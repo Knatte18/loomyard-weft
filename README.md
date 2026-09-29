@@ -7,6 +7,11 @@
 
 A landed loom run marks its board task done
 
+## **#002:** lyx loom start pane layout: one-line status, no loom-operator, agent gets the height [A]
+[loom-start-layout](design-loom-start-layout.md)
+
+lyx loom start pane layout: one-line status, no loom-operator, agent gets the height
+
 # Done
 
 ## **#000:** Burler: no cluster-exclude warning when the profile has no cluster fan
