@@ -12,6 +12,11 @@ A landed loom run marks its board task done
 
 lyx loom start pane layout: one-line status, no loom-operator, agent gets the height
 
+## **#003:** loom status shows the producer's stuck reason, not 'stuck with no OnStuck target' [A]
+[stuck-reason-in-status](design-stuck-reason-in-status.md)
+
+loom status shows the producer's stuck reason, not 'stuck with no OnStuck target'
+
 # Done
 
 ## **#000:** Burler: no cluster-exclude warning when the profile has no cluster fan
