@@ -1,8 +1,8 @@
 # Tasks
 
-# Layer A
+# Done
 
-## **#000:** Burler: no cluster-exclude warning when the profile has no cluster fan [A]
-[burler-exclude-warn](design-burler-exclude-warn.md)
+## **#000:** Burler: no cluster-exclude warning when the profile has no cluster fan
+[burler-exclude-warn](design-burler-exclude-warn.md) [done]
 
 Every Burler round WARNs about dropped cluster excludes; fix at the source (#278)
