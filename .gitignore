@@ -1,0 +1,3 @@
+*.lock
+*.swaplock
+.board-rendered.json

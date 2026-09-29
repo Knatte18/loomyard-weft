@@ -1,0 +1,12 @@
+[
+  {
+    "id": 0,
+    "slug": "burler-exclude-warn",
+    "title": "Burler: no cluster-exclude warning when the profile has no cluster fan",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Every Burler round WARNs about dropped cluster excludes; fix at the source (#278)",
+    "body": "Repro: any loom run; every Burler round logs `shedadapters: focus directive names cluster excludes but the template profile has no cluster fan; dropping` (WARN).\nImpact: the judge writes an `exclude_lenses` list nothing consumes, and the WARN buries real warnings in traces.\n\nFound in crucible-happy-path round fable-high-r2.\n\nSource: https://github.com/Knatte18/loomyard/issues/278\nPreferred fix: stop asking the Burler judge for exclude_lenses (and stop warning) when the template profile has no cluster fan, rather than only downgrading the log level."
+  }
+]
