@@ -3,9 +3,10 @@
      the agent's entire instruction set -- the call runs as a single clean-room agent told only "read
      this file and do exactly what it says".
      Every marker below is a top-level {{.X}} substitution;
-     stencil.Fill requires all nine non-empty and there are no {{if}}/{{range}} conditionals
-     anywhere in this file (a required marker inside a conditional branch would render silently
-     blank when present-but-empty -- see internal/stencil/stencil.go).
+     stencil.Fill requires every marker this file names non-empty,
+     and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty -- see internal/stencil/stencil.go).
+     The focus-schema markers ({{.focus_example_lists}}, {{.focus_list_rules}}, {{.approved_focus_lists}}) have two variants, rendered by focusSchemaMarkers in internal/shedadapters/bouncerprompt.go:
+     Go holds the variant so this stencil stays conditional-free.
      {{.round}} and {{.next_round}} are deliberately DIFFERENT markers, not a typo: the ledger file
      (`{{.ledger_path}}`, built from ledgerPath(runDir, round)) records the round being judged, while
      the focus file (`{{.focus_path}}`, built from focusPath(runDir, round+1) -- see focusPath's own
@@ -14,7 +15,7 @@
      round-agrees-with-filename check discards it as malformed (crucible round sonnet-xhigh-r8,
      LS-1) -- before this fix, both instructions reused {{.round}}, so a compliant judge wrote a
      focus file whose OWN frontmatter round permanently disagreed with its OWN filename by one.
-lyx-stencil: sha256=692e000860ac745ce9ba608249729a2e842ed453a5d2cb590dc1a97ea3a44dd6 -->
+lyx-stencil: sha256=ec553912eb72c596d5b5306a96c09a631e165f95b11d943f3b79d861954779b7 -->
 
 # Bouncer — judge pass, round {{.round}}
 
@@ -100,8 +101,7 @@ Write `{{.focus_path}}` as `---`-delimited YAML frontmatter over optional prose 
 ```
 ---
 round: 1
-exclude_lenses: []
-focus: []
+{{.focus_example_lists}}
 ---
 ```
 
@@ -110,17 +110,13 @@ Frontmatter rules, all strict:
 - `round` is a positive integer, here {{.next_round}} -- NOT {{.round}}: this file targets the
   ROUND AFTER the one you are judging (its own filename already names that round), so its `round:`
   field must match the filename rather than the round you were asked to review.
-- `exclude_lenses` is a list of strings, possibly empty.
-- `focus` is a list of strings, possibly empty.
-- Both list keys are always present, even when empty -- never omit either key, and never write a
-  scalar where a list is required.
+{{.focus_list_rules}}
 - This format is parsed mechanically, and any deviation from it fails the parse;
   a file the parser rejects is discarded and replaced with an empty-lists fallback.
 
 Below the closing `---`, prose rationale is optional.
 
-An `APPROVED` verdict still writes `{{.focus_path}}`, with an empty `exclude_lenses` and an empty
-`focus`, because the run is classified complete only when every declared output file exists -- a
-judge that writes two of three files has its approval discarded.
+An `APPROVED` verdict still writes `{{.focus_path}}`, with {{.approved_focus_lists}}, because the run is classified complete only when every declared output file exists --
+a judge that writes two of three files has its approval discarded.
 
 Write EXACTLY THREE files this call: `{{.verdict_path}}`, `{{.ledger_path}}`, and `{{.focus_path}}`.
