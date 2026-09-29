@@ -22,6 +22,11 @@ loom status shows the producer's stuck reason, not 'stuck with no OnStuck target
 
 Webster integration.md renders the verify command verbatim
 
+## **#005:** Stencil drift warning names the right remedy per drift direction [A]
+[stencil-drift-remedy](design-stencil-drift-remedy.md)
+
+Stencil drift warning names the right remedy per drift direction
+
 # Done
 
 ## **#000:** Burler: no cluster-exclude warning when the profile has no cluster fan
