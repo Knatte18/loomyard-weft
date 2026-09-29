@@ -17,6 +17,11 @@ lyx loom start pane layout: one-line status, no loom-operator, agent gets the he
 
 loom status shows the producer's stuck reason, not 'stuck with no OnStuck target'
 
+## **#004:** Webster integration.md renders the verify command verbatim [A]
+[integration-verify-fence](design-integration-verify-fence.md)
+
+Webster integration.md renders the verify command verbatim
+
 # Done
 
 ## **#000:** Burler: no cluster-exclude warning when the profile has no cluster fan
