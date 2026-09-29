@@ -9,5 +9,15 @@
     "brief": "Every Burler round WARNs about dropped cluster excludes; fix at the source (#278)",
     "body": "Repro: any loom run; every Burler round logs `shedadapters: focus directive names cluster excludes but the template profile has no cluster fan; dropping` (WARN).\nImpact: the judge writes an `exclude_lenses` list nothing consumes, and the WARN buries real warnings in traces.\n\nFound in crucible-happy-path round fable-high-r2.\n\nSource: https://github.com/Knatte18/loomyard/issues/278\nPreferred fix: stop asking the Burler judge for exclude_lenses (and stop warning) when the template profile has no cluster fan, rather than only downgrading the log level.",
     "status": "done"
+  },
+  {
+    "id": 1,
+    "slug": "board-done-on-landing",
+    "title": "A landed loom run marks its board task done",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "A landed loom run marks its board task done",
+    "body": "Repro: `lyx board upsert` a task, `lyx fabric add \u003cslug\u003e`, `lyx loom start --no-attach` until `state: done` with the change landed on the parent; `lyx board get \u003cslug\u003e` still shows no status (no production code outside `boardcli` sets a board status).\nImpact: the board keeps listing landed work as open and claimable, so the operator must `lyx board set-status` by hand after every landing.\n\nFound in crucible-happy-path (round opus-medium-r1).\n\nSource: https://github.com/Knatte18/loomyard/issues/275 (close it in the landing commit)."
   }
 ]
