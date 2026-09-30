@@ -8,21 +8,13 @@ Depends on: #020, #021, #019
 
 Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
 
-## **#022:** Webster: a parent merge after a batch commit wedges record-batch [A]
-[webster-parent-merge-midrun](design-webster-parent-merge-midrun.md)
-Depends on: #021
-
-record-batch demands HEAD == report head_sha; a mid-run merge-in wedges the run
-
-# Layer B
-
-## **#023:** Every refusal has a way forward: audit Webster and shed halt paths [B]
+## **#023:** Every refusal has a way forward: audit Webster and shed halt paths [A]
 [refusal-audit](design-refusal-audit.md)
 Depends on: #022
 
 Walk every refusal/halt path in webster and shed; none may wedge a run
 
-## **#026:** Send PR review findings back into the run instead of fixing outside loom [B]
+## **#026:** Send PR review findings back into the run instead of fixing outside loom [A]
 [publish-review-fixback](design-publish-review-fixback.md)
 Depends on: #022
 
@@ -128,6 +120,12 @@ Re-adding a removed slug races the old remote weft branch; integration test flak
 [verify-triage](design-verify-triage.md) [done]
 
 Flaky or pre-existing test failures no longer halt a run; report names the failing tests
+
+## **#022:** Webster: a parent merge after a batch commit wedges record-batch
+[webster-parent-merge-midrun](design-webster-parent-merge-midrun.md) [done]
+Depends on: #021
+
+record-batch demands HEAD == report head_sha; a mid-run merge-in wedges the run
 
 ## **#024:** ly-drive: safe self-repairs instead of always handing back
 [ly-drive-safe-repairs](design-ly-drive-safe-repairs.md) [done]
