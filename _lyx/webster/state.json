@@ -1,7 +1,7 @@
 {
   "runGuid": "f652684f48161c48a7d9bfbde839552f",
   "planFingerprint": "05ad78708ac0e39771ff3ecf8cb0c697b62001fd8291c93c3913f35f5cfa9120",
-  "currentBatch": 14,
+  "currentBatch": 0,
   "masterStrand": "cdbb4b6aa888221ee164baab2824365c",
   "masterSessionId": "2a0edaea-54f5-45ae-af8a-c85c0ae22947",
   "assertedModel": "sonnet",
@@ -112,8 +112,19 @@
       "kind": "fork",
       "spawnedAt": "2026-09-30T15:34:27Z",
       "sessionId": "2a0edaea-54f5-45ae-af8a-c85c0ae22947",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "14-ly-drive-skill",
+        "status": "done",
+        "head_sha": "d23a8b9e76d7197f3935d9b63f973374d5b7e5cf"
+      },
+      "cardShas": [
+        "d23a8b9e76d7197f3935d9b63f973374d5b7e5cf"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a8fa4c255dbba68fd.jsonl"
+      ]
     },
     "2": {
       "slug": "gitexec-transport-classifier",
@@ -292,6 +303,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a85c4541189dd537d.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-ac7467b6d7e45eef5.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-ab1e83eea0dbd7c46.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a462bc19ba6ac09ba.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a462bc19ba6ac09ba.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a8fa4c255dbba68fd.jsonl"
   ]
 }
