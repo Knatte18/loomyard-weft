@@ -1,7 +1,7 @@
 {
   "runGuid": "d9d8c2214f0ee69b93fc9225871f8d26",
   "planFingerprint": "7a4108e25c8033d3ffe61b3f17904ffce120d0ddafa646ece5e2eeb945468bd6",
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "eb9d0da12b75d71d6b1396d0c25a2a2e",
   "masterSessionId": "81d46c4f-8fc0-4c22-be4b-d93b9305f45c",
   "assertedModel": "sonnet",
@@ -85,6 +85,15 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-write-respawn/81d46c4f-8fc0-4c22-be4b-d93b9305f45c/subagents/agent-a82c065296c175953.jsonl"
       ]
+    },
+    "5": {
+      "slug": "loomengine-prior-plan-block",
+      "startSha": "3e6d42b603e6f9cde9fde35b2f52dc9294689b8a",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T14:27:42Z",
+      "sessionId": "81d46c4f-8fc0-4c22-be4b-d93b9305f45c",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
