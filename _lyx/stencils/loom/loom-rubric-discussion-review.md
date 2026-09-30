@@ -2,10 +2,10 @@
      the Discussion-Bouncer row interpolates it as bouncer-template-seed.md's and
      bouncer-template-judge.md's rubric marker value, and the Discussion-Burler row interpolates it
      the same way into internal/burlerengine's own round prompt.
-     It is a marker VALUE, never a template -- it carries no top-level stencil markers of its own, and
+     It is a marker VALUE, never a template -- its only markers are the ones ReadRubric fills, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=4ba2b077b08880ef533653621556f763f4abeca971af9cea4e23ca1a48eb8fb5 -->
+lyx-stencil: sha256=c88407e77e9cbe9397fa151d900eb9ed0887405ea4e60d465902b366e5a53e87 -->
 
 # Discussion-Review rubric
 
@@ -35,4 +35,5 @@ Do not flag any of the following as a finding:
   Before raising any relocation finding, check whether the content carries a requirement or constraint the plan writer needs.
   Extract that into `decision-record.md`'s own Decisions or Constraints first, and move only the surrounding deliberation narrative — because `Plan-Write` never reads `support-log.md`, making a careless move a silent loss rather than a relocation.
 - **The writer/reviewer symmetry note.**
-  Whatever the discussion writer's own stencil says not to gather, this rubric must not flag as missing, or the additive bias reappears even with the writer-side fix in place.
+  The discussion writer's own stencil is `{{.stencils_dir}}/loom/loom-template-discussion.md`: read it to learn what the writer was told not to gather.
+  Whatever it says not to gather, this rubric must not flag as missing, or the additive bias reappears even with the writer-side fix in place.

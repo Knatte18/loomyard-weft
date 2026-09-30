@@ -8,11 +8,14 @@
      and friction_directive is the sixth: both are optional, both filled via stencil.FillOptional, and
      both render as nothing when their respective feature is inactive (PATTERN for pattern_directive,
      Tier 2 for friction_directive).
-     They stay at the top level, before the first work heading, so their optional-blank semantics hold.
-lyx-stencil: sha256=45aa4c0af84c1178d59c14f499f885bbe007f607ee9c017149506ecaae98fd69 -->
+     focus_directive is the seventh marker, optional, filled via stencil.FillOptional, and renders
+     nothing when the round has no directive.
+     All three stay at the top level, before the first work heading, so their optional-blank semantics hold.
+lyx-stencil: sha256=a4b85e09f3ddceaa1ebd63c7cbfd30dd938384968e4c3eae300a74307e822ee3 -->
 
 {{.pattern_directive}}
 {{.friction_directive}}
+{{.focus_directive}}
 ## What to review (the target)
 
 {{.target}}

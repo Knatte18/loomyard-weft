@@ -6,7 +6,7 @@
      (burler-template-round-orchestrator.md) directs it here, after instruction
      1. Every marker below is a top-level {{.X}} substitution;
         stencil.Fill requires all three non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go).
-lyx-stencil: sha256=953ec367c6343b53ff855416eff9209c86a242f539a2bbc4c75da1088340cb08 -->
+lyx-stencil: sha256=f3d4bce6b6455571ad8395cb91e0698979456a5b1904a9ac4cd46b023ada12ef -->
 
 ## Cluster rules
 
@@ -44,6 +44,11 @@ Frontmatter rules, all strict:
 - In a cluster round, each finding also carries an `origin:` key — `lens:<name>` for a finding kept from a named fork, or `handler` for one you found yourself.
 
 Below the closing `---`, write prose: one `### [SEVERITY] <title>` block per finding, each carrying `**Location:**`, `**Issue:**`, and `**Fix:**` lines.
+
+When you departed from a focus directive this round, add a `## Focus departures` section below the frontmatter, after the finding blocks.
+Write one entry per departed directive, quoting the directive and giving your reason for departing.
+Omit the section when you departed from none.
+The section is prose and never a frontmatter key — the frontmatter schema above is unchanged.
 
 ## Source-grounding rule
 

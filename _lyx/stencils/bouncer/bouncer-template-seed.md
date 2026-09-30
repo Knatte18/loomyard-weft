@@ -8,7 +8,7 @@
      and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty -- see internal/stencil/stencil.go).
      The focus-schema markers ({{.focus_example_lists}}, {{.focus_list_rules}}) have two variants, rendered by focusSchemaMarkers in internal/shedadapters/bouncerprompt.go:
      Go holds the variant so this stencil stays conditional-free.
-lyx-stencil: sha256=772fb67fb53de1c63cf853a79fd65e5eb0dd2b36f49b9667d9ddb73c88225452 -->
+lyx-stencil: sha256=815ec101afab6da2031f907b62947258f4577af18ce73df98b6f011d3d0408dd -->
 
 # Bouncer — seed pass
 
@@ -49,5 +49,11 @@ Frontmatter rules, all strict:
   a file the parser rejects is discarded and replaced with an empty-lists fallback.
 
 Below the closing `---`, prose rationale is optional.
+
+What a `focus` entry may say:
+
+- An entry names where to look and which question to settle.
+- An entry never caps severity, and never pre-states a verdict.
+- Promote a concrete instance into an entry only after checking it against the rubric's `Do not flag` list and its symmetry rule.
 
 Write only that one file: `{{.focus_path}}`.

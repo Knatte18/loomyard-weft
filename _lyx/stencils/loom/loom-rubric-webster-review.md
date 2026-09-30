@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- it carries no top-level stencil markers of its own, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=7921db099505a042f6f99af7dd834a61f583b24b760bd75d9c49bced66ab6b29 -->
+lyx-stencil: sha256=d57945c1d97e995a6bcc3c695f519b1fb7b0a1118bae4a14629a36378d8f1ce3 -->
 
 # Webster-Review rubric
 
@@ -44,12 +44,14 @@ Do not flag any of the following as a finding:
 - **A missing `ImpactSummary` on any card, or an incomplete `DependsOn`/`Produces` list.**
   Both belong to `Plan-Review`, which has already passed.
 - **Anything that is not the diff.**
-  The discussion pair and the plan directory under `_lyx`, and this segment's own round artifacts under `.lyx/loom/reviews/webster/`, are never the subject of a finding.
+  The discussion pair and the plan directory under `_lyx`, and this segment's own round artifacts under `_lyx/reviews/webster/`, are never the subject of a finding.
 
 ## Also flag
 
 - **Comment-convention compliance.**
   Any new or changed doc comment follows the target repository's own conventions — its own constraints document if it has one, and the conventions the surrounding code already follows.
+  A rule written in the target repository's constraints document outranks a convention inferred from the surrounding code.
+  A line width is never inferred from the surrounding code.
   This rubric checks compliance with the target repository's own standard, not loomyard's.
 - **Per-card mechanical check.**
   Confirm every one of the card's own groups' type-specific mechanical checks actually ran and passed, each against that group's own targets, not just the first label's — the AST-script-plus-grep for a `Rename` group, `assert-no-callers` for a `Delete` group, per the per-type table in `{{.specs_dir}}/loom/loom-plan-spec.md` — not merely that the diff compiles and its tests pass.
