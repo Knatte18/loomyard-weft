@@ -12,7 +12,7 @@
 - `internal/vscode#TaskChainInteractive`
 - `internal/vscode#TaskChainAttachOnly`
 - `internal/fabricengine#ExcludeAnchoredDir`
-- `plan:internal/fabricengine#PathTracked`
+- `internal/fabricengine#PathTracked`
 - `internal/ideengine#CodeLauncher`
 
 **Intent:**

@@ -1,7 +1,7 @@
 # Card 3 — fabric-path-tracked
 
 **Create:**
-- `plan:internal/fabricengine#PathTracked` -> `func PathTracked(worktreeDir, relPath string) (bool, error)`
+- `internal/fabricengine#PathTracked`
 - `internal/fabricengine/pathtracked.go`
 - `internal/fabricengine/pathtracked_integration_test.go`
 
