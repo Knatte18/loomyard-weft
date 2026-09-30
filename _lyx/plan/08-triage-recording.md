@@ -10,8 +10,8 @@
 - `plan:internal/websterengine#writeTriageFrictionNote` -> `func writeTriageFrictionNote(frictionDir string, t IntegrationTriage) error`
 
 **Uses:**
-- `plan:internal/websterengine#IntegrationTriage`
-- `plan:internal/websterengine#IntegrationFailure`
+- `internal/websterengine#IntegrationTriage`
+- `internal/websterengine#IntegrationFailure`
 - `//internal/friction/friction.go`
 
 **Intent:** Add the pure formatting and note-writing pieces the stage records a verdict with, so card 9 only wires them (D2, D11).

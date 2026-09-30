@@ -7,7 +7,7 @@
 - `plan:internal/websterengine#opaqueFailureID` -> `const opaqueFailureID = "verify-command"`
 
 **Uses:**
-- `plan:internal/websterengine#IntegrationFailure`
+- `internal/websterengine#IntegrationFailure`
 
 **Intent:** Parse a verify command's combined output into failure identities, per D5.
 The parser lives in `internal/websterengine`, not its own package, since webster is its only consumer.

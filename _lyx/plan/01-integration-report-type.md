@@ -6,11 +6,11 @@
 **Create:**
 - `integrationreport.go`
 - `integrationreport_test.go`
-- `plan:internal/websterengine#IntegrationReport` -> `type IntegrationReport struct`
-- `plan:internal/websterengine#IntegrationFailure` -> `type IntegrationFailure struct`
-- `plan:internal/websterengine#IntegrationTriage` -> `type IntegrationTriage struct`
-- `plan:internal/websterengine#ParseIntegrationReport` -> `func ParseIntegrationReport(path string) (*IntegrationReport, error)`
-- `plan:internal/websterengine#WriteIntegrationReport` -> `func WriteIntegrationReport(path string, r *IntegrationReport) error`
+- `internal/websterengine#IntegrationReport`
+- `internal/websterengine#IntegrationFailure`
+- `internal/websterengine#IntegrationTriage`
+- `internal/websterengine#ParseIntegrationReport`
+- `internal/websterengine#WriteIntegrationReport`
 
 **Intent:** Give the integration report its own parse type so Go can add triage fields to it while batch reports keep their strict three-field shape (D10).
 

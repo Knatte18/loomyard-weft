@@ -10,7 +10,7 @@
 - `plan:internal/websterengine#AppendIntegrationTriage` -> `func AppendIntegrationTriage(websterDir string, flaky, preExisting []string) error`
 
 **Uses:**
-- `plan:internal/websterengine#IntegrationFailure`
+- `internal/websterengine#IntegrationFailure`
 
 **Intent:** Give `summary.md`, the channel that reaches the operator and the PR, the failing identities and their tails (D11).
 

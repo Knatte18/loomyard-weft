@@ -6,9 +6,9 @@
 - `runlevel_test.go`
 
 **Uses:**
-- `plan:internal/websterengine#IntegrationReport`
-- `plan:internal/websterengine#ParseIntegrationReport`
-- `plan:internal/websterengine#WriteIntegrationReport`
+- `internal/websterengine#IntegrationReport`
+- `internal/websterengine#ParseIntegrationReport`
+- `internal/websterengine#WriteIntegrationReport`
 - `plan:internal/websterengine#triageOutcome`
 - `plan:internal/websterengine#triageIntegrationFailure`
 - `plan:internal/websterengine#runVerifyCapture`

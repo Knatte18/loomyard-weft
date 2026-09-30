@@ -7,8 +7,8 @@
 - `plan:internal/websterengine#triageIntegrationFailure` -> `func triageIntegrationFailure(run verifyRunner, repo FabricBisector, baselineSHA, verifyCmd, worktree, scratchDir, firstLogPath string) (triageOutcome, error)`
 
 **Uses:**
-- `plan:internal/websterengine#IntegrationFailure`
-- `plan:internal/websterengine#IntegrationTriage`
+- `internal/websterengine#IntegrationFailure`
+- `internal/websterengine#IntegrationTriage`
 - `plan:internal/websterengine#parseVerifyFailures`
 - `plan:internal/websterengine#opaqueFailureID`
 - `plan:internal/websterengine#verifyRun`
