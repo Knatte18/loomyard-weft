@@ -1,7 +1,7 @@
 {
   "runGuid": "58d2f68d0b54bf289c61d20455e5ff7a",
   "planFingerprint": "50ae649928eeb63fb689ca4b0d201cc5ddbfef2570cbee2e8382364a67cf9f4c",
-  "currentBatch": 0,
+  "currentBatch": 3,
   "masterStrand": "3b8cb9f6d8eced4983834149237404b3",
   "masterSessionId": "4c17ecbb-80dc-4bf9-a43a-78ebde2bb2c5",
   "assertedModel": "sonnet",
@@ -48,6 +48,15 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-hub-ready/4c17ecbb-80dc-4bf9-a43a-78ebde2bb2c5/subagents/agent-aa4232eaa1a8c566c.jsonl"
       ]
+    },
+    "3": {
+      "slug": "loomengine-durable-friction",
+      "startSha": "a73894b0c753a492ff9757ffb3a731f5dc4e22b6",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T13:33:09Z",
+      "sessionId": "4c17ecbb-80dc-4bf9-a43a-78ebde2bb2c5",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
