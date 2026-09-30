@@ -2,11 +2,6 @@
 
 # Layer A
 
-## **#006:** Landing: board status, PR body, squash message, operator-approved merge, branch cleanup [A]
-[landing](design-landing.md)
-
-Landing gaps: #275, #276, #289, #292, #293
-
 ## **#007:** Operator surface: what the operator sees and types while a run goes [A]
 [operator-surface](design-operator-surface.md)
 
@@ -38,6 +33,11 @@ loom status shows the producer's stuck reason, not 'stuck with no OnStuck target
 [integration-verify-fence](design-integration-verify-fence.md) [done]
 
 Strip code fences from the plan-level verify command (#285)
+
+## **#006:** Landing: board status, PR body, squash message, operator-approved merge, branch cleanup
+[landing](design-landing.md) [done]
+
+Landing gaps: #275, #276, #289, #292, #293
 
 # Manifest
 
