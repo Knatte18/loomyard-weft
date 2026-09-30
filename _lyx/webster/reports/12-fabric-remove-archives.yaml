@@ -1,0 +1,6 @@
+status: OK
+head_sha: b10811a56a183baa17b30101221768f290e36e6c
+deviations:
+  - internal/fabricengine/livestate_mutationoracle_test.go
+  - internal/fabricengine/remove_refusal_remedy_integration_test.go
+  - internal/fabricengine/removeremote_integration_test.go
