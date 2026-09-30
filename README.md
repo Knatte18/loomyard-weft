@@ -2,11 +2,6 @@
 
 # Layer A
 
-## **#005:** Stencil drift warning names the right remedy per drift direction [A]
-[stencil-drift-remedy](design-stencil-drift-remedy.md)
-
-Stencil drift warning names the right remedy per drift direction
-
 ## **#006:** Landing: board status, PR body, squash message, operator-approved merge, branch cleanup [A]
 [landing](design-landing.md)
 
@@ -43,3 +38,20 @@ loom status shows the producer's stuck reason, not 'stuck with no OnStuck target
 [integration-verify-fence](design-integration-verify-fence.md) [done]
 
 Strip code fences from the plan-level verify command (#285)
+
+# Manifest
+
+## **#000:** Fabric: branches left behind by a failed add and on the remote
+[fabric-branch-hygiene](design-fabric-branch-hygiene.md)
+
+Parked: #269, #270 — re-check after landing
+
+## **#001:** Batten teardown deletes an llm-driven child's friction notes
+[batten-llm-friction](design-batten-llm-friction.md)
+
+Parked: #274 — only matters once batten runs llm-driven children
+
+## **#002:** Kick-start pack: pre-resolved glyph spans for implementer and Burler
+[kick-start-pack](design-kick-start-pack.md)
+
+Parked: #227, #228 — measured win, not yet scheduled

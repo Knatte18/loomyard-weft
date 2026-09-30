@@ -1,0 +1,1 @@
+Read the closed GitHub issues #269 (add rollback leaves the warp branch) and #270 (cleanup cannot see weft branches stranded on the remote). Re-check both once `landing` has landed: it takes #293 (remove leaves the warp branch, locally and on origin), which touches the same branch-lifecycle code, and the ly-drive may repair the rest from a trace.

@@ -1,0 +1,32 @@
+[
+  {
+    "id": 0,
+    "slug": "fabric-branch-hygiene",
+    "title": "Fabric: branches left behind by a failed add and on the remote",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Parked: #269, #270 — re-check after landing",
+    "body": "Read the closed GitHub issues #269 (add rollback leaves the warp branch) and #270 (cleanup cannot see weft branches stranded on the remote). Re-check both once `landing` has landed: it takes #293 (remove leaves the warp branch, locally and on origin), which touches the same branch-lifecycle code, and the ly-drive may repair the rest from a trace."
+  },
+  {
+    "id": 1,
+    "slug": "batten-llm-friction",
+    "title": "Batten teardown deletes an llm-driven child's friction notes",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Parked: #274 — only matters once batten runs llm-driven children",
+    "body": "Read the closed GitHub issue #274. Batten is not in real use yet; take this when it is."
+  },
+  {
+    "id": 2,
+    "slug": "kick-start-pack",
+    "title": "Kick-start pack: pre-resolved glyph spans for implementer and Burler",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Parked: #227, #228 — measured win, not yet scheduled",
+    "body": "Read the closed GitHub issues #227 (implementer prompt) and #228 (Burler, with the operator's architecture-correction comment: inject once before the explore phase so every fork inherits it). Measured basis in quarry's `results/2026-09-06-kickstart`."
+  }
+]

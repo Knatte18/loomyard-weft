@@ -1,0 +1,1 @@
+Read the closed GitHub issue #274. Batten is not in real use yet; take this when it is.
