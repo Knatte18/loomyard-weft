@@ -15,7 +15,7 @@
 **Uses:**
 - `plan:internal/shedtransient#Class`
 - `plan:internal/shedtransient#Mark`
-- `plan:internal/shedengine#TransientOf`
+- `internal/shedengine#TransientOf`
 
 **Intent:**
 Turn the mark on for real (decision record D1, D2, D12): every recipe shed classifies its producer errors, and every step bootstrap classifies its own failures, through the one `internal/shedtransient` mapping.

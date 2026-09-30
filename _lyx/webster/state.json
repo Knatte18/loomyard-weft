@@ -1,7 +1,7 @@
 {
   "runGuid": "f652684f48161c48a7d9bfbde839552f",
-  "planFingerprint": "6c6661912aa285ee09a21b07a1975546230a4fb4a6316c31609d5b2810a063c4",
-  "currentBatch": 1,
+  "planFingerprint": "5121d8bbd845bb2856ed18014eecf94217585ab74d0fcdf19a2f5f3ac12b901e",
+  "currentBatch": 0,
   "masterStrand": "cdbb4b6aa888221ee164baab2824365c",
   "masterSessionId": "2a0edaea-54f5-45ae-af8a-c85c0ae22947",
   "assertedModel": "sonnet",
@@ -12,8 +12,22 @@
       "kind": "fork",
       "spawnedAt": "2026-09-30T15:22:37Z",
       "sessionId": "2a0edaea-54f5-45ae-af8a-c85c0ae22947",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-shedengine-transient-mark",
+        "status": "done",
+        "head_sha": "f1b6466acf695b560093a985d3aedad9f61087d5"
+      },
+      "cardShas": [
+        "f1b6466acf695b560093a985d3aedad9f61087d5"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a9bf9ec81fd58c722.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a9bf9ec81fd58c722.jsonl"
+  ]
 }

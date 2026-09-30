@@ -1,12 +1,12 @@
 # Card 1 — shedengine transient mark
 
 **Create:**
-- `plan:internal/shedengine#TransientClass` -> `type TransientClass string`
-- `plan:internal/shedengine#TransientGitTransport` -> `const TransientGitTransport TransientClass = "git-transport"`
-- `plan:internal/shedengine#TransientGitHubAPI` -> `const TransientGitHubAPI TransientClass = "github-api"`
-- `plan:internal/shedengine#TransientAgentStart` -> `const TransientAgentStart TransientClass = "agent-start"`
-- `plan:internal/shedengine#MarkTransient` -> `func MarkTransient(class TransientClass, err error) error`
-- `plan:internal/shedengine#TransientOf` -> `func TransientOf(err error) TransientClass`
+- `internal/shedengine#TransientClass`
+- `internal/shedengine#TransientGitTransport`
+- `internal/shedengine#TransientGitHubAPI`
+- `internal/shedengine#TransientAgentStart`
+- `internal/shedengine#MarkTransient`
+- `internal/shedengine#TransientOf`
 - `internal/shedengine/transient.go`
 - `internal/shedengine/transient_test.go`
 

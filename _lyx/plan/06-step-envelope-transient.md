@@ -9,7 +9,7 @@
 - `CONSTRAINTS.md`
 
 **Uses:**
-- `plan:internal/shedengine#TransientOf`
+- `internal/shedengine#TransientOf`
 - `internal/shedverbs#StepKinds`
 
 **Intent:**

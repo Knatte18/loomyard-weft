@@ -12,12 +12,12 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/shedengine#TransientClass`
-- `plan:internal/shedengine#TransientGitTransport`
-- `plan:internal/shedengine#TransientGitHubAPI`
-- `plan:internal/shedengine#TransientAgentStart`
-- `plan:internal/shedengine#MarkTransient`
-- `plan:internal/shedengine#TransientOf`
+- `internal/shedengine#TransientClass`
+- `internal/shedengine#TransientGitTransport`
+- `internal/shedengine#TransientGitHubAPI`
+- `internal/shedengine#TransientAgentStart`
+- `internal/shedengine#MarkTransient`
+- `internal/shedengine#TransientOf`
 - `plan:internal/gitexec#IsTransportFailure`
 - `plan:internal/githubclient#IsTransient`
 - `internal/shuttleengine#ErrNotStarted`
