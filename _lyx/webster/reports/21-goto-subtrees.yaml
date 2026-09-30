@@ -1,0 +1,5 @@
+status: OK
+head_sha: aaf9c7553f1813bd7bcb4e7623defad3f8f88007
+deviations:
+  - internal/loomcli/cli_test.go
+  - internal/battencli/cli_test.go
