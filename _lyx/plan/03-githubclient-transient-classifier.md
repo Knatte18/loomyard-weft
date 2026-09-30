@@ -1,7 +1,7 @@
 # Card 3 — githubclient classifies its own transient failures
 
 **Create:**
-- `plan:internal/githubclient#IsTransient` -> `func IsTransient(err error) bool`
+- `internal/githubclient#IsTransient`
 - `internal/githubclient/transient.go`
 - `internal/githubclient/transient_test.go`
 

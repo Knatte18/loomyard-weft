@@ -19,7 +19,7 @@
 - `internal/shedengine#MarkTransient`
 - `internal/shedengine#TransientOf`
 - `internal/gitexec#IsTransportFailure`
-- `plan:internal/githubclient#IsTransient`
+- `internal/githubclient#IsTransient`
 - `internal/shuttleengine#ErrNotStarted`
 
 **Intent:**
