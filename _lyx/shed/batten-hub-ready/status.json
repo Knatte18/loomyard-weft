@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "Batch 11-fabric-archive-helper: record-batch failed with a policy violation: webster: fabric-reference violation in the fork transcript agent-a3728e1078a49c641.jsonl (ran a fabric-referencing command writing archive_integration_test.go).",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Batchifier → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "Batch 11-fabric-archive-helper: record-batch failed with a policy violation: webster: fabric-reference violation in the fork transcript agent-a3728e1078a49c641.jsonl (ran a fabric-referencing command writing archive_integration_test.go)."
   },
   "history": [
     {
@@ -78,6 +78,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-09-30T13:31:12Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-09-30T13:42:40Z"
     }
   ],
   "product": {
