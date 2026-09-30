@@ -1,12 +1,12 @@
 {
   "current_producer": "Publish",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "pull request created; awaiting review, then run `lyx loom approve` and `lyx loom start`: https://github.com/Knatte18/loomyard/pull/309",
   "pause_requested": false,
   "activity": {
     "now": "Publish",
-    "last": "Describe → done",
-    "wait": ""
+    "last": "Publish → awaiting",
+    "wait": "pull request created; awaiting review, then run `lyx loom approve` and `lyx loom start`: https://github.com/Knatte18/loomyard/pull/309"
   },
   "history": [
     {
@@ -133,6 +133,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/plan-write-respawn/_lyx/landing/summary.md",
       "at": "2026-09-30T15:04:16Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Publish",
+      "outcome": "awaiting",
+      "output": "",
+      "at": "2026-09-30T15:05:41Z"
     }
   ],
   "product": {
