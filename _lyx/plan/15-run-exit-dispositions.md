@@ -27,7 +27,8 @@ Update `Run`'s and `runExitAuditCrossCheck`'s doc comments.
 
 Tests (integration) in `runlevel_test.go`:
 
-- The named-spawn scenario end to end: begin and record batches 2 and 3 with the finding present from batch 2 on, then a `done` Master whose whole-session audit carries it → `Run` returns `done`, no error, and no second warning for the finding.
+- The named-spawn scenario end to end: begin and record batches 2 and 3 with the finding present from batch 2 on, then a `done` Master whose whole-session audit carries it → `Run` returns `done`, no error, and no second warning for the finding;
+  summary.md carries an `## Audit warnings` section holding batch 2's warning exactly once, the batch-level half of D5's summary requirement.
 - A `fabric-reference` in the integration fork's transcript on a `done` run → outcome `done`, one run-level entry in state.json's `auditWarnings`, the line on `RunResult.Warnings` (what `lyx webster run` prints), and a `## Audit warnings` section in summary.md.
 - A Master `parent-write` into a tracked file after the last batch → outcome `stuck`, the stuck reason names the path and `git`; the test then restores the file with `git checkout`, runs `Run` again with a clean audit, and gets `done`.
 - Rewrite `TestRun_DoneWithParentWriteViolationIsHardError` to the stuck demotion.

@@ -1,4 +1,4 @@
-# Card 30 — constraints-invariant
+# Card 31 — constraints-invariant
 
 **Prosa:**
 - `CONSTRAINTS.md`

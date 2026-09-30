@@ -1,4 +1,4 @@
-# Card 29 — ly-drive-skill
+# Card 30 — ly-drive-skill
 
 **Prosa:**
 - `plugins/ly/skills/ly-drive/SKILL.md`

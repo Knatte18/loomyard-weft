@@ -13,7 +13,8 @@ Give every webster CLI-level refusal a way forward (D1) and a reaching test, in 
 
 Messages to fix:
 
-- Every `… but the fabric sync failed` refusal (begin-batch, record-batch, recover-batch spawn and terminal, run): the state is saved locally; `lyx fabric sync` commits and pushes it, or the next bracket verb's own sync carries it.
+- Every `… but the fabric sync failed` refusal (begin-batch, record-batch, recover-batch spawn and terminal, run): the state is saved locally; `lyx fabric commit` commits it, or the next bracket verb's own sync carries it.
+  `fabricSync` (`sync.go`) only commits the scoped `_lyx` pathspec and never pushes, so a commit failure is the one way to reach these rows.
 - `run`, standalone reed boot failure, and `recover-batch`'s same failure: transient; re-run the verb.
 - `recover-batch`, state.json vanished during the wait: re-run `lyx webster recover-batch NN`.
 - `validate`, the re-baseline persistence failure: re-run `lyx webster validate`, or `lyx webster rebaseline`.
@@ -24,7 +25,7 @@ They get a reaching test where none exists.
 
 Grouped: a non-numeric batch argument (usage), and wiring failures in the pre-run.
 
-Tests in `verbs_test.go` (integration): for the fabric-sync rows, a hub fixture whose fabric push is made to fail, then `lyx fabric sync` (or the next verb) succeeding;
+Tests in `verbs_test.go` (integration): for the fabric-sync rows, a hub fixture whose weft commit is made to fail (a stale `index.lock` planted in the weft worktree's git dir), then, with the lock removed, `lyx fabric commit` (or the next bracket verb) committing the saved state;
 for the vanished-state row, the verb re-run succeeding once state.json is back;
 for `no run in progress`, `lyx webster run`'s state init followed by the refused verb succeeding.
 Every hub fixture comes from `internal/hubforge`.

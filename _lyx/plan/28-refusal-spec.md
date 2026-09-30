@@ -1,4 +1,4 @@
-# Card 27 — refusal-spec
+# Card 28 — refusal-spec
 
 **Create:**
 - `contracts/specs/refusal-spec.md`
@@ -13,9 +13,10 @@ Write the durable refusal table D3 specifies, the lookup ly-drive and the operat
 One `##` section per bound module: webster, shed, loom.
 Each section is one table with the columns Refusal, Trigger, Class, Way forward.
 
-- One row per refusal reachable through the module's verbs, with the class D2 assigns: every row cards 5–26 named, each audit class with its D4 severity and its disposition (warning, failed batch, or run-exit demotion), and the new `rebaseline` and `goto` refusals.
+- One row per refusal reachable through the module's verbs, with the class D2 assigns: every row cards 5–27 named, each audit class with its D4 severity and its disposition (warning, failed batch, or run-exit demotion), and the new `rebaseline` and `goto` refusals.
 - The grouped rows each sweep card listed become one wiring-guard row and one transient raw-I/O row per section, naming what they cover.
 - The Way forward cell quotes the verb, git command or transition the message names, so the cell and the message cannot disagree.
+- A validation verb's findings envelope (`lyx webster validate`, loom's `validate-*` verbs) is that verb's verdict on its artifact, not a refusal; the loom and webster sections say so in one sentence rather than adding rows.
 
 Out of scope, stated in one closing paragraph: landing, batten, orch, fabric, burler and board refusals, which a later audit adds as its own section, and the fast-forward merge-in limit, whose message already names a git recourse.
 

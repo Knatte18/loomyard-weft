@@ -2,6 +2,7 @@
 
 **Edit:**
 - `internal/websterengine/digest.go`
+- `internal/websterengine/state.go`
 
 **Create:**
 - `internal/websterengine/batchfail.go`
@@ -9,12 +10,12 @@
 
 **Uses:**
 - `internal/websterengine/recoverbatch.go`
-- `internal/websterengine/state.go`
 
 **Intent:**
 Add the single primitive D6 uses to take a batch terminal-failed instead of leaving it wedged, so record-batch (cards 8–10) and recover-batch (card 11) share one implementation.
 
 `digest.go` gains `DigestStatusFailed = "failed"` (the doc comment now lists five legal values and says `failed` is a batch whose report webster rejected on its merits) and `Digest.Reasons []string` (`reasons,omitempty`), set only on a failed digest.
+In `state.go`, the doc comments of `BatchState.Terminal` and `BatchState.Status`, which list the terminal statuses, add `failed`.
 
 `batchfail.go` declares:
 
@@ -27,4 +28,4 @@ Add the single primitive D6 uses to take a batch terminal-failed instead of leav
 
 `batchfail_test.go` (untagged, `package websterengine`, files under `t.TempDir()`) covers: an OK report present → archived under the timestamped name and the live path is free; no report → nothing archived; the record is terminal `failed` with the reasons; transcripts are appended once even when passed twice; the error text contains `lyx webster recover-batch 03` and every suspect path; and `errors.Is(err, ErrBatchFailed)`.
 
-**ImpactSummary:** Adds one Digest status value and one omitempty field; existing readers treat an unknown non-done status as not done, which is the intended reading.
+**ImpactSummary:** Adds one Digest status value and one omitempty field; no reader validates the status set, and every reader treats `failed` as it treats `stuck` — terminal for `completedCards`, not done for `verifyEveryBatchDone`, printed verbatim by `lyx webster status` and the Master progress trail.

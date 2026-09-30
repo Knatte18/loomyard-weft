@@ -24,12 +24,15 @@ New order inside `RecordBatch`, after the bracket checks, settle retry and `Clas
 3. Any correctness finding: every remaining finding is marked `recordFailedFinding`, and `failBatch` takes the batch terminal-failed with one reason per finding (`Error()` text) and every correctness `Path` as a suspect path, consuming the new transcripts.
    Return `RecordResult{Digest: <failed digest>, Failed: true, Warnings}` together with the `*BatchFailedError`.
    This runs whatever the report says, and with no report at all.
+   D6 names only the `OK` report, but D2 makes a correctness finding a halt with a way forward, and D8 dispositions every finding once: returning `NoReport` would drop a correctness finding, and failing the batch is the one disposition that satisfies both.
+   A report a still-running fork writes afterwards re-forms no refusal ring: `recover-batch NN` passes the `failed` record (card 11) and `recoverSpawn` archives the late report before it spawns.
 4. Otherwise advance attribution as today.
 5. No report: record each policy finding as a batch warning (`recordBatchWarning`) and return `NoReport` with those warnings.
 6. Report present: parse it, then run the mid-merge, dirty-worktree and head reconciliation steps unchanged.
-7. Policy findings on an `OK` report: run `rerunCardVerifies` over the batch's cards on `deps.Geom.WorktreeRoot`.
-   Any failure makes every policy finding correctness class for this batch (D5): `failBatch` with the findings and the verify failures as reasons, as in step 3.
-   All pass: record each as a batch warning and carry its text on `Warnings`.
+7. An `OK` report with policy findings this call, or with `bs.AuditWarnings` already recorded by an earlier call on this batch (a no-report call before a re-fork, kept across the re-begin by card 2): run `rerunCardVerifies` over the batch's cards on `deps.Geom.WorktreeRoot`.
+   Without the second trigger, a finding first seen on a no-report call would be warned with no evidence check, since step 1 drops its identity by the time the report arrives.
+   Any failure makes every policy finding correctness class for this batch (D5): `failBatch` with the findings, the earlier recorded warnings and the verify failures as reasons, as in step 3.
+   All pass: record each new finding as a batch warning and carry its text on `Warnings`.
    A `FAILED` report records the policy findings as warnings with no verify re-run.
 8. Continue to `postBatchChecks` and the terminal digest as today.
 
@@ -37,8 +40,13 @@ Update the file's header comment and the doc comments of `RecordDeps`, `RecordRe
 
 Tests in `recordbatch_test.go` (integration), each from a real scratch repo with state as the verbs write it:
 
-- `fabric-reference` in the fork's transcript, OK report, a card whose `**Verify:**` passes → batch terminal `done`, `Warnings` carries one `audit warning (fabric-reference)` line, `bs.AuditWarnings` has one entry; a second `RecordBatch` call on the now-terminal batch adds no second warning.
-- The same finding with a card verify that exits 1 → batch terminal `failed`, the report file moved to its archive name, `errors.Is(err, ErrBatchFailed)`, message names `lyx webster recover-batch`.
+- `fabric-reference` in the fork's transcript, OK report, a card whose `**Verify:**` passes → batch terminal `done`, `Warnings` carries one `audit warning (fabric-reference)` line, `bs.AuditWarnings` has one entry.
+- A retry never duplicates a warning: a parent `fabric-reference` present on a no-report call → `NoReport` with one recorded warning, state saved; `BeginBatch` re-begins the batch, a new fork writes an OK report with a passing verify, and `RecordBatch` records `done` with exactly one warning for that identity in state and the verify re-run having run.
+  The same flow with a verify that exits 1 fails the batch, naming the earlier warning among the reasons.
+- A correctness parent finding (`parent-write` to a tracked file) on a no-report call → batch terminal `failed`, nothing archived, the path in the digest's reasons.
+  Card 11's tests take the late-report half of this case.
+- A correctness finding with a `FAILED` report → batch terminal `failed`, the report archived.
+- A fork `fabric-reference` on an `OK` report whose card verify exits 1, on the same call (step 7's first trigger) → batch terminal `failed`, the report file moved to its archive name, `errors.Is(err, ErrBatchFailed)`, message names `lyx webster recover-batch`.
 - A `named-spawn` parent finding at batch 2 → batch 2 done with one warning; batch 3 (same session, same whole-session audit plus its own fork) records done with no refusal and no repeated warning.
 - A Master `parent-write` to `_lyx/webster/state.json` → correctness, batch failed, the path in the digest's reasons.
 - A `fork-contract-write` → batch failed, report archived.

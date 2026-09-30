@@ -12,7 +12,7 @@
 
 **Intent:**
 Close the remaining webster-engine refusals that name no way forward (D1), and give every non-grouped webster-engine row its reaching test.
-Every added way forward is a trailing `way forward: …` clause, the phrasing cards 5–19 use, so tests and the refusal table (card 27) match on one form.
+Every added way forward is a trailing `way forward: …` clause, the overview's `way-forward-phrasing` shared decision, so tests and the refusal table (card 28) match on one form.
 
 Messages to fix:
 
@@ -23,7 +23,8 @@ Messages to fix:
 - `MasterAskingError`, `MasterDiedError`, `MasterTimeoutError` (`Error()` methods): re-run `lyx webster run` (re-step the Webster row); a fresh Master resumes from state.json.
 - The run-exit refusals in `mapMasterDone`, `verifyEveryBatchDone`, `runExitAuditCrossCheck`'s nil-audit and audited-count checks, and `runIntegrationStage`'s missing integration report under `done`: re-run `lyx webster run`; a fresh Master resumes from state.json and re-drives every batch without a done record.
 - A malformed `outcome.yaml` at run exit: re-run `lyx webster run`; the stale file is archived and a fresh Master writes a new one.
-- `BeginBatch`, batch number not in the plan's batches: `lyx webster status` lists the run's batches; begin one of those.
+- A batch number not in the plan's batches: `lyx webster status` lists the run's batches; name one of those.
+  The text lives in `findBatch` (`beginbatch.go`), so begin-batch, record-batch, await-batch and recover-batch all carry it; the test reaches it through `BeginBatch` and `RecordBatch`.
 - `BeginBatch`, model-switch injection failure: transient; re-run `lyx webster begin-batch NN`.
 - `RecordBatch`, a malformed batch report (`ParseReport` error): `lyx webster recover-batch NN` archives the malformed report and re-drives the batch (its `refuseRecoveringDoneReport` passes a report that does not parse).
 - `PersistRecoveryTerminal`, no recorded state for the batch: re-run `lyx webster recover-batch NN`.

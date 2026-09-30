@@ -15,6 +15,7 @@ Declare D11's history-only `goto` outcome and make it an episode boundary for th
 
 `producer.go`: add `Goto Outcome = "goto"` beside the three verdicts, with a doc comment saying it is history-only: written by `lyx shed goto`, never returned by a producer.
 The outcome constants' comment keeps "a ShedProducer must return exactly one of" the three verdicts, and `stepLocked`'s default arm still treats a producer returning `goto` as unrecognised.
+In `run.go`, `appendHistory`'s comment that calls done, stuck and awaiting the persisted enum's "whole vocabulary" names `goto` as its history-only fourth value, one no producer returns.
 
 `run.go`: `episodeStuckCount(history []HistoryEntry, def ProducerDef, producers []ProducerDef) int`.
 Walking backward, it stops at `def`'s own most recent `done` as today, and also at any `goto` entry whose target (the entry's `Producer`) shares `def.Segment` when that is non-empty, or is `def` itself when `def.Segment` is empty.

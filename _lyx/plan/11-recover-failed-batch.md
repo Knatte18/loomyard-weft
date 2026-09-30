@@ -30,7 +30,8 @@ Name the marker in the header comment's marker list.
 
 Tests:
 
-- `recoverbatch_test.go` (integration): after card 8's fork-contract-write failure, card 8's failing-verify failure and card 10's failing done-check, each driven through `RecordBatch` on a real repo, `RecoverSpawnOrAttach` spawns (no refusal), the rendered prompt contains every reason and suspect path, and the new recovery record carries `Cards` (card 4).
+- `recoverbatch_test.go` (integration): after card 8's fork-contract-write failure, card 8's same-call `fabric-reference` on an `OK` report with a failing card verify, and card 10's failing done-check, each driven through `RecordBatch` on a real repo, `RecoverSpawnOrAttach` spawns (no refusal), and the rendered prompt contains every reason and suspect path.
+  After card 8's correctness finding on a no-report call, an OK report written to the live path afterwards (a still-running fork's late report) → `RecoverSpawnOrAttach` archives it and spawns, so no refusal ring re-forms.
   `PersistRecoveryTerminal` over an unresolved Create → record terminal `failed`, report archived, `errors.Is(err, ErrBatchFailed)`; a following `RecoverSpawnOrAttach` spawns a fresh strand.
   Update `TestRecoverBatch_TerminalRunsTheSamePostBatchChecksAsRecordBatch` to the terminal-failed outcome.
 - `template_test.go`: every `RenderRecoveryPrompt` call gains the new argument; add one case asserting a non-empty failure digest renders verbatim and an empty one renders `none`.

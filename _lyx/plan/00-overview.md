@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -10,8 +10,8 @@ Every refusal a `lyx webster`, `lyx shed` or `lyx loom` run can reach must name 
 A guard that does not protect correctness warns and records instead of halting.
 Webster's fork audit splits into correctness and policy findings, disposes of each finding once per run, and fails a batch on its merits instead of wedging it (cards 1–16).
 Two verbs are added: `lyx webster rebaseline` accepts a mid-run plan edit (cards 4–6), and `lyx shed goto` moves a halted run onto a named row with a fresh segment budget (cards 17–22).
-Four sweep cards give the remaining refusals their way forward and reaching tests (cards 23–26).
-The refusal table, package docs, ly-drive skill and the new CONSTRAINTS.md invariant follow (cards 27–30).
+Five sweep cards give the remaining refusals their way forward and reaching tests (cards 23–27).
+The refusal table, package docs, ly-drive skill and the new CONSTRAINTS.md invariant follow (cards 28–31).
 
 ## Card Index
 
@@ -40,11 +40,12 @@ The refusal table, package docs, ly-drive skill and the new CONSTRAINTS.md invar
 23 — websterengine-refusal-sweep — way forward and reaching tests for webster engine refusals
 24 — webstercli-refusal-sweep — way forward and reaching tests for webster CLI refusals
 25 — shed-refusal-sweep — way forward and reaching tests for shed refusals
-26 — loom-refusal-sweep — way forward and reaching tests for loom refusals and gate stops
-27 — refusal-spec — the refusal table contract doc, one section per module
-28 — package-docs — webster, shed and loom package docs describe the dispositions and link the table
-29 — ly-drive-skill — ly-drive looks up ways forward in the table and names goto
-30 — constraints-invariant — Refusal Way-Forward Invariant and goto in the Shed Verb-Set list
+26 — loom-cli-refusal-sweep — way forward and reaching tests for loom's approve, start and commit-records refusals
+27 — loom-gate-refusal-sweep — way forward and reaching tests for loom's gate-row stops
+28 — refusal-spec — the refusal table contract doc, one section per module
+29 — package-docs — webster, shed and loom package docs describe the dispositions and link the table
+30 — ly-drive-skill — ly-drive looks up ways forward in the table and names goto
+31 — constraints-invariant — Refusal Way-Forward Invariant and goto in the Shed Verb-Set list
 
 ## Shared Decisions
 
@@ -52,7 +53,7 @@ The refusal table, package docs, ly-drive skill and the new CONSTRAINTS.md invar
 
 - **Decision:** a message's way forward is a trailing `way forward: <verb | transition | git command>` clause.
 - **Rationale:** one form lets every test and the refusal table's Way forward cell match the message the same way.
-- **Applies to:** cards 5, 7, 9, 10, 15, 18, 19, 22–26
+- **Applies to:** cards 5, 7, 9, 10, 15, 18, 19, 22–27
 
 ### Decision: finding-identity
 
