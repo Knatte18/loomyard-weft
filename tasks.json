@@ -174,7 +174,8 @@
     "isolated": false,
     "deferred": false,
     "brief": "Burler: warn when the explore stencil lacks the focus_directive marker",
-    "body": "`internal/burlerengine/prompt.go`: friction warns when its stencil marker is missing (`friction.WarnIfMarkerAbsent`), but `{{.focus_directive}}` has no such check. Since #299 the focus directive no longer also rides `PriorReviews`, so a board explore stencil without the marker (dev build, operator-edited board copy) silently drops the Bouncer's focus from every Burler round. Add the same warning. Found in the #299 review."
+    "body": "`internal/burlerengine/prompt.go`: friction warns when its stencil marker is missing (`friction.WarnIfMarkerAbsent`), but `{{.focus_directive}}` has no such check. Since #299 the focus directive no longer also rides `PriorReviews`, so a board explore stencil without the marker (dev build, operator-edited board copy) silently drops the Bouncer's focus from every Burler round. Add the same warning. Found in the #299 review.",
+    "status": "done"
   },
   {
     "id": 18,

@@ -28,11 +28,6 @@ Trace logs: configurable retention, fewer files from routine commands
 
 lyx quarry: per-glyph resolve answers, grep-safe glyphs output
 
-## **#017:** Burler: warn when the explore stencil lacks the focus_directive marker [A]
-[focus-marker-warn](design-focus-marker-warn.md)
-
-Burler: warn when the explore stencil lacks the focus_directive marker
-
 ## **#018:** reed: send a short launch-script line instead of the full command [A]
 [reed-launch-script](design-reed-launch-script.md)
 
@@ -135,6 +130,11 @@ One generated VS Code workspace shows the board beside the prime
 Depends on: #012
 
 RefScanner flags quoted grep patterns; a done batch cannot be recorded
+
+## **#017:** Burler: warn when the explore stencil lacks the focus_directive marker
+[focus-marker-warn](design-focus-marker-warn.md) [done]
+
+Burler: warn when the explore stencil lacks the focus_directive marker
 
 # Manifest
 
