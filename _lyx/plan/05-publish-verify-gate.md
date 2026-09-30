@@ -33,13 +33,14 @@ Use semantic line breaks in the changed comment lines.
 `publish_verify_test.go` (untagged) builds `Publish` with `newVerifyGate(deps)` and a fake `run`, and reuses the package's `recordingResolver`, `newTestDeps`, `writeSummary` and `newPublishGitHubServer` helpers.
 Assert, per acceptance criterion:
 tree changed and pass → the push closure runs, the pull request is created (Awaiting), and the marker is absent;
-tree changed and fail → Stuck whose reason names the parent branch, the exit code and the output path, the push closure never runs, `NewGitHubClient` is never called (install a factory that fails the test if called), and the marker remains;
+tree changed and fail → Stuck whose reason names the parent branch, the exit code and the output path, the push closure never runs, `NewGitHubClient` is never called (install a factory that fails the test if called), the marker remains, and the output file holds the line the fake runner wrote into its writer;
 already up to date with no marker → the fake runner is never called and the push runs;
 already up to date with a marker → the runner is called, pass removes the marker and pushes, fail is Stuck with no push;
 resolver `OutcomeStuck` → Stuck with the resolver's reason, the runner never called and no marker written;
 empty command → the push runs, no marker is written, and a `WARN` line is captured;
 empty command with a marker → the push runs, the `WARN` line names the marker path, and the marker stays;
 closure error → a returned error, not Stuck, and no push;
+tree changed and a marker write failure (the marker path under a regular file, so its parent cannot be created) → a returned error, not Stuck, no push, and the runner never called;
 spawn failure → Stuck carrying the spawn error, no push, marker remains;
 a context cancelled by the fake runner → a returned error, not Stuck, and the marker remains;
 the no-PR-required path and the approval path (reuse `newApprovalFixture`) → the runner is never called.

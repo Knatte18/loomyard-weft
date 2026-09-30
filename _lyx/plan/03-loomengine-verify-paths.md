@@ -12,7 +12,6 @@
 
 **Uses:**
 - `internal/loomengine#LoomScratchDir`
-- `internal/loomengine#loomApprovalFileName`
 
 **Intent:**
 Add two ephemeral path accessors to `internal/loomengine/config.go`, beside `LoomApprovalPath` and built the same way on `LoomScratchDir` (never re-joining the `.lyx` literal, per the Lyxdirs Single-Declarer Invariant):

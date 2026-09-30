@@ -33,8 +33,9 @@ Assert:
 tree changed and fail → Stuck before the parent-side merge (the merger's `Merge` and `PushBranch` never called), a recording `MarkTaskDone` never called, the marker remains;
 tree changed and pass → the parent-side merge and push run and the verdict is Done;
 already up to date with a marker → the runner runs, fail is Stuck before the parent-side merge, pass removes the marker and lands;
-a merge-in-required retry whose second merge-in changed the tree → the runner runs a second time after that merge-in (script the resolver to return up-to-date first and tree-changed second, and the merger to return `*fabricengine.ErrMergeInRequired` first), and a failing second verify is Stuck with no second `Merge` call.
-A resolver that returns different results per call is a small new in-file fake, since `recordingResolver` returns one scripted result.
+a merge-in-required retry whose second merge-in changed the tree → the gate runs again after that merge-in: script the resolver to return tree-changed on both calls, the fake runner to pass its first run and fail its second, and the merger to return `*fabricengine.ErrMergeInRequired` on its first `Merge`;
+assert the runner is called exactly twice, the verdict is Stuck, `Merge` is called exactly once, `PushBranch` and `MarkTaskDone` are never called, and the marker remains.
+A resolver that returns a scripted result per call is a small new in-file fake, since `recordingResolver` returns one scripted result.
 
 **ImpactSummary:** `Finalize` gains one field and `mergeInStep` gains the gate, reaching both of `Call`'s merge-in sites; the parent-side merge, board update, push and pull-request close are untouched.
 
