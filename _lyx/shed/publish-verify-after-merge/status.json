@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "Integration fork reported status FAILED (head 009d49c02) for the plan-level verify command; all 7 batches are done.",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": ""
+    "wait": "Integration fork reported status FAILED (head 009d49c02) for the plan-level verify command; all 7 batches are done."
   },
   "history": [
     {
@@ -84,6 +84,12 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-09-30T14:33:02Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-09-30T14:35:42Z"
     }
   ],
   "product": {
