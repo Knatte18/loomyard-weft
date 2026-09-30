@@ -11,9 +11,9 @@
 **Uses:**
 - `internal/websterengine#parseVerifyFailures`
 - `internal/websterengine#opaqueFailureID`
-- `plan:internal/websterengine#verifyRun`
-- `plan:internal/websterengine#verifyRunner`
-- `plan:internal/websterengine#runVerifyCapture`
+- `internal/websterengine#verifyRun`
+- `internal/websterengine#verifyRunner`
+- `internal/websterengine#runVerifyCapture`
 
 **Intent:** Localize a regression by the regressing identities rather than by the whole command's exit code, so a pre-existing failure present at every card SHA no longer makes bisect blame card 1 by arithmetic (D9).
 

@@ -7,7 +7,7 @@
 - `//contracts/stencils/webster/webster-template-integration.md`
 
 **Uses:**
-- `plan:internal/websterengine#IntegrationLogPath`
+- `internal/websterengine#IntegrationLogPath`
 
 **Intent:** Make the integration fork capture the verify command's combined output to a told log path, so Go can parse failures after the fork ends (D4).
 

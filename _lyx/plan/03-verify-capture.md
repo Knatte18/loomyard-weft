@@ -5,10 +5,10 @@
 - `runverify_test.go`
 
 **Create:**
-- `plan:internal/websterengine#verifyRun` -> `type verifyRun struct`
-- `plan:internal/websterengine#verifyRunner` -> `type verifyRunner func(verifyCmd, worktree, logPath string) (verifyRun, error)`
-- `plan:internal/websterengine#runVerifyCapture` -> `func runVerifyCapture(verifyCmd, worktree, logPath string) (verifyRun, error)`
-- `plan:internal/websterengine#IntegrationLogPath` -> `func IntegrationLogPath(scratchDir string) string`
+- `internal/websterengine#verifyRun`
+- `internal/websterengine#verifyRunner`
+- `internal/websterengine#runVerifyCapture`
+- `internal/websterengine#IntegrationLogPath`
 
 **Intent:** Replace the output-discarding `runVerifyCommand` with a capturing variant, since triage and the identity-based bisect both need the verify command's output.
 

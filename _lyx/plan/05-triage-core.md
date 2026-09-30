@@ -11,8 +11,8 @@
 - `internal/websterengine#IntegrationTriage`
 - `internal/websterengine#parseVerifyFailures`
 - `internal/websterengine#opaqueFailureID`
-- `plan:internal/websterengine#verifyRun`
-- `plan:internal/websterengine#verifyRunner`
+- `internal/websterengine#verifyRun`
+- `internal/websterengine#verifyRunner`
 - `internal/websterengine#FabricBisector`
 
 **Intent:** Classify a `FAILED` integration report as flaky, pre-existing, or regression, mechanically and in Go (D1, D6, D7, D8).

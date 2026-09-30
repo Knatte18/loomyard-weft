@@ -11,8 +11,8 @@
 - `internal/websterengine#WriteIntegrationReport`
 - `plan:internal/websterengine#triageOutcome`
 - `plan:internal/websterengine#triageIntegrationFailure`
-- `plan:internal/websterengine#runVerifyCapture`
-- `plan:internal/websterengine#IntegrationLogPath`
+- `internal/websterengine#runVerifyCapture`
+- `internal/websterengine#IntegrationLogPath`
 - `plan:internal/websterengine#AppendIntegrationTriage`
 - `plan:internal/websterengine#triageWarnings`
 - `plan:internal/websterengine#triageStuckReason`
