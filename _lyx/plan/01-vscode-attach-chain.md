@@ -2,6 +2,7 @@
 
 **Create:**
 - `plan:internal/vscode#TaskChain` -> `type TaskChain int`
+- `plan:internal/vscode#TaskChainInteractive` -> `const TaskChainInteractive TaskChain = 0`
 - `plan:internal/vscode#TaskChainAttachOnly` -> `const TaskChainAttachOnly TaskChain = 1`
 
 **Edit:**
@@ -12,7 +13,7 @@
 **Intent:**
 Give `vscode.WriteConfig` a chain selector, the `TaskChain` type in `internal/vscode/config.go`, with exactly two values:
 `TaskChainInteractive` (the zero value, today's chain) and `TaskChainAttachOnly`.
-Declare them as one iota const block, `TaskChainInteractive TaskChain = iota` then `TaskChainAttachOnly`, so `TaskChainAttachOnly` equals 1 as the handle's head says.
+Declare them as one iota const block, `TaskChainInteractive TaskChain = iota` then `TaskChainAttachOnly`, so `TaskChainInteractive` equals 0 and `TaskChainAttachOnly` equals 1, as the handles' heads say.
 `WriteConfig` gains a trailing `chain TaskChain` parameter.
 
 `TaskChainInteractive` keeps today's behaviour byte-for-byte: settings and tasks each written only when absent, the four-task `reed up` → `reed add claude` → `reed attach` chain, and the `gitignore.Ensure(dir, ".vscode/")` call.
@@ -23,7 +24,7 @@ Declare them as one iota const block, `TaskChainInteractive TaskChain = iota` th
   label `reed attach`, `type: shell`, `command` the resolved `lyxPath` (with the same empty-string → `"lyx"` fallback), `args: ["reed", "attach"]`, the same `presentation` block today's `reed attach` task carries, and `runOptions: {"runOn": "folderOpen"}`.
   No `reed up`, no `reed add` and no `dependsOn` task.
   Rationale: `reed attach` boots a cold session itself, and `reed add claude` would put a second, bare claude strand beside the child's driver.
-- No `gitignore.Ensure` call: the driven pair's `.vscode/` is kept out of git through `info/exclude` by the caller (card 3), never by editing a tracked `.gitignore`.
+- No `gitignore.Ensure` call: the driven pair's `.vscode/` is kept out of git through `info/exclude` by the caller (card 4), never by editing a tracked `.gitignore`.
 - `claudePath` is unused; the caller may pass `""`.
 
 Whether an existing `tasks.json` is tracked is not this package's question — it never runs git; the caller decides whether to call `WriteConfig` at all.

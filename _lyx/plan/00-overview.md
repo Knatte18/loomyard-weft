@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -14,10 +14,11 @@ Plain `lyx ide spawn` is unchanged.
 ## Card Index
 
 1 — vscode-attach-chain — add the attach-only chain selector to `vscode.WriteConfig`
-2 — fabric-anchored-exclude — export an anchored, lock-held `info/exclude` entry writer and a tracked-path query
-3 — ide-spawn-driven — add `ideengine.SpawnDriven`, the driven-pair open path
-4 — innerrun-open-once — call a new `OpenIDE` closure once per run after a successful spawn
-5 — batten-wire-open — wire `OpenIDE` to `SpawnDriven` in battencli and document the step
+2 — fabric-anchored-exclude — export an anchored, lock-held `info/exclude` entry writer
+3 — fabric-path-tracked — export a read-only tracked-path query
+4 — ide-spawn-driven — add `ideengine.SpawnDriven`, the driven-pair open path
+5 — innerrun-open-once — call a new `OpenIDE` closure once per run after a successful spawn
+6 — batten-wire-open — wire `OpenIDE` to `SpawnDriven` in battencli and document the step
 
 ## Shared Decisions
 
@@ -25,17 +26,17 @@ Plain `lyx ide spawn` is unchanged.
 
 - **Decision:** No test starts a real `code` process: `battenshed` tests stub `OpenIDE`, every test reaching `SpawnDriven` stubs `ideengine.CodeLauncher`, and `battencli`'s integration `TestMain` replaces it for that whole binary.
 - **Rationale:** the lifecycle integration tests keep the real `OpenIDE` wiring, so a per-test stub would be easy to miss.
-- **Applies to:** cards 3, 4, 5
+- **Applies to:** cards 4, 5, 6
 
 ### Decision: git-stays-in-fabricengine
 
-- **Decision:** The driven path's git calls (the exclude write and the tracked-file query) live in `fabricengine`, and every git-touching test of them is integration-tagged.
-- **Rationale:** the Fabric Git Invariant routes git through `fabricengine`, the exclude write must hold its existing lock, and the Test Tier Purity Invariant bars git spawns in untagged tests.
-- **Applies to:** cards 2, 3
+- **Decision:** The driven path's git calls (the exclude write and the tracked-file query) live in `fabricengine`, go through the checked `gitexec.Run` (no new `//gitexec:raw` site), and every git-touching test of them is integration-tagged.
+- **Rationale:** the Fabric Git Invariant routes git through `fabricengine`, the exclude write must hold its existing lock, the gitexec Checked-Call Invariant pins `fabricengine`'s raw sites, and the Test Tier Purity Invariant bars git spawns in untagged tests.
+- **Applies to:** cards 2, 3, 4
 
 ## verify:
 
 go build ./...
 go vet ./internal/vscode/... ./internal/fabricengine/... ./internal/ideengine/... ./internal/battenshed/... ./internal/battencli/...
-go test ./internal/vscode/... ./internal/fabricengine/... ./internal/ideengine/... ./internal/battenshed/... ./internal/battencli/... ./internal/battenrecipe/... ./internal/loomcli/...
+go test ./internal/vscode/... ./internal/fabricengine/... ./internal/ideengine/... ./internal/battenshed/... ./internal/battencli/... ./internal/battenrecipe/... ./internal/loomcli/... ./cmd/lyx/...
 go test -tags integration ./internal/vscode/... ./internal/fabricengine/... ./internal/ideengine/... ./internal/battenshed/... ./internal/battencli/...
