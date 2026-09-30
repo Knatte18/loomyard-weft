@@ -7,11 +7,6 @@
 
 Operator surface: #295, #277, #286, #297 + four unfiled findings
 
-## **#008:** Burler review rounds: tracked records, focus steering, directive precedence [A]
-[burler-review](design-burler-review.md)
-
-Burler: #287, #282, #263 + comment-width finding
-
 # Done
 
 ## **#000:** Burler: no cluster-exclude warning when the profile has no cluster fan
@@ -38,6 +33,11 @@ Strip code fences from the plan-level verify command (#285)
 [landing](design-landing.md) [done]
 
 Landing gaps: #275, #276, #289, #292, #293
+
+## **#008:** Burler review rounds: tracked records, focus steering, directive precedence
+[burler-review](design-burler-review.md) [done]
+
+Burler: #287, #282, #263 + comment-width finding
 
 # Manifest
 
