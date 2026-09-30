@@ -1,7 +1,7 @@
 {
   "runGuid": "d62c8f1871612013bc5037be8f7a529e",
   "planFingerprint": "8cfcd58c8ad8f64256e93bff3bd1627dfad589e3867e1c636a71491af9dda250",
-  "currentBatch": 0,
+  "currentBatch": 3,
   "masterStrand": "8582c4b0d9ce744dbc38e5668c380775",
   "masterSessionId": "0675e7f8-2080-4b39-8b23-ef068ef17e99",
   "assertedModel": "sonnet",
@@ -45,6 +45,15 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-records-leak-into-pairs/0675e7f8-2080-4b39-8b23-ef068ef17e99/subagents/agent-ace00638544aef241.jsonl"
       ]
+    },
+    "3": {
+      "slug": "battenshed-prime-lock-wait",
+      "startSha": "e2ad94c9dbf12a6a80b9510679785f0d6b9842a3",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T17:35:48Z",
+      "sessionId": "0675e7f8-2080-4b39-8b23-ef068ef17e99",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
