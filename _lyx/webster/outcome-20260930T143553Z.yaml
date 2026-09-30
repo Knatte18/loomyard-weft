@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "integration verify FAILED: go test -tags integration failed TestBattenIntegration_CreateRow_IncompletePairRemedyWorksVerbatimOnAPrefixedHub (battencli) and TestPublish_MergesInCleanlyBeforeCreatingPullRequest (landingshed)"
+batches_done: 6

@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "integration verify FAILED at head 3e1407115 (integration report status: FAILED); all 6 batches done"
+batches_done: 6

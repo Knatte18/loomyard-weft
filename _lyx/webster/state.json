@@ -2,10 +2,26 @@
   "runGuid": "d9d8c2214f0ee69b93fc9225871f8d26",
   "planFingerprint": "9aceb6aebc857f012a243725989245f5af8ae85aa12a2c1144d395b456e00d45",
   "currentBatch": 0,
-  "masterStrand": "eb9d0da12b75d71d6b1396d0c25a2a2e",
-  "masterSessionId": "81d46c4f-8fc0-4c22-be4b-d93b9305f45c",
+  "masterStrand": "8269a812cc7a9299ca7395d718d5bfc3",
+  "masterSessionId": "3f4fa396-17e8-4421-8e28-22356cd27515",
   "assertedModel": "sonnet",
   "batches": {
+    "-1": {
+      "slug": "01-claudeengine-deny-notice",
+      "startSha": "",
+      "kind": "",
+      "spawnedAt": "",
+      "terminal": true,
+      "status": "stuck",
+      "digest": {
+        "batch": "01-claudeengine-deny-notice",
+        "status": "stuck",
+        "head_sha": "cd1498323266efd186827695e9d384c909bef6fb"
+      },
+      "cardShas": [
+        "cd1498323266efd186827695e9d384c909bef6fb"
+      ]
+    },
     "1": {
       "slug": "claudeengine-deny-notice",
       "startSha": "85902381e89c8131af7ccff9d388227aa5774aa4",
