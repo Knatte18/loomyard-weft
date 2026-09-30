@@ -114,3 +114,8 @@ Respawn starts over instead of reusing the plan; prompt does not say Agent is re
 [reed-launch-script](design-reed-launch-script.md)
 
 Hide the long env+claude launch line behind a generated launch script
+
+## **#012:** ide: hub workspace with prime, board and portals
+[ide-hub-workspace](design-ide-hub-workspace.md)
+
+One generated VS Code workspace shows the board beside the prime
