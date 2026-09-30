@@ -8,12 +8,6 @@ Depends on: #022
 
 Walk every refusal/halt path in webster and shed; none may wedge a run
 
-## **#026:** Send PR review findings back into the run instead of fixing outside loom [A]
-[publish-review-fixback](design-publish-review-fixback.md)
-Depends on: #022
-
-`lyx loom reject <review>` at Publish routes review findings to Webster as a fix batch, then re-verify, re-publish, re-approve.
-
 ## **#030:** Batten run records in the prime leak into every new pair [A]
 [batten-records-leak-into-pairs](design-batten-records-leak-into-pairs.md)
 Depends on: #029
@@ -143,6 +137,12 @@ Driver re-steps known transient stops itself; hands back only real decisions
 [hub-orch-strand](design-hub-orch-strand.md) [done]
 
 lyx hosts the hub orchestrator in tmux and cycles its context via handoff
+
+## **#026:** Send PR review findings back into the run instead of fixing outside loom
+[publish-review-fixback](design-publish-review-fixback.md) [done]
+Depends on: #022
+
+`lyx loom reject <review>` at Publish routes review findings to Webster as a fix batch, then re-verify, re-publish, re-approve.
 
 ## **#027:** loom start should refuse a worktree with an unfinished merge
 [loom-start-refuses-mid-merge](design-loom-start-refuses-mid-merge.md) [done]
