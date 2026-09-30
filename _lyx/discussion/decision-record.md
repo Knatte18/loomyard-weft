@@ -27,15 +27,20 @@ Out:
 - The reed mailbox (`manifest/designs/reed-mailbox.md`). The resume channel is the existing shuttle `Send`.
 - The `driver-restart-race` board note's own fix. Parking removes its trigger at hand-backs; the `done` teardown path is unchanged.
 - Changes to the existing trace-based repair path, its repair cap, or the stranded-branch exception.
+- `manifest/HANDOFF.md`.
+  It is operator-owned; its "wait until the session has no `claude` pane left" step becomes unnecessary once this lands, and updating it is the hub's call.
 
 ## Decisions
 
-### D1 — Transient mark is Go-classified, never text-matched
+### D1 — Transient mark is Go-classified; the driver never text-matches
 
 Decision:
 A typed transient mark, declared once in `internal/shedengine`, wraps a producer or bootstrap error whose cause is outside the task.
 Shed persists it with the `failed` state, and the step error envelope carries it as a `transient` key holding the class name (empty when not transient).
 The refusal-kind vocabulary stays at its five values; `transient` is a new envelope key, not a kind.
+Classification happens in Go at the failure site, which may inspect the failed call's own output (git stderr, HTTP status);
+anything it does not recognise is not transient.
+The skill never matches text: it reads only the `transient` key.
 Rationale:
 The skill branches only on envelope fields, policy words and the five kinds, never on text.
 Only the code at the failure site knows whether a failure was a transport fault or a real rejection.
@@ -69,8 +74,8 @@ One retry clears a blip; a failure that repeats at once is not a blip.
 ### D4 — Build identity per step, `binary_changed` derived by status
 
 Decision:
-Every `lyx shed step` records the VCS revision and modified flag of the binary that ran it in its step record.
-`lyx shed status` reports that identity on `last_step` and derives `last_step.binary_changed`: true only when both the running binary's identity and the recorded one are known and differ.
+Every `lyx shed step` records the build identity of the binary that ran it in its step record: the pair (`vcs.revision`, `vcs.modified`).
+`lyx shed status` reports that identity on `last_step` and derives `last_step.binary_changed`: true only when both the running binary's identity and the recorded one are known and the pairs differ in either field.
 An unstamped binary on either side yields false.
 Rationale:
 Production binaries are built from a clean pushed tree and carry `vcs.revision`, so "a deploy landed" is exactly "the revision changed".
@@ -83,7 +88,9 @@ Decision:
 A driver re-steps once when `binary_changed` is true, checked immediately at the stop and again each time the binary changes while parked.
 Eligible stops: `blocked`, a `producer`, `bootstrap` or `unseeded` error the driver escalated (repair cap exhausted or nothing to repair), and a transient stop whose own re-step failed.
 Never eligible: `awaiting`, `paused`, `busy`, `ownership`, a no-kind refusal, and an interrupted invocation under `interrupt_policy: handback`.
-The driver skips the re-step, and stays parked, when the worktree has any uncommitted change; `git status --porcelain` is the read-only check.
+The driver skips the re-step, and stays parked, when the task's code worktree (the warp) has any uncommitted change; `git status --porcelain` run there is the read-only check.
+The guard never reads the weft `_lyx` or `.lyx`, so the driver's own stop reports, repair records and park marker never count.
+A skipped re-step is not retried when the tree turns clean; it waits for the next binary change or a resume.
 Rationale:
 The hub's usual recovery was "fix lyx on `main`, deploy, `loom start`", and most 2026-09-30 hand-backs were of that kind.
 `awaiting` and `paused` wait on a person by design.
@@ -93,7 +100,7 @@ A dirty worktree means someone is fixing the task by hand, and a re-step would r
 ### D6 — Parking replaces exiting at a hand-back
 
 Decision:
-A loom-launched driver at a hand-back writes its stop report, runs `lyx loom commit-records`, writes the park marker, starts its binary watch as a background job, and ends its turn with its session still open.
+A loom-launched driver at a hand-back writes its stop report, runs `lyx loom commit-records`, writes the park marker, starts its binary watch as a background job when the stop is D5-eligible, and ends its turn with its session still open.
 At `done` and at `busy` it runs the existing end-of-session teardown command, as today.
 Orchestrator forks and operator-launched sessions keep their current stop behaviour.
 Rationale:
@@ -120,11 +127,13 @@ Decision:
 
 - Live driver with the marker present: compose a fresh drive-report path, `Send` one resume line naming it, remove the marker, spawn nothing.
   With `--no-attach` it returns once the `Send` is verified; without it, it then attaches as today.
-- Live driver without the marker: the driver is working; behave as today.
+- Live driver without the marker: the driver is working; send nothing, spawn nothing, then hand over (attach, or the envelope under `--no-attach`) as today.
 - Dead or absent driver: remove any stale marker, then spawn as today.
 
 When the pane is not ready for input, `loom start` waits a bounded time, then refuses naming a retry and leaves the marker in place.
 The resume line tells the driver to take a fresh baseline, reset its repair and re-step budgets, and write its next stop report to the named path.
+A resume line that arrives while a step job is in flight starts no second step;
+the driver adopts the line's report path and budget reset for its next stop.
 Rationale:
 The hub (`loom approve` then `loom start`) and batten (whose `Spawn` runs `loom start --no-attach`) keep their existing commands unchanged, and neither needs to know that a driver parked.
 Typed input through shuttle's `Send` needs no approval in the driver's pane, unlike a cross-session message.
@@ -174,6 +183,7 @@ It is cross-cutting: any producer can set it, and a mark added at a new site cha
   - Shed Run-Directory Invariant and Lyxdirs Single-Declarer Invariant: the park-marker path is composed through `internal/shedrun`, never spelled in `loomcli`.
   - Durable-vs-Ephemeral State Invariant: the marker lives under `.lyx`.
   - Shuttle Provider-Seam Invariant: the resume line is prompt text; no Claude-specific flag or command line in `loomcli`.
+  - Buildinfo Leaf Invariant: `internal/buildinfo` imports nothing and exposes only `Channel`/`IsDev()`, so the build-identity read lives outside it.
   - Driver Choice Single-Site Invariant: resume versus spawn branches on strand liveness and the marker, not on a second read of the seed's driver field.
   - Live-Substrate Spawn Observability: the resume `Send` and any wait are logged.
   - CLI/Cobra Invariant and Documentation Lifecycle: help text and docs change in the same commit.
@@ -191,16 +201,16 @@ It is cross-cutting: any producer can set it, and a mark added at a new site cha
 - `unseeded` and `bootstrap` errors after the repair cap are eligible for the binary-change re-step, since a lyx bug can cause either.
 - The watch interval is about a minute; a deploy is picked up within that.
 - The hub can hold a parked driver during a hand fix with `lyx loom pause`: the next re-step then persists `paused`, which is never auto-resumed.
-- Dev builds from a modified tree share a revision with their base, so they trigger no binary-change re-step; the dev route is for internal testing only.
+- Successive dev builds from a still-modified tree at one base revision compare equal, so they trigger no binary-change re-step; a dev build that moves the revision or flips the modified flag does.
+  The dev route is for internal testing only.
 
 ## Open risks
 
 - An unrelated deploy re-steps every parked, eligible run once; for an LLM producer that is one agent run per parked run.
 - A parked driver's session grows over many resumes and may compact; D7's on-disk marker is the mitigation.
 - A deploy landing between a hub subagent's commits in a task worktree passes the clean-tree guard and re-steps mid-fix, unless the hub paused the run first.
-- A small race remains where `loom start` reads the marker just as the driver self-resumes; the skill rule that a resume line during an in-flight step job is noted and ignored covers it.
-- Classifying git and GitHub failures by their error text inside lyx may misclassify a new message format; the fallback is "not transient", which is today's behaviour.
-- The HANDOFF's "wait until the session has no `claude` pane left" step becomes unnecessary once this lands; updating that operator-owned file is the hub's call.
+- `loom start` can read the marker just as the driver self-resumes; D8's in-flight resume rule covers it.
+- Classifying git and GitHub failures by their error text inside lyx (D1) may misclassify a new message format; the fallback is "not transient", which is today's behaviour.
 
 ## Acceptance criteria
 
@@ -216,13 +226,20 @@ It is cross-cutting: any producer can set it, and a mark added at a new site cha
 - The launch prompt tells the driver to park at a hand-back and to run the teardown command only at `done` or `busy`, and stays under `maxLaunchPromptBytes`.
 - The park-marker filename in the skill matches the Go declaration, pinned by a test.
 - `SKILL.md` states the closed list of automatic re-steps (D3, D5), their eligibility and guards, parking, the binary watch, resume handling, and the repair records; `awaiting` and `paused` are explicitly never auto-resumed.
+  In particular it states:
+  - orchestrator forks and operator-launched sessions do not park (D6);
+  - the driver removes the marker before a self-initiated re-step and treats the marker on disk as the truth on every wake (D7);
+  - after a self-initiated re-step, the next stop rewrites the attempt's report and lists every automatic re-step (D9);
+  - the watch is re-armed after a harness timeout or a failed confirmation, and stopped before a resume step (D10);
+  - a resume line during an in-flight step job starts no second step, and its report path and budget reset apply to the next stop (D8);
+  - each repair record holds the stop, the justifying field, the action and the outcome (D11).
 - `lyx loom start --help`, `docs/overview.md` and `CONSTRAINTS.md` (Transient Stop Invariant) describe the new behaviour.
 - The batten flow still works end to end: an awaiting child with a parked driver is resumed by batten's `Spawn` after `lyx loom approve`, and a `done` child's driver still exits before teardown.
 
 ## Notes for the plan writer
 
 - Existing seams: `internal/loomcli/driverprompt.go` (prompt and `driverTeardownCommand`), `driverlaunch.go` (`driverStarter`, `driverPaneProbe`), `start.go` (`runDriverSpawnAndWait`, `startLLMDriverArm`), `driverreport.go` (per-attempt report path).
-- `shuttleengine.Runner.Send(guid, text)` already reaches a run started by another process and verifies delivery.
+- `shuttleengine.Runner.Send` already reaches a run started by another process and verifies delivery.
 - `internal/shedverbs/steprecord.go` holds the per-invocation step record `last_step` is read from; `stepErrFields` in `step.go` builds the error envelope.
 - `internal/shedengine/run.go`'s `callErr != nil` branch persists `failed`.
 - `runtime/debug.ReadBuildInfo` exposes `vcs.revision` and `vcs.modified`; the deployed binary carries both.

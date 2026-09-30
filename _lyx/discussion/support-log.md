@@ -98,6 +98,7 @@ _No rounds yet._
 - **Q14 — Does this task fix the `driver-restart-race` note?**
   Resolved, auto-pick: no dedicated fix; parking removes its hand-back trigger, and the `done` path nobody restarts after is unchanged.
 - **Q15 — Update the hub's HANDOFF run loop?**
-  Resolved, auto-pick: no; `manifest/HANDOFF.md` is updated only when the operator asks. Listed under open risks for the hub.
+  Resolved, auto-pick: no; `manifest/HANDOFF.md` is updated only when the operator asks.
+  Recorded under Scope Out as operator-owned (moved from Open risks in review round 1).
 - **Q16 — New CONSTRAINTS.md invariant?**
   Resolved, auto-pick: yes, the Transient Stop Invariant (D12).
