@@ -66,7 +66,7 @@ Parked: workers on 5m cache TTL, waiting sessions on 1h — operator deciding
 
 Trace logs: configurable retention, fewer files from routine commands
 
-## **#005:** lyx quarry resolve: one answer per glyph
+## **#005:** lyx quarry: per-glyph resolve answers, grep-safe glyphs output
 [quarry-cli-answers](design-quarry-cli-answers.md)
 
-lyx quarry resolve: one answer per glyph
+lyx quarry: per-glyph resolve answers, grep-safe glyphs output
