@@ -1,0 +1,4 @@
+status: OK
+head_sha: 866d14896f22b69ae1c734fc5080f58a3d2466f7
+deviations:
+  - internal/shedrecipe/registry_test.go
