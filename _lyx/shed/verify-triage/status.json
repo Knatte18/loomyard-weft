@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "blocked",
-  "error": "integration suite FAILED: internal/landingshed TestPublish_MergesInCleanlyBeforeCreatingPullRequest got outcome \"awaiting\", want \"stuck\" (-tags integration run)",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": "integration suite FAILED: internal/landingshed TestPublish_MergesInCleanlyBeforeCreatingPullRequest got outcome \"awaiting\", want \"stuck\" (-tags integration run)"
+    "wait": ""
   },
   "history": [
     {
