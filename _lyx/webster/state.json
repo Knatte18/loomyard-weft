@@ -2,10 +2,26 @@
   "runGuid": "f652684f48161c48a7d9bfbde839552f",
   "planFingerprint": "05ad78708ac0e39771ff3ecf8cb0c697b62001fd8291c93c3913f35f5cfa9120",
   "currentBatch": 0,
-  "masterStrand": "cdbb4b6aa888221ee164baab2824365c",
-  "masterSessionId": "2a0edaea-54f5-45ae-af8a-c85c0ae22947",
+  "masterStrand": "2259b92e0742a86de9d199f16b350cb5",
+  "masterSessionId": "947d60f8-3476-4e2d-95ac-cd6740663709",
   "assertedModel": "sonnet",
   "batches": {
+    "-1": {
+      "slug": "14-ly-drive-skill",
+      "startSha": "",
+      "kind": "",
+      "spawnedAt": "",
+      "terminal": true,
+      "status": "stuck",
+      "digest": {
+        "batch": "14-ly-drive-skill",
+        "status": "stuck",
+        "head_sha": "d23a8b9e76d7197f3935d9b63f973374d5b7e5cf"
+      },
+      "cardShas": [
+        "d23a8b9e76d7197f3935d9b63f973374d5b7e5cf"
+      ]
+    },
     "1": {
       "slug": "shedengine-transient-mark",
       "startSha": "676d9ec0337614944a8364480ea8b4551c45b036",
