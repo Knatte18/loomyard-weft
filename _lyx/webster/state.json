@@ -1,0 +1,19 @@
+{
+  "runGuid": "d261ac60bf3d1e30bc74e6cf6230d0fa",
+  "planFingerprint": "a16282a9b333601336d51c13d013faa7827c6e09742b2850db7c53ce2f84b637",
+  "currentBatch": 1,
+  "masterStrand": "4f83987afe600ae43e7d168e55edc9ec",
+  "masterSessionId": "db243dd2-d859-4644-9383-d337238bb067",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "leased-remote-delete",
+      "startSha": "676d9ec0337614944a8364480ea8b4551c45b036",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T15:02:30Z",
+      "sessionId": "db243dd2-d859-4644-9383-d337238bb067",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
