@@ -1,7 +1,7 @@
 {
   "runGuid": "8cbae2d24dc77ca61078e4a14c0d97d9",
   "planFingerprint": "72beeeca8af47879b29f61f3d12596d0152a732e87e1144091933cb7fa0de70c",
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "c5a6ee49a5e983607227bc80c63f9e8f",
   "masterSessionId": "79878df8-c188-4ee5-bc08-9b78e78e2add",
   "assertedModel": "sonnet",
@@ -132,8 +132,19 @@
       "kind": "fork",
       "spawnedAt": "2026-09-30T16:56:16Z",
       "sessionId": "79878df8-c188-4ee5-bc08-9b78e78e2add",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-landingshed-pr-gate",
+        "status": "done",
+        "head_sha": "4b66514b5cd6caf7e3ea9eea9f4eeaabd11a086f"
+      },
+      "cardShas": [
+        "4b66514b5cd6caf7e3ea9eea9f4eeaabd11a086f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-publish-review-fixback/79878df8-c188-4ee5-bc08-9b78e78e2add/subagents/agent-a4e0d23389fc71c39.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
@@ -142,6 +153,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-publish-review-fixback/79878df8-c188-4ee5-bc08-9b78e78e2add/subagents/agent-a7083032359a66904.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-publish-review-fixback/79878df8-c188-4ee5-bc08-9b78e78e2add/subagents/agent-a855a98c3fb39acc2.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-publish-review-fixback/79878df8-c188-4ee5-bc08-9b78e78e2add/subagents/agent-ab17e990f41b90fbb.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-publish-review-fixback/79878df8-c188-4ee5-bc08-9b78e78e2add/subagents/agent-ae5bf4de1e9a47b01.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-publish-review-fixback/79878df8-c188-4ee5-bc08-9b78e78e2add/subagents/agent-ae5bf4de1e9a47b01.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-publish-review-fixback/79878df8-c188-4ee5-bc08-9b78e78e2add/subagents/agent-a4e0d23389fc71c39.jsonl"
   ]
 }
