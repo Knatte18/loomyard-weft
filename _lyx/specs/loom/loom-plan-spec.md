@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=65bfaf404027f0d9bc64f8819064cdd31bf8a0697d4c095880a52382d6ae75fc -->
+<!-- lyx-stencil: sha256=fc8d124b5d6281035daf8f2f95cb1e49b427336c028a25f391f2038d3c8b25b7 -->
 
 # Loom plan-spec — flat card list
 
@@ -267,6 +267,11 @@ This spec pins only what exists today: the per-card **`**Verify:**`** field stay
 There is no mandatory per-card or per-batch verify gate in the code, and the plan-level `## verify:` body section in `00-overview.md` (unchanged in shape from format 3) is the single integration suite run once at the end of the plan.
 The section holds one shell command per line;
 the parser skips code-fence lines and full-line `#` comments, then chains every remaining non-blank line with ` && ` into the one command line webster runs, so the first failing command fails the whole check.
+
+Landing is the verify line's second consumer.
+After a parent merge-in that changed the task tree, the `Publish` and `Finalize` landing producers run the same chained command in the task worktree,
+and halt Stuck on failure before anything is pushed or landed,
+so the section must cover what a parent merge can break.
 
 The three tiers match this repo's own test-tier discipline — `internal/planparser`'s existing `Verify` fields are the V1 precedent this generalizes, not three tiers invented for this format:
 
