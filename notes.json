@@ -98,5 +98,15 @@
     "deferred": false,
     "brief": "Parallel `lyx batten run` starts: every run but the first blocks at Worktree-Create on the held prime run.lock and needs a manual resume.",
     "body": "Starting three `lyx batten run` at once blocked two at Worktree-Create: \"prime lock .../.lyx/shed/run.lock is already held; another batten producer is creating or tearing down a task worktree\".\nThe lock is held only for the seconds a create or teardown takes, so the producer should wait for it (bounded, e.g. a few minutes) rather than halt; the hub starts runs in parallel as a matter of course."
+  },
+  {
+    "id": 18,
+    "slug": "fabric-remove-ends-reed-session",
+    "title": "fabric remove leaves the pair tmux session alive",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "After `lyx fabric remove` the pair tmux session (driver claude, status strand, bash) keeps running in the deleted directory; its late writes recreate the worktree dir as a stray folder.",
+    "body": "Seen 2026-09-30 for quarry-cli-answers and status-strand-by-driver: after landing and `fabric remove --remote`, their reed sessions were still alive hours later.\nA driver that wrote its stop report after the removal recreated `\u003chub\u003e/\u003cslug\u003e/.lyx/...` and `\u003chub\u003e/\u003cslug\u003e/_lyx/shed/\u003cslug\u003e/drive-reports/\u003creport\u003e.md`: a stray directory, and a drive report that never reached the archive.\nThe hub killed the sessions and deleted the dirs by hand.\n\nFix: remove (and batten teardown) ends the pair reed session (reed down) before deleting the worktrees, and waits for or refuses on a live driver; a stop report written after done should land before the archive tag."
   }
 ]

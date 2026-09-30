@@ -212,3 +212,8 @@ A crash between the merge-in commit and the pending-verify marker write leaves t
 [batten-prime-lock-wait](design-batten-prime-lock-wait.md)
 
 Parallel `lyx batten run` starts: every run but the first blocks at Worktree-Create on the held prime run.lock and needs a manual resume.
+
+## **#018:** fabric remove leaves the pair tmux session alive
+[fabric-remove-ends-reed-session](design-fabric-remove-ends-reed-session.md)
+
+After `lyx fabric remove` the pair tmux session (driver claude, status strand, bash) keeps running in the deleted directory; its late writes recreate the worktree dir as a stray folder.
