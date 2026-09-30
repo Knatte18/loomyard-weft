@@ -93,6 +93,3 @@ Hub runs never involve the orchestrator in Discussion; port millhouse's mill-sta
 [convergence-plan](design-convergence-plan.md)
 
 Plan for lyx to converge rather than accumulate bugs: per-run intervention log, real-wiring tests, feature freezes
-
-## **#026:** timing probe
-[zz-timing-probe]
