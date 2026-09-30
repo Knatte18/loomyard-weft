@@ -14,11 +14,6 @@ Depends on: #022
 
 `lyx loom reject <review>` at Publish routes review findings to Webster as a fix batch, then re-verify, re-publish, re-approve.
 
-## **#027:** loom start should refuse a worktree with an unfinished merge [A]
-[loom-start-refuses-mid-merge](design-loom-start-refuses-mid-merge.md)
-
-loom start spawned a driver on a worktree whose merge-in had stopped on a conflict (UU path, MERGE_HEAD present).
-
 ## **#028:** fabric remove pushes the archive tag before its dirty checks [A]
 [archive-tag-before-dirty-check](design-archive-tag-before-dirty-check.md)
 
@@ -160,6 +155,11 @@ Driver re-steps known transient stops itself; hands back only real decisions
 [hub-orch-strand](design-hub-orch-strand.md) [done]
 
 lyx hosts the hub orchestrator in tmux and cycles its context via handoff
+
+## **#027:** loom start should refuse a worktree with an unfinished merge
+[loom-start-refuses-mid-merge](design-loom-start-refuses-mid-merge.md) [done]
+
+loom start spawned a driver on a worktree whose merge-in had stopped on a conflict (UU path, MERGE_HEAD present).
 
 # Manifest
 

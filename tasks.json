@@ -300,7 +300,8 @@
     "isolated": false,
     "deferred": false,
     "brief": "loom start spawned a driver on a worktree whose merge-in had stopped on a conflict (UU path, MERGE_HEAD present).",
-    "body": "`lyx loom start` does not check for an in-progress merge.\nA hub merge-in stopped on a conflict, and the following `loom start` spawned a driver onto the conflicted tree.\nPreflight should refuse with the remedy: resolve, `lyx fabric merge-stage`, `lyx fabric merge --continue` (or `--abort`)."
+    "body": "`lyx loom start` does not check for an in-progress merge.\nA hub merge-in stopped on a conflict, and the following `loom start` spawned a driver onto the conflicted tree.\nPreflight should refuse with the remedy: resolve, `lyx fabric merge-stage`, `lyx fabric merge --continue` (or `--abort`).",
+    "status": "done"
   },
   {
     "id": 28,
