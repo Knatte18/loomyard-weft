@@ -2,10 +2,26 @@
   "runGuid": "d62c8f1871612013bc5037be8f7a529e",
   "planFingerprint": "8cfcd58c8ad8f64256e93bff3bd1627dfad589e3867e1c636a71491af9dda250",
   "currentBatch": 0,
-  "masterStrand": "8582c4b0d9ce744dbc38e5668c380775",
-  "masterSessionId": "0675e7f8-2080-4b39-8b23-ef068ef17e99",
+  "masterStrand": "9adb19d1e58981b0c4386c7f27fe9f54",
+  "masterSessionId": "29df97dc-98b9-4200-a6e8-4da343b7c702",
   "assertedModel": "sonnet",
   "batches": {
+    "-1": {
+      "slug": "01-shedrun-runs-root-rel",
+      "startSha": "",
+      "kind": "",
+      "spawnedAt": "",
+      "terminal": true,
+      "status": "stuck",
+      "digest": {
+        "batch": "01-shedrun-runs-root-rel",
+        "status": "stuck",
+        "head_sha": "fc1db08845d89e0540c11ecdd81af9871263d25f"
+      },
+      "cardShas": [
+        "fc1db08845d89e0540c11ecdd81af9871263d25f"
+      ]
+    },
     "1": {
       "slug": "shedrun-runs-root-rel",
       "startSha": "dcc7d7dcd1aa191bb82959c4c70807ec9d6cef4f",
