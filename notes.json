@@ -98,5 +98,15 @@
     "deferred": false,
     "brief": "Each 30 s poll during an unbounded approval wait appends a history entry; days of waiting make a multi-MB status.json.",
     "body": "Batten polls a child in `awaiting` every 30 s and each poll appends to `status.json` history.\nThe wait is unbounded by design, so collapse repeated identical wait entries or cap them.\nRelated: right after a resume a poll can still see `awaiting` and logs a misleading re-approve hint (`internal/battenshed/innerrun.go`).\nFound reviewing PR #304."
+  },
+  {
+    "id": 15,
+    "slug": "loom-start-refuses-mid-merge",
+    "title": "loom start should refuse a worktree with an unfinished merge",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "loom start spawned a driver on a worktree whose merge-in had stopped on a conflict (UU path, MERGE_HEAD present).",
+    "body": "`lyx loom start` does not check for an in-progress merge.\nA hub merge-in stopped on a conflict, and the following `loom start` spawned a driver onto the conflicted tree.\nPreflight should refuse with the remedy: resolve, `lyx fabric merge-stage`, `lyx fabric merge --continue` (or `--abort`)."
   }
 ]
