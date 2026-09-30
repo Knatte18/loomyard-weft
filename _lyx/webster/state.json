@@ -1,7 +1,7 @@
 {
   "runGuid": "d034e779e46981db3c437435107fbdfe",
   "planFingerprint": "4fb13236a43a6567bc39ac6d1c094592b97b287334009a1f8feb0f3542fc181e",
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "c3acb35141b3b55e3cfb359538cee023",
   "masterSessionId": "9b81ac28-d68e-420b-be2f-860d6b311e2f",
   "assertedModel": "sonnet",
@@ -105,6 +105,15 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-parent-merge-midrun/9b81ac28-d68e-420b-be2f-860d6b311e2f/subagents/agent-ad260a0545d889e3a.jsonl"
       ]
+    },
+    "6": {
+      "slug": "merge-in-warns-mid-run",
+      "startSha": "237ffd50ee1294ab08f75f0b274bf0b75c0e92cd",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T15:40:32Z",
+      "sessionId": "9b81ac28-d68e-420b-be2f-860d6b311e2f",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
