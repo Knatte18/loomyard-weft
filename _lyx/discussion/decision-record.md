@@ -21,7 +21,8 @@ In:
 - The `shedadapters` fresh-spawn preparation seam, widened so a preparation can amend the prompt of the session about to spawn.
 - A new loom stencil holding the prior-plan block's text.
 - `internal/shuttleengine/claudeengine`: a system-prompt notice announcing each standing tool deny the engine installs, on both the launch and the resume command lines.
-- Docs: the package docs of the touched packages, and `docs/overview.md`'s shuttle paragraph (it describes the guardrails).
+- Docs: the package docs of the touched packages, `docs/overview.md`'s shuttle paragraph (it describes the guardrails),
+  and `internal/loomengine/plan.go`'s file comment, whose sentence calling stale-plan rotation "the future loom phase machine's responsibility" is false and must point at the rotator.
 
 Out:
 
@@ -55,10 +56,11 @@ Decision: the block tells the session to:
 - re-verify every glyph it carries forward with `lyx quarry`;
 - revise only what is wrong, missing or stale;
 - never modify the archive directory;
-- write `00-overview.md` last, as the template already requires.
+- never copy `00-overview.md` from the archive: write it fresh, last, with `approved: false`, as the template already requires.
 
 Rationale: the agent is the only party that can judge whether the prior plan still matches the decision record,
 and a finished, still-valid plan then costs one verification pass instead of a full rewrite.
+A copied `00-overview.md` would land before the revised cards and carry the archived plan's `approved` flag, which may be `true` on a restarted run.
 
 ### D3 — The agent always runs on a respawn
 
@@ -69,10 +71,11 @@ The session in D2 is the check that covers those cases.
 
 ### D4 — The fresh-spawn preparation can amend the spawned session's prompt
 
-Decision: `shedadapters.SingleLLMProducer`'s fresh-spawn preparation hook is widened so it can amend the prompt of the session it prepares for.
+Decision: `shedadapters.SingleLLMProducer`'s fresh-spawn preparation hook is widened so it can append text to the end of the prompt of the session it prepares for.
+The amendment is append-only: a preparation never rewrites or removes composed prompt text.
 The producer applies the amendment to the spec it hands to the shuttle seam's run call, and to no other spec.
 The attach path is unchanged: it never runs the preparation, and attach matching does not read the prompt.
-A preparation that makes no amendment leaves the prompt byte-identical.
+A preparation that appends nothing leaves the prompt byte-identical.
 The generic SingleLLM rows keep passing no preparation.
 
 Rationale: the archive path exists only after the rotation runs, and the rotation must run after the attach probe (the probe-before-archive ordering in `SingleLLMProducer.Call`).
@@ -90,25 +93,32 @@ The loom template carries no conditionals by rule, so the block is appended rath
 ### D6 — The Claude engine announces every standing tool deny through `--append-system-prompt`
 
 Decision: `claudeengine` passes `--append-system-prompt <notice>` on both the launch and the resume command line whenever it installs at least one announced deny, and omits the flag when it installs none.
-The notice is built from the same inputs that build the `PreToolUse` hooks (the shuttle config, `interactive`, `forkSubagents`), with one sentence per installed deny:
+The notice is built from the same inputs that build the `PreToolUse` hooks (the shuttle config, `interactive`, `forkSubagents`), with one sentence per installed deny.
+Each sentence must hold in every session that receives it, forks included, since forks inherit the system prompt:
 
 - Agent deny, non-fork run: the `Agent` tool is unavailable in this session; do all exploration and work in this session, with no subagents.
-- Agent deny, fork run: only fork subagents may be spawned; every other subagent type is refused.
-- AskUserQuestion deny (autonomous runs with the deny on): `AskUserQuestion` is unavailable; the steer already given by the deny reason applies.
+- Agent deny, fork run: the `Agent` tool accepts only fork subagents and refuses every other subagent type; a fork does its own work and never spawns further subagents.
+- AskUserQuestion deny (autonomous runs with the deny on): `AskUserQuestion` is unavailable; when blocked or needing operator input, state the question as the final message and end the turn without writing the result file.
 
 The webster fork-context guard is not announced.
 
 Rationale: the engine is the one place that knows which denies it installs, so announcing there keeps the notice and the hooks from drifting when `claude_deny_agent_tool` or `claude_deny_ask_user_question` is switched off.
-It covers every spawned agent (Discussion, Plan, Describe, Burler, Bouncer judges, webster Master) rather than Plan-Write alone.
+It covers every session `claudeengine` spawns rather than Plan-Write alone.
+The notice states each steer in full because the deny reason reaches a session only on a refused call, which is the loss the notice exists to prevent.
 A system-prompt flag is engine vocabulary, so shuttle's core stays a transport that never templates prompt content.
-The resume line must carry it too, for the same reason it already carries model, effort and permission mode: reed replays the resume line verbatim.
-The webster guard targets forks, and announcing it to the Master, which legitimately runs `lyx webster` verbs, would mislead it.
+The resume line must carry the flag too: Claude Code replays the recorded system prompt on resume, but re-renders it from the current flags after a compaction and where recording is not enabled, so a resume line without it loses the notice.
+A notice change therefore never reaches a running session, which matches the hooks, since those do not change mid-session either.
+The webster guard needs no announcement: webster's fork stencils (`webster-prefix-fork.md`, `webster-template-integration.md`) already tell forks never to run `lyx webster`, and the guard is a backstop for a case the prompts cover.
 
 ### D7 — Notice text follows the steer strings' quoting constraint
 
-Decision: the notice sentences are Go constants beside the existing steer constants in `settings.go`, and carry no single quote, double quote or backslash, checked the same way the webster steer string is checked.
+Decision: the notice sentences are Go constants beside the existing steer constants in `settings.go`.
+The assembled notice is a single line, its sentences joined by a space, and carries no line break, single quote, double quote or backslash, checked the same way the steer strings are checked.
 
-Rationale: the notice is interpolated into a pane-shell command line through `shell.Shell` quoting on every supported shell, including Windows.
+Rationale: the notice is passed through `shell.Shell` quoting as one command-line argument, and reed types the whole command into the pane with `tmux send-keys`, which submits at the first line break.
+Windows native-argument passing from pwsh can mangle double quotes and backslashes.
+Both `Quote` implementations escape a single quote, and backticks and `$` are literal inside their single quotes;
+the single quote stays forbidden for parity with the steer check.
 
 ## Constraints
 
@@ -126,13 +136,9 @@ Rationale: the notice is interpolated into a pane-shell command line through `sh
 - No operator answered questions; every pick in `## Decisions` is a self-pick recorded in the support log's question ledger.
 - Claude Code's `--append-system-prompt` works in an interactive session (verified against `claude --help` on 2.1.285, which lists it and states the appended prompt is recorded on the first request and replayed on resume).
 - `shuttleengine.Runner.AttachGated` matches candidates on output files only, never on the prompt, so amending the prompt after the probe cannot change what the probe would have matched.
-- The prior-plan block is appended even on a spawn that is not strictly a "respawn" in the halt sense (for example, a restarted run whose plan directory still holds a plan); the instruction to check against the decision record makes this correct in every case.
 
 ## Open risks
 
-- Claude Code records the appended system prompt on the first request and replays the record on resume, so a notice change never reaches an already-running session.
-  This is harmless: the hooks do not change mid-session either.
-- A session copying archived cards back could write `00-overview.md` before the cards; shuttle classifies Done only at a turn end with the file present, and the plan gate validates the whole directory, so a mid-turn ordering slip is caught by the gate rather than silently accepted.
 - The first spawn of a restarted run whose plan directory holds a plan from an unrelated earlier attempt will be told to reuse it; D2's check against the decision record is the guard, and it relies on the agent following it.
 
 ## Acceptance criteria
@@ -145,13 +151,12 @@ Rationale: the notice is interpolated into a pane-shell command line through `sh
 - The new stencil is embedded, seeded, and read through `stencilstore`; the stencil enumeration tests include it; rendering with an empty marker fails loudly.
 - `loom-template-plan.md` tells the agent to read a trailing `Prior plan` section before Step 3's writing.
 - `claudeengine`, for every combination of `ClaudeDenyAgentTool`, `ClaudeDenyAskUserQuestion`, `interactive` and `forkSubagents`: the launch and resume commands carry an `--append-system-prompt` notice sentence for a deny if and only if `buildSettings` installs that deny's `PreToolUse` entry; the flag is absent when no announced deny is installed.
-- `claudeengine`: the fork-run notice names fork subagents as the permitted type; the non-fork notice names the `Agent` tool as unavailable; the webster fork guard is never announced.
-- `claudeengine`: every notice constant is free of single quotes, double quotes and backslashes, and a command built on each supported shell quotes the notice as one argument.
-- `docs/overview.md`'s shuttle paragraph states that the engine announces its tool denies to the session; the package docs of `shedadapters`, `loomshed` and `claudeengine` describe the new behaviour.
+- `claudeengine`: the fork-run notice names fork subagents as the permitted type and tells a fork not to spawn further subagents; the non-fork notice names the `Agent` tool as unavailable; the AskUserQuestion notice states the final-message channel; the webster fork guard is never announced.
+- `claudeengine`: every assembled notice is free of line breaks, single quotes, double quotes and backslashes, and a command built on each supported shell quotes the notice as one argument.
+- `docs/overview.md`'s shuttle paragraph states that the engine announces its tool denies to the session; the package docs of `shedadapters`, `loomshed` and `claudeengine` describe the new behaviour; `internal/loomengine/plan.go`'s file comment names the rotator as owning stale-plan rotation.
 - `go build ./...` and `go test ./...` pass.
 
 ## Notes for the plan writer
 
 - The rotation is `NewPlanDirRotator`/`rotateStalePlanDir` in `internal/loomshed/planwrite.go`; it is wired in `internal/shedrecipe/entries_planwrite.go`, and the only other caller of `NewSingleLLMProducer` (`internal/shedrecipe/entries_singlellm.go`) passes a nil preparation.
 - The deny hooks and steer strings are in `internal/shuttleengine/claudeengine/settings.go`; the launch and resume lines are `buildLaunchCmd`/`buildResumeCmd` in `command.go`.
-- `internal/loomengine/plan.go`'s file comment says rotating a stale plan directory is "the future loom phase machine's responsibility"; that sentence is stale and can point at the rotator instead.

@@ -30,9 +30,11 @@ Autonomous session: no operator was present, so every turn below is exploration 
    `claude --help` (2.1.285) lists `--append-system-prompt` and states the appended prompt is recorded on the first request and replayed on resume.
    Decision: the engine announces each installed deny through `--append-system-prompt`, from the same inputs as the hooks, on launch and resume (D6).
 8. **Which denies to announce.**
-   Agent (both variants) and AskUserQuestion; not the webster fork guard, whose audience is forks and whose text would mislead the Master (D6).
+   Agent (both variants) and AskUserQuestion; not the webster fork guard, which webster's fork stencils already cover (D6).
+   The notice reaches forks through the inherited system prompt, so every sentence is worded to hold inside a fork too.
 9. **Quoting.**
-   Notices ride a pane-shell command on every supported shell; the webster steer already carries a no-quote, no-backslash check (D7).
+   Notices ride a pane-shell command typed by `tmux send-keys`, which submits at a line break, on every supported shell;
+   the notice is a single line, kept free of quotes and backslashes like the steer strings (D7).
 
 ## Rejected alternatives
 
