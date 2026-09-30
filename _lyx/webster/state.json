@@ -1,7 +1,7 @@
 {
   "runGuid": "f652684f48161c48a7d9bfbde839552f",
   "planFingerprint": "9f0fe613eebbb454865ae505f24ac71602d2b8d68bab888efda43f8872aff74b",
-  "currentBatch": 11,
+  "currentBatch": 0,
   "masterStrand": "cdbb4b6aa888221ee164baab2824365c",
   "masterSessionId": "2a0edaea-54f5-45ae-af8a-c85c0ae22947",
   "assertedModel": "sonnet",
@@ -52,8 +52,19 @@
       "kind": "fork",
       "spawnedAt": "2026-09-30T15:31:38Z",
       "sessionId": "2a0edaea-54f5-45ae-af8a-c85c0ae22947",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "11-driver-prompt-park",
+        "status": "done",
+        "head_sha": "b8e259620741e7771aa4d438a74889a06dbdef18"
+      },
+      "cardShas": [
+        "b8e259620741e7771aa4d438a74889a06dbdef18"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-ac7467b6d7e45eef5.jsonl"
+      ]
     },
     "2": {
       "slug": "gitexec-transport-classifier",
@@ -229,6 +240,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a50b716039e664e93.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-adaea6f5d8ed298dd.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-ae5c195c7d2277598.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a85c4541189dd537d.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a85c4541189dd537d.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-ac7467b6d7e45eef5.jsonl"
   ]
 }
