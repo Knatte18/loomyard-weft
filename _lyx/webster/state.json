@@ -1,7 +1,7 @@
 {
   "runGuid": "99b1dd0dd58180b0f43901d41595a29d",
   "planFingerprint": "fa8879ebca0e674eee43ccef667adc7bab3efedf17b316d6b87a3871fd18640e",
-  "currentBatch": 0,
+  "currentBatch": 3,
   "masterStrand": "a78941b98e9841d1e9839ee2ade19407",
   "masterSessionId": "b4e736d7-d339-4e56-9f13-e701820320a3",
   "assertedModel": "sonnet",
@@ -45,6 +45,15 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-launch-script/b4e736d7-d339-4e56-9f13-e701820320a3/subagents/agent-ab22271646ecff466.jsonl"
       ]
+    },
+    "3": {
+      "slug": "launch-script-cleanup",
+      "startSha": "46ad25dbdc00e8e89754731c0bac0ec74ed3ef62",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T14:25:06Z",
+      "sessionId": "b4e736d7-d339-4e56-9f13-e701820320a3",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
