@@ -1,0 +1,19 @@
+{
+  "runGuid": "d62c8f1871612013bc5037be8f7a529e",
+  "planFingerprint": "c3700d245cb0cd7122658385bccac030e1e6389e7751750de6b247e187a12eab",
+  "currentBatch": 1,
+  "masterStrand": "8582c4b0d9ce744dbc38e5668c380775",
+  "masterSessionId": "0675e7f8-2080-4b39-8b23-ef068ef17e99",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "shedrun-runs-root-rel",
+      "startSha": "dcc7d7dcd1aa191bb82959c4c70807ec9d6cef4f",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T17:32:20Z",
+      "sessionId": "0675e7f8-2080-4b39-8b23-ef068ef17e99",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
