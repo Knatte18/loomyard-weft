@@ -34,7 +34,6 @@ The hook is an unexported package var, `addBeforeWeftReplaceHook func()`, nil in
 Tests in `add_remoteleftover_integration_test.go`:
 - divergence: add, commit and push an extra weft commit, plain Remove, re-Add → succeeds; origin's weft branch equals the new local weft tip; the old tip is an ancestor of, or equal to, the target of an `archive/<slug>/*` tag on the weft bare; the second Add's record holds `remote_branch_deleted` for `<slug>-weft` before its weft `branch_pushed`.
 - archived ancestor: add, commit an extra weft commit without pushing it, plain Remove (the archive tag lands on the unpushed commit, a strict descendant of origin's tip), re-Add → succeeds.
-- warp fast-forwardable: add, plain Remove, commit on the prime so its HEAD advances past origin's workless warp branch, re-Add → succeeds and origin's warp branch equals the new warp tip.
 - lease race (non-parallel): the hook pushes a commit onto origin's `<slug>-weft` from a clone → Add fails with an error naming the branch, no weft worktree remains, and origin keeps the moved tip.
 
 In `remove_warpbranch_integration_test.go`, `TestRemove_AddSucceedsAfterWarpBranchDeleted` goes back to a plain Remove (`remote=false`), dropping the comment about the timestamp-dependent re-add gap.
@@ -43,4 +42,4 @@ Docs, same commit:
 - `doc.go`: after the paragraph on `Remove`'s archiving, a paragraph on `Add`'s re-add handling — the pre-flight probes of both origins, the archive tag as the orphan proof, the leased gated replacement at step 12, the refusal outcomes, and that `SkipPush`/`SkipGit` skip all of it.
 - `CONSTRAINTS.md`, the archive bullet of the Fabric Git Invariant: add a sentence that `Add` replaces a leftover remote weft branch only when an `archive/<slug>/*` tag covers its tip.
 
-**ImpactSummary:** `Topology.Add` step 12 gains one gated, leased remote deletion; tests and docs within `internal/fabricengine`, plus one `CONSTRAINTS.md` sentence.
+**ImpactSummary:** `Topology.Add` step 12 gains one gated, leased remote deletion, so a push failure after a completed replacement now leaves origin with no `<slug>-weft` branch, its old content reachable only from the archive tag. `rollbackAdd`'s behaviour is otherwise unchanged. A nil-in-production package var, `addBeforeWeftReplaceHook`, makes the lease-race test non-parallel. The rest is tests and docs within `internal/fabricengine`, plus one `CONSTRAINTS.md` sentence.
