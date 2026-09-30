@@ -17,7 +17,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/shedrun#ParkMarker`
+- `internal/shedrun#ParkMarker`
 - `plan:internal/loomcli#driverResumeLine`
 - `internal/loomcli#driverReportPath`
 - `internal/loomcli#resolveDriverStrandAction`

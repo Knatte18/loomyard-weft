@@ -1,8 +1,8 @@
 # Card 10 — declare the driver park marker in shedrun
 
 **Create:**
-- `plan:internal/shedrun#ParkMarkerFileName` -> `const ParkMarkerFileName = "driver-parked"`
-- `plan:internal/shedrun#ParkMarker` -> `func ParkMarker(l *lyxcwd.Location, runID string) string`
+- `internal/shedrun#ParkMarkerFileName`
+- `internal/shedrun#ParkMarker`
 
 **Edit:**
 - `internal/shedrun/paths.go`

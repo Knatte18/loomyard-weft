@@ -8,7 +8,7 @@
 - `internal/loomcli/driveskill_test.go`
 
 **Uses:**
-- `plan:internal/shedrun#ParkMarkerFileName`
+- `internal/shedrun#ParkMarkerFileName`
 
 **Intent:**
 Teach the driver the new behaviour (decision record D3, D5–D11) while it stays recipe-blind: every new branch is on an envelope or status field, a policy word or one of the five kinds, never on a row or recipe name, and the skill still makes no commits.

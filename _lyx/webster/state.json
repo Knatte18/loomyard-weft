@@ -1,7 +1,7 @@
 {
   "runGuid": "f652684f48161c48a7d9bfbde839552f",
-  "planFingerprint": "1ede0173b0edb000857ba9f4adb619bf8aa2f125e7719e2ee1fcead5cc5be958",
-  "currentBatch": 10,
+  "planFingerprint": "9f0fe613eebbb454865ae505f24ac71602d2b8d68bab888efda43f8872aff74b",
+  "currentBatch": 0,
   "masterStrand": "cdbb4b6aa888221ee164baab2824365c",
   "masterSessionId": "2a0edaea-54f5-45ae-af8a-c85c0ae22947",
   "assertedModel": "sonnet",
@@ -32,8 +32,19 @@
       "kind": "fork",
       "spawnedAt": "2026-09-30T15:31:08Z",
       "sessionId": "2a0edaea-54f5-45ae-af8a-c85c0ae22947",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "10-shedrun-park-marker",
+        "status": "done",
+        "head_sha": "3135232abdbce89f886b2a387f2b97017b6647c8"
+      },
+      "cardShas": [
+        "3135232abdbce89f886b2a387f2b97017b6647c8"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a85c4541189dd537d.jsonl"
+      ]
     },
     "2": {
       "slug": "gitexec-transport-classifier",
@@ -208,6 +219,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a99247f0df7675bc5.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a50b716039e664e93.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-adaea6f5d8ed298dd.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-ae5c195c7d2277598.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-ae5c195c7d2277598.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a85c4541189dd537d.jsonl"
   ]
 }
