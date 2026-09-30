@@ -4,8 +4,10 @@
 - `internal/reedengine#Engine.launchStrandLocked`
 - `internal/reedengine#Engine.addStrandLocked`
 - `internal/reedengine#Engine.AddStrand`
+- `internal/reedengine#Engine.ReplaceStrand`
 - `internal/reedengine/panebin.go`
 - `internal/reedengine/spawn_test.go`
+- `internal/reedengine/emptycmd_integration_test.go`
 
 **Prosa:**
 - `internal/reedengine/doc.go`
@@ -34,8 +36,12 @@ Failed add — a script whose strand record is never persisted:
 - `addStrandLocked` calls `removeLaunchScripts(shell.ForGOOS(), e.stateDir(), []string{guid})` when `launchStrandLocked` fails, before returning the error.
   Both of its callers then drop the unpersisted record (`AddStrand` returns without saving, `ReplaceStrand` cuts it off the table).
 - `AddStrand`'s ordinary path does the same for `strand.GUID` when the `SaveState` right after `addStrandLocked` fails.
+- `ReplaceStrand` records a failure of its own `SaveState` right after a successful `addStrandLocked` apart from a launch failure, since that path leaves the new strand in `st.Strands`.
+  The tail's `reconcileApplyPersistLocked` ends in `SaveState`, so when it returns `nil` the new strand's record was persisted after all and its script stays;
+  when that post-add save failed and `reconcileApplyPersistLocked` also returns an error, the record was never persisted, and `ReplaceStrand` calls `removeLaunchScripts` for the new strand's GUID before returning.
 
 Update `panebin.go`'s file doc and `composePaneLaunchLine`'s doc comment: its output is now the launch script's content rather than the send-keys payload itself.
+Reword `emptycmd_integration_test.go`'s file doc the same way: an empty-Cmd strand's launch script holds the composed prelude alone, and the send-keys literal is the source statement for it.
 
 Docs, in this same commit per the Documentation Lifecycle:
 
@@ -55,7 +61,9 @@ Tests in `spawn_test.go`, with `executablePath` injected via `withInjectedExecut
 - An empty launch command writes the prelude alone plus `"\n"`, with no trailing separator.
 - A regular file at `<e.stateDir()>/reed` makes the payload the full composed line, and `captureLogOutput` names the strand GUID.
 - `addStrandLocked` with a fake whose literal `send-keys` fails returns an error and leaves no file in the launch directory.
+- `AddStrand` with a fake whose `split-window` returns a fresh pane id and whose `Enter` send-keys replaces `<e.stateDir()>/reed.json` with a non-empty directory, so `SaveState`'s rename fails after the script is written: `AddStrand` returns the persist error and the launch directory holds no file.
+- `ReplaceStrand` with the same failing-save fake: every later `SaveState` fails, so `reconcileApplyPersistLocked` errors too; `ReplaceStrand` returns an error and the launch directory holds no script for the new strand's GUID.
 
-**ImpactSummary:** Changes the typed line of every strand pane on every realizing path through the one chokepoint; `addStrandLocked`'s callers `AddStrand` and `ReplaceStrand` gain a best-effort delete on failure only; selvage, `new-session`, and `io.go`'s `Send` are untouched.
+**ImpactSummary:** Changes the typed line of every strand pane on every realizing path through the one chokepoint; `addStrandLocked`'s callers `AddStrand` and `ReplaceStrand` gain a best-effort delete on a failed launch or an unpersisted record only, never changing either op's result or error; selvage, `new-session`, and `io.go`'s `Send` are untouched.
 
 **Commit:** 4: reedengine: type the launch script's source statement instead of the full line

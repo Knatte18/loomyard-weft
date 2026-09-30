@@ -33,6 +33,7 @@ Tests in the new `launchscript_cleanup_test.go`, driving each public op through 
 - `RemoveStrand` of a leaf deletes that strand's script and leaves a sibling strand's script in place.
 - `RemoveStrand` with `recursive` true on a parent deletes the scripts of the parent and every descendant, and leaves an unrelated strand's script in place.
 - `ReplaceStrand` deletes the replaced strand's script and leaves a surviving strand's script in place.
+  The replacement spec's display is `render.AnchorHidden`, so `needsLaunchOnAdd` skips the launch the fake's empty `split-window` answer would fail, and the test isolates the removal step.
 - `RemoveStrand` of a strand that never had a script succeeds and logs no warning.
 - `Down` removes both `reed.json` and the launch directory; the fake answers `list-sessions` with a sibling session name so `Down` skips the server teardown.
   A second `Down` with the directory already gone still succeeds.
