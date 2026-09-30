@@ -29,8 +29,11 @@ A refused teardown (dirty sibling) still pushes archive/<slug>/*; the retry push
 
 Each 30 s poll during an unbounded approval wait appends a history entry; days of waiting make a multi-MB status.json.
 
-## **#030:** Batten run records in the prime leak into every new pair [A]
+# Layer B
+
+## **#030:** Batten run records in the prime leak into every new pair [B]
 [batten-records-leak-into-pairs](design-batten-records-leak-into-pairs.md)
+Depends on: #029
 
 Batten keeps its per-slug seed/status at the prime weft `_lyx/shed/<slug>/`, committed to main-weft; a pair created afterwards inherits them, and its child run (same slug) finds a batten seed and blocks at Seed-Child.
 

@@ -326,7 +326,9 @@
     "id": 30,
     "slug": "batten-records-leak-into-pairs",
     "title": "Batten run records in the prime leak into every new pair",
-    "depends_on": [],
+    "depends_on": [
+      "awaiting-status-history-growth"
+    ],
     "isolated": false,
     "deferred": false,
     "brief": "Batten keeps its per-slug seed/status at the prime weft `_lyx/shed/\u003cslug\u003e/`, committed to main-weft; a pair created afterwards inherits them, and its child run (same slug) finds a batten seed and blocks at Seed-Child.",
