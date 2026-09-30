@@ -5,9 +5,9 @@
 
 **Create:**
 - `internal/fabricengine/remoteleftover.go`
-- `plan:internal/fabricengine#ErrRemoteLeftover` -> `type ErrRemoteLeftover struct`
-- `plan:internal/fabricengine#weftLeftover` -> `type weftLeftover struct`
-- `plan:internal/fabricengine#probeWeftLeftover` -> `func probeWeftLeftover(l *lyxcwd.Location, slug, weftBranch string, localExists bool) (weftLeftover, error)`
+- `internal/fabricengine#ErrRemoteLeftover`
+- `internal/fabricengine#weftLeftover`
+- `internal/fabricengine#probeWeftLeftover`
 - `internal/fabricengine/add_remoteleftover_integration_test.go`
 
 **Uses:**

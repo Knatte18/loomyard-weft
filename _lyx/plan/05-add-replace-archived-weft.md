@@ -11,8 +11,8 @@
 - `CONSTRAINTS.md`
 
 **Uses:**
-- `plan:internal/fabricengine#weftLeftover`
-- `plan:internal/fabricengine#probeWeftLeftover`
+- `internal/fabricengine#weftLeftover`
+- `internal/fabricengine#probeWeftLeftover`
 - `internal/fabricengine#ownedPairWeftBranch`
 - `internal/fabricengine#dirtyArchivedOnRemote`
 - `internal/fabricengine#deleteRemoteBranch`

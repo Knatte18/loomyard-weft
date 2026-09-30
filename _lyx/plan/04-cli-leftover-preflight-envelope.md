@@ -7,7 +7,7 @@
 - `internal/fabriccli/addleftover_integration_test.go`
 
 **Uses:**
-- `plan:internal/fabricengine#ErrRemoteLeftover`
+- `internal/fabricengine#ErrRemoteLeftover`
 - `internal/fabriccli#errWithRecord`
 
 **Intent:**

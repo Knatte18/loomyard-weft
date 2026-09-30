@@ -1,0 +1,6 @@
+status: OK
+head_sha: 8000cd8519fdc51b83284553ad281e156ae1f384
+deviations:
+  - internal/fabricengine/livestate_verbs_test.go
+  - internal/fabricengine/mutation_record_integration_test.go
+  - internal/fabricengine/origin_integration_test.go
