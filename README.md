@@ -17,11 +17,6 @@ Respawn starts over instead of reusing the plan; prompt does not say Agent is re
 
 Trace logs: configurable retention, fewer files from routine commands
 
-## **#018:** reed: send a short launch-script line instead of the full command [A]
-[reed-launch-script](design-reed-launch-script.md)
-
-Hide the long env+claude launch line behind a generated launch script
-
 ## **#019:** One driving surface per run: ly-drive pane or status strand, never both [A]
 [status-strand-by-driver](design-status-strand-by-driver.md)
 Depends on: #010
@@ -135,6 +130,11 @@ lyx quarry: per-glyph resolve answers, grep-safe glyphs output
 [focus-marker-warn](design-focus-marker-warn.md) [done]
 
 Burler: warn when the explore stencil lacks the focus_directive marker
+
+## **#018:** reed: send a short launch-script line instead of the full command
+[reed-launch-script](design-reed-launch-script.md) [done]
+
+Hide the long env+claude launch line behind a generated launch script
 
 # Manifest
 
