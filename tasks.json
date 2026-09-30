@@ -235,7 +235,9 @@
     "id": 22,
     "slug": "webster-parent-merge-midrun",
     "title": "Webster: a parent merge after a batch commit wedges record-batch",
-    "depends_on": [],
+    "depends_on": [
+      "verify-triage"
+    ],
     "isolated": false,
     "deferred": false,
     "brief": "record-batch demands HEAD == report head_sha; a mid-run merge-in wedges the run",

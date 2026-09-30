@@ -19,11 +19,6 @@ Respawn starts over instead of reusing the plan; prompt does not say Agent is re
 
 Flaky or pre-existing test failures no longer halt a run; report names the failing tests
 
-## **#022:** Webster: a parent merge after a batch commit wedges record-batch [A]
-[webster-parent-merge-midrun](design-webster-parent-merge-midrun.md)
-
-record-batch demands HEAD == report head_sha; a mid-run merge-in wedges the run
-
 ## **#023:** Every refusal has a way forward: audit Webster and shed halt paths [A]
 [refusal-audit](design-refusal-audit.md)
 
@@ -52,6 +47,12 @@ Trace logs: configurable retention, fewer files from routine commands
 Depends on: #010
 
 llm-driven run shows only ly-drive; go-driven run shows only the status strand
+
+## **#022:** Webster: a parent merge after a batch commit wedges record-batch [B]
+[webster-parent-merge-midrun](design-webster-parent-merge-midrun.md)
+Depends on: #021
+
+record-batch demands HEAD == report head_sha; a mid-run merge-in wedges the run
 
 # Layer C
 
