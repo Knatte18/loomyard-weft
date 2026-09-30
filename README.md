@@ -2,11 +2,6 @@
 
 # Layer A
 
-## **#003:** loom status shows the producer's stuck reason, not 'stuck with no OnStuck target' [A]
-[stuck-reason-in-status](design-stuck-reason-in-status.md)
-
-loom status shows the producer's stuck reason, not 'stuck with no OnStuck target'
-
 ## **#004:** Plan verify: code-fence lines are not commands [A]
 [integration-verify-fence](design-integration-verify-fence.md)
 
@@ -33,3 +28,8 @@ Every Burler round WARNs about dropped cluster excludes; fix at the source (#278
 [loom-start-layout](design-loom-start-layout.md) [done]
 
 lyx loom start pane layout (#279)
+
+## **#003:** loom status shows the producer's stuck reason, not 'stuck with no OnStuck target'
+[stuck-reason-in-status](design-stuck-reason-in-status.md) [done]
+
+loom status shows the producer's stuck reason, not 'stuck with no OnStuck target'
