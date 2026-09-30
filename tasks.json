@@ -81,7 +81,7 @@
     "slug": "batten-open-ide",
     "title": "batten opens VS Code on the new pair with reed attached",
     "depends_on": [
-      "batten-hub-ready",
+      "status-strand-by-driver",
       "ide-hub-workspace"
     ],
     "isolated": false,
@@ -116,7 +116,7 @@
     "slug": "publish-verify-after-merge",
     "title": "Publish: verify the tree after merging the parent",
     "depends_on": [
-      "status-strand-by-driver"
+      "batten-open-ide"
     ],
     "isolated": false,
     "deferred": false,
