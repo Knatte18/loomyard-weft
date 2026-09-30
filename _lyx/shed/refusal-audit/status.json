@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "integration verify regressed: github.com/Knatte18/loomyard/internal/loomrecipe.TestBounceRouting_BudgetExhaustionBlocks, github.com/Knatte18/loomyard/internal/lyxcwd.TestEnforcement_FabricVocabulary/tree-scan (offending card: 15-run-exit-dispositions)",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Batchifier → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "integration verify regressed: github.com/Knatte18/loomyard/internal/loomrecipe.TestBounceRouting_BudgetExhaustionBlocks, github.com/Knatte18/loomyard/internal/lyxcwd.TestEnforcement_FabricVocabulary/tree-scan (offending card: 15-run-exit-dispositions)"
   },
   "history": [
     {
@@ -104,6 +104,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-09-30T17:20:28Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-09-30T18:05:29Z"
     }
   ],
   "product": {
