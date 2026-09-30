@@ -1,7 +1,7 @@
 {
   "runGuid": "8cbae2d24dc77ca61078e4a14c0d97d9",
   "planFingerprint": "72beeeca8af47879b29f61f3d12596d0152a732e87e1144091933cb7fa0de70c",
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "c5a6ee49a5e983607227bc80c63f9e8f",
   "masterSessionId": "79878df8-c188-4ee5-bc08-9b78e78e2add",
   "assertedModel": "sonnet",
@@ -12,8 +12,22 @@
       "kind": "fork",
       "spawnedAt": "2026-09-30T16:50:58Z",
       "sessionId": "79878df8-c188-4ee5-bc08-9b78e78e2add",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-landingshed-rejection-record",
+        "status": "done",
+        "head_sha": "cb59a10b205dcbc295b399759554715606698b13"
+      },
+      "cardShas": [
+        "cb59a10b205dcbc295b399759554715606698b13"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-publish-review-fixback/79878df8-c188-4ee5-bc08-9b78e78e2add/subagents/agent-ac3d94898562cd10a.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-publish-review-fixback/79878df8-c188-4ee5-bc08-9b78e78e2add/subagents/agent-ac3d94898562cd10a.jsonl"
+  ]
 }
