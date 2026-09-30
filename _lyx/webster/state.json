@@ -1,7 +1,7 @@
 {
   "runGuid": "d4030ca681712cfd6232d1752f3f0e74",
-  "planFingerprint": "b16c914a82e2f94560a7540f95c9a8b134c5492be3b07eeef17cb7c3334e03d3",
-  "currentBatch": 5,
+  "planFingerprint": "e34a6f818fb4079e35a1730ddc922b628d2a587564d233ebf773e128407f6304",
+  "currentBatch": 0,
   "masterStrand": "912cb983bf6042832f4d934fc5bd884a",
   "masterSessionId": "ae7c4f15-2d58-48b6-8181-6776f9f18b95",
   "assertedModel": "sonnet",
@@ -92,14 +92,26 @@
       "kind": "fork",
       "spawnedAt": "2026-09-30T14:25:57Z",
       "sessionId": "ae7c4f15-2d58-48b6-8181-6776f9f18b95",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-triage-core",
+        "status": "done",
+        "head_sha": "145bf99706845df0f224f0b985055f0afcaf94d3"
+      },
+      "cardShas": [
+        "145bf99706845df0f224f0b985055f0afcaf94d3"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-verify-triage/ae7c4f15-2d58-48b6-8181-6776f9f18b95/subagents/agent-a8d8ee80bb451ebb3.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-verify-triage/ae7c4f15-2d58-48b6-8181-6776f9f18b95/subagents/agent-a951f817e59a4e307.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-verify-triage/ae7c4f15-2d58-48b6-8181-6776f9f18b95/subagents/agent-ac5b9dd4f76ae2b5d.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-verify-triage/ae7c4f15-2d58-48b6-8181-6776f9f18b95/subagents/agent-a945b9bc59860ab74.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-verify-triage/ae7c4f15-2d58-48b6-8181-6776f9f18b95/subagents/agent-a1ee0332f187cb8ca.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-verify-triage/ae7c4f15-2d58-48b6-8181-6776f9f18b95/subagents/agent-a1ee0332f187cb8ca.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-verify-triage/ae7c4f15-2d58-48b6-8181-6776f9f18b95/subagents/agent-a8d8ee80bb451ebb3.jsonl"
   ]
 }

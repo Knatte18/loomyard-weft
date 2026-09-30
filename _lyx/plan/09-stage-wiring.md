@@ -9,8 +9,8 @@
 - `internal/websterengine#IntegrationReport`
 - `internal/websterengine#ParseIntegrationReport`
 - `internal/websterengine#WriteIntegrationReport`
-- `plan:internal/websterengine#triageOutcome`
-- `plan:internal/websterengine#triageIntegrationFailure`
+- `internal/websterengine#triageOutcome`
+- `internal/websterengine#triageIntegrationFailure`
 - `internal/websterengine#runVerifyCapture`
 - `internal/websterengine#IntegrationLogPath`
 - `plan:internal/websterengine#AppendIntegrationTriage`

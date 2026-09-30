@@ -3,8 +3,8 @@
 **Create:**
 - `triage.go`
 - `triage_test.go`
-- `plan:internal/websterengine#triageOutcome` -> `type triageOutcome struct`
-- `plan:internal/websterengine#triageIntegrationFailure` -> `func triageIntegrationFailure(run verifyRunner, repo FabricBisector, baselineSHA, verifyCmd, worktree, scratchDir, firstLogPath string) (triageOutcome, error)`
+- `internal/websterengine#triageOutcome`
+- `internal/websterengine#triageIntegrationFailure`
 
 **Uses:**
 - `internal/websterengine#IntegrationFailure`
