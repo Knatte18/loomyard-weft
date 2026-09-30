@@ -172,3 +172,8 @@ Small cleanups from the PR #301 review
 [driver-restart-race](design-driver-restart-race.md)
 
 First loom start after a hand-back keeps a strand that is about to be removed
+
+## **#012:** Integration tests leave tmux sockets behind
+[test-tmux-socket-leak](design-test-tmux-socket-leak.md)
+
+reed/loom tests leak tmux servers and sockets in /tmp

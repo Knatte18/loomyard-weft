@@ -68,5 +68,15 @@
     "deferred": false,
     "brief": "First loom start after a hand-back keeps a strand that is about to be removed",
     "body": "After a hand-back, the ly-drive session removes its own strand with a detached `lyx reed remove --name loom-driver --detach` that waits for the session's pid to exit (end-of-session command from `083e992cf`).\nA `lyx loom start` issued in that window sees the loom-driver strand still live, keeps it instead of spawning a driver, and the detached remover then deletes it: the run is left with no driver and nothing happens (hit on `batten-hub-ready` and `focus-marker-warn`, 2026-09-30; a second `loom start` works).\nFix direction: `loom start` treats a driver strand with a pending self-removal (or whose claude has exited) as gone and spawns a fresh one, or the remover skips a strand that was re-adopted since it was scheduled."
+  },
+  {
+    "id": 12,
+    "slug": "test-tmux-socket-leak",
+    "title": "Integration tests leave tmux sockets behind",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "reed/loom tests leak tmux servers and sockets in /tmp",
+    "body": "Tests leak tmux sockets: `/tmp/tmux-1000/` holds hundreds of `lyx-Test…`, `lyx-contract-…` and `lyx-warp-bare-…` sockets left by reed/loom integration tests. Test fixtures should kill their tmux server and remove the socket in `t.Cleanup`."
   }
 ]
