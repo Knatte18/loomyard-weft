@@ -17,7 +17,8 @@ Autonomous session: no operator answered; every decision below is a self-pick re
    Picked Go after Master's session (D1): no Bash-tool timeout, existing detached-checkout and restore machinery, existing unleased-phase split.
 4. **How the outcome reaches the driver.**
    With Go deciding after Master exits, either Go promotes a Master `stuck` to `done`, or Master always ends `done` and Go demotes on regression.
-   Picked demotion (D2): a `done` run already has a validated `summary.md`; a `stuck` one may not.
+   Picked demotion (D2): a `done` run already has a validated `summary.md` and passed the run-exit audit;
+   a `stuck` run's `summary.md` is written but never validated, and a `stuck` run skips the audit.
    Added D3 so an old-stencil Master that still ends `stuck` does not skip triage.
 5. **Failure names.**
    The task wants names and tails in the report.
@@ -28,8 +29,10 @@ Autonomous session: no operator answered; every decision below is a self-pick re
    A targeted `go test -run` rerun needs the right flags and build tags from whichever `&&` link failed, and a dropped `-tags` makes `-run` match nothing and pass — a false flaky that masks a regression.
    Picked a whole-command rerun (D6); plan verifies are targeted suites, and bisect already pays whole runs.
 7. **Baseline.**
-   "Parent commit" read as the tree the plan started from: first parent of the first card SHA (D7).
+   "Parent commit" read as the tree the plan started from (D7).
    The parent branch's head could have moved and would answer a different question.
+   Round 1 review replaced "first parent of the first card SHA" with the HEAD webster recorded before the first batch began:
+   a batch's recorded card SHA is its post-batch head, so with two commits in batch 1 the first parent sat inside the batch and excused a regression from its first commit.
 8. **Ambiguity policy.**
    Every case triage cannot prove — test absent at baseline, chain stopped early at baseline, opaque failure, no bisector — falls to halting (D7, D8).
    Triage can only remove halts it can prove unwarranted.
@@ -48,13 +51,15 @@ Autonomous session: no operator answered; every decision below is a self-pick re
 - **The integration fork runs triage.**
   Same Bash cap, and the fork's prompt would have to drop its "never run lyx webster" guard, which exists because a fork once ran Master's poll loop and deadlocked.
 - **Go promotes a Master `stuck` to `done` after a non-regression triage.**
-  Requires Master to write a done-quality `summary.md` on a `stuck` outcome and re-running the run-exit audit on promotion; outcome.yaml would contradict the result.
+  Requires validating a `summary.md` that was only written best-effort on a `stuck` outcome, and running the run-exit audit on promotion.
 - **Targeted `go test -run` reruns at head and baseline.**
   Flag and build-tag attribution across `&&` links is unreliable, and a lost tag produces a silent pass — the one error triage must never make.
 - **Fork lists failing tests itself in the report.**
   LLM extraction from long output can omit or invent names; Go parsing is deterministic.
 - **Full log stored in `_lyx/webster/reports/`.**
   `_lyx` is committed; a full test log is ephemeral diagnosis material and belongs in `.lyx` scratch.
+- **Baseline = first parent of the first accumulated card SHA.**
+  A batch's recorded card SHA is its post-batch head, and a batch can hold several commits, so that parent can sit inside batch 1 and excuse a regression batch 1 introduced.
 - **Baseline = parent branch's current head.**
   The parent may have moved since the task branched, so a failure there says nothing about whether this task caused it.
 - **Classify an opaque failure pre-existing when the baseline is also red.**
@@ -76,7 +81,7 @@ _No rounds yet._
 - **Q4 — Who extracts failing test names?** Resolved, auto-pick: Go parses a log the fork writes to `.lyx` scratch (D4).
 - **Q5 — Identity granularity?** Resolved, auto-pick: package + top-level test; package-only for build/setup/panic failures; one opaque identity otherwise (D5).
 - **Q6 — Rerun the failing tests or the whole command?** Resolved, auto-pick: whole command, once (D6).
-- **Q7 — Which commit is "the parent"?** Resolved, auto-pick: first parent of the first accumulated card SHA (D7).
+- **Q7 — Which commit is "the parent"?** Resolved, auto-pick: the HEAD webster recorded before the first batch began; unavailable baseline falls to D8 (D7, revised in review round 1).
 - **Q8 — How to classify a test absent or not run at baseline?** Resolved, auto-pick: regression (D7).
 - **Q9 — Opaque failure red at baseline?** Resolved, auto-pick: still a regression (D7).
 - **Q10 — No fabric repo?** Resolved, auto-pick: rerun only; red rerun halts with warnings (D8).

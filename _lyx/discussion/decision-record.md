@@ -42,14 +42,15 @@ Decision: the Master stencil's `status: FAILED` branch changes from `outcome: st
 a regression demotes the `RunResult` to `outcome: stuck` with a `StuckReason` naming the regressing tests and the localized card, returned as a result, not an error.
 The existing loud error for "done over a FAILED suite" is removed;
 the loud error for "done with no integration report" stays.
+Go never rewrites Master's `outcome.yaml`: after a demotion it still says `done`, and the report's `triage.verdict`, the `-1` state record, and the `summary.md` section are the durable record of the demotion.
 Rationale: demoting `done` to `stuck` is safe because a `done` run already carries a validated `summary.md` and passed the run-exit audit;
-promoting a Master `stuck` to `done` would need a `summary.md` Master was never required to write.
+a `stuck` run's `summary.md` is never validated and a `stuck` run never passes the run-exit audit, so promoting it to `done` would have to add both.
 A regression reaches the Shed adapter as `Stuck` with a reason, the same channel the old Master-stuck path used.
 
 ### D3 — Triage also runs when Master ended `stuck` over a FAILED report
 
 Decision: whenever every batch is terminal-done and the report is `FAILED`, triage runs regardless of Master's outcome.
-A non-regression verdict never promotes a Master `stuck`: the outcome stays `stuck`, and the triage section and report fields are still written.
+A non-regression verdict never promotes a Master `stuck`: the outcome stays `stuck`, the report fields are still written, and D11's recording applies unchanged (warnings, `summary.md` section, friction note, log line).
 A regression under a Master `stuck` escalates as today.
 Rationale: a resumed or stale Master session following the old stencil must not bypass triage, and Master's own `stuck` may carry a reason webster cannot see.
 
@@ -58,6 +59,7 @@ Rationale: a resumed or stale Master session following the old stencil must not 
 Decision: the integration fork runs the verify command with its combined stdout and stderr redirected to a told log path, and reports `status` from the command's exit code exactly as today.
 The log lives in webster's scratch dir under `.lyx`, never under `_lyx`.
 Go parses the log; the fork never lists failures itself.
+Webster removes any prior log at that path before rendering the integration prompt, so a log present at triage time was written by this run's fork.
 A missing or unreadable log is not an error: the first run's failure set is then unknown, and triage proceeds from the rerun.
 Rationale: parsing is deterministic in Go and hallucination-free;
 the full log is ephemeral diagnosis material under the Durable-vs-Ephemeral State Invariant, while the durable report carries only names and tails.
@@ -88,7 +90,9 @@ Plan-level verify commands are the plan's targeted suite, and bisect already pay
 ### D7 — Compare against the baseline commit
 
 Decision: step 2 checks out the baseline commit detached in the live worktree, runs the whole verify command once with captured output, and restores the branch afterwards, even on error, using the same `FabricBisector` surface and restore-failure handling bisect uses.
-The baseline is the first parent of the first accumulated card SHA in execution order — the tree the plan started from.
+The baseline is the HEAD webster recorded before the first batch in execution order began — the tree the plan started from.
+It is not derived from the card SHAs: a batch's recorded card SHA is its post-batch head, and a batch can hold more than one commit, so a parent of it can sit inside the batch.
+When that recorded start is absent or empty, the baseline is unavailable and triage proceeds as in D8.
 Classification of each head identity:
 
 - **Test** or **package** identity that also fails at baseline: pre-existing.
@@ -104,12 +108,17 @@ every ambiguous case falls to halting, which is today's behavior, so triage can 
 
 Decision: when `RunDeps.OpenBisector` is nil (no fabric repo), step 1 still runs.
 A red rerun yields verdict regression with the existing "could not be localized" warning plus a warning that the baseline comparison was unavailable.
-Rationale: without a repo there is no baseline to check out, and an unproven failure halts.
+The same "baseline unavailable" rule applies when a bisector exists but D7 finds no recorded start: a red rerun is a regression, and bisect still localizes it.
+Rationale: without a repo or a recorded start there is no baseline to check out, and an unproven failure halts.
 
 ### D9 — Bisect localizes by the regressing identities
 
 Decision: on a regression, bisect's pass predicate at each SHA becomes "none of the regressing identities fails", parsed from that SHA's captured output;
 when the regressing set contains the opaque identity, the predicate is the whole command's exit code, as today.
+A regressing identity fails at a SHA only when it appears in that SHA's parsed failure set;
+absent (the test does not exist yet), not run (an earlier `&&` link stopped the chain), or surfaced only as its package identity counts as passing.
+This uses the same membership test as D7.
+D7 declines to excuse a failure it cannot prove, while D9 only localizes, so the two map a non-member to opposite results.
 The last-SHA-passes → `unknown` rule stays.
 Rationale: with a pre-existing failure present, every SHA fails the whole command, so the exit-code predicate converges on card 1 and blames it by arithmetic.
 
@@ -119,10 +128,10 @@ Decision: the fork still writes `status`, `head_sha`, `deviations`.
 On a `FAILED` report, Go adds, under the state-mutation lease in the stage's final phase:
 
 ```yaml
-failures:            # the first run's failures; from the rerun when the first log was missing
+failures:            # the head set (D6) plus first-run-only identities
   - id: <package>.<Test> | <package> | verify-command
     kind: test | package | opaque
-    tail: |
+    tail: |          # from the rerun when the identity failed there, else from the first run
       <up to 40 lines>
 triage:
   verdict: flaky | pre-existing | regression
@@ -133,6 +142,8 @@ triage:
   regressions: [<id>, ...]
 ```
 
+`failures` holds every identity triage saw: the head set, which is the rerun's when it was red, plus identities that failed only in the first run.
+An identity that fails only in the rerun is therefore listed, with the rerun's tail.
 The integration report gets its own parse type or optional fields so batch reports keep their strict shape.
 Rationale: one file answers both "what failed" and "why the run did or did not halt", which is what the driver and the hub read.
 
@@ -140,12 +151,13 @@ Rationale: one file answers both "what failed" and "why the run did or did not h
 
 Decision: a non-regression verdict produces:
 
-- a `RunResult` warning per verdict naming the identities,
+- one `RunResult` warning per non-empty category (flaky, pre-existing), naming its identities,
 - an appended `summary.md` section (the PR text) listing flaky and pre-existing identities,
-- a Go-written friction note via `friction.NotePath(deps.FrictionDir, "webster-verify-triage")` listing the same, only when `FrictionDir` is non-empty,
+- a Go-written friction note named `webster-verify-triage` in the told friction dir, listing the same, written only when that dir is set,
 - a `logger.Warn` line.
 
-A regression's `summary.md` section extends today's integration-failure section with the regressing identities and their tails.
+A regression's `summary.md` section extends today's integration-failure section with the regressing identities and their tails, and the `StuckReason` names the same identities;
+both read identities and tails from the report's `failures` (D10).
 No state record is written for a non-regression verdict; a regression writes today's reserved `-1` record.
 Rationale: the Shed adapter's `Done` path forwards only the summary pointer, so `summary.md` is the channel that survives to the operator and the PR;
 friction is where the hub collects environment trouble, and a pre-existing red on the baseline is exactly that.
@@ -162,17 +174,14 @@ friction is where the hub collects environment trouble, and a pre-existing red o
 
 ## Auto-mode assumptions
 
-- The baseline is the first parent of the first accumulated card SHA, not the parent branch's current head: the question is "did this task break it", and the parent branch may have moved.
-- The rerun and the baseline run are whole-command runs, not reconstructed per-test `go test -run` invocations.
-- An opaque failure is never classified pre-existing.
-- Both flaky and pre-existing failures go to the friction note, not only flaky ones.
-- The per-failure tail cap is 40 lines.
+- D1–D11 are all auto-mode self-picks; no operator answered.
 - Triage logic sits in `internal/websterengine`; the `go test` output parser is not split into its own package, since webster is its only consumer.
 
 ## Open risks
 
 - A baseline whose `&&` chain stops on an earlier failing link never runs the later tests, so a pre-existing failure behind it is classified a regression and halts — today's behavior, not a new failure mode.
 - A regression in a test that is also flaky can pass the single rerun and be recorded flaky instead of halting.
+- A regressing test that did not run at an intermediate bisect SHA counts as passing there (D9), so bisect can blame a later card than the one that introduced the failure.
 - Two extra whole-verify runs add wall-clock to every red integration stage.
 - Unusual `go test` output (`-json`, custom test runners, interleaved `-p` output without `-v`) may parse only as package or opaque identities, which degrades toward halting rather than toward continuing.
 
@@ -187,7 +196,9 @@ friction is where the hub collects environment trouble, and a pre-existing red o
 - With a pre-existing failure present at every card SHA, bisect localizes a regression to the card that introduced it, not to card 1.
 - With no bisector, a red rerun yields `verdict: regression` with both "not localized" and "baseline unavailable" warnings; a green rerun yields flaky.
 - A missing fork log does not error; failure identities come from the rerun.
-- A Master `stuck` over a FAILED report still gets triage fields in the report and stays `stuck` on a non-regression verdict.
+- A Master `stuck` over a FAILED report still gets triage fields in the report and the triage section in `summary.md`, and stays `stuck` on a non-regression verdict.
+- A test that passes in the fork's run and fails in the rerun appears in `failures` with the rerun's tail.
+- With batch 1 holding two commits and a test broken by the first, the baseline is the tree before batch 1 and the test is a regression, not pre-existing.
 - A Master `done` with no integration report still fails loud.
 - The worktree is back on its branch after the baseline run, including when the baseline verify leaves the tree dirty or errors.
 - Parser unit tests (untagged) cover: top-level test failures across multiple packages, subtests collapsing to the top-level test, `[build failed]` and `[setup failed]` package failures, a panic with no `--- FAIL` line, `\r\n` input, tail capping, an all-`ok` log, and non-Go output yielding the opaque identity.
@@ -199,6 +210,5 @@ friction is where the hub collects environment trouble, and a pre-existing red o
 
 - The integration stage is `runIntegrationStage` in `internal/websterengine/runlevel.go`; bisect, `runVerifyCommand`, and `LocalizeIntegrationFailure` are in `integration.go`; `AppendIntegrationFailure` is in `summary.go`.
 - `runVerifyCommand` discards output today; triage and the new bisect predicate need a capturing variant.
-- `ParseReport` decodes with `KnownFields(true)` and is shared with batch reports.
 - Friction note paths come from `friction.NotePath`; see how `runlevel.go` derives the `webster-integration` and `webster-master` note paths.
 - The Shed adapter (`internal/shedadapters/webster.go`) maps `stuck` to `Stuck` with `StuckReason` and `done` to the summary pointer; it should need no change.
