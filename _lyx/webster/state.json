@@ -1,7 +1,7 @@
 {
   "runGuid": "58d2f68d0b54bf289c61d20455e5ff7a",
   "planFingerprint": "c40dc98c6a46e05ead31661fa7069161bc87efc6dd62bea1ee2ce90d89877574",
-  "currentBatch": 0,
+  "currentBatch": 15,
   "masterStrand": "9acb332600d74bfcdc4395303bc7b8e7",
   "masterSessionId": "4c6ab6b0-79e1-4be6-ab5e-953345d7e36c",
   "assertedModel": "sonnet",
@@ -140,6 +140,15 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-hub-ready/4c6ab6b0-79e1-4be6-ab5e-953345d7e36c/subagents/agent-a043bed6d93911297.jsonl"
       ]
+    },
+    "15": {
+      "slug": "batten-teardown-records-remedy",
+      "startSha": "5e5c6979a9588c1723e460ea2b63d2f53b38e3c2",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T13:59:08Z",
+      "sessionId": "4c6ab6b0-79e1-4be6-ab5e-953345d7e36c",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "shedrun-drive-reports-dir",
