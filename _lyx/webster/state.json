@@ -1,7 +1,7 @@
 {
   "runGuid": "f652684f48161c48a7d9bfbde839552f",
   "planFingerprint": "05ad78708ac0e39771ff3ecf8cb0c697b62001fd8291c93c3913f35f5cfa9120",
-  "currentBatch": 0,
+  "currentBatch": 13,
   "masterStrand": "cdbb4b6aa888221ee164baab2824365c",
   "masterSessionId": "2a0edaea-54f5-45ae-af8a-c85c0ae22947",
   "assertedModel": "sonnet",
@@ -85,6 +85,15 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-ab1e83eea0dbd7c46.jsonl"
       ]
+    },
+    "13": {
+      "slug": "loom-start-resume",
+      "startSha": "eb4dd8d8e2a09afbde969b1a2119db1a86eecc4c",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T15:32:41Z",
+      "sessionId": "2a0edaea-54f5-45ae-af8a-c85c0ae22947",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "gitexec-transport-classifier",
