@@ -128,5 +128,15 @@
     "deferred": false,
     "brief": "No verb removes done tasks; the hub had to set-deps open tasks off done ones, then remove each done task one by one",
     "body": "Seen 2026-09-30: clearing 27 done tasks took set-deps on the open tasks plus one `lyx board remove` per slug.\nWant `lyx board prune` (tasks and notes): one atomic write that removes every done entry, their design docs, and drops done slugs from the depends_on of the entries that stay.\nBundle with the board viewer work."
+  },
+  {
+    "id": 21,
+    "slug": "process-naming",
+    "title": "Process naming: one name system for every process lyx spawns, out of creel",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Lift strand naming out of the creel design (manifest/designs/reed-mailbox.md) into its own module that reed, orch and creel build on",
+    "body": "Operator 2026-09-30: wants a proper naming system so processes are easy to find; not for today.\nToday children show up as auto names like `refusal-audit-c9`; nothing of the naming part of the creel design is built.\nScope: `\u003crole\u003e@\u003cslug\u003e` grammar owned by one package, fixed role vocabulary (orch, driver, worker, reviewer, operator); the strand name is a birth attribute in reed state, mirrored to pane title (allow-set-title off), Claude session name (`claude --name`) and `LYX_STRAND_NAME`; the reed watchdog restores drifted mirrors (Claude resets the session name after compact); `lyx reed list` as the directory.\nCreel then references this design instead of owning naming."
   }
 ]

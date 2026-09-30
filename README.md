@@ -80,3 +80,8 @@ loom start returns ok before the child status leaves blocked; an immediate lyx b
 [board-prune-done](design-board-prune-done.md)
 
 No verb removes done tasks; the hub had to set-deps open tasks off done ones, then remove each done task one by one
+
+## **#021:** Process naming: one name system for every process lyx spawns, out of creel
+[process-naming](design-process-naming.md)
+
+Lift strand naming out of the creel design (manifest/designs/reed-mailbox.md) into its own module that reed, orch and creel build on

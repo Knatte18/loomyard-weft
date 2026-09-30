@@ -1,0 +1,4 @@
+Operator 2026-09-30: wants a proper naming system so processes are easy to find; not for today.
+Today children show up as auto names like `refusal-audit-c9`; nothing of the naming part of the creel design is built.
+Scope: `<role>@<slug>` grammar owned by one package, fixed role vocabulary (orch, driver, worker, reviewer, operator); the strand name is a birth attribute in reed state, mirrored to pane title (allow-set-title off), Claude session name (`claude --name`) and `LYX_STRAND_NAME`; the reed watchdog restores drifted mirrors (Claude resets the session name after compact); `lyx reed list` as the directory.
+Creel then references this design instead of owning naming.
