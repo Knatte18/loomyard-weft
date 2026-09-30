@@ -1,7 +1,7 @@
 {
   "runGuid": "430e78321628394bc3b0a1986e139d39",
   "planFingerprint": "c3b25e0911638988017b7beb68159c11a67acac1575ba559df5ba4eaa122de55",
-  "currentBatch": 0,
+  "currentBatch": 17,
   "masterStrand": "9ed6a3cdf35a0a85d23879e608bbcfda",
   "masterSessionId": "2f3fd60d-c9e5-432c-a5ea-858cc9645e14",
   "assertedModel": "sonnet",
@@ -145,6 +145,15 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-audit/2f3fd60d-c9e5-432c-a5ea-858cc9645e14/subagents/agent-a9a4d1465057b8f45.jsonl"
       ]
+    },
+    "17": {
+      "slug": "shed-goto-outcome",
+      "startSha": "c6a04f9d7cbe9910829733d45095f956f5c96a7f",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T17:46:51Z",
+      "sessionId": "2f3fd60d-c9e5-432c-a5ea-858cc9645e14",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "audit-ledger",
