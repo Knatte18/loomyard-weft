@@ -55,4 +55,6 @@ _No rounds yet._
 - Q5 — Change `battencli`'s `teardownRefusal` wording? — Resolved, auto-pick: no; both remedies stay correct.
 - Q6 — Clean up duplicate archive tags already pushed by the old order? — Resolved, auto-pick: no; out of scope and nobody asked for it.
 - Q7 — Keep a test for `archiveWeftTip`'s same-tip reuse? — Resolved, auto-pick: yes, as a pre-seeded same-tip tag (D6).
-- Q8 — Do the livestate matrix or mutation-oracle tests encode the old refusal records? — Open; recorded under Open risks for the Plan phase.
+- Q8 — Do the livestate matrix or mutation-oracle tests encode the old refusal records? — Resolved in review round 1: yes; `livestate_verbs_test.go`'s `removeCase` dirty cells and `mutation_record_integration_test.go`'s `Remove` dirty-refusal test assert the portal and launcher teardown before the refusal, and invert (D6).
+  No `internal/battencli` integration test drives a dirty refusal, so the battencli risk was dropped.
+- Q9 — Keep the `9de0c46d6` archaeology in D2? — Resolved in review round 1: no; the decision record keeps only the stale-rationale fact, and Interview turn 3 keeps the history.
