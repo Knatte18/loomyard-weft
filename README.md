@@ -182,3 +182,8 @@ reed/loom tests leak tmux servers and sockets in /tmp
 [archive-tag-before-dirty-check](design-archive-tag-before-dirty-check.md)
 
 A refused teardown (dirty sibling) still pushes archive/<slug>/*; the retry pushes a second tag.
+
+## **#014:** Awaiting waits grow status.json without bound
+[awaiting-status-history-growth](design-awaiting-status-history-growth.md)
+
+Each 30 s poll during an unbounded approval wait appends a history entry; days of waiting make a multi-MB status.json.
