@@ -62,5 +62,25 @@
     "deferred": false,
     "brief": "Landing gaps: #275, #276, #289, #292, #293",
     "body": "Landing gaps, one task. Read each issue in full; they are the spec.\n\n- #275: a landed run leaves its board task open; Finalize should mark it `done`.\n- #276: the landing squash message is Webster's whole `summary.md`, including false fork warnings.\n- #289: the Publish PR body is Webster's run narrative instead of a description of the change.\n- #292: an operator approval lets Publish proceed without a GitHub merge; Finalize squash-merges locally with exactly one `Co-Authored-By` trailer and closes the PR.\n- #293: `lyx fabric remove` leaves the local warp branch behind.\n\n#276, #289 and #292 share one root: `summary.md` is a run record, not a change description. Decide one source for the PR body and the squash message."
+  },
+  {
+    "id": 7,
+    "slug": "operator-surface",
+    "title": "Operator surface: what the operator sees and types while a run goes",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Operator surface: #295, #277, #286, #297 + four unfiled findings",
+    "body": "Read the closed GitHub issues #295, #277, #286 and #297 (all folded here), plus these findings that were never filed:\n\n- **Status is unreadable.** `lyx loom status` gives raw JSON; `stuck` means both normal Bouncer-to-Burler routing and a real failure; nothing says how far the run has come (which segment of the recipe, what is left). The operator cannot follow a run without reading traces.\n- **A deploy does not upgrade running sessions.** `lyx loom start` finds the existing status strand via `IfAbsent` and keeps its old display after `update-plugins.sh`.\n- **Layout rule.** Every pane but the bottom-most collapses to a fixed configurable minimum (3 rows) and the bottom-most takes the rest; adding a pane moves nothing above it (`3+20` becomes `3+3+17`). Selvage is excluded.\n- **ly-drive reporting.** Name the run by its slug, never `self`; give the run's own history position, not ly-drive's step counter; say when a reported state is from before it acted. `_lyx/shed/self/` should be named by slug, with `self` only an alias.\n\n#286 replaces the old board entry `stencil-drift-remedy`."
+  },
+  {
+    "id": 8,
+    "slug": "burler-review",
+    "title": "Burler review rounds: tracked records, focus steering, directive precedence",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Burler: #287, #282, #263 + comment-width finding",
+    "body": "Read the closed GitHub issues #287, #282 and #263 (all folded here), plus this finding that was never filed:\n\n- **Comment width is unwritten.** The 100-column comment width, and how a leading tab counts toward it, is written down nowhere, so a width finding costs a whole review round (friction note `burler-webster-r2.md` from the `stuck-reason-in-status` run)."
   }
 ]

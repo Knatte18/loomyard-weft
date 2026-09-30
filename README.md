@@ -12,6 +12,16 @@ Stencil drift warning names the right remedy per drift direction
 
 Landing gaps: #275, #276, #289, #292, #293
 
+## **#007:** Operator surface: what the operator sees and types while a run goes [A]
+[operator-surface](design-operator-surface.md)
+
+Operator surface: #295, #277, #286, #297 + four unfiled findings
+
+## **#008:** Burler review rounds: tracked records, focus steering, directive precedence [A]
+[burler-review](design-burler-review.md)
+
+Burler: #287, #282, #263 + comment-width finding
+
 # Done
 
 ## **#000:** Burler: no cluster-exclude warning when the profile has no cluster fan
