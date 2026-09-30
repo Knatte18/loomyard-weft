@@ -158,5 +158,15 @@
     "deferred": false,
     "brief": "Hub runs never involve the orchestrator in Discussion; port millhouse's mill-start --orch + orch-review/orch-wait so the hub writes Discussion-Review round 1",
     "body": "Operator 2026-09-30: a weakness that the orchestrator is not involved during discussion; millhouse's `mill-start --orch` with the `orch-review`/`orch-wait` skills works very well.\nMill shape: the worker pauses before discussion-review round 1, messages its parent session (`--parent \u003cname\u003e`) that discussion.md is ready, and waits for `orch-review.md`; the orchestrator forks a reviewer that writes it in the review-output format (BLOCKING/NIT, class design/scope/decision/consistency); the worker fixes and continues; convergence needs two consecutive APPROVEs, so round 1 alone never converges; round 2+ uses the normal reviewer.\nLoom shape to decide: a seed flag (batten sets it for hub runs) that makes Discussion-Review round 1 an `awaiting` stop naming the discussion file; the hub writes its review and records it with a verb (reuse the approve/reject record idiom), and `lyx loom start` resumes; the notification can be the awaiting state (hub watch) plus a message to the parent once process-naming exists.\nOpen: the same for Plan-Review round 1."
+  },
+  {
+    "id": 25,
+    "slug": "convergence-plan",
+    "title": "Convergence: measure hub and driver interventions, fix at the source, hardening freezes",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Plan for lyx to converge rather than accumulate bugs: per-run intervention log, real-wiring tests, feature freezes",
+    "body": "Operator 2026-09-30: take a step back and plan for convergence, not keep accepting more bugs.\nObserved today: nearly every hub intervention was in same-day new code (#319: approve nil dep, reject reading its file argument as run-id), and both passed tests built on fake deps.\nIngredients: (1) log every hub intervention and ly-drive repair per run with a class and cause, so interventions per run and new-vs-repeat failure classes are visible; (2) every fix at the source with a test that drives the real CLI wiring, not only fakes; (3) freeze periods with no new verbs or recipe rows, hardening only, until the intervention rate flattens.\nGoal: the outside LLM steps in rarely, and for the task rather than for lyx."
   }
 ]

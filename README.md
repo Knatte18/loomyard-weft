@@ -88,3 +88,8 @@ TestEnforcement_FabricVocabulary scans Go production code only; specs, docs, ski
 [orch-discussion-review](design-orch-discussion-review.md)
 
 Hub runs never involve the orchestrator in Discussion; port millhouse's mill-start --orch + orch-review/orch-wait so the hub writes Discussion-Review round 1
+
+## **#025:** Convergence: measure hub and driver interventions, fix at the source, hardening freezes
+[convergence-plan](design-convergence-plan.md)
+
+Plan for lyx to converge rather than accumulate bugs: per-run intervention log, real-wiring tests, feature freezes
