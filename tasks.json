@@ -74,15 +74,5 @@
     "brief": "Burler: #287, #282, #263 + comment-width finding",
     "body": "Read the closed GitHub issues #287, #282 and #263 (all folded here), plus this finding that was never filed:\n\n- **Comment width is unwritten.** The 100-column comment width, and how a leading tab counts toward it, is written down nowhere, so a width finding costs a whole review round (friction note `burler-webster-r2.md` from the `stuck-reason-in-status` run).\n- **Plan verify misses touched packages.** The `landing` plan's `## verify:` integration line named four packages; card 20's `//go:build integration` test in `internal/websterengine` failed unnoticed until Burler ran the tag over every touched package (friction note `burler-webster-r1.md` from `landing`). Plan review should check that verify covers every package a card touches.",
     "status": "done"
-  },
-  {
-    "id": 9,
-    "slug": "loom-start-vscode",
-    "title": "loom start opens VS Code on the pair with reed attached",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "New run opens a VS Code window whose terminal is already attached to the run (reed attach on folderOpen)",
-    "body": "Goal: when a loom run starts, a VS Code window opens on the new pair with the run's reed session already attached in its terminal, so the operator watches the run without typing any command.\n\nToday:\n- `lyx loom start --no-attach` spawns the ly-drive strand and opens nothing; the operator must run `cd \u003chub\u003e/\u003cslug\u003e \u0026\u0026 lyx reed attach` by hand.\n- `lyx ide spawn \u003cslug\u003e` (`internal/ideengine/spawn.go`, `internal/vscode/config.go`) writes `.vscode/settings.json` and `tasks.json` only when absent, and its `folderOpen` chain is `reed up` -\u003e `reed add claude` -\u003e `reed attach`.\n  For a loom pair that chain is wrong: it adds a second, bare claude strand next to the ly-drive strand.\n\nWanted:\n- `loom start` (or the orchestrator's start path) opens VS Code on the pair after the driver strand is up.\n- The generated `folderOpen` task for a loom pair runs `lyx reed attach` only — no `reed up`, no `reed add claude`.\n- `ide spawn` creates the pair when missing (ide depends on fabric, never the reverse).\n- Launch failure (no `code` on PATH, headless machine) degrades to a warning; the run still starts.\n\nOpen: which verb owns the open (`loom start` flag vs. orchestrator calling `ide spawn`), and whether an existing `tasks.json` from a non-loom spawn is rewritten."
   }
 ]
