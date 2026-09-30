@@ -58,5 +58,15 @@
     "deferred": false,
     "brief": "lyx quarry: per-glyph resolve answers, grep-safe glyphs output",
     "body": "- **One bad glyph sinks the whole `resolve` batch.** `lyx quarry resolve a b bad` returns only `{\"error\":\"\u003cbad\u003e: not_found\",\"ok\":false}`, nothing for the valid glyphs. quarry itself answers per glyph; `internal/quarrycli/resolve.go` collects every non-found status and fails the whole invocation by design. A planner checking spellings wants one answer per glyph, with the bad one marked `not_found`.\n- **`glyphs` output invites a broken grep.** A Plan-Write agent ran `lyx quarry glyphs internal/shedengine | grep -v \"_test\"` to drop test symbols; the JSON is pretty-printed one field per line, so the grep removed only each test symbol's `\"file\": ..._test.go` line and left the symbol without `file` (quarry#33, closed: quarry is correct). Give `lyx quarry glyphs` a flag that excludes test-file symbols, or emit one symbol per line, so the obvious filter is either unnecessary or correct.\n\nReported by the `operator-surface` Plan-Write session (2026-09-30)."
+  },
+  {
+    "id": 6,
+    "slug": "focus-marker-warn",
+    "title": "Burler: warn when the explore stencil lacks the focus_directive marker",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Burler: warn when the explore stencil lacks the focus_directive marker",
+    "body": "`internal/burlerengine/prompt.go`: friction warns when its stencil marker is missing (`friction.WarnIfMarkerAbsent`), but `{{.focus_directive}}` has no such check. Since #299 the focus directive no longer also rides `PriorReviews`, so a board explore stencil without the marker (dev build, operator-edited board copy) silently drops the Bouncer's focus from every Burler round. Add the same warning. Found in the #299 review."
   }
 ]

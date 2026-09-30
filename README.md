@@ -70,3 +70,8 @@ Trace logs: configurable retention, fewer files from routine commands
 [quarry-cli-answers](design-quarry-cli-answers.md)
 
 lyx quarry: per-glyph resolve answers, grep-safe glyphs output
+
+## **#006:** Burler: warn when the explore stencil lacks the focus_directive marker
+[focus-marker-warn](design-focus-marker-warn.md)
+
+Burler: warn when the explore stencil lacks the focus_directive marker
