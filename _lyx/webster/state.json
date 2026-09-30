@@ -1,7 +1,7 @@
 {
   "runGuid": "f652684f48161c48a7d9bfbde839552f",
   "planFingerprint": "1ede0173b0edb000857ba9f4adb619bf8aa2f125e7719e2ee1fcead5cc5be958",
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "cdbb4b6aa888221ee164baab2824365c",
   "masterSessionId": "2a0edaea-54f5-45ae-af8a-c85c0ae22947",
   "assertedModel": "sonnet",
@@ -112,8 +112,19 @@
       "kind": "fork",
       "spawnedAt": "2026-09-30T15:26:56Z",
       "sessionId": "2a0edaea-54f5-45ae-af8a-c85c0ae22947",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-step-envelope-transient",
+        "status": "done",
+        "head_sha": "66b56e24b7af12571b28ae69d66bb9a22f35c3ba"
+      },
+      "cardShas": [
+        "66b56e24b7af12571b28ae69d66bb9a22f35c3ba"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a99247f0df7675bc5.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
@@ -121,6 +132,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a7a0ec3afd3ce0d19.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a6e63de80e9827a88.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-ad657d2e6af0dabf0.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a14846e05dba97d87.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a14846e05dba97d87.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a99247f0df7675bc5.jsonl"
   ]
 }
