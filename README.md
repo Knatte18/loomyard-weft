@@ -109,3 +109,8 @@ A conflict-resolved parent merge was pushed with non-compiling tests
 [plan-write-respawn](design-plan-write-respawn.md)
 
 Respawn starts over instead of reusing the plan; prompt does not say Agent is refused
+
+## **#011:** reed: send a short launch-script line instead of the full command
+[reed-launch-script](design-reed-launch-script.md)
+
+Hide the long env+claude launch line behind a generated launch script

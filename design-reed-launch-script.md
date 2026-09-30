@@ -1,0 +1,3 @@
+Every strand pane shows a long typed launch line before the agent starts: the pane-binary prelude (`export PATH=…`, `export LYX_BIN=…`, `internal/reedengine/panebin.go`) chained onto the claude invocation (`CLAUDE_CODE_FORK_SUBAGENT=1`, `"$(cat prompt.md)"`, `--session-id`, `--settings`, `--model`, `--effort`, `--dangerously-skip-permissions`, `internal/shuttleengine/claudeengine/command.go`), sent with `send-keys` into an interactive shell.
+The operator finds it noisy.
+Direction: reed writes the composed line to a `launch.sh` (or `.ps1`) in the strand's scratch dir and sends only `. <path>/launch.sh`; behaviour unchanged, the full line stays inspectable in the file.
