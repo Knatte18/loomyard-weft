@@ -1,4 +1,3 @@
-Reported by the `operator-surface` Plan-Write session (2026-09-30):
+- **One bad glyph sinks the whole `resolve` batch.** `lyx quarry resolve a b bad` returns only `{"error":"<bad>: not_found","ok":false}`, nothing for the valid glyphs. quarry itself answers per glyph; `internal/quarrycli/resolve.go` collects every non-found status and fails the whole invocation by design. A planner checking spellings wants one answer per glyph, with the bad one marked `not_found`.
 
-- **One bad glyph sinks the whole `resolve` batch.** `lyx quarry resolve a b bad` returns only `{"error":"<bad>: not_found","ok":false}`, nothing for the valid glyphs. This is `internal/quarrycli/resolve.go`'s documented design ("fails the whole invocation"); a planner checking spellings wants one answer per glyph, with the bad one marked `not_found`.
-- **`glyphs` output differed between identical calls.** The first `lyx quarry glyphs internal/shedengine` lacked `file` on test-file symbols; a later identical call had `file` on all of them. Cause unknown, possibly a cold vs warm index in quarry (`github.com/Knatte18/quarry`).
+Reported by the `operator-surface` Plan-Write session (2026-09-30). Its second finding, `glyphs` omitting `file` on a first call, is quarry's: Knatte18/quarry#33.
