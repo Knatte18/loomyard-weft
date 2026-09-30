@@ -14,9 +14,9 @@
 - `internal/websterengine#runVerifyCapture`
 - `internal/websterengine#IntegrationLogPath`
 - `internal/websterengine#AppendIntegrationTriage`
-- `plan:internal/websterengine#triageWarnings`
-- `plan:internal/websterengine#triageStuckReason`
-- `plan:internal/websterengine#writeTriageFrictionNote`
+- `internal/websterengine#triageWarnings`
+- `internal/websterengine#triageStuckReason`
+- `internal/websterengine#writeTriageFrictionNote`
 - `integration.go`
 - `summary.go`
 

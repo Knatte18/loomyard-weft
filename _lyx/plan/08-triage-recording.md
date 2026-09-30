@@ -5,9 +5,9 @@
 - `triage_test.go`
 
 **Create:**
-- `plan:internal/websterengine#triageWarnings` -> `func triageWarnings(t IntegrationTriage) []string`
-- `plan:internal/websterengine#triageStuckReason` -> `func triageStuckReason(regressions []IntegrationFailure, offendingCard string) string`
-- `plan:internal/websterengine#writeTriageFrictionNote` -> `func writeTriageFrictionNote(frictionDir string, t IntegrationTriage) error`
+- `internal/websterengine#triageWarnings`
+- `internal/websterengine#triageStuckReason`
+- `internal/websterengine#writeTriageFrictionNote`
 
 **Uses:**
 - `internal/websterengine#IntegrationTriage`
