@@ -14,14 +14,7 @@ Depends on: #022
 
 `lyx loom reject <review>` at Publish routes review findings to Webster as a fix batch, then re-verify, re-publish, re-approve.
 
-## **#029:** Awaiting waits grow status.json without bound [A]
-[awaiting-status-history-growth](design-awaiting-status-history-growth.md)
-
-Each 30 s poll during an unbounded approval wait appends a history entry; days of waiting make a multi-MB status.json.
-
-# Layer B
-
-## **#030:** Batten run records in the prime leak into every new pair [B]
+## **#030:** Batten run records in the prime leak into every new pair [A]
 [batten-records-leak-into-pairs](design-batten-records-leak-into-pairs.md)
 Depends on: #029
 
@@ -160,6 +153,11 @@ loom start spawned a driver on a worktree whose merge-in had stopped on a confli
 [archive-tag-before-dirty-check](design-archive-tag-before-dirty-check.md) [done]
 
 A refused teardown (dirty sibling) still pushes archive/<slug>/*; the retry pushes a second tag.
+
+## **#029:** Awaiting waits grow status.json without bound
+[awaiting-status-history-growth](design-awaiting-status-history-growth.md) [done]
+
+Each 30 s poll during an unbounded approval wait appends a history entry; days of waiting make a multi-MB status.json.
 
 # Manifest
 

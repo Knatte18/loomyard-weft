@@ -322,7 +322,8 @@
     "isolated": false,
     "deferred": false,
     "brief": "Each 30 s poll during an unbounded approval wait appends a history entry; days of waiting make a multi-MB status.json.",
-    "body": "Batten polls a child in `awaiting` every 30 s and each poll appends to `status.json` history.\nThe wait is unbounded by design, so collapse repeated identical wait entries or cap them.\nRelated: right after a resume a poll can still see `awaiting` and logs a misleading re-approve hint (`internal/battenshed/innerrun.go`).\nFound reviewing PR #304."
+    "body": "Batten polls a child in `awaiting` every 30 s and each poll appends to `status.json` history.\nThe wait is unbounded by design, so collapse repeated identical wait entries or cap them.\nRelated: right after a resume a poll can still see `awaiting` and logs a misleading re-approve hint (`internal/battenshed/innerrun.go`).\nFound reviewing PR #304.",
+    "status": "done"
   },
   {
     "id": 30,
