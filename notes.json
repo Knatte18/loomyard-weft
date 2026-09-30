@@ -90,16 +90,6 @@
     "body": "Found reviewing PR #308 (`publish-verify-after-merge`).\nFabric reports a finished-but-interrupted merge as already up to date, so the gate cannot tell a verified tree from an unverified one.\nRobust fix: record the task HEAD that last passed verify, and verify whenever HEAD differs from it."
   },
   {
-    "id": 17,
-    "slug": "batten-prime-lock-wait",
-    "title": "Worktree-Create should wait for the prime lock instead of blocking",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "Parallel `lyx batten run` starts: every run but the first blocks at Worktree-Create on the held prime run.lock and needs a manual resume.",
-    "body": "Starting three `lyx batten run` at once blocked two at Worktree-Create: \"prime lock .../.lyx/shed/run.lock is already held; another batten producer is creating or tearing down a task worktree\".\nThe lock is held only for the seconds a create or teardown takes, so the producer should wait for it (bounded, e.g. a few minutes) rather than halt; the hub starts runs in parallel as a matter of course."
-  },
-  {
     "id": 18,
     "slug": "fabric-remove-ends-reed-session",
     "title": "fabric remove leaves the pair tmux session alive",

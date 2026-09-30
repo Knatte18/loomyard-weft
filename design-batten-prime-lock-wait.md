@@ -1,2 +1,0 @@
-Starting three `lyx batten run` at once blocked two at Worktree-Create: "prime lock .../.lyx/shed/run.lock is already held; another batten producer is creating or tearing down a task worktree".
-The lock is held only for the seconds a create or teardown takes, so the producer should wait for it (bounded, e.g. a few minutes) rather than halt; the hub starts runs in parallel as a matter of course.
