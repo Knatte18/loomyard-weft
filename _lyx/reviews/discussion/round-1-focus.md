@@ -1,0 +1,13 @@
+---
+round: 1
+focus:
+  - "Windows ExecutionPolicy (Open risks, first bullet, against the Write-failure decision): the write-failure decision says a cosmetic feature must never fail a strand launch, yet this risk accepts that a strand silently never starts under `Restricted`/`AllSigned`. Settle whether these two positions are consistent, and whether the plan writer needs a decision or constraint here rather than an unguarded risk."
+  - "Launch-script cleanup coverage (Decisions: 'Removing a strand deletes its launch script'; Scope In): cleanup is tied to `RemoveStrand` alone. Settle whether other paths that end a strand or replace its GUID (the replace flow that `replace_integration_test.go` covers, any reconcile or teardown path) leave orphaned scripts, and whether the decision states its lifecycle rule in terms the plan writer can apply to those paths. This is a question about the lifecycle rule, not a request to enumerate call sites."
+  - "The 'behaviour unchanged by construction' claim (Goal; Decisions: script content, typed line): check that dot-sourcing a file really is equivalent to typing the same bytes in both dialects (shell history contents, `exit`/`return` semantics inside a sourced file, pwsh dot-source scope, the exit status the pane shell sees afterwards). Settle whether any difference is a requirement the plan writer must know, and whether the live integration acceptance criterion tests the equivalence that matters."
+  - "Q10, scrollback readers (Open risks, second bullet; support-log Question ledger Q10 left open): the record passes an unchecked question to the Plan producer as a risk. Settle whether this is a genuine open risk or a plan-time instruction that belongs under Constraints or Acceptance criteria. Plan-Write reads only `decision-record.md`, so decide what it has to be told."
+  - "Leanness and placement in `decision-record.md`: look for rejected-alternative reasoning that has leaked into it (e.g. 'accepted rather than guarded with per-launch filenames' in Open risks, 'needs no per-strand directory' in Decisions), and for restatements repeated across Scope Out, Decisions, and Auto-mode assumptions (no config key, no per-strand directory). Apply the completeness-before-leanness test before proposing any move."
+---
+
+Seed focus for round 1.
+Excluded under the rubric's `Do not flag` list: the Notes for the plan writer subsection, and how completely the strand-realizing call sites are enumerated in Scope In (`AddStrand`, `UpdateStrand`, `Resume`, `--if-absent`).
+The writer stencil also rules out exact signatures and `file:line` citations, so no entry asks for them.
