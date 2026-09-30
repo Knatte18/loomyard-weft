@@ -1,0 +1,19 @@
+{
+  "runGuid": "d4030ca681712cfd6232d1752f3f0e74",
+  "planFingerprint": "65d8d6669312fe93b233efa0ce9bc3fc528b687cb7a675d0373c7957e450ea3d",
+  "currentBatch": 1,
+  "masterStrand": "912cb983bf6042832f4d934fc5bd884a",
+  "masterSessionId": "ae7c4f15-2d58-48b6-8181-6776f9f18b95",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "integration-report-type",
+      "startSha": "85902381e89c8131af7ccff9d388227aa5774aa4",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T14:23:01Z",
+      "sessionId": "ae7c4f15-2d58-48b6-8181-6776f9f18b95",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
