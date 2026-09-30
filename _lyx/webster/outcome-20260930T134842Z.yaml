@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "Batch 11-fabric-archive-helper: record-batch failed with a policy violation: webster: fabric-reference violation in the fork transcript agent-a3728e1078a49c641.jsonl (ran a fabric-referencing command writing archive_integration_test.go)."
+batches_done: 10

@@ -11,7 +11,7 @@
 - `internal/fabricengine/pairbranch_archive_integration_test.go`
 
 **Uses:**
-- `plan:internal/fabricengine#archiveWeftTip`
+- `internal/fabricengine#archiveWeftTip`
 - `internal/fabricengine#deleteWeftBranch`
 - `internal/fabricengine#deleteWeftBranchOnRemote`
 - `internal/fabricengine#Topology.Prune`

@@ -1,8 +1,8 @@
 # Card 11 — fabric-archive-helper
 
 **Create:**
-- `plan:internal/fabricengine#archiveWeftTip` -> `func archiveWeftTip(rec *Mutations, l *lyxcwd.Location, slug, weftBranch string) (tag string, skippedReason string, err error)`
-- `plan:internal/fabricengine#KindTagPushed` -> `const KindTagPushed Kind = "tag_pushed"`
+- `internal/fabricengine#archiveWeftTip`
+- `internal/fabricengine#KindTagPushed`
 - `internal/fabricengine/archive.go`
 - `internal/fabricengine/archive_integration_test.go`
 

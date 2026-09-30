@@ -12,8 +12,8 @@
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#archiveWeftTip`
-- `plan:internal/fabricengine#KindTagPushed`
+- `internal/fabricengine#archiveWeftTip`
+- `internal/fabricengine#KindTagPushed`
 - `internal/fabricengine#removeWeftWorktree`
 
 **Intent:**
