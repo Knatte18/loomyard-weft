@@ -38,4 +38,4 @@ It separately names two denied imports so a violation reports the rule it breaks
 Register the module: add `{Name: "orch", Template: orchengine.ConfigTemplate}` to `configreg.Modules()` in alphabetical position (between `models` and `reed`), extend `TestNames`' pinned list to match, and add `internal/orchengine` to `configStrictnessDegradingSet` in `cmd/lyx/configstrictness_test.go`.
 `CONSTRAINTS.md`'s degrading list is updated in card 13.
 
-**ImpactSummary:** One new registry entry reaches `lyx config`'s listing, reconcile and menu; the two edited tests only extend pinned sets.
+**ImpactSummary:** One new registry entry reaches every `configreg.Modules()` consumer: `lyx config`'s listing, reconcile and menu, and `lyx fabric clone`'s reconcile, which now materialises and commits `_lyx/orch.yaml` into every new hub's weft, `hubforge` fixtures included; `fabriccli`'s clone-config commit test derives its expected set from the registry, and the two edited tests only extend pinned sets.

@@ -77,4 +77,4 @@ Register `start` in `cli.go`, add it to `helptree_test.go`'s `orch` row, and add
 
 `handover_test.go` covers each `decideHandover` row.
 
-**ImpactSummary:** Adds one subcommand to `orchcli`'s tree and one verb to two test lists; no code outside the module changes.
+**ImpactSummary:** Adds one subcommand to `orchcli`'s tree; outside the module only `cmd/lyx/helptree_test.go` changes, gaining `start` in the `orch` row.

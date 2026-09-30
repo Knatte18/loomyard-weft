@@ -17,7 +17,8 @@ Wrap `Tick` in the daemon loop D4 describes: single-instance per prime, polling 
 Held means a watcher is live.
 `status` and `start` both read watcher liveness through it.
 
-`(*Watcher).Run(ctx context.Context, sleep func(time.Duration)) error` creates `Paths.Dir`, then takes the watch lock with `lock.TryAcquireWriteLock` and returns `ErrWatcherRunning` when another process holds it.
+`(*Watcher).Run(ctx context.Context, sleep func(time.Duration)) error` creates `Paths.Dir`, then takes the watch lock with `lock.TryAcquireWriteLock`.
+When the lock is held it retries a small, named number of times over a short interval before returning `ErrWatcherRunning`, because `WatcherLive` holds the same lock for the instant of its probe: a watcher spawned during a `status` or `start` probe would otherwise exit as already running and leave no watcher at all.
 It holds the lock for the whole run and clears `WatcherExit` in state on entry.
 It then calls `Tick` every `PollInterval()` until `Tick` reports `done` or `ctx` is cancelled.
 A cancelled context records `WatcherExit` as stopped by signal.
@@ -31,7 +32,8 @@ A successful tick resets the count.
 `sleep` is a parameter so tests never sleep for real.
 
 `watchloop_test.go` covers, with card 8's fake `Session` and a no-op sleep:
-`Run` returning `ErrWatcherRunning` while the test holds the watch lock;
+`Run` returning `ErrWatcherRunning` while the test holds the watch lock through every retry;
+`Run` taking the lock when the test releases it between retries, as a `WatcherLive` probe does;
 `WatcherLive` reporting true while the lock is held and false after release;
 `Run` returning once the fake strand disappears, with `WatcherExit` recorded;
 a context cancelled mid-run recording the signal exit;

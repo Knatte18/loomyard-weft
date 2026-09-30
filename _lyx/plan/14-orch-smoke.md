@@ -18,7 +18,9 @@ Prove one full cycle against a real Claude session, and record the two open risk
 `smoke_cycle_test.go` carries the `smoke` build tag and follows the existing smoke tests' conventions for skipping when tmux or the `claude` binary is unavailable and for building a hub with `hubforge`.
 From the hub's prime it:
 
-1. Seeds an `orch` config with a low `threshold_tokens` and short idle grace and poll interval.
+1. Seeds an `orch` config with short idle grace and poll interval, and a `threshold_tokens` far above any reading the smoke session can reach, so the manual `lyx orch cycle` is the one trigger.
+   A threshold below a fresh session's own usage would fire on the start prompt's turn end, before step 3's background task exists, and again on every later turn end including the resume turn's, so `cycle_count` would never settle at 1.
+   The threshold-triggered path is covered by card 8's unit cases.
 2. Runs `lyx orch start --no-attach` and waits for the strand to report ready.
 3. Sends the session a turn that starts a short background task (a backgrounded `sleep` whose completion notification arrives after the cycle) and waits for that turn to end.
 4. Runs `lyx orch cycle`.

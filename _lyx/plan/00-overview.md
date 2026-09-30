@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -68,7 +68,8 @@ Everything orch writes lives under the prime's `<anchor>/.lyx/orch/` (D12; Durab
 
 Events-file positions are byte offsets from `Runner.ReadEvents`, and each is per run: a fresh launch has a new events file, so `ResetForFreshLaunch` zeroes both stored offsets.
 A starting watcher sets its read cursor to the offset that bounds its current phase: `PhaseEventsOffset` in a non-idle phase, `LastInjectionOffset` in `idle`.
-It then reads forward from there, so every event it ever evaluates lies past the injection that matters, and no per-event offset is needed.
+Every return to `idle`, whether a cycle completed or aborted, persists `LastInjectionOffset` as the cursor read through and forgets the in-memory newest event.
+The watcher reads forward from its cursor, so every event it ever evaluates lies past the last injection and past the last return to `idle`, and no per-event offset is needed.
 The newest event's arrival time is when the watcher first read it, held in memory, so a watcher restart restarts the idle grace — the cautious direction.
 
 ## verify:

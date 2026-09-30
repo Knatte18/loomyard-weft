@@ -38,7 +38,8 @@ The group's `PersistentPreRunE` skips the bare group and otherwise resolves once
    This is `battencli.RefuseUnlessPrime`'s shape with `orch:` wording ("lyx orch runs from the hub's prime worktree only"), duplicated rather than imported because a `<module>cli` importing another `<module>cli` would couple two cobra seams.
    Both refusals land on the envelope before anything is created.
 3. `orchengine.LoadConfig`, `shuttleengine.LoadConfig` and `reedengine.LoadConfig`, all anchored at `location.AnchorPath()`.
-   The receiver's copy of the shuttle config gets `ClaudeDenyAgentTool` set false (see the `orch-agent-tool` decision).
+   The receiver's copy of the shuttle config goes through a pure `orchShuttleConfig(cfg shuttleengine.Config) shuttleengine.Config`, which sets `ClaudeDenyAgentTool` false and changes nothing else (see the `orch-agent-tool` decision).
+   It is a named function so an untagged test can pin the override, which `PersistentPreRunE` alone would leave untested.
 4. `reedengine.New(reedCfg, hubgeom.ReedGeometry(location))` and `shuttleengine.NewRunner(reed, claudeengine.New(), …)`, exactly as `shuttlecli` builds them.
 5. `orchPaths(location)` from `paths.go`, and `fabricengine.StencilsDir(location.HubPath)` as the stencils directory.
 
@@ -55,6 +56,7 @@ The verbs read reed through a receiver seam, `strandOps` (`Strands() ([]reedengi
 
 `cli_test.go` builds receivers by hand over a temporary `Paths` and a fake `strandOps`, and covers:
 `refuseNonPrime`'s three outcomes;
+`orchShuttleConfig` clearing `ClaudeDenyAgentTool` and leaving every other field as loaded;
 `status` reporting every field for a populated state and null tokens for an unknown reading;
 `cycle` writing the request;
 `stop` removing a tracked strand and reporting `removed: false` for an untracked one;

@@ -20,11 +20,13 @@ The overview's `orch-dir-layout` decision fixes their layout.
 
 - `Strand` — the orch strand's guid, written by `start` (see the `orch-strand-identity` decision).
 - The persisted phase: `Phase`, `PhaseStrand` (the strand the phase belongs to), `PhaseEnteredAt`, and `PhaseEventsOffset` (the events-file position at entry — "a turn end after the injection" means one read past it).
+- `PhaseInjected` — whether the current phase's injection is confirmed: saved false with the phase, before its side effect, and set true once the `Send` or `ClearSession` returned nil or card 8's landed check read a turn end past `PhaseEventsOffset`, and saved false again by a restarted watcher before its first landed check.
 - `PendingHandoff` — the handoff path the current `handoff-requested` phase asked for.
+- `PendingResume` — the resume prompt rendered for `PendingHandoff` before `/clear`, which `resuming` sends verbatim.
 - `LastHandoff` — the last completed handoff, set only once its phase completes (D6, D10).
-- `LastInjectionOffset` — the events position of the watcher's last completed cycle; only turn ends past it are evaluated for usage (D7).
+- `LastInjectionOffset` — the events position the watcher had read through when it last returned to `idle`, from a completed or an aborted cycle; only turn ends past it are evaluated for usage (D7).
 - `LastContextTokens` and `LastContextKnown`.
-- `CycleCount` — cycles that reached `/clear`.
+- `CycleCount` — cycles that reached `/clear`: a cycle counts once, when it leaves `clearing` with a `ClearSession` that returned nil.
 - `LastAbortReason`.
 - `WatcherExit` — why the last watcher exited, empty while one runs.
 
@@ -35,11 +37,11 @@ Functions:
 - `RequestCycle(p Paths) error`, `CycleRequested(p Paths) (bool, error)` and `ClearCycleRequest(p Paths) error` over the request file; clearing an absent request is not an error.
 - `NewHandoffPath(p Paths, now time.Time) string` — a new file under `HandoffsDir` named from a UTC timestamp with second precision, so every cycle gets its own kept file (D12).
 - `ResetForFreshLaunch(s State, strand string) State` — D10's fresh-launch rule: when the persisted phase is not `idle` it records the abandoned phase in `LastAbortReason`;
-  it then sets `Phase` to `idle`, `Strand` to `strand`, zeroes `PhaseEventsOffset` and `LastInjectionOffset` (a new run has a new events file), and clears `PendingHandoff` and `WatcherExit`.
+  it then sets `Phase` to `idle`, `Strand` to `strand`, zeroes `PhaseEventsOffset` and `LastInjectionOffset` (a new run has a new events file), and clears `PhaseInjected`, `PendingHandoff`, `PendingResume` and `WatcherExit`.
   `LastHandoff`, `CycleCount` and the context reading survive.
 
 `state_test.go` covers: an absent state file loading as `idle`;
 a save/load round trip of every field;
 the cycle request's write, probe and clear, including clearing an absent request;
 two `NewHandoffPath` calls a second apart differing and both sitting under `HandoffsDir`;
-and `ResetForFreshLaunch` over an `idle` and a non-idle state — the non-idle one recording the abandoned phase, both zeroing the offsets and keeping `LastHandoff`.
+and `ResetForFreshLaunch` over an `idle` and a non-idle state — the non-idle one recording the abandoned phase and clearing `PendingResume`, both zeroing the offsets and keeping `LastHandoff`.
