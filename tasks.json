@@ -109,7 +109,8 @@
     "isolated": false,
     "deferred": false,
     "brief": "One generated VS Code workspace shows the board beside the prime",
-    "body": "The operator wants to watch the board (and running tasks) in VS Code while talking to the hub orchestrator in the prime.\nDirection: `lyx ide spawn` for the prime generates `\u003chub\u003e/_launchers/\u003cprime\u003e.code-workspace` with folders prime, `_board` and `_portals`, and opens that instead of the bare folder.\nLyx-owned, outside every worktree, so agents never see it; task windows stay one pair each.\n`code --add` works today but is ad hoc."
+    "body": "The operator wants to watch the board (and running tasks) in VS Code while talking to the hub orchestrator in the prime.\nDirection: `lyx ide spawn` for the prime generates `\u003chub\u003e/_launchers/\u003cprime\u003e.code-workspace` with folders prime, `_board` and `_portals`, and opens that instead of the bare folder.\nLyx-owned, outside every worktree, so agents never see it; task windows stay one pair each.\n`code --add` works today but is ad hoc.",
+    "status": "done"
   },
   {
     "id": 12,

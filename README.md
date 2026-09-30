@@ -8,11 +8,6 @@ Depends on: #007
 
 Batten keeps watching an awaiting child, run records survive teardown, approval time off the watch budget
 
-## **#011:** ide: hub workspace with prime, board and portals [A]
-[ide-hub-workspace](design-ide-hub-workspace.md)
-
-One generated VS Code workspace shows the board beside the prime
-
 ## **#014:** Plan-Write: respawn archives the finished plan; Agent refusal unannounced [A]
 [plan-write-respawn](design-plan-write-respawn.md)
 Depends on: #013
@@ -119,6 +114,11 @@ Operator surface: #295, #277, #286, #297 + four unfiled findings
 [burler-review](design-burler-review.md) [done]
 
 Burler: #287, #282, #263 + comment-width finding
+
+## **#011:** ide: hub workspace with prime, board and portals
+[ide-hub-workspace](design-ide-hub-workspace.md) [done]
+
+One generated VS Code workspace shows the board beside the prime
 
 ## **#013:** Webster fork audit: text search for "lyx fabric" counted as a fabric operation
 [refscan-false-positive](design-refscan-false-positive.md) [done]
