@@ -2,22 +2,15 @@
 
 # Layer A
 
-## **#007:** Operator surface: what the operator sees and types while a run goes [A]
-[operator-surface](design-operator-surface.md)
-
-Operator surface: #295, #277, #286, #297 + four unfiled findings
-
-# Layer B
-
-## **#010:** Batten ready for the hub loop: wait through awaiting, keep run records [B]
+## **#010:** Batten ready for the hub loop: wait through awaiting, keep run records [A]
 [batten-hub-ready](design-batten-hub-ready.md)
 Depends on: #007
 
 Batten keeps watching an awaiting child, run records survive teardown, approval time off the watch budget
 
-# Layer C
+# Layer B
 
-## **#009:** batten opens VS Code on the new pair with reed attached [C]
+## **#009:** batten opens VS Code on the new pair with reed attached [B]
 [batten-open-ide](design-batten-open-ide.md)
 Depends on: #010
 
@@ -49,6 +42,11 @@ Strip code fences from the plan-level verify command (#285)
 [landing](design-landing.md) [done]
 
 Landing gaps: #275, #276, #289, #292, #293
+
+## **#007:** Operator surface: what the operator sees and types while a run goes
+[operator-surface](design-operator-surface.md) [done]
+
+Operator surface: #295, #277, #286, #297 + four unfiled findings
 
 ## **#008:** Burler review rounds: tracked records, focus steering, directive precedence
 [burler-review](design-burler-review.md) [done]
