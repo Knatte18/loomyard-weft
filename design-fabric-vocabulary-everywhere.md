@@ -1,0 +1,3 @@
+Operator 2026-09-30: warp and weft are fabric-internal words; nothing outside fabric should know them.
+Seen on refusal-audit: contracts/specs/refusal-spec.md and several _test.go files outside fabric use them, and the scan let them through.
+Want: extend the scan to contracts/, docs/, manifest/, plugins/ skills and test files outside the owner set (or an explicit allowlist for fabric docs), and sweep the existing hits.

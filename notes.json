@@ -148,5 +148,15 @@
     "deferred": false,
     "brief": "orch is deployed but untested live and lacks what the hub needs: bypass permissions, the Agent tool, adoption of a running session, a soft threshold",
     "body": "Found 2026-09-30:\n- orch launches as an interactive shuttle run (internal/orchcli/start.go:61), so no --dangerously-skip-permissions; the hub runs in bypass mode. Want a permission-mode option, bypass as the orch default.\n- shuttle denies the Agent tool in every run (claude_deny_agent_tool), so orch cannot spawn review or fix agents; ForkSubagents is false.\n- no way to adopt a running session (`--adopt \u003csession-id\u003e` via claude --resume, watcher bound to the existing transcript).\n- soft threshold: hand off at a natural break from about 300k, 400k hard cap.\n- risk: SessionIdle may read Claude's greyed prompt suggestion as not idle, so no cycle ever runs; verify live."
+  },
+  {
+    "id": 23,
+    "slug": "fabric-vocabulary-everywhere",
+    "title": "Fabric vocabulary: warp and weft only inside fabric, also in docs, specs and tests",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "TestEnforcement_FabricVocabulary scans Go production code only; specs, docs, skills and tests outside fabric still say warp/weft",
+    "body": "Operator 2026-09-30: warp and weft are fabric-internal words; nothing outside fabric should know them.\nSeen on refusal-audit: contracts/specs/refusal-spec.md and several _test.go files outside fabric use them, and the scan let them through.\nWant: extend the scan to contracts/, docs/, manifest/, plugins/ skills and test files outside the owner set (or an explicit allowlist for fabric docs), and sweep the existing hits."
   }
 ]

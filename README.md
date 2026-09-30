@@ -90,3 +90,8 @@ Lift strand naming out of the creel design (manifest/designs/reed-mailbox.md) in
 [orch-live-ready](design-orch-live-ready.md)
 
 orch is deployed but untested live and lacks what the hub needs: bypass permissions, the Agent tool, adoption of a running session, a soft threshold
+
+## **#023:** Fabric vocabulary: warp and weft only inside fabric, also in docs, specs and tests
+[fabric-vocabulary-everywhere](design-fabric-vocabulary-everywhere.md)
+
+TestEnforcement_FabricVocabulary scans Go production code only; specs, docs, skills and tests outside fabric still say warp/weft
