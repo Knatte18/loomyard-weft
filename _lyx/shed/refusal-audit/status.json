@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "integration verify regressed: github.com/Knatte18/loomyard/internal/preflightshed.TestPreflight_BrokenPreconditionMapsToStuck (offending card not localized)",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": ""
+    "wait": "integration verify regressed: github.com/Knatte18/loomyard/internal/preflightshed.TestPreflight_BrokenPreconditionMapsToStuck (offending card not localized)"
   },
   "history": [
     {
@@ -110,6 +110,12 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-09-30T18:05:29Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-09-30T18:10:05Z"
     }
   ],
   "product": {
