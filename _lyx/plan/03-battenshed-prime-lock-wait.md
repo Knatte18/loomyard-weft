@@ -27,7 +27,7 @@ An `Acquire` error at any attempt is returned as the hard error it is today, and
 `PrimeLock` gains a `Sleep func(ctx context.Context, d time.Duration)` field, the injected sleep seam; a nil `Sleep` resolves to `waitOrCancel`.
 `Acquire` stays non-blocking and its contract text is unchanged; `battencli`'s closure needs no edit, since a nil `Sleep` is the production value.
 Both producers keep their existing dispositions otherwise: the release still runs deferred on every exit after acquisition, and a bound exhausted is `Stuck` — never a transient-marked error — with the existing contention reason extended to name the wait, e.g. `prime lock "<path>" is still held after waiting 10m0s; another batten producer is creating or tearing down a task worktree`.
-Update both `Call` doc comments, `PrimeLock`'s doc comment (the new field), the `deps.go` header, and `doc.go` with the wait.
+Update both `Call` doc comments, `PrimeLock`'s doc comment (the new field), and `doc.go` with the wait.
 `battenshed` stays outside the Fabric Vocabulary Invariant's owner set, so no identifier, message or comment added here names either fabric side.
 
 Tests, over fake seams and a no-op or counting `Sleep` so none spends real time:
