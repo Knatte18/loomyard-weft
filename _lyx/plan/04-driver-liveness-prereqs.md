@@ -1,8 +1,8 @@
 # Card 4 — driver-liveness-prereqs
 
 **Create:**
-- `plan:internal/loomengine#LoomDriverStrandName` -> `const LoomDriverStrandName = "loom-driver"`
-- `plan:internal/reedengine#ErrNoSession` -> `var ErrNoSession error`
+- `internal/loomengine#LoomDriverStrandName`
+- `internal/reedengine#ErrNoSession`
 - `internal/reedengine/nosession_integration_test.go`
 
 **Edit:**

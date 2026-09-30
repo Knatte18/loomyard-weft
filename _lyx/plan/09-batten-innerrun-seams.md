@@ -15,8 +15,8 @@
 - `internal/battenrecipe/fixture_test.go`
 
 **Uses:**
-- `plan:internal/loomengine#LoomDriverStrandName`
-- `plan:internal/reedengine#ErrNoSession`
+- `internal/loomengine#LoomDriverStrandName`
+- `internal/reedengine#ErrNoSession`
 - `internal/landingshed#ReadApproval`
 - `internal/reedengine#Engine.Status`
 

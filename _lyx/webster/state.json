@@ -1,7 +1,7 @@
 {
   "runGuid": "58d2f68d0b54bf289c61d20455e5ff7a",
-  "planFingerprint": "b082d45915a3c5a70f3458dadc82c23655b230e3a208b07f09b67dc6abc69b8d",
-  "currentBatch": 4,
+  "planFingerprint": "8bed790337ebd1d02262306f9d59722e92ad49c13107b8fa77d613f87cbd9014",
+  "currentBatch": 0,
   "masterStrand": "3b8cb9f6d8eced4983834149237404b3",
   "masterSessionId": "4c17ecbb-80dc-4bf9-a43a-78ebde2bb2c5",
   "assertedModel": "sonnet",
@@ -78,13 +78,25 @@
       "kind": "fork",
       "spawnedAt": "2026-09-30T13:33:48Z",
       "sessionId": "4c17ecbb-80dc-4bf9-a43a-78ebde2bb2c5",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-driver-liveness-prereqs",
+        "status": "done",
+        "head_sha": "afb685b5debacdeace8dad8920c7212594857acb"
+      },
+      "cardShas": [
+        "afb685b5debacdeace8dad8920c7212594857acb"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-hub-ready/4c17ecbb-80dc-4bf9-a43a-78ebde2bb2c5/subagents/agent-a9f92cc3295598c22.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-hub-ready/4c17ecbb-80dc-4bf9-a43a-78ebde2bb2c5/subagents/agent-aee931ddfbd0ccb8f.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-hub-ready/4c17ecbb-80dc-4bf9-a43a-78ebde2bb2c5/subagents/agent-aa4232eaa1a8c566c.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-hub-ready/4c17ecbb-80dc-4bf9-a43a-78ebde2bb2c5/subagents/agent-ae6102eeca9c135cc.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-hub-ready/4c17ecbb-80dc-4bf9-a43a-78ebde2bb2c5/subagents/agent-ae6102eeca9c135cc.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-hub-ready/4c17ecbb-80dc-4bf9-a43a-78ebde2bb2c5/subagents/agent-a9f92cc3295598c22.jsonl"
   ]
 }
