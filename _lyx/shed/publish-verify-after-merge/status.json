@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "Integration fork reported status FAILED: the plan-level verify command failed after all 7 batches were done.",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Batchifier → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "Integration fork reported status FAILED: the plan-level verify command failed after all 7 batches were done."
   },
   "history": [
     {
@@ -78,6 +78,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-09-30T14:25:37Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-09-30T14:33:02Z"
     }
   ],
   "product": {
