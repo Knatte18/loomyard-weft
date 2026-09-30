@@ -1,7 +1,7 @@
 {
   "runGuid": "58d2f68d0b54bf289c61d20455e5ff7a",
   "planFingerprint": "8bed790337ebd1d02262306f9d59722e92ad49c13107b8fa77d613f87cbd9014",
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "3b8cb9f6d8eced4983834149237404b3",
   "masterSessionId": "4c17ecbb-80dc-4bf9-a43a-78ebde2bb2c5",
   "assertedModel": "sonnet",
@@ -157,6 +157,15 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-hub-ready/4c17ecbb-80dc-4bf9-a43a-78ebde2bb2c5/subagents/agent-aaebbafb1eafcb2f3.jsonl"
       ]
+    },
+    "8": {
+      "slug": "loom-driver-teardown-command",
+      "startSha": "d9a2187239d69d4ca93f1da091ba593ecaec6a48",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T13:37:02Z",
+      "sessionId": "4c17ecbb-80dc-4bf9-a43a-78ebde2bb2c5",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
