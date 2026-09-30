@@ -1,8 +1,8 @@
 # Card 3 — loomengine: scratch accessors for the verify marker and output
 
 **Create:**
-- `plan:internal/loomengine#LoomVerifyPendingPath` -> `func LoomVerifyPendingPath(l *lyxcwd.Location) string`
-- `plan:internal/loomengine#LoomVerifyOutputPath` -> `func LoomVerifyOutputPath(l *lyxcwd.Location) string`
+- `internal/loomengine#LoomVerifyPendingPath`
+- `internal/loomengine#LoomVerifyOutputPath`
 
 **Edit:**
 - `internal/loomengine#TestLandingAndApprovalAccessors`

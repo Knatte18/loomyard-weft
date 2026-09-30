@@ -10,8 +10,8 @@
 - `contracts/specs/loom-plan-spec.md`
 
 **Uses:**
-- `plan:internal/loomengine#LoomVerifyPendingPath`
-- `plan:internal/loomengine#LoomVerifyOutputPath`
+- `internal/loomengine#LoomVerifyPendingPath`
+- `internal/loomengine#LoomVerifyOutputPath`
 - `internal/planparser#ParsePlan`
 - `internal/planparser#PlanDir`
 - `internal/loomcli#TestLandingDeps_EveryFieldPopulated`
