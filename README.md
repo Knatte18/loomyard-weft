@@ -19,6 +19,16 @@ Depends on: #022
 
 loom start spawned a driver on a worktree whose merge-in had stopped on a conflict (UU path, MERGE_HEAD present).
 
+## **#028:** fabric remove pushes the archive tag before its dirty checks [A]
+[archive-tag-before-dirty-check](design-archive-tag-before-dirty-check.md)
+
+A refused teardown (dirty sibling) still pushes archive/<slug>/*; the retry pushes a second tag.
+
+## **#029:** Awaiting waits grow status.json without bound [A]
+[awaiting-status-history-growth](design-awaiting-status-history-growth.md)
+
+Each 30 s poll during an unbounded approval wait appends a history entry; days of waiting make a multi-MB status.json.
+
 # Done
 
 ## **#000:** Burler: no cluster-exclude warning when the profile has no cluster fan
@@ -184,16 +194,6 @@ First loom start after a hand-back keeps a strand that is about to be removed
 [test-tmux-socket-leak](design-test-tmux-socket-leak.md)
 
 reed/loom tests leak tmux servers and sockets in /tmp
-
-## **#013:** fabric remove pushes the archive tag before its dirty checks
-[archive-tag-before-dirty-check](design-archive-tag-before-dirty-check.md)
-
-A refused teardown (dirty sibling) still pushes archive/<slug>/*; the retry pushes a second tag.
-
-## **#014:** Awaiting waits grow status.json without bound
-[awaiting-status-history-growth](design-awaiting-status-history-growth.md)
-
-Each 30 s poll during an unbounded approval wait appends a history entry; days of waiting make a multi-MB status.json.
 
 ## **#016:** Landing verify gate skips a merge interrupted before its marker write
 [verify-gate-crash-after-merge](design-verify-gate-crash-after-merge.md)

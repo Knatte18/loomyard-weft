@@ -80,26 +80,6 @@
     "body": "Tests leak tmux sockets: `/tmp/tmux-1000/` holds hundreds of `lyx-Test…`, `lyx-contract-…` and `lyx-warp-bare-…` sockets left by reed/loom integration tests. Test fixtures should kill their tmux server and remove the socket in `t.Cleanup`."
   },
   {
-    "id": 13,
-    "slug": "archive-tag-before-dirty-check",
-    "title": "fabric remove pushes the archive tag before its dirty checks",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "A refused teardown (dirty sibling) still pushes archive/\u003cslug\u003e/*; the retry pushes a second tag.",
-    "body": "`internal/fabricengine/remove.go` pushes the archive tag before the no-force dirty checks.\nWhen the sibling is dirty the teardown refuses, but a tag missing the uncommitted records is already on the weft remote, and the resume after `commit-records` pushes another.\nMove the archive step after the dirty checks, still before any removal.\nFound reviewing PR #304."
-  },
-  {
-    "id": 14,
-    "slug": "awaiting-status-history-growth",
-    "title": "Awaiting waits grow status.json without bound",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "Each 30 s poll during an unbounded approval wait appends a history entry; days of waiting make a multi-MB status.json.",
-    "body": "Batten polls a child in `awaiting` every 30 s and each poll appends to `status.json` history.\nThe wait is unbounded by design, so collapse repeated identical wait entries or cap them.\nRelated: right after a resume a poll can still see `awaiting` and logs a misleading re-approve hint (`internal/battenshed/innerrun.go`).\nFound reviewing PR #304."
-  },
-  {
     "id": 16,
     "slug": "verify-gate-crash-after-merge",
     "title": "Landing verify gate skips a merge interrupted before its marker write",
