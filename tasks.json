@@ -200,7 +200,7 @@
     "slug": "status-strand-by-driver",
     "title": "One readable driving surface per run: ly-drive pane or status strand, never both",
     "depends_on": [
-      "batten-open-ide"
+      "batten-hub-ready"
     ],
     "isolated": false,
     "deferred": false,
