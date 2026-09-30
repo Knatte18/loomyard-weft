@@ -199,3 +199,8 @@ reed/loom tests leak tmux servers and sockets in /tmp
 [verify-gate-crash-after-merge](design-verify-gate-crash-after-merge.md)
 
 A crash between the merge-in commit and the pending-verify marker write leaves the next resume seeing up-to-date with no marker, so verify is skipped.
+
+## **#017:** Worktree-Create should wait for the prime lock instead of blocking
+[batten-prime-lock-wait](design-batten-prime-lock-wait.md)
+
+Parallel `lyx batten run` starts: every run but the first blocks at Worktree-Create on the held prime run.lock and needs a manual resume.
