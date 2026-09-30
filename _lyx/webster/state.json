@@ -1,0 +1,19 @@
+{
+  "runGuid": "d034e779e46981db3c437435107fbdfe",
+  "planFingerprint": "824cecc44282fb8d1cbd8c938ca2721168189eb69adec4b33d6497b8980c6a89",
+  "currentBatch": 1,
+  "masterStrand": "c3acb35141b3b55e3cfb359538cee023",
+  "masterSessionId": "9b81ac28-d68e-420b-be2f-860d6b311e2f",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "head-reconcile-helpers",
+      "startSha": "0e5074bbe5340c77984c09fa2b466aca2e254870",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T15:36:14Z",
+      "sessionId": "9b81ac28-d68e-420b-be2f-860d6b311e2f",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
