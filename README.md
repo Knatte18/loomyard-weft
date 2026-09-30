@@ -14,6 +14,11 @@ Depends on: #022
 
 `lyx loom reject <review>` at Publish routes review findings to Webster as a fix batch, then re-verify, re-publish, re-approve.
 
+## **#027:** loom start should refuse a worktree with an unfinished merge [A]
+[loom-start-refuses-mid-merge](design-loom-start-refuses-mid-merge.md)
+
+loom start spawned a driver on a worktree whose merge-in had stopped on a conflict (UU path, MERGE_HEAD present).
+
 # Done
 
 ## **#000:** Burler: no cluster-exclude warning when the profile has no cluster fan
@@ -189,11 +194,6 @@ A refused teardown (dirty sibling) still pushes archive/<slug>/*; the retry push
 [awaiting-status-history-growth](design-awaiting-status-history-growth.md)
 
 Each 30 s poll during an unbounded approval wait appends a history entry; days of waiting make a multi-MB status.json.
-
-## **#015:** loom start should refuse a worktree with an unfinished merge
-[loom-start-refuses-mid-merge](design-loom-start-refuses-mid-merge.md)
-
-loom start spawned a driver on a worktree whose merge-in had stopped on a conflict (UU path, MERGE_HEAD present).
 
 ## **#016:** Landing verify gate skips a merge interrupted before its marker write
 [verify-gate-crash-after-merge](design-verify-gate-crash-after-merge.md)
