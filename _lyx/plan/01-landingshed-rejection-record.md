@@ -20,4 +20,4 @@ Move `WriteApproval`'s temp-file-then-rename body into one unexported atomic JSO
 Update `approval.go`'s file comment: the gate reads the record, not Publish (the reader moves in a later card, but the comment states the target shape once here).
 `rejection_test.go` covers a round trip, an overwrite, an absent file, invalid JSON, each missing field including blank findings, and `RemoveRecord` on a present and an absent file.
 
-**ImpactSummary:** Refactors WriteApproval's body onto a shared writer; its behaviour and its three callers are unchanged.
+**ImpactSummary:** Refactors WriteApproval's body onto a shared writer; its behaviour, its one production caller (loomcli's approve) and its landingshed and battencli test callers are unchanged.

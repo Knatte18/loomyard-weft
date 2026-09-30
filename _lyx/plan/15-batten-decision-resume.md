@@ -6,9 +6,12 @@
 - `internal/battenshed/innerrun_awaiting_test.go`
 - `internal/battenshed/innerrun_test.go`
 - `internal/battencli/wire.go`
+- `internal/battencli/wire_test.go`
 - `internal/battencli/run_test.go`
 - `internal/battencli/records_integration_test.go`
 - `internal/battenrecipe/fixture_test.go`
+- `internal/shedrecipe/entries_batten.go`
+- `internal/shedrecipe/entries_batten_test.go`
 - `internal/shedrecipe/fixture_test.go`
 - `internal/shedbuild/fixture_test.go`
 
@@ -23,8 +26,9 @@ Rename the marker helpers and suffix to name a decision (`decisionActedFile`, `-
 an old `-approval-acted` marker is simply never read, which costs at most one extra resume of a still-awaiting child.
 In `battencli/wire.go`, `ReadDecision` reads `LoomApprovalPath` and `LoomRejectionPath` in the task worktree through `landingshed.ReadApproval`/`ReadRejection`;
 since `approve` and `reject` each remove the other's record first, at most one is present, and when both are the approval wins, matching the gate's own precedence.
+In `shedrecipe/entries_batten.go`, the `requireSeam` call and the entry's doc comment name `InnerRun.ReadDecision`.
 Tests: `innerrun_awaiting_test.go`'s approval cases run over `ChildDecision`, and new cases assert a rejection resumes the child once and not again for the same record, and an approval at the same head and second as an already-acted rejection resumes it again;
 `records_integration_test.go` writes a rejection record and asserts one resume;
-the fixture `InnerRunDeps` literals in `innerrun_test.go`, `run_test.go` and the battenrecipe, shedrecipe and shedbuild fixtures follow the rename.
+the fixture `InnerRunDeps` literals in `innerrun_test.go`, `run_test.go` and the battenrecipe, shedrecipe and shedbuild fixtures follow the rename, as do `entries_batten_test.go`'s nil-seam case and `battencli/wire_test.go`'s non-nil seam row.
 
-**ImpactSummary:** Renames one exported battenshed type and one InnerRunDeps field; battencli's wiring is their only production user, and the test fixtures building InnerRunDeps follow the rename.
+**ImpactSummary:** Renames one exported battenshed type and one InnerRunDeps field; battencli's wiring and shedrecipe's batten entry seam check are their only production users, and every test building or checking InnerRunDeps follows the rename.

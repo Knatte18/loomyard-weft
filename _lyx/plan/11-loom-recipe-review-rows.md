@@ -33,7 +33,8 @@ Every closure opens nothing at wire time, since `wire()` also runs for `status`/
 Tests: `wantProducerTable` gains both rows with Publish's `onDone` now `NamePRGate`, and `loomRowEngines` maps both;
 a new routing test in `recipe_test.go` asserts `Publish.on_done` → `PR-Gate`, the gate's `on_done` → `Finalize` and `on_stuck` → `PR-Rework`, the rework row's `on_done` → `Webster` and empty `on_stuck`, both rows in segment `PR-Review`, and that the main line still ends at `Friction-Reflect`;
 `TestRecipe_StructuralCheckHasNoFindings` stays green, confirming `internal/shedcheck` accepts the off-main-line writer row;
-the loomrecipe test `Env` fills `ReworkSpec` and `Rework` with fakes;
+the loomrecipe test `Env` fills `ReworkSpec` and `Rework` with fakes, and `fixture_test.go`'s `testLandingDeps` fills `ApprovalPath` and `RejectionPath` with paths under its directory and `TaskHead` with a stub closure, since `NewPRGate` refuses each when empty;
+`sequence_test.go` and `resume_test.go` need no change, because Publish's `on_stuck` stays empty and their fixture still blocks at Publish before the gate;
 and `internal/shedrecipe/coverage_guard_test.go` drops the two allowlist entries card 10 added, now that the recipe reaches both engines.
 
 **ImpactSummary:** Reroutes Publish's on_done through the new gate; every other row's routing is unchanged, and in-flight runs migrate as the decision record's auto-mode assumptions state.

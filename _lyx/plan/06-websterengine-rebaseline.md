@@ -16,7 +16,8 @@ Its doc comment names the rule it serves — every sanctioned plan rewrite is re
 Run entry gains no rework special case.
 `fingerprint_rebaseline_test.go`: an existing `state.json` with a stale fingerprint is restamped to the plan's current digest, its batch records survive untouched, and an absent `state.json` stays absent.
 Add a `runlevel_test.go` case for the acceptance criterion:
-a state recording batches 1–2 complete over a two-card plan, a third card appended, then `RebaselinePlanFingerprint`, then `Run` with the test's fake Master starter;
-the run returns no `ErrFingerprintMismatch`, the rendered Master prompt carries batches 1–2 as complete and only batch 3 as pending, and the integration prompt is written because the plan carries a `## verify:` section.
+seed what a finished run over a two-card plan leaves: a state recording batches 1–2 complete, a done `outcome.yaml` and a `summary.md` in the webster directory, and an integration report in the reports directory;
+then append a third card, call `RebaselinePlanFingerprint`, and call `Run` with the test's fake Master starter.
+The run returns no `ErrFingerprintMismatch`, the stale outcome and summary are archived and the stale integration report removed before Master spawns, the rendered Master prompt carries batches 1–2 as complete and only batch 3 as pending, and the integration prompt is written because the plan carries a `## verify:` section.
 
 **ImpactSummary:** Adds one exported function beside restampAndSaveFingerprint; no existing caller changes.
