@@ -71,4 +71,7 @@ _No rounds yet._
 - **Q8 — chain depends on driver.** Resolved (auto-pick): no.
 - **Q9 — opt-out knob.** Resolved (auto-pick): none.
 - **Q10 — test isolation from real VS Code.** Resolved (auto-pick): stub the closure and `ideengine.CodeLauncher`.
+- **Q11 — once-marker lifetime.** Resolved (auto-pick, review round 1): the gate is "no once-marker present" at both spawn sites; `Call` clears the marker when it finds no child status file, so an earlier run of the same slug never suppresses the open; a lost marker re-opens on the next spawn.
+- **Q12 — tracked `.vscode/tasks.json`.** Resolved (auto-pick, review round 1): the driven path leaves a tracked `tasks.json` untouched, warns, and still opens VS Code.
+- **Q13 — shared `info/exclude` writes.** Resolved (auto-pick, review round 1): written under `fabricengine`'s exclude lock with an atomic replace, with an entry matching `.vscode/` at the anchor subpath.
 - **Environment note:** `lyx board get` printed a valid `{"ok":true,"task":{...}}` envelope but exited with status 2. The task was read correctly; not repaired, reported here for the operator.
