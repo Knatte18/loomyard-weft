@@ -1,7 +1,7 @@
 {
   "runGuid": "8cbae2d24dc77ca61078e4a14c0d97d9",
   "planFingerprint": "72beeeca8af47879b29f61f3d12596d0152a732e87e1144091933cb7fa0de70c",
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "c5a6ee49a5e983607227bc80c63f9e8f",
   "masterSessionId": "79878df8-c188-4ee5-bc08-9b78e78e2add",
   "assertedModel": "sonnet",
@@ -145,6 +145,15 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-publish-review-fixback/79878df8-c188-4ee5-bc08-9b78e78e2add/subagents/agent-a4e0d23389fc71c39.jsonl"
       ]
+    },
+    "8": {
+      "slug": "rework-stencil-spec",
+      "startSha": "4b66514b5cd6caf7e3ea9eea9f4eeaabd11a086f",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T16:57:41Z",
+      "sessionId": "79878df8-c188-4ee5-bc08-9b78e78e2add",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
