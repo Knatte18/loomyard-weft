@@ -157,3 +157,8 @@ Focus directive needs prior-round files the round prompt says to read only after
 [webster-parent-merge-midrun](design-webster-parent-merge-midrun.md)
 
 record-batch demands HEAD == report head_sha; a mid-run merge-in wedges the run
+
+## **#010:** ide hub workspace: review follow-ups
+[ide-hub-workspace-followups](design-ide-hub-workspace-followups.md)
+
+Small cleanups from the PR #301 review
