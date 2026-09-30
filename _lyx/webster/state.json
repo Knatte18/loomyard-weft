@@ -1,0 +1,19 @@
+{
+  "runGuid": "37cba9f1c359b5c9585f75af3e7b0fdf",
+  "planFingerprint": "38e428063886724aba6c4e077c909dbcd6be9275a43236aaa0d24e372c90ea4b",
+  "currentBatch": 1,
+  "masterStrand": "bc858593720baabdba10312cb7491bff",
+  "masterSessionId": "c16f1da8-e977-4c1e-a607-aa1a986d970a",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "refuse-before-archive",
+      "startSha": "724b78b50801475b524578dfb316076c6bf7c92d",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T16:48:03Z",
+      "sessionId": "c16f1da8-e977-4c1e-a607-aa1a986d970a",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
