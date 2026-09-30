@@ -321,5 +321,15 @@
     "deferred": false,
     "brief": "Each 30 s poll during an unbounded approval wait appends a history entry; days of waiting make a multi-MB status.json.",
     "body": "Batten polls a child in `awaiting` every 30 s and each poll appends to `status.json` history.\nThe wait is unbounded by design, so collapse repeated identical wait entries or cap them.\nRelated: right after a resume a poll can still see `awaiting` and logs a misleading re-approve hint (`internal/battenshed/innerrun.go`).\nFound reviewing PR #304."
+  },
+  {
+    "id": 30,
+    "slug": "batten-records-leak-into-pairs",
+    "title": "Batten run records in the prime leak into every new pair",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Batten keeps its per-slug seed/status at the prime weft `_lyx/shed/\u003cslug\u003e/`, committed to main-weft; a pair created afterwards inherits them, and its child run (same slug) finds a batten seed and blocks at Seed-Child.",
+    "body": "Seen 2026-09-30 starting three `lyx batten run` in a row: the 2nd and 3rd blocked at Seed-Child with \"task worktree already seeded with a disagreeing seed: run self is already seeded with {Recipe:batten ...}; refusing to overwrite with {Recipe:loom ...}\".\nEvery new pair also carries every other in-flight batten slug under `_lyx/shed/`.\nThe hub unblocked them by deleting the inherited seed.json/status.json in the task worktree.\n\nFix direction: give batten its own namespace in the prime (e.g. a batten-owned dir rather than `_lyx/shed/\u003cslug\u003e`), so it can never collide with the child run segment, and make Worktree-Create (or fabric add) start a pair without other runs records.\nAlso covers `batten-prime-lock-wait` (parallel creates block on the prime lock)."
   }
 ]
