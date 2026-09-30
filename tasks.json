@@ -230,5 +230,15 @@
     "deferred": false,
     "brief": "Flaky or pre-existing test failures no longer halt a run; report names the failing tests",
     "body": "A red plan verify halts the whole run at Webster, whatever the cause.\nRun `ide-hub-workspace` blocked twice on the flaky `TestRemove_AddSucceedsAfterWarpBranchDeleted` (see `fabric-readd-weft-push`), in a package the task did not break; the verify was green when rerun by hand.\n\nWanted, when the integration verify fails:\n1. Rerun the failing tests once. Green on rerun: continue, and record the test as flaky in the run's report and friction.\n2. Still red: run the same tests at the parent commit. Red there too: continue with a pre-existing-failure warning.\n3. Halt only when a test fails on the task head and passes on the parent (a real regression).\n\nAlso: the integration report (`_lyx/webster/reports/integration.yaml`, `contracts/stencils/webster/webster-template-integration.md`) records only `status: OK | FAILED`; it must carry the failing test names and the tail of their output, so neither the driver nor the hub has to dig the fork transcript."
+  },
+  {
+    "id": 22,
+    "slug": "webster-parent-merge-midrun",
+    "title": "Webster: a parent merge after a batch commit wedges record-batch",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "record-batch demands HEAD == report head_sha; a mid-run merge-in wedges the run",
+    "body": "Webster has no path for a batch whose fork committed and reported OK when HEAD has since moved by a parent merge (run `batten-hub-ready`, batch 11, after the hub ran `lyx fabric merge-in main` to pick up a deployed fix).\n`record-batch` refuses on report `head_sha` != worktree HEAD, and `begin-batch`/`recover-batch` refuse because an OK report exists: the run is wedged until the merge is removed (the hub reset the unpushed merge commit).\nAlso found: a batch left non-terminal after a refused record-batch wedged resume on create-already-exists; fixed in `b16efae35` and `4ab6f6dd6` (`begunCards`).\nFix direction: record-batch accepts a HEAD whose first-parent chain reaches the report's `head_sha` through merge commits only; and loom/fabric warn against a parent merge while Webster is mid-run."
   }
 ]

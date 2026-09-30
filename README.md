@@ -19,6 +19,11 @@ Respawn starts over instead of reusing the plan; prompt does not say Agent is re
 
 Flaky or pre-existing test failures no longer halt a run; report names the failing tests
 
+## **#022:** Webster: a parent merge after a batch commit wedges record-batch [A]
+[webster-parent-merge-midrun](design-webster-parent-merge-midrun.md)
+
+record-batch demands HEAD == report head_sha; a mid-run merge-in wedges the run
+
 # Layer B
 
 ## **#015:** Trace logs: configurable retention, fewer files from routine commands [B]
@@ -149,11 +154,6 @@ Parked: workers on 5m cache TTL, waiting sessions on 1h — operator deciding
 [burler-focus-prior-round](design-burler-focus-prior-round.md)
 
 Focus directive needs prior-round files the round prompt says to read only after the review
-
-## **#009:** Webster: a parent merge after a batch commit wedges record-batch
-[webster-parent-merge-midrun](design-webster-parent-merge-midrun.md)
-
-record-batch demands HEAD == report head_sha; a mid-run merge-in wedges the run
 
 ## **#010:** ide hub workspace: review follow-ups
 [ide-hub-workspace-followups](design-ide-hub-workspace-followups.md)
