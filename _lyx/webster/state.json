@@ -1,7 +1,7 @@
 {
   "runGuid": "d4030ca681712cfd6232d1752f3f0e74",
   "planFingerprint": "cc0f9d3fac850fe4a2f34c4c92e6dce624854e01cfb0c4921227bb7bdda44fae",
-  "currentBatch": 9,
+  "currentBatch": 0,
   "masterStrand": "912cb983bf6042832f4d934fc5bd884a",
   "masterSessionId": "ae7c4f15-2d58-48b6-8181-6776f9f18b95",
   "assertedModel": "sonnet",
@@ -172,8 +172,19 @@
       "kind": "fork",
       "spawnedAt": "2026-09-30T14:29:12Z",
       "sessionId": "ae7c4f15-2d58-48b6-8181-6776f9f18b95",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "09-stage-wiring",
+        "status": "done",
+        "head_sha": "d09f789a4cba83d6727e456be6478fa35979ba7f"
+      },
+      "cardShas": [
+        "d09f789a4cba83d6727e456be6478fa35979ba7f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-verify-triage/ae7c4f15-2d58-48b6-8181-6776f9f18b95/subagents/agent-a57da11d47c91d6be.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
@@ -184,6 +195,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-verify-triage/ae7c4f15-2d58-48b6-8181-6776f9f18b95/subagents/agent-a8d8ee80bb451ebb3.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-verify-triage/ae7c4f15-2d58-48b6-8181-6776f9f18b95/subagents/agent-a6b7bac38c164a9da.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-verify-triage/ae7c4f15-2d58-48b6-8181-6776f9f18b95/subagents/agent-a09399c7dd2f79c08.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-verify-triage/ae7c4f15-2d58-48b6-8181-6776f9f18b95/subagents/agent-a6409b266aeaa3a48.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-verify-triage/ae7c4f15-2d58-48b6-8181-6776f9f18b95/subagents/agent-a6409b266aeaa3a48.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-verify-triage/ae7c4f15-2d58-48b6-8181-6776f9f18b95/subagents/agent-a57da11d47c91d6be.jsonl"
   ]
 }
