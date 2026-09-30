@@ -4,7 +4,7 @@
 - `internal/shedengine#HistoryEntry`
 
 **Create:**
-- `plan:internal/shedengine#appendOrFold` -> `func appendOrFold(history []HistoryEntry, entry HistoryEntry) []HistoryEntry`
+- `internal/shedengine#appendOrFold`
 - `internal/shedengine/historyfold_test.go`
 
 **Uses:**

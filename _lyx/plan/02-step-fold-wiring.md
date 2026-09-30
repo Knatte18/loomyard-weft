@@ -13,7 +13,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/shedengine#appendOrFold`
+- `internal/shedengine#appendOrFold`
 - `internal/shedengine#scriptedStuckShed`
 - `internal/shedengine#funcProducer`
 
