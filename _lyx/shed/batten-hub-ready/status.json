@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "webster: plan validation refused this run (8 finding(s)): create-already-exists/11-fabric-archive-helper[blocking]: Create target \"plan:internal/fabricengine#archiveWeftTip\" already resolves found; create-already-exists/11-fabric-archive-helper[blocking]: Create target \"plan:internal/fabricengine#KindTagPushed\" already resolves found; create-already-exists/11-fabric-archive-helper[blocking]: Create target \"internal/fabricengine/archive.go#\" already resolves found; create-already-exists/11-fabric-archive-helper[blocking]: Create target \"internal/fabricengine/archive_integration_test.go#\" already resolves found; create-new-unit/12-fabric-remove-archives[informational]: Create target \"internal/fabricengine/remove_archive_integration_test.go#\" introduces a new unit; create-new-unit/13-fabric-pairbranch-cleanup-archives[informational]: Create target \"internal/fabricengine/pairbranch_archive_integration_test.go#\" introduces a new unit; create-new-unit/14-fabric-sibling-dirty-sentinel[informational]: Create target \"internal/fabricengine/remove_siblingdirty_integration_test.go#\" introduces a new unit; create-new-unit/16-batten-records-integration[informational]: Create target \"internal/battencli/records_integration_test.go#\" introduces a new unit",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": ""
+    "wait": "webster: plan validation refused this run (8 finding(s)): create-already-exists/11-fabric-archive-helper[blocking]: Create target \"plan:internal/fabricengine#archiveWeftTip\" already resolves found; create-already-exists/11-fabric-archive-helper[blocking]: Create target \"plan:internal/fabricengine#KindTagPushed\" already resolves found; create-already-exists/11-fabric-archive-helper[blocking]: Create target \"internal/fabricengine/archive.go#\" already resolves found; create-already-exists/11-fabric-archive-helper[blocking]: Create target \"internal/fabricengine/archive_integration_test.go#\" already resolves found; create-new-unit/12-fabric-remove-archives[informational]: Create target \"internal/fabricengine/remove_archive_integration_test.go#\" introduces a new unit; create-new-unit/13-fabric-pairbranch-cleanup-archives[informational]: Create target \"internal/fabricengine/pairbranch_archive_integration_test.go#\" introduces a new unit; create-new-unit/14-fabric-sibling-dirty-sentinel[informational]: Create target \"internal/fabricengine/remove_siblingdirty_integration_test.go#\" introduces a new unit; create-new-unit/16-batten-records-integration[informational]: Create target \"internal/battencli/records_integration_test.go#\" introduces a new unit"
   },
   "history": [
     {
