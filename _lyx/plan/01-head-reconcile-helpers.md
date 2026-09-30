@@ -1,8 +1,8 @@
 # Card 1 — Merge-only head reconciliation and mid-merge probe
 
 **Create:**
-- `plan:internal/websterengine#refuseMidMerge` -> `func refuseMidMerge(worktree string) error`
-- `plan:internal/websterengine#reconcileReportHead` -> `func reconcileReportHead(worktree, reportHead, subject string) (warning string, err error)`
+- `internal/websterengine#refuseMidMerge`
+- `internal/websterengine#reconcileReportHead`
 
 **Edit:**
 - `internal/websterengine/gitwrap.go`

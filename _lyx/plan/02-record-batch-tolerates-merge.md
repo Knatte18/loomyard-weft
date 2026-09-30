@@ -8,8 +8,8 @@
 - `internal/websterengine/doc.go`
 
 **Uses:**
-- `plan:internal/websterengine#refuseMidMerge`
-- `plan:internal/websterengine#reconcileReportHead`
+- `internal/websterengine#refuseMidMerge`
+- `internal/websterengine#reconcileReportHead`
 
 **Intent:**
 Stop a parent merge-in that lands between a fork's commit and its `record-batch` call from wedging the run (decisions D1–D4).

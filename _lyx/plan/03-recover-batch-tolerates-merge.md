@@ -8,8 +8,8 @@
 - `internal/websterengine/doc.go`
 
 **Uses:**
-- `plan:internal/websterengine#refuseMidMerge`
-- `plan:internal/websterengine#reconcileReportHead`
+- `internal/websterengine#refuseMidMerge`
+- `internal/websterengine#reconcileReportHead`
 
 **Intent:**
 Give recover-batch's head cross-check the same D1/D3/D4 rules card 2 gave record-batch, so the two verbs agree.
