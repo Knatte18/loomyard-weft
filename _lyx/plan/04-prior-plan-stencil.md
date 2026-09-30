@@ -2,7 +2,7 @@
 
 **Create:**
 - `contracts/stencils/loom/loom-template-prior-plan.md`
-- `plan:contracts/stencils#LoomTemplatePriorPlan` -> `var LoomTemplatePriorPlan []byte`
+- `contracts/stencils#LoomTemplatePriorPlan`
 - `contracts/stencils/priorplantemplate_test.go`
 
 **Edit:**

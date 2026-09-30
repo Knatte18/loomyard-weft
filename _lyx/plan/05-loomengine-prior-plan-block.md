@@ -6,7 +6,7 @@
 - `internal/loomengine/priorplan_test.go`
 
 **Uses:**
-- `plan:contracts/stencils#LoomTemplatePriorPlan`
+- `contracts/stencils#LoomTemplatePriorPlan`
 
 **Intent:**
 Add the renderer for the prior-plan block, in `loomengine` beside `composePlanPrompt`, which already reads the loom stencils through `stencilstore` (decision record D5).

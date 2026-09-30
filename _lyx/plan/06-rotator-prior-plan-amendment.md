@@ -12,7 +12,7 @@
 
 **Uses:**
 - `plan:internal/loomengine#PriorPlanBlock`
-- `plan:contracts/stencils#LoomTemplatePriorPlan`
+- `contracts/stencils#LoomTemplatePriorPlan`
 
 **Intent:**
 Make Plan-Write's fresh-spawn rotation tell the new session where the prior plan went (decision record D1, D3).
