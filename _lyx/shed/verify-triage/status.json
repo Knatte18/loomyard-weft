@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "integration suite FAILED: internal/landingshed TestPublish_MergesInCleanlyBeforeCreatingPullRequest got outcome \"awaiting\", want \"stuck\" (-tags integration run)",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Batchifier → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "integration suite FAILED: internal/landingshed TestPublish_MergesInCleanlyBeforeCreatingPullRequest got outcome \"awaiting\", want \"stuck\" (-tags integration run)"
   },
   "history": [
     {
@@ -78,6 +78,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-09-30T14:22:42Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-09-30T14:35:18Z"
     }
   ],
   "product": {
