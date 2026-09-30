@@ -12,7 +12,7 @@
 - `internal/fabriccli/mergein_webster_integration_test.go`
 
 **Uses:**
-- `plan:internal/websterengine#RunInFlight`
+- `internal/websterengine#RunInFlight`
 - `internal/lyxcwd#Location.AnchorPath`
 - `internal/logger#Warn`
 

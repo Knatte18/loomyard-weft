@@ -1,7 +1,7 @@
 # Card 5 — Webster-owned "run in flight" predicate
 
 **Create:**
-- `plan:internal/websterengine#RunInFlight` -> `func RunInFlight(anchorRoot string) (bool, error)`
+- `internal/websterengine#RunInFlight`
 - `internal/websterengine/inflight_test.go`
 
 **Uses:**
