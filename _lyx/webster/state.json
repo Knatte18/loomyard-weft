@@ -1,7 +1,7 @@
 {
   "runGuid": "430e78321628394bc3b0a1986e139d39",
   "planFingerprint": "a4e82e8cf5c57ac4822b00b888e45f53ef02520e9fb977573e1930aae433a994",
-  "currentBatch": 0,
+  "currentBatch": 37,
   "masterStrand": "96b1c12a9eab96f19639545c68037928",
   "masterSessionId": "f0b56719-d89c-4056-aaf7-5ae1b9970745",
   "assertedModel": "sonnet",
@@ -561,6 +561,15 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-audit/f0b56719-d89c-4056-aaf7-5ae1b9970745/subagents/agent-abe18bddfd9e7536b.jsonl"
       ]
+    },
+    "37": {
+      "slug": "rebaseline-card-hashes",
+      "startSha": "012a4e56cd401d46a38151a3a3c40e67b1972b84",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T19:01:41Z",
+      "sessionId": "f0b56719-d89c-4056-aaf7-5ae1b9970745",
+      "terminal": false,
+      "status": ""
     },
     "4": {
       "slug": "batch-card-record",
