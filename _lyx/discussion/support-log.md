@@ -73,10 +73,40 @@ Each turn below is a question the discussion put to itself, the evidence read, a
   Rejected: re-opening a finished run risks a second landing; seeding a new run is the way forward.
 - **Extend the merge-only head rule to accept fast-forwards onto parent commits.**
   Rejected: the dependency task decided that limit and its message already names a git recourse.
+- **Reset goto's bounce budget with a synthetic `done` history entry.**
+  Rejected (review round 1): it records a producer verdict no producer reached.
+- **Keep the budget reset in a separate status field instead of history.**
+  Rejected (review round 1): the budget is derived from history alone, and a second source would have to be kept consistent with it.
+- **goto writes state `running`.**
+  Rejected (review round 1): with the lock free and history non-empty, loom's entry observation files it as a crashed driver.
+- **goto refuses targets whose entry gate expects a fresh seed.**
+  Rejected (review round 1): the generic verb cannot know which rows those are, and the gate's own refusal already has a way forward.
+- **Re-open a consumed correctness-class `parent-write` finding at later batches.**
+  Rejected (review round 1): it rebuilds the repeating refusal D8 removes; the D6 digest hands the paths to the recovery strand instead.
+- **Keep a run-exit correctness finding as a plain error, cleared by re-stepping the Webster row.**
+  Rejected (review round 2): the error names no way forward, and the re-step's fresh Master session carries no finding, so the suspect content would land unaudited.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+Verdict BLOCKING; every finding fixed in the same round.
+
+- Run exit's whole-session audit cross-check now honours record-batch's dispositions; recover-batch is no longer named as an audit site (D5, D8).
+- `parent-write` classification is ordered, with correctness winning, and covers everything under `_lyx` (D4).
+- goto's bounce-budget reset, jump entry, `paused` state and entry-gate re-entry are decided (D11); ledger item 17 is closed.
+- The invariant is scoped to modules with a table section (D12).
+- rebaseline refuses regrouped batches (D10); D5 defines a failed verify; the D6 digest names suspect `parent-write` paths.
+- The per-row test criterion is split by class; the Auto-mode assumptions point at their decisions instead of restating them.
+
+### Round 2
+
+Verdict BLOCKING; every finding fixed in the same round.
+
+- Run exit dispositions findings no record-batch saw: policy warns, correctness demotes `done` to `stuck` naming the suspect paths (D8), with a must-cover scenario for each.
+- D5's recording path covers run-exit warnings through a run-level list in `state.json` and `lyx webster run`'s envelope.
+- Ledger item 18 is resolved from `manifest/roadmap.md`.
+- The step refusal-kind rule is stated once, in Constraints, without a tally.
 
 ## Question ledger
 
@@ -88,7 +118,7 @@ _No rounds yet._
 | 4 | Must wiring guards and raw I/O errors get rows and tests? | resolved (auto-pick) | Grouped rows, no per-row test (D2). |
 | 5 | Where does the table live? | resolved (auto-pick) | New `contracts/specs/refusal-spec.md`, linked from module docs; deviates from the board's "webster module doc" wording because the table spans three modules. |
 | 6 | Is `nested-agent` policy class? | resolved (auto-pick) | Yes; the call cannot execute in a fork. |
-| 7 | How is `parent-write` classified? | resolved (auto-pick) | Tracked tree or reports dir: correctness; elsewhere: policy. |
+| 7 | How is `parent-write` classified? | resolved (auto-pick, revised round 1) | Warp tracked tree or anywhere under `_lyx`: correctness, checked first; elsewhere: policy. |
 | 8 | What does "commits pass verify" mean? | resolved (auto-pick) | The batch's cards' `verify:` re-run in-process on the current worktree. |
 | 9 | Where is a recorded warning kept? | resolved (auto-pick) | Batch state in `state.json`, the verb envelope's `warnings`, and a Go-appended `## Audit warnings` section in `summary.md`. |
 | 10 | What happens on a correctness-class finding? | resolved (auto-pick) | Archive report, record batch failed, way forward `recover-batch` (D6). |
@@ -98,5 +128,10 @@ _No rounds yet._
 | 14 | May ly-drive call `goto`? | resolved (auto-pick) | No; operator and orchestrator only. |
 | 15 | May `goto` re-open a done run? | resolved (auto-pick) | No. |
 | 16 | How is the principle enforced after this task? | resolved (auto-pick) | CONSTRAINTS.md Refusal Way-Forward Invariant, review plus per-row tests. |
-| 17 | Does loom's fresh-start coherence check misfire on a `goto` re-entry? | open | For the Plan's audit to decide per gate; recorded as an open risk. |
-| 18 | Does `manifest/roadmap.md` carry this task? | open | Plan checks; the roadmap moves only if it is a planned item. |
+| 17 | Does loom's fresh-start coherence check misfire on a `goto` re-entry? | resolved (review round 1) | It refuses a re-entered run as a normal table row; way forward: `goto` the row after `Loom-Preflight`, or seed a new run (D11). |
+| 18 | Does `manifest/roadmap.md` carry this task? | resolved (review round 2) | No; the roadmap carries no refusal-audit item, so it does not move. |
+| 19 | Does the run-exit audit cross-check re-fail dispositioned findings? | resolved (review round 1) | No; it passes findings record-batch dispositioned and hard-errors only on undispositioned ones (D8). |
+| 20 | How does goto reset a bounce budget? | resolved (review round 1) | A history-only `goto` outcome is an episode boundary for the target's segment (D11). |
+| 21 | Which modules does the invariant bind? | resolved (review round 1) | Those with a section in `refusal-spec.md`; others join with their own audit (D12). |
+| 22 | What happens to a finding no record-batch saw (integration fork, Master after the last batch)? | resolved (review round 2) | Run exit dispositions it: policy becomes a run-level warning; correctness demotes `done` to `stuck` naming the suspect paths (D8). |
+| 23 | Where is a run-exit warning recorded? | resolved (review round 2) | A run-level warning list in `state.json`, `lyx webster run`'s envelope, and `summary.md`'s `## Audit warnings` (D5). |
