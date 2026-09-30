@@ -152,3 +152,8 @@ Parked: workers on 5m cache TTL, waiting sessions on 1h — operator deciding
 [burler-focus-prior-round](design-burler-focus-prior-round.md)
 
 Focus directive needs prior-round files the round prompt says to read only after the review
+
+## **#009:** Webster: a parent merge after a batch commit wedges record-batch
+[webster-parent-merge-midrun](design-webster-parent-merge-midrun.md)
+
+record-batch demands HEAD == report head_sha; a mid-run merge-in wedges the run
