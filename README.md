@@ -23,12 +23,6 @@ llm-driven run shows only ly-drive; go-driven run shows only the status strand
 
 # Layer C
 
-## **#009:** batten opens VS Code on the new pair with reed attached [C]
-[batten-open-ide](design-batten-open-ide.md)
-Depends on: #019, #011
-
-Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
-
 ## **#020:** fabric add after remove: leftover remote weft branch rejects the push (flaky test) [C]
 [fabric-readd-weft-push](design-fabric-readd-weft-push.md)
 Depends on: #019
@@ -36,12 +30,6 @@ Depends on: #019
 Re-adding a removed slug races the old remote weft branch; integration test flakes
 
 # Layer D
-
-## **#012:** Publish: verify the tree after merging the parent [D]
-[publish-verify-after-merge](design-publish-verify-after-merge.md)
-Depends on: #009
-
-A conflict-resolved parent merge was pushed with non-compiling tests
 
 ## **#021:** Webster verify: rerun, compare with parent, halt only on a real regression [D]
 [verify-triage](design-verify-triage.md)
@@ -51,47 +39,63 @@ Flaky or pre-existing test failures no longer halt a run; report names the faili
 
 # Layer E
 
-## **#013:** Webster fork audit: text search for "lyx fabric" counted as a fabric operation [E]
+## **#009:** batten opens VS Code on the new pair with reed attached [E]
+[batten-open-ide](design-batten-open-ide.md)
+Depends on: #021, #011
+
+Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
+
+# Layer F
+
+## **#012:** Publish: verify the tree after merging the parent [F]
+[publish-verify-after-merge](design-publish-verify-after-merge.md)
+Depends on: #009
+
+A conflict-resolved parent merge was pushed with non-compiling tests
+
+# Layer G
+
+## **#013:** Webster fork audit: text search for "lyx fabric" counted as a fabric operation [G]
 [refscan-false-positive](design-refscan-false-positive.md)
 Depends on: #012
 
 RefScanner flags quoted grep patterns; a done batch cannot be recorded
 
-# Layer F
+# Layer H
 
-## **#014:** Plan-Write: respawn archives the finished plan; Agent refusal unannounced [F]
+## **#014:** Plan-Write: respawn archives the finished plan; Agent refusal unannounced [H]
 [plan-write-respawn](design-plan-write-respawn.md)
 Depends on: #013
 
 Respawn starts over instead of reusing the plan; prompt does not say Agent is refused
 
-# Layer G
+# Layer I
 
-## **#015:** Trace logs: configurable retention, fewer files from routine commands [G]
+## **#015:** Trace logs: configurable retention, fewer files from routine commands [I]
 [trace-log-retention](design-trace-log-retention.md)
 Depends on: #014
 
 Trace logs: configurable retention, fewer files from routine commands
 
-# Layer H
+# Layer J
 
-## **#016:** lyx quarry: per-glyph resolve answers, grep-safe glyphs output [H]
+## **#016:** lyx quarry: per-glyph resolve answers, grep-safe glyphs output [J]
 [quarry-cli-answers](design-quarry-cli-answers.md)
 Depends on: #015
 
 lyx quarry: per-glyph resolve answers, grep-safe glyphs output
 
-# Layer I
+# Layer K
 
-## **#017:** Burler: warn when the explore stencil lacks the focus_directive marker [I]
+## **#017:** Burler: warn when the explore stencil lacks the focus_directive marker [K]
 [focus-marker-warn](design-focus-marker-warn.md)
 Depends on: #016
 
 Burler: warn when the explore stencil lacks the focus_directive marker
 
-# Layer J
+# Layer L
 
-## **#018:** reed: send a short launch-script line instead of the full command [J]
+## **#018:** reed: send a short launch-script line instead of the full command [L]
 [reed-launch-script](design-reed-launch-script.md)
 Depends on: #017
 

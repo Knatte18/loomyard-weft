@@ -81,7 +81,7 @@
     "slug": "batten-open-ide",
     "title": "batten opens VS Code on the new pair with reed attached",
     "depends_on": [
-      "status-strand-by-driver",
+      "verify-triage",
       "ide-hub-workspace"
     ],
     "isolated": false,
