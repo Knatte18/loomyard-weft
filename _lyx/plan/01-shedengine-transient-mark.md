@@ -42,6 +42,6 @@ Tests in `transient_test.go`:
 - A `Stuck` verdict, an `Awaiting` verdict and a pause never call the classifier (a counting classifier stays at zero) and persist an empty `transient`.
 - A nil `Transient` field leaves a producer error unmarked.
 
-**ImpactSummary:** Adds one optional field each to `Shed` and `Status` and one classify call in the producer-error arm; every current caller leaves `Transient` nil, so behaviour is unchanged until card 5 wires a classifier.
+**ImpactSummary:** Adds one optional field each to `Shed` and `Status` and one classify call in the producer-error arm; every current caller leaves `Transient` nil, so behaviour is unchanged until card 7 sets the classifier in `shedbuild.NewShed`.
 
 **Commit:** 1: shedengine: declare the transient mark and persist it with failed

@@ -1,4 +1,4 @@
-# Card 4 — shedtransient: translate leaf classifications into the mark
+# Card 5 — shedtransient: translate leaf classifications into the mark
 
 **Create:**
 - `plan:internal/shedtransient#Class` -> `func Class(err error) shedengine.TransientClass`
@@ -25,6 +25,7 @@
 **Intent:**
 A new leaf package, `internal/shedtransient`, is the one place that translates a lower-level package's own classification into `internal/shedengine`'s transient mark (decision record D1, D2).
 It exists so `shedengine` stays stdlib-only and the leaf packages gain no `shedengine` import, while the producer boundary (the classifier `shedbuild.NewShed` tells a `Shed`) and the bootstrap boundary (the `PreStep` hooks) share a single mapping.
+The landingshed producers (card 8) call `Class` too, to decide which of their failures to return as an error rather than a verdict.
 
 `Class` returns, in this order:
 - the class already on `err`, via `shedengine.TransientOf`, so a mark set closer to the failure wins;
@@ -43,11 +44,11 @@ A nil error gives the empty class.
 
 `shedtransient_test.go` is untagged and spawns nothing; a table drives `Class` and `Mark` over:
 - an `ErrNotStarted` wrapped twice with `%w` → `agent-start`;
-- a `*gitexec.GitError` for a `push` whose stderr carries `Could not resolve host` → `git-transport`;
+- a `*gitexec.GitError` for `-c push.autoSetupRemote=true push` whose stderr carries `Could not resolve host`, wrapped as `gitrepo` wraps it → `git-transport`;
 - a rejected push `*gitexec.GitError` → empty;
 - a 503 `*github.ErrorResponse` → `github-api`;
 - a 404 `*github.ErrorResponse` and a `*github.RateLimitError` → empty;
 - an error already marked `github-api` that also wraps `ErrNotStarted` → `github-api`, and `Mark` leaves it with exactly one mark;
 - a plain error and nil → empty, with `Mark` returning the same error value.
 
-**Commit:** 4: shedtransient: one translation from leaf classifications into the transient mark
+**Commit:** 5: shedtransient: one translation from leaf classifications into the transient mark

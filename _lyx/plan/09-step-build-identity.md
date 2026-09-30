@@ -1,4 +1,4 @@
-# Card 7 — record the build identity per step; derive `binary_changed`
+# Card 9 — record the build identity per step; derive `binary_changed`
 
 **Edit:**
 - `internal/shedverbs/steprecord.go`
@@ -10,6 +10,9 @@
 **Create:**
 - `internal/shedverbs/buildidentity.go`
 - `internal/shedverbs/buildidentity_test.go`
+
+**Prosa:**
+- `docs/overview.md`
 
 **Intent:**
 Give the driver a Go-derived "a new `lyx` was deployed" signal (decision record D4).
@@ -34,12 +37,14 @@ The step envelope itself is unchanged.
 
 Identities are passed as parameters rather than through a package-level seam, so tests substitute nothing shared.
 
+`docs/overview.md`'s sentence on the status envelope's `last_step` (the record `lyx shed step` keeps under `.lyx`) adds that it also carries the build identity (`vcs_revision`, `vcs_modified`) of the `lyx` that ran that step, and `binary_changed`, true when the running `lyx` is a different known build.
+
 Tests:
 - `buildidentity_test.go`: a table over `binaryChanged` covers equal pairs (false), differing revisions (true), an equal revision with a flipped modified flag (true), and an empty revision on either side or both (false, whatever the other fields hold).
 - `steprecord_test.go`: a recorder built with a given identity writes it into the in-flight record, and `lastStepOf` reports it back with `binary_changed` false for the same running identity and true for a different known one.
   A hand-written in-flight record with no identity fields reports `binary_changed: false` against a known running identity.
 - `status_test.go`: the status envelope's `last_step` carries the `vcs_revision`, `vcs_modified` and `binary_changed` keys, with `binary_changed` false (a test binary is unstamped).
 
-**ImpactSummary:** Adds two fields to each step's in-flight record and three to `last_step` in `lyx shed status`; `newStepRecorder` and `lastStepOf` each gain one parameter with a single production caller, and existing records still decode.
+**ImpactSummary:** Adds two fields to each step's in-flight record and three to `last_step` in `lyx shed status`; `newStepRecorder` and `lastStepOf` each gain one parameter with a single production caller (`step.go` and `status.go`), the only other `last_step` reader (`loomcli/status_test.go`) checks key presence alone, and existing records still decode.
 
-**Commit:** 7: shedverbs: record each step's build identity; status derives binary_changed
+**Commit:** 9: shedverbs: record each step's build identity; status derives binary_changed

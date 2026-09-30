@@ -1,4 +1,4 @@
-# Card 3 — surface a never-ready agent start to the producer's error
+# Card 4 — surface a never-ready agent start to the producer's error
 
 **Edit:**
 - `internal/shuttleengine/run.go`
@@ -26,7 +26,7 @@ The producers that turn a died or timeout outcome into a returned error wrap `sh
 - `SingleLLM`'s died/timeout arm (`singlellm.go`).
 - `Burler`'s two-consecutive-died arm (`burler.go`), when the final attempt's result is `NotStarted`.
   The one-retry ladder is unchanged: a first not-started attempt still retries.
-A producer that starts an agent through `StartGated` or `Start` already returns `ErrNotStarted` in its chain and needs no change.
+A producer that starts an agent through `StartGated` or `Start` already returns `ErrNotStarted` in its chain and needs no change: the Webster row's Master starts through `StartGated`, and `websterengine` wraps that error with `%w`.
 `Bouncer` degrades rather than erroring on a not-done run and is out of scope.
 
 Tests:
@@ -37,4 +37,4 @@ Tests:
 
 **ImpactSummary:** Adds one boolean to `shuttleengine.Result` and `burlerengine.Result` and a `%w` on two producer error arms; every existing error text and outcome is unchanged.
 
-**Commit:** 3: shuttleengine: report a never-ready start on Result; producers wrap ErrNotStarted
+**Commit:** 4: shuttleengine: report a never-ready start on Result; producers wrap ErrNotStarted

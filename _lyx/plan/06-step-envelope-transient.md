@@ -1,8 +1,9 @@
-# Card 5 — step error envelope carries `transient`
+# Card 6 — step error envelope carries `transient`
 
 **Edit:**
 - `internal/shedverbs/step.go`
 - `internal/shedverbs/step_test.go`
+- `internal/loomcli/cli.go`
 
 **Prosa:**
 - `CONSTRAINTS.md`
@@ -23,6 +24,9 @@ In `stepCmd` (`step.go`), the refusal path takes the class alongside the kind:
 
 `CONSTRAINTS.md`'s Shed Verb-Set Invariant bullet on the step envelope's key set adds that every error envelope also carries `transient`, and that the key is not a sixth kind.
 
+`internal/loomcli/cli.go`'s `Step` `Long` help, which today says every error envelope carries the same three location keys beside `"kind"`, adds that it also carries `"transient"`: the transient class name, or empty when the failure is not transient.
+The help-text change lands in this commit per the CLI/Cobra Invariant and the Documentation Lifecycle.
+
 Tests (`step_test.go`):
 - `TestStepCmd_ErrorEnvelopesCarryLocations` asserts `transient` is present and empty on every row of its table, and asserts the exact error-envelope key set.
 - A new table test drives a `PreStep` returning an error marked `TransientGitTransport` via `shedengine.MarkTransient`, a `BuildShed` returning one marked `TransientAgentStart`, and a producer row returning an error that the fake shed's `Transient` classifier marks `TransientGitHubAPI`.
@@ -30,6 +34,6 @@ Tests (`step_test.go`):
 - The busy refusal carries an empty `transient` even when the classifier would mark its error.
 - `TestStepEnvelope_KeySetIsExactlySixteen` and `TestStepKinds_IsExactlyFive` stay as they are and keep passing.
 
-**ImpactSummary:** Adds one key to every `lyx shed step` error envelope and one parameter to `stepErrFields`; consumers reading the envelope by key are unaffected, and the success envelope and the kind vocabulary are unchanged.
+**ImpactSummary:** Adds one key to every `lyx shed step` error envelope and one parameter to `stepErrFields`, whose only callers are in `step.go`; no test outside `shedverbs` asserts an exact error-envelope key set, the success envelope and the kind vocabulary are unchanged, and `lyx loom step`'s help text names the new key.
 
-**Commit:** 5: shedverbs: step error envelopes carry the transient class
+**Commit:** 6: shedverbs: step error envelopes carry the transient class

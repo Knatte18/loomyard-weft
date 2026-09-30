@@ -1,4 +1,4 @@
-# Card 11 — ly-drive skill: safe re-steps, parking, binary watch, resume
+# Card 14 — ly-drive skill: safe re-steps, parking, binary watch, resume
 
 **Prosa:**
 - `plugins/ly/skills/ly-drive/SKILL.md`
@@ -24,8 +24,8 @@ Teach the driver the new behaviour (decision record D3, D5–D11) while it stays
     Eligible stops: `blocked`; a `producer`, `bootstrap` or `unseeded` error the driver escalated (repair cap exhausted or nothing to repair); a transient stop whose own re-step failed.
     Never eligible: `awaiting`, `paused`, `busy`, `ownership`, a no-kind refusal, and an interrupted invocation under `interrupt_policy: handback`.
     `awaiting` and `paused` are never auto-resumed, by either re-step.
-  - *Clean-tree guard*: skip the binary-change re-step, and stay parked, when `git -C <warp> status --porcelain` in the task's code worktree lists any change outside `_lyx/` and `.lyx/`.
-    The driver's own stop reports, repair records and park marker never count.
+  - *Clean-tree guard*: skip the binary-change re-step, and stay parked, when `git -C <warp> status --porcelain` in the task's code worktree (the warp) lists any uncommitted change.
+    The driver's own stop reports, repair records and park marker never count: they live in the weft, which the warp reaches only through its `_lyx` and `.lyx` links, and the warp's git excludes both links, so porcelain there never lists them.
     A skipped re-step is not retried when the tree turns clean; it waits for the next binary change or a resume.
   - Before any self-initiated re-step, remove the park marker.
 - **Parking** (a new section): only a session whose launch prompt says to park does so.
@@ -59,4 +59,4 @@ The skill names the marker's filename exactly as `shedrun.ParkMarkerFileName` sp
 
 `driveskill_test.go` (untagged): locate `plugins/ly/skills/ly-drive/SKILL.md` from the test file's own directory via `runtime.Caller`, and assert the skill contains the backtick-quoted `shedrun.ParkMarkerFileName`, so renaming either side without the other fails.
 
-**Commit:** 11: ly-drive: safe automatic re-steps, parking, binary watch and resume
+**Commit:** 14: ly-drive: safe automatic re-steps, parking, binary watch and resume
