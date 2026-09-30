@@ -79,7 +79,9 @@
     "id": 9,
     "slug": "batten-open-ide",
     "title": "batten opens VS Code on the new pair with reed attached",
-    "depends_on": [],
+    "depends_on": [
+      "batten-hub-ready"
+    ],
     "isolated": false,
     "deferred": false,
     "brief": "Batten lifecycle step: open a VS Code window whose terminal is attached to the child run",

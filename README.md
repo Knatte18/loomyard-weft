@@ -7,11 +7,6 @@
 
 Operator surface: #295, #277, #286, #297 + four unfiled findings
 
-## **#009:** batten opens VS Code on the new pair with reed attached [A]
-[batten-open-ide](design-batten-open-ide.md)
-
-Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
-
 # Layer B
 
 ## **#010:** Batten ready for the hub loop: wait through awaiting, keep run records [B]
@@ -19,6 +14,14 @@ Batten lifecycle step: open a VS Code window whose terminal is attached to the c
 Depends on: #007
 
 Batten keeps watching an awaiting child, run records survive teardown, approval time off the watch budget
+
+# Layer C
+
+## **#009:** batten opens VS Code on the new pair with reed attached [C]
+[batten-open-ide](design-batten-open-ide.md)
+Depends on: #010
+
+Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
 
 # Done
 
