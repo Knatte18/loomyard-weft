@@ -7,6 +7,11 @@
 
 Operator surface: #295, #277, #286, #297 + four unfiled findings
 
+## **#009:** batten opens VS Code on the new pair with reed attached [A]
+[batten-open-ide](design-batten-open-ide.md)
+
+Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
+
 # Done
 
 ## **#000:** Burler: no cluster-exclude warning when the profile has no cluster fan
