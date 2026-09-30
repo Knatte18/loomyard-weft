@@ -1,0 +1,19 @@
+{
+  "runGuid": "d9d8c2214f0ee69b93fc9225871f8d26",
+  "planFingerprint": "d648b53e7f182506f75e6b30f947b35e3d959f60e6e9d556ecbcd56ed21f009c",
+  "currentBatch": 1,
+  "masterStrand": "eb9d0da12b75d71d6b1396d0c25a2a2e",
+  "masterSessionId": "81d46c4f-8fc0-4c22-be4b-d93b9305f45c",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "claudeengine-deny-notice",
+      "startSha": "85902381e89c8131af7ccff9d388227aa5774aa4",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T14:24:40Z",
+      "sessionId": "81d46c4f-8fc0-4c22-be4b-d93b9305f45c",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
