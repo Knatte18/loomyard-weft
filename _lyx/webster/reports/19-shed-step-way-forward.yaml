@@ -1,0 +1,6 @@
+status: OK
+head_sha: 3390fbaf8981001c0c04783b8fd810915dcafb31
+deviations:
+  - internal/shedengine/step_test.go
+  - internal/shedengine/budgetexempt_test.go
+  - internal/shedengine/run_routing_test.go
