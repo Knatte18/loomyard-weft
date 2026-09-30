@@ -8,7 +8,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/fabricengine#ErrPairSiblingDirty`
+- `internal/fabricengine#ErrPairSiblingDirty`
 - `internal/fabricengine#RemoveResult`
 - `internal/fabricengine#PairBranchResult`
 - `internal/battencli#createRefusal`

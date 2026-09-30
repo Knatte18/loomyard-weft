@@ -1,7 +1,7 @@
 # Card 14 — fabric-sibling-dirty-sentinel
 
 **Create:**
-- `plan:internal/fabricengine#ErrPairSiblingDirty` -> `var ErrPairSiblingDirty error`
+- `internal/fabricengine#ErrPairSiblingDirty`
 - `internal/fabricengine/remove_siblingdirty_integration_test.go`
 
 **Edit:**
