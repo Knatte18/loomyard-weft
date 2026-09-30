@@ -1,7 +1,7 @@
 # Card 2 — gitexec classifies its own transport failures
 
 **Create:**
-- `plan:internal/gitexec#IsTransportFailure` -> `func IsTransportFailure(err error) bool`
+- `internal/gitexec#IsTransportFailure`
 - `internal/gitexec/transport.go`
 - `internal/gitexec/transport_test.go`
 - `internal/gitexec/transport_integration_test.go`

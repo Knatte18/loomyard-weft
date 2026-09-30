@@ -18,7 +18,7 @@
 - `internal/shedengine#TransientAgentStart`
 - `internal/shedengine#MarkTransient`
 - `internal/shedengine#TransientOf`
-- `plan:internal/gitexec#IsTransportFailure`
+- `internal/gitexec#IsTransportFailure`
 - `plan:internal/githubclient#IsTransient`
 - `internal/shuttleengine#ErrNotStarted`
 
