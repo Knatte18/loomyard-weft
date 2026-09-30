@@ -33,7 +33,7 @@ Each turn below is a question the design had to settle, the evidence read, and t
    Picked: skip; Webster-Review and the operator's PR review still judge the diff (D9).
 9. **Edge cases.**
    Stale records (head moved), closed PR, malformed record, budget exhaustion, crash between commit and record deletion, zero cards, edits to prior cards.
-   Each has a verdict in D2, D3, D4 or D5, or an open risk.
+   Each has a verdict in D2, D3, D4 or D5.
 
 ## Rejected alternatives
 
@@ -51,6 +51,8 @@ Each turn below is a question the design had to settle, the evidence read, and t
   Adds a review round over operator-authored findings whose diff is reviewed twice more anyway.
 - **An append-only check folded into the re-prompting gate.**
   A new gate kind requires a new self-check verb and parity test under the Gate Self-Check Parity Invariant; the stencil states the rule and a post-gate Go check halts on the rare violation.
+- **Webster re-run with `--fresh` over the extended plan.**
+  `--fresh` discards every completed batch, re-running the whole plan for a handful of new cards.
 - **No bounce cap on the new segment.**
   Every other segment is capped; the cap costs nothing here because `approve` still works at an exhausted gate.
 - **Fetching findings from GitHub PR review comments, or posting them to the PR.**
@@ -74,4 +76,4 @@ _No rounds yet._
 - Q10 Plan-Review over rework cards? — resolved, auto-pick: no (D9).
 - Q11 Row and segment names? — resolved, auto-pick: working names `PR-Gate`, `PR-Rework`, `PR-Review`; plan writer may rename.
 - Q12 Does `reject` post findings to the PR? — resolved, auto-pick: no.
-- Q13 Hand-made fixes outside loom after the split? — resolved, auto-pick: operator pushes them before `approve`; recorded as an auto-mode assumption.
+- Q13 Hand-made fixes outside loom after the split? — resolved, auto-pick: operator pushes them before `approve`; recorded as a consequence in D2, with docs in Constraints.
