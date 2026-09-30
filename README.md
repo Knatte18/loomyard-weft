@@ -12,11 +12,6 @@ A conflict-resolved parent merge was pushed with non-compiling tests
 
 Respawn starts over instead of reusing the plan; prompt does not say Agent is refused
 
-## **#015:** Trace logs: configurable retention, fewer files from routine commands [A]
-[trace-log-retention](design-trace-log-retention.md)
-
-Trace logs: configurable retention, fewer files from routine commands
-
 ## **#019:** One driving surface per run: ly-drive pane or status strand, never both [A]
 [status-strand-by-driver](design-status-strand-by-driver.md)
 Depends on: #010
@@ -120,6 +115,11 @@ One generated VS Code workspace shows the board beside the prime
 Depends on: #012
 
 RefScanner flags quoted grep patterns; a done batch cannot be recorded
+
+## **#015:** Trace logs: configurable retention, fewer files from routine commands
+[trace-log-retention](design-trace-log-retention.md) [done]
+
+Trace logs: configurable retention, fewer files from routine commands
 
 ## **#016:** lyx quarry: per-glyph resolve answers, grep-safe glyphs output
 [quarry-cli-answers](design-quarry-cli-answers.md) [done]
