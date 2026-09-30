@@ -7,8 +7,8 @@
 - `internal/fabricengine/destroyremote_integration_test.go`
 
 **Create:**
-- `plan:internal/fabricengine#ownedPairWeftBranch` -> `func ownedPairWeftBranch(l *lyxcwd.Location, warpBranch string) branchOwnership`
-- `plan:internal/fabricengine#dirtyArchivedOnRemote` -> `func dirtyArchivedOnRemote(archiveTag string) branchDirtiness`
+- `internal/fabricengine#ownedPairWeftBranch`
+- `internal/fabricengine#dirtyArchivedOnRemote`
 
 **Uses:**
 - `internal/gitrepo#Repo.DeleteRemoteBranchLeased`

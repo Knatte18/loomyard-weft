@@ -13,8 +13,8 @@
 **Uses:**
 - `plan:internal/fabricengine#weftLeftover`
 - `plan:internal/fabricengine#probeWeftLeftover`
-- `plan:internal/fabricengine#ownedPairWeftBranch`
-- `plan:internal/fabricengine#dirtyArchivedOnRemote`
+- `internal/fabricengine#ownedPairWeftBranch`
+- `internal/fabricengine#dirtyArchivedOnRemote`
 - `internal/fabricengine#deleteRemoteBranch`
 - `internal/fabricengine#pushWeftBranch`
 - `internal/fabricengine#Topology.rollbackAdd`
