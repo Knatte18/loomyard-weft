@@ -58,5 +58,15 @@
     "deferred": false,
     "brief": "Small cleanups from the PR #301 review",
     "body": "Follow-ups from the PR #301 review (`85902381e`), all non-blocking:\n- `internal/fabricengine/hubworkspace.go` builds the prime path by hand (`filepath.Join(l.HubPath, primeName, l.AnchorRel)`) instead of `WorktreePath`.\n- `internal/ideengine/spawn.go` now WARNs on every spawn whose prime resolution fails, task spawns included (silent before).\n- Removing the last pair prunes `_portals/\u003canchor\u003e`, so the hub workspace shows a missing folder until the next prime spawn.\n- Relative-path settings spliced from the prime into the workspace file resolve against `_launchers/`, not the prime."
+  },
+  {
+    "id": 11,
+    "slug": "driver-restart-race",
+    "title": "loom start races the ly-drive self-removal and ends with no driver",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "First loom start after a hand-back keeps a strand that is about to be removed",
+    "body": "After a hand-back, the ly-drive session removes its own strand with a detached `lyx reed remove --name loom-driver --detach` that waits for the session's pid to exit (end-of-session command from `083e992cf`).\nA `lyx loom start` issued in that window sees the loom-driver strand still live, keeps it instead of spawning a driver, and the detached remover then deletes it: the run is left with no driver and nothing happens (hit on `batten-hub-ready` and `focus-marker-warn`, 2026-09-30; a second `loom start` works).\nFix direction: `loom start` treats a driver strand with a pending self-removal (or whose claude has exited) as gone and spawns a fresh one, or the remover skips a strand that was re-adopted since it was scheduled."
   }
 ]

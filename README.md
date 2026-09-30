@@ -167,3 +167,8 @@ Focus directive needs prior-round files the round prompt says to read only after
 [ide-hub-workspace-followups](design-ide-hub-workspace-followups.md)
 
 Small cleanups from the PR #301 review
+
+## **#011:** loom start races the ly-drive self-removal and ends with no driver
+[driver-restart-race](design-driver-restart-race.md)
+
+First loom start after a hand-back keeps a strand that is about to be removed
