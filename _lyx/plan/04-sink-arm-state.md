@@ -6,8 +6,8 @@
 - `internal/logger/sink_callsite_integration_test.go`
 
 **Create:**
-- `plan:internal/logger#SinkArmState` -> `type SinkArmState struct`
-- `plan:internal/logger#CurrentSinkArmState` -> `func CurrentSinkArmState() SinkArmState`
+- `internal/logger#SinkArmState`
+- `internal/logger#CurrentSinkArmState`
 
 **Intent:**
 Give the CLI layer the query decision record D3 and D4 need: whether the durable sink armed in the current generation, whether it was redirected, where it writes, and which lyx anchor it resolved from.

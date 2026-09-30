@@ -14,8 +14,8 @@
 - `cmd/lyx/exitsweep_test.go`
 
 **Uses:**
-- `plan:internal/logger#SinkArmState`
-- `plan:internal/logger#CurrentSinkArmState`
+- `internal/logger#SinkArmState`
+- `internal/logger#CurrentSinkArmState`
 - `internal/logger#DefaultRetentionBounds`
 - `internal/loggerconfig#Load`
 - `internal/loggerconfig#ConfigPath`
