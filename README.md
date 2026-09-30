@@ -14,12 +14,6 @@ Depends on: #021
 
 record-batch demands HEAD == report head_sha; a mid-run merge-in wedges the run
 
-## **#024:** ly-drive: safe self-repairs instead of always handing back [A]
-[ly-drive-safe-repairs](design-ly-drive-safe-repairs.md)
-Depends on: #010
-
-Driver re-steps known transient stops itself; hands back only real decisions
-
 # Layer B
 
 ## **#023:** Every refusal has a way forward: audit Webster and shed halt paths [B]
@@ -134,6 +128,12 @@ Re-adding a removed slug races the old remote weft branch; integration test flak
 [verify-triage](design-verify-triage.md) [done]
 
 Flaky or pre-existing test failures no longer halt a run; report names the failing tests
+
+## **#024:** ly-drive: safe self-repairs instead of always handing back
+[ly-drive-safe-repairs](design-ly-drive-safe-repairs.md) [done]
+Depends on: #010
+
+Driver re-steps known transient stops itself; hands back only real decisions
 
 ## **#025:** Hub orchestrator as a reed strand with automatic handoff
 [hub-orch-strand](design-hub-orch-strand.md) [done]
