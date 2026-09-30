@@ -1,11 +1,11 @@
 {
-  "current_producer": "Publish",
+  "current_producer": "Finalize",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Publish",
-    "last": "Publish → awaiting",
+    "now": "Finalize",
+    "last": "Publish → done",
     "wait": ""
   },
   "history": [
@@ -128,6 +128,12 @@
       "outcome": "awaiting",
       "output": "",
       "at": "2026-09-30T14:44:25Z"
+    },
+    {
+      "producer": "Publish",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-09-30T14:48:48Z"
     }
   ],
   "product": {
