@@ -37,7 +37,7 @@ Doc comments: `approvalActedFileSuffix` and `approvalActedFile` describe the mar
 
 In `innerrun_awaiting_test.go`:
 
-- `TestInnerRun_AwaitingResumesOncePerApproval` gives the awaiting child a non-empty history, asserts the marker holds exactly `approvalIdentity(approval)` followed by that length and a newline, and changes its second-Call expectation to the not-yet-re-stepped reason: it contains the approval time and `lyx loom start` and names the pane, does not contain `lyx loom approve`, and spawns nothing; its third Call with a new approval still resumes.
+- `TestInnerRun_AwaitingResumesOncePerApproval` gives the awaiting child a non-empty history, asserts the marker holds exactly `approvalIdentity(approval)` followed by that length and a newline, and changes its second-Call expectation to the not-yet-re-stepped reason: it contains the approval time and `lyx loom start` and names the pane, does not contain `lyx loom approve`, and spawns nothing; its third Call, with a new approval and the child's history length still equal to the recorded one, still resumes (D9), even though that length would otherwise mean the child has not re-stepped yet.
 - a new test scripts the child's history one entry longer on the second Call and expects the existing re-approve hint with no second spawn;
 - a new test pre-writes an old-layout marker (the identity line alone) for an awaiting child and expects the re-approve hint with no spawn;
 - a new test drives many awaiting polls with no approval through `newRunShed`, and asserts from the persisted status that the history holds the seeded counted entries plus one `Run-Shed` budget-exempt Stuck whose `Repeats` is the poll count minus one, and that no step blocks.

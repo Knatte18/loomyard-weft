@@ -4,6 +4,7 @@
 - `internal/shedengine#Shed.stepLocked`
 - `internal/shedengine#Shed.persistTransient`
 - `internal/shedengine#Shed.persist`
+- `internal/battencli#maxStatusHistoryEntries`
 
 **Create:**
 - `internal/shedengine/step_fold_test.go`
@@ -36,12 +37,19 @@ The same doc comment's batten-seam paragraph still holds (a skipped self-bounce'
 - repeated exempt Stucks on a self-bouncing row leave the persisted history at one entry whose `Repeats` is the number of steps after the first, whose `At` is unchanged from the first step, and whose `LastAt` is RFC 3339 UTC and not earlier than `At`; `StepResult.History` equals the persisted history;
 - the step that folds overwrites `activity.last`: seed a sentinel `activity.last` into the file between the first and second step (through `state.UpdateJSON` on the same lock path) and assert the folding step leaves `"Wait → bounced to Wait"`;
 - a folding step on a running run calls a counting `CommitStatus` exactly once, so the fold travels in the step's single persist;
+- a write that records no verdict, landing right after a fold, still carries `activity.last` forward: after two exempt Stucks (one fold), set `pause_requested` through `state.UpdateJSON` on the same lock path and step to `paused`, then assert the history is unchanged and `activity.last` is still `"Wait → bounced to Wait"`;
+  step once more, and the step-3b resume write carries it forward again while the exempt Stuck folds across the pause (D4), leaving one entry with `Repeats` 2;
 - an exempt Stuck after a counted one, and a counted one after an exempt one, each lengthen the persisted history;
-- a producer scripted exempt Stuck, Awaiting, exempt Stuck ends with three entries, the last carrying no `Repeats`/`LastAt`.
+- a `funcProducer` scripted exempt Stuck, exempt Stuck, Awaiting, exempt Stuck ends with three entries: the first with `Repeats` 1, then the Awaiting, then a fresh exempt Stuck carrying no `Repeats`/`LastAt`.
+  The step after the Awaiting halt is a plain `Step` call: `stepLocked` does not short-circuit on `awaiting`, so it re-calls `Wait` through the step-3b resume write.
 
 In `docs/overview.md`'s batten `status` paragraph, stop claiming `Run-Shed`'s self-bounce appends one entry per poll while the child awaits approval or waits for its driver.
 State instead that the running watch appends one entry per poll, bounded by its 1440-bounce budget, while a budget-exempt wait (an awaiting hand-off, the driver-exit grace) folds consecutive identical polls into one entry carrying `repeats` and `last_at`, so such a wait neither grows the history nor advances `history_length` (D10).
 Adjust the same bullet's earlier sentence beginning "Those per-poll history appends" so it still reads true for a fold, which rewrites `status.json` on every poll without lengthening it.
 Keep semantic line breaks.
 
-**ImpactSummary:** Every Shed caller's history now folds consecutive identical budget-exempt Stucks; battenshed is the only producer emitting them, and counted Stucks, routing and budget decisions are unchanged.
+In `internal/battencli/arm.go`, reword `maxStatusHistoryEntries`'s doc comment, which makes the same one-entry-per-poll claim for awaiting and driver-exit waits.
+It should say the running watch appends one entry per poll, bounded by its 1440-bounce budget, while a budget-exempt wait folds into one entry, and that the cap still keeps a long watch from burying the two ends that carry the run's meaning.
+The constant's value and `recentHistory` stay unchanged.
+
+**ImpactSummary:** Only batten folds (battenshed alone emits exempt Stucks), so its `history_length` holds still across a wait (ly-drive hands back, D10) and battencli's 20-entry window spans more of it; loomengine's length readers, counted Stucks, routing and budget are unchanged.
