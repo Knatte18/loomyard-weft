@@ -211,7 +211,9 @@
     "id": 20,
     "slug": "fabric-readd-weft-push",
     "title": "fabric add after remove: leftover remote weft branch rejects the push (flaky test)",
-    "depends_on": [],
+    "depends_on": [
+      "status-strand-by-driver"
+    ],
     "isolated": false,
     "deferred": false,
     "brief": "Re-adding a removed slug races the old remote weft branch; integration test flakes",

@@ -13,11 +13,6 @@ Batten keeps watching an awaiting child, run records survive teardown, approval 
 
 One generated VS Code workspace shows the board beside the prime
 
-## **#020:** fabric add after remove: leftover remote weft branch rejects the push (flaky test) [A]
-[fabric-readd-weft-push](design-fabric-readd-weft-push.md)
-
-Re-adding a removed slug races the old remote weft branch; integration test flakes
-
 # Layer B
 
 ## **#019:** One driving surface per run: ly-drive pane or status strand, never both [B]
@@ -33,6 +28,12 @@ llm-driven run shows only ly-drive; go-driven run shows only the status strand
 Depends on: #019, #011
 
 Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
+
+## **#020:** fabric add after remove: leftover remote weft branch rejects the push (flaky test) [C]
+[fabric-readd-weft-push](design-fabric-readd-weft-push.md)
+Depends on: #019
+
+Re-adding a removed slug races the old remote weft branch; integration test flakes
 
 # Layer D
 
