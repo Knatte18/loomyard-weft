@@ -6,12 +6,12 @@
 
 **Create:**
 - `internal/fabricengine/midmerge.go`
-- `plan:internal/fabricengine#MidMergeKind` -> `type MidMergeKind int`
-- `plan:internal/fabricengine#MidMergeNone` -> `const MidMergeNone MidMergeKind = 0`
-- `plan:internal/fabricengine#MidMergeParked` -> `const MidMergeParked MidMergeKind = 1`
-- `plan:internal/fabricengine#MidMergeForeign` -> `const MidMergeForeign MidMergeKind = 2`
-- `plan:internal/fabricengine#MidMergeState` -> `type MidMergeState struct`
-- `plan:internal/fabricengine#MidMerge` -> `func MidMerge(l *lyxcwd.Location) (MidMergeState, error)`
+- `internal/fabricengine#MidMergeKind`
+- `internal/fabricengine#MidMergeNone`
+- `internal/fabricengine#MidMergeParked`
+- `internal/fabricengine#MidMergeForeign`
+- `internal/fabricengine#MidMergeState`
+- `internal/fabricengine#MidMerge`
 - `internal/fabricengine/midmerge_integration_test.go`
 
 **Uses:**

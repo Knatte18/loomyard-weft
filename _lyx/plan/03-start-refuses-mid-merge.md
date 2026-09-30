@@ -14,12 +14,12 @@
 
 **Uses:**
 - `internal/shedrun#StartMergeInProgressKind`
-- `plan:internal/fabricengine#MidMerge`
-- `plan:internal/fabricengine#MidMergeState`
-- `plan:internal/fabricengine#MidMergeKind`
-- `plan:internal/fabricengine#MidMergeNone`
-- `plan:internal/fabricengine#MidMergeParked`
-- `plan:internal/fabricengine#MidMergeForeign`
+- `internal/fabricengine#MidMerge`
+- `internal/fabricengine#MidMergeState`
+- `internal/fabricengine#MidMergeKind`
+- `internal/fabricengine#MidMergeNone`
+- `internal/fabricengine#MidMergeParked`
+- `internal/fabricengine#MidMergeForeign`
 - `internal/shedrun#StartNotParkedKind`
 - `internal/loomcli#loomCLI.resumeParkedDriver`
 - `internal/loomcli#loomCLI.runHaltedAtHandBack`
