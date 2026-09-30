@@ -2,7 +2,7 @@
 
 **Create:**
 - `internal/loomengine/priorplan.go`
-- `plan:internal/loomengine#PriorPlanBlock` -> `func PriorPlanBlock(stencilsDir, archiveDir string, movedFiles []string) (string, error)`
+- `internal/loomengine#PriorPlanBlock`
 - `internal/loomengine/priorplan_test.go`
 
 **Uses:**

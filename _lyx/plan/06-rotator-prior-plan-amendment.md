@@ -11,7 +11,7 @@
 - `internal/loomengine/plan.go`
 
 **Uses:**
-- `plan:internal/loomengine#PriorPlanBlock`
+- `internal/loomengine#PriorPlanBlock`
 - `contracts/stencils#LoomTemplatePriorPlan`
 
 **Intent:**

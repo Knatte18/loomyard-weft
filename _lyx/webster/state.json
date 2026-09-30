@@ -1,7 +1,7 @@
 {
   "runGuid": "d9d8c2214f0ee69b93fc9225871f8d26",
-  "planFingerprint": "7a4108e25c8033d3ffe61b3f17904ffce120d0ddafa646ece5e2eeb945468bd6",
-  "currentBatch": 5,
+  "planFingerprint": "9aceb6aebc857f012a243725989245f5af8ae85aa12a2c1144d395b456e00d45",
+  "currentBatch": 0,
   "masterStrand": "eb9d0da12b75d71d6b1396d0c25a2a2e",
   "masterSessionId": "81d46c4f-8fc0-4c22-be4b-d93b9305f45c",
   "assertedModel": "sonnet",
@@ -92,14 +92,26 @@
       "kind": "fork",
       "spawnedAt": "2026-09-30T14:27:42Z",
       "sessionId": "81d46c4f-8fc0-4c22-be4b-d93b9305f45c",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-loomengine-prior-plan-block",
+        "status": "done",
+        "head_sha": "d08efa80356632f12897869fe0a8185f6988f9a9"
+      },
+      "cardShas": [
+        "d08efa80356632f12897869fe0a8185f6988f9a9"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-write-respawn/81d46c4f-8fc0-4c22-be4b-d93b9305f45c/subagents/agent-a9d55c01d436b456f.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-write-respawn/81d46c4f-8fc0-4c22-be4b-d93b9305f45c/subagents/agent-a825c41e556efc4a3.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-write-respawn/81d46c4f-8fc0-4c22-be4b-d93b9305f45c/subagents/agent-a9ed87d7bda1a5949.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-write-respawn/81d46c4f-8fc0-4c22-be4b-d93b9305f45c/subagents/agent-aa657fc8b20f6ccc6.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-write-respawn/81d46c4f-8fc0-4c22-be4b-d93b9305f45c/subagents/agent-a82c065296c175953.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-write-respawn/81d46c4f-8fc0-4c22-be4b-d93b9305f45c/subagents/agent-a82c065296c175953.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-write-respawn/81d46c4f-8fc0-4c22-be4b-d93b9305f45c/subagents/agent-a9d55c01d436b456f.jsonl"
   ]
 }
