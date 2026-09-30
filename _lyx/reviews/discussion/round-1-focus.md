@@ -1,0 +1,15 @@
+---
+round: 1
+focus:
+  - "Decisions, 'The archive tag is the orphan proof': archiveWeftTip (internal/fabricengine/archive.go) tags the LOCAL weft tip when the local branch exists, and only falls back to origin's copy otherwise. Settle whether the proof still holds when the local weft branch was behind or diverged from origin at Remove time, and whether the reachability check has the archive-tag target objects locally when the tag was pushed from another hub (the Open risks bullet covers only fetching the remote branch tip)."
+  - "Decisions, weft refusal remedies: settle whether 'lyx fabric remove <slug>' is a usable remedy when the pair was already removed on this very hub but the remote tip is not archived (local behind origin at Remove, or Remove ran with ArchiveSkippedReason because the weft repo had no origin then). If it is not usable, does the record give the operator a working remedy?"
+  - "Decisions and Open risks, ancestor reachability: 'reachable from (equal to, or an ancestor of)' an archive tag also covers a live pair on another hub that has pushed nothing past the parent's weft commit, since that commit is an ancestor of any older archive of the slug. Settle whether the first Open risks bullet and the 'one slug live on at most one hub' assumption describe this case accurately."
+  - "Goal vs. warp decisions: the Goal says a re-add after plain Remove 'succeeds deterministically', but the warp decision and its acceptance criterion make the squash-landed re-add refuse until someone deletes the remote warp branch by hand. Settle whether Goal, Scope and Acceptance criteria state that outcome consistently, and whether the rollback defect cited as rationale (a bare-slug warp branch the rollback cannot delete) is in or out of scope."
+  - "Auto-mode assumptions / Q10, adopt path: settle whether the local weft branch can survive a plain Remove at all, and if it can, whether the unprobed adopt path reproduces the same mid-Add push rejection this task removes."
+  - "Acceptance criteria, lease race: settle whether 'the remote weft branch moves between the pre-flight probe and the deletion' is pinned deterministically enough for the plan writer (which seam moves the branch), given the Goal requires tests independent of timing."
+  - "Leanness of decision-record.md: check whether Decisions rationales (notably the warp bullet's account of today's step-11 failure) and the last Auto-mode assumption (why the warp pre-flight is in scope) are deliberation narrative that belongs in support-log.md. Apply the completeness-before-leanness test: keep any requirement the plan writer needs in Decisions or Constraints."
+---
+
+Seeded from a read of both artifacts, the writer stencil and `internal/fabricengine/archive.go` and `remove.go`.
+The identifiers the record cites exist (`remoteBranchRequest`, `deleteRemoteBranch`, `KindRemoteBranchDeleted`, `KindBranchPushed`, `archiveWeftTip`, the roadmap's "no remote/GitHub branch deletion" entry).
+Call-site enumeration and signatures are deliberately excluded per the rubric and stencil.
