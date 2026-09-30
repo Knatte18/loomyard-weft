@@ -72,3 +72,6 @@ _No rounds yet._
 - **Q8 — Is the `operator-surface` failure caused by retention?**
   Open.
   Not reproducible (worktree removed); recorded as an open risk in the decision record.
+- **Q9 — When does the CLI load `logger.yaml` relative to the arm check?**
+  Resolved in review round 1: after `NotifyExit`, and only when the sink armed and was not redirected.
+  Rationale: `LoadOrTemplate` logs at Info when it degrades, and an Info record arms the sink, so an unconditional load would add an arm trigger to every process.

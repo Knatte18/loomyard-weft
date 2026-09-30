@@ -3,8 +3,9 @@
 ## Goal
 
 Stop routine lyx invocations from evicting the trace files a loom run or an ly-drive step depends on.
-A shed step's `trace_file` must still exist when the driver reads it after the step returns,
-and the operator must be able to widen the retention window without a code change.
+After a shed step returns, its `trace_file` must outrank every trace whose last activity is older,
+so it survives until N newer-active traces exist or the age bound passes, rather than being the first file the next sweep deletes;
+the operator must be able to widen the retention window without a code change.
 
 ## Scope
 
@@ -32,8 +33,9 @@ A group with at least one file owned by a live pid (including the sweeping proce
 Files that do not match the trace-file grammar stay untouched, as today.
 
 Rationale: a trace id names one invocation tree — a process plus every child that adopted its exported `LYX_TRACE_ID`.
-Counting files lets a single step that spawns many lyx children consume most of the budget,
-and deleting half of a tree leaves a trace nobody can reconstruct.
+Counting files lets a single invocation whose direct-exec lyx children inherit its exported trace id consume most of the budget;
+tmux-spawned agent sessions have `LYX_TRACE_ID` stripped, so their lyx calls form their own groups, and D2 covers that case.
+Deleting half of a tree leaves a trace nobody can reconstruct.
 Exempting a whole live group extends the existing live-pid guarantee to the children of a running invocation.
 
 ### D2 — Rank and age by last activity (newest mtime), not by filename timestamp
@@ -56,8 +58,21 @@ At exit, a process sweeps its sink directory if and only if its durable sink arm
 A process that never armed a sink sweeps nothing.
 The sweep runs outside `sinkMu`.
 
-Rationale: at exit the CLI layer has already resolved the retention config, so the sweep can use configured bounds without the logger importing `internal/configengine` (which imports `internal/logger` — a cycle).
-Sweeping at exit also means the sweep never runs while the config load itself is logging, so it cannot deadlock on the non-reentrant `sinkMu`.
+The exit path runs in this order:
+
+1. `NotifyExit(code)`, which force-arms the sink on a non-zero code, as today.
+2. The CLI layer asks the logger whether the sink armed in the current generation, and whether it was redirected.
+3. Not armed: stop — no config load, no sweep.
+4. Armed and redirected: sweep with the template defaults, without loading `logger.yaml`.
+5. Armed and not redirected: load `logger.yaml` (D4, D5), then sweep with the resulting bounds.
+
+The config load never runs before step 2, and never in a process whose sink has not armed.
+`configengine.LoadOrTemplate` logs at Info when it degrades to the template, and an Info record arms the sink,
+so a load in a process that never armed would arm it and write a trace file.
+
+Rationale: loading the config in the CLI layer at exit lets the sweep use configured bounds without the logger importing `internal/configengine` (which imports `internal/logger` — a cycle).
+Loading it only after the arm check keeps the arm triggers unchanged: the load's own logging lands in a trace file that already exists.
+Sweeping after the load, outside `sinkMu`, also means the sweep never runs while the config load itself is logging, so it cannot deadlock on the non-reentrant `sinkMu`.
 A process killed before exit skips its sweep;
 the next exiting process sweeps the same directory, so the bound still converges.
 
@@ -72,8 +87,8 @@ Both must be positive integers.
 The file is loaded with `configengine.LoadOrTemplate` (degrading), so a worktree without `_lyx/` or a hub/standalone state directory uses the template defaults.
 The config is resolved from the same lyx-owned worktree anchor the cwd-anchored sink resolves from;
 a process whose sink was redirected (`SetDurableSinkDir*`: reed watchdog, standalone wiring) uses the template defaults.
-The logger exposes a setter or an exit-time parameter for the bounds;
-the CLI layer (cmd/lyx root or a cliwire helper — the plan picks the site) loads the config and passes the bounds in.
+The logger exposes a setter or an exit-time parameter for the bounds, and a query for whether its sink armed in the current generation and was redirected;
+the CLI layer (cmd/lyx root or a cliwire helper — the plan picks the site) loads the config in the order D3 fixes and passes the bounds in.
 The logger keeps compiled-in defaults equal to the template values for any process that never passes bounds.
 
 Rationale: every process sweeping one directory reads the same per-worktree file, so they agree on the bounds, which environment variables cannot guarantee across tmux-spawned children.
@@ -88,22 +103,13 @@ The process exit code is unchanged.
 
 Rationale: retention is housekeeping at exit;
 turning a bad config into a failed `lyx board upsert` would punish an unrelated command.
-The Warn lands in the already-armed trace file, so the misconfiguration is discoverable.
-
-### D6 — No suppression of trace files for routine commands
-
-Decision: the sink's arm triggers and the level policy stay unchanged;
-routine commands (board upserts, fabric verbs) keep writing a trace file when they log at Info+.
-"Fewer files from routine commands" is met by D1–D4: routine traces stop evicting run traces, rather than stop existing.
-
-Rationale: the level policy states that a mutation or step the trace does not record cannot be repaired from.
-Board and fabric verbs run by agents inside a loom run are exactly those mutations,
-and an agent's lyx call in a tmux session cannot be told apart from an operator's by an inherited trace id today.
+D3 loads the config only in a process whose sink already armed, so the Warn lands in that process's trace file and the misconfiguration is discoverable.
 
 ## Constraints
 
 - `internal/logger` must not import `internal/configengine` (`configengine` imports `logger`).
 - `sinkMu` is non-reentrant: nothing that takes it may run config loading or logging while holding it.
+- The retention config load adds no arm trigger: it never runs in a process whose sink has not armed (D3).
 - Config Strictness Invariant: `logger.yaml`'s loader adopts `LoadOrTemplate` only, and `CONSTRAINTS.md`'s degrading-set list gains the owning module in the same commit.
 - Cwd Resolution Invariant: config and sink directory resolution go through `internal/lyxcwd`;
   no new cwd resolution.
@@ -119,7 +125,6 @@ and an agent's lyx call in a tmux session cannot be told apart from an operator'
 - Key names `trace_retention_count` / `trace_retention_days` are chosen here; the operator did not name them.
 - Default count 200 is a judgment from observed turnover, not an operator figure.
 - Days, not a Go duration string, as the age unit: matches the existing `*_timeout_min` integer style in `loom.yaml`.
-- The `operator-surface` root cause is taken to be D2's post-exit eviction; it was not reproduced (that worktree no longer exists).
 
 ## Open risks
 
@@ -128,11 +133,8 @@ and an agent's lyx call in a tmux session cannot be told apart from an operator'
   The acceptance test for D2 pins the retention path; any other cause stays open.
 - mtime is writable by any process and can be reset by tools that copy without preserving it.
   A copied trace directory ranks by copy time; the fallback to the filename timestamp covers only a failed stat.
-- Windows `proc.IsAlive` treats a pid with an open handle as alive, which errs toward keeping files — safe for this task, noted for completeness.
 - Sweep-at-exit means a long-lived daemon (reed watchdog) sweeps its directory only when it exits;
   other processes that arm a sink in the same directory keep it bounded meanwhile.
-- A config template rename or a new module file interacts with `lyx config reconcile`;
-  the plan must register the template wherever reconcile discovers module templates.
 
 ## Acceptance criteria
 
@@ -144,6 +146,7 @@ and an agent's lyx call in a tmux session cannot be told apart from an operator'
 - Non-matching filenames and subdirectories are untouched; an absent or empty directory returns nil.
 - The sink arm no longer sweeps; a process that armed its sink sweeps its sink directory exactly once at exit (zero and non-zero exit codes); a process that never armed sweeps nothing.
 - The exit sweep uses bounds from `_lyx/config/logger.yaml` when present and valid, template defaults when `_lyx/` is absent or the sink was redirected, and compiled-in defaults plus one Warn record when the file is invalid — with the exit code unchanged in every case.
+- A process that never armed its sink, run in a lyx worktree whose `logger.yaml` is absent or invalid, writes no trace file and loads no config at exit.
 - `logger.yaml` rejects zero, negative, and non-integer values for both keys.
 - `lyx config reconcile` recognises `logger.yaml` and seeds it from the template.
 - Existing retention tests (`retention_test.go`) are updated to the trace-group and activity-time semantics, not deleted.
