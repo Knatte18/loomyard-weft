@@ -1,0 +1,7 @@
+status: OK
+head_sha: a30634c15e810addcee031b147c8c06012102fbb
+deviations:
+  - internal/loomengine/coherence.go
+  - internal/preflightshed/wayforward_test.go
+  - internal/preflightshed/preflight_integration_test.go
+  - internal/loomshed/batchifier.go
