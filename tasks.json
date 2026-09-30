@@ -271,9 +271,7 @@
     "id": 25,
     "slug": "hub-orch-strand",
     "title": "Hub orchestrator as a reed strand with automatic handoff",
-    "depends_on": [
-      "batten-open-ide"
-    ],
+    "depends_on": [],
     "isolated": false,
     "deferred": false,
     "brief": "lyx hosts the hub orchestrator in tmux and cycles its context via handoff",
