@@ -7,8 +7,10 @@
 
 Walk every refusal/halt path in webster and shed; none may wedge a run
 
-## **#030:** Batten run records in the prime leak into every new pair [A]
-[batten-records-leak-into-pairs](design-batten-records-leak-into-pairs.md)
+# Done
+
+## **#030:** Batten run records in the prime leak into every new pair
+[batten-records-leak-into-pairs](design-batten-records-leak-into-pairs.md) [done]
 
 Batten keeps its per-slug seed/status at the prime weft `_lyx/shed/<slug>/`, committed to main-weft; a pair created afterwards inherits them, and its child run (same slug) finds a batten seed and blocks at Seed-Child.
 
