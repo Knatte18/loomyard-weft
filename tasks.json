@@ -59,15 +59,5 @@
     "deferred": false,
     "brief": "Stencil drift warning names the right remedy per drift direction",
     "body": "After PR #280 changed `bouncer-template-seed` and `bouncer-template-judge` and was merged, every `lyx` command in the hub warned:\n\n```\nstencilstore: board copy has drifted from worktree source; see lyx stencil promote\n```\n\n`lyx stencil promote` copies a board copy back into `contracts/stencils/`. Here that would have reverted #280's stencil changes: the drift was the source moving ahead while the board copy was the older, untouched one a previous binary deployed. The actual fix was deploying the new binary (`update-plugins.sh`), which refreshed the untouched board copy — the warning then disappeared on its own.\n\nSo the remedy is wrong whenever the drift runs source-ahead, and following it verbatim does harm.\n\nWanted: the warning distinguishes the two cases —\n- the board copy was hand-edited (it differs from what the binary deploys): `lyx stencil promote \u003cname\u003e` is right;\n- the board copy is untouched and the source moved ahead: say the deployed binary is older than the source and the fix is a production deploy, never promote.\n\nSource: https://github.com/Knatte18/loomyard/issues/286 (close it in the landing commit)."
-  },
-  {
-    "id": 6,
-    "slug": "zz-bench",
-    "title": "bench 1",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "",
-    "body": ""
   }
 ]

@@ -27,9 +27,6 @@ Webster integration.md renders the verify command verbatim
 
 Stencil drift warning names the right remedy per drift direction
 
-## **#006:** bench 1 [A]
-[zz-bench]
-
 # Done
 
 ## **#000:** Burler: no cluster-exclude warning when the profile has no cluster fan
