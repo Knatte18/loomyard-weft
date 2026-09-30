@@ -2,12 +2,6 @@
 
 # Layer A
 
-## **#019:** One driving surface per run: ly-drive pane or status strand, never both [A]
-[status-strand-by-driver](design-status-strand-by-driver.md)
-Depends on: #010
-
-llm-driven run shows only ly-drive; go-driven run shows only the status strand
-
 ## **#020:** fabric add after remove: leftover remote weft branch rejects the push (flaky test) [A]
 [fabric-readd-weft-push](design-fabric-readd-weft-push.md)
 Depends on: #010
@@ -128,6 +122,12 @@ Burler: warn when the explore stencil lacks the focus_directive marker
 [reed-launch-script](design-reed-launch-script.md) [done]
 
 Hide the long env+claude launch line behind a generated launch script
+
+## **#019:** One driving surface per run: ly-drive pane or status strand, never both
+[status-strand-by-driver](design-status-strand-by-driver.md) [done]
+Depends on: #010
+
+llm-driven run shows only ly-drive; go-driven run shows only the status strand
 
 ## **#021:** Webster verify: rerun, compare with parent, halt only on a real regression
 [verify-triage](design-verify-triage.md) [done]
