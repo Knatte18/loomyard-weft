@@ -1,0 +1,3 @@
+`.lyx/logs` gets one trace file per lyx invocation that logs at INFO+ or exits non-zero (`internal/logger/sink.go`); `internal/logger/retention.go` keeps the newest 50 files and nothing older than 14 days, both hard-coded.
+Operator board upserts and fabric verbs fill the 50 slots, pushing a run's interesting traces out.
+Options: make both bounds config keys; or arm the sink only on failure or when a trace id is set (loom runs, ly-drive steps).

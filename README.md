@@ -60,3 +60,8 @@ Someday (roadmap): #227, #228 — measured win, committed, not yet scheduled
 [cache-ttl-per-role](design-cache-ttl-per-role.md)
 
 Parked: workers on 5m cache TTL, waiting sessions on 1h — operator deciding
+
+## **#004:** Trace logs: configurable retention, fewer files from routine commands
+[trace-log-retention](design-trace-log-retention.md)
+
+Trace logs: configurable retention, fewer files from routine commands
