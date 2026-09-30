@@ -1,7 +1,7 @@
 {
-  "recipe": "batten",
-  "driver": "go",
+  "recipe": "loom",
+  "driver": "llm",
   "params": {
-    "child_driver": "llm"
+    "parent": "main"
   }
 }
