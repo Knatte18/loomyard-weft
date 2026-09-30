@@ -1,0 +1,19 @@
+{
+  "runGuid": "b04563a9d904ea039fd9d66a7ea05680",
+  "planFingerprint": "dab93d28b73bcceae1a063a9687e3f709be137e7e08f9d835f3b10d7432c2cbf",
+  "currentBatch": 1,
+  "masterStrand": "d17077d35e631db55a59944a069f7e19",
+  "masterSessionId": "5369a876-adce-4177-880d-78dbd2855074",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "verifyrun-runner",
+      "startSha": "85902381e89c8131af7ccff9d388227aa5774aa4",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T14:25:52Z",
+      "sessionId": "5369a876-adce-4177-880d-78dbd2855074",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
