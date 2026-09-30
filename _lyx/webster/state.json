@@ -1,7 +1,7 @@
 {
   "runGuid": "f652684f48161c48a7d9bfbde839552f",
   "planFingerprint": "36dbf8a988fd24d366b4451335b25b6ca068d63a43b4636877df44955fd94a77",
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "cdbb4b6aa888221ee164baab2824365c",
   "masterSessionId": "2a0edaea-54f5-45ae-af8a-c85c0ae22947",
   "assertedModel": "sonnet",
@@ -72,13 +72,25 @@
       "kind": "fork",
       "spawnedAt": "2026-09-30T15:25:15Z",
       "sessionId": "2a0edaea-54f5-45ae-af8a-c85c0ae22947",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-agent-start-not-started",
+        "status": "done",
+        "head_sha": "3e5420f018a66ec59bf450bd68eed0de810ae800"
+      },
+      "cardShas": [
+        "3e5420f018a66ec59bf450bd68eed0de810ae800"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-ad657d2e6af0dabf0.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a9bf9ec81fd58c722.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a7a0ec3afd3ce0d19.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a6e63de80e9827a88.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-a6e63de80e9827a88.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-ad657d2e6af0dabf0.jsonl"
   ]
 }
