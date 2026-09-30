@@ -5,6 +5,7 @@
 - `internal/websterengine#RecordResult`
 - `internal/websterengine#postBatchChecks`
 - `internal/websterengine/recordbatch_test.go`
+- `internal/websterengine/doc.go`
 
 **Uses:**
 - `plan:internal/websterengine#refuseMidMerge`
@@ -19,6 +20,10 @@ From there on the batch's head is `report.HeadSHA`, not the post-merge HEAD: pas
 `postBatchChecks` itself is unchanged: its done-checks and drift tree resolution still read the worktree as it stands, the merged tree.
 When HEAD equals the report's `head_sha` the call's behaviour and warnings are byte-for-byte what they were.
 Update the `RecordResult.Warnings` doc comment to list the moved-HEAD notice among the non-fatal warnings, and the `postBatchChecks` comment that says HeadSHA is "cross-checked against the worktree's real HEAD" to say it is the reconciled report head.
+
+In `doc.go`, add the merge-only head rule for record-batch to the fork-return contract section, in this commit because this is where record-batch's behaviour changes: record-batch accepts HEAD when it equals the report's `head_sha` or sits above it by merge commits alone on the first-parent chain (a parent merge-in), records the batch at the report's `head_sha` while the done-checks and drift read the merged tree, warns naming the walked merge SHAs, refuses any non-merge movement, and refuses outright while a git merge is in progress.
+Name the known limit there too: integration bisect over earlier `CardSHAs` runs on pre-merge trees.
+Card 3 extends the paragraph to recover-batch.
 
 Tests, in the existing integration-tagged `recordbatch_test.go` on `newRecordFixture`, with a helper that builds a parent-side commit off `fx.StartSHA` on a side branch and merges it `--no-ff` into the fixture's branch after the fork's commit:
 - one parent merge after the fork's commit: the batch goes terminal, `CardSHAs` is `[fx.HeadSHA]`, and `Warnings` holds exactly one entry naming `fx.HeadSHA`, the merge commit's SHA and the new HEAD;

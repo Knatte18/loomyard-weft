@@ -11,6 +11,7 @@
 Pin the observed wedge (run `batten-hub-ready`, batch 11) end to end, so a regression in any one of begin-batch, record-batch or the head rule shows up as the scenario it breaks.
 
 A new integration-tagged (`//go:build integration`) test file in package `websterengine_test`, reusing the package's existing test fixtures rather than building new ones: `newBeginFixture` for the two-batch plan, scratch repo and geometry, and a `recordFakeEngine` scripted with one fork transcript for the `RecordDeps` built from the same `State`, `Plan`, `Batches` and `Geom`.
+The remaining `RecordDeps` seams are wired as `newRecordFixture` wires them: `RefMatcher: websterengine.NeverMatches{}`, a `recordFakeSleeper`, and `OutcomePath`/`SummaryPath` under a `t.TempDir()` contract dir.
 The scenario:
 1. `BeginBatch(deps, 1)` succeeds and records batch 1's `StartSHA`.
 2. The fork's commit lands on the scratch repo and an OK report naming that commit's SHA is written to the reports dir.

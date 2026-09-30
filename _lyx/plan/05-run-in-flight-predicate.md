@@ -27,7 +27,8 @@ Tests, untagged in package `websterengine_test` over `t.TempDir()` anchors (no g
 outcome `paused` → true;
 outcome `stuck` with a reason → true;
 outcome `done` → false;
-a malformed `outcome.yaml` (an unknown outcome value, and unparseable YAML) → error.
+a malformed `outcome.yaml` (an unknown outcome value, and unparseable YAML) → error;
+an unreadable `outcome.yaml` (a directory created at its path, which fails the read portably) → error.
 Seeded files are written under `websterengine.Dir(anchor)` and `websterengine.OutcomePath(websterengine.Dir(anchor))`.
 
 **Commit:** 5: websterengine: RunInFlight predicate for a mid-run Webster at an anchor

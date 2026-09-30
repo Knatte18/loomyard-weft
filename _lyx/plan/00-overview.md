@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -12,8 +12,8 @@ This plan makes the head cross-check accept HEAD when only merge commits sit bet
 ## Card Index
 
 1 — head-reconcile-helpers — add the merge-only head walk and the mid-merge probe beside `headSHA`
-2 — record-batch-tolerates-merge — record-batch uses both helpers and records the batch at the report's head
-3 — recover-batch-tolerates-merge — recover-batch follows the same rule; package doc describes it
+2 — record-batch-tolerates-merge — record-batch uses both helpers and records the batch at the report's head; package doc describes the rule
+3 — recover-batch-tolerates-merge — recover-batch follows the same rule; package doc covers both verbs
 4 — parent-merge-wedge-scenario — end-to-end begin → fork commit → parent merge → record → next begin test
 5 — run-in-flight-predicate — export `RunInFlight` over webster's own `state.json` and `outcome.yaml`
 6 — merge-in-warns-mid-run — `lyx fabric merge-in` warns mid-run; `Long` help and the ly-drive rule document it

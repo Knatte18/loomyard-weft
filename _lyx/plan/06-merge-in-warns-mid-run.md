@@ -5,6 +5,7 @@
 - `internal/fabriccli#setMergeExit`
 - `internal/fabriccli#errConflictsWithRecord`
 - `internal/fabriccli#addWeftVerbs`
+- `internal/fabriccli/envelope_test.go`
 - `plugins/ly/skills/ly-drive/SKILL.md`
 
 **Create:**
@@ -24,15 +25,17 @@ The `merge-in` RunE calls `websterengine.RunInFlight(loc().AnchorPath())` — th
 When it is true, the verb logs one `logger.Warn` and passes one warning to the envelope: Webster is mid-run in this worktree, `lyx webster record-batch` tolerates the parent merge, and integration bisect over earlier card SHAs will run on pre-merge trees.
 The warning goes under a `warnings` string array on the ok envelope of a merge that moved HEAD (not `already_up_to_date`) and on the conflict envelope; a hard failure and an already-up-to-date result carry no `warnings` key.
 A `RunInFlight` error degrades to no warning plus a `logger.Warn` naming the error, never a failure.
-`setMergeExit` gains a warnings parameter that `merge --continue`, `merge --abort` and `merge <branch>` pass as nil, and `errConflictsWithRecord` gains the matching optional field, so their envelopes are unchanged.
+`setMergeExit` gains a `warnings []string` parameter that `merge --continue`, `merge --abort` and `merge <branch>` pass as nil, and forwards it to the ok and conflict envelopes.
+`errConflictsWithRecord` gains a matching `warnings []string` parameter; the existing calls in `envelope_test.go` pass nil.
+Both envelopes add a `warnings` key only when the slice is non-empty, so a nil or empty slice leaves every existing envelope byte-for-byte unchanged.
 `merge-in`'s `Long` help gains a paragraph documenting the warning and when it appears; `Short` is unchanged.
 
 In the `ly-drive` skill's `## Repairing` section, add one short rule: prefer not to merge the parent into a task worktree while its Webster phase is in flight;
 when a parent fix is needed mid-run, `lyx fabric merge-in` is survivable and will warn.
-The skill must stay recipe-blind (`cmd/lyx/lydriveskill_test.go`): the rule may not contain the whole word "loom" or the literals `lyx loom`, `lyx batten` or `.lyx/`.
+The skill must stay recipe-blind (`cmd/lyx/lydriveskill_test.go`): the rule may not contain either recipe name, "loom" or "batten", as a whole word, nor the literals `lyx loom`, `lyx batten` or `.lyx/`.
 
 Tests, in the new integration-tagged file in package `fabriccli_test`, on a `hubforge.NewHub` pair driven through `fabriccli.RunCLIIn` with the existing helpers in `merge_cli_integration_test.go`.
-Seed webster state by writing `state.json` (and `outcome.yaml` where the case needs one) under `websterengine.Dir(h.PrimeWorktree())` and committing it on the prime weft before the weft feature branch is cut, since `MergeIn` refuses a dirty pair:
+Seed webster state by writing `state.json` (and `outcome.yaml` where the case needs one) under `websterengine.Dir(h.Location.AnchorPath())`, the same anchor path the verb reads, and committing it on the prime weft before the weft feature branch is cut, since `MergeIn` refuses a dirty pair:
 - in-flight state (no outcome), clean diverging merge-in: exit 0, the merge commits, and `warnings` is exactly the one warning;
 - in-flight state, conflicting merge-in: exit 1, the conflict envelope carries `conflicts` and the same `warnings`;
 - no webster state: exit 0 with no `warnings` key;
