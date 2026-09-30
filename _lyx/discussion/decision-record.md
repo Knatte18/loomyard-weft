@@ -67,17 +67,20 @@ It polls the run's events file and exits when reed no longer tracks the strand o
 
 **Decision:** A fresh launch's prompt is chosen in this order:
 1. `--handoff <path>` if given.
-2. The newest file in the prime's `.lyx/orch/handoffs/`.
+2. The last completed handoff recorded in orch state (D10), if that file still exists.
 3. The plain start stencil, which tells the session it is the hub orchestrator and to read the board.
 
 In cases 1 and 2 the prompt is the resume stencil pointed at that file.
 **Rationale:** Continuity across restarts comes free from the last cycle's handoff; lyx stays repo-agnostic by never naming `manifest/HANDOFF.md`, and the operator passes that file with `--handoff` when wanted.
+The newest file in `.lyx/orch/handoffs/` can be a partial or aborted handoff that D11 left behind, so only a handoff whose phase completed counts.
 
 ### D7 — Context usage is read from the provider transcript, behind the Engine seam
 
 **Decision:** The Claude engine reads context usage as `input_tokens + cache_creation_input_tokens + cache_read_input_tokens` of the last main-chain assistant message (sidechain entries excluded) in the session's current transcript.
 It locates that transcript itself, from what the Stop hook records.
 It follows the transcript through `/clear`, which starts a new session ID and transcript file.
+A reading is taken from the transcript named by the turn end being evaluated, and only a turn end after the watcher's last injection is evaluated.
+So the pre-clear handoff turn is never read after `/clear`, and the first post-cycle reading comes from the resume turn in the new transcript.
 shuttleengine and orchengine see only a provider-invariant token count.
 **Rationale:** Shuttle Provider-Seam Invariant; the Stop hook payload already carries the transcript location, so no guessing from directory listings is needed.
 
@@ -92,23 +95,38 @@ Usage is checked on every turn end.
 **Decision:** The watcher may inject only when all of these hold:
 - The newest event is a turn end, either `EventStop` or `EventWaiting`, never `EventAsk`.
 - No newer event has arrived for at least the configured idle grace period, default 30s.
-- A fresh pane capture, classified by a new engine probe, shows the provider's input box present and empty.
+- A fresh pane capture, classified by a new engine probe, shows an idle session: the provider's input box present and empty, and no turn in progress.
 
 Otherwise the watcher skips this poll and re-checks on the next one.
 **Rationale:** The orchestrator nearly always has background watchers outstanding, so excluding `EventWaiting` would block cycling for hours.
 The grace period keeps a cycle out of the operator's back-and-forth.
-The input-box probe prevents typing over an operator's unsent draft or into a permission prompt.
+The probe prevents typing over an operator's unsent draft, into a permission prompt, or into a running turn.
+The events file records no turn start, so after a turn end only the probe can see a new turn started by the operator or by a background task's completion.
 
 ### D10 — The cycle is a persisted state machine
 
 **Decision:** Phases, persisted in the prime's `.lyx/orch/state.json` before each side effect: `idle` → `handoff-requested` → `clearing` → `resuming` → `idle`.
-1. `handoff-requested`: type the handoff stencil (`/scribe:handoff <path>` with a focus line), with the path a new timestamped file under `.lyx/orch/handoffs/`.
-   Wait for the file to exist **and** a turn end after the injection.
-2. `clearing`: type the engine's clear-session choreography, then wait for the provider's startup-ready classification.
-3. `resuming`: type the resume stencil pointing at the handoff file.
+The persisted phase records the strand it belongs to, its entry time, and the events-file position at entry;
+"a turn end after the injection" below means one past that position.
+Each non-idle phase is bounded by the configured handoff timeout, measured from its entry time.
+1. `handoff-requested`: type the handoff stencil (`/scribe:handoff <path>` followed on the same line by focus text), with the path a new timestamped file under `.lyx/orch/handoffs/`.
+   Wait for the file to exist **and** a turn end after the injection, then record the file in state as the last completed handoff.
+   D11 governs the timeout.
+2. `clearing`: type the engine's clear-session choreography, then wait for D9's idle-session probe to pass.
+   Move to `resuming` when it passes or the timeout expires.
+   The startup-ready classification is not used here, since a pre-clear pane shows it too.
+3. `resuming`: type the resume stencil pointing at the last completed handoff.
+   Return to `idle` at the first turn end after the injection, or when the timeout expires, recording an abort reason in that case.
 
-A restarted watcher resumes from the persisted phase and never re-injects a step whose effect is already observable.
+A watcher restarted against the same strand resumes from the persisted phase:
+- `handoff-requested` or `resuming`: a turn end after the injection, or a turn in progress on the pane, means the injection landed, so keep waiting;
+  an idle pane with no such turn end means it did not, so re-type the phase's stencil.
+- `clearing`: re-type the clear choreography, then wait as above.
+
+A fresh launch (D5's dead-or-absent branch) never resumes a persisted phase: it resets the phase to `idle` and records the abandoned phase as the last abort reason.
 **Rationale:** A crash mid-cycle must neither double-inject a handoff nor strand a cleared session with no resume prompt.
+Once the handoff is complete, a repeated `/clear` loses nothing and a resume prompt in an uncleared session is harmless, so neither phase needs proof that `/clear` landed.
+A persisted phase describes one session's cycle; replaying it into a new session would type `/clear` or a resume prompt into a context that never asked for one.
 
 ### D11 — Never clear without a written handoff
 
@@ -137,7 +155,7 @@ Each injected stencil renders to a single line, so it can go through shuttle's s
 - `start [--no-attach] [--handoff <path>]` behaves as D5 and D6 describe.
 - `status` emits a JSON envelope: strand guid and liveness, watcher liveness, last context tokens, threshold, cycle phase, cycle count, last handoff path, last abort reason.
 - `cycle` writes a request the watcher picks up, and runs one cycle at the next qualifying idle point regardless of threshold.
-- `stop` removes the orchestrator strand; the watcher then exits on its own.
+- `stop` removes the orchestrator strand; the watcher then exits on its own, and the next `start` resets any persisted phase as D10 states.
 - `watch` is the daemon itself; it is started by `start`, not by the operator.
 
 Every command carries a non-empty `Short` and JSON errors through `internal/output`.
@@ -174,22 +192,24 @@ lyx adds nothing.
 - Default threshold 150000 tokens, idle grace 30s, handoff timeout 10 minutes.
 - `EventWaiting` counts as idle for cycling.
 - No adoption of the operator's existing terminal session; the migration is: `/scribe:handoff` in the old session, exit it, `lyx orch start --handoff <that file>`.
-- No automatic relaunch on process death; `lyx orch start` relaunches from the newest handoff.
+- No automatic relaunch on process death; `lyx orch start` relaunches from the last completed handoff.
 - Handoffs are kept indefinitely.
 
 ## Open risks
 
 - Whether background tasks started by the session survive `/clear`, and whether their completion notifications land in the fresh context, is unverified.
-  The handoff focus line tells the session to list its live watchers, so the resumed session can check before re-arming them.
+  The handoff focus text tells the session to list its live watchers, so the resumed session can check before re-arming them;
+  the smoke test verifies survival and records the outcome in the module doc.
 - A `SendMessage` delivered in the sub-second gap between the handoff turn's end and `/clear` is lost from context.
 - Whether a `SendMessage` address for the session stays stable across `/clear` is unverified; verify in the smoke test and record the outcome in the module doc.
 - The transcript's usage fields and the Stop-hook payload shape are Claude Code internals and can change without notice; the parser must degrade to "usage unknown", which never triggers a cycle, rather than fail the watcher.
 - If the configured threshold sits above the model's auto-compaction point, Claude Code compacts first; the cycle still works later, only less usefully.
+  Even the default leaves a narrow margin on a 200k window: operator turns before idle qualifies, and the handoff turn itself, both spend it, so a busy session can compact first with the same outcome.
 
 ## Acceptance criteria
 
 - `lyx orch start` from the prime launches one `orch` strand and one watcher, then attaches; a second `start` launches nothing new; `start` from a task worktree or the weft prime refuses on the envelope.
-- `lyx orch start` after the strand died removes the corpse and resumes from the newest handoff; `--handoff` overrides it.
+- `lyx orch start` after the strand died removes the corpse and resumes from the last completed handoff; `--handoff` overrides it.
 - `lyx orch status` reports every field in D14.
 - `lyx orch cycle` produces one full cycle at the next idle point: a new handoff file, then `/clear`, then the resume prompt naming that file.
 - Unit tests (fakes, untagged) for the cycle state machine cover:
@@ -201,7 +221,12 @@ lyx adds nothing.
   - handoff file written but turn not ended → no `/clear`
   - handoff timeout → abort to `idle`, no `/clear`, abort recorded
   - handoff written and turn ended → `/clear`, then resume prompt
-  - watcher restarted in each non-idle phase → resumes without re-injecting
+  - idle-session probe never passes after `/clear` → resume prompt after the timeout
+  - resume turn never ends → `idle` after the timeout, abort recorded
+  - watcher restarted in each non-idle phase → follows D10's restart rules, with no duplicate injection when the earlier one landed
+  - fresh launch over a non-idle persisted phase → phase reset to `idle`, abandoned phase recorded, nothing injected but the start prompt
+  - aborted handoff file → never chosen as D6's resume source
+  - pre-clear turn end after `/clear` → not evaluated for usage, no second cycle
   - manual `cycle` request below threshold → cycle runs
   - strand gone → watcher exits and records it
 - claudeengine unit tests over transcript fixtures:
@@ -209,8 +234,9 @@ lyx adds nothing.
   - sidechain entries are ignored
   - a transcript switch after `/clear` is followed
   - a malformed or missing transcript yields "usage unknown"
-- claudeengine unit tests over pane-capture fixtures for the input-box probe: empty box, box holding a draft, permission prompt showing.
+- claudeengine unit tests over pane-capture fixtures for the idle-session probe: empty box, box holding a draft, permission prompt showing, turn in progress.
 - A `smoke`-tagged test drives a real session through `lyx orch cycle` with a low threshold and asserts handoff file, cleared context and resume prompt.
+  It starts a background task before the cycle and records in the module doc whether the task and its completion notification survive `/clear`.
 - Seam and invariant tests still pass: provider-seam, Told-Geometry, CLI help-tree, stencil registry.
 - `docs/overview.md` lists the module; `CONSTRAINTS.md` lists `orchengine` under Told-Geometry and the degrading Config Strictness set, and `lyx orch start` under the interactive-handoff exception; `manifest/roadmap.md` gains the shipped item.
 

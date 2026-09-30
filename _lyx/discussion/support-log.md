@@ -41,7 +41,7 @@ The session ran autonomously with no operator present; every turn below is a que
 - **Stop-only idle (excluding `EventWaiting`)** — the orchestrator's long-lived background watchers would block cycling for hours.
 - **Writing cycle handoffs to `manifest/HANDOFF.md`** — it is tracked, which dirties the prime and blocks `update-plugins.sh`, and the operator updates it only on request.
 - **Adopting the operator's existing session via `claude --resume` into a strand** — it moves a context that is already large and needs the current session ID; the one-time manual migration costs a single command.
-- **Auto-relaunch or provider-resume after process death** — the session ID changes on every `/clear`, so tracking the current one adds state for a rare event; the relaunch from the newest handoff loses at most one cycle's worth.
+- **Auto-relaunch or provider-resume after process death** — the session ID changes on every `/clear`, so tracking the current one adds state for a rare event; the relaunch from the last completed handoff loses at most one cycle's worth.
 - **A Shed recipe for the orchestrator** — it is not a phased run with producers; a plain state machine is smaller.
 - **Pruning old handoffs** — a few small files a day; retention logic is unmotivated.
 - **Adding a hub-workspace auto-attach task in `lyx ide`** — belongs with the existing `ide-hub-workspace-followups` note, not this task.
@@ -62,6 +62,9 @@ _No rounds yet._
 - **Q8 — Cross-session messaging to the strand-hosted session?** Resolved (auto-pick): native `SendMessage`, no lyx work, D16. Two sub-points stay open risks: the `/clear` gap, and address stability across `/clear`.
 - **Q9 — Where do cycle handoffs go?** Resolved (auto-pick): `.lyx/orch/handoffs/`, kept, D12.
 - **Q10 — What if the handoff never appears?** Resolved (auto-pick): timeout aborts with no `/clear`, D11.
-- **Q11 — Start prompt when no handoff is given?** Resolved (auto-pick): newest cycle handoff, else the plain start stencil; `manifest/HANDOFF.md` only via `--handoff`, D6.
+- **Q11 — Start prompt when no handoff is given?** Resolved (auto-pick): last completed cycle handoff, else the plain start stencil; `manifest/HANDOFF.md` only via `--handoff`, D6.
 - **Q12 — Manual trigger?** Resolved (auto-pick): `lyx orch cycle`, D14.
-- **Q13 — Do background tasks survive `/clear`?** Open: unverified, listed under open risks; the handoff focus line mitigates it.
+- **Q13 — Do background tasks survive `/clear`?** Open: unverified, listed under open risks; the handoff focus text mitigates it, and the smoke test verifies it and records the outcome.
+- **Q14 — What happens to a mid-cycle phase when the strand is stopped or dies?** Resolved (review round 1): a fresh launch resets it to `idle` and records it; only a watcher restarted against the same strand resumes it, D10.
+- **Q15 — Which handoff does a fresh launch resume from?** Resolved (review round 1): the last completed handoff recorded in state, never merely the newest file, D6.
+- **Q16 — How does a watcher know a turn is running when no event marks a turn start?** Resolved (review round 1): the idle-session probe classifies a turn in progress, D9.
