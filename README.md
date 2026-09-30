@@ -2,12 +2,6 @@
 
 # Layer A
 
-## **#009:** batten opens VS Code on the new pair with reed attached [A]
-[batten-open-ide](design-batten-open-ide.md)
-Depends on: #020, #021, #019
-
-Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
-
 ## **#023:** Every refusal has a way forward: audit Webster and shed halt paths [A]
 [refusal-audit](design-refusal-audit.md)
 Depends on: #022
@@ -56,6 +50,12 @@ Operator surface: #295, #277, #286, #297 + four unfiled findings
 [burler-review](design-burler-review.md) [done]
 
 Burler: #287, #282, #263 + comment-width finding
+
+## **#009:** batten opens VS Code on the new pair with reed attached
+[batten-open-ide](design-batten-open-ide.md) [done]
+Depends on: #020, #021, #019
+
+Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
 
 ## **#010:** Batten ready for the hub loop: wait through awaiting, keep run records
 [batten-hub-ready](design-batten-hub-ready.md) [done]
