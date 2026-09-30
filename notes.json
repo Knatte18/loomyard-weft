@@ -88,5 +88,15 @@
     "deferred": false,
     "brief": "Focus directive needs prior-round files the round prompt says to read only after the review",
     "body": "Friction from run `operator-surface`, Burler Webster-Review round 2 (stencils from `d619100af`).\nThe round-2 focus directive asked the reviewer to check the round-1 F4 site list and the round-1 fix commits, which requires reading `round-1-review.md` and `round-1-fixer-report.md`.\nThe round prompt's instruction 2 says prior-round files are read only after the review is saved, so the focus file handed over in instruction 1 cannot be followed without breaking it; the reviewer read them early and said so.\nFix direction: the focus directive restates the sites it depends on, or the prior-round rule exempts what a focus directive names."
+  },
+  {
+    "id": 9,
+    "slug": "publish-verify-after-merge",
+    "title": "Publish: verify the tree after merging the parent",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "A conflict-resolved parent merge was pushed with non-compiling tests",
+    "body": "Publish merges the parent into the task branch and pushes without compiling or testing the result.\nIn run `operator-surface` (PR #300) the conflict-resolved merge `854eb73fe` left four test call sites on the old `shedrun.StatusRel(runID)` signature (`internal/loomcli/wiring_commitstatus_test.go`, `..._integration_test.go`), so `go vet`/`go test` failed while `go build` passed; only the hub's PR review caught it.\nFix direction: after a parent merge that changed the tree, Publish runs the plan's `## verify:` command (or at least `go vet ./...` across build tags) and halts stuck on failure before pushing and opening or updating the PR."
   }
 ]

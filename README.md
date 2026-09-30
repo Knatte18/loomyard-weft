@@ -101,3 +101,8 @@ RefScanner flags quoted grep patterns; a done batch cannot be recorded
 [burler-focus-prior-round](design-burler-focus-prior-round.md)
 
 Focus directive needs prior-round files the round prompt says to read only after the review
+
+## **#009:** Publish: verify the tree after merging the parent
+[publish-verify-after-merge](design-publish-verify-after-merge.md)
+
+A conflict-resolved parent merge was pushed with non-compiling tests
