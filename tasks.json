@@ -311,7 +311,8 @@
     "isolated": false,
     "deferred": false,
     "brief": "A refused teardown (dirty sibling) still pushes archive/\u003cslug\u003e/*; the retry pushes a second tag.",
-    "body": "`internal/fabricengine/remove.go` pushes the archive tag before the no-force dirty checks.\nWhen the sibling is dirty the teardown refuses, but a tag missing the uncommitted records is already on the weft remote, and the resume after `commit-records` pushes another.\nMove the archive step after the dirty checks, still before any removal.\nFound reviewing PR #304."
+    "body": "`internal/fabricengine/remove.go` pushes the archive tag before the no-force dirty checks.\nWhen the sibling is dirty the teardown refuses, but a tag missing the uncommitted records is already on the weft remote, and the resume after `commit-records` pushes another.\nMove the archive step after the dirty checks, still before any removal.\nFound reviewing PR #304.",
+    "status": "done"
   },
   {
     "id": 29,

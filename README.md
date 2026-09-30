@@ -14,11 +14,6 @@ Depends on: #022
 
 `lyx loom reject <review>` at Publish routes review findings to Webster as a fix batch, then re-verify, re-publish, re-approve.
 
-## **#028:** fabric remove pushes the archive tag before its dirty checks [A]
-[archive-tag-before-dirty-check](design-archive-tag-before-dirty-check.md)
-
-A refused teardown (dirty sibling) still pushes archive/<slug>/*; the retry pushes a second tag.
-
 ## **#029:** Awaiting waits grow status.json without bound [A]
 [awaiting-status-history-growth](design-awaiting-status-history-growth.md)
 
@@ -160,6 +155,11 @@ lyx hosts the hub orchestrator in tmux and cycles its context via handoff
 [loom-start-refuses-mid-merge](design-loom-start-refuses-mid-merge.md) [done]
 
 loom start spawned a driver on a worktree whose merge-in had stopped on a conflict (UU path, MERGE_HEAD present).
+
+## **#028:** fabric remove pushes the archive tag before its dirty checks
+[archive-tag-before-dirty-check](design-archive-tag-before-dirty-check.md) [done]
+
+A refused teardown (dirty sibling) still pushes archive/<slug>/*; the retry pushes a second tag.
 
 # Manifest
 
