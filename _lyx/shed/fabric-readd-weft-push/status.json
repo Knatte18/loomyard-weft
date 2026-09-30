@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "blocked",
-  "error": "batch 01-leased-remote-delete: record-batch failed with a fabric-reference policy violation — fork ran `cd \u003cworktree\u003e/internal/gitrepo \u0026\u0026 ...` commands, which the audit treats as an implementer fork touching the fabric repo directly",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": "batch 01-leased-remote-delete: record-batch failed with a fabric-reference policy violation — fork ran `cd \u003cworktree\u003e/internal/gitrepo \u0026\u0026 ...` commands, which the audit treats as an implementer fork touching the fabric repo directly"
+    "wait": ""
   },
   "history": [
     {
