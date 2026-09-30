@@ -55,6 +55,12 @@ Each turn below is a question the design had to settle, with the answer taken fr
   `main-weft` is local-only and never pushed, so the copy does not leave the machine; it also has batten reach into loom's record layout.
 - **Batten's teardown commits the child's records.**
   Covers only the batten route, not a manual `lyx fabric remove`, and still races a driver writing its report.
+- **Count the done-wait's Stuck bounces against the running budget.**
+  They share one episode with the running watch, so a child that ran close to 12 hours would block batten on budget exhaustion after it is already `done`; the grace window already bounds the wait.
+- **Tag the weft tip at the weft-branch deletion inside `Remove`.**
+  `Remove` reaches that point after the portal, launchers and both worktrees are gone, so an abort there leaves a half-torn pair a plain re-run cannot finish.
+- **Let `force` skip the archive tag.**
+  `force` answers dirtiness only, never a live merge record; widening it to skip the archive would let an offline removal silently drop the records the tag exists to keep.
 - **Include ly-drive's `repairs/` records.**
   The task names friction notes and the driver report only, and the hub loop reads only those two.
 
@@ -77,6 +83,12 @@ _No rounds yet._
   The operator should confirm this repair when reviewing, since it corrects the body's premise.
 - **Resolved (auto-pick):** `Run-Shed` waits for the driver strand to end after `done`, with a 900 s grace.
   Rationale: prevents teardown from killing the driver before its report is committed.
+- **Resolved (auto-pick):** the done-wait's Stuck bounces are budget-exempt, like the awaiting wait.
+  Rationale: the grace window bounds the wait, and the running watch may already have spent the budget.
+- **Resolved (auto-pick):** the archive tag is pushed whatever `remote` says, and `force` does not skip it.
+  Rationale: keeps `force` dirtiness-only; the cost, offline pair removal, is recorded as an open risk for the operator to weigh.
+- **Resolved (auto-pick):** friction notes an in-flight run left under the old `.lyx` path at deploy are not reflected, committed or migrated.
+  Rationale: deploy is operator-timed and can wait for in-flight runs to finish.
 - **Resolved (codebase):** `blocked`, `paused`, `failed` stay halts; a child `blocked` at Publish is not auto-resumed after approval.
   Rationale: the body keeps those three as halts.
 - **Open:** history growth in prime's batten status file during multi-day awaits; left to the plan to measure.

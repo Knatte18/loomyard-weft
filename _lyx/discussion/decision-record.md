@@ -43,19 +43,23 @@ Out:
   Rationale: awaiting is a planned hand-off, and the batten run must survive it without a manual resume.
 - **Batten resumes an approved awaiting child, once per approval.**
   When the child is `awaiting` and the child's approval record (`loomengine.LoomApprovalPath` of the task worktree, decoded through `landingshed`) exists, `Run-Shed` calls `deps.Spawn` (the idempotent `lyx loom start --no-attach` bootstrap) and records that approval's identity (`approved_at` plus `head_sha`) in a marker under its scratch directory.
+  The marker is written only after `Spawn` returns success; a `Spawn` error stays today's hard error, and resuming the batten run retries the spawn.
   A later Call that sees the same approval identity while the child is still or again `awaiting` does not spawn again; only a new approval record triggers another resume.
+  On that path the Stuck reason says the approval at its `approved_at` was already acted on and names the recovery: re-run `lyx loom approve` in the task worktree, which records a new identity and so triggers another resume.
   battenshed reads the approval through a new injected `InnerRunDeps` seam, wired in `battencli`, so battenshed gains no loom or landing import.
   Rationale: the orchestrator's only action is `lyx loom approve`; the per-approval marker stops a Publish that re-parks on a stale approval from respawning an LLM driver every poll.
 - **Awaiting-wait bounces do not consume the watch budget.**
   `shedengine.OutputPointer` gains a budget-exempt flag; shedengine persists it on the history entry, and `episodeStuckCount` skips exempt entries.
   Routing is unchanged: an exempt Stuck still follows `OnStuck`.
-  `Run-Shed` sets the flag only for an `awaiting` child.
-  Rationale: approval time is unbounded by design, and running time keeps its 12-hour budget counted across the whole child run minus the awaiting spans; no fourth outcome value, so the three-outcome producer contract holds.
+  `Run-Shed` sets the flag for an `awaiting` child and for a `done` child's driver-exit wait, and never for a `running` child.
+  Rationale: approval time is unbounded by design, and running time keeps its 12-hour budget counted across the whole child run minus the awaiting spans; the driver-exit wait has its own bound, the grace window, and counting it would block a child that ran close to 12 hours after it is already `done`; no fourth outcome value, so the three-outcome producer contract holds.
 - **A `done` child is finished only after its driver has ended.**
   On a `done` child, `Run-Shed` checks the child's ly-drive strand through a new injected liveness seam.
-  While the strand is live and the grace window (`driver_exit_grace_s` on the `Run-Shed` row's config, default 900) has not elapsed, it sleeps and returns Stuck (not exempt) with a reason naming the wait.
+  While the strand is live and the grace window (`driver_exit_grace_s` on the `Run-Shed` row's config, default 900) has not elapsed, it sleeps and returns an exempt Stuck with a reason naming the wait.
   When the strand is gone, it returns Done.
   When the grace window elapses with the strand still live, it logs a warning and returns Done; `Worktree-Teardown`'s session shutdown and `Remove`'s clean-worktree check take it from there.
+  If the killed driver left its report uncommitted, `Remove` refuses the dirty weft after tearing down the portal and launchers, and batten blocks at `Worktree-Teardown` with the pair otherwise intact.
+  The teardown's Stuck reason for a dirty weft names the recovery, never `--force`: run `lyx loom commit-records` in the task worktree, then resume the batten run.
   The grace window's start is a first-seen-done timestamp marker under the producer's scratch directory.
   Rationale: the driver writes its stop report after the final step, and teardown would otherwise kill it before the report is written and committed.
 - **Friction notes live at `_lyx/loom/friction/`.**
@@ -66,17 +70,22 @@ Out:
   `shedrun` gains the accessor for that directory (and its anchor-relative form), since it declares the run directory; `driverReportPath` composes onto it, keeping its timestamp-plus-random filename.
   Rationale: the report belongs to one run, and `shedrun` is the sole declarer of the `shed` segment.
 - **The per-transition status commit stages the records.**
-  `statusCommitPathspec` adds the `_lyx/loom/` friction tree and the drive-reports directory under the same "holds at least one file" rule it applies to `_lyx/reviews/`.
-  Rationale: friction notes are written during producers, so the transition that follows commits them, through the route `_lyx/reviews/` already uses.
+  `statusCommitPathspec` adds the friction directory, its timestamped archive siblings under `_lyx/loom/`, and the drive-reports directory, under the same "holds at least one file" rule it applies to `_lyx/reviews/`.
+  Rationale: friction notes are written during producers, so the transition that follows commits them, through the route `_lyx/reviews/` already uses; an archive sibling left untracked would make the non-force teardown refuse the weft as dirty.
 - **`lyx loom commit-records` commits the records at the driver's stop.**
   It stages the same records pathspec (status file included), skips while a merge is active exactly as the status commit does, commits through `fabricengine.CommitAnchoredPaths` and pushes through `fabricengine.PushAnchored`.
   A clean tree is a successful no-op.
   The ly-drive launch prompt's end-of-session command becomes `lyx loom commit-records` followed by the strand removal, joined so the removal runs even when the commit fails.
   Rationale: the stop report is written after the last `lyx shed step`, so no transition commit can capture it; the commit stays Go through fabricengine, which the Fabric Git Invariant requires, while the agent only triggers it.
-- **Every weft-branch deletion archives the weft tip first.**
-  Before `fabricengine` deletes a pair's weft branch (`Remove`, `RemovePairBranch`, and prune's pair removal), it creates a tag on the weft tip named deterministically from the slug and the tip SHA under an `archive/` namespace, and pushes it to the weft origin.
+- **Every teardown of an existing pair's weft branch archives the weft tip first.**
+  Before `fabricengine` deletes an existing pair's weft branch (`Remove`, `RemovePairBranch`, and prune's pair removal), it creates a tag on the weft tip named deterministically from the slug and the tip SHA under an `archive/` namespace, and pushes it to the weft origin.
+  `Add`'s rollback of a weft branch it just created carries no records and is excluded.
+  The archive runs whatever the `remote` flag says, since it protects the local branch's commits as much as the remote copy.
   The tag name is idempotent: a resumed teardown on the same tip finds the tag already there and proceeds.
-  A failed tag push aborts the deletion before any branch is removed and surfaces as an error, so batten's teardown halts resumable instead of losing records.
+  `Remove` creates and pushes the tag after its refusals and before its first mutation, so a failed push leaves the whole pair, portal and launchers included, in place and a plain re-run retries it.
+  `RemovePairBranch` and prune push it before their own first branch deletion.
+  A failed tag push, including an origin that exists but cannot be reached, aborts with an error, so batten's teardown halts resumable instead of losing records.
+  `force` does not bypass the archive: it answers dirtiness only, as it already does for a live merge record.
   A weft repo with no origin skips the tag with a reason in the result, as `RemoteSkippedReason` already does.
   The remove result reports the tag name, and batten's teardown logs it.
   Rationale: batten's teardown deletes the weft branch locally and on origin (`remote: true`, needed so a later create of the same slug can push), so a weft commit alone does not survive teardown; a tag keeps the commits reachable without blocking slug reuse.
@@ -103,7 +112,7 @@ Out:
 - `lyx loom start --no-attach` on an `awaiting` run launches a driver whose first step resumes the run, as the ly-drive skill states; the plan verifies this against `start.go`.
 - The driver strand's display name (`driverStrandDisplayName`) is a sufficient liveness key for the child's driver.
 - A grace window of 900 s is enough for a driver to write and commit its stop report.
-- Notes and reports under the old `.lyx` paths from runs in flight at deploy time are left in place, not migrated.
+- `force` not bypassing the archive tag (auto-pick): it keeps `force`'s existing dirtiness-only meaning, at the cost of offline pair removal.
 - The verb name `lyx loom commit-records` is final unless it collides with an existing verb.
 
 ## Open risks
@@ -111,25 +120,32 @@ Out:
 - **History growth during long awaits:** each exempt bounce appends a history entry to prime's batten status file; an approval left for days writes thousands of entries and rewrites the file each time.
   Today's running watch already allows 1440; the plan should check status write cost and `lyx batten status` rendering at a few thousand entries.
 - **Stale approval loop:** Publish re-parking `awaiting` on the same approval record relies on the per-approval marker to stop respawns; if Publish rewrites or deletes the record in a way that changes its identity, batten could resume more than once per operator action.
-- **Driver never exits after `done`:** past the grace window, teardown's session shutdown kills the driver; an uncommitted report then makes `Remove` (force false) refuse on a dirty weft, halting batten with a failed teardown rather than losing the report silently.
+- **Driver never exits after `done`:** past the grace window, teardown's session shutdown kills the driver; an uncommitted report then blocks batten at `Worktree-Teardown` until the operator runs the recovery the done-wait Decision names, rather than losing the report silently.
 - **Archive tags accumulate** on the weft origin, one per removed pair; nothing prunes them.
+- **Offline pair removal:** `lyx fabric remove` (with or without `--remote`), `RemovePairBranch` and prune now fail while the weft origin exists but cannot be reached, where they succeeded offline before.
 - **In-flight runs at deploy:** a run started on the old binary and resumed on the new one splits its friction notes between `.lyx/loom/friction/` and `_lyx/loom/friction/`.
+  Reflection and the hub loop read only the new path, so the old-path notes are never reflected, committed or archived, and teardown deletes them with the worktree.
+  Accepted: deploy is operator-timed and can wait for in-flight runs to finish.
 
 ## Acceptance criteria
 
 - `Run-Shed` on an `awaiting` child without an approval record: sleeps, returns Stuck with the exempt flag, reason names the awaiting reason and `lyx loom approve`, and does not spawn.
-- `Run-Shed` on an `awaiting` child with an approval record not yet acted on: spawns once, writes the approval-identity marker, and returns Stuck; a second Call with the same approval and the child still `awaiting` does not spawn; a Call after a new approval record spawns again.
+- `Run-Shed` on an `awaiting` child with an approval record not yet acted on: spawns once, writes the approval-identity marker, and returns Stuck; a second Call with the same approval and the child still `awaiting` does not spawn, and its reason says the approval was acted on and names re-running `lyx loom approve`; a Call after a new approval record spawns again.
+- `Run-Shed` on an approved `awaiting` child whose `Spawn` errors: returns the hard error, writes no marker, and the next Call spawns.
 - `Run-Shed` on `blocked`, `paused` or `failed` still returns the hard error carrying `haltedChildRemedy`.
 - shedengine: exempt Stuck entries route through `OnStuck` and are not counted by `episodeStuckCount`; a row with a budget of N survives any number of exempt Stucks interleaved with fewer than N counted ones, and blocks on the (N+1)th counted Stuck.
 - shedengine: a history entry without the exempt field decodes as not exempt.
-- `Run-Shed` on a `done` child with a live driver strand returns Stuck until the strand is gone, then Done; with the grace window elapsed and the strand still live, it returns Done and logs a warning.
+- `Run-Shed` on a `done` child with a live driver strand returns exempt Stuck until the strand is gone, then Done; with the grace window elapsed and the strand still live, it returns Done and logs a warning.
+- A `done` child's driver-exit wait neither consumes nor is blocked by the running budget: a `Run-Shed` with its counted budget one short of exhausted still reaches Done through a full grace wait.
+- `Worktree-Teardown` on a dirty weft names `lyx loom commit-records` in the task worktree and a batten resume in its Stuck reason, not `--force`.
 - `loomengine.LoomFrictionDir` and its archive prefix resolve under `_lyx/loom/`; `LoomFrictionLock` resolves under `.lyx/loom/`.
 - `driverReportPath` resolves under `_lyx/shed/<slug>/drive-reports/`.
-- `statusCommitPathspec` includes the friction tree and the drive-reports directory only when each holds a file.
+- `statusCommitPathspec` includes the friction directory, its archive siblings and the drive-reports directory only when each holds a file.
 - `lyx loom commit-records`: commits and pushes pending records; is a no-op success on a clean tree; skips during an active merge; has a `Short` and appears in the help tree.
 - The driver launch prompt's end-of-session command runs `lyx loom commit-records` before the strand removal, and the removal still runs when the commit fails.
-- fabricengine `Remove` with a weft origin: an `archive/` tag on the weft tip exists on origin after removal and the result names it; a resumed removal on the same tip is idempotent; a tag push failure leaves both branches in place and returns an error; no origin skips the tag with a reason.
+- fabricengine `Remove` with a weft origin: an `archive/` tag on the weft tip exists on origin after removal and the result names it; a resumed removal on the same tip is idempotent; a tag push failure, including an unreachable origin, returns an error and leaves the pair's worktrees, portal, launchers and both branches in place; `force` does not skip the tag; `remote: false` still pushes the tag; no origin skips the tag with a reason.
 - `RemovePairBranch` and prune archive the weft tip before deleting the branch.
+- `Add`'s rollback deletes its just-created weft branch without an archive tag.
 - Integration: a batten run whose child goes `awaiting`, gets an approval record, resumes, reaches `done`, and is torn down ends with the friction notes and the drive report reachable from the archive tag on the weft origin.
 
 ## Notes for the plan writer
