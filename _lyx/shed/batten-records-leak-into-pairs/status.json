@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Bouncer",
+  "current_producer": "Batchifier",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Bouncer",
-    "last": "Plan-Burler → bounced to Plan-Bouncer",
+    "now": "Batchifier",
+    "last": "Plan-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -66,6 +66,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/batten-records-leak-into-pairs/_lyx/reviews/plan/round-1-review.md",
       "at": "2026-09-30T17:30:45Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/batten-records-leak-into-pairs/_lyx/reviews/plan/round-1-bouncer-ledger.md",
+      "at": "2026-09-30T17:31:54Z"
     }
   ],
   "product": {
