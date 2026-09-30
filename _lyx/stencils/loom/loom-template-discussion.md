@@ -7,7 +7,7 @@
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires the four original markers non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). friction_directive is the fifth marker, and the one optional one: it is filled via stencil.FillOptional and renders as nothing when Tier 2 is off.
      The literal `{` / `}` characters around {{.slug}} in the board-read example below are ordinary JSON punctuation, not template syntax — only `{{` begins a template action.
-lyx-stencil: sha256=e2f6dd49859a7427f72aca5466b29ba707b2ac66fc80efc46856273200ab01e7 -->
+lyx-stencil: sha256=2752f660106cddc1cd2f404e8524fd58e07f203292eb7cb1930a7ff633222a88 -->
 
 # Discussion — interview, then write the decision record
 
@@ -144,7 +144,7 @@ Everything else in the worktree is read-only to you. In particular, never write,
 - **`_lyx/config/`** — this is the driver's own configuration, read fresh on every invocation.
   Editing it changes how the run that spawned you behaves, and how the next one does.
   `lyx config reconcile --apply` counts as editing it.
-- **`_lyx/shed/self/`** — the phase machine's status file. The driver owns it; a write from here corrupts orchestration state.
+- **`_lyx/shed/<slug>/`** (and the legacy `_lyx/shed/self/`) — the phase machine's status file. The driver owns it; a write from here corrupts orchestration state.
 - **`_lyx/plan/`** — a later phase's artifact, not yours.
 - **repository source files**, and **git history**: no `git add`, `git commit`, `git checkout`, `git restore`, or any other mutating git command.
   Committing your two files is the loop owner's job, not yours.

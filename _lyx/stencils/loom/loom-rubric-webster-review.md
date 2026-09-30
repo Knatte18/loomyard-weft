@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- it carries no top-level stencil markers of its own, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=d57945c1d97e995a6bcc3c695f519b1fb7b0a1118bae4a14629a36378d8f1ce3 -->
+lyx-stencil: sha256=33c93e78e33c87de744d17d325a4cb82badf3d4de33d9d93e0b3700d003ace8d -->
 
 # Webster-Review rubric
 
@@ -25,11 +25,13 @@ This gate sits downstream of three separate upstream gates, so a finding re-deri
 This section is the single definition of the review range;
 nothing else states it.
 
-1. Read `_lyx/shed/self/status.json` and take `product.parent`, the branch this run started from.
+1. Read `_lyx/shed/<slug>/status.json` and take `product.parent`, the branch this run started from.
+   `<slug>` is this worktree's own directory name;
+   a run started before the rename keeps its status at `_lyx/shed/self/status.json`, so read that path when `_lyx/shed/<slug>/` does not exist.
 2. Review `git diff $(git merge-base <product.parent> HEAD)..HEAD` — every commit the current branch introduces over that merge base.
 
 Both steps are read-only.
-If `_lyx/shed/self/status.json` cannot be read, or its `product.parent` is empty or absent, raise a BLOCKING finding stating that the review range could not be determined, and review nothing.
+If neither status file can be read, or its `product.parent` is empty or absent, raise a BLOCKING finding stating that the review range could not be determined, and review nothing.
 Silently reviewing a guessed range is a worse failure than an honest block.
 
 ## Do not flag
