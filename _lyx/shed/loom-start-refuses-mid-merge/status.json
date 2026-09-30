@@ -1,12 +1,12 @@
 {
   "current_producer": "Publish",
-  "state": "awaiting",
-  "error": "pull request created; awaiting review, then run `lyx loom approve` and `lyx loom start`: https://github.com/Knatte18/loomyard/pull/316",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Publish",
     "last": "Publish → awaiting",
-    "wait": "pull request created; awaiting review, then run `lyx loom approve` and `lyx loom start`: https://github.com/Knatte18/loomyard/pull/316"
+    "wait": ""
   },
   "history": [
     {
