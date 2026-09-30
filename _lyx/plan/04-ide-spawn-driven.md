@@ -1,7 +1,7 @@
 # Card 4 — ide-spawn-driven
 
 **Create:**
-- `plan:internal/ideengine#SpawnDriven` -> `func SpawnDriven(l *lyxcwd.Location, slug string) error`
+- `internal/ideengine#SpawnDriven`
 - `internal/ideengine/spawn_driven_hub_integration_test.go`
 
 **Edit:**

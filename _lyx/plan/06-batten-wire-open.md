@@ -10,7 +10,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/ideengine#SpawnDriven`
+- `internal/ideengine#SpawnDriven`
 - `internal/battenshed#InnerRunDeps`
 - `internal/ideengine#CodeLauncher`
 
