@@ -12,6 +12,14 @@ Operator surface: #295, #277, #286, #297 + four unfiled findings
 
 Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
 
+# Layer B
+
+## **#010:** Batten ready for the hub loop: wait through awaiting, keep run records [B]
+[batten-hub-ready](design-batten-hub-ready.md)
+Depends on: #007
+
+Batten keeps watching an awaiting child, run records survive teardown, approval time off the watch budget
+
 # Done
 
 ## **#000:** Burler: no cluster-exclude warning when the profile has no cluster fan
