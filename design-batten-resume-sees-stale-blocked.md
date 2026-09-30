@@ -1,0 +1,2 @@
+Seen 2026-09-30 on batten-records-leak-into-pairs: after a hub fix, `lyx loom start --no-attach` (ok) followed at once by `lyx batten run` ended with Run-Shed "inner shed run reached state blocked" because status.json still said blocked for a few seconds.
+Fix direction: loom start writes state running (or a resume marker) before returning, or batten treats a blocked child whose driver was just relaunched as running.

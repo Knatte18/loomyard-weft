@@ -215,3 +215,8 @@ Parallel `lyx batten run` starts: every run but the first blocks at Worktree-Cre
 [fabric-remove-ends-reed-session](design-fabric-remove-ends-reed-session.md)
 
 After `lyx fabric remove` the pair tmux session (driver claude, status strand, bash) keeps running in the deleted directory; its late writes recreate the worktree dir as a stray folder.
+
+## **#019:** batten run right after loom start exits on the child's stale blocked state
+[batten-resume-sees-stale-blocked](design-batten-resume-sees-stale-blocked.md)
+
+loom start returns ok before the child status leaves blocked; an immediate lyx batten run reads blocked and exits again

@@ -108,5 +108,15 @@
     "deferred": false,
     "brief": "After `lyx fabric remove` the pair tmux session (driver claude, status strand, bash) keeps running in the deleted directory; its late writes recreate the worktree dir as a stray folder.",
     "body": "Seen 2026-09-30 for quarry-cli-answers and status-strand-by-driver: after landing and `fabric remove --remote`, their reed sessions were still alive hours later.\nA driver that wrote its stop report after the removal recreated `\u003chub\u003e/\u003cslug\u003e/.lyx/...` and `\u003chub\u003e/\u003cslug\u003e/_lyx/shed/\u003cslug\u003e/drive-reports/\u003creport\u003e.md`: a stray directory, and a drive report that never reached the archive.\nThe hub killed the sessions and deleted the dirs by hand.\n\nFix: remove (and batten teardown) ends the pair reed session (reed down) before deleting the worktrees, and waits for or refuses on a live driver; a stop report written after done should land before the archive tag."
+  },
+  {
+    "id": 19,
+    "slug": "batten-resume-sees-stale-blocked",
+    "title": "batten run right after loom start exits on the child's stale blocked state",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "loom start returns ok before the child status leaves blocked; an immediate lyx batten run reads blocked and exits again",
+    "body": "Seen 2026-09-30 on batten-records-leak-into-pairs: after a hub fix, `lyx loom start --no-attach` (ok) followed at once by `lyx batten run` ended with Run-Shed \"inner shed run reached state blocked\" because status.json still said blocked for a few seconds.\nFix direction: loom start writes state running (or a resume marker) before returning, or batten treats a blocked child whose driver was just relaunched as running."
   }
 ]
