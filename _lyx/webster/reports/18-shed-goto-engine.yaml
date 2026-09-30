@@ -1,0 +1,6 @@
+status: OK
+head_sha: 77e313d161d3fb93c9fc5ea096c8d2f5f27f1c75
+deviations:
+  - internal/shedengine/producer.go
+  - internal/shedengine/run.go
+  - internal/shedengine/gotobudget_test.go
