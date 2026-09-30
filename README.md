@@ -7,6 +7,11 @@
 
 Operator surface: #295, #277, #286, #297 + four unfiled findings
 
+## **#009:** loom start opens VS Code on the pair with reed attached [A]
+[loom-start-vscode](design-loom-start-vscode.md)
+
+New run opens a VS Code window whose terminal is already attached to the run (reed attach on folderOpen)
+
 # Done
 
 ## **#000:** Burler: no cluster-exclude warning when the profile has no cluster fan
