@@ -177,3 +177,8 @@ First loom start after a hand-back keeps a strand that is about to be removed
 [test-tmux-socket-leak](design-test-tmux-socket-leak.md)
 
 reed/loom tests leak tmux servers and sockets in /tmp
+
+## **#013:** fabric remove pushes the archive tag before its dirty checks
+[archive-tag-before-dirty-check](design-archive-tag-before-dirty-check.md)
+
+A refused teardown (dirty sibling) still pushes archive/<slug>/*; the retry pushes a second tag.
