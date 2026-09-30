@@ -11,7 +11,7 @@
 - `internal/vscode#TaskChain`
 - `internal/vscode#TaskChainInteractive`
 - `internal/vscode#TaskChainAttachOnly`
-- `plan:internal/fabricengine#ExcludeAnchoredDir`
+- `internal/fabricengine#ExcludeAnchoredDir`
 - `plan:internal/fabricengine#PathTracked`
 - `internal/ideengine#CodeLauncher`
 

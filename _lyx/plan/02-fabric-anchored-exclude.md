@@ -1,7 +1,7 @@
 # Card 2 — fabric-anchored-exclude
 
 **Create:**
-- `plan:internal/fabricengine#ExcludeAnchoredDir` -> `func ExcludeAnchoredDir(worktreeDir, anchorRel, dirName string) (excludePath string, changed bool, err error)`
+- `internal/fabricengine#ExcludeAnchoredDir`
 
 **Edit:**
 - `internal/fabricengine/gitexclude.go`
