@@ -10,9 +10,9 @@
 - `internal/landingshed/publish_verify_test.go`
 
 **Uses:**
-- `plan:internal/landingshed#verifyGate`
-- `plan:internal/landingshed#newVerifyGate`
-- `plan:internal/landingshed#verifyGate.check`
+- `internal/landingshed#verifyGate`
+- `internal/landingshed#newVerifyGate`
+- `internal/landingshed#verifyGate.check`
 
 **Intent:**
 Stop `Publish` from pushing a tree a parent merge-in broke.

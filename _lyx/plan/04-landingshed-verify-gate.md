@@ -5,9 +5,9 @@
 - `internal/landingshed#landingshedAllowedImports`
 
 **Create:**
-- `plan:internal/landingshed#verifyGate` -> `type verifyGate struct`
-- `plan:internal/landingshed#newVerifyGate` -> `func newVerifyGate(deps Deps) verifyGate`
-- `plan:internal/landingshed#verifyGate.check` -> `func (g verifyGate) check(ctx context.Context, producer, parentBranch string, treeChanged bool) (string, error)`
+- `internal/landingshed#verifyGate`
+- `internal/landingshed#newVerifyGate`
+- `internal/landingshed#verifyGate.check`
 - `internal/landingshed/verifygate_test.go`
 - `internal/landingshed/verifygate_integration_test.go`
 

@@ -10,9 +10,9 @@
 - `internal/landingshed/finalize_verify_test.go`
 
 **Uses:**
-- `plan:internal/landingshed#verifyGate`
-- `plan:internal/landingshed#newVerifyGate`
-- `plan:internal/landingshed#verifyGate.check`
+- `internal/landingshed#verifyGate`
+- `internal/landingshed#newVerifyGate`
+- `internal/landingshed#verifyGate.check`
 
 **Intent:**
 Stop `Finalize` from landing on the parent, and pushing it, with a tree its catch-up merge-in broke — the worse case, since nothing reviews it downstream.
