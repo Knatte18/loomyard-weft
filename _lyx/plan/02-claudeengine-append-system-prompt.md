@@ -12,7 +12,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/shuttleengine/claudeengine#buildDenyNotice`
+- `internal/shuttleengine/claudeengine#buildDenyNotice`
 
 **Intent:**
 Pass the deny notice to every session the Claude engine spawns, on both the launch and the resume command line (decision record D6).

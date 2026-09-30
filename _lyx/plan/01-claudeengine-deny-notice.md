@@ -5,7 +5,7 @@
 - `internal/shuttleengine/claudeengine/settings_test.go`
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#buildDenyNotice` -> `func buildDenyNotice(interactive bool, cfg shuttleengine.Config, forkSubagents bool) string`
+- `internal/shuttleengine/claudeengine#buildDenyNotice`
 
 **Uses:**
 - `internal/shuttleengine/claudeengine#buildSettings`
