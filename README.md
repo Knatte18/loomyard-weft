@@ -24,6 +24,21 @@ Flaky or pre-existing test failures no longer halt a run; report names the faili
 
 record-batch demands HEAD == report head_sha; a mid-run merge-in wedges the run
 
+## **#023:** Every refusal has a way forward: audit Webster and shed halt paths [A]
+[refusal-audit](design-refusal-audit.md)
+
+Walk every refusal/halt path in webster and shed; none may wedge a run
+
+## **#024:** ly-drive: safe self-repairs instead of always handing back [A]
+[ly-drive-safe-repairs](design-ly-drive-safe-repairs.md)
+
+Driver re-steps known transient stops itself; hands back only real decisions
+
+## **#025:** Hub orchestrator as a reed strand with automatic handoff [A]
+[hub-orch-strand](design-hub-orch-strand.md)
+
+lyx hosts the hub orchestrator in tmux and cycles its context via handoff
+
 # Layer B
 
 ## **#015:** Trace logs: configurable retention, fewer files from routine commands [B]
