@@ -1,0 +1,19 @@
+{
+  "runGuid": "497a78c7a0fe03b89b2620f66e625070",
+  "planFingerprint": "d2175e7d86d9bc38be877c1e3957b4f9a16b18981a08b940de7b4ae3f6685792",
+  "currentBatch": 1,
+  "masterStrand": "723e77cdc8200b7c4ad42387a21b2a3e",
+  "masterSessionId": "d6708e94-e9a0-4c20-aaf0-4cf98254ed44",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "status-strand-removal-helper",
+      "startSha": "676d9ec0337614944a8364480ea8b4551c45b036",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T14:56:57Z",
+      "sessionId": "d6708e94-e9a0-4c20-aaf0-4cf98254ed44",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
