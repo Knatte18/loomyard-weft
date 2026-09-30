@@ -1,0 +1,16 @@
+---
+round: 1
+focus:
+  - "Decision-record fidelity, D13 and D7 versus the session-cycler-capability shared decision (overview; cards 1-3): D13 says the clear-session choreography is a new `Engine` method, and D7 places context reading behind the Engine seam, but the plan puts both on an optional `SessionCycler` interface outside `Engine`. Settle whether this carries D13 faithfully or departs from it without license."
+  - "Unlicensed scope, the orch-agent-tool shared decision (overview; card 10 step 3): orchcli sets `ClaudeDenyAgentTool` false for the orch runner. No Decision or Constraint in the decision record mentions the Agent tool. Settle whether the decision record licenses this override."
+  - "D7's 'only a turn end after the watcher's last injection is evaluated' versus card 6's `LastInjectionOffset` and card 8's cursor: card 8 advances `LastInjectionOffset` only when `resuming` completes, and the events-cursor decision restarts an idle watcher from `LastInjectionOffset`. Settle whether a watcher restarted after an aborted handoff, or a resume that timed out, evaluates turn ends at or before a later injection (the aborted handoff turn, for example), and whether card 8's tests cover that path."
+  - "Card 8's `clearing` phase and its restart rule: the first `SessionIdle` probe after `ClearSession` can pass against the pre-clear empty box. Check this against D10's text on `clearing` and its rationale, and settle whether card 8 and its test list implement D10 as written and cover the restart-in-`clearing` case."
+  - "ImpactSummary conclusions on Edit cards (cards 1, 4, 5, 10, 11, 12, 14): check each one's blast-radius claim against the code. For card 4 in particular, `configreg.Modules()` has consumers beyond `lyx config`, such as `internal/fabriccli`'s clone-config commit path and `internal/hubforge` tests. Card 12 edits `cmd/lyx/helptree_test.go` while claiming 'no code outside the module changes'."
+  - "Acceptance-criteria coverage across cards 7, 8, 10, 12 and 14: map each decision-record acceptance bullet (the start/status/cycle behaviours, every state-machine unit case, the claudeengine transcript and pane fixtures, the smoke test's two recorded outcomes, and the docs and CONSTRAINTS.md updates) to the card and test that carry it, and name any bullet no card carries."
+  - "Granularity of cards 3, 10, 11 and 12: card 10 bundles module scaffolding, prime-only resolution and three verbs; card 3 pairs the idle probe with the clear choreography; cards 11 and 12 each pair a production adapter or spawn helper with a verb. Settle whether each card is one independently reviewable and testable unit or should split."
+---
+
+The plan is fourteen cards over a new two-package module plus shuttle and claudeengine additions.
+Its riskiest content is the persisted cycle state machine (card 8) and the places where the plan's shared decisions go beyond or rephrase the decision record.
+The verify section runs every package the cards target, including their `-tags integration` tests, and compiles the smoke tag rather than running it, so verify coverage is not a focus entry.
+Missing `DependsOn`, and the missing `ImpactSummary` on Create-only and Prosa-carrying cards (2, 3, 6-9, 13), are on the do-not-flag list and were left out.
