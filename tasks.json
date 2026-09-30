@@ -194,5 +194,17 @@
     "deferred": false,
     "brief": "Hide the long env+claude launch line behind a generated launch script",
     "body": "Every strand pane shows a long typed launch line before the agent starts: the pane-binary prelude (`export PATH=…`, `export LYX_BIN=…`, `internal/reedengine/panebin.go`) chained onto the claude invocation (`CLAUDE_CODE_FORK_SUBAGENT=1`, `\"$(cat prompt.md)\"`, `--session-id`, `--settings`, `--model`, `--effort`, `--dangerously-skip-permissions`, `internal/shuttleengine/claudeengine/command.go`), sent with `send-keys` into an interactive shell.\nThe operator finds it noisy.\nDirection: reed writes the composed line to a `launch.sh` (or `.ps1`) in the strand's scratch dir and sends only `. \u003cpath\u003e/launch.sh`; behaviour unchanged, the full line stays inspectable in the file."
+  },
+  {
+    "id": 19,
+    "slug": "status-strand-by-driver",
+    "title": "One driving surface per run: ly-drive pane or status strand, never both",
+    "depends_on": [
+      "batten-open-ide"
+    ],
+    "isolated": false,
+    "deferred": false,
+    "brief": "llm-driven run shows only ly-drive; go-driven run shows only the status strand",
+    "body": "Operator decision: a run's tmux session shows exactly one driving surface, chosen by the run's driver.\n- `llm` driver: only the ly-drive session pane; no loom-status strand (the driver already reports progress, the status band above it is noise).\n- `go` driver: only the loom-status strand.\n\nToday `lyx loom start` always ensures the status strand (`internal/loomcli/arm.go` calls `ensureStatusStrand`, `internal/loomcli/sharedbootstrap.go`), and an llm-driven run adds the ly-drive strand next to it.\nWanted: `ensureStatusStrand` runs only for a `go`-driven run (driver read from the run's seed), and a resume of an llm run whose session still holds a status strand from an older build removes it.\n`lyx loom status` stays available as a command either way."
   }
 ]

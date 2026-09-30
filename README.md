@@ -29,6 +29,12 @@ Depends on: #009
 
 A conflict-resolved parent merge was pushed with non-compiling tests
 
+## **#019:** One driving surface per run: ly-drive pane or status strand, never both [C]
+[status-strand-by-driver](design-status-strand-by-driver.md)
+Depends on: #009
+
+llm-driven run shows only ly-drive; go-driven run shows only the status strand
+
 # Layer D
 
 ## **#013:** Webster fork audit: text search for "lyx fabric" counted as a fabric operation [D]
