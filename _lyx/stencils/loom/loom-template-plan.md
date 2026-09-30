@@ -4,7 +4,7 @@
      to shuttle as the plan agent's entire instruction set.
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires the three original ones non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
-lyx-stencil: sha256=e6ce76dfa63ad841e8f258c9cadadaaf6f90e166b4b6ada102a9c9095c85f689 -->
+lyx-stencil: sha256=a2d1b83e3aa52716e44daea14a02a1a1660a962286ac45bdbd961857a5a67e6a -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -41,7 +41,11 @@ and it answers against the current worktree only — it takes no repository-path
 
 - `lyx quarry glyphs <dir>` is the flat index: every symbol under `<dir>`'s whole tree, depth-first, each with its own glyph spelling.
   This is what you read a card's target spellings out of.
+  `lyx quarry glyphs --text <dir>` gives the same index as one symbol per line, the form to use before any line filter such as `grep`.
+  The glyph to copy from a `--text` line is its last field, the id — never the whole line.
 - `lyx quarry resolve <glyph>...` checks that a spelling names something real — pass it one or more glyphs, positionally, in one call.
+  It answers each glyph separately, and exits non-zero when any glyph is not found, ambiguous, or rejected by the grammar, but still prints every glyph's answer.
+  Read each answer's `status` (or `error`, for a grammar-rejected spelling) rather than treating the non-zero exit as a tool failure.
 - `lyx quarry toc <path>` and `lyx quarry expand <glyph>` are the structure and detail queries: `toc` for a directory's shape, and `expand` for a type's own head plus every member whose owner chain begins with it.
 
 **You never spell a glyph — you copy a line verbatim out of a quarry answer.**
