@@ -1,7 +1,7 @@
 {
   "runGuid": "58d2f68d0b54bf289c61d20455e5ff7a",
   "planFingerprint": "c40dc98c6a46e05ead31661fa7069161bc87efc6dd62bea1ee2ce90d89877574",
-  "currentBatch": 15,
+  "currentBatch": 0,
   "masterStrand": "9acb332600d74bfcdc4395303bc7b8e7",
   "masterSessionId": "4c6ab6b0-79e1-4be6-ab5e-953345d7e36c",
   "assertedModel": "sonnet",
@@ -147,8 +147,19 @@
       "kind": "fork",
       "spawnedAt": "2026-09-30T13:59:08Z",
       "sessionId": "4c6ab6b0-79e1-4be6-ab5e-953345d7e36c",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "15-batten-teardown-records-remedy",
+        "status": "done",
+        "head_sha": "c563859091ba6cd8073ddeddae9479fcca1d09c3"
+      },
+      "cardShas": [
+        "c563859091ba6cd8073ddeddae9479fcca1d09c3"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-hub-ready/4c6ab6b0-79e1-4be6-ab5e-953345d7e36c/subagents/agent-a0bef5861d980326b.jsonl"
+      ]
     },
     "2": {
       "slug": "shedrun-drive-reports-dir",
@@ -337,6 +348,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-hub-ready/4c17ecbb-80dc-4bf9-a43a-78ebde2bb2c5/subagents/agent-a3728e1078a49c641.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-hub-ready/4c6ab6b0-79e1-4be6-ab5e-953345d7e36c/subagents/agent-a50102d46d6472a75.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-hub-ready/4c6ab6b0-79e1-4be6-ab5e-953345d7e36c/subagents/agent-a6e727ca5200f95e6.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-hub-ready/4c6ab6b0-79e1-4be6-ab5e-953345d7e36c/subagents/agent-a043bed6d93911297.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-hub-ready/4c6ab6b0-79e1-4be6-ab5e-953345d7e36c/subagents/agent-a043bed6d93911297.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-hub-ready/4c6ab6b0-79e1-4be6-ab5e-953345d7e36c/subagents/agent-a0bef5861d980326b.jsonl"
   ]
 }
