@@ -2,12 +2,6 @@
 
 # Layer A
 
-## **#010:** Batten ready for the hub loop: wait through awaiting, keep run records [A]
-[batten-hub-ready](design-batten-hub-ready.md)
-Depends on: #007
-
-Batten keeps watching an awaiting child, run records survive teardown, approval time off the watch budget
-
 ## **#012:** Publish: verify the tree after merging the parent [A]
 [publish-verify-after-merge](design-publish-verify-after-merge.md)
 
@@ -28,10 +22,28 @@ Trace logs: configurable retention, fewer files from routine commands
 
 Hide the long env+claude launch line behind a generated launch script
 
+## **#019:** One driving surface per run: ly-drive pane or status strand, never both [A]
+[status-strand-by-driver](design-status-strand-by-driver.md)
+Depends on: #010
+
+llm-driven run shows only ly-drive; go-driven run shows only the status strand
+
+## **#020:** fabric add after remove: leftover remote weft branch rejects the push (flaky test) [A]
+[fabric-readd-weft-push](design-fabric-readd-weft-push.md)
+Depends on: #010
+
+Re-adding a removed slug races the old remote weft branch; integration test flakes
+
 ## **#021:** Webster verify: rerun, compare with parent, halt only on a real regression [A]
 [verify-triage](design-verify-triage.md)
 
 Flaky or pre-existing test failures no longer halt a run; report names the failing tests
+
+## **#024:** ly-drive: safe self-repairs instead of always handing back [A]
+[ly-drive-safe-repairs](design-ly-drive-safe-repairs.md)
+Depends on: #010
+
+Driver re-steps known transient stops itself; hands back only real decisions
 
 ## **#025:** Hub orchestrator as a reed strand with automatic handoff [A]
 [hub-orch-strand](design-hub-orch-strand.md)
@@ -40,17 +52,11 @@ lyx hosts the hub orchestrator in tmux and cycles its context via handoff
 
 # Layer B
 
-## **#019:** One driving surface per run: ly-drive pane or status strand, never both [B]
-[status-strand-by-driver](design-status-strand-by-driver.md)
-Depends on: #010
+## **#009:** batten opens VS Code on the new pair with reed attached [B]
+[batten-open-ide](design-batten-open-ide.md)
+Depends on: #020, #021, #019
 
-llm-driven run shows only ly-drive; go-driven run shows only the status strand
-
-## **#020:** fabric add after remove: leftover remote weft branch rejects the push (flaky test) [B]
-[fabric-readd-weft-push](design-fabric-readd-weft-push.md)
-Depends on: #010
-
-Re-adding a removed slug races the old remote weft branch; integration test flakes
+Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
 
 ## **#022:** Webster: a parent merge after a batch commit wedges record-batch [B]
 [webster-parent-merge-midrun](design-webster-parent-merge-midrun.md)
@@ -58,19 +64,7 @@ Depends on: #021
 
 record-batch demands HEAD == report head_sha; a mid-run merge-in wedges the run
 
-## **#024:** ly-drive: safe self-repairs instead of always handing back [B]
-[ly-drive-safe-repairs](design-ly-drive-safe-repairs.md)
-Depends on: #010
-
-Driver re-steps known transient stops itself; hands back only real decisions
-
 # Layer C
-
-## **#009:** batten opens VS Code on the new pair with reed attached [C]
-[batten-open-ide](design-batten-open-ide.md)
-Depends on: #020, #021, #019
-
-Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
 
 ## **#023:** Every refusal has a way forward: audit Webster and shed halt paths [C]
 [refusal-audit](design-refusal-audit.md)
@@ -114,6 +108,12 @@ Operator surface: #295, #277, #286, #297 + four unfiled findings
 [burler-review](design-burler-review.md) [done]
 
 Burler: #287, #282, #263 + comment-width finding
+
+## **#010:** Batten ready for the hub loop: wait through awaiting, keep run records
+[batten-hub-ready](design-batten-hub-ready.md) [done]
+Depends on: #007
+
+Batten keeps watching an awaiting child, run records survive teardown, approval time off the watch budget
 
 ## **#011:** ide: hub workspace with prime, board and portals
 [ide-hub-workspace](design-ide-hub-workspace.md) [done]
