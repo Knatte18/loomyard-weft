@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "blocked",
-  "error": "integration verify FAILED: go test -tags integration failed TestBattenIntegration_CreateRow_IncompletePairRemedyWorksVerbatimOnAPrefixedHub (battencli) and TestPublish_MergesInCleanlyBeforeCreatingPullRequest (landingshed)",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": "integration verify FAILED: go test -tags integration failed TestBattenIntegration_CreateRow_IncompletePairRemedyWorksVerbatimOnAPrefixedHub (battencli) and TestPublish_MergesInCleanlyBeforeCreatingPullRequest (landingshed)"
+    "wait": ""
   },
   "history": [
     {
