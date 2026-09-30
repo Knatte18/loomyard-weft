@@ -7,10 +7,10 @@
 
 A landed loom run marks its board task done
 
-## **#002:** lyx loom start pane layout: one-line status, no loom-operator, agent gets the height [A]
+## **#002:** lyx loom start pane layout: small status band, no loom-operator, agent gets the height [A]
 [loom-start-layout](design-loom-start-layout.md)
 
-lyx loom start pane layout: one-line status, no loom-operator, agent gets the height
+lyx loom start pane layout (#279)
 
 ## **#003:** loom status shows the producer's stuck reason, not 'stuck with no OnStuck target' [A]
 [stuck-reason-in-status](design-stuck-reason-in-status.md)
