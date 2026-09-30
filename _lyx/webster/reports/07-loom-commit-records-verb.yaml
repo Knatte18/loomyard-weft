@@ -1,0 +1,4 @@
+status: OK
+head_sha: d9a2187239d69d4ca93f1da091ba593ecaec6a48
+deviations:
+  - internal/loomcli/cli_test.go
