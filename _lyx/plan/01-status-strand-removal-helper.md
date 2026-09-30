@@ -24,8 +24,10 @@ Bundle table-driven tests in `bootstrap_test.go` covering:
 - one status strand among other strands (including the driver strand and a `loom-status-extra` prefix-sharing name): exactly that guid is removed, and no other;
 - two strands carry the name: both guids are removed, in table order;
 - every `remove` call passes `recursive == false`;
-- `status` fails: `remove` is never called and the function returns normally;
-- the first of two `remove` calls fails: the second same-named strand is still removed.
+- `status` fails: `remove` is never called, the function returns normally, and exactly one warning is logged;
+- the first of two `remove` calls fails: the second same-named strand is still removed, and one warning naming the failing guid is logged.
+
+The two failure cases capture log output through `logger.SetOutput` into a buffer, restored to `os.Stderr` in `t.Cleanup`, as `internal/loomshed/gatefindings_test.go` does, so the warning the acceptance criterion requires is pinned rather than assumed.
 
 **ImpactSummary:** Adds one unexported function and its tests in `internal/loomcli`; no caller yet, so no existing behaviour changes.
 

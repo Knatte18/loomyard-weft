@@ -33,7 +33,11 @@ Create `smoke_drivingsurface_test.go` (build tag `smoke`, package `loomcli`, wit
   after the step, `probeReedEngine(...).Status()` succeeds (reed is up) and `statusStrandCount` for `statusStrandDisplayName` is 0.
 - `TestSmokeStep_LeavesAPreexistingStatusStrandUntouched`: on a go-seeded fixture, bring reed up through the probe engine and add one strand with `statusStrandAddSpec` over a long-lived shell command, then run `lyx loom step`;
   afterwards exactly one strand carries `statusStrandDisplayName` and its guid is the one added before the step.
+- `TestSmokeStep_FailedReedUpRefusesWithBootstrapKind`: on a go-seeded fixture whose reed config is `reedengine.ConfigTemplate()` with its `mouse:` line replaced by an invalid value (the hub built as `newWiredPairFixture` builds it, with that reed config in place of the template), `lyx loom step` exits 1 and its envelope carries `"kind": "bootstrap"`.
+  `reedengine.Engine.Up` validates `mouse` through `mouseOption` before any tmux round trip, and `LoadConfig` does not validate it, so `Up` is the first thing to fail; this test needs no tmux.
 
-**ImpactSummary:** `lyx loom step` and `lyx shed step` on loom stop keeping, replacing or adding the status strand; `start` is unchanged, and the parity tests' refusal arm never reached reed, so they pass unchanged apart from comments.
+The two tests that bring reed up call `tmuxBinaryPath(t)` first, as this suite's live-tmux tests do, so a machine without tmux skips them.
+
+**ImpactSummary:** `lyx loom step` and `lyx shed step` on loom stop keeping, replacing or adding the status strand, and a failed reed `Up` still refuses with `bootstrap`; `start` is unchanged, and the parity tests' refusal arm never reached reed, so they pass unchanged apart from comments.
 
 **Commit:** 2: loomcli: step brings reed up and does no status-strand work
