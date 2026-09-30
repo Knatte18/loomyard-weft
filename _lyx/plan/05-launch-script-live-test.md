@@ -8,7 +8,7 @@
 - `internal/reedengine#Engine.Down`
 - `internal/reedengine#executablePath`
 - `internal/reedengine#composePaneLaunchLine`
-- `plan:internal/reedengine#launchScriptPath`
+- `internal/reedengine#launchScriptPath`
 
 **Intent:**
 Prove against a real tmux that sourcing the launch script runs the same statements in the pane shell's own scope that typing them did: the command runs, and the prelude's exports persist in the pane session after it returns.

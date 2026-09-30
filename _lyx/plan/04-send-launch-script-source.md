@@ -15,7 +15,7 @@
 - `docs/sandbox-howto.md`
 
 **Uses:**
-- `plan:internal/reedengine#stageLaunchScript`
+- `internal/reedengine#stageLaunchScript`
 - `plan:internal/reedengine#removeLaunchScripts`
 - `internal/reedengine#composePaneLaunchLine`
 - `internal/reedengine#executablePath`

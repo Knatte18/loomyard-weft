@@ -10,8 +10,8 @@
 - `internal/reedengine/launchscript_cleanup_test.go`
 
 **Uses:**
-- `plan:internal/reedengine#launchScriptDir`
-- `plan:internal/reedengine#launchScriptPath`
+- `internal/reedengine#launchScriptDir`
+- `internal/reedengine#launchScriptPath`
 - `internal/reedengine#Engine.stateDir`
 - `internal/reedengine#Engine.RemoveStrand`
 - `internal/reedengine#Engine.ReplaceStrand`

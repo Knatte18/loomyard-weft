@@ -5,9 +5,9 @@
 - `internal/reedengine/panebin_test.go`
 
 **Create:**
-- `plan:internal/reedengine#launchScriptDir` -> `func launchScriptDir(stateDir string) string`
-- `plan:internal/reedengine#launchScriptPath` -> `func launchScriptPath(sh shell.Shell, stateDir, strandGUID string) string`
-- `plan:internal/reedengine#stageLaunchScript` -> `func stageLaunchScript(sh shell.Shell, stateDir, strandGUID, composedLine string) string`
+- `internal/reedengine#launchScriptDir`
+- `internal/reedengine#launchScriptPath`
+- `internal/reedengine#stageLaunchScript`
 
 **Uses:**
 - `internal/shell#Shell`
