@@ -21,12 +21,14 @@ In `sink.go`:
   It never arms the sink, creates anything, or logs.
 - Update `TraceDir` for the new `resolveSinkDirLocked` return value.
 
-In `sink_test.go`, add tests:
+In `sink_test.go`, add tests.
+Each case starts with `SetDurableSinkDir(dir)` on its own `t.TempDir()`, per the file's existing convention:
+under `go test` without `LYX_TRACE=1`, `resolveSinkDirLocked` refuses the cwd-anchored path, so without the redirect no case can arm.
 
-- Before any record in a fresh generation, `CurrentSinkArmState()` reports `Armed: false`, and calling it creates no file.
-- After `SetDurableSinkDir(dir)` and one `Info` record, it reports `Armed: true`, `Redirected: true`, `Dir: dir`, `AnchorPath: ""`.
-- After `NotifyExit(1)` with no prior record, it reports `Armed: true`.
-- After a redirect to a new directory, it reports `Armed: false` again until the next arm.
+- Right after the redirect, before any record, `CurrentSinkArmState()` reports `Armed: false`, and calling it leaves `dir` empty.
+- After one `Info` record, it reports `Armed: true`, `Redirected: true`, `Dir: dir`, `AnchorPath: ""`.
+- After `NotifyExit(1)` with no prior record, it reports `Armed: true`, `Redirected: true`, `Dir: dir`.
+- After an arm followed by a redirect to a second `t.TempDir()`, it reports `Armed: false` again until the next arm.
 
 In `sink_callsite_integration_test.go`, extend `TestDurableSink_CwdFallbackArmsInALyxOwnedWorktree` (or add a sibling test using `armFallbackSinkFrom`) to assert the cwd-anchored arm reports `Redirected: false`, `Dir` equal to `<repo>/.lyx/logs`, and `AnchorPath` equal to `repo`.
 
