@@ -1,0 +1,19 @@
+{
+  "runGuid": "8dcdc58a17e2ce9e3b90b50d80cd08b2",
+  "planFingerprint": "11581e4cc3767e50fb1915f2ae12097d41de4ad24e057d038badea24621be4f7",
+  "currentBatch": 1,
+  "masterStrand": "25f597c87f27bc4449485be4d5591d2a",
+  "masterSessionId": "dae6511b-a160-4cae-8f5d-7ca64935acba",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "shuttle-session-seam",
+      "startSha": "85902381e89c8131af7ccff9d388227aa5774aa4",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T14:44:56Z",
+      "sessionId": "dae6511b-a160-4cae-8f5d-7ca64935acba",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
