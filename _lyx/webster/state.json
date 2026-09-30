@@ -1,7 +1,7 @@
 {
   "runGuid": "d62c8f1871612013bc5037be8f7a529e",
   "planFingerprint": "8cfcd58c8ad8f64256e93bff3bd1627dfad589e3867e1c636a71491af9dda250",
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "8582c4b0d9ce744dbc38e5668c380775",
   "masterSessionId": "0675e7f8-2080-4b39-8b23-ef068ef17e99",
   "assertedModel": "sonnet",
@@ -85,6 +85,15 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-records-leak-into-pairs/0675e7f8-2080-4b39-8b23-ef068ef17e99/subagents/agent-a320a154f1ae28097.jsonl"
       ]
+    },
+    "5": {
+      "slug": "docs-fresh-pair-and-lock-wait",
+      "startSha": "9fb10e9ebb7905e706b91567a891fd8633b5e249",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T17:38:05Z",
+      "sessionId": "0675e7f8-2080-4b39-8b23-ef068ef17e99",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
