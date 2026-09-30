@@ -2,11 +2,6 @@
 
 # Layer A
 
-## **#001:** A landed loom run marks its board task done [A]
-[board-done-on-landing](design-board-done-on-landing.md)
-
-A landed loom run marks its board task done
-
 ## **#003:** loom status shows the producer's stuck reason, not 'stuck with no OnStuck target' [A]
 [stuck-reason-in-status](design-stuck-reason-in-status.md)
 

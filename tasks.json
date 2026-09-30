@@ -11,16 +11,6 @@
     "status": "done"
   },
   {
-    "id": 1,
-    "slug": "board-done-on-landing",
-    "title": "A landed loom run marks its board task done",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "A landed loom run marks its board task done",
-    "body": "Repro: `lyx board upsert` a task, `lyx fabric add \u003cslug\u003e`, `lyx loom start --no-attach` until `state: done` with the change landed on the parent; `lyx board get \u003cslug\u003e` still shows no status (no production code outside `boardcli` sets a board status).\nImpact: the board keeps listing landed work as open and claimable, so the operator must `lyx board set-status` by hand after every landing.\n\nFound in crucible-happy-path (round opus-medium-r1).\n\nSource: https://github.com/Knatte18/loomyard/issues/275 (close it in the landing commit)."
-  },
-  {
     "id": 2,
     "slug": "loom-start-layout",
     "title": "lyx loom start pane layout: small status band, no loom-operator, agent gets the height",
