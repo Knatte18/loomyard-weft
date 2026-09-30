@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "blocked",
-  "error": "Integration fork reported status FAILED: the plan-level verify command failed after all 7 batches were done.",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": "Integration fork reported status FAILED: the plan-level verify command failed after all 7 batches were done."
+    "wait": ""
   },
   "history": [
     {
