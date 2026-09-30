@@ -1,11 +1,11 @@
 {
-  "current_producer": "Batchifier",
+  "current_producer": "Webster",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Batchifier",
-    "last": "Plan-Bouncer → done",
+    "now": "Webster",
+    "last": "Batchifier → done",
     "wait": ""
   },
   "history": [
@@ -72,6 +72,12 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/batten-records-leak-into-pairs/_lyx/reviews/plan/round-1-bouncer-ledger.md",
       "at": "2026-09-30T17:31:54Z"
+    },
+    {
+      "producer": "Batchifier",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-09-30T17:32:02Z"
     }
   ],
   "product": {
