@@ -8,16 +8,5 @@
     "deferred": false,
     "brief": "Walk every refusal/halt path in webster and shed; none may wedge a run",
     "body": "Principle (operator-agreed): a false stop is as serious as a wrong landing; every refusal lyx issues must leave a documented way forward, and a guard that does not protect correctness warns and records instead of halting.\n\nEvidence from 2026-09-30 (runs `operator-surface`, `batten-hub-ready`, `ide-hub-workspace`), each needing a hub code fix and deploy to continue:\n- fork-audit false positives made a done batch unrecordable forever (flagged transcript never enters `seenForkTranscripts`) — `777d93af7`, `b848b8f9f`;\n- run-entry and begin-batch validation refused a begun-but-unrecorded batch as create-already-exists — `b16efae35`, `4ab6f6dd6`;\n- record-batch / begin-batch / recover-batch refuse each other in a ring after a parent merge (`webster-parent-merge-midrun`).\n\nScope: enumerate every refusal in `internal/websterengine`, `internal/webstercli`, `internal/shedengine`, `internal/loomcli` (preflight, coherence, fingerprint, audit, head-SHA, report-exists gates). For each: can a run reach it through no fault of its own? Is there a verb or state transition out of it? Is the halt needed for correctness, or can it warn?\nDeliver: a table in the webster module doc (refusal, trigger, way forward), fixes for every refusal without a way forward, and tests reaching each from a realistic state.\nPolicy-class audit findings (fabric-reference, named spawn) on a batch whose report is OK and whose commits pass verify become recorded warnings, not halts."
-  },
-  {
-    "id": 30,
-    "slug": "batten-records-leak-into-pairs",
-    "title": "Batten run records in the prime leak into every new pair",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "Batten keeps its per-slug seed/status at the prime weft `_lyx/shed/\u003cslug\u003e/`, committed to main-weft; a pair created afterwards inherits them, and its child run (same slug) finds a batten seed and blocks at Seed-Child.",
-    "body": "Seen 2026-09-30 starting three `lyx batten run` in a row: the 2nd and 3rd blocked at Seed-Child with \"task worktree already seeded with a disagreeing seed: run self is already seeded with {Recipe:batten ...}; refusing to overwrite with {Recipe:loom ...}\".\nEvery new pair also carries every other in-flight batten slug under `_lyx/shed/`.\nThe hub unblocked them by deleting the inherited seed.json/status.json in the task worktree.\n\nFix direction: give batten its own namespace in the prime (e.g. a batten-owned dir rather than `_lyx/shed/\u003cslug\u003e`), so it can never collide with the child run segment, and make Worktree-Create (or fabric add) start a pair without other runs records.\nAlso covers `batten-prime-lock-wait` (parallel creates block on the prime lock).",
-    "status": "done"
   }
 ]
