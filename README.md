@@ -13,6 +13,11 @@ Batten keeps watching an awaiting child, run records survive teardown, approval 
 
 One generated VS Code workspace shows the board beside the prime
 
+## **#020:** fabric add after remove: leftover remote weft branch rejects the push (flaky test) [A]
+[fabric-readd-weft-push](design-fabric-readd-weft-push.md)
+
+Re-adding a removed slug races the old remote weft branch; integration test flakes
+
 # Layer B
 
 ## **#019:** One driving surface per run: ly-drive pane or status strand, never both [B]
@@ -148,8 +153,3 @@ Parked: workers on 5m cache TTL, waiting sessions on 1h — operator deciding
 [burler-focus-prior-round](design-burler-focus-prior-round.md)
 
 Focus directive needs prior-round files the round prompt says to read only after the review
-
-## **#009:** fabric add after remove: leftover remote weft branch rejects the push (flaky test)
-[fabric-readd-weft-push](design-fabric-readd-weft-push.md)
-
-Re-adding a removed slug races the old remote weft branch; integration test flakes

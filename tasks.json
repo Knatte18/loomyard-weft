@@ -206,5 +206,15 @@
     "deferred": false,
     "brief": "llm-driven run shows only ly-drive; go-driven run shows only the status strand",
     "body": "Operator decision: a run's tmux session shows exactly one driving surface, chosen by the run's driver.\n- `llm` driver: only the ly-drive session pane; no loom-status strand (the driver already reports progress, the status band above it is noise).\n- `go` driver: only the loom-status strand.\n\nToday `lyx loom start` always ensures the status strand (`internal/loomcli/arm.go` calls `ensureStatusStrand`, `internal/loomcli/sharedbootstrap.go`), and an llm-driven run adds the ly-drive strand next to it.\nWanted: `ensureStatusStrand` runs only for a `go`-driven run (driver read from the run's seed), and a resume of an llm run whose session still holds a status strand from an older build removes it.\n`lyx loom status` stays available as a command either way.\nDriver pane height needs no new key: with the status strand gone, the stack is ly-drive over the agent, so `collapsed_rows` is the ly-drive height (hub config set to 16 in weft `main-weft`)."
+  },
+  {
+    "id": 20,
+    "slug": "fabric-readd-weft-push",
+    "title": "fabric add after remove: leftover remote weft branch rejects the push (flaky test)",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Re-adding a removed slug races the old remote weft branch; integration test flakes",
+    "body": "`TestRemove_AddSucceedsAfterWarpBranchDeleted` (`internal/fabricengine/remove_warpbranch_integration_test.go`) is flaky: run `ide-hub-workspace` failed its plan verify with \"push of wb-readd-weft rejected non-fast-forward\"; the same test passes on reruns on main and in the task worktree.\nThe test adds `wb-readd`, removes it without `--remote` (the pushed weft branch stays on the fixture's origin), then adds it again: the re-created weft branch pushes only if it happens to match or fast-forward the old remote one, which depends on commit timestamps.\nThis is a product gap too: `lyx fabric add \u003cslug\u003e` after a plain `fabric remove \u003cslug\u003e` can fail on the leftover remote weft branch.\nFix direction: Add adopts or resets an orphaned remote weft branch of the same name (or Remove records it and Add refuses with a remedy), and the test pins that deterministically.\n\nHit twice in a row in run `ide-hub-workspace` (integration verify, then again after re-step); both times the verify passed when rerun by hand.\nLikely mechanism: the re-created weft branch's bootstrap commits are identical to the old ones only when they land in the same second (same SHA, push is a no-op); otherwise they diverge and the push is rejected, so in real use a re-add of a removed slug nearly always fails.\nThe integration verify report (`_lyx/webster/reports/integration.yaml`) carries only `status: FAILED`, no failing test name or output; the hub had to dig the fork transcript for it."
   }
 ]

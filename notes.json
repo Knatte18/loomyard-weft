@@ -48,15 +48,5 @@
     "deferred": false,
     "brief": "Focus directive needs prior-round files the round prompt says to read only after the review",
     "body": "Friction from run `operator-surface`, Burler Webster-Review round 2 (stencils from `d619100af`).\nThe round-2 focus directive asked the reviewer to check the round-1 F4 site list and the round-1 fix commits, which requires reading `round-1-review.md` and `round-1-fixer-report.md`.\nThe round prompt's instruction 2 says prior-round files are read only after the review is saved, so the focus file handed over in instruction 1 cannot be followed without breaking it; the reviewer read them early and said so.\nFix direction: the focus directive restates the sites it depends on, or the prior-round rule exempts what a focus directive names."
-  },
-  {
-    "id": 9,
-    "slug": "fabric-readd-weft-push",
-    "title": "fabric add after remove: leftover remote weft branch rejects the push (flaky test)",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "Re-adding a removed slug races the old remote weft branch; integration test flakes",
-    "body": "`TestRemove_AddSucceedsAfterWarpBranchDeleted` (`internal/fabricengine/remove_warpbranch_integration_test.go`) is flaky: run `ide-hub-workspace` failed its plan verify with \"push of wb-readd-weft rejected non-fast-forward\"; the same test passes on reruns on main and in the task worktree.\nThe test adds `wb-readd`, removes it without `--remote` (the pushed weft branch stays on the fixture's origin), then adds it again: the re-created weft branch pushes only if it happens to match or fast-forward the old remote one, which depends on commit timestamps.\nThis is a product gap too: `lyx fabric add \u003cslug\u003e` after a plain `fabric remove \u003cslug\u003e` can fail on the leftover remote weft branch.\nFix direction: Add adopts or resets an orphaned remote weft branch of the same name (or Remove records it and Add refuses with a remedy), and the test pins that deterministically.\n\nHit twice in a row in run `ide-hub-workspace` (integration verify, then again after re-step); both times the verify passed when rerun by hand.\nLikely mechanism: the re-created weft branch's bootstrap commits are identical to the old ones only when they land in the same second (same SHA, push is a no-op); otherwise they diverge and the push is rejected, so in real use a re-add of a removed slug nearly always fails.\nThe integration verify report (`_lyx/webster/reports/integration.yaml`) carries only `status: FAILED`, no failing test name or output; the hub had to dig the fork transcript for it."
   }
 ]
