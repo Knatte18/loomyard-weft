@@ -1,7 +1,7 @@
 {
   "runGuid": "d62c8f1871612013bc5037be8f7a529e",
   "planFingerprint": "8cfcd58c8ad8f64256e93bff3bd1627dfad589e3867e1c636a71491af9dda250",
-  "currentBatch": 2,
+  "currentBatch": 0,
   "masterStrand": "8582c4b0d9ce744dbc38e5668c380775",
   "masterSessionId": "0675e7f8-2080-4b39-8b23-ef068ef17e99",
   "assertedModel": "sonnet",
@@ -32,11 +32,23 @@
       "kind": "fork",
       "spawnedAt": "2026-09-30T17:32:58Z",
       "sessionId": "0675e7f8-2080-4b39-8b23-ef068ef17e99",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "02-fabric-add-drops-run-records",
+        "status": "done",
+        "head_sha": "e2ad94c9dbf12a6a80b9510679785f0d6b9842a3"
+      },
+      "cardShas": [
+        "e2ad94c9dbf12a6a80b9510679785f0d6b9842a3"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-records-leak-into-pairs/0675e7f8-2080-4b39-8b23-ef068ef17e99/subagents/agent-ace00638544aef241.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-records-leak-into-pairs/0675e7f8-2080-4b39-8b23-ef068ef17e99/subagents/agent-a4a16c688635926ae.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-records-leak-into-pairs/0675e7f8-2080-4b39-8b23-ef068ef17e99/subagents/agent-a4a16c688635926ae.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-records-leak-into-pairs/0675e7f8-2080-4b39-8b23-ef068ef17e99/subagents/agent-ace00638544aef241.jsonl"
   ]
 }
