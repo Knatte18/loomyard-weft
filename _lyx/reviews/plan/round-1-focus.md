@@ -1,0 +1,14 @@
+---
+round: 1
+focus:
+  - "Cards 1 and 2 (verifyrun Run, webster runVerifyCommand): does verifyrun.Run's return contract (exit, cancellation, ErrWaitDelay, spawn-failure branches) map back onto runVerifyCommand's (bool, error) contract so that the existing integration-tagged TestRunVerifyCommand, including its PATH-cleared SpawnFailure subtest and its exitCode/cause log-key assertions, passes unchanged as card 2 claims?"
+  - "Card 5 (publish_verify_test.go) against the decision record's Publish acceptance criteria: is every Publish criterion asserted somewhere in the plan, in particular 'marker write or output-file create failure: a returned error, not Stuck; no push' and 'the output file holds the command's output', or does card 4's gate-level coverage leave a Publish-level criterion unasserted?"
+  - "Card 6 (Finalize.mergeInStep, finalize_verify_test.go): does the scripted merge-in-required retry scenario (resolver up-to-date then tree-changed, merger returning ErrMergeInRequired first) match how Finalize.Call's step 2 and step 5 actually reach mergeInStep, and do the Finalize acceptance criteria (parent branch unchanged, MarkTaskDone not called, nothing pushed) each get an assertion?"
+  - "Card 7 (landingDeps, landingdeps_verify_test.go): does the described test setup (a lyxcwd.Location with only HubPath set, plan written under planparser.PlanDir(loc.AnchorPath())) actually resolve to the directory the closure reads, and does the existing TestLandingDeps_EveryFieldPopulated guard detect a zero func field and zero string fields without an edit, as the card asserts?"
+  - "Fidelity and docs for the new internal/verifyrun leaf package: is every doc and invariant surface a new leaf package touches carried by some card (CONSTRAINTS.md's Told-Geometry bound-package list, docs/overview.md's shared-infrastructure list and shared-libs/README.md, beyond the package-tree line card 1 adds), and is card 1's docs/overview.md Prosa target licensed by the decision record's scope?"
+  - "Card 1's conditional testmain_test.go ('if cmd/lyx's hermetic-environment scan flags the new test package'): is a file created only on a runtime condition, and absent from the card's Create targets, a legitimate card instruction, given the Hermetic Git Test Environment Invariant binds only packages whose tests spawn git?"
+---
+
+Seed rationale: the plan's surface is seven cards over one new leaf package, one runner extraction, two accessors, one gate and its two call sites, and the loomcli wiring.
+The riskiest claims are the "passes unchanged" and "without an edit" assertions in cards 2 and 7, which rest on existing tests the plan does not touch, and the per-producer acceptance-criteria coverage split between card 4's gate tests and cards 5–6's producer tests.
+The `## verify:` section already runs `go test ./...` plus `-tags integration` over every targeted Go package and only vets `smoke`, so verify coverage is not a focus.
