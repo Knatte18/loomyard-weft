@@ -12,10 +12,10 @@ A landed loom run marks its board task done
 
 loom status shows the producer's stuck reason, not 'stuck with no OnStuck target'
 
-## **#004:** Webster integration.md renders the verify command verbatim [A]
+## **#004:** Plan verify: code-fence lines are not commands [A]
 [integration-verify-fence](design-integration-verify-fence.md)
 
-Webster integration.md renders the verify command verbatim
+Strip code fences from the plan-level verify command (#285)
 
 ## **#005:** Stencil drift warning names the right remedy per drift direction [A]
 [stencil-drift-remedy](design-stencil-drift-remedy.md)
