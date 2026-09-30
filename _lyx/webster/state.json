@@ -1,0 +1,19 @@
+{
+  "runGuid": "de1e8938e55df24dff4a37d419c1bc01",
+  "planFingerprint": "f770fc8cd645570e64d289a52866eecc5916ab63df4d6bc84f525b9436cf2531",
+  "currentBatch": 1,
+  "masterStrand": "a7640500dce053df26911daf00b01e4e",
+  "masterSessionId": "aeafe430-1f08-406e-93c7-53094ee67314",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "retention-trace-groups",
+      "startSha": "85902381e89c8131af7ccff9d388227aa5774aa4",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T14:30:31Z",
+      "sessionId": "aeafe430-1f08-406e-93c7-53094ee67314",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
