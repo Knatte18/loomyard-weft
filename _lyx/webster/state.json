@@ -1,7 +1,7 @@
 {
   "runGuid": "37cba9f1c359b5c9585f75af3e7b0fdf",
   "planFingerprint": "38e428063886724aba6c4e077c909dbcd6be9275a43236aaa0d24e372c90ea4b",
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "bc858593720baabdba10312cb7491bff",
   "masterSessionId": "c16f1da8-e977-4c1e-a607-aa1a986d970a",
   "assertedModel": "sonnet",
@@ -12,8 +12,22 @@
       "kind": "fork",
       "spawnedAt": "2026-09-30T16:48:03Z",
       "sessionId": "c16f1da8-e977-4c1e-a607-aa1a986d970a",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-refuse-before-archive",
+        "status": "done",
+        "head_sha": "015c710c2708adb11478e6bcede4615d77b0c4be"
+      },
+      "cardShas": [
+        "015c710c2708adb11478e6bcede4615d77b0c4be"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-archive-tag-before-dirty-check/c16f1da8-e977-4c1e-a607-aa1a986d970a/subagents/agent-a17e0b635e26d28f4.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-archive-tag-before-dirty-check/c16f1da8-e977-4c1e-a607-aa1a986d970a/subagents/agent-a17e0b635e26d28f4.jsonl"
+  ]
 }
