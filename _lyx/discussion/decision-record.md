@@ -4,7 +4,7 @@
 
 `lyx loom start` must never put a driver to work on a pair that is mid-merge.
 Today a hub merge-in that stopped on a conflict (a `UU` path, `MERGE_HEAD` present) was followed by `lyx loom start`, which spawned a driver onto the conflicted tree.
-`start` checks for no merge state at all before it spawns or resumes a driver;
+Today `start` checks no merge state at all before it spawns or resumes a driver;
 the recipe's own Preflight row runs only at the head of the recipe, inside the driver, so a resumed run never re-checks.
 After this task, `start` refuses on its envelope with a distinct kind and names the remedy: resolve, `lyx fabric merge-stage`, `lyx fabric merge --continue` (or `--abort`).
 
@@ -35,6 +35,8 @@ Out:
 - **Refuse only when this invocation would spawn a driver or resume a parked one.**
   The trigger is `runDriverSpawnAndWait`'s existing decision: `mustSpawn` true (go or llm arm), or a live driver strand with the park marker present (the resume branch).
   A live, working driver (strand live with no marker, or the go arm's run lock held) is left alone and `start` proceeds to attach exactly as today.
+  A live strand with no marker over a run halted at a hand-back is neither a spawn nor a resume, so it keeps its `driver_not_parked` refusal on a mid-merge pair;
+  the merge check applies once that driver parks and a later `start` would resume it.
   Rationale: Landing's conflict-resolution session runs mid-merge with a live driver, and an operator re-attaching to it must not be refused.
 
 - **The check runs after the strand/run-lock probe and before park-marker removal, the resume line, or any spawn.**
@@ -43,13 +45,15 @@ Out:
 
 - **A new exported probe in `internal/fabricengine` answers "is this pair mid-merge, and how".**
   It takes `l *lyxcwd.Location`, is read-only (no `MutationRecord`), and returns a vocabulary-neutral classification with three states: not mid-merge, a fabric merge parked (the fabric merge-state record exists), or foreign merge state (a `MERGE_HEAD` or unmerged index entries on either side with no fabric record), plus the conflicted paths.
-  It reuses the existing internals — `mergeRecordExists` and the four probes `foreignMergeStatePresent` combines — rather than re-deriving them.
-  A pair whose record location cannot be resolved follows `mergeBlocksMutation`'s half-broken-pair rule and reports on the git-level probes alone.
-  Rationale: `loomcli` is outside the Fabric Vocabulary Invariant's owner set and cannot name the sides, and `MergeStateActive` (weft-only) and `Fabric.MergeInProgress` (record-only, needs an open `*Fabric`) each miss the incident's shape.
+  The conflicted paths are in the pair's one-repo form, the same form a fabric merge verb's `conflicts` carries, so `lyx fabric merge-stage` accepts them.
+  It opens the pair from `l` itself and reuses the existing internals — `mergeRecordExists` and the four probes `foreignMergeStatePresent` combines — rather than re-deriving them.
+  A pair the probe cannot open, or whose record location cannot be resolved, is a probe error, never "not mid-merge".
+  Rationale: `loomcli` is outside the Fabric Vocabulary Invariant's owner set and cannot name the sides, and `MergeStateActive` (weft-only) and `Fabric.MergeInProgress` (record-only) each miss the incident's shape.
 
 - **One new kind, `merge_in_progress`, declared as a constant beside `shedrun.StartNotParkedKind`.**
   The envelope is `output.ErrFields` with `kind` and `conflicts` (the conflicted paths, an empty list when there are none).
   Rationale: an unattended caller (batten, a script, the hub) must tell this non-retryable refusal apart from the retryable `driver_not_parked` by kind, never by message text.
+  Batten needs no change: its child-spawn error wraps the retry sentinel only for kind `driver_not_parked`, and its inner run returns every other spawn error as a hard error, so a `merge_in_progress` refusal halts rather than loops.
 
 - **The message names the remedy by case.**
   Fabric merge parked: resolve each conflicted path, mark it resolved with `lyx fabric merge-stage <path>...`, then run `lyx fabric merge --continue` (or `lyx fabric merge --abort` to discard the merge), then re-run `lyx loom start`.
@@ -57,6 +61,7 @@ Out:
   Rationale: the board names the fabric remedy, and the foreign case needs its own text because that remedy fails on it.
 
 - **A probe error refuses on the envelope.**
+  This covers a pair the probe cannot open or whose record location cannot be resolved.
   Rationale: an undetermined answer is not evidence the tree is clean, and spawning on it reopens the bug.
 
 ## Constraints
@@ -73,15 +78,12 @@ Out:
 
 - The incident's merge-in was run with `lyx fabric merge-in`, so the common shape is a fabric-parked merge; the foreign shape is covered because it is equally reachable and equally harmful.
 - Refusing a `start` whose only merge state is a record left by a crashed Landing `mergeresolve` session is acceptable: the operator runs `lyx fabric merge --abort` (which `mergeresolve` would itself have done on re-entry) and re-runs `start`.
-- Batten's inner run already treats a refusal envelope whose kind is not `driver_not_parked` as a non-retryable failure, so it needs no change.
 - Foreign merge state on the weft side counts as mid-merge, matching `foreignMergeStatePresent`'s two-sided form.
 
 ## Open risks
 
 - A crashed Landing conflict session leaves a fabric record that now blocks `start` until the operator aborts it; the refusal text names `--abort`, but the operator cannot tell this origin from a hub merge-in by the message alone.
 - A merge-in started into the worktree while a driver is actively stepping is not guarded; that race is outside this task.
-- If batten's inner run turns out to retry every refusal, a `merge_in_progress` refusal loops until the operator resolves; the plan must confirm batten's handling.
-
 ## Acceptance criteria
 
 - `start` over a pair with a conflicted `lyx fabric merge-in` parked refuses with kind `merge_in_progress`, lists the conflicted paths in `conflicts`, names `lyx fabric merge-stage`, `lyx fabric merge --continue` and `--abort`, exits non-zero, and spawns no driver on either arm.
@@ -92,7 +94,9 @@ Out:
 - On refusal the bootstrap lock is released and a stale park marker is left untouched.
 - A clean pair's `start` behaves exactly as before; existing `start` tests stay green.
 - The `fabricengine` probe has a unit/integration row per state: clean, fabric-parked with conflicts, fabric-parked with none, and each foreign shape on each side.
-- A probe error surfaces as an error envelope and spawns nothing.
+- A probe error surfaces as an error envelope and spawns nothing, including over a pair the probe cannot open.
+- A live strand with no marker over a run halted at a hand-back, over a mid-merge pair, still refuses with kind `driver_not_parked`.
+- Over a pair with conflicts, `conflicts` lists paths in the same one-repo form a fabric merge verb's `conflicts` carries.
 - `start`'s `Long` text, `docs/overview.md`'s loom entry and `internal/fabricengine/doc.go` describe the refusal and the probe in the same commit.
 
 ## Notes for the plan writer
@@ -100,4 +104,4 @@ Out:
 - The spawn/resume decision point is `runDriverSpawnAndWait` in `internal/loomcli/start.go`; the resume branch reads the park marker, and every failure there releases the bootstrap lock before `output.Err`.
 - The existing fabric probes worth reusing sit in `internal/fabricengine/mergestate.go` (`mergeRecordExists`, `mergeBlocksMutation`, `foreignMergeStatePresent`) and `mergestateactive.go` (`MergeStateActive`, an `l`-in precedent).
 - The fabric remedy wording already exists in `internal/fabriccli/envelope.go`'s conflict error; keep `start`'s text consistent with it.
-- `internal/battencli/wire.go`'s `childNotParked` is where batten classifies a child `start` refusal by kind.
+- `internal/battencli/wire.go`'s `childNotParked` is where batten classifies a child `start` refusal by kind; `internal/battenshed/innerrun.go` retries only on `ErrChildNotParked`.

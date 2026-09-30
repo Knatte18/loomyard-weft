@@ -23,7 +23,7 @@ The session ran autonomously; every turn below is a self-posed question answered
    The resolved-but-unconcluded shape (`MERGE_HEAD` only, or a record with every path staged) is the most dangerous because the tree looks clean, so it counts too.
 
 5. **Which probe?**
-   `MergeStateActive` is weft-only; `Fabric.MergeInProgress` is record-only and needs an open `*Fabric`; `foreignMergeStatePresent` is unexported and excludes the record.
+   `MergeStateActive` is weft-only; `Fabric.MergeInProgress` is record-only; `foreignMergeStatePresent` is unexported and excludes the record.
    None covers the incident alone, so a new exported `l`-in probe combines the record check and the four git-level probes, returning a vocabulary-neutral classification plus conflicted paths.
 
 6. **What does the refusal look like?**
@@ -35,7 +35,8 @@ The session ran autonomously; every turn below is a self-posed question answered
    The seed commit is weft-only and idempotent, so leaving it first is harmless.
 
 8. **What about batten and ly-drive?**
-   Batten classifies a child `start` refusal by kind (`childNotParked`); a new kind falls into its non-retryable path, assumed and flagged for the plan to verify.
+   Batten classifies a child `start` refusal by kind (`childNotParked`); a new kind falls into its non-retryable path.
+   Verified in review round 1: `childSpawnError` wraps `ErrChildNotParked` only for `driver_not_parked`, and the inner run returns every other spawn error as a hard error.
    ly-drive is spawned by `start` and does not call it, so it is unaffected.
 
 ## Rejected alternatives
@@ -50,6 +51,9 @@ The session ran autonomously; every turn below is a self-posed question answered
   The refusal still has to wait for the spawn/resume decision, so an early probe only adds a second site; the seed commit it would pre-empt is harmless.
 - **Reusing `MergeStateActive` or `Fabric.MergeInProgress`.**
   The first sees only the weft side, the second only the fabric record; the incident's shape (warp-side conflict under a fabric record) and the foreign shapes each slip past one of them.
+- **Following `mergeBlocksMutation`'s half-broken-pair rule (answer "not mid-merge" when the pair cannot be opened or its record location cannot be resolved).**
+  That rule exists so a half-torn-down pair can still be torn down; for `start` it would put a driver on an unchecked tree, and where the weft gitdir cannot be resolved the git-level probes fail in the same directory anyway.
+  Replaced in review round 1 by treating both cases as a probe error.
 - **Two kinds, one per case (fabric vs foreign).**
   Both are the same non-retryable class for a caller; the message carries the case difference.
 - **Auto-aborting the merge from `start`.**
@@ -67,5 +71,5 @@ _No rounds yet._
 - Q4 New probe or reuse? — Resolved, auto-pick: new exported `l`-in probe in `fabricengine`, reusing its internals. Rationale: no existing probe covers every shape, and `loomcli` cannot name the sides.
 - Q5 Kind vocabulary? — Resolved, auto-pick: one kind `merge_in_progress` beside `StartNotParkedKind`. Rationale: callers branch on kind; retryability is the distinction that matters.
 - Q6 Probe error handling? — Resolved, auto-pick: refuse on the envelope. Rationale: undetermined is not clean.
-- Q7 Does batten retry unknown refusal kinds? — Open, for the plan: assumed non-retryable; verify in `internal/battencli/wire.go`.
+- Q7 Does batten retry unknown refusal kinds? — Resolved, verified in review round 1: no. `internal/battencli/wire.go` wraps the retry sentinel only for `driver_not_parked`, and `internal/battenshed/innerrun.go` returns every other spawn error as a hard error; the decision record states it as fact.
 - Q8 Crash-left Landing record blocking `start`? — Resolved, auto-pick: accept; the message names `--abort`. Recorded as an open risk.
