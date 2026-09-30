@@ -1,7 +1,7 @@
 {
   "runGuid": "f652684f48161c48a7d9bfbde839552f",
   "planFingerprint": "36dbf8a988fd24d366b4451335b25b6ca068d63a43b4636877df44955fd94a77",
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "cdbb4b6aa888221ee164baab2824365c",
   "masterSessionId": "2a0edaea-54f5-45ae-af8a-c85c0ae22947",
   "assertedModel": "sonnet",
@@ -85,6 +85,15 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ly-drive-safe-repairs/2a0edaea-54f5-45ae-af8a-c85c0ae22947/subagents/agent-ad657d2e6af0dabf0.jsonl"
       ]
+    },
+    "5": {
+      "slug": "shedtransient-package",
+      "startSha": "3e5420f018a66ec59bf450bd68eed0de810ae800",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T15:26:14Z",
+      "sessionId": "2a0edaea-54f5-45ae-af8a-c85c0ae22947",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
