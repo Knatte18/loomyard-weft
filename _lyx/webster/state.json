@@ -1,0 +1,19 @@
+{
+  "runGuid": "8cbae2d24dc77ca61078e4a14c0d97d9",
+  "planFingerprint": "72beeeca8af47879b29f61f3d12596d0152a732e87e1144091933cb7fa0de70c",
+  "currentBatch": 1,
+  "masterStrand": "c5a6ee49a5e983607227bc80c63f9e8f",
+  "masterSessionId": "79878df8-c188-4ee5-bc08-9b78e78e2add",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "landingshed-rejection-record",
+      "startSha": "2cb4ac68cf475b91645da060c7062b04c35a3661",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T16:50:58Z",
+      "sessionId": "79878df8-c188-4ee5-bc08-9b78e78e2add",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
