@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "integration verify regressed: github.com/Knatte18/loomyard/internal/lyxcwd.TestEnforcement_FabricVocabulary/tree-scan (offending card: 01-shedrun-runs-root-rel)",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Batchifier → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "integration verify regressed: github.com/Knatte18/loomyard/internal/lyxcwd.TestEnforcement_FabricVocabulary/tree-scan (offending card: 01-shedrun-runs-root-rel)"
   },
   "history": [
     {
@@ -78,6 +78,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-09-30T17:32:02Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-09-30T17:39:44Z"
     }
   ],
   "product": {
