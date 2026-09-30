@@ -20,11 +20,6 @@ Depends on: #010
 
 Driver re-steps known transient stops itself; hands back only real decisions
 
-## **#025:** Hub orchestrator as a reed strand with automatic handoff [A]
-[hub-orch-strand](design-hub-orch-strand.md)
-
-lyx hosts the hub orchestrator in tmux and cycles its context via handoff
-
 # Layer B
 
 ## **#009:** batten opens VS Code on the new pair with reed attached [B]
@@ -139,6 +134,11 @@ llm-driven run shows only ly-drive; go-driven run shows only the status strand
 [verify-triage](design-verify-triage.md) [done]
 
 Flaky or pre-existing test failures no longer halt a run; report names the failing tests
+
+## **#025:** Hub orchestrator as a reed strand with automatic handoff
+[hub-orch-strand](design-hub-orch-strand.md) [done]
+
+lyx hosts the hub orchestrator in tmux and cycles its context via handoff
 
 # Manifest
 
