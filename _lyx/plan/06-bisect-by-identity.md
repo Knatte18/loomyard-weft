@@ -9,8 +9,8 @@
 - `bisect_test.go`
 
 **Uses:**
-- `plan:internal/websterengine#parseVerifyFailures`
-- `plan:internal/websterengine#opaqueFailureID`
+- `internal/websterengine#parseVerifyFailures`
+- `internal/websterengine#opaqueFailureID`
 - `plan:internal/websterengine#verifyRun`
 - `plan:internal/websterengine#verifyRunner`
 - `plan:internal/websterengine#runVerifyCapture`

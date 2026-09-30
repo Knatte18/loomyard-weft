@@ -9,8 +9,8 @@
 **Uses:**
 - `internal/websterengine#IntegrationFailure`
 - `internal/websterengine#IntegrationTriage`
-- `plan:internal/websterengine#parseVerifyFailures`
-- `plan:internal/websterengine#opaqueFailureID`
+- `internal/websterengine#parseVerifyFailures`
+- `internal/websterengine#opaqueFailureID`
 - `plan:internal/websterengine#verifyRun`
 - `plan:internal/websterengine#verifyRunner`
 - `internal/websterengine#FabricBisector`

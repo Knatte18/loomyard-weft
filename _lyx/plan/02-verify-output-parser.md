@@ -3,8 +3,8 @@
 **Create:**
 - `verifyparse.go`
 - `verifyparse_test.go`
-- `plan:internal/websterengine#parseVerifyFailures` -> `func parseVerifyFailures(output string, passed bool) []IntegrationFailure`
-- `plan:internal/websterengine#opaqueFailureID` -> `const opaqueFailureID = "verify-command"`
+- `internal/websterengine#parseVerifyFailures`
+- `internal/websterengine#opaqueFailureID`
 
 **Uses:**
 - `internal/websterengine#IntegrationFailure`
