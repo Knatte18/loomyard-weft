@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "integration verify regressed: github.com/Knatte18/loomyard/cmd/lyx.TestGitrepoBoundary_PinnedRunCallSites (offending card: 01-leased-remote-delete)",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": ""
+    "wait": "integration verify regressed: github.com/Knatte18/loomyard/cmd/lyx.TestGitrepoBoundary_PinnedRunCallSites (offending card: 01-leased-remote-delete)"
   },
   "history": [
     {
@@ -90,6 +90,12 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-09-30T15:12:24Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-09-30T15:18:34Z"
     }
   ],
   "product": {
