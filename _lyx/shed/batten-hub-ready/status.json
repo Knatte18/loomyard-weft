@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "batch 11-fabric-archive-helper: record-batch refuses because report head_sha 90422433b does not match worktree HEAD 15b82c779 (a parent merge landed after the fork's commit); begin-batch and recover-batch both refuse because the report already exists with status OK",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": ""
+    "wait": "batch 11-fabric-archive-helper: record-batch refuses because report head_sha 90422433b does not match worktree HEAD 15b82c779 (a parent merge landed after the fork's commit); begin-batch and recover-batch both refuse because the report already exists with status OK"
   },
   "history": [
     {
@@ -90,6 +90,12 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-09-30T13:48:59Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-09-30T13:50:37Z"
     }
   ],
   "product": {
