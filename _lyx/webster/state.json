@@ -1,7 +1,7 @@
 {
   "runGuid": "d4030ca681712cfd6232d1752f3f0e74",
   "planFingerprint": "b16c914a82e2f94560a7540f95c9a8b134c5492be3b07eeef17cb7c3334e03d3",
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "912cb983bf6042832f4d934fc5bd884a",
   "masterSessionId": "ae7c4f15-2d58-48b6-8181-6776f9f18b95",
   "assertedModel": "sonnet",
@@ -85,6 +85,15 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-verify-triage/ae7c4f15-2d58-48b6-8181-6776f9f18b95/subagents/agent-a1ee0332f187cb8ca.jsonl"
       ]
+    },
+    "5": {
+      "slug": "triage-core",
+      "startSha": "d3f03cde128f56ed0ca0905806a223a486d45bda",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T14:25:57Z",
+      "sessionId": "ae7c4f15-2d58-48b6-8181-6776f9f18b95",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
