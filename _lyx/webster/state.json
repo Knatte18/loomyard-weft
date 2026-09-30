@@ -1,7 +1,7 @@
 {
   "runGuid": "d261ac60bf3d1e30bc74e6cf6230d0fa",
   "planFingerprint": "30bdacc921f3603e74116f002d7adf3662724ef393b36e7609d0b6f3c742bd30",
-  "currentBatch": 0,
+  "currentBatch": 2,
   "masterStrand": "53c850f5e487d1e7c64e3d075478b00c",
   "masterSessionId": "461e8c2a-0eed-46d7-b22a-8157adb6beda",
   "assertedModel": "sonnet",
@@ -25,6 +25,15 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fabric-readd-weft-push/db243dd2-d859-4644-9383-d337238bb067/subagents/agent-a337d61bcc6c0517d.jsonl"
       ]
+    },
+    "2": {
+      "slug": "gate-archived-weft-delete",
+      "startSha": "a70ca33f75ff70f8f6a0070cc5ffdaa77d892783",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T15:04:59Z",
+      "sessionId": "461e8c2a-0eed-46d7-b22a-8157adb6beda",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
