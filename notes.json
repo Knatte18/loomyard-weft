@@ -68,5 +68,15 @@
     "deferred": false,
     "brief": "Burler: warn when the explore stencil lacks the focus_directive marker",
     "body": "`internal/burlerengine/prompt.go`: friction warns when its stencil marker is missing (`friction.WarnIfMarkerAbsent`), but `{{.focus_directive}}` has no such check. Since #299 the focus directive no longer also rides `PriorReviews`, so a board explore stencil without the marker (dev build, operator-edited board copy) silently drops the Bouncer's focus from every Burler round. Add the same warning. Found in the #299 review."
+  },
+  {
+    "id": 7,
+    "slug": "refscan-false-positive",
+    "title": "Webster fork audit: text search for \"lyx fabric\" counted as a fabric operation",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "RefScanner flags quoted grep patterns; a done batch cannot be recorded",
+    "body": "`fabricengine.RefScanner` (`internal/fabricengine/refscanner.go`) flags any Bash command whose text matches `lyx(\\.exe)?\\s+(fabric|weft|warp)\\b`, including a quoted search pattern.\nRun `operator-surface` blocked at Webster batch 28 (docs card, commit `d369f8915`, report OK) because the fork ran `grep -n \"fabric remove\\|lyx fabric.*remove\" docs/overview.md` — a content search in the warp, not a fabric operation.\nThe flagged transcript never enters `seenForkTranscripts`, so every retry of `record-batch 28` re-audits it and fails again: the run cannot resume without a code change.\nFix direction: match `lyx fabric|weft|warp` only in command position (start of the command or after `;`, `\u0026\u0026`, `||`, `|`, `$(`), not inside quoted arguments; keep the weft-path match.\nDocs cards will keep hitting this, since docs describe fabric verbs."
   }
 ]

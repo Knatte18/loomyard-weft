@@ -91,3 +91,8 @@ lyx quarry: per-glyph resolve answers, grep-safe glyphs output
 [focus-marker-warn](design-focus-marker-warn.md)
 
 Burler: warn when the explore stencil lacks the focus_directive marker
+
+## **#007:** Webster fork audit: text search for "lyx fabric" counted as a fabric operation
+[refscan-false-positive](design-refscan-false-positive.md)
+
+RefScanner flags quoted grep patterns; a done batch cannot be recorded
