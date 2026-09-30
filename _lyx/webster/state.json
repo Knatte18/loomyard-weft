@@ -1,7 +1,7 @@
 {
   "runGuid": "430e78321628394bc3b0a1986e139d39",
   "planFingerprint": "c3b25e0911638988017b7beb68159c11a67acac1575ba559df5ba4eaa122de55",
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "9ed6a3cdf35a0a85d23879e608bbcfda",
   "masterSessionId": "2f3fd60d-c9e5-432c-a5ea-858cc9645e14",
   "assertedModel": "sonnet",
@@ -12,8 +12,22 @@
       "kind": "fork",
       "spawnedAt": "2026-09-30T17:21:05Z",
       "sessionId": "2f3fd60d-c9e5-432c-a5ea-858cc9645e14",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-audit-severity",
+        "status": "done",
+        "head_sha": "e2fd634751db7fb16484caae650a6a332fece828"
+      },
+      "cardShas": [
+        "e2fd634751db7fb16484caae650a6a332fece828"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-audit/2f3fd60d-c9e5-432c-a5ea-858cc9645e14/subagents/agent-afc767cd0df765299.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-audit/2f3fd60d-c9e5-432c-a5ea-858cc9645e14/subagents/agent-afc767cd0df765299.jsonl"
+  ]
 }
