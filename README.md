@@ -54,7 +54,7 @@ Parked: #274 — only matters once batten runs llm-driven children
 ## **#002:** Kick-start pack: pre-resolved glyph spans for implementer and Burler
 [kick-start-pack](design-kick-start-pack.md)
 
-Parked: #227, #228 — measured win, not yet scheduled
+Someday (roadmap): #227, #228 — measured win, committed, not yet scheduled
 
 ## **#003:** Prompt-cache TTL per agent role
 [cache-ttl-per-role](design-cache-ttl-per-role.md)
