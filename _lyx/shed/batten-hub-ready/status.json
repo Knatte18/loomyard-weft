@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "begin-batch 11: webster: plan re-resolution at begin-batch reported a blocking finding: create-already-exists/11-fabric-archive-helper[blocking]: Create targets archiveWeftTip, KindTagPushed, archive.go and archive_integration_test.go already resolve found (plan_drifted)",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": ""
+    "wait": "begin-batch 11: webster: plan re-resolution at begin-batch reported a blocking finding: create-already-exists/11-fabric-archive-helper[blocking]: Create targets archiveWeftTip, KindTagPushed, archive.go and archive_integration_test.go already resolve found (plan_drifted)"
   },
   "history": [
     {
@@ -84,6 +84,12 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-09-30T13:42:40Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-09-30T13:48:59Z"
     }
   ],
   "product": {
