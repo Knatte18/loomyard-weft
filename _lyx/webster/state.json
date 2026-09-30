@@ -1,7 +1,7 @@
 {
   "runGuid": "8cbae2d24dc77ca61078e4a14c0d97d9",
   "planFingerprint": "72beeeca8af47879b29f61f3d12596d0152a732e87e1144091933cb7fa0de70c",
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "c5a6ee49a5e983607227bc80c63f9e8f",
   "masterSessionId": "79878df8-c188-4ee5-bc08-9b78e78e2add",
   "assertedModel": "sonnet",
@@ -125,6 +125,15 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-publish-review-fixback/79878df8-c188-4ee5-bc08-9b78e78e2add/subagents/agent-ae5bf4de1e9a47b01.jsonl"
       ]
+    },
+    "7": {
+      "slug": "landingshed-pr-gate",
+      "startSha": "e0e3397904416b37cfb7856350805f2bf14aaa4c",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T16:56:16Z",
+      "sessionId": "79878df8-c188-4ee5-bc08-9b78e78e2add",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
