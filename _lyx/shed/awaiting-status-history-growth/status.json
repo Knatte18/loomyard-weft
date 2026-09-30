@@ -1,12 +1,12 @@
 {
   "current_producer": "Worktree-Create",
-  "state": "blocked",
-  "error": "prime lock \"/home/knatte/Code/loomyard-LYXHUB/loomyard/.lyx/shed/run.lock\" is already held; another batten producer is creating or tearing down a task worktree",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Worktree-Create",
     "last": "Worktree-Create → stuck",
-    "wait": "prime lock \"/home/knatte/Code/loomyard-LYXHUB/loomyard/.lyx/shed/run.lock\" is already held; another batten producer is creating or tearing down a task worktree"
+    "wait": ""
   },
   "history": [
     {
