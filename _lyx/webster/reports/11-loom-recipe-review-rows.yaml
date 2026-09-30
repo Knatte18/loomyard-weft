@@ -1,0 +1,4 @@
+status: OK
+head_sha: b8b26be860d3d84434846fd6ea94f5ee7144218e
+deviations:
+  - internal/loomrecipe/gatequiescence_test.go
