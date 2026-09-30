@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "blocked",
-  "error": "integration verify FAILED: -tags integration failures in internal/loomcli (TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver), internal/battencli (TestBattenIntegration_Teardown_FailedRemoteDeletionHaltsResumably, TestBattenIntegration_CreateRow_IncompletePairRemedyWorksVerbatimOnAPrefixedHub)",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": "integration verify FAILED: -tags integration failures in internal/loomcli (TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver), internal/battencli (TestBattenIntegration_Teardown_FailedRemoteDeletionHaltsResumably, TestBattenIntegration_CreateRow_IncompletePairRemedyWorksVerbatimOnAPrefixedHub)"
+    "wait": ""
   },
   "history": [
     {
