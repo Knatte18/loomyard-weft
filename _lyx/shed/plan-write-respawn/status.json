@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "integration verify FAILED: go test -tags integration failed TestBattenIntegration_CreateRow_IncompletePairRemedyWorksVerbatimOnAPrefixedHub (battencli) and TestPublish_MergesInCleanlyBeforeCreatingPullRequest (landingshed)",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Batchifier → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "integration verify FAILED: go test -tags integration failed TestBattenIntegration_CreateRow_IncompletePairRemedyWorksVerbatimOnAPrefixedHub (battencli) and TestPublish_MergesInCleanlyBeforeCreatingPullRequest (landingshed)"
   },
   "history": [
     {
@@ -78,6 +78,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-09-30T14:24:23Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-09-30T14:34:04Z"
     }
   ],
   "product": {
