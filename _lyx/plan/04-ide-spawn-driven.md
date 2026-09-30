@@ -8,9 +8,9 @@
 - `internal/ideengine#Spawn`
 
 **Uses:**
-- `plan:internal/vscode#TaskChain`
-- `plan:internal/vscode#TaskChainInteractive`
-- `plan:internal/vscode#TaskChainAttachOnly`
+- `internal/vscode#TaskChain`
+- `internal/vscode#TaskChainInteractive`
+- `internal/vscode#TaskChainAttachOnly`
 - `plan:internal/fabricengine#ExcludeAnchoredDir`
 - `plan:internal/fabricengine#PathTracked`
 - `internal/ideengine#CodeLauncher`

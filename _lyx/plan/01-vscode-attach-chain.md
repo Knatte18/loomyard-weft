@@ -1,9 +1,9 @@
 # Card 1 — vscode-attach-chain
 
 **Create:**
-- `plan:internal/vscode#TaskChain` -> `type TaskChain int`
-- `plan:internal/vscode#TaskChainInteractive` -> `const TaskChainInteractive TaskChain = 0`
-- `plan:internal/vscode#TaskChainAttachOnly` -> `const TaskChainAttachOnly TaskChain = 1`
+- `internal/vscode#TaskChain`
+- `internal/vscode#TaskChainInteractive`
+- `internal/vscode#TaskChainAttachOnly`
 
 **Edit:**
 - `internal/vscode#WriteConfig`
