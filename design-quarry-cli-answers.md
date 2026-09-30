@@ -1,3 +1,3 @@
 - **One bad glyph sinks the whole `resolve` batch.** `lyx quarry resolve a b bad` returns only `{"error":"<bad>: not_found","ok":false}`, nothing for the valid glyphs. quarry itself answers per glyph; `internal/quarrycli/resolve.go` collects every non-found status and fails the whole invocation by design. A planner checking spellings wants one answer per glyph, with the bad one marked `not_found`.
 
-Reported by the `operator-surface` Plan-Write session (2026-09-30). Its second finding, `glyphs` omitting `file` on a first call, is quarry's: Knatte18/quarry#33.
+Reported by the `operator-surface` Plan-Write session (2026-09-30).
