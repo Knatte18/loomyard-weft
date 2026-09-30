@@ -1,0 +1,13 @@
+---
+round: 1
+focus:
+  - "D7/D8 marker layout, reverse direction: today callAwaiting compares the whole marker file byte-for-byte against approvalIdentity's line. Settle whether an older binary reading a marker written in the new identity-plus-length layout fails that match and re-spawns an already-resumed child, and whether the decision record must state the new layout so this direction is either safe or an accepted, recorded risk. Open risks' Mixed binaries entry covers only the status file."
+  - "D7 discriminator soundness: settle whether 'child still awaiting with unchanged history length' exactly means 'driver has not re-stepped since the resume'. Check whether anything can append to the child's history while it stays awaiting without a new Awaiting verdict, and whether the claim that the loom child emits no budget-exempt Stucks, so D1 folding never hides the growth, holds."
+  - "Open risks, history_length freeze: settle whether deferring to the plan writer the check that batten's interrupt_policy makes an unchanged (current_producer, history_length) read safe for ly-drive is a legitimate open risk, or a design question Discussion should close. If it stays open, check that the constraint the plan writer must honour is stated in decision-record.md, not only in support-log.md's Q10."
+  - "Leanness of decision-record.md: settle whether the Open risks 'Activity recomposition' entry and the persistTransient line in Notes for the plan writer restate D6 rather than add a requirement, and whether the code-level detail in Notes (the exact `appended :=` expression, function-by-function locations) is the class of fact the writer stencil says is computed at Plan time. Apply the completeness-before-leanness test before any relocation or cut: D6's requirement must survive any trim."
+  - "Fold scope versus the Goal and acceptance criteria: D2 folds every budget-exempt Stuck, including battenshed's done-grace (driver-exit) wait, which the docs criterion also names. Settle whether the Goal and battenshed acceptance criteria describe the fold's actual reach, or read as awaiting-only while the decision covers more."
+---
+
+The marker compare in `internal/battenshed/innerrun.go` is an exact string match on the whole file, which makes the first entry's direction-of-compatibility question concrete rather than speculative.
+The HistoryEntry fold key (producer, outcome, output, gate_attempts, budget_exempt) already covers every field the struct carries besides `at`, so D1's key completeness is not a focus.
+Rejected alternatives' placement, call-site enumeration, and the optional Notes subsection's presence are excluded per the rubric's Do-not-flag list.
