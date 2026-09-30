@@ -2,10 +2,26 @@
   "runGuid": "b04563a9d904ea039fd9d66a7ea05680",
   "planFingerprint": "d0acdd83ebb0853dc7d15fad32b69072d5d5e3777ac92a8dc3adb552e75149f5",
   "currentBatch": 0,
-  "masterStrand": "d17077d35e631db55a59944a069f7e19",
-  "masterSessionId": "5369a876-adce-4177-880d-78dbd2855074",
+  "masterStrand": "4cad579acb9dbb51f5a0913dee168508",
+  "masterSessionId": "1a58bb27-995f-4666-a12e-6b3d90841c66",
   "assertedModel": "sonnet",
   "batches": {
+    "-1": {
+      "slug": "01-verifyrun-runner",
+      "startSha": "",
+      "kind": "",
+      "spawnedAt": "",
+      "terminal": true,
+      "status": "stuck",
+      "digest": {
+        "batch": "01-verifyrun-runner",
+        "status": "stuck",
+        "head_sha": "18c301da5e2e7ff67cd31bd86661881727319993"
+      },
+      "cardShas": [
+        "18c301da5e2e7ff67cd31bd86661881727319993"
+      ]
+    },
     "1": {
       "slug": "verifyrun-runner",
       "startSha": "85902381e89c8131af7ccff9d388227aa5774aa4",

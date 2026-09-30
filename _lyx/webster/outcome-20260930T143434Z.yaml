@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "Integration fork reported status FAILED: the plan-level verify command failed after all 7 batches were done."
+batches_done: 7
