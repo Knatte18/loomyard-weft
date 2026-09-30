@@ -21,13 +21,16 @@ Autonomous session: no operator answered; every decision below is a self-pick re
 5. **Downstream consumers of history.**
    `episodeStuckCount` skips exempt entries, so budgets are unaffected.
    `history_length` is read by `ly-drive` (progress key for interrupted invocations, repair-cap key), by `lyx shed step`/`status` envelopes, and by loom's self-report/step-handoff logic.
-   Loom never emits exempt Stucks, so loom-side consumers are unaffected; `ly-drive` driving a batten run sees no `history_length` change across a folded wait, recorded as an open risk.
-   `persistTransient` recomposes `activity.last` only when the slice grew, so a fold must be recognised explicitly.
+   Loom never emits exempt Stucks, so loom-side consumers are unaffected; `ly-drive` driving a batten run sees no `history_length` change across a folded wait.
+   Batten wires no `InterruptPolicyFor` hook (only `loomcli` does), so its `interrupt_policy` is `""` and an unchanged read hands back; recorded as D10.
+   `persistTransient` recomposes `activity.last` only when the slice grew, so a fold must be recognised explicitly (D6).
+   The carried-forward value already matches on every reachable path, so D6 is an explicit rule rather than a live bug fix.
 6. **Misleading re-approve hint.**
    `callAwaiting` resumes the child through `Spawn`; for a parked LLM driver the bootstrap types one resume line and returns while the child's status is still `awaiting`.
    The next poll matches the approval-acted marker and reports "already acted on … re-run `lyx loom approve`".
    The child's history length at resume time separates "not re-stepped yet" (length unchanged) from "awaiting again" (a new Awaiting verdict appended).
-   Chose recording that length beside the identity in the existing marker.
+   Chose recording that length beside the identity in the existing marker, as a second line.
+   The resume removes the child's park marker, so `lyx loom start` refuses a live driver as not parked; the reason names it only for a driver that has ended.
 7. **Testing.**
    `shedengine` unit tests for the fold rule and its boundaries, activity wording and JSON compatibility;
    `battenshed` tests through the existing real-`Shed` harness for the multi-poll fold and the post-resume dispositions.
@@ -67,6 +70,7 @@ _No rounds yet._
 - **Q6 — Compact existing bloated history?** Resolved, auto-pick: no (Scope, Auto-mode assumptions).
 - **Q7 — How to tell "resume not picked up yet" from "awaiting again"?** Resolved, auto-pick: child history length recorded at resume (D7).
 - **Q8 — Old marker layout?** Resolved, auto-pick: identity-only match, existing re-approve hint (D8).
-- **Q9 — Timeout on a resume never picked up?** Resolved, auto-pick: no timeout; the reason names `lyx loom start` as the remedy.
-- **Q10 — Is `history_length` freezing during a folded wait safe for `ly-drive`?** Open, carried to Open risks for the plan writer to confirm against batten's `interrupt_policy`.
+- **Q9 — Timeout on a resume never picked up?** Resolved, auto-pick: no timeout; the reason names the remedies, inspecting a live driver's pane or `lyx loom start` for an ended one (D7).
+- **Q10 — Is `history_length` freezing during a folded wait safe for `ly-drive`?** Resolved: batten's `interrupt_policy` is `""`, so an unchanged read hands back; accepted (D10).
 - **Q11 — Forward-compat of the new fields under an older binary's strict decode?** Resolved, auto-pick: accepted, same precedent as `budget_exempt` and `transient`.
+- **Q12 — An older binary reading the two-line marker?** Resolved, auto-pick: accepted; its whole-file compare fails and it re-attempts one resume at most, and in practice it fails strict decode on the status file first (Open risks, Mixed binaries).
