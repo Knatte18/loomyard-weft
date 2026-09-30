@@ -4,7 +4,6 @@
 
 ## **#023:** Every refusal has a way forward: audit Webster and shed halt paths [A]
 [refusal-audit](design-refusal-audit.md)
-Depends on: #022
 
 Walk every refusal/halt path in webster and shed; none may wedge a run
 

@@ -248,9 +248,7 @@
     "id": 23,
     "slug": "refusal-audit",
     "title": "Every refusal has a way forward: audit Webster and shed halt paths",
-    "depends_on": [
-      "webster-parent-merge-midrun"
-    ],
+    "depends_on": [],
     "isolated": false,
     "deferred": false,
     "brief": "Walk every refusal/halt path in webster and shed; none may wedge a run",
