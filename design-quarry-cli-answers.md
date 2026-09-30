@@ -1,4 +1,0 @@
-- **One bad glyph sinks the whole `resolve` batch.** `lyx quarry resolve a b bad` returns only `{"error":"<bad>: not_found","ok":false}`, nothing for the valid glyphs. quarry itself answers per glyph; `internal/quarrycli/resolve.go` collects every non-found status and fails the whole invocation by design. A planner checking spellings wants one answer per glyph, with the bad one marked `not_found`.
-- **`glyphs` output invites a broken grep.** A Plan-Write agent ran `lyx quarry glyphs internal/shedengine | grep -v "_test"` to drop test symbols; the JSON is pretty-printed one field per line, so the grep removed only each test symbol's `"file": ..._test.go` line and left the symbol without `file` (quarry#33, closed: quarry is correct). Give `lyx quarry glyphs` a flag that excludes test-file symbols, or emit one symbol per line, so the obvious filter is either unnecessary or correct.
-
-Reported by the `operator-surface` Plan-Write session (2026-09-30).

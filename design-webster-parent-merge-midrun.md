@@ -1,4 +1,0 @@
-Webster has no path for a batch whose fork committed and reported OK when HEAD has since moved by a parent merge (run `batten-hub-ready`, batch 11, after the hub ran `lyx fabric merge-in main` to pick up a deployed fix).
-`record-batch` refuses on report `head_sha` != worktree HEAD, and `begin-batch`/`recover-batch` refuse because an OK report exists: the run is wedged until the merge is removed (the hub reset the unpushed merge commit).
-Also found: a batch left non-terminal after a refused record-batch wedged resume on create-already-exists; fixed in `b16efae35` and `4ab6f6dd6` (`begunCards`).
-Fix direction: record-batch accepts a HEAD whose first-parent chain reaches the report's `head_sha` through merge commits only; and loom/fabric warn against a parent merge while Webster is mid-run.

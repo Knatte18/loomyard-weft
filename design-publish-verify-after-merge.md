@@ -1,3 +1,0 @@
-Publish merges the parent into the task branch and pushes without compiling or testing the result.
-In run `operator-surface` (PR #300) the conflict-resolved merge `854eb73fe` left four test call sites on the old `shedrun.StatusRel(runID)` signature (`internal/loomcli/wiring_commitstatus_test.go`, `..._integration_test.go`), so `go vet`/`go test` failed while `go build` passed; only the hub's PR review caught it.
-Fix direction: after a parent merge that changed the tree, Publish runs the plan's `## verify:` command (or at least `go vet ./...` across build tags) and halts stuck on failure before pushing and opening or updating the PR.
