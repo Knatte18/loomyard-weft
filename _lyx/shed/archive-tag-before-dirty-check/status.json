@@ -1,12 +1,12 @@
 {
   "current_producer": "Seed-Child",
-  "state": "blocked",
-  "error": "the task worktree already has its own seed, and it disagrees with the one Seed-Child would write: battenshed: task worktree already seeded with a disagreeing seed: shedrun: disagreeing seed: run \"self\" is already seeded with {Recipe:batten Driver:go Params:map[child_driver:llm]}; refusing to overwrite with {Recipe:loom Driver:llm Params:map[parent:main]}",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Seed-Child",
     "last": "Seed-Child → stuck",
-    "wait": "the task worktree already has its own seed, and it disagrees with the one Seed-Child would write: battenshed: task worktree already seeded with a disagreeing seed: shedrun: disagreeing seed: run \"self\" is already seeded with {Recipe:batten Driver:go Params:map[child_driver:llm]}; refusing to overwrite with {Recipe:loom Driver:llm Params:map[parent:main]}"
+    "wait": ""
   },
   "history": [
     {
