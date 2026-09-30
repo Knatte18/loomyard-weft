@@ -85,3 +85,8 @@ No verb removes done tasks; the hub had to set-deps open tasks off done ones, th
 [process-naming](design-process-naming.md)
 
 Lift strand naming out of the creel design (manifest/designs/reed-mailbox.md) into its own module that reed, orch and creel build on
+
+## **#022:** lyx orch: ready to host the real hub orchestrator
+[orch-live-ready](design-orch-live-ready.md)
+
+orch is deployed but untested live and lacks what the hub needs: bypass permissions, the Agent tool, adoption of a running session, a soft threshold

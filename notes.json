@@ -138,5 +138,15 @@
     "deferred": false,
     "brief": "Lift strand naming out of the creel design (manifest/designs/reed-mailbox.md) into its own module that reed, orch and creel build on",
     "body": "Operator 2026-09-30: wants a proper naming system so processes are easy to find; not for today.\nToday children show up as auto names like `refusal-audit-c9`; nothing of the naming part of the creel design is built.\nScope: `\u003crole\u003e@\u003cslug\u003e` grammar owned by one package, fixed role vocabulary (orch, driver, worker, reviewer, operator); the strand name is a birth attribute in reed state, mirrored to pane title (allow-set-title off), Claude session name (`claude --name`) and `LYX_STRAND_NAME`; the reed watchdog restores drifted mirrors (Claude resets the session name after compact); `lyx reed list` as the directory.\nCreel then references this design instead of owning naming."
+  },
+  {
+    "id": 22,
+    "slug": "orch-live-ready",
+    "title": "lyx orch: ready to host the real hub orchestrator",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "orch is deployed but untested live and lacks what the hub needs: bypass permissions, the Agent tool, adoption of a running session, a soft threshold",
+    "body": "Found 2026-09-30:\n- orch launches as an interactive shuttle run (internal/orchcli/start.go:61), so no --dangerously-skip-permissions; the hub runs in bypass mode. Want a permission-mode option, bypass as the orch default.\n- shuttle denies the Agent tool in every run (claude_deny_agent_tool), so orch cannot spawn review or fix agents; ForkSubagents is false.\n- no way to adopt a running session (`--adopt \u003csession-id\u003e` via claude --resume, watcher bound to the existing transcript).\n- soft threshold: hand off at a natural break from about 300k, 400k hard cap.\n- risk: SessionIdle may read Claude's greyed prompt suggestion as not idle, so no cycle ever runs; verify live."
   }
 ]
