@@ -10,9 +10,9 @@
 - `internal/loggerconfig/template.go`
 - `internal/loggerconfig/config.go`
 - `internal/loggerconfig/config_test.go`
-- `plan:internal/loggerconfig#ConfigTemplate` -> `func ConfigTemplate() string`
-- `plan:internal/loggerconfig#Load` -> `func Load(anchorPath string) (logger.RetentionBounds, error)`
-- `plan:internal/loggerconfig#ConfigPath` -> `func ConfigPath(anchorPath string) string`
+- `internal/loggerconfig#ConfigTemplate`
+- `internal/loggerconfig#Load`
+- `internal/loggerconfig#ConfigPath`
 
 **Uses:**
 - `internal/logger#RetentionBounds`

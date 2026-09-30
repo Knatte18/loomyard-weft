@@ -17,8 +17,8 @@
 - `plan:internal/logger#SinkArmState`
 - `plan:internal/logger#CurrentSinkArmState`
 - `internal/logger#DefaultRetentionBounds`
-- `plan:internal/loggerconfig#Load`
-- `plan:internal/loggerconfig#ConfigPath`
+- `internal/loggerconfig#Load`
+- `internal/loggerconfig#ConfigPath`
 - `internal/logger#Sweep`
 - `internal/logger#NotifyExit`
 - `internal/logger#Warn`

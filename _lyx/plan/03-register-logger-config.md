@@ -6,7 +6,7 @@
 - `internal/configsync/configsync_test.go`
 
 **Uses:**
-- `plan:internal/loggerconfig#ConfigTemplate`
+- `internal/loggerconfig#ConfigTemplate`
 - `internal/configsync#ReconcileAll`
 
 **Intent:**
