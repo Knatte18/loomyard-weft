@@ -98,5 +98,15 @@
     "deferred": false,
     "brief": "A conflict-resolved parent merge was pushed with non-compiling tests",
     "body": "Publish merges the parent into the task branch and pushes without compiling or testing the result.\nIn run `operator-surface` (PR #300) the conflict-resolved merge `854eb73fe` left four test call sites on the old `shedrun.StatusRel(runID)` signature (`internal/loomcli/wiring_commitstatus_test.go`, `..._integration_test.go`), so `go vet`/`go test` failed while `go build` passed; only the hub's PR review caught it.\nFix direction: after a parent merge that changed the tree, Publish runs the plan's `## verify:` command (or at least `go vet ./...` across build tags) and halts stuck on failure before pushing and opening or updating the PR."
+  },
+  {
+    "id": 10,
+    "slug": "plan-write-respawn",
+    "title": "Plan-Write: respawn archives the finished plan; Agent refusal unannounced",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Respawn starts over instead of reusing the plan; prompt does not say Agent is refused",
+    "body": "Friction from run `operator-surface` (Plan-Write, trace `7b2a74344919ecc3`).\n1. A respawned Plan-Write moves an existing finished plan to `_lyx/plan/archive-\u003cts\u003e/` and starts from an empty directory; the new session learned of the prior plan only from a cross-session message.\n   The false `asking` that caused the respawn is fixed in `083e992cf`, but any respawn still discards the plan: a respawn should reuse or at least point the prompt at the archived cards.\n2. A PreToolUse hook refuses the Agent tool in the Plan-Write pane and the prompt does not say so; five parallel explorer dispatches failed before work started.\n   The prompt should state the tool restriction (see Someday \"shuttle `Spec`: generic tools-restriction\")."
   }
 ]

@@ -104,3 +104,8 @@ Focus directive needs prior-round files the round prompt says to read only after
 [publish-verify-after-merge](design-publish-verify-after-merge.md)
 
 A conflict-resolved parent merge was pushed with non-compiling tests
+
+## **#010:** Plan-Write: respawn archives the finished plan; Agent refusal unannounced
+[plan-write-respawn](design-plan-write-respawn.md)
+
+Respawn starts over instead of reusing the plan; prompt does not say Agent is refused
