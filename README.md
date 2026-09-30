@@ -23,11 +23,6 @@ Respawn starts over instead of reusing the plan; prompt does not say Agent is re
 
 Trace logs: configurable retention, fewer files from routine commands
 
-## **#016:** lyx quarry: per-glyph resolve answers, grep-safe glyphs output [A]
-[quarry-cli-answers](design-quarry-cli-answers.md)
-
-lyx quarry: per-glyph resolve answers, grep-safe glyphs output
-
 ## **#018:** reed: send a short launch-script line instead of the full command [A]
 [reed-launch-script](design-reed-launch-script.md)
 
@@ -130,6 +125,11 @@ One generated VS Code workspace shows the board beside the prime
 Depends on: #012
 
 RefScanner flags quoted grep patterns; a done batch cannot be recorded
+
+## **#016:** lyx quarry: per-glyph resolve answers, grep-safe glyphs output
+[quarry-cli-answers](design-quarry-cli-answers.md) [done]
+
+lyx quarry: per-glyph resolve answers, grep-safe glyphs output
 
 ## **#017:** Burler: warn when the explore stencil lacks the focus_directive marker
 [focus-marker-warn](design-focus-marker-warn.md) [done]
