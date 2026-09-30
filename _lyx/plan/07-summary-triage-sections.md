@@ -7,7 +7,7 @@
 - `summary_test.go`
 
 **Create:**
-- `plan:internal/websterengine#AppendIntegrationTriage` -> `func AppendIntegrationTriage(websterDir string, flaky, preExisting []string) error`
+- `internal/websterengine#AppendIntegrationTriage`
 
 **Uses:**
 - `internal/websterengine#IntegrationFailure`

@@ -13,7 +13,7 @@
 - `internal/websterengine#triageIntegrationFailure`
 - `internal/websterengine#runVerifyCapture`
 - `internal/websterengine#IntegrationLogPath`
-- `plan:internal/websterengine#AppendIntegrationTriage`
+- `internal/websterengine#AppendIntegrationTriage`
 - `plan:internal/websterengine#triageWarnings`
 - `plan:internal/websterengine#triageStuckReason`
 - `plan:internal/websterengine#writeTriageFrictionNote`
