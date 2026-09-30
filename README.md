@@ -22,6 +22,11 @@ Strip code fences from the plan-level verify command (#285)
 
 Stencil drift warning names the right remedy per drift direction
 
+## **#006:** Landing: board status, PR body, squash message, operator-approved merge, branch cleanup [A]
+[landing](design-landing.md)
+
+Landing gaps: #275, #276, #289, #292, #293
+
 # Done
 
 ## **#000:** Burler: no cluster-exclude warning when the profile has no cluster fan
