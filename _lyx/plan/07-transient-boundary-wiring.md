@@ -13,8 +13,8 @@
 - `CONSTRAINTS.md`
 
 **Uses:**
-- `plan:internal/shedtransient#Class`
-- `plan:internal/shedtransient#Mark`
+- `internal/shedtransient#Class`
+- `internal/shedtransient#Mark`
 - `internal/shedengine#TransientOf`
 
 **Intent:**

@@ -8,7 +8,7 @@
 - `internal/landingshed/seam_enforcement_test.go`
 
 **Uses:**
-- `plan:internal/shedtransient#Class`
+- `internal/shedtransient#Class`
 
 **Intent:**
 Make `git-transport` and `github-api` reachable in a real run (decision record D1, D2).

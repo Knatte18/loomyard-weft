@@ -1,8 +1,8 @@
 # Card 5 — shedtransient: translate leaf classifications into the mark
 
 **Create:**
-- `plan:internal/shedtransient#Class` -> `func Class(err error) shedengine.TransientClass`
-- `plan:internal/shedtransient#Mark` -> `func Mark(err error) error`
+- `internal/shedtransient#Class`
+- `internal/shedtransient#Mark`
 - `internal/shedtransient/doc.go`
 - `internal/shedtransient/shedtransient.go`
 - `internal/shedtransient/shedtransient_test.go`
