@@ -28,7 +28,9 @@ Every turn below is a question the agent posed to itself, with the pick it made 
 6. **Removal failure — fatal or not?**
    Pick: warn and continue, matching today's failed-replace stance.
 7. **Sidecar on removal?**
-   Pick: delete it best-effort, so the scratch tree does not name a strand that is gone.
+   First pick was to delete it best-effort, so the scratch tree does not name a strand that is gone.
+   Reversed in review round 1: only the go arm reads or writes the sidecar, and `resolveStatusStrandAction` ignores it whenever no strand carries the name.
+   Pick: leave it.
 8. **Pane height.**
    The board states `collapsed_rows` already carries the ly-drive height in hub config.
    Pick: no code or config change in this task.
@@ -46,8 +48,12 @@ Every turn below is a question the agent posed to itself, with the pick it made 
   Rejected: the read stays in `internal/loomcli`, which the tripwire already admits; only the invariant's prose needs to widen from "spawn" to "driving surface".
 - **Make status-strand removal fatal to `start`.**
   Rejected: a leftover band is cosmetic; failing the resume over it would block the run.
-- **Leave the sidecar after removal.**
-  Rejected, narrowly: harmless to `resolveStatusStrandAction` (it adds when no strand carries the name), but a file recording a GUID for a removed strand is misleading scratch state.
+- **Delete the status sidecar when the llm arm removes the status strand.**
+  Rejected under YAGNI: a leftover sidecar is harmless, since only the go arm reads it and `resolveStatusStrandAction` adds whenever no strand carries the name.
+  Deleting it would add a second driver-gated side effect, with its own failure path and test, that is not driving-surface selection.
+- **Remove the status strand recursively.**
+  Rejected: a cascade could take out whatever an older build parented beneath the status strand;
+  a non-recursive removal is refused by reed on a non-leaf and falls into the warn-and-continue path instead.
 - **Symmetric cleanup: `start` on a go run removes a stray ly-drive strand.**
   Rejected under YAGNI: seeds are immutable per run, so a go run never had a ly-drive strand; no reported case needs it.
 - **A new config key for the ly-drive pane height.**
@@ -65,6 +71,7 @@ _No rounds yet._
 - **Q4 — Invariant amendment or carve-out?** Resolved (auto-pick): amend the Driver Choice Single-Site Invariant's wording to "driving surface".
 - **Q5 — Where does reed `Up` run?** Resolved (auto-pick): unconditionally in both `start` and `step`, outside the status-strand helper.
 - **Q6 — Removal failure handling?** Resolved (auto-pick): warn and continue.
-- **Q7 — Status sidecar on removal?** Resolved (auto-pick): delete best-effort.
+- **Q7 — Status sidecar on removal?** Resolved (review round 1): leave it; the first auto-pick to delete it best-effort was reversed as YAGNI.
 - **Q8 — Pane height work?** Resolved (auto-pick): none; hub `collapsed_rows` already set per the board.
 - **Q9 — Remove every same-named status strand or the first only?** Resolved (auto-pick): every one, since an older build may have left duplicates.
+- **Q10 — Recursive or non-recursive removal?** Resolved (review round 1): non-recursive. Evidence: reed's `removeStrandLocked` refuses a non-leaf without `recursive`, and the ly-drive strand is built parentless, so it can never sit beneath the status strand.

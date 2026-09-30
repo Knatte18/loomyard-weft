@@ -2,7 +2,7 @@
 
 ## Goal
 
-A loom run's tmux session shows exactly one driving surface, chosen by the run's recorded driver.
+Once `lyx loom start` has run on this build, a loom run's tmux session shows exactly one driving surface, chosen by the run's recorded driver.
 An `llm`-driven run shows the ly-drive strand and never the `loom-status` strand;
 a `go`-driven run shows the `loom-status` strand.
 `lyx loom status` stays available as a command for both.
@@ -41,12 +41,10 @@ Out:
   The branch sits where `ensureStatusStrand` sits today (under the bootstrap lock, before the watchdog spawn and the driver spawn), so the llm driver strand is added into a session that no longer holds the status strand.
 - **The llm-arm removal matches by the pinned `statusStrandDisplayName` and removes every strand carrying that name.**
   Rationale: the name is the status strand's stable identity; an older build may have left a duplicate, and removing only the first would leave the band.
+- **The llm-arm removal is non-recursive.**
+  Rationale: reed refuses a non-recursive removal of a strand that has children and removes nothing, so a status strand with anything parented beneath it falls into the warn-and-continue path below instead of cascading through strands this task never meant to touch.
 - **A failed status-strand removal on the llm arm logs a warning and does not fail `start`.**
   Rationale: same stance as today's failed `ReplaceStrand` — a leftover band costs the operator screen rows, not the run.
-- **The llm-arm removal also deletes the status sidecar (`status-strand.json`), best-effort.**
-  Rationale: the sidecar records a strand GUID and build for a strand that no longer exists;
-  deleting it keeps the scratch tree from claiming a strand that is gone.
-  A failed delete logs and continues.
 - **`step` (`loomPreStep`, reached by both `lyx loom step` and `lyx shed step`) calls reed `Up` in place of `ensureStatusStrand` and does no strand work.**
   Rationale: `lyx shed step` is what the ly-drive driver runs on every step, so leaving `ensureStatusStrand` in `step` re-adds the status strand on every llm step and defeats the whole task.
   The go driver never steps — it runs detached `lyx loom run` — so `step` has no driving surface of its own to show.
@@ -56,14 +54,11 @@ Out:
   Rationale: removal needs the driver, which `step` must not read;
   and an unconditional removal would strip the band from a halted go run an operator is stepping by hand.
   An llm run's leftover band is cleared by the next `start`, which is the resume path.
-- **`ensureStatusStrand` keeps its name and body for the go arm; the reed `Up` call moves out of it to its callers.**
-  Rationale: its keep/replace/add logic is correct for the go arm unchanged;
-  moving `Up` out lets the llm arm and `step` share the substrate call without the strand work.
-  The plan writer may restructure helper boundaries as long as the behaviour above holds.
 - **`CONSTRAINTS.md`'s Driver Choice Single-Site Invariant is amended in the same commit.**
   The "selects a spawn and nothing else" clause becomes "selects the run's driving surface — which driver spawns and whether the session carries the loom status strand — and nothing else."
   Rationale: removing a status strand is spawn-set selection, not behaviour gating, but the current wording names only the spawn;
   an unamended invariant would read as violated by this change.
+  The first sub-bullet ("no code path gates *behaviour* on it") stays unchanged: it governs every code path other than the bootstrap verb's own branch, and removing the status strand is that branch choosing the session's strand set, not a gate on behaviour.
   The tripwire test (`driverFieldReadCarveOuts`) needs no entry: the read stays inside `internal/loomcli`.
 
 ## Constraints
@@ -90,22 +85,21 @@ Out:
   Accepted: `start` is the go run's bootstrap, and `lyx loom status` remains available.
 - A running ly-drive session keeps a leftover status band until its next `start`; `step` does not clear it.
   Accepted per the `step` decision above.
-- Reed's `RemoveStrand` cascades through descendants.
-  The status strand is added as a plain below-parent strand with no children, so the cascade removes only it;
-  if some older build parented anything beneath it, that would be removed too.
+- A status strand that some older build parented anything beneath is refused by the non-recursive removal and stays up, with a warning.
+  Accepted: today's status strand is added with no children, and the ly-drive strand is parentless, so no current session holds such a strand.
 
 ## Acceptance criteria
 
 - `start` on an `llm`-seeded run over a session with no status strand adds none, and the driver strand is spawned as today.
-- `start` on an `llm`-seeded run over a session holding a `loom-status` strand removes it (every same-named strand) before the driver-spawn step, and deletes the status sidecar.
+- `start` on an `llm`-seeded run over a session holding a `loom-status` strand removes it (every same-named strand, non-recursively) before the driver-spawn step.
 - `start` on an `llm`-seeded run whose status-strand removal fails still proceeds to the driver spawn and logs a warning.
 - `start` on a `go`-seeded run keeps today's keep/replace/add behaviour and sidecar write, unchanged.
 - `start` on an unseeded worktree (seeded `llm` by `resolveSeedDriver`) adds no status strand.
 - Reed `Up` still runs on both arms of `start` before any strand work.
-- `lyx loom step` and `lyx shed step` on a loom run bring reed up and add no status strand, whatever the seed's driver.
+- A failed reed `Up` fails `start` on either arm with an error envelope before the watchdog and driver spawn, and fails `step` with the bootstrap refusal kind.
+- `lyx loom step` and `lyx shed step` on a loom run bring reed up and add no status strand, behaving identically on a `go`-seeded and an `llm`-seeded run.
 - `lyx loom step` over a session already holding a status strand leaves it untouched.
 - A busy `step` (run lock held) still refuses at the early probe, above seeding and reed.
-- `step` does not read the seed's driver (the value from `seedAndCommitBootstrap` stays discarded).
 - `TestDriverChoiceSingleSiteInvariant_OnlyLoomcliReadsTheSeedDriverField` passes with no new carve-out.
 - The `internal/shedcli` parity tests still pass; comments there naming `ensureStatusStrand` in `step`'s path are corrected.
 - `CONSTRAINTS.md` and `docs/overview.md` reflect the new behaviour.
