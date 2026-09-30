@@ -1,7 +1,7 @@
 # Card 12 — compose the resume line
 
 **Create:**
-- `plan:internal/loomcli#driverResumeLine` -> `func driverResumeLine(runID string, reportPath string) string`
+- `internal/loomcli#driverResumeLine`
 - `internal/loomcli/driverresumeline.go`
 - `internal/loomcli/driverresumeline_test.go`
 

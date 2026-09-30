@@ -18,7 +18,7 @@
 
 **Uses:**
 - `internal/shedrun#ParkMarker`
-- `plan:internal/loomcli#driverResumeLine`
+- `internal/loomcli#driverResumeLine`
 - `internal/loomcli#driverReportPath`
 - `internal/loomcli#resolveDriverStrandAction`
 - `internal/shuttleengine#Runner.Send`
