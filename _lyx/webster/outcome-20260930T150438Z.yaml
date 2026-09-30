@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "batch 01-leased-remote-delete: record-batch failed with a fabric-reference policy violation — fork ran `cd <worktree>/internal/gitrepo && ...` commands, which the audit treats as an implementer fork touching the fabric repo directly"
+batches_done: 0

@@ -5,7 +5,7 @@
 - `internal/gitrepo/deleteremotebranch_integration_test.go`
 
 **Create:**
-- `plan:internal/gitrepo#Repo.DeleteRemoteBranchLeased` -> `func (r *Repo) DeleteRemoteBranchLeased(remote, branch, expectSHA string) error`
+- `internal/gitrepo#Repo.DeleteRemoteBranchLeased`
 
 **Uses:**
 - `internal/gitrepo#Repo.DeleteRemoteBranch`

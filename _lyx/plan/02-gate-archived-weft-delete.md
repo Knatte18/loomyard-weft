@@ -11,7 +11,7 @@
 - `plan:internal/fabricengine#dirtyArchivedOnRemote` -> `func dirtyArchivedOnRemote(archiveTag string) branchDirtiness`
 
 **Uses:**
-- `plan:internal/gitrepo#Repo.DeleteRemoteBranchLeased`
+- `internal/gitrepo#Repo.DeleteRemoteBranchLeased`
 - `internal/fabricengine#WeftBranchName`
 - `internal/fabricengine#WeftWarpSlug`
 - `internal/fabricengine#primaryWeftBranch`
