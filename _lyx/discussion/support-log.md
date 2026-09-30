@@ -27,7 +27,10 @@ Autonomous session: no operator answered; every decision below is a self-pick re
 
 - **Adopt the remote weft branch** (fetch it, create the local branch from it): carries the removed run's shed status, discussion, plan and origin record (old parent) into the new task, which would mislead the loom run.
 - **Unconditional force-push of the new weft branch**: overwrites a live pair's weft on another hub with no proof its content is preserved; violates the chokepoint's ownership/dirtiness checks.
-- **Make plain Remove delete the remote weft branch by default**: reverses the deliberate opt-in policy for remote deletion (`--remote`), and does not help hubs whose leftovers already exist.
+- **Make plain Remove delete the remote weft branch by default**: reverses the deliberate opt-in policy for remote deletion (`--remote`).
+  Leftovers from Removes that ran before archive tagging landed (`676d9ec03`, 2026-09-30) are not helped by it, nor replaced by the chosen design, which refuses them with a hand-deletion remedy.
+- **Reuse the managed-branch ownership kind for the step-12 deletion**: its predicate refuses a branch checked out at any local worktree, and at step 12 the same-named new local weft branch is checked out at the new weft worktree, so it would refuse every replacement; it also accepts any `branch_prefix` branch.
+- **Leave the adopt path unprobed**: a local weft branch that survived Remove behind or diverged from origin would reproduce the mid-Add push rejection this task removes.
 - **Remove writes a new "removed slugs" record that Add consults**: duplicates what the archive tag already proves, and adds durable state with its own lifecycle.
 - **Refuse on every leftover, even archived ones**: correct but leaves the common re-add broken in real use, which is the product gap the task names.
 - **Delete the archived leftover at pre-flight**: touches the remote even when Add later fails for an unrelated reason; deleting right before the push keeps a failed Add remote-neutral.
@@ -50,4 +53,8 @@ _No rounds yet._
 - Q7 (auto-pick, resolved): Rollback after a completed replacement? → Do not restore the old remote branch; the archive tag holds its content.
 - Q8 (auto-pick, resolved): Existing test's `remote=true` workaround? → Revert to a plain Remove and add a deterministic-divergence test alongside it.
 - Q9 (auto-pick, resolved): Webster integration report lacks the failing test name → out of scope, separate task.
-- Q10 (auto-pick, resolved): Adopt path (local weft branch already exists) → unchanged; assumed to already match or fast-forward its remote copy.
+- Q10 (auto-pick, resolved, revised in review round 1): Adopt path (local weft branch already exists) → a pre-flight fast-forward probe against the remote copy, refusing when the push could not fast-forward. Rationale: the branch survives a plain Remove only when its local deletion fails, and then nothing guarantees it matches origin.
+- Q11 (review round 1, resolved): Which ownership kind gates the step-12 deletion? → A new kind, the pair's own weft branch, with no local-checkout test. Rationale: the managed-branch kind refuses because the replacement is checked out by then.
+- Q12 (review round 1, resolved): What remedy does an unarchived leftover get when no hub holds the pair (every leftover from before `676d9ec03`, a Remove with no origin, a local tip behind origin at Remove)? → Delete the remote branch by hand once its content is disposable, or pick a different slug; `lyx fabric remove` applies only to a live pair.
+- Q13 (review round 1, resolved): Where do the archive tag's objects come from on a hub that did not run Remove? → The probe fetches the listed tag targets into `FETCH_HEAD` alongside the remote tip; a commit still missing counts as unreachable.
+- Q14 (review round 1, resolved): How does the lease-race test move the remote branch deterministically? → A test-only hook `Add` calls between pre-flight and the deletion, plus a `destroy.go` unit test with a stale lease SHA.
