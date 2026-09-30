@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "integration verify FAILED at head 3e1407115 (integration report status: FAILED); all 6 batches done",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": ""
+    "wait": "integration verify FAILED at head 3e1407115 (integration report status: FAILED); all 6 batches done"
   },
   "history": [
     {
@@ -84,6 +84,12 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-09-30T14:34:04Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-09-30T14:39:53Z"
     }
   ],
   "product": {
