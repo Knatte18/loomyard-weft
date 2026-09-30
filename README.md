@@ -192,3 +192,8 @@ Each 30 s poll during an unbounded approval wait appends a history entry; days o
 [loom-start-refuses-mid-merge](design-loom-start-refuses-mid-merge.md)
 
 loom start spawned a driver on a worktree whose merge-in had stopped on a conflict (UU path, MERGE_HEAD present).
+
+## **#016:** Landing verify gate skips a merge interrupted before its marker write
+[verify-gate-crash-after-merge](design-verify-gate-crash-after-merge.md)
+
+A crash between the merge-in commit and the pending-verify marker write leaves the next resume seeing up-to-date with no marker, so verify is skipped.

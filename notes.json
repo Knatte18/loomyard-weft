@@ -108,5 +108,15 @@
     "deferred": false,
     "brief": "loom start spawned a driver on a worktree whose merge-in had stopped on a conflict (UU path, MERGE_HEAD present).",
     "body": "`lyx loom start` does not check for an in-progress merge.\nA hub merge-in stopped on a conflict, and the following `loom start` spawned a driver onto the conflicted tree.\nPreflight should refuse with the remedy: resolve, `lyx fabric merge-stage`, `lyx fabric merge --continue` (or `--abort`)."
+  },
+  {
+    "id": 16,
+    "slug": "verify-gate-crash-after-merge",
+    "title": "Landing verify gate skips a merge interrupted before its marker write",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "A crash between the merge-in commit and the pending-verify marker write leaves the next resume seeing up-to-date with no marker, so verify is skipped.",
+    "body": "Found reviewing PR #308 (`publish-verify-after-merge`).\nFabric reports a finished-but-interrupted merge as already up to date, so the gate cannot tell a verified tree from an unverified one.\nRobust fix: record the task HEAD that last passed verify, and verify whenever HEAD differs from it."
   }
 ]
