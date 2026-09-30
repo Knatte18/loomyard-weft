@@ -13,7 +13,19 @@ Batten keeps watching an awaiting child, run records survive teardown, approval 
 
 One generated VS Code workspace shows the board beside the prime
 
+## **#014:** Plan-Write: respawn archives the finished plan; Agent refusal unannounced [A]
+[plan-write-respawn](design-plan-write-respawn.md)
+Depends on: #013
+
+Respawn starts over instead of reusing the plan; prompt does not say Agent is refused
+
 # Layer B
+
+## **#015:** Trace logs: configurable retention, fewer files from routine commands [B]
+[trace-log-retention](design-trace-log-retention.md)
+Depends on: #014
+
+Trace logs: configurable retention, fewer files from routine commands
 
 ## **#019:** One driving surface per run: ly-drive pane or status strand, never both [B]
 [status-strand-by-driver](design-status-strand-by-driver.md)
@@ -23,6 +35,12 @@ llm-driven run shows only ly-drive; go-driven run shows only the status strand
 
 # Layer C
 
+## **#016:** lyx quarry: per-glyph resolve answers, grep-safe glyphs output [C]
+[quarry-cli-answers](design-quarry-cli-answers.md)
+Depends on: #015
+
+lyx quarry: per-glyph resolve answers, grep-safe glyphs output
+
 ## **#020:** fabric add after remove: leftover remote weft branch rejects the push (flaky test) [C]
 [fabric-readd-weft-push](design-fabric-readd-weft-push.md)
 Depends on: #019
@@ -30,6 +48,12 @@ Depends on: #019
 Re-adding a removed slug races the old remote weft branch; integration test flakes
 
 # Layer D
+
+## **#017:** Burler: warn when the explore stencil lacks the focus_directive marker [D]
+[focus-marker-warn](design-focus-marker-warn.md)
+Depends on: #016
+
+Burler: warn when the explore stencil lacks the focus_directive marker
 
 ## **#021:** Webster verify: rerun, compare with parent, halt only on a real regression [D]
 [verify-triage](design-verify-triage.md)
@@ -45,6 +69,12 @@ Depends on: #021, #011
 
 Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
 
+## **#018:** reed: send a short launch-script line instead of the full command [E]
+[reed-launch-script](design-reed-launch-script.md)
+Depends on: #017
+
+Hide the long env+claude launch line behind a generated launch script
+
 # Layer F
 
 ## **#012:** Publish: verify the tree after merging the parent [F]
@@ -52,54 +82,6 @@ Batten lifecycle step: open a VS Code window whose terminal is attached to the c
 Depends on: #009
 
 A conflict-resolved parent merge was pushed with non-compiling tests
-
-# Layer G
-
-## **#013:** Webster fork audit: text search for "lyx fabric" counted as a fabric operation [G]
-[refscan-false-positive](design-refscan-false-positive.md)
-Depends on: #012
-
-RefScanner flags quoted grep patterns; a done batch cannot be recorded
-
-# Layer H
-
-## **#014:** Plan-Write: respawn archives the finished plan; Agent refusal unannounced [H]
-[plan-write-respawn](design-plan-write-respawn.md)
-Depends on: #013
-
-Respawn starts over instead of reusing the plan; prompt does not say Agent is refused
-
-# Layer I
-
-## **#015:** Trace logs: configurable retention, fewer files from routine commands [I]
-[trace-log-retention](design-trace-log-retention.md)
-Depends on: #014
-
-Trace logs: configurable retention, fewer files from routine commands
-
-# Layer J
-
-## **#016:** lyx quarry: per-glyph resolve answers, grep-safe glyphs output [J]
-[quarry-cli-answers](design-quarry-cli-answers.md)
-Depends on: #015
-
-lyx quarry: per-glyph resolve answers, grep-safe glyphs output
-
-# Layer K
-
-## **#017:** Burler: warn when the explore stencil lacks the focus_directive marker [K]
-[focus-marker-warn](design-focus-marker-warn.md)
-Depends on: #016
-
-Burler: warn when the explore stencil lacks the focus_directive marker
-
-# Layer L
-
-## **#018:** reed: send a short launch-script line instead of the full command [L]
-[reed-launch-script](design-reed-launch-script.md)
-Depends on: #017
-
-Hide the long env+claude launch line behind a generated launch script
 
 # Done
 
@@ -137,6 +119,12 @@ Operator surface: #295, #277, #286, #297 + four unfiled findings
 [burler-review](design-burler-review.md) [done]
 
 Burler: #287, #282, #263 + comment-width finding
+
+## **#013:** Webster fork audit: text search for "lyx fabric" counted as a fabric operation
+[refscan-false-positive](design-refscan-false-positive.md) [done]
+Depends on: #012
+
+RefScanner flags quoted grep patterns; a done batch cannot be recorded
 
 # Manifest
 

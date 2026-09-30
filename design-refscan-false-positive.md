@@ -6,3 +6,5 @@ Docs cards will keep hitting this, since docs describe fabric verbs.
 
 Fixed for the spelling in `777d93af7` (hub prime, deployed): command position only, quoted spans blanked.
 Still open: the path half (`\S*-weft\b`) matches any word ending in `-weft`, quoted or not, so a docs grep for `main-weft` would trip the same dead end.
+
+Path half fixed in `b848b8f9f` (hub prime, deployed): heredoc bodies dropped, a weft sibling counts as a path only after a separator, a bare `-weft` word only outside quotes. Triggered by run `batten-hub-ready` batch 11 (a fork writing `archive_integration_test.go` via heredoc).
