@@ -1,12 +1,12 @@
 {
   "current_producer": "Publish",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "an open pull request already exists against parent branch \"main\"; run `lyx loom approve` and `lyx loom start` once it is reviewed: https://github.com/Knatte18/loomyard/pull/314",
   "pause_requested": false,
   "activity": {
     "now": "Publish",
     "last": "Publish → awaiting",
-    "wait": ""
+    "wait": "an open pull request already exists against parent branch \"main\"; run `lyx loom approve` and `lyx loom start` once it is reviewed: https://github.com/Knatte18/loomyard/pull/314"
   },
   "history": [
     {
@@ -146,6 +146,12 @@
       "outcome": "awaiting",
       "output": "",
       "at": "2026-09-30T15:56:26Z"
+    },
+    {
+      "producer": "Publish",
+      "outcome": "awaiting",
+      "output": "",
+      "at": "2026-09-30T16:02:57Z"
     }
   ],
   "product": {
