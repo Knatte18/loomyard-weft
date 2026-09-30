@@ -1,0 +1,19 @@
+{
+  "runGuid": "946bc082c904e8d2ae720d8f601e4189",
+  "planFingerprint": "a2a002d2c85638f8cc4002da9be16a4b4329bc8bac7411eaab025b583b7172ae",
+  "currentBatch": 1,
+  "masterStrand": "a4ccbac60c1580d689180b13a03f0c3c",
+  "masterSessionId": "a555464e-315a-4a5f-95b3-0dc73fe95184",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "history-fold",
+      "startSha": "724b78b50801475b524578dfb316076c6bf7c92d",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T16:48:32Z",
+      "sessionId": "a555464e-315a-4a5f-95b3-0dc73fe95184",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
