@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "blocked",
-  "error": "integration verify regressed: github.com/Knatte18/loomyard/cmd/lyx.TestLyDriveSkill_IsRecipeBlind (offending card: 14-ly-drive-skill)",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": "integration verify regressed: github.com/Knatte18/loomyard/cmd/lyx.TestLyDriveSkill_IsRecipeBlind (offending card: 14-ly-drive-skill)"
+    "wait": ""
   },
   "history": [
     {
