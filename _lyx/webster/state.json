@@ -2,10 +2,26 @@
   "runGuid": "d261ac60bf3d1e30bc74e6cf6230d0fa",
   "planFingerprint": "39f3b44ca0deae4093c4dcf4279cde0b25546d05f1671628c8aa1ee640449507",
   "currentBatch": 0,
-  "masterStrand": "afea820dbac970313b4922ca43a482e6",
-  "masterSessionId": "8bccc684-f2e9-4189-aa26-10f85a2fa7b1",
+  "masterStrand": "08cfed332375ea42a8341951f456c857",
+  "masterSessionId": "e74ac067-2f98-456a-873d-0e4c22183882",
   "assertedModel": "sonnet",
   "batches": {
+    "-1": {
+      "slug": "01-leased-remote-delete",
+      "startSha": "",
+      "kind": "",
+      "spawnedAt": "",
+      "terminal": true,
+      "status": "stuck",
+      "digest": {
+        "batch": "01-leased-remote-delete",
+        "status": "stuck",
+        "head_sha": "a70ca33f75ff70f8f6a0070cc5ffdaa77d892783"
+      },
+      "cardShas": [
+        "a70ca33f75ff70f8f6a0070cc5ffdaa77d892783"
+      ]
+    },
     "1": {
       "slug": "leased-remote-delete",
       "startSha": "676d9ec0337614944a8364480ea8b4551c45b036",

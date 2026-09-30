@@ -1,0 +1,17 @@
+status: FAILED
+head_sha: fd2c3d3ec01d3ae20eec8bda2d62ee65d945919d
+deviations: []
+failures:
+    - id: github.com/Knatte18/loomyard/internal/fabriccli.TestRunCLI_CleanupRemoteFailureExitsNonZero
+      kind: test
+      tail: |4-
+            remoteenvelope_integration_test.go:160: envelope partial = false; want true
+                output: {"entries":[{"branch":"cli-cleanup-remote-fail-weft","deleted":false,"error":"archive weft branch \"cli-cleanup-remote-fail-weft\" failed: archiving the pair's records before teardown failed: push archive tag \"archive/cli-cleanup-remote-fail/bc87b99712ed\" to \"origin\": git push origin refs/tags/archive/cli-cleanup-remote-fail/bc87b99712ed: exit 128: fatal: '/tmp/TestRunCLI_CleanupRemoteFailureExitsNonZero260446888/003/no-such-remote.git' does not appear to be a git repository\nfatal: Could not read from remote repository.\n\nPlease make sure you have the correct access rights\nand the repository exists."},{"branch":"main","deleted":false,"protected":true}],"error":"branch deletion failed for 1 of 1 orphan branches (cli-cleanup-remote-fail-weft); each branch's reason is in entries[].error","mutations":[],"ok":false,"partial":false,"remote_skipped_reason":""}
+            remoteenvelope_integration_test.go:183: no entry carries a "remote_error"; want the failing branch's own reason
+                output: {"entries":[{"branch":"cli-cleanup-remote-fail-weft","deleted":false,"error":"archive weft branch \"cli-cleanup-remote-fail-weft\" failed: archiving the pair's records before teardown failed: push archive tag \"archive/cli-cleanup-remote-fail/bc87b99712ed\" to \"origin\": git push origin refs/tags/archive/cli-cleanup-remote-fail/bc87b99712ed: exit 128: fatal: '/tmp/TestRunCLI_CleanupRemoteFailureExitsNonZero260446888/003/no-such-remote.git' does not appear to be a git repository\nfatal: Could not read from remote repository.\n\nPlease make sure you have the correct access rights\nand the repository exists."},{"branch":"main","deleted":false,"protected":true}],"error":"branch deletion failed for 1 of 1 orphan branches (cli-cleanup-remote-fail-weft); each branch's reason is in entries[].error","mutations":[],"ok":false,"partial":false,"remote_skipped_reason":""}
+triage:
+    verdict: pre-existing
+    rerun: failed
+    baseline_sha: 676d9ec0337614944a8364480ea8b4551c45b036
+    pre_existing:
+        - github.com/Knatte18/loomyard/internal/fabriccli.TestRunCLI_CleanupRemoteFailureExitsNonZero
