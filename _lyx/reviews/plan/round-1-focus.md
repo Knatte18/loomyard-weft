@@ -1,0 +1,13 @@
+---
+round: 1
+focus:
+  - "Card 3 seam wiring: the new probe field on loomCLI is set only by newLoomCLI and newTestSpawnAndWaitReceiver (newResumeBranchReceiver builds on the latter). Settle whether every existing receiver that reaches runDriverSpawnAndWait gets a non-nil probe, so no existing start_driver_test.go row nil-calls it, and whether the untagged 'real fabricengine.MidMerge over the receiver's temp-dir location' row fails inside Open's directory checks without spawning git (Test Tier Purity) given that newTestSpawnAndWaitReceiver creates the warp directory on disk."
+  - "Card 3 refusal placement against start.go's runDriverSpawnAndWait: settle whether reading the park marker once before the mustSpawn/live-strand branch, then probing only on mustSpawn or live-strand-plus-marker, preserves today's stale-marker removal, resume, running-driver attach and driver_not_parked paths exactly, and whether the card's test rows cover every decision-record acceptance criterion for start (both arms, no resume line typed, bootstrap lock released, stale marker left on disk, exit non-zero)."
+  - "Card 2 probe behaviour: settle whether extracting the four readings out of foreignMergeStatePresent keeps its answer and error wrapping unchanged for its existing callers, whether resolving merge geometry only when a side has a conflicted path is consistent with the shared decision that no probe failure defaults to clean, and whether the foreign rows' expected Conflicts for a weft-side conflict are stated in the one-repo form the decision record requires."
+  - "Granularity: settle whether card 1 (one exported constant, no test, card 3 its only reader) is an independently reviewable/testable unit or belongs in card 3, and whether card 2 correctly bundles the foreignMergeStatePresent extraction with the new probe rather than splitting it."
+  - "ImpactSummary on cards 2 and 3: settle whether each states a concrete blast-radius conclusion (which callers, how many, where) rather than restating the card's Intent."
+  - "Decision-record fidelity: settle whether every Decision, Constraint and acceptance criterion in _lyx/discussion/decision-record.md is carried by some card, and whether any card adds scope the record does not license (for example card 3's optional test rename or card 2's doc.go reword)."
+---
+
+Seeded from a read of the plan cards, the decision record, the writer stencil, and the current `internal/loomcli/start.go`, `internal/loomcli/start_driver_test.go` and `internal/fabricengine/mergestate.go`.
+The `## verify:` section already runs the integration tag for all three targeted packages, so verify coverage is not a focus.
