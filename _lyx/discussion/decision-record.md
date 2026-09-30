@@ -33,7 +33,9 @@ Out:
 Decision: the head cross-check accepts the worktree HEAD when HEAD equals the report's `head_sha`, or when walking HEAD's first-parent chain reaches the report's `head_sha` and every commit walked before reaching it is a merge commit (two or more parents).
 Any non-merge commit on that walk, or a walk that never reaches the report's `head_sha`, is refused with an error that names both SHAs and states the merge-only rule.
 The rule lives in one webster helper beside `headSHA` in `gitwrap.go`, and both `RecordBatch` and `RecoverBatch` call it.
-Rationale: a parent merge-in adds exactly merge commits on the task branch's first-parent line, so this admits the observed case and nothing else; a fork that committed past its own report still leaves a non-merge commit on the walk and is still refused.
+Rationale: a parent merge-in adds exactly merge commits on the task branch's first-parent line whenever HEAD has commits the parent lacks, which is the observed case, including a conflicted merge-in concluded through `lyx fabric merge --continue`;
+a fork that committed past its own report still leaves a non-merge commit on the walk and is still refused.
+A merge-in that fast-forwards instead (it merges with `--ff`) is refused by the same rule; see Open risks.
 The walk is a read-only git query, which the Fabric Git Invariant exempts, matching how `gitwrap.go` already reads HEAD and status.
 
 ### D2 — The batch is recorded at its own commit
@@ -41,6 +43,7 @@ The walk is a read-only git query, which the Fabric Git Invariant exempts, match
 Decision: once D1 accepts a moved HEAD, `RecordBatch` uses the report's `head_sha` as the batch's head for `CardSHAs`, the `postBatchChecks` delta (`StartSHA`..head), and `DetectDrift`'s triggering SHA.
 `DoneChecks` and drift's tree resolution still read the worktree as it stands (the merged tree).
 Rationale: `CardSHAs` is the per-card bisect anchor and the delta is the batch's own work; using the merge commit would attribute the parent's changes to the batch's cards (spurious scope-guard notices, bind mismatches, drift).
+The tree checks read the merged tree because that is the tree the remaining plan builds on, so a Create target or a repaired ref has to resolve there.
 `RecoverBatch` already records `digest.HeadSHA`, so this makes the two verbs agree.
 
 ### D3 — Accepted merges are reported, not silent
@@ -50,7 +53,9 @@ Rationale: the run's record should show that HEAD moved under it; the warning ch
 
 ### D4 — Refuse while a merge is in progress
 
-Decision: `record-batch` and `recover-batch` refuse, before the head cross-check, when the worktree has a git merge in progress (`MERGE_HEAD` present), with an error pointing at `lyx fabric merge --continue` / `lyx fabric merge --abort`.
+Decision: `record-batch` and `recover-batch` refuse, before the head cross-check, when the worktree has a git merge in progress, with an error naming both routes to conclude it: `lyx fabric merge --continue` / `--abort` in a hub, and plain `git merge --continue` / `--abort` for a standalone run, which has no fabric.
+The probe asks git whether `MERGE_HEAD` resolves in the repo at `WorktreeRoot`, the warp checkout, through `gitrepo` like the rest of `gitwrap.go`; it never stats a `.git/MERGE_HEAD` file, which a linked worktree keeps in its per-worktree git dir.
+The weft is not probed: merge-in never merges it.
 Rationale: a conflicted merge-in leaves conflict-marked files that `DoneChecks` and drift would read as the batch's result; refusing leaves the batch non-terminal and retryable once the merge concludes, which D1 then accepts.
 
 ### D5 — Webster owns the "run in flight" predicate
@@ -60,7 +65,9 @@ Rationale: the Cwd Resolution Invariant forbids any other package from construct
 
 ### D6 — `lyx fabric merge-in` warns, never refuses
 
-Decision: the `merge-in` RunE in `internal/fabriccli` calls the D5 predicate on the resolved anchor and, when true, adds a warning to the merge-in result envelope (and a `logger.Warn`).
+Decision: the `merge-in` RunE in `internal/fabriccli` calls the D5 predicate with `AnchorPath()` of the `lyxcwd.Location` the verb already resolved — the value `hubgeom.WebsterGeometry` hands webster as `AnchorRoot` — so it reads the run in the worktree being merged into.
+When the predicate is true, the verb adds a warning to the ok envelope of a merge that moved HEAD and to the conflict envelope, and logs a `logger.Warn`; an already-up-to-date result and a hard failure carry no warning.
+The warning goes under a `warnings` string array, the key webster's own CLI envelopes use.
 The merge proceeds regardless, and a predicate error degrades to no warning plus a `logger.Warn`, never a failure.
 The warning says Webster is mid-run, that `record-batch` tolerates the merge, and that integration bisect over earlier card SHAs will run on pre-merge trees.
 Rationale: a parent merge mid-run is sometimes needed (picking up a deployed fix was the trigger), and D1 makes it survivable, so blocking would only move the wedge; the CLI verb is the operator/hub path, while landing merges through `fabricengine` directly after Webster is done and never reaches this code.
@@ -86,19 +93,21 @@ Rationale: the hub repairing a stopped run is the actor that did this; the skill
 - "loom/fabric warn" in the board entry is satisfied by the `fabric merge-in` CLI warning plus the `ly-drive` rule; no loom driver or `lyx loom status` change.
 - Any commit with two or more parents counts as a merge for D1; the second parent's origin (the recorded parent branch or not) is not checked.
 - Mid-run detection reads only webster's own durable files, not loom's shed status.
-- The warning is attached to the merge-in JSON result envelope; its exact key follows whatever warning convention `output` and the fabric envelopes already use, chosen at Plan time.
 
 ## Open risks
 
 - Integration bisect walks `CardSHAs` across the merge: a card recorded before the merge is verified on a tree without the parent's changes, so a regression the merge introduced (or fixed) can be attributed to the wrong card. D6's warning names this; the bisect itself is unchanged.
-- D1 does not verify that a merge's second parent came from the task's parent branch, so a fork that ran `git merge` after writing its report is accepted by the head check; the fork audit, not the head check, is the control on what a fork runs.
+- A fork that runs `git merge` after writing its report is accepted by D1, and nothing else stops it: the fork audit allows repo-native git. D3's warning, which names every walked merge SHA, is the only trace.
+- A merge-in fast-forwards when the report's `head_sha` is an ancestor of the parent's tip — the task's warp has no commits the parent lacks and the batch's fork committed nothing. HEAD then moves by the parent's ordinary commits, D1 refuses, and the run wedges as today; recovery is resetting the warp to `head_sha` before `record-batch`.
+- A symbol the parent renamed or deleted falls in no batch's delta (this batch's ends at `head_sha`, the next starts at the merge commit), so drift never auto-repairs a remaining-plan reference to it; the next `begin-batch`'s dispatch validation reports it as a blocking finding instead.
 - A Webster run started standalone (no fabric) never sees D6's warning, since `lyx fabric` is hub-only; D1 still protects it.
 
 ## Acceptance criteria
 
 - `record-batch` with HEAD == report `head_sha` behaves exactly as before (existing tests pass unchanged).
 - `record-batch` after one parent merge commit on top of the fork's commit succeeds: the batch goes terminal, `CardSHAs` holds the report's `head_sha`, and the result carries one warning naming both SHAs and the merge SHA.
-- Same with two successive merge commits.
+- Same with two successive merge commits, and the one warning names both merge SHAs.
+- A fast-forward from the report's `head_sha` onto parent commits that are not merges is refused like any non-merge movement.
 - A file added only on the merged-in parent side does not appear in the batch's delta: no scope-guard notice, no bind mismatch, no drift finding caused by it.
 - A non-merge commit after the report's `head_sha` (with or without merges around it) is refused, and the error states the merge-only rule and names both SHAs; the batch stays non-terminal.
 - A report `head_sha` that is not on HEAD's first-parent chain is refused the same way.
@@ -106,7 +115,9 @@ Rationale: the hub repairing a stopped run is the actor that did this; the skill
 - `recover-batch`'s head cross-check follows the same D1 and D4 rules (accepted merge → terminal with the report's head recorded; non-merge commit → refused).
 - End-to-end wedge scenario in `websterengine` tests: begin-batch, fork commit + OK report, parent merge, record-batch succeeds, next begin-batch succeeds with `StartSHA` at the merge commit.
 - The D5 predicate: no `state.json` → false; `state.json` and no `outcome.yaml` → true; outcome `paused` → true; `stuck` → true; `done` → false; unreadable/malformed `outcome.yaml` → error.
-- `lyx fabric merge-in` in a hub fixture with an in-flight Webster state: the merge completes and the envelope carries the warning; without Webster state, or with outcome `done`, no warning; conflict and failure exit behaviour unchanged.
+- `lyx fabric merge-in` in a hub fixture with an in-flight Webster state: the merge completes and the envelope carries the warning; a conflicting merge-in's conflict envelope carries it too; without Webster state, or with outcome `done`, no warning; conflict and failure exit behaviour unchanged.
+- `lyx fabric merge-in` with a malformed `outcome.yaml`: the merge completes and the envelope carries no warning.
+- `record-batch`'s merge-in-progress probe fires in a linked git worktree.
 - `ly-drive` SKILL.md contains the D7 rule; `merge-in`'s `Long` help documents the warning; `websterengine`'s package doc describes the merge-only head rule.
 
 ## Notes for the plan writer

@@ -35,7 +35,7 @@ The session ran autonomously; every turn below is a self-resolved question, grou
 
 - **Refuse `lyx fabric merge-in` while Webster is mid-run.** Blocks the legitimate case that triggered the bug (picking up a deployed fix); with D1 in place the merge is survivable.
 - **Accept any HEAD that descends from the report's `head_sha`.** Would also accept a fork's own post-report commits, defeating the head cross-check.
-- **Verify each merge's second parent is on the task's recorded parent branch.** `websterengine` does not know the parent branch (fabric does), and adding that coupling buys little over the fork audit, which already polices fork commands.
+- **Verify each merge's second parent is on the task's recorded parent branch.** `websterengine` does not know the parent branch (fabric does), and the case it would catch — a fork merging after its own report — is narrow; the fork audit does not cover it, since it allows repo-native git, so it stays an open risk that D3's warning makes visible.
 - **Record the batch at the post-merge HEAD.** Attributes the parent's changes to the batch's cards in the delta, scope guard, bind checks, drift, and bisect.
 - **Put the warning inside `fabricengine.MergeIn`.** Landing's own post-Webster parent merge goes through the engine and would need the predicate to suppress it; the engine would also gain a webster dependency. The CLI verb is the operator path and the right place.
 - **Detect mid-run from loom's shed status (current phase is Webster).** Couples fabric to loom's status file layout and misses a standalone-launched Webster run's state; webster's own files are the direct signal.
@@ -57,6 +57,7 @@ _No rounds yet._
 - Q7 How is "mid-run" detected? — auto-pick: webster-exported predicate; `state.json` present and outcome absent or not `done` (resolved).
 - Q8 Warn or refuse at merge-in? — auto-pick: warn; predicate errors degrade to no warning (resolved).
 - Q9 Loom-side warning? — auto-pick: one rule in the `ly-drive` skill; no loom driver change (resolved).
-- Q10 Check merge second-parent provenance? — auto-pick: no; fork audit is the control (resolved, listed as open risk).
+- Q10 Check merge second-parent provenance? — auto-pick: no; webster does not know the parent branch, and the fork audit allows repo-native git, so the residual is uncontrolled (resolved, listed as open risk).
 - Q11 Change integration bisect? — auto-pick: no; warning names the risk (resolved, listed as open risk).
-- Q12 Warning envelope key in fabric's JSON output — left to Plan, which follows the existing `output` warning convention (open).
+- Q12 Warning envelope key in fabric's JSON output — auto-pick: a `warnings` string array, the key webster's own CLI envelopes use (resolved).
+- Q13 Admit a fast-forward merge-in in D1? — auto-pick: no; telling a fast-forward from a fork's own post-report commits needs the parent branch, which webster does not know (resolved, listed as open risk).
