@@ -1,7 +1,7 @@
 {
   "runGuid": "d261ac60bf3d1e30bc74e6cf6230d0fa",
   "planFingerprint": "39f3b44ca0deae4093c4dcf4279cde0b25546d05f1671628c8aa1ee640449507",
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "afea820dbac970313b4922ca43a482e6",
   "masterSessionId": "8bccc684-f2e9-4189-aa26-10f85a2fa7b1",
   "assertedModel": "sonnet",
@@ -90,6 +90,15 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fabric-readd-weft-push/461e8c2a-0eed-46d7-b22a-8157adb6beda/subagents/agent-aa3734b6df3b57ff2.jsonl"
       ]
+    },
+    "5": {
+      "slug": "add-replace-archived-weft",
+      "startSha": "8f1cdb80c66f5bfb225f208b2247c4ab56275339",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T15:14:21Z",
+      "sessionId": "8bccc684-f2e9-4189-aa26-10f85a2fa7b1",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
