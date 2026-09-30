@@ -1,7 +1,7 @@
 {
   "runGuid": "58d2f68d0b54bf289c61d20455e5ff7a",
   "planFingerprint": "4824edb5c1b06c279795e76224c4bcadcb04cc8c9b95602bac3936eaadd0c8c0",
-  "currentBatch": 0,
+  "currentBatch": 12,
   "masterStrand": "9acb332600d74bfcdc4395303bc7b8e7",
   "masterSessionId": "4c6ab6b0-79e1-4be6-ab5e-953345d7e36c",
   "assertedModel": "sonnet",
@@ -71,6 +71,15 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-hub-ready/4c17ecbb-80dc-4bf9-a43a-78ebde2bb2c5/subagents/agent-a3728e1078a49c641.jsonl"
       ]
+    },
+    "12": {
+      "slug": "fabric-remove-archives",
+      "startSha": "90422433b6b29b82e4aed43594b097fee9f4f073",
+      "kind": "fork",
+      "spawnedAt": "2026-09-30T13:52:26Z",
+      "sessionId": "4c6ab6b0-79e1-4be6-ab5e-953345d7e36c",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "shedrun-drive-reports-dir",
