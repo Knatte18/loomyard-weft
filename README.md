@@ -14,10 +14,11 @@ Depends on: #010
 
 Re-adding a removed slug races the old remote weft branch; integration test flakes
 
-## **#021:** Webster verify: rerun, compare with parent, halt only on a real regression [A]
-[verify-triage](design-verify-triage.md)
+## **#022:** Webster: a parent merge after a batch commit wedges record-batch [A]
+[webster-parent-merge-midrun](design-webster-parent-merge-midrun.md)
+Depends on: #021
 
-Flaky or pre-existing test failures no longer halt a run; report names the failing tests
+record-batch demands HEAD == report head_sha; a mid-run merge-in wedges the run
 
 ## **#024:** ly-drive: safe self-repairs instead of always handing back [A]
 [ly-drive-safe-repairs](design-ly-drive-safe-repairs.md)
@@ -38,15 +39,7 @@ Depends on: #020, #021, #019
 
 Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
 
-## **#022:** Webster: a parent merge after a batch commit wedges record-batch [B]
-[webster-parent-merge-midrun](design-webster-parent-merge-midrun.md)
-Depends on: #021
-
-record-batch demands HEAD == report head_sha; a mid-run merge-in wedges the run
-
-# Layer C
-
-## **#023:** Every refusal has a way forward: audit Webster and shed halt paths [C]
+## **#023:** Every refusal has a way forward: audit Webster and shed halt paths [B]
 [refusal-audit](design-refusal-audit.md)
 Depends on: #022
 
@@ -135,6 +128,11 @@ Burler: warn when the explore stencil lacks the focus_directive marker
 [reed-launch-script](design-reed-launch-script.md) [done]
 
 Hide the long env+claude launch line behind a generated launch script
+
+## **#021:** Webster verify: rerun, compare with parent, halt only on a real regression
+[verify-triage](design-verify-triage.md) [done]
+
+Flaky or pre-existing test failures no longer halt a run; report names the failing tests
 
 # Manifest
 
