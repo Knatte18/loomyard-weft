@@ -43,6 +43,12 @@ Depends on: #009
 
 A conflict-resolved parent merge was pushed with non-compiling tests
 
+## **#021:** Webster verify: rerun, compare with parent, halt only on a real regression [D]
+[verify-triage](design-verify-triage.md)
+Depends on: #020
+
+Flaky or pre-existing test failures no longer halt a run; report names the failing tests
+
 # Layer E
 
 ## **#013:** Webster fork audit: text search for "lyx fabric" counted as a fabric operation [E]

@@ -218,5 +218,17 @@
     "deferred": false,
     "brief": "Re-adding a removed slug races the old remote weft branch; integration test flakes",
     "body": "`TestRemove_AddSucceedsAfterWarpBranchDeleted` (`internal/fabricengine/remove_warpbranch_integration_test.go`) is flaky: run `ide-hub-workspace` failed its plan verify with \"push of wb-readd-weft rejected non-fast-forward\"; the same test passes on reruns on main and in the task worktree.\nThe test adds `wb-readd`, removes it without `--remote` (the pushed weft branch stays on the fixture's origin), then adds it again: the re-created weft branch pushes only if it happens to match or fast-forward the old remote one, which depends on commit timestamps.\nThis is a product gap too: `lyx fabric add \u003cslug\u003e` after a plain `fabric remove \u003cslug\u003e` can fail on the leftover remote weft branch.\nFix direction: Add adopts or resets an orphaned remote weft branch of the same name (or Remove records it and Add refuses with a remedy), and the test pins that deterministically.\n\nHit twice in a row in run `ide-hub-workspace` (integration verify, then again after re-step); both times the verify passed when rerun by hand.\nLikely mechanism: the re-created weft branch's bootstrap commits are identical to the old ones only when they land in the same second (same SHA, push is a no-op); otherwise they diverge and the push is rejected, so in real use a re-add of a removed slug nearly always fails.\nThe integration verify report (`_lyx/webster/reports/integration.yaml`) carries only `status: FAILED`, no failing test name or output; the hub had to dig the fork transcript for it."
+  },
+  {
+    "id": 21,
+    "slug": "verify-triage",
+    "title": "Webster verify: rerun, compare with parent, halt only on a real regression",
+    "depends_on": [
+      "fabric-readd-weft-push"
+    ],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Flaky or pre-existing test failures no longer halt a run; report names the failing tests",
+    "body": "A red plan verify halts the whole run at Webster, whatever the cause.\nRun `ide-hub-workspace` blocked twice on the flaky `TestRemove_AddSucceedsAfterWarpBranchDeleted` (see `fabric-readd-weft-push`), in a package the task did not break; the verify was green when rerun by hand.\n\nWanted, when the integration verify fails:\n1. Rerun the failing tests once. Green on rerun: continue, and record the test as flaky in the run's report and friction.\n2. Still red: run the same tests at the parent commit. Red there too: continue with a pre-existing-failure warning.\n3. Halt only when a test fails on the task head and passes on the parent (a real regression).\n\nAlso: the integration report (`_lyx/webster/reports/integration.yaml`, `contracts/stencils/webster/webster-template-integration.md`) records only `status: OK | FAILED`; it must carry the failing test names and the tail of their output, so neither the driver nor the hub has to dig the fork transcript."
   }
 ]
