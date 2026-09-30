@@ -39,6 +39,12 @@ Depends on: #022
 
 Walk every refusal/halt path in webster and shed; none may wedge a run
 
+## **#026:** Send PR review findings back into the run instead of fixing outside loom [B]
+[publish-review-fixback](design-publish-review-fixback.md)
+Depends on: #022
+
+`lyx loom reject <review>` at Publish routes review findings to Webster as a fix batch, then re-verify, re-publish, re-approve.
+
 # Done
 
 ## **#000:** Burler: no cluster-exclude warning when the profile has no cluster fan
