@@ -2,11 +2,6 @@
 
 # Layer A
 
-## **#004:** Plan verify: code-fence lines are not commands [A]
-[integration-verify-fence](design-integration-verify-fence.md)
-
-Strip code fences from the plan-level verify command (#285)
-
 ## **#005:** Stencil drift warning names the right remedy per drift direction [A]
 [stencil-drift-remedy](design-stencil-drift-remedy.md)
 
@@ -33,3 +28,8 @@ lyx loom start pane layout (#279)
 [stuck-reason-in-status](design-stuck-reason-in-status.md) [done]
 
 loom status shows the producer's stuck reason, not 'stuck with no OnStuck target'
+
+## **#004:** Plan verify: code-fence lines are not commands
+[integration-verify-fence](design-integration-verify-fence.md) [done]
+
+Strip code fences from the plan-level verify command (#285)
