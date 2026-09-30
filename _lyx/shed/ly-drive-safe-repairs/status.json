@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Webster-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Webster → stuck",
+    "now": "Webster-Bouncer",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -97,6 +97,12 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-09-30T15:36:44Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/ly-drive-safe-repairs/_lyx/webster/summary.md",
+      "at": "2026-09-30T15:39:27Z"
     }
   ],
   "product": {
