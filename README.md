@@ -8,6 +8,36 @@ Depends on: #007
 
 Batten keeps watching an awaiting child, run records survive teardown, approval time off the watch budget
 
+## **#012:** Publish: verify the tree after merging the parent [A]
+[publish-verify-after-merge](design-publish-verify-after-merge.md)
+
+A conflict-resolved parent merge was pushed with non-compiling tests
+
+## **#014:** Plan-Write: respawn archives the finished plan; Agent refusal unannounced [A]
+[plan-write-respawn](design-plan-write-respawn.md)
+
+Respawn starts over instead of reusing the plan; prompt does not say Agent is refused
+
+## **#015:** Trace logs: configurable retention, fewer files from routine commands [A]
+[trace-log-retention](design-trace-log-retention.md)
+
+Trace logs: configurable retention, fewer files from routine commands
+
+## **#016:** lyx quarry: per-glyph resolve answers, grep-safe glyphs output [A]
+[quarry-cli-answers](design-quarry-cli-answers.md)
+
+lyx quarry: per-glyph resolve answers, grep-safe glyphs output
+
+## **#017:** Burler: warn when the explore stencil lacks the focus_directive marker [A]
+[focus-marker-warn](design-focus-marker-warn.md)
+
+Burler: warn when the explore stencil lacks the focus_directive marker
+
+## **#018:** reed: send a short launch-script line instead of the full command [A]
+[reed-launch-script](design-reed-launch-script.md)
+
+Hide the long env+claude launch line behind a generated launch script
+
 ## **#021:** Webster verify: rerun, compare with parent, halt only on a real regression [A]
 [verify-triage](design-verify-triage.md)
 
@@ -20,11 +50,17 @@ lyx hosts the hub orchestrator in tmux and cycles its context via handoff
 
 # Layer B
 
-## **#012:** Publish: verify the tree after merging the parent [B]
-[publish-verify-after-merge](design-publish-verify-after-merge.md)
-Depends on: #025
+## **#019:** One driving surface per run: ly-drive pane or status strand, never both [B]
+[status-strand-by-driver](design-status-strand-by-driver.md)
+Depends on: #010
 
-A conflict-resolved parent merge was pushed with non-compiling tests
+llm-driven run shows only ly-drive; go-driven run shows only the status strand
+
+## **#020:** fabric add after remove: leftover remote weft branch rejects the push (flaky test) [B]
+[fabric-readd-weft-push](design-fabric-readd-weft-push.md)
+Depends on: #010
+
+Re-adding a removed slug races the old remote weft branch; integration test flakes
 
 ## **#022:** Webster: a parent merge after a batch commit wedges record-batch [B]
 [webster-parent-merge-midrun](design-webster-parent-merge-midrun.md)
@@ -32,75 +68,25 @@ Depends on: #021
 
 record-batch demands HEAD == report head_sha; a mid-run merge-in wedges the run
 
-# Layer C
-
-## **#015:** Trace logs: configurable retention, fewer files from routine commands [C]
-[trace-log-retention](design-trace-log-retention.md)
-Depends on: #012
-
-Trace logs: configurable retention, fewer files from routine commands
-
-## **#019:** One driving surface per run: ly-drive pane or status strand, never both [C]
-[status-strand-by-driver](design-status-strand-by-driver.md)
-Depends on: #022, #010
-
-llm-driven run shows only ly-drive; go-driven run shows only the status strand
-
-# Layer D
-
-## **#014:** Plan-Write: respawn archives the finished plan; Agent refusal unannounced [D]
-[plan-write-respawn](design-plan-write-respawn.md)
-Depends on: #015
-
-Respawn starts over instead of reusing the plan; prompt does not say Agent is refused
-
-## **#023:** Every refusal has a way forward: audit Webster and shed halt paths [D]
-[refusal-audit](design-refusal-audit.md)
-Depends on: #019
-
-Walk every refusal/halt path in webster and shed; none may wedge a run
-
-# Layer E
-
-## **#016:** lyx quarry: per-glyph resolve answers, grep-safe glyphs output [E]
-[quarry-cli-answers](design-quarry-cli-answers.md)
-Depends on: #014
-
-lyx quarry: per-glyph resolve answers, grep-safe glyphs output
-
-## **#024:** ly-drive: safe self-repairs instead of always handing back [E]
+## **#024:** ly-drive: safe self-repairs instead of always handing back [B]
 [ly-drive-safe-repairs](design-ly-drive-safe-repairs.md)
-Depends on: #023
+Depends on: #010
 
 Driver re-steps known transient stops itself; hands back only real decisions
 
-# Layer F
+# Layer C
 
-## **#017:** Burler: warn when the explore stencil lacks the focus_directive marker [F]
-[focus-marker-warn](design-focus-marker-warn.md)
-Depends on: #016
-
-Burler: warn when the explore stencil lacks the focus_directive marker
-
-## **#020:** fabric add after remove: leftover remote weft branch rejects the push (flaky test) [F]
-[fabric-readd-weft-push](design-fabric-readd-weft-push.md)
-Depends on: #024
-
-Re-adding a removed slug races the old remote weft branch; integration test flakes
-
-# Layer G
-
-## **#009:** batten opens VS Code on the new pair with reed attached [G]
+## **#009:** batten opens VS Code on the new pair with reed attached [C]
 [batten-open-ide](design-batten-open-ide.md)
-Depends on: #020
+Depends on: #020, #021, #019
 
 Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
 
-## **#018:** reed: send a short launch-script line instead of the full command [G]
-[reed-launch-script](design-reed-launch-script.md)
-Depends on: #017
+## **#023:** Every refusal has a way forward: audit Webster and shed halt paths [C]
+[refusal-audit](design-refusal-audit.md)
+Depends on: #022
 
-Hide the long env+claude launch line behind a generated launch script
+Walk every refusal/halt path in webster and shed; none may wedge a run
 
 # Done
 

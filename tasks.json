@@ -81,7 +81,9 @@
     "slug": "batten-open-ide",
     "title": "batten opens VS Code on the new pair with reed attached",
     "depends_on": [
-      "fabric-readd-weft-push"
+      "fabric-readd-weft-push",
+      "verify-triage",
+      "status-strand-by-driver"
     ],
     "isolated": false,
     "deferred": false,
@@ -115,9 +117,7 @@
     "id": 12,
     "slug": "publish-verify-after-merge",
     "title": "Publish: verify the tree after merging the parent",
-    "depends_on": [
-      "hub-orch-strand"
-    ],
+    "depends_on": [],
     "isolated": false,
     "deferred": false,
     "brief": "A conflict-resolved parent merge was pushed with non-compiling tests",
@@ -140,9 +140,7 @@
     "id": 14,
     "slug": "plan-write-respawn",
     "title": "Plan-Write: respawn archives the finished plan; Agent refusal unannounced",
-    "depends_on": [
-      "trace-log-retention"
-    ],
+    "depends_on": [],
     "isolated": false,
     "deferred": false,
     "brief": "Respawn starts over instead of reusing the plan; prompt does not say Agent is refused",
@@ -152,9 +150,7 @@
     "id": 15,
     "slug": "trace-log-retention",
     "title": "Trace logs: configurable retention, fewer files from routine commands",
-    "depends_on": [
-      "publish-verify-after-merge"
-    ],
+    "depends_on": [],
     "isolated": false,
     "deferred": false,
     "brief": "Trace logs: configurable retention, fewer files from routine commands",
@@ -164,9 +160,7 @@
     "id": 16,
     "slug": "quarry-cli-answers",
     "title": "lyx quarry: per-glyph resolve answers, grep-safe glyphs output",
-    "depends_on": [
-      "plan-write-respawn"
-    ],
+    "depends_on": [],
     "isolated": false,
     "deferred": false,
     "brief": "lyx quarry: per-glyph resolve answers, grep-safe glyphs output",
@@ -176,9 +170,7 @@
     "id": 17,
     "slug": "focus-marker-warn",
     "title": "Burler: warn when the explore stencil lacks the focus_directive marker",
-    "depends_on": [
-      "quarry-cli-answers"
-    ],
+    "depends_on": [],
     "isolated": false,
     "deferred": false,
     "brief": "Burler: warn when the explore stencil lacks the focus_directive marker",
@@ -188,9 +180,7 @@
     "id": 18,
     "slug": "reed-launch-script",
     "title": "reed: send a short launch-script line instead of the full command",
-    "depends_on": [
-      "focus-marker-warn"
-    ],
+    "depends_on": [],
     "isolated": false,
     "deferred": false,
     "brief": "Hide the long env+claude launch line behind a generated launch script",
@@ -201,7 +191,6 @@
     "slug": "status-strand-by-driver",
     "title": "One driving surface per run: ly-drive pane or status strand, never both",
     "depends_on": [
-      "webster-parent-merge-midrun",
       "batten-hub-ready"
     ],
     "isolated": false,
@@ -214,7 +203,7 @@
     "slug": "fabric-readd-weft-push",
     "title": "fabric add after remove: leftover remote weft branch rejects the push (flaky test)",
     "depends_on": [
-      "ly-drive-safe-repairs"
+      "batten-hub-ready"
     ],
     "isolated": false,
     "deferred": false,
@@ -248,7 +237,7 @@
     "slug": "refusal-audit",
     "title": "Every refusal has a way forward: audit Webster and shed halt paths",
     "depends_on": [
-      "status-strand-by-driver"
+      "webster-parent-merge-midrun"
     ],
     "isolated": false,
     "deferred": false,
@@ -260,7 +249,7 @@
     "slug": "ly-drive-safe-repairs",
     "title": "ly-drive: safe self-repairs instead of always handing back",
     "depends_on": [
-      "refusal-audit"
+      "batten-hub-ready"
     ],
     "isolated": false,
     "deferred": false,
