@@ -15,6 +15,7 @@ Autonomous session: no operator was present, so every turn below is a question t
    The board text said "the strand's scratch dir"; reed has no per-strand dir today, and one file does not justify creating one.
 4. **How is it invoked?**
    Dot-source on the absolute quoted path in both dialects, so env exports land in the pane shell as before.
+   Revised in review round 1: pwsh dot-sources a script block built from the file's text instead of the file itself, so no ExecutionPolicy can refuse the launch.
    Both the statement and the file extension go into `internal/shell` (Shell Mechanics Seam).
 5. **What goes in the file?**
    The exact composed line plus a newline — no header, no reformatting — so "behaviour unchanged" holds by construction.
@@ -24,6 +25,8 @@ Autonomous session: no operator was present, so every turn below is a question t
    Atomic temp+rename write; rewritten on every launch.
 7. **Lifecycle.**
    Delete on `RemoveStrand` (subtree-wide, best-effort); keep across `Down` because `Resume` rewrites anyway.
+   Revised in review round 1: `Down` deletes `reed.json`, so nothing survives it for `Resume`;
+   the rule became "a script exists only while its GUID is in the persisted strand table", covering `ReplaceStrand`, `Down`, and a failed add as well.
 8. **Testing.**
    `internal/shell` unit tests for both dialects; reedengine fake-tmux tests for payload, content, relaunch, degrade paths, and removal; one live POSIX tmux integration test proving env exports survive sourcing.
 
@@ -34,13 +37,17 @@ Autonomous session: no operator was present, so every turn below is a question t
   It would also leave non-shuttle strands and reed's own `ResumeCmd` replay uncovered.
 - **Execute the script (`sh launch.sh` / `pwsh -File`) instead of sourcing it.**
   A child shell drops the `PATH`/`LYX_BIN` exports when it exits, changing what the pane shell sees after the agent returns — a behaviour change.
-- **pwsh `Invoke-Expression (Get-Content -Raw …)` to sidestep ExecutionPolicy.**
-  Longer typed line, defeats the point on Windows, and guards against a policy the default pwsh 7 install does not have.
-  Recorded as an open risk instead.
+- **pwsh dot-source of the `.ps1` file path (`. '<path>'`), relying on pwsh 7's default `RemoteSigned`.**
+  A machine whose effective policy is `Restricted` or `AllSigned` (common under Group Policy, and the client default for a Windows PowerShell 5.1 pane shell set via `LYX_REED_SHELL`) refuses it, and the strand never starts, undetected by reed.
+  That contradicts the never-fail-a-launch rule the write-failure degrade follows.
+  The script-block form costs a few dozen typed characters against a full line carrying several paths and flags, so it keeps the point.
+- **pwsh `Invoke-Expression (Get-Content -Raw …)`.**
+  Equally policy-proof, but dot-sourcing a script block mirrors the POSIX `.` and states the current-scope intent directly.
 - **Reformat the script one statement per line.**
   reed can only split its own prelude — the launch command is opaque and may already chain statements — so the result would be half-reformatted and no longer byte-equal to what was typed before.
 - **Per-launch filenames (`<guid>-<n>.sh`) to avoid overwrite races.**
-  The earlier pane is killed by the relaunch's reconcile, and unique names need their own cleanup; atomic rename is enough.
+  No overwrite race exists: every relaunch path reaches `launchStrandLocked` only for a strand with no live pane (Resume and `--if-absent` select strands whose pane is not alive, and `UpdateStrand` launches a strand that has never held a pane), so no earlier pane can source a rewritten script.
+  Unique names would also need their own cleanup; atomic rename is enough.
 - **Per-strand directory `.lyx/reed/strands/<guid>/launch.sh`.**
   An extra directory level for a single file; the GUID-named file is equally identifiable.
 - **Relative script path.**
@@ -62,7 +69,8 @@ _No rounds yet._
 - Q4 Invocation? — **resolved, auto-pick:** dot-source the absolute quoted path; `Source` and extension accessor added to `internal/shell`.
 - Q5 Script content? — **resolved, auto-pick:** composed line verbatim plus newline.
 - Q6 Write failure? — **resolved, auto-pick:** warn and send the full line.
-- Q7 Cleanup? — **resolved, auto-pick:** delete on remove, keep across `Down`.
-- Q8 Windows ExecutionPolicy? — **resolved, auto-pick:** rely on pwsh 7's default `RemoteSigned`; listed under open risks.
+- Q7 Cleanup? — **resolved, review round 1:** a script exists only while its GUID is in the persisted strand table; removal, replace, `Down` and a failed add all delete.
+- Q8 Windows ExecutionPolicy? — **resolved, review round 1:** pwsh dot-sources a script block built from the file's text, which no ExecutionPolicy governs.
 - Q9 Opt-out config key? — **resolved, auto-pick:** none (YAGNI).
-- Q10 Scrollback readers of the launch line? — **open:** not checked at Discussion depth; flagged as an open risk for the Plan producer.
+- Q10 Scrollback readers of the launch line? — **resolved, review round 1:** shuttle's production pane readers (`requireReadyAgentPane`, `sendVerified`) classify the provider TUI's ready marker and the sent text, never the typed launch line, so only tests could read it;
+  an Acceptance criterion now requires any such test to be retargeted.
