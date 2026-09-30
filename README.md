@@ -15,7 +15,7 @@ One generated VS Code workspace shows the board beside the prime
 
 # Layer B
 
-## **#019:** One readable driving surface per run: ly-drive pane or status strand, never both [B]
+## **#019:** One driving surface per run: ly-drive pane or status strand, never both [B]
 [status-strand-by-driver](design-status-strand-by-driver.md)
 Depends on: #010
 
