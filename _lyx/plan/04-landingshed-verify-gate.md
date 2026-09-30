@@ -12,7 +12,7 @@
 - `internal/landingshed/verifygate_integration_test.go`
 
 **Uses:**
-- `plan:internal/verifyrun#Run`
+- `internal/verifyrun#Run`
 
 **Intent:**
 Build the gate both landing producers run after their parent merge-in, as a self-contained unit in a new file `internal/landingshed/verifygate.go`; cards 5 and 6 wire it into `Publish` and `Finalize`.

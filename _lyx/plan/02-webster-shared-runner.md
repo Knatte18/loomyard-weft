@@ -4,7 +4,7 @@
 - `internal/websterengine#runVerifyCommand`
 
 **Uses:**
-- `plan:internal/verifyrun#Run`
+- `internal/verifyrun#Run`
 
 **Intent:**
 Replace `runVerifyCommand`'s own shell selection and `exec.Command` call with a call to `verifyrun.Run(context.Background(), verifyCmd, worktree, io.Discard)`, so webster and landing share one runner instead of two drifting copies.

@@ -1,7 +1,7 @@
 # Card 1 — verifyrun: the shared shell-command runner
 
 **Create:**
-- `plan:internal/verifyrun#Run` -> `func Run(ctx context.Context, command, dir string, out io.Writer) (int, error)`
+- `internal/verifyrun#Run`
 - `internal/verifyrun/run_integration_test.go`
 
 **Prosa:**
