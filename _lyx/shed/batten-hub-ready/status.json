@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "integration verify FAILED: -tags integration failures in internal/loomcli (TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver), internal/battencli (TestBattenIntegration_Teardown_FailedRemoteDeletionHaltsResumably, TestBattenIntegration_CreateRow_IncompletePairRemedyWorksVerbatimOnAPrefixedHub)",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": ""
+    "wait": "integration verify FAILED: -tags integration failures in internal/loomcli (TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver), internal/battencli (TestBattenIntegration_Teardown_FailedRemoteDeletionHaltsResumably, TestBattenIntegration_CreateRow_IncompletePairRemedyWorksVerbatimOnAPrefixedHub)"
   },
   "history": [
     {
@@ -96,6 +96,12 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-09-30T13:50:37Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-09-30T14:06:20Z"
     }
   ],
   "product": {
