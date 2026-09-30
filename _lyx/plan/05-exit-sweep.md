@@ -16,7 +16,7 @@
 **Uses:**
 - `plan:internal/logger#SinkArmState`
 - `plan:internal/logger#CurrentSinkArmState`
-- `plan:internal/logger#DefaultRetentionBounds`
+- `internal/logger#DefaultRetentionBounds`
 - `plan:internal/loggerconfig#Load`
 - `plan:internal/loggerconfig#ConfigPath`
 - `internal/logger#Sweep`

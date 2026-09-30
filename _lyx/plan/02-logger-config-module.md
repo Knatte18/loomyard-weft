@@ -15,8 +15,8 @@
 - `plan:internal/loggerconfig#ConfigPath` -> `func ConfigPath(anchorPath string) string`
 
 **Uses:**
-- `plan:internal/logger#RetentionBounds`
-- `plan:internal/logger#DefaultRetentionBounds`
+- `internal/logger#RetentionBounds`
+- `internal/logger#DefaultRetentionBounds`
 - `internal/configengine#LoadOrTemplate`
 - `internal/configengine#ConfigFile`
 - `internal/batcher#Active`

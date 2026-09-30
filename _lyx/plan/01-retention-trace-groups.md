@@ -7,8 +7,8 @@
 - `internal/logger/retention_test.go`
 
 **Create:**
-- `plan:internal/logger#RetentionBounds` -> `type RetentionBounds struct`
-- `plan:internal/logger#DefaultRetentionBounds` -> `func DefaultRetentionBounds() RetentionBounds`
+- `internal/logger#RetentionBounds`
+- `internal/logger#DefaultRetentionBounds`
 
 **Intent:**
 Rewrite the retention sweep so the count bound counts traces rather than files, and both bounds rank by last activity rather than filename timestamp (decision record D1, D2).
