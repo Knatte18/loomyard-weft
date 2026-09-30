@@ -225,9 +225,7 @@
     "id": 21,
     "slug": "verify-triage",
     "title": "Webster verify: rerun, compare with parent, halt only on a real regression",
-    "depends_on": [
-      "fabric-readd-weft-push"
-    ],
+    "depends_on": [],
     "isolated": false,
     "deferred": false,
     "brief": "Flaky or pre-existing test failures no longer halt a run; report names the failing tests",

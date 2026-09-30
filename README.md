@@ -14,7 +14,18 @@ Depends on: #013
 
 Respawn starts over instead of reusing the plan; prompt does not say Agent is refused
 
+## **#021:** Webster verify: rerun, compare with parent, halt only on a real regression [A]
+[verify-triage](design-verify-triage.md)
+
+Flaky or pre-existing test failures no longer halt a run; report names the failing tests
+
 # Layer B
+
+## **#009:** batten opens VS Code on the new pair with reed attached [B]
+[batten-open-ide](design-batten-open-ide.md)
+Depends on: #021, #011
+
+Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
 
 ## **#015:** Trace logs: configurable retention, fewer files from routine commands [B]
 [trace-log-retention](design-trace-log-retention.md)
@@ -29,6 +40,12 @@ Depends on: #010
 llm-driven run shows only ly-drive; go-driven run shows only the status strand
 
 # Layer C
+
+## **#012:** Publish: verify the tree after merging the parent [C]
+[publish-verify-after-merge](design-publish-verify-after-merge.md)
+Depends on: #009
+
+A conflict-resolved parent merge was pushed with non-compiling tests
 
 ## **#016:** lyx quarry: per-glyph resolve answers, grep-safe glyphs output [C]
 [quarry-cli-answers](design-quarry-cli-answers.md)
@@ -50,33 +67,13 @@ Depends on: #016
 
 Burler: warn when the explore stencil lacks the focus_directive marker
 
-## **#021:** Webster verify: rerun, compare with parent, halt only on a real regression [D]
-[verify-triage](design-verify-triage.md)
-Depends on: #020
-
-Flaky or pre-existing test failures no longer halt a run; report names the failing tests
-
 # Layer E
-
-## **#009:** batten opens VS Code on the new pair with reed attached [E]
-[batten-open-ide](design-batten-open-ide.md)
-Depends on: #021, #011
-
-Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
 
 ## **#018:** reed: send a short launch-script line instead of the full command [E]
 [reed-launch-script](design-reed-launch-script.md)
 Depends on: #017
 
 Hide the long env+claude launch line behind a generated launch script
-
-# Layer F
-
-## **#012:** Publish: verify the tree after merging the parent [F]
-[publish-verify-after-merge](design-publish-verify-after-merge.md)
-Depends on: #009
-
-A conflict-resolved parent merge was pushed with non-compiling tests
 
 # Done
 
