@@ -6,10 +6,12 @@
 - `internal/loomcli#commitStatusDeps`
 - `internal/loomcli#loomCommitStatusDeps`
 - `internal/loomcli/wiring_commitstatus_test.go`
+- `internal/loomcli/wiring_commitstatus_integration_test.go`
 
 **Uses:**
 - `plan:internal/loomengine#LoomDurableDir`
 - `plan:internal/loomengine#LoomDurableDirRel`
+- `internal/loomengine#LoomFrictionDir`
 - `plan:internal/shedrun#DriveReportsDir`
 - `plan:internal/shedrun#DriveReportsRel`
 
@@ -25,5 +27,10 @@ Rename `reviewsHoldFile` to `holdsFile`, since it now answers for three director
 Update `statusCommitPathspec`'s, `commitStatusDeps.Commit`'s and `loomCommitStatusDeps`'s doc comments, which describe the pathspec as the status file plus the review round record.
 
 Tests in `wiring_commitstatus_test.go`, extending the existing `statusCommitPathspec` table over a temp-dir location: the loom durable directory and the drive-reports directory each appear exactly when they hold a file (at any depth, including only an archive sibling under `_lyx/loom/`), and are omitted when absent, empty, or holding only empty subdirectories.
+
+Tests in `wiring_commitstatus_integration_test.go`, over its existing `realSeamFixture` (a real hubforge pair and the real `loomCommitStatusDeps`), beside the reviews-directory cases they mirror:
+- a friction note under `loomengine.LoomFrictionDir` and a drive report under `shedrun.DriveReportsDir`, written before a transition, land in the weft HEAD commit and leave `_lyx/loom` and the drive-reports directory clean;
+- a committed friction directory renamed to a timestamped `friction-<ts>` sibling (the reflection archive) is recorded by the next transition as both an addition of the sibling and a deletion of the old path, and leaves `_lyx/loom` clean.
+These are the proof that the records pathspec carries both kinds of record onto the weft tip, which card 16's end-to-end test stubs out.
 
 **ImpactSummary:** The per-transition commit's pathspec grows by two optional entries; the commit, push and mid-merge dispositions are unchanged.

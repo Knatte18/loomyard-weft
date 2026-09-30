@@ -5,6 +5,7 @@
 - `internal/fabricengine#PairBranchResult`
 - `internal/fabricengine#Topology.Cleanup`
 - `internal/fabricengine#CleanupBranchEntry`
+- `internal/fabricengine#CleanupResult`
 
 **Create:**
 - `internal/fabricengine/pairbranch_archive_integration_test.go`
@@ -23,10 +24,12 @@ The other two paths that delete an existing pair's weft branch archive its tip f
   `PairBranchResult` gains `ArchiveTag` and `ArchiveSkippedReason` with the same JSON keys as `RemoveResult`.
 - `Cleanup`'s apply loop calls `archiveWeftTip` for each orphan weft branch before `deleteWeftBranch`, with the slug recovered from the branch (`WeftWarpSlug`, then the configured branch prefix stripped).
   An archive error fills the entry's `Error` and leaves that branch, local and remote, in place without aborting the sweep, matching how the loop treats other per-branch failures; `CleanupBranchEntry` gains `ArchiveTag`.
+  A weft repo with no origin makes the helper return a skip reason for every branch, so `CleanupResult` gains a once-per-verb `ArchiveSkippedReason` (`json:"archive_skipped_reason,omitempty"`, the key `RemoveResult` uses), set from the first skip, the same way `RemoteSkippedReason` is reported once per verb; the branch is then deleted as today.
+  The archive runs whatever `remote` says, as in `Remove`, and Cleanup's remote deletion stays gated on the local deletion having happened, so it is held behind the archive too.
 - `Prune` removes weft worktrees but deletes no weft branch (it leaves orphaned branches for `Cleanup`), so it needs no archive step; confirm this while implementing and state it in `Prune`'s doc comment beside the ownership rules.
 
 Update the doc comments of `RemovePairBranch`, `Cleanup` and `CleanupBranchEntry` for the archive step.
 
-Tests in `pairbranch_archive_integration_test.go`, over a hubforge hub with a weft origin: `RemovePairBranch` pushes the archive tag before deleting the branch locally and on origin, including when only the origin copy is left; an unreachable origin makes it return an error with the branch still present; `Cleanup` with apply archives each orphan weft branch it deletes, and an archive failure leaves that branch in place with the entry's `Error` set.
+Tests in `pairbranch_archive_integration_test.go`, over a hubforge hub with a weft origin: `RemovePairBranch` pushes the archive tag before deleting the branch locally and on origin, including when only the origin copy is left; an unreachable origin makes it return an error with the branch still present; `Cleanup` with apply archives each orphan weft branch it deletes, and an archive failure leaves that branch in place with the entry's `Error` set; with a weft repo that has no origin, `Cleanup` with apply deletes the orphan branch and sets `ArchiveSkippedReason` on the result.
 
-**ImpactSummary:** RemovePairBranch and Cleanup gain a network step before each weft-branch deletion and one result field each; Prune is unchanged.
+**ImpactSummary:** RemovePairBranch and Cleanup gain a network step before each weft-branch deletion, RemovePairBranch two result fields and Cleanup an entry field plus a once-per-verb skip reason; Prune is unchanged.

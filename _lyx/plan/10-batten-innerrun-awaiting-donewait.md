@@ -12,6 +12,7 @@
 - `internal/battenshed/innerrun_awaiting_test.go`
 - `internal/shedrecipe/entries_batten_test.go`
 - `internal/battencli/lifecycle_integration_test.go`
+- `internal/battencli#maxStatusHistoryEntries`
 - `contracts/recipes/batten-recipe.yaml`
 
 **Prosa:**
@@ -27,6 +28,7 @@
 
 **Intent:**
 `Run-Shed` survives the PR hand-off and the driver's final report: it watches an `awaiting` child, resumes it once per approval, and finishes a `done` child only after its driver has ended or a grace window has elapsed.
+The resume rests on the decision record's assumption that `lyx loom start --no-attach` on an `awaiting` run launches a driver, checked against `internal/loomcli/start.go`: the bootstrap's driver step spawns the seed's recorded driver unless one is already alive, with no gate on the run's state, and that driver's first step resumes the run.
 
 `NewInnerRun` takes one more parameter, `driverExitGrace time.Duration`, stored on `innerRunProducer`, and resolves a nil `deps.Now` to `time.Now`.
 `innerRunEntry` reads the optional int config key `driver_exit_grace_s` (default 900 when absent or zero, negative rejected naming the key, added to `configRejectUnknown`'s accepted keys) and passes it; declare the default as a constant beside `defaultInnerRunPollIntervalS` and update both doc comments.
@@ -39,12 +41,13 @@ New arms in `innerRunProducer.Call` (the running arm, the halted arms and the sp
   A Spawn error is today's hard error and writes no marker, so resuming the batten run retries the spawn.
   On success write the marker holding the identity and record the spawn confirmation (`recordSpawnConfirmed`), then sleep and return an exempt Stuck whose reason says the approved child was resumed.
 - **`awaiting`, approval already acted on** (the marker matches): do not spawn; sleep and return an exempt Stuck whose reason says the approval at its `approved_at` was already acted on, and names the recovery: re-run `lyx loom approve` in the task worktree, which records a new identity and triggers another resume.
-- **`done`**: on first sight write the marker `<scratchDir>/<name>-done-seen` holding `deps.Now()` in RFC 3339 (never overwritten while present).
+- **`done`**: on first sight write the marker `<scratchDir>/<name>-done-seen` holding `deps.Now()` in RFC 3339 (never overwritten while present, so the grace window counts from first sight across a resumed batten run).
+  The marker's life ends with the wait: the arm removes it just before returning Done, and every Call that finds the child in any other state removes a leftover one before its own arm runs, so a marker from an earlier run of the same slug in prime's scratch directory, which nothing else clears, can never shorten a later run's wait.
   If `deps.DriverAlive` reports the strand gone, return Done.
   If it reports it live (a liveness error is logged at Warn and treated as live, so the wait stays bounded by the grace window) and less than `driverExitGrace` has passed since the marker's time, sleep and return an exempt Stuck with a reason naming the wait for the driver to finish its stop report.
   Once the grace has elapsed with the strand still live, log a warning naming the slug and the elapsed grace, and return Done: `Worktree-Teardown`'s session shutdown and `Remove`'s clean-worktree check take it from there.
 
-An `ReadApproval` error, and a marker read or write failure other than "absent", are hard errors (mechanism failure), like a `ReadStatus` error.
+A `ReadApproval` error, and a marker read, write or removal failure other than "absent", are hard errors (mechanism failure), like a `ReadStatus` error.
 Marker names are built by unexported helpers beside `SpawnConfirmedFile`; every Stuck reason goes through `reportStuck`.
 `awaitingChildRemedy` is deleted as a hard-error text; the awaiting arm's hand-off wording is a new constant.
 The running arm never sets `BudgetExempt`, so a running child keeps its 12-hour budget.
@@ -57,14 +60,19 @@ Tests, rewriting `innerrun_awaiting_test.go` and extending `innerrun_test.go`:
 - awaiting with a new approval: spawns once, writes the marker, returns exempt Stuck; a second Call with the same approval and the child still awaiting does not spawn and its reason names re-running `lyx loom approve`; a Call after a new approval identity spawns again;
 - awaiting with an approval whose Spawn errors: hard error, no marker, and the next Call spawns;
 - `blocked`, `paused`, `failed` still hard errors carrying `haltedChildRemedy`;
-- done with a live strand returns exempt Stuck until `DriverAlive` reports gone, then Done; done with the strand live past the grace (fake clock) returns Done;
-- a done child's wait reaches Done through a full grace wait when driven through `shedengine` with the row's counted budget one short of exhausted (seed the history with N-1 counted Run-Shed Stucks and a `MaxBounces` of N).
+- done with a live strand returns exempt Stuck until `DriverAlive` reports gone, then Done, leaving no done-seen marker; done with the strand live past the grace (fake clock) returns Done and logs the warning naming the slug, asserted by redirecting `logger.SetOutput` to a buffer for the test (restored on cleanup), as `internal/loomshed/gatefindings_test.go` does;
+- a done-seen marker left in the scratch directory while the child is `running` is removed by that Call, and a later done Call waits a full grace from its own first sight;
+- a done child's wait reaches Done through a full grace wait when driven through `shedengine` with the row's counted budget already spent (seed the history with N counted Run-Shed Stucks and a `MaxBounces` of N), so the test proves the wait is neither counted nor blocked by the running budget;
+- the same through `shedengine` for an awaiting child: with N counted Run-Shed Stucks seeded, an awaiting Call still routes back to Run-Shed rather than blocking.
 `entries_batten_test.go`: `driver_exit_grace_s` default, explicit value, and negative rejection.
 
 Recipe and docs:
 - `batten-recipe.yaml`: add `driver_exit_grace_s: 900` to Run-Shed's config and rewrite the header comment: the 12-hour budget counts the running watch only; the awaiting wait and the driver-exit wait are budget-exempt bounces, the latter bounded by the grace window; row names and `max_bounces: 1440` unchanged.
   Mirror the new key in `lifecycle_integration_test.go`'s `shortPollBattenRecipe` copy.
 - `internal/battenshed/doc.go`: the paragraph saying teardown follows the child's terminal state and not the driver's exit now says the done arm waits for the driver strand up to the grace window, and that a driver still alive past it is ended by teardown.
+  In the paragraph before it, a stopped driver leaves its report under the task worktree's `_lyx/shed/<slug>/drive-reports/` (not `.lyx/shed/<slug>/`), and "the InnerRun row watches the child's persisted status file, never the driver's own liveness" becomes true of a running child only, since the done arm now reads the driver strand's liveness.
 - `docs/overview.md`'s batten section: replace the awaiting sentence (approve, resume the child with `lyx loom start`, resume batten) with the new flow: batten watches the awaiting child, the operator runs `lyx loom approve` in the task worktree, batten resumes the child itself once per approval, and waits for the driver before teardown.
+  In the same section, "batten cannot restart the child's driver" is scoped to the halted children it describes (batten restarts an approved awaiting one), and the sentence that prime's pair carries an uncommitted status change "up to the full 12 hours" says the running watch is budgeted at 12 hours while an awaiting wait is not bounded.
+- `maxStatusHistoryEntries`'s doc comment: the self-bounce appends one entry per poll while the child runs, awaits approval, or waits for its driver, so the history grows past the 1440-bounce running budget and the cap matters more, not less.
 
 **ImpactSummary:** Changes Run-Shed's awaiting and done dispositions and NewInnerRun's signature (one registry caller); running and halted-child behavior is unchanged.

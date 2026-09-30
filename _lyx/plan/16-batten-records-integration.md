@@ -20,5 +20,6 @@ One end-to-end check that the whole hand-off keeps the run's records: a batten r
 The test writes the approval record through `landingshed.WriteApproval` at the task worktree's `loomengine.LoomApprovalPath` between steps, drives the run to done, and asserts: Spawn ran once for the approval and never again for the same record; the run ends `done` past `Worktree-Teardown`; the task pair is gone; and `git show archive/<slug>/<tip>:<path>` in the weft origin returns both files.
 
 No real provider or driver is spawned, per batten's cost declaration.
+The `Spawn` stub's own commit is the one link this test does not exercise: `battencli` cannot reach loomcli's unexported commit seam, so the proof that the real records pathspec commits friction notes, their archive rename and the drive report onto the weft tip lives in card 5's and card 7's integration tests, and this test proves the rest of the chain, from a committed weft tip to an archive tag on the weft origin through batten's own teardown.
 
 This card only adds a test: the behavior it exercises lands in the earlier cards.

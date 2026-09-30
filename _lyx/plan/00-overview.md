@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -15,7 +15,7 @@ After this plan batten watches an awaiting child without spending budget, resume
 1 — shedengine-budget-exempt — a Stuck verdict can be marked budget-exempt and is then not counted
 2 — shedrun-drive-reports-dir — shedrun declares the durable drive-reports directory
 3 — loomengine-durable-friction — friction notes and archives move under _lyx/loom, the lock stays in .lyx
-4 — loomengine-driver-strand-name — the driver strand name moves to loomengine so batten can look it up
+4 — driver-liveness-prereqs — the driver strand name moves to loomengine and reed's no-session error gains a sentinel, so batten can probe the driver
 5 — loom-status-commit-records — the per-transition status commit stages the loom durable dir and drive reports
 6 — loom-driver-report-path — drive reports are written into the durable drive-reports directory
 7 — loom-commit-records-verb — new lyx loom commit-records verb commits and pushes the run records
@@ -57,13 +57,13 @@ After this plan batten watches an awaiting child without spending budget, resume
 
 ### Decision: liveness-error-is-live
 
-- **Decision:** on a `done` child, a `DriverAlive` error is logged and treated as a live strand.
-- **Rationale:** the wait is already bounded by `driver_exit_grace_s`, so a flaky liveness read costs at most the grace window, where a hard error would fail a finished batten run at its last row.
-- **Applies to:** card 10
+- **Decision:** on a `done` child, a `DriverAlive` error is logged and treated as a live strand; an absent reed session is not an error but a "not live" answer, which `DriverAlive` derives from `reedengine.ErrNoSession`.
+- **Rationale:** the wait is already bounded by `driver_exit_grace_s`, so a flaky liveness read costs at most the grace window, where a hard error would fail a finished batten run at its last row; an absent session is the common "driver gone" case, and reading it as an error would spend the whole grace window on every such child.
+- **Applies to:** cards 4, 9, 10
 
 ## verify:
 
 go build ./...
-go test ./internal/shedengine/... ./internal/shedrun/... ./internal/loomengine/... ./internal/loomcli/... ./internal/webstercli/... ./internal/battenshed/... ./internal/battencli/... ./internal/shedrecipe/... ./internal/shedbuild/... ./internal/battenrecipe/... ./internal/fabricengine/... ./cmd/lyx/...
-go test -tags integration ./internal/shedengine/... ./internal/shedrun/... ./internal/loomengine/... ./internal/loomcli/... ./internal/webstercli/... ./internal/battenshed/... ./internal/battencli/... ./internal/shedrecipe/... ./internal/shedbuild/... ./internal/battenrecipe/... ./internal/fabricengine/... ./cmd/lyx/...
+go test ./internal/shedengine/... ./internal/shedrun/... ./internal/loomengine/... ./internal/loomcli/... ./internal/webstercli/... ./internal/reedengine/... ./internal/battenshed/... ./internal/battencli/... ./internal/shedrecipe/... ./internal/shedbuild/... ./internal/battenrecipe/... ./internal/fabricengine/... ./cmd/lyx/...
+go test -tags integration ./internal/shedengine/... ./internal/shedrun/... ./internal/loomengine/... ./internal/loomcli/... ./internal/webstercli/... ./internal/reedengine/... ./internal/battenshed/... ./internal/battencli/... ./internal/shedrecipe/... ./internal/shedbuild/... ./internal/battenrecipe/... ./internal/fabricengine/... ./cmd/lyx/...
 go vet -tags smoke ./internal/loomcli/... ./internal/battencli/... ./cmd/lyx/...
