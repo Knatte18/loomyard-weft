@@ -1,7 +1,7 @@
 # Card 1 — shedrun-runs-root-rel
 
 **Create:**
-- `plan:internal/shedrun#RunsRootRel` -> `func RunsRootRel() string`
+- `internal/shedrun#RunsRootRel`
 
 **Edit:**
 - `internal/shedrun/paths.go`

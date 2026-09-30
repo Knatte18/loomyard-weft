@@ -7,7 +7,7 @@
 **Uses:**
 - `internal/fabricengine#Topology.Add`
 - `internal/battenshed#PrimeLock`
-- `plan:internal/shedrun#RunsRootRel`
+- `internal/shedrun#RunsRootRel`
 
 **Intent:**
 Bring the two repo-level docs in line with cards 2 and 3, with semantic line breaks throughout.

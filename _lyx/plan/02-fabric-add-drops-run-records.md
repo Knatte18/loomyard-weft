@@ -9,7 +9,7 @@
 - `internal/fabricengine/add_runrecords_integration_test.go`
 
 **Uses:**
-- `plan:internal/shedrun#RunsRootRel`
+- `internal/shedrun#RunsRootRel`
 - `internal/fabricengine#containedWorktreeAdd`
 - `internal/fabricengine#PathTracked`
 - `internal/fabricengine#CommitWeftPaths`
