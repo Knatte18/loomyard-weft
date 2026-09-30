@@ -96,3 +96,8 @@ Burler: warn when the explore stencil lacks the focus_directive marker
 [refscan-false-positive](design-refscan-false-positive.md)
 
 RefScanner flags quoted grep patterns; a done batch cannot be recorded
+
+## **#008:** Burler: round-N focus directive conflicts with the read-prior-rounds-last rule
+[burler-focus-prior-round](design-burler-focus-prior-round.md)
+
+Focus directive needs prior-round files the round prompt says to read only after the review

@@ -78,5 +78,15 @@
     "deferred": false,
     "brief": "RefScanner flags quoted grep patterns; a done batch cannot be recorded",
     "body": "`fabricengine.RefScanner` (`internal/fabricengine/refscanner.go`) flags any Bash command whose text matches `lyx(\\.exe)?\\s+(fabric|weft|warp)\\b`, including a quoted search pattern.\nRun `operator-surface` blocked at Webster batch 28 (docs card, commit `d369f8915`, report OK) because the fork ran `grep -n \"fabric remove\\|lyx fabric.*remove\" docs/overview.md` — a content search in the warp, not a fabric operation.\nThe flagged transcript never enters `seenForkTranscripts`, so every retry of `record-batch 28` re-audits it and fails again: the run cannot resume without a code change.\nFix direction: match `lyx fabric|weft|warp` only in command position (start of the command or after `;`, `\u0026\u0026`, `||`, `|`, `$(`), not inside quoted arguments; keep the weft-path match.\nDocs cards will keep hitting this, since docs describe fabric verbs.\n\nFixed for the spelling in `777d93af7` (hub prime, deployed): command position only, quoted spans blanked.\nStill open: the path half (`\\S*-weft\\b`) matches any word ending in `-weft`, quoted or not, so a docs grep for `main-weft` would trip the same dead end."
+  },
+  {
+    "id": 8,
+    "slug": "burler-focus-prior-round",
+    "title": "Burler: round-N focus directive conflicts with the read-prior-rounds-last rule",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Focus directive needs prior-round files the round prompt says to read only after the review",
+    "body": "Friction from run `operator-surface`, Burler Webster-Review round 2 (stencils from `d619100af`).\nThe round-2 focus directive asked the reviewer to check the round-1 F4 site list and the round-1 fix commits, which requires reading `round-1-review.md` and `round-1-fixer-report.md`.\nThe round prompt's instruction 2 says prior-round files are read only after the review is saved, so the focus file handed over in instruction 1 cannot be followed without breaking it; the reviewer read them early and said so.\nFix direction: the focus directive restates the sites it depends on, or the prior-round rule exempts what a focus directive names."
   }
 ]

@@ -1,0 +1,4 @@
+Friction from run `operator-surface`, Burler Webster-Review round 2 (stencils from `d619100af`).
+The round-2 focus directive asked the reviewer to check the round-1 F4 site list and the round-1 fix commits, which requires reading `round-1-review.md` and `round-1-fixer-report.md`.
+The round prompt's instruction 2 says prior-round files are read only after the review is saved, so the focus file handed over in instruction 1 cannot be followed without breaking it; the reviewer read them early and said so.
+Fix direction: the focus directive restates the sites it depends on, or the prior-round rule exempts what a focus directive names.
