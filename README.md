@@ -23,7 +23,7 @@ Batten lifecycle step: open a VS Code window whose terminal is attached to the c
 
 # Layer C
 
-## **#019:** One driving surface per run: ly-drive pane or status strand, never both [C]
+## **#019:** One readable driving surface per run: ly-drive pane or status strand, never both [C]
 [status-strand-by-driver](design-status-strand-by-driver.md)
 Depends on: #009
 
