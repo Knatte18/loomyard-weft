@@ -1,8 +1,8 @@
 # Card 3 — approval-acted-layout
 
 **Create:**
-- `plan:internal/battenshed#approvalActedContent` -> `func approvalActedContent(identity string, historyLen int) string`
-- `plan:internal/battenshed#parseApprovalActed` -> `func parseApprovalActed(raw string) (identity string, historyLen int, hasLen bool)`
+- `internal/battenshed#approvalActedContent`
+- `internal/battenshed#parseApprovalActed`
 - `internal/battenshed/approvalacted_test.go`
 
 **Uses:**

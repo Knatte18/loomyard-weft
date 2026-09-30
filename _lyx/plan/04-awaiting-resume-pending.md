@@ -8,8 +8,8 @@
 - `internal/battenshed/innerrun_awaiting_test.go`
 
 **Uses:**
-- `plan:internal/battenshed#approvalActedContent`
-- `plan:internal/battenshed#parseApprovalActed`
+- `internal/battenshed#approvalActedContent`
+- `internal/battenshed#parseApprovalActed`
 - `internal/battenshed#approvalIdentity`
 - `internal/battenshed#newInnerRunDeps`
 - `internal/battenshed#newRunShed`
