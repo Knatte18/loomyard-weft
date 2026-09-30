@@ -41,10 +41,10 @@ Production changes in `remove.go`:
 
 Test changes, all in `internal/fabricengine` and behind `//go:build integration`:
 - `remove_archive_integration_test.go`: delete `TestRemove_ResumedRemoveReusesArchiveTag`, which reached `archiveWeftTip`'s reuse path through the refused-after-archive state the reorder removes, and replace it with two tests.
-  `TestRemove_ReusesSameTipArchiveTag` keeps that reuse path covered: it builds a pair (`Add` without `SkipPush`), commits a record with `commitLyxFileInWeft`, then plants the state an archive leaves when a later teardown step failed by creating `archive/<slug>/<tip[:12]>` at the tip in the weft repo (`mustWeftRepoRoot`) and pushing it to origin with `gitkit.MustRun`.
+  `TestRemove_ReusesSameTipArchiveTag` keeps that reuse path covered: it builds a pair (`Add` without `SkipPush`), commits a record with `commitLyxFileInWeft`, then plants the state an archive leaves when a later teardown step failed by creating `archive/<slug>/<tip[:12]>` as a lightweight tag at the tip in the weft repo (`git tag <name> <tip>`, as `archiveWeftTip` itself does, since its reuse check compares the ref's objectname to the tip and an annotated tag fails it) (`mustWeftRepoRoot`) and pushing it to origin with `gitkit.MustRun`.
   A no-force `Remove` then succeeds with `ArchiveTag` naming the planted tag, `tagTargetAt(fixture.WeftBare, tag)` at the tip, and `archiveTagsAt(fixture.WeftBare)` listing exactly that one tag.
   `TestRemove_WeftDirtyRefusalPushesNoTagAndResumeArchivesOnce` covers the refuse-then-resume flow.
-  It dirties the weft worktree with an untracked file `git status` reports (the shape `TestRemove_UntrackedDriveReportRefusesWithSiblingDirty` uses), asserts a no-force `Remove` fails with `errors.Is(err, fabricengine.ErrPairSiblingDirty)` and that `archiveTagsAt` is empty on both `fixture.WeftBare` and the local weft repo.
+  It dirties the weft worktree with an untracked file `git status` reports (the shape `TestRemove_UntrackedDriveReportRefusesWithSiblingDirty` uses), asserts a no-force `Remove` fails with `errors.Is(err, fabricengine.ErrPairSiblingDirty)` and an error not containing `lyx fabric reconcile`, that `archiveTagsAt` is empty on both `fixture.WeftBare` and the local weft repo, that `res.Mutated().Len()` is 0, and that the portal link, launcher dir, both worktrees, the warp branch and the weft branch (`branchExistsAt`) all exist.
   It then commits that file in the weft worktree (`git add -f`, `git commit`), captures the new tip, re-runs a no-force `Remove`, and asserts success with `archiveTagsAt(fixture.WeftBare)` equal to exactly `archive/<slug>/<tip[:12]>`, pointing at the post-commit tip.
   Reword the file header's "before any mutation" and "resumed reuse" phrasing to match the new order and the two new tests.
 - `remove_refusal_remedy_integration_test.go`: rename `TestRemove_RefusalNamesStrandedPortalTeardown` to `TestRemove_DirtyRefusalLeavesPairIntact` and invert it.
@@ -65,6 +65,6 @@ Test changes, all in `internal/fabricengine` and behind `//go:build integration`
 
 `CONSTRAINTS.md`, `docs/overview.md`, `archive.go`, `cleanup.go` and `battencli`'s `teardownRefusal` stay unchanged.
 
-**ImpactSummary:** `Topology.Remove`'s step order and refusal errors (reconcile suffix gone); `battencli` sees the same sentinels and base texts; every change beyond `remove.go` is a comment or a test in `internal/fabricengine`.
+**ImpactSummary:** 2 production callers of `Topology.Remove` (`fabriccli`'s `fabric remove`, `battencli`'s teardown) see the same sentinels and base texts minus the reconcile suffix, and a refused call now leaves the pair and weft origin untouched; every change beyond `remove.go` is a comment or a test in `internal/fabricengine`.
 
 **Commit:** 1: fabric: refuse a dirty Remove before archiving or tearing anything down

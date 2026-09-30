@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -26,6 +26,6 @@ It is one card because the reorder breaks every old-order test at once, and the 
 ```bash
 go build ./...
 go test ./...
-go test -tags integration ./internal/fabricengine/... ./internal/battencli/... ./internal/fabriccli/...
+go test -tags integration ./...
 ! grep -rn nameStrandedPortalTeardown --include='*.go' .
 ```
