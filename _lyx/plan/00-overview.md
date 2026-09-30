@@ -46,6 +46,18 @@ The refusal table, package docs, ly-drive skill and the new CONSTRAINTS.md invar
 29 — package-docs — webster, shed and loom package docs describe the dispositions and link the table
 30 — ly-drive-skill — ly-drive looks up ways forward in the table and names goto
 31 — constraints-invariant — Refusal Way-Forward Invariant and goto in the Shed Verb-Set list
+32 — loom-preflight-goto-reentry — Loom-Preflight passes a deliberate goto re-entry instead of naming a forward goto
+33 — goto-admissible-targets — goto refuses a running run and every target past the current row
+34 — goto-way-forward-address — goto way-forward texts name the run-id and the recipe's own missing-status verb
+35 — batten-goto-teardown — batten goto reaches Worktree-Teardown only once the child run is done
+36 — fabric-reference-mutation-class — a fabric reference whose command can change files is correctness
+37 — rebaseline-card-hashes — rebaseline compares each begun card's content, not only its id
+38 — run-exit-pending-findings — run-exit correctness findings stay pending and block run entry until accepted
+39 — accept-audit-verb — `lyx webster accept-audit` accepts the pending run-exit findings
+40 — loom-approve-way-forward — approve's refusals name git push/pull and a backward goto to Publish
+41 — master-stencil-done-checks — the Master stencil stops listing later-card drift as a batch_failed done-check
+42 — fabric-words-outside-fabric — reword the fabric side names this branch added in tests
+43 — refusal-spec-rework — the refusal table, overview and ly-drive skill follow cards 32–42
 
 ## Shared Decisions
 
