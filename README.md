@@ -148,3 +148,8 @@ Parked: workers on 5m cache TTL, waiting sessions on 1h — operator deciding
 [burler-focus-prior-round](design-burler-focus-prior-round.md)
 
 Focus directive needs prior-round files the round prompt says to read only after the review
+
+## **#009:** fabric add after remove: leftover remote weft branch rejects the push (flaky test)
+[fabric-readd-weft-push](design-fabric-readd-weft-push.md)
+
+Re-adding a removed slug races the old remote weft branch; integration test flakes

@@ -1,0 +1,4 @@
+`TestRemove_AddSucceedsAfterWarpBranchDeleted` (`internal/fabricengine/remove_warpbranch_integration_test.go`) is flaky: run `ide-hub-workspace` failed its plan verify with "push of wb-readd-weft rejected non-fast-forward"; the same test passes on reruns on main and in the task worktree.
+The test adds `wb-readd`, removes it without `--remote` (the pushed weft branch stays on the fixture's origin), then adds it again: the re-created weft branch pushes only if it happens to match or fast-forward the old remote one, which depends on commit timestamps.
+This is a product gap too: `lyx fabric add <slug>` after a plain `fabric remove <slug>` can fail on the leftover remote weft branch.
+Fix direction: Add adopts or resets an orphaned remote weft branch of the same name (or Remove records it and Add refuses with a remedy), and the test pins that deterministically.
