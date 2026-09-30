@@ -1,7 +1,7 @@
 {
   "runGuid": "d034e779e46981db3c437435107fbdfe",
   "planFingerprint": "4fb13236a43a6567bc39ac6d1c094592b97b287334009a1f8feb0f3542fc181e",
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "c3acb35141b3b55e3cfb359538cee023",
   "masterSessionId": "9b81ac28-d68e-420b-be2f-860d6b311e2f",
   "assertedModel": "sonnet",
@@ -112,8 +112,19 @@
       "kind": "fork",
       "spawnedAt": "2026-09-30T15:40:32Z",
       "sessionId": "9b81ac28-d68e-420b-be2f-860d6b311e2f",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-merge-in-warns-mid-run",
+        "status": "done",
+        "head_sha": "af701526d5682bd5319ce445fd3c31a44e6c994f"
+      },
+      "cardShas": [
+        "af701526d5682bd5319ce445fd3c31a44e6c994f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-parent-merge-midrun/9b81ac28-d68e-420b-be2f-860d6b311e2f/subagents/agent-a4ee2b43f1118e96d.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
@@ -121,6 +132,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-parent-merge-midrun/9b81ac28-d68e-420b-be2f-860d6b311e2f/subagents/agent-aff9b2315bd2b1f7c.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-parent-merge-midrun/9b81ac28-d68e-420b-be2f-860d6b311e2f/subagents/agent-ae8ad0e84f25c15d1.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-parent-merge-midrun/9b81ac28-d68e-420b-be2f-860d6b311e2f/subagents/agent-a1d86708ea0f4ee7a.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-parent-merge-midrun/9b81ac28-d68e-420b-be2f-860d6b311e2f/subagents/agent-ad260a0545d889e3a.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-parent-merge-midrun/9b81ac28-d68e-420b-be2f-860d6b311e2f/subagents/agent-ad260a0545d889e3a.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-parent-merge-midrun/9b81ac28-d68e-420b-be2f-860d6b311e2f/subagents/agent-a4ee2b43f1118e96d.jsonl"
   ]
 }
