@@ -2,11 +2,6 @@
 
 # Layer A
 
-## **#014:** Plan-Write: respawn archives the finished plan; Agent refusal unannounced [A]
-[plan-write-respawn](design-plan-write-respawn.md)
-
-Respawn starts over instead of reusing the plan; prompt does not say Agent is refused
-
 ## **#019:** One driving surface per run: ly-drive pane or status strand, never both [A]
 [status-strand-by-driver](design-status-strand-by-driver.md)
 Depends on: #010
@@ -115,6 +110,11 @@ A conflict-resolved parent merge was pushed with non-compiling tests
 Depends on: #012
 
 RefScanner flags quoted grep patterns; a done batch cannot be recorded
+
+## **#014:** Plan-Write: respawn archives the finished plan; Agent refusal unannounced
+[plan-write-respawn](design-plan-write-respawn.md) [done]
+
+Respawn starts over instead of reusing the plan; prompt does not say Agent is refused
 
 ## **#015:** Trace logs: configurable retention, fewer files from routine commands
 [trace-log-retention](design-trace-log-retention.md) [done]
