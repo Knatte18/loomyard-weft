@@ -2,11 +2,6 @@
 
 # Layer A
 
-## **#012:** Publish: verify the tree after merging the parent [A]
-[publish-verify-after-merge](design-publish-verify-after-merge.md)
-
-A conflict-resolved parent merge was pushed with non-compiling tests
-
 ## **#014:** Plan-Write: respawn archives the finished plan; Agent refusal unannounced [A]
 [plan-write-respawn](design-plan-write-respawn.md)
 
@@ -109,6 +104,11 @@ Batten keeps watching an awaiting child, run records survive teardown, approval 
 [ide-hub-workspace](design-ide-hub-workspace.md) [done]
 
 One generated VS Code workspace shows the board beside the prime
+
+## **#012:** Publish: verify the tree after merging the parent
+[publish-verify-after-merge](design-publish-verify-after-merge.md) [done]
+
+A conflict-resolved parent merge was pushed with non-compiling tests
 
 ## **#013:** Webster fork audit: text search for "lyx fabric" counted as a fabric operation
 [refscan-false-positive](design-refscan-false-positive.md) [done]
