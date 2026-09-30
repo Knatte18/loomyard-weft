@@ -1,8 +1,8 @@
 # Card 3 — loomengine-durable-friction
 
 **Create:**
-- `plan:internal/loomengine#LoomDurableDir` -> `func LoomDurableDir(l *lyxcwd.Location) string`
-- `plan:internal/loomengine#LoomDurableDirRel` -> `func LoomDurableDirRel() string`
+- `internal/loomengine#LoomDurableDir`
+- `internal/loomengine#LoomDurableDirRel`
 
 **Edit:**
 - `internal/loomengine#LoomFrictionDir`

@@ -8,7 +8,7 @@
 - `internal/battencli#battenCLI.wire`
 - `plan:internal/battenshed#ChildApproval`
 - `internal/shedrun#DriveReportsDir`
-- `plan:internal/loomengine#LoomDurableDir`
+- `internal/loomengine#LoomDurableDir`
 
 **Intent:**
 One end-to-end check that the whole hand-off keeps the run's records: a batten run whose child goes `awaiting`, gets an approval record, is resumed by batten, reaches `done`, and is torn down ends with the friction notes and the drive report reachable from the archive tag on the weft origin.

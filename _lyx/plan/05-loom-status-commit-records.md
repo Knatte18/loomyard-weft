@@ -9,8 +9,8 @@
 - `internal/loomcli/wiring_commitstatus_integration_test.go`
 
 **Uses:**
-- `plan:internal/loomengine#LoomDurableDir`
-- `plan:internal/loomengine#LoomDurableDirRel`
+- `internal/loomengine#LoomDurableDir`
+- `internal/loomengine#LoomDurableDirRel`
 - `internal/loomengine#LoomFrictionDir`
 - `internal/shedrun#DriveReportsDir`
 - `internal/shedrun#DriveReportsRel`
