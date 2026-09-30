@@ -21,7 +21,7 @@
 
 **Uses:**
 - `internal/battenshed#InnerRunDeps`
-- `plan:internal/battenshed#ChildApproval`
+- `internal/battenshed#ChildApproval`
 - `internal/battenshed#haltedChildRemedy`
 - `internal/battenshed#reportStuck`
 - `internal/shedengine#OutputPointer`

@@ -6,7 +6,7 @@
 **Uses:**
 - `internal/battencli#wireForHub`
 - `internal/battencli#battenCLI.wire`
-- `plan:internal/battenshed#ChildApproval`
+- `internal/battenshed#ChildApproval`
 - `internal/shedrun#DriveReportsDir`
 - `internal/loomengine#LoomDurableDir`
 

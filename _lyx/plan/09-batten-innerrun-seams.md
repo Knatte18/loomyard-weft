@@ -1,7 +1,7 @@
 # Card 9 — batten-innerrun-seams
 
 **Create:**
-- `plan:internal/battenshed#ChildApproval` -> `type ChildApproval struct`
+- `internal/battenshed#ChildApproval`
 
 **Edit:**
 - `internal/battenshed#InnerRunDeps`
