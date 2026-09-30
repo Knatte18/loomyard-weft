@@ -30,20 +30,19 @@ Out:
 ## Decisions
 
 1. **Stop the inheritance at its source, in `fabricengine.Add`.**
-   A new weft branch forks from the parent's weft branch; immediately after that fork, and before the pair is pushed, the run-records root is removed from the new branch and the removal is committed.
+   A new weft branch forks from the parent's weft branch; creating it drops the run-records root from the new branch, so the parent's records never reach the new weft worktree's disk, and the removal is committed before the pair is pushed.
    Rationale: it fixes both symptoms (the same-slug seed collision and the clutter of every other in-flight run), for every way a pair is created, with no on-disk migration of in-flight batten runs.
 2. **The adopt path is untouched.**
    When `Add` adopts an already-existing weft branch (`weftBranchAlreadyExists`), it drops nothing.
-   Rationale: an existing branch is the pair's own; its `_lyx/shed/<slug>/` holds that pair's own run records.
+   Rationale: `Remove` and `Add`'s rollback both delete the weft branch, so one that survives them is the pair's own; its `_lyx/shed/<slug>/` holds that pair's own run records.
 3. **No batten-specific namespace.**
    Batten's prime-side run directory stays `_lyx/shed/<slug>/`, addressed by the same flat run-id vocabulary `lyx shed seed|step|status` and ly-drive use.
    Rationale: once pairs stop inheriting `_lyx/shed/`, the prime-side batten record and the child's own record live in different worktrees and cannot collide.
 4. **`fabricengine` learns the path from `shedrun`, not from its caller.**
    `shedrun` exports an anchor-relative constructor for the run-records root; `Add` calls it directly.
    Rationale: the Shed Run-Directory Invariant keeps `shedrun` the sole declarer of the `shed` segment, and a path `Add` derives itself cannot be forgotten by a future caller the way a caller-told option could.
-   `shedrun` imports only `lyxcwd` and `lyxdirs`, so the new import creates no cycle.
 5. **One weft commit, not two.**
-   The drop lands in the same commit as the origin record (`fabric: record parent branch for <slug>` or a message naming both), and only when the fork point tracks anything under the run-records root.
+   The drop lands in the same commit as the origin record, under today's message `fabric: record parent branch for <slug>`, and only when the fork point tracks anything under the run-records root.
    Rationale: a pathspec matching nothing is a hard git error, and a fresh hub with no run records must still add pairs.
 6. **Rollback covers the drop.**
    A failure after the drop runs `Add`'s existing rollback, which deletes the new weft branch and worktree; the parent's weft branch is never touched.
@@ -62,8 +61,12 @@ Out:
 ## Constraints
 
 - **Shed Run-Directory Invariant:** `fabricengine` names neither the `shed` segment nor `seed.json`; it uses the new `shedrun` constructor.
-- **Fabric Destruction Chokepoint Invariant:** if the drop deletes working-tree files in the new weft worktree, that deletion is a destructive primitive and must live in `internal/fabricengine/destroy.go` with its containment/ownership/dirtiness/force checks.
-  Building the new branch's first commit without the subtree (index-only removal, so nothing is deleted from a checkout) avoids the question; the plan picks the mechanism and states which rule it satisfies.
+- **No run records on disk:** the parent's run records must never sit in the new weft worktree untracked.
+  `shedrun` reads seeds and lists runs from disk, so an untracked copy still collides with the child's own seed.
+  Today's create path checks the parent's whole tree out (`git worktree add -b`), so an index-only removal after that checkout leaves the files on disk and does not fix the bug.
+- **Fabric Destruction Chokepoint Invariant:** the drop uses one of two mechanisms, and the plan states which.
+  Either the fork keeps the subtree off disk (a no-checkout fork whose index drops the root before the tree is written out), which deletes nothing and is outside the chokepoint;
+  or it deletes the checked-out files, which is a destructive primitive and must live in `internal/fabricengine/destroy.go` with its containment/ownership/dirtiness/force checks.
 - **Fabric Git Invariant:** the drop commit goes through `fabricengine`'s scoped-pathspec commit path (`ScopedPathspec` / `CommitWeftPaths`), positive-only file list, never a repo-wide stage.
 - **Mutation Record Invariant:** the drop records its mutation(s) on `Add`'s `*Mutations` recorder only after they observably changed state.
 - **Batten Bookend Invariant:** unchanged; the lock wait runs in prime like the rest of the batten Shed.
@@ -85,10 +88,13 @@ Out:
   The drop makes the fork point's run records irrelevant either way.
 - A lock holder that legitimately exceeds 10 min (a very slow archive push during teardown) makes the waiter halt `blocked` exactly as today; resuming retries.
 - Nested pairs still inherit the parent task's other per-run directories (out of scope above).
+- A crash between the fork and the origin commit leaves an unmodified fork of the parent's weft branch, run records included, with no rollback.
+  Batten's retry stops at the warp branch's "already exists" refusal, but an operator who deletes the warp branch and re-adds reaches the adopt path, which keeps those records.
+  Remedy: delete the leftover weft branch too before re-adding.
 
 ## Acceptance criteria
 
-- `fabricengine` integration: `Add` on a hub whose parent weft tracks `_lyx/shed/<a>/` and `_lyx/shed/<b>/` produces a pair whose weft branch tracks nothing under `_lyx/shed/`, has no such files on disk, carries the origin record, and is pushed; the parent's weft branch still tracks both directories.
+- `fabricengine` integration: `Add` on a hub whose parent weft tracks `_lyx/shed/<a>/` and `_lyx/shed/<b>/` produces a pair whose weft branch is exactly one commit ahead of the fork point, tracks nothing under `_lyx/shed/`, has no such files on disk, carries the origin record, and is pushed; the parent's weft branch still tracks both directories.
 - `fabricengine` integration: `Add` on a hub whose parent weft tracks nothing under `_lyx/shed/` succeeds with the same single origin-record commit as today.
 - `fabricengine` integration: `Add` adopting an existing weft branch leaves that branch's `_lyx/shed/` content untouched.
 - `fabricengine` integration: `Add` from a task pair (non-`main` parent) drops the parent task's own `_lyx/shed/<parent>/`.

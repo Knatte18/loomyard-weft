@@ -24,7 +24,9 @@ Autonomous session: no operator answered; each turn below is a question the agen
    `shedrun` exports an anchor-relative constructor; `fabricengine` already imports domain packages (`pattern`, `stencilstore`), and `shedrun` imports only `lyxcwd`/`lyxdirs`, so no cycle.
    Pick: `Add` calls the constructor itself rather than taking a caller-told option.
 6. **Which destruction rules apply?**
-   Deleting files in the new weft checkout is a destructive primitive under the Fabric Destruction Chokepoint Invariant; an index-only removal avoids it.
+   Deleting files in the new weft checkout is a destructive primitive under the Fabric Destruction Chokepoint Invariant.
+   An index-only removal avoids it only when the subtree never reaches disk: `git worktree add -b` checks it out, and an untracked copy still collides because `shedrun` reads from disk.
+   A no-checkout fork whose index drops the root before `checkout-index` writes the tree deletes nothing and still commits the drop with the origin record in one commit (checked in a scratch repo).
    Left to the plan, stated as a constraint.
 7. **What is `batten-prime-lock-wait`?**
    Not on the board.
@@ -50,6 +52,10 @@ Autonomous session: no operator answered; each turn below is a question the agen
   They are committed so a batten run resumes on another machine; losing that is a regression.
 - **Seed-Child treats an inherited batten seed as foreign and overwrites it.**
   Treats the symptom, needs a recorded-driver/recipe read the Driver Choice Single-Site Invariant scrutinises, and leaves the clutter.
+- **Index-only removal after a normal checkout.**
+  Deletes nothing, but leaves the parent's records on disk untracked, where the child's loom run still reads the foreign seed.
+- **Drop on the adopt path when the adopted branch is an unmodified fork of the parent.**
+  Reachable only after a crash plus manual recovery; recorded as an open risk with its remedy instead.
 - **Blocking `lock.AcquireWriteLock` for the prime lock.**
   Not cancellable and unbounded; a stuck holder would hang the batten step forever.
 - **Prime-lock wait as a config key.**
@@ -67,8 +73,8 @@ _No rounds yet._
 | 2 | Drop in `fabricengine.Add` or in batten's `Worktree-Create`? | Resolved (auto-pick) | `fabricengine.Add`, fresh-fork path only. |
 | 3 | How does `Add` know the path? | Resolved (auto-pick) | New `shedrun` anchor-relative constructor, called by `Add` itself. |
 | 4 | Drop only `_lyx/shed/` or all per-run directories? | Resolved (auto-pick) | Only `_lyx/shed/`. |
-| 5 | One commit or two on the new weft branch? | Resolved (auto-pick) | One, together with the origin record; drop included only when the fork point tracks something there. |
-| 6 | Mechanism for the drop (working-tree delete vs index-only)? | Open for Plan | Either, provided it satisfies the Fabric Destruction Chokepoint Invariant; plan states which. |
+| 5 | One commit or two on the new weft branch? | Resolved (auto-pick) | One, together with the origin record, under today's origin-record message; drop included only when the fork point tracks something there. |
+| 6 | Mechanism for the drop (working-tree delete vs index-only)? | Open for Plan | A fork that keeps the subtree off disk, or a working-tree delete through `destroy.go`; an index-only removal after a normal checkout is neither. Plan states which. |
 | 7 | Scope of `batten-prime-lock-wait` with no board entry? | Resolved (auto-pick) | Contention on the prime lock halts a second create `blocked`; fix with a bounded wait in both lock-holding producers. |
 | 8 | Wait bound and poll interval? | Resolved (auto-pick) | 10 min bound, 2 s poll, package constants. |
 | 9 | Handle pairs created before the fix? | Resolved (auto-pick) | No; inherited copies are inert and blocked runs were already cleared by hand. |
