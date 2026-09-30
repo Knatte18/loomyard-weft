@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "integration verify FAILED: -tags integration failures in internal/loomcli (TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver), internal/battencli (TestBattenIntegration_Teardown_FailedRemoteDeletionHaltsResumably, TestBattenIntegration_CreateRow_IncompletePairRemedyWorksVerbatimOnAPrefixedHub)"
+batches_done: 16

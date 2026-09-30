@@ -2,10 +2,26 @@
   "runGuid": "58d2f68d0b54bf289c61d20455e5ff7a",
   "planFingerprint": "c40dc98c6a46e05ead31661fa7069161bc87efc6dd62bea1ee2ce90d89877574",
   "currentBatch": 0,
-  "masterStrand": "9acb332600d74bfcdc4395303bc7b8e7",
-  "masterSessionId": "4c6ab6b0-79e1-4be6-ab5e-953345d7e36c",
+  "masterStrand": "46fce9affded29125810e010521fd1c3",
+  "masterSessionId": "f0209624-4756-4620-b08b-d7ca60d56c0f",
   "assertedModel": "sonnet",
   "batches": {
+    "-1": {
+      "slug": "01-shedengine-budget-exempt",
+      "startSha": "",
+      "kind": "",
+      "spawnedAt": "",
+      "terminal": true,
+      "status": "stuck",
+      "digest": {
+        "batch": "01-shedengine-budget-exempt",
+        "status": "stuck",
+        "head_sha": "b8cd5392d8b5f1dde9e65be8a70797f50460ceed"
+      },
+      "cardShas": [
+        "b8cd5392d8b5f1dde9e65be8a70797f50460ceed"
+      ]
+    },
     "1": {
       "slug": "shedengine-budget-exempt",
       "startSha": "083e992cfedea15c2976d0ecd76541799670df57",
