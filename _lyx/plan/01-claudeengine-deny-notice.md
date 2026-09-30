@@ -25,7 +25,8 @@ The webster fork-context guard is never announced.
 
 Add `buildDenyNotice`, which returns the sentences for the denies `buildSettings` installs under the same `(interactive, cfg, forkSubagents)` inputs, joined by a single space, or the empty string when none is installed:
 the Agent sentence (fork or non-fork form) exactly when `cfg.ClaudeDenyAgentTool` is set, and the AskUserQuestion sentence exactly when the run is autonomous and `cfg.ClaudeDenyAskUserQuestion` is set (an interactive run's AskUserQuestion marker hook records, never denies, so it is not announced).
-Keep the two install conditions in one place both functions read, rather than restating them, so a change to one cannot leave the other behind.
+Keep the two install conditions in one place both functions read, rather than restating them, so a change to one cannot leave the other behind:
+move them out of `buildSettings`' inline `if` tests into one unexported helper over `(interactive, cfg)`, and reshape `buildSettings`' body to read that helper, leaving its output byte-identical.
 
 Extend the package `init` forbidden-character check to the three notice constants, and make it also reject a line break (`\n`, `\r`), since the assembled notice rides one command-line argument that reed types with `tmux send-keys`.
 Update the file comment to mention the notice.
@@ -37,4 +38,4 @@ Tests in `settings_test.go`:
 - No notice mentions `lyx webster`.
 - Every assembled notice is free of line breaks, single quotes, double quotes and backslashes.
 
-**ImpactSummary:** additive: new unexported constants and one new function in `claudeengine`; `buildSettings`' output is unchanged, and no caller outside the package exists.
+**ImpactSummary:** new unexported constants and functions in `claudeengine`, plus a refactor of `buildSettings`' body onto the shared install-condition helper; its output stays byte-identical, pinned by the existing `settings_test.go` cases, and no caller outside the package exists.

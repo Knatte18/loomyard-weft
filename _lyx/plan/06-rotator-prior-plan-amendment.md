@@ -7,6 +7,7 @@
 - `internal/loomshed/doc.go`
 - `internal/shedrecipe#planWriteEntry`
 - `internal/shedrecipe/entries_planwrite_test.go`
+- `internal/loomrecipe/fixture_test.go`
 - `internal/loomengine/plan.go`
 
 **Uses:**
@@ -44,4 +45,9 @@ Tests in `entries_planwrite_test.go`:
 - An empty `env.StencilsDir` fails construction, the error naming `PlanWrite` and `StencilsDir`.
 - A stale `.md` file in the plan directory under `env.AnchorPath`, with a minimal `loom-template-prior-plan` stencil written into `env.StencilsDir`: one `Call` hands the shuttle a spec whose prompt is the composed prompt followed by the rendered block.
 
-**ImpactSummary:** `NewPlanDirRotator` gains a parameter and its single production caller, `planWriteEntry`, now requires `Env.StencilsDir`, which every loom wiring already sets; rotation behaviour on disk is unchanged.
+Fixture in `internal/loomrecipe/fixture_test.go`:
+`buildSequenceFixture` seeds a plan with `seedPlanFixture` before Plan-Write runs, so the rotation moves files and the rotator now renders the prior-plan block from `env.StencilsDir`.
+`stencilstore.Read` never falls back to the embedded default, so add `"loom-template-prior-plan": stencils.LoomTemplatePriorPlan` to `seedBouncerStencils`' seed map and update its doc comment's list of seeded stencils.
+Without it, every sequence test built on that fixture (`TestSequence_FullRunBlocksAtPublish`, the `resume_test.go` and `frictionreflect_test.go` runs) fails at Plan-Write with the render error.
+
+**ImpactSummary:** `NewPlanDirRotator` gains a parameter and its single production caller, `planWriteEntry`, now requires `Env.StencilsDir`, which every loom wiring already sets; a rotation that moves files now also requires `loom-template-prior-plan` in that directory, and the one test fixture that seeds a plan before Plan-Write (`loomrecipe`'s `buildSequenceFixture`) is updated to seed it; rotation behaviour on disk is unchanged.

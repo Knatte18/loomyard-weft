@@ -7,7 +7,6 @@
 
 **Uses:**
 - `plan:contracts/stencils#LoomTemplatePriorPlan`
-- `internal/loomengine#composePlanPrompt`
 
 **Intent:**
 Add the renderer for the prior-plan block, in `loomengine` beside `composePlanPrompt`, which already reads the loom stencils through `stencilstore` (decision record D5).
