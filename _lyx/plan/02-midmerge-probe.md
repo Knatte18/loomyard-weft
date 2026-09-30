@@ -46,7 +46,8 @@ The type embeds no `MutationRecord` (Mutation Record Invariant: a read-only prob
 - Read the record's existence through `Fabric.mergeRecordExists`.
   Its error, which includes a record location that cannot be resolved (the weft gitdir), is returned wrapped — deliberately unlike `mergeBlocksMutation`, which swallows an unopenable pair to false: an undetermined answer is not evidence the tree is clean.
 - Read the four git-level probes `foreignMergeStatePresent` combines (`MERGE_HEAD` and conflicted files on each side), all four unconditionally.
-  Extract them into one unexported reader in `midmerge.go` returning the four raw readings (two `MERGE_HEAD` booleans, two conflicted-path lists), and rewrite `foreignMergeStatePresent` as a thin combination over that reader, so the four calls exist once.
+  Extract them into one unexported reader in `mergestate.go`, directly above `foreignMergeStatePresent`, returning the four raw readings (two `MERGE_HEAD` booleans, two conflicted-path lists), and rewrite `foreignMergeStatePresent` as a thin combination over that reader, so the four calls exist once and `MidMerge` in `midmerge.go` calls the same reader.
+  Keeping the reader in `mergestate.go` keeps every foreign-state probe in the file whose header says it holds them.
   `foreignMergeStatePresent`'s observable answer and its error wrapping stay byte-identical;
   its existing doc comment moves with the four calls where it describes them.
 - Classify: record present → `MidMergeParked`; else any `MERGE_HEAD` or any conflicted path → `MidMergeForeign`; else `MidMergeNone`.
@@ -69,6 +70,6 @@ Bundled test, `internal/fabricengine/midmerge_integration_test.go` (`//go:build 
 - Foreign, each of the three shapes (`git merge` conflicted, `git merge` resolved but unconcluded, `git merge --squash` conflicted) on each side, shaped exactly as `TestMergeVerbs_ForeignMergeState_EverySideAndShapeRefuses` builds them (weft-side conflict path under `_lyx/`) → `MidMergeForeign`, with `Conflicts` equal to the one conflicted path for the two conflicted shapes and empty for the resolved-unconcluded shape.
 - A location whose pair cannot be opened (a `lyxcwd.Location` over a `t.TempDir()` with no worktree behind it) → a non-nil error.
 
-**ImpactSummary:** Adds one exported read-only probe; foreignMergeStatePresent's callers (the merge verbs' foreign-state guards) see an unchanged answer through the extracted reader.
+**ImpactSummary:** foreignMergeStatePresent has 6 call sites, all in fabricengine (MergeIn, Merge and recheckMergePreconditionsUnderLock in merge.go, mergeStateOrForeignErr for MergeContinue/MergeAbort, MergeStageResolved, Fabric.Commit), and each sees an unchanged answer and error wrapping through the extracted reader; doc.go is comment-only, and MidMerge has no caller until card 3.
 
 **Commit:** 2: fabricengine: add the MidMerge probe for a pair's unfinished merge

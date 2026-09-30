@@ -38,7 +38,7 @@ Make `lyx loom start` (and so its root alias `lyx start`) refuse on its envelope
 
 Seam.
 Add a field to `loomCLI` holding the mid-merge probe, typed `func(*lyxcwd.Location) (fabricengine.MidMergeState, error)`, with a doc comment saying why it is a seam (the Test Tier Purity Invariant bars an untagged test from building a real mid-merge pair).
-`newLoomCLI` sets it to `fabricengine.MidMerge`, next to `spawnWatchdog`, so both constructors carry it; extend `TestNewLoomCLI_SetsBothInjectedSeams` to assert it is non-nil (and rename the test only if its name then misstates what it pins).
+`newLoomCLI` sets it to `fabricengine.MidMerge`, next to `spawnWatchdog`, so both constructors carry it; extend `TestNewLoomCLI_SetsBothInjectedSeams` to assert it is non-nil, and rename it `TestNewLoomCLI_SetsInjectedSeams` with its doc comment updated to match, since "Both" is wrong once it pins a third field.
 `newTestSpawnAndWaitReceiver` sets it to a fake answering `MidMergeNone` with no error, so every existing `runDriverSpawnAndWait` test keeps its current behaviour.
 
 Refusal, in `runDriverSpawnAndWait`.
@@ -80,6 +80,6 @@ Each refusal row decodes the envelope and asserts `ok` false, the exact `kind`, 
 - The real `fabricengine.MidMerge` wired as the probe over the receiver's own temp-dir location, which is no pair → refused as a probe error, nothing spawned.
 - Clean pair (`MidMergeNone`) on the spawn path → proceeds past the check to the starter exactly as today.
 
-**ImpactSummary:** start (and lyx start) now refuses a spawn or resume over a mid-merge pair with a new envelope kind; attach to a working driver, step, run and every other verb are unchanged.
+**ImpactSummary:** runDriverSpawnAndWait has 1 production caller (start's bootstrap in start.go); the new loomCLI field is set by newLoomCLI, used by both Command() and StartAliasCommand(), and left nil by every other test literal, none of which reaches runDriverSpawnAndWait except through newTestSpawnAndWaitReceiver (given a MidMergeNone fake); startCmd's change is help text only; batten's childNotParked, the one out-of-package reader of the start kind, treats the new kind as a hard error.
 
 **Commit:** 3: loom start: refuse to spawn or resume a driver over an unfinished merge
