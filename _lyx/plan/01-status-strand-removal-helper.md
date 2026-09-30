@@ -5,7 +5,7 @@
 - `internal/loomcli/bootstrap_test.go`
 
 **Create:**
-- `plan:internal/loomcli#removeStatusStrands` -> `func removeStatusStrands(status func() (reedengine.StatusResult, error), remove func(guid string, recursive bool) (reedengine.Removed, error))`
+- `internal/loomcli#removeStatusStrands`
 
 **Uses:**
 - `internal/loomcli#statusStrandDisplayName`

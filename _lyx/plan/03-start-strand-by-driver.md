@@ -13,7 +13,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/loomcli#removeStatusStrands`
+- `internal/loomcli#removeStatusStrands`
 - `internal/loomcli#seedGoDriverRun`
 - `internal/loomcli#seedLLMDriver`
 - `internal/loomcli#statusStrandDisplayName`
