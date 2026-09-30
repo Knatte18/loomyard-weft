@@ -116,7 +116,7 @@
     "slug": "publish-verify-after-merge",
     "title": "Publish: verify the tree after merging the parent",
     "depends_on": [
-      "batten-open-ide"
+      "status-strand-by-driver"
     ],
     "isolated": false,
     "deferred": false,

@@ -23,12 +23,6 @@ Batten lifecycle step: open a VS Code window whose terminal is attached to the c
 
 # Layer C
 
-## **#012:** Publish: verify the tree after merging the parent [C]
-[publish-verify-after-merge](design-publish-verify-after-merge.md)
-Depends on: #009
-
-A conflict-resolved parent merge was pushed with non-compiling tests
-
 ## **#019:** One driving surface per run: ly-drive pane or status strand, never both [C]
 [status-strand-by-driver](design-status-strand-by-driver.md)
 Depends on: #009
@@ -37,47 +31,55 @@ llm-driven run shows only ly-drive; go-driven run shows only the status strand
 
 # Layer D
 
-## **#013:** Webster fork audit: text search for "lyx fabric" counted as a fabric operation [D]
+## **#012:** Publish: verify the tree after merging the parent [D]
+[publish-verify-after-merge](design-publish-verify-after-merge.md)
+Depends on: #019
+
+A conflict-resolved parent merge was pushed with non-compiling tests
+
+# Layer E
+
+## **#013:** Webster fork audit: text search for "lyx fabric" counted as a fabric operation [E]
 [refscan-false-positive](design-refscan-false-positive.md)
 Depends on: #012
 
 RefScanner flags quoted grep patterns; a done batch cannot be recorded
 
-# Layer E
+# Layer F
 
-## **#014:** Plan-Write: respawn archives the finished plan; Agent refusal unannounced [E]
+## **#014:** Plan-Write: respawn archives the finished plan; Agent refusal unannounced [F]
 [plan-write-respawn](design-plan-write-respawn.md)
 Depends on: #013
 
 Respawn starts over instead of reusing the plan; prompt does not say Agent is refused
 
-# Layer F
+# Layer G
 
-## **#015:** Trace logs: configurable retention, fewer files from routine commands [F]
+## **#015:** Trace logs: configurable retention, fewer files from routine commands [G]
 [trace-log-retention](design-trace-log-retention.md)
 Depends on: #014
 
 Trace logs: configurable retention, fewer files from routine commands
 
-# Layer G
+# Layer H
 
-## **#016:** lyx quarry: per-glyph resolve answers, grep-safe glyphs output [G]
+## **#016:** lyx quarry: per-glyph resolve answers, grep-safe glyphs output [H]
 [quarry-cli-answers](design-quarry-cli-answers.md)
 Depends on: #015
 
 lyx quarry: per-glyph resolve answers, grep-safe glyphs output
 
-# Layer H
+# Layer I
 
-## **#017:** Burler: warn when the explore stencil lacks the focus_directive marker [H]
+## **#017:** Burler: warn when the explore stencil lacks the focus_directive marker [I]
 [focus-marker-warn](design-focus-marker-warn.md)
 Depends on: #016
 
 Burler: warn when the explore stencil lacks the focus_directive marker
 
-# Layer I
+# Layer J
 
-## **#018:** reed: send a short launch-script line instead of the full command [I]
+## **#018:** reed: send a short launch-script line instead of the full command [J]
 [reed-launch-script](design-reed-launch-script.md)
 Depends on: #017
 
