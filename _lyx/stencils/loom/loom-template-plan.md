@@ -4,7 +4,7 @@
      to shuttle as the plan agent's entire instruction set.
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires the three original ones non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
-lyx-stencil: sha256=a2d1b83e3aa52716e44daea14a02a1a1660a962286ac45bdbd961857a5a67e6a -->
+lyx-stencil: sha256=7726404920e1389a48dca66f182c02d835c0541638a2adf00200ef25cffb051e -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -54,6 +54,7 @@ The verbs above are the whole of what `lyx quarry` offers you — there is no fu
 
 ## Step 3 — Write the plan into `{{.plan_dir}}`
 
+When this prompt ends with a `Prior plan` section, read that section and act on it before writing anything in this step.
 Create `{{.plan_dir}}` first if it does not already exist.
 Write one `00-overview.md` plus one `NN-<card-slug>.md` per card, following this **compact plan-format** spec.
 
