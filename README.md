@@ -17,9 +17,65 @@ One generated VS Code workspace shows the board beside the prime
 
 ## **#009:** batten opens VS Code on the new pair with reed attached [B]
 [batten-open-ide](design-batten-open-ide.md)
-Depends on: #010
+Depends on: #010, #011
 
 Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
+
+# Layer C
+
+## **#012:** Publish: verify the tree after merging the parent [C]
+[publish-verify-after-merge](design-publish-verify-after-merge.md)
+Depends on: #009
+
+A conflict-resolved parent merge was pushed with non-compiling tests
+
+# Layer D
+
+## **#013:** Webster fork audit: text search for "lyx fabric" counted as a fabric operation [D]
+[refscan-false-positive](design-refscan-false-positive.md)
+Depends on: #012
+
+RefScanner flags quoted grep patterns; a done batch cannot be recorded
+
+# Layer E
+
+## **#014:** Plan-Write: respawn archives the finished plan; Agent refusal unannounced [E]
+[plan-write-respawn](design-plan-write-respawn.md)
+Depends on: #013
+
+Respawn starts over instead of reusing the plan; prompt does not say Agent is refused
+
+# Layer F
+
+## **#015:** Trace logs: configurable retention, fewer files from routine commands [F]
+[trace-log-retention](design-trace-log-retention.md)
+Depends on: #014
+
+Trace logs: configurable retention, fewer files from routine commands
+
+# Layer G
+
+## **#016:** lyx quarry: per-glyph resolve answers, grep-safe glyphs output [G]
+[quarry-cli-answers](design-quarry-cli-answers.md)
+Depends on: #015
+
+lyx quarry: per-glyph resolve answers, grep-safe glyphs output
+
+# Layer H
+
+## **#017:** Burler: warn when the explore stencil lacks the focus_directive marker [H]
+[focus-marker-warn](design-focus-marker-warn.md)
+Depends on: #016
+
+Burler: warn when the explore stencil lacks the focus_directive marker
+
+# Layer I
+
+## **#018:** reed: send a short launch-script line instead of the full command [I]
+[reed-launch-script](design-reed-launch-script.md)
+Depends on: #017
+
+Hide the long env+claude launch line behind a generated launch script
 
 # Done
 
@@ -80,42 +136,7 @@ Someday (roadmap): #227, #228 — measured win, committed, not yet scheduled
 
 Parked: workers on 5m cache TTL, waiting sessions on 1h — operator deciding
 
-## **#004:** Trace logs: configurable retention, fewer files from routine commands
-[trace-log-retention](design-trace-log-retention.md)
-
-Trace logs: configurable retention, fewer files from routine commands
-
-## **#005:** lyx quarry: per-glyph resolve answers, grep-safe glyphs output
-[quarry-cli-answers](design-quarry-cli-answers.md)
-
-lyx quarry: per-glyph resolve answers, grep-safe glyphs output
-
-## **#006:** Burler: warn when the explore stencil lacks the focus_directive marker
-[focus-marker-warn](design-focus-marker-warn.md)
-
-Burler: warn when the explore stencil lacks the focus_directive marker
-
-## **#007:** Webster fork audit: text search for "lyx fabric" counted as a fabric operation
-[refscan-false-positive](design-refscan-false-positive.md)
-
-RefScanner flags quoted grep patterns; a done batch cannot be recorded
-
 ## **#008:** Burler: round-N focus directive conflicts with the read-prior-rounds-last rule
 [burler-focus-prior-round](design-burler-focus-prior-round.md)
 
 Focus directive needs prior-round files the round prompt says to read only after the review
-
-## **#009:** Publish: verify the tree after merging the parent
-[publish-verify-after-merge](design-publish-verify-after-merge.md)
-
-A conflict-resolved parent merge was pushed with non-compiling tests
-
-## **#010:** Plan-Write: respawn archives the finished plan; Agent refusal unannounced
-[plan-write-respawn](design-plan-write-respawn.md)
-
-Respawn starts over instead of reusing the plan; prompt does not say Agent is refused
-
-## **#011:** reed: send a short launch-script line instead of the full command
-[reed-launch-script](design-reed-launch-script.md)
-
-Hide the long env+claude launch line behind a generated launch script

@@ -81,7 +81,8 @@
     "slug": "batten-open-ide",
     "title": "batten opens VS Code on the new pair with reed attached",
     "depends_on": [
-      "batten-hub-ready"
+      "batten-hub-ready",
+      "ide-hub-workspace"
     ],
     "isolated": false,
     "deferred": false,
@@ -109,5 +110,89 @@
     "deferred": false,
     "brief": "One generated VS Code workspace shows the board beside the prime",
     "body": "The operator wants to watch the board (and running tasks) in VS Code while talking to the hub orchestrator in the prime.\nDirection: `lyx ide spawn` for the prime generates `\u003chub\u003e/_launchers/\u003cprime\u003e.code-workspace` with folders prime, `_board` and `_portals`, and opens that instead of the bare folder.\nLyx-owned, outside every worktree, so agents never see it; task windows stay one pair each.\n`code --add` works today but is ad hoc."
+  },
+  {
+    "id": 12,
+    "slug": "publish-verify-after-merge",
+    "title": "Publish: verify the tree after merging the parent",
+    "depends_on": [
+      "batten-open-ide"
+    ],
+    "isolated": false,
+    "deferred": false,
+    "brief": "A conflict-resolved parent merge was pushed with non-compiling tests",
+    "body": "Publish merges the parent into the task branch and pushes without compiling or testing the result.\nIn run `operator-surface` (PR #300) the conflict-resolved merge `854eb73fe` left four test call sites on the old `shedrun.StatusRel(runID)` signature (`internal/loomcli/wiring_commitstatus_test.go`, `..._integration_test.go`), so `go vet`/`go test` failed while `go build` passed; only the hub's PR review caught it.\nFix direction: after a parent merge that changed the tree, Publish runs the plan's `## verify:` command (or at least `go vet ./...` across build tags) and halts stuck on failure before pushing and opening or updating the PR."
+  },
+  {
+    "id": 13,
+    "slug": "refscan-false-positive",
+    "title": "Webster fork audit: text search for \"lyx fabric\" counted as a fabric operation",
+    "depends_on": [
+      "publish-verify-after-merge"
+    ],
+    "isolated": false,
+    "deferred": false,
+    "brief": "RefScanner flags quoted grep patterns; a done batch cannot be recorded",
+    "body": "`fabricengine.RefScanner` (`internal/fabricengine/refscanner.go`) flags any Bash command whose text matches `lyx(\\.exe)?\\s+(fabric|weft|warp)\\b`, including a quoted search pattern.\nRun `operator-surface` blocked at Webster batch 28 (docs card, commit `d369f8915`, report OK) because the fork ran `grep -n \"fabric remove\\|lyx fabric.*remove\" docs/overview.md` — a content search in the warp, not a fabric operation.\nThe flagged transcript never enters `seenForkTranscripts`, so every retry of `record-batch 28` re-audits it and fails again: the run cannot resume without a code change.\nFix direction: match `lyx fabric|weft|warp` only in command position (start of the command or after `;`, `\u0026\u0026`, `||`, `|`, `$(`), not inside quoted arguments; keep the weft-path match.\nDocs cards will keep hitting this, since docs describe fabric verbs.\n\nFixed for the spelling in `777d93af7` (hub prime, deployed): command position only, quoted spans blanked.\nStill open: the path half (`\\S*-weft\\b`) matches any word ending in `-weft`, quoted or not, so a docs grep for `main-weft` would trip the same dead end."
+  },
+  {
+    "id": 14,
+    "slug": "plan-write-respawn",
+    "title": "Plan-Write: respawn archives the finished plan; Agent refusal unannounced",
+    "depends_on": [
+      "refscan-false-positive"
+    ],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Respawn starts over instead of reusing the plan; prompt does not say Agent is refused",
+    "body": "Friction from run `operator-surface` (Plan-Write, trace `7b2a74344919ecc3`).\n1. A respawned Plan-Write moves an existing finished plan to `_lyx/plan/archive-\u003cts\u003e/` and starts from an empty directory; the new session learned of the prior plan only from a cross-session message.\n   The false `asking` that caused the respawn is fixed in `083e992cf`, but any respawn still discards the plan: a respawn should reuse or at least point the prompt at the archived cards.\n2. A PreToolUse hook refuses the Agent tool in the Plan-Write pane and the prompt does not say so; five parallel explorer dispatches failed before work started.\n   The prompt should state the tool restriction (see Someday \"shuttle `Spec`: generic tools-restriction\")."
+  },
+  {
+    "id": 15,
+    "slug": "trace-log-retention",
+    "title": "Trace logs: configurable retention, fewer files from routine commands",
+    "depends_on": [
+      "plan-write-respawn"
+    ],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Trace logs: configurable retention, fewer files from routine commands",
+    "body": "`.lyx/logs` gets one trace file per lyx invocation that logs at INFO+ or exits non-zero (`internal/logger/sink.go`); `internal/logger/retention.go` keeps the newest 50 files and nothing older than 14 days, both hard-coded.\nOperator board upserts and fabric verbs fill the 50 slots, pushing a run's interesting traces out.\nOptions: make both bounds config keys; or arm the sink only on failure or when a trace id is set (loom runs, ly-drive steps).\nObserved in run `operator-surface`: the Webster step's own live trace was swept by retention before the step returned, so the driver's `trace_file` pointed at a missing file.\nRetention must never delete the trace of a still-running invocation (skip files held by a live pid, or sweep only at process exit)."
+  },
+  {
+    "id": 16,
+    "slug": "quarry-cli-answers",
+    "title": "lyx quarry: per-glyph resolve answers, grep-safe glyphs output",
+    "depends_on": [
+      "trace-log-retention"
+    ],
+    "isolated": false,
+    "deferred": false,
+    "brief": "lyx quarry: per-glyph resolve answers, grep-safe glyphs output",
+    "body": "- **One bad glyph sinks the whole `resolve` batch.** `lyx quarry resolve a b bad` returns only `{\"error\":\"\u003cbad\u003e: not_found\",\"ok\":false}`, nothing for the valid glyphs. quarry itself answers per glyph; `internal/quarrycli/resolve.go` collects every non-found status and fails the whole invocation by design. A planner checking spellings wants one answer per glyph, with the bad one marked `not_found`.\n- **`glyphs` output invites a broken grep.** A Plan-Write agent ran `lyx quarry glyphs internal/shedengine | grep -v \"_test\"` to drop test symbols; the JSON is pretty-printed one field per line, so the grep removed only each test symbol's `\"file\": ..._test.go` line and left the symbol without `file` (quarry#33, closed: quarry is correct). Give `lyx quarry glyphs` a flag that excludes test-file symbols, or emit one symbol per line, so the obvious filter is either unnecessary or correct.\n\nReported by the `operator-surface` Plan-Write session (2026-09-30)."
+  },
+  {
+    "id": 17,
+    "slug": "focus-marker-warn",
+    "title": "Burler: warn when the explore stencil lacks the focus_directive marker",
+    "depends_on": [
+      "quarry-cli-answers"
+    ],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Burler: warn when the explore stencil lacks the focus_directive marker",
+    "body": "`internal/burlerengine/prompt.go`: friction warns when its stencil marker is missing (`friction.WarnIfMarkerAbsent`), but `{{.focus_directive}}` has no such check. Since #299 the focus directive no longer also rides `PriorReviews`, so a board explore stencil without the marker (dev build, operator-edited board copy) silently drops the Bouncer's focus from every Burler round. Add the same warning. Found in the #299 review."
+  },
+  {
+    "id": 18,
+    "slug": "reed-launch-script",
+    "title": "reed: send a short launch-script line instead of the full command",
+    "depends_on": [
+      "focus-marker-warn"
+    ],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Hide the long env+claude launch line behind a generated launch script",
+    "body": "Every strand pane shows a long typed launch line before the agent starts: the pane-binary prelude (`export PATH=…`, `export LYX_BIN=…`, `internal/reedengine/panebin.go`) chained onto the claude invocation (`CLAUDE_CODE_FORK_SUBAGENT=1`, `\"$(cat prompt.md)\"`, `--session-id`, `--settings`, `--model`, `--effort`, `--dangerously-skip-permissions`, `internal/shuttleengine/claudeengine/command.go`), sent with `send-keys` into an interactive shell.\nThe operator finds it noisy.\nDirection: reed writes the composed line to a `launch.sh` (or `.ps1`) in the strand's scratch dir and sends only `. \u003cpath\u003e/launch.sh`; behaviour unchanged, the full line stays inspectable in the file."
   }
 ]
