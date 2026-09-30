@@ -1,7 +1,7 @@
 {
   "runGuid": "d62c8f1871612013bc5037be8f7a529e",
   "planFingerprint": "8cfcd58c8ad8f64256e93bff3bd1627dfad589e3867e1c636a71491af9dda250",
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "8582c4b0d9ce744dbc38e5668c380775",
   "masterSessionId": "0675e7f8-2080-4b39-8b23-ef068ef17e99",
   "assertedModel": "sonnet",
@@ -92,14 +92,26 @@
       "kind": "fork",
       "spawnedAt": "2026-09-30T17:38:05Z",
       "sessionId": "0675e7f8-2080-4b39-8b23-ef068ef17e99",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-docs-fresh-pair-and-lock-wait",
+        "status": "done",
+        "head_sha": "cfe49dcacae58254995ef5e010ed76b36b4092e7"
+      },
+      "cardShas": [
+        "cfe49dcacae58254995ef5e010ed76b36b4092e7"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-records-leak-into-pairs/0675e7f8-2080-4b39-8b23-ef068ef17e99/subagents/agent-a9c508aa6925f6da7.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-records-leak-into-pairs/0675e7f8-2080-4b39-8b23-ef068ef17e99/subagents/agent-a4a16c688635926ae.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-records-leak-into-pairs/0675e7f8-2080-4b39-8b23-ef068ef17e99/subagents/agent-ace00638544aef241.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-records-leak-into-pairs/0675e7f8-2080-4b39-8b23-ef068ef17e99/subagents/agent-ac37a688c357d4806.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-records-leak-into-pairs/0675e7f8-2080-4b39-8b23-ef068ef17e99/subagents/agent-a320a154f1ae28097.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-records-leak-into-pairs/0675e7f8-2080-4b39-8b23-ef068ef17e99/subagents/agent-a320a154f1ae28097.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-records-leak-into-pairs/0675e7f8-2080-4b39-8b23-ef068ef17e99/subagents/agent-a9c508aa6925f6da7.jsonl"
   ]
 }
