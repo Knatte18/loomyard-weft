@@ -1,3 +1,4 @@
 Read the closed GitHub issues #287, #282 and #263 (all folded here), plus this finding that was never filed:
 
 - **Comment width is unwritten.** The 100-column comment width, and how a leading tab counts toward it, is written down nowhere, so a width finding costs a whole review round (friction note `burler-webster-r2.md` from the `stuck-reason-in-status` run).
+- **Plan verify misses touched packages.** The `landing` plan's `## verify:` integration line named four packages; card 20's `//go:build integration` test in `internal/websterengine` failed unnoticed until Burler ran the tag over every touched package (friction note `burler-webster-r1.md` from `landing`). Plan review should check that verify covers every package a card touches.

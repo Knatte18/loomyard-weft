@@ -1,1 +1,3 @@
 Read the closed GitHub issues #269 (add rollback leaves the warp branch) and #270 (cleanup cannot see weft branches stranded on the remote). Re-check both once `landing` has landed: it takes #293 (remove leaves the warp branch, locally and on origin), which touches the same branch-lifecycle code, and the ly-drive may repair the rest from a trace.
+
+After `landing` (#298): `fabric remove` now deletes the local warp branch, but `--remote` still deletes only the weft branch on origin; warp branches of removed pairs stay there (`board-done-on-landing`, `burler-exclude-warn`, `integration-verify-fence`, `loom-start-layout`, `stencil-drift-remedy`, `stuck-reason-in-status`, `landing`). Out of scope in landing's decision record.
