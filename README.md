@@ -83,3 +83,8 @@ orch is deployed but untested live and lacks what the hub needs: bypass permissi
 [fabric-vocabulary-everywhere](design-fabric-vocabulary-everywhere.md)
 
 TestEnforcement_FabricVocabulary scans Go production code only; specs, docs, skills and tests outside fabric still say warp/weft
+
+## **#024:** Orchestrator reviews the discussion: loom port of mill-start --orch
+[orch-discussion-review](design-orch-discussion-review.md)
+
+Hub runs never involve the orchestrator in Discussion; port millhouse's mill-start --orch + orch-review/orch-wait so the hub writes Discussion-Review round 1

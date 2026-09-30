@@ -148,5 +148,15 @@
     "deferred": false,
     "brief": "TestEnforcement_FabricVocabulary scans Go production code only; specs, docs, skills and tests outside fabric still say warp/weft",
     "body": "Operator 2026-09-30: warp and weft are fabric-internal words; nothing outside fabric should know them.\nSeen on refusal-audit: contracts/specs/refusal-spec.md and several _test.go files outside fabric use them, and the scan let them through.\nWant: extend the scan to contracts/, docs/, manifest/, plugins/ skills and test files outside the owner set (or an explicit allowlist for fabric docs), and sweep the existing hits."
+  },
+  {
+    "id": 24,
+    "slug": "orch-discussion-review",
+    "title": "Orchestrator reviews the discussion: loom port of mill-start --orch",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Hub runs never involve the orchestrator in Discussion; port millhouse's mill-start --orch + orch-review/orch-wait so the hub writes Discussion-Review round 1",
+    "body": "Operator 2026-09-30: a weakness that the orchestrator is not involved during discussion; millhouse's `mill-start --orch` with the `orch-review`/`orch-wait` skills works very well.\nMill shape: the worker pauses before discussion-review round 1, messages its parent session (`--parent \u003cname\u003e`) that discussion.md is ready, and waits for `orch-review.md`; the orchestrator forks a reviewer that writes it in the review-output format (BLOCKING/NIT, class design/scope/decision/consistency); the worker fixes and continues; convergence needs two consecutive APPROVEs, so round 1 alone never converges; round 2+ uses the normal reviewer.\nLoom shape to decide: a seed flag (batten sets it for hub runs) that makes Discussion-Review round 1 an `awaiting` stop naming the discussion file; the hub writes its review and records it with a verb (reuse the approve/reject record idiom), and `lyx loom start` resumes; the notification can be the awaiting state (hub watch) plus a message to the parent once process-naming exists.\nOpen: the same for Plan-Review round 1."
   }
 ]
