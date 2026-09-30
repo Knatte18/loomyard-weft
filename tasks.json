@@ -81,8 +81,8 @@
     "slug": "batten-open-ide",
     "title": "batten opens VS Code on the new pair with reed attached",
     "depends_on": [
-      "verify-triage",
-      "ide-hub-workspace"
+      "fabric-readd-weft-push",
+      "verify-triage"
     ],
     "isolated": false,
     "deferred": false,

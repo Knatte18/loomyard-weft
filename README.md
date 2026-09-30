@@ -21,12 +21,6 @@ Flaky or pre-existing test failures no longer halt a run; report names the faili
 
 # Layer B
 
-## **#009:** batten opens VS Code on the new pair with reed attached [B]
-[batten-open-ide](design-batten-open-ide.md)
-Depends on: #021, #011
-
-Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
-
 ## **#015:** Trace logs: configurable retention, fewer files from routine commands [B]
 [trace-log-retention](design-trace-log-retention.md)
 Depends on: #014
@@ -40,12 +34,6 @@ Depends on: #010
 llm-driven run shows only ly-drive; go-driven run shows only the status strand
 
 # Layer C
-
-## **#012:** Publish: verify the tree after merging the parent [C]
-[publish-verify-after-merge](design-publish-verify-after-merge.md)
-Depends on: #009
-
-A conflict-resolved parent merge was pushed with non-compiling tests
 
 ## **#016:** lyx quarry: per-glyph resolve answers, grep-safe glyphs output [C]
 [quarry-cli-answers](design-quarry-cli-answers.md)
@@ -61,6 +49,12 @@ Re-adding a removed slug races the old remote weft branch; integration test flak
 
 # Layer D
 
+## **#009:** batten opens VS Code on the new pair with reed attached [D]
+[batten-open-ide](design-batten-open-ide.md)
+Depends on: #020, #021
+
+Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
+
 ## **#017:** Burler: warn when the explore stencil lacks the focus_directive marker [D]
 [focus-marker-warn](design-focus-marker-warn.md)
 Depends on: #016
@@ -68,6 +62,12 @@ Depends on: #016
 Burler: warn when the explore stencil lacks the focus_directive marker
 
 # Layer E
+
+## **#012:** Publish: verify the tree after merging the parent [E]
+[publish-verify-after-merge](design-publish-verify-after-merge.md)
+Depends on: #009
+
+A conflict-resolved parent merge was pushed with non-compiling tests
 
 ## **#018:** reed: send a short launch-script line instead of the full command [E]
 [reed-launch-script](design-reed-launch-script.md)
