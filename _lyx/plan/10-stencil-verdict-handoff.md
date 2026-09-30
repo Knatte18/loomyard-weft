@@ -5,7 +5,8 @@
 - `//contracts/stencils/landing/landing-template-describe.md`
 - `template_test.go`
 
-**Intent:** Hand the integration verdict to webster: Master ends `done` over a `FAILED` report instead of `stuck` (D2).
+**Intent:** Hand the integration verdict to webster: Master ends `done` over a `FAILED` report instead of `stuck` (D2), and carry the triage section to the PR (D11).
+D11 makes `summary.md` the channel to the PR, but the Describe stencil reads the run record only for manual-check items and carries only the `## Integration suite failed` section, so without a rule the triage section never reaches the PR.
 
 In the Master stencil's integration-suite stage, the `status: FAILED` branch changes from `outcome: stuck` to `outcome: done`.
 Master still neither localizes, fixes, nor re-forks;

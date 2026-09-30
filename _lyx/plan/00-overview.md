@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 root: internal/websterengine
 language: go
 ---
@@ -26,6 +26,7 @@ The integration fork captures its output to a scratch log so Go can name every f
 9 — stage-wiring — run triage in the integration stage and demote done on regression
 10 — stencil-verdict-handoff — Master ends done over a FAILED report; Describe carries the triage section
 11 — triage-docs — package doc, overview row, and webster spec describe triage
+12 — rebegin-keeps-start-sha — begin-batch keeps a batch's recorded start SHA across a re-begin
 
 ## Shared Decisions
 
