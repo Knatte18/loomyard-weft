@@ -16,7 +16,7 @@
 
 **Uses:**
 - `internal/reedengine#stageLaunchScript`
-- `plan:internal/reedengine#removeLaunchScripts`
+- `internal/reedengine#removeLaunchScripts`
 - `internal/reedengine#composePaneLaunchLine`
 - `internal/reedengine#executablePath`
 - `internal/shell#Shell`

@@ -6,7 +6,7 @@
 - `internal/reedengine#Engine.Down`
 
 **Create:**
-- `plan:internal/reedengine#removeLaunchScripts` -> `func removeLaunchScripts(sh shell.Shell, stateDir string, guids []string)`
+- `internal/reedengine#removeLaunchScripts`
 - `internal/reedengine/launchscript_cleanup_test.go`
 
 **Uses:**
