@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "batch 04-cli-leftover-preflight-envelope: record-batch refused with a policy violation: fabric-reference violation in fork transcript agent-aa3734b6df3b57ff2.jsonl (fork ran a fabric-referencing command via Bash)"
+batches_done: 3
