@@ -1,0 +1,13 @@
+---
+round: 1
+focus:
+  - "decision-record.md Decisions, the fabricengine probe bullet: it says the probe takes `l *lyxcwd.Location` and reuses `mergeRecordExists` and `foreignMergeStatePresent`, but it also rejects `Fabric.MergeInProgress` for needing an open `*Fabric`. Settle whether the decided probe shape is internally consistent on that point, and whether the plan writer can act on it as written."
+  - "decision-record.md Decisions, the half-broken-pair rule against the 'A probe error refuses on the envelope' decision: when the pair cannot be opened or its record location cannot be resolved, the probe is said to 'report on the git-level probes alone'. Settle whether that fallback and the refuse-on-error decision agree, and which one governs an unopenable pair."
+  - "decision-record.md, the batten claim stated as an Auto-mode assumption, repeated as an Open risk, and left open in support-log.md's Q7: settle whether the three statements agree, and whether an unverified retry behaviour that can loop belongs in the decision record as an assumption, a risk, or a constraint the plan must satisfy."
+  - "decision-record.md Decisions, the spawn/resume trigger bullet and the matching acceptance criteria: the existing branch has a third outcome besides spawn, resume and live-working (a live strand with no marker over a run halted at a hand-back, refused as `driver_not_parked`). Settle whether the record states what `start` does on a mid-merge pair in that case, so the plan writer does not have to guess the precedence between the two refusals."
+  - "decision-record.md Decisions, the rationale for exempting a live working driver: it rests on Landing's conflict session running mid-merge with a live driver. Settle whether that rationale, and the Open risk about a crash-left Landing record, are stated precisely enough for the plan writer, or carry deliberation that belongs in support-log.md."
+  - "decision-record.md Scope (Out) and Acceptance criteria, the docs list: settle whether the named docs cover the observable CLI change the repo's same-commit docs rule asks for, without asking for an enumeration of call sites."
+---
+
+Seed rationale: the pair is well-formed and the design is narrow, so round 1 is aimed at internal consistency between decisions, the probe's decided shape against the internals it claims to reuse, and whether open items (batten retry, the hand-back refusal precedence) are left for the plan writer to resolve silently.
+Per the rubric's Do-not-flag list and the writer stencil's bounds, no entry asks for rejected alternatives in the decision record, a "Notes for the plan writer" addition, or exhaustive call-site enumeration.
