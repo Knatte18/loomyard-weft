@@ -2,10 +2,26 @@
   "runGuid": "d4030ca681712cfd6232d1752f3f0e74",
   "planFingerprint": "cc0f9d3fac850fe4a2f34c4c92e6dce624854e01cfb0c4921227bb7bdda44fae",
   "currentBatch": 0,
-  "masterStrand": "912cb983bf6042832f4d934fc5bd884a",
-  "masterSessionId": "ae7c4f15-2d58-48b6-8181-6776f9f18b95",
+  "masterStrand": "41646ff63eff43ec927601f2c561fe91",
+  "masterSessionId": "f3adbacd-d173-4846-9aa3-cf9b3ec215f3",
   "assertedModel": "sonnet",
   "batches": {
+    "-1": {
+      "slug": "01-integration-report-type",
+      "startSha": "",
+      "kind": "",
+      "spawnedAt": "",
+      "terminal": true,
+      "status": "stuck",
+      "digest": {
+        "batch": "01-integration-report-type",
+        "status": "stuck",
+        "head_sha": "6e0d2a4d870686346d8afa2e97b04efab053065c"
+      },
+      "cardShas": [
+        "6e0d2a4d870686346d8afa2e97b04efab053065c"
+      ]
+    },
     "1": {
       "slug": "integration-report-type",
       "startSha": "85902381e89c8131af7ccff9d388227aa5774aa4",

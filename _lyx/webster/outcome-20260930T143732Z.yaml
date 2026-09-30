@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "integration suite FAILED: internal/landingshed TestPublish_MergesInCleanlyBeforeCreatingPullRequest got outcome \"awaiting\", want \"stuck\" (-tags integration run)"
+batches_done: 12
