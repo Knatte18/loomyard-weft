@@ -118,15 +118,5 @@
     "deferred": false,
     "brief": "Hide the long env+claude launch line behind a generated launch script",
     "body": "Every strand pane shows a long typed launch line before the agent starts: the pane-binary prelude (`export PATH=…`, `export LYX_BIN=…`, `internal/reedengine/panebin.go`) chained onto the claude invocation (`CLAUDE_CODE_FORK_SUBAGENT=1`, `\"$(cat prompt.md)\"`, `--session-id`, `--settings`, `--model`, `--effort`, `--dangerously-skip-permissions`, `internal/shuttleengine/claudeengine/command.go`), sent with `send-keys` into an interactive shell.\nThe operator finds it noisy.\nDirection: reed writes the composed line to a `launch.sh` (or `.ps1`) in the strand's scratch dir and sends only `. \u003cpath\u003e/launch.sh`; behaviour unchanged, the full line stays inspectable in the file."
-  },
-  {
-    "id": 12,
-    "slug": "ide-hub-workspace",
-    "title": "ide: hub workspace with prime, board and portals",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "One generated VS Code workspace shows the board beside the prime",
-    "body": "The operator wants to watch the board (and running tasks) in VS Code while talking to the hub orchestrator in the prime.\nDirection: `lyx ide spawn` for the prime generates `\u003chub\u003e/_launchers/\u003cprime\u003e.code-workspace` with folders prime, `_board` and `_portals`, and opens that instead of the bare folder.\nLyx-owned, outside every worktree, so agents never see it; task windows stay one pair each.\n`code --add` works today but is ad hoc."
   }
 ]
