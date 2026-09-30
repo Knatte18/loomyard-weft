@@ -13,7 +13,7 @@
 - `internal/loomcli/start_midmerge_test.go`
 
 **Uses:**
-- `plan:internal/shedrun#StartMergeInProgressKind`
+- `internal/shedrun#StartMergeInProgressKind`
 - `plan:internal/fabricengine#MidMerge`
 - `plan:internal/fabricengine#MidMergeState`
 - `plan:internal/fabricengine#MidMergeKind`

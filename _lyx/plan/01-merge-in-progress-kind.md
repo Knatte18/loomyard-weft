@@ -1,7 +1,7 @@
 # Card 1 — merge-in-progress-kind
 
 **Create:**
-- `plan:internal/shedrun#StartMergeInProgressKind` -> `const StartMergeInProgressKind = "merge_in_progress"`
+- `internal/shedrun#StartMergeInProgressKind`
 
 **Uses:**
 - `internal/shedrun#StartNotParkedKind`
