@@ -7,6 +7,8 @@ The session ran autonomously; every turn below is a self-posed question with the
 1. **What is the task?**
    Board task 12: `Publish` merges the parent into the task branch and pushes without compiling or testing.
    Incident: run `operator-surface`, PR #300, conflict-resolved merge `854eb73fe` left call sites on the old `shedrun.StatusRel(runID)` signature.
+   `go build` passed, `go vet`/`go test` failed, and only the hub's PR review caught it.
+   The broken call sites were parent-side tests in `internal/loomcli`, a package the task itself changed, so a plan verify meeting the template's coverage rule would have run them.
 2. **Where does the work fall?**
    `internal/landingshed` (`publish.go`, `finalize.go`, `deps.go`), wired by `internal/loomcli/landingdeps.go`.
    The merge-in is `internal/mergeresolve.Resolver.Resolve`, whose `Result.AlreadyUpToDate` distinguishes a no-op merge.
@@ -77,4 +79,9 @@ _No rounds yet._
 - **Q8 — Runner?** Resolved, auto-pick: share webster's shell-selection runner, extended with context and an output writer.
 - **Q9 — Timeout key?** Resolved, auto-pick: none.
 - **Q10 — Spawn failure: error or Stuck?** Resolved, auto-pick: Stuck, so the reason reaches the operator's envelope.
+- **Q11 — How does call-time resolution reach landingshed?** Resolved, auto-pick: a `Deps` closure that parses the plan when the gate runs; a read or parse error is a returned error, never a skip.
+- **Q12 — Marker present but no verify command?** Resolved, auto-pick: skip as for any empty command, leave the marker, and name it in the warning.
+- **Q13 — Marker or output-file write failure?** Resolved, auto-pick: a returned error, matching a `CommitStatus` failure.
+- **Q14 — What does webster pass to the shared runner?** Resolved, auto-pick: a background context and a discarding writer, keeping its bisect unchanged.
+- **Q15 — What does cancellation kill?** Resolved, auto-pick: the shell process, with a bounded wait delay as in `internal/treadleengine`; orphaned grandchildren are an accepted risk.
 - **Environment:** no tool failures observed during exploration.
