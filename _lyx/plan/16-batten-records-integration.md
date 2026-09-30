@@ -7,7 +7,7 @@
 - `internal/battencli#wireForHub`
 - `internal/battencli#battenCLI.wire`
 - `plan:internal/battenshed#ChildApproval`
-- `plan:internal/shedrun#DriveReportsDir`
+- `internal/shedrun#DriveReportsDir`
 - `plan:internal/loomengine#LoomDurableDir`
 
 **Intent:**

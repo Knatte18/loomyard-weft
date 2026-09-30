@@ -12,8 +12,8 @@
 - `plan:internal/loomengine#LoomDurableDir`
 - `plan:internal/loomengine#LoomDurableDirRel`
 - `internal/loomengine#LoomFrictionDir`
-- `plan:internal/shedrun#DriveReportsDir`
-- `plan:internal/shedrun#DriveReportsRel`
+- `internal/shedrun#DriveReportsDir`
+- `internal/shedrun#DriveReportsRel`
 
 **Intent:**
 Loom's per-transition status commit also stages the run records, so friction notes written during a producer are committed by the transition that follows it, through the same route `_lyx/reviews/` already takes.

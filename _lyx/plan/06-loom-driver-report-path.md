@@ -5,7 +5,7 @@
 - `internal/loomcli/driverreport_test.go`
 
 **Uses:**
-- `plan:internal/shedrun#DriveReportsDir`
+- `internal/shedrun#DriveReportsDir`
 
 **Intent:**
 Write each ly-drive attempt's report into the durable run directory so it can be committed and survive teardown.

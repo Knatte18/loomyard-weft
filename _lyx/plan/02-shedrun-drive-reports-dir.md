@@ -1,8 +1,8 @@
 # Card 2 — shedrun-drive-reports-dir
 
 **Create:**
-- `plan:internal/shedrun#DriveReportsDir` -> `func DriveReportsDir(l *lyxcwd.Location, runID string) string`
-- `plan:internal/shedrun#DriveReportsRel` -> `func DriveReportsRel(l *lyxcwd.Location, runID string) string`
+- `internal/shedrun#DriveReportsDir`
+- `internal/shedrun#DriveReportsRel`
 
 **Edit:**
 - `internal/shedrun/paths.go`

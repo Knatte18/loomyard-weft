@@ -15,7 +15,7 @@
 - `internal/loomcli#statusCommitPathspec`
 - `internal/loomcli#commitStatusDeps`
 - `internal/loomcli#loomCommitStatusDeps`
-- `plan:internal/shedrun#DriveReportsDir`
+- `internal/shedrun#DriveReportsDir`
 
 **Intent:**
 Add `lyx loom commit-records`, which commits and pushes the run's records from Go when the driver stops.
