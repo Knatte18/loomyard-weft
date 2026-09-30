@@ -2,11 +2,11 @@
 
 # Layer A
 
-## **#020:** fabric add after remove: leftover remote weft branch rejects the push (flaky test) [A]
-[fabric-readd-weft-push](design-fabric-readd-weft-push.md)
-Depends on: #010
+## **#009:** batten opens VS Code on the new pair with reed attached [A]
+[batten-open-ide](design-batten-open-ide.md)
+Depends on: #020, #021, #019
 
-Re-adding a removed slug races the old remote weft branch; integration test flakes
+Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
 
 ## **#022:** Webster: a parent merge after a batch commit wedges record-batch [A]
 [webster-parent-merge-midrun](design-webster-parent-merge-midrun.md)
@@ -21,12 +21,6 @@ Depends on: #010
 Driver re-steps known transient stops itself; hands back only real decisions
 
 # Layer B
-
-## **#009:** batten opens VS Code on the new pair with reed attached [B]
-[batten-open-ide](design-batten-open-ide.md)
-Depends on: #020, #021, #019
-
-Batten lifecycle step: open a VS Code window whose terminal is attached to the child run
 
 ## **#023:** Every refusal has a way forward: audit Webster and shed halt paths [B]
 [refusal-audit](design-refusal-audit.md)
@@ -129,6 +123,12 @@ Hide the long env+claude launch line behind a generated launch script
 Depends on: #010
 
 llm-driven run shows only ly-drive; go-driven run shows only the status strand
+
+## **#020:** fabric add after remove: leftover remote weft branch rejects the push (flaky test)
+[fabric-readd-weft-push](design-fabric-readd-weft-push.md) [done]
+Depends on: #010
+
+Re-adding a removed slug races the old remote weft branch; integration test flakes
 
 ## **#021:** Webster verify: rerun, compare with parent, halt only on a real regression
 [verify-triage](design-verify-triage.md) [done]
