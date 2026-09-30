@@ -93,3 +93,8 @@ Hub runs never involve the orchestrator in Discussion; port millhouse's mill-sta
 [convergence-plan](design-convergence-plan.md)
 
 Plan for lyx to converge rather than accumulate bugs: per-run intervention log, real-wiring tests, feature freezes
+
+## **#026:** main-weft is never pushed and never advances on landing
+[main-weft-not-pushed]
+
+Seen 2026-09-30, uninvestigated: the prime weft branch main-weft stays local and does not move when a task lands
