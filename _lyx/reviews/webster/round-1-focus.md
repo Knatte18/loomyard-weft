@@ -1,0 +1,14 @@
+---
+round: 1
+focus:
+  - "internal/fabricengine/forkrecords.go: settle whether the no-checkout fork plus read-tree HEAD / rm -r --cached / checkout-index -a -u / read-tree -m HEAD sequence leaves the new weft worktree equivalent to a full checkout outside the run-records root — index stat data (no spurious modified entries), symlinks, attributes/filters, and anything else the plain worktree-add checkout did that checkout-index skips."
+  - "internal/fabricengine/forkrecords.go and add.go step 10c: settle whether the root pathspec used for the drop (ScopedPathspec + filepath.ToSlash, relative to the weft worktree) and the path CommitWeftPaths stages (shedrun.RunsRootRel under l.AnchorRel) name the same tree for a non-empty AnchorRel and on Windows, so the first weft commit stages exactly the root's deletions."
+  - "internal/fabricengine/add.go rollback after the drop: settle whether rollbackAdd removes a weft worktree whose run-record entries are tracked-but-absent (a dirty-looking worktree) without forcing or tripping the Fabric Destruction Chokepoint, and whether add_runrecords_integration_test.go's injected-failure case actually exercises the tracked-root path."
+  - "internal/battenshed/primelockwait.go and the create.go/teardown.go callers: settle the bound arithmetic (attempts vs sleeps), the cancellation checks around sleep and Acquire errors, and whether keying Stuck on release == nil rather than on the returned stuckReason misclassifies any Acquire result."
+  - "PrimeLock's new Sleep field: settle whether any existing PrimeLock construction outside battenshed (battenrecipe, shedbuild, shedrecipe, battencli fixtures and wire.go) exercises contention and would now fall through to the real waitOrCancel and wait out the 10-minute bound in tests — the Edit group's blast radius on PrimeLock and both Call methods."
+  - "Comment-convention compliance against CONSTRAINTS.md's Comment Line-Break Convention (semantic breaks, one sentence per line, no column limit): check every new or changed comment in the diff, in particular the reworded Call doc comments in create.go and teardown.go, PrimeLock's doc comment in deps.go, and RunsRootRel's doc comment in paths.go, for mid-sentence column wraps or two sentences sharing a line."
+  - "Fabric Vocabulary Invariant on new text: settle whether any comment, log line or message added in battenshed or shedrun (outside the owner set) names a fabric side."
+  - "Per-card mechanical checks: confirm each card's Edit group (Topology.Add, PrimeLock, both Call methods, the doc.go files) had its impact/blast-radius check against its own targets, and that each Create group's new symbol or file duplicates nothing already present."
+---
+
+The plan's decision record states the weft is never a merge participant, so a child's committed drop reaching the parent on landing is out of scope and not a focus.
