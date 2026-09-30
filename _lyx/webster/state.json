@@ -2,10 +2,26 @@
   "runGuid": "430e78321628394bc3b0a1986e139d39",
   "planFingerprint": "c3b25e0911638988017b7beb68159c11a67acac1575ba559df5ba4eaa122de55",
   "currentBatch": 0,
-  "masterStrand": "9ed6a3cdf35a0a85d23879e608bbcfda",
-  "masterSessionId": "2f3fd60d-c9e5-432c-a5ea-858cc9645e14",
+  "masterStrand": "2e2130555dfdb49c215b998939dea45b",
+  "masterSessionId": "1a348c28-9fad-4d70-9159-c6bc7ce3ee4f",
   "assertedModel": "sonnet",
   "batches": {
+    "-1": {
+      "slug": "unknown",
+      "startSha": "",
+      "kind": "",
+      "spawnedAt": "",
+      "terminal": true,
+      "status": "stuck",
+      "digest": {
+        "batch": "unknown",
+        "status": "stuck",
+        "head_sha": "unknown"
+      },
+      "cardShas": [
+        "unknown"
+      ]
+    },
     "1": {
       "slug": "audit-severity",
       "startSha": "2cb4ac68cf475b91645da060c7062b04c35a3661",
