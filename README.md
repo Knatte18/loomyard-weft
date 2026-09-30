@@ -55,3 +55,8 @@ Parked: #274 — only matters once batten runs llm-driven children
 [kick-start-pack](design-kick-start-pack.md)
 
 Parked: #227, #228 — measured win, not yet scheduled
+
+## **#003:** Prompt-cache TTL per agent role
+[cache-ttl-per-role](design-cache-ttl-per-role.md)
+
+Parked: workers on 5m cache TTL, waiting sessions on 1h — operator deciding
