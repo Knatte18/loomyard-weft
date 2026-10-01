@@ -1,4 +1,7 @@
-Operator 2026-09-30: wants a proper naming system so processes are easy to find; not for today.
-Today children show up as auto names like `refusal-audit-c9`; nothing of the naming part of the creel design is built.
-Scope: `<role>@<slug>` grammar owned by one package, fixed role vocabulary (orch, driver, worker, reviewer, operator); the strand name is a birth attribute in reed state, mirrored to pane title (allow-set-title off), Claude session name (`claude --name`) and `LYX_STRAND_NAME`; the reed watchdog restores drifted mirrors (Claude resets the session name after compact); `lyx reed list` as the directory.
-Creel then references this design instead of owning naming.
+Operator 2026-09-30/10-01: wants a proper naming system so processes are easy to find, out of creel and general; and every worktree thread must know its parent: if the hub spawns a worktree, the hub is the parent of every process in it, and all questions go to the hub.
+Today children show up as auto names like `refusal-audit-c9`; nothing of the naming part of manifest/designs/reed-mailbox.md is built.
+Naming: `<role>@<slug>` grammar owned by one package, fixed role vocabulary (orch, driver, worker, reviewer, operator); the strand name is a birth attribute in reed state, mirrored to the pane title (allow-set-title off), the Claude session name (`claude --name`) and `LYX_STRAND_NAME`; the reed watchdog restores drifted mirrors (Claude resets the session name after compact); `lyx reed list` as the directory.
+Parentage: the spawner records `parent` (its own address) in the run seed at create time (batten run / loom start); every strand reed starts in that worktree gets `LYX_PARENT`; stencils tell agents that questions and notices go to `$LYX_PARENT`; no parent recorded means the operator (awaiting state).
+Delivery v1: Claude Code peer messaging (SendMessage to the parent's session name, used successfully 2026-09-30), which needs session name == strand name; creel replaces it later without changing the addresses.
+The hub itself must carry a stable name (orch@<hub>), set by lyx orch or by the hub at session start.
+Prerequisite for orch-discussion-review's live question mode.
