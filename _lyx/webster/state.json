@@ -1,9 +1,9 @@
 {
   "runGuid": "430e78321628394bc3b0a1986e139d39",
-  "planFingerprint": "a4e82e8cf5c57ac4822b00b888e45f53ef02520e9fb977573e1930aae433a994",
-  "currentBatch": 0,
-  "masterStrand": "96b1c12a9eab96f19639545c68037928",
-  "masterSessionId": "f0b56719-d89c-4056-aaf7-5ae1b9970745",
+  "planFingerprint": "d5862d608e1b548dbf557a1b5bb786413915d43feb2366edccec5ea94ce34f31",
+  "currentBatch": 44,
+  "masterStrand": "b72909bb87c5e43992bc97a163b8d021",
+  "masterSessionId": "1ae81dfe-e156-4616-8f80-98eebc9973c4",
   "assertedModel": "sonnet",
   "batches": {
     "-1": {
@@ -805,6 +805,15 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-audit/f0b56719-d89c-4056-aaf7-5ae1b9970745/subagents/agent-a6c034cdacb6d4775.jsonl"
       ]
+    },
+    "44": {
+      "slug": "fabric-reference-allowlist",
+      "startSha": "9185228a2ffd0f44ba884ab20cb878c5338e0f77",
+      "kind": "fork",
+      "spawnedAt": "2026-10-01T14:28:10Z",
+      "sessionId": "1ae81dfe-e156-4616-8f80-98eebc9973c4",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "rebaseline-engine",
