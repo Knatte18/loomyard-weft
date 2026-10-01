@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "integration verify regressed: github.com/Knatte18/loomyard/cmd/lyx.TestNoRawGitMutation_WebsterProductionSource (offending card not localized)",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "PR-Rework → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "integration verify regressed: github.com/Knatte18/loomyard/cmd/lyx.TestNoRawGitMutation_WebsterProductionSource (offending card not localized)"
   },
   "history": [
     {
@@ -360,6 +360,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-01T16:15:12Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-01T16:45:04Z"
     }
   ],
   "product": {
