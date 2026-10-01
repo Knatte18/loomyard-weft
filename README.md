@@ -1,9 +1,9 @@
 # Tasks
 
-# Layer A
+# Done
 
-## **#023:** Every refusal has a way forward: audit Webster and shed halt paths [A]
-[refusal-audit](design-refusal-audit.md)
+## **#023:** Every refusal has a way forward: audit Webster and shed halt paths
+[refusal-audit](design-refusal-audit.md) [done]
 
 Walk every refusal/halt path in webster and shed; none may wedge a run
 
