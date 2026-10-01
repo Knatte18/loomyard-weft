@@ -69,6 +69,16 @@ The refusal table, package docs, ly-drive skill and the new CONSTRAINTS.md invar
 52 — fresh-pending-findings — run --fresh refuses while a pending suspect path differs from the run's start commit, and otherwise drops pending findings with a warning
 53 — recovery-suspect-check — recovery records a failed batch done only once its suspect paths are reverted or re-derived and committed
 54 — refusal-spec-evidence — the webster refusal table follows cards 47–53
+55 — evidence-base-by-ancestry — pick the last batch head and the run's start commit by git ancestry, and refuse a recorded commit missing from the repository with a fetch way forward
+56 — accept-audit-head — accept-audit refuses while HEAD carries a commit past the last batch head other than a clean parent merge
+57 — plan-baseline-restore — store the content behind every recorded plan hash and restore it with `lyx webster restore-plan`
+58 — fresh-and-plan-path-evidence — run --fresh requires HEAD at the start commit and restored plan paths, and plan-path way forwards name restore-plan
+59 — plan-edit-guard — validate, record-batch and recovery refuse a plan edited since the run recorded it instead of adopting it
+60 — recovery-uncheckable-findings — recover-batch refuses a batch failed on findings it cannot check, toward run --fresh
+61 — recovered-blob-anywhere — recovery looks for the flagged content anywhere in the head tree
+62 — fork-state-write — a fork write under webster's run directory other than its own report is correctness, audited before the terminal refusal
+63 — lyx-state-run-dirs — a Master write under the run's `.lyx` state directory is correctness
+64 — refusal-spec-round-four — the webster refusal table and webster spec follow cards 55–63
 
 ## Shared Decisions
 
