@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "integration verify regressed: github.com/Knatte18/loomyard/cmd/lyx.TestCheckedCallInvariant_RawSitesMarkedAndPinned, github.com/Knatte18/loomyard/cmd/lyx.TestNoRawGitMutation_WebsterProductionSource, github.com/Knatte18/loomyard/cmd/lyx.TestTierPurity_UntaggedTestsSpawnNothing (offending card not localized)",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "PR-Rework → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "integration verify regressed: github.com/Knatte18/loomyard/cmd/lyx.TestCheckedCallInvariant_RawSitesMarkedAndPinned, github.com/Knatte18/loomyard/cmd/lyx.TestNoRawGitMutation_WebsterProductionSource, github.com/Knatte18/loomyard/cmd/lyx.TestTierPurity_UntaggedTestsSpawnNothing (offending card not localized)"
   },
   "history": [
     {
@@ -299,6 +299,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-01T15:14:42Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-01T15:31:57Z"
     }
   ],
   "product": {
