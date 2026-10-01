@@ -99,11 +99,6 @@ Seen 2026-09-30, uninvestigated: the prime weft branch main-weft stays local and
 
 Bolt's README is unreadable; give bolt the roadmap's three tiers as a tier number in one entry store and render it in the roadmap's one-line-per-item style
 
-## **#028:** Move the Prowler plugin out of loomyard into the Scribe repo
-[prowler-to-scribe]
-
-Prowler (web fetch/markdown) is not part of the loomyard orchestration; it belongs with Scribe. GitHub #322.
-
 ## **#029:** Test suite: cut change amplification
 [test-suite-change-amplification](design-test-suite-change-amplification.md)
 
