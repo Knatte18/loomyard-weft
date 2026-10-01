@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Webster-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Webster → stuck",
+    "now": "Webster-Bouncer",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -366,6 +366,12 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-01T16:45:04Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/refusal-audit/_lyx/webster/summary.md",
+      "at": "2026-10-01T16:48:49Z"
     }
   ],
   "product": {
