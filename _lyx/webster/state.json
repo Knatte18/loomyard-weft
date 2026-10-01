@@ -1,7 +1,7 @@
 {
   "runGuid": "430e78321628394bc3b0a1986e139d39",
   "planFingerprint": "a8fa283ab8442e7f5a376122bb2976a9bdec76f7701172a156f15e0f037d080c",
-  "currentBatch": 0,
+  "currentBatch": 60,
   "masterStrand": "8a71e236b46b0774297553a140362748",
   "masterSessionId": "7cad014d-da70-4bfe-b281-ee0ad933719b",
   "assertedModel": "sonnet",
@@ -1176,6 +1176,15 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-audit/2f3fd60d-c9e5-432c-a5ea-858cc9645e14/subagents/agent-a12b3462f52fbca50.jsonl"
       ]
+    },
+    "60": {
+      "slug": "recovery-uncheckable-findings",
+      "startSha": "5dddf33309d399981b0a7426eb8cf516e687e5ae",
+      "kind": "fork",
+      "spawnedAt": "2026-10-01T16:36:15Z",
+      "sessionId": "7cad014d-da70-4bfe-b281-ee0ad933719b",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "batch-fail-primitive",
