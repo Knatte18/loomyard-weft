@@ -1,4 +1,6 @@
-Why: agents misuse or bypass lyx (e.g. jq on _board/*.json) because the CLI shape is not discoverable; MCP tools carry a typed input schema and a description per tool.
-Shape to discuss: a thin server shipped in the ly plugin (.mcp.json), each tool a call into the same module seam the CLI uses, so behaviour never forks; generate the tools from the cobra tree (`--json` help already emits the tree as structured data) so they cannot drift; expose only the curated set agents need (board, loom status/approve/reject, webster record/accept-audit for Master), not every verb.
-Wins: no shell-quoted JSON payloads, per-tool permissions (an agent can be denied accept-audit), deferred tool loading keeps context small.
-Related: bolt-roadmap-tiers (board verbs), process-naming.
+Why: agents misuse or bypass lyx (e.g. jq on _board/*.json) because the CLI shape is not discoverable; an MCP tool carries a typed input schema and a description.
+Operator 2026-10-01: NOT one tool per verb, MCP entries are heavy; pick only the important ones, and how to pick is open.
+Proposed selection: (1) measure first: mine transcripts and logs for which lyx commands agents run, where they fail, and where they read around lyx; (2) few coarse tools, one per area with an `action` enum (the Artifact-tool pattern), e.g. board, run (status/approve/reject), webster (Master only), a handful in total; (3) per-role exposure: a fork may get none, Master gets webster, the hub gets board and run.
+Shape: a thin server in the ly plugin, each action calling the same module seam the CLI uses so behaviour never forks; the CLI stays for humans and scripts.
+Wins: no shell-quoted JSON payloads, per-tool permissions (deny accept-audit to an agent).
+Related: bolt-roadmap-tiers, process-naming.
