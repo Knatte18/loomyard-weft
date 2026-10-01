@@ -1,7 +1,7 @@
 {
   "runGuid": "430e78321628394bc3b0a1986e139d39",
   "planFingerprint": "a8fa283ab8442e7f5a376122bb2976a9bdec76f7701172a156f15e0f037d080c",
-  "currentBatch": 58,
+  "currentBatch": 0,
   "masterStrand": "8a71e236b46b0774297553a140362748",
   "masterSessionId": "7cad014d-da70-4bfe-b281-ee0ad933719b",
   "assertedModel": "sonnet",
@@ -1117,8 +1117,22 @@
       "kind": "fork",
       "spawnedAt": "2026-10-01T16:29:39Z",
       "sessionId": "7cad014d-da70-4bfe-b281-ee0ad933719b",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "58-fresh-and-plan-path-evidence",
+        "status": "done",
+        "head_sha": "00bc0676b79c7c4a40325c84bb2e622c8a954c02",
+        "deviations": [
+          "internal/websterengine/recoverbatch.go"
+        ]
+      },
+      "cardShas": [
+        "00bc0676b79c7c4a40325c84bb2e622c8a954c02"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-audit/7cad014d-da70-4bfe-b281-ee0ad933719b/subagents/agent-af67773d82731c392.jsonl"
+      ]
     },
     "6": {
       "slug": "rebaseline-verb",
@@ -1262,6 +1276,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-audit/d0797970-76ff-4dee-934b-6b253c34b3a6/subagents/agent-a0d833f6cebc0240b.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-audit/7cad014d-da70-4bfe-b281-ee0ad933719b/subagents/agent-aeba21d27c6397413.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-audit/7cad014d-da70-4bfe-b281-ee0ad933719b/subagents/agent-a927da5a45fda2d3a.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-audit/7cad014d-da70-4bfe-b281-ee0ad933719b/subagents/agent-a62bd01f0e5f991ec.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-audit/7cad014d-da70-4bfe-b281-ee0ad933719b/subagents/agent-a62bd01f0e5f991ec.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-audit/7cad014d-da70-4bfe-b281-ee0ad933719b/subagents/agent-af67773d82731c392.jsonl"
   ]
 }
