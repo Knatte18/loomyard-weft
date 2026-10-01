@@ -108,3 +108,13 @@ Prowler (web fetch/markdown) is not part of the loomyard orchestration; it belon
 [test-suite-change-amplification](design-test-suite-change-amplification.md)
 
 Test code is ~3x production and growing faster; a small prod change forces edits in many test files, each one context an implementing agent must read. Survey and plan in GitHub #323, work split into #324-#327.
+
+## **#030:** Move everything in manifest/ into bolt and retire the folder
+[manifest-to-bolt](design-manifest-to-bolt.md)
+
+LYXHUB takes over all loomyard development, so manifest/ (roadmap.md Someday list, designs/, the stale HANDOFF.md) moves into bolt and the folder goes
+
+## **#031:** Initialize PATTERN for loomyard: CONSTRAINTS.md becomes _lyx/PATTERN.md
+[pattern-init](design-pattern-init.md)
+
+lyx agents get the constraints directive only when _lyx/PATTERN.md exists, and loomyard has none, so every run so far ran without it; CONSTRAINTS.md is the millhouse-style setup that PATTERN replaces

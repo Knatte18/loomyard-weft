@@ -198,5 +198,25 @@
     "deferred": false,
     "brief": "Test code is ~3x production and growing faster; a small prod change forces edits in many test files, each one context an implementing agent must read. Survey and plan in GitHub #323, work split into #324-#327.",
     "body": "Survey of main at fafb660c3, 2026-10-01: test churn 1.68x prod churn and rising; one loom-recipe row costs edits to ~8 test files in 4 packages; worst packages cmd/lyx, loomrecipe, fabricengine.\nWork items, each self-contained with file:line evidence in its issue:\n- #324 shared `internal/testkit` and one fake per cross-package seam (reverses the do-not-share-test-helpers decision; needs a CONSTRAINTS.md Testkit Invariant).\n- #325 git helpers in gitkit, hubforge as the only fabric fixture (84 private git helper copies today).\n- #326 one invariant-scan harness; derive registry and CLI-tree tests (section 2 needs an operator decision: it changes the CLI/Cobra Invariant help-tree tests).\n- #327 decouple recipe, plan and stencil tests from their sources.\nTies to convergence-plan: real-wiring tests over per-package fakes."
+  },
+  {
+    "id": 30,
+    "slug": "manifest-to-bolt",
+    "title": "Move everything in manifest/ into bolt and retire the folder",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "LYXHUB takes over all loomyard development, so manifest/ (roadmap.md Someday list, designs/, the stale HANDOFF.md) moves into bolt and the folder goes",
+    "body": "Operator 2026-10-01: LYXHUB takes over all development of loomyard; everything in manifest/ goes into bolt.\nThe operator also says much of it is outdated: triage each roadmap Someday item with the operator (keep as tier 3 or tier 2, merge, or strike) and carry its designs/\u003cname\u003e.md over as the bolt entry's design doc.\nDepends on bolt-roadmap-tiers for the tiers and the readable render.\nAfterwards: delete manifest/, and update CLAUDE.md (Task completion section names manifest/roadmap.md and manifest/designs/), docs/overview.md's Documentation Lifecycle and any stencil or test that names manifest/."
+  },
+  {
+    "id": 31,
+    "slug": "pattern-init",
+    "title": "Initialize PATTERN for loomyard: CONSTRAINTS.md becomes _lyx/PATTERN.md",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "lyx agents get the constraints directive only when _lyx/PATTERN.md exists, and loomyard has none, so every run so far ran without it; CONSTRAINTS.md is the millhouse-style setup that PATTERN replaces",
+    "body": "Operator 2026-10-01: CONSTRAINTS.md is millhouse's setup; loomyard's variant is PATTERN, not yet initialized.\nVerified: no _lyx/PATTERN.md in loomyard-weft, and there is no init verb. internal/pattern injects a role directive (implementer, review-fix, orchestrator) pointing at _lyx/PATTERN.md into webster fork/Master, burler and loom plan prompts only when the file exists, so today's runs got no PATTERN directive (they only saw CONSTRAINTS.md through CLAUDE.md and stencil mentions).\nWork: move CONSTRAINTS.md's invariants into _lyx/PATTERN.md (weft, invisible to the code repo; optionally split under _lyx/pattern/); repoint everything that names CONSTRAINTS.md: CLAUDE.md, stencils (loom discussion/plan/rework, webster master and prefix-recovery), the ly-drive skill, contracts/specs, burlercli/run.go, loomshed and treadleengine docs, and contracts/stencils/citation_enforcement_test.go; decide whether a `lyx pattern init` verb is wanted for other repos."
   }
 ]
