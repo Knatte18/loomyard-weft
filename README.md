@@ -94,7 +94,7 @@ Plan for lyx to converge rather than accumulate bugs: per-run intervention log, 
 
 Seen 2026-09-30, uninvestigated: the prime weft branch main-weft stays local and does not move when a task lands
 
-## **#027:** Bolt as the roadmap: Planned, Next Up and Someday in one store, rendered like roadmap.md
+## **#027:** Bolt as the roadmap: three numbered tiers in one store, rendered like roadmap.md
 [bolt-roadmap-tiers](design-bolt-roadmap-tiers.md)
 
-Bolt's README is unreadable; give bolt the roadmap's three tiers in one entry store and render it in the roadmap's one-line-per-item style
+Bolt's README is unreadable; give bolt the roadmap's three tiers as a tier number in one entry store and render it in the roadmap's one-line-per-item style
