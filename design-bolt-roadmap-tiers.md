@@ -1,0 +1,6 @@
+Operator 2026-10-01: manifest/roadmap.md is very readable, bolt's README is not readable at all; bolt should follow the roadmap's principle, and everything in it matters to the orchestrator (the future direction shapes how Planned work is reviewed).
+Tiers: Planned = tasks.json, concretized and claimable; Next Up = notes with stage next, planned to be done next but not concretized, not claimable until promoted; Someday = notes with stage someday (default), loose thoughts and ideas.
+Work: a stage field on notes plus a verb to move a note between next and someday; promote-note requires next by default but allows the skip the roadmap allows; render README like roadmap.md: Planned, Next Up, Someday sections each with a one-line meaning, one `1.` item per entry with **title**, slug, one or two what/why sentences and the design link, no per-entry headings and no numeric ids; optionally live state/producer/PR on running tasks.
+Folds in board-prune-done (one verb removing every done entry, its design doc and dangling depends_on).
+After the manifest triage, roadmap.md's Someday moves into bolt and bolt becomes the only roadmap.
+Content job, not code: rewrite note briefs as what/why during the review.
