@@ -1,70 +1,68 @@
 # Every webster, shed and loom refusal names a way forward
 
-A false stop costs as much as a wrong landing.
-Three runs on 2026-09-30 (`operator-surface`, `batten-hub-ready`, `ide-hub-workspace`) each needed a hub code fix and deploy to continue.
-Their wedges were a fork-audit false positive on a done batch, a begun-but-unrecorded batch refused as create-already-exists, and the `record-batch`/`begin-batch`/`recover-batch` ring after a parent merge.
-This change audits every refusal reachable through `lyx webster`, `lyx shed` and `lyx loom`, and fixes each one that had no way forward.
-A guard that does not protect correctness now warns and records instead of halting.
-
-No GitHub issue is attached to the board entry, so there is no `Closes` line.
+A false stop is as serious as a wrong landing.
+On 2026-09-30 three runs (`operator-surface`, `batten-hub-ready`, `ide-hub-workspace`) each wedged on a refusal whose only exit was a hub code fix and deploy.
+This change audits every refusal reachable through the `lyx webster`, `lyx shed` and `lyx loom` verbs, so no run needs that again.
 
 ## What changes
 
 - **Refusal table.**
-  `contracts/specs/refusal-spec.md` lists every refusal per module (webster, shed, loom) with trigger, class and way forward.
-  The `websterengine` and `shedengine` package docs, `webster-spec.md` and the ly-drive skill link to it.
+  `contracts/specs/refusal-spec.md` is new, with one section per module.
+  Each row gives refusal, trigger, class and way forward; I/O and wiring guards are grouped rows.
+  The `websterengine` and `shedengine` package docs, the loom gate docs and `webster-spec.md` link to it, and the ly-drive skill uses it to look up an escalation's way forward.
 - **Fork audit split by class.**
-  `fork-contract-write`, and `parent-write` into the warp's tracked tree or under the run's `_lyx` content, are correctness findings.
-  `fabric-reference`, `named-spawn`, `nested-agent` and every other `parent-write` are policy findings.
-- **Policy findings become warnings.**
-  When `record-batch` finds only policy findings on an `OK` report, it re-runs the batch's cards' `verify:` commands in-process.
-  If they pass, the batch is recorded done and each finding is a warning.
+  `fork-contract-write`, a `parent-write` into the warp's tracked tree or under `_lyx`, and a fabric reference whose command can change files are correctness class.
+  `named-spawn`, `nested-agent`, other `parent-write` paths and read-only fabric references are policy class.
+- **Policy findings warn.**
+  When record-batch sees only policy findings on an `OK` report, it re-runs the batch's cards' `verify:` commands.
+  If they pass, the batch is recorded done and each finding becomes a warning.
   The warning is stored once per finding in `state.json`, returned under the envelope's `warnings` key, and appended to `summary.md` as `## Audit warnings`.
-- **A rejected report fails the batch instead of wedging it.**
-  A correctness finding, a failing done-check or a blocking handle-bind finding now archives the report and records the batch failed, with the reasons as its digest.
-  The error names `lyx webster recover-batch NN`.
-  An unattributable report (no begin record, or no fork transcripts after the settle window) is archived and the error names `lyx webster begin-batch NN`.
+  A failing verify treats the findings as correctness class.
+- **Rejected reports fail the batch.**
+  A correctness finding, a failing done-check or a blocking bind finding now archives the report and records the batch failed.
+  The error names `lyx webster recover-batch NN`, which then proceeds.
+  Before, an `OK` report stayed on disk and begin-batch, record-batch and recover-batch refused each other in a ring.
+- **Unattributable reports are archived.**
+  With no begin record or no fork transcripts after the settle window, the report is archived and the error names `lyx webster begin-batch NN`.
 - **Each finding is dispositioned once.**
-  A finding is consumed by the first `record-batch` that reports it.
-  The run-exit audit passes already-dispositioned findings.
-  A leftover policy finding there becomes a warning.
-  A leftover correctness finding demotes Master's `done` to `stuck`, naming the suspect paths to revert with `git` before re-stepping.
-- **Later-card findings only warn.**
-  Drift about a card outside the batch being recorded becomes a warning.
-  That card's own `begin-batch` refuses it.
-- **`lyx webster rebaseline`** accepts an edited on-disk plan: it restamps the fingerprint and keeps every batch record.
-  It refuses when a begun or terminal batch's card set changed.
-  `ErrFingerprintMismatch` messages name it first, and `--fresh` only with the branch-reset precondition.
-- **`lyx shed goto [<run-id>] --to <producer>`**, in `internal/shedverbs`, so the shed, loom and batten subtrees all get it.
-  It leaves the run `paused` at the named row and appends a history entry with the new history-only outcome `goto`.
-  A `goto` entry starts a fresh bounce budget for the target's segment.
-  It refuses while the run lock is held, for an unknown producer, and on a done run.
-  The missing-producer and exhausted-budget stops, and `Loom-Preflight`'s half-finished stop, now name it.
-- **Refusal sweep.**
-  Refusal messages in the webster engine and CLI, shed, the loom CLI and the loom gates now carry a way forward, each with a test that reaches it.
-- **`CONSTRAINTS.md`** gains the Refusal Way-Forward Invariant, and the Shed Verb-Set list gains `goto`.
+  A parent finding is consumed by the first record-batch that reports it, and fork transcripts are marked seen whether they passed or failed.
+  The run-exit audit passes findings already dispositioned.
+  Policy findings it still sees become run-level warnings.
+  Correctness findings demote `done` to `stuck` and stay pending in state until `lyx webster accept-audit`, which also unblocks run entry (`ErrPendingAuditFindings`).
+- **Later-card findings.**
+  A drift or deleted-symbol finding about a later card is a warning on the current batch.
+  That card's own begin-batch refuses it.
+- **`lyx webster rebaseline`** accepts the on-disk plan after a foreign edit: it restamps the fingerprint and keeps every batch record.
+  It refuses when a begun or terminal batch number now covers a different card set, or a begun card's content hash changed (begin-batch and recover-batch now record SHA-256 per card).
+  Fingerprint-mismatch messages name `rebaseline` first and `--fresh` only with the branch-reset precondition.
+- **`lyx shed goto [<run-id>] --to <producer>`** is a generic verb in `internal/shedverbs`, so shed, loom and batten all gain it.
+  It parks the run `paused` at the named row and appends a history entry with the new history-only outcome `goto`.
+  A `goto` entry resets the bounce budget for every producer in the target's segment.
+  It refuses a held run lock, an unknown producer, a done run, a running run and targets past the reference row.
+  Way-forward texts carry the run-id.
+  Batten admits Worktree-Teardown only once the child run is done, through a `PreGoto` hook.
+- **Loom entry gates.**
+  Loom-Preflight accepts a deliberate `goto` re-entry and otherwise names `lyx loom goto --to Loom-Preflight`.
+  Seed coherence accepts the `goto` outcome, so the next `lyx loom run` files no crash-resume anomaly.
+  Approve's refusals name `git push`/`git pull` and a backward goto to Publish.
+- **Constraints and docs.**
+  CONSTRAINTS.md gains the Refusal Way-Forward Invariant and `goto` joins the Shed Verb-Set list.
+  `docs/overview.md`, the websterengine package doc and the Master and recovery stencils follow.
 
-## Decisions to check
+## Design decisions to check
 
 - A way forward is a `lyx` verb, a state transition the run takes itself, or a plain `git` command on the warp.
-  Hand-editing lyx-owned state never counts.
-- `nested-agent` is policy class although the board named only `fabric-reference` and `named-spawn`.
-- `parent-write` is split by path instead of classed whole.
-- "Commits pass verify" is implemented as a re-run of the cards' own `verify:` commands.
-- `goto` places no restriction on targets and does not re-open a done run.
-- `goto` writes `paused`, not `running`: a `running` write with the lock free reads as a crashed driver to loom's entry observation.
-- A consumed correctness-class `parent-write` is not re-audited.
-  If the recovery strand keeps a path the failure digest names, that content can land.
-- A failed batch's recovery continues on the fork's committed tree and repairs it instead of reverting it.
-- A re-driven batch after an unattributable report relies on `begin-batch` finding the already-committed cards done.
-- The enumeration is the audit: a refusal it missed keeps its old behaviour.
-- Out of scope: landing, batten, orch, fabric and burler refusals, and the fast-forward merge-in limit (it already names a git recourse).
-  Landing and batten refusals may still wedge runs until their own audit.
+  Hand-editing a lyx-owned state file or a hub code fix never counts.
+- `goto` places no restriction on targets beyond the refusals above.
+  The step refusal-kind vocabulary and envelope keys are unchanged, and `goto` sets no transient mark.
+- `shedengine` still imports only stdlib, `state` and `lock`; it declares `goto` and no producer returns it.
+- Landing, batten, orch, fabric, burler and board refusals are out of scope and may still wedge runs until their own audit.
+- Known risks: the audit covers the refusals found by enumeration, so a missed one keeps its old behaviour.
+  A consumed correctness-class `parent-write` is not re-audited, so a recovery that keeps a suspect path named in the digest can land it.
+  Re-driving a batch after archiving an unattributable report relies on begin-batch's begun-card validation scoping staying correct.
 
 ## To check by hand
 
-- The integration suite passed in its run and reported no failure or triage items.
-- Run a real loom run through `lyx shed goto` and `lyx webster rebaseline` on a live hub.
-  The tests use `hubforge` fixtures, not a running loom.
-- `lyx board get` warns that the deployed `webster-template-master` and `webster-prefix-recovery` stencils are behind the worktree source.
-  The Master stencil gained the `batch_failed` and `report_archived` rungs, so a production deploy (`update-plugins.sh`) is needed before those rungs reach running Masters.
+- The refusal table's cells were written before the later fixes landed; spot-check them against the final messages in code.
+- `go test ./...` and the integration-tagged tests reported OK at the branch head; no run against a live loom hub was done.
+- `update-plugins.sh` has not run; the `lyx board get` logs warn that the board stencil copies for the Master and recovery templates drift from source until a production deploy.
