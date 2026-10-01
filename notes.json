@@ -178,5 +178,25 @@
     "deferred": false,
     "brief": "Bolt's README is unreadable; give bolt the roadmap's three tiers as a tier number in one entry store and render it in the roadmap's one-line-per-item style",
     "body": "Operator 2026-10-01: manifest/roadmap.md is very readable, bolt's README is not readable at all; bolt should follow the roadmap's principle, and everything in it matters to the orchestrator (the future direction shapes how Planned work is reviewed).\nTiers: 1 = concretized and claimable (rendered Planned); 2 = planned to be done next but not concretized, not claimable until promoted (Next Up); 3 = loose ideas the operator has thought about, as in roadmap.md today (Someday).\nStorage: one store, not tasks.json + notes.json (and not three files): every entry carries a numeric `tier`; the data holds only the number and the renderer alone owns the section names. Claimable means tier 1; promotion is a lower tier number (3 -\u003e 2 -\u003e 1, skip allowed as in the roadmap); new ideas default to tier 3. The task and notes verb groups collapse onto it; migrate the two existing files.\nRender README like roadmap.md: one section per tier, in tier order, each with a one-line meaning, one `1.` item per entry with **title**, slug, one or two what/why sentences and the design link, no per-entry headings and no numeric ids; optionally live state/producer/PR on running tier-1 entries.\nFolds in board-prune-done (one verb removing every done entry, its design doc and dangling depends_on).\nAfter the manifest triage, roadmap.md's Someday moves into bolt and bolt becomes the only roadmap.\nContent job, not code: rewrite entry briefs as what/why during the review."
+  },
+  {
+    "id": 28,
+    "slug": "prowler-to-scribe",
+    "title": "Move the Prowler plugin out of loomyard into the Scribe repo",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Prowler (web fetch/markdown) is not part of the loomyard orchestration; it belongs with Scribe. GitHub #322.",
+    "body": ""
+  },
+  {
+    "id": 29,
+    "slug": "test-suite-change-amplification",
+    "title": "Test suite: cut change amplification",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Test code is ~3x production and growing faster; a small prod change forces edits in many test files, each one context an implementing agent must read. Survey and plan in GitHub #323, work split into #324-#327.",
+    "body": "Survey of main at fafb660c3, 2026-10-01: test churn 1.68x prod churn and rising; one loom-recipe row costs edits to ~8 test files in 4 packages; worst packages cmd/lyx, loomrecipe, fabricengine.\nWork items, each self-contained with file:line evidence in its issue:\n- #324 shared `internal/testkit` and one fake per cross-package seam (reverses the do-not-share-test-helpers decision; needs a CONSTRAINTS.md Testkit Invariant).\n- #325 git helpers in gitkit, hubforge as the only fabric fixture (84 private git helper copies today).\n- #326 one invariant-scan harness; derive registry and CLI-tree tests (section 2 needs an operator decision: it changes the CLI/Cobra Invariant help-tree tests).\n- #327 decouple recipe, plan and stencil tests from their sources.\nTies to convergence-plan: real-wiring tests over per-package fakes."
   }
 ]
