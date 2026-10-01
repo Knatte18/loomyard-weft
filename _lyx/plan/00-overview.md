@@ -61,6 +61,14 @@ The refusal table, package docs, ly-drive skill and the new CONSTRAINTS.md invar
 44 — fabric-reference-allowlist — a fabric reference is policy only when every command is a known read-only program
 45 — accept-audit-sync-failure — accept-audit's fabric-sync refusal gets its table row and a reaching test
 46 — pending-findings-block-run — pending audit findings block the shed run with the accept-audit way forward instead of failing it
+47 — fabric-reference-correctness — every fabric reference is correctness, and the shell parser behind the read-only split is deleted
+48 — fork-plan-write — a fork write under the plan directory is a correctness finding
+49 — parent-write-run-dirs — Master writes under webster's scratch directory or into another worktree are correctness
+50 — rebaseline-named-cards — run state hashes every plan file, and rebaseline accepts only the cards `--card` names, never 00-overview.md
+51 — accept-audit-evidence — accept-audit clears pending findings only when their suspect paths match the last batch head
+52 — fresh-pending-findings — run --fresh refuses while a pending suspect path differs from the run's start commit, and otherwise drops pending findings with a warning
+53 — recovery-suspect-check — recovery records a failed batch done only once its suspect paths are reverted or re-derived and committed
+54 — refusal-spec-evidence — the webster refusal table follows cards 47–53
 
 ## Shared Decisions
 
