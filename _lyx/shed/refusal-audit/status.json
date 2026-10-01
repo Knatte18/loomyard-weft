@@ -1,12 +1,12 @@
 {
   "current_producer": "Publish",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "landingshed: Publish: merge-in against parent branch \"main\": mergeresolve: conflict session run (attempt 1): shuttle: spec.OutputFiles entry \"/home/knatte/Code/loomyard-LYXHUB/refusal-audit/.lyx/loom/conflict-resolution-r1.md\" already exists — a pre-existing file would satisfy the file contract immediately; remove it or name a fresh path",
   "pause_requested": false,
   "activity": {
     "now": "Publish",
     "last": "Describe → done",
-    "wait": ""
+    "wait": "landingshed: Publish: merge-in against parent branch \"main\": mergeresolve: conflict session run (attempt 1): shuttle: spec.OutputFiles entry \"/home/knatte/Code/loomyard-LYXHUB/refusal-audit/.lyx/loom/conflict-resolution-r1.md\" already exists — a pre-existing file would satisfy the file contract immediately; remove it or name a fresh path"
   },
   "history": [
     {
