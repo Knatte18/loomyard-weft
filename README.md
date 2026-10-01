@@ -138,3 +138,8 @@ Webster forks run only untagged package tests, so integration tests first run in
 [publish-dirty-tree]
 
 refusal-audit's Publish merge left historyfold_test.go uncommitted and verify ran on the dirty tree; earlier publish-review-fixback had the same uncommitted merge-resolution edits
+
+## **#036:** Model specs in the short form everywhere, and per-role model choice revisited
+[model-spec-short-form](design-model-spec-short-form.md)
+
+Templates, spec examples and the repo config still write opus[effort=high] although opus[high] is supported, and their comments point at a docs/reference/model-spec.md that does not exist
