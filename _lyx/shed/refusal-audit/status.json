@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster-Burler",
-  "state": "blocked",
-  "error": "bounce budget exhausted",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Webster-Burler",
     "last": "Webster-Burler → stuck",
-    "wait": "bounce budget exhausted"
+    "wait": ""
   },
   "history": [
     {
