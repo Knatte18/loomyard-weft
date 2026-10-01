@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "webster: start master: shuttle: prepare run: prompt is 30394 bytes, over the 30000-byte launch limit: the pane launch expands the whole prompt into one command-line argument and Windows caps a process command line at 32,767 characters — move the long content into a file and make the prompt a short pointer to it",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "PR-Rework → done",
-    "wait": ""
+    "wait": "webster: start master: shuttle: prepare run: prompt is 30394 bytes, over the 30000-byte launch limit: the pane launch expands the whole prompt into one command-line argument and Windows caps a process command line at 32,767 characters — move the long content into a file and make the prompt a short pointer to it"
   },
   "history": [
     {
