@@ -138,3 +138,8 @@ refusal-audit's Publish merge left historyfold_test.go uncommitted and verify ra
 [model-spec-short-form](design-model-spec-short-form.md)
 
 Templates, spec examples and the repo config still write opus[effort=high] although opus[high] is supported, and their comments point at a docs/reference/model-spec.md that does not exist
+
+## **#037:** lyx board: let an agent find what it needs without reading the json
+[board-agent-ergonomics](design-board-agent-ergonomics.md)
+
+Agents bypass lyx board because finding an entry is awkward

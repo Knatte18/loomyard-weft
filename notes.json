@@ -258,5 +258,15 @@
     "deferred": false,
     "brief": "Templates, spec examples and the repo config still write opus[effort=high] although opus[high] is supported, and their comments point at a docs/reference/model-spec.md that does not exist",
     "body": "Seen 2026-10-01: long form in internal/loomengine/template.yaml (discussion, plan, review, friction), internal/websterengine/template.yaml (recovery), internal/landingshed/template.yaml (conflict, describe) and contracts/specs/llm-model-spec.md's examples; the spec only mentions in one sentence that a bare bracket token means effort. Template comments cite docs/reference/model-spec.md, which is missing; the spec lives at contracts/specs/llm-model-spec.md.\nWebster master is plain `sonnet`, so its effort (medium) comes invisibly from models.yaml; write it explicitly.\nModel choice (operator, 2026-10-01): try `fable[high]` for discussion and review, where design judgement matters (refusal-audit's holes came from opus Discussion and opus reviews; a Fable review found the design problem), keep sonnet for implementation; change it only between runs and measure review rounds, PR rejects and interventions before and after (convergence-plan)."
+  },
+  {
+    "id": 37,
+    "slug": "board-agent-ergonomics",
+    "title": "lyx board: let an agent find what it needs without reading the json",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Agents bypass lyx board because finding an entry is awkward",
+    "body": "Seen 2026-10-01: the hub looked for prowler with `lyx board list | grep`, found nothing (list shows tasks only), and fell back to jq on _board/notes.json.\nGaps: no search or filter by slug/text across tasks and notes; no one view of both; `notes list` returns its entries under the key \"tasks\"; `get`/`remove` take a JSON payload whose shape no --help states; list output is one JSON line, unreadable without jq.\nWant: `lyx board find \u003ctext\u003e` over both stores, a compact human listing (slug, tier, title), payload shapes in --help, and an agent-facing skill or doc for bolt."
   }
 ]
