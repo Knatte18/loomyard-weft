@@ -21,3 +21,13 @@ Only the important ones are exposed, and how to pick them is still open.
 - Wins: no shell-quoted JSON payloads, and per-tool permissions (an agent can be denied `accept-audit`).
 
 Related: `bolt-roadmap-tiers`, `process-naming`.
+
+
+## Status: needs a careful design session first
+
+Operator 2026-10-01: what goes into the MCP must be thought through very carefully; this is not a loom task yet.
+Questions for that session:
+
+- Which verbs need an MCP tool at all, and which are served well enough by a better `--help` (payload schema and an example per command) and a per-role command card in each stencil, generated from the cobra tree?
+- Is permission gating (an agent denied `accept-audit` or `approve`) the real reason for MCP, since `--help` and cards cannot give it?
+- One tool per module was raised and judged too heavy (long descriptions); what is the cut instead?
