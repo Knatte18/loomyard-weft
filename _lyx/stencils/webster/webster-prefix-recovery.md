@@ -2,8 +2,8 @@
      by RenderRecoveryPrompt (render.go) via internal/stencil, then written to a prompt file under _lyx/webster/prompts/ and handed to the SEPARATE, cold recovery-strand process recover-batch spawns when a fork reports stuck or writes no report — see the fork-context-hygiene Shared Decision.
      Unlike a fork prefix, this strand inherits NOTHING from Master's session: no codebase orientation, no plan framing, no constraints.
      It must earn its own orientation before the shared implementer body runs.
-     Its markers are {{.pattern_directive}} and {{.friction_directive}}, both optional (filled via stencil.FillOptional), each rendering as nothing when its own tier is inactive.
-lyx-stencil: sha256=6307cad8eae3f188bb3e86a6fc1bc32b6721f43807add7e28b60ded27d308a49 -->
+     Its markers are {{.pattern_directive}}, {{.friction_directive}} and {{.failure_digest}}, all optional (filled via stencil.FillOptional); the first two render as nothing when their own tier is inactive, and failure_digest renders as `none` when the batch was not failed.
+lyx-stencil: sha256=f4d4bd55e3cb6ca18c8329cbe0b72626d7937e90bc2ea24597cc3ae01195297f -->
 
 # Webster cold recovery implementer — starting COLD, inheriting nothing
 
@@ -28,3 +28,11 @@ Do this BEFORE the card instructions below — they assume you already hold this
 You implement ONLY your card(s) below and write your report as your final action.
 **NEVER run any `lyx webster` command** — not `await-batch`, not anything;
 those are Master's own verbs, driven by a session you are not part of.
+
+## Why this batch is being recovered
+
+{{.failure_digest}}
+
+If the text above is not `none`, webster rejected this batch's earlier report, and the text lists why.
+Treat every path named as a suspect path as suspect: revert it or re-derive it before you finish the card.
+You continue from the committed tree, not from scratch.
