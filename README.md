@@ -142,4 +142,4 @@ Templates, spec examples and the repo config still write opus[effort=high] altho
 ## **#037:** An MCP server over lyx exposing the verbs agents need
 [lyx-mcp](design-lyx-mcp.md)
 
-Operator idea 2026-10-01: give agents lyx through MCP so each verb carries its schema and description, instead of agents guessing CLI shapes
+A few coarse MCP tools over lyx, chosen by measured agent use and exposed per role, so agents see typed schemas instead of guessing CLI shapes
