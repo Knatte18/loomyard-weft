@@ -1,7 +1,7 @@
 {
   "runGuid": "430e78321628394bc3b0a1986e139d39",
   "planFingerprint": "7d477858f0bb145f4eaef19e837fa9e784c3d2fa9f07bea4940e896509d7eee0",
-  "currentBatch": 52,
+  "currentBatch": 0,
   "masterStrand": "e4203c2a6991b88597ff72fbb147f515",
   "masterSessionId": "d0797970-76ff-4dee-934b-6b253c34b3a6",
   "assertedModel": "sonnet",
@@ -992,8 +992,19 @@
       "kind": "fork",
       "spawnedAt": "2026-10-01T15:27:15Z",
       "sessionId": "d0797970-76ff-4dee-934b-6b253c34b3a6",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "52-fresh-pending-findings",
+        "status": "done",
+        "head_sha": "29d7b759f9c14c1c3fda5ffad23e52e3a7528292"
+      },
+      "cardShas": [
+        "29d7b759f9c14c1c3fda5ffad23e52e3a7528292"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-audit/d0797970-76ff-4dee-934b-6b253c34b3a6/subagents/agent-a6fcf7f9d16815526.jsonl"
+      ]
     },
     "6": {
       "slug": "rebaseline-verb",
@@ -1131,6 +1142,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-audit/d0797970-76ff-4dee-934b-6b253c34b3a6/subagents/agent-a5f8d0774156fd450.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-audit/d0797970-76ff-4dee-934b-6b253c34b3a6/subagents/agent-a73616e9461ec1819.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-audit/d0797970-76ff-4dee-934b-6b253c34b3a6/subagents/agent-acf5614a8675924d6.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-audit/d0797970-76ff-4dee-934b-6b253c34b3a6/subagents/agent-a79a5eb616e92f43e.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-audit/d0797970-76ff-4dee-934b-6b253c34b3a6/subagents/agent-a79a5eb616e92f43e.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-audit/d0797970-76ff-4dee-934b-6b253c34b3a6/subagents/agent-a6fcf7f9d16815526.jsonl"
   ]
 }
