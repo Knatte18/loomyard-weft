@@ -138,3 +138,8 @@ refusal-audit's Publish merge left historyfold_test.go uncommitted and verify ra
 [model-spec-short-form](design-model-spec-short-form.md)
 
 Templates, spec examples and the repo config still write opus[effort=high] although opus[high] is supported, and their comments point at a docs/reference/model-spec.md that does not exist
+
+## **#037:** An MCP server over lyx exposing the verbs agents need
+[lyx-mcp](design-lyx-mcp.md)
+
+Operator idea 2026-10-01: give agents lyx through MCP so each verb carries its schema and description, instead of agents guessing CLI shapes

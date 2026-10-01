@@ -1,0 +1,4 @@
+Why: agents misuse or bypass lyx (e.g. jq on _board/*.json) because the CLI shape is not discoverable; MCP tools carry a typed input schema and a description per tool.
+Shape to discuss: a thin server shipped in the ly plugin (.mcp.json), each tool a call into the same module seam the CLI uses, so behaviour never forks; generate the tools from the cobra tree (`--json` help already emits the tree as structured data) so they cannot drift; expose only the curated set agents need (board, loom status/approve/reject, webster record/accept-audit for Master), not every verb.
+Wins: no shell-quoted JSON payloads, per-tool permissions (an agent can be denied accept-audit), deferred tool loading keeps context small.
+Related: bolt-roadmap-tiers (board verbs), process-naming.
