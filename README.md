@@ -79,10 +79,10 @@ orch is deployed but untested live and lacks what the hub needs: bypass permissi
 
 TestEnforcement_FabricVocabulary scans Go production code only; specs, docs, skills and tests outside fabric still say warp/weft
 
-## **#024:** Orchestrator reviews the discussion: loom port of mill-start --orch
+## **#024:** The orchestrator takes part in Discussion: questions to the parent and a review gate
 [orch-discussion-review](design-orch-discussion-review.md)
 
-Hub runs never involve the orchestrator in Discussion; port millhouse's mill-start --orch + orch-review/orch-wait so the hub writes Discussion-Review round 1
+Hub runs never involve the orchestrator in Discussion; route Discussion-Write's questions to the parent session and make Discussion-Review round 1 the parent's review (loom port of mill-start --orch)
 
 ## **#025:** Convergence: measure hub and driver interventions, fix at the source, hardening freezes
 [convergence-plan](design-convergence-plan.md)

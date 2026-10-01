@@ -142,12 +142,12 @@
   {
     "id": 24,
     "slug": "orch-discussion-review",
-    "title": "Orchestrator reviews the discussion: loom port of mill-start --orch",
+    "title": "The orchestrator takes part in Discussion: questions to the parent and a review gate",
     "depends_on": [],
     "isolated": false,
     "deferred": false,
-    "brief": "Hub runs never involve the orchestrator in Discussion; port millhouse's mill-start --orch + orch-review/orch-wait so the hub writes Discussion-Review round 1",
-    "body": "Operator 2026-09-30: a weakness that the orchestrator is not involved during discussion; millhouse's `mill-start --orch` with the `orch-review`/`orch-wait` skills works very well.\nMill shape: the worker pauses before discussion-review round 1, messages its parent session (`--parent \u003cname\u003e`) that discussion.md is ready, and waits for `orch-review.md`; the orchestrator forks a reviewer that writes it in the review-output format (BLOCKING/NIT, class design/scope/decision/consistency); the worker fixes and continues; convergence needs two consecutive APPROVEs, so round 1 alone never converges; round 2+ uses the normal reviewer.\nLoom shape to decide: a seed flag (batten sets it for hub runs) that makes Discussion-Review round 1 an `awaiting` stop naming the discussion file; the hub writes its review and records it with a verb (reuse the approve/reject record idiom), and `lyx loom start` resumes; the notification can be the awaiting state (hub watch) plus a message to the parent once process-naming exists.\nOpen: the same for Plan-Review round 1."
+    "brief": "Hub runs never involve the orchestrator in Discussion; route Discussion-Write's questions to the parent session and make Discussion-Review round 1 the parent's review (loom port of mill-start --orch)",
+    "body": "Operator 2026-09-30/10-01: a weakness that the orchestrator is not involved in discussion; the hub must take part in the design.\nTwo mechanisms, built in this order:\n1. Review gate (millhouse mill-start --orch with orch-review/orch-wait): a seed flag (batten sets it for hub runs) makes Discussion-Review round 1 an `awaiting` stop naming the discussion file; the parent is notified (message to $LYX_PARENT, with the hub's state watch as fallback); the hub forks a reviewer that writes the review in the review-output format (BLOCKING/NIT, class design/scope/decision/consistency, plus review-attack-surface's question) and records it with a verb in the approve/reject idiom; `lyx loom start` resumes; convergence needs two consecutive APPROVEs so round 1 alone never converges. File-based, so it survives a hub restart.\n2. Live questions: where Discussion-Write would ask the operator interactively (as millhouse does), it sends each question to $LYX_PARENT and waits; the parent answers by message. shuttle already classifies an asking session (OutcomeAsking, AwaitOperator); route that to the parent instead of the operator. Needs process-naming (names and parentage). No parent or no answer within a bound: fall back to awaiting for the operator.\nOpen: the same for Plan-Review round 1."
   },
   {
     "id": 25,
