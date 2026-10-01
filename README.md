@@ -64,11 +64,6 @@ After `lyx fabric remove` the pair tmux session (driver claude, status strand, b
 
 loom start returns ok before the child status leaves blocked; an immediate lyx batten run reads blocked and exits again
 
-## **#020:** lyx board prune: remove every done task in one verb
-[board-prune-done](design-board-prune-done.md)
-
-No verb removes done tasks; the hub had to set-deps open tasks off done ones, then remove each done task one by one
-
 ## **#021:** Process naming: one name system for every process lyx spawns, out of creel
 [process-naming](design-process-naming.md)
 

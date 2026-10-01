@@ -110,16 +110,6 @@
     "body": "Seen 2026-09-30 on batten-records-leak-into-pairs: after a hub fix, `lyx loom start --no-attach` (ok) followed at once by `lyx batten run` ended with Run-Shed \"inner shed run reached state blocked\" because status.json still said blocked for a few seconds.\nFix direction: loom start writes state running (or a resume marker) before returning, or batten treats a blocked child whose driver was just relaunched as running."
   },
   {
-    "id": 20,
-    "slug": "board-prune-done",
-    "title": "lyx board prune: remove every done task in one verb",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "No verb removes done tasks; the hub had to set-deps open tasks off done ones, then remove each done task one by one",
-    "body": "Seen 2026-09-30: clearing 27 done tasks took set-deps on the open tasks plus one `lyx board remove` per slug.\nWant `lyx board prune` (tasks and notes): one atomic write that removes every done entry, their design docs, and drops done slugs from the depends_on of the entries that stay.\nBundle with the board viewer work."
-  },
-  {
     "id": 21,
     "slug": "process-naming",
     "title": "Process naming: one name system for every process lyx spawns, out of creel",
