@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster-Burler",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "bounce budget exhausted",
   "pause_requested": false,
   "activity": {
     "now": "Webster-Burler",
-    "last": "Webster-Bouncer → bounced to Webster-Burler",
-    "wait": ""
+    "last": "Webster-Burler → stuck",
+    "wait": "bounce budget exhausted"
   },
   "history": [
     {
@@ -378,6 +378,12 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-01T16:51:09Z"
+    },
+    {
+      "producer": "Webster-Burler",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/refusal-audit/_lyx/reviews/webster/round-1-review.md",
+      "at": "2026-10-01T17:10:57Z"
     }
   ],
   "product": {
