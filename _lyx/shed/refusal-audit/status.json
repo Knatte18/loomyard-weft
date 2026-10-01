@@ -1,11 +1,11 @@
 {
-  "current_producer": "Publish",
+  "current_producer": "PR-Gate",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Publish",
-    "last": "Describe → done",
+    "now": "PR-Gate",
+    "last": "Publish → done",
     "wait": ""
   },
   "history": [
@@ -403,6 +403,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/refusal-audit/_lyx/landing/summary.md",
       "at": "2026-10-01T17:15:55Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Publish",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-01T17:19:09Z"
     }
   ],
   "product": {
