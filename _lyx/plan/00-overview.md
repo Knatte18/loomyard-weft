@@ -58,6 +58,9 @@ The refusal table, package docs, ly-drive skill and the new CONSTRAINTS.md invar
 41 — master-stencil-done-checks — the Master stencil stops listing later-card drift as a batch_failed done-check
 42 — fabric-words-outside-fabric — reword the fabric side names this branch added in tests
 43 — refusal-spec-rework — the refusal table, overview and ly-drive skill follow cards 32–42
+44 — fabric-reference-allowlist — a fabric reference is policy only when every command is a known read-only program
+45 — accept-audit-sync-failure — accept-audit's fabric-sync refusal gets its table row and a reaching test
+46 — pending-findings-block-run — pending audit findings block the shed run with the accept-audit way forward instead of failing it
 
 ## Shared Decisions
 
