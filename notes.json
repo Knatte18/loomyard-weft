@@ -218,5 +218,45 @@
     "deferred": false,
     "brief": "lyx agents get the constraints directive only when _lyx/PATTERN.md exists, and loomyard has none, so every run so far ran without it; CONSTRAINTS.md is the millhouse-style setup that PATTERN replaces",
     "body": "Operator 2026-10-01: CONSTRAINTS.md is millhouse's setup; loomyard's variant is PATTERN, not yet initialized.\nVerified: no _lyx/PATTERN.md in loomyard-weft, and there is no init verb. internal/pattern injects a role directive (implementer, review-fix, orchestrator) pointing at _lyx/PATTERN.md into webster fork/Master, burler and loom plan prompts only when the file exists, so today's runs got no PATTERN directive (they only saw CONSTRAINTS.md through CLAUDE.md and stencil mentions).\nWork: move CONSTRAINTS.md's invariants into _lyx/PATTERN.md (weft, invisible to the code repo; optionally split under _lyx/pattern/); repoint everything that names CONSTRAINTS.md: CLAUDE.md, stencils (loom discussion/plan/rework, webster master and prefix-recovery), the ly-drive skill, contracts/specs, burlercli/run.go, loomshed and treadleengine docs, and contracts/stencils/citation_enforcement_test.go; decide whether a `lyx pattern init` verb is wanted for other repos."
+  },
+  {
+    "id": 32,
+    "slug": "review-attack-surface",
+    "title": "Reviews ask what a new verb or downgraded guard can skip or let through",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "No review rubric has a security/invariant axis, so refusal-audit's internal reviews approved an unguarded goto and a policy-only fabric write; downstream gates only check fidelity to the upstream decision",
+    "body": "From a Fable process analysis of refusal-audit, 2026-10-01: Discussion-Burler round 1 F5 itself wrote \"goto places no restriction on targets\" (reviews/discussion/round-1-review.md:142); Plan-Review checks fidelity to the decision record and so cannot question it; Webster-Review reviewed the diff as code.\nWant: loom-rubric-discussion-review.md (and the plan rubric) asks, for every new verb or downgraded guard, what it can now skip or let through; pairs with orch-discussion-review."
+  },
+  {
+    "id": 33,
+    "slug": "rework-design-review",
+    "title": "PR-Rework cards that change a classifier, verb or guard get a Plan-Review pass",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "PR-Rework skips Plan-Review because the findings are operator-authored, but the design of the fix is the rework agent's; refusal-audit's card 36 chose a fail-open denylist that nobody design-reviewed",
+    "body": "loom-recipe.yaml:37 exempts PR-Rework from Plan-Review. Keep the exemption for text-only findings; route cards that create or change a classifier, verb or guard through Plan-Review."
+  },
+  {
+    "id": 34,
+    "slug": "card-verify-integration",
+    "title": "Cards that touch integration-tagged tests verify with -tags integration",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "Webster forks run only untagged package tests, so integration tests first run in the plan-level verify, which cannot localize the offending card; refusal-audit stopped there four times",
+    "body": "No refusal-audit card declared a verify: line; the fork gate is go build plus the package's unit tests (webster-body-implementer.md:30), untagged, while 11 of 48 touched test files are //go:build integration.\nWant: Plan-Write adds `go test -tags integration \u003cpkg\u003e` to a card's verify when it touches a tagged file; a message-rewording card greps the repo for the old text first so stale exact-string assertions become part of the card; Master re-runs integration tests after a rework fork."
+  },
+  {
+    "id": 35,
+    "slug": "publish-dirty-tree",
+    "title": "Publish must not verify or push a dirty tree after merge resolution",
+    "depends_on": [],
+    "isolated": false,
+    "deferred": false,
+    "brief": "refusal-audit's Publish merge left historyfold_test.go uncommitted and verify ran on the dirty tree; earlier publish-review-fixback had the same uncommitted merge-resolution edits",
+    "body": ""
   }
 ]

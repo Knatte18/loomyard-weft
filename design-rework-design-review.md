@@ -1,0 +1,1 @@
+loom-recipe.yaml:37 exempts PR-Rework from Plan-Review. Keep the exemption for text-only findings; route cards that create or change a classifier, verb or guard through Plan-Review.

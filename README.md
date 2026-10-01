@@ -118,3 +118,23 @@ LYXHUB takes over all loomyard development, so manifest/ (roadmap.md Someday lis
 [pattern-init](design-pattern-init.md)
 
 lyx agents get the constraints directive only when _lyx/PATTERN.md exists, and loomyard has none, so every run so far ran without it; CONSTRAINTS.md is the millhouse-style setup that PATTERN replaces
+
+## **#032:** Reviews ask what a new verb or downgraded guard can skip or let through
+[review-attack-surface](design-review-attack-surface.md)
+
+No review rubric has a security/invariant axis, so refusal-audit's internal reviews approved an unguarded goto and a policy-only fabric write; downstream gates only check fidelity to the upstream decision
+
+## **#033:** PR-Rework cards that change a classifier, verb or guard get a Plan-Review pass
+[rework-design-review](design-rework-design-review.md)
+
+PR-Rework skips Plan-Review because the findings are operator-authored, but the design of the fix is the rework agent's; refusal-audit's card 36 chose a fail-open denylist that nobody design-reviewed
+
+## **#034:** Cards that touch integration-tagged tests verify with -tags integration
+[card-verify-integration](design-card-verify-integration.md)
+
+Webster forks run only untagged package tests, so integration tests first run in the plan-level verify, which cannot localize the offending card; refusal-audit stopped there four times
+
+## **#035:** Publish must not verify or push a dirty tree after merge resolution
+[publish-dirty-tree]
+
+refusal-audit's Publish merge left historyfold_test.go uncommitted and verify ran on the dirty tree; earlier publish-review-fixback had the same uncommitted merge-resolution edits
