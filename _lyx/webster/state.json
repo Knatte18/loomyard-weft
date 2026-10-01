@@ -1,7 +1,7 @@
 {
   "runGuid": "430e78321628394bc3b0a1986e139d39",
   "planFingerprint": "7d477858f0bb145f4eaef19e837fa9e784c3d2fa9f07bea4940e896509d7eee0",
-  "currentBatch": 0,
+  "currentBatch": 54,
   "masterStrand": "e4203c2a6991b88597ff72fbb147f515",
   "masterSessionId": "d0797970-76ff-4dee-934b-6b253c34b3a6",
   "assertedModel": "sonnet",
@@ -1025,6 +1025,15 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-audit/d0797970-76ff-4dee-934b-6b253c34b3a6/subagents/agent-a865c73a43ba8488d.jsonl"
       ]
+    },
+    "54": {
+      "slug": "refusal-spec-evidence",
+      "startSha": "68b70b9eea7f2d6c06f06c9ac7dbd0d749d9d51b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-01T15:30:29Z",
+      "sessionId": "d0797970-76ff-4dee-934b-6b253c34b3a6",
+      "terminal": false,
+      "status": ""
     },
     "6": {
       "slug": "rebaseline-verb",
