@@ -3,7 +3,7 @@
      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the codebase and the plan once, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lyx/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, and integration_report_path is always rendered with its prose context gating when it matters — both added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive.
-lyx-stencil: sha256=2152fc1492786302e8062ef4b910bc37e28d5e14c3ac1d2e60f98079d3f145b5 -->
+lyx-stencil: sha256=e3322bb2a2719094cabc165a3c5e3497ab38ded02931bd63059cc0098cf5338e -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -44,7 +44,10 @@ and no batch is ever skipped or reordered because it "looks independent."
 
 {{.progress}}
 
-`none` means this is a fresh run.
+**Still to run:** {{.remaining}}
+
+Every batch named in "Still to run" must be begun, run and recorded before the run can end `done`; `none` there means every batch already has a terminal record.
+`none` under the progress trail means this is a fresh run.
 Any other value lists one `NN-slug: <status>` line per already-reported batch.
 Read the trail by status — a resumed session thus picks up exactly where the last one left off:
 
