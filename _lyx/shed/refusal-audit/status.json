@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "integration verify regressed: github.com/Knatte18/loomyard/internal/websterengine.TestClassifyViolation/fabric-reference, github.com/Knatte18/loomyard/internal/websterengine.TestRecordBatch_UnlistedWriterFabricReferenceFailsBatch (offending card not localized)",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "PR-Rework → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "integration verify regressed: github.com/Knatte18/loomyard/internal/websterengine.TestClassifyViolation/fabric-reference, github.com/Knatte18/loomyard/internal/websterengine.TestRecordBatch_UnlistedWriterFabricReferenceFailsBatch (offending card not localized)"
   },
   "history": [
     {
@@ -226,6 +226,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-01T14:27:47Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-01T14:33:19Z"
     }
   ],
   "product": {
