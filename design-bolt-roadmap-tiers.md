@@ -5,3 +5,4 @@ Render README like roadmap.md: one section per tier, in tier order, each with a 
 Folds in board-prune-done (one verb removing every done entry, its design doc and dangling depends_on).
 After the manifest triage, roadmap.md's Someday moves into bolt and bolt becomes the only roadmap.
 Content job, not code: rewrite entry briefs as what/why during the review.
+Folds in board-agent-ergonomics (2026-10-01): the hub fell back to jq on notes.json because `lyx board list` shows tasks only and nothing searches. Add `lyx board find <text>` over every entry, a compact human listing (tier, slug, title) besides the JSON, the get/remove payload shapes in --help, and a skill or doc telling agents how to use bolt. Operator also wants entries grouped by a `type` (e.g. design, bug, idea, chore) alongside the tier; settle the type set in Discussion.
