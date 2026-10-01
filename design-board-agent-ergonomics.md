@@ -1,3 +1,0 @@
-Seen 2026-10-01: the hub looked for prowler with `lyx board list | grep`, found nothing (list shows tasks only), and fell back to jq on _board/notes.json.
-Gaps: no search or filter by slug/text across tasks and notes; no one view of both; `notes list` returns its entries under the key "tasks"; `get`/`remove` take a JSON payload whose shape no --help states; list output is one JSON line, unreadable without jq.
-Want: `lyx board find <text>` over both stores, a compact human listing (slug, tier, title), payload shapes in --help, and an agent-facing skill or doc for bolt.
