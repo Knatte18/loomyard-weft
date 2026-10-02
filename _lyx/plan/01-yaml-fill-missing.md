@@ -1,7 +1,7 @@
 # Card 1 — yaml-fill-missing
 
 **Create:**
-- `plan:internal/yamlengine#FillMissing` -> `func FillMissing(template, existing []byte) (filled []byte, keys []string, err error)`
+- `internal/yamlengine#FillMissing`
 - `internal/yamlengine/fill.go`
 - `internal/yamlengine/fill_test.go`
 

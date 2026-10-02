@@ -17,7 +17,7 @@
 - `CONSTRAINTS.md`
 
 **Uses:**
-- `plan:internal/yamlengine#FillMissing`
+- `internal/yamlengine#FillMissing`
 - `internal/yamlengine#MissingKeys`
 - `internal/logger#Info`
 - `internal/configreg#Modules`
