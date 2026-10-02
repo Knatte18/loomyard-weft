@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -31,7 +31,7 @@ The wait is a new pending gate state the shuttle wait loop holds without stallin
 ## Shared Decisions
 
 - **Gate contract additions (card 1).** `GateResult` gains `Pending`, `Send` and `SendFailedWayForward`; `GateEntry` gains an optional `Final` closure `finalize` evaluates instead of `Gate`; `GateEntryState` gains `waiting`.
-  Only a `PassOnCap` entry may return pending, enforced at run time by shuttle and at construction time by `shedrecipe`.
+  Only a `PassOnCap` entry may return pending or carry a `Final`, enforced at run time by shuttle and at construction time by `shedrecipe`.
 - **Turn boundary.** The writer is at a turn boundary when its last arrival was Done and the loop has sent it nothing since; every gate send and every pending re-evaluation happens only there.
 - **On-disk layout (cards 2 and 4).** Rounds live at `_lyx/reviews/parent-review/round-<N>/` with `request.json`, `brief.md`, `delivery.json`, `verdict.json` and `review.md`; the store's lock files live under the `.lyx` mirror of that directory.
   `loomengine` declares the segment; `internal/parentreview` receives both directories told.

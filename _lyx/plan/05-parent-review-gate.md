@@ -38,7 +38,7 @@ The wait bound is measured from opened-at, so a restart never resets it, and eve
 
 Bound: the prompt reaches only the writer's own session, at most three gate prompts per round plus one per notify, and the closure never sends anything itself.
 
-`gate_test.go` drives the state table with a fake clock and fake render seams: open-and-prompt, the throttle, the cap and its single Warn, notify past the cap, `--failed` not stopping re-sends, expiry from the original opened-at after a simulated restart, approve, reject consumed once then passed, a consumed reject on attach, no reviewer, and `final`'s non-opening and non-consuming behaviour.
+`gate_test.go` drives the state table with a fake clock and fake render seams: open-and-prompt, the throttle, the cap and its single Warn, notify past the cap, `--failed` not stopping re-sends, expiry from the original opened-at after a simulated restart, the cap and throttle across a restart (two prompts carried, then a second `NewGate` over the same store carries one more only a minute after the second and none after the third), a notify added between two closures carried by the second closure's first call, approve, reject consumed once then passed, a consumed reject on attach, no reviewer, and `final`'s non-opening and non-consuming behaviour.
 The allowlist gains `internal/shuttleengine`.
 
 **ImpactSummary:** New closure file in the package card 4 created; the only edit widens that package's own import allowlist by one entry.

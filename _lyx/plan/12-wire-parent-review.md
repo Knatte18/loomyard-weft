@@ -29,6 +29,8 @@ Discussion-Burler's list is unchanged.
 `wire` fills `Env.ParentReview`: the `Store` over `LoomParentReviewDir`/`LoomParentReviewLockDir`; the slug; the reviewer from `shedrun.ReadSeed(location, c.runID)`'s `Parent` (empty when the seed has none, a read error being a wiring error); the two discussion paths; `WaitBound` from `ParentReviewWaitMin`; and render seams calling `ParentReviewDeliveryPrompt` and `ParentReviewBrief` with the hub's stencils directory and that slug and reviewer.
 `CommitDiscussion`'s pathspec gains `LoomParentReviewDirRel()`, so the round directories land in the discussion commit through `fabricengine.ScopedPathspec` (Fabric Git Invariant).
 
+Bound: the gate entry holds the run only as card 6's `pass_on_cap` entry, and the pathspec adds only the parent-review directory, whose files only `parentreview.Store` writes and which already sits under `_lyx/reviews`, tracked content the per-transition status commit carries; no new class of content reaches weft.
+
 The two loomrecipe fixtures fill `Env.ParentReview` so the embedded recipe still builds.
 `parentreview_wiring_test.go` asserts the Discussion-Write row's gate list is `discussion` then `parent-review` with `pass_on_cap`, the reviewer comes from the seed's parent, an absent parent leaves it empty, and the commit pathspec includes the parent-review directory.
 
