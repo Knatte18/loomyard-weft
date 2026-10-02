@@ -20,7 +20,7 @@
     "15-driver-parent-notice.md": "8fd6f6a445de7edcf3982b0ff64caa2c6a2b78dd1ddf3c8a4dc2fa2ec5d35c82",
     "16-naming-docs.md": "8804cd4c9eee15bf01ba839a0fe9e9871c46ec244dc900219120d85241386133"
   },
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "2415d67dc1df7818ede233c030eceeeb",
   "masterSessionId": "5577a3e8-00d9-48db-8946-b3be117b6f8b",
   "assertedModel": "sonnet",
@@ -217,6 +217,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-agent-naming/5577a3e8-00d9-48db-8946-b3be117b6f8b/subagents/agent-aabb82c83e37b7fd2.jsonl"
       ]
+    },
+    "8": {
+      "slug": "callers-address-roles",
+      "cards": [
+        "08-callers-address-roles"
+      ],
+      "cardHashes": {
+        "08-callers-address-roles": "5bfade18cdf4d8402fabf693039fddee7bfca8d64858b8854540c6d6f52927d6"
+      },
+      "startSha": "225c411d634c0e7b1e503cfef7dc9be0bd45b3c5",
+      "kind": "fork",
+      "spawnedAt": "2026-10-02T08:43:50Z",
+      "sessionId": "5577a3e8-00d9-48db-8946-b3be117b6f8b",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
