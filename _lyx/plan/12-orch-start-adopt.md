@@ -17,7 +17,7 @@ The watcher needs no adopt-specific code, since it binds to the adopted transcri
 
 `orchengine` gains `SourceAdopt = "adopt"` beside the other prompt sources.
 In `start.go`, `sessionStarter.StartSession` returns the run's resume warning beside the guid, read from `Run.ResumeWarning` in `runnerSessionStarter`;
-update the test's `starterFunc` to match.
+update both test fakes in `start_test.go`, `fakeStarter` and `starterFunc`, to match.
 
 The verb, in order:
 
@@ -45,4 +45,4 @@ In `cmd/lyx/helptree_test.go`, assert `orch start --help` lists `--adopt`.
 
 In the orchengine package doc, add `--adopt` to the verb list and the start-prompt order, and add an "Adopting a running session" section beside the `--handoff` migration path: read the id from `/status`, exit that session, run `lyx orch start --adopt <id>`.
 
-**ImpactSummary:** Adds one flag and one launch branch to `orch start` and one return value to its internal starter seam; existing start branches keep their behaviour.
+**ImpactSummary:** Adds one flag and one launch branch to `orch start` and one return value to its internal starter seam, whose one production implementer and two test fakes all live in orchcli; existing start branches keep their behaviour.

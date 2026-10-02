@@ -23,6 +23,10 @@ the run's own settings file is what routes the adopted session's Stop hook into 
 `buildResumeCmd` already names `Launch.SessionID`, so reed's resume line names the same id with no further change.
 Pass the choice to `buildLaunchCmd` as a `resume bool` parameter, and update its doc comment to describe both shapes.
 
+Bound: this lets a run take over any existing session whose id is well formed; the engine checks only the id's shape here, not that the transcript exists or that no live process holds the session.
+Card 5 bounds it: `Runner.start` refuses any resume through an engine that does not implement `SessionResumer`, and card 6's check refuses a session with no transcript under the pane cwd or one a live process is identified as holding.
+orch's `--adopt` (card 12) is the only production caller that sets the field.
+
 Tests: a spec with `ResumeSessionID` produces a launch line with `--resume` naming the id, no `--session-id`, and the prompt read, settings path, model, effort and `--dangerously-skip-permissions` under `bypass`;
 its resume line names the same id;
 `Launch.SessionID` equals the given id;

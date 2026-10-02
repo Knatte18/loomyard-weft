@@ -27,4 +27,4 @@ Tests: `TestStart_SpecShape` asserts `PermissionMode` equals the configured valu
 
 In the orchengine package doc, add a section naming the permission mode (template `bypass`, passed verbatim, validated by the engine), the Agent-tool allowance with forks, and their bound.
 
-**ImpactSummary:** Changes the orch run's spec and drops orch's shuttle-config rewrite; no other module's runs or config change.
+**ImpactSummary:** `orchShuttleConfig` has one caller (`cli.go`'s `PersistentPreRunE`) and one test, both in orchcli; `orchSpec` is the only spec orch's runner ever starts, so every Claude run orch launches still gets the Agent tool, and no other module's runs or config change.

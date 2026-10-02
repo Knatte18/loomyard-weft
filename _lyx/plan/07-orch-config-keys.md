@@ -26,4 +26,4 @@ A present `orch.yaml` without the new keys fails to load with the existing "run 
 Tests: the template loads with `permission_mode` `bypass`, `SoftThreshold` 300000 and `SoftIdle` 300 seconds;
 zero and negative values for both soft keys floor to their defaults.
 
-**ImpactSummary:** Three new keys on orch's Config and template; existing accessors and callers are unchanged.
+**ImpactSummary:** Every `lyx orch` verb fails to load an existing `orch.yaml` until `lyx config reconcile` adds the three keys, and the in-repo fixtures that seed one (`config_test.go` here, the smoke test in card 13) must carry them; no module outside orch reads this config, and the existing accessors keep their values.
