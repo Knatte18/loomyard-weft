@@ -70,3 +70,5 @@ Waits on nothing open; can start now, in parallel.
    - Someday (roadmap): #227, #228 — measured win, committed, not yet scheduled
 1. **Prompt-cache TTL per agent role** — [`cache-ttl-per-role`](design-cache-ttl-per-role.md) · feature
    - Parked: workers on 5m cache TTL, waiting sessions on 1h — operator deciding
+1. **Orch owns the run loop: detached batten start, a lyx watch, one land command, --continue, a committed role prompt** — [`orch-owns-the-loop`](design-orch-owns-the-loop.md) · feature
+   - Replace the hub scratch scripts and remembered procedure with lyx itself, so an orch session runs the loop from its committed role prompt alone and resumes after a reboot
