@@ -1,13 +1,13 @@
 {
   "runGuid": "1102e7a2bcd70fa4139d86c14d6d1a64",
-  "planFingerprint": "a65539015695f35edff107a27cd956872264afa4b20f2359d30969462b6e98b7",
+  "planFingerprint": "0b866e6c1418a094da7a1eca30199ab2843e402e6e5c372d1829d3d0e6102133",
   "planFileHashes": {
     "00-overview.md": "3ef567e84c33e2c39a3c83ec4a6ba51a5429f8096f2dc4532720018850ed5617",
     "01-plan-first-card.md": "30e03f65241f23dbd49944761003cc3f321ad3d1e58c9903854ea32ad875d790",
     "02-review-exempt-classifier.md": "04fb3fd4c1f587638bd781c85527715b70531a199a0c5201ef4432ba9029cd9d",
     "03-webster-archive-run-record.md": "8c58f0a1c48c5a54847410b0b4cdd83d792836f9ae325cf9b04fdb924f5a5f5c",
-    "04-rework-told-values.md": "617d112ff1cc1f16f459e8e40f3f2288c8e284f8c23f48477bf5dda9b056eb25",
-    "05-rework-archive-generation.md": "beaef66753feb4bcf762845ae12f6355129ca4828bb1838152b4e91fba30060f",
+    "04-rework-told-values.md": "4c71aca9445bb28f981595a209423bb1dbee43ffb7ee01d3c45f1ceefd2cdd92",
+    "05-rework-archive-generation.md": "d6c58abb3876a8168dd143927b05f5d050539d130271232a2d440400636dc667",
     "06-retire-plan-fingerprint-rebaseline.md": "ac8c8491e09f04711b083fd20c9b581f7fd415be0218974a8c53f7510518e73d",
     "07-rework-gate-whole-plan.md": "5cd951fa20b799a98f93858e0b3fc7e24793d37edac2991491b7379c2241fc27",
     "08-bouncer-skip-seam.md": "5ef737eca8b34c0f0e16100155c7c8282e5e740c0a6eb28b5673f0215660a8ce",
@@ -20,7 +20,7 @@
     "15-self-contained-focus.md": "4afa16ec0caa3293ceb1e5abb19655c0682709b1734548fc7f3a4339231467fa",
     "16-status-commit-holds-archive.md": "6fe0c807ddb016f912061d14ff1908eee6301f27a79af1a76bc07a4283de292c"
   },
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "ac1a51aff320bd2aac1af67923b6e981",
   "masterSessionId": "63436152-871a-4246-b54f-4bffdd73602d",
   "assertedModel": "sonnet",
@@ -115,13 +115,25 @@
       "kind": "fork",
       "spawnedAt": "2026-10-02T08:24:13Z",
       "sessionId": "63436152-871a-4246-b54f-4bffdd73602d",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-rework-told-values",
+        "status": "done",
+        "head_sha": "9c3f84bd9e6a918900fb7950bbbe94c4b062f2cd"
+      },
+      "cardShas": [
+        "9c3f84bd9e6a918900fb7950bbbe94c4b062f2cd"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-rework-generations/63436152-871a-4246-b54f-4bffdd73602d/subagents/agent-ab37a2be63220e624.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-rework-generations/63436152-871a-4246-b54f-4bffdd73602d/subagents/agent-a97404525ebf8d5fa.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-rework-generations/63436152-871a-4246-b54f-4bffdd73602d/subagents/agent-a22ab599305001e23.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-rework-generations/63436152-871a-4246-b54f-4bffdd73602d/subagents/agent-a341a89e6c5e4c68b.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-rework-generations/63436152-871a-4246-b54f-4bffdd73602d/subagents/agent-a341a89e6c5e4c68b.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-rework-generations/63436152-871a-4246-b54f-4bffdd73602d/subagents/agent-ab37a2be63220e624.jsonl"
   ]
 }

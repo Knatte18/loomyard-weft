@@ -13,7 +13,7 @@
 - `internal/shedbuild/fixture_test.go`
 
 **Create:**
-- `plan:internal/loomshed#ReworkTold` -> `type ReworkTold struct`
+- `internal/loomshed#ReworkTold`
 
 **Intent:**
 Move the decision of what the rework session is told out of the wiring and into the PR-Rework producer, so the next card can tell the session where it archived the retired generation.

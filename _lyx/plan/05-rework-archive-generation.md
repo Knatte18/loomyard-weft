@@ -2,7 +2,7 @@
 
 **Edit:**
 - `internal/loomshed/prrework.go`
-- `plan:internal/loomshed#ReworkTold`
+- `internal/loomshed#ReworkTold`
 - `internal/loomshed/prrework_test.go`
 - `internal/loomengine/rework.go`
 - `internal/loomengine/rework_test.go`
