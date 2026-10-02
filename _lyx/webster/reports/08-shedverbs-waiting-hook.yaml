@@ -1,0 +1,5 @@
+status: OK
+head_sha: c68b209d5530101f245069066dd5cfa8de70dffa
+deviations:
+  - internal/shedverbs/spec.go
+  - internal/shedverbs/status.go
