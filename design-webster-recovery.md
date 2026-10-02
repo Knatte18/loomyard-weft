@@ -1,6 +1,6 @@
 # Webster recovers from a re-begin, its own canonicalization and an integration regression
 
-`webster-recovery` · Planned · bug
+`webster-recovery` · Planned · bug · running · Loom-Preflight
 
 ## Goal
 
