@@ -1,0 +1,5 @@
+status: OK
+head_sha: 7a6a5597dbd62fcf749d3c3547ab457531256240
+deviations:
+  - internal/shuttleengine/claudeengine/session.go
+  - internal/shuttleengine/claudeengine/session_test.go
