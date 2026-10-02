@@ -31,6 +31,7 @@ Each turn below is a question the design had to settle, with the self-picked ans
    Picked: tell Describe every generation's summary.
 9. Attack-surface fold-in: which stencils?
    Board names the discussion and plan rubrics; each rubric has a writer/reviewer symmetry note.
+   The trigger: refusal-audit's own review wrote "goto places no restriction on targets" and nothing acted on it.
    Picked: both rubrics plus the matching writer-stencil instruction.
 10. Burler focus/prior-round conflict: restate, or exempt?
     Picked: the judge writes self-contained focus entries, and the directive stencil keeps the clean-room rule unconditional.
@@ -64,7 +65,11 @@ Each turn below is a question the design had to settle, with the self-picked ans
 
 ## Review rounds
 
-_No rounds yet._
+### Hub review (parent, 2026-10-02)
+
+Reviewed by the hub orchestrator against the board goal before Discussion-Review, edited in place.
+The record meets the goal and covers every folded-in source; no decision changed.
+One addition: Open risks names the `loom-recipe.yaml` overlap with `gate-list`, which runs in parallel and reshapes the `gate` keys.
 
 ## Question ledger
 
