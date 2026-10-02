@@ -16,7 +16,7 @@
 **Uses:**
 - `plan:internal/parentreview#GateConfig`
 - `plan:internal/parentreview#NewGate`
-- `plan:internal/parentreview#Store.BeginRound`
+- `internal/parentreview#Store.BeginRound`
 - `internal/shedadapters#NewSingleLLMProducerGated`
 
 **Intent:**

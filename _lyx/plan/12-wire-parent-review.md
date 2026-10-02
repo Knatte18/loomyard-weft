@@ -11,7 +11,7 @@
 
 **Uses:**
 - `plan:internal/parentreview#GateConfig`
-- `plan:internal/parentreview#Store`
+- `internal/parentreview#Store`
 - `internal/loomengine#LoomParentReviewDirRel`
 - `internal/loomengine#LoomParentReviewDir`
 - `internal/loomengine#LoomParentReviewLockDir`

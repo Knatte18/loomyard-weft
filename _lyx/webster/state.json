@@ -1,24 +1,24 @@
 {
   "runGuid": "e995a0ad0536259d674999cec40c86c0",
-  "planFingerprint": "82d41029205913154972878edc06a25c14db7d7b83bd50aed84eda0f65fa25dc",
+  "planFingerprint": "e3cfa0f819219dfd7bf06457f3735bb6668982ab98150a8856d93585be4b614d",
   "planFileHashes": {
     "00-overview.md": "9cfc00df7182aa3038c7742b3bace8a05cae3310efb99f726b3334175164416f",
     "01-gate-pending-state.md": "131115b783cb179ecb1be123d6050b406aa950186e745ace08a97919a0fcea30",
     "02-loom-parent-review-config.md": "c74517641a5b6e01fee3e75a805d4c78d5c14e8e65f8a651459b420d16c93bbf",
     "03-parent-review-stencils.md": "72a9ce38c4327a49d56b777b78152bc4df8e7ca64a4745c98801d71aac1822ac",
-    "04-parent-review-store.md": "2d556121f94917ab638073b5932a2c19102206c2126d28766df47238a78b113b",
-    "05-parent-review-gate.md": "7ff3735725e278d1a6347fd3c4518e5373855e940a7800117127f55db931233b",
-    "06-recipe-parent-review-gate.md": "bc4c3be94861a31270bafd9190c818d66fc787cccad1201dda06b877e46f72ab",
-    "07-loom-review-verbs.md": "a3713c4c5f31ff5fb0bddc4344169e46c4854854ce34de508354e6eeb7952c53",
+    "04-parent-review-store.md": "1f0c2463f02b369c61131430da35df4c4af26687db22a4118b2c6824a6d3c40d",
+    "05-parent-review-gate.md": "f2123ce69192568263f539db9fd48a8e494cdf5b144c88e1994ceaf5d0d5d34d",
+    "06-recipe-parent-review-gate.md": "4aed6e264e3387a24a1221d06c9f0eb8b906ef58294f13d0cb08cc49517ee937",
+    "07-loom-review-verbs.md": "d1b071fc6b3d24aed3324fcbfa871c289de9c46640da7a31af3ee5e2108a030f",
     "08-shedverbs-waiting-hook.md": "e010bfc4c1fe9efd4f3c7e96b6f59d7ae6aa48233b89e131662c96837fb12290",
-    "09-loom-status-review-wait.md": "c4362bd18b0fb8a3299650347e963254efb7724c5e6314900425d1d329e85874",
-    "10-batten-review-wait.md": "f12867dde43148bfba8b10620a60c6d6fdc320c6b1df02dfccdb932c20332029",
+    "09-loom-status-review-wait.md": "ab4d43123ad1a9b2223ded1cdd423f95f21c76674de5f7129402ffa4109bbea5",
+    "10-batten-review-wait.md": "1a7f8b75cc378f602696b8ae83a9f646e63722fbf1b675d504f7e0331c21062f",
     "11-discussion-stencil-parent-review.md": "f57e57e3b0f15c01a091e01355d7261ec64bffb7dfc03e0a356842a98491a43a",
-    "12-wire-parent-review.md": "f98490f975b88e5e6a873bd6fa5300ec227e9e6f9e211c4f928a9e708522c6ca",
+    "12-wire-parent-review.md": "55dd773cfa74419344e32b88012938c7bdda156a5f6f090ab54952f9c09fe214",
     "13-orch-review-fork.md": "0411a3e59e71a23bbef0c0e16e6a7f192a6cbdd50ab64b5822bcfe78f58d2b72",
-    "14-parent-review-integration.md": "8471acff5d0d3c0ed4fa5314867904d9c9a730e0d62e9c7b90d14b0e04aea17f"
+    "14-parent-review-integration.md": "92ca5a12030179ba614577341ba387871376b1e1cd4e806605763ae16502fdff"
   },
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "909a6e3579ce76689cf6276d94a867d8",
   "masterSessionId": "3e89f69f-ac78-43a1-884c-23a00c477f28",
   "assertedModel": "sonnet",
@@ -121,13 +121,25 @@
       "kind": "fork",
       "spawnedAt": "2026-10-02T11:52:24Z",
       "sessionId": "3e89f69f-ac78-43a1-884c-23a00c477f28",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-parent-review-store",
+        "status": "done",
+        "head_sha": "51e98831efec2c113e214103bf79758aaabbe950"
+      },
+      "cardShas": [
+        "51e98831efec2c113e214103bf79758aaabbe950"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-parent-review/3e89f69f-ac78-43a1-884c-23a00c477f28/subagents/agent-abdbfce0ce6030354.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-parent-review/3e89f69f-ac78-43a1-884c-23a00c477f28/subagents/agent-af325f5b9cdbbb9d5.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-parent-review/3e89f69f-ac78-43a1-884c-23a00c477f28/subagents/agent-a3749e364be27898e.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-parent-review/3e89f69f-ac78-43a1-884c-23a00c477f28/subagents/agent-a16ebbbdaa73c8558.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-parent-review/3e89f69f-ac78-43a1-884c-23a00c477f28/subagents/agent-a16ebbbdaa73c8558.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-parent-review/3e89f69f-ac78-43a1-884c-23a00c477f28/subagents/agent-abdbfce0ce6030354.jsonl"
   ]
 }

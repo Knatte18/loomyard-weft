@@ -6,8 +6,8 @@
 
 **Uses:**
 - `plan:internal/parentreview#NewGate`
-- `plan:internal/parentreview#Store`
-- `plan:internal/parentreview#Store.Latest`
+- `internal/parentreview#Store`
+- `internal/parentreview#Store.Latest`
 - `internal/loomcli#RunCLIIn`
 - `internal/loomcli/smoke_gate_test.go`
 

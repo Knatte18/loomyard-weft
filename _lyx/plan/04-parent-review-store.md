@@ -5,14 +5,14 @@
 - `internal/parentreview/store.go`
 - `internal/parentreview/store_test.go`
 - `internal/parentreview/seam_enforcement_test.go`
-- `plan:internal/parentreview#Store` -> `type Store struct`
-- `plan:internal/parentreview#Round` -> `type Round struct`
-- `plan:internal/parentreview#Store.Latest` -> `func (s Store) Latest() (Round, bool, error)`
-- `plan:internal/parentreview#Store.BeginRound` -> `func (s Store) BeginRound() (Round, error)`
-- `plan:internal/parentreview#Store.RecordDelivered` -> `func (s Store) RecordDelivered(failedReason string) error`
-- `plan:internal/parentreview#Store.AddNotify` -> `func (s Store) AddNotify() error`
-- `plan:internal/parentreview#Store.RecordVerdict` -> `func (s Store) RecordVerdict(kind, reviewFile string) error`
-- `plan:internal/parentreview#Store.WaitNote` -> `func (s Store) WaitNote() (string, error)`
+- `internal/parentreview#Store`
+- `internal/parentreview#Round`
+- `internal/parentreview#Store.Latest`
+- `internal/parentreview#Store.BeginRound`
+- `internal/parentreview#Store.RecordDelivered`
+- `internal/parentreview#Store.AddNotify`
+- `internal/parentreview#Store.RecordVerdict`
+- `internal/parentreview#Store.WaitNote`
 
 **Prosa:**
 - `CONSTRAINTS.md`

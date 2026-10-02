@@ -7,8 +7,8 @@
 - `internal/battencli#battenCLI.wire`
 
 **Uses:**
-- `plan:internal/parentreview#Store`
-- `plan:internal/parentreview#Store.WaitNote`
+- `internal/parentreview#Store`
+- `internal/parentreview#Store.WaitNote`
 - `internal/loomengine#LoomParentReviewDir`
 - `internal/loomengine#LoomParentReviewLockDir`
 - `internal/battencli#taskWorktreeLocation`

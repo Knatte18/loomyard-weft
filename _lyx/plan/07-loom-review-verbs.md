@@ -13,10 +13,10 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/parentreview#Store`
-- `plan:internal/parentreview#Store.RecordDelivered`
-- `plan:internal/parentreview#Store.AddNotify`
-- `plan:internal/parentreview#Store.RecordVerdict`
+- `internal/parentreview#Store`
+- `internal/parentreview#Store.RecordDelivered`
+- `internal/parentreview#Store.AddNotify`
+- `internal/parentreview#Store.RecordVerdict`
 - `internal/loomengine#LoomParentReviewDir`
 - `internal/loomengine#LoomParentReviewLockDir`
 - `internal/fabricengine#PrimeName`

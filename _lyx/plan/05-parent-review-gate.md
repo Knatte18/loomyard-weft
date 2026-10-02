@@ -10,9 +10,9 @@
 - `internal/parentreview/seam_enforcement_test.go`
 
 **Uses:**
-- `plan:internal/parentreview#Store`
-- `plan:internal/parentreview#Round`
-- `plan:internal/parentreview#Store.Latest`
+- `internal/parentreview#Store`
+- `internal/parentreview#Round`
+- `internal/parentreview#Store.Latest`
 - `internal/shuttleengine#GateResult`
 - `internal/shuttleengine#Gate`
 
