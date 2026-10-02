@@ -9,9 +9,9 @@
 - `internal/loomengine/review_test.go`
 
 **Create:**
-- `plan:internal/loomengine#LoomParentReviewDirRel` -> `func LoomParentReviewDirRel() string`
-- `plan:internal/loomengine#LoomParentReviewDir` -> `func LoomParentReviewDir(l *lyxcwd.Location) string`
-- `plan:internal/loomengine#LoomParentReviewLockDir` -> `func LoomParentReviewLockDir(l *lyxcwd.Location) string`
+- `internal/loomengine#LoomParentReviewDirRel`
+- `internal/loomengine#LoomParentReviewDir`
+- `internal/loomengine#LoomParentReviewLockDir`
 
 **Uses:**
 - `internal/loomengine#LoomReviewsDirRel`

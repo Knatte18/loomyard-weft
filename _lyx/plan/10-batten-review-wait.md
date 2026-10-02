@@ -9,8 +9,8 @@
 **Uses:**
 - `plan:internal/parentreview#Store`
 - `plan:internal/parentreview#Store.WaitNote`
-- `plan:internal/loomengine#LoomParentReviewDir`
-- `plan:internal/loomengine#LoomParentReviewLockDir`
+- `internal/loomengine#LoomParentReviewDir`
+- `internal/loomengine#LoomParentReviewLockDir`
 - `internal/battencli#taskWorktreeLocation`
 
 **Intent:**

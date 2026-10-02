@@ -1,0 +1,5 @@
+status: OK
+head_sha: e4ac79cf07cfe5e6240461615f237d778c8246ea
+deviations:
+  - internal/loomcli/wiring_test.go
+  - internal/webstercli/wiring_test.go

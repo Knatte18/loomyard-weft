@@ -17,8 +17,8 @@
 - `plan:internal/parentreview#Store.RecordDelivered`
 - `plan:internal/parentreview#Store.AddNotify`
 - `plan:internal/parentreview#Store.RecordVerdict`
-- `plan:internal/loomengine#LoomParentReviewDir`
-- `plan:internal/loomengine#LoomParentReviewLockDir`
+- `internal/loomengine#LoomParentReviewDir`
+- `internal/loomengine#LoomParentReviewLockDir`
 - `internal/fabricengine#PrimeName`
 - `internal/fabricengine#WorktreePath`
 - `internal/loomcli#loomCLI.approveCmd`

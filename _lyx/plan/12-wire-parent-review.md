@@ -12,9 +12,9 @@
 **Uses:**
 - `plan:internal/parentreview#GateConfig`
 - `plan:internal/parentreview#Store`
-- `plan:internal/loomengine#LoomParentReviewDirRel`
-- `plan:internal/loomengine#LoomParentReviewDir`
-- `plan:internal/loomengine#LoomParentReviewLockDir`
+- `internal/loomengine#LoomParentReviewDirRel`
+- `internal/loomengine#LoomParentReviewDir`
+- `internal/loomengine#LoomParentReviewLockDir`
 - `plan:internal/loomengine#ParentReviewDeliveryPrompt`
 - `plan:internal/loomengine#ParentReviewBrief`
 - `internal/loomengine#Config`

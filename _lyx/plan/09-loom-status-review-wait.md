@@ -14,8 +14,8 @@
 - `internal/shedverbs#Hooks`
 - `plan:internal/parentreview#Store`
 - `plan:internal/parentreview#Store.WaitNote`
-- `plan:internal/loomengine#LoomParentReviewDir`
-- `plan:internal/loomengine#LoomParentReviewLockDir`
+- `internal/loomengine#LoomParentReviewDir`
+- `internal/loomengine#LoomParentReviewLockDir`
 
 **Intent:**
 Fill card 8's `Waiting` hook for loom, so `lyx loom status` reports a run waiting on its reviewer (decision D9).
