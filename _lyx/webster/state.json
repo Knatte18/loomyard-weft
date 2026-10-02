@@ -14,7 +14,7 @@
     "09-integration-fix-attempt.md": "c604e858fc57176e8dc112f56e6ebab6eaad9edd080c03f9df2e397c62ad8f70",
     "10-drop-temporary-workarounds.md": "8e3fbe12d992fddb9a9390d762aa5d85491dfb85f82f4d4ee0f78cbb3f61f3c5"
   },
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "70df4911a1e4fd781b0f537a24167446",
   "masterSessionId": "e0907656-a36c-4e5a-a63e-5409a403f3ab",
   "assertedModel": "sonnet",
@@ -96,6 +96,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-recovery/e0907656-a36c-4e5a-a63e-5409a403f3ab/subagents/agent-a384363880ae92653.jsonl"
       ]
+    },
+    "4": {
+      "slug": "fork-fixes-own-breakage",
+      "cards": [
+        "04-fork-fixes-own-breakage"
+      ],
+      "cardHashes": {
+        "04-fork-fixes-own-breakage": "a23d08cceae1eb89906b456ce0edb0308d15dfa6a756d51de8a50e9a0582447f"
+      },
+      "startSha": "227bccca840a05688d587d0ff2911ce2d22daa93",
+      "kind": "fork",
+      "spawnedAt": "2026-10-02T17:53:04Z",
+      "sessionId": "e0907656-a36c-4e5a-a63e-5409a403f3ab",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
