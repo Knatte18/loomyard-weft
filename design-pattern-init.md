@@ -2,7 +2,7 @@
 
 `pattern-init` · Planned · feature
 
-Depends on: [`parent-review`](design-parent-review.md), [`verify-publish-hardening`](design-verify-publish-hardening.md), [`pair-lifecycle`](design-pair-lifecycle.md), [`manifest-retire`](design-manifest-retire.md), [`review-finding-class`](design-review-finding-class.md)
+Depends on: [`verify-publish-hardening`](design-verify-publish-hardening.md), [`pair-lifecycle`](design-pair-lifecycle.md), [`manifest-retire`](design-manifest-retire.md), [`review-finding-class`](design-review-finding-class.md)
 
 ## Goal
 

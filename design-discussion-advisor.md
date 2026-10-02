@@ -2,8 +2,6 @@
 
 `discussion-advisor` · Someday · feature
 
-Depends on: [`parent-review`](design-parent-review.md)
-
 - **ask mode**: Discussion-Write asks its design questions as they arise, and an answerer replies; answers to design questions, not a review.
 - **The answerer is a dedicated agent**, spawned in parallel with Discussion-Write with its own prompt: it studies the task, bolt and the code while the writer drafts, so it is ready when the questions come.
   It is an address, not hard-wired to `$LYX_PARENT`; the parent is the fallback.

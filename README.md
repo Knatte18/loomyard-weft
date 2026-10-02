@@ -73,10 +73,3 @@ Waits on nothing open; can start now, in parallel.
    - Someday (roadmap): #227, #228 — measured win, committed, not yet scheduled
 1. **Prompt-cache TTL per agent role** — [`cache-ttl-per-role`](design-cache-ttl-per-role.md) · feature
    - Parked: workers on 5m cache TTL, waiting sessions on 1h — operator deciding
-
-## Done
-
-Finished, awaiting `lyx board prune`.
-
-1. **Parent review as a step in Discussion-Write's gate** — [`parent-review`](design-parent-review.md) · feature · done
-   - Port of millhouse orch-review/orch-wait into Discussion-Write's producer gate: after the mechanical validator, a reviewer (the parent for now) reviews once through a lyx verb pair and the live writer addresses it; a new pass_on_cap gate flag lets the run through afterwards
