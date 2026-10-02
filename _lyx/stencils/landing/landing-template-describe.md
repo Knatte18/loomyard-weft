@@ -4,7 +4,7 @@
      DescribeSpec via internal/stencil, then handed to shuttle as the describing agent's whole
      prompt. Every marker below is a top-level {{.X}} substitution; stencil.Fill requires both
      non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=18038c6c179d9d6d74b3899cba218ba587d89fd521308fd5e8f77386d7892f3a -->
+lyx-stencil: sha256=2f233dfb328d7f204652e5b23d3bd7fbb9c4a059a9b2838dcfe4cc2ee60089a2 -->
 
 # Change description — write the one description this task lands under
 
@@ -23,6 +23,7 @@ Read only these sources, and use read-only git for the diff:
   A manual-check item from an older generation still counts when the live change does not make it obsolete.
   When a record carries an `## Integration suite failed` section, carry that failure into your description as an item for the reviewer to check.
   When a record carries an `## Integration suite triage` section, carry it into your description as an item for the reviewer to check too, naming the flaky and pre-existing identities it lists.
+  When a record carries an `## Integration suite fix` section, carry it into your description as an item for the reviewer to check, naming the fix commits and the identities they cleared.
 
 ## What to write
 
