@@ -1,0 +1,5 @@
+status: OK
+head_sha: 63b442d22f104cc2827fb959fb35f707f571c586
+deviations:
+  - internal/hubgeom/hubgeom_test.go
+  - internal/hubgeom/testmain_integration_test.go
