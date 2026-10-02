@@ -1,0 +1,42 @@
+{
+  "runGuid": "e995a0ad0536259d674999cec40c86c0",
+  "planFingerprint": "8546d20e657f4b22f257d91c124e62ec490e9c829e52545a82bb724a50a50035",
+  "planFileHashes": {
+    "00-overview.md": "9cfc00df7182aa3038c7742b3bace8a05cae3310efb99f726b3334175164416f",
+    "01-gate-pending-state.md": "131115b783cb179ecb1be123d6050b406aa950186e745ace08a97919a0fcea30",
+    "02-loom-parent-review-config.md": "8f6d938a2de4ccf4ed8dc6474e41139fa7fed7baa171d21f847d8edbb5c9d5da",
+    "03-parent-review-stencils.md": "fcf5e7d64a108cf2a0f8d77b7fa50b400145634bc062229e399c545eeffc083f",
+    "04-parent-review-store.md": "2d556121f94917ab638073b5932a2c19102206c2126d28766df47238a78b113b",
+    "05-parent-review-gate.md": "7ff3735725e278d1a6347fd3c4518e5373855e940a7800117127f55db931233b",
+    "06-recipe-parent-review-gate.md": "bc4c3be94861a31270bafd9190c818d66fc787cccad1201dda06b877e46f72ab",
+    "07-loom-review-verbs.md": "c97c7de386be74a4f175e00c5fb1d9786866b2a664450d833421aba47f3920ec",
+    "08-shedverbs-waiting-hook.md": "e010bfc4c1fe9efd4f3c7e96b6f59d7ae6aa48233b89e131662c96837fb12290",
+    "09-loom-status-review-wait.md": "e98c5a18917ab2acf970638c76ca8205c75322f838de629476cea121280d7fb6",
+    "10-batten-review-wait.md": "978ae2219f2964a424a1496583b6f76ff84e3c69b6798a111f76d380ded2667b",
+    "11-discussion-stencil-parent-review.md": "f57e57e3b0f15c01a091e01355d7261ec64bffb7dfc03e0a356842a98491a43a",
+    "12-wire-parent-review.md": "4a0cee0dc19ba9eebbb0d773470d455bc3c16215fe25d6794fae99caea7eca28",
+    "13-orch-review-fork.md": "0411a3e59e71a23bbef0c0e16e6a7f192a6cbdd50ab64b5822bcfe78f58d2b72",
+    "14-parent-review-integration.md": "8471acff5d0d3c0ed4fa5314867904d9c9a730e0d62e9c7b90d14b0e04aea17f"
+  },
+  "currentBatch": 1,
+  "masterStrand": "909a6e3579ce76689cf6276d94a867d8",
+  "masterSessionId": "3e89f69f-ac78-43a1-884c-23a00c477f28",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "gate-pending-state",
+      "cards": [
+        "01-gate-pending-state"
+      ],
+      "cardHashes": {
+        "01-gate-pending-state": "131115b783cb179ecb1be123d6050b406aa950186e745ace08a97919a0fcea30"
+      },
+      "startSha": "218ba2a68e915b6cadae3bedf872fed72672235f",
+      "kind": "fork",
+      "spawnedAt": "2026-10-02T11:46:59Z",
+      "sessionId": "3e89f69f-ac78-43a1-884c-23a00c477f28",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
