@@ -5,7 +5,7 @@
 ## Goal
 
 Retire `manifest/`: first bring roadmap.md's surviving Someday items into bolt in the new tier format, then move the durable reference content into package docs, fix inbound links and delete the folder.
-Depends on `bolt-v2`; Millhouse has no ownership of `manifest/` (operator, 2026-10-02).
+Millhouse has no ownership of `manifest/` (operator, 2026-10-02).
 
 ## Someday items still to triage with the operator
 
@@ -29,5 +29,4 @@ This task moves the durable reference content into package docs, fixes inbound l
 
 Operator 2026-10-01: LYXHUB takes over all development of loomyard; everything in manifest/ goes into bolt.
 The operator also says much of it is outdated: triage each roadmap Someday item with the operator (keep as tier 3 or tier 2, merge, or strike) and carry its designs/<name>.md over as the bolt entry's design doc.
-Depends on bolt-roadmap-tiers for the tiers and the readable render.
 Afterwards: delete manifest/, and update CLAUDE.md (Task completion section names manifest/roadmap.md and manifest/designs/), docs/overview.md's Documentation Lifecycle and any stencil or test that names manifest/.
