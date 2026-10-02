@@ -1,0 +1,4 @@
+status: OK
+head_sha: 36ee2f09f4650f51ee382fe11a4d969bf19989db
+deviations:
+  - internal/shuttleengine/claudeengine/prepare_test.go
