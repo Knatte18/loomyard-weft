@@ -1,0 +1,15 @@
+---
+round: 1
+focus:
+  - "Card 11 (orch-spec-bypass-agents): the decision record never names removing orchShuttleConfig and TestOrchShuttleConfig_ClearsOnlyAgentDeny. Settle whether Decision 3's per-run allowance licenses that removal, and whether every Claude run orch launches still gets the Agent tool once orch loads shuttle.yaml unmodified."
+  - "Card 4 (spec-resume-session): it introduces the --resume launch edge, but its Intent states no bound; the guard against an unchecked resume lives in card 5. Settle whether card 4's own Intent has to state what the new edge lets through and what bounds it, under the attack-surface rule."
+  - "Card 9 (soft-trigger-watcher): it has ResetForFreshLaunch keep LastDeferral and CycleTrigger, but Decision 5 names only LastHandoff as kept. Settle whether a deferral recorded against the previous session holding the soft trigger on a freshly launched or adopted session is licensed by the decision record, or is scope the answer key does not grant."
+  - "Card 9 (soft-trigger-watcher): check the DEFER rules against Decision 6 and the watcher acceptance criteria one at a time: exact-match on the trimmed final message, a written file beating DEFER, the deferral window measured from when the turn end was read, DEFER ignored in hard and requested cycles, and the hard-before-requested-before-soft order. Settle whether every one is carried and nothing extra is introduced."
+  - "Decision 7 and the acceptance criteria against card 13 (orch-live-smoke): check each live-smoke item (bypass with no dialog, an Agent subagent, the idle probe, a soft cycle with a background shell re-armed, adopt keeping its context and completing a cycle, the <shortname>:orch name, the loom parent, SendMessage reachability, the two recorded observations) against a concrete step. Also settle whether card 13's stop-and-report rule for a --resume prompt that is never submitted fits the decision record's open-risk fallback."
+  - "Documentation: check that the touched docs named in the decision record's Scope (the orchengine package doc, the shuttleengine package doc, orch.yaml's template comments) are each assigned to a card. That includes whether the orchengine package doc covers the new orch status fields from card 10, and the prompt-suggestion residual from card 3."
+  - "ImpactSummary on the Edit cards (1, 2, 4, 5, 7, 9, 10, 11, 12): settle whether each one states a blast-radius conclusion (callers, packages reached, cross-module effects) or only restates Intent. Card 11 removes a function and a test, and card 12 changes the internal starter seam's return shape, so check those two first."
+---
+
+No rework round exists (`_lyx/loom/rework/` is absent), so `_lyx/discussion/decision-record.md` alone is the answer key.
+The verify section runs every package the cards target, with `-tags integration`, and compiles the smoke tag with `go vet`, so I set no verify-coverage entry.
+The dependency edges, the missing ImpactSummary on Create-only cards 6, 8 and 13, and the format checks are left to the gate.
