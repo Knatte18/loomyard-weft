@@ -17,6 +17,7 @@ Expose the new operations on the `Board` facade, each write through `boardCritic
 - `Find(text string) ([]BriefTask, error)` is a read: it loads the store without the lock and returns `Store.Find`.
 - `RetireLegacy() error`: under the lock, refuses with "nothing to retire" when neither legacy file exists;
   otherwise loads (which runs the last fold), drops `legacy_done`, saves `board.json`, deletes `tasks.json`, `notes.json` and their `.swaplock` files, renders, and spawns sync.
+  The mutate drops `legacy_done`, and the deletion is `boardCriticalSection`'s after-save step from card 4, so it runs under the lock, after the save, and before the render and the sync.
   `board.json` is saved before any deletion, so a crash in between leaves the legacy files beside a store that has already absorbed them.
 
 Tests in `board_test.go`: promote through the facade persists the new tier; prune removes a `done` entry and its design doc from disk and keeps an `abandoned` one;

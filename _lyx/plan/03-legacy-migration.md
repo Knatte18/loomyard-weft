@@ -12,7 +12,8 @@ Hold the conversion from the pre-upgrade `tasks.json` + `notes.json` records int
 
 - A legacy record type matching the pre-upgrade on-disk shape: `id`, `slug`, `title`, `depends_on`, `isolated`, `deferred`, `brief`, `body`, `status`, `type` (the recipe), `short_name`.
   It is decoded leniently, the way the old binary read its own files.
-- The legacy file names `tasks.json` and `notes.json` are declared here, as constants card 4's I/O and card 5's `RetireLegacy` both read.
+- The legacy file names `tasks.json` and `notes.json` are declared here as `legacyTasksFile` and `legacyNotesFile`, the constants card 4's I/O and card 5's `RetireLegacy` both read;
+  the distinct names keep this card compiling beside `board.go`'s `tasksFile`/`notesFile`, which card 4 deletes.
 - Migration takes the decoded tasks and notes and returns the entries plus the seeded `legacy_done` slug list:
   tasks become tier 1, deferred tasks tier 3, notes tier 3;
   every entry gets `type: feature`; a legacy `type` value moves to `recipe`; ids, `depends_on`, `isolated`, `brief`, `body`, `status` and `short_name` carry over.

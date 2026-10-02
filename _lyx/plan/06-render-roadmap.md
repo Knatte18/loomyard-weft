@@ -19,6 +19,7 @@ within each section, dependency layer then id.
 - The section names and their one-line meanings live here alone, as the only place tier numbers map to words: `Planned` (tier 1, concretized and claimable), `Next Up` (tier 2, planned next but not concretized), `Someday` (tier 3, loose ideas), and `Done` (finished, awaiting `lyx board prune`).
 - The README is `# Board`, a one-line intro, then `## Planned`, `## Next Up`, `## Someday`, `## Done`, each heading followed by its meaning line.
   A tier section renders its heading and meaning even when empty; `## Done` is omitted when no entry is done.
+  The intro and each meaning line are a single sentence on a line of their own, and the renderer never hard-wraps, so the generated markdown follows semantic line breaks.
   A `done` entry renders under `## Done` whatever its tier; every other entry, `abandoned` included, under its tier.
 - Each entry is one numbered item, exactly:
 
@@ -44,4 +45,4 @@ Tests:
 - `layer_test.go`: `RenderOrder` sorts tier before layer and puts `done` last.
 - `store_test.go`: `ListTasksBrief` and `Find` return README order.
 
-**ImpactSummary:** README and design-doc output change wholesale on the next render of every board; `list` JSON order changes to README order; no API signature changes.
+**ImpactSummary:** README and design-doc output change wholesale on the next render of every board; `list` JSON order changes to README order, which reaches only `internal/boardcli`'s `list` (the sole production caller of `ListTasksBrief`), since no stencil reads `lyx board list`; no API signature changes.

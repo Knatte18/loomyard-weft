@@ -31,9 +31,11 @@ The record keeps the Go name `Task` so the `{"task": ...}` envelope and every ex
 `store.go`:
 - `upsertAllowedKeys` gains `tier`, `type`, `recipe` and loses `deferred`.
   A payload carrying `deferred` is refused with a message naming `tier: 3` as its replacement, ahead of the generic unknown-field message (the same special-case shape as the existing `phase` hint).
-- `validateWrite` drops both deferred rules and gains the tier rule in both directions over the projected snapshot:
-  every non-`done` dependency of the incoming entry must have a tier less than or equal to its own,
-  and every non-`done` entry depending on the incoming entry must have a tier greater than or equal to the incoming entry's tier, unless the incoming entry is itself `done`.
+- `validateWrite` drops both deferred rules and gains the tier rule in both directions over the projected snapshot.
+  The rule is one predicate per edge: a dependent's tier must be greater than or equal to its dependency's tier, compared only when the dependency is not `done`;
+  the dependent's own status never exempts the edge.
+  So every non-`done` dependency of the incoming entry must have a tier less than or equal to its own,
+  and every entry depending on the incoming entry, `done` or not, must have a tier greater than or equal to the incoming entry's tier, unless the incoming entry is itself `done`.
   The refusal names the offending dependency and which entry to promote or demote.
   Dangling, isolated and cycle checks stay as they are.
 - `SetStatus` to a value other than `done` runs the tier rule for that entry, so reopening a done dependency cannot leave a lower-tier dependent behind it;
@@ -50,7 +52,7 @@ The record keeps the Go name `Task` so the `{"task": ...}` envelope and every ex
 Tests, in the existing test files: defaults (tier 3, type `feature`) through `UpsertTask` and `UpsertTasksBatch`;
 `tier` 0 and 4 refused; an unknown `type` refused with a message naming the set and `recipe`; `deferred` refused naming `tier: 3`;
 a dependency on a higher-tier entry refused on create, on demotion of the dependency, and on promoting the dependent to a lower tier number via upsert;
-a dependency on a `done` entry accepted whatever its tier; `SetStatus` reopening a done higher-tier dependency refused.
+a dependency on a `done` entry accepted whatever its tier; demoting a dependency of a `done` dependent to a higher tier refused; `SetStatus` reopening a done higher-tier dependency refused.
 Delete the deferred-rule and deferred-bucket cases, and repoint the `type` round-trip tests (`TestPromoteNotePreservesType` and the `task_test.go`/`store_test.go` cases) at `recipe`.
 
 **ImpactSummary:** Field rename ripples to `battencli`'s recipe read and every boardengine test touching `deferred` or `type`; `boardcli` help text still lists `deferred` until card 8.
