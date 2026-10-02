@@ -29,7 +29,6 @@
 
 **Uses:**
 - `internal/agentname/agentname.go`
-- `internal/fabricengine/codebinding.go`
 - `internal/fabricengine/worktreelist.go`
 - `internal/shedrun/seed.go`
 

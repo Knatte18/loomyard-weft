@@ -1,14 +1,14 @@
 {
   "runGuid": "2171423aa430a2b69f58e8cb8f3ffc71",
-  "planFingerprint": "8b7b87da4bb318f3e20772ec064d61f5eeb0695df012655839a0efdae43acdab",
+  "planFingerprint": "c900aeccb6d88f5679f8849d2834fcf288ea0d553b03f3024b48b9f4424ab95f",
   "planFileHashes": {
     "00-overview.md": "32cc554f6e88b540536bd5ec1dc47501cc04a2f0f25a460e7419e4be07b03996",
     "01-agentname-package.md": "e266e601ffcacc77d637635f17a75c8b92fc603cb6c5279e24b3da608a202d7a",
     "02-fabric-code-record.md": "d6d710951b3b016adb40e0049e41ebaa926831c59bb57d5bda664ee13dddfbe4",
-    "03-fabric-code-verb.md": "70a3bad4fe979f3c5cfb378bec1c96ad9ba8f8a819bcb73a874edebe19e80c55",
+    "03-fabric-code-verb.md": "1de2edc5c1b67f78d7559e66ad69e040eca1f0adc19c5dfd770f404ed064eb4b",
     "04-shell-envref.md": "5dab191ef61b1c9c5d39c924e7ecdee044af5b0cb01bc557a16ac6154ba6cb78",
     "05-seed-parent.md": "e56343f3a7679353f04ddafa5988ac46d6b41d071b40ac55d19c08e580da7caa",
-    "06-geometry-naming.md": "b989f0a633ec0ac4e915207ae6060e77a78d78a1c32b3cdb7e60dd7b4bd285c8",
+    "06-geometry-naming.md": "a32d97077e793bd572b50dcb165ae0abbc891a2e1658fe90a8d7174114c1ea06",
     "07-reed-forms-names.md": "32f5b1a6e7ec374ab4a05ea12e6000608cc4fa69c14864fe50043c233e3e9f81",
     "08-callers-address-roles.md": "5bfade18cdf4d8402fabf693039fddee7bfca8d64858b8854540c6d6f52927d6",
     "09-reed-env-injection.md": "09372a20b87891888d2f9f3faa57883d7f3cf05de7a36dcfed062406de6ab4be",

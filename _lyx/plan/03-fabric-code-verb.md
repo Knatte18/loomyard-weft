@@ -11,7 +11,6 @@
 - `cmd/lyx/helptree_test.go`
 
 **Uses:**
-- `internal/fabricengine/codebinding.go`
 - `internal/fabricengine/bolt.go`
 - `internal/agentname/agentname.go`
 

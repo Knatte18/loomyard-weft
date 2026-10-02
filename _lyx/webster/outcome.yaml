@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "Batch 02 begin-batch refused plan_drifted: glyph-not-found/3-fabric-code-verb and glyph-not-found/6-geometry-naming - target internal/fabricengine/codebinding.go#'s unit does not exist; edit the plan, run lyx webster rebaseline --card NN, then begin-batch 02 again"
+batches_done: 1
