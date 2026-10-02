@@ -1,13 +1,13 @@
 {
   "runGuid": "1102e7a2bcd70fa4139d86c14d6d1a64",
-  "planFingerprint": "0b866e6c1418a094da7a1eca30199ab2843e402e6e5c372d1829d3d0e6102133",
+  "planFingerprint": "2e82b491aeff518b24370de7f0ea3ac8b6e971763c80c2ad3d90df485572a29f",
   "planFileHashes": {
     "00-overview.md": "3ef567e84c33e2c39a3c83ec4a6ba51a5429f8096f2dc4532720018850ed5617",
     "01-plan-first-card.md": "30e03f65241f23dbd49944761003cc3f321ad3d1e58c9903854ea32ad875d790",
-    "02-review-exempt-classifier.md": "04fb3fd4c1f587638bd781c85527715b70531a199a0c5201ef4432ba9029cd9d",
-    "03-webster-archive-run-record.md": "8c58f0a1c48c5a54847410b0b4cdd83d792836f9ae325cf9b04fdb924f5a5f5c",
-    "04-rework-told-values.md": "4c71aca9445bb28f981595a209423bb1dbee43ffb7ee01d3c45f1ceefd2cdd92",
-    "05-rework-archive-generation.md": "d6c58abb3876a8168dd143927b05f5d050539d130271232a2d440400636dc667",
+    "02-review-exempt-classifier.md": "139821dd9e5de55b8cf9fd08ff54625b1836bf09226db35a7f84c026f378f1f4",
+    "03-webster-archive-run-record.md": "c6664ec763c7b49f6e4c7ac1c21a45b50f1ac1e796d41fc8845f57bcc00d2a20",
+    "04-rework-told-values.md": "617d112ff1cc1f16f459e8e40f3f2288c8e284f8c23f48477bf5dda9b056eb25",
+    "05-rework-archive-generation.md": "ce8233a84c0a385952cbb6c9da5e37648ac9fc2c859f8c16bd141dbf22f50904",
     "06-retire-plan-fingerprint-rebaseline.md": "ac8c8491e09f04711b083fd20c9b581f7fd415be0218974a8c53f7510518e73d",
     "07-rework-gate-whole-plan.md": "5cd951fa20b799a98f93858e0b3fc7e24793d37edac2991491b7379c2241fc27",
     "08-bouncer-skip-seam.md": "5ef737eca8b34c0f0e16100155c7c8282e5e740c0a6eb28b5673f0215660a8ce",

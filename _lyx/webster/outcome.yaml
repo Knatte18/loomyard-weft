@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "batch 05-rework-archive-generation: begin-batch refused with plan_drifted: containment-file-overlap/5-rework-archive-generation[blocking]: card 5's member glyph physically overlaps card 9-plan-review-skip-predicate's own file self glyph naming \"internal/loomshed/prrework.go\"; way forward: edit the plan so the named cards match the tree, run \"lyx webster rebaseline --card NN\" naming each card you edited, then begin-batch 05 again"
+batches_done: 4
