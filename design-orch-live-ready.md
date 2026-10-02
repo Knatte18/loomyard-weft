@@ -1,6 +1,6 @@
 # lyx orch: ready to host the real hub orchestrator
 
-`orch-live-ready` · Planned · feature
+`orch-live-ready` · Planned · feature · running
 
 Found 2026-09-30:
 - orch launches as an interactive shuttle run (internal/orchcli/start.go:61), so no --dangerously-skip-permissions; the hub runs in bypass mode. Want a permission-mode option, bypass as the orch default.
