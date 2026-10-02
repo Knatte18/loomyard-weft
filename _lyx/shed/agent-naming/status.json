@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "integration verify regressed: github.com/Knatte18/loomyard/cmd/lyx.TestHermeticGitEnv_GitSpawningPackagesHaveTestMain, github.com/Knatte18/loomyard/internal/lyxcwd.TestEnforcement_FabricVocabulary/tree-scan (offending card: 06-geometry-naming)",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": ""
+    "wait": "integration verify regressed: github.com/Knatte18/loomyard/cmd/lyx.TestHermeticGitEnv_GitSpawningPackagesHaveTestMain, github.com/Knatte18/loomyard/internal/lyxcwd.TestEnforcement_FabricVocabulary/tree-scan (offending card: 06-geometry-naming)"
   },
   "history": [
     {
@@ -97,6 +97,12 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-02T08:20:31Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-02T08:57:25Z"
     }
   ],
   "product": {
