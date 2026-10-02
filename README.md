@@ -19,11 +19,11 @@ One entry store with a numeric tier and a type, a README rendered like roadmap.m
 
 # Layer B
 
-## **#001:** Discussion-Write asks its parent, and shuttle waits for the answer [B]
+## **#001:** The parent takes part in Discussion: ask mode or review mode [B]
 [parent-asking](design-parent-asking.md)
 Depends on: #000
 
-Discussion-Write sends its questions and its finished draft to $LYX_PARENT and fixes the answers in the same live session; shuttle learns to wait on a parent instead of the operator
+Discussion-Write either asks its parent design questions as they arise (ask) or drafts first and asks for the parent's review (review, millhouse orch-review); one mode per run, the writer waits on files and always fixes, the parent answers through one-shot forks
 
 ## **#003:** Verify localizes failures and Publish never runs on a dirty tree [B]
 [verify-publish-hardening](design-verify-publish-hardening.md)

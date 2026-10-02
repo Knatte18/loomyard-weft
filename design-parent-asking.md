@@ -1,23 +1,29 @@
 ## Goal
 
-Discussion-Write holds a live dialogue with whoever spawned the run.
-It sends its questions to `$LYX_PARENT` (the operator when no parent is recorded) and waits in the same session for the answer.
-When its draft is ready it sends that too, and fixes the parent's findings itself before exiting, so the writer keeps its context throughout.
-Shuttle is made to support this.
+The parent (the session that spawned the run; the operator when none is recorded) takes part in Discussion through one of two modes, chosen per run; never both at once.
 
-## Decided with the operator (2026-10-01/02)
+- **ask**: a running conversation.
+  Discussion-Write asks its design questions as they arise, and the parent answers them; it is answers to design questions, not a review.
+- **review** (millhouse's `orch-review`/`orch-wait`): Discussion-Write answers its own questions as best it can, finishes the draft, and then asks the parent for input; the parent's review comes back and the writer fixes it.
 
-- The parent answers every question the child asks; where they disagree, they discuss it out in the dialogue rather than either one deciding alone.
-- No separate parent-review producer: a reviewing producer has no one to fix its review.
-  This replaces the review gate in `orch-discussion-review` below; its live-question half is what this task builds.
+## Decided with the operator (2026-10-02)
+
+- The parent answers every question; where writer and parent disagree, they argue it out in the files rather than either one deciding alone.
+- The writer always fixes; there is no separate parent-review producer (a reviewing producer has no one to fix its review).
+- Neither side's waiting may cost the parent its context:
+  - The writer is a shuttle-run interactive session and waits on a file; shuttle keeps it non-terminal, as it already does for an asking session (`internal/shuttleengine/wait.go`), and a bound expires into `awaiting` with the open question or draft surfaced for the operator.
+  - The parent arms a Monitor and, each round, forks a fresh one-shot agent that reads the exchange file, answers or reviews, and exits; no fork ever waits, so none is flagged dead by its master.
+    A fork inherits the parent's context, and the exchange file records every answer with its reasoning, so continuity lives in those two, not in the fork.
+  - A lyx verb delivers the parent's answer or review and wakes the writer.
+- Rounds repeat until the parent approves or a round cap is reached; disagreement left at the cap becomes `awaiting` for the operator.
+- The mode is a seed field set by the spawner (batten for hub runs); no parent means the operator, as today.
+- Build the shared waiting first, then `review` (proven in millhouse), then `ask` on the same machinery.
 - Later, not now: the same for Plan-Write.
 
-## Shape
+## Verify early and live
 
-- Shuttle: `Spec.AwaitOperator` (`internal/shuttleengine/spec.go`) becomes a choice of who answers, operator or parent.
-  An asking session stays non-terminal either way (`internal/shuttleengine/wait.go`); with a parent, a bound expires into `awaiting` with the question surfaced for the operator.
-- Discussion-Write's stencil: ask through SendMessage to `$LYX_PARENT` and end the turn; the parent answers by SendMessage to the writer's name.
-- Verify early and live: SendMessage reaches an idle interactive session in tmux, and the tool is available inside shuttle runs.
+- An idle interactive session in tmux is reliably woken by the delivering verb.
+- The parent's Monitor-plus-fork loop costs little context per round (measure it on the first hub run).
 
 ## From `orch-discussion-review`: The orchestrator takes part in Discussion: questions to the parent and a review gate
 
