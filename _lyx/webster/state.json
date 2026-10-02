@@ -12,7 +12,7 @@
     "07-gitignore-pkg-delete.md": "f7798852088c52015be18459e66c0e340ed67663271d6d5a2f3077025c2b4eb4",
     "08-repo-housekeeping.md": "b9df1824547b7a92e3330bc4dc565fbe68710de9da73cdba22f138ded3e81f5b"
   },
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "6c3dedda52773d86f2e8e44e377fae20",
   "masterSessionId": "796914ab-91bc-485a-8687-914ff1238eb9",
   "assertedModel": "sonnet",
@@ -146,6 +146,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-operator-surface-fixes/796914ab-91bc-485a-8687-914ff1238eb9/subagents/agent-a42dd498067f6a8d8.jsonl"
       ]
+    },
+    "6": {
+      "slug": "ide-spawn-clean",
+      "cards": [
+        "06-ide-spawn-clean"
+      ],
+      "cardHashes": {
+        "06-ide-spawn-clean": "b616fe8f2b92013e7d921a5538c668a59fd2ca22a4a4283ef3cc9a6e48f43f9e"
+      },
+      "startSha": "34c219027fb1de74e64ea8f7d17aad8a34b9988a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-02T17:49:34Z",
+      "sessionId": "796914ab-91bc-485a-8687-914ff1238eb9",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
