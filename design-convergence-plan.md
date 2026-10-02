@@ -10,3 +10,8 @@ Goal: the outside LLM steps in rarely, and for the task rather than for lyx.
 
 Try `fable[high]` for discussion and review, where design judgement matters (refusal-audit's holes came from opus Discussion and opus reviews; a Fable review found the design problem), and keep sonnet for implementation.
 Change it only between runs, and measure review rounds, PR rejects and interventions before and after.
+
+## Friction on halt (from the hub, 2026-10-02)
+
+A refusal or halt makes a friction note mandatory, so every intervention leaves a record the measurement can count.
+Check first whether `internal/loomengine/anomaly.go` loses a halt that is later resumed.
