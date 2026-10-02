@@ -205,7 +205,7 @@
       "isolated": true,
       "brief": "Fix #339, #340, #334: defaulted keys are not required, reed sizes to the latest client and folder-open spares the orch strand, ide spawn writes .git/info/exclude",
       "body": "## Goal\n\nDeploying lyx and opening worktrees in VS Code leave every worktree runnable and clean, with no manual step after either.\n\n## Bugs\n\n- #339: a new required config key shipped by a deploy makes loom refuse in every worktree until `lyx config reconcile --apply` runs there.\n- #340: opening the prime in VS Code while `lyx orch` hosts the hub collapses the orch pane to 3 rows and stalls every cycle.\n- #334: `lyx ide spawn` writes a lyx-managed block into a task pair's tracked `.gitignore`.\n\n## Fix direction\n\n- #339: a key that has a default is not required: loom fills a missing key from its default and logs it instead of refusing.\n- #340: reed sizes its sessions to the latest client (`window-size latest`), and the folder-open task skips `reed add` when the worktree already has an orch strand.\n- #334: `lyx ide spawn` records its ignore in `.git/info/exclude`, never in a tracked `.gitignore`.\n  Rename the repo `.gitignore`'s \"mill-managed\" block, now that mill is gone.\n\n## Done when\n\n- A deploy that adds a defaulted key leaves running pairs runnable with no reconcile.\n- Opening the prime in VS Code leaves the orch pane's size and session alone.\n- `lyx ide spawn` on a pair leaves `git status` clean.\n- CLAUDE.md's TEMPORARY items for #339, #340 and #334 are deleted (the issues are already closed into this task).\n",
-      "status": "running · Plan-Write"
+      "status": "running · Plan-Bouncer"
     }
   ],
   "legacy_done": [

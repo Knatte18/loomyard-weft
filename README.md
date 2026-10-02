@@ -40,7 +40,7 @@ Depends on nothing and nothing depends on it, by design.
    - Fix #329, #330, #332: only landed batches count as built, webster's own card rewrites update their hashes, forks fix what their card broke and a bisected regression gets a recovery fork
 1. **A run's parent is the worktree it is seeded from; batten survives pauses; parent-review loops** — [`run-parentage`](design-run-parentage.md) · bug · running · Plan-Write
    - Fix #341, #338: parent from the seeding worktree, batten waits through paused/blocked, parent-review reviews every rewrite up to a cap
-1. **Deploy and VS Code leave every worktree runnable and clean** — [`operator-surface-fixes`](design-operator-surface-fixes.md) · bug · running · Plan-Write
+1. **Deploy and VS Code leave every worktree runnable and clean** — [`operator-surface-fixes`](design-operator-surface-fixes.md) · bug · running · Plan-Bouncer
    - Fix #339, #340, #334: defaulted keys are not required, reed sizes to the latest client and folder-open spares the orch strand, ide spawn writes .git/info/exclude
 
 ## Next Up
