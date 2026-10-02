@@ -20,7 +20,7 @@
     "15-self-contained-focus.md": "4afa16ec0caa3293ceb1e5abb19655c0682709b1734548fc7f3a4339231467fa",
     "16-status-commit-holds-archive.md": "6fe0c807ddb016f912061d14ff1908eee6301f27a79af1a76bc07a4283de292c"
   },
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "ac1a51aff320bd2aac1af67923b6e981",
   "masterSessionId": "63436152-871a-4246-b54f-4bffdd73602d",
   "assertedModel": "sonnet",
@@ -102,6 +102,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-rework-generations/63436152-871a-4246-b54f-4bffdd73602d/subagents/agent-a341a89e6c5e4c68b.jsonl"
       ]
+    },
+    "4": {
+      "slug": "rework-told-values",
+      "cards": [
+        "04-rework-told-values"
+      ],
+      "cardHashes": {
+        "04-rework-told-values": "617d112ff1cc1f16f459e8e40f3f2288c8e284f8c23f48477bf5dda9b056eb25"
+      },
+      "startSha": "09bb584cf9446ae0ddf94ffa389e6c5168f24249",
+      "kind": "fork",
+      "spawnedAt": "2026-10-02T08:24:13Z",
+      "sessionId": "63436152-871a-4246-b54f-4bffdd73602d",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
