@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "batch 05-rework-archive-generation: begin-batch refused with plan_drifted: containment-file-overlap/5-rework-archive-generation[blocking]: card 5's member glyph physically overlaps card 9-plan-review-skip-predicate's own file self glyph naming \"internal/loomshed/prrework.go\"; way forward: edit the plan so the named cards match the tree, run \"lyx webster rebaseline --card NN\" naming each card you edited, then begin-batch 05 again",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Batchifier → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "batch 05-rework-archive-generation: begin-batch refused with plan_drifted: containment-file-overlap/5-rework-archive-generation[blocking]: card 5's member glyph physically overlaps card 9-plan-review-skip-predicate's own file self glyph naming \"internal/loomshed/prrework.go\"; way forward: edit the plan so the named cards match the tree, run \"lyx webster rebaseline --card NN\" naming each card you edited, then begin-batch 05 again"
   },
   "history": [
     {
@@ -91,6 +91,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-02T08:21:08Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-02T08:25:51Z"
     }
   ],
   "product": {
