@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "blocked",
-  "error": "integration verify regressed: github.com/Knatte18/loomyard/internal/reedcli.TestNaming_TaskWorktreeRolesParentResumeAndRemove (offending card: 02-parent-resolver)",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": "integration verify regressed: github.com/Knatte18/loomyard/internal/reedcli.TestNaming_TaskWorktreeRolesParentResumeAndRemove (offending card: 02-parent-resolver)"
+    "wait": ""
   },
   "history": [
     {
