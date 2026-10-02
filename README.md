@@ -16,7 +16,7 @@ Waits on nothing open; can start now, in parallel.
    - **Before:** `pattern-init`
 1. **Parent review as a step in Discussion-Write's gate** — [`parent-review`](design-parent-review.md) · feature · running · Webster
    - Port of millhouse orch-review/orch-wait into Discussion-Write's producer gate: after the mechanical validator, a reviewer (the parent for now) reviews once through a lyx verb pair and the live writer addresses it; a new pass_on_cap gate flag lets the run through afterwards
-   - **Before:** `pattern-init`
+   - **Before:** `pattern-init`, `discussion-advisor`
 1. **Retire manifest/: Someday into bolt, durable content into package docs** — [`manifest-retire`](design-manifest-retire.md) · feature
    - Triage roadmap.md's Someday into bolt's tiers, move the durable design content into package docs, fix inbound links and delete manifest/
    - **Before:** `pattern-init`
@@ -68,11 +68,17 @@ Waits on nothing open; can start now, in parallel.
    - Mail store and verbs on top of agent-naming's names; deferred while Claude's own SendMessage is enough
 1. **One-screen overview of every run in the hub** — [`runs-overview`](design-runs-overview.md) · feature
    - One line per run with state, producer and age, instead of polling each run
-1. **Discussion advisor: a dedicated agent answers Discussion-Write's questions live** — [`discussion-advisor`](design-discussion-advisor.md) · feature
-   - A second agent spawned beside Discussion-Write studies the task and code and answers its design questions as they arise, a real two-agent dialogue; after parent-review
 1. **Plan cards name the members they change as glyphs, after the glyph library is tested properly** — [`plan-glyph-precision`](design-plan-glyph-precision.md) · feature
    - Plan-Write lists file paths instead of member glyphs because its stencil shows and allows it, and handle-unreferenced forces invented glyphs; test the glyph library at scale first
 1. **Kick-start pack: pre-resolved glyph spans for implementer and Burler** — [`kick-start-pack`](design-kick-start-pack.md) · feature
    - Someday (roadmap): #227, #228 — measured win, committed, not yet scheduled
 1. **Prompt-cache TTL per agent role** — [`cache-ttl-per-role`](design-cache-ttl-per-role.md) · feature
    - Parked: workers on 5m cache TTL, waiting sessions on 1h — operator deciding
+
+### Layer B
+
+Starts when every entry it names under After is done.
+
+1. **Discussion advisor: a dedicated agent answers Discussion-Write's questions live** — [`discussion-advisor`](design-discussion-advisor.md) · feature
+   - A second agent spawned beside Discussion-Write studies the task and code and answers its design questions as they arise, a real two-agent dialogue
+   - **After:** `parent-review`

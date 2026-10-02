@@ -2,6 +2,8 @@
 
 `discussion-advisor` · Someday · feature
 
+Depends on: [`parent-review`](design-parent-review.md)
+
 Later, after `parent-review` (operator, 2026-10-02).
 
 - **ask mode**: Discussion-Write asks its design questions as they arise, and an answerer replies; answers to design questions, not a review.

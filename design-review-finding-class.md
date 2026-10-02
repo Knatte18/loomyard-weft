@@ -25,7 +25,6 @@ With a high-temperature reviewer every round is a new sample, and one sample can
 - The judge gets its own model key: today it shares loom's `review` key (`opus[effort=high]` in `internal/loomengine/template.yaml`) with the reviewers, which is part of why it acts as one; `judge: sonnet[medium]` (operator: Sonnet 5.5 is fast and cheap now, and the job is narrow).
 - Applies to all three review segments (Discussion-, Plan- and Webster-Review).
 - The reviewer's own top verdict (`verdict: APPROVED` with MEDIUM findings) mixes "not blocking" with "converged"; the judge must not read it as converged.
-- Depends on `rework-generations`, which also edits the judge stencil (self-contained focus entries).
 ## Finding classes (from manifest/designs/review-finding-classification.md)
 
 - Add a finding-class field (`design`, `scope`, `decision`, `consistency`) to burler's review contract and the rubrics; `internal/burlerengine/verdict.go` has only severity today.
