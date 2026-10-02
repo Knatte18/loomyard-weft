@@ -2,6 +2,8 @@
 
 `review-finding-class` · Planned · feature
 
+Depends on: [`test-suite-change-amplification`](design-test-suite-change-amplification.md)
+
 ## Goal
 
 A review segment stops when it has converged, judged from fresh reviews, and escalates when it circles.

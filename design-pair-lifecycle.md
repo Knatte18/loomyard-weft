@@ -2,6 +2,8 @@
 
 `pair-lifecycle` · Planned · feature
 
+Depends on: [`test-suite-change-amplification`](design-test-suite-change-amplification.md)
+
 ## Goal
 
 Removing a pair ends its tmux session first, can finish a half-removed pair, and leaves no branches or stray directories behind; starting a run never races a dying driver.

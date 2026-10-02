@@ -2,7 +2,7 @@
 
 `pattern-init` · Planned · feature
 
-Depends on: [`test-suite-change-amplification`](design-test-suite-change-amplification.md)
+Depends on: [`verify-publish-hardening`](design-verify-publish-hardening.md), [`pair-lifecycle`](design-pair-lifecycle.md), [`review-finding-class`](design-review-finding-class.md)
 
 ## Goal
 

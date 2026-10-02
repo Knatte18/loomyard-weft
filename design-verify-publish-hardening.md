@@ -2,6 +2,8 @@
 
 `verify-publish-hardening` · Planned · feature
 
+Depends on: [`test-suite-change-amplification`](design-test-suite-change-amplification.md)
+
 ## Goal
 
 A failing integration test stops on the card that caused it, Publish never verifies or pushes a dirty tree, and no gate is skipped after a crash.

@@ -11,23 +11,34 @@ Concretized and claimable.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Verify localizes failures, gates Merriam once, and Publish never runs on a dirty tree** — [`verify-publish-hardening`](design-verify-publish-hardening.md) · feature
-   - Cards verify with the integration tests and repo scans they touch; the plan verify runs once as a gate on Merriam, which fixes a failure in a fork and waits on forks instead of polling; Publish never verifies or pushes a dirty tree; verify is never skipped after a crash; every agent prompt goes through a file
-1. **Clean pair lifecycle: no leftover sessions, branches, sockets or races** — [`pair-lifecycle`](design-pair-lifecycle.md) · feature
-   - fabric remove ends the pair's tmux session, finishes half-removed pairs and deletes warp branches on origin; loom start never races a dying driver
-1. **Review convergence: the judge decides converged, continue or circling from fresh reviews** — [`review-finding-class`](design-review-finding-class.md) · feature
-   - The Bouncer judge stops reviewing the artifacts and judges convergence from facts Go hands it (counts, severities, trend, reopened ledger keys), on its own sonnet[medium] key; at least one fresh round, circling escalates; plus finding classes
 1. **Test suite: cut change amplification** — [`test-suite-change-amplification`](design-test-suite-change-amplification.md) · feature
    - A small prod change forces edits in many test files; shared testkit and seam fakes, git helpers in gitkit, one invariant-scan harness, decoupled recipe/plan/stencil tests, and no leaked tmux sockets
-   - **Before:** `pattern-init`
+   - **Before:** `verify-publish-hardening`, `pair-lifecycle`, `review-finding-class`
 
 ### Layer B
 
 Starts when every entry it names under After is done.
 
+1. **Verify localizes failures, gates Merriam once, and Publish never runs on a dirty tree** — [`verify-publish-hardening`](design-verify-publish-hardening.md) · feature
+   - Cards verify with the integration tests and repo scans they touch; the plan verify runs once as a gate on Merriam, which fixes a failure in a fork and waits on forks instead of polling; Publish never verifies or pushes a dirty tree; verify is never skipped after a crash; every agent prompt goes through a file
+   - **After:** `test-suite-change-amplification`
+   - **Before:** `pattern-init`
+1. **Clean pair lifecycle: no leftover sessions, branches, sockets or races** — [`pair-lifecycle`](design-pair-lifecycle.md) · feature
+   - fabric remove ends the pair's tmux session, finishes half-removed pairs and deletes warp branches on origin; loom start never races a dying driver
+   - **After:** `test-suite-change-amplification`
+   - **Before:** `pattern-init`
+1. **Review convergence: the judge decides converged, continue or circling from fresh reviews** — [`review-finding-class`](design-review-finding-class.md) · feature
+   - The Bouncer judge stops reviewing the artifacts and judges convergence from facts Go hands it (counts, severities, trend, reopened ledger keys), on its own sonnet[medium] key; at least one fresh round, circling escalates; plus finding classes
+   - **After:** `test-suite-change-amplification`
+   - **Before:** `pattern-init`
+
+### Layer C
+
+Starts when every entry it names under After is done.
+
 1. **PATTERN for loomyard, manifest/ retired, plus repo conventions** — [`pattern-init`](design-pattern-init.md) · feature
    - CONSTRAINTS.md becomes _lyx/PATTERN.md so agents get the constraints directive; manifest/ retires into bolt and package docs; warp/weft scan beyond Go code; model specs in short form; role constants; ide workspace cleanups
-   - **After:** `test-suite-change-amplification`
+   - **After:** `verify-publish-hardening`, `pair-lifecycle`, `review-finding-class`
 
 ## Next Up
 
