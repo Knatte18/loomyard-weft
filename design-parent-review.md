@@ -7,10 +7,15 @@ The interview helper is the separate note `discussion-advisor`.
 ## Shape
 
 - Discussion-Write's gate today is the mechanical `discussion` validator (`internal/shedrecipe/entries_gate.go`, `internal/shuttleengine/gate.go`).
-  The review step runs after it passes: the validator first, then the review.
+  A gate is Go code run before the producer may finish; it returns pass or fail, and what it checks is up to the program it calls.
+- One mechanism, one new flag (operator, 2026-10-02): `GateSpec` gains `PassOnCap`.
+  With it, a gate that has used its attempts lets the run through on its next arrival instead of failing into Stuck.
+  Millhouse's `orch-review` behaviour is `attempts: 1`, `pass_on_cap: true`: the review runs once whatever it finds, the writer addresses it, and the next arrival passes; independent reviews follow in the Burler segment as today.
+  `attempts: 0` turns the review off.
+- A row can carry more than one gate, each with its own attempts and flag, evaluated in order at every arrival.
+  Discussion-Write runs the validator first (must always pass, no `pass_on_cap`), then the review; the validator therefore re-checks the writer's fixes after the review.
 - The gate is mechanical in the sense its name means: the LLM inside the producer cannot decide it is done; the gate decides.
   A review by another agent fits that, so no invariant changes; the spec and CONSTRAINTS wording should say so plainly.
-- Rounds are configurable per row: 0 means no review, 1 to 3 the number of review rounds before the gate gives up into the ordinary Stuck path; Discussion settles the default (1 keeps time down).
 - The reviewer is an address, defaulting to `$LYX_PARENT`, so others can review later; only the parent is wired now.
 - A lyx verb pair carries the exchange (names settled in Discussion):
   - the gate runs one to open a review request: write the request file, notify the reviewer by name (agent-naming), and wait for the verdict file;
@@ -21,7 +26,7 @@ The interview helper is the separate note `discussion-advisor`.
   - status must show that the run waits on its reviewer (and who), not a plain `running`;
   - request and verdict are files, so a driver restart that re-attaches (`AttachGated`) finds the open request and keeps waiting rather than asking twice.
 - A writer that disagrees with a finding answers it in the discussion file instead of fixing it; the next round's reviewer reads that answer.
-- A run with no parent recorded, or rounds set to 0, skips the review step.
+- A run with no parent recorded, or `attempts: 0`, skips the review step.
 
 ## Bolt as design context (operator, 2026-10-02)
 

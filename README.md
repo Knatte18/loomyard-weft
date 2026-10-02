@@ -35,7 +35,7 @@ fabric remove ends the pair's tmux session, finishes half-removed pairs and dele
 [parent-review](design-parent-review.md)
 Depends on: #000
 
-Port of millhouse orch-review/orch-wait into Discussion-Write's producer gate: after the mechanical validator, a reviewer (the parent for now) reviews through a lyx verb pair, and a reject re-prompts the live writer; 0 to 3 rounds
+Port of millhouse orch-review/orch-wait into Discussion-Write's producer gate: after the mechanical validator, a reviewer (the parent for now) reviews once through a lyx verb pair and the live writer addresses it; a new pass_on_cap gate flag lets the run through afterwards
 
 # Layer C
 
