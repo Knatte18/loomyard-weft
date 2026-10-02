@@ -11,7 +11,7 @@ Runs alone, last: it repoints CONSTRAINTS.md in ~130 files.
 
 ## Also folded in
 
-- `fabric-vocabulary-everywhere`, `model-spec-short-form` and `ide-hub-workspace-followups` below.
+- `fabric-vocabulary-everywhere`, `model-spec-short-form`, `ide-hub-workspace-followups` and `agent-role-constants` below.
 - `model-spec-short-form`'s model trial (`fable[high]` for discussion and review) moved to `convergence-plan`, where it is measured; this task does only the short form, the dead link and Master's explicit effort.
 
 ## From `pattern-init`: Initialize PATTERN for loomyard: CONSTRAINTS.md becomes _lyx/PATTERN.md
@@ -39,3 +39,10 @@ Follow-ups from the PR #301 review (`85902381e`), all non-blocking:
 - `internal/ideengine/spawn.go` now WARNs on every spawn whose prime resolution fails, task spawns included (silent before).
 - Removing the last pair prunes `_portals/<anchor>`, so the hub workspace shows a missing folder until the next prime spawn.
 - Relative-path settings spliced from the prime into the workspace file resolve against `_launchers/`, not the prime.
+
+## From `agent-role-constants`: each module names the agents it spawns with its own constant
+
+Operator 2026-10-02: role names stay owned by the module that spawns the agent; no central list, since a new module with its own agent must touch no shared file, and `agentname`'s role set stays open.
+Seen: most spawn sites pass their role as an inline literal (`driver` in `loomcli/driverspec.go`, `discussion`/`plan`/`rework` in `loomengine`, `burler`, `friction`, `describe`, `conflict`, `judge`/`triage`/`targeting` in `treadleengine`).
+Want: each spawn site takes its role from a named constant in its own module, and the Agent Name Invariant states that the spawning module owns its role.
+Webster's own `master` → `webster` rename is in `webster-verify-gate`.
