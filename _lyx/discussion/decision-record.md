@@ -24,6 +24,8 @@ Out:
 
 - Parallel gates, dependencies between gates, any new gate validator (the review gate belongs to `parent-review`).
 - Persisting per-gate counts across a driver restart or an attach; counts stay in-memory per run, as `gateSent` is today.
+  After an attach a `PassOnCap` entry starts from zero and can fire again, so "one-time" holds within one shuttle run only;
+  the `PassOnCap` doc comment states this limit and Decision 4's, and that a request which must not repeat makes its own closure idempotent.
 - Per-gate detail in the shed status file; `HistoryEntry.GateAttempts` stays one integer.
 - A run-wide cap across all gates.
 
@@ -31,13 +33,14 @@ Out:
 
 1. **GateSpec shape.**
    `GateSpec` becomes a list of entries (working name `GateEntry`: `Name`, `Gate` closure, `Attempts`, `PassOnCap`), carried as one value through every hop exactly as today (`StartGated`, `RunGated`, `AttachGated`, `RunOpts.Gate`, `websterengine`'s `StartMaster`).
-   An empty or nil list means ungated; every `run.gate.Gate == nil` / `gateSpec.Gate != nil` test becomes a length test.
+   An empty or nil list means ungated.
    Rationale: one value at every hop keeps the existing "one GateSpec at every hop" contract; a named list keeps the zero value meaning ungated.
 
 2. **Arrival evaluation.**
    An arrival is a gated `OutcomeDone` (the turn boundary Wait already gates on, plus `finalize`'s single verdict site).
    At each arrival the entries run in list order and evaluation stops at the first that fails; a later entry runs only when every earlier one passed, was off, or was let through on that arrival.
    The verdict is memoised per arrival exactly as `gateVerdict` is today, and cleared before each re-prompt.
+   `finalize`'s arrival is the final one: it reads the memo when Wait left one (exhausted, re-prompt send failed) and evaluates the list afresh otherwise (session lost or deadline after a re-prompt), under the same ordering and cap rules, but it never re-prompts and never changes a count.
    Rationale: the board's ordering rule, and it keeps "the gate runs exactly once per settling".
 
 3. **Per-gate counting.**
@@ -50,8 +53,10 @@ Out:
    An entry whose count has reached `Attempts`:
    without `PassOnCap`, its failure on that arrival ends the loop and the run finalizes Done with a failed `GateOutcome`, as an exhausted gate does today (the producer then maps it to Stuck);
    with `PassOnCap`, the entry is not run on that or any later arrival of this run, counts as let through, and evaluation continues to the next entry.
-   A let-through does not reset the count, so a `PassOnCap` entry fires at most `Attempts` re-prompts per run.
-   Rationale: a one-time request (review) must not re-fire after a later gate's re-prompt, and an expensive gate should not run when its verdict would be ignored.
+   A let-through does not reset the count, so once capped a `PassOnCap` entry never runs again on this run.
+   An entry that passes before it is capped resets per Decision 3 and re-runs at later arrivals, so if it fails again it starts a fresh streak of up to `Attempts` re-prompts;
+   a request that must not repeat after it passed makes its own closure idempotent.
+   Rationale: a capped request (review) must not re-fire after a later gate's re-prompt, and an expensive gate should not run when its verdict would be ignored.
 
 5. **`Attempts: 0` is off.**
    An entry with `Attempts` 0 is skipped at every arrival regardless of `PassOnCap`, and reported as off.
@@ -61,9 +66,9 @@ Out:
 
 6. **GateOutcome.**
    Aggregate fields keep their meaning so every consumer (`shedadapters` single-LLM and burler, `burlerengine`, the shed status history) is untouched:
-   `Passed` is false only when an entry without `PassOnCap` was failing at the final arrival (exhausted, re-prompt send failed, session lost, or deadline);
+   `Passed` is true only when every entry without `PassOnCap` that is not off passed at the final arrival, so an entry without `PassOnCap` that failed or was not reached makes it false, however the run ended (exhausted, re-prompt send failed, session lost, or deadline);
    `Attempts` is the total re-prompts actually sent on the run, summed over entries;
-   `FindingsPath` is the findings file of the failing entry, empty when `Passed`.
+   `FindingsPath` is the findings file of the entry that failed at the final arrival, empty when `Passed`.
    A new per-gate slice reports, in list order, each entry's name, its re-prompts sent, and its state at the final arrival: passed, failed, let through, off, or not reached.
    Rationale: the board asks for per-gate reporting; keeping the aggregates means a single-gate row's result is identical to today's.
 
@@ -106,7 +111,8 @@ Out:
 - Transient Stop Invariant: a gate verdict never carries the transient mark.
 - Shed Recipe Registry Invariant: `resolveGateSpec` stays the single place gate config is read; no self-registration.
 - `completionsignal_enforcement_test.go`'s tripwire: the negative-verdict `Errorf` marker stays reserved for the two finalize call sites.
-- Refusal Way-Forward Invariant: any new construction error that is reachable through a shed or loom verb names its way forward and gets its row in `contracts/specs/refusal-spec.md` with a reaching test, same commit.
+- Refusal Way-Forward Invariant: recipes are embedded, so the new shedrecipe construction errors are unreachable from any on-disk state a run can produce;
+  they are wiring guards covered by each section's grouped row in `contracts/specs/refusal-spec.md`, and no refusal-spec row is added.
 - Markdown semantic line breaks in every `.md` touched.
 
 ## Auto-mode assumptions
@@ -115,22 +121,25 @@ Out:
 - A `PassOnCap` entry stays let through for the rest of the run once capped (auto-pick).
 - An `Attempts`-0 entry still resolves its closure and `Env` at construction, so a typo in an off gate fails loud (auto-pick).
 - The per-gate state at the final arrival uses the five states named in Decision 6; exact type names are the Plan producer's call (auto-pick).
-- New shedrecipe construction errors are recipe-author errors raised at build; whether they are reachable through a bound module's verbs, and so need refusal-spec rows, is for the plan to confirm against `contracts/specs/refusal-spec.md` (auto-pick).
+- New shedrecipe construction errors are wiring guards, not refusals needing their own rows, because the recipes are embedded (auto-pick).
 
 ## Open risks
 
 - Two non-cap gates that alternate failures reset each other's counts and can re-prompt until the run's deadline (`spec.Timeout`); the board chose reset-on-pass, and the deadline is the bound.
   No current row has two gates, so nothing in production can hit this before `parent-review`.
 - `GateOutcome.Attempts` as a sum loses which gate spent the re-prompts in the status file; the per-gate slice carries that only on the in-process `Result`.
+- `contracts/recipes/loom-recipe.yaml` is also edited by `rework-generations` (its PR-Rework rows carry `gate: rework-plan`), which runs in parallel; whichever lands second resolves the conflict at Publish by keeping that task's row changes in the `gates:` form.
 
 ## Acceptance criteria
 
 - Every existing gated row (`Discussion-Write`, `Discussion-Burler`, `Plan-Write`, `Plan-Burler`, `Describe`, `PR-Rework`) is migrated to `gates:` and behaves as before: same re-prompt count, same findings file, same re-prompt text, same `GateOutcome.Passed`/`Attempts`/`FindingsPath`, same Done/Stuck mapping.
-  The existing shuttleengine, shedadapters, burlerengine, shedrecipe and loomrecipe tests pass with only the spec-construction syntax changed.
+  The existing shuttleengine, shedadapters, burlerengine, shedrecipe and loomrecipe tests keep their assertions, with spec construction migrated to the list form and an explicit `Attempts` of 3 wherever a test relied on the removed default;
+  shedrecipe's tests of the removed `gate`/`gate_attempts` keys are replaced by the `gates` tests below.
 - `go build ./...` and `go test ./...` pass.
 - shuttleengine tests (fake engine, scripted gate results) cover:
   - two entries, first fails then passes: the second runs only on the arrival after the first passed;
-  - consecutive-failure counting with reset on pass: an entry that fails, passes, then fails again starts its budget afresh;
+  - consecutive-failure counting with reset on pass: an entry that fails, passes, then fails again starts its budget afresh, `PassOnCap` or not;
+  - a final arrival (deadline or failed re-prompt send) that stops at a failing `PassOnCap` entry, with an entry without `PassOnCap` after it, finalizes `Passed` false with that later entry reported not reached;
   - exhaustion without `PassOnCap` finalizes Done with `Passed` false and the failing entry's findings path;
   - `PassOnCap` with `Attempts` 1: one re-prompt, then let through without the closure running again, the run finalizes `Passed` true, and the entry stays let through after a later entry's re-prompt;
   - `Attempts` 0 is never called, with or without `PassOnCap`, and is reported off;

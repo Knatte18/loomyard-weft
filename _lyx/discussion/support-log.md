@@ -57,7 +57,24 @@ The session ran autonomously; every answer below is a self-pick recorded in the 
 
 ## Review rounds
 
-_No rounds yet._
+### Hub review (parent, 2026-10-02)
+
+Reviewed by the hub orchestrator against the board goal before Discussion-Review, edited in place.
+The record meets the goal; two additions, no decision changed:
+
+- Out of scope now states that a `PassOnCap` entry is one-time within one shuttle run only, since counts do not survive an attach, and that a gate whose request must not repeat makes its own closure idempotent; `parent-review` builds on this.
+- Open risks names the `loom-recipe.yaml` overlap with `rework-generations`, which runs in parallel.
+
+### Discussion-Review round 1
+
+APPROVED with three MEDIUM, two LOW and one NIT finding, all fixed in the record:
+
+- Decision 4 claimed a `PassOnCap` entry fires at most `Attempts` re-prompts per run, which reset-on-pass breaks; it now states that only a capped entry never runs again.
+- Decision 6's `Passed` let a final arrival that stopped at a failing `PassOnCap` entry pass with a later check entry never run; `Passed` now needs every non-off check entry to have passed, and Decision 2 states that `finalize`'s arrival never re-prompts or changes a count.
+- The acceptance criterion "only the spec-construction syntax changed" was unachievable once 0 means off; it now names the explicit `Attempts` of 3 and the replaced shedrecipe key tests.
+- Refusal-spec reachability is settled: recipes are embedded, so the new errors are wiring guards.
+- The Out paragraph dropped the review gate's closure design (an already-recorded verdict file passes), which belongs to `parent-review`, and keeps the per-run limit for the `PassOnCap` doc comment.
+- Decision 1 dropped the nil-test rewrite clause.
 
 ## Question ledger
 
@@ -74,6 +91,8 @@ _No rounds yet._
 | 9 | Keep old `gate`/`gate_attempts` keys? | Auto-pick: no; removed and rejected as unknown. |
 | 10 | Empty `gates` list, duplicate names? | Auto-pick: both construction errors naming the row. |
 | 11 | Which closures does `repairReportBeforeGate` wrap? | Auto-pick: every entry. |
-| 12 | Do new construction errors need refusal-spec rows? | Open for Plan: confirm against `contracts/specs/refusal-spec.md` whether recipe-build errors are reachable through a bound verb. |
+| 12 | Do new construction errors need refusal-spec rows? | Resolved in Discussion-Review round 1: no; recipes are embedded, so recipe-build errors are wiring guards under each section's grouped row. |
 | 13 | Bound on two alternating non-cap gates? | Auto-pick: none beyond the run deadline; recorded as an open risk. |
 | 14 | Docs touched? | Auto-pick: recipe comments, type doc comments, `shed-recipe-spec.md` paragraph; no roadmap or `CONSTRAINTS.md` change. |
+| 15 | Can a `PassOnCap` entry re-prompt more than `Attempts` times in a run? | Resolved in Discussion-Review round 1: yes, after a pass resets it; once capped it never runs again, and a request that must not repeat makes its closure idempotent. |
+| 16 | What is `Passed` when the final arrival stops at a failing `PassOnCap` entry before a check entry? | Resolved in Discussion-Review round 1: false; `Passed` needs every non-off entry without `PassOnCap` to have passed, and `finalize`'s arrival never re-prompts or changes a count. |
