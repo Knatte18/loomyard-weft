@@ -52,7 +52,7 @@ Triage roadmap.md's Someday into bolt's tiers, move the durable design content i
 [review-finding-class](design-review-finding-class.md)
 Depends on: #002
 
-The Bouncer judge stops reviewing the artifacts and judges convergence: converged only when the latest fresh review has no MEDIUM+ (or gating-class) finding, circling escalates; plus finding classes
+The Bouncer judge stops reviewing the artifacts and judges convergence from facts Go hands it (counts, severities, trend, reopened ledger keys), on its own sonnet[medium] key; at least one fresh round, circling escalates; plus finding classes
 
 # Layer C
 

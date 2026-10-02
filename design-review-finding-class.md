@@ -12,16 +12,16 @@ With a high-temperature reviewer every round is a new sample, and one sample can
 
 ## Shape
 
-- The judge's role is the operator's: a quick sit-rep agent that decides converged, continue or circling, and does not itself read code or review the artifacts.
-- Convergence is mechanical where it can be: converged when the latest fresh review has no finding at MEDIUM or above (with finding classes, no gating-class finding); whether findings were fixed does not count.
-  Go reads the severities (and classes) from the round's review file; no LLM is needed for that call.
-  The seed entry has no fresh review yet, so a segment always runs at least one Burler round.
-- The judge is needed only for circling: the same ledger key reopened, or a fix in one area producing a new MEDIUM in the same area; circling escalates to the operator.
-- `max_bounces` stays the upper bound.
+- The judge's role is the operator's: a quick sit-rep agent that decides converged, continue or circling, and does not itself read the artifacts or the code.
+- The judge decides all three outcomes; a pure mechanical rule was considered and rejected (operator, 2026-10-02): severities are the reviewer's own noisy labels, a nitpicky MEDIUM would force rounds up to `max_bounces`, and a reworded old finding looks new.
+- Go hands the judge the facts instead of the artifacts: per round, the finding count and highest severity (and class, once findings carry one), the trend across rounds, and which ledger keys were reopened.
+- Only two things stay mechanical: at least one fresh Burler round before convergence is possible (the seed entry has no fresh review, so it never converges straight away), and `max_bounces` as the upper bound.
+- Fixed findings never count as convergence on their own; the fixes are new text, and the judge weighs whether the latest fresh review still found MEDIUM-or-worse.
+- Circling escalates to the operator.
+- The judge gets its own model key: today it shares loom's `review` key (`opus[effort=high]` in `internal/loomengine/template.yaml`) with the reviewers, which is part of why it acts as one; `judge: sonnet[medium]` (operator: Sonnet 5.5 is fast and cheap now, and the job is narrow).
 - Applies to all three review segments (Discussion-, Plan- and Webster-Review).
 - The reviewer's own top verdict (`verdict: APPROVED` with MEDIUM findings) mixes "not blocking" with "converged"; the judge must not read it as converged.
 - Depends on `rework-generations`, which also edits the judge stencil (self-contained focus entries).
-
 ## Finding classes (from manifest/designs/review-finding-classification.md)
 
 - Add a finding-class field (`design`, `scope`, `decision`, `consistency`) to burler's review contract and the rubrics; `internal/burlerengine/verdict.go` has only severity today.
