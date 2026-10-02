@@ -20,3 +20,13 @@ Webster's changed-files guard then compares at file level only, no `quarry resol
 
 The operator is not sure loomyard's glyph library works in practice: it is tested through crucible, not through real plans at scale.
 Pushing planners onto member glyphs makes every plan depend on it, so before the stencil change, exercise it against real plans: resolve every member glyph a sample of real cards would name, the handle bind path, and the containment checks, and record what fails.
+
+## Validation must not change verdict mid-run (2026-10-02)
+
+Seen on `rework-generations`, batch 5: a plan valid at Plan-Write was refused at `begin-batch` with `containment-file-overlap`.
+Card 4 creates `loomshed#ReworkTold` with a `plan:` handle; card 5 lists both `internal/loomshed/prrework.go` and `loomshed#ReworkTold`; card 9 lists `prrework.go`.
+While the unit did not exist the handle had no location, so containment could not place it; once card 4 built it and `begin-batch` canonicalized the handle into a glyph, containment saw the overlap for the first time.
+Cards 5 and 9 sit in different, sequential batches, so the overlap was harmless; the member line in card 5 was redundant beside its own file line.
+
+Want: validation gives the same answer at Plan-Write and at dispatch.
+Either containment places a `plan:` handle by its declared file at plan time, or it does not refuse overlaps between cards in different batches; and a card listing a file and a member of that same file is flagged at plan time as redundant.
