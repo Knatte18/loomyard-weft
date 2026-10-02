@@ -14,7 +14,7 @@ Waits on nothing open; can start now, in parallel.
 1. **Clean pair lifecycle: no leftover sessions, branches, sockets or races** — [`pair-lifecycle`](design-pair-lifecycle.md) · feature
    fabric remove ends the pair's tmux session, finishes half-removed pairs and deletes warp branches on origin; loom start never races a dying driver; tests stop leaking tmux sockets
    Before `pattern-init`.
-1. **Parent review as a step in Discussion-Write's gate** — [`parent-review`](design-parent-review.md) · feature · running
+1. **Parent review as a step in Discussion-Write's gate** — [`parent-review`](design-parent-review.md) · feature · running · Discussion-Bouncer
    Port of millhouse orch-review/orch-wait into Discussion-Write's producer gate: after the mechanical validator, a reviewer (the parent for now) reviews once through a lyx verb pair and the live writer addresses it; a new pass_on_cap gate flag lets the run through afterwards
    Before `pattern-init`.
 1. **Retire manifest/: Someday into bolt, durable content into package docs** — [`manifest-retire`](design-manifest-retire.md) · feature
@@ -23,7 +23,7 @@ Waits on nothing open; can start now, in parallel.
 1. **Review convergence: the judge decides converged, continue or circling from fresh reviews** — [`review-finding-class`](design-review-finding-class.md) · feature
    The Bouncer judge stops reviewing the artifacts and judges convergence from facts Go hands it (counts, severities, trend, reopened ledger keys), on its own sonnet[medium] key; at least one fresh round, circling escalates; plus finding classes
    Before `pattern-init`.
-1. **lyx orch: ready to host the real hub orchestrator** — [`orch-live-ready`](design-orch-live-ready.md) · feature · running
+1. **lyx orch: ready to host the real hub orchestrator** — [`orch-live-ready`](design-orch-live-ready.md) · feature · running · Plan-Write
    orch is deployed but untested live and lacks what the hub needs: bypass permissions, the Agent tool, adoption of a running session, a soft threshold
    Before `verify-publish-hardening`.
 
