@@ -64,10 +64,3 @@ Waits on nothing open; can start now, in parallel.
    - Someday (roadmap): #227, #228 — measured win, committed, not yet scheduled
 1. **Prompt-cache TTL per agent role** — [`cache-ttl-per-role`](design-cache-ttl-per-role.md) · feature
    - Parked: workers on 5m cache TTL, waiting sessions on 1h — operator deciding
-
-## Done
-
-Finished, awaiting `lyx board prune`.
-
-1. **lyx orch: ready to host the real hub orchestrator** — [`orch-live-ready`](design-orch-live-ready.md) · feature · done
-   - orch is deployed but untested live and lacks what the hub needs: bypass permissions, the Agent tool, adoption of a running session, a soft threshold
