@@ -1,20 +1,12 @@
 ## Goal
 
-Bolt becomes the roadmap: one store with a numeric tier and a `type`, a README rendered like roadmap.md, `lyx board find`, a compact listing; then `manifest/` is deleted.
+Bolt becomes the roadmap: one store with a numeric tier and a `type`, a README rendered like roadmap.md, `lyx board find` and a compact listing.
+The operator finds bolt's layout poor; this task is the layout and store only, and retiring `manifest/` is the separate task `manifest-retire`, which depends on this one.
 
-## manifest/ retirement
+## Must not break running work
 
-The triage was done in the bolt review of 2026-10-01/02; what survives is already in bolt.
-This task moves the durable reference content into package docs, fixes inbound links and deletes the folder (Millhouse has no ownership of `manifest/`).
-
-- `manifest/HANDOFF.md`: the hub run loop goes to the `internal/orchcli` package doc; the rest is spent.
-- `hardener.md`: the text-review vs behaviour-review distinction and the respawn rationale go to `internal/treadleengine`'s doc.
-- `fabric-windows-verification.md`: the Linux-only caveat goes to the `internal/fabricengine` and `internal/fslink` docs.
-- `webster-parallel-execution.md`: the 42-card case study and the index-race rationale go to `internal/websterengine`'s doc.
-- `review-finding-classification.md`: the convergence case study goes to `internal/burlerengine`'s doc.
-- `curation-triage.md`: one line in the boardengine doc ("anyone adds notes, the orchestrator curates"); the automation is struck.
-- Inbound links: `internal/treadleengine/doc.go`, `internal/fabricengine/livestate_doc_test.go`, `contracts/specs/loom-plan-spec.md`, `docs/overview.md` (lifecycle text and design links), `crucible/README.md`, `crucible/review-prompt-template.md`, CLAUDE.md's Task completion rule, `.claude/agents/mill-done-gate-fixer.md`.
-
+Other runs land while this one does, and their landings write to bolt with the deployed lyx.
+The store migrates itself on first use by the new binary, and the existing task and notes verbs keep working (or map onto the new store) so no other run's landing breaks.
 ## From `bolt-roadmap-tiers`: Bolt as the roadmap: three numbered tiers in one store, rendered like roadmap.md
 
 ### Why
@@ -59,9 +51,3 @@ The hub fell back to jq on `notes.json` because `lyx board list` shows tasks onl
 - Content job, not code: rewrite entry briefs as what/why during the review.
 
 
-## From `manifest-to-bolt`: Move everything in manifest/ into bolt and retire the folder
-
-Operator 2026-10-01: LYXHUB takes over all development of loomyard; everything in manifest/ goes into bolt.
-The operator also says much of it is outdated: triage each roadmap Someday item with the operator (keep as tier 3 or tier 2, merge, or strike) and carry its designs/<name>.md over as the bolt entry's design doc.
-Depends on bolt-roadmap-tiers for the tiers and the readable render.
-Afterwards: delete manifest/, and update CLAUDE.md (Task completion section names manifest/roadmap.md and manifest/designs/), docs/overview.md's Documentation Lifecycle and any stencil or test that names manifest/.

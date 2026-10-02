@@ -12,10 +12,10 @@ Every process lyx spawns gets one hierarchical name (ly:landing:driver, ly:orch 
 
 Each rework round gets a fresh plan with only its own cards, so Webster never drags implemented cards along; rework cards that change a classifier, verb or guard go through Plan-Review
 
-## **#006:** Bolt as the roadmap, manifest/ retired [A]
+## **#006:** Bolt as the roadmap: tiers, type and a readable README [A]
 [bolt-v2](design-bolt-v2.md)
 
-One entry store with a numeric tier and a type, a README rendered like roadmap.md, lyx board find and a compact listing; then manifest/ is deleted after its durable content moves to package docs
+One entry store with a numeric tier and a type, a README rendered like roadmap.md, lyx board find and a compact listing; migrates itself without breaking other runs' landings
 
 ## **#008:** Gate list: several gates per row, each with its own budget and pass_on_cap [A]
 [gate-list](design-gate-list.md)
