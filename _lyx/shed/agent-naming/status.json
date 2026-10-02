@@ -1,11 +1,11 @@
 {
-  "current_producer": "PR-Rework",
+  "current_producer": "Webster",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "PR-Rework",
-    "last": "PR-Gate → bounced to PR-Rework",
+    "now": "Webster",
+    "last": "PR-Rework → done",
     "wait": ""
   },
   "history": [
@@ -152,6 +152,12 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-02T09:35:42Z"
+    },
+    {
+      "producer": "PR-Rework",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-02T09:40:05Z"
     }
   ],
   "product": {
