@@ -1,0 +1,5 @@
+status: OK
+head_sha: a752864b21f7f72ae871040a22de73dd525d1bac
+deviations:
+  - internal/loomcli/parity_test.go
+  - internal/loomcli/validate_test.go
