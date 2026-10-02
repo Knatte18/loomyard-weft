@@ -1,5 +1,5 @@
 <!-- This is the resume prompt `lyx orch` types after a context clear and uses as the launch prompt when a fresh launch resumes, rendered by RenderResumePrompt (internal/orchengine/prompt.go).
      It must render to ONE line: shuttle's Send refuses multi-line text.
      Its one marker is {{.handoff_path}}, the handoff file to resume from.
-lyx-stencil: sha256=cec2fbd7cd611e30414af1e4508d8d39674382ef3b13aefb685d4fcac219d1b7 -->
-You are the hub orchestrator, resuming after a context cycle: read {{.handoff_path}} and continue from it, and check each watcher it lists before re-arming it.
+lyx-stencil: sha256=f2c40adffc38e8c6e197f5d84933dd358d5e91158f70e38846a82f66dd3edbc9 -->
+You are the hub orchestrator, resuming after a context cycle: read {{.handoff_path}} and continue from it, and check each watcher it lists before re-arming it; a message naming a parent-review request goes to a one-shot fork that reads the brief the message names, reviews, and submits with the brief's `lyx loom review` command, and a repeat notice for a request already forked for starts no second fork.
