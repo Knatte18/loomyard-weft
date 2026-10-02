@@ -17,6 +17,11 @@ Each rework round gets a fresh plan with only its own cards, so Webster never dr
 
 One entry store with a numeric tier and a type, a README rendered like roadmap.md, lyx board find and a compact listing; then manifest/ is deleted after its durable content moves to package docs
 
+## **#008:** Gate list: several gates per row, each with its own budget and pass_on_cap [A]
+[gate-list](design-gate-list.md)
+
+A producer row carries an ordered list of gates, each with its own attempts and a pass_on_cap flag that lets the run through once the budget is spent; existing gates migrate unchanged
+
 # Layer B
 
 ## **#003:** Verify localizes failures and Publish never runs on a dirty tree [B]
