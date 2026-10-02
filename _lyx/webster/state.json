@@ -18,7 +18,7 @@
     "13-orch-review-fork.md": "0411a3e59e71a23bbef0c0e16e6a7f192a6cbdd50ab64b5822bcfe78f58d2b72",
     "14-parent-review-integration.md": "a4aef40d054752c2c4cd59496014e69d980b9c0ed1dead324ab761256c092557"
   },
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "909a6e3579ce76689cf6276d94a867d8",
   "masterSessionId": "3e89f69f-ac78-43a1-884c-23a00c477f28",
   "assertedModel": "sonnet",
@@ -143,8 +143,19 @@
       "kind": "fork",
       "spawnedAt": "2026-10-02T12:05:08Z",
       "sessionId": "3e89f69f-ac78-43a1-884c-23a00c477f28",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-orch-review-fork",
+        "status": "done",
+        "head_sha": "061371c950e94c461e89c0ab5ca908dd2e898aab"
+      },
+      "cardShas": [
+        "061371c950e94c461e89c0ab5ca908dd2e898aab"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-parent-review/3e89f69f-ac78-43a1-884c-23a00c477f28/subagents/agent-a3a1c1706fbe33c60.jsonl"
+      ]
     },
     "2": {
       "slug": "loom-parent-review-config",
@@ -375,6 +386,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-parent-review/3e89f69f-ac78-43a1-884c-23a00c477f28/subagents/agent-aaa7efaa292af755d.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-parent-review/3e89f69f-ac78-43a1-884c-23a00c477f28/subagents/agent-ab6b6a67a39c1ff11.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-parent-review/3e89f69f-ac78-43a1-884c-23a00c477f28/subagents/agent-ab13a90b3452bb2be.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-parent-review/3e89f69f-ac78-43a1-884c-23a00c477f28/subagents/agent-ad78e13eeda79c769.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-parent-review/3e89f69f-ac78-43a1-884c-23a00c477f28/subagents/agent-ad78e13eeda79c769.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-parent-review/3e89f69f-ac78-43a1-884c-23a00c477f28/subagents/agent-a3a1c1706fbe33c60.jsonl"
   ]
 }
