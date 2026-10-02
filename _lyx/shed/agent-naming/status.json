@@ -1,12 +1,12 @@
 {
   "current_producer": "Run-Shed",
-  "state": "failed",
-  "error": "battenshed: Run-Shed: inner shed run reached state \"blocked\": error=\"integration verify regressed: github.com/Knatte18/loomyard/cmd/lyx.TestHermeticGitEnv_GitSpawningPackagesHaveTestMain, github.com/Knatte18/loomyard/internal/lyxcwd.TestEnforcement_FabricVocabulary/tree-scan (offending card: 06-geometry-naming)\" current_producer=\"Webster\"; the task worktree's own run must be resumed from inside that worktree (its recipe's bootstrap verb, e.g. \"lyx loom start\") before this run is resumed; resuming this run alone only resumes the watch",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
     "last": "Run-Shed → bounced to Run-Shed",
-    "wait": "battenshed: Run-Shed: inner shed run reached state \"blocked\": error=\"integration verify regressed: github.com/Knatte18/loomyard/cmd/lyx.TestHermeticGitEnv_GitSpawningPackagesHaveTestMain, github.com/Knatte18/loomyard/internal/lyxcwd.TestEnforcement_FabricVocabulary/tree-scan (offending card: 06-geometry-naming)\" current_producer=\"Webster\"; the task worktree's own run must be resumed from inside that worktree (its recipe's bootstrap verb, e.g. \"lyx loom start\") before this run is resumed; resuming this run alone only resumes the watch"
+    "wait": ""
   },
   "history": [
     {
