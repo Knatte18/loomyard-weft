@@ -20,7 +20,7 @@
     "15-self-contained-focus.md": "4afa16ec0caa3293ceb1e5abb19655c0682709b1734548fc7f3a4339231467fa",
     "16-status-commit-holds-archive.md": "6fe0c807ddb016f912061d14ff1908eee6301f27a79af1a76bc07a4283de292c"
   },
-  "currentBatch": 0,
+  "currentBatch": 13,
   "masterStrand": "4d7502a7a3e293d00362fb85656d9e60",
   "masterSessionId": "204f7581-145b-40e4-a35e-4760920b8642",
   "assertedModel": "sonnet",
@@ -128,6 +128,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-rework-generations/204f7581-145b-40e4-a35e-4760920b8642/subagents/agent-a0667714e45f459ec.jsonl"
       ]
+    },
+    "13": {
+      "slug": "webster-review-rework-range",
+      "cards": [
+        "13-webster-review-rework-range"
+      ],
+      "cardHashes": {
+        "13-webster-review-rework-range": "61935c8d51baa551e1125376347dce102b052f6e2ce3b1f82c4c04a6627e55c3"
+      },
+      "startSha": "724dc426a190e2d4b4a933967fbcf6b40cf8f46b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-02T08:44:29Z",
+      "sessionId": "204f7581-145b-40e4-a35e-4760920b8642",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "review-exempt-classifier",
