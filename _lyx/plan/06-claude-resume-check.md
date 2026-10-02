@@ -6,7 +6,7 @@
 
 **Uses:**
 - `plan:internal/shuttleengine#SessionResumer`
-- `plan:internal/shuttleengine/claudeengine#validateSessionID`
+- `internal/shuttleengine/claudeengine#validateSessionID`
 - `internal/shuttleengine/claudeengine#claudeProjectDirFor`
 - `internal/shuttleengine/claudeengine#claudeHomeDir`
 

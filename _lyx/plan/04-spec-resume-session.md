@@ -9,7 +9,7 @@
 - `internal/shuttleengine/claudeengine/prepare_test.go`
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#validateSessionID` -> `func validateSessionID(id string) error`
+- `internal/shuttleengine/claudeengine#validateSessionID`
 
 **Intent:**
 Add `ResumeSessionID string` to `Spec`, engine vocabulary: when set, the engine launches that existing session instead of minting a new one.
