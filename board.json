@@ -208,17 +208,6 @@
       "isolated": false,
       "brief": "Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges",
       "body": "## Goal\n\nReplace `crucible`, the hand-run review-and-fix loop, with `Hardener`.\nHardener is an on-demand campaign after loom that runs a live-substrate module in a sandbox, reviews its behavior round after round, and fixes what it finds until the gates are green.\nThen retire `crucible/`, which still writes to `_mill/` and runs its rounds through hand-spawned `crucible-reviewer-\u003ceffort\u003e` agents.\n\n## Starting point\n\n- `manifest/designs/hardener.md` (DRAFT): `Tenter` is the round loop on `Treadle`, and `Hardener` is `Shed` wrapping `Tenter` with its own Preflight.\n  Rounds respawn every time instead of keeping a persistent thread, and a `progress-judge` runs before and after each round.\n- `crucible/README.md` is the method Hardener automates.\n\n## Open before Discussion\n\n- What the handoff must carry losslessly besides the finding-recurrence ledger.\n- Where the line falls between the Go scaffolding and the LLM's orchestrator role.\n- Whether the round agent reuses the `burler` package or only its prompt template.\n- How much of the sandbox provisioning lyx automates.\n\n## Done when\n\n- `lyx` can start a Hardener campaign against a module and run it unattended to convergence or a round cap.\n- `crucible/` is deleted, and the design's durable content lives in package docs.\n\n## Notes\n\n- One of the Someday items on `manifest-retire`'s triage list (`hardener`). Landing this entry removes it from that list.\n"
-    },
-    {
-      "id": 49,
-      "slug": "runs-window",
-      "title": "See every run at once: an own tmux window for the hub runs",
-      "tier": 3,
-      "type": "feature",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Show all runs in the hub without squeezing the orch pane, likely via reed own-window anchoring; the content is runs-overview",
-      "body": "## Goal\n\nThe operator sees many runs at once without squeezing the orch pane.\n\n## Notes\n\n- Operator 2026-10-02: a status strand under orch would need its height to follow the number of runs, which reed cannot do; an own tmux window may fit better.\n- reed today lays out one strand per pane in one window per worktree; `manifest/designs/reed-multi-window.md` sketches own-window strand anchoring, independent per-window attach via tmux session groups, and cross-worktree columns.\n- `runs-overview` (one line per run with state, producer and age) is the content such a window would show.\n- Deep enough to stand alone, separate from `orch-owns-the-loop`.\n"
     }
   ],
   "legacy_done": [
