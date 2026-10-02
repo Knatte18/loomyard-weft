@@ -20,7 +20,7 @@
     "15-self-contained-focus.md": "4afa16ec0caa3293ceb1e5abb19655c0682709b1734548fc7f3a4339231467fa",
     "16-status-commit-holds-archive.md": "6fe0c807ddb016f912061d14ff1908eee6301f27a79af1a76bc07a4283de292c"
   },
-  "currentBatch": 0,
+  "currentBatch": 10,
   "masterStrand": "4d7502a7a3e293d00362fb85656d9e60",
   "masterSessionId": "204f7581-145b-40e4-a35e-4760920b8642",
   "assertedModel": "sonnet",
@@ -50,6 +50,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-rework-generations/63436152-871a-4246-b54f-4bffdd73602d/subagents/agent-a97404525ebf8d5fa.jsonl"
       ]
+    },
+    "10": {
+      "slug": "rework-routes-through-plan-review",
+      "cards": [
+        "10-rework-routes-through-plan-review"
+      ],
+      "cardHashes": {
+        "10-rework-routes-through-plan-review": "d313bd9fa61393b6a406640693cc25838cd96d54f8475e8fc8292cc376b20462"
+      },
+      "startSha": "af335451a6ba8140533569f929a76e79b69f13b2",
+      "kind": "fork",
+      "spawnedAt": "2026-10-02T08:41:14Z",
+      "sessionId": "204f7581-145b-40e4-a35e-4760920b8642",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "review-exempt-classifier",
