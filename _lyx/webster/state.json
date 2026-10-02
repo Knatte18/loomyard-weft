@@ -17,7 +17,7 @@
     "12-orch-start-adopt.md": "ba0ffd7f2449a65f4f38d11b8e741f68a69143f34ebf370e864cb51da96f2141",
     "13-orch-live-smoke.md": "f352b48b96489b78efcb9bd3e25b55b581efca3306e48867525c7f9376ae8803"
   },
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "4749c6c8df55cc26567a2bca686e0b78",
   "masterSessionId": "cab8d9fb-2200-455a-8151-ff5999560bb9",
   "assertedModel": "sonnet",
@@ -206,6 +206,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-live-ready/cab8d9fb-2200-455a-8151-ff5999560bb9/subagents/agent-ad74900b67b20cde8.jsonl"
       ]
+    },
+    "8": {
+      "slug": "orch-stencils",
+      "cards": [
+        "08-orch-stencils"
+      ],
+      "cardHashes": {
+        "08-orch-stencils": "f63c5a75684f8e4d6077e8cb19bd996ed8a5d4345aa1ce069640a486d3416a68"
+      },
+      "startSha": "a96fcbd35c4aa1c2017260143a863f54ce8f2a8c",
+      "kind": "fork",
+      "spawnedAt": "2026-10-02T11:41:53Z",
+      "sessionId": "cab8d9fb-2200-455a-8151-ff5999560bb9",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
