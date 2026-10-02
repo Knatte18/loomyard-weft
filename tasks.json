@@ -52,7 +52,8 @@
       "parent-review",
       "verify-publish-hardening",
       "pair-lifecycle",
-      "manifest-retire"
+      "manifest-retire",
+      "review-finding-class"
     ],
     "isolated": false,
     "deferred": false,
@@ -107,11 +108,13 @@
   {
     "id": 10,
     "slug": "review-finding-class",
-    "title": "Review findings carry a class, and the loop stops at zero gating-class findings",
-    "depends_on": [],
+    "title": "Review convergence: the judge decides converged, continue or circling from fresh reviews",
+    "depends_on": [
+      "rework-generations"
+    ],
     "isolated": false,
     "deferred": false,
-    "brief": "A design/scope/decision/consistency class on every review finding, a stop rule on it, and per-class counts per round",
-    "body": "From `manifest/designs/review-finding-classification.md`; its item 5 (matching \"do not flag\" instructions on writer and reviewer) has shipped.\n\n- Add a finding-class field (`design`, `scope`, `decision`, `consistency`) to burler's review contract and the rubrics; `internal/burlerengine/verdict.go` has only severity today.\n- End the round loop when a round returns zero gating-class findings, keeping the cap as a backstop.\n- Emit per-class counts in the round record, so the same class recurring across rounds is visible.\n- Add a line to the Review Round Invariant: class decides who decides and when the loop stops, never whether a finding is fixed.\n"
+    "brief": "The Bouncer judge stops reviewing the artifacts and judges convergence: converged only when the latest fresh review has no MEDIUM+ (or gating-class) finding, circling escalates; plus finding classes",
+    "body": "## Goal\n\nA review segment stops when it has converged, judged from fresh reviews, and escalates when it circles.\nToday the Bouncer judge is a second reviewer: `contracts/stencils/bouncer/bouncer-template-judge.md` opens with \"You are a review-gate judge: a reviewer of the target artifacts against the rubric\", reads the artifacts first, and `internal/shedadapters/bouncer.go` maps its APPROVED straight to Done.\nSo \"every finding fixed\" counts as converged, although the fixes are new text no fresh reviewer has seen.\nThe prompt is wrong by design, not the agent: it does what it is told (operator, 2026-10-02).\n\n## Seen in rework-generations (2026-10-02)\n\nOne Discussion-Burler round found four MEDIUM, two LOW and two NIT; the fixer fixed all eight, three of them new design decisions; the judge checked each fix against the decision record, marked all resolved, and the segment ended without a second fresh review.\nWith a high-temperature reviewer every round is a new sample, and one sample cannot show convergence.\n\n## Shape\n\n- The judge's role is the operator's: a quick sit-rep agent that decides converged, continue or circling, and does not itself read code or review the artifacts.\n- Convergence is mechanical where it can be: converged when the latest fresh review has no finding at MEDIUM or above (with finding classes, no gating-class finding); whether findings were fixed does not count.\n  Go reads the severities (and classes) from the round's review file; no LLM is needed for that call.\n  The seed entry has no fresh review yet, so a segment always runs at least one Burler round.\n- The judge is needed only for circling: the same ledger key reopened, or a fix in one area producing a new MEDIUM in the same area; circling escalates to the operator.\n- `max_bounces` stays the upper bound.\n- Applies to all three review segments (Discussion-, Plan- and Webster-Review).\n- The reviewer's own top verdict (`verdict: APPROVED` with MEDIUM findings) mixes \"not blocking\" with \"converged\"; the judge must not read it as converged.\n- Depends on `rework-generations`, which also edits the judge stencil (self-contained focus entries).\n\n## Finding classes (from manifest/designs/review-finding-classification.md)\n\n- Add a finding-class field (`design`, `scope`, `decision`, `consistency`) to burler's review contract and the rubrics; `internal/burlerengine/verdict.go` has only severity today.\n- End the round loop when a round returns zero gating-class findings, keeping the cap as a backstop.\n- Emit per-class counts in the round record, so the same class recurring across rounds is visible.\n- Add a line to the Review Round Invariant: class decides who decides and when the loop stops, never whether a finding is fixed."
   }
 ]
