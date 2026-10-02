@@ -1,0 +1,30 @@
+{
+  "runGuid": "d2e1f97c4d51c70a153afdb0abdebf16",
+  "planFingerprint": "9aeff138adbf4b45c5978834546f94559e4da77533c65a35aa2c92ce61f3af83",
+  "planFileHashes": {
+    "00-overview.md": "7717a229155215718c4b9d77c13017ab994a020f5d2e0a8eb9091fc231866762",
+    "01-shuttle-gate-list.md": "2e5bd30c48466cc5c36e7e2c858f1955428058998bd0081491023cfa3343f3db",
+    "02-recipe-gates-key.md": "a55401a912e81fd452d4d76ef8e274880611f925cb532eb2ecdb6766e7a82ce6"
+  },
+  "currentBatch": 1,
+  "masterStrand": "ae2516defb05945c61c299ab01b449cf",
+  "masterSessionId": "1e212dc6-8161-4647-929b-2e2c61aad0be",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "shuttle-gate-list",
+      "cards": [
+        "01-shuttle-gate-list"
+      ],
+      "cardHashes": {
+        "01-shuttle-gate-list": "2e5bd30c48466cc5c36e7e2c858f1955428058998bd0081491023cfa3343f3db"
+      },
+      "startSha": "9ae5f9405e6c9a63eca9f482d60befad38b1d081",
+      "kind": "fork",
+      "spawnedAt": "2026-10-02T07:59:55Z",
+      "sessionId": "1e212dc6-8161-4647-929b-2e2c61aad0be",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
