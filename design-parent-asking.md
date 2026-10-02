@@ -17,6 +17,7 @@ The parent (the session that spawned the run; the operator when none is recorded
   - A lyx verb delivers the parent's answer or review and wakes the writer.
 - Rounds repeat until the parent approves or a round cap is reached; disagreement left at the cap becomes `awaiting` for the operator.
 - The mode is a seed field set by the spawner (batten for hub runs); no parent means the operator, as today.
+  Model it as two independent switches (`ask`, `review`) rather than one enum: one is on per run for now, but the operator sees both on later, served by two different agents, one answering the writer's interview questions and another doing the review (two agents designing together beat one agent asking and answering itself).
 - Build the shared waiting first, then `review` (proven in millhouse), then `ask` on the same machinery.
 - Later, not now: the same for Plan-Write.
 
