@@ -81,3 +81,18 @@ Test code is ~3x production and growing faster; a small prod change forces edits
 [lyx-mcp](design-lyx-mcp.md)
 
 A few coarse MCP tools over lyx, chosen by measured agent use and exposed per role, so agents see typed schemas instead of guessing CLI shapes
+
+## **#038:** creel: a mailbox between named lyx processes
+[creel](design-creel.md)
+
+Mail store and verbs on top of agent-naming's names; deferred while Claude's own SendMessage is enough
+
+## **#039:** Review findings carry a class, and the loop stops at zero gating-class findings
+[review-finding-class](design-review-finding-class.md)
+
+A design/scope/decision/consistency class on every review finding, a stop rule on it, and per-class counts per round
+
+## **#040:** One-screen overview of every run in the hub
+[runs-overview](design-runs-overview.md)
+
+One line per run with state, producer and age, instead of polling each run
