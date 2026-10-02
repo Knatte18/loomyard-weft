@@ -20,7 +20,7 @@
     "15-driver-parent-notice.md": "8fd6f6a445de7edcf3982b0ff64caa2c6a2b78dd1ddf3c8a4dc2fa2ec5d35c82",
     "16-naming-docs.md": "8804cd4c9eee15bf01ba839a0fe9e9871c46ec244dc900219120d85241386133"
   },
-  "currentBatch": 0,
+  "currentBatch": 11,
   "masterStrand": "2415d67dc1df7818ede233c030eceeeb",
   "masterSessionId": "5577a3e8-00d9-48db-8946-b3be117b6f8b",
   "assertedModel": "sonnet",
@@ -76,6 +76,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-agent-naming/5577a3e8-00d9-48db-8946-b3be117b6f8b/subagents/agent-a4e3f4ebbad1f8d1e.jsonl"
       ]
+    },
+    "11": {
+      "slug": "claude-name-flag",
+      "cards": [
+        "11-claude-name-flag"
+      ],
+      "cardHashes": {
+        "11-claude-name-flag": "cf995db04d1c5b6e81424d824c9690d12b69a05bb3bb08cd563d230429cfb4cb"
+      },
+      "startSha": "9decc3ed80e7d3a56e12b84f2783ae6d28056282",
+      "kind": "fork",
+      "spawnedAt": "2026-10-02T08:48:57Z",
+      "sessionId": "5577a3e8-00d9-48db-8946-b3be117b6f8b",
+      "terminal": false,
+      "status": ""
     },
     "15": {
       "slug": "driver-parent-notice",
