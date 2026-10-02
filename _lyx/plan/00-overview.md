@@ -30,6 +30,10 @@ The build order is: the name grammar, the code record and its verb, the shell se
 14 — reed-list-verb — `lyx reed list`, the hub-wide name directory
 15 — driver-parent-notice — ly-drive and the driver prompt notify `$LYX_PARENT` on escalation
 16 — naming-docs — overview, reed, fabric and shedrun package docs
+17 — agentname-shortname — agentname's code segment becomes the shortname
+18 — fabric-shortname — `.lyx-shortname`, `--shortname` and `lyx fabric shortname` replace the code record, flag and verb
+19 — reed-shortname — reed's told `NameCode` becomes `NameShortname`, with its tellers, help and tests
+20 — shortname-docs — CONSTRAINTS, overview and package docs say shortname
 
 ## Shared Decisions
 
