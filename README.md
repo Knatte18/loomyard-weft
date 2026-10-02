@@ -1,5 +1,50 @@
 # Tasks
 
+# Layer A
+
+## **#000:** Agent names: <repo>:<slug>:<role> for every process, with parentage [A]
+[agent-naming](design-agent-naming.md)
+
+Every process lyx spawns gets one hierarchical name (ly:landing:driver, ly:orch in the prime) as strand, Claude session and pane name, and records its parent; each repo gets a short code at fabric clone
+
+## **#002:** PR-Rework as its own plan generation, design-reviewed [A]
+[rework-generations](design-rework-generations.md)
+
+Each rework round gets a fresh plan with only its own cards, so Webster never drags implemented cards along; rework cards that change a classifier, verb or guard go through Plan-Review
+
+## **#006:** Bolt as the roadmap, manifest/ retired [A]
+[bolt-v2](design-bolt-v2.md)
+
+One entry store with a numeric tier and a type, a README rendered like roadmap.md, lyx board find and a compact listing; then manifest/ is deleted after its durable content moves to package docs
+
+# Layer B
+
+## **#001:** Discussion-Write asks its parent, and shuttle waits for the answer [B]
+[parent-asking](design-parent-asking.md)
+Depends on: #000
+
+Discussion-Write sends its questions and its finished draft to $LYX_PARENT and fixes the answers in the same live session; shuttle learns to wait on a parent instead of the operator
+
+## **#003:** Verify localizes failures and Publish never runs on a dirty tree [B]
+[verify-publish-hardening](design-verify-publish-hardening.md)
+Depends on: #002, #000
+
+Cards verify with the integration tests and repo scans they touch, Publish never verifies or pushes a dirty tree, verify is never skipped after a crash, and every agent prompt goes through a file
+
+## **#004:** Clean pair lifecycle: no leftover sessions, branches, sockets or races [B]
+[pair-lifecycle](design-pair-lifecycle.md)
+Depends on: #000
+
+fabric remove ends the pair's tmux session, finishes half-removed pairs and deletes warp branches on origin; loom start never races a dying driver; tests stop leaking tmux sockets
+
+# Layer C
+
+## **#005:** PATTERN for loomyard, plus repo conventions [C]
+[pattern-init](design-pattern-init.md)
+Depends on: #001, #003, #004, #006
+
+CONSTRAINTS.md becomes _lyx/PATTERN.md so agents get the constraints directive; warp/weft scan beyond Go code; model specs in short form; ide workspace cleanups
+
 # Manifest
 
 ## **#001:** Batten teardown deletes an llm-driven child's friction notes
