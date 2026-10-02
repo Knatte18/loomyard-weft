@@ -7,16 +7,17 @@
 
 Every process lyx spawns gets one hierarchical name (ly:landing:driver, ly:orch in the prime) as strand, Claude session and pane name, and records its parent; each repo gets a short code at fabric clone
 
-## **#002:** PR-Rework as its own plan generation, design-reviewed [A]
-[rework-generations](design-rework-generations.md)
-
-Each rework round gets a fresh plan with only its own cards, so Webster never drags implemented cards along; rework cards that change a classifier, verb or guard go through Plan-Review
-
 ## **#009:** Retire manifest/: Someday into bolt, durable content into package docs [A]
 [manifest-retire](design-manifest-retire.md)
 Depends on: #006
 
 Triage roadmap.md's Someday into bolt's tiers, move the durable design content into package docs, fix inbound links and delete manifest/
+
+## **#010:** Review convergence: the judge decides converged, continue or circling from fresh reviews [A]
+[review-finding-class](design-review-finding-class.md)
+Depends on: #002
+
+The Bouncer judge stops reviewing the artifacts and judges convergence from facts Go hands it (counts, severities, trend, reopened ledger keys), on its own sonnet[medium] key; at least one fresh round, circling escalates; plus finding classes
 
 # Layer B
 
@@ -38,12 +39,6 @@ Depends on: #000, #008
 
 Port of millhouse orch-review/orch-wait into Discussion-Write's producer gate: after the mechanical validator, a reviewer (the parent for now) reviews once through a lyx verb pair and the live writer addresses it; a new pass_on_cap gate flag lets the run through afterwards
 
-## **#010:** Review convergence: the judge decides converged, continue or circling from fresh reviews [B]
-[review-finding-class](design-review-finding-class.md)
-Depends on: #002
-
-The Bouncer judge stops reviewing the artifacts and judges convergence from facts Go hands it (counts, severities, trend, reopened ledger keys), on its own sonnet[medium] key; at least one fresh round, circling escalates; plus finding classes
-
 # Layer C
 
 ## **#005:** PATTERN for loomyard, plus repo conventions [C]
@@ -53,6 +48,11 @@ Depends on: #007, #003, #004, #009, #010
 CONSTRAINTS.md becomes _lyx/PATTERN.md so agents get the constraints directive; warp/weft scan beyond Go code; model specs in short form; ide workspace cleanups
 
 # Done
+
+## **#002:** PR-Rework as its own plan generation, design-reviewed
+[rework-generations](design-rework-generations.md) [done]
+
+Each rework round gets a fresh plan with only its own cards, so Webster never drags implemented cards along; rework cards that change a classifier, verb or guard go through Plan-Review
 
 ## **#006:** Bolt as the roadmap: tiers, type and a readable README
 [bolt-v2](design-bolt-v2.md) [done]
