@@ -20,7 +20,7 @@
     "15-driver-parent-notice.md": "8fd6f6a445de7edcf3982b0ff64caa2c6a2b78dd1ddf3c8a4dc2fa2ec5d35c82",
     "16-naming-docs.md": "8804cd4c9eee15bf01ba839a0fe9e9871c46ec244dc900219120d85241386133"
   },
-  "currentBatch": 12,
+  "currentBatch": 0,
   "masterStrand": "2415d67dc1df7818ede233c030eceeeb",
   "masterSessionId": "5577a3e8-00d9-48db-8946-b3be117b6f8b",
   "assertedModel": "sonnet",
@@ -115,8 +115,19 @@
       "kind": "fork",
       "spawnedAt": "2026-10-02T08:49:38Z",
       "sessionId": "5577a3e8-00d9-48db-8946-b3be117b6f8b",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "12-watchdog-name-repair",
+        "status": "done",
+        "head_sha": "f62a2c28437060b745f9ed4ef773f40d0609d817"
+      },
+      "cardShas": [
+        "f62a2c28437060b745f9ed4ef773f40d0609d817"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-agent-naming/5577a3e8-00d9-48db-8946-b3be117b6f8b/subagents/agent-a8dd563382c854b66.jsonl"
+      ]
     },
     "15": {
       "slug": "driver-parent-notice",
@@ -380,6 +391,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-agent-naming/5577a3e8-00d9-48db-8946-b3be117b6f8b/subagents/agent-a6d1855cc5c797116.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-agent-naming/5577a3e8-00d9-48db-8946-b3be117b6f8b/subagents/agent-a9d478bd9ebd81c8b.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-agent-naming/5577a3e8-00d9-48db-8946-b3be117b6f8b/subagents/agent-a4e3f4ebbad1f8d1e.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-agent-naming/5577a3e8-00d9-48db-8946-b3be117b6f8b/subagents/agent-a4683f3f048210ace.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-agent-naming/5577a3e8-00d9-48db-8946-b3be117b6f8b/subagents/agent-a4683f3f048210ace.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-agent-naming/5577a3e8-00d9-48db-8946-b3be117b6f8b/subagents/agent-a8dd563382c854b66.jsonl"
   ]
 }
