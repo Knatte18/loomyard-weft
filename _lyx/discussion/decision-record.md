@@ -104,7 +104,7 @@ Rationale: the closure is idempotent over the on-disk state, which is what the g
 ### D5 — The live writer delivers the notice through SendMessage
 
 Decision: when the closure opens a request, the wait loop sends the still-live writer one delivery prompt, carried by the pending result (D2), instead of typing into the reviewer's pane.
-The prompt is a stencil, rendered with the run slug, the request path and the reviewer's full name from the seed; it tells the writer to send one message through Claude Code's `SendMessage` addressed to that full name, carrying the slug, the request path and an instruction to review with a one-shot fork, then to end its turn without changing the discussion.
+The prompt is a stencil, rendered with the run slug, the round's brief path and the reviewer's full name from the seed; it tells the writer to send one message through Claude Code's `SendMessage` addressed to that full name, carrying the slug, the brief path (the brief alone says what to read and how to submit) and an instruction to review with a one-shot fork, then to end its turn without changing the discussion.
 `$LYX_PARENT` holds the same name, since reed exports the seed's parent as it, but the prompt names the address itself.
 The delivery prompt is not a re-prompt: it changes no gate count, and the entry stays pending.
 The writer records delivery by running `lyx loom review delivered [<slug>]` after the send, which stamps the delivery record; a send that fails is recorded with `--failed <reason>`.
