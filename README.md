@@ -32,6 +32,13 @@ Starts when every entry it names under After is done.
    - CONSTRAINTS.md becomes _lyx/PATTERN.md so agents get the constraints directive; warp/weft scan beyond Go code; model specs in short form; ide workspace cleanups
    - **After:** `verify-publish-hardening`, `pair-lifecycle`, `manifest-retire`, `review-finding-class`
 
+### Independent
+
+Depends on nothing and nothing depends on it, by design.
+
+1. **Webster recovers from a re-begin, its own canonicalization and an integration regression** — [`webster-recovery`](design-webster-recovery.md) · bug
+   - Fix #329, #330, #332: only landed batches count as built, webster's own card rewrites update their hashes, forks fix what their card broke and a bisected regression gets a recovery fork
+
 ## Next Up
 
 Planned next, but not yet concretized.
