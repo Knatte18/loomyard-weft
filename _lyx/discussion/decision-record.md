@@ -2,31 +2,31 @@
 
 ## Goal
 
-Bolt becomes the roadmap.
+The board, the task tracker behind `lyx board`, becomes the roadmap.
 One entry store replaces `tasks.json` + `notes.json`, every entry carries a numeric `tier` and a `type`, and the README renders like `manifest/roadmap.md`: one section per tier, one `1.` item per entry.
-Agents get `lyx board find`, a compact `--text` listing, payload shapes in every verb's `--help`, and a `ly:bolt` skill, so nobody falls back to jq on the JSON files.
+Agents get `lyx board find`, a compact `--text` listing, payload shapes in every verb's `--help`, and a `ly:board` skill, so nobody falls back to jq on the JSON files.
 The store migrates itself on first use by the new binary, and a pre-upgrade `lyx` still running in a long-lived process keeps working against the board without losing its writes.
 
 ## Scope
 
 In:
 
-- One store file `bolt.json` in the board directory, shaped `{"version": 1, "entries": [...]}`, replacing `tasks.json` and `notes.json` as the source of truth.
+- One store file `board.json` in the board directory, shaped `{"version": 1, "entries": [...]}` (plus `legacy_done` until `retire-legacy`), replacing `tasks.json` and `notes.json` as the source of truth.
 - Entry fields `tier` (1, 2 or 3) and `type` (closed set, see Decisions); the old recipe-carrying `type` field becomes `recipe`; `deferred` is retired into the tier.
 - Migration from the legacy files, the legacy done-mark fold, and a `retire-legacy` verb that removes the legacy files.
 - One verb set over the store: `upsert`, `upsert-batch`, `set-status`, `remove`, `get`, `list`, `list-full`, `merge`, `set-deps`, plus new `find`, `promote`, `prune`, `retire-legacy`, and the existing `rerender`, `sync`.
 - The `notes` group and `promote-note` stay as hidden aliases onto the same store.
-- README and design-doc rendering rewritten (tier sections, item shape, design-doc header, line-preserving body).
+- README and design-doc rendering rewritten (tier sections, item shape, design-doc header; the body itself renders unchanged).
 - `--text` compact listing on `list` and `find`.
 - Payload shapes documented in the `Long` help of every verb that takes a JSON payload.
-- A new skill `plugins/ly/skills/bolt/SKILL.md` (`ly:bolt`) telling agents how to use bolt, listed in `plugins/ly/skills/INDEX.md`.
+- A new skill `plugins/ly/skills/board/SKILL.md` (`ly:board`) telling agents how to use the board, listed in `plugins/ly/skills/INDEX.md`.
 - Callers of the old fields updated: `internal/battencli`'s recipe read moves from `Type` to `Recipe`.
 - Docs: `internal/boardengine` and `internal/boardcli` package docs, the `lyx board` help text, and the board entry in `docs/overview.md`.
 
 Out:
 
 - Rewriting entry briefs as what/why and re-tiering or re-typing migrated entries: a content job the operator and hub do through `lyx board` after deploy.
-- Moving roadmap.md's Someday into bolt and retiring `manifest/`: task `manifest-retire`.
+- Moving roadmap.md's Someday into the board and retiring `manifest/`: task `manifest-retire`.
 - Rendering producer or PR on running entries.
 - Any claimability refusal in `lyx loom start` or `lyx fabric add`.
 - An MCP server (`lyx-mcp` is its own entry).
@@ -34,7 +34,8 @@ Out:
 
 ## Decisions
 
-1. **Store file is `bolt.json`, a versioned object.**
+1. **Store file is `board.json`, a versioned object.**
+   Shape: `{"version": 1, "entries": [...]}`, plus `legacy_done` (Decision 9) while a legacy file exists.
    Rationale: a new filename means a pre-upgrade binary never reads or rewrites the new store, so it cannot silently drop the `tier`/`type`/`recipe` fields it does not know; the `version` key gives later schema changes a hook.
 2. **Entry schema.**
    Fields: `id`, `slug`, `title`, `tier`, `type`, `recipe` (omitempty), `depends_on`, `isolated`, `brief`, `body`, `status` (omitempty), `short_name` (omitempty).
@@ -57,23 +58,27 @@ Out:
    An upsert carrying `deferred` is refused with a message naming `tier: 3` as its replacement.
    Rationale: deferral is exactly "not claimable", which the tier now expresses.
 7. **Dependency rule: an entry's dependencies have a tier less than or equal to its own.**
+   A dependency whose status is `done` is exempt: it blocks nothing, so its tier is never compared.
    Checked on every write over the projected store, including tier changes through upsert or promote, in place of the old deferred rules; dangling-dependency, isolated and cycle checks stay.
    A refusal names the offending dependency and the entry to promote or demote.
    Rationale: generalizes the old "a non-deferred task cannot depend on a deferred one", so a tier-1 entry is never blocked by something not yet concretized.
 8. **Migration happens on load, persists on the first write.**
-   When `bolt.json` is absent and a legacy file exists, every load builds the store in memory from the legacy files:
+   When `board.json` is absent and a legacy file exists, every load builds the store in memory from the legacy files:
    tasks become tier 1, deferred tasks tier 3, notes tier 3; every migrated entry gets `type: feature`; a legacy `type` value moves to `recipe`.
    A note whose id collides with a task id gets a fresh id; a slug present in both legacy files refuses the load, naming the slug and leaving every file untouched.
-   Reads persist nothing; the first locked write saves `bolt.json`, renders, and syncs.
+   Reads persist nothing; the first locked write saves `board.json`, renders, and syncs.
    The legacy files stay on disk.
    Rationale: read paths built without output config (battencli, ideengine) cannot render, so only writes persist; leaving the legacy files keeps a pre-upgrade process's reads working.
-9. **Legacy done-mark fold on every load.**
-   While a legacy file exists beside `bolt.json`, each load reads it and, for every legacy entry with status `done` whose slug exists in the store with another status, sets that entry to `done`.
+9. **Legacy done-mark fold on every load, each mark applied once.**
+   The store keeps `legacy_done`, the slugs whose legacy `done` mark it has already absorbed; migration seeds it with every legacy slug already `done`.
+   While a legacy file exists beside `board.json`, each load reads it and, for every legacy entry with status `done` whose slug is not in `legacy_done`, sets the store entry with that slug to `done` when one exists, and adds the slug to `legacy_done` either way.
    Nothing else is folded: no new slugs, no other statuses, no field edits.
-   Writes persist the folded result.
-   Rationale: the only write a pre-upgrade binary still makes after deploy is a landing's `MarkTaskDone`, from a long-running Go driver started before the deploy; a done-only, present-slug fold is idempotent, needs no snapshot, and cannot resurrect a pruned entry or revert a newer status.
+   Writes persist the folded result and the grown `legacy_done`.
+   Rationale: the only write a pre-upgrade binary still makes after deploy is a landing's `MarkTaskDone`, from a long-running Go driver started before the deploy;
+   the frozen legacy file keeps every historical done mark, so applying each mark once is what keeps the fold from reverting a status the new binary set later, or marking done a new entry that reuses a legacy slug.
+   A done-only, present-slug fold never resurrects a pruned entry.
 10. **`lyx board retire-legacy` removes the legacy files.**
-    It runs one last fold, saves `bolt.json`, deletes `tasks.json`, `notes.json` and their swaplock files, renders and syncs.
+    It runs one last fold, drops `legacy_done`, saves `board.json`, deletes `tasks.json`, `notes.json` and their swaplock files, renders and syncs.
     With no legacy file present it refuses, saying there is nothing to retire.
     Rationale: stale JSON beside the store misleads agents that read files directly; removal is an explicit operator step taken once no pre-upgrade driver is alive.
 11. **Write lock stays `board.lock`.**
@@ -83,7 +88,8 @@ Out:
     The JSON envelope keys stay `task` (get, upsert results) and the current list keys.
     Rationale: the deployed discussion stencil and agents read `{"task": ...}`; keeping the keys makes the upgrade invisible to them.
 13. **`notes` group and `promote-note` become hidden aliases.**
-    Every `lyx board notes <verb>` runs the top-level verb of the same name over the same store; `promote-note` runs `promote` with target tier 1.
+    Every `lyx board notes <verb>` runs the top-level verb of the same name over the same store, so it sees every entry: `notes list` lists all entries, and `notes get` and `notes remove` reach any entry, not only former notes.
+    `promote-note` runs `promote` with target tier 1, and on an entry already at tier 1 it succeeds without a change, keeping the old verb's idempotence on retry.
     Both are hidden from help and their `Short` says they are aliases.
     Rationale: `manifest/HANDOFF.md` and agents still call `lyx board notes upsert`; a hidden alias keeps them working without advertising two names.
 14. **`lyx board promote '{"slug": ..., "tier": N}'`.**
@@ -104,7 +110,7 @@ Out:
     Order is the README's order.
     Rationale: `--text` is the existing lyx convention (quarry); the operator asked for tier, slug and title, and type and status are what the hub needs to scan next.
 18. **README shape.**
-    `# Bolt`, a one-line intro, then `## Planned`, `## Next Up`, `## Someday`, `## Done`, each followed by its one-line meaning; a tier section renders its heading and meaning even when empty, and `## Done` is omitted when no entry is done.
+    `# Board`, a one-line intro, then `## Planned`, `## Next Up`, `## Someday`, `## Done`, each followed by its one-line meaning; a tier section renders its heading and meaning even when empty, and `## Done` is omitted when no entry is done.
     Done entries render under `## Done` whatever their tier; every other entry renders under its tier.
     Within a section, order is dependency layer then id.
     Each entry is one item:
@@ -121,26 +127,28 @@ Out:
 20. **Design doc shape.**
     `# <title>`, a metadata line (`` `<slug>` · <tier section name> · <type>[ · <status>] ``), a `Depends on:` line linking each dependency's design doc or naming it when it has none, then the body.
     Rationale: a design doc opened alone says what it belongs to.
-21. **Design-doc body renders line-preserving.**
-    Outside fenced code blocks, a single newline between two non-blank prose lines becomes a hard line break (trailing backslash), except when the next line starts a list item, heading, fence, table row or blockquote, or the current line is a heading or table row.
-    The stored body is never modified; only the rendered file is.
-    Rationale: the operator's complaint that single-newline bodies render as one paragraph; a hard break shows lines as written without turning every sentence into its own spaced paragraph.
+21. **Design-doc body renders as ordinary markdown.**
+    The body is written into the design doc unchanged; a single newline stays a soft break, per the repo's semantic-line-break rule.
+    The complaint that a body "renders as one paragraph" is fixed at the writing end: bodies use headings and lists, and the `ly:board` skill says so.
+    Rationale: hub review (2026-10-02); a renderer that turns every newline into a hard break would contradict the markdown rule every other file follows.
 22. **Help documents every payload.**
     Every verb taking a JSON payload carries `Long` text listing each key, its type, whether it is required, and one example, following `get`'s current shape.
     Rationale: the operator asked for `get`/`remove` explicitly; documenting every verb removes the guesswork that drove agents to raw files.
-23. **Agent skill `ly:bolt`.**
-    `plugins/ly/skills/bolt/SKILL.md` covers: bolt is read and written only through `lyx board`; tier and type meanings; creating, promoting, finding and listing; the payload of each common verb; never reading `_board/*.json` directly.
+23. **Agent skill `ly:board`.**
+    `plugins/ly/skills/board/SKILL.md` covers: the board is read and written only through `lyx board`; tier and type meanings; creating, promoting, finding and listing; the payload of each common verb; never reading `_board/*.json` directly.
     Rationale: the operator asked for a skill or doc; a skill reaches every agent through the plugin cache, a doc only agents that open it.
 
 ## Constraints
 
+- "Board" names the task tracker; "Bolt" is the nickname of weft's main branch, the board's git home, and never names the tracker, its store, its skill or its README.
+  "Bolt" stays only where it names the weft-main writer.
 - `CONSTRAINTS.md` is authoritative; the relevant invariants are the CLI/Cobra Invariant (`Short` on every command, hidden aliases included, help-tree tests), the Fabric Git Invariant's board carve-out (writes to weft:main only through `Bolt`), Hub Containment (board reached from the hub only), and Lyxdirs Single-Declarer.
-- Every weft commit passes a positive-only file list; the sync must stage `bolt.json` and the legacy-file deletions.
-- `*.swaplock` and `*.lock` stay gitignored; `bolt.json.swaplock` is covered by the existing pattern.
+- Every weft commit passes a positive-only file list; the sync must stage `board.json` and the legacy-file deletions.
+- `*.swaplock` and `*.lock` stay gitignored; `board.json.swaplock` is covered by the existing pattern.
 - Tests build hubs through `internal/hubforge`; no test touches the real `_board`.
 - `boardengine`'s render stays a pure function; I/O stays in `RenderToDisk`.
 - No change to `manifest/` beyond what `manifest-retire` owns; `manifest/roadmap.md` does not move.
-- Markdown written in this task follows semantic line breaks; the generated design docs' trailing-backslash hard breaks are renderer output, not authored prose.
+- Markdown written in this task, and the markdown the renderer generates, follows semantic line breaks.
 - Production deploy is the operator's `update-plugins.sh`; nothing in this task runs it.
 
 ## Auto-mode assumptions
@@ -148,7 +156,7 @@ Out:
 - No operator answered; every decision above is a self-pick, logged in the support log's question ledger.
 - Migrated notes go to tier 3, not 2: briefs mark several as parked or someday, and the operator re-tiers during the content review.
 - Every migrated entry gets `type: feature`; re-typing is the operator's content job.
-- New entries without `tier` get 3 even through the top-level `upsert`, which used to create claimable tasks; agents that create claimable work pass `tier: 1`, and the `ly:bolt` skill says so.
+- New entries without `tier` get 3 even through the top-level `upsert`, which used to create claimable tasks; agents that create claimable work pass `tier: 1`, and the `ly:board` skill says so.
 - Claimability stays a data and rendering concept; no verb outside `lyx board` checks it.
 - `abandoned` entries render in their tier with the status tag, not under Done, and `prune` keeps them.
 
@@ -161,40 +169,42 @@ Out:
 
 ## Acceptance criteria
 
-- `bolt.json` is the only store a new-binary write produces; no write creates `tasks.json` or `notes.json`.
+- `board.json` is the only store a new-binary write produces; no write creates `tasks.json` or `notes.json`.
 - Migration:
   - A board holding only legacy files loads with tasks at tier 1, deferred tasks at tier 3, notes at tier 3, every entry typed `feature`, legacy `type` values moved to `recipe`, ids preserved.
   - A note id colliding with a task id is reassigned.
   - A slug in both legacy files refuses the load and leaves every file byte-identical.
-  - A read on an unmigrated board writes nothing; the first write creates `bolt.json` and leaves the legacy files in place.
+  - A read on an unmigrated board writes nothing; the first write creates `board.json` and leaves the legacy files in place.
 - Fold:
   - A legacy entry marked `done` after migration marks the matching store entry `done` on the next load.
   - A legacy entry whose slug is absent from the store is ignored.
   - A non-done legacy status never changes the store.
-  - A pre-upgrade-shaped `SetStatus` on the legacy `tasks.json` under `board.lock` followed by any new-binary write leaves that entry `done` in `bolt.json`.
-- `retire-legacy` folds, deletes both legacy files and their swaplocks, and refuses when none exist.
+  - An entry `done` in the legacy file at migration, later set to another status by the new binary, keeps that status across loads and writes.
+  - A new entry reusing a slug that is `done` in the legacy file is not marked `done` by the fold.
+  - A pre-upgrade-shaped `SetStatus` on the legacy `tasks.json` under `board.lock` followed by any new-binary write leaves that entry `done` in `board.json`.
+- `retire-legacy` folds, drops `legacy_done`, deletes both legacy files and their swaplocks, and refuses when none exist.
+- Defaults: a new entry created without `tier` gets tier 3, and without `type` gets `feature`, through both `upsert` and `upsert-batch`.
 - Validation:
   - `tier` outside 1–3 is refused.
   - `type` outside the set is refused, naming the set and `recipe`.
   - `deferred` is refused, naming `tier: 3`.
   - A dependency on a higher-tier entry is refused on create, on demotion of the dependency, and on promotion of the dependent.
+  - A dependency on a `done` entry is accepted whatever its tier.
   - Dangling, isolated and cycle checks still hold.
 - `promote` defaults to one tier lower, accepts a skip, and refuses an equal, higher, or below-1 target.
-- `prune` removes every done entry, strips them from other entries' `depends_on`, removes their design docs on render, and reports the removed slugs.
+- `prune` removes every done entry, strips them from other entries' `depends_on`, removes their design docs on render, and reports the removed slugs; `abandoned` entries survive it.
 - `find` matches case-insensitively in slug, title, brief and body, includes done entries, and returns the `list` shape; `--text` prints the compact lines.
 - `list --text` prints one aligned line per entry (tier, type, slug, title, bracketed status when set) in README order.
-- README golden test: sections in order with meaning lines, an empty tier still rendered, Done omitted when empty, item shape exactly as in Decision 18, no ids or layer letters, dependency-layer ordering within a section.
+- README golden test: sections in order with meaning lines, an empty tier still rendered, Done omitted when empty, item shape exactly as in Decision 18, no ids or layer letters, dependency-layer ordering within a section, an `abandoned` entry under its tier section with its status tag.
 - Design-doc golden tests:
   - Header and metadata line.
   - `Depends on:` links.
-  - Single newlines between prose lines become hard breaks.
-  - Fenced code, tables, headings and list starts are left alone.
-  - The stored body is unchanged.
+  - The body appears byte-identical to the stored body, with no added breaks.
 - `get` returns `{"task": ...}` with `tier`, `type`, `recipe`; `get`/`remove` by id still work.
-- `lyx board notes upsert` and `lyx board promote-note` act on the same store; both are hidden from `lyx board --help` and carry a `Short`.
+- `lyx board notes upsert` and `lyx board promote-note` act on the same store, `notes list` lists every entry, and `promote-note` on a tier-1 entry succeeds unchanged; both are hidden from `lyx board --help` and carry a `Short`.
 - Every payload-taking verb's `--help` lists its keys, types, required flags and an example; help-tree tests pass.
 - `internal/battencli` reads the child recipe from `recipe`; `internal/loomcli`'s `MarkTaskDone` marks a migrated entry done.
-- `plugins/ly/skills/bolt/SKILL.md` exists and is listed in `plugins/ly/skills/INDEX.md`.
+- `plugins/ly/skills/board/SKILL.md` exists and is listed in `plugins/ly/skills/INDEX.md`.
 - `go test ./...` passes.
 
 ## Notes for the plan writer
