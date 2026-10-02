@@ -1,7 +1,7 @@
 # Card 4 — reed-unless-engine
 
 **Create:**
-- `plan:internal/reedengine#Engine.AddStrandUnless` -> `func (e *Engine) AddStrandUnless(spec AddSpec, unlessName string) (Strand, bool, error)`
+- `internal/reedengine#Engine.AddStrandUnless`
 
 **Edit:**
 - `internal/reedengine/strand.go`

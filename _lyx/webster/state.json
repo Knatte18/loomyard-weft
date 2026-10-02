@@ -1,18 +1,18 @@
 {
   "runGuid": "9245815fed673e43cee944598482c6e4",
-  "planFingerprint": "7222c322f6a32890b2353143cdec89fd39e78cb3cfe3f35db6559198fb27a4d3",
+  "planFingerprint": "a0a385bd971379404aef82c74aca78d608fac14d834c3444689c15e5b4fbf94c",
   "planFileHashes": {
     "00-overview.md": "4ebf52893883b02caf6c9f63a796735c7e9fcd67f8dc452e51eba991b5dd31b8",
     "01-yaml-fill-missing.md": "35623a6a6347bf87233bcb4aadaf76e1d22372f5a484c371a1b2afc024f8bdd6",
     "02-config-load-fills.md": "5c4c0c91198ceb53fb735a640de33fc4cfbd733d3ef4bb060a8a15cc5c0b140a",
     "03-reconcile-hints.md": "1e2a5a0275fcdc9a26233e75d552fa3d3f3b934d8ed951f6b67e7d1a7718a523",
-    "04-reed-unless-engine.md": "a8c11e97e7243d4beab4cdad5dc3e4142d1d311ab15286b0ae65221a0a03167f",
-    "05-reed-add-unless-flag.md": "446cd1c3eecc8b02926405db5b8033e1ccb012d2db08e3e9d6f7a7a1d16df97f",
+    "04-reed-unless-engine.md": "a8dea026f4f30ca0e30d249d45ea7c83fdc7b2e9912f308113bfb36659e8be4f",
+    "05-reed-add-unless-flag.md": "f6a7a5035a6a21c3be4cbcd4c8ad49052884c2964bd249001bcd445adb58156d",
     "06-ide-spawn-clean.md": "b616fe8f2b92013e7d921a5538c668a59fd2ca22a4a4283ef3cc9a6e48f43f9e",
     "07-gitignore-pkg-delete.md": "f7798852088c52015be18459e66c0e340ed67663271d6d5a2f3077025c2b4eb4",
     "08-repo-housekeeping.md": "b9df1824547b7a92e3330bc4dc565fbe68710de9da73cdba22f138ded3e81f5b"
   },
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "6c3dedda52773d86f2e8e44e377fae20",
   "masterSessionId": "796914ab-91bc-485a-8687-914ff1238eb9",
   "assertedModel": "sonnet",
@@ -107,13 +107,25 @@
       "kind": "fork",
       "spawnedAt": "2026-10-02T17:47:47Z",
       "sessionId": "796914ab-91bc-485a-8687-914ff1238eb9",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-reed-unless-engine",
+        "status": "done",
+        "head_sha": "dc6680473db80055c995712526c216e0a499b3e0"
+      },
+      "cardShas": [
+        "dc6680473db80055c995712526c216e0a499b3e0"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-operator-surface-fixes/796914ab-91bc-485a-8687-914ff1238eb9/subagents/agent-ae96a0332b5442dbd.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-operator-surface-fixes/796914ab-91bc-485a-8687-914ff1238eb9/subagents/agent-abc12b964e2bd71f8.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-operator-surface-fixes/796914ab-91bc-485a-8687-914ff1238eb9/subagents/agent-abe8aa3ed7317c867.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-operator-surface-fixes/796914ab-91bc-485a-8687-914ff1238eb9/subagents/agent-ab8bb2b6f5e22cfbd.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-operator-surface-fixes/796914ab-91bc-485a-8687-914ff1238eb9/subagents/agent-ab8bb2b6f5e22cfbd.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-operator-surface-fixes/796914ab-91bc-485a-8687-914ff1238eb9/subagents/agent-ae96a0332b5442dbd.jsonl"
   ]
 }

@@ -7,7 +7,7 @@
 - `internal/reedcli/unlessname_integration_test.go`
 
 **Uses:**
-- `plan:internal/reedengine#Engine.AddStrandUnless`
+- `internal/reedengine#Engine.AddStrandUnless`
 
 **Intent:**
 Expose the engine's skip as `lyx reed add --unless-name <name>` (D2).
