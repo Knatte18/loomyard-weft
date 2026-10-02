@@ -18,7 +18,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/loomshed#PlanReviewSkippable`
+- `internal/loomshed#PlanReviewSkippable`
 - `internal/shedadapters/bouncer.go`
 
 **Intent:**

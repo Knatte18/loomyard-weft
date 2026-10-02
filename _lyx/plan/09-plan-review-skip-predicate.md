@@ -2,7 +2,7 @@
 
 **Create:**
 - `internal/loomshed/generation.go`
-- `plan:internal/loomshed#PlanReviewSkippable` -> `func PlanReviewSkippable(deps PRReworkDeps) (bool, error)`
+- `internal/loomshed#PlanReviewSkippable`
 - `internal/loomshed/generation_test.go`
 
 **Edit:**
