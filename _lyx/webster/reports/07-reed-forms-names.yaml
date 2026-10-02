@@ -1,0 +1,5 @@
+status: OK
+head_sha: 225c411d634c0e7b1e503cfef7dc9be0bd45b3c5
+deviations:
+  - internal/reedengine/template.go
+  - internal/reedcli/cli_integration_test.go
