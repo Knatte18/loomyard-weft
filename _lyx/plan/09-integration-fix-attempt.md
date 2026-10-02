@@ -16,8 +16,8 @@
 - `internal/websterengine#RenderIntegrationFixPrompt`
 - `internal/websterengine#IntegrationFixState`
 - `internal/websterengine#checkFixCommits`
-- `plan:internal/websterengine#IntegrationFixRecord`
-- `plan:internal/websterengine#AppendIntegrationFix`
+- `internal/websterengine#IntegrationFixRecord`
+- `internal/websterengine#AppendIntegrationFix`
 - `internal/websterengine#triageIntegrationFailure`
 - `internal/websterengine#RecordIntegrationFailure`
 - `internal/websterengine#MasterHandle`

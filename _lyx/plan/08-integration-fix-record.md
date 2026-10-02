@@ -1,8 +1,8 @@
 # Card 8 — integration-fix-record
 
 **Create:**
-- `plan:internal/websterengine#IntegrationFixRecord` -> `type IntegrationFixRecord struct`
-- `plan:internal/websterengine#AppendIntegrationFix` -> `func AppendIntegrationFix(websterDir string, fix IntegrationFixRecord) error`
+- `internal/websterengine#IntegrationFixRecord`
+- `internal/websterengine#AppendIntegrationFix`
 
 **Edit:**
 - `internal/websterengine/integrationreport.go`
