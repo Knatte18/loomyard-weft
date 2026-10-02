@@ -2,6 +2,8 @@
 
 `verify-publish-hardening` · Planned · feature
 
+Depends on: [`orch-live-ready`](design-orch-live-ready.md)
+
 ## Goal
 
 A failing integration test stops on the card that caused it, Publish never verifies or pushes a dirty tree, and no gate is skipped after a crash.

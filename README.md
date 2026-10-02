@@ -6,8 +6,6 @@ Entries grouped by tier, in dependency order within each tier.
 
 Concretized and claimable.
 
-1. **Verify localizes failures and Publish never runs on a dirty tree** — `verify-publish-hardening` · feature
-   Cards verify with the integration tests and repo scans they touch, Publish never verifies or pushes a dirty tree, verify is never skipped after a crash, and every agent prompt goes through a file [design](design-verify-publish-hardening.md)
 1. **Clean pair lifecycle: no leftover sessions, branches, sockets or races** — `pair-lifecycle` · feature
    fabric remove ends the pair's tmux session, finishes half-removed pairs and deletes warp branches on origin; loom start never races a dying driver; tests stop leaking tmux sockets [design](design-pair-lifecycle.md)
 1. **Parent review as a step in Discussion-Write's gate** — `parent-review` · feature
@@ -18,6 +16,9 @@ Concretized and claimable.
    The Bouncer judge stops reviewing the artifacts and judges convergence from facts Go hands it (counts, severities, trend, reopened ledger keys), on its own sonnet[medium] key; at least one fresh round, circling escalates; plus finding classes [design](design-review-finding-class.md)
 1. **lyx orch: ready to host the real hub orchestrator** — `orch-live-ready` · feature
    orch is deployed but untested live and lacks what the hub needs: bypass permissions, the Agent tool, adoption of a running session, a soft threshold [design](design-orch-live-ready.md)
+1. **Verify localizes failures and Publish never runs on a dirty tree** — `verify-publish-hardening` · feature
+   Cards verify with the integration tests and repo scans they touch, Publish never verifies or pushes a dirty tree, verify is never skipped after a crash, and every agent prompt goes through a file [design](design-verify-publish-hardening.md)
+   After `orch-live-ready`.
 1. **PATTERN for loomyard, plus repo conventions** — `pattern-init` · feature
    CONSTRAINTS.md becomes _lyx/PATTERN.md so agents get the constraints directive; warp/weft scan beyond Go code; model specs in short form; ide workspace cleanups [design](design-pattern-init.md)
    After `parent-review`, `verify-publish-hardening`, `pair-lifecycle`, `manifest-retire`, `review-finding-class`.
