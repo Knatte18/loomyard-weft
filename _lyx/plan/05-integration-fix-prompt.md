@@ -17,7 +17,9 @@ It follows the integration template's conventions (leading banner comment naming
 - the plan's integration verify regressed after every batch landed, with the regressing test identities and their output tails (`{{.regressions}}`) and the verify command (`{{.verify}}`);
 - `{{.card_hint}}`, an optional marker naming the plan card file bisect localized the regression to, as a hint only;
 - fix the regressions at the current HEAD of `{{.worktree_root}}` and commit with normal dev git, in non-merge commits only;
-- never touch `{{.plan_dir}}` or anything under `_lyx`, never reset, rebase or amend existing commits, and never run any `lyx` command;
+- never write under `{{.plan_dir}}`, never commit anything under `_lyx`, and write nothing else under `_lyx` but `{{.report_path}}` and the friction note the directive names;
+- never reset, rebase or amend existing commits, and never run any `lyx` command;
+- leave no uncommitted change behind: Go judges only the commits, and a dirty worktree fails the attempt;
 - never delete, skip or weaken a test to make it pass: a test changes only when the test itself is wrong, and the commit message says why;
 - run the verify command before reporting;
 - as the last action, write `{{.report_path}}` with `status: OK | FAILED` and `head_sha: <git rev-parse HEAD>` and nothing else.
@@ -32,7 +34,7 @@ and resolves the friction directive through `friction.RoleImplementer`, swallowi
 Update the file doc comment's asset list and render-function list.
 
 Tests in `template_test.go`: add the new stencil to both seeding helpers (`newTestStencilsDir`, `seedHubWebsterStencils`) and their comments;
-a render test asserts the output carries each identity with its tail, the verify command, the report path, the plan directory in the never-touch rule, and the no-delete/skip/weaken rule;
+a render test asserts the output carries each identity with its tail, the verify command, the plan directory in the never-write rule, the report path as the stated exception to the `_lyx` rule, the leave-nothing-uncommitted rule, and the no-delete/skip/weaken rule;
 an empty `cardHint` renders no hint sentence and a non-empty one names the card file;
 an empty `regressions` or `verify` returns an error.
 

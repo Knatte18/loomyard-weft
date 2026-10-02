@@ -14,7 +14,8 @@ Give dispatch validation a second card set: cards excluded from the resolve pass
 `ValidateDispatch` gains a trailing `forthcoming []planparser.Card` parameter beside `completed`.
 `completed` keeps its meaning (excluded from the resolve pass and from card-scoped pure findings);
 `forthcoming` names the subset of those excluded cards whose work may not have landed.
-`resolvePass` takes the forthcoming card IDs as a set, and after canonicalization (and the reload when it rewrote the plan) selects those cards by ID from the current plan, so a handle canonicalization respelled is matched under its new spelling.
+`resolvePass` takes the forthcoming card IDs as a set, and after canonicalization selects those cards by ID from the reloaded plan when it rewrote the plan and from `plan` otherwise, so a handle canonicalization respelled is matched under its new spelling.
+Never select them from `current`: it holds pending cards only, so a forthcoming card is never in it.
 Their Create targets join `createTargets` and their Rename New sides join `renameNewTargets`, so a pending card's `Uses:` or target of such a ref is excluded from `statusFindings` exactly as a pending card's own Create target already is.
 The forthcoming cards themselves stay out of every pass: they are not resolved, not paired for containment and not checked by the Create inversion.
 Update both doc comments to state the two sets and why a forthcoming card's targets are excluded rather than resolved.

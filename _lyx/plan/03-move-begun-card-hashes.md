@@ -26,7 +26,9 @@ In `rebaseline.go`, `Rebaseline` calls `restampBaseline`, never `restampFingerpr
 `rebaseline` and the begun-card checks in record-batch and recovery keep comparing exact hashes.
 
 Bound: this moves a begun card's recorded hash without an operator naming it.
-It runs only at the sanctioned-rewrite restamps, each of which runs after a foreign-edit check passed in the same call (`PlanEditError`, or run entry's fingerprint compare), so a rewrite never runs while an unadopted edit is on disk.
+It runs only at the sanctioned-rewrite restamps, each of which runs after a foreign-edit check passed in the same call (`PlanEditError`, or run entry's fingerprint compare); no site restamps after a check that failed, so an edit on disk when the call starts is refused, never adopted.
+The check runs before the rewrite, not atomically with the restamp: an edit landing between the two in the same call is adopted with the rewrite, and a begun card's hash now moves with it, where today `batchCardEditError` would still refuse it later.
+That window is one call's check-to-restamp span: quarry resolution at begin-batch and run entry, and the card-verify re-runs, done-checks and delta at record-batch and recovery.
 It moves only a card whose recorded hash equals the pre-rewrite `PlanFileHashes` entry for its file.
 
 Rewrite `doc.go`'s staleness-guard section to state that the restamp moves begun card hashes, the precondition above, and that `rebaseline` never does.
