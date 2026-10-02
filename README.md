@@ -12,10 +12,11 @@ Every process lyx spawns gets one hierarchical name (ly:landing:driver, ly:orch 
 
 Each rework round gets a fresh plan with only its own cards, so Webster never drags implemented cards along; rework cards that change a classifier, verb or guard go through Plan-Review
 
-## **#006:** Bolt as the roadmap: tiers, type and a readable README [A]
-[bolt-v2](design-bolt-v2.md)
+## **#009:** Retire manifest/: Someday into bolt, durable content into package docs [A]
+[manifest-retire](design-manifest-retire.md)
+Depends on: #006
 
-One entry store with a numeric tier and a type, a README rendered like roadmap.md, lyx board find and a compact listing; migrates itself without breaking other runs' landings
+Triage roadmap.md's Someday into bolt's tiers, move the durable design content into package docs, fix inbound links and delete manifest/
 
 # Layer B
 
@@ -37,12 +38,6 @@ Depends on: #000, #008
 
 Port of millhouse orch-review/orch-wait into Discussion-Write's producer gate: after the mechanical validator, a reviewer (the parent for now) reviews once through a lyx verb pair and the live writer addresses it; a new pass_on_cap gate flag lets the run through afterwards
 
-## **#009:** Retire manifest/: Someday into bolt, durable content into package docs [B]
-[manifest-retire](design-manifest-retire.md)
-Depends on: #006
-
-Triage roadmap.md's Someday into bolt's tiers, move the durable design content into package docs, fix inbound links and delete manifest/
-
 ## **#010:** Review convergence: the judge decides converged, continue or circling from fresh reviews [B]
 [review-finding-class](design-review-finding-class.md)
 Depends on: #002
@@ -58,6 +53,11 @@ Depends on: #007, #003, #004, #009, #010
 CONSTRAINTS.md becomes _lyx/PATTERN.md so agents get the constraints directive; warp/weft scan beyond Go code; model specs in short form; ide workspace cleanups
 
 # Done
+
+## **#006:** Bolt as the roadmap: tiers, type and a readable README
+[bolt-v2](design-bolt-v2.md) [done]
+
+One entry store with a numeric tier and a type, a README rendered like roadmap.md, lyx board find and a compact listing; migrates itself without breaking other runs' landings
 
 ## **#008:** Gate list: several gates per row, each with its own budget and pass_on_cap
 [gate-list](design-gate-list.md) [done]
