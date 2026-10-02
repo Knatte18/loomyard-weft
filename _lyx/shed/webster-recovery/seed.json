@@ -1,0 +1,8 @@
+{
+  "recipe": "loom",
+  "driver": "llm",
+  "params": {
+    "parent": "main"
+  },
+  "parent": "ly:orch"
+}
