@@ -36,7 +36,9 @@ reed forms every strand's full name inside `AddStrand`, under its state lock, fr
 The `strand_name` template and its `<ROLE>`, `<ROUND>` and `<SHORT_GUID>` tokens retire.
 
 Up-front checks, before the session pre-flight so a refused call never boots a tmux server, in both `AddStrand` and `ReplaceStrand`:
-- an empty `Geometry.NameCode` refuses with `no strand name can be formed: this hub records no short code; way forward: lyx fabric code <code> records it, then retry`, and a recorded code failing `agentname.ValidateCode` refuses naming it with the same way forward;
+- an empty `Geometry.NameCode` refuses with `no strand name can be formed: this hub records no short code; way forward: lyx fabric code <code> records it, then retry`.
+  `fabricengine.ReadCode` reports a malformed record as absent, so a damaged `.lyx-code` reaches this refusal and its way forward works.
+  A told code failing `agentname.ValidateCode` is a wiring guard, since neither teller can produce one, and refuses naming the value;
 - a `NameSlug` failing `agentname.ValidateSlug` refuses naming the worktree and the grammar, `way forward: lyx fabric add <slug> creates the task under a slug that fits`.
 
 Formation (`strandNameLocked`, called from `addStrandLocked`; `resolveStrandName` and `FormatStrandName` are deleted, `newGUID` stays in `name.go`):

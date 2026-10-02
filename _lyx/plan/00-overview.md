@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -54,7 +54,8 @@ The build order is: the name grammar, the code record and its verb, the shell se
 ### Decision: name lookups match by role segment through `agentname.Matches`
 
 - **Decision:** every lookup of a strand by name — reed's `--name`, loom's status and driver strands, orch's strand, batten's driver wait — goes through `agentname.Matches`, which accepts the full name, its role segment, or a legacy exact name.
-- **Rationale:** one reed state file holds one worktree's strands, so the role segment is unambiguous inside it, and a strand recorded before this task stays reachable.
+- **Rationale:** one reed state file holds one worktree's strands, so the role segment is unambiguous inside it, and a strand recorded before this task stays reachable by its exact old name.
+  The driver is the one role whose literal changes (`loom-driver` to `driver`), so its two lookups also match the legacy literal, or a run in flight across the deploy would miss its own driver.
 - **Applies to:** cards 7, 8
 
 ### Decision: name repair runs only in the hub watchdog daemon

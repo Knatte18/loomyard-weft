@@ -22,7 +22,7 @@ A `Name` struct (`Code`, `Slug`, `Role`) with `String()`; `Format(code, slug, ro
 
 `NumberRole(role string, held []string) string` returns role itself when it is not in held, and otherwise `role-N` for the lowest N from 2 upward that is not in held; held is the role segments of every strand in the worktree's state, live or dormant, which the caller collects.
 
-`Resolve(code, slug, query string) (Name, error)` reads a `--name`-style query: a query with no `:` is a role segment and is formed under (code, slug); a query with `:` is parsed as a full name and refused when its code or slug differ from (code, slug), naming both.
+`Resolve(code, slug, query string) (Name, error)` reads a `--name`-style query: a query with no `:` is a role segment and is formed under (code, slug); a query with `:` is parsed as a full name and refused when its code or slug differ from (code, slug), naming both and the way forward: `way forward: pass the role segment alone, or run the command from the worktree the full name belongs to`.
 `Matches(full, query string) bool` reports whether query addresses the strand named full: query equals full, or query has no `:` and equals full's role segment.
 A full that fails `Parse` matches only by equality, so a strand recorded before this task stays addressable by its exact old name.
 
@@ -34,7 +34,7 @@ Constants: `RoleOrch = "orch"` and `RoleDriver = "driver"`, the two roles other 
 Tests, table-driven: two- and three-segment format/parse round trips;
 rejection of a bad code (too short, too long, leading digit, `-`, `:`, `.`, `@`, upper case), a bad slug, a bad role, an empty segment and a fourth segment;
 `NumberRole` leaves the first instance bare, picks the lowest free number from 2, skips a held `-2`, and counts every held entry regardless of who passed it;
-`Resolve` on a role segment, on a matching full name, and the refusal on a foreign prefix;
+`Resolve` on a role segment, on a matching full name, and the refusal on a foreign prefix, asserting its way-forward text;
 `Matches` on equality, on role segment, on a non-matching role, and on a legacy one-segment name;
 `StandaloneCode` on a sample hash8 yields a value `ValidateCode` accepts.
 `seam_enforcement_test.go` parses every non-test `.go` file in the package and fails on any non-stdlib import, following the AST-scan shape of `internal/cliwire/seam_enforcement_test.go`.

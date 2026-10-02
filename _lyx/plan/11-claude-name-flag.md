@@ -17,6 +17,6 @@ Both builders' doc comments say why the flag is a reference.
 
 `command_test.go`: for the POSIX and pwsh dialects, the launch and the resume line each contain exactly `--name "${LYX_STRAND_NAME}"` and `--name "$env:LYX_STRAND_NAME"` respectively, in the position the test pins for the other flags.
 
-**ImpactSummary:** Adds one flag to the two Claude command-line builders; every Claude strand launch and resume carries it.
+**ImpactSummary:** Only reed-launched panes run these two lines, and reed exports `LYX_STRAND_NAME` before them (card 9), so no line expands to an empty name; a resume line stored in reed state before the deploy lacks the flag, so its session comes back unnamed until the watchdog repairs it.
 
 **Commit:** 11: claude engine: name the session after its strand

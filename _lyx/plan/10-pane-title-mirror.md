@@ -11,10 +11,13 @@
 **Create:**
 - `internal/reedengine/naming_integration_test.go`
 - `internal/reedcli/naming_integration_test.go`
+- `internal/standalonegeom/naming_integration_test.go`
 
 **Uses:**
 - `internal/agentname/agentname.go`
 - `internal/reedengine/panebin.go`
+- `internal/standalonegeom/reedgeom.go`
+- `internal/standalonestate/standalonestate.go`
 
 **Intent:**
 Mirror each strand's full name into its pane title, and stop the agent inside from overwriting it.
@@ -30,6 +33,10 @@ Tests: `parse_test.go` parses a title with spaces and an empty title; `spawn_tes
 `reedcli/naming_integration_test.go` (`integration` tag) on a `hubforge` hub with a task worktree whose default-run seed (written through `shedrun.WriteSeed` with a `Parent`) records a parent: `lyx reed add --role worker` twice yields `worker` and `worker-2` in `lyx reed status`, the launched process sees `LYX_PARENT`, and after `tmux kill-server` and `lyx reed resume` the resumed process sees the same `LYX_STRAND_NAME` and `LYX_PARENT`;
 `reed remove --name worker-2` and `--name <full name>` each remove the right strand;
 a strand added in the prime is `<code>:<role>` and its process sees no `LYX_PARENT`.
+`standalonegeom/naming_integration_test.go` (`integration` tag, real tmux) carries the standalone acceptance criterion at the engine `lyx webster run --target-dir` and `lyx burler run --target-dir` build, since a CLI-level run would spawn live Claude producers.
+On a plain temp git checkout with no `.lyx-code`, it builds the reed engine exactly as the standalone wiring does, from `standalonestate.Derive` and `standalonegeom.ReedGeometry`.
+It then adds a `worker` strand running `sh`.
+The test asserts the state name and pane title are `<agentname.StandaloneCode(hash8)>:worker`, the process sees `LYX_STRAND_NAME` with that value, and `LYX_PARENT` is unset.
 
 **ImpactSummary:** Adds two tmux commands to every strand launch and a title column to the pane listing every reed reader shares; no lookup changes.
 

@@ -33,7 +33,7 @@
 **Intent:**
 Record each repo's short code as a single-line file `.lyx-code` at the board root, committed on weft:main beside `.lyx-warp`, and make `lyx fabric clone` take it.
 
-`codebinding.go` mirrors `warpbinding.go`: an exported `CodeFileName = ".lyx-code"`, an exported `ReadCode(boardDir string) (code string, found bool)` (any read error and an empty-after-trim value report not found, like `readWarpBinding`), an exported `WriteCode(boardDir, code string) error` writing the code plus a newline, and the pure, git-free rule `resolveEffectiveCode(recorded string, found bool, supplied string, freshBind bool) (effective string, writeRecord bool, warning string, err error)`:
+`codebinding.go` mirrors `warpbinding.go`: an exported `CodeFileName = ".lyx-code"`, an exported `ReadCode(boardDir string) (code string, found bool)` (any read error and an empty-after-trim value report not found, like `readWarpBinding`; a value failing `agentname.ValidateCode` also reports not found and logs a named `logger.Warn` with the value, so a damaged record reads as an uncoded hub and `lyx fabric code <code>` or `clone --code` records over it), an exported `WriteCode(boardDir, code string) error` writing the code plus a newline, and the pure, git-free rule `resolveEffectiveCode(recorded string, found bool, supplied string, freshBind bool) (effective string, writeRecord bool, warning string, err error)`:
 - fresh bind, no `--code`: refuse, naming `--code <code>` and the grammar;
 - record present, no `--code` or an equal one: derive it, write nothing;
 - record present, a differing `--code`: refuse, naming the recorded code (`lyx fabric code` cannot change it either);
@@ -42,7 +42,8 @@ Record each repo's short code as a single-line file `.lyx-code` at the board roo
 A supplied code is validated with `agentname.ValidateCode` before anything else.
 Both writers stay off git: the CLI layer commits through Bolt, as for `.lyx-warp` (Fabric Git Invariant).
 
-`probeWeftBinding` also reports the code recorded at the probed HEAD (`RecordedCode`, `CodeFound`) and whether the anchor marker is present (`AnchorFound`), read with the same `probeTreeHasPath` + `git show HEAD:` pair it uses for `.lyx-warp`.
+`probeWeftBinding` also reports the code recorded at the probed HEAD (`RecordedCode`, `CodeFound`) and whether the anchor marker is present (`AnchorFound`), read with the same `probeTreeHasPath` + `git show HEAD:` pair it uses for `.lyx-warp`;
+the code value goes through the same blank-and-grammar rule as `ReadCode`, so a malformed one reports `CodeFound` false.
 A fresh bind is a probe with neither the warp binding nor the anchor marker: an unborn or empty weft that lyx has never touched.
 A weft carrying either is bound.
 
@@ -57,7 +58,7 @@ Fixtures: `hubforge.NewHub` passes a fixed test code, so every hub fixture is co
 `tools/sandbox/main.go`'s fresh clone passes `--code`.
 Every listed engine and CLI test whose clone binds a fresh weft passes a code; a clone of an already-bound weft keeps passing none.
 
-Tests: `codebinding_test.go` covers `ReadCode`/`WriteCode` round trip, absent and blank records, and every row of `resolveEffectiveCode`, asserting the exact refusal and warning texts name `--code` and `lyx fabric code`.
+Tests: `codebinding_test.go` covers `ReadCode`/`WriteCode` round trip, absent and blank records, a record failing the grammar (read as not found), and every row of `resolveEffectiveCode`, asserting the exact refusal and warning texts name `--code` and `lyx fabric code`.
 `codebinding_clone_integration_test.go`: a fresh bind without a code refuses naming the flag and leaves no hub;
 a fresh bind with a code commits `.lyx-code` on weft:main;
 a second clone of that weft derives the code;
