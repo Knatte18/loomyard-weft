@@ -75,10 +75,3 @@ Waits on nothing open; can start now, in parallel.
    - Someday (roadmap): #227, #228 — measured win, committed, not yet scheduled
 1. **Prompt-cache TTL per agent role** — [`cache-ttl-per-role`](design-cache-ttl-per-role.md) · feature
    - Parked: workers on 5m cache TTL, waiting sessions on 1h — operator deciding
-
-## Done
-
-Finished, awaiting `lyx board prune`.
-
-1. **Deploy and VS Code leave every worktree runnable and clean** — [`operator-surface-fixes`](design-operator-surface-fixes.md) · bug · done
-   - Fix #339, #340, #334: defaulted keys are not required, reed sizes to the latest client and folder-open spares the orch strand, ide spawn writes .git/info/exclude
