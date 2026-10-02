@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "blocked",
-  "error": "Batch 02 begin-batch refused plan_drifted: glyph-not-found/3-fabric-code-verb and glyph-not-found/6-geometry-naming - target internal/fabricengine/codebinding.go#'s unit does not exist; edit the plan, run lyx webster rebaseline --card NN, then begin-batch 02 again",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": "Batch 02 begin-batch refused plan_drifted: glyph-not-found/3-fabric-code-verb and glyph-not-found/6-geometry-naming - target internal/fabricengine/codebinding.go#'s unit does not exist; edit the plan, run lyx webster rebaseline --card NN, then begin-batch 02 again"
+    "wait": ""
   },
   "history": [
     {
