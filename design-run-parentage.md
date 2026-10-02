@@ -1,6 +1,6 @@
 # A run's parent is the worktree it is seeded from; batten survives pauses; parent-review loops
 
-`run-parentage` · Planned · bug · running · Plan-Bouncer
+`run-parentage` · Planned · bug · running · Plan-Burler
 
 ## Goal
 
