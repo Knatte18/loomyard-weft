@@ -14,7 +14,7 @@
     "09-integration-fix-attempt.md": "c604e858fc57176e8dc112f56e6ebab6eaad9edd080c03f9df2e397c62ad8f70",
     "10-drop-temporary-workarounds.md": "8e3fbe12d992fddb9a9390d762aa5d85491dfb85f82f4d4ee0f78cbb3f61f3c5"
   },
-  "currentBatch": 2,
+  "currentBatch": 0,
   "masterStrand": "70df4911a1e4fd781b0f537a24167446",
   "masterSessionId": "e0907656-a36c-4e5a-a63e-5409a403f3ab",
   "assertedModel": "sonnet",
@@ -57,11 +57,23 @@
       "kind": "fork",
       "spawnedAt": "2026-10-02T17:46:44Z",
       "sessionId": "e0907656-a36c-4e5a-a63e-5409a403f3ab",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "02-one-dispatch-scope",
+        "status": "done",
+        "head_sha": "e1ea4e33e8a710b0e3db5ad136c136a53f764c5f"
+      },
+      "cardShas": [
+        "e1ea4e33e8a710b0e3db5ad136c136a53f764c5f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-recovery/e0907656-a36c-4e5a-a63e-5409a403f3ab/subagents/agent-a7c8943027a313790.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-recovery/e0907656-a36c-4e5a-a63e-5409a403f3ab/subagents/agent-a1d5b13748bafbeae.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-recovery/e0907656-a36c-4e5a-a63e-5409a403f3ab/subagents/agent-a1d5b13748bafbeae.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-recovery/e0907656-a36c-4e5a-a63e-5409a403f3ab/subagents/agent-a7c8943027a313790.jsonl"
   ]
 }
