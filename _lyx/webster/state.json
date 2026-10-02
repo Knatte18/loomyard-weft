@@ -12,7 +12,7 @@
     "07-gitignore-pkg-delete.md": "f7798852088c52015be18459e66c0e340ed67663271d6d5a2f3077025c2b4eb4",
     "08-repo-housekeeping.md": "b9df1824547b7a92e3330bc4dc565fbe68710de9da73cdba22f138ded3e81f5b"
   },
-  "currentBatch": 2,
+  "currentBatch": 0,
   "masterStrand": "6c3dedda52773d86f2e8e44e377fae20",
   "masterSessionId": "796914ab-91bc-485a-8687-914ff1238eb9",
   "assertedModel": "sonnet",
@@ -55,11 +55,23 @@
       "kind": "fork",
       "spawnedAt": "2026-10-02T17:44:48Z",
       "sessionId": "796914ab-91bc-485a-8687-914ff1238eb9",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "02-config-load-fills",
+        "status": "done",
+        "head_sha": "ecdedd46b6b9384b4f5d32607fb8f7d83a07a566"
+      },
+      "cardShas": [
+        "ecdedd46b6b9384b4f5d32607fb8f7d83a07a566"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-operator-surface-fixes/796914ab-91bc-485a-8687-914ff1238eb9/subagents/agent-abe8aa3ed7317c867.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-operator-surface-fixes/796914ab-91bc-485a-8687-914ff1238eb9/subagents/agent-abc12b964e2bd71f8.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-operator-surface-fixes/796914ab-91bc-485a-8687-914ff1238eb9/subagents/agent-abc12b964e2bd71f8.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-operator-surface-fixes/796914ab-91bc-485a-8687-914ff1238eb9/subagents/agent-abe8aa3ed7317c867.jsonl"
   ]
 }
