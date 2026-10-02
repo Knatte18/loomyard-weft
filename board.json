@@ -181,7 +181,7 @@
       "isolated": true,
       "brief": "Fix #329, #330, #332: only landed batches count as built, webster's own card rewrites update their hashes, forks fix what their card broke and a bisected regression gets a recovery fork",
       "body": "## Goal\n\nA webster run recovers on its own from the three states that today need a hand edit or a human: a re-begun batch, its own plan canonicalization, and an integration regression.\n\n## Bugs\n\n- #329: a re-begun batch whose fork landed nothing is validated as if its cards were built, so later cards that Use its Create targets are refused.\n- #330: `rebaseline` refuses begun cards that `begin-batch` canonicalized itself, because the recorded card hashes keep the pre-canonical text.\n- #332: an integration regression bisected to a card ends the run as `blocked` with no fix attempt, although the batch forks had seen the failures.\n\n## Fix direction\n\n- #329: only a batch that landed commits counts as built; a begun batch with nothing landed validates like a first begin.\n- #330: when webster rewrites a begun card, it updates that card's recorded hash in the same step, so its own edits never count as drift.\n- #332: a batch fork that sees a test its own card broke fixes it before reporting done.\n  An integration regression bisected to a card gets a recovery fork against that card before the run escalates.\n\n## Done when\n\n- Each issue's \"Seen\" scenario has a regression test that passes.\n- CLAUDE.md's TEMPORARY items for #329, #330 and #332 are deleted (the issues are already closed into this task).\n",
-      "status": "running · Plan-Write"
+      "status": "running · Plan-Bouncer"
     },
     {
       "id": 46,
