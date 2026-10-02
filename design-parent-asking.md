@@ -26,6 +26,15 @@ The parent (the session that spawned the run; the operator when none is recorded
 - An idle interactive session in tmux is reliably woken by the delivering verb.
 - The parent's Monitor-plus-fork loop costs little context per round (measure it on the first hub run).
 
+
+## Who answers in ask mode (operator, 2026-10-02)
+
+The answerer is an address, not hard-wired to `$LYX_PARENT`.
+It can be the parent, or a dedicated agent spawned in parallel with Discussion-Write, with its own prompt: it studies the task and the code while the writer drafts, so it is ready when the questions come.
+A dedicated answerer is a live session of its own, so the exchange is a real dialogue between two processes that both keep their context, and none of it lands in the parent's context.
+That makes it the likely default for `ask`; the parent stays the natural `review` agent.
+New machinery this needs: one producer running two interactive sessions side by side (writer and answerer, e.g. `ly:<slug>:discussion` and `ly:<slug>:advisor`), each waiting on the other through files.
+
 ## From `orch-discussion-review`: The orchestrator takes part in Discussion: questions to the parent and a review gate
 
 Operator 2026-09-30/10-01: a weakness that the orchestrator is not involved in discussion; the hub must take part in the design.
