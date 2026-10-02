@@ -2,8 +2,6 @@
 
 `pair-lifecycle` · Planned · feature
 
-Depends on: [`agent-naming`](design-agent-naming.md)
-
 ## Goal
 
 Removing a pair ends its tmux session first, can finish a half-removed pair, and leaves no branches, sockets or stray directories behind; starting a run never races a dying driver.

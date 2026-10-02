@@ -2,8 +2,6 @@
 
 `review-finding-class` · Planned · feature
 
-Depends on: [`rework-generations`](design-rework-generations.md)
-
 ## Goal
 
 A review segment stops when it has converged, judged from fresh reviews, and escalates when it circles.

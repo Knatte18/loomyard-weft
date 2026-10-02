@@ -8,19 +8,14 @@ Concretized and claimable.
 
 1. **Verify localizes failures and Publish never runs on a dirty tree** — `verify-publish-hardening` · feature
    Cards verify with the integration tests and repo scans they touch, Publish never verifies or pushes a dirty tree, verify is never skipped after a crash, and every agent prompt goes through a file [design](design-verify-publish-hardening.md)
-   After `rework-generations`, `agent-naming`.
 1. **Clean pair lifecycle: no leftover sessions, branches, sockets or races** — `pair-lifecycle` · feature
    fabric remove ends the pair's tmux session, finishes half-removed pairs and deletes warp branches on origin; loom start never races a dying driver; tests stop leaking tmux sockets [design](design-pair-lifecycle.md)
-   After `agent-naming`.
 1. **Parent review as a step in Discussion-Write's gate** — `parent-review` · feature
    Port of millhouse orch-review/orch-wait into Discussion-Write's producer gate: after the mechanical validator, a reviewer (the parent for now) reviews once through a lyx verb pair and the live writer addresses it; a new pass_on_cap gate flag lets the run through afterwards [design](design-parent-review.md)
-   After `agent-naming`, `gate-list`.
 1. **Retire manifest/: Someday into bolt, durable content into package docs** — `manifest-retire` · feature
    Triage roadmap.md's Someday into bolt's tiers, move the durable design content into package docs, fix inbound links and delete manifest/ [design](design-manifest-retire.md)
-   After `bolt-v2`.
 1. **Review convergence: the judge decides converged, continue or circling from fresh reviews** — `review-finding-class` · feature
    The Bouncer judge stops reviewing the artifacts and judges convergence from facts Go hands it (counts, severities, trend, reopened ledger keys), on its own sonnet[medium] key; at least one fresh round, circling escalates; plus finding classes [design](design-review-finding-class.md)
-   After `rework-generations`.
 1. **lyx orch: ready to host the real hub orchestrator** — `orch-live-ready` · feature
    orch is deployed but untested live and lacks what the hub needs: bypass permissions, the Agent tool, adoption of a running session, a soft threshold [design](design-orch-live-ready.md)
 1. **PATTERN for loomyard, plus repo conventions** — `pattern-init` · feature
@@ -55,16 +50,3 @@ Loose ideas.
    Someday (roadmap): #227, #228 — measured win, committed, not yet scheduled [design](design-kick-start-pack.md)
 1. **Prompt-cache TTL per agent role** — `cache-ttl-per-role` · feature
    Parked: workers on 5m cache TTL, waiting sessions on 1h — operator deciding [design](design-cache-ttl-per-role.md)
-
-## Done
-
-Finished, awaiting `lyx board prune`.
-
-1. **Agent names: <repo>:<slug>:<role> for every process, with parentage** — `agent-naming` · feature · done
-   Every process lyx spawns gets one hierarchical name (ly:landing:driver, ly:orch in the prime) as strand, Claude session and pane name, and records its parent; each repo gets a short code at fabric clone [design](design-agent-naming.md)
-1. **PR-Rework as its own plan generation, design-reviewed** — `rework-generations` · feature · done
-   Each rework round gets a fresh plan with only its own cards, so Webster never drags implemented cards along; rework cards that change a classifier, verb or guard go through Plan-Review [design](design-rework-generations.md)
-1. **Bolt as the roadmap: tiers, type and a readable README** — `bolt-v2` · feature · done
-   One entry store with a numeric tier and a type, a README rendered like roadmap.md, lyx board find and a compact listing; migrates itself without breaking other runs' landings [design](design-bolt-v2.md)
-1. **Gate list: several gates per row, each with its own budget and pass_on_cap** — `gate-list` · feature · done
-   A producer row carries an ordered list of gates, each with its own attempts and a pass_on_cap flag that lets the run through once the budget is spent; existing gates migrate unchanged [design](design-gate-list.md)

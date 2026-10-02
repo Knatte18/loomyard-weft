@@ -2,8 +2,6 @@
 
 `parent-review` · Planned · feature
 
-Depends on: [`agent-naming`](design-agent-naming.md), [`gate-list`](design-gate-list.md)
-
 ## Goal
 
 Port millhouse's `orch-review`/`orch-wait` as a review step in Discussion-Write's own producer gate: when the writer reports done, the gate asks a reviewer (for now always the parent) to review the discussion, and a reject re-prompts the still-live writer with the findings, so the writer fixes with its own context.
