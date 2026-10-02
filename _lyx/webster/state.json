@@ -18,7 +18,7 @@
     "13-orch-review-fork.md": "0411a3e59e71a23bbef0c0e16e6a7f192a6cbdd50ab64b5822bcfe78f58d2b72",
     "14-parent-review-integration.md": "a4aef40d054752c2c4cd59496014e69d980b9c0ed1dead324ab761256c092557"
   },
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "909a6e3579ce76689cf6276d94a867d8",
   "masterSessionId": "3e89f69f-ac78-43a1-884c-23a00c477f28",
   "assertedModel": "sonnet",
@@ -186,6 +186,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-parent-review/3e89f69f-ac78-43a1-884c-23a00c477f28/subagents/agent-aebb686b807999385.jsonl"
       ]
+    },
+    "7": {
+      "slug": "loom-review-verbs",
+      "cards": [
+        "07-loom-review-verbs"
+      ],
+      "cardHashes": {
+        "07-loom-review-verbs": "d1b071fc6b3d24aed3324fcbfa871c289de9c46640da7a31af3ee5e2108a030f"
+      },
+      "startSha": "a299221f373cdae5e7580c44ca7a8ce1e028c669",
+      "kind": "fork",
+      "spawnedAt": "2026-10-02T11:58:24Z",
+      "sessionId": "3e89f69f-ac78-43a1-884c-23a00c477f28",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
