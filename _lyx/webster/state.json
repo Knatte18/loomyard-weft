@@ -18,7 +18,7 @@
     "13-orch-review-fork.md": "0411a3e59e71a23bbef0c0e16e6a7f192a6cbdd50ab64b5822bcfe78f58d2b72",
     "14-parent-review-integration.md": "8471acff5d0d3c0ed4fa5314867904d9c9a730e0d62e9c7b90d14b0e04aea17f"
   },
-  "currentBatch": 0,
+  "currentBatch": 3,
   "masterStrand": "909a6e3579ce76689cf6276d94a867d8",
   "masterSessionId": "3e89f69f-ac78-43a1-884c-23a00c477f28",
   "assertedModel": "sonnet",
@@ -82,6 +82,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-parent-review/3e89f69f-ac78-43a1-884c-23a00c477f28/subagents/agent-a3749e364be27898e.jsonl"
       ]
+    },
+    "3": {
+      "slug": "parent-review-stencils",
+      "cards": [
+        "03-parent-review-stencils"
+      ],
+      "cardHashes": {
+        "03-parent-review-stencils": "fcf5e7d64a108cf2a0f8d77b7fa50b400145634bc062229e399c545eeffc083f"
+      },
+      "startSha": "e4ac79cf07cfe5e6240461615f237d778c8246ea",
+      "kind": "fork",
+      "spawnedAt": "2026-10-02T11:51:37Z",
+      "sessionId": "3e89f69f-ac78-43a1-884c-23a00c477f28",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
