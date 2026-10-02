@@ -1,12 +1,12 @@
 {
   "current_producer": "Run-Shed",
-  "state": "failed",
-  "error": "battenshed: Run-Shed: inner shed run reached state \"blocked\": error=\"batch 05-rework-archive-generation: begin-batch refused with plan_drifted: containment-file-overlap/5-rework-archive-generation[blocking]: card 5's member glyph physically overlaps card 9-plan-review-skip-predicate's own file self glyph naming \\\"internal/loomshed/prrework.go\\\"; way forward: edit the plan so the named cards match the tree, run \\\"lyx webster rebaseline --card NN\\\" naming each card you edited, then begin-batch 05 again\" current_producer=\"Webster\"; the task worktree's own run must be resumed from inside that worktree (its recipe's bootstrap verb, e.g. \"lyx loom start\") before this run is resumed; resuming this run alone only resumes the watch",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
     "last": "Run-Shed → bounced to Run-Shed",
-    "wait": "battenshed: Run-Shed: inner shed run reached state \"blocked\": error=\"batch 05-rework-archive-generation: begin-batch refused with plan_drifted: containment-file-overlap/5-rework-archive-generation[blocking]: card 5's member glyph physically overlaps card 9-plan-review-skip-predicate's own file self glyph naming \\\"internal/loomshed/prrework.go\\\"; way forward: edit the plan so the named cards match the tree, run \\\"lyx webster rebaseline --card NN\\\" naming each card you edited, then begin-batch 05 again\" current_producer=\"Webster\"; the task worktree's own run must be resumed from inside that worktree (its recipe's bootstrap verb, e.g. \"lyx loom start\") before this run is resumed; resuming this run alone only resumes the watch"
+    "wait": ""
   },
   "history": [
     {
