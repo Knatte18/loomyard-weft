@@ -21,10 +21,26 @@
     "16-naming-docs.md": "8804cd4c9eee15bf01ba839a0fe9e9871c46ec244dc900219120d85241386133"
   },
   "currentBatch": 0,
-  "masterStrand": "2415d67dc1df7818ede233c030eceeeb",
-  "masterSessionId": "5577a3e8-00d9-48db-8946-b3be117b6f8b",
+  "masterStrand": "19c89054a676adf998258859899b2c41",
+  "masterSessionId": "eabcab2d-4f79-45ad-bb3f-997095516bf9",
   "assertedModel": "sonnet",
   "batches": {
+    "-1": {
+      "slug": "06-geometry-naming",
+      "startSha": "",
+      "kind": "",
+      "spawnedAt": "",
+      "terminal": true,
+      "status": "stuck",
+      "digest": {
+        "batch": "06-geometry-naming",
+        "status": "stuck",
+        "head_sha": "63b442d22f104cc2827fb959fb35f707f571c586"
+      },
+      "cardShas": [
+        "63b442d22f104cc2827fb959fb35f707f571c586"
+      ]
+    },
     "1": {
       "slug": "agentname-package",
       "cards": [
