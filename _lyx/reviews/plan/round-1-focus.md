@@ -1,0 +1,14 @@
+---
+round: 1
+focus:
+  - "Card 5's final closure fails on a consumed reject as well as an unconsumed one. Settle whether this fits Decision 5, which says Final fails on an unconsumed reject and passes on an approve, an expired request, no reviewer or no open request. Also check that the below-cap terminal line ('the re-spawned writer is re-prompted with it') is accurate for a consumed reject, given that card 5's own arrival table opens a new round there instead of re-prompting."
+  - "Decision 5 states that the in-memory count never exceeds the store count, so the engine's own budget never fails the entry first. Check whether cards 3, 5 and 7 together guarantee this for every path that increments the in-memory count, including the below-cap reject re-prompt, the final closure's below-cap terminal failure and any gate error. Then decide whether some card's Intent carries that claim."
+  - "Card 10's supersede path has to read the target worktree's run status from the parent. Settle whether the Intent says how the verb finds that worktree from the slug, and whether the stated bound (status blocked, store at the cap, latest round is the cap's reject) is the full set of conditions on the new path. Also check whether card 10 states what the reject verb can now halt."
+  - "The project's same-commit docs rule and the decision record's Scope docs list both apply. Check that the cards cover every doc the decision record names: parentreview, fabricengine, shedrun and battenshed package docs, the loom and batten recipe comments, lyx loom review help, both CLAUDE.md TEMPORARY deletions and the Agent Name Invariant. Then decide whether the changed CLI behavior (lyx loom review approve, lyx batten run's halted wait) needs a docs/overview.md or manifest/designs/ change that no card names."
+  - "Granularity of cards 5 and 6: both edit internal/parentreview/gate.go and gate_test.go. Settle whether each one is still an independently reviewable and testable unit, or whether the hold logic, which runs after card 5's open-request branch, is inseparable from it."
+  - "Card 3 introduces MayHold, Terminal and Reason in shuttleengine. Check whether its Intent bounds each one, including what an entry that sets Terminal can skip (the in-memory budget and the re-prompt). Also check the Completion Signal Invariant claim against CONSTRAINTS.md, and confirm that no CONSTRAINTS.md text about only PassOnCap entries pending, or about gate finalization, needs a change that no card carries."
+---
+
+Seed rationale: the plan's riskiest scope is the parent-review gate rework (cards 3–7, 10), where the decision record states precise bounds and the cards restate them, sometimes adding to them.
+Parentage (cards 1, 2, 8, 9) and batten (card 11) follow the decision record closely.
+A grep turned up no seed-parent reader outside `hubgeom` and `loomcli/wiring.go`, so card 9's "read only by the resolver" claim needs no focus entry.

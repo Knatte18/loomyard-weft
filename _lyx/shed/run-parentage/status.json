@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Bouncer",
+  "current_producer": "Plan-Burler",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Bouncer",
-    "last": "Plan-Write → done",
+    "now": "Plan-Burler",
+    "last": "Plan-Bouncer → bounced to Plan-Burler",
     "wait": ""
   },
   "history": [
@@ -53,6 +53,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/run-parentage/_lyx/plan/00-overview.md",
       "at": "2026-10-02T17:40:09Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-02T17:41:20Z"
     }
   ],
   "product": {
