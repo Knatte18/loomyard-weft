@@ -42,11 +42,17 @@ Depends on: #000, #008
 
 Port of millhouse orch-review/orch-wait into Discussion-Write's producer gate: after the mechanical validator, a reviewer (the parent for now) reviews once through a lyx verb pair and the live writer addresses it; a new pass_on_cap gate flag lets the run through afterwards
 
+## **#009:** Retire manifest/: Someday into bolt, durable content into package docs [B]
+[manifest-retire](design-manifest-retire.md)
+Depends on: #006
+
+Triage roadmap.md's Someday into bolt's tiers, move the durable design content into package docs, fix inbound links and delete manifest/
+
 # Layer C
 
 ## **#005:** PATTERN for loomyard, plus repo conventions [C]
 [pattern-init](design-pattern-init.md)
-Depends on: #007, #003, #004, #006
+Depends on: #007, #003, #004, #009
 
 CONSTRAINTS.md becomes _lyx/PATTERN.md so agents get the constraints directive; warp/weft scan beyond Go code; model specs in short form; ide workspace cleanups
 
