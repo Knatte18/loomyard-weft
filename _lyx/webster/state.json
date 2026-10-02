@@ -24,7 +24,7 @@
     "19-reed-shortname.md": "1b5451f2377f6f60cbb48492b16f2acc317e798d29f52e7ff711e06dfc75159a",
     "20-shortname-docs.md": "3ce88dab92eed96f754187996a469b890b0917e8f36617fe6b9ef06e3881152d"
   },
-  "currentBatch": 0,
+  "currentBatch": 19,
   "masterStrand": "4bbe8f54d14fcd92bb49604d3269d9e4",
   "masterSessionId": "9c92e1e4-c331-489d-92fd-0297684cb10b",
   "assertedModel": "sonnet",
@@ -304,6 +304,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-agent-naming/9c92e1e4-c331-489d-92fd-0297684cb10b/subagents/agent-aa5d41b9eeb901166.jsonl"
       ]
+    },
+    "19": {
+      "slug": "reed-shortname",
+      "cards": [
+        "19-reed-shortname"
+      ],
+      "cardHashes": {
+        "19-reed-shortname": "1b5451f2377f6f60cbb48492b16f2acc317e798d29f52e7ff711e06dfc75159a"
+      },
+      "startSha": "1109d5efe07ad060c80a563a093dd0c2ce4f1849",
+      "kind": "fork",
+      "spawnedAt": "2026-10-02T09:45:53Z",
+      "sessionId": "9c92e1e4-c331-489d-92fd-0297684cb10b",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "fabric-code-record",
