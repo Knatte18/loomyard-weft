@@ -25,6 +25,8 @@ Waits on nothing open; can start now, in parallel.
    - **Before:** `pattern-init`
 1. **Webster's strand is named webster, and each module names its agents with its own constant** — [`agent-role-names`](design-agent-role-names.md) · chore
    - Webster's orchestrating strand shows as <sn>:<slug>:master because its model-config key doubles as its strand role; give it the role webster, and every spawn site takes its role from a constant in its own module
+1. **Webster: integration verify is a gate on Merriam, and Merriam waits instead of polling** — [`webster-verify-gate`](design-webster-verify-gate.md) · feature
+   - The plan verify runs once, as a shuttle gate on Merriam that injects failures back for Merriam to fix in a fork; Merriam waits on fork notifications instead of polling await-batch
 
 ### Layer B
 
