@@ -1,3 +1,7 @@
+# Bolt as the roadmap: tiers, type and a readable README
+
+`bolt-v2` · Planned · feature · done
+
 ## Goal
 
 Bolt becomes the roadmap: one store with a numeric tier and a `type`, a README rendered like roadmap.md, `lyx board find` and a compact listing.

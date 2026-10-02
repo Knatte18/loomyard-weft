@@ -1,3 +1,9 @@
+# Retire manifest/: Someday into bolt, durable content into package docs
+
+`manifest-retire` · Planned · feature
+
+Depends on: [`bolt-v2`](design-bolt-v2.md)
+
 ## Goal
 
 Retire `manifest/`: first bring roadmap.md's surviving Someday items into bolt in the new tier format, then move the durable reference content into package docs, fix inbound links and delete the folder.

@@ -1,3 +1,7 @@
+# Agent names: <repo>:<slug>:<role> for every process, with parentage
+
+`agent-naming` · Planned · feature · done
+
 ## Goal
 
 Every process lyx spawns gets one hierarchical name, used as its strand name, its Claude session name and its pane title, and every worktree records its parent so questions go to the session that spawned it.

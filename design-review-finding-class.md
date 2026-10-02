@@ -1,3 +1,9 @@
+# Review convergence: the judge decides converged, continue or circling from fresh reviews
+
+`review-finding-class` · Planned · feature
+
+Depends on: [`rework-generations`](design-rework-generations.md)
+
 ## Goal
 
 A review segment stops when it has converged, judged from fresh reviews, and escalates when it circles.

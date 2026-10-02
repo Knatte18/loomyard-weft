@@ -1,3 +1,7 @@
+# An MCP server over lyx exposing the verbs agents need
+
+`lyx-mcp` · Someday · feature
+
 ## Why
 
 Agents misuse or bypass lyx (the hub read `_board/*.json` with jq) because the CLI shape is not discoverable.

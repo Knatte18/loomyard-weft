@@ -1,3 +1,9 @@
+# Verify localizes failures and Publish never runs on a dirty tree
+
+`verify-publish-hardening` · Planned · feature
+
+Depends on: [`rework-generations`](design-rework-generations.md), [`agent-naming`](design-agent-naming.md)
+
 ## Goal
 
 A failing integration test stops on the card that caused it, Publish never verifies or pushes a dirty tree, and no gate is skipped after a crash.

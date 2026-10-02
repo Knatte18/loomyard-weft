@@ -1,3 +1,9 @@
+# PATTERN for loomyard, plus repo conventions
+
+`pattern-init` · Planned · feature
+
+Depends on: [`parent-review`](design-parent-review.md), [`verify-publish-hardening`](design-verify-publish-hardening.md), [`pair-lifecycle`](design-pair-lifecycle.md), [`manifest-retire`](design-manifest-retire.md), [`review-finding-class`](design-review-finding-class.md)
+
 ## Goal
 
 loomyard gets `_lyx/PATTERN.md` so lyx agents receive the constraints directive, which no run has received so far; CONSTRAINTS.md moves there.

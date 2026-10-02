@@ -1,3 +1,7 @@
+# Gate list: several gates per row, each with its own budget and pass_on_cap
+
+`gate-list` · Planned · feature · done
+
 ## Goal
 
 A producer row carries a list of gates instead of one, each with its own attempt budget and a `pass_on_cap` flag, so a gate can be a check that must pass or a one-time request that lets the run through afterwards.

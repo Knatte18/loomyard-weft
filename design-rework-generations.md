@@ -1,3 +1,7 @@
+# PR-Rework as its own plan generation, design-reviewed
+
+`rework-generations` · Planned · feature · done
+
 ## Goal
 
 A PR-Rework round becomes a new plan generation: Webster sees only that round's cards plus `00-overview.md`, earlier cards are archived (git keeps them), and rework cards that add or change a classifier, verb or guard go through Plan-Review.

@@ -1,3 +1,7 @@
+# lyx orch: ready to host the real hub orchestrator
+
+`orch-live-ready` · Someday · feature
+
 Found 2026-09-30:
 - orch launches as an interactive shuttle run (internal/orchcli/start.go:61), so no --dangerously-skip-permissions; the hub runs in bypass mode. Want a permission-mode option, bypass as the orch default.
 - shuttle denies the Agent tool in every run (claude_deny_agent_tool), so orch cannot spawn review or fix agents; ForkSubagents is false.

@@ -1,3 +1,7 @@
+# Plan cards name the members they change as glyphs, after the glyph library is tested properly
+
+`plan-glyph-precision` · Someday · feature
+
 ## Why
 
 Seen on `gate-list`'s plan (2026-10-02): card 1's `Edit:` lists 24 file paths and no member glyph, although its Intent names the members it changes (`GateSpec`, `GateOutcome`, `Run.evaluateGate`, `resolveGateSpec`, `burlerengine#Engine.Run`).
