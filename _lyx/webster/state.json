@@ -14,7 +14,7 @@
     "09-board-skill.md": "ea153d553f81673bc477d64119c638e5fae60e0304cb65978df8f6112a63acf6",
     "10-overview-doc.md": "a4da823b82e1cdb9694d39e7fec9e491cfcadddd2bba01119abddb83d533ad29"
   },
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "eff08e946b373b4854f0e5ab982da5e9",
   "masterSessionId": "ed75cea7-1e3f-4630-b97b-859a0429b6c1",
   "assertedModel": "sonnet",
@@ -190,8 +190,19 @@
       "kind": "fork",
       "spawnedAt": "2026-10-02T08:30:16Z",
       "sessionId": "ed75cea7-1e3f-4630-b97b-859a0429b6c1",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-cli-verbs",
+        "status": "done",
+        "head_sha": "06ccb424bd758ee365800bc01ad46716e2365d55"
+      },
+      "cardShas": [
+        "06ccb424bd758ee365800bc01ad46716e2365d55"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-v2/ed75cea7-1e3f-4630-b97b-859a0429b6c1/subagents/agent-ab40cd6e695d636f4.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
@@ -200,6 +211,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-v2/ed75cea7-1e3f-4630-b97b-859a0429b6c1/subagents/agent-aa6ba73912045c02e.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-v2/ed75cea7-1e3f-4630-b97b-859a0429b6c1/subagents/agent-af626a1f54cf4f58a.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-v2/ed75cea7-1e3f-4630-b97b-859a0429b6c1/subagents/agent-ad443520d1a97c693.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-v2/ed75cea7-1e3f-4630-b97b-859a0429b6c1/subagents/agent-a3ebdc1255e6557ff.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-v2/ed75cea7-1e3f-4630-b97b-859a0429b6c1/subagents/agent-a3ebdc1255e6557ff.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-v2/ed75cea7-1e3f-4630-b97b-859a0429b6c1/subagents/agent-ab40cd6e695d636f4.jsonl"
   ]
 }
