@@ -16,10 +16,26 @@
     "11-batten-halted-wait.md": "c4735ed3ede39106a212732f0ff958e7650f1c2cab34c2ecd06738bd935a2a7e"
   },
   "currentBatch": 0,
-  "masterStrand": "6d4366f10831244b5ce0aebb2bf0ce0a",
-  "masterSessionId": "02fd2c21-7b3c-420e-8e2a-7e0ce8cfa0e0",
+  "masterStrand": "a37cc18f7709f3d0632fd133d67d4849",
+  "masterSessionId": "e51282aa-50d5-4e97-acd1-d45be26388f2",
   "assertedModel": "sonnet",
   "batches": {
+    "-1": {
+      "slug": "02-parent-resolver",
+      "startSha": "",
+      "kind": "",
+      "spawnedAt": "",
+      "terminal": true,
+      "status": "stuck",
+      "digest": {
+        "batch": "02-parent-resolver",
+        "status": "stuck",
+        "head_sha": "f3e2c570a82a160e68a608f83fa2c7a89c9c8bae"
+      },
+      "cardShas": [
+        "f3e2c570a82a160e68a608f83fa2c7a89c9c8bae"
+      ]
+    },
     "1": {
       "slug": "origin-parent-worktree",
       "cards": [
