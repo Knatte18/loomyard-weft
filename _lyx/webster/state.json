@@ -17,7 +17,7 @@
     "12-orch-start-adopt.md": "9274564cf41688495f852620fd48c26803390666df005c17c88ad8598c4c1939",
     "13-orch-live-smoke.md": "f352b48b96489b78efcb9bd3e25b55b581efca3306e48867525c7f9376ae8803"
   },
-  "currentBatch": 11,
+  "currentBatch": 0,
   "masterStrand": "4749c6c8df55cc26567a2bca686e0b78",
   "masterSessionId": "cab8d9fb-2200-455a-8151-ff5999560bb9",
   "assertedModel": "sonnet",
@@ -86,8 +86,19 @@
       "kind": "fork",
       "spawnedAt": "2026-10-02T11:44:45Z",
       "sessionId": "cab8d9fb-2200-455a-8151-ff5999560bb9",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "11-orch-spec-bypass-agents",
+        "status": "done",
+        "head_sha": "5216fd92751cccb01a4e705e587e0067f4c237a9"
+      },
+      "cardShas": [
+        "5216fd92751cccb01a4e705e587e0067f4c237a9"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-live-ready/cab8d9fb-2200-455a-8151-ff5999560bb9/subagents/agent-ad6a5f5e42775434c.jsonl"
+      ]
     },
     "2": {
       "slug": "spec-allow-agent-tool",
@@ -311,6 +322,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-live-ready/cab8d9fb-2200-455a-8151-ff5999560bb9/subagents/agent-ad74900b67b20cde8.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-live-ready/cab8d9fb-2200-455a-8151-ff5999560bb9/subagents/agent-a5755189dc8af0e97.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-live-ready/cab8d9fb-2200-455a-8151-ff5999560bb9/subagents/agent-a4e89a613707fada4.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-live-ready/cab8d9fb-2200-455a-8151-ff5999560bb9/subagents/agent-ac26e83c4f95eb452.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-live-ready/cab8d9fb-2200-455a-8151-ff5999560bb9/subagents/agent-ac26e83c4f95eb452.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-live-ready/cab8d9fb-2200-455a-8151-ff5999560bb9/subagents/agent-ad6a5f5e42775434c.jsonl"
   ]
 }
