@@ -5,7 +5,7 @@
 - `internal/shuttleengine/claudeengine/resume_test.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#SessionResumer`
+- `internal/shuttleengine#SessionResumer`
 - `internal/shuttleengine/claudeengine#validateSessionID`
 - `internal/shuttleengine/claudeengine#claudeProjectDirFor`
 - `internal/shuttleengine/claudeengine#claudeHomeDir`

@@ -6,8 +6,8 @@
 - `internal/shuttleengine/fakes_test.go`
 
 **Create:**
-- `plan:internal/shuttleengine#SessionResumer` -> `type SessionResumer interface`
-- `plan:internal/shuttleengine#Run.ResumeWarning` -> `func (run *Run) ResumeWarning() string`
+- `internal/shuttleengine#SessionResumer`
+- `internal/shuttleengine#Run.ResumeWarning`
 - `internal/shuttleengine/run_resume_test.go`
 
 **Intent:**

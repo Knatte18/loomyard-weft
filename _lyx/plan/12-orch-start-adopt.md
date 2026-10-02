@@ -8,7 +8,7 @@
 - `cmd/lyx/helptree_test.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#Run.ResumeWarning`
+- `internal/shuttleengine#Run.ResumeWarning`
 - `plan:internal/orchengine#RenderAdoptPrompt`
 
 **Intent:**
