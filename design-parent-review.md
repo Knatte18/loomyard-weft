@@ -14,6 +14,8 @@ The interview helper is the separate note `discussion-advisor`.
   `attempts: 0` turns the review off.
 - A row can carry more than one gate, each with its own attempts and flag, evaluated in order at every arrival.
   Discussion-Write runs the validator first (must always pass, no `pass_on_cap`), then the review; the validator therefore re-checks the writer's fixes after the review.
+  Ordering, kept simple (operator, 2026-10-02): at each arrival the gates run in list order and stop at the first that fails, so a later gate runs only when every earlier one passed on that arrival; each gate counts its own attempts.
+  Anything richer (parallel gates, dependencies between them) is out of scope.
 - The gate is mechanical in the sense its name means: the LLM inside the producer cannot decide it is done; the gate decides.
   A review by another agent fits that, so no invariant changes; the spec and CONSTRAINTS wording should say so plainly.
 - The reviewer is an address, defaulting to `$LYX_PARENT`, so others can review later; only the parent is wired now.
