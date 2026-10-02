@@ -2,7 +2,7 @@
 
 **Create:**
 - `internal/planparser/reviewclass.go`
-- `plan:internal/planparser#ReviewExempt` -> `func ReviewExempt(plan *Plan) bool`
+- `internal/planparser#ReviewExempt`
 - `internal/planparser/reviewclass_test.go`
 
 **Intent:**

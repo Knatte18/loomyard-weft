@@ -27,7 +27,7 @@
 - `README.md`
 
 **Uses:**
-- `plan:internal/planparser#ReviewExempt`
+- `internal/planparser#ReviewExempt`
 - `plan:internal/websterengine#ArchiveRunRecord`
 
 **Intent:**

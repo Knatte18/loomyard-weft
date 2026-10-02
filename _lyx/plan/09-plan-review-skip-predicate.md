@@ -9,7 +9,7 @@
 - `internal/loomshed/prrework.go`
 
 **Uses:**
-- `plan:internal/planparser#ReviewExempt`
+- `internal/planparser#ReviewExempt`
 
 **Intent:**
 Add the Go half of the Plan-Bouncer skip seam (D7): decide from committed state whether the live plan generation is exempt from Plan-Review.
