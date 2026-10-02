@@ -1,28 +1,32 @@
 ## Goal
 
-Port millhouse's `orch-review`/`orch-wait` as one Shed producer, `Discussion-Parent-Review`: the session that spawned the run reviews the discussion once Discussion-Write has drafted it, and the writer fixes the review with its own context.
-Scope is this producer only (operator, 2026-10-02); the interview helper is the separate note `discussion-advisor`.
+Port millhouse's `orch-review`/`orch-wait` as a review step in Discussion-Write's own producer gate: when the writer reports done, the gate asks a reviewer (for now always the parent) to review the discussion, and a reject re-prompts the still-live writer with the findings, so the writer fixes with its own context.
+No new recipe row and no separate fixer (operator, 2026-10-02).
+The interview helper is the separate note `discussion-advisor`.
 
 ## Shape
 
-- Discussion-Write works as today: it answers its own questions as best it can and finishes the draft.
-- `Discussion-Parent-Review` sits right after Discussion-Write and before the Burler segment, and must not assume its position, so a second row after the Burler segment can be added later by recipe alone.
-- The row stops as `awaiting` and notifies `$LYX_PARENT` (message to the parent's name; the parent's own state watch is the fallback).
-  A run with no parent recorded skips the row.
-- The parent forks one one-shot reviewer, which writes the review in the review-output format (BLOCKING/NIT, class design/scope/decision/consistency); the parent records it with a lyx verb in the approve/reject idiom, and `lyx loom start` resumes.
-  No fork waits; the parent's cost per round is a notification and the fork's summary.
-- On reject, the producer resumes the writer's own Claude session (shuttle's `ResumeCmd` and the recorded `SessionID`, `internal/shuttleengine/engine.go`) with the review, so the fix keeps the writer's context; the writer may answer a finding it disagrees with in the file instead of fixing it.
-- Rounds repeat until the parent approves or a round cap is reached; disagreement left at the cap becomes `awaiting` for the operator.
-- File-based throughout, so it survives a hub restart.
+- Discussion-Write's gate today is the mechanical `discussion` validator (`internal/shedrecipe/entries_gate.go`, `internal/shuttleengine/gate.go`).
+  The review step runs after it passes: the validator first, then the review.
+- The gate is mechanical in the sense its name means: the LLM inside the producer cannot decide it is done; the gate decides.
+  A review by another agent fits that, so no invariant changes; the spec and CONSTRAINTS wording should say so plainly.
+- Rounds are configurable per row: 0 means no review, 1 to 3 the number of review rounds before the gate gives up into the ordinary Stuck path; Discussion settles the default (1 keeps time down).
+- The reviewer is an address, defaulting to `$LYX_PARENT`, so others can review later; only the parent is wired now.
+- A lyx verb pair carries the exchange (names settled in Discussion):
+  - the gate runs one to open a review request: write the request file, notify the reviewer by name (agent-naming), and wait for the verdict file;
+  - the reviewer runs one to submit an approve or a reject with its review file.
+  The parent reviews through a one-shot fork that writes the review in the review-output format (BLOCKING/NIT, class design/scope/decision/consistency), so its own context grows by a notification and a summary per round.
+- Waiting on a reviewer takes minutes, not milliseconds:
+  - the run's timeout must allow it;
+  - status must show that the run waits on its reviewer (and who), not a plain `running`;
+  - request and verdict are files, so a driver restart that re-attaches (`AttachGated`) finds the open request and keeps waiting rather than asking twice.
+- A writer that disagrees with a finding answers it in the discussion file instead of fixing it; the next round's reviewer reads that answer.
+- A run with no parent recorded, or rounds set to 0, skips the review step.
 
 ## Bolt as design context (operator, 2026-10-02)
 
-Bolt exists to show what is planned ahead, so both Discussion-Write and the parent's reviewer read it: the design must fit planned work, and must not duplicate or contradict it.
+Bolt exists to show what is planned ahead, so both Discussion-Write and the reviewer read it: the design must fit planned work, and must not duplicate or contradict it.
 Discussion-Write's stencil tells it to read `lyx board list` and `lyx board notes list` (and `get` what touches its task); the reviewer's brief does the same.
-
-## Verify early and live
-
-- Resuming a finished writer session under shuttle restores its context and accepts the review as its next turn.
 
 ## From `orch-discussion-review`: The orchestrator takes part in Discussion: questions to the parent and a review gate
 

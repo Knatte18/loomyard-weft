@@ -31,11 +31,11 @@ Depends on: #000
 
 fabric remove ends the pair's tmux session, finishes half-removed pairs and deletes warp branches on origin; loom start never races a dying driver; tests stop leaking tmux sockets
 
-## **#007:** Discussion-Parent-Review: the parent reviews the discussion and the writer fixes it [B]
+## **#007:** Parent review as a step in Discussion-Write's gate [B]
 [parent-review](design-parent-review.md)
 Depends on: #000
 
-Port of millhouse orch-review/orch-wait as one Shed producer after Discussion-Write: the parent reviews through a one-shot fork, and on reject the writer's own session is resumed to fix; both read bolt for what is planned
+Port of millhouse orch-review/orch-wait into Discussion-Write's producer gate: after the mechanical validator, a reviewer (the parent for now) reviews through a lyx verb pair, and a reject re-prompts the live writer; 0 to 3 rounds
 
 # Layer C
 
