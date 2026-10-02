@@ -113,3 +113,8 @@ One line per run with state, producer and age, instead of polling each run
 [discussion-advisor](design-discussion-advisor.md)
 
 A second agent spawned beside Discussion-Write studies the task and code and answers its design questions as they arise, a real two-agent dialogue; after parent-review
+
+## **#042:** Plan cards name the members they change as glyphs, after the glyph library is tested properly
+[plan-glyph-precision](design-plan-glyph-precision.md)
+
+Plan-Write lists file paths instead of member glyphs because its stencil shows and allows it, and handle-unreferenced forces invented glyphs; test the glyph library at scale first
