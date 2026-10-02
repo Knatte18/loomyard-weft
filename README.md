@@ -34,13 +34,6 @@ Starts when every entry it names under After is done.
    - CONSTRAINTS.md becomes _lyx/PATTERN.md so agents get the constraints directive; warp/weft scan beyond Go code; model specs in short form; ide workspace cleanups
    - **After:** `verify-publish-hardening`, `pair-lifecycle`, `manifest-retire`, `review-finding-class`
 
-### Independent
-
-Depends on nothing and nothing depends on it, by design.
-
-1. **A run's parent is the worktree it is seeded from; batten survives pauses; parent-review loops** — [`run-parentage`](design-run-parentage.md) · bug · running · Finalize
-   - Fix #341, #338: parent from the seeding worktree, batten waits through paused/blocked, parent-review reviews every rewrite up to a cap
-
 ## Next Up
 
 Planned next, but not yet concretized.
@@ -73,3 +66,10 @@ Waits on nothing open; can start now, in parallel.
    - Someday (roadmap): #227, #228 — measured win, committed, not yet scheduled
 1. **Prompt-cache TTL per agent role** — [`cache-ttl-per-role`](design-cache-ttl-per-role.md) · feature
    - Parked: workers on 5m cache TTL, waiting sessions on 1h — operator deciding
+
+## Done
+
+Finished, awaiting `lyx board prune`.
+
+1. **A run's parent is the worktree it is seeded from; batten survives pauses; parent-review loops** — [`run-parentage`](design-run-parentage.md) · bug · done
+   - Fix #341, #338: parent from the seeding worktree, batten waits through paused/blocked, parent-review reviews every rewrite up to a cap
