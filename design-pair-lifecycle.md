@@ -27,11 +27,6 @@ After a hand-back, the ly-drive session removes its own strand with a detached `
 A `lyx loom start` issued in that window sees the loom-driver strand still live, keeps it instead of spawning a driver, and the detached remover then deletes it: the run is left with no driver and nothing happens (hit on `batten-hub-ready` and `focus-marker-warn`, 2026-09-30; a second `loom start` works).
 Fix direction: `loom start` treats a driver strand with a pending self-removal (or whose claude has exited) as gone and spawns a fresh one, or the remover skips a strand that was re-adopted since it was scheduled.
 
-## From `batten-resume-sees-stale-blocked`: batten run right after loom start exits on the child's stale blocked state
-
-Seen 2026-09-30 on batten-records-leak-into-pairs: after a hub fix, `lyx loom start --no-attach` (ok) followed at once by `lyx batten run` ended with Run-Shed "inner shed run reached state blocked" because status.json still said blocked for a few seconds.
-Fix direction: loom start writes state running (or a resume marker) before returning, or batten treats a blocked child whose driver was just relaunched as running.
-
 ## From `fabric-branch-hygiene`: Fabric: branches left behind by a failed add and on the remote
 
 Read the closed GitHub issues #269 (add rollback leaves the warp branch) and #270 (cleanup cannot see weft branches stranded on the remote). Re-check both once `landing` has landed: it takes #293 (remove leaves the warp branch, locally and on origin), which touches the same branch-lifecycle code, and the ly-drive may repair the rest from a trace.
