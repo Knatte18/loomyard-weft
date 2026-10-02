@@ -16,10 +16,12 @@ The session ran autonomously, so every turn below is a question the agent posed 
    Yes (D1).
 4. **How does Go notify the parent?**
    The ly-drive skill uses Claude Code's `SendMessage`, which Go cannot call.
-   Reed can type into a strand by guid, and `lyx reed list` already enumerates every worktree's strands, so hub-wide resolution by full name plus `SendText` gated by an idle probe works for any reed-hosted parent (D5).
+   Reed can type into a strand by guid, and `lyx reed list` already enumerates every worktree's strands, so hub-wide resolution by full name plus `SendText` gated by an idle probe works for any reed-hosted parent.
+   Replaced by the hub review: Go does not notify the parent directly; it prompts the live writer, which sends through SendMessage (D5, and turn 5).
 5. **What if the parent is not a reed strand?**
    A hand-started hub is not a strand.
    Delivery fails loudly but does not stop the run; status shows the wait, and the wait bound lets the run through (D5, D9, D10).
+   Replaced by the hub review: the hub is hand-started today, so reed delivery would never reach it; the live writer sends the notice through SendMessage to `$LYX_PARENT` instead, which reaches a hand-started and an orch-hosted hub alike.
 6. **What survives a restart?**
    The gate-list commit notes that in-memory counts reset after an attach.
    The closure therefore keys on the on-disk round: an open request, a verdict and a consumed marker (D3, D4).
@@ -45,12 +47,11 @@ The session ran autonomously, so every turn below is a question the agent posed 
   The operator ruled this out on 2026-10-02: the live writer fixes with its own context.
 - **Discussion-Review round 1 as an `awaiting` stop with two consecutive approves to converge (the older `orch-discussion-review` shape).**
   It is superseded by the operator's 2026-10-02 shape; it would also cost a fresh fixer without the writer's context.
-- **The writer sending the notice with `SendMessage` (re-prompting it to notify).**
-  It works for any named Claude session, but it bends the fixed gate re-prompt into a messaging channel and spends a writer turn on plumbing.
-  Delivery belongs in Go, where it is testable.
+- **Reed delivery: Go types one line into the parent's reed strand, gated by the idle probe (the original D5).**
+  Rejected by the hub review: the hub is hand-started and not a reed strand, so every run would wait out the full bound; it also races the orch watcher for the hub's keyboard.
+  The writer-sent SendMessage the original pick rejected is adopted instead: Go keeps the request, the delivery prompt (its own stencil, not the gate re-prompt), the throttle and the delivery record, so only the send itself runs in the session, and the cost is one short writer turn per round.
 - **Routing the notice through the orch watcher as the single typist into the hub pane.**
   It removes the typing race, but works only when the parent is the orch strand, and couples loom to orch's state.
-  Reed delivery covers any reed-hosted parent; the race is recorded as a risk.
 - **A blocking refusal when the parent cannot be reached.**
   The review is not a correctness guard, so the Refusal Way-Forward Invariant's warn-and-record rule applies.
 - **A configurable reviewer address.**
@@ -62,22 +63,37 @@ The session ran autonomously, so every turn below is a question the agent posed 
   It would widen the gate element schema for one entry; the bound is a tunable like the other `*_timeout_min` keys, so it goes in `loom.yaml`.
 - **Approve carrying NITs for the writer.**
   It would need a second re-prompt path on approve; a review with findings is a reject, and `pass_on_cap` still lets the next arrival through.
+- **Counting only delivery prompts whose send succeeded.**
+  The closure decides whether to carry a prompt, but only the loop knows whether the send succeeded, and `Gate` has no callback for it.
+  Counting at hand-off keeps the gate contract as D2 states it; a failing send spends the cap, and `notify` is the way forward.
+- **Keeping the prompt count and last-prompt time in memory, as `gateFails` is.**
+  `AttachGated` builds a fresh run, so every restart would reset the cap and allow three more notices; `notify` runs in another process and needs a file to reach the gate anyway.
 - **Parent review in Plan-Write or Plan-Review round 1.**
   It is outside this board entry's title and shape; the old note left it open.
 
 ## Review rounds
 
-_No rounds yet._
+### Hub review (parent, 2026-10-02)
+
+Reviewed by the hub orchestrator (`ly:orch`) against the board goal before Discussion-Review, edited in place.
+The record meets the goal and matches the operator's agreed shape (a pass-on-cap gate step, run once, the live writer fixes, the mechanical gate re-runs); one decision changed.
+
+- D5 replaced: the notice goes through the live writer's SendMessage to `$LYX_PARENT`, prompted by a Go-owned delivery stencil, and is stamped with a new `lyx loom review delivered` verb.
+  Reed typing would never reach the hand-started hub, which is the parent today, and races the orch watcher; SendMessage already carries every driver's escalation notice to the hub, and the operator chose Claude Code's own messaging over a lyx mailbox for now.
+  D4, D6, Scope, Constraints, Open risks, Acceptance and the plan notes follow.
 
 ## Question ledger
 
 - **Q1 — Gate mechanism for a long wait.** Auto-pick: pending gate state (D2). Resolved.
-- **Q2 — Notification channel.** Auto-pick: reed delivery by full name with the idle probe; warn and record on failure (D5). Resolved.
-- **Q3 — Verb names.** Auto-pick: `lyx loom review notify|approve|reject`, mirroring PR-Gate's `approve`/`reject` without colliding with them (D6). Resolved.
+- **Q2 — Notification channel.** Auto-pick, replaced by the hub review: the live writer's SendMessage to `$LYX_PARENT`, prompted and recorded by Go; warn and record on failure (D5). Resolved.
+- **Q3 — Verb names.** Auto-pick, `delivered` added by the hub review: `lyx loom review notify|delivered|approve|reject`, mirroring PR-Gate's `approve`/`reject` without colliding with them (D6). Resolved.
 - **Q4 — File location.** Auto-pick: a per-round directory beside the Discussion-Review run directory, committed with the discussion (D3). Resolved.
 - **Q5 — Wait bound.** Auto-pick: `parent_review_wait_min: 60` in `loom.yaml`; expiry lets the run through with a Warn (D10). Resolved.
 - **Q6 — Where the writer answers a disputed finding.** Auto-pick: the support log's `## Review rounds` (D8). Resolved.
 - **Q7 — Board reading.** Auto-pick: `lyx board list` plus `get`; `notes list` dropped as an alias over the same store (D11). Resolved.
 - **Q8 — Rounds per run.** Auto-pick: one round per Discussion-Write start; attach continues it (D3). Resolved.
 - **Q9 — Plan-side parent review.** Out of scope for this task. Open for a separate board entry.
-- **Q10 — Hand-started hub.** It gets no push notice under this design; the risk is recorded. Open until the hub is hosted by `lyx orch start` as a matter of course.
+- **Q10 — Hand-started hub.** Resolved by the hub review's D5: the writer's SendMessage reaches a hand-started hub and an orch-hosted one alike.
+- **Q11 — Re-send and mid-turn sends.** Auto-pick in Discussion-Review round 1: gate sends happen only at the writer's turn boundary, a failed delivery-prompt send leaves the entry pending, and the gate sends at most three delivery prompts per round, `notify` adding one each (D2, D5). Resolved.
+- **Q12 — Unchecked verbs.** Auto-pick in Discussion-Review round 1: no caller check; D6 states the bound, which is this one advisory review (D6). Resolved.
+- **Q13 — Delivery bookkeeping across restarts.** Auto-pick in Discussion-Review round 2: the prompt count, last-prompt time and waiting-notify count live in the round's delivery record; a prompt counts when the closure carries it, sent or not; `finalize` opens no request and consumes no verdict; a new round supersedes an earlier one without a verdict (D3, D4, D5, D6). Resolved.
