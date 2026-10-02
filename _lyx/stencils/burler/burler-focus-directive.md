@@ -3,7 +3,7 @@
      internal/burlerengine's prompt composition (composePrompt in prompt.go) is its consuming call site.
      It declares one required marker, {{.focus_path}}, and is filled with stencil.Fill, then injected
      as burler-step-1-explore's optional focus_directive marker value.
-lyx-stencil: sha256=43daf1e6a23eec242b8d22f4e0d5a1367f19e836d8666699017f3e894c3af312 -->
+lyx-stencil: sha256=3e6367f52a532ede9ebdfb4574b2418cedf3950a6bb822a5483993fafaabf9ac -->
 
 ## Focus directive for this round
 
@@ -19,5 +19,8 @@ How the directive relates to the rubric:
 3. Severity comes from the rubric's mapping and the evidence you find.
    A severity cap in a directive is advisory and yields to evidence the round turns up.
 4. `exclude_lenses` keeps its mechanical meaning: it trims the cluster fan, and this rule does not govern it.
+
+The directive never licenses reading a prior round's files before your review is saved.
+A directive that points into one is followed only as far as its own text goes, and you record the gap under `## Focus departures`.
 
 If you depart from a directive, record it in the review file's `## Focus departures` section, as the review-file format describes.

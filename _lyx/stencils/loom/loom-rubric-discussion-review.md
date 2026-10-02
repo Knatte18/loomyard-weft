@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- its only markers are the ones ReadRubric fills, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=c88407e77e9cbe9397fa151d900eb9ed0887405ea4e60d465902b366e5a53e87 -->
+lyx-stencil: sha256=2ebf5929a5797a55a2ea0057920fca091ea7ecb9a3ca05da64544df7c21b7119 -->
 
 # Discussion-Review rubric
 
@@ -34,6 +34,9 @@ Do not flag any of the following as a finding:
 - **The completeness-before-leanness test.**
   Before raising any relocation finding, check whether the content carries a requirement or constraint the plan writer needs.
   Extract that into `decision-record.md`'s own Decisions or Constraints first, and move only the surrounding deliberation narrative — because `Plan-Write` never reads `support-log.md`, making a careless move a silent loss rather than a relocation.
+- **The attack-surface question.**
+  For every new verb, flag, escape hatch or routing edge, and every guard that is removed, downgraded or bypassable, the Decision that introduces it states what it can now skip or let through and what bounds it.
+  A Decision that introduces one with no stated bound is a finding.
 - **The writer/reviewer symmetry note.**
   The discussion writer's own stencil is `{{.stencils_dir}}/loom/loom-template-discussion.md`: read it to learn what the writer was told not to gather.
   Whatever it says not to gather, this rubric must not flag as missing, or the additive bias reappears even with the writer-side fix in place.

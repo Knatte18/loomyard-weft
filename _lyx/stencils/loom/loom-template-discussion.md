@@ -7,7 +7,7 @@
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires the four original markers non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). friction_directive is the fifth marker, and the one optional one: it is filled via stencil.FillOptional and renders as nothing when Tier 2 is off.
      The literal `{` / `}` characters around {{.slug}} in the board-read example below are ordinary JSON punctuation, not template syntax — only `{{` begins a template action.
-lyx-stencil: sha256=2752f660106cddc1cd2f404e8524fd58e07f203292eb7cb1930a7ff633222a88 -->
+lyx-stencil: sha256=bbc08d33e71fd61b3288784595a90ca4f8feb7cf65beb5a99d0bb7d0d67ef879 -->
 
 # Discussion — interview, then write the decision record
 
@@ -102,6 +102,9 @@ Compaction rules for this file:
   A decision record that re-litigates what was *not* chosen is not distilled.
 - **Must-cover test scenarios go under `## Acceptance criteria`.**
   There is no separate `## Testing` section.
+- **A Decision that adds an edge or weakens a guard states its bound.**
+  When a Decision introduces a new verb, flag, escape hatch or routing edge, or removes, downgrades or makes bypassable a guard, state in that Decision what it can now skip or let through and what bounds it.
+  Discussion-Review flags one left unbounded.
 - **No italic prose-coaching.**
   Write terse, structured prose the Plan producer can act on directly — not a template with meta-commentary about how to fill it in.
 

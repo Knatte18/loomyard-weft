@@ -4,7 +4,7 @@
      to shuttle as the plan agent's entire instruction set.
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires the three original ones non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
-lyx-stencil: sha256=7726404920e1389a48dca66f182c02d835c0541638a2adf00200ef25cffb051e -->
+lyx-stencil: sha256=99d59a888d9a6bd30da01a40f14084f303f38227184982f7f9e86fe6ad5f5304 -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -136,6 +136,9 @@ An implementation card that bundles its own new test file writes `**Edit:**` for
 `**Custom:**` is a last resort, used only where none of the other six genuinely fits.
 A card whose targets can be expressed as a multi-label combination of the other six is not `Custom`.
 A `**Custom:**` group may not be combined with a group of a different type.
+
+A card that introduces a new verb, flag, escape hatch or routing edge, or removes, downgrades or makes bypassable a guard, states in its `**Intent:**` what the change can now skip or let through and what bounds it.
+Plan-Review flags one left unbounded.
 
 A field with no content is omitted entirely — never write a `none` sentinel on any field.
 

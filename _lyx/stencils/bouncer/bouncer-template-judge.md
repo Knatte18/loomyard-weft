@@ -15,7 +15,7 @@
      round-agrees-with-filename check discards it as malformed (crucible round sonnet-xhigh-r8,
      LS-1) -- before this fix, both instructions reused {{.round}}, so a compliant judge wrote a
      focus file whose OWN frontmatter round permanently disagreed with its OWN filename by one.
-lyx-stencil: sha256=919ea0aa4c1a7500e4924d0adf67cee71a123c6a1e950f9c3386842f95ebd45d -->
+lyx-stencil: sha256=7aa75602dd9413722bfc34f5f3baad1f3c3d1aa22296946cad923e1838985d93 -->
 
 # Bouncer — judge pass, round {{.round}}
 
@@ -122,6 +122,7 @@ What a `focus` entry may say:
 - An entry names where to look and which question to settle.
 - An entry never caps severity, and never pre-states a verdict.
 - Promote a concrete instance into an entry only after checking it against the rubric's `Do not flag` list and its symmetry rule.
+- An entry restates every site, commit and claim it depends on, and never refers the reviewer to a prior round's review, fixer report, or finding ID.
 
 An `APPROVED` verdict still writes `{{.focus_path}}`, with {{.approved_focus_lists}}, because the run is classified complete only when every declared output file exists --
 a judge that writes two of three files has its approval discarded.
