@@ -38,7 +38,7 @@ Starts when every entry it names under After is done.
 
 Depends on nothing and nothing depends on it, by design.
 
-1. **Webster recovers from a re-begin, its own canonicalization and an integration regression** — [`webster-recovery`](design-webster-recovery.md) · bug · running · Webster
+1. **Webster recovers from a re-begin, its own canonicalization and an integration regression** — [`webster-recovery`](design-webster-recovery.md) · bug · running · Webster-Bouncer
    - Fix #329, #330, #332: only landed batches count as built, webster's own card rewrites update their hashes, forks fix what their card broke and a bisected regression gets a recovery fork
 1. **A run's parent is the worktree it is seeded from; batten survives pauses; parent-review loops** — [`run-parentage`](design-run-parentage.md) · bug · running · Webster
    - Fix #341, #338: parent from the seeding worktree, batten waits through paused/blocked, parent-review reviews every rewrite up to a cap
