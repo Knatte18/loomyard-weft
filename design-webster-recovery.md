@@ -22,4 +22,4 @@ A webster run recovers on its own from the three states that today need a hand e
 ## Done when
 
 - Each issue's "Seen" scenario has a regression test that passes.
-- CLAUDE.md's TEMPORARY items for #329, #330 and #332 are deleted, and the issues are closed by the landing commit.
+- CLAUDE.md's TEMPORARY items for #329, #330 and #332 are deleted (the issues are already closed into this task).
