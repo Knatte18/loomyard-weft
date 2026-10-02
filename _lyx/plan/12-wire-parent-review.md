@@ -15,8 +15,8 @@
 - `internal/loomengine#LoomParentReviewDirRel`
 - `internal/loomengine#LoomParentReviewDir`
 - `internal/loomengine#LoomParentReviewLockDir`
-- `plan:internal/loomengine#ParentReviewDeliveryPrompt`
-- `plan:internal/loomengine#ParentReviewBrief`
+- `internal/loomengine#ParentReviewDeliveryPrompt`
+- `internal/loomengine#ParentReviewBrief`
 - `internal/loomengine#Config`
 - `internal/shedrun#ReadSeed`
 

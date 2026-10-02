@@ -5,8 +5,8 @@
 - `contracts/stencils/loom/loom-template-parent-review-brief.md`
 - `internal/loomengine/parentreview.go`
 - `internal/loomengine/parentreview_test.go`
-- `plan:internal/loomengine#ParentReviewDeliveryPrompt` -> `func ParentReviewDeliveryPrompt(stencilsDir, slug, requestPath, reviewer string) (string, error)`
-- `plan:internal/loomengine#ParentReviewBrief` -> `func ParentReviewBrief(stencilsDir, slug, decisionRecordPath, supportLogPath string) (string, error)`
+- `internal/loomengine#ParentReviewDeliveryPrompt`
+- `internal/loomengine#ParentReviewBrief`
 
 **Edit:**
 - `contracts/stencils/stencils.go`
