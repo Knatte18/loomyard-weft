@@ -1,8 +1,8 @@
 # Card 2 — parent-resolver
 
 **Create:**
-- `plan:internal/hubgeom#Parent` -> `type Parent struct`
-- `plan:internal/hubgeom#ResolveParent` -> `func ResolveParent(l *lyxcwd.Location) (Parent, error)`
+- `internal/hubgeom#Parent`
+- `internal/hubgeom#ResolveParent`
 - `internal/hubgeom/parent.go`
 - `internal/hubgeom/parent_test.go`
 

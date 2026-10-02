@@ -7,8 +7,8 @@
 - `internal/loomcli/smoke_parentreview_test.go`
 
 **Uses:**
-- `plan:internal/hubgeom#ResolveParent`
-- `plan:internal/hubgeom#Parent`
+- `internal/hubgeom#ResolveParent`
+- `internal/hubgeom#Parent`
 - `internal/hubgeom#ReedGeometry`
 - `internal/reedengine#Engine.Status`
 - `internal/reedengine#ErrNoSession`
