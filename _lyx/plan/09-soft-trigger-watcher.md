@@ -10,7 +10,7 @@
 **Uses:**
 - `internal/orchengine#Config.SoftThreshold`
 - `internal/orchengine#Config.SoftIdle`
-- `plan:internal/orchengine#RenderSoftHandoffInstruction`
+- `internal/orchengine#RenderSoftHandoffInstruction`
 
 **Intent:**
 Add the soft trigger to the watcher, keeping `threshold_tokens` as the hard cap and the four-phase cycle as it is.

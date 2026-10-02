@@ -3,8 +3,8 @@
 **Create:**
 - `contracts/stencils/orch/orch-template-adopt.md`
 - `contracts/stencils/orch/orch-template-handoff-soft.md`
-- `plan:internal/orchengine#RenderAdoptPrompt` -> `func RenderAdoptPrompt(stencilsDir string) (string, error)`
-- `plan:internal/orchengine#RenderSoftHandoffInstruction` -> `func RenderSoftHandoffInstruction(stencilsDir, handoffPath string) (string, error)`
+- `internal/orchengine#RenderAdoptPrompt`
+- `internal/orchengine#RenderSoftHandoffInstruction`
 
 **Edit:**
 - `contracts/stencils/stencils.go`

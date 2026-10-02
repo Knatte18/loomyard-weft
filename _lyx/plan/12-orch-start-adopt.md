@@ -9,7 +9,7 @@
 
 **Uses:**
 - `internal/shuttleengine#Run.ResumeWarning`
-- `plan:internal/orchengine#RenderAdoptPrompt`
+- `internal/orchengine#RenderAdoptPrompt`
 
 **Intent:**
 Add `lyx orch start --adopt <session-id>`: resume an existing Claude session from the prime as the orch strand, with a watcher bound to it.
