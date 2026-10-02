@@ -6,8 +6,8 @@
 - `internal/orchengine/config_test.go`
 
 **Create:**
-- `plan:internal/orchengine#Config.SoftThreshold` -> `func (c Config) SoftThreshold() int`
-- `plan:internal/orchengine#Config.SoftIdle` -> `func (c Config) SoftIdle() time.Duration`
+- `internal/orchengine#Config.SoftThreshold`
+- `internal/orchengine#Config.SoftIdle`
 
 **Intent:**
 Add three `orch.yaml` keys through the embedded template, per the Config Strictness Invariant:

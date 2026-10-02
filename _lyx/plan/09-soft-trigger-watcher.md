@@ -8,8 +8,8 @@
 - `internal/orchengine/doc.go`
 
 **Uses:**
-- `plan:internal/orchengine#Config.SoftThreshold`
-- `plan:internal/orchengine#Config.SoftIdle`
+- `internal/orchengine#Config.SoftThreshold`
+- `internal/orchengine#Config.SoftIdle`
 - `plan:internal/orchengine#RenderSoftHandoffInstruction`
 
 **Intent:**

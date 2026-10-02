@@ -5,7 +5,7 @@
 - `internal/orchcli/cli_test.go`
 
 **Uses:**
-- `plan:internal/orchengine#Config.SoftThreshold`
+- `internal/orchengine#Config.SoftThreshold`
 - `internal/orchengine/state.go`
 
 **Intent:**
