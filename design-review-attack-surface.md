@@ -1,2 +1,0 @@
-From a Fable process analysis of refusal-audit, 2026-10-01: Discussion-Burler round 1 F5 itself wrote "goto places no restriction on targets" (reviews/discussion/round-1-review.md:142); Plan-Review checks fidelity to the decision record and so cannot question it; Webster-Review reviewed the diff as code.
-Want: loom-rubric-discussion-review.md (and the plan rubric) asks, for every new verb or downgraded guard, what it can now skip or let through; pairs with orch-discussion-review.

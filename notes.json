@@ -1,15 +1,5 @@
 [
   {
-    "id": 0,
-    "slug": "fabric-branch-hygiene",
-    "title": "Fabric: branches left behind by a failed add and on the remote",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "Parked: #269, #270 — re-check after landing",
-    "body": "Read the closed GitHub issues #269 (add rollback leaves the warp branch) and #270 (cleanup cannot see weft branches stranded on the remote). Re-check both once `landing` has landed: it takes #293 (remove leaves the warp branch, locally and on origin), which touches the same branch-lifecycle code, and the ly-drive may repair the rest from a trace.\n\nAfter `landing` (#298): `fabric remove` now deletes the local warp branch, but `--remote` still deletes only the weft branch on origin; warp branches of removed pairs stay there (`board-done-on-landing`, `burler-exclude-warn`, `integration-verify-fence`, `loom-start-layout`, `stencil-drift-remedy`, `stuck-reason-in-status`, `landing`). Out of scope in landing's decision record."
-  },
-  {
     "id": 1,
     "slug": "batten-llm-friction",
     "title": "Batten teardown deletes an llm-driven child's friction notes",
@@ -40,76 +30,6 @@
     "body": "Claude Code gives a subscription's main session a 1-hour prompt-cache TTL (cache write 2× base input) and subagents/forks 5 minutes (1.25×); every lyx agent is a main session in tmux, so all of them write at the 1-hour price (see https://code.claude.com/docs/en/prompt-caching.md).\n\nMeasured on the `landing` run's transcripts: Discussion, Plan, Bouncer and Burler never paused more than 90 s between turns, so 5 minutes keeps them warm; ly-drive paused up to 508 s (three gaps over 5 minutes), so it needs 1 hour. Webster Master waits on forks via Monitor and is not yet measured.\n\nLikely shape: shuttle sets `CLAUDE_CODE_PROMPT_CACHE_TTL=5m|1h` (Claude Code v2.1.242+) per role when it spawns a session, configurable per role. loomyard was developed with the 5-minute limit in mind, so 5 minutes matches its design assumption."
   },
   {
-    "id": 8,
-    "slug": "burler-focus-prior-round",
-    "title": "Burler: round-N focus directive conflicts with the read-prior-rounds-last rule",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "Focus directive needs prior-round files the round prompt says to read only after the review",
-    "body": "Friction from run `operator-surface`, Burler Webster-Review round 2 (stencils from `d619100af`).\nThe round-2 focus directive asked the reviewer to check the round-1 F4 site list and the round-1 fix commits, which requires reading `round-1-review.md` and `round-1-fixer-report.md`.\nThe round prompt's instruction 2 says prior-round files are read only after the review is saved, so the focus file handed over in instruction 1 cannot be followed without breaking it; the reviewer read them early and said so.\nFix direction: the focus directive restates the sites it depends on, or the prior-round rule exempts what a focus directive names."
-  },
-  {
-    "id": 10,
-    "slug": "ide-hub-workspace-followups",
-    "title": "ide hub workspace: review follow-ups",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "Small cleanups from the PR #301 review",
-    "body": "Follow-ups from the PR #301 review (`85902381e`), all non-blocking:\n- `internal/fabricengine/hubworkspace.go` builds the prime path by hand (`filepath.Join(l.HubPath, primeName, l.AnchorRel)`) instead of `WorktreePath`.\n- `internal/ideengine/spawn.go` now WARNs on every spawn whose prime resolution fails, task spawns included (silent before).\n- Removing the last pair prunes `_portals/\u003canchor\u003e`, so the hub workspace shows a missing folder until the next prime spawn.\n- Relative-path settings spliced from the prime into the workspace file resolve against `_launchers/`, not the prime."
-  },
-  {
-    "id": 11,
-    "slug": "driver-restart-race",
-    "title": "loom start races the ly-drive self-removal and ends with no driver",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "First loom start after a hand-back keeps a strand that is about to be removed",
-    "body": "After a hand-back, the ly-drive session removes its own strand with a detached `lyx reed remove --name loom-driver --detach` that waits for the session's pid to exit (end-of-session command from `083e992cf`).\nA `lyx loom start` issued in that window sees the loom-driver strand still live, keeps it instead of spawning a driver, and the detached remover then deletes it: the run is left with no driver and nothing happens (hit on `batten-hub-ready` and `focus-marker-warn`, 2026-09-30; a second `loom start` works).\nFix direction: `loom start` treats a driver strand with a pending self-removal (or whose claude has exited) as gone and spawns a fresh one, or the remover skips a strand that was re-adopted since it was scheduled."
-  },
-  {
-    "id": 12,
-    "slug": "test-tmux-socket-leak",
-    "title": "Integration tests leave tmux sockets behind",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "reed/loom tests leak tmux servers and sockets in /tmp",
-    "body": "Tests leak tmux sockets: `/tmp/tmux-1000/` holds hundreds of `lyx-Test…`, `lyx-contract-…` and `lyx-warp-bare-…` sockets left by reed/loom integration tests. Test fixtures should kill their tmux server and remove the socket in `t.Cleanup`."
-  },
-  {
-    "id": 16,
-    "slug": "verify-gate-crash-after-merge",
-    "title": "Landing verify gate skips a merge interrupted before its marker write",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "A crash between the merge-in commit and the pending-verify marker write leaves the next resume seeing up-to-date with no marker, so verify is skipped.",
-    "body": "Found reviewing PR #308 (`publish-verify-after-merge`).\nFabric reports a finished-but-interrupted merge as already up to date, so the gate cannot tell a verified tree from an unverified one.\nRobust fix: record the task HEAD that last passed verify, and verify whenever HEAD differs from it."
-  },
-  {
-    "id": 18,
-    "slug": "fabric-remove-ends-reed-session",
-    "title": "fabric remove leaves the pair tmux session alive",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "After `lyx fabric remove` the pair tmux session (driver claude, status strand, bash) keeps running in the deleted directory; its late writes recreate the worktree dir as a stray folder.",
-    "body": "Seen 2026-09-30 for quarry-cli-answers and status-strand-by-driver: after landing and `fabric remove --remote`, their reed sessions were still alive hours later.\nA driver that wrote its stop report after the removal recreated `\u003chub\u003e/\u003cslug\u003e/.lyx/...` and `\u003chub\u003e/\u003cslug\u003e/_lyx/shed/\u003cslug\u003e/drive-reports/\u003creport\u003e.md`: a stray directory, and a drive report that never reached the archive.\nThe hub killed the sessions and deleted the dirs by hand.\n\nFix: remove (and batten teardown) ends the pair reed session (reed down) before deleting the worktrees, and waits for or refuses on a live driver; a stop report written after done should land before the archive tag."
-  },
-  {
-    "id": 19,
-    "slug": "batten-resume-sees-stale-blocked",
-    "title": "batten run right after loom start exits on the child's stale blocked state",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "loom start returns ok before the child status leaves blocked; an immediate lyx batten run reads blocked and exits again",
-    "body": "Seen 2026-09-30 on batten-records-leak-into-pairs: after a hub fix, `lyx loom start --no-attach` (ok) followed at once by `lyx batten run` ended with Run-Shed \"inner shed run reached state blocked\" because status.json still said blocked for a few seconds.\nFix direction: loom start writes state running (or a resume marker) before returning, or batten treats a blocked child whose driver was just relaunched as running."
-  },
-  {
     "id": 22,
     "slug": "orch-live-ready",
     "title": "lyx orch: ready to host the real hub orchestrator",
@@ -118,26 +38,6 @@
     "deferred": false,
     "brief": "orch is deployed but untested live and lacks what the hub needs: bypass permissions, the Agent tool, adoption of a running session, a soft threshold",
     "body": "Found 2026-09-30:\n- orch launches as an interactive shuttle run (internal/orchcli/start.go:61), so no --dangerously-skip-permissions; the hub runs in bypass mode. Want a permission-mode option, bypass as the orch default.\n- shuttle denies the Agent tool in every run (claude_deny_agent_tool), so orch cannot spawn review or fix agents; ForkSubagents is false.\n- no way to adopt a running session (`--adopt \u003csession-id\u003e` via claude --resume, watcher bound to the existing transcript).\n- soft threshold: hand off at a natural break from about 300k, 400k hard cap.\n- risk: SessionIdle may read Claude's greyed prompt suggestion as not idle, so no cycle ever runs; verify live."
-  },
-  {
-    "id": 23,
-    "slug": "fabric-vocabulary-everywhere",
-    "title": "Fabric vocabulary: warp and weft only inside fabric, also in docs, specs and tests",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "TestEnforcement_FabricVocabulary scans Go production code only; specs, docs, skills and tests outside fabric still say warp/weft",
-    "body": "Operator 2026-09-30: warp and weft are fabric-internal words; nothing outside fabric should know them.\nSeen on refusal-audit: contracts/specs/refusal-spec.md and several _test.go files outside fabric use them, and the scan let them through.\nWant: extend the scan to contracts/, docs/, manifest/, plugins/ skills and test files outside the owner set (or an explicit allowlist for fabric docs), and sweep the existing hits."
-  },
-  {
-    "id": 24,
-    "slug": "orch-discussion-review",
-    "title": "The orchestrator takes part in Discussion: questions to the parent and a review gate",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "Hub runs never involve the orchestrator in Discussion; route Discussion-Write's questions to the parent session and make Discussion-Review round 1 the parent's review (loom port of mill-start --orch)",
-    "body": "Operator 2026-09-30/10-01: a weakness that the orchestrator is not involved in discussion; the hub must take part in the design.\nTwo mechanisms, built in this order:\n1. Review gate (millhouse mill-start --orch with orch-review/orch-wait): a seed flag (batten sets it for hub runs) makes Discussion-Review round 1 an `awaiting` stop naming the discussion file; the parent is notified (message to $LYX_PARENT, with the hub's state watch as fallback); the hub forks a reviewer that writes the review in the review-output format (BLOCKING/NIT, class design/scope/decision/consistency, plus review-attack-surface's question) and records it with a verb in the approve/reject idiom; `lyx loom start` resumes; convergence needs two consecutive APPROVEs so round 1 alone never converges. File-based, so it survives a hub restart.\n2. Live questions: where Discussion-Write would ask the operator interactively (as millhouse does), it sends each question to $LYX_PARENT and waits; the parent answers by message. shuttle already classifies an asking session (OutcomeAsking, AwaitOperator); route that to the parent instead of the operator. Needs process-naming (names and parentage). No parent or no answer within a bound: fall back to awaiting for the operator.\nOpen: the same for Plan-Review round 1."
   },
   {
     "id": 25,
@@ -150,26 +50,6 @@
     "body": "Operator 2026-09-30: take a step back and plan for convergence, not keep accepting more bugs.\nObserved today: nearly every hub intervention was in same-day new code (#319: approve nil dep, reject reading its file argument as run-id), and both passed tests built on fake deps.\nIngredients: (1) log every hub intervention and ly-drive repair per run with a class and cause, so interventions per run and new-vs-repeat failure classes are visible; (2) every fix at the source with a test that drives the real CLI wiring, not only fakes; (3) freeze periods with no new verbs or recipe rows, hardening only, until the intervention rate flattens.\nGoal: the outside LLM steps in rarely, and for the task rather than for lyx."
   },
   {
-    "id": 26,
-    "slug": "main-weft-not-pushed",
-    "title": "main-weft is never pushed and never advances on landing",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "Seen 2026-09-30, uninvestigated: the prime weft branch main-weft stays local and does not move when a task lands",
-    "body": ""
-  },
-  {
-    "id": 27,
-    "slug": "bolt-roadmap-tiers",
-    "title": "Bolt as the roadmap: three numbered tiers in one store, rendered like roadmap.md",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "Bolt's README is unreadable; give bolt the roadmap's three tiers as a tier number in one entry store and render it in the roadmap's one-line-per-item style",
-    "body": "## Why\n\nOperator 2026-10-01: `manifest/roadmap.md` is very readable and bolt's README is not.\nBolt should follow the roadmap's principle; everything in it matters to the orchestrator, since the future direction shapes how Planned work is reviewed.\n\n## Tiers\n\n1. Concretized and claimable (rendered Planned).\n2. Planned next but not concretized; not claimable until promoted (Next Up).\n3. Loose ideas the operator has thought about, as in roadmap.md today (Someday).\n\n## Storage\n\n- One store, not `tasks.json` + `notes.json` (and not three files); every entry carries a numeric `tier`.\n- The data holds only the number; the renderer alone owns the section names.\n- Claimable means tier 1; promotion lowers the number (3 → 2 → 1, skipping allowed); new ideas default to tier 3.\n- The task and notes verb groups collapse onto it; migrate the two existing files.\n- Operator also wants a `type` field (e.g. design, bug, idea, chore) alongside the tier; settle the type set in Discussion.\n\n## Rendering\n\n- README like roadmap.md: one section per tier, in tier order, each with a one-line meaning.\n- One `1.` item per entry with **title**, slug, one or two what/why sentences and the design link; no per-entry headings, no numeric ids.\n- Optionally live state, producer and PR on running tier-1 entries.\n- Design docs render as markdown: today a body written with single newlines shows as one paragraph.\n\n## Agent ergonomics (folded in from `board-agent-ergonomics`)\n\nThe hub fell back to jq on `notes.json` because `lyx board list` shows tasks only and nothing searches.\n\n- `lyx board find \u003ctext\u003e` over every entry.\n- A compact human listing (tier, slug, title) besides the JSON.\n- The `get`/`remove` payload shapes in `--help`.\n- A skill or doc telling agents how to use bolt (see also `lyx-mcp`).\n\n## Also folds in\n\n- `board-prune-done`: one verb removing every done entry, its design doc and dangling `depends_on`.\n- After the manifest triage, roadmap.md's Someday moves into bolt and bolt becomes the only roadmap (`manifest-to-bolt`).\n- Content job, not code: rewrite entry briefs as what/why during the review.\n"
-  },
-  {
     "id": 29,
     "slug": "test-suite-change-amplification",
     "title": "Test suite: cut change amplification",
@@ -178,76 +58,6 @@
     "deferred": false,
     "brief": "Test code is ~3x production and growing faster; a small prod change forces edits in many test files, each one context an implementing agent must read. Survey and plan in GitHub #323, work split into #324-#327.",
     "body": "Survey of main at fafb660c3, 2026-10-01: test churn 1.68x prod churn and rising; one loom-recipe row costs edits to ~8 test files in 4 packages; worst packages cmd/lyx, loomrecipe, fabricengine.\nWork items, each self-contained with file:line evidence in its issue:\n- #324 shared `internal/testkit` and one fake per cross-package seam (reverses the do-not-share-test-helpers decision; needs a CONSTRAINTS.md Testkit Invariant).\n- #325 git helpers in gitkit, hubforge as the only fabric fixture (84 private git helper copies today).\n- #326 one invariant-scan harness; derive registry and CLI-tree tests (section 2 needs an operator decision: it changes the CLI/Cobra Invariant help-tree tests).\n- #327 decouple recipe, plan and stencil tests from their sources.\nTies to convergence-plan: real-wiring tests over per-package fakes."
-  },
-  {
-    "id": 30,
-    "slug": "manifest-to-bolt",
-    "title": "Move everything in manifest/ into bolt and retire the folder",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "LYXHUB takes over all loomyard development, so manifest/ (roadmap.md Someday list, designs/, the stale HANDOFF.md) moves into bolt and the folder goes",
-    "body": "Operator 2026-10-01: LYXHUB takes over all development of loomyard; everything in manifest/ goes into bolt.\nThe operator also says much of it is outdated: triage each roadmap Someday item with the operator (keep as tier 3 or tier 2, merge, or strike) and carry its designs/\u003cname\u003e.md over as the bolt entry's design doc.\nDepends on bolt-roadmap-tiers for the tiers and the readable render.\nAfterwards: delete manifest/, and update CLAUDE.md (Task completion section names manifest/roadmap.md and manifest/designs/), docs/overview.md's Documentation Lifecycle and any stencil or test that names manifest/."
-  },
-  {
-    "id": 31,
-    "slug": "pattern-init",
-    "title": "Initialize PATTERN for loomyard: CONSTRAINTS.md becomes _lyx/PATTERN.md",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "lyx agents get the constraints directive only when _lyx/PATTERN.md exists, and loomyard has none, so every run so far ran without it; CONSTRAINTS.md is the millhouse-style setup that PATTERN replaces",
-    "body": "Operator 2026-10-01: CONSTRAINTS.md is millhouse's setup; loomyard's variant is PATTERN, not yet initialized.\nVerified: no _lyx/PATTERN.md in loomyard-weft, and there is no init verb. internal/pattern injects a role directive (implementer, review-fix, orchestrator) pointing at _lyx/PATTERN.md into webster fork/Master, burler and loom plan prompts only when the file exists, so today's runs got no PATTERN directive (they only saw CONSTRAINTS.md through CLAUDE.md and stencil mentions).\nWork: move CONSTRAINTS.md's invariants into _lyx/PATTERN.md (weft, invisible to the code repo; optionally split under _lyx/pattern/); repoint everything that names CONSTRAINTS.md: CLAUDE.md, stencils (loom discussion/plan/rework, webster master and prefix-recovery), the ly-drive skill, contracts/specs, burlercli/run.go, loomshed and treadleengine docs, and contracts/stencils/citation_enforcement_test.go; decide whether a `lyx pattern init` verb is wanted for other repos."
-  },
-  {
-    "id": 32,
-    "slug": "review-attack-surface",
-    "title": "Reviews ask what a new verb or downgraded guard can skip or let through",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "No review rubric has a security/invariant axis, so refusal-audit's internal reviews approved an unguarded goto and a policy-only fabric write; downstream gates only check fidelity to the upstream decision",
-    "body": "From a Fable process analysis of refusal-audit, 2026-10-01: Discussion-Burler round 1 F5 itself wrote \"goto places no restriction on targets\" (reviews/discussion/round-1-review.md:142); Plan-Review checks fidelity to the decision record and so cannot question it; Webster-Review reviewed the diff as code.\nWant: loom-rubric-discussion-review.md (and the plan rubric) asks, for every new verb or downgraded guard, what it can now skip or let through; pairs with orch-discussion-review."
-  },
-  {
-    "id": 33,
-    "slug": "rework-design-review",
-    "title": "PR-Rework cards that change a classifier, verb or guard get a Plan-Review pass",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "PR-Rework skips Plan-Review because the findings are operator-authored, but the design of the fix is the rework agent's; refusal-audit's card 36 chose a fail-open denylist that nobody design-reviewed",
-    "body": "loom-recipe.yaml:37 exempts PR-Rework from Plan-Review. Keep the exemption for text-only findings; route cards that create or change a classifier, verb or guard through Plan-Review.\n\n## Rework should not drag the implemented plan along (operator, 2026-10-01)\n\nPR-Rework appends its cards to the same plan, and Webster resumes the same run, so Master's prompt and context carry every earlier card's index and progress line.\nIn refusal-audit round 4 that was 64 batches with 54 done; the rendered prompt outgrew the launch limit (fixed on main in `e39909bbc` by handing Master the prompt as a file, which treats the symptom only).\nDone cards are dead weight: Master never re-runs them, but they fill its context and every fork inherits it.\nWant: each rework round is its own plan generation; Webster sees only that round's cards plus `00-overview.md`, and the earlier cards are archived (git keeps them), so prompt and context stay flat however many rounds a task takes.\n"
-  },
-  {
-    "id": 34,
-    "slug": "card-verify-integration",
-    "title": "Cards that touch integration-tagged tests verify with -tags integration",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "Webster forks run only untagged package tests, so integration tests first run in the plan-level verify, which cannot localize the offending card; refusal-audit stopped there four times",
-    "body": "No refusal-audit card declared a verify: line; the fork gate is go build plus the package's unit tests (webster-body-implementer.md:30), untagged, while 11 of 48 touched test files are //go:build integration.\nWant: Plan-Write adds `go test -tags integration \u003cpkg\u003e` to a card's verify when it touches a tagged file; a message-rewording card greps the repo for the old text first so stale exact-string assertions become part of the card; Master re-runs integration tests after a rework fork."
-  },
-  {
-    "id": 35,
-    "slug": "publish-dirty-tree",
-    "title": "Publish must not verify or push a dirty tree after merge resolution",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "refusal-audit's Publish merge left historyfold_test.go uncommitted and verify ran on the dirty tree; earlier publish-review-fixback had the same uncommitted merge-resolution edits",
-    "body": ""
-  },
-  {
-    "id": 36,
-    "slug": "model-spec-short-form",
-    "title": "Model specs in the short form everywhere, and per-role model choice revisited",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "Templates, spec examples and the repo config still write opus[effort=high] although opus[high] is supported, and their comments point at a docs/reference/model-spec.md that does not exist",
-    "body": "Seen 2026-10-01: long form in internal/loomengine/template.yaml (discussion, plan, review, friction), internal/websterengine/template.yaml (recovery), internal/landingshed/template.yaml (conflict, describe) and contracts/specs/llm-model-spec.md's examples; the spec only mentions in one sentence that a bare bracket token means effort. Template comments cite docs/reference/model-spec.md, which is missing; the spec lives at contracts/specs/llm-model-spec.md.\nWebster master is plain `sonnet`, so its effort (medium) comes invisibly from models.yaml; write it explicitly.\nModel choice (operator, 2026-10-01): try `fable[high]` for discussion and review, where design judgement matters (refusal-audit's holes came from opus Discussion and opus reviews; a Fable review found the design problem), keep sonnet for implementation; change it only between runs and measure review rounds, PR rejects and interventions before and after (convergence-plan)."
   },
   {
     "id": 37,

@@ -1,3 +1,0 @@
-After a hand-back, the ly-drive session removes its own strand with a detached `lyx reed remove --name loom-driver --detach` that waits for the session's pid to exit (end-of-session command from `083e992cf`).
-A `lyx loom start` issued in that window sees the loom-driver strand still live, keeps it instead of spawning a driver, and the detached remover then deletes it: the run is left with no driver and nothing happens (hit on `batten-hub-ready` and `focus-marker-warn`, 2026-09-30; a second `loom start` works).
-Fix direction: `loom start` treats a driver strand with a pending self-removal (or whose claude has exited) as gone and spawns a fresh one, or the remover skips a strand that was re-adopted since it was scheduled.

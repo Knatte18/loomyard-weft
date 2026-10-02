@@ -1,4 +1,0 @@
-Operator 2026-10-01: LYXHUB takes over all development of loomyard; everything in manifest/ goes into bolt.
-The operator also says much of it is outdated: triage each roadmap Someday item with the operator (keep as tier 3 or tier 2, merge, or strike) and carry its designs/<name>.md over as the bolt entry's design doc.
-Depends on bolt-roadmap-tiers for the tiers and the readable render.
-Afterwards: delete manifest/, and update CLAUDE.md (Task completion section names manifest/roadmap.md and manifest/designs/), docs/overview.md's Documentation Lifecycle and any stencil or test that names manifest/.

@@ -1,2 +1,0 @@
-No refusal-audit card declared a verify: line; the fork gate is go build plus the package's unit tests (webster-body-implementer.md:30), untagged, while 11 of 48 touched test files are //go:build integration.
-Want: Plan-Write adds `go test -tags integration <pkg>` to a card's verify when it touches a tagged file; a message-rewording card greps the repo for the old text first so stale exact-string assertions become part of the card; Master re-runs integration tests after a rework fork.
