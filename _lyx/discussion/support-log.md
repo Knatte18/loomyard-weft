@@ -46,13 +46,17 @@ The session ran autonomously, so every turn below is a question the Discussion a
 15. **How does the hub get its name?**
     A hand-started Claude session cannot export env to its Bash calls, since shell state does not persist between them.
     Pick: `lyx orch start`; reed names the orch strand `<code>:orch`.
+    Superseded in part by the hub review below: a per-command env prefix does reach the seeding call, so a hand-started hub can record itself as parent.
 16. **Which stencils send to the parent?**
     Producer stencils are autonomous file-writers; the asker in a worktree is the driver.
     Pick: the ly-drive skill and the loom driver prompt send a short notice on escalation, keeping the stop report as the fallback.
 17. **Is `lyx reed list` per worktree or hub-wide?**
     No list verb exists today; the hub needs to find strands in other worktrees.
     Pick: hub-wide.
-18. **Testing approach.**
+18. **How is a standalone strand named?** (Added by Discussion-Review round 2.)
+    `lyx webster run` and `lyx burler run` with `--target-dir` boot their own reed session through `standalonegeom.ReedGeometry`, with no weft, `.lyx-code`, slug or seed, and no watchdog; the Claude engine's lines reference `$LYX_STRAND_NAME` in every mode.
+    Pick: `standalonegeom` tells a code derived from the hash8 (`s` plus five hex digits) through an `agentname` rule; strands take `<code>:<role>`; no `LYX_PARENT`.
+19. **Testing approach.**
     Pick: unit tests for agentname and the Claude provider; integration tests against real git for fabric and against real tmux for reed; a fake provider for the watchdog seam; help-tree tests for the new verbs.
 
 ## Rejected alternatives
@@ -80,13 +84,29 @@ The session ran autonomously, so every turn below is a question the Discussion a
 - **A general resolver for the conversational short form.**
   Rejected: two-segment short forms (`landing:driver`) collide with two-segment full prime names (`mh:orch`), and lyx writes full names wherever something is addressed, so no lyx code needs the resolver.
 - **A `--parent` flag on `batten run` and `loom start` for hand-started hub sessions.**
-  Rejected under YAGNI: `lyx orch start` is the supported hub, and its migration path from a hand-started session exists.
+  Rejected under YAGNI: a per-command `LYX_STRAND_NAME` prefix gives a hand-started hub the same parent record with no new flag, and `lyx orch start` replaces that path once `orch-live-ready` lands.
+- **Refuse every standalone spawn for lack of a code.**
+  Rejected: it would end standalone webster and burler runs, which have no weft to record a code on.
+- **Keep today's `strand_name` template for standalone strands.**
+  Rejected: it keeps a retired key alive in one mode, and its round and guid prefix make names unaddressable.
+- **A fixed sentinel code for every standalone run.**
+  Rejected: concurrent standalone runs on different targets would share names, while the hash8 already tells them apart.
+- **A `--code` flag on standalone runs.**
+  Rejected: a standalone run has nowhere to record it, so the operator would pass it on every run, and a run without it would refuse.
 - **An identity notice appended to every Claude strand's system prompt.**
   Rejected: autonomous producers would start sending notices to the hub, which is noise until orch-discussion-review designs the live question mode.
 
 ## Review rounds
 
-_No rounds yet._
+### Hub review (parent, 2026-10-02)
+
+Reviewed by the hub orchestrator against the board goal before Discussion-Review, edited in place.
+The record meets the goal and follows every operator decision; three changes:
+
+- Parentage: a hand-started hub records itself as parent through a per-command `LYX_STRAND_NAME` prefix on `lyx batten run`, until `lyx orch` can host the hub.
+  The record's claim that a hand-started session cannot set env was true for persistent shell state only; without this path today's hub is never a parent and `parent-review` would skip every review.
+- Docs: `manifest/designs/reed-mailbox.md` is not edited, since `manifest/` is being retired and bolt's `creel` note carries the supersession.
+- Open risks: the rollout order (record the code at deploy, before in-flight runs spawn again).
 
 ## Question ledger
 
@@ -102,8 +122,9 @@ _No rounds yet._
 - **Q10 Where the name is formed.** Resolved, auto-pick: reed's `AddStrand`, with the Claude line referencing the injected env.
 - **Q11 Session-name repair owner.** Resolved, auto-pick: watchdog through a reedengine seam filled by cliwire.
 - **Q12 Parent record and propagation.** Resolved, auto-pick: optional seed `parent`, first seeding wins, batten copies into the child, worktree parent from `self`.
-- **Q13 Hub name source.** Resolved, auto-pick: `lyx orch start`.
+- **Q13 Hub name source.** Resolved, auto-pick revised by the hub review: `lyx orch start`, and until `orch-live-ready` a hand-started hub records itself through a per-command `LYX_STRAND_NAME` prefix on `lyx batten run`.
 - **Q14 Which stencils send to the parent.** Resolved, auto-pick: ly-drive skill and loom driver prompt only.
 - **Q15 `lyx reed list` scope.** Resolved, auto-pick: hub-wide.
 - **Q16 tmux `allow-set-title` availability on the Windows tmux build.** Open: carried to Open risks; the plan should check the tmux version reed requires.
 - **Q17 Whether `/clear` resets the Claude session name.** Open: unverified; the watchdog repair covers both outcomes.
+- **Q18 Standalone naming.** Resolved, auto-pick by Discussion-Review round 2: a code derived from the hash8, told by `standalonegeom`; two-segment names; no parent.
