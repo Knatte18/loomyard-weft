@@ -14,7 +14,7 @@
     "09-integration-fix-attempt.md": "c62f67137b7004173456c481bf9df9d60878ad2c3da28aa1aecd6ad908f5b09b",
     "10-drop-temporary-workarounds.md": "8e3fbe12d992fddb9a9390d762aa5d85491dfb85f82f4d4ee0f78cbb3f61f3c5"
   },
-  "currentBatch": 9,
+  "currentBatch": 0,
   "masterStrand": "70df4911a1e4fd781b0f537a24167446",
   "masterSessionId": "e0907656-a36c-4e5a-a63e-5409a403f3ab",
   "assertedModel": "sonnet",
@@ -239,8 +239,19 @@
       "kind": "fork",
       "spawnedAt": "2026-10-02T17:58:05Z",
       "sessionId": "e0907656-a36c-4e5a-a63e-5409a403f3ab",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "09-integration-fix-attempt",
+        "status": "done",
+        "head_sha": "8d1b9986eff173044ce720984fd0a94ab6243d4d"
+      },
+      "cardShas": [
+        "8d1b9986eff173044ce720984fd0a94ab6243d4d"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-recovery/e0907656-a36c-4e5a-a63e-5409a403f3ab/subagents/agent-a6c897e04feccf0ee.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
@@ -251,6 +262,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-recovery/e0907656-a36c-4e5a-a63e-5409a403f3ab/subagents/agent-a86708e7d71fc9515.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-recovery/e0907656-a36c-4e5a-a63e-5409a403f3ab/subagents/agent-a4d977699867bb89d.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-recovery/e0907656-a36c-4e5a-a63e-5409a403f3ab/subagents/agent-a875ee3d1d7b2fb0a.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-recovery/e0907656-a36c-4e5a-a63e-5409a403f3ab/subagents/agent-a43640f055c3818e8.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-recovery/e0907656-a36c-4e5a-a63e-5409a403f3ab/subagents/agent-a43640f055c3818e8.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-recovery/e0907656-a36c-4e5a-a63e-5409a403f3ab/subagents/agent-a6c897e04feccf0ee.jsonl"
   ]
 }
