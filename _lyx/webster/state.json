@@ -15,10 +15,26 @@
     "10-drop-temporary-workarounds.md": "8e3fbe12d992fddb9a9390d762aa5d85491dfb85f82f4d4ee0f78cbb3f61f3c5"
   },
   "currentBatch": 0,
-  "masterStrand": "70df4911a1e4fd781b0f537a24167446",
-  "masterSessionId": "e0907656-a36c-4e5a-a63e-5409a403f3ab",
+  "masterStrand": "d2673eb9f7527d94947ffd5a3ca89bb1",
+  "masterSessionId": "7c026ea0-80f7-4bc4-8759-a18ffb3d3797",
   "assertedModel": "sonnet",
   "batches": {
+    "-1": {
+      "slug": "07-fix-commit-check",
+      "startSha": "",
+      "kind": "",
+      "spawnedAt": "",
+      "terminal": true,
+      "status": "stuck",
+      "digest": {
+        "batch": "07-fix-commit-check",
+        "status": "stuck",
+        "head_sha": "2b55092156ed5256cf8afaa0925aa19a4c432831"
+      },
+      "cardShas": [
+        "2b55092156ed5256cf8afaa0925aa19a4c432831"
+      ]
+    },
     "1": {
       "slug": "dispatch-forthcoming-targets",
       "cards": [
