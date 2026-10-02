@@ -1,11 +1,11 @@
 {
-  "current_producer": "Publish",
+  "current_producer": "PR-Gate",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Publish",
-    "last": "Describe → done",
+    "now": "PR-Gate",
+    "last": "Publish → done",
     "wait": ""
   },
   "history": [
@@ -122,6 +122,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/parent-review/_lyx/landing/summary.md",
       "at": "2026-10-02T12:27:45Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Publish",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-02T12:29:15Z"
     }
   ],
   "product": {
