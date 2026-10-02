@@ -18,7 +18,7 @@
     "13-orch-review-fork.md": "0411a3e59e71a23bbef0c0e16e6a7f192a6cbdd50ab64b5822bcfe78f58d2b72",
     "14-parent-review-integration.md": "8471acff5d0d3c0ed4fa5314867904d9c9a730e0d62e9c7b90d14b0e04aea17f"
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "909a6e3579ce76689cf6276d94a867d8",
   "masterSessionId": "3e89f69f-ac78-43a1-884c-23a00c477f28",
   "assertedModel": "sonnet",
@@ -35,8 +35,26 @@
       "kind": "fork",
       "spawnedAt": "2026-10-02T11:46:59Z",
       "sessionId": "3e89f69f-ac78-43a1-884c-23a00c477f28",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-gate-pending-state",
+        "status": "done",
+        "head_sha": "1f3071eab011f2e26233e84be4cb557758f43d97",
+        "deviations": [
+          "internal/shuttleengine/completionsignal_enforcement_test.go",
+          "internal/shuttleengine/gate_test.go"
+        ]
+      },
+      "cardShas": [
+        "1f3071eab011f2e26233e84be4cb557758f43d97"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-parent-review/3e89f69f-ac78-43a1-884c-23a00c477f28/subagents/agent-af325f5b9cdbbb9d5.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-parent-review/3e89f69f-ac78-43a1-884c-23a00c477f28/subagents/agent-af325f5b9cdbbb9d5.jsonl"
+  ]
 }
