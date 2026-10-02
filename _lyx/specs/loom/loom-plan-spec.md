@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=fc8d124b5d6281035daf8f2f95cb1e49b427336c028a25f391f2038d3c8b25b7 -->
+<!-- lyx-stencil: sha256=de54be4cf1f0ad7590bc6ddca3593ce1f077db44c2e6c95e8ecc31b3079bf094 -->
 
 # Loom plan-spec — flat card list
 
@@ -62,6 +62,7 @@ format: 5
 approved: true
 root: <optional worktree-relative dir>   # optional; see Card path resolution below
 language: go                             # optional; "go" (default) or "none" — see The shape classifier below
+first_card: 1                            # optional positive integer, default 1; see Numbering and commit subject below
 ```
 
 The body carries a short task-framing paragraph, an ordered **Card Index** whose entries read `N — <card-slug> — <one-line intent>`,
@@ -250,7 +251,8 @@ A plan carrying at least one `plan:` handle also gains a companion write path on
 
 ## Numbering and commit subject
 
-Cards are numbered flat **`N` (1..N)** across the whole plan — no batch-scoped restart, no `NN.C` compound numbering.
+Cards are numbered flat across the whole plan — no batch-scoped restart, no `NN.C` compound numbering.
+Numbers run from the overview's `first_card:` (default `1`) upward with no gap, so a rework generation can continue the numbering of the generation it retires.
 The per-card file prefix `NN` (zero-padded) must equal the heading `N`.
 
 The **default commit subject is `N: <name>`** — the card heading's `<name>`;
@@ -350,7 +352,8 @@ The rows below stay in one fixed order regardless of which entry point runs them
 2. `plan-language-unrecognized` — `language:` (when present) is `"go"` or `"none"`; else flagged, naming the offending value and the two legal ones. Absent defaults to `"go"` and is never flagged.
 3. `plan-unapproved` — `approved: true`; else refuse to run.
    This is a consumer guard, and its "else refuse to run" is deliberately not enforced by every caller: both plan gate sites — `Plan-Write`'s and `Plan-Burler`'s own gates — run only the format-only set, `ValidateFormat`, strictly before the review segment's approve seam ever writes the flag, so neither one re-checks it. Every standalone plan consumer (`internal/websterengine`, `internal/webstercli`, `internal/batcher`) still enforces it through `Validate`, the full entry point — the plan writer is forbidden from setting the flag, and the review segment (`Plan-Bouncer`'s approved settle) is what writes it, so a pre-review gate demanding it would be demanding something only review itself can produce, and no row in the recipe re-checks it once written.
-4. `index-file-mismatch` — Card Index ↔ card files consistent (numbering, slugs, no gaps, no orphaned file on disk).
+4. `index-file-mismatch` — Card Index ↔ card files consistent (numbering from `first_card` upward, slugs, no gaps, no orphaned file on disk).
+   A `first_card:` that is not a positive integer is a finding of its own naming the value, and the numbering half then checks against `1`.
    This check covers the card count because there is no separate `(C cards)` segment to cross-check;
    the index itself IS the card list.
 5. `card-type-missing` — every card carries at least one recognized type label; zero is flagged.
@@ -388,6 +391,9 @@ The rows below stay in one fixed order regardless of which entry point runs them
     A `Rename` group's own `Pairs.Old` entries are checked instead of its `Refs`, and its `Pairs.New` side is never checked.
     `Custom` stays exempt on its own targets — and from the `prosa-symbol-target` rule above, restated in group terms: a `Custom` group's own targets are exempt from both rules — and from nothing else, since every other group and every card-generic check still binds it.
 28. `commit-subject-mismatch` — a present `Commit:` value that does not start with the card's own `N: ` prefix. Card-generic.
+
+One further check, `rework-first-card`, is outside both entry points and has no row above.
+Only the rework gate runs it: `planglyph.ValidateRework` runs it after the format-only set, and it reports a `first_card:` that differs from the card number Go told the rework session to start at.
 
 ## Worked example
 
