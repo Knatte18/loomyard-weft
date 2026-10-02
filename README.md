@@ -41,7 +41,7 @@ Port of millhouse orch-review/orch-wait as one Shed producer after Discussion-Wr
 
 ## **#005:** PATTERN for loomyard, plus repo conventions [C]
 [pattern-init](design-pattern-init.md)
-Depends on: #???: parent-asking (missing), #003, #004, #006
+Depends on: #007, #003, #004, #006
 
 CONSTRAINTS.md becomes _lyx/PATTERN.md so agents get the constraints directive; warp/weft scan beyond Go code; model specs in short form; ide workspace cleanups
 

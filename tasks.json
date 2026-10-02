@@ -49,7 +49,7 @@
     "slug": "pattern-init",
     "title": "PATTERN for loomyard, plus repo conventions",
     "depends_on": [
-      "parent-asking",
+      "parent-review",
       "verify-publish-hardening",
       "pair-lifecycle",
       "bolt-v2"
