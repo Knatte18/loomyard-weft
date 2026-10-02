@@ -1,0 +1,36 @@
+{
+  "runGuid": "9245815fed673e43cee944598482c6e4",
+  "planFingerprint": "3046562a7e639d7a5907e23ccb747a3d59fcb9d9f9e72a9707d3e32ca2a31983",
+  "planFileHashes": {
+    "00-overview.md": "4ebf52893883b02caf6c9f63a796735c7e9fcd67f8dc452e51eba991b5dd31b8",
+    "01-yaml-fill-missing.md": "e5275f157480c45e40e61227f726fc3e29524b297962aadd81bd7678e865b27c",
+    "02-config-load-fills.md": "7488f24be35519079856d204b3f3aea0f32805d81f2b7e3216f4aff83c1dddc2",
+    "03-reconcile-hints.md": "1e2a5a0275fcdc9a26233e75d552fa3d3f3b934d8ed951f6b67e7d1a7718a523",
+    "04-reed-unless-engine.md": "a8c11e97e7243d4beab4cdad5dc3e4142d1d311ab15286b0ae65221a0a03167f",
+    "05-reed-add-unless-flag.md": "446cd1c3eecc8b02926405db5b8033e1ccb012d2db08e3e9d6f7a7a1d16df97f",
+    "06-ide-spawn-clean.md": "b616fe8f2b92013e7d921a5538c668a59fd2ca22a4a4283ef3cc9a6e48f43f9e",
+    "07-gitignore-pkg-delete.md": "f7798852088c52015be18459e66c0e340ed67663271d6d5a2f3077025c2b4eb4",
+    "08-repo-housekeeping.md": "b9df1824547b7a92e3330bc4dc565fbe68710de9da73cdba22f138ded3e81f5b"
+  },
+  "currentBatch": 1,
+  "masterStrand": "6c3dedda52773d86f2e8e44e377fae20",
+  "masterSessionId": "796914ab-91bc-485a-8687-914ff1238eb9",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "yaml-fill-missing",
+      "cards": [
+        "01-yaml-fill-missing"
+      ],
+      "cardHashes": {
+        "01-yaml-fill-missing": "e5275f157480c45e40e61227f726fc3e29524b297962aadd81bd7678e865b27c"
+      },
+      "startSha": "812600b3addd2dc3fdac36a2711e6eceb7735be2",
+      "kind": "fork",
+      "spawnedAt": "2026-10-02T17:43:47Z",
+      "sessionId": "796914ab-91bc-485a-8687-914ff1238eb9",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
