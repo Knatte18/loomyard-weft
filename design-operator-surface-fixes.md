@@ -1,6 +1,6 @@
 # Deploy and VS Code leave every worktree runnable and clean
 
-`operator-surface-fixes` · Planned · bug · running · Discussion-Write
+`operator-surface-fixes` · Planned · bug · running · Discussion-Bouncer
 
 ## Goal
 
