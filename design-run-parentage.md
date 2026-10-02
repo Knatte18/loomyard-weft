@@ -26,4 +26,4 @@ A run knows its parent from where it was seeded, and batten carries a run throug
 - A run started with plain `lyx batten run <slug>` from the prime has the prime as parent, and its parent-review request reaches the orch session.
 - Pausing and resuming an inner run leaves its batten watcher alive.
 - A rejected discussion comes back to the parent for review until approved or the cap escalates.
-- CLAUDE.md's TEMPORARY items for #341 and #338 are deleted, and the issues are closed by the landing commit.
+- CLAUDE.md's TEMPORARY items for #341 and #338 are deleted (the issues are already closed into this task).

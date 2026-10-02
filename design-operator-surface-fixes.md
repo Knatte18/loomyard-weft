@@ -24,4 +24,4 @@ Deploying lyx and opening worktrees in VS Code leave every worktree runnable and
 - A deploy that adds a defaulted key leaves running pairs runnable with no reconcile.
 - Opening the prime in VS Code leaves the orch pane's size and session alone.
 - `lyx ide spawn` on a pair leaves `git status` clean.
-- CLAUDE.md's TEMPORARY items for #339, #340 and #334 are deleted, and the issues are closed by the landing commit.
+- CLAUDE.md's TEMPORARY items for #339, #340 and #334 are deleted (the issues are already closed into this task).
