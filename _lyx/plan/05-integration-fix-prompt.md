@@ -2,7 +2,7 @@
 
 **Create:**
 - `contracts/stencils/webster/webster-template-integration-fix.md`
-- `plan:internal/websterengine#RenderIntegrationFixPrompt` -> `func RenderIntegrationFixPrompt(regressions []IntegrationFailure, verify, cardHint, reportPath, worktreeRoot, planDir, stencilsDir, notePath string) ([]byte, error)`
+- `internal/websterengine#RenderIntegrationFixPrompt`
 
 **Edit:**
 - `contracts/stencils/stencils.go`

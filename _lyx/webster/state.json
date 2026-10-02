@@ -1,20 +1,20 @@
 {
   "runGuid": "982633d6e93b1e0ba6ca8261cb253727",
-  "planFingerprint": "dd75f81d4cd2b80c9d740088b8a711da7d80f71eaa3c15652239ef8950d48b8d",
+  "planFingerprint": "becdea4139464106d51d5a1321ae004730ceb52c640821eb7f8ceec8f77bb221",
   "planFileHashes": {
     "00-overview.md": "7157890cc1e19db8eef0b0104ddc01c011c8f9d6855253459f21ecfc80a26928",
     "01-dispatch-forthcoming-targets.md": "901dbb61922953b3ebfb084510063192988752e9ee98dfe12f5bf186c65cc015",
     "02-one-dispatch-scope.md": "ac3bea36915ab26f245f91c649b4fdd3ac080457c2dc27055944621e7bcbc788",
     "03-move-begun-card-hashes.md": "40a2828f6a9cfe07c663113d86b3a9e5919292ea3c9a04902da0bb1862134f23",
     "04-fork-fixes-own-breakage.md": "a23d08cceae1eb89906b456ce0edb0308d15dfa6a756d51de8a50e9a0582447f",
-    "05-integration-fix-prompt.md": "d5239dc8d6fc3141028a0022622bb37199c914989a40a4df3729b916d90cbf20",
+    "05-integration-fix-prompt.md": "f4d52f26becdb3bc6ddf4700652f071ca599563682c2bafff34ada89a0e47f91",
     "06-integration-fix-state.md": "f8c38112f60ebd654996f2f1633df31e01ae4c334fb5d360b0a50fdb9bd67c6d",
     "07-fix-commit-check.md": "c9165d8a241241fac39b746d99b8a32a7df48b52eccca30ddfc7cb1caaaaae3b",
     "08-integration-fix-record.md": "860bbf413085958088ea1bb5df253e37911229f21f7339502c5265f9467b2edf",
-    "09-integration-fix-attempt.md": "c604e858fc57176e8dc112f56e6ebab6eaad9edd080c03f9df2e397c62ad8f70",
+    "09-integration-fix-attempt.md": "47e95b57d52a9746d6a556f8f976870214c3fb99ee48525fbb5ea33071e59a60",
     "10-drop-temporary-workarounds.md": "8e3fbe12d992fddb9a9390d762aa5d85491dfb85f82f4d4ee0f78cbb3f61f3c5"
   },
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "70df4911a1e4fd781b0f537a24167446",
   "masterSessionId": "e0907656-a36c-4e5a-a63e-5409a403f3ab",
   "assertedModel": "sonnet",
@@ -135,14 +135,26 @@
       "kind": "fork",
       "spawnedAt": "2026-10-02T17:53:47Z",
       "sessionId": "e0907656-a36c-4e5a-a63e-5409a403f3ab",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-integration-fix-prompt",
+        "status": "done",
+        "head_sha": "0131f71f9e3624d4967bd7b55de5dbf80442fcb2"
+      },
+      "cardShas": [
+        "0131f71f9e3624d4967bd7b55de5dbf80442fcb2"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-recovery/e0907656-a36c-4e5a-a63e-5409a403f3ab/subagents/agent-a86708e7d71fc9515.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-recovery/e0907656-a36c-4e5a-a63e-5409a403f3ab/subagents/agent-a1d5b13748bafbeae.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-recovery/e0907656-a36c-4e5a-a63e-5409a403f3ab/subagents/agent-a7c8943027a313790.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-recovery/e0907656-a36c-4e5a-a63e-5409a403f3ab/subagents/agent-a384363880ae92653.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-recovery/e0907656-a36c-4e5a-a63e-5409a403f3ab/subagents/agent-ad649287aeffce552.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-recovery/e0907656-a36c-4e5a-a63e-5409a403f3ab/subagents/agent-ad649287aeffce552.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-recovery/e0907656-a36c-4e5a-a63e-5409a403f3ab/subagents/agent-a86708e7d71fc9515.jsonl"
   ]
 }

@@ -13,7 +13,7 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/websterengine#RenderIntegrationFixPrompt`
+- `internal/websterengine#RenderIntegrationFixPrompt`
 - `plan:internal/websterengine#IntegrationFixState`
 - `plan:internal/websterengine#checkFixCommits`
 - `plan:internal/websterengine#IntegrationFixRecord`
