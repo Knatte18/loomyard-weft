@@ -20,7 +20,7 @@ Merriam's strand is named for what it is.
 - Merriam's strand gets a shuttle gate (`shuttleengine.GateOutcome`, as Discussion-Write and Burler use) that runs the plan's `## verify:` when Merriam reports done.
   A failing gate injects its findings into Merriam's session; Merriam forks a fixer with the full plan context, and the gate re-runs, up to an attempt cap Discussion sets.
 - The gate is the only run of the suite: Merriam's integration fork and Go's separate post-exit verify go.
-- This replaces `webster-recovery`'s D5/D6 recovery session; Discussion decides whether its bisect survives as a hint in the gate's findings.
+- This replaces `webster-recovery`'s D5/D6 recovery session; Discussion finds why the bisect named the wrong card and decides whether it survives as a hint in the gate's findings.
 - While the gate runs, `activity.wait` names it.
 - Merriam spawns each fork in the background, ends its turn, and acts on the fork's completion notification; the stencil's polling and its "started non-interactively" framing go.
   Discussion confirms Merriam's strand is waited on through the shuttle loop that reads `EventWaiting`.
@@ -37,5 +37,6 @@ Merriam's strand is named for what it is.
 ## Depends on
 
 `webster-recovery` (both edit `internal/websterengine` and Merriam's stencil); start after it lands.
+
 
 
