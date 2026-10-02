@@ -5,7 +5,7 @@
 - `internal/websterengine/archive_test.go`
 
 **Create:**
-- `plan:internal/websterengine#ArchiveRunRecord` -> `func ArchiveRunRecord(geom Geometry, dest string) error`
+- `internal/websterengine#ArchiveRunRecord`
 
 **Intent:**
 Add the primitive D8 names: move webster's durable run record into a directory the caller tells it, so the next `lyx webster run` finds no state and starts a fresh run over the live plan only.

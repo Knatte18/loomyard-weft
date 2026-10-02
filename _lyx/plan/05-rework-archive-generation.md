@@ -28,7 +28,7 @@
 
 **Uses:**
 - `internal/planparser#ReviewExempt`
-- `plan:internal/websterengine#ArchiveRunRecord`
+- `internal/websterengine#ArchiveRunRecord`
 
 **Intent:**
 Make a PR-Rework round start a new plan generation instead of appending cards (D1, D2, D4, D8, D14), retiring the append-only machinery.

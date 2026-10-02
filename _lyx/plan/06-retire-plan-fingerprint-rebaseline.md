@@ -9,7 +9,7 @@
 - `internal/websterengine/runlevel_test.go`
 
 **Uses:**
-- `plan:internal/websterengine#ArchiveRunRecord`
+- `internal/websterengine#ArchiveRunRecord`
 
 **Intent:**
 Remove `RebaselinePlanFingerprint`, whose only production caller was PR-Rework before card 5 (D8), and replace the resume-over-an-extended-plan test with the fresh-run behaviour a rework generation now gets.
