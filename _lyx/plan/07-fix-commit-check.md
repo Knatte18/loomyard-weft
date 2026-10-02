@@ -3,7 +3,7 @@
 **Create:**
 - `internal/websterengine/integrationfix.go`
 - `internal/websterengine/integrationfix_test.go`
-- `plan:internal/websterengine#checkFixCommits` -> `func checkFixCommits(worktree, preFixHead, reportHead, planDir string, parentBranch ParentBranchFunc) (warning string, err error)`
+- `internal/websterengine#checkFixCommits`
 
 **Edit:**
 - `internal/websterengine/gitwrap.go`
