@@ -67,24 +67,39 @@ Once such a strand is live, the gate prompts as today.
 The hold is bounded by the existing `parent_review_wait_min`; past it, the round expires and passes with the existing Warn.
 A legacy-name reviewer (Decision 3's fallback) has no known worktree and is treated as live.
 The liveness check reaches `parentreview` through a told seam on `GateConfig`.
+A failed liveness read counts as not live: the gate holds and logs a Warn naming the error, never returns it as a gate error.
 
-Rationale: the operator deferred `creel`, so no store-and-forward mailbox; but the gate's three prompts at one-minute throttle would otherwise burn out during an orch relaunch and leave the request to time out unreviewed, and holding the prompt until the orch appears costs one liveness read per evaluation.
+Bound: the hold delays the delivery prompt, never skips the review short of that wait bound; a reviewer that never becomes live, as for a nested pair (Decision 3 resolves its reviewer to an orch name in a pair, where `lyx orch` never runs), always ends in that timed pass.
+
+Rationale: the gate's three prompts at one-minute throttle would otherwise burn out during an orch relaunch and leave the request to time out unreviewed, and holding the prompt until the orch appears costs one liveness read per evaluation.
 
 ### 5. Parent-review loops, with a durable reject cap that escalates
 
 Decision: after a consumed reject, the writer's next arrival that passes the `discussion` gate opens a new round (`round-<N+1>`) with a fresh request, brief and delivery prompt; the parent reviews every rewrite.
-The cap is 3 rejected rounds, set by the recipe entry's `attempts: 3`; the entry stops being `pass_on_cap`.
-The gate counts rejected rounds from the round store on disk, so an attach, a driver restart or a resumed run never resets the count.
-The third reject fails the entry: Discussion-Write ends gate-failed Stuck, its discussion is committed as today, and the run halts `blocked` with a reason naming the slug, the round count, the latest review file and the way out.
-The way out is `lyx loom review approve <slug>`, which on a run halted at the cap records approval of the latest round in place of its reject; the next `lyx loom start` then passes the entry.
-Without that approval, a resume reaches the same failed gate and halts again.
-A pending entry no longer needs `pass_on_cap`: the shuttle engine accepts `Pending` from this entry, and its `Final` closure keeps reporting the latest round's state at a deadline or liveness finalize.
+The entry stops being `pass_on_cap`; its `attempts: 3` is told to the gate as the cap of 3 rejected rounds.
+The round store decides the cap: the gate counts rounds whose verdict is a reject, so an attach, a driver restart or a resumed run never resets the count.
+A reject below the cap is an ordinary failure, which the engine re-prompts with the review path.
+The reject that brings the count to the cap returns a new terminal failure on `GateResult`, which the engine finalizes as failed without a re-prompt whatever its in-memory count.
+The in-memory count never exceeds the store count, so the engine's own budget never fails the entry first.
+At the cap, Discussion-Write ends gate-failed Stuck, its discussion is committed as today, and the run halts `blocked` with a reason naming the slug, the round count, the latest review file and the way out.
+
+Discussion-Write's fresh-spawn preparation keeps the latest round when its verdict is a reject or a superseding approve, and otherwise opens the next round as today.
+The gate reads the latest round before opening a request: a superseding approve passes, the cap's reject fails at once without a new request, an unconsumed reject below the cap is consumed and re-prompts with its review, and a consumed one opens the next round.
+
+The way out is `lyx loom review approve <slug>`, which on a run halted at the cap replaces the cap's reject with an approve marked superseding, keeping its review file; the next `lyx loom start` re-spawns the writer, whose first arrival passes the entry.
+Without that approval, a resume's first arrival fails the entry at once and the run halts again.
+
+The engine's refusal of `Pending` and `Final` from a must-pass entry is lifted only for an entry whose new `GateEntry` field allows it; only the parent-review wiring sets the field, never an entry name or a recipe key.
 
 Bound: the cap turns `lyx loom review reject`, which checks no caller identity, from an advisory verb into one that can halt a run, but only after three rejected rounds, and only into `blocked`, which the parent or operator lifts with one approve.
-Approve's new supersede path reaches only the latest round of a run halted at the cap; it cannot rewrite an earlier round or an open round's pending state.
-`lyx loom review`'s help text states both.
+Approve's supersede path applies only to a run halted at the cap: its status is `blocked`, the store holds cap rejected rounds, and the latest round's verdict is the cap's reject.
+Otherwise approve refuses to supersede, and it never rewrites an earlier round or an open round's pending state.
+Approve, like reject, checks no caller identity, so that halted state is the only gate on the supersede path.
+The lifted engine guard lets nothing through: the entry may hold the run and set `Final`, but passes only on an approve, an expired request (at its wait bound or at a finalize, as today), no reviewer or no open request.
+`Final` fails on an unconsumed reject and counts it toward the cap as the gate does, so a lost session or a deadline after a reject never lets the rejected discussion through.
+`lyx loom review`'s help text states the reject and approve bounds.
 
-Rationale: three matches the `discussion` gate's own budget and keeps the parent's attention bounded; escalating at the cap is the board's fix direction, and an approval override is the parent's own verdict, so no new verb is needed.
+Rationale: three rounds give the writer two rewrites to converge on the parent's findings while keeping the parent's attention bounded; escalating at the cap is the board's fix direction, and an approval override is the parent's own verdict, so no new verb is needed.
 
 ### 6. Batten waits through a halted child
 
@@ -107,8 +122,7 @@ Decision: batten sends no message of its own on a halt.
 The child's llm driver already messages `LYX_PARENT` with the run-id and report path at every stop other than done, which covers `paused`, `blocked` and `failed`, and with Decisions 1 and 3 that variable is set whoever ran `lyx batten run`.
 Batten's tell is its Warn and stuck reason, which `lyx batten status` shows.
 
-Rationale: batten is a Go process with no SendMessage, and the only Go route into the orch session is typing into its pane, which the orch watcher owns under its idle-probe rule; a second typer could collide with a cycle's `/clear`.
-The driver's message already carries what the parent needs to act.
+Rationale: batten is a Go process with no SendMessage, and the driver's message already carries what the parent needs to act.
 
 ## Constraints
 
@@ -117,20 +131,21 @@ The driver's message already carries what the parent needs to act.
 - `internal/fabricengine` stays the sole reader and writer of the origin record.
 - `parentreview` and `battenshed` stay told-geometry: the liveness check and every path arrive through their configs.
 - The Fabric Vocabulary Invariant holds: `battenshed` text says "the task worktree" and "the pair", never a fabric side.
-- Every agent stays an interactive tmux session driven through reed; no Go process sends into a Claude session except the orch watcher as today.
+- Every agent stays an interactive tmux session driven through reed; no Go process sends into the orch session except the orch watcher, and batten sends into no session.
 - Docs land in the same commit (see Scope); `manifest/roadmap.md` is untouched.
 
 ## Auto-mode assumptions
 
 - The open question "queue until an orch appears, or log only" was settled without the operator as Decision 4: log only, with the parent-review gate holding its prompt within its existing wait bound.
 - The reject cap of 3 was picked without the operator.
+- `Final` failing on an unconsumed reject (Decision 5) replaces today's Warn-and-pass, picked without the operator.
 - Including `failed` in batten's waits goes one state past the board's "paused and blocked".
 - Decision 7 departs from the board's "tells the parent once" wording: the child's driver's existing stop message is the tell, and batten adds none.
 - The parent-review timeout still passes with a Warn, as today.
 
 ## Open risks
 
-- A nested pair (created from another pair) resolves to an orch name in that pair, where `lyx orch` never runs, so its upward messages go nowhere and its parent-review holds until the wait bound passes it; the same as a plain-shell run today, but now by design.
+- A nested pair (created from another pair) resolves to an orch name in that pair, where `lyx orch` never runs, so its upward messages go nowhere; the same as a plain-shell run today, but now by design.
 - A child with `child_driver: go` has no driver message, so its halts reach the parent only through batten's status.
 - `pair-lifecycle` still lists `batten-resume-sees-stale-blocked`; once this lands the hub should drop that item from the board task.
 - Legacy fallback (Decision 3) stays in code until no seed with a recorded parent remains in flight; it is small, but nothing removes it automatically.
@@ -141,8 +156,9 @@ The driver's message already carries what the parent needs to act.
 - A pair created by `lyx fabric add` from another pair records that pair as `parent_worktree`.
 - Neither `lyx batten run`'s arm, Seed-Child nor `lyx loom start` writes a seed `parent`; a pre-existing seed carrying one still decodes.
 - Resolver table: prime parent → `<shortname>:orch`; pair parent → `<shortname>:<slug>:orch`; no origin record → none; origin without `parent_worktree` and a legacy seed name → that name; both absent → none.
-- Parent-review gate: a reject followed by a passing rewrite opens round 2 and prompts delivery; an approve on round 2 passes; the third reject fails the entry and the run halts `blocked` with the reason above; the reject count survives a fresh gate built over the same store; `lyx loom review approve` on a run halted at the cap supersedes the latest reject and the next evaluation passes; a timeout still passes with a Warn.
-- Parent-review hold: with the reviewer not live, the gate stays pending, sends no prompt and spends no prompt count; once live, it prompts; a legacy-name reviewer is treated as live.
+- Parent-review gate: a reject followed by a passing rewrite opens round 2 and prompts delivery; an approve on round 2 passes; the third reject fails the entry and the run halts `blocked` with the reason above; the reject count survives a fresh gate built over the same store, and an attach between rejects does not move the cap; `lyx loom review approve` on a run halted at the cap supersedes the latest reject and the re-spawned writer's first arrival passes; a timeout still passes with a Warn.
+- Parent-review refusals: approve's supersede refuses on a run that is not `blocked` and on a latest round that is not the cap's reject; a resume without approval fails the entry at once, opening no request; a lost session or a deadline after an unconsumed reject fails the entry, and the re-spawned writer is re-prompted with that review.
+- Parent-review hold: with the reviewer not live, the gate stays pending, sends no prompt and spends no prompt count; once live, it prompts; a legacy-name reviewer is treated as live; a failing liveness read holds with a Warn rather than erroring.
 - Batten Run-Shed: a `paused`, `blocked` or `failed` child gives a budget-exempt Stuck naming the state and the resume command, not an error; a child going back to `running` and then `done` reaches teardown; one Warn per halt episode across many polls, and another after a resume and re-halt.
 - End to end: pausing and resuming an inner run leaves its batten watcher alive and the pair is torn down after done.
 - CLAUDE.md's TEMPORARY items for #341 and #338 are gone, and the Agent Name Invariant states the parentage rule.
@@ -151,6 +167,7 @@ The driver's message already carries what the parent needs to act.
 
 - Parent write sites today: `internal/battencli/arm.go` (env read), `internal/battencli/wire.go` (Seed-Child copy), `internal/loomcli/sharedbootstrap.go` (`loomSeedFor`'s caller); read sites: `internal/hubgeom` (`reedGeometry`) and `internal/loomcli/wiring.go` (`newParentReviewConfig`).
 - The origin record is `internal/fabricengine/origin.go`, written in `add.go` and in the bootstrap's legacy branch.
-- `shuttleengine`'s `evaluateGate` refuses `Pending` and `Final` from a non-`pass_on_cap` entry today; Decision 5 needs that relaxed for this entry, and `GateEntry.PassOnCap`'s doc notes that the in-memory count resets on attach, which is why the cap is counted from the store.
+- `shuttleengine`'s `evaluateGate` refuses `Pending` and `Final` from a non-`pass_on_cap` entry today; `handleGatedBoundary` finalizes a failing entry only once its in-memory count reaches `Attempts`, and `GateEntry.PassOnCap`'s doc notes that count resets on attach, which is why the cap's reject needs its own terminal result.
+- Discussion-Write's fresh-spawn preparation calling `Store.BeginRound` is in `internal/shedrecipe/entries_discussionwrite.go`.
 - Reed state is per worktree session; the liveness seam needs a reed engine built over the parent worktree's geometry.
 - `battenshed/innerrun.go`'s `callAwaiting` and `exemptWait` are the model for the new halted-wait arm.

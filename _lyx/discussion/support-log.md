@@ -48,6 +48,8 @@ The session ran autonomously, so every turn below is a question the writer put t
 - Log-only for parent-review too, with no hold: the gate's three one-minute-throttled prompts burn out during an orch relaunch, and the request then times out unreviewed.
 - Walk the worktree parent chain to the nearest orch: no current use creates nested pairs that need it.
 - Keep `pass_on_cap: true` and raise `attempts`: the cap would still let the last rewrite through and the in-memory count resets on attach.
+- Keep `Final`'s Warn-and-pass on an unconsumed reject: a lost session or a deadline after the cap's reject would let the rejected discussion through.
+- Let the recipe's in-memory `attempts` count decide the cap: it fails only on the fourth reject and resets on attach.
 - Escalate by halting `awaiting` with `lyx loom approve`/`reject`: those verbs are PR-Gate's, and the review verbs live under `lyx loom review` to avoid that collision.
 - A cap of 1 or 2 rejects: too few for a writer to converge on a parent's findings; above 3 spends the parent's attention for little gain.
 - Batten typing a notice into the orch pane through reed under its own idle probe: two typers in one pane can collide with a cycle's `/clear`.
@@ -70,3 +72,4 @@ _No rounds yet._
 - Q8 (resolved, auto-pick): does batten message the parent itself? — no; the child's driver does.
 - Q9 (resolved, auto-pick): does the parent-review timeout change? — no, it still passes with a Warn.
 - Q10 (open, for the hub): drop `batten-resume-sees-stale-blocked` from `pair-lifecycle` once this lands.
+- Q11 (resolved, auto-pick): does an unconsumed reject still pass at a finalize? — no; `Final` fails it and it counts toward the cap.
