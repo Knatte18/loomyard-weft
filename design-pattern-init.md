@@ -78,3 +78,9 @@ This task moves the durable reference content into package docs, fixes inbound l
 Operator 2026-10-01: LYXHUB takes over all development of loomyard; everything in manifest/ goes into bolt.
 The operator also says much of it is outdated: triage each roadmap Someday item with the operator (keep as tier 3 or tier 2, merge, or strike) and carry its designs/<name>.md over as the bolt entry's design doc.
 Afterwards: delete manifest/, and update CLAUDE.md (Task completion section names manifest/roadmap.md and manifest/designs/), docs/overview.md's Documentation Lifecycle and any stencil or test that names manifest/.
+
+
+## From `run-parentage`'s PR-Gate (2026-10-02): retire `seed.Parent`
+
+`shedrun.Seed.Parent` is no longer written; parent comes from the pair's origin record, and the field is read only as a fallback for runs seeded before `aa67fd1d7`.
+Remove the field and the fallback once no such run remains.
