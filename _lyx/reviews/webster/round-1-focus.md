@@ -1,0 +1,18 @@
+---
+round: 1
+focus:
+  - "internal/shuttleengine/wait.go gated-Done branch and run.go evaluateGate: settle whether per-entry counting matches Card 1 — gateFails/gateSent increment only after a successful Send, passed entries' failure counts reset on a re-prompt arrival, exhaustion of a non-PassOnCap entry finalizes Passed false with that entry's findings path, and a PassOnCap entry past its cap is never re-run."
+  - "evaluateGate's Passed and FindingsPath computation: settle whether a failing PassOnCap entry with budget left, a not-reached non-PassOnCap entry after it, and a list of only off entries each yield the Passed/FindingsPath/Entries states Card 1 specifies, and whether gateFindingsPath (kept apart from FindingsPath) is what the re-prompt and Warn line use."
+  - "Attach path (attach.go reconstructAndWait plus the lazy sizing of gateFails/gateSent in evaluateGate): settle whether an attached gated run counts exactly as a started one and whether finalize after a deadline or lost session can change any count."
+  - "internal/burlerengine/engine.go Run: settle whether the GateSpec copy wraps every entry's closure without mutating the caller's slice, and whether the new engine_test.go test really recovers a second entry's wrapped closure and checks the repair instruction."
+  - "internal/shedrecipe/entries_gate.go and config.go configMapList: settle whether every rejection Card 2 lists (empty list, duplicate name, negative or missing attempts, missing name, unknown element key, unknown name) is reached and names the row's entry and element index, and whether an attempts-0 entry still resolves its closure and Env requirements."
+  - "Every gate-capable entry's configRejectUnknown list in internal/shedrecipe (burler, describe, discussionwrite, planwrite, prrework, simple/webster): settle whether gate and gate_attempts are dropped and gates accepted, and whether one leftover-key rejection test per gate-capable entry exists as Card 2 requires."
+  - "contracts/recipes/loom-recipe.yaml: settle whether every gated row (Discussion-Write, Discussion-Burler, Plan-Write, Plan-Burler, Describe, PR-Rework) carries a one-entry gates list with attempts 3 and no pass_on_cap, and no gate:/gate_attempts: key or comment remains."
+  - "Comment-convention compliance per CONSTRAINTS.md's Comment Line-Break Convention (semantic line breaks, one sentence per line, no column limit): settle whether new and changed Go comments in the diff (gate.go GateEntry/GateSpec/GateOutcome, run.go Run fields, wait.go file doc and evaluateGate doc, entries_gate.go, config.go configMapList, engine.go) break mid-sentence at a fixed column instead; untouched lines are out of scope and line width is never a finding."
+  - "Per-card mechanical check: settle whether Card 1's and Card 2's Create targets exist (shuttleengine#GateEntry, gate_list_test.go, entries_gate_test.go) and whether the plan's verify block (go build, go test, go test -tags integration, go vet -tags smoke) passes at HEAD and at commit 1 alone, since Card 1 claims the tree builds with the old recipe keys still read."
+---
+
+The diff spans two commits over merge base `9ae5f9405` (parent `main`): commit 1 changes the shuttle gate contract and migrates callers, and commit 2 replaces the recipe keys.
+The behavioural risk sits in the shuttle run loop's per-entry counting and the Passed/FindingsPath rule.
+The shedrecipe rejection matrix and leftover-key strictness are the contract surface.
+CONSTRAINTS.md's Comment Line-Break Convention governs the comment check, and several changed comments in gate.go, run.go and wait.go look fixed-column wrapped.
