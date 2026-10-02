@@ -28,6 +28,7 @@ Autonomous session: no operator answered; every pick below is the Discussion pro
 - #332b, reopen the offending batch and route it through `recover-batch`: that batch's `StartSHA`, delta, done-checks and suspect paths describe its own position, with later batches already landed on top.
 - #332b, route the regression to Webster-Review: a review row judges, it does not fix, and the run is already blocked by then.
 - #332b, a configurable attempt cap: no requirement for more than one attempt; one attempt is the bound.
+- #332b, reset the branch to the pre-fix head when Go rejects the strand's commits: unsafe when HEAD moved by something other than the strand, and it discards what the operator needs to inspect.
 
 ## Review rounds
 
@@ -44,3 +45,4 @@ _No rounds yet._
 - Q7 (resolved, auto-pick): attempt a fix when bisect did not localize a card? → yes, card hint omitted.
 - Q8 (resolved, auto-pick): model role and timeout for the fix strand? → the recovery role and `recovery_timeout_min`.
 - Q9 (resolved, auto-pick): repair stale `CardHashes` of runs begun before deploy? → no; listed under Open risks.
+- Q10 (resolved, review round 1): what happens to strand commits Go rejects? → they stay on the branch, named in summary.md and the escalation's way-forward; D5.

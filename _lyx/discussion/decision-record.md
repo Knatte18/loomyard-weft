@@ -35,6 +35,7 @@ This needs no git inspection and holds for any batcher and any begin order.
 
 Bound: this lets a `Uses:` of a target declared by a begun, non-terminal card pass dispatch validation unresolved.
 It grants nothing an unbegun pending card does not already grant today, it covers only Create targets and Rename New sides, and the producing card's done-checks at `record-batch`/`recover-batch` still fail its batch when the target is missing.
+A begun batch that never reaches a terminal record (abandoned, or the run ends or escalates first) never runs those done-checks, but it keeps the run from an outcome of done: the run-exit check that every batch carries a terminal done record refuses it.
 
 ### D2 — One scoping rule for all three validation sites (#329)
 
@@ -43,6 +44,9 @@ Decision: `begin-batch`, `run` entry and `lyx webster validate` scope dispatch v
 
 Rationale: the Seen case had `validate` report the plan valid while `begin-batch` refused it.
 One rule, computed in one place, makes the pre-flight verb answer what the run will answer.
+
+Bound: `validate` stops resolving begun, non-terminal cards, so drift in such a card's own targets is no longer reported by any of the three sites.
+That card was fully validated at its first `begin-batch`, its bytes stay pinned by its recorded `CardHashes` (checked by `record-batch`, recovery and `rebaseline`), and `record-batch`/`recover-batch` still run its done-checks and drift detection.
 
 ### D3 — Webster's own rewrites move begun card hashes in the same step (#330)
 
@@ -53,8 +57,9 @@ Rationale: the rewrite sites already funnel through one restamp that runs after 
 Exact-hash comparison stays simple and needs no canonicalization-aware diff.
 
 Bound: this moves a begun card's recorded hash without an operator naming it.
-It moves only a card whose recorded begun hash equals the plan-file hash the run had adopted before the rewrite, so a card a foreign edit touched keeps its old hash and stays refused.
-It runs only at the sanctioned-rewrite restamps, never from `rebaseline`'s acceptance of an operator edit.
+It runs only at the sanctioned-rewrite restamps, never from `rebaseline`'s acceptance of an operator edit, and only in a call whose foreign-edit check passed before the rewrite (`PlanEditError`, or run entry's fingerprint compare).
+That check is what refuses a foreign edit, including one followed by a sanctioned rewrite: the rewrite never runs while an unadopted edit is on disk, and `rebaseline` never adopts an edit to a begun card.
+The update also moves only a card whose recorded begun hash equals the `PlanFileHashes` entry for that card's file before the rewrite (both are SHA-256 of the file's bytes), so a card an earlier untracked rewrite already moved keeps its old hash and stays refused.
 
 ### D4 — A fork fixes what its own card broke (#332a)
 
@@ -68,12 +73,14 @@ What the fork must run stays `verify-publish-hardening`'s decision.
 
 ### D5 — One integration-fix strand before escalation (#332b)
 
-Decision: when the run-exit integration stage triages a regression, it spawns one cold strand at the recovery role before it escalates.
-Its Go-rendered prompt names the regressing test identities with their output tails, the plan's `## verify:` command, and the bisected card's file as a hint when bisect localized one.
+Decision: when the run-exit integration stage triages a regression, it spawns one cold strand at the recovery role, with `recovery_timeout_min` as its timeout, before it escalates.
+One attempt per run, with no new config key.
+Its Go-rendered prompt names the regressing test identities with their output tails, the plan's `## verify:` command, and the bisected card's file as a hint when bisect localized one (standalone mode has no bisector, so the hint is optional).
 The strand fixes at HEAD, commits, and writes a minimal report (`status`, `head_sha`).
 Go then re-runs the verify in-process and triages again.
 No regression left: the outcome is not demoted, and summary.md and the integration report record the fix commits and the identities they cleared.
-A regression left, a `FAILED` report, a timeout, or a check failure: the run escalates exactly as today (bisect, the reserved `-1` record, outcome stuck), with the fix attempt's result added to summary.md.
+A regression left, a `FAILED` report, a timeout, or a check failure: the run escalates as today, recording the pre-fix bisect result under the reserved `-1` record without bisecting again, with outcome stuck and the fix attempt's result added to summary.md.
+Go never resets the branch on a failed attempt: the strand's commits stay, and summary.md and the escalation's way-forward name the pre-fix head and those commits so the operator decides whether to keep them.
 
 Rationale: Master has already ended when the integration stage runs, so the fix cannot be an in-session fork; `run` already owns the reed/shuttle wiring and the recovery role, and `recover-batch` shows the cold-strand pattern.
 The regressions in the Seen case were small and fully described by their failure tails.
@@ -81,10 +88,11 @@ The regressions in the Seen case were small and fully described by their failure
 Bound: this adds a spawn and commits to the task branch after the last batch without a human.
 It is bounded by:
 
-- one attempt per run, recorded in state.json when spawned, so a resumed run never spends a second one; `run --fresh` starts a new run and resets it;
-- the recovery timeout from webster config;
-- Go accepting the strand's commits only when HEAD moved past the pre-fix head by the strand's own non-merge commits under the existing merge-only rule, and no commit touches the plan directory or anything under `_lyx`; otherwise the attempt counts as failed;
-- the post-fix triage deciding success, never the strand's own report;
+- the single attempt, recorded in state.json when spawned, so a resumed run never spends a second one; `run --fresh` starts a new run and resets it;
+- the `recovery_timeout_min` timeout;
+- Go accepting the strand's commits only when the commits from the pre-fix head to the report's `head_sha` are all non-merge, none touches the plan directory or anything under `_lyx`, and HEAD reconciles against `head_sha` under the existing merge-only rule; otherwise the attempt counts as failed;
+- the post-fix triage deciding success, never the strand's own report.
+  Triage sees only failures, so a test the strand deleted or skipped reads as cleared and a weakened one passes; the prompt forbids both, and summary.md names the fix commits and the identities they cleared for the review rows below to judge;
 - the later loom review rows seeing the fix commits like any other branch commit.
 
 The lease is not held across the strand's wait or the verify re-runs, matching the stage's existing phase split.
@@ -107,18 +115,11 @@ Rationale: a run that crashes during the fix must not leave a strand committing 
 
 ## Auto-mode assumptions
 
-- D1 over the board's "only a batch that landed commits counts as built": chosen because it needs no git attribution and holds for partial landings; the board's Done-when (Seen scenario passes) is met either way.
-- D3 updates hashes at the rewrite rather than making `rebaseline` canonicalization-aware.
-- D5 uses a cold strand at run exit, not an in-session fork or a Webster-Review route.
-- One fix attempt per run, no new config key.
-- The fix attempt runs for any regression verdict, with the card hint only when bisect localized one (standalone mode has no bisector).
-- The fix strand reuses the recovery role and `recovery_timeout_min`.
-- Runs begun before this lands keep their stale card hashes; no migration.
+No operator answered; every Decision (D1–D6) is the Discussion producer's own pick.
+D1 departs from the board's direction for #329; the board's Done-when (the Seen scenario passes) is met either way.
 
 ## Open risks
 
-- The fix strand could make a regressing test pass by deleting, skipping or weakening it.
-  The prompt forbids it, and the post-fix triage cannot see a test that no longer exists; the later review rows are the backstop.
 - D4's caused-by-the-card judgment is the fork's own; a fork can still misattribute a failure and move on, and D5 then catches it at the plan level.
 - A run already carrying stale `CardHashes` when this deploys still hits the #330 refusal, and its TEMPORARY workaround is deleted by this task.
 - The fix commits sit after the last card SHA, so a later bisect in the same run cannot attribute anything to them; with one attempt per run there is no later bisect.
