@@ -23,6 +23,8 @@ Waits on nothing open; can start now, in parallel.
 1. **Review convergence: the judge decides converged, continue or circling from fresh reviews** — [`review-finding-class`](design-review-finding-class.md) · feature
    - The Bouncer judge stops reviewing the artifacts and judges convergence from facts Go hands it (counts, severities, trend, reopened ledger keys), on its own sonnet[medium] key; at least one fresh round, circling escalates; plus finding classes
    - **Before:** `pattern-init`
+1. **Spawned agents' role names live in one place, and webster's strand is named webster** — [`agent-role-names`](design-agent-role-names.md) · chore
+   - Webster's orchestrating strand shows as <sn>:<slug>:master because its model-config key doubles as its strand role; give it the role webster and gather every spawned role name into one list
 
 ### Layer B
 
