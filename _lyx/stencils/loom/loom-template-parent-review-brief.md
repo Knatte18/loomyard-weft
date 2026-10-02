@@ -1,7 +1,7 @@
 <!-- This is the parent-review reviewer brief, handed to the one-shot fork the parent runs for a review notice, rendered by ParentReviewBrief (internal/loomengine/parentreview.go).
      Every marker is a top-level {{.X}} substitution: {{.slug}}, {{.decision_record_path}}, {{.support_log_path}} and {{.review_format_path}}.
      The review-output format is named by the path of the deployed burler-step-2-review stencil and never restated here.
-lyx-stencil: sha256=7fb10b5a922bba9e4cc9508e69a6543e5d63e2adcbf5e2f9afd3e5c900286e2e -->
+lyx-stencil: sha256=81f06e1c4ff8bfbecf0cd25076e057514ba9823ab9c0f7db114112032fb9f804 -->
 
 # Parent review — does the design for {{.slug}} fit the planned work?
 
@@ -16,8 +16,9 @@ The child has finished its design and is waiting on your verdict.
 
 ## What to judge
 
-Judge whether the design fits the planned work, without duplicating or contradicting any board entry.
-Do not re-review the design's internal quality; the Discussion-Review segment does that.
+This is a scope check only: judge whether the design does what this task's board entry asks, no more and no less, without duplicating or contradicting any other board entry.
+A finding is a scope deviation: a goal or Done-when point left out, work that belongs to another entry, or a direction the entry rules out.
+Do not judge design details or the design's internal quality; the Discussion-Review segment reviews those in detail right after you.
 
 ## Write the review
 
