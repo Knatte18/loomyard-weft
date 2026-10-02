@@ -72,3 +72,11 @@ Waits on nothing open; can start now, in parallel.
    - Parked: workers on 5m cache TTL, waiting sessions on 1h — operator deciding
 1. **Orch owns the run loop: detached batten start, a lyx watch, one land command, --continue, a committed role prompt** — [`orch-owns-the-loop`](design-orch-owns-the-loop.md) · feature
    - Replace the hub scratch scripts and remembered procedure with lyx itself, so an orch session runs the loop from its committed role prompt alone and resumes after a reboot
+1. **Parent-review gate: wait bound off the boundary, no mid-turn sends, live smoke** — [`parent-review-hardening`](design-parent-review-hardening.md) · feature
+   - Close the cases the first parent-review gate left open: expiry while the writer is mid-turn, sends into a running turn after restart, poll cost, and one live smoke run
+1. **lyx orch runs for days without hand repair** — [`orch-live-hardening`](design-orch-live-hardening.md) · feature
+   - Adopt keeps watchers, permission modes mean what they say, attach keeps the orch window size, large-session adopt is tested, status reads the current session
+1. **Hardener: an autonomous behavior-review campaign that replaces crucible** — [`hardener`](design-hardener.md) · feature
+   - Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges
+1. **See every run at once: an own tmux window for the hub runs** — [`runs-window`](design-runs-window.md) · feature
+   - Show all runs in the hub without squeezing the orch pane, likely via reed own-window anchoring; the content is runs-overview
