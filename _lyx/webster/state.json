@@ -6,7 +6,7 @@
     "01-shuttle-gate-list.md": "6dc854b3156842c6eb163cca5cf96bc0d5cca2c998b162c38853849193b8635c",
     "02-recipe-gates-key.md": "bb1e34507365f9f79ff99f41c969d308ba3c9ac83617c7b7c3224e8afaf1b355"
   },
-  "currentBatch": 0,
+  "currentBatch": 2,
   "masterStrand": "ae2516defb05945c61c299ab01b449cf",
   "masterSessionId": "1e212dc6-8161-4647-929b-2e2c61aad0be",
   "assertedModel": "sonnet",
@@ -36,6 +36,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-list/1e212dc6-8161-4647-929b-2e2c61aad0be/subagents/agent-afa9e63df05f25fb2.jsonl"
       ]
+    },
+    "2": {
+      "slug": "recipe-gates-key",
+      "cards": [
+        "02-recipe-gates-key"
+      ],
+      "cardHashes": {
+        "02-recipe-gates-key": "bb1e34507365f9f79ff99f41c969d308ba3c9ac83617c7b7c3224e8afaf1b355"
+      },
+      "startSha": "cdce74404b093c83606f14050c2fab0abdb2bc21",
+      "kind": "fork",
+      "spawnedAt": "2026-10-02T08:08:08Z",
+      "sessionId": "1e212dc6-8161-4647-929b-2e2c61aad0be",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
