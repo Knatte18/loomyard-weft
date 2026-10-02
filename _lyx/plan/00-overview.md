@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -29,18 +29,26 @@ Two review-stencil fixes ride along: the discussion and plan rubrics ask the att
 13 — webster-review-rework-range — review only the live generation's own commits in a rework generation
 14 — attack-surface-question — ask what a new edge or downgraded guard can skip or let through, in rubrics and writer stencils
 15 — self-contained-focus — a focus directive restates its sites and never sends the reviewer to prior-round files
+16 — status-commit-holds-archive — keep loom's status commit from landing half of an in-flight rework round
 
 ## Shared Decisions
 
 ### Decision: generation-round-rule
 
-The live generation's round is the highest committed rework round whose `record.json` `first_card` equals the live overview's `first_card`; with none, the live plan is generation 0.
+The live generation's round is the highest rework round whose `record.json` carries a `class` and whose `first_card` equals the live overview's `first_card` (absent means `1`); with none, the live plan is generation 0.
 Go (card 9's predicate) and the review agents (cards 12 and 13, through their rubrics) apply this one rule, and nothing else marks a generation.
+Card 9 reads the records at HEAD and is authoritative, since it alone gates a skip; the agents read the working tree, which agrees because Plan-Review and Webster-Review run only after PR-Rework's round commit, when the working tree and HEAD hold the same classed records.
 
 ### Decision: committed-round-carries-a-class
 
-A rework round counts as committed only when its `record.json` at HEAD carries the class.
-The archive step writes `record.json` without a class as its completion marker, and loom's status commit sweeps `_lyx/loom/`, so a classless record can reach HEAD before the session runs; counting it would skip the session.
+A rework round counts as committed only when its `record.json` at HEAD carries the `class` field (`exempt` or `required`).
+The archive step writes `record.json` without a class as its completion marker.
+Card 16 keeps loom's status commit from landing any of a round while its rejection is pending, but a classless record can still reach HEAD outside that window (an agent-written one, or one left after an operator removes the rejection record by hand), and counting it would skip the session.
+
+### Decision: one-commit-per-round
+
+PR-Rework's round commit is the only commit that records a round's archive: the moved-from deletions, the `prior-generation/` copies and the new plan land together.
+Card 5's commit pathspec covers every side, and card 16 holds the status commit back for as long as the rejection is pending, which runs past the class write to the round commit itself.
 
 ### Decision: archive-layout-owned-by-loomshed
 
@@ -52,5 +60,5 @@ Every path is built from the existing accessors (`planparser.PlanDir`, `loomengi
 go build ./...
 go vet ./...
 go test ./...
-go test -tags integration ./internal/planparser/... ./internal/websterengine/... ./internal/loomshed/... ./internal/shedadapters/... ./internal/shedrecipe/... ./internal/shedbuild/... ./internal/loomengine/... ./internal/loomcli/... ./internal/loomrecipe/... ./internal/landingshed/... ./contracts/...
-go vet -tags smoke ./internal/planparser/... ./internal/websterengine/... ./internal/loomshed/... ./internal/shedadapters/... ./internal/shedrecipe/... ./internal/shedbuild/... ./internal/loomengine/... ./internal/loomcli/... ./internal/loomrecipe/... ./internal/landingshed/... ./contracts/...
+go test -tags integration ./internal/planparser/... ./internal/planglyph/... ./internal/websterengine/... ./internal/loomshed/... ./internal/shedadapters/... ./internal/shedrecipe/... ./internal/shedbuild/... ./internal/loomengine/... ./internal/loomcli/... ./internal/loomrecipe/... ./internal/landingshed/... ./contracts/...
+go vet -tags smoke ./internal/planparser/... ./internal/planglyph/... ./internal/websterengine/... ./internal/loomshed/... ./internal/shedadapters/... ./internal/shedrecipe/... ./internal/shedbuild/... ./internal/loomengine/... ./internal/loomcli/... ./internal/loomrecipe/... ./internal/landingshed/... ./contracts/...

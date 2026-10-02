@@ -14,7 +14,7 @@
 **Intent:**
 Add the Go half of the Plan-Bouncer skip seam (D7): decide from committed state whether the live plan generation is exempt from Plan-Review.
 
-The live generation's round is the highest committed rework round whose `record.json` `first_card` equals the live overview's `first_card`; with none, the live plan is generation 0.
+The live generation's round is the highest rework round whose committed `record.json` carries a `class` and whose `first_card` equals the live overview's `first_card`; with none, the live plan is generation 0 (the overview's `generation-round-rule`, which this predicate is the authoritative reading of).
 `PlanReviewSkippable` parses the live plan as committed at HEAD (`ParseCommittedPlan`) and reports true only when the live generation's round exists, its committed `record.json` records the class `exempt`, and `ReviewExempt` over those live committed cards also says exempt.
 It returns an error when the committed plan or a committed record cannot be read or decoded, which the Bouncer turns into a real review.
 
