@@ -1,0 +1,4 @@
+status: OK
+head_sha: ed73a846ca5841a863fdcf05aad6e872d1ae0c22
+deviations:
+  - internal/battenshed/innerrun_test.go
