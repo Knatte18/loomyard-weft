@@ -1,0 +1,4 @@
+status: OK
+head_sha: 63e8b133743e060b28d183d862218441b8e4166f
+deviations:
+  - internal/boardengine/boardtest/bench_test.go
