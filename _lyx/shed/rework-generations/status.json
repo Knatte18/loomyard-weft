@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Bouncer",
+  "current_producer": "Batchifier",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Bouncer",
-    "last": "Plan-Burler → bounced to Plan-Bouncer",
+    "now": "Batchifier",
+    "last": "Plan-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -79,6 +79,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/rework-generations/_lyx/reviews/plan/round-2-review.md",
       "at": "2026-10-02T08:19:33Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/rework-generations/_lyx/reviews/plan/round-2-bouncer-ledger.md",
+      "at": "2026-10-02T08:21:01Z"
     }
   ],
   "product": {
