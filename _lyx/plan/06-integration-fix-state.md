@@ -1,7 +1,7 @@
 # Card 6 — integration-fix-state
 
 **Create:**
-- `plan:internal/websterengine#IntegrationFixState` -> `type IntegrationFixState struct`
+- `internal/websterengine#IntegrationFixState`
 
 **Edit:**
 - `internal/websterengine/state.go`

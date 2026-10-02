@@ -14,7 +14,7 @@
 
 **Uses:**
 - `internal/websterengine#RenderIntegrationFixPrompt`
-- `plan:internal/websterengine#IntegrationFixState`
+- `internal/websterengine#IntegrationFixState`
 - `plan:internal/websterengine#checkFixCommits`
 - `plan:internal/websterengine#IntegrationFixRecord`
 - `plan:internal/websterengine#AppendIntegrationFix`
