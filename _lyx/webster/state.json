@@ -14,7 +14,7 @@
     "09-board-skill.md": "ea153d553f81673bc477d64119c638e5fae60e0304cb65978df8f6112a63acf6",
     "10-overview-doc.md": "a4da823b82e1cdb9694d39e7fec9e491cfcadddd2bba01119abddb83d533ad29"
   },
-  "currentBatch": 0,
+  "currentBatch": 2,
   "masterStrand": "eff08e946b373b4854f0e5ab982da5e9",
   "masterSessionId": "ed75cea7-1e3f-4630-b97b-859a0429b6c1",
   "assertedModel": "sonnet",
@@ -47,6 +47,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-v2/ed75cea7-1e3f-4630-b97b-859a0429b6c1/subagents/agent-abedeeb567afedc09.jsonl"
       ]
+    },
+    "2": {
+      "slug": "store-ops",
+      "cards": [
+        "02-store-ops"
+      ],
+      "cardHashes": {
+        "02-store-ops": "1b4c8cfe2c399abb746b5f05be6b5199f130a1b3ab4b73241366b3552e38d656"
+      },
+      "startSha": "63e8b133743e060b28d183d862218441b8e4166f",
+      "kind": "fork",
+      "spawnedAt": "2026-10-02T08:21:25Z",
+      "sessionId": "ed75cea7-1e3f-4630-b97b-859a0429b6c1",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
