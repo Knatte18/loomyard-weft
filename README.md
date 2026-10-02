@@ -96,3 +96,8 @@ A design/scope/decision/consistency class on every review finding, a stop rule o
 [runs-overview](design-runs-overview.md)
 
 One line per run with state, producer and age, instead of polling each run
+
+## **#041:** Discussion advisor: a dedicated agent answers Discussion-Write's questions live
+[discussion-advisor](design-discussion-advisor.md)
+
+A second agent spawned beside Discussion-Write studies the task and code and answers its design questions as they arise, a real two-agent dialogue; after parent-review
