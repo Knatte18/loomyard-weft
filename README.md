@@ -20,7 +20,7 @@ Waits on nothing open; can start now, in parallel.
 1. **Review convergence: the judge decides converged, continue or circling from fresh reviews** — [`review-finding-class`](design-review-finding-class.md) · feature
    - The Bouncer judge stops reviewing the artifacts and judges convergence from facts Go hands it (counts, severities, trend, reopened ledger keys), on its own sonnet[medium] key; at least one fresh round, circling escalates; plus finding classes
    - **Before:** `pattern-init`
-1. **lyx orch: ready to host the real hub orchestrator** — [`orch-live-ready`](design-orch-live-ready.md) · feature · awaiting · PR-Gate
+1. **lyx orch: ready to host the real hub orchestrator** — [`orch-live-ready`](design-orch-live-ready.md) · feature · running · PR-Gate
    - orch is deployed but untested live and lacks what the hub needs: bypass permissions, the Agent tool, adoption of a running session, a soft threshold
    - **Before:** `verify-publish-hardening`
 
