@@ -8,8 +8,8 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/parentreview#Store.SupersedeCapReject`
-- `plan:internal/parentreview#ErrNotAtCap`
+- `internal/parentreview#Store.SupersedeCapReject`
+- `internal/parentreview#ErrNotAtCap`
 - `internal/shedrun#StatusFile`
 - `internal/shedrun#StatusLock`
 - `internal/state#ReadJSONStrict`

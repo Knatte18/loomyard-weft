@@ -5,7 +5,7 @@
 - `internal/parentreview/gate_test.go`
 
 **Uses:**
-- `plan:internal/parentreview#Store.RejectedRounds`
+- `internal/parentreview#Store.RejectedRounds`
 - `internal/parentreview#Store.BeginRound`
 - `internal/parentreview#Store.MarkConsumed`
 

@@ -12,7 +12,7 @@
 - `contracts/specs/shed-recipe-spec.md`
 
 **Uses:**
-- `plan:internal/parentreview#Store.PrepareRound`
+- `internal/parentreview#Store.PrepareRound`
 
 **Intent:**
 Wire the multi-round, capped parent review into Discussion-Write's row.

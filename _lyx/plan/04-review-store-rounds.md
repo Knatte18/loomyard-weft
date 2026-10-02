@@ -1,10 +1,10 @@
 # Card 4 — review-store-rounds
 
 **Create:**
-- `plan:internal/parentreview#Store.RejectedRounds` -> `func (s Store) RejectedRounds() (int, error)`
-- `plan:internal/parentreview#Store.PrepareRound` -> `func (s Store) PrepareRound() (Round, error)`
-- `plan:internal/parentreview#Store.SupersedeCapReject` -> `func (s Store) SupersedeCapReject() error`
-- `plan:internal/parentreview#ErrNotAtCap` -> `var ErrNotAtCap = errors.New("parentreview: latest round is not the cap's reject")`
+- `internal/parentreview#Store.RejectedRounds`
+- `internal/parentreview#Store.PrepareRound`
+- `internal/parentreview#Store.SupersedeCapReject`
+- `internal/parentreview#ErrNotAtCap`
 
 **Edit:**
 - `internal/parentreview/store.go`
