@@ -2,7 +2,7 @@
 
 ## Goal
 
-Deploying lyx and opening worktrees in VS Code leave every worktree runnable and clean, with no manual step after either.
+Deploying lyx and opening worktrees in VS Code leave every worktree runnable and clean, with no manual step after either beyond one `lyx ide spawn` of each worktree spawned before this task lands.
 Fixes #339 (a deploy's new config key makes loom refuse until reconcile), #340 (opening the prime in VS Code while `lyx orch` hosts the hub collapses the orch pane and stalls every cycle) and #334 (`lyx ide spawn` writes a lyx-managed block into a pair's tracked `.gitignore`).
 
 ## Scope
@@ -23,7 +23,7 @@ In:
 Out:
 
 - Seed-only config modules (`models`, `burler`): they never load through `configengine`'s key check.
-- The board repo's own `.gitignore` written by `internal/boardengine`: that repo is lyx-owned, not a user's code repo.
+- The `.gitignore` `internal/boardengine` writes in `_board`, the weft's `main` worktree: it is weft-side, not a warp worktree.
 - Changing reed's `window-size` policy or the orch idle probe.
 - Making `lyx config reconcile` obsolete: it still materializes absent files, prunes removed keys and writes new keys to disk.
 - Pruning the mill-era entries inside the renamed `.gitignore` section.
@@ -36,9 +36,11 @@ Decision: `configengine`'s shared `load` body stops refusing when a present conf
 It merges the missing leaf keys from the template into the file's document in memory, logs one `logger.Info` line naming the module, the file and the filled key-paths, and resolves the merged document through `envsource.Build` and `yamlengine.Resolve` exactly as before.
 It never writes the config file.
 Both `Load` and `LoadOrTemplate` get this, since they share the body.
-Bound: it fills only key-paths present in the module's embedded template, with the template's own value.
+Bound: it fills only key-paths present in the module's embedded template, with the template's own value, and only where the file lacks the key and every ancestor the file holds is a mapping.
 It still refuses on an absent `_lyx/`, an absent file under `Load`, a read error, unparseable YAML, and an env marker without a default (`${env:NAME}`) whose variable is unset.
-A key present with any value, empty included, keeps that value; a present list keeps its length (the existing "a template list is a default, not a minimum length" rule).
+It also still refuses, naming the key-path, on a shape mismatch: a scalar or null where the template holds a mapping, or a mapping where the template holds a scalar.
+A key present with any value, empty or null included, keeps that value; keys the template lacks stay as the file has them.
+A present list is carried whole and keeps its length (the existing "a template list is a default, not a minimum length" rule); nothing is filled inside its elements, and a template key missing inside an element of a present list still refuses, as today.
 Rationale: every template key carries a default, so a key a deploy adds needs no operator decision; refusing turned every deploy into a reconcile sweep across worktrees (#339).
 Fixing it in the shared loader covers every strict module (`fabric`, `board`, `loom`, `landing`) and the degrading ones, which hit the same check whenever their file is present.
 
@@ -47,6 +49,8 @@ Fixing it in the shared loader covers every strict module (`fabric`, `board`, `l
 Decision: `lyx reed add` gains `--unless-name <name>`.
 When the worktree's session holds a strand matching `<name>` (matched as role segment or full name, the same rule as `--name`) whose pane is alive, the add is a successful no-op: it creates no strand, changes no focus and applies no layout, and its JSON envelope reports the skip.
 A recorded strand whose pane is dead does not count, so the add proceeds.
+"Alive" is the set `--if-absent` already uses: a visible strand whose pane is present and not `pane_dead`; a hidden strand never counts.
+The check lives in the shared engine beside `--if-absent`'s classification, with no backend-specific code, so the tmux and psmux backends decide alike.
 Bound: the flag can only suppress an add; it never removes, resizes or refocuses an existing strand.
 Reed stays role-agnostic: the name is the caller's.
 Rationale: the 3-row collapse is reed's stacking rule, not the window size.
@@ -63,7 +67,8 @@ Rationale: the folder-open task's intent is to give the operator an agent in the
 
 Decision: `Spawn` writes the interactive `tasks.json` on every call, overwriting an untracked one, as `SpawnDriven` already does for the attach-only chain.
 `settings.json` keeps its write-only-when-absent rule.
-A `tasks.json` tracked in the repo is left alone with one `logger.Warn`, as in `SpawnDriven`.
+`Spawn` runs D5's `PathTracked` check before any write.
+When `tasks.json` is tracked in the repo, `Spawn` writes neither file and no exclude line, logs one `logger.Warn` and still launches, the prime's hub workspace file included, as in `SpawnDriven`.
 Bound: it overwrites only the untracked `.vscode/tasks.json` at the spawned worktree's anchor; operator edits to that file are lost on the next spawn, the same contract the hub workspace file already has.
 Rationale: an existing prime keeps its old chain forever under write-when-absent, so D3 would never reach it; the overview's documented "delete tasks.json and re-run spawn" upgrade is the manual step this task removes.
 
@@ -74,11 +79,11 @@ Decision: `Spawn` uses the same path `SpawnDriven` uses: `fabricengine.PathTrack
 `internal/gitignore` is deleted with its tests, since nothing else calls it.
 Rationale: a tracked `.gitignore` edit dirties the pair and rides into its commits (#334); `info/exclude` is untracked and already the mechanism for junctions and driven pairs.
 
-### D6 — New invariant: lyx never writes a `.gitignore` in a code worktree
+### D6 — New invariant: lyx never writes a `.gitignore` in a warp worktree
 
-Decision: `CONSTRAINTS.md` gains the rule that lyx's own code never writes a `.gitignore` in a warp or prime worktree; every ignore lyx needs there goes to `.git/info/exclude` through `fabricengine`.
-The board repo, which lyx owns, is exempt.
-It sits beside the Fabric Git Invariant's existing junction-exclusion bullet, which it generalizes.
+Decision: `CONSTRAINTS.md` gains the rule that lyx's own code never writes a `.gitignore` in a warp worktree, the prime included; every ignore lyx needs there goes to `.git/info/exclude` through `fabricengine`.
+Bound: the rule binds the warp side only; the one weft-side `.gitignore` writer is `boardengine`'s lock and manifest patterns in `_board`, the weft's `main` worktree, and the rule names it so no other writer claims the same footing.
+It sits beside the Fabric Git Invariant's existing junction-exclusion bullet and extends that bullet's rule from junctions to every warp-side writer.
 Rationale: #334 is the second instance of the rule the junction bullet states for junctions alone; stating it once for every writer stops the next one.
 
 ### D7 — Config Strictness Invariant records D1
@@ -117,13 +122,14 @@ Decision: the TEMPORARY items for #339, #340 and #334 are deleted from CLAUDE.md
 - No template key is meant as "the operator must set this": every template value, empty string included, is a usable default. Checked against every module template; none uses a bare `${env:NAME}` marker today.
 - `logger.Info` (durable trace) is the right level for a filled key; `lyx config reconcile` (dry run) remains the operator-facing report of pending keys. A Warn would repeat on every lyx call in every worktree until reconcile runs.
 - `window-size latest` is already pinned on every reed session (since August), so the board's "reed sizes to the latest client" half of #340 needs no code; the collapse comes from strand stacking (D2).
-- The prime is opened through `lyx ide spawn <prime>`, which is what regenerates `tasks.json` under D4.
+- Only `lyx ide spawn` regenerates `tasks.json` under D4; a later open of the prime's hub workspace from VS Code, recents included, runs the chain the last spawn wrote, so D3 reaches #340's opening path once a spawn has run after landing.
 - The orch strand's reed name resolves from `agentname.RoleOrch` through the same role-segment matching `--name` uses.
 - Mill-era entries in the repo `.gitignore` are kept, not pruned (D9).
 
 ## Open risks
 
-- A prime reopened from VS Code's recent list after a deploy, without a `lyx ide spawn`, runs whatever chain its `tasks.json` held at the last spawn; worktrees spawned before this task land need one more spawn to pick up D3.
+- A prime reopened from VS Code's recent list after a deploy, without a `lyx ide spawn`, runs whatever chain its `tasks.json` held at the last spawn; worktrees spawned before this task lands need one more spawn to pick up D3.
+  That covers the prime too: D10 removes #340's workaround, so until the prime's first post-landing spawn its workspace still collapses the orch pane.
 - Any other strand added to the prime while orch runs (an operator's own `reed add`) still collapses the orch pane and stalls its idle probe; this task removes only the folder-open trigger.
 - A config whose author deliberately removed a key to mean "unset" now gets the template default instead of a refusal; no module documents removal as meaningful today.
 
@@ -133,12 +139,17 @@ Decision: the TEMPORARY items for #339, #340 and #334 are deleted from CLAUDE.md
 - Nested keys: a `reed.yaml` missing `selvage.height_rows` loads with the default; a missing whole mapping (`status_line`) loads with its defaults.
 - A present list keeps its length (an emptied `require_pr_to_base: []` stays empty); a present empty string keeps its empty value.
 - An empty but present config file loads as the template.
+- A key the template lacks survives the fill: a file holding an extra key alongside a missing one loads with both the extra key and the filled default.
 - Still refused: absent file under `Load`, absent `_lyx/` under `Load`, unparseable YAML, a filled key whose template value is `${env:NAME}` with `NAME` unset (unit test with a fixture template).
+- Still refused, naming the key-path (unit tests with fixture templates): a null `status_line:` where the template holds a mapping; a mapping where the template holds a scalar; a key missing inside an element of a present list of mappings.
 - `lyx reed add --unless-name orch --if-absent --name claude --cmd <x>` in a worktree with a live `orch` strand: exit 0, envelope reports the skip, strand list unchanged, orch pane height and focused pane unchanged (real-tmux integration test).
 - Same command with no `orch` strand, or with an `orch` strand whose pane is dead: the `claude` strand is added as today.
+- The skip decision, unit-tested on fixture strand tables on every platform: a live visible `orch` skips; a dead, hidden or absent `orch` does not.
 - `vscode.WriteConfig` interactive output: the `reed add claude` row carries `--unless-name orch`; no `.gitignore` is created or modified in either chain.
 - `ideengine.Spawn` on a task pair in a git repo with a tracked `.gitignore`: `git status --porcelain` is empty afterwards; `.vscode/` is ignored through `info/exclude`, or nothing is written when the repo already ignores it.
-- `Spawn` overwrites an untracked `tasks.json` holding an old chain; leaves a tracked `tasks.json` untouched; leaves an existing `settings.json` untouched.
+- `Spawn` overwrites an untracked `tasks.json` holding an old chain; leaves an existing `settings.json` untouched.
+- `Spawn` with a tracked `tasks.json` leaves it untouched, writes no `settings.json` even when absent, writes no `info/exclude` line, and still launches.
+- No template comment, Go string or doc under `internal/`, `docs/` or `contracts/` says an existing hub must run `lyx config reconcile` to adopt a new key; `Load`'s absent-file error still names `lyx config reconcile`.
 - `internal/gitignore` no longer exists and `go build ./...` and `go vet ./...` pass.
 - The repo `.gitignore` has no `mill-managed` marker; `git status` in this worktree is unchanged by the edit.
 - CLAUDE.md has no TEMPORARY item for #339, #340 or #334; `CONSTRAINTS.md` carries D6 and D7.
@@ -146,7 +157,7 @@ Decision: the TEMPORARY items for #339, #340 and #334 are deleted from CLAUDE.md
 
 ## Notes for the plan writer
 
-- Loader: `internal/configengine/config.go`'s `load`; `yamlengine.Reconcile` already merges template and existing (returning `added`), which may serve the in-memory fill; check that its list handling keeps a present list whole before reusing it.
+- Loader: `internal/configengine/config.go`'s `load`; `yamlengine.Reconcile` merges template and existing (returning `added`), but two of its behaviours break D1 if reused as-is: its merged document is built on the template, so it drops every file key the template lacks and replaces a mismatched shape with the template's; and its `added` lists keys inside list elements that it carries whole and never fills.
 - Templates with reconcile-adoption wording: `internal/reedengine/template_posix.yaml` and `template_windows.yaml` (`debug_log`, `collapsed_rows`); search for "config reconcile" across `internal/**/template*.yaml`, `docs/` and `contracts/` for more.
 - Reed add flags live in `internal/reedcli/add.go`; `--if-absent`'s strand classification is in `internal/reedengine/strand.go` (`classifyIfAbsent`), a natural neighbour for the liveness check.
 - `ideengine.SpawnDriven` already holds the tracked-check + `ExcludeAnchoredDir` sequence D5 reuses.

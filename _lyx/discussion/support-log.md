@@ -27,11 +27,11 @@ Autonomous run: no operator answered; every answer below is an auto-pick grounde
 8. #334 mechanism.
    `SpawnDriven` already does tracked-check plus `ExcludeAnchoredDir`; `Spawn` adopts the same path and `WriteConfig` drops its `gitignore.Ensure`.
    `internal/gitignore` then has no caller and is deleted.
-   The board repo's own `.gitignore` writer is lyx-owned territory and stays.
+   `boardengine`'s `.gitignore` writer works in `_board`, the weft's `main` worktree, not a warp worktree, and stays.
 9. Repo `.gitignore` mill block.
    Picked renaming the markers to one plain comment and keeping the entries.
 10. Invariants.
-    The junction-only exclusion bullet generalizes to "lyx never writes a `.gitignore` in a code worktree"; the Config Strictness Invariant records the fill.
+    The junction-only exclusion bullet extends to "lyx never writes a `.gitignore` in a warp worktree"; the Config Strictness Invariant records the fill.
 
 ## Rejected alternatives
 
@@ -73,7 +73,7 @@ _No rounds yet._
 - Q7 (resolved, auto-pick): does a dead orch strand suppress the add? → no, only a live pane does (D2).
 - Q8 (resolved, auto-pick): how existing worktrees get the new chain? → rewrite untracked `tasks.json` on every spawn (D4).
 - Q9 (resolved, auto-pick): #334 mechanism? → reuse `SpawnDriven`'s `ExcludeAnchoredDir` path; delete `internal/gitignore` (D5).
-- Q10 (resolved, auto-pick): new invariant? → lyx never writes a `.gitignore` in a code worktree, board repo exempt (D6).
+- Q10 (resolved, auto-pick): new invariant? → lyx never writes a `.gitignore` in a warp worktree; `boardengine`'s writer in `_board` is named as the one weft-side writer (D6).
 - Q11 (resolved, auto-pick): mill block entries? → keep entries, rename markers (D9).
 - Q12 (open, residual): a prime reopened from VS Code's recents without a spawn keeps its old chain until the next spawn; recorded under Open risks.
 - Environment: no tool failed during this session.
