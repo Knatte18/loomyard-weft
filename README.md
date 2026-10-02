@@ -2,10 +2,23 @@
 
 # Layer A
 
-## **#000:** Agent names: <repo>:<slug>:<role> for every process, with parentage [A]
-[agent-naming](design-agent-naming.md)
+## **#003:** Verify localizes failures and Publish never runs on a dirty tree [A]
+[verify-publish-hardening](design-verify-publish-hardening.md)
+Depends on: #002, #000
 
-Every process lyx spawns gets one hierarchical name (ly:landing:driver, ly:orch in the prime) as strand, Claude session and pane name, and records its parent; each repo gets a short code at fabric clone
+Cards verify with the integration tests and repo scans they touch, Publish never verifies or pushes a dirty tree, verify is never skipped after a crash, and every agent prompt goes through a file
+
+## **#004:** Clean pair lifecycle: no leftover sessions, branches, sockets or races [A]
+[pair-lifecycle](design-pair-lifecycle.md)
+Depends on: #000
+
+fabric remove ends the pair's tmux session, finishes half-removed pairs and deletes warp branches on origin; loom start never races a dying driver; tests stop leaking tmux sockets
+
+## **#007:** Parent review as a step in Discussion-Write's gate [A]
+[parent-review](design-parent-review.md)
+Depends on: #000, #008
+
+Port of millhouse orch-review/orch-wait into Discussion-Write's producer gate: after the mechanical validator, a reviewer (the parent for now) reviews once through a lyx verb pair and the live writer addresses it; a new pass_on_cap gate flag lets the run through afterwards
 
 ## **#009:** Retire manifest/: Someday into bolt, durable content into package docs [A]
 [manifest-retire](design-manifest-retire.md)
@@ -21,33 +34,18 @@ The Bouncer judge stops reviewing the artifacts and judges convergence from fact
 
 # Layer B
 
-## **#003:** Verify localizes failures and Publish never runs on a dirty tree [B]
-[verify-publish-hardening](design-verify-publish-hardening.md)
-Depends on: #002, #000
-
-Cards verify with the integration tests and repo scans they touch, Publish never verifies or pushes a dirty tree, verify is never skipped after a crash, and every agent prompt goes through a file
-
-## **#004:** Clean pair lifecycle: no leftover sessions, branches, sockets or races [B]
-[pair-lifecycle](design-pair-lifecycle.md)
-Depends on: #000
-
-fabric remove ends the pair's tmux session, finishes half-removed pairs and deletes warp branches on origin; loom start never races a dying driver; tests stop leaking tmux sockets
-
-## **#007:** Parent review as a step in Discussion-Write's gate [B]
-[parent-review](design-parent-review.md)
-Depends on: #000, #008
-
-Port of millhouse orch-review/orch-wait into Discussion-Write's producer gate: after the mechanical validator, a reviewer (the parent for now) reviews once through a lyx verb pair and the live writer addresses it; a new pass_on_cap gate flag lets the run through afterwards
-
-# Layer C
-
-## **#005:** PATTERN for loomyard, plus repo conventions [C]
+## **#005:** PATTERN for loomyard, plus repo conventions [B]
 [pattern-init](design-pattern-init.md)
 Depends on: #007, #003, #004, #009, #010
 
 CONSTRAINTS.md becomes _lyx/PATTERN.md so agents get the constraints directive; warp/weft scan beyond Go code; model specs in short form; ide workspace cleanups
 
 # Done
+
+## **#000:** Agent names: <repo>:<slug>:<role> for every process, with parentage
+[agent-naming](design-agent-naming.md) [done]
+
+Every process lyx spawns gets one hierarchical name (ly:landing:driver, ly:orch in the prime) as strand, Claude session and pane name, and records its parent; each repo gets a short code at fabric clone
 
 ## **#002:** PR-Rework as its own plan generation, design-reviewed
 [rework-generations](design-rework-generations.md) [done]
