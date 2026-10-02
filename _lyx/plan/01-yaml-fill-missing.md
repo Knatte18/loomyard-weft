@@ -26,6 +26,6 @@ The walk runs over the two node trees in parallel, starting at the document root
 - When nothing is missing, it returns `existing` byte-for-byte, with an empty key list, so a complete file resolves exactly as before.
 - Unparseable YAML on either side returns a parse error, as `MissingKeys` does.
 
-`fill_test.go` covers each rule above with inline fixture templates: a missing top-level key, a missing nested key, a missing whole mapping, a present empty string and a present null kept, an emptied list kept empty, an extra file key surviving beside a filled one, file key order preserved with the fill appended, the empty and comments-only file, the no-op byte identity, each shape-mismatch refusal naming its key-path, and a missing key inside a present list's element left for `MissingKeys`.
+`fill_test.go` covers each rule above with inline fixture templates: a missing top-level key, a missing nested key, a missing whole mapping, a present empty string and a present null kept, an emptied list kept empty, an extra file key surviving beside a filled one, file key order preserved with the fill appended, the empty and comments-only file, the no-op byte identity, each shape-mismatch refusal naming its key-path, a parse error for an unparseable template and for an unparseable `existing`, and a missing key inside a present list's element left for `MissingKeys`.
 
 `docs/shared-libs/yamlengine.md` gains a `FillMissing` section beside `MissingKeys`, stating these rules and how they differ from `Reconcile`.

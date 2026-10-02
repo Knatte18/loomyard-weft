@@ -44,12 +44,13 @@ A tracked `tasks.json` is never touched.
 Tests:
 
 - `internal/vscode/config_test.go`: the interactive-chain assertions expect `--unless-name orch` in the `reed add claude` args; `TestWriteVSCodeConfigDoesNotClobber` keeps the settings half and asserts an existing `tasks.json` is overwritten with the current chain; `TestWriteVSCodeConfigRegistersInGitignore` becomes a test that the interactive chain creates no `.gitignore` and leaves an existing one byte-identical.
-- Delete `internal/ideengine/spawn_test.go`: its `TestSpawn` runs `Spawn` on bare temp directories without git, which the tracked check now refuses; its chain-stamping assertion moves into the new integration file.
+- Delete `internal/ideengine/spawn_test.go`: its `TestSpawn` runs `Spawn` on bare temp directories without git, which the tracked check now refuses; its chain-stamping assertion and its prime-resolution degrade case move into the new integration file.
 - New `spawn_clean_integration_test.go` (`//go:build integration`, serial because it swaps `CodeLauncher`, following `spawn_driven_hub_integration_test.go`'s fixtures):
   - `Spawn` on a task pair whose repo tracks a `.gitignore` leaves `git status --porcelain` empty, with `.vscode/` ignored through `info/exclude`, or no exclude line written when the repo already ignores `.vscode/`.
   - The generated `tasks.json` stamps the reed chain with absolute paths and `--unless-name orch`.
   - `Spawn` overwrites an untracked `tasks.json` holding an old chain and leaves an existing `settings.json` byte-identical.
-  - `Spawn` with a tracked `tasks.json` leaves it untouched, writes no `settings.json` even when absent, writes no `info/exclude` line, and still launches.
+  - `Spawn` with a tracked `tasks.json` leaves it untouched, writes no `settings.json` even when absent, writes no `info/exclude` line, and still launches, on a task pair and on the prime; on the prime it still writes the hub workspace file and launches that file.
+  - A `Location` whose worktree is not a git checkout, so `fabricengine.PrimeName` fails, spawning a real pair logs the `resolve prime name` warning and launches the pair's bare folder.
 
 Docs in this commit:
 
