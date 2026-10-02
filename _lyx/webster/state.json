@@ -1,8 +1,8 @@
 {
   "runGuid": "2171423aa430a2b69f58e8cb8f3ffc71",
-  "planFingerprint": "c900aeccb6d88f5679f8849d2834fcf288ea0d553b03f3024b48b9f4424ab95f",
+  "planFingerprint": "7601a0aaa36f3826e4da775525415b798857444dd69f6d94f3ca2f69c07f0245",
   "planFileHashes": {
-    "00-overview.md": "32cc554f6e88b540536bd5ec1dc47501cc04a2f0f25a460e7419e4be07b03996",
+    "00-overview.md": "556a98fd265c1494f219d1aec07fd470dd448d71836bb7641009da3fd92ad400",
     "01-agentname-package.md": "e266e601ffcacc77d637635f17a75c8b92fc603cb6c5279e24b3da608a202d7a",
     "02-fabric-code-record.md": "d6d710951b3b016adb40e0049e41ebaa926831c59bb57d5bda664ee13dddfbe4",
     "03-fabric-code-verb.md": "1de2edc5c1b67f78d7559e66ad69e040eca1f0adc19c5dfd770f404ed064eb4b",
@@ -18,11 +18,15 @@
     "13-claude-session-namer.md": "39dc08d68f0d1933939e4b4ff1b7f82c88e26847a724c6f753555d4e335900bd",
     "14-reed-list-verb.md": "2870fc26cf23053bfa614f2a38d8d8fcfe4189830a12032aa1bfddb6a005cda0",
     "15-driver-parent-notice.md": "8fd6f6a445de7edcf3982b0ff64caa2c6a2b78dd1ddf3c8a4dc2fa2ec5d35c82",
-    "16-naming-docs.md": "8804cd4c9eee15bf01ba839a0fe9e9871c46ec244dc900219120d85241386133"
+    "16-naming-docs.md": "8804cd4c9eee15bf01ba839a0fe9e9871c46ec244dc900219120d85241386133",
+    "17-agentname-shortname.md": "06dcc187f1dee9f1d976dd611c2ba67fc8a521e77c48da26a972967adfca83a8",
+    "18-fabric-shortname.md": "2e26e97e992306fba5a97b6c25d6f2fef3305c82a0ab32bab4ea19e61b42fa9a",
+    "19-reed-shortname.md": "1b5451f2377f6f60cbb48492b16f2acc317e798d29f52e7ff711e06dfc75159a",
+    "20-shortname-docs.md": "3ce88dab92eed96f754187996a469b890b0917e8f36617fe6b9ef06e3881152d"
   },
-  "currentBatch": 0,
-  "masterStrand": "19c89054a676adf998258859899b2c41",
-  "masterSessionId": "eabcab2d-4f79-45ad-bb3f-997095516bf9",
+  "currentBatch": 17,
+  "masterStrand": "4bbe8f54d14fcd92bb49604d3269d9e4",
+  "masterSessionId": "9c92e1e4-c331-489d-92fd-0297684cb10b",
   "assertedModel": "sonnet",
   "batches": {
     "-1": {
@@ -248,6 +252,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-agent-naming/5577a3e8-00d9-48db-8946-b3be117b6f8b/subagents/agent-a0d1cf12ed4e7238f.jsonl"
       ]
+    },
+    "17": {
+      "slug": "agentname-shortname",
+      "cards": [
+        "17-agentname-shortname"
+      ],
+      "cardHashes": {
+        "17-agentname-shortname": "06dcc187f1dee9f1d976dd611c2ba67fc8a521e77c48da26a972967adfca83a8"
+      },
+      "startSha": "c0f53d5b4db4d040f73b5981b01b83786141ada7",
+      "kind": "fork",
+      "spawnedAt": "2026-10-02T09:40:42Z",
+      "sessionId": "9c92e1e4-c331-489d-92fd-0297684cb10b",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "fabric-code-record",
