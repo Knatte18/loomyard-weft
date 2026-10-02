@@ -2,6 +2,8 @@
 
 `test-suite-change-amplification` · Planned · feature
 
+Depends on: [`verify-publish-hardening`](design-verify-publish-hardening.md), [`pair-lifecycle`](design-pair-lifecycle.md), [`review-finding-class`](design-review-finding-class.md)
+
 ## Goal
 
 A small production change costs edits in few test files, so an implementing agent reads less test context per change, and integration tests leave no tmux sockets behind.
