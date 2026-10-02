@@ -1,0 +1,44 @@
+{
+  "runGuid": "2171423aa430a2b69f58e8cb8f3ffc71",
+  "planFingerprint": "8b7b87da4bb318f3e20772ec064d61f5eeb0695df012655839a0efdae43acdab",
+  "planFileHashes": {
+    "00-overview.md": "32cc554f6e88b540536bd5ec1dc47501cc04a2f0f25a460e7419e4be07b03996",
+    "01-agentname-package.md": "e266e601ffcacc77d637635f17a75c8b92fc603cb6c5279e24b3da608a202d7a",
+    "02-fabric-code-record.md": "d6d710951b3b016adb40e0049e41ebaa926831c59bb57d5bda664ee13dddfbe4",
+    "03-fabric-code-verb.md": "70a3bad4fe979f3c5cfb378bec1c96ad9ba8f8a819bcb73a874edebe19e80c55",
+    "04-shell-envref.md": "5dab191ef61b1c9c5d39c924e7ecdee044af5b0cb01bc557a16ac6154ba6cb78",
+    "05-seed-parent.md": "e56343f3a7679353f04ddafa5988ac46d6b41d071b40ac55d19c08e580da7caa",
+    "06-geometry-naming.md": "b989f0a633ec0ac4e915207ae6060e77a78d78a1c32b3cdb7e60dd7b4bd285c8",
+    "07-reed-forms-names.md": "32f5b1a6e7ec374ab4a05ea12e6000608cc4fa69c14864fe50043c233e3e9f81",
+    "08-callers-address-roles.md": "5bfade18cdf4d8402fabf693039fddee7bfca8d64858b8854540c6d6f52927d6",
+    "09-reed-env-injection.md": "09372a20b87891888d2f9f3faa57883d7f3cf05de7a36dcfed062406de6ab4be",
+    "10-pane-title-mirror.md": "fa7169c0be0b01f677a00fd64eb5620211fedbba1f6276f10a1bff3556525cf8",
+    "11-claude-name-flag.md": "cf995db04d1c5b6e81424d824c9690d12b69a05bb3bb08cd563d230429cfb4cb",
+    "12-watchdog-name-repair.md": "1c77d37f3ff964cb92f2207557713d218f28a5235a5f409876cae6ca80d6707e",
+    "13-claude-session-namer.md": "39dc08d68f0d1933939e4b4ff1b7f82c88e26847a724c6f753555d4e335900bd",
+    "14-reed-list-verb.md": "2870fc26cf23053bfa614f2a38d8d8fcfe4189830a12032aa1bfddb6a005cda0",
+    "15-driver-parent-notice.md": "8fd6f6a445de7edcf3982b0ff64caa2c6a2b78dd1ddf3c8a4dc2fa2ec5d35c82",
+    "16-naming-docs.md": "8804cd4c9eee15bf01ba839a0fe9e9871c46ec244dc900219120d85241386133"
+  },
+  "currentBatch": 1,
+  "masterStrand": "d7008029baca6e94b35c94795258b9d2",
+  "masterSessionId": "e20f0b5d-74a9-4500-96aa-c87e3771e63a",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "agentname-package",
+      "cards": [
+        "01-agentname-package"
+      ],
+      "cardHashes": {
+        "01-agentname-package": "e266e601ffcacc77d637635f17a75c8b92fc603cb6c5279e24b3da608a202d7a"
+      },
+      "startSha": "9ae5f9405e6c9a63eca9f482d60befad38b1d081",
+      "kind": "fork",
+      "spawnedAt": "2026-10-02T08:18:44Z",
+      "sessionId": "e20f0b5d-74a9-4500-96aa-c87e3771e63a",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
