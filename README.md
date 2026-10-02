@@ -11,6 +11,9 @@ Concretized and claimable.
 
 Waits on nothing open; can start now, in parallel.
 
+1. **Verify localizes failures and Publish never runs on a dirty tree** — [`verify-publish-hardening`](design-verify-publish-hardening.md) · feature
+   - Cards verify with the integration tests and repo scans they touch, Publish never verifies or pushes a dirty tree, verify is never skipped after a crash, and every agent prompt goes through a file
+   - **Before:** `pattern-init`
 1. **Clean pair lifecycle: no leftover sessions, branches, sockets or races** — [`pair-lifecycle`](design-pair-lifecycle.md) · feature
    - fabric remove ends the pair's tmux session, finishes half-removed pairs and deletes warp branches on origin; loom start never races a dying driver; tests stop leaking tmux sockets
    - **Before:** `pattern-init`
@@ -20,20 +23,8 @@ Waits on nothing open; can start now, in parallel.
 1. **Review convergence: the judge decides converged, continue or circling from fresh reviews** — [`review-finding-class`](design-review-finding-class.md) · feature
    - The Bouncer judge stops reviewing the artifacts and judges convergence from facts Go hands it (counts, severities, trend, reopened ledger keys), on its own sonnet[medium] key; at least one fresh round, circling escalates; plus finding classes
    - **Before:** `pattern-init`
-1. **lyx orch: ready to host the real hub orchestrator** — [`orch-live-ready`](design-orch-live-ready.md) · feature · running · Finalize
-   - orch is deployed but untested live and lacks what the hub needs: bypass permissions, the Agent tool, adoption of a running session, a soft threshold
-   - **Before:** `verify-publish-hardening`
 
 ### Layer B
-
-Starts when every entry it names under After is done.
-
-1. **Verify localizes failures and Publish never runs on a dirty tree** — [`verify-publish-hardening`](design-verify-publish-hardening.md) · feature
-   - Cards verify with the integration tests and repo scans they touch, Publish never verifies or pushes a dirty tree, verify is never skipped after a crash, and every agent prompt goes through a file
-   - **After:** `orch-live-ready`
-   - **Before:** `pattern-init`
-
-### Layer C
 
 Starts when every entry it names under After is done.
 
@@ -73,3 +64,10 @@ Waits on nothing open; can start now, in parallel.
    - Someday (roadmap): #227, #228 — measured win, committed, not yet scheduled
 1. **Prompt-cache TTL per agent role** — [`cache-ttl-per-role`](design-cache-ttl-per-role.md) · feature
    - Parked: workers on 5m cache TTL, waiting sessions on 1h — operator deciding
+
+## Done
+
+Finished, awaiting `lyx board prune`.
+
+1. **lyx orch: ready to host the real hub orchestrator** — [`orch-live-ready`](design-orch-live-ready.md) · feature · done
+   - orch is deployed but untested live and lacks what the hub needs: bypass permissions, the Agent tool, adoption of a running session, a soft threshold
