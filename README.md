@@ -38,7 +38,7 @@ Starts when every entry it names under After is done.
 
 Depends on nothing and nothing depends on it, by design.
 
-1. **A run's parent is the worktree it is seeded from; batten survives pauses; parent-review loops** — [`run-parentage`](design-run-parentage.md) · bug · awaiting · PR-Gate
+1. **A run's parent is the worktree it is seeded from; batten survives pauses; parent-review loops** — [`run-parentage`](design-run-parentage.md) · bug · running · PR-Gate
    - Fix #341, #338: parent from the seeding worktree, batten waits through paused/blocked, parent-review reviews every rewrite up to a cap
 
 ## Next Up
