@@ -1,0 +1,16 @@
+---
+round: 1
+focus:
+  - "internal/shuttleengine/claudeengine/session.go isBoxRule (landed in commit 13, whose card says no production code changes and lists no session.go target): settle whether the new prefix-`───`/suffix-`─` shortcut can accept a non-rule line, such as transcript output or a draft that starts and ends with box-drawing glyphs, so that IdleSession reports idle on a box that is not empty; and whether session_test.go covers both the labelled rule and a near-miss."
+  - "internal/orchengine/watcher.go tickIdle after a DEFER: card 9 says a deferral blocks the next soft attempt until soft_idle_s after the reply, then allows it on a fresh turn end. Settle whether the code requires a fresh turn end, or whether the DEFER turn end itself (newestRead equal to LastDeferral) re-qualifies once soft_idle_s passes, so the watcher re-asks with no new activity from the session."
+  - "internal/orchengine/watcher.go DEFER detection in tick(): settle how a DEFER event read while replaying after a watcher restart, or read in the same tick that enters handoff-requested, sets seen.deferred and deferRead, and whether phaseEvents is reset on every phase entry so a stale deferral cannot carry into a later soft cycle."
+  - "internal/orchcli/smoke_live_test.go TestSmokeOrch_SoftCycle: card 13 asserts that the resumed session launches a background shell again, but the diff only logs the count. Settle whether that departure from the plan is justified by the recorded observation and stated in the orchengine doc, or is a dropped assertion."
+  - "internal/orchcli/start.go --adopt ordering: card 12 says --adopt with --handoff refuses before anything is locked or launched. Check where the exclusivity check sits relative to the lock and the early-return branches above it, and that the live-strand refusal covers every non-relaunch action, including the spawn-watcher-only branch."
+  - "internal/shuttleengine/claudeengine/resume.go checkResumable: settle whether a transcript stat error other than not-exist is correctly a refusal, and whether keeping only the last unreadable-entry warning while scanning the remaining entries matches card 6's contract."
+  - "Comment convention over every new or changed Go doc and inline comment in the diff, judged against CONSTRAINTS.md's Comment Line-Break Convention (semantic line breaks, no column limit, untouched lines never rewrapped): check the new doc.go sections, resume.go, run.go, watcher.go and the smoke test file."
+  - "Per-card mechanical checks: for every Edit group, check that the blast radius matches the card's ImpactSummary (for example, every implementer of the starter seam and every caller of buildLaunchCmd and denyInstalls was updated). For card 11's removal of orchShuttleConfig and its test, confirm that no caller or prose reference remains. For every Create group, confirm that nothing equivalent existed already."
+---
+
+The diff range is `git diff $(git merge-base main HEAD)..HEAD`: `product.parent` is `main`, and `_lyx/loom/rework/` does not exist, so no live rework round applies.
+It spans thirteen card commits.
+The production changes with the most behaviour live in `watcher.go` (soft trigger and DEFER), `start.go` (`--adopt`), `run.go` and `resume.go` (the resume seam), plus an out-of-card `isBoxRule` change in commit 13.
