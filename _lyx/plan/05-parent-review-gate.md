@@ -3,8 +3,8 @@
 **Create:**
 - `internal/parentreview/gate.go`
 - `internal/parentreview/gate_test.go`
-- `plan:internal/parentreview#GateConfig` -> `type GateConfig struct`
-- `plan:internal/parentreview#NewGate` -> `func NewGate(cfg GateConfig) (gate, final shuttleengine.Gate)`
+- `internal/parentreview#GateConfig`
+- `internal/parentreview#NewGate`
 
 **Edit:**
 - `internal/parentreview/seam_enforcement_test.go`

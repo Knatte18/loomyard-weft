@@ -14,8 +14,8 @@
 - `contracts/specs/shed-recipe-spec.md`
 
 **Uses:**
-- `plan:internal/parentreview#GateConfig`
-- `plan:internal/parentreview#NewGate`
+- `internal/parentreview#GateConfig`
+- `internal/parentreview#NewGate`
 - `internal/parentreview#Store.BeginRound`
 - `internal/shedadapters#NewSingleLLMProducerGated`
 

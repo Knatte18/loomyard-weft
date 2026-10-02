@@ -10,7 +10,7 @@
 - `internal/loomcli/parentreview_wiring_test.go`
 
 **Uses:**
-- `plan:internal/parentreview#GateConfig`
+- `internal/parentreview#GateConfig`
 - `internal/parentreview#Store`
 - `internal/loomengine#LoomParentReviewDirRel`
 - `internal/loomengine#LoomParentReviewDir`

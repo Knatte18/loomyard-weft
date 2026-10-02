@@ -5,7 +5,7 @@
 - `internal/loomcli/smoke_parentreview_test.go`
 
 **Uses:**
-- `plan:internal/parentreview#NewGate`
+- `internal/parentreview#NewGate`
 - `internal/parentreview#Store`
 - `internal/parentreview#Store.Latest`
 - `internal/loomcli#RunCLIIn`
