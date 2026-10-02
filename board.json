@@ -97,11 +97,7 @@
       "title": "Test suite: cut change amplification",
       "tier": 1,
       "type": "feature",
-      "depends_on": [
-        "verify-publish-hardening",
-        "pair-lifecycle",
-        "review-finding-class"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "A small prod change forces edits in many test files; shared testkit and seam fakes, git helpers in gitkit, one invariant-scan harness, decoupled recipe/plan/stencil tests, and no leaked tmux sockets",
       "body": "## Goal\n\nA small production change costs edits in few test files, so an implementing agent reads less test context per change, and integration tests leave no tmux sockets behind.\nRuns alone: it touches test files in nearly every package, so a concurrent run would conflict.\nIt runs before `pattern-init`, so its Testkit Invariant lands in `CONSTRAINTS.md` before that file moves.\n#326 section 2 needs an operator decision before Discussion closes.\n\n## Survey and work items\n\nSurvey of main at fafb660c3, 2026-10-01: test churn 1.68x prod churn and rising; one loom-recipe row costs edits to ~8 test files in 4 packages; worst packages cmd/lyx, loomrecipe, fabricengine.\nWork items, each self-contained with file:line evidence in its issue:\n- #324 shared `internal/testkit` and one fake per cross-package seam (reverses the do-not-share-test-helpers decision; needs a CONSTRAINTS.md Testkit Invariant).\n- #325 git helpers in gitkit, hubforge as the only fabric fixture (84 private git helper copies today).\n- #326 one invariant-scan harness; derive registry and CLI-tree tests (section 2 needs an operator decision: it changes the CLI/Cobra Invariant help-tree tests).\n- #327 decouple recipe, plan and stencil tests from their sources.\nTies to convergence-plan: real-wiring tests over per-package fakes.\n\n## From `test-tmux-socket-leak`: Integration tests leave tmux sockets behind\n\nTests leak tmux sockets: `/tmp/tmux-1000/` holds hundreds of `lyx-Test…`, `lyx-contract-…` and `lyx-warp-bare-…` sockets left by reed/loom integration tests. Test fixtures should kill their tmux server and remove the socket in `t.Cleanup`.\n\n"
