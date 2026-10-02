@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Write",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Write",
-    "last": "Loom-Preflight → done",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Write → done",
     "wait": ""
   },
   "history": [
@@ -20,6 +20,13 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-02T17:14:13Z"
+    },
+    {
+      "producer": "Discussion-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/webster-recovery/_lyx/discussion/decision-record.md",
+      "at": "2026-10-02T17:19:58Z",
+      "gate_attempts": 0
     }
   ],
   "product": {
