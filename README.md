@@ -22,6 +22,11 @@ One entry store with a numeric tier and a type, a README rendered like roadmap.m
 
 A producer row carries an ordered list of gates, each with its own attempts and a pass_on_cap flag that lets the run through once the budget is spent; existing gates migrate unchanged
 
+## **#010:** Review findings carry a class, and the loop stops at zero gating-class findings [A]
+[review-finding-class](design-review-finding-class.md)
+
+A design/scope/decision/consistency class on every review finding, a stop rule on it, and per-class counts per round
+
 # Layer B
 
 ## **#003:** Verify localizes failures and Publish never runs on a dirty tree [B]
@@ -97,11 +102,6 @@ A few coarse MCP tools over lyx, chosen by measured agent use and exposed per ro
 [creel](design-creel.md)
 
 Mail store and verbs on top of agent-naming's names; deferred while Claude's own SendMessage is enough
-
-## **#039:** Review findings carry a class, and the loop stops at zero gating-class findings
-[review-finding-class](design-review-finding-class.md)
-
-A design/scope/decision/consistency class on every review finding, a stop rule on it, and per-class counts per round
 
 ## **#040:** One-screen overview of every run in the hub
 [runs-overview](design-runs-overview.md)

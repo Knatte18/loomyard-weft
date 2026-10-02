@@ -80,16 +80,6 @@
     "body": "The mail store and verbs from `manifest/designs/reed-mailbox.md` (send, inbox, read, log; the watchdog delivering at idle; `inject` for privileged senders), addressed by `agent-naming`'s names.\n\nDeferred (operator, 2026-10-02): Claude Code's own SendMessage is enough for now.\nThe address grammar in reed-mailbox.md (`name@slug[.hub]`) is superseded by `agent-naming`'s `\u003crepo\u003e:\u003cslug\u003e:\u003crole\u003e`, and its naming half moved into that task.\nThe design doc goes with `manifest/` in `bolt-v2`; this note keeps what is left of it.\n"
   },
   {
-    "id": 39,
-    "slug": "review-finding-class",
-    "title": "Review findings carry a class, and the loop stops at zero gating-class findings",
-    "depends_on": [],
-    "isolated": false,
-    "deferred": false,
-    "brief": "A design/scope/decision/consistency class on every review finding, a stop rule on it, and per-class counts per round",
-    "body": "From `manifest/designs/review-finding-classification.md`; its item 5 (matching \"do not flag\" instructions on writer and reviewer) has shipped.\n\n- Add a finding-class field (`design`, `scope`, `decision`, `consistency`) to burler's review contract and the rubrics; `internal/burlerengine/verdict.go` has only severity today.\n- End the round loop when a round returns zero gating-class findings, keeping the cap as a backstop.\n- Emit per-class counts in the round record, so the same class recurring across rounds is visible.\n- Add a line to the Review Round Invariant: class decides who decides and when the loop stops, never whether a finding is fixed.\n"
-  },
-  {
     "id": 40,
     "slug": "runs-overview",
     "title": "One-screen overview of every run in the hub",
