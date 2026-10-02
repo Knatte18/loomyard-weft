@@ -1,6 +1,6 @@
 # Parent review as a step in Discussion-Write's gate
 
-`parent-review` · Planned · feature · running · Describe
+`parent-review` · Planned · feature · running · Publish
 
 ## Goal
 
