@@ -20,9 +20,9 @@
     "15-self-contained-focus.md": "4afa16ec0caa3293ceb1e5abb19655c0682709b1734548fc7f3a4339231467fa",
     "16-status-commit-holds-archive.md": "6fe0c807ddb016f912061d14ff1908eee6301f27a79af1a76bc07a4283de292c"
   },
-  "currentBatch": 0,
-  "masterStrand": "ac1a51aff320bd2aac1af67923b6e981",
-  "masterSessionId": "63436152-871a-4246-b54f-4bffdd73602d",
+  "currentBatch": 5,
+  "masterStrand": "4d7502a7a3e293d00362fb85656d9e60",
+  "masterSessionId": "204f7581-145b-40e4-a35e-4760920b8642",
   "assertedModel": "sonnet",
   "batches": {
     "1": {
@@ -128,6 +128,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-rework-generations/63436152-871a-4246-b54f-4bffdd73602d/subagents/agent-ab37a2be63220e624.jsonl"
       ]
+    },
+    "5": {
+      "slug": "rework-archive-generation",
+      "cards": [
+        "05-rework-archive-generation"
+      ],
+      "cardHashes": {
+        "05-rework-archive-generation": "ce8233a84c0a385952cbb6c9da5e37648ac9fc2c859f8c16bd141dbf22f50904"
+      },
+      "startSha": "9c3f84bd9e6a918900fb7950bbbe94c4b062f2cd",
+      "kind": "fork",
+      "spawnedAt": "2026-10-02T08:27:34Z",
+      "sessionId": "204f7581-145b-40e4-a35e-4760920b8642",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
