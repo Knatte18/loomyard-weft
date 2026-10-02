@@ -30,7 +30,7 @@
 - `contracts/specs/shed-recipe-spec.md`
 
 **Uses:**
-- `plan:internal/shuttleengine#GateEntry`
+- `internal/shuttleengine#GateEntry`
 - `internal/shuttleengine#GateSpec`
 
 **Intent:**

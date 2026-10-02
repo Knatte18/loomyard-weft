@@ -1,12 +1,12 @@
 {
   "runGuid": "d2e1f97c4d51c70a153afdb0abdebf16",
-  "planFingerprint": "9aeff138adbf4b45c5978834546f94559e4da77533c65a35aa2c92ce61f3af83",
+  "planFingerprint": "6c228d07c23236b449b979378d60c39c440452790d197d77fc733e834c997b85",
   "planFileHashes": {
     "00-overview.md": "7717a229155215718c4b9d77c13017ab994a020f5d2e0a8eb9091fc231866762",
-    "01-shuttle-gate-list.md": "2e5bd30c48466cc5c36e7e2c858f1955428058998bd0081491023cfa3343f3db",
-    "02-recipe-gates-key.md": "a55401a912e81fd452d4d76ef8e274880611f925cb532eb2ecdb6766e7a82ce6"
+    "01-shuttle-gate-list.md": "6dc854b3156842c6eb163cca5cf96bc0d5cca2c998b162c38853849193b8635c",
+    "02-recipe-gates-key.md": "bb1e34507365f9f79ff99f41c969d308ba3c9ac83617c7b7c3224e8afaf1b355"
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "ae2516defb05945c61c299ab01b449cf",
   "masterSessionId": "1e212dc6-8161-4647-929b-2e2c61aad0be",
   "assertedModel": "sonnet",
@@ -23,8 +23,22 @@
       "kind": "fork",
       "spawnedAt": "2026-10-02T07:59:55Z",
       "sessionId": "1e212dc6-8161-4647-929b-2e2c61aad0be",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-shuttle-gate-list",
+        "status": "done",
+        "head_sha": "cdce74404b093c83606f14050c2fab0abdb2bc21"
+      },
+      "cardShas": [
+        "cdce74404b093c83606f14050c2fab0abdb2bc21"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-list/1e212dc6-8161-4647-929b-2e2c61aad0be/subagents/agent-afa9e63df05f25fb2.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-list/1e212dc6-8161-4647-929b-2e2c61aad0be/subagents/agent-afa9e63df05f25fb2.jsonl"
+  ]
 }

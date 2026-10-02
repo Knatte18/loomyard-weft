@@ -27,7 +27,7 @@
 - `internal/loomcli/smoke_gate_test.go`
 
 **Create:**
-- `plan:internal/shuttleengine#GateEntry` -> `type GateEntry struct`
+- `internal/shuttleengine#GateEntry`
 - `internal/shuttleengine/gate_list_test.go`
 
 **Uses:**
