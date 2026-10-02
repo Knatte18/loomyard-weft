@@ -1,0 +1,17 @@
+---
+round: 1
+focus:
+  - "Legacy compatibility window (internal/boardengine/store.go Load, legacy.go migrateLegacy/foldLegacyDone, board.go boardCriticalSection and RetireLegacy): settle whether every interleaving with a pre-upgrade binary keeps that binary's done marks, whether an unlocked read migrates and folds in memory while persisting nothing and creating no swaplock for an absent file, whether a fold can double-apply or drop a mark across repeated loads, and whether RetireLegacy's save-then-delete ordering and its noWrite/afterSave plumbing hold on every error path."
+  - "Tier dependency rule symmetry (store.go validateTier, validateWrite, SetStatus, Promote, Prune; board.go PromoteNote): settle whether every write path (upsert, upsert-batch, merge, set-deps, set-status, promote, promote-note) applies the rule in both directions as card 1 and card 2 specify, including Promote validating against a snapshot that still holds the entry's old tier and a done entry's own deps, and whether any path can leave a stored board that violates the rule."
+  - "Stale or inaccurate doc comments on code the diff changed: task.go's file comment and the Task doc still say the record is stored in tasks.json; Board.Promote's doc names idOrSlug while its parameter is slug; PromoteNote still reports 'note not found'. Settle which are stale against the diff's own behavior."
+  - "Comment Line-Break Convention (CONSTRAINTS.md) on new and changed Go comments: several new comments appear wrapped mid-sentence at a fixed column rather than at sentence or independent-clause boundaries (board.go package doc, legacy.go file comment, store.go NewStore/Load area, boardCriticalSection doc). Settle which new or changed lines break the convention; a line-width finding is never legitimate and untouched lines are out of scope."
+  - "Per-card mechanical checks (cards are Edit, Create and Prosa only): for each Edit group, confirm the blast radius of the changed symbols was actually covered — the Task.Type to Recipe meaning change, the BriefTask deferred-to-tier/type change, the one-list Render/RenderToDisk signature, the deleted Note methods and taskToUpsertFields, and ListTasksBrief's new README order — against every caller and stencil reader outside boardengine/boardcli; for each Create group (legacy.go, text.go, verbs_test.go, the ly:board skill), confirm nothing equivalent already existed; and confirm the plan's verify block, including the integration-tagged and smoke-tagged packages, ran green on HEAD."
+---
+
+Review range: `product.parent` is `main` (from `_lyx/shed/bolt-v2/status.json`), merge base `9ae5f9405`, ten commits `63e8b1337..4594739bc`, one per card.
+
+The heaviest risk sits in cards 3–5: the store migrates and folds on every load, and the fold is the only thing that keeps a long-running pre-upgrade driver's done marks, so its correctness under concurrent old- and new-binary access is the first thing to settle.
+The tier rule is the second: it replaced the deferred rules and is enforced from several entry points, so a path that skips one direction would silently store a board the renderer then shows out of order.
+
+A grep found no production reader of the old recipe-meaning `Type` outside `internal/battencli/wire.go`, which the diff updates.
+The fifth entry turns that grep into a full blast-radius check, since a string-keyed reader, such as a stencil parsing `lyx board get` output, would not show up in a symbol search.
