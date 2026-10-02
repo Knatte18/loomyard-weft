@@ -33,6 +33,7 @@ The session ran autonomously, so each turn below is a question the writer put to
    The watcher already sees whether the newest turn end had background work outstanding (`EventWaiting`) and when it arrived.
    Pick: at or over the soft threshold, cycle when the newest event is a plain `EventStop`, it is at least `soft_idle_s` old (300 s), and the idle probe passes.
    The hard cap keeps today's rule, including cycling on `EventWaiting`, so a hub that always runs a Monitor still cycles at 400k.
+   Replaced by the hub review: the soft trigger also fires on `EventWaiting`, and its own handoff request lets the session answer `DEFER` when a `/clear` would lose in-flight work.
 
 7. **How is "verify live" closed?**
    The smoke test exists but has never run against a live install, and the orchengine doc carries two "unverified" open risks.
@@ -63,6 +64,9 @@ The session ran autonomously, so each turn below is a question the writer put to
   Rejected: the registry is a Claude internal; refusing on its absence would make adopt break on a shape change even when no other process holds the id.
 - **Soft threshold as an injected notice asking the session to run `lyx orch cycle` at its own break.**
   Rejected: it spends a turn, relies on the session complying, and the session cannot see its own token count to judge.
+  The hub review's `DEFER` differs: the watcher still decides on the token count and starts the cycle, the session only vetoes the timing, and the hard cap cannot be deferred.
+- **Soft trigger only on a plain `EventStop` (the original pick).**
+  Rejected by the hub review: the real hub keeps a background watcher almost all the time, so the soft trigger would never fire for the session it exists for.
 - **Excluding `EventWaiting` from the hard trigger too.**
   Rejected: the hub keeps long-running Monitors, so it would never cycle.
 - **Renaming `threshold_tokens` to `hard_threshold_tokens`.**
@@ -70,7 +74,15 @@ The session ran autonomously, so each turn below is a question the writer put to
 
 ## Review rounds
 
-_No rounds yet._
+### Hub review (parent, 2026-10-02)
+
+Reviewed by the hub orchestrator (`ly:orch`) against the board goal before Discussion-Review, edited in place.
+The record meets the goal; one decision changed and one acceptance line was added.
+
+- Decision 6 revised: the hub runs a background watcher almost continuously, so "no background work outstanding" would never hold for it.
+  The soft trigger now fires on `EventStop` or `EventWaiting` after `soft_idle_s`, sends a soft handoff stencil, and the session may answer `DEFER` when a `/clear` would lose in-flight work; long-lived watchers go into the handoff to be re-armed.
+  The hard cap and `lyx orch cycle` cannot be deferred.
+- Acceptance added: after adopt, the orch strand carries `<shortname>:orch`, a run started from it records that parent, and a driver's notice reaches it through SendMessage — the hub relies on this since `agent-naming` landed.
 
 ## Question ledger
 
@@ -82,7 +94,7 @@ _No rounds yet._
 - Q6 Adopt semantics with a live holder? — resolved, auto-pick: refuse with way forward; never wait or kill.
 - Q7 Adopt with unreadable registry? — resolved, auto-pick: warn and proceed.
 - Q8 How does the operator find the session id? — resolved, auto-pick: explicit id from Claude's `/status`; no discovery.
-- Q9 Soft-threshold natural break? — resolved, auto-pick: `EventStop` quiet for `soft_idle_s` (300 s) at or over 300k.
+- Q9 Soft-threshold natural break? — resolved, auto-pick, revised by the hub review: a turn end (`EventStop` or `EventWaiting`) quiet for `soft_idle_s` (300 s) at or over 300k, with the session able to `DEFER`.
 - Q10 Keep `threshold_tokens` as the hard-cap key? — resolved, auto-pick: yes.
 - Q11 Record the cycle trigger in state and status? — resolved, auto-pick: yes, so a live run shows which path fired.
 - Q12 Is running the smoke test in scope? — resolved, auto-pick: yes, outcomes recorded in the orchengine package doc.
