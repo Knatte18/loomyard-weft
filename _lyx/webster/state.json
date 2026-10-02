@@ -1,0 +1,38 @@
+{
+  "runGuid": "8fce2d88d8a91d63f450ef1a054a3e95",
+  "planFingerprint": "cf25b280f8b99d3fccd659d21a0b60e09c07a24111af42cc224373ec99d02fca",
+  "planFileHashes": {
+    "00-overview.md": "c74e1aed1b39b75cb0a9f0bb57f7462e357a0c5419349606ea6a0cbb89d63cab",
+    "01-entry-schema.md": "f661bf5800ffad457794327688dde920e71e08aa74796a1cd84b50c923224535",
+    "02-store-ops.md": "1b4c8cfe2c399abb746b5f05be6b5199f130a1b3ab4b73241366b3552e38d656",
+    "03-legacy-migration.md": "ee1cc96429ea0716cd385f52cee36bbbe2ba7d2d70a17e77ae1fea2dd2102ab7",
+    "04-board-json-store.md": "49a7da2a16dad626bc5150704fc11a342f34a674c0d09648a94d2b0ffa79a3e5",
+    "05-board-verbs.md": "c7f8259b0af764ea1f0862fb2e10ee303c51bf2b2618d625359998e11de32026",
+    "06-render-roadmap.md": "fa45f1e5c36ab3514082d8e1de07656f86a24704fcee2ec9e793461a52f53a0b",
+    "07-cli-verbs.md": "23aadaeda145b6afe1ed836e2c72e0d010c338938db739f2a472232c1de9bb7c",
+    "08-cli-help.md": "02194ff0231d8302fbb037fe10d8290f0a7c5abd1433b6d33d3ecf366f8ffc2e",
+    "09-board-skill.md": "ea153d553f81673bc477d64119c638e5fae60e0304cb65978df8f6112a63acf6",
+    "10-overview-doc.md": "a4da823b82e1cdb9694d39e7fec9e491cfcadddd2bba01119abddb83d533ad29"
+  },
+  "currentBatch": 1,
+  "masterStrand": "eff08e946b373b4854f0e5ab982da5e9",
+  "masterSessionId": "ed75cea7-1e3f-4630-b97b-859a0429b6c1",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "entry-schema",
+      "cards": [
+        "01-entry-schema"
+      ],
+      "cardHashes": {
+        "01-entry-schema": "f661bf5800ffad457794327688dde920e71e08aa74796a1cd84b50c923224535"
+      },
+      "startSha": "9ae5f9405e6c9a63eca9f482d60befad38b1d081",
+      "kind": "fork",
+      "spawnedAt": "2026-10-02T08:16:54Z",
+      "sessionId": "ed75cea7-1e3f-4630-b97b-859a0429b6c1",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
