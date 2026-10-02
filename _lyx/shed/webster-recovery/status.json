@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "blocked",
-  "error": "integration verify regressed: github.com/Knatte18/loomyard/internal/lyxcwd.TestEnforcement_FabricVocabulary/tree-scan (offending card: 07-fix-commit-check)",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": "integration verify regressed: github.com/Knatte18/loomyard/internal/lyxcwd.TestEnforcement_FabricVocabulary/tree-scan (offending card: 07-fix-commit-check)"
+    "wait": ""
   },
   "history": [
     {
