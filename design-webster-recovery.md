@@ -1,6 +1,6 @@
 # Webster recovers from a re-begin, its own canonicalization and an integration regression
 
-`webster-recovery` · Planned · bug · running · Discussion-Bouncer
+`webster-recovery` · Planned · bug · running · Discussion-Burler
 
 ## Goal
 
