@@ -26,12 +26,13 @@ When the latest round carries a reject verdict, approve takes the supersede path
 - on success the envelope carries `"action": "approve"` and `"superseded": true`, and the message's way forward is `lyx loom start` in the task worktree.
 
 Every other approve keeps today's `RecordVerdict` path and refusals.
+The verdict-recorded way forward (`reviewWaySettled`) gains a clause that a run halted at the reject cap proceeds only after `lyx loom review approve <slug>`, since a second `reject` on the cap's round otherwise reads that the run proceeds on its own.
 
 Bound: approve, like reject, checks no caller identity, so the halted state (status `blocked`, the store at the cap, the latest round the cap's reject) is the only gate on the supersede path, and it never rewrites an earlier round or an open round's pending state.
 `reject` can now halt a run, but only on the cap's rejected round and only into `blocked`, which one approve lifts.
 
 Rewrite `review.go`'s file comment paragraph on unchecked verbs, which says an approve skips at most a pass-on-cap review and a reject spends one re-prompt, and the `review` group's, `approve`'s and `reject`'s `Short`/`Long` help so they state those bounds: the parent reviews every rewrite after a reject, the cap's reject halts the run `blocked`, and approve on that halted run supersedes the reject.
-Add rows to `contracts/specs/refusal-spec.md`'s loom review section for the three new refusals (run not halted at the cap, latest round not the cap's reject, `--review` on the supersede path), per the Refusal Way-Forward Invariant.
+Add rows to `contracts/specs/refusal-spec.md`'s loom review section for the three new refusals (run not halted at the cap, latest round not the cap's reject, `--review` on the supersede path), per the Refusal Way-Forward Invariant, and extend the `review: verdict already recorded` row's way forward with the same reject-cap clause.
 
 Tests in `review_test.go`, each refusal reached through the verb with a temp store and a fake status reader: approve at the cap on a `blocked` run supersedes, keeps `review.md` and reports `superseded`; on a `running` run it refuses naming the way forward; with the latest reject below the cap it refuses with `ErrNotAtCap`'s message; with `--review` on that path it refuses; an ordinary approve on an open round still records a plain approve.
 

@@ -31,7 +31,8 @@ Add the one parent resolver Decision 3 names, in a new `internal/hubgeom/parent.
 No string concatenation forms a name; `agentname.Format` is the only former.
 The resolver checks no liveness: the name is returned even when no orch strand is live.
 A hub with no recorded shortname yields no parent and logs one `logger.Warn`, since no name can be formed and reed already refuses spawns without a shortname.
-Origin, seed and prime-check read errors are returned.
+A parent worktree with no `.git` entry (a parent pair since removed) is not the prime, since the prime is the repository's main worktree and exists while any pair does, so it resolves to the pair form `<shortname>:<ParentWorktree>:orch` rather than an error: the name depends only on the recorded worktree name and the shortname, never on the parent worktree still existing.
+Origin and seed read errors, and any other prime-check error, are returned.
 
 Split the decision into a pure helper over already-read values (shortname, origin and found flag, legacy seed parent, and whether the parent worktree is the prime) so the table is testable with no filesystem.
 
@@ -40,6 +41,7 @@ This is what gives every strand in a pair `LYX_PARENT` equal to the prime's orch
 Update `ReedGeometry`'s doc comment and `doc.go`, which today say the parent comes from the default run's seed.
 
 Tests: `parent_test.go` is a table over the pure helper covering the acceptance rows — prime parent gives `<shortname>:orch`; pair parent gives `<shortname>:<slug>:orch`; no origin record and no legacy seed gives none; origin without `parent_worktree` plus a legacy seed name gives that name; both absent gives none; no shortname gives none.
+A filesystem case in `parent_test.go` over a temp hub asserts that an origin naming a parent worktree with no directory resolves to `<shortname>:<slug>:orch` with no error.
 In `reedgeom_integration_test.go`, a pair created by the hub fixture from the prime now carries `ParentName` `<shortname>:orch` before any seed is written (replace the "empty before seeding" assertion), and an origin record rewritten without `parent_worktree` plus a seed carrying a legacy parent yields that legacy name.
 
 **ImpactSummary:** Changes where reed's `ParentName` comes from for a task worktree (origin record first, legacy seed second); the prime and standalone geometry are unchanged.
