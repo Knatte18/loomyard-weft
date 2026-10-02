@@ -30,9 +30,6 @@
       "tier": 1,
       "type": "feature",
       "depends_on": [
-        "verify-publish-hardening",
-        "pair-lifecycle",
-        "review-finding-class",
         "test-suite-change-amplification"
       ],
       "isolated": false,
