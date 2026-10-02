@@ -1,0 +1,4 @@
+status: OK
+head_sha: e6f8234fa0e655c7d358dfba2098540a6a5c2ba1
+deviations:
+  - cmd/lyx/uncontainedwrite_test.go
