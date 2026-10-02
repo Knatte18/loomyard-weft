@@ -21,6 +21,8 @@ Concretized and claimable.
 1. **Review convergence: the judge decides converged, continue or circling from fresh reviews** — `review-finding-class` · feature
    The Bouncer judge stops reviewing the artifacts and judges convergence from facts Go hands it (counts, severities, trend, reopened ledger keys), on its own sonnet[medium] key; at least one fresh round, circling escalates; plus finding classes [design](design-review-finding-class.md)
    After `rework-generations`.
+1. **lyx orch: ready to host the real hub orchestrator** — `orch-live-ready` · feature
+   orch is deployed but untested live and lacks what the hub needs: bypass permissions, the Agent tool, adoption of a running session, a soft threshold [design](design-orch-live-ready.md)
 1. **PATTERN for loomyard, plus repo conventions** — `pattern-init` · feature
    CONSTRAINTS.md becomes _lyx/PATTERN.md so agents get the constraints directive; warp/weft scan beyond Go code; model specs in short form; ide workspace cleanups [design](design-pattern-init.md)
    After `parent-review`, `verify-publish-hardening`, `pair-lifecycle`, `manifest-retire`, `review-finding-class`.
@@ -35,8 +37,6 @@ Loose ideas.
 
 1. **Batten teardown deletes an llm-driven child's friction notes** — `batten-llm-friction` · feature
    Parked: #274 — only matters once batten runs llm-driven children [design](design-batten-llm-friction.md)
-1. **lyx orch: ready to host the real hub orchestrator** — `orch-live-ready` · feature
-   orch is deployed but untested live and lacks what the hub needs: bypass permissions, the Agent tool, adoption of a running session, a soft threshold [design](design-orch-live-ready.md)
 1. **Convergence: measure hub and driver interventions, fix at the source, hardening freezes** — `convergence-plan` · feature
    Plan for lyx to converge rather than accumulate bugs: per-run intervention log, real-wiring tests, feature freezes [design](design-convergence-plan.md)
 1. **Test suite: cut change amplification** — `test-suite-change-amplification` · feature

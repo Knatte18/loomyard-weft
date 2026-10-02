@@ -170,7 +170,7 @@
       "id": 22,
       "slug": "orch-live-ready",
       "title": "lyx orch: ready to host the real hub orchestrator",
-      "tier": 3,
+      "tier": 1,
       "type": "feature",
       "depends_on": [],
       "isolated": false,
