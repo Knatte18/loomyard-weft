@@ -15,7 +15,7 @@
     "10-review-approve-supersede.md": "cb986c43d379fdfb4765250f664bb719c57d0843eafce0e08619989637ad75e2",
     "11-batten-halted-wait.md": "c4735ed3ede39106a212732f0ff958e7650f1c2cab34c2ecd06738bd935a2a7e"
   },
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "6d4366f10831244b5ce0aebb2bf0ce0a",
   "masterSessionId": "02fd2c21-7b3c-420e-8e2a-7e0ce8cfa0e0",
   "assertedModel": "sonnet",
@@ -165,8 +165,19 @@
       "kind": "fork",
       "spawnedAt": "2026-10-02T17:57:42Z",
       "sessionId": "02fd2c21-7b3c-420e-8e2a-7e0ce8cfa0e0",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-review-gate-hold",
+        "status": "done",
+        "head_sha": "870e0a4c6ff8e8701f9e3ed7b8b11fab37a52b39"
+      },
+      "cardShas": [
+        "870e0a4c6ff8e8701f9e3ed7b8b11fab37a52b39"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-parentage/02fd2c21-7b3c-420e-8e2a-7e0ce8cfa0e0/subagents/agent-a1e52e538676bb5fd.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
@@ -174,6 +185,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-parentage/02fd2c21-7b3c-420e-8e2a-7e0ce8cfa0e0/subagents/agent-a9f1b3c301be94279.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-parentage/02fd2c21-7b3c-420e-8e2a-7e0ce8cfa0e0/subagents/agent-af63df5c461516dbc.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-parentage/02fd2c21-7b3c-420e-8e2a-7e0ce8cfa0e0/subagents/agent-a510c2d7b442ef480.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-parentage/02fd2c21-7b3c-420e-8e2a-7e0ce8cfa0e0/subagents/agent-a974127d82b7c4877.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-parentage/02fd2c21-7b3c-420e-8e2a-7e0ce8cfa0e0/subagents/agent-a974127d82b7c4877.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-parentage/02fd2c21-7b3c-420e-8e2a-7e0ce8cfa0e0/subagents/agent-a1e52e538676bb5fd.jsonl"
   ]
 }
