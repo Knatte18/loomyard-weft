@@ -57,11 +57,6 @@ After `lyx fabric remove` the pair tmux session (driver claude, status strand, b
 
 loom start returns ok before the child status leaves blocked; an immediate lyx batten run reads blocked and exits again
 
-## **#021:** Process naming and parentage: one name per process, the same in Claude messaging and creel
-[process-naming](design-process-naming.md)
-
-Every process lyx spawns gets one name, <slug>:<role>, used as its strand name, its Claude session name and its creel address alike, and every worktree records its parent so all questions from a run go to the session that spawned it
-
 ## **#022:** lyx orch: ready to host the real hub orchestrator
 [orch-live-ready](design-orch-live-ready.md)
 
