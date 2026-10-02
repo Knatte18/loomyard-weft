@@ -20,7 +20,7 @@
     "15-self-contained-focus.md": "4afa16ec0caa3293ceb1e5abb19655c0682709b1734548fc7f3a4339231467fa",
     "16-status-commit-holds-archive.md": "6fe0c807ddb016f912061d14ff1908eee6301f27a79af1a76bc07a4283de292c"
   },
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "4d7502a7a3e293d00362fb85656d9e60",
   "masterSessionId": "204f7581-145b-40e4-a35e-4760920b8642",
   "assertedModel": "sonnet",
@@ -210,6 +210,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-rework-generations/204f7581-145b-40e4-a35e-4760920b8642/subagents/agent-a917bfb440b78d888.jsonl"
       ]
+    },
+    "8": {
+      "slug": "bouncer-skip-seam",
+      "cards": [
+        "08-bouncer-skip-seam"
+      ],
+      "cardHashes": {
+        "08-bouncer-skip-seam": "5ef737eca8b34c0f0e16100155c7c8282e5e740c0a6eb28b5673f0215660a8ce"
+      },
+      "startSha": "a752864b21f7f72ae871040a22de73dd525d1bac",
+      "kind": "fork",
+      "spawnedAt": "2026-10-02T08:37:22Z",
+      "sessionId": "204f7581-145b-40e4-a35e-4760920b8642",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
