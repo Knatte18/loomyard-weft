@@ -4,7 +4,7 @@
 
 ## Goal
 
-Removing a pair ends its tmux session first, can finish a half-removed pair, and leaves no branches, sockets or stray directories behind; starting a run never races a dying driver.
+Removing a pair ends its tmux session first, can finish a half-removed pair, and leaves no branches or stray directories behind; starting a run never races a dying driver.
 
 ## Also folded in, not in bolt before
 
@@ -37,6 +37,3 @@ After `landing` (#298): `fabric remove` now deletes the local warp branch, but `
 
 Seen 2026-09-30, uninvestigated: the prime weft branch main-weft stays local and does not move when a task lands
 
-## From `test-tmux-socket-leak`: Integration tests leave tmux sockets behind
-
-Tests leak tmux sockets: `/tmp/tmux-1000/` holds hundreds of `lyx-Test…`, `lyx-contract-…` and `lyx-warp-bare-…` sockets left by reed/loom integration tests. Test fixtures should kill their tmux server and remove the socket in `t.Cleanup`.

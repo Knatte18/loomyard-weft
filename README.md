@@ -15,24 +15,22 @@ Waits on nothing open; can start now, in parallel.
    - Cards verify with the integration tests and repo scans they touch; the plan verify runs once as a gate on Merriam, which fixes a failure in a fork and waits on forks instead of polling; Publish never verifies or pushes a dirty tree; verify is never skipped after a crash; every agent prompt goes through a file
    - **Before:** `pattern-init`
 1. **Clean pair lifecycle: no leftover sessions, branches, sockets or races** — [`pair-lifecycle`](design-pair-lifecycle.md) · feature
-   - fabric remove ends the pair's tmux session, finishes half-removed pairs and deletes warp branches on origin; loom start never races a dying driver; tests stop leaking tmux sockets
-   - **Before:** `pattern-init`
-1. **Retire manifest/: Someday into bolt, durable content into package docs** — [`manifest-retire`](design-manifest-retire.md) · feature
-   - Triage roadmap.md's Someday into bolt's tiers, move the durable design content into package docs, fix inbound links and delete manifest/
+   - fabric remove ends the pair's tmux session, finishes half-removed pairs and deletes warp branches on origin; loom start never races a dying driver
    - **Before:** `pattern-init`
 1. **Review convergence: the judge decides converged, continue or circling from fresh reviews** — [`review-finding-class`](design-review-finding-class.md) · feature
    - The Bouncer judge stops reviewing the artifacts and judges convergence from facts Go hands it (counts, severities, trend, reopened ledger keys), on its own sonnet[medium] key; at least one fresh round, circling escalates; plus finding classes
    - **Before:** `pattern-init`
-1. **Webster: verify is a gate on Merriam, Merriam waits instead of polling, and its strand is named webster** — [`webster-verify-gate`](design-webster-verify-gate.md) · feature
-   - The plan verify runs once, as a shuttle gate on Merriam that injects failures back for Merriam to fix in a fork; Merriam waits on fork notifications; its strand is named webster
+1. **Test suite: cut change amplification** — [`test-suite-change-amplification`](design-test-suite-change-amplification.md) · feature
+   - A small prod change forces edits in many test files; shared testkit and seam fakes, git helpers in gitkit, one invariant-scan harness, decoupled recipe/plan/stencil tests, and no leaked tmux sockets
+   - **Before:** `pattern-init`
 
 ### Layer B
 
 Starts when every entry it names under After is done.
 
-1. **PATTERN for loomyard, plus repo conventions** — [`pattern-init`](design-pattern-init.md) · feature
-   - CONSTRAINTS.md becomes _lyx/PATTERN.md so agents get the constraints directive; warp/weft scan beyond Go code; model specs in short form; ide workspace cleanups
-   - **After:** `verify-publish-hardening`, `pair-lifecycle`, `manifest-retire`, `review-finding-class`
+1. **PATTERN for loomyard, manifest/ retired, plus repo conventions** — [`pattern-init`](design-pattern-init.md) · feature
+   - CONSTRAINTS.md becomes _lyx/PATTERN.md so agents get the constraints directive; manifest/ retires into bolt and package docs; warp/weft scan beyond Go code; model specs in short form; role constants; ide workspace cleanups
+   - **After:** `verify-publish-hardening`, `pair-lifecycle`, `review-finding-class`, `test-suite-change-amplification`
 
 ## Next Up
 
@@ -50,8 +48,6 @@ Waits on nothing open; can start now, in parallel.
    - Parked: #274 — only matters once batten runs llm-driven children
 1. **Convergence: measure hub and driver interventions, fix at the source, hardening freezes** — [`convergence-plan`](design-convergence-plan.md) · feature
    - Plan for lyx to converge rather than accumulate bugs: per-run intervention log, real-wiring tests, feature freezes
-1. **Test suite: cut change amplification** — [`test-suite-change-amplification`](design-test-suite-change-amplification.md) · feature
-   - Test code is ~3x production and growing faster; a small prod change forces edits in many test files, each one context an implementing agent must read. Survey and plan in GitHub #323, work split into #324-#327.
 1. **An MCP server over lyx exposing the verbs agents need** — [`lyx-mcp`](design-lyx-mcp.md) · feature
    - A few coarse MCP tools over lyx, chosen by measured agent use and exposed per role, so agents see typed schemas instead of guessing CLI shapes
 1. **creel: a mailbox between named lyx processes** — [`creel`](design-creel.md) · feature
