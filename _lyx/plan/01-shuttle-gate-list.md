@@ -31,11 +31,12 @@
 - `internal/shuttleengine/gate_list_test.go`
 
 **Uses:**
+- `internal/shuttleengine/attach.go`
 - `internal/shuttleengine/completionsignal_enforcement_test.go`
 - `internal/shedadapters/gateattempts.go`
 
 **Intent:**
-Turn `GateSpec` into an ordered list of gate entries evaluated per arrival with per-entry consecutive-failure counts (decision record Decisions 1–7 and 9), and migrate every caller so the tree builds and every existing test keeps its assertions.
+Turn `GateSpec` into an ordered list of gate entries evaluated per arrival with per-entry consecutive-failure counts (decision record Decisions 1–7 and 9), and migrate every caller so the tree builds and every existing test keeps its assertions, bar the one `shedrecipe` default assertion named under Callers.
 
 Types in `gate.go`:
 `GateEntry` carries `Name string`, `Gate Gate`, `Attempts int` and `PassOnCap bool`;
@@ -48,6 +49,7 @@ a pass before the cap resets the count, so the entry can fire again later;
 a request that must not repeat makes its own closure idempotent.
 
 Run state in `run.go`: replace the single `gateSent` with per-entry counts, index-aligned with `run.gate`: consecutive failures and re-prompts sent.
+The count slices are sized from `len(run.gate)` on first use, so neither `Run` literal (`start` in `run.go`, `reconstructAndWait` in `attach.go`) nor a test's bare `&Run{...}` needs a new field, and an attached gated run counts exactly as a started one.
 `GateOutcome.Attempts` is the sum of re-prompts sent over all entries.
 The memo stays per arrival and cleared before each re-prompt; it now also records which entry failed (none when every entry passed, was off, or was let through), so Wait can read it without re-running a closure.
 
@@ -73,10 +75,12 @@ Update the package and method doc comments in `wait.go`, `run.go` and `gate.go` 
 Callers:
 `burlerengine.Engine.Run` builds a fresh `GateSpec` copy in which every entry's closure is wrapped by `repairReportBeforeGate`, never mutating the caller's slice;
 off entries are wrapped too, since they never run.
-`shedrecipe`'s `resolveGateSpec` keeps reading `gate`/`gate_attempts` in this card and returns a one-entry list named after the `gate` value, with `Attempts` 3 when `gate_attempts` is absent, so the shipped recipe's behaviour is unchanged until Card 2 replaces the keys.
+`shedrecipe`'s `resolveGateSpec` keeps reading `gate`/`gate_attempts` in this card and returns a one-entry list named after the `gate` value, with `Attempts` 3 when `gate_attempts` is absent, zero or negative — today's `defaultGateAttempts` reading — so no interim value turns a gate off and the shipped recipe's behaviour is unchanged until Card 2 replaces the keys.
+Because the default now resolves in `shedrecipe`, `entries_planwrite_test.go`'s `AbsentGateAttemptsYieldsPackageDefault` subtest changes its assertion from `Attempts` 0 to the single entry's `Attempts` 3, the one existing assertion this card changes rather than migrates;
+the subtests asserting `Attempts` 0 for a row with no `gate` key (`entries_discussionwrite_test.go`, `entries_burler_test.go`) assert an empty list instead.
 Every test fake's `RunGated`/`AttachGated` (in `burlerengine`, `shedadapters`, `shedrecipe`, `shedbuild`, `loomrecipe`) treats an empty list as ungated and otherwise runs the entries in list order, skipping off entries and stopping at the first failure, stamping the aggregate `GateOutcome` as it does today.
 Test constructions of `GateSpec{Gate: g}` become one-entry lists with an explicit `Attempts` of 3 wherever the test relied on the removed default, and assertions reading `spec.Gate`/`spec.Attempts` read the single entry instead.
-Doc comments that say "a nil Gate means ungated" in `websterengine/runlevel.go`, `burlerengine/profile.go` and `shedadapters/singlellm.go` say an empty list instead.
+Doc comments that say "a nil Gate means ungated" in `websterengine/runlevel.go`, `burlerengine/profile.go` and `shedadapters/singlellm.go` say an empty list instead, and every other comment in this card's edited files that names `gate.Gate`, `opts.Gate.Gate` or a nil `Gate` (among them `burlerengine/engine.go`'s `RunGated` field and `Run` method comments, and `shedadapters/singlellm.go`'s field and `NewSingleLLMProducerGated` comments) describes the list.
 `shedadapters/gateattempts.go` stays unchanged because the aggregate `Attempts` keeps its meaning.
 
 Tests in the new `gate_list_test.go`, driven by the fake engine and scripted gate results the existing `gate_test.go` tests use:
@@ -92,6 +96,6 @@ Tests in the new `gate_list_test.go`, driven by the fake engine and scripted gat
 
 `burlerengine/engine_test.go` gains a test that a failing second entry's findings carry the repair instruction naming the round's review and fixer-report paths, recovered from the wrapped closure the fake recorded, as the existing first-entry test does.
 
-**ImpactSummary:** Changes the exported shape of `shuttleengine.GateSpec` and `GateOutcome`; every package that builds or fakes a gated run is migrated in this card, and single-entry behaviour is byte-identical.
+**ImpactSummary:** Changes the exported shape of `shuttleengine.GateSpec` and `GateOutcome`; eight packages read or build a `GateSpec` and are migrated here (`shuttleengine`, `burlerengine`, `shedadapters`, `shedrecipe`, `shedbuild`, `loomrecipe`, `websterengine`, `loomcli`), the pass-through callers (`webstercli`'s and `loomcli/cli.go`'s `StartMaster`, `attach.go`) compile unchanged, and single-entry behaviour is byte-identical.
 
 **Commit:** 1: shuttle: carry an ordered list of gates, each with its own budget and pass_on_cap

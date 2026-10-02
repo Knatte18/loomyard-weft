@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -22,6 +22,7 @@ No shipped row changes behaviour.
 - Counts are in memory per shuttle run; nothing is persisted, and `HistoryEntry.GateAttempts` stays one integer fed by the aggregate `GateOutcome.Attempts`.
 - `gate-findings.md` and `gateRepromptText` are unchanged, so a single-entry row's re-prompts are byte-identical to today's.
 - No `manifest/roadmap.md` change and no new `CONSTRAINTS.md` invariant.
+- Told-Geometry, Transient Stop and Refusal Way-Forward hold without a change: a gate closure keeps capturing its own told paths, a gate verdict never carries the transient mark, and the new `shedrecipe` construction errors are wiring guards under each section's grouped row in `contracts/specs/refusal-spec.md`, so no refusal-spec row is added.
 
 ## verify:
 
