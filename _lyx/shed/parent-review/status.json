@@ -1,12 +1,12 @@
 {
   "current_producer": "Run-Shed",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "battenshed: Run-Shed: inner shed run reached state \"paused\": error=\"\" current_producer=\"Discussion-Bouncer\"; the task worktree's own run must be resumed from inside that worktree (its recipe's bootstrap verb, e.g. \"lyx loom start\") before this run is resumed; resuming this run alone only resumes the watch",
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
-    "last": "Seed-Child → done",
-    "wait": ""
+    "last": "Run-Shed → bounced to Run-Shed",
+    "wait": "battenshed: Run-Shed: inner shed run reached state \"paused\": error=\"\" current_producer=\"Discussion-Bouncer\"; the task worktree's own run must be resumed from inside that worktree (its recipe's bootstrap verb, e.g. \"lyx loom start\") before this run is resumed; resuming this run alone only resumes the watch"
   },
   "history": [
     {
@@ -20,6 +20,78 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-02T11:08:16Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-02T11:08:53Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-02T11:09:23Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-02T11:09:53Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-02T11:10:23Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-02T11:10:53Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-02T11:11:23Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-02T11:11:53Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-02T11:12:23Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-02T11:12:53Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-02T11:13:23Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-02T11:13:53Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-02T11:14:23Z"
     }
   ]
 }
