@@ -1,8 +1,8 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "running",
+  "state": "paused",
   "error": "",
-  "pause_requested": true,
+  "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
     "last": "Discussion-Write → done",
