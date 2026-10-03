@@ -8,4 +8,5 @@ Deferred (operator, 2026-10-02): Claude Code's own SendMessage is enough for now
 The address grammar in reed-mailbox.md (`name@slug[.hub]`) is superseded by `agent-naming`'s `<repo>:<slug>:<role>`, and its naming half moved into that task.
 The design doc goes with `manifest/` in `bolt-v2`; this note keeps what is left of it.
 
-Use case (2026-10-03): the operator's backup session on Remote Control rescues the orch, for example by re-enabling Remote Control after a cycle, and today has to find reed's per-hub tmux socket by hand; `inject` to a named strand covers it.
+Layering (operator, 2026-10-03): only reed talks to tmux, so the keystroke delivery is reed's: `reedengine.Engine.SendText`/`SendKey` exist, and a `lyx reed send <strand> <text>` verb exposes them; creel's `send`/`inject` deliver through it and never touch tmux themselves.
+Use case: the operator's backup session on Remote Control rescues the orch, for example by re-enabling Remote Control after a cycle, and today has to find reed's per-hub tmux socket by hand; `lyx reed send ly:orch ...` covers it.
