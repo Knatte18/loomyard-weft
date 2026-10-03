@@ -24,7 +24,7 @@
     "19-docs-and-specs.md": "354cc46fd57e9c63f6d3cfbfe9bd1ed53276d99ff2c2789ac8990165fdb928de",
     "20-retire-detach-primitives.md": "7ebad6ba8e73bedb2e83206627ebcacba9e4751b3618c3d046fdc3f9ea49c178"
   },
-  "currentBatch": 0,
+  "currentBatch": 17,
   "masterStrand": "66c95156b1341ff1ff95136e952db4d9",
   "masterSessionId": "cd627267-1e0a-4e18-a7de-6d222661f871",
   "assertedModel": "sonnet",
@@ -241,6 +241,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-verify-publish-hardening/cd627267-1e0a-4e18-a7de-6d222661f871/subagents/agent-a700d359e839a38ce.jsonl"
       ]
+    },
+    "17": {
+      "slug": "retire-integration-stage",
+      "cards": [
+        "17-retire-integration-stage"
+      ],
+      "cardHashes": {
+        "17-retire-integration-stage": "bc7e58e7b2840265444eefa32f34b980a40c6ac2825d2f7f7f22665151385fb9"
+      },
+      "startSha": "36ab418ccfd871b1b787795d09da9d5a186c74b0",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T16:02:27Z",
+      "sessionId": "cd627267-1e0a-4e18-a7de-6d222661f871",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "gated-wait-defers-waiting",
