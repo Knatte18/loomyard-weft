@@ -17,7 +17,7 @@
     "12-delete-half-removed-helpers.md": "1b53c0cd63687a348a68738bdd7fa03741eca18667651152d474db68ff748e81",
     "13-pair-teardown-invariant-and-docs.md": "9fe3d0e0f86fd87c840e35ef2e2c2543a2894fb658f21eb9db1b74e953a8af87"
   },
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "d40931c07b299f9e2765cbc16d1f4dc8",
   "masterSessionId": "27e00257-9d85-477e-be58-5a6b3e2b8076",
   "assertedModel": "sonnet",
@@ -76,6 +76,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/27e00257-9d85-477e-be58-5a6b3e2b8076/subagents/agent-aedefda198669b02e.jsonl"
       ]
+    },
+    "7": {
+      "slug": "reed-retiring-mark",
+      "cards": [
+        "07-reed-retiring-mark"
+      ],
+      "cardHashes": {
+        "07-reed-retiring-mark": "a4d63c56839b04d51e82e38b6a4e184ccf75cd5501fb242ba75398378bfed582"
+      },
+      "startSha": "428408dbaa4ef87998d6ff4cebc4ff3763742c03",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T15:02:30Z",
+      "sessionId": "27e00257-9d85-477e-be58-5a6b3e2b8076",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
