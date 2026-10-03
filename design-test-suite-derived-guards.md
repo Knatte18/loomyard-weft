@@ -2,8 +2,6 @@
 
 `test-suite-derived-guards` · Planned · feature
 
-Depends on: [`test-suite-change-amplification`](design-test-suite-change-amplification.md)
-
 ## Goal
 
 Tests derive their expectations from the code they guard instead of keeping hand-written copies of lists owned elsewhere, so adding a module, command, config section, path or recipe row edits no test file; and integration tests leave no tmux sockets behind.

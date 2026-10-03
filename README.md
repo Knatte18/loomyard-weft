@@ -87,10 +87,3 @@ Starts when every entry it names under After is done.
 1. **A batchifier that groups small related cards into one Webster batch** — [`card-batching`](design-card-batching.md) · feature
    - Only the identity batchifier exists; a mechanical batchifier groups cards from their Create/Edit/Uses fields once cards name members as glyphs
    - **After:** `plan-glyph-precision`
-
-## Done
-
-Finished, awaiting `lyx board prune`.
-
-1. **Test suite, part 1: shared testkit, seam fakes and git helpers** — [`test-suite-change-amplification`](design-test-suite-change-amplification.md) · feature · done
-   - Test helpers and seam fakes live once: internal/testkit with one fake per cross-package seam, git helpers in gitkit, hubforge as the only fabric fixture
