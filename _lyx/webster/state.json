@@ -1,0 +1,48 @@
+{
+  "runGuid": "f2633a94f610e68b82f04b7e5e585e69",
+  "planFingerprint": "8cc741009dcfee4dd4fbb1a46e90d6c2eb57fea06b5d820aef58ce2b2f82d9e7",
+  "planFileHashes": {
+    "00-overview.md": "5a1ef655bdc42c3d026fbd1fda0f9bd2616047c361937b7962bfb3cc8445d11f",
+    "01-verifytree-package.md": "3e7b7d96da52ebaa404964bcf857a6d7c1cea466dd4b9764e8929589902704f9",
+    "02-gated-wait-defers-waiting.md": "6ae2391105391730aebad281bab8a881ba962228a7ebbc0b711e934037d1afdc",
+    "03-pointer-launch.md": "cb1a2ced04193690912f6b6504854fcb6e3c9375e16b53b6906a9bc7f9984492",
+    "04-merge-stage-tracked.md": "8d1658248528f630d2261a3b0c4337489e78f6262056e01750165d083063e353",
+    "05-mergeresolve-session-edits.md": "86f9effa728787c6699ebee70908af67b61075bd2a43220e21b35e3399fe000b",
+    "06-landing-clean-verify.md": "819013a4211eac573d925a8d30075fa3321efe04c544f8bf21b84ba8529371cb",
+    "07-webster-geometry-verifydir.md": "6a95619276ffa76b05871d88da291b67d3e8c650302e7e043ecd2182340441c7",
+    "08-webster-burler-verify-gate.md": "44221f88de7f00d4e20eb1f32a86dfd5d6a36d70ce27eb2f42319ccd8342cda7",
+    "09-status-verify-note.md": "47ac8ef865f399b2ecfdf468f1d4b8988cb24611609367f095481c9a4733f9d6",
+    "10-recover-batch-notification-wait.md": "c917027819042b5f7900a0720f9df4a2757147999cf622eecbb6ff572bb4d791",
+    "11-merriam-strand-role.md": "15546cca94113daf5805052511b310c2934408ee7f103535f2fdd140e6f68371",
+    "12-per-card-gate-command.md": "c1e73b4231a798d2333639d325c8cc558e502a3852237a2f8bc920ae75c28d4d",
+    "13-plan-write-reworded-messages.md": "4fd768f2d9be2efde2478b2dc4bcd9b81829563b4102ba95ba2b35283ed52b88",
+    "14-verify-gate-report.md": "1f3cb6b64e6ca0edf6313080c620d35413b3daa70509683ba05e7acd7555316a",
+    "15-webster-verify-gate.md": "cb0f69cf4903c1aec96d34f783b12d9dd13c197d9ff022622075d8a7c4a3f7d5",
+    "16-verify-fixer-fork.md": "899b6621eba1a39d93c02cc3a8d47ed2258529b88fcc6e37b4a8df387b9ad9e3",
+    "17-retire-integration-stage.md": "9096231a0df4a01ef49c6d127fa2b3805e6db483958a97b050d431287e022a8c",
+    "18-webster-verify-verb.md": "67729fac214dfed50ddae8213fc98bca023310c239a98f34def94040f7d47d0d",
+    "19-docs-and-specs.md": "354cc46fd57e9c63f6d3cfbfe9bd1ed53276d99ff2c2789ac8990165fdb928de",
+    "20-retire-detach-primitives.md": "7ebad6ba8e73bedb2e83206627ebcacba9e4751b3618c3d046fdc3f9ea49c178"
+  },
+  "currentBatch": 2,
+  "masterStrand": "6999e8c6ee20ddff89c3bc1f8c54b49a",
+  "masterSessionId": "099f06c6-5f44-4b91-a2d5-0b41dee65ff2",
+  "assertedModel": "sonnet",
+  "batches": {
+    "2": {
+      "slug": "gated-wait-defers-waiting",
+      "cards": [
+        "02-gated-wait-defers-waiting"
+      ],
+      "cardHashes": {
+        "02-gated-wait-defers-waiting": "6ae2391105391730aebad281bab8a881ba962228a7ebbc0b711e934037d1afdc"
+      },
+      "startSha": "5805c58fbb82665bb5acce0dab784d0b33b6e2bb",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T14:55:08Z",
+      "sessionId": "099f06c6-5f44-4b91-a2d5-0b41dee65ff2",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
