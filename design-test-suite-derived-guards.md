@@ -32,3 +32,12 @@ A changed invariant lands in `CONSTRAINTS.md` in the same commit as its tests; a
 - Tier Purity's and Hermetic Env's per-file allowlist entries whose only reason is resolving the module root through `go env GOMOD` mirror each guard's implementation; one shared root resolver in the harness retires them.
 - Hand-kept copies of registries production owns: CLI / Cobra Invariant help-tree tests, Sandbox Suite Coverage, the config-section registry, Cwd Resolution's constructor-anchoring and no-transients path mirrors, Shed Recipe Registry's row mirrors, Agent Name and Stencil Ownership tests.
 - Plan fixtures: part 1's parent review moved its proposed `internal/testkit/plankit` here, as #327 section 2's plan-fixture writer; it also covers the glyph-plan and file-tree fixture copies in `loomshed` and `loomcli` that part 1's discussion had found.
+
+## Socket leak: findings and direction (ly:orch, 2026-10-03)
+
+`/tmp/tmux-1000/` held about 1,500 dead socket files (656 `lyx-warp-…`, 415 `lyx-001…`, 115 `lyx-contract-…`, the rest per test name) with no tmux server behind any of them: servers exit, their socket files stay.
+About 34 tests already run `kill-server` in `t.Cleanup`, which ends the server but leaves the file; others, likely the fabric tests that boot reed (`lyx-warp-…`), have no cleanup at all.
+Direction for Discussion to weigh:
+- One shared tmux fixture (under `internal/testkit`) for every test that needs a server: a unique socket, `kill-server` and removal of the socket file in `t.Cleanup`.
+- The socket under a short per-test temp directory (`tmux -S <path>`, not `-L <name>`), so it goes with the directory even when a test dies; mind the ~108-byte Unix socket path limit, which long `t.TempDir()` paths can exceed.
+- A guard: each tmux-using package's `TestMain` compares the socket directory before and after its tests and fails on a new leftover `lyx-*` socket.
