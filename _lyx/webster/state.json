@@ -49,7 +49,7 @@
     "44-slices-cleanup.md": "d490d1e3c94c8ef7e2f203913f6eb8e3ead0189d217b6020bc9db04d7b247ad5",
     "45-old-policy-citations.md": "485f164a9c4d89449a927199b09a72c4e6b232d54691f0e6d1a75ae48e754a4e"
   },
-  "currentBatch": 28,
+  "currentBatch": 0,
   "masterStrand": "4ea15cf8b6c585eea1c4d55a66620653",
   "masterSessionId": "01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7",
   "assertedModel": "sonnet",
@@ -596,8 +596,22 @@
       "kind": "fork",
       "spawnedAt": "2026-10-03T09:28:53Z",
       "sessionId": "01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "28-landingshed-shedfake",
+        "status": "done",
+        "head_sha": "773e93b4df7d5da960bed4344e1d34000f29669b",
+        "deviations": [
+          "internal/landingshed/export_test.go"
+        ]
+      },
+      "cardShas": [
+        "773e93b4df7d5da960bed4344e1d34000f29669b"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-change-amplification/01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7/subagents/agent-abbf6d65c4e6edd98.jsonl"
+      ]
     },
     "3": {
       "slug": "gitkit-spawn-rule",
@@ -809,6 +823,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-change-amplification/01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7/subagents/agent-af1db40358ab5a1e1.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-change-amplification/01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7/subagents/agent-ade2b4c8fe6d5483f.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-change-amplification/01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7/subagents/agent-ade8808ef69d2dff4.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-change-amplification/01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7/subagents/agent-ad4223f1f2291d026.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-change-amplification/01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7/subagents/agent-ad4223f1f2291d026.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-change-amplification/01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7/subagents/agent-abbf6d65c4e6edd98.jsonl"
   ]
 }
