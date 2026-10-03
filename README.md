@@ -83,7 +83,7 @@ Waits on nothing open; can start now, in parallel.
 1. **No recovery path needs a command the agents are denied** — [`no-denied-recovery`](design-no-denied-recovery.md) · design
    - [agents][permissions][webster] Webster named git reset --hard as the way forward, the global deny list blocks it even in bypass, and the run stopped for the operator
 1. **Merriam and the driver reflect on their own session and file issues at the end** — [`agent-self-reflect`](design-agent-self-reflect.md) · design
-   - [friction][agents][webster] Friction-Reflect never runs under shed step and batten deletes the notes; key agents self-report at end of work, as millhouse does
+   - [friction][agents][webster] Friction-Reflect never runs under shed step and batten deletes the notes; key agents reflect at end of work and file through lyx selfreport, as millhouse does
 
 ### Layer B
 
