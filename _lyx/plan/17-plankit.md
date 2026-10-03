@@ -9,7 +9,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/planparser#RecognizedFormat`
+- `internal/planparser#RecognizedFormat`
 
 **Intent:** Add the one test-side writer of valid plans (D10), `internal/testkit/plankit`.
 It renders a plan directory from an overview (approved flag, framing, optional `first_card:`, `root:`, `language:`, plan-level sections such as `## verify:`) and cards (number, slug, typed target groups, `Uses:`, `Intent:`, `ImpactSummary:`, optional `Commit:`), writing the format version from `planparser.RecognizedFormat` and the Card Index and card-file names in `planparser`'s grammar.
