@@ -24,7 +24,7 @@ An `ok: true` envelope, such as `begin-batch`'s `paused: true`, writes nothing.
 `Command` registers its subcommands through a new `(c *websterCLI) addVerbs(parent *cobra.Command)`, which wraps every verb through `noteRefusals` except `validate`: `validate` is a lint an agent iterates against, so its findings are expected rather than friction.
 Refusals raised in `resolvePersistentPreRun` stay unnoted, since they fire before the friction directory is resolved.
 
-What this lets through, and the bound: one local note file per refusal and nothing filed by itself; Tier 2 off (an empty friction directory) writes nothing, and the reflection's content rule (card 10) bounds what an issue may quote from the arguments and refusal text.
+What this lets through, and the bound: one local note file per refusal and nothing filed by itself; Tier 2 off (an empty friction directory) writes nothing, and the reflection's content rule (card 8) bounds what an issue may quote from the arguments and refusal text.
 
 `refusalnote_test.go` (untagged, no hub needed) drives commands built by `addVerbs` on a bare parent over a hand-built `websterCLI` with a temporary friction directory:
 

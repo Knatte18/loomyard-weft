@@ -1,4 +1,4 @@
-# Card 10 — reflection-stencil
+# Card 8 — reflection-stencil
 
 **Prosa:**
 - `contracts/stencils/friction/friction-template-reflection.md`
@@ -23,7 +23,6 @@ Stencil body changes, keeping the no-conditionals rule and an accurate header co
 
 - It names the note kinds the agent will see: agent-written friction notes, Go-written halt notes (`loom-halt*`), Go-written webster refusal notes (`webster-refusal-*`), and the driver's repair and re-step records.
 - Step 2 becomes grouping, not triage: file every distinct problem in lyx tooling, merge notes describing the same problem into one issue, and drop only notes about the task's own code or describing nothing wrong.
-- A halt note that states Tier 1 files the halt itself is not filed as a halt; the agent files only the distinct lyx problems the notes show behind it.
 - Each issue body ends with a provenance line naming the task slug and the note file names it came from.
 - The content rule, stated as a hard rule: an issue body describes the lyx problem and may quote lyx's own output, verb names and repo-relative lyx paths; it never quotes the task repository's source, diffs or plan text, credentials, tokens, environment values or absolute home paths, because `Knatte18/loomyard` is public.
 - Filing stays `lyx selfreport create` only, never `gh`.
