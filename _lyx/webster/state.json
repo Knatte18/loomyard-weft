@@ -49,7 +49,7 @@
     "44-slices-cleanup.md": "d490d1e3c94c8ef7e2f203913f6eb8e3ead0189d217b6020bc9db04d7b247ad5",
     "45-old-policy-citations.md": "485f164a9c4d89449a927199b09a72c4e6b232d54691f0e6d1a75ae48e754a4e"
   },
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "4ea15cf8b6c585eea1c4d55a66620653",
   "masterSessionId": "01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7",
   "assertedModel": "sonnet",
@@ -144,13 +144,25 @@
       "kind": "fork",
       "spawnedAt": "2026-10-03T07:35:54Z",
       "sessionId": "01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-fabricengine-git-queries",
+        "status": "done",
+        "head_sha": "3a47c2521a4c682b7aaee350218b6fc8b053f0a6"
+      },
+      "cardShas": [
+        "3a47c2521a4c682b7aaee350218b6fc8b053f0a6"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-change-amplification/01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7/subagents/agent-a00fe3717ddf9c65d.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-change-amplification/01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7/subagents/agent-a5ee3aae98f88bce7.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-change-amplification/01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7/subagents/agent-ae173d75a53f29452.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-change-amplification/01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7/subagents/agent-a79cbe47a2e389a1e.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-change-amplification/01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7/subagents/agent-a79cbe47a2e389a1e.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-change-amplification/01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7/subagents/agent-a00fe3717ddf9c65d.jsonl"
   ]
 }
