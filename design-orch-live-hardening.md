@@ -20,4 +20,5 @@ The hub runs under `lyx orch` for days without hand repair: an adopt keeps the h
 ## Cycle by compact instead of clear (operator idea, 2026-10-03)
 
 The orch's context cycle uses `/clear` plus a handoff file, which starts a new conversation and may drop a Remote Control link the operator relies on from a phone.
-Cycling through `/compact` keeps the same session, so Remote Control and session identity survive; weigh what the handoff file gives that a compaction summary does not.
+Cycling through `/compact` keeps the same session, so Remote Control and session identity survive.
+The operator wants the cycle mode as a config option (`clear` or `compact`), not a fixed switch; weigh what the handoff file gives that a compaction summary does not.
