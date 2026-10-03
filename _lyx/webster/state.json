@@ -1,0 +1,37 @@
+{
+  "runGuid": "ae8f2d12bbba008eb9e2246053dbd715",
+  "planFingerprint": "f8b2b8185b523965a4c54224d8547da8d06981434e3b463698a7a245b0d59ae7",
+  "planFileHashes": {
+    "00-overview.md": "2ffbdce6545a468d8a46a8cc58c4ce3136c094657993e360bb7e561f59bea1f2",
+    "01-reflect-reentrant.md": "97fab38391837a29ba9e9f029b702765116f38199bdf391f5626ce6b1c5d95d2",
+    "02-step-after-hook.md": "1b573544e99851ec3d0c8b23d8363132750cbaa3eeb1c665416b2d2b30bc6daf",
+    "03-reflect-under-step.md": "f3cca16329a3db3e55d39bf950c2fecf75051dfe6aca7a99dc5a5384e1ef118f",
+    "04-refusal-note-writer.md": "a92b37acec825ae3d5d21c5a816f2115ec0f40e2c5f508e036de3f1bc7b695d4",
+    "05-webster-refusal-notes.md": "df5f6087a63300891778a178ab6dc707f20d380a331e2a456fa8882cc00912a9",
+    "06-halt-notes.md": "25fbde023174aa38048ef59762edb5144a8f8e01c5fe4b3b1b3c73b5f065fa42",
+    "07-drive-skill-filing.md": "d48f72ecffc685e2774f4ba8dd2a667b7766448e549a3e002c0114c5795dad56",
+    "08-reflection-stencil.md": "9e3ac9c6c36234d2ea1c32644c454c8dcc39a7b54f293b1f5abec2e104bafefa",
+    "09-friction-capture-docs.md": "ba18d6b7a2640bd1f926b569b4b1a8222c4270b450e0abab4cbce34f256cde1c"
+  },
+  "currentBatch": 1,
+  "masterStrand": "75c7eff8c42410c4caf21985fff03086",
+  "masterSessionId": "5aebe7e2-f383-487b-92ec-654444d1e65c",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "reflect-reentrant",
+      "cards": [
+        "01-reflect-reentrant"
+      ],
+      "cardHashes": {
+        "01-reflect-reentrant": "97fab38391837a29ba9e9f029b702765116f38199bdf391f5626ce6b1c5d95d2"
+      },
+      "startSha": "1e9cd1252e62c5e7411907a07a3fc59cd768244f",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T17:32:23Z",
+      "sessionId": "5aebe7e2-f383-487b-92ec-654444d1e65c",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
