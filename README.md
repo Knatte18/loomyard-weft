@@ -11,20 +11,11 @@ Concretized and claimable.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Test suite, part 1: shared testkit, seam fakes and git helpers** — [`test-suite-change-amplification`](design-test-suite-change-amplification.md) · feature · running · Finalize
-   - Test helpers and seam fakes live once: internal/testkit with one fake per cross-package seam, git helpers in gitkit, hubforge as the only fabric fixture
-   - **Before:** `test-suite-derived-guards`
-
-### Layer B
-
-Starts when every entry it names under After is done.
-
 1. **Test suite, part 2: derived guards, decoupled recipe tests, no leaked tmux sockets** — [`test-suite-derived-guards`](design-test-suite-derived-guards.md) · feature
    - One invariant-scan harness; registry and CLI-tree tests derived from the real registries; recipe/plan/stencil tests decoupled from their sources; fixtures clean up tmux sockets
-   - **After:** `test-suite-change-amplification`
    - **Before:** `verify-publish-hardening`, `pair-lifecycle`, `review-finding-class`
 
-### Layer C
+### Layer B
 
 Starts when every entry it names under After is done.
 
@@ -41,7 +32,7 @@ Starts when every entry it names under After is done.
    - **After:** `test-suite-derived-guards`
    - **Before:** `pattern-init`
 
-### Layer D
+### Layer C
 
 Starts when every entry it names under After is done.
 
@@ -96,3 +87,10 @@ Starts when every entry it names under After is done.
 1. **A batchifier that groups small related cards into one Webster batch** — [`card-batching`](design-card-batching.md) · feature
    - Only the identity batchifier exists; a mechanical batchifier groups cards from their Create/Edit/Uses fields once cards name members as glyphs
    - **After:** `plan-glyph-precision`
+
+## Done
+
+Finished, awaiting `lyx board prune`.
+
+1. **Test suite, part 1: shared testkit, seam fakes and git helpers** — [`test-suite-change-amplification`](design-test-suite-change-amplification.md) · feature · done
+   - Test helpers and seam fakes live once: internal/testkit with one fake per cross-package seam, git helpers in gitkit, hubforge as the only fabric fixture
