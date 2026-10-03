@@ -1,0 +1,6 @@
+status: OK
+head_sha: c289821e6ec1af1dcf3e21356f6e8e6f2415f716
+deviations:
+  - cmd/lyx/hermeticenv_test.go
+  - cmd/lyx/spawnobservability_test.go
+  - internal/testkit/doc.go
