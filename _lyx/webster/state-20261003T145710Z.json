@@ -1,0 +1,174 @@
+{
+  "runGuid": "b7c04440dbff304c43f24304a87de12b",
+  "planFingerprint": "ae5798feee7caf92252a2748f13354e9aa287be98040e44b18ba9ddf64954838",
+  "planFileHashes": {
+    "00-overview.md": "83bdc51d454c4f8116843d0f025dea0ae275fb3f5b09fff85fae379a9ad6812d",
+    "01-remove-refusal-probe-and-record-commit.md": "cd3c469c1c994a7b5a7bb1bb81b7b098ca1f279da2a0d04e581117b8a08129ac",
+    "02-remove-finishes-half-removed-pair.md": "eb19a12d6d5438bd7406b5e6951acd3805dd652e4660de38c3430ed9e846bce6",
+    "03-remove-remote-deletes-landed-task-branch.md": "1935d854b6985c57fc304cc636d1c51be5fcd7ba6e93560ef07f866bf4b3b3c1",
+    "04-cleanup-remote-task-branch-sweep.md": "4223993a90c41521ae90ef1ba9b3eb0e61c20b07c61f41c29d7c0c05c20222e4",
+    "05-cleanup-remote-cli-with-open-prs.md": "feb0ea0ccc8b32ad54557a6c730905bf1159e7a99f82229b6358903070d9afcf",
+    "06-reed-end-session-by-name.md": "55582ee29c9cf66ccf864cd82eaa1337b0ba80e56ee43d235187704a73ebe915",
+    "07-reed-retiring-mark.md": "a4d63c56839b04d51e82e38b6a4e184ccf75cd5501fb242ba75398378bfed582",
+    "08-loom-start-replaces-retiring-driver.md": "9bce3cd0d0ba4af5390ed791fc2887ec6a8eca8e333d542c304688335b246735",
+    "09-pairteardown-composite.md": "00e8f4daf3d8bf14f66bdd6ec3b7a4f9a1dd809f7d06541239217c713d44736d",
+    "10-fabric-remove-through-composite.md": "bf1785718963874f6c17f81333ec3c6ade6e0d66a40d94bfbd5e7203077a32d1",
+    "11-batten-teardown-through-composite.md": "9ac471da43c8ea5af1f7cf4de4e89a98b1b6200d96cdb56e5c83df82b7eeb122",
+    "12-delete-half-removed-helpers.md": "35775b81f792a03e92af9333a491c223b556097f0739392baac1ca9ee6e22867",
+    "13-pair-teardown-invariant-and-docs.md": "9fe3d0e0f86fd87c840e35ef2e2c2543a2894fb658f21eb9db1b74e953a8af87"
+  },
+  "currentBatch": 0,
+  "masterStrand": "494384ce5deddba4d47cdb0d1769fb44",
+  "masterSessionId": "09881b49-bad6-4826-ac64-6ed455c6ae98",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "remove-refusal-probe-and-record-commit",
+      "cards": [
+        "01-remove-refusal-probe-and-record-commit"
+      ],
+      "cardHashes": {
+        "01-remove-refusal-probe-and-record-commit": "cd3c469c1c994a7b5a7bb1bb81b7b098ca1f279da2a0d04e581117b8a08129ac"
+      },
+      "startSha": "5805c58fbb82665bb5acce0dab784d0b33b6e2bb",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T14:32:04Z",
+      "sessionId": "09881b49-bad6-4826-ac64-6ed455c6ae98",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-remove-refusal-probe-and-record-commit",
+        "status": "done",
+        "head_sha": "c8d12c8bb8f9e42612db86b377ea275e951fb115",
+        "deviations": [
+          "internal/fabricengine/remove_weftprobe_test.go"
+        ]
+      },
+      "cardShas": [
+        "c8d12c8bb8f9e42612db86b377ea275e951fb115"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/09881b49-bad6-4826-ac64-6ed455c6ae98/subagents/agent-a766de0d5aa6e11f6.jsonl"
+      ]
+    },
+    "12": {
+      "slug": "delete-half-removed-helpers",
+      "cards": [
+        "12-delete-half-removed-helpers"
+      ],
+      "cardHashes": {
+        "12-delete-half-removed-helpers": "35775b81f792a03e92af9333a491c223b556097f0739392baac1ca9ee6e22867"
+      },
+      "startSha": "8f03fa43f6664fee71018d1c35d26f367fbfeed5",
+      "kind": "recovery",
+      "spawnedAt": "2026-10-03T14:44:21Z",
+      "terminal": true,
+      "status": "failed",
+      "digest": {
+        "batch": "12-delete-half-removed-helpers",
+        "status": "failed",
+        "head_sha": "8f03fa43f6664fee71018d1c35d26f367fbfeed5",
+        "reasons": [
+          "delete-not-done/12-delete-half-removed-helpers[blocking]: Delete target \"internal/fabricengine#Topology.RemovePairBranch\" still resolves found",
+          "delete-not-done/12-delete-half-removed-helpers[blocking]: Delete target \"internal/fabricengine#PairBranchResult\" still resolves found",
+          "delete-not-done/12-delete-half-removed-helpers[blocking]: Delete target \"internal/fabricengine#PairSiblingRemnant\" still resolves found"
+        ]
+      },
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/09881b49-bad6-4826-ac64-6ed455c6ae98/subagents/agent-a3b16e90f108df70d.jsonl"
+      ],
+      "strandGuid": "f1437fb30727da38550fe5e932eead06",
+      "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/pair-lifecycle/.lyx/shuttle/38a4448aaaf1c674bc24da130066893e",
+      "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/pair-lifecycle/.lyx/shuttle/38a4448aaaf1c674bc24da130066893e/events.jsonl"
+    },
+    "6": {
+      "slug": "reed-end-session-by-name",
+      "cards": [
+        "06-reed-end-session-by-name"
+      ],
+      "cardHashes": {
+        "06-reed-end-session-by-name": "55582ee29c9cf66ccf864cd82eaa1337b0ba80e56ee43d235187704a73ebe915"
+      },
+      "startSha": "c8d12c8bb8f9e42612db86b377ea275e951fb115",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T14:35:29Z",
+      "sessionId": "09881b49-bad6-4826-ac64-6ed455c6ae98",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-reed-end-session-by-name",
+        "status": "done",
+        "head_sha": "9113663e6587449d2dec535a3e6fec62162796a0"
+      },
+      "cardShas": [
+        "9113663e6587449d2dec535a3e6fec62162796a0"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/09881b49-bad6-4826-ac64-6ed455c6ae98/subagents/agent-a0d20fba4117bb40f.jsonl"
+      ]
+    },
+    "7": {
+      "slug": "reed-retiring-mark",
+      "cards": [
+        "07-reed-retiring-mark"
+      ],
+      "cardHashes": {
+        "07-reed-retiring-mark": "a4d63c56839b04d51e82e38b6a4e184ccf75cd5501fb242ba75398378bfed582"
+      },
+      "startSha": "9113663e6587449d2dec535a3e6fec62162796a0",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T14:36:21Z",
+      "sessionId": "09881b49-bad6-4826-ac64-6ed455c6ae98",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-reed-retiring-mark",
+        "status": "done",
+        "head_sha": "ca73623416bf2a2e04113f6960737e2cf3e7a76a",
+        "deviations": [
+          "internal/reedcli/strandops.go",
+          "internal/reedcli/cli.go"
+        ]
+      },
+      "cardShas": [
+        "ca73623416bf2a2e04113f6960737e2cf3e7a76a"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/09881b49-bad6-4826-ac64-6ed455c6ae98/subagents/agent-ad08bb7d8126738ab.jsonl"
+      ]
+    },
+    "8": {
+      "slug": "loom-start-replaces-retiring-driver",
+      "cards": [
+        "08-loom-start-replaces-retiring-driver"
+      ],
+      "cardHashes": {
+        "08-loom-start-replaces-retiring-driver": "9bce3cd0d0ba4af5390ed791fc2887ec6a8eca8e333d542c304688335b246735"
+      },
+      "startSha": "ca73623416bf2a2e04113f6960737e2cf3e7a76a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T14:38:22Z",
+      "sessionId": "09881b49-bad6-4826-ac64-6ed455c6ae98",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "08-loom-start-replaces-retiring-driver",
+        "status": "done",
+        "head_sha": "8f03fa43f6664fee71018d1c35d26f367fbfeed5"
+      },
+      "cardShas": [
+        "8f03fa43f6664fee71018d1c35d26f367fbfeed5"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/09881b49-bad6-4826-ac64-6ed455c6ae98/subagents/agent-af6f6c0a15c25a876.jsonl"
+      ]
+    }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/09881b49-bad6-4826-ac64-6ed455c6ae98/subagents/agent-a766de0d5aa6e11f6.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/09881b49-bad6-4826-ac64-6ed455c6ae98/subagents/agent-a0d20fba4117bb40f.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/09881b49-bad6-4826-ac64-6ed455c6ae98/subagents/agent-ad08bb7d8126738ab.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/09881b49-bad6-4826-ac64-6ed455c6ae98/subagents/agent-af6f6c0a15c25a876.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/09881b49-bad6-4826-ac64-6ed455c6ae98/subagents/agent-a3b16e90f108df70d.jsonl"
+  ]
+}
