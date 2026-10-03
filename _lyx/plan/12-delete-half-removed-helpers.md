@@ -11,6 +11,9 @@
 - `internal/fabricengine/cleanupremote_integration_test.go`
 - `internal/fabricengine/doc.go`
 
+**Uses:**
+- `internal/battencli#battenCLI.wire`
+
 **Intent:**
 Removes the exported fabric helpers left with no production caller once card 11 dropped batten's half-removed special-casing (D1).
 `Remove`'s finish path (card 2) covers what they did.
