@@ -25,6 +25,11 @@ Filtering happens when issues are pulled back into the board, not before filing 
 - **Ordering.** The reflection finishes before batten tears the pair down, and the notes survive a failed reflection.
 - **Filing.** Through `lyx selfreport create` only, never `gh`; dedupe against open issues, or leave that to the intake filter (decide in Discussion).
 
+## From `convergence-plan`: Friction on halt (hub, 2026-10-02)
+
+A refusal or halt makes a friction note mandatory, so every intervention leaves a record the measurement can count.
+Check first whether `internal/loomengine/anomaly.go` loses a halt that is later resumed.
+
 ## Open
 
 - Under `step`, the reflection blocks the driver's `shed step` call for up to `friction_timeout_min`; ly-drive must tolerate that wait without taking the run for hung.
