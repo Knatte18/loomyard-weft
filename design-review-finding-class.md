@@ -1,6 +1,6 @@
 # Review convergence: the judge decides converged, continue or circling from fresh reviews
 
-`review-finding-class` · Planned · feature
+`review-finding-class` · Tasks · feature
 
 Depends on: [`test-suite-derived-guards`](design-test-suite-derived-guards.md)
 

@@ -1,6 +1,6 @@
 # Orch and batten run from the operator's own long-lived worktree, not only the prime
 
-`orch-any-worktree` · Someday · feature
+`orch-any-worktree` · Notes · feature
 
 ## Why
 
