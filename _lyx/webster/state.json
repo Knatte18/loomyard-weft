@@ -17,7 +17,7 @@
     "12-delete-half-removed-helpers.md": "35775b81f792a03e92af9333a491c223b556097f0739392baac1ca9ee6e22867",
     "13-pair-teardown-invariant-and-docs.md": "9fe3d0e0f86fd87c840e35ef2e2c2543a2894fb658f21eb9db1b74e953a8af87"
   },
-  "currentBatch": 0,
+  "currentBatch": 12,
   "masterStrand": "494384ce5deddba4d47cdb0d1769fb44",
   "masterSessionId": "09881b49-bad6-4826-ac64-6ed455c6ae98",
   "assertedModel": "sonnet",
@@ -60,24 +60,16 @@
         "12-delete-half-removed-helpers": "35775b81f792a03e92af9333a491c223b556097f0739392baac1ca9ee6e22867"
       },
       "startSha": "8f03fa43f6664fee71018d1c35d26f367fbfeed5",
-      "kind": "fork",
-      "spawnedAt": "2026-10-03T14:39:19Z",
-      "sessionId": "09881b49-bad6-4826-ac64-6ed455c6ae98",
-      "terminal": true,
-      "status": "failed",
-      "digest": {
-        "batch": "12-delete-half-removed-helpers",
-        "status": "failed",
-        "head_sha": "8f03fa43f6664fee71018d1c35d26f367fbfeed5",
-        "reasons": [
-          "delete-not-done/12-delete-half-removed-helpers[blocking]: Delete target \"internal/fabricengine#Topology.RemovePairBranch\" still resolves found",
-          "delete-not-done/12-delete-half-removed-helpers[blocking]: Delete target \"internal/fabricengine#PairBranchResult\" still resolves found",
-          "delete-not-done/12-delete-half-removed-helpers[blocking]: Delete target \"internal/fabricengine#PairSiblingRemnant\" still resolves found"
-        ]
-      },
+      "kind": "recovery",
+      "spawnedAt": "2026-10-03T14:44:21Z",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/09881b49-bad6-4826-ac64-6ed455c6ae98/subagents/agent-a3b16e90f108df70d.jsonl"
-      ]
+      ],
+      "strandGuid": "f1437fb30727da38550fe5e932eead06",
+      "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/pair-lifecycle/.lyx/shuttle/38a4448aaaf1c674bc24da130066893e",
+      "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/pair-lifecycle/.lyx/shuttle/38a4448aaaf1c674bc24da130066893e/events.jsonl"
     },
     "6": {
       "slug": "reed-end-session-by-name",
