@@ -8,8 +8,8 @@
 - `internal/webstercli/refusalnote_test.go`
 
 **Uses:**
-- `plan:internal/websterengine#WriteRefusalNote`
-- `plan:internal/websterengine#RefusalNote`
+- `internal/websterengine#WriteRefusalNote`
+- `internal/websterengine#RefusalNote`
 - `internal/output#ErrFields`
 
 **Intent:**

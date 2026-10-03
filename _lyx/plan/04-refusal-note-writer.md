@@ -1,8 +1,8 @@
 # Card 4 — refusal-note-writer
 
 **Create:**
-- `plan:internal/websterengine#RefusalNote` -> `type RefusalNote struct`
-- `plan:internal/websterengine#WriteRefusalNote` -> `func WriteRefusalNote(frictionDir string, n RefusalNote) error`
+- `internal/websterengine#RefusalNote`
+- `internal/websterengine#WriteRefusalNote`
 - `internal/websterengine/refusalnote.go`
 - `internal/websterengine/refusalnote_test.go`
 

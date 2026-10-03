@@ -20,8 +20,8 @@
 - `internal/shedengine#ErrShedBusy`
 - `internal/shedverbs#Hooks`
 - `internal/loomshed#NameWebster`
-- `plan:internal/websterengine#WriteRefusalNote`
-- `plan:internal/websterengine#RefusalNote`
+- `internal/websterengine#WriteRefusalNote`
+- `internal/websterengine#RefusalNote`
 - `internal/testkit/shedfake#Shuttle`
 
 **Intent:**
