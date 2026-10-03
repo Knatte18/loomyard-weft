@@ -1,0 +1,4 @@
+status: OK
+head_sha: 250a2399a41f84c3f4b6d99cc6e46d32b5ff7657
+deviations:
+  - cmd/lyx/gitrepoboundary_test.go
