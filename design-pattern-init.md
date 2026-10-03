@@ -11,7 +11,7 @@ Runs alone, last: it repoints CONSTRAINTS.md in ~130 files.
 ## Also folded in
 
 - `fabric-vocabulary-everywhere`, `model-spec-short-form`, `ide-hub-workspace-followups`, `agent-role-constants` and `manifest-retire` below.
-- `manifest-retire`'s Someday strike list needs the operator before this task starts.
+- `manifest-retire`'s Someday strike list was decided by the operator on 2026-10-03 (below).
 - `model-spec-short-form`'s model trial (`fable[high]` for discussion and review) moved to `convergence-plan`, where it is measured; this task does only the short form, the dead link and Master's explicit effort.
 
 ## From `pattern-init`: Initialize PATTERN for loomyard: CONSTRAINTS.md becomes _lyx/PATTERN.md
@@ -53,10 +53,13 @@ Webster's own `master` → `webster` rename is in `webster-verify-gate`.
 Retire `manifest/`: first bring roadmap.md's surviving Someday items into bolt in the new tier format, then move the durable reference content into package docs, fix inbound links and delete the folder.
 Millhouse has no ownership of `manifest/` (operator, 2026-10-02).
 
-### Someday items still to triage with the operator
+### Someday items
 
-Not yet in bolt: `raddle`, `hardener`, `webster-parallel-execution`, `reed-multi-window`, `warp-visibility`, `baseline-drift-gate`, `config-overlay`, `fabric-reset-to-sha`, `finalize-discrepancy-doc`, `shedrecipe-capabilities`, `doctor`, `session-sync`.
-Proposed strikes, awaiting the operator: fabric Windows verification (dropping Windows and CLAUDE.md's fslink claim), `semantic-index`, curation-triage automation, VS Code opt-in per worktree (check `batten-open-ide` first), plugin packaging, the shuttle tools-restriction and per-round provider selector, bulk-mode clusters, fabric's ordinary-monorepo verbs, the reed Slack relay.
+Not yet in bolt, to bring in as notes: `raddle`, `hardener`, `webster-parallel-execution`, `reed-multi-window`, `warp-visibility`, `baseline-drift-gate`, `config-overlay`, `fabric-reset-to-sha`, `finalize-discrepancy-doc`, `shedrecipe-capabilities`, `doctor`, `session-sync`.
+The proposed strikes were decided by the operator on 2026-10-03 and are already on the board as notes: `fabric-windows` (Windows support stays, so CLAUDE.md's fslink rule stays), `semantic-index`, `issue-intake`, `ide-opt-in`, `plugin-packaging`, `burler-round-models` (was the per-round provider selector), `fabric-monorepo-verbs`, `reed-slack-relay`.
+Struck: the shuttle tools-restriction (replaced by note `agent-permission-setup`) and bulk-mode clusters (replaced by note `codex-engine`).
+Remove these items from `manifest/roadmap.md` with the rest; keep `manifest/designs/` docs only for designs not yet built, per CLAUDE.md.
+
 ### manifest/ retirement
 
 The triage was done in the bolt review of 2026-10-01/02; what survives is already in bolt.
@@ -82,3 +85,4 @@ Afterwards: delete manifest/, and update CLAUDE.md (Task completion section name
 
 `shedrun.Seed.Parent` is no longer written; parent comes from the pair's origin record, and the field is read only as a fallback for runs seeded before `aa67fd1d7`.
 Remove the field and the fallback once no such run remains.
+
