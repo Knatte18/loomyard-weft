@@ -38,7 +38,7 @@
     "33-tmuxkit-socket-fixture.md": "4f13b206edcf0343a5b12d0bc94d64cf99c838c91140207792e211c07d808e2b",
     "34-tmux-isolation-scan.md": "729ee171db5708a6c50f54de11629c35415e8ad72d826c395c0ebdbb1fb02145"
   },
-  "currentBatch": 0,
+  "currentBatch": 17,
   "masterStrand": "e4a1de44f65a28710965f0d3ed142a38",
   "masterSessionId": "fc4d87f7-c072-4eff-bd8e-de22f27e663f",
   "assertedModel": "sonnet",
@@ -250,6 +250,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-derived-guards/fc4d87f7-c072-4eff-bd8e-de22f27e663f/subagents/agent-af006414f5362a103.jsonl"
       ]
+    },
+    "17": {
+      "slug": "plankit",
+      "cards": [
+        "17-plankit"
+      ],
+      "cardHashes": {
+        "17-plankit": "0563a5d443a32b748c9534f91a11d423f1d95dc77d39881cf8861609de9eabe2"
+      },
+      "startSha": "7f9fcb8749adfbaf904c88addb4e9268d75134ff",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T12:25:38Z",
+      "sessionId": "fc4d87f7-c072-4eff-bd8e-de22f27e663f",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "testkit-scan-on-scankit",
