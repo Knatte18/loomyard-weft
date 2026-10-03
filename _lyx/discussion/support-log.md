@@ -32,6 +32,16 @@ The session ran autonomously: no operator answered questions, and every pick bel
    `RenderIntegrationPrompt` is likely retired by `verify-publish-hardening`; picked local test helpers and no production signature change (D16).
 10. **Invariant audit.**
     Walked every `CONSTRAINTS.md` section bearing on the touched tests and recorded change or keep for each (D20).
+    The directive asks for each invariant that forces duplicated tests or hand-kept copies to be restated, moved to one shared scan or dropped; per-package scan copies and registry mirrors were enforcement shape, not rule text, so most change only in enforcement.
+    Kept in text: Cwd Resolution and Durable-vs-Ephemeral (D7 changes only the test's shape), Shed Recipe Registry (its tests already range `Names()`), Agent Name (no hand-kept mirror found), Stencil Ownership (D11 routes test seeding through its owner), Sandbox Suite Coverage (already derived from `newRoot()`; its exclusion list carries reasons) and Shed Verb-Set (D14's bound moves any `loomcli` case `shedverbs` lacks before deleting it).
+11. **Churn evidence behind the derived tests.**
+    About twenty scans each rebuilt the same root, walk, allowlist and floor scaffolding, and the leaf guard files differed only in package name and allowlist (D1).
+    The `go env GOMOD` exec forced an allowlist entry per untagged guard file (D4).
+    `helptree_test.go` was edited in 29 of 32 commits that touched it, each for a one-word list addition (D5); `configreg`'s list took the same one-word edit in three commits (D6).
+    gofmt re-aligned about twenty lines per added allowlist key (D8).
+    One recipe row edited three tables in `internal/loomrecipe` (D9).
+    `format: 5` appeared in ten test files outside `planparser` (D10).
+    `websterengine/template_test.go` alone carried over a hundred phrase checks, each re-reading the stencil (D12).
 
 ## Rejected alternatives
 

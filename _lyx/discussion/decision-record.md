@@ -42,8 +42,6 @@ It provides:
 
 The exact API is the plan's call.
 
-Rationale: about twenty scans each rebuild ~50 lines of the same scaffolding, and the 11 leaf files differ only in package name and allowlist.
-
 ### D2 — Every invariant scan converts to the harness
 
 Decision: every test that enforces a `CONSTRAINTS.md` invariant by walking source or resolving the repo root uses `scankit` for root, walk, allowlist and floor: the `cmd/lyx` guards, every `seam_enforcement_test.go`, `leaf_enforcement_test.go` and other `*_enforcement_test.go`, the Testkit scan, `internal/lyxcwd/enforcement_test.go`, `contracts/stencils/citation_enforcement_test.go`, the docs-link scan and the sandbox coverage guard's root lookup.
@@ -66,10 +64,8 @@ Rationale: `go test ./internal/<pkg>` still catches that package's import violat
 
 ### D4 — No `go env GOMOD` spawn in any scan
 
-Decision: every scan resolves the module root through `scankit`; the `exec.LookPath("go")` skips and `go env GOMOD` execs go.
+Decision: every scan resolves the module root through `scankit`; the `exec.LookPath("go")` skips and the `go env GOMOD` execs are removed.
 The Test Tier Purity and Hermetic Env allowlist entries whose only reason was that exec become stale and are removed in the same change.
-
-Rationale: the exec made 14 untagged files need an allowlist entry that mirrored each guard's implementation.
 
 ### D5 — One CLI-tree walk replaces the hand-kept help tree
 
@@ -83,14 +79,13 @@ Bound: a derived listing no longer notices a verb being deleted; that verb's own
 `go test` of one CLI package no longer checks `Short`; `go test ./cmd/lyx` does, and the plan-level verify runs it.
 A deleted test whose comment cites a finding or crucible round is not deleted: its assertion moves into the walk or stays (D21).
 
-Rationale: `helptree_test.go` was edited in 29 of 32 commits that touched it, each for a one-word list addition.
-
 ### D6 — Config registry asserted by property
 
 Decision: `internal/configreg`'s name-list test asserts properties instead of a literal list: names sorted, unique, and each with a template that resolves.
 Tests that assert a specific module's attribute (`SeedOnly` for `models` and `burler`, the `fabric` template) stay.
+A scan on `scankit` asserts that every production package declaring `ConfigTemplate` is registered in `Modules()`, as the independent oracle for membership.
 
-Rationale: three commits made the same one-word edit to that list.
+Bound: the property test no longer notices a module dropped from `Modules()`; the registration scan does, and a new module's `ConfigTemplate` is caught there with no test edit.
 
 ### D7 — Path guards: one table of constructors, expectations from the rule
 
@@ -109,8 +104,6 @@ Rationale: a path change edited three files, asserting each path twice; producti
 Decision: every allowlist a converted scan carries is written one entry per line without aligned values (a `[]string`, or a map whose values are not column-aligned by gofmt, such as a slice of `{entry, reason}` pairs).
 `gitrepoboundary_test.go`'s pinned-method set is the first.
 
-Rationale: gofmt re-aligned ~20 lines per added key.
-
 ### D9 — Recipe row list pinned once
 
 Decision: per #327 §1.
@@ -119,7 +112,8 @@ Decision: per #327 §1.
 `sequence_test.go` and `coverage_guard_test.go` read that one table instead of their own copies; `coverage_guard_test.go` is restructured, never weakened.
 Proof: swapping two `OnDone` targets in the recipe YAML still fails a test.
 
-Rationale: one recipe row edited three tables in `internal/loomrecipe`.
+Bound: the property pins `MaxBounces` and `Segment` only as equal within a Bouncer/Burler pair, so a pair's `max_bounces` value or a consistently renamed segment label changes unnoticed, except Discussion-Bouncer's budget, which `resume_test.go` drives.
+`OnDone` order through Publish stays guarded by `sequence_test.go`, and the PR-Gate and PR-Rework edges by `TestRecipe_PublishRoutesThroughPRGate`.
 
 ### D10 — `internal/testkit/plankit` writes plan fixtures
 
@@ -134,7 +128,7 @@ The Planparser Sole-Parser Invariant is restated: `planparser` is the sole produ
 Bound: this adds a second, test-only writer of the plan format.
 It is bounded to `_test.go` callers by the Testkit importer rule, renders through `planparser`'s exported format constant so a format bump fails at one site, and the golden-fixture test stays the parser's anchor.
 
-Rationale: `format: 5` appears in 10 test files outside `planparser`; each helper is a de facto second writer already, and one is better than fifteen.
+Rationale: each hand-written helper is a de facto second writer already, and one is better than many.
 
 ### D11 — `internal/testkit/stencilkit` seeds stencils through the registry
 
@@ -154,8 +148,6 @@ Left in place: assertions on rendered output (`Fill`, `RenderForkPrompt_*`, `Ren
 Bound: dropping generic-wording claims lets those phrases change unnoticed.
 Only claims with no cited provenance may be dropped, and each drop is itemised.
 
-Rationale: `websterengine/template_test.go` alone carries over a hundred phrase checks across dozens of functions, each re-reading the stencil.
-
 ### D13 — shedrecipe conformance over the whole registry
 
 Decision: per #327 §5.
@@ -172,6 +164,10 @@ Bound: a new entry gets unknown-key coverage only once it has a minimal-config r
 Decision: per #327 §6.
 `loomcli`'s tests of `shedverbs.StepEnvelope`, `RenderStatusLine` and `PrintStatusLinesOnChange` that duplicate `shedverbs`' own are deleted, after diffing the two 16-key lists once; `TestStepEnvelope_FieldMapping` moves to `shedverbs` if `shedverbs` lacks it; the loom-specific tests #327 names stay.
 `validate-plan`'s tests in `loomcli` and `webstercli` stay: the two verbs render findings into different envelope shapes, so there is no shared mapper to test once.
+
+Bound: a deleted `loomcli` test is removed only case by case.
+A case with no counterpart in `shedverbs`' own tests moves there first, for example `loomcli`'s `PrintStatusLinesOnChange` cases for the deduped unavailable line, a reprint after returning to an earlier line and the always-printed first line.
+`loomcli`'s own wiring of `shedverbs` stays asserted by the loom-specific tests that stay.
 
 ### D15 — One commit-status seam
 
@@ -200,7 +196,7 @@ Decision: `tmuxkit` has two parts.
 - A per-test socket fixture for tests that start tmux directly: a unique `-L` key, with `kill-server` in `t.Cleanup`.
   Tests that today hand-roll a `lyx-Test…`/`lyx-contract-…` key and their own `kill-server` cleanup convert to it.
 
-Every tmux server a test starts, directly or through reed, the `lyx` binary or a reed pane, inherits `TMUX_TMPDIR`, because production reed always addresses tmux by `-L <key>` and `OwnsTmuxEnv` compares only the socket basename.
+Every tmux server a test starts, directly or through reed, the `lyx` binary or a reed pane, inherits `TMUX_TMPDIR`, because production reed (`internal/reedengine`) always addresses tmux by `-L <key>` and `OwnsTmuxEnv` compares only the socket basename.
 On Windows (psmux) the entry point runs the tests unchanged.
 
 Bound: the sweep kills only servers whose socket is under the kit's own directory.
@@ -213,6 +209,8 @@ Rationale: sockets survive their servers today, and some packages have no cleanu
 
 Decision: a new `CONSTRAINTS.md` section: every test package with an `integration`- or `smoke`-tagged test file has a `TestMain` that runs its tests through `tmuxkit`'s entry point, under every tag set that compiles that package's tests.
 Enforced by a scan in `cmd/lyx` on `scankit`, modelled on the Hermetic Git Test Environment scan, with an allowlist (entry plus reason) and stale-entry detection.
+The allowlist starts empty.
+An entry is admitted only for a package whose `TestMain` cannot call the entry point, and its reason names that obstacle; "does not start tmux" is not a reason.
 Test Tier Purity gains one rule, parallel to its `gitkit` rule: every `tmuxkit` export except the `TestMain` entry point counts as a spawn and is barred from untagged files.
 In an untagged run, the entry point spawns nothing, because no server exists to sweep.
 
@@ -226,12 +224,13 @@ Its rules gain:
 
 - `scankit` imports the standard library only, so every package's tests can import it.
 - `tmuxkit` is exempt from the `os/exec` ban, bounded to running the `tmux` binary against sockets under its own directory or its own fixture keys.
+- No other kit imports `tmuxkit`, as for `lyxbin`, so the exemption cannot reach another kit transitively and Tier Purity's `tmuxkit` rule sees every spawning call.
 - `scankit` asserts scan results; `plankit` and `stencilkit` assert nothing beyond `t.Fatalf` on their own setup.
 
 The enforcing scan is rebuilt on `scankit` and covers the new kits.
 
 Bound: the `tmuxkit` exemption lets a second kit import `os/exec`.
-Review keeps it to `tmux`, and D18's Tier Purity rule keeps its spawning exports out of untagged files.
+Review keeps it to `tmux`, the rebuilt Testkit scan bars other kits from importing it, and D18's Tier Purity rule keeps its spawning exports out of untagged files.
 
 ### D20 — Invariant audit under the operator directive
 
@@ -245,9 +244,7 @@ Decision: of the invariants bearing on this task's tests, only these change:
 - Planparser Sole-Parser Invariant: restated per D10.
 - New: Tmux Test Isolation Invariant (D18).
 
-Audited and unchanged in text, with their enforcement moved onto `scankit` where they have a scan: every Leaf and Seam invariant (D3), Cwd Resolution and Durable-vs-Ephemeral (D7 changes only the test's shape), Shed Recipe Registry (its tests already range `Names()`), Agent Name (no hand-kept mirror found), Stencil Ownership (D11 routes test seeding through its owner), Sandbox Suite Coverage (already derived from `newRoot()`; its exclusion list carries reasons), Markdown Link Integrity, and Shed Verb-Set (its named enforcer `internal/shedverbs/step_test.go` keeps every assertion D14 deletes from `loomcli`).
-
-Rationale: the directive asks for each invariant that forces duplicated tests or hand-kept copies to be restated, moved to one shared scan or dropped; per-package scan copies and registry mirrors were enforcement shape, not rule text, so most change only in enforcement.
+Unchanged in text, with their enforcement moved onto `scankit` where they have a scan: every Leaf and Seam invariant (D3), Cwd Resolution, Durable-vs-Ephemeral, Shed Recipe Registry, Agent Name, Stencil Ownership, Sandbox Suite Coverage, Markdown Link Integrity and Shed Verb-Set.
 
 ### D21 — Protected tests and verification
 
@@ -277,7 +274,7 @@ Rationale: the later scans (D18, the rebuilt Testkit scan) are written on the ha
 ## Constraints
 
 - `CONSTRAINTS.md` is authoritative; each change in D20 lands with the code and scan that enforce it.
-- Testkit Invariant (as restated in D19): kits are imported only from `_test.go` files, import no `internal/*cli` package, and only `lyxbin` and `tmuxkit` may import `os/exec`.
+- Testkit Invariant (as restated in D19): kits are imported only from `_test.go` files, import no `internal/*cli` package, and only `lyxbin` and `tmuxkit` may import `os/exec`; no kit imports `lyxbin` or `tmuxkit`.
 - Test Tier Purity: untagged test files spawn nothing; `scankit` resolves the root without a spawn; `tmuxkit`'s spawning exports stay in tagged files.
 - Hermetic Git Test Environment: a package that gains a `TestMain` for D18 keeps or adds `gitkit.HermeticGitEnv()` where its tests spawn git.
 - Fabric Vocabulary Invariant: kit production files are outside the owner set and must not use warp/weft.
@@ -312,7 +309,7 @@ Rationale: the later scans (D18, the rebuilt Testkit scan) are written on the ha
 - Each leaf and seam package keeps its own import guard as a short `scankit` caller (D3).
 - `cmd/lyx` has one `newRoot()` walk asserting `Short`, bare-group listing, `bogus` refusal with an `ok:false` envelope, and `root.Long` naming every module; `helptree_test.go`'s lists, `unknown_subcommand_test.go`'s hard-coded groups, `longlist_test.go` and `drift_test.go` are gone or folded in; no `*cli` package keeps a `NoArgs`, `UnknownSubcommand` or `Short` copy or an exact-verb-set test; `registration_test.go` is unchanged in what it asserts.
 - Adding a module, a verb, a config section, a path constructor, a stencil or a recipe row edits no test file (shown by inspection of the derived tests; a path constructor is guarded once it has a table row).
-- `configreg`'s name test asserts sorted, unique and template-backed names, with no literal list.
+- `configreg`'s name test asserts sorted, unique and template-backed names, with no literal list; removing one entry from `Modules()` fails the registration scan (planted, then removed).
 - One path-constructor table in `cmd/lyx` replaces `constructoranchoring_test.go` and `notransients_test.go`, with no expected-path literal per row; moving a transient constructor under `_lyx` fails it.
 - Touched allowlists are one entry per line without aligned values.
 - D9's deletions are made; swapping two `OnDone` targets in the recipe YAML fails a test; `sequence_test.go` and `coverage_guard_test.go` carry no list of their own.
@@ -320,17 +317,16 @@ Rationale: the later scans (D18, the rebuilt Testkit scan) are written on the ha
 - `stencilkit` seeds every stencil fixture; no test hand-lists stencil byte slices to seed a directory.
 - `contracts/stencils/claims_test.go` holds the raw-stencil wording claims, each with a `why`; every dropped claim is listed with its reason.
 - shedrecipe has one registry-wide unknown-key test; removing one entry's `configRejectUnknown` call fails it.
-- D14's `loomcli` duplicates are deleted and D15's seam lives in one production package with one test set; `wiring_commitstatus_integration_test.go` still passes.
-- `tmuxkit` exists; every package with an `integration`/`smoke`-tagged test file runs its tests through its entry point, and the D18 scan fails when one such package's `TestMain` lacks the call (planted, then removed); an untagged `tmuxkit` fixture call fails Tier Purity (planted, then removed).
-- After `go test -tags integration ./...` and the smoke tier, the default socket directory (`/tmp/tmux-<uid>/`) has no new socket from a test, and no tmux server started by a test is still running; a socket from the operator's own live hubs may appear and is excluded by checking which servers answer.
+- D14's `loomcli` duplicates are deleted, every deleted case is asserted in `shedverbs`' own tests, and D15's seam lives in one production package with one test set; `wiring_commitstatus_integration_test.go` still passes.
+- `tmuxkit` exists; every package with an `integration`/`smoke`-tagged test file runs its tests through its entry point, and the D18 scan fails when one such package's `TestMain` lacks the call (planted, then removed); an untagged `tmuxkit` fixture call fails Tier Purity (planted, then removed); a kit importing `tmuxkit` fails the Testkit scan (planted, then removed).
+- After `go test -tags integration ./...` and the smoke tier, the default socket directory (`/tmp/tmux-<uid>/`) has no new socket from a test, and no tmux server started by a test is still running.
+  A new socket is excluded only when its key equals `reedengine.ServerName` of one of the operator's own hub paths; any other new socket fails the criterion, whether or not its server answers.
 - `CONSTRAINTS.md` carries every D20 change; `docs/overview.md` and the kit package docs are updated.
 - `go test ./...`, `go test -tags integration ./...` and the smoke tier of every package whose smoke files changed are green before and after; leaf test counts before and after are recorded, and every drop is itemised against a deletion this record names.
 
 ## Notes for the plan writer
 
 - Evidence: `gh issue view 323`, `326`, `327`; part 1's decision record is in the weft archive tag `archive/test-suite-change-amplification/*` under `_lyx/discussion/`.
-- Production reed builds every tmux argv with `-L <key>` (`internal/reedengine`), and `ServerName` caps keys at 61 bytes; `OwnsTmuxEnv` compares the socket basename only.
 - `internal/orchcli` already has a tag-split `TestMain` pair (`testmain_test.go` with `!integration` and an integration-tagged sibling); D18 must cover both.
 - `cmd/lyx/hermeticenv_test.go` is the model for D18's scan; `cmd/lyx/gitkitspawn_test.go` holds the shared gitkit spawn definition that D18's `tmuxkit` rule parallels.
 - `internal/lyxcwd/enforcement_test.go` already has a shared-walker shape inside one package.
-- `webstercli/validate.go` and `loomcli/validate.go` render findings differently, which is why D14 leaves `validate-plan`'s tests alone.
