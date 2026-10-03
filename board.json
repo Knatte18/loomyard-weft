@@ -102,13 +102,13 @@
     {
       "id": 29,
       "slug": "test-suite-change-amplification",
-      "title": "Test suite: cut change amplification",
+      "title": "Test suite, part 1: shared testkit, seam fakes and git helpers",
       "tier": 1,
       "type": "feature",
       "depends_on": [],
       "isolated": false,
-      "brief": "A small prod change forces edits in many test files; shared testkit and seam fakes, git helpers in gitkit, one invariant-scan harness, decoupled recipe/plan/stencil tests, and no leaked tmux sockets",
-      "body": "## Goal\n\nA small production change costs edits in few test files, so an implementing agent reads less test context per change, and integration tests leave no tmux sockets behind.\nRuns alone: it touches test files in nearly every package, so a concurrent run would conflict.\nIt runs first in Layer A, so the tasks after it change fewer test files, and before `pattern-init`, so its Testkit Invariant lands in `CONSTRAINTS.md` before that file moves.\n#326 section 2 needs an operator decision before Discussion closes.\n\n## Survey and work items\n\nSurvey of main at fafb660c3, 2026-10-01: test churn 1.68x prod churn and rising; one loom-recipe row costs edits to ~8 test files in 4 packages; worst packages cmd/lyx, loomrecipe, fabricengine.\nWork items, each self-contained with file:line evidence in its issue:\n- #324 shared `internal/testkit` and one fake per cross-package seam (reverses the do-not-share-test-helpers decision; needs a CONSTRAINTS.md Testkit Invariant).\n- #325 git helpers in gitkit, hubforge as the only fabric fixture (84 private git helper copies today).\n- #326 one invariant-scan harness; derive registry and CLI-tree tests (section 2 needs an operator decision: it changes the CLI/Cobra Invariant help-tree tests).\n- #327 decouple recipe, plan and stencil tests from their sources.\nTies to convergence-plan: real-wiring tests over per-package fakes.\n\n## From `test-tmux-socket-leak`: Integration tests leave tmux sockets behind\n\nTests leak tmux sockets: `/tmp/tmux-1000/` holds hundreds of `lyx-Test…`, `lyx-contract-…` and `lyx-warp-bare-…` sockets left by reed/loom integration tests. Test fixtures should kill their tmux server and remove the socket in `t.Cleanup`.\n\n\n"
+      "brief": "Test helpers and seam fakes live once: internal/testkit with one fake per cross-package seam, git helpers in gitkit, hubforge as the only fabric fixture",
+      "body": "## Goal\n\nA small production change costs edits in few test files, because test helpers and seam fakes live in one place instead of being copied per package.\nThis is the first half of the test-suite cleanup; `test-suite-derived-guards` is the second and builds on this one's `internal/testkit`.\nIt lands its Testkit Invariant in `CONSTRAINTS.md` before `pattern-init` moves that file.\n\n## Survey and work items\n\nSurvey of main at fafb660c3, 2026-10-01: test churn 1.68x prod churn and rising; one loom-recipe row costs edits to ~8 test files in 4 packages; worst packages cmd/lyx, loomrecipe, fabricengine.\nWork items, each self-contained with file:line evidence in its issue:\n- #324 shared `internal/testkit` and one fake per cross-package seam (reverses the do-not-share-test-helpers decision; needs a CONSTRAINTS.md Testkit Invariant).\n- #325 git helpers in gitkit, hubforge as the only fabric fixture (84 private git helper copies today).\nTies to convergence-plan: real-wiring tests over per-package fakes.\n\n## Out of scope\n\n#326, #327 and the tmux socket leak belong to `test-suite-derived-guards`.\n"
     },
     {
       "id": 37,
@@ -208,6 +208,19 @@
       "isolated": false,
       "brief": "Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges",
       "body": "## Goal\n\nReplace `crucible`, the hand-run review-and-fix loop, with `Hardener`.\nHardener is an on-demand campaign after loom that runs a live-substrate module in a sandbox, reviews its behavior round after round, and fixes what it finds until the gates are green.\nThen retire `crucible/`, which still writes to `_mill/` and runs its rounds through hand-spawned `crucible-reviewer-\u003ceffort\u003e` agents.\n\n## Starting point\n\n- `manifest/designs/hardener.md` (DRAFT): `Tenter` is the round loop on `Treadle`, and `Hardener` is `Shed` wrapping `Tenter` with its own Preflight.\n  Rounds respawn every time instead of keeping a persistent thread, and a `progress-judge` runs before and after each round.\n- `crucible/README.md` is the method Hardener automates.\n\n## Open before Discussion\n\n- What the handoff must carry losslessly besides the finding-recurrence ledger.\n- Where the line falls between the Go scaffolding and the LLM's orchestrator role.\n- Whether the round agent reuses the `burler` package or only its prompt template.\n- How much of the sandbox provisioning lyx automates.\n\n## Done when\n\n- `lyx` can start a Hardener campaign against a module and run it unattended to convergence or a round cap.\n- `crucible/` is deleted, and the design's durable content lives in package docs.\n\n## Notes\n\n- One of the Someday items on `manifest-retire`'s triage list (`hardener`). Landing this entry removes it from that list.\n"
+    },
+    {
+      "id": 49,
+      "slug": "test-suite-derived-guards",
+      "title": "Test suite, part 2: derived guards, decoupled recipe tests, no leaked tmux sockets",
+      "tier": 1,
+      "type": "feature",
+      "depends_on": [
+        "test-suite-change-amplification"
+      ],
+      "isolated": false,
+      "brief": "One invariant-scan harness; registry and CLI-tree tests derived from the real registries; recipe/plan/stencil tests decoupled from their sources; fixtures clean up tmux sockets",
+      "body": "## Goal\n\nTests derive their expectations from the code they guard instead of keeping hand-written copies of lists owned elsewhere, so adding a module, command, config section, path or recipe row edits no test file; and integration tests leave no tmux sockets behind.\nSecond half of the test-suite cleanup: it builds on `test-suite-change-amplification`'s `internal/testkit` (the scan harness lives under it).\n#326 section 2 needs an operator decision before Discussion closes.\n\n## Work items\n\nEach self-contained with file:line evidence in its issue:\n- #326 one invariant-scan harness; derive registry and CLI-tree tests (section 2 needs an operator decision: it changes the CLI/Cobra Invariant help-tree tests).\n- #327 decouple recipe, plan and stencil tests from their sources.\n\n## From `test-tmux-socket-leak`: Integration tests leave tmux sockets behind\n\nTests leak tmux sockets: `/tmp/tmux-1000/` holds hundreds of `lyx-Test…`, `lyx-contract-…` and `lyx-warp-bare-…` sockets left by reed/loom integration tests. Test fixtures should kill their tmux server and remove the socket in `t.Cleanup`.\n"
     }
   ],
   "legacy_done": [

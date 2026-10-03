@@ -11,9 +11,9 @@ Concretized and claimable.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Test suite: cut change amplification** — [`test-suite-change-amplification`](design-test-suite-change-amplification.md) · feature
-   - A small prod change forces edits in many test files; shared testkit and seam fakes, git helpers in gitkit, one invariant-scan harness, decoupled recipe/plan/stencil tests, and no leaked tmux sockets
-   - **Before:** `verify-publish-hardening`, `pair-lifecycle`, `review-finding-class`
+1. **Test suite, part 1: shared testkit, seam fakes and git helpers** — [`test-suite-change-amplification`](design-test-suite-change-amplification.md) · feature
+   - Test helpers and seam fakes live once: internal/testkit with one fake per cross-package seam, git helpers in gitkit, hubforge as the only fabric fixture
+   - **Before:** `verify-publish-hardening`, `pair-lifecycle`, `review-finding-class`, `test-suite-derived-guards`
 
 ### Layer B
 
@@ -31,6 +31,9 @@ Starts when every entry it names under After is done.
    - The Bouncer judge stops reviewing the artifacts and judges convergence from facts Go hands it (counts, severities, trend, reopened ledger keys), on its own sonnet[medium] key; at least one fresh round, circling escalates; plus finding classes
    - **After:** `test-suite-change-amplification`
    - **Before:** `pattern-init`
+1. **Test suite, part 2: derived guards, decoupled recipe tests, no leaked tmux sockets** — [`test-suite-derived-guards`](design-test-suite-derived-guards.md) · feature
+   - One invariant-scan harness; registry and CLI-tree tests derived from the real registries; recipe/plan/stencil tests decoupled from their sources; fixtures clean up tmux sockets
+   - **After:** `test-suite-change-amplification`
 
 ### Layer C
 
