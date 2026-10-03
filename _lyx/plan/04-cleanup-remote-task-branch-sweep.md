@@ -1,8 +1,8 @@
 # Card 4 — cleanup-remote-task-branch-sweep
 
 **Create:**
-- `plan:internal/fabricengine#Topology.CleanupRemoteWarp` -> `func (t *Topology) CleanupRemoteWarp(l *lyxcwd.Location, apply bool, openPRHeads map[string]bool) (RemoteWarpCleanupResult, error)`
-- `plan:internal/fabricengine#RemoteWarpCleanupResult` -> `type RemoteWarpCleanupResult struct`
+- `internal/fabricengine#Topology.CleanupRemoteWarp`
+- `internal/fabricengine#RemoteWarpCleanupResult`
 - `internal/fabricengine/cleanupremotewarp_integration_test.go`
 
 **Uses:**

@@ -1,13 +1,13 @@
 {
   "runGuid": "af7ad269d1832b5ff9c480553943f1b4",
-  "planFingerprint": "ac364c57b75de211a67bc0fc3bb7fb04784fc49daea3269a1095bbcb82924371",
+  "planFingerprint": "793f026590d91df4296383a8e4cd37901b71da69abfb7d301cff99e4e9534a5f",
   "planFileHashes": {
     "00-overview.md": "83bdc51d454c4f8116843d0f025dea0ae275fb3f5b09fff85fae379a9ad6812d",
     "01-remove-refusal-probe-and-record-commit.md": "cd3c469c1c994a7b5a7bb1bb81b7b098ca1f279da2a0d04e581117b8a08129ac",
     "02-remove-finishes-half-removed-pair.md": "ad38c63298a3a56d225388abd4b76822111db7422cc70f7ed387a44f564fc81f",
     "03-remove-remote-deletes-landed-task-branch.md": "5b144b237bdde1275eef12a2759fec096c97ef97131cfe06f43b7d84e6bbc511",
-    "04-cleanup-remote-task-branch-sweep.md": "0a8f2bb228b3bc33138d0d38767357abc3ca8801dfafea8d10fba26fb409a2e9",
-    "05-cleanup-remote-cli-with-open-prs.md": "feb0ea0ccc8b32ad54557a6c730905bf1159e7a99f82229b6358903070d9afcf",
+    "04-cleanup-remote-task-branch-sweep.md": "3ccc6b130afe14d40ab36ecfcbade2ef0540f054e4b91d8efe56001277df3840",
+    "05-cleanup-remote-cli-with-open-prs.md": "229ea6ec7065f3af107f3570eb67199de078329ff6822df1e02dc9c4ffe298c9",
     "06-reed-end-session-by-name.md": "55582ee29c9cf66ccf864cd82eaa1337b0ba80e56ee43d235187704a73ebe915",
     "07-reed-retiring-mark.md": "a4d63c56839b04d51e82e38b6a4e184ccf75cd5501fb242ba75398378bfed582",
     "08-loom-start-replaces-retiring-driver.md": "9bce3cd0d0ba4af5390ed791fc2887ec6a8eca8e333d542c304688335b246735",
@@ -17,7 +17,7 @@
     "12-delete-half-removed-helpers.md": "1b53c0cd63687a348a68738bdd7fa03741eca18667651152d474db68ff748e81",
     "13-pair-teardown-invariant-and-docs.md": "9fe3d0e0f86fd87c840e35ef2e2c2543a2894fb658f21eb9db1b74e953a8af87"
   },
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "d40931c07b299f9e2765cbc16d1f4dc8",
   "masterSessionId": "27e00257-9d85-477e-be58-5a6b3e2b8076",
   "assertedModel": "sonnet",
@@ -168,14 +168,28 @@
         "04-cleanup-remote-task-branch-sweep"
       ],
       "cardHashes": {
-        "04-cleanup-remote-task-branch-sweep": "0a8f2bb228b3bc33138d0d38767357abc3ca8801dfafea8d10fba26fb409a2e9"
+        "04-cleanup-remote-task-branch-sweep": "3ccc6b130afe14d40ab36ecfcbade2ef0540f054e4b91d8efe56001277df3840"
       },
       "startSha": "596c04d5cf878db719f03e4bf91b6a8dc131c461",
       "kind": "fork",
       "spawnedAt": "2026-10-03T15:24:51Z",
       "sessionId": "27e00257-9d85-477e-be58-5a6b3e2b8076",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-cleanup-remote-task-branch-sweep",
+        "status": "done",
+        "head_sha": "f8c7162747798a69f6b92f09165f6428cad0d61a",
+        "deviations": [
+          "internal/fabricengine/export_test.go"
+        ]
+      },
+      "cardShas": [
+        "f8c7162747798a69f6b92f09165f6428cad0d61a"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/27e00257-9d85-477e-be58-5a6b3e2b8076/subagents/agent-ac6e4157514c5044e.jsonl"
+      ]
     },
     "6": {
       "slug": "reed-end-session-by-name",
@@ -267,6 +281,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/27e00257-9d85-477e-be58-5a6b3e2b8076/subagents/agent-a12a118295252bba9.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/27e00257-9d85-477e-be58-5a6b3e2b8076/subagents/agent-a9b205a9064308558.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/27e00257-9d85-477e-be58-5a6b3e2b8076/subagents/agent-a22ae2c3752ea234f.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/27e00257-9d85-477e-be58-5a6b3e2b8076/subagents/agent-a2bdf688ea5133742.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/27e00257-9d85-477e-be58-5a6b3e2b8076/subagents/agent-a2bdf688ea5133742.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/27e00257-9d85-477e-be58-5a6b3e2b8076/subagents/agent-ac6e4157514c5044e.jsonl"
   ]
 }

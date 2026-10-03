@@ -10,8 +10,8 @@
 - `internal/fabriccli/cleanupremotewarp_integration_test.go`
 
 **Uses:**
-- `plan:internal/fabricengine#Topology.CleanupRemoteWarp`
-- `plan:internal/fabricengine#RemoteWarpCleanupResult`
+- `internal/fabricengine#Topology.CleanupRemoteWarp`
+- `internal/fabricengine#RemoteWarpCleanupResult`
 - `internal/githubclient#New`
 - `internal/githubclient#ParseOwnerRepo`
 - `internal/landingshed#FindPullRequest`
