@@ -27,10 +27,12 @@ Each turn below is a question the design had to settle, the evidence read, and t
    Pick: make `Reflect` re-entrant through attach and a covered-notes record (D5); no ly-drive wait text.
 6. **Self-reflection sessions for Merriam and the driver?**
    With D2–D4, every intervention named on the board lands as a note.
-   Pick: no extra self-report sessions (D7).
+   Merriam's friction comes from its existing optional orchestrator directive plus D3's refusal notes, the driver's from D4.
+   Pick: no extra self-report sessions (Scope Out).
 7. **Ordering against batten's teardown.**
    Read `contracts/recipes/batten-recipe.yaml`, `internal/battenshed/doc.go` and commit `676d9ec03`: done persists after Friction-Reflect, notes are committed records, and the weft tip is tagged under `archive/` at teardown.
-   Pick: no batten change (D8).
+   #274's deletion was closed by those durable records and the archive tag; what remained was that nothing read the notes, which D1 and D2 fix.
+   Pick: no batten change (Constraints).
 8. **Dedupe against open issues?**
    The board entry records the operator's statement that filtering happens at intake, as in millhouse (`mill-self-report --auto` files all candidates).
    Pick: no dedupe; the reflection only merges duplicates within its own notes and adds provenance (D6).
@@ -59,6 +61,8 @@ Each turn below is a question the design had to settle, the evidence read, and t
   Tier 1's triggers (escalation, exhausted budget, producer failure) are the same halts D2 notes and reflects on, so running both would file each halt twice; its crash-resume trigger relies on `run`'s entry observation, which `step` does not take.
 - **Change batten's teardown to archive or copy friction notes.**
   Already done by `676d9ec03` (records committed, weft tip tagged); the remaining gap was that nothing read the notes.
+- **Go parses a filing status out of the reflection report.**
+  Writing the report only after filing succeeded (D6) gives Go the same signal through shuttle's existing file contract, with no report format to keep in sync.
 - **A dedicated GitHub label for reflected issues.**
   No intake exists to consume it yet; provenance in the body is enough for a later intake to match on.
 
@@ -73,9 +77,9 @@ _No rounds yet._
 - Q3 How are webster refusals recorded? Resolved, auto-pick: Go-written note at every refusal except `validate` (D3).
 - Q4 Driver records and filing? Resolved, auto-pick: repair records into `friction_dir`, driver files nothing, drive reports not a source (D4).
 - Q5 ly-drive tolerance of the reflection wait? Resolved, auto-pick: no skill text; re-entrant `Reflect` covers a killed job (D5).
-- Q6 Self-reflection sessions? Resolved, auto-pick: none (D7).
+- Q6 Self-reflection sessions? Resolved, auto-pick: none (Scope Out).
 - Q7 Dedupe against open issues? Resolved, auto-pick: none; left to intake, per the operator's statement on the board (D6).
 - Q8 Failed terminal reflection? Resolved, auto-pick: done still persists; parent notified on `friction: failed` (D4); listed as an open risk.
 - Q9 Tier 1 under `step`? Resolved, auto-pick: out of scope (Rejected alternatives).
-- Q10 New CONSTRAINTS invariant? Resolved, auto-pick: Friction Capture invariant (D9).
+- Q10 New CONSTRAINTS invariant? Resolved, auto-pick: Friction Capture invariant (D7).
 - Environment note: every `lyx` call logs stencilstore drift warnings (board copy older than the worktree source, "run a production deploy"); they did not block anything and were left alone.
