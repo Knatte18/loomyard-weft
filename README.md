@@ -13,29 +13,35 @@ Waits on nothing open; can start now, in parallel.
 
 1. **Test suite, part 1: shared testkit, seam fakes and git helpers** — [`test-suite-change-amplification`](design-test-suite-change-amplification.md) · feature
    - Test helpers and seam fakes live once: internal/testkit with one fake per cross-package seam, git helpers in gitkit, hubforge as the only fabric fixture
-   - **Before:** `verify-publish-hardening`, `pair-lifecycle`, `review-finding-class`, `test-suite-derived-guards`
+   - **Before:** `test-suite-derived-guards`
 
 ### Layer B
 
 Starts when every entry it names under After is done.
 
-1. **Verify localizes failures, gates Merriam once, and Publish never runs on a dirty tree** — [`verify-publish-hardening`](design-verify-publish-hardening.md) · feature
-   - Cards verify with the integration tests and repo scans they touch; the plan verify runs once as a gate on Merriam, which fixes a failure in a fork and waits on forks instead of polling; Publish never verifies or pushes a dirty tree; verify is never skipped after a crash; every agent prompt goes through a file
-   - **After:** `test-suite-change-amplification`
-   - **Before:** `pattern-init`
-1. **Clean pair lifecycle: no leftover sessions, branches, sockets or races** — [`pair-lifecycle`](design-pair-lifecycle.md) · feature
-   - fabric remove ends the pair's tmux session, finishes half-removed pairs and deletes warp branches on origin; loom start never races a dying driver
-   - **After:** `test-suite-change-amplification`
-   - **Before:** `pattern-init`
-1. **Review convergence: the judge decides converged, continue or circling from fresh reviews** — [`review-finding-class`](design-review-finding-class.md) · feature
-   - The Bouncer judge stops reviewing the artifacts and judges convergence from facts Go hands it (counts, severities, trend, reopened ledger keys), on its own sonnet[medium] key; at least one fresh round, circling escalates; plus finding classes
-   - **After:** `test-suite-change-amplification`
-   - **Before:** `pattern-init`
 1. **Test suite, part 2: derived guards, decoupled recipe tests, no leaked tmux sockets** — [`test-suite-derived-guards`](design-test-suite-derived-guards.md) · feature
    - One invariant-scan harness; registry and CLI-tree tests derived from the real registries; recipe/plan/stencil tests decoupled from their sources; fixtures clean up tmux sockets
    - **After:** `test-suite-change-amplification`
+   - **Before:** `verify-publish-hardening`, `pair-lifecycle`, `review-finding-class`
 
 ### Layer C
+
+Starts when every entry it names under After is done.
+
+1. **Verify localizes failures, gates Merriam once, and Publish never runs on a dirty tree** — [`verify-publish-hardening`](design-verify-publish-hardening.md) · feature
+   - Cards verify with the integration tests and repo scans they touch; the plan verify runs once as a gate on Merriam, which fixes a failure in a fork and waits on forks instead of polling; Publish never verifies or pushes a dirty tree; verify is never skipped after a crash; every agent prompt goes through a file
+   - **After:** `test-suite-derived-guards`
+   - **Before:** `pattern-init`
+1. **Clean pair lifecycle: no leftover sessions, branches, sockets or races** — [`pair-lifecycle`](design-pair-lifecycle.md) · feature
+   - fabric remove ends the pair's tmux session, finishes half-removed pairs and deletes warp branches on origin; loom start never races a dying driver
+   - **After:** `test-suite-derived-guards`
+   - **Before:** `pattern-init`
+1. **Review convergence: the judge decides converged, continue or circling from fresh reviews** — [`review-finding-class`](design-review-finding-class.md) · feature
+   - The Bouncer judge stops reviewing the artifacts and judges convergence from facts Go hands it (counts, severities, trend, reopened ledger keys), on its own sonnet[medium] key; at least one fresh round, circling escalates; plus finding classes
+   - **After:** `test-suite-derived-guards`
+   - **Before:** `pattern-init`
+
+### Layer D
 
 Starts when every entry it names under After is done.
 

@@ -2,7 +2,7 @@
 
 `verify-publish-hardening` · Planned · feature
 
-Depends on: [`test-suite-change-amplification`](design-test-suite-change-amplification.md)
+Depends on: [`test-suite-derived-guards`](design-test-suite-derived-guards.md)
 
 ## Goal
 
