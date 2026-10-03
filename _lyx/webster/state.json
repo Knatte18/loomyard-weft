@@ -17,7 +17,7 @@
     "12-delete-half-removed-helpers.md": "1b53c0cd63687a348a68738bdd7fa03741eca18667651152d474db68ff748e81",
     "13-pair-teardown-invariant-and-docs.md": "9fe3d0e0f86fd87c840e35ef2e2c2543a2894fb658f21eb9db1b74e953a8af87"
   },
-  "currentBatch": 0,
+  "currentBatch": 3,
   "masterStrand": "d40931c07b299f9e2765cbc16d1f4dc8",
   "masterSessionId": "27e00257-9d85-477e-be58-5a6b3e2b8076",
   "assertedModel": "sonnet",
@@ -79,6 +79,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/27e00257-9d85-477e-be58-5a6b3e2b8076/subagents/agent-a66610b441ae3d63f.jsonl"
       ]
+    },
+    "3": {
+      "slug": "remove-remote-deletes-landed-task-branch",
+      "cards": [
+        "03-remove-remote-deletes-landed-task-branch"
+      ],
+      "cardHashes": {
+        "03-remove-remote-deletes-landed-task-branch": "1935d854b6985c57fc304cc636d1c51be5fcd7ba6e93560ef07f866bf4b3b3c1"
+      },
+      "startSha": "80c0547d3b225238252cbd98404e214daef717d7",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T15:12:30Z",
+      "sessionId": "27e00257-9d85-477e-be58-5a6b3e2b8076",
+      "terminal": false,
+      "status": ""
     },
     "6": {
       "slug": "reed-end-session-by-name",
