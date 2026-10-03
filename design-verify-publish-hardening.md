@@ -69,3 +69,9 @@ Merriam's strand is named for what it is.
 
 - Merriam waits on its forks' completion notifications instead of polling (`9ae921b24`): the stencil's polling loops are gone, and `await-batch` stays only as an operator verb. The verify gate, the strand rename and the rest of `webster-verify-gate` remain here.
 - `begin-batch`'s model assertion is dormant, not a cost: `run` baselines `AssertedModel` to Merriam's launch model, so the check is a string comparison that never injects. Removing it touches state, docs and a sandbox scenario for no runtime gain; Discussion decides whether it goes.
+
+## Where verify runs (operator, 2026-10-03)
+
+Part 1 of the test-suite cleanup ran the suite in Webster's integration fork, again in Go's post-exit verify, and again in Publish's merged-tree verify (most of Publish's 87 s), while the perch that edited code last had no mechanical test gate.
+- The perch does not let go until it has verified that its own edits broke nothing: a Burler round that changed code ends with a passing verify.
+- Publish verifies only when the merge brought something new: conflicts resolved, or new parent commits merged in (a conflict-free merge can still break a caller); a no-op merge onto a HEAD that already passed verify skips it, which the recorded last-verified HEAD above makes checkable.
