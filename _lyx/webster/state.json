@@ -1,0 +1,41 @@
+{
+  "runGuid": "b7c04440dbff304c43f24304a87de12b",
+  "planFingerprint": "387e062be351811205fe94e4b0cf17f5f945519fd742c6dbc94c553132217f27",
+  "planFileHashes": {
+    "00-overview.md": "83bdc51d454c4f8116843d0f025dea0ae275fb3f5b09fff85fae379a9ad6812d",
+    "01-remove-refusal-probe-and-record-commit.md": "7e238259db3f13a75ebfe236797c5d75c42039dae0569d1501c65083928399aa",
+    "02-remove-finishes-half-removed-pair.md": "9ba7d8a90570079d570eaef086aa015f26a4ca612826752946a73fc6234582aa",
+    "03-remove-remote-deletes-landed-task-branch.md": "1935d854b6985c57fc304cc636d1c51be5fcd7ba6e93560ef07f866bf4b3b3c1",
+    "04-cleanup-remote-task-branch-sweep.md": "4223993a90c41521ae90ef1ba9b3eb0e61c20b07c61f41c29d7c0c05c20222e4",
+    "05-cleanup-remote-cli-with-open-prs.md": "feb0ea0ccc8b32ad54557a6c730905bf1159e7a99f82229b6358903070d9afcf",
+    "06-reed-end-session-by-name.md": "01c555f84f4910cdad311de0ef80ec2f33d09b6225d0da5a18cdc1d6757b13b0",
+    "07-reed-retiring-mark.md": "66632546a369dba55431a8b0a9b826acb72dcc63aaca483ca03feaf94045effc",
+    "08-loom-start-replaces-retiring-driver.md": "9bce3cd0d0ba4af5390ed791fc2887ec6a8eca8e333d542c304688335b246735",
+    "09-pairteardown-composite.md": "0eeeb2aae72da67e322ba4fd7e9725223314fa7bebad20a5bdbdac0a33942f56",
+    "10-fabric-remove-through-composite.md": "bf1785718963874f6c17f81333ec3c6ade6e0d66a40d94bfbd5e7203077a32d1",
+    "11-batten-teardown-through-composite.md": "9ac471da43c8ea5af1f7cf4de4e89a98b1b6200d96cdb56e5c83df82b7eeb122",
+    "12-delete-half-removed-helpers.md": "35775b81f792a03e92af9333a491c223b556097f0739392baac1ca9ee6e22867",
+    "13-pair-teardown-invariant-and-docs.md": "9fe3d0e0f86fd87c840e35ef2e2c2543a2894fb658f21eb9db1b74e953a8af87"
+  },
+  "currentBatch": 1,
+  "masterStrand": "494384ce5deddba4d47cdb0d1769fb44",
+  "masterSessionId": "09881b49-bad6-4826-ac64-6ed455c6ae98",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "remove-refusal-probe-and-record-commit",
+      "cards": [
+        "01-remove-refusal-probe-and-record-commit"
+      ],
+      "cardHashes": {
+        "01-remove-refusal-probe-and-record-commit": "7e238259db3f13a75ebfe236797c5d75c42039dae0569d1501c65083928399aa"
+      },
+      "startSha": "5805c58fbb82665bb5acce0dab784d0b33b6e2bb",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T14:32:04Z",
+      "sessionId": "09881b49-bad6-4826-ac64-6ed455c6ae98",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
