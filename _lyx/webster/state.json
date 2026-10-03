@@ -49,7 +49,7 @@
     "44-slices-cleanup.md": "d490d1e3c94c8ef7e2f203913f6eb8e3ead0189d217b6020bc9db04d7b247ad5",
     "45-old-policy-citations.md": "485f164a9c4d89449a927199b09a72c4e6b232d54691f0e6d1a75ae48e754a4e"
   },
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "4ea15cf8b6c585eea1c4d55a66620653",
   "masterSessionId": "01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7",
   "assertedModel": "sonnet",
@@ -261,6 +261,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-change-amplification/01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7/subagents/agent-a77873bf103be4f54.jsonl"
       ]
+    },
+    "9": {
+      "slug": "fabricengine-hub-fixture",
+      "cards": [
+        "09-fabricengine-hub-fixture"
+      ],
+      "cardHashes": {
+        "09-fabricengine-hub-fixture": "3b0a7ec266ac0dd3d5e3a22b04c2769068008adb531c936ff5217f44370cfebe"
+      },
+      "startSha": "a2f80c04668e71d15bf042e82815142564130cc2",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T08:11:59Z",
+      "sessionId": "01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
