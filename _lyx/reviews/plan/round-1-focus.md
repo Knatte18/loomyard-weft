@@ -1,0 +1,15 @@
+---
+round: 1
+focus:
+  - "Card 16 (fidelity to D15 and the Gate Self-Check Parity constraint): card 16 makes a tier-1 source scan, `cmd/lyx/verifiedtree_test.go`, \"the parity enforcement test\". The repo's existing parity checks, such as `internal/loomcli/parity_test.go`, compare the gate closure's verdict with the verb's verdict over one fixture. CONSTRAINTS.md says \"Adding a mechanical gate means adding its verb and its parity check in the same task\". Settle whether a call-site scan carries D15's parity test for the webster `verify` gate, the Webster-Burler `verify` gate and `lyx webster verify`, or whether some card must add a verdict-parity check."
+  - "Card 14 (granularity): one card holds the gate closure, the findings/card-hint/`verify-gate.yaml` writer, the fixer-commit check, the run outcome mapping, the new `webster-body-verify-fix.md` stencil, Merriam's gate-failure section, the `forkOwnReport` remap, record-batch's audit-skip change and loomcli's `RunDeps.ParentBranch` wiring. Settle whether each of these is inseparable from the gate or is its own independently reviewable and testable unit. Also check whether D3's `verify_gate_attempts` key belongs in card 10, which is otherwise D6."
+  - "ImpactSummary quality (cards 4, 7, 13, 15, 16): several read as a list of what the card changes rather than a blast-radius conclusion (for example card 13's \"gains one card rule and one claim pin\"). Check each Edit or Delete card's ImpactSummary for a real conclusion about who is affected and how far it reaches, not a restatement of its Intent."
+  - "Attack surface (cards 3 and 10): card 3 drops the 30000-byte refusal on `spec.Prompt` for every role. Check that its Intent says what that guard let through before and what bounds prompt size now. Also check whether code or comments that relied on the cap, such as `internal/loomcli/driverprompt.go`'s comment, fall within its stated reach. Card 10 keeps `--wait` as an operator override that can still return a `running` snapshot, while Merriam's stencil drops all `running` handling. Settle whether the Intent bounds that edge."
+  - "Fidelity to the decision record's Constraints and Notes for the plan writer: check that every Constraint is carried by a card (webster's degrading config, no migration, in-memory attempt counts, landingshed and mergeresolve naming no fabric side). Check the same for every retiring item in the Notes, including `LoomVerifyOutputPath` becoming D7's log path and the attach-path check for a resumed Merriam. Also check that no card adds scope that neither a Decision nor a Constraint licenses."
+---
+
+Seed focus for round 1.
+The plan is 17 cards implementing D1–D16; the `## verify:` section runs `go test ./...` and `go test -tags integration ./...` over the whole repository, so verify coverage needs no entry.
+No card is `Custom`, and card 17's `Prosa` targets are all file paths.
+Card 9's claim that `shedverbs`' `waitingNote` serves both the one-shot status and `--watch` matches `internal/shedverbs/status.go`.
+Card 14's statement that loomcli does not yet fill `RunDeps.ParentBranch` matches `internal/loomcli/wiring.go`.
