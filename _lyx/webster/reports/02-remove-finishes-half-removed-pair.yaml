@@ -1,0 +1,4 @@
+status: OK
+head_sha: 80c0547d3b225238252cbd98404e214daef717d7
+deviations:
+  - internal/fabricengine/remove_refusal_remedy_integration_test.go

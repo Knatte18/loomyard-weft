@@ -15,7 +15,7 @@
 - `plan:internal/pairteardown#Request`
 - `plan:internal/pairteardown#RemoveQuietWait`
 - `plan:internal/pairteardown#Teardown.Run`
-- `plan:internal/fabricengine#ErrPairNotFound`
+- `internal/fabricengine#ErrPairNotFound`
 
 **Intent:**
 `lyx fabric remove` tears a pair down through the composite instead of calling `Topology.Remove` directly.

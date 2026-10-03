@@ -14,7 +14,7 @@
 - `plan:internal/pairteardown#Request`
 - `plan:internal/pairteardown#Teardown.EndSession`
 - `plan:internal/pairteardown#Teardown.RemovePair`
-- `plan:internal/fabricengine#ErrPairNotFound`
+- `internal/fabricengine#ErrPairNotFound`
 - `internal/battenshed#NewWorktreeTeardown`
 
 **Intent:**

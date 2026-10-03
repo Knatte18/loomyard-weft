@@ -6,7 +6,7 @@
 - `internal/fabricengine#Topology.RemoveRefusal`
 
 **Create:**
-- `plan:internal/fabricengine#ErrPairNotFound` -> `var ErrPairNotFound error`
+- `internal/fabricengine#ErrPairNotFound`
 - `internal/fabricengine/remove_finish_integration_test.go`
 
 **Uses:**
