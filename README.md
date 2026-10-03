@@ -86,6 +86,8 @@ Waits on nothing open; can start now, in parallel.
    - [orch][batten] The hub watches runs with a hand-written .scratch/hub/watch.sh; drivers already message their parent, so question the watcher, and close any real gap in lyx code
 1. **Each batten the orch starts runs in its own tmux window** — [`batten-windows`](design-batten-windows.md) · feature
    - [orch][batten][reed][ui] Batten runs detached and invisible; a window per run makes the window list show what the orch has in flight
+1. **No recovery path needs a command the agents are denied** — [`no-denied-recovery`](design-no-denied-recovery.md) · design
+   - [agents][permissions][webster] Webster named git reset --hard as the way forward, the global deny list blocks it even in bypass, and the run stopped for the operator
 
 ### Layer B
 

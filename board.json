@@ -306,6 +306,17 @@
       "isolated": false,
       "brief": "[orch][batten][reed][ui] Batten runs detached and invisible; a window per run makes the window list show what the orch has in flight",
       "body": "Seen 2026-10-03: the hub orch starts each batten detached with `setsid nohup lyx batten run \u003cslug\u003e`, so nothing on screen shows what the orch has running; Claude Code's footer shows only \"1 shell\" for a background helper, which says nothing about what it does.\nIdea (operator): when the orch starts a batten, it lands in its own tmux window in the orch's session, so the window list names every run the orch has in flight.\nRelated notes: `runs-overview` (one status line per run, in its own window) and `orch-owns-the-loop` (lyx starts batten detached, leaves the view undecided); `manifest/designs/reed-multi-window.md` sketches reed's own-window anchoring.\n"
+    },
+    {
+      "id": 60,
+      "slug": "no-denied-recovery",
+      "title": "No recovery path needs a command the agents are denied",
+      "tier": 3,
+      "type": "design",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[agents][permissions][webster] Webster named git reset --hard as the way forward, the global deny list blocks it even in bypass, and the run stopped for the operator",
+      "body": "Seen 2026-10-03 in the `pair-lifecycle` run: Webster refused a plan fix for a failed batch.\nIts only named way forward was \"reset the branch to the run's start commit with git and run `lyx webster run --fresh`\" (see #350).\nThe driver, even in bypass mode, could not run `git reset --hard`, because `~/.claude/settings.json` denies `Bash(git reset --hard:*)` and a deny rule holds in every mode.\nThe run stopped until the operator ran the reset by hand.\n`contracts/specs/refusal-spec.md` prescribes `git reset --hard \u003cpre-fix head\u003e` for another halt as well.\n\nIdea (operator): a permission refusal must never stop the flow.\nEvery recovery a lyx refusal names must be doable by the agent that receives it.\nEither lyx performs the destructive step itself, in Go, guarded to the run's own branch and start commit (`webster run --fresh` resetting the branch, a `keep|drop` verb for the integration fix commits), or the agents' permission set is loosened for what lyx's recoveries need.\nAudit every refusal and stencil for commands the deny list blocks.\nRelated: `orch-live-hardening` (permission modes mean what they say).\n"
     }
   ],
   "legacy_done": [
