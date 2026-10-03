@@ -1,0 +1,62 @@
+{
+  "runGuid": "7113fb54366f5306b2e69ff71dc61059",
+  "planFingerprint": "ac617e2210d61d701b8c69b2f083ba395e866f6d159465c6529f4aae55abadaf",
+  "planFileHashes": {
+    "00-overview.md": "d5b5063aab57e7ad1c24c7a88c19ed84e6d8d5a0fb58e0893ef00530508a2ff5",
+    "01-scankit.md": "a48c74de592a956a170a0305fb6a0ed036ae43b85428e9d0be27f27ba0a823ca",
+    "02-testkit-scan-on-scankit.md": "83c5eb61c6d3a2e7f06dd37536370bdd7af48a9a1a07b5f716c10fad377ebdea",
+    "03-cmdlyx-git-guards.md": "abb9d320f5c5b14e3ad49f7814b04facd22acaf8d8230e83dce6cfe659a59bd7",
+    "04-cmdlyx-module-guards.md": "ff2c6086a2bec3fcfb74b5f620ac6e17d214299a481513e81a9ce8342d668d33",
+    "05-tier-purity-hermetic-env.md": "aa1bb86bd93c56a339f2dc3dd4114d126d236e4c6e6ed01c01a70b806a104d56",
+    "06-lyxcwd-scans.md": "428d8afd64d33b4297aa350b8a8bcc7c2b03729d22164b99644fd50a2dc3a638",
+    "07-leaf-guards.md": "4d30c5fccf490620203a3729c3dc2d2c4b6f98a2f66022f340adc45fbd16cdfa",
+    "08-seam-guards-a.md": "12ccf4c6dacf0f4c415d6b4b35991fc36bee5588d4be12bd06aed6bc35a13b5f",
+    "09-seam-guards-b.md": "7610b97f00a314d3ddc73d9570d6714a159183f4248ecc9f41b5af84d28ab578",
+    "10-package-local-scans.md": "8da33bfa5e44019846f54d29f3e88437eeff82f05cb247033bf0d38847615fe6",
+    "11-cli-tree-walk.md": "3e7b9ebb1c1fb9feac4e6a7dd093b5017bd011e014ff367aa6f5468503f5174f",
+    "12-per-cli-copies.md": "efa1f7f8d557a4bebf2b4a1adbf8b59b2fea88b3832f6e753480169d70771e66",
+    "13-configreg-properties.md": "616c358d251379561b65fa9b2ccf342f150243ba8acf4772a2b6c708c0ed6e61",
+    "14-path-rule-table.md": "6910953c056d85c32d8ca17f88769c339c9a06b337d068c44727a045948cfe2a",
+    "15-recipe-row-table.md": "7e43a3f9f8a649993199f2e4d86ad5f54c240db2aa98159b480e46c25355879f",
+    "16-export-plan-format.md": "05f0ad933dbd5392d605b84edfe915733c50197f0b7a89ee98b8561ce77eed6d",
+    "17-plankit.md": "000279b1b1820a34fe079410dee595d7526c8be6ea511c3f56cd3acdf9ee1595",
+    "18-plankit-webster.md": "6446a13732f48cdd645084a7bdeca060abdef86ba304fa67c878fc06281c6b4d",
+    "19-plankit-loom.md": "632b0acd5606355b94cab7a41ac33b61c86ffe77557e3b984995061aa419bed7",
+    "20-stencilkit.md": "5abcde6a07e25c8608970924aefeba93160c8b26ce4d5b966bee7a98d1a403c9",
+    "21-stencilkit-webster-orch.md": "9393565316e04390b81a3893a18506298d5866de1f1572b9da9e22b3cb7551f9",
+    "22-stencilkit-loom.md": "3d71bd7b2bbc0be58fce061f7bd53e735d02da141df915c14a8d1c37f51fd114",
+    "23-claims-table.md": "0bb525efa688bc9dc58f904e7ee5e27dc901abc61dfc7efb016cbd502de82219",
+    "24-claims-webster.md": "b9fe8cd552dfd104cbd04e823ca9c510f87fee796b295b49f7a0cdfab5a0ce93",
+    "25-claims-engines.md": "cc54e520f09ec7e116f3aca6e32f148cc3a31bb7641f9031702ba41c9420c8a8",
+    "26-shedrecipe-conformance.md": "db9754c5e34ec18ba1a7f6c71243554f1655e9cc0ca93b82171f9c12da74bf9a",
+    "27-shedverbs-duplicates.md": "3e9c091f63abe90c46abda911c694f94a34b81b96e1d4cdce74cf181be1209ff",
+    "28-statuscommit-seam.md": "17b380ef33a571f1a9093d9d885fb4daf8b416b7a444e47442a12572d00f7bb5",
+    "29-wide-call-helpers.md": "045e977340664aaa1aef4ffc95d9ad51d70a8a75cd51f7078fc4a16671e16a75",
+    "30-tmuxkit.md": "73705986f9eaeccd1b8366066d3e02d45fe23d9c6c7a898c3e7a9ee7ceef25b9",
+    "31-tmuxkit-testmain-a.md": "82afe8efbe73fc13d350d88b2732a930b283db89aa83d443ccd3e2f94adc885e",
+    "32-tmuxkit-testmain-b.md": "ddce660725028a2767b8fad537c6137e39ac486f9b2e9802655f57283bc6b15e",
+    "33-tmuxkit-socket-fixture.md": "4f13b206edcf0343a5b12d0bc94d64cf99c838c91140207792e211c07d808e2b",
+    "34-tmux-isolation-scan.md": "729ee171db5708a6c50f54de11629c35415e8ad72d826c395c0ebdbb1fb02145"
+  },
+  "currentBatch": 1,
+  "masterStrand": "e4a1de44f65a28710965f0d3ed142a38",
+  "masterSessionId": "fc4d87f7-c072-4eff-bd8e-de22f27e663f",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "scankit",
+      "cards": [
+        "01-scankit"
+      ],
+      "cardHashes": {
+        "01-scankit": "a48c74de592a956a170a0305fb6a0ed036ae43b85428e9d0be27f27ba0a823ca"
+      },
+      "startSha": "22e46970ef8d2fa6d47016181c1aecc517be26d6",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T11:50:01Z",
+      "sessionId": "fc4d87f7-c072-4eff-bd8e-de22f27e663f",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
