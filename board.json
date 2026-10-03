@@ -291,6 +291,17 @@
       "isolated": false,
       "brief": "[agents][permissions][webster] Webster named git reset --hard as the way forward, the global deny list blocks it even in bypass, and the run stopped for the operator",
       "body": "Seen 2026-10-03 in the `pair-lifecycle` run: Webster refused a plan fix for a failed batch.\nIts only named way forward was \"reset the branch to the run's start commit with git and run `lyx webster run --fresh`\" (see #350).\nThe driver, even in bypass mode, could not run `git reset --hard`, because `~/.claude/settings.json` denies `Bash(git reset --hard:*)` and a deny rule holds in every mode.\nThe run stopped until the operator ran the reset by hand.\n`contracts/specs/refusal-spec.md` prescribes `git reset --hard \u003cpre-fix head\u003e` for another halt as well.\n\nIdea (operator): a permission refusal must never stop the flow.\nEvery recovery a lyx refusal names must be doable by the agent that receives it.\nEither lyx performs the destructive step itself, in Go, guarded to the run's own branch and start commit (`webster run --fresh` resetting the branch, a `keep|drop` verb for the integration fix commits), or the agents' permission set is loosened for what lyx's recoveries need.\nAudit every refusal and stencil for commands the deny list blocks.\nRelated: `orch-live-hardening` (permission modes mean what they say).\n"
+    },
+    {
+      "id": 61,
+      "slug": "agent-self-reflect",
+      "title": "Merriam and the driver reflect on their own session and file issues at the end",
+      "tier": 3,
+      "type": "design",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[friction][agents][webster] Friction-Reflect never runs under shed step and batten deletes the notes; key agents self-report at end of work, as millhouse does",
+      "body": "Seen 2026-10-03: no friction from today's driven runs reached GitHub.\nFriction-Reflect spawns its reflection agent only under `lyx loom run` (`internal/loomcli/run.go`, `reflectFrictionRow`).\nUnder `lyx shed step`, which every ly-drive driver uses, it skips, and leaves the notes for an operator-gated filing that autonomous drivers never do (\"Self-report draft: none filed\").\nBatten's teardown then deletes `_lyx/loom/friction/` with the pair.\nThe friction worth filing today (Webster's Delete ordering, a failed batch that cannot be redone, recoveries that need denied commands) was found and filed by the hub by hand.\n\nIdea (operator): the agents that matter, at least Merriam (webster's Master) and the driver, reflect on their own session at the very end and file what they hit as GitHub issues themselves.\nThis is the model millhouse uses: `mill-self-report` runs at end-of-work in its orchestrating agents, scans its own session context for tool failures, refusals, prompt mismatches and surprises, and files the candidates with `gh` in auto mode.\nAn agent reflecting on its own context sees what a cold aggregator over notes never sees.\nOpen: dedupe against open issues before filing; the reflection must run before batten tears the pair down; how this relates to the existing note-writing and Friction-Reflect (replace, or keep the aggregator for agents that leave notes but do not self-report).\nRelated: `batten-llm-friction` (#274, teardown deletes the notes).\n"
     }
   ],
   "legacy_done": [
