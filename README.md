@@ -93,6 +93,8 @@ Waits on nothing open; can start now, in parallel.
    - [reed][slack] A Slack relay so the operator can reach the orch from a phone where Claude's own app is not allowed
 1. **Agents run with a deliberate tool and permission setup that never blocks the flow** — [`agent-permission-setup`](design-agent-permission-setup.md) · design
    - [agents][permissions] A correct deny/allow setup for every lyx-spawned role, so no agent stops on a tool or command it needs
+1. **Scope added after Discussion amends the decision record** — [`post-discussion-additions`](design-post-discussion-additions.md) · design
+   - [discussion][plan][orch] Additions relayed to Plan-Write were dropped by plan review because the decision record lacked them; extend the discussion instead
 
 ### Layer B
 
