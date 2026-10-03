@@ -15,7 +15,7 @@
     "10-circling-verbs.md": "d955190c01f9b3b83cf4978af39a03d6979a480768087670c9102bcd5fd9f294",
     "11-retire-classification-draft.md": "71e280c94862f7bc2360355a64168407980ffc9f44aa7c99acd9b64acdbf0455"
   },
-  "currentBatch": 0,
+  "currentBatch": 2,
   "masterStrand": "6ae6a24e80acfb89e279dcf937eb3c34",
   "masterSessionId": "55ee855a-3447-48c9-b795-18ba3dc1b3a9",
   "assertedModel": "sonnet",
@@ -45,6 +45,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-finding-class/55ee855a-3447-48c9-b795-18ba3dc1b3a9/subagents/agent-a4ad2cc678fe51a53.jsonl"
       ]
+    },
+    "2": {
+      "slug": "rubric-class-mapping",
+      "cards": [
+        "02-rubric-class-mapping"
+      ],
+      "cardHashes": {
+        "02-rubric-class-mapping": "c0228d495597fbda5fdc925432786f4e21fdd6a9e683e0e18948703b1a965e5f"
+      },
+      "startSha": "a4a4666ece9b05e20f74f56d35cfc95c062eb767",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T14:35:28Z",
+      "sessionId": "55ee855a-3447-48c9-b795-18ba3dc1b3a9",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
