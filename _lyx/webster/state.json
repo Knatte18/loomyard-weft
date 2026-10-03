@@ -15,7 +15,7 @@
     "10-circling-verbs.md": "d955190c01f9b3b83cf4978af39a03d6979a480768087670c9102bcd5fd9f294",
     "11-retire-classification-draft.md": "71e280c94862f7bc2360355a64168407980ffc9f44aa7c99acd9b64acdbf0455"
   },
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "6ae6a24e80acfb89e279dcf937eb3c34",
   "masterSessionId": "55ee855a-3447-48c9-b795-18ba3dc1b3a9",
   "assertedModel": "sonnet",
@@ -149,6 +149,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-finding-class/55ee855a-3447-48c9-b795-18ba3dc1b3a9/subagents/agent-a3df8f4fa86a041b8.jsonl"
       ]
+    },
+    "6": {
+      "slug": "judge-reads-facts",
+      "cards": [
+        "06-judge-reads-facts"
+      ],
+      "cardHashes": {
+        "06-judge-reads-facts": "b1460aa79f7c898de612e91b179945f866325e7839eb112bb23d172e647098e3"
+      },
+      "startSha": "c83eecab4ab5903785ab89e68b529e8f26614a8c",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T14:42:33Z",
+      "sessionId": "55ee855a-3447-48c9-b795-18ba3dc1b3a9",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
