@@ -398,6 +398,17 @@
       "isolated": false,
       "brief": "[burler][review] B orients, forks its lenses and writes the report only; A, stronger, orients in parallel, then fixes and validates B findings with a grain of salt",
       "body": "Idea (operator, 2026-10-03), a large design change for later: split a Burler round into two agents spawned in parallel.\n\n- **A, handler and fixer**, the stronger model.\n- **B, reviewer**, writes the review only and never fixes.\n\nBoth start at once and orient themselves in the code independently.\nB then forks its lens fan as today, and when every fork is done, writes the combined report as Burler does now.\nThe report goes to A, which has already oriented itself, fixes, and acts as an extra validator that takes B's findings with a grain of salt.\n\nWhat it buys: A's orientation overlaps B's review instead of following it, and the reviewer never grades its own fixes.\nRelated: `burler-round-models` (model per round), `review-finding-class` (landed: the judge reads facts, not artifacts).\n"
+    },
+    {
+      "id": 74,
+      "slug": "claude-test-tier",
+      "title": "Tests that spawn Claude get their own opt-in tier; smoke never spawns Claude",
+      "tier": 3,
+      "type": "chore",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[testing][cost] A card verify ran -tags smoke and spawned ~24 real Claude sessions; move Claude-spawning tests to an explicit tier",
+      "body": "Seen 2026-10-03: a Webster implementer fork in `test-suite-derived-guards`, verifying a card that touched smoke-tagged files, ran `-tags smoke` and spawned about 24 real Claude Code sessions through the `orchcli` smoke tests (`TestSmokeOrch_*`), about 5.5 MB of transcripts against the whole run's 31 MB.\nThe smoke tier mixes tests that only drive real tmux and the built binary with tests that spawn real `claude` sessions (orch cycle and adopt, shuttle runs, Burler clusters, the treadle judge, the model pin); the latter skip only when `claude` is not on `PATH`.\n\nIdea (operator): a smoke test never spawns Claude.\nTests that drive a real Claude session move to their own tier (a separate build tag), run only when explicitly asked, never by a card verify or a plan verify.\nSmoke stays cheap: real tmux, real binary, fake or no provider.\nUpdate `CONSTRAINTS.md`'s test-tier rules and Plan-Write's per-card verify accordingly.\n"
     }
   ],
   "legacy_done": [
