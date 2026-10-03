@@ -11,6 +11,7 @@ In:
 - **Per-card gate**: Go derives each card's gate command; it runs the whole untagged suite (repo scans included) and the integration-tagged tests of the card's own packages.
 - **Plan-Write stencil**: a card that rewords a message greps the repo for the old text and takes the stale assertions into its own scope.
 - **Webster verify gate**: a shuttle gate on Merriam's strand replaces Merriam's integration fork, Go's post-exit integration stage, the in-process bisect, the triage baseline and the `webster-recovery` integration-fix strand.
+  Shuttle's gated wait stops counting a turn end with background work outstanding as an arrival.
 - **Merriam's stencil**: no integration fork, no polling loop (recover-batch included), no "started non-interactively" framing, and a gate-failure section that forks a fixer.
 - **Strand role**: Merriam's strand is named `<shortname>:<slug>:webster`.
 - **Verified-tree record**: one record per worktree of the tree that last passed verify, written by every verify site, replacing landing's pending-verify marker.
@@ -37,7 +38,10 @@ Decision: `begin-batch` renders each card's gate command into the fork prompt, r
 The command is `go build ./...`, then `go test ./...` (untagged, whole repo), then `go test -tags integration <pkgs>` over the Go package directories holding the card's targets (path targets and the files holding symbol targets).
 Directories that hold no Go package after the card (a Delete-only directory) are left out.
 A card's own `**Verify:**` still runs after the gate when declared.
-Rationale: the plan spec's Tier 1 already calls for a mechanical per-card run with no author enumeration.
+The integration-tagged run moves part of the spec's Tier 2 to per card, so `loom-plan-spec.md`'s Tier 2 text changes with Tier 1's; the plan-level `## verify:` stays the once-per-plan run.
+Bound: the fork runs the gate and Go never does, as with today's stencil gate.
+A fork that skips it is caught at the webster gate (D3), which localizes through D4's hint.
+Rationale: the plan spec's Tier 1 already calls for a per-card run with no author enumeration.
 The untagged whole-repo suite takes ~13 s cold and ~2 s cached here, so it covers callers and the `cmd/lyx` repo scans at near-zero cost, without a scan-package config key or a Plan-Write rule that can be forgotten.
 The integration tests of the card's own packages are the localization refusal-audit lacked.
 
@@ -49,9 +53,13 @@ Rationale: stale exact-string assertions then fail on the card that reworded the
 ### D3 — The webster verify gate is a must-pass shuttle gate entry on Merriam's strand
 
 Decision: `Run` passes `StartMaster` a one-entry `GateSpec` named `verify`, with `Attempts` from a new `webster.yaml` key `verify_gate_attempts` (template default 3).
+On a gated run, shuttle treats a turn end with background work outstanding (`EventWaiting`) as no arrival, even when every output file exists.
+Without that, the turn end that spawns D5's fixer re-arrives at the gate, because `outcome.yaml` and `summary.md` are still on disk from the first arrival, and the gate verifies the fork's half-edited tree.
+Bound: the deferral holds only while the session is live; the deadline and liveness exits still classify Done from the output files, so `master_timeout_min` bounds a fork that never finishes.
 The closure, evaluated at each gated Done arrival, does the following in order:
 
-1. When `outcome.yaml` is absent or its outcome is not `done`, it passes without verifying, so a stuck or paused outcome ends the run as today.
+1. When `outcome.yaml` names an outcome other than `done`, it passes without verifying, so a stuck or paused outcome ends the run as today, without reaching Publish.
+   An absent `outcome.yaml` cannot reach the gate, since a Done arrival requires both output files; if it did, the run errors at the post-gate outcome parse.
 2. It runs the clean-tree check (D7); a dirty tree fails with the dirty paths as findings.
 3. It checks the fixer commits (D5); a violation is a `Terminal` failure.
 4. With no `## verify:` section it passes with a warning.
@@ -72,7 +80,6 @@ Go writes the same content, plus the fix commits, to a per-run gate report `veri
 In-process bisect, the triage baseline run and every detached checkout of the live worktree go.
 Rationale: bisect assumes intermediate card SHAs pass the integration suite and that the label list is in ancestry order.
 Neither holds: a card's test can precede the card that makes it pass, and `begin-batch` does not enforce execution order, so the first failing SHA in list order is not the card that broke the test.
-That is how it named card 07 for card 09's line.
 A touch-based hint never claims more than it knows, and Merriam judges it with the plan in hand.
 
 ### D5 — Merriam fixes through one fork per gate failure
@@ -83,9 +90,10 @@ The fixer fixes the cause in source, never deletes, skips or weakens a test, nev
 It runs the failing packages' tests (with `-tags integration`) before reporting, and does not run the plan-level verify.
 On the fork's notification Merriam rewrites `outcome.yaml` and `summary.md`, the summary gaining a "Verify gate fixes" section, and ends its turn, which re-arrives at the gate.
 Go records the HEAD at the gate's first failure as the pre-fix head.
-At each later arrival every commit from it to HEAD must be a non-merge commit touching no plan or `_lyx` path, else the gate fails `Terminal`.
+At each later arrival every commit from it to HEAD must be a non-merge commit or a clean parent merge on the first-parent chain, as record-batch already accepts, else the gate fails `Terminal`.
+The plan directory and `_lyx` sit outside every warp commit, so the run-exit fork audit (`CheckFork`) is what catches a fixer write there: it audits the fixer fork as it audits a batch fork.
 Bound: fixer commits skip record-batch's done-checks, drift detection and glyph scope guard.
-They are bounded by that commit check, by the gate's own verify and by Webster-Review, which reviews the committed range.
+They are bounded by the commit check, the run-exit fork audit, the gate's own verify and Webster-Review, which reviews the committed range.
 Rationale: the board's fix direction; a fork keeps Merriam's context clean and Merriam never edits files.
 
 ### D6 — Merriam's stencil waits only on notifications
@@ -109,6 +117,8 @@ It takes told paths (worktree, record, log, marker) and the command, and does th
 The record lives under `.lyx` (one per worktree, the path told to every consumer), and is written only after a pass.
 Landing's pending-verify marker and its `treeChanged` argument retire.
 Bound: the skip lets through only a tree byte-identical to one that passed the same command.
+That holds because only this function writes the record, so `lyx webster verify` records only after a pass of its own.
+No agent prompt names the record path; an agent writing it is outside the bound, which is a steering guard like the other agent write bans, not a security boundary.
 A crash anywhere before the record write leaves a mismatch, so verify runs again; a lost `.lyx` only costs a re-run.
 Rationale: the board's robust fix for `verify-gate-crash-after-merge`; keying on the tree, not the commit, also makes Publish's no-op merge skip and makes Burler's "changed code" check mechanical.
 
@@ -118,6 +128,7 @@ Decision: `loom-recipe.yaml`'s Webster-Burler row gains `gates: [{name: verify, 
 A round that changed no code sees the verified tree and passes without running.
 A failure re-prompts the Burler round session with the findings.
 An exhausted gate is Stuck to Webster-Bouncer, as every Burler gate failure already is.
+Bound: a failing verify writes no record, so a red tree Webster-Bouncer approves reaches Publish, whose D7 verify runs because the tree differs from the record, and is Stuck there before anything is pushed.
 Rationale: the perch that last edits code gets a mechanical test gate (operator, 2026-10-03), and the record makes the no-change case free.
 
 ### D9 — Publish and Finalize never verify or push a dirty tree
@@ -179,7 +190,6 @@ Rationale: four sites share the rule, and the next site must not reintroduce a m
 - Gate Self-Check Parity, Completion Signal, Shuttle Provider-Seam, Agent Name, Durable-vs-Ephemeral State, Told-Geometry, Stencil Ownership, Test Tier Purity and Fabric Vocabulary invariants apply; landingshed and mergeresolve must not name either fabric side.
 - Webster's degrading config: a hub `webster.yaml` still carrying `poll_wait_s` must keep loading, and a missing `verify_gate_attempts` takes its default.
 - No migration: a webster run in flight with an `IntegrationFix` state record or an `integration.yaml` report restarts with `--fresh`; `state.json` decoding must not fail on the retired field.
-- The gate closure runs only at a turn boundary with no background work outstanding, so it never verifies under a running fork.
 - Gate attempt counts are in memory per shuttle run; after an attach they restart from zero, bounded by `master_timeout_min`.
 - Card gates assume a Go repository, as the implementer stencil already does.
 
@@ -195,8 +205,7 @@ Rationale: four sites share the rule, and the next site must not reintroduce a m
 ## Open risks
 
 - The per-card integration run over a heavily tested package (`internal/fabricengine`) costs minutes per card that touches it.
-- The fork, not Go, runs the card gate; a fork that skips it is caught only at the webster gate, which still localizes through the touch hint.
-- An exhausted Webster-Burler gate routes to Webster-Bouncer, whose judge (being reworked in `review-finding-class`) could approve a red tree onward; Publish's verify then halts it.
+- Webster-Bouncer's judge, being reworked in `review-finding-class`, could approve a red tree past an exhausted Webster-Burler gate, which costs a Describe and a Publish run before Publish halts it (D8).
 - A pre-existing parent failure now consumes Merriam's gate attempts before halting.
 - The pointer launch changes every role's first user message; a test or tool reading the first message for content would break.
 
@@ -207,11 +216,16 @@ Rationale: four sites share the rule, and the next site must not reintroduce a m
 - Test: a fake Merriam whose first done arrival fails verify and whose second passes ends `done` with one re-prompt, and the findings name the failing identity and the card whose commit touched its package.
 - Test: an exhausted gate ends `stuck` with a reason naming the failing identities.
 - Test: a dirty tree at a done arrival fails the gate with the dirty paths and does not run verify.
-- Test: a fixer commit touching the plan directory fails the gate `Terminal`.
+- Test: a turn end that spawns the fixer fork in the background does not evaluate the gate; the turn end after its notification does.
+- Test: a merge commit above the pre-fix head, other than a clean parent merge, fails the gate `Terminal`, and a clean parent merge there does not.
+- Test: a fixer fork that writes the plan directory is flagged by the run-exit fork audit.
 - Test: a flaky failure that passes on rerun passes the gate with the flaky warning.
 - Test: a non-`done` outcome passes the gate without verifying.
 - Merriam's stencil contains no integration fork, no `await-batch` or `recover-batch` re-call loop, no `sleep`, and no "non-interactively".
   A template test pins the absence and the gate-failure fixer section.
+- A template test pins D2's grep rule in `loom-template-plan.md`.
+- Test: `recover-batch` returns only at a terminal digest or once `recovery_timeout_min` classifies the strand dead, and a `webster.yaml` still carrying `poll_wait_s` loads.
+- Test: a failed gate writes `verify-gate.yaml` with the failing identities, the card hint and the fix commits.
 - Merriam's strand is named `<shortname>:<slug>:webster`, pinned by a test, while `webster.yaml`'s `master` key still resolves its model.
 - Test: `begin-batch` renders a card's gate command with `go test ./...` and `-tags integration` over the card's package directories, leaving out a Delete-only directory.
 - Test: the shared function skips when the record names HEAD's tree and the command, runs when either differs, refuses a dirty tree, and writes the record only on a pass.
@@ -233,4 +247,4 @@ Rationale: four sites share the rule, and the next site must not reintroduce a m
 - `MasterStarter.StartMaster` already takes a `GateSpec` (empty today); check that the attach path for a resumed Merriam carries the same spec.
 - `LoomVerifyPendingPath` and `verifyGate.check`'s `treeChanged` argument go; `LoomVerifyOutputPath` can become D7's log path.
 - `internal/shedverbs/status.go`'s `waitingNote` serves `--watch`; confirm the one-shot status envelope surfaces the same note.
-- `contracts/specs/loom-plan-spec.md` says the verify model is "designed, not implemented"; Tier 1 becomes implemented as D1.
+- `contracts/specs/loom-plan-spec.md` says the verify model is "designed, not implemented"; Tier 1 becomes implemented as D1, and Tier 2 gains D1's per-card integration-tagged run.
