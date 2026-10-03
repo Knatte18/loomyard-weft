@@ -93,10 +93,3 @@ Starts when every entry it names under After is done.
 1. **A batchifier that groups small related cards into one Webster batch** — [`card-batching`](design-card-batching.md) · feature
    - [webster][batcher] Only the identity batchifier exists; a mechanical batchifier groups cards from their Create/Edit/Uses fields once cards name members as glyphs
    - **After:** `plan-glyph-precision`
-
-## Done
-
-Finished, awaiting `lyx board prune`.
-
-1. **Review convergence: the judge decides converged, continue or circling from fresh reviews** — [`review-finding-class`](design-review-finding-class.md) · feature · done
-   - The Bouncer judge stops reviewing the artifacts and judges convergence from facts Go hands it (counts, severities, trend, reopened ledger keys), on its own sonnet[medium] key; at least one fresh round, circling escalates; plus finding classes

@@ -2,7 +2,7 @@
 
 `pattern-init` · Tasks · feature
 
-Depends on: [`verify-publish-hardening`](design-verify-publish-hardening.md), [`pair-lifecycle`](design-pair-lifecycle.md), [`review-finding-class`](design-review-finding-class.md)
+Depends on: [`verify-publish-hardening`](design-verify-publish-hardening.md), [`pair-lifecycle`](design-pair-lifecycle.md)
 
 ## Goal
 
