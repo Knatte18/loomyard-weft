@@ -11,4 +11,4 @@ Stale exact-string assertions then fail on the card that reworded them, under th
 
 Test: `claims_test.go` pins the rule's wording in `loom-template-plan.md`.
 
-**ImpactSummary:** the Plan-Write stencil gains one card rule and one claim pin.
+**ImpactSummary:** no production code reads the rule; only plans Plan-Write writes from now on change, a message-rewording card gaining the asserting tests as targets, and existing plans are unaffected.

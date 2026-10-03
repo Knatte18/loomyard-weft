@@ -35,7 +35,7 @@ The card's own `**Verify:**` still runs after the gate when declared.
 The self-fix and report wording that says "build+unit gate" says "gate".
 
 Bound: the fork runs the gate and Go never does, as with today's stencil gate;
-a fork that skips it is caught by the webster verify gate (card 14), whose card hint localizes the failure.
+a fork that skips it is caught by the webster verify gate (card 15), whose card hint (card 14) localizes the failure.
 
 Tests:
 `targetdirs_test.go`: path, member glyph, handle and Rename targets map to their directories, and Delete-only and `NamesGo` flags are set.

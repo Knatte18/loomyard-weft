@@ -8,7 +8,7 @@
 In `pollEventsTick`, when the run is gated (`len(run.gate) > 0`) and the newest event is `EventWaiting`, return no outcome even when every output file exists.
 An ungated run keeps today's order, where existing output files win over a waiting event.
 
-Without this, the turn end on which Merriam spawns the gate fixer fork in the background (card 14) re-arrives at the gate, because `outcome.yaml` and `summary.md` are still on disk from the first arrival, and the gate verifies the fork's half-edited tree.
+Without this, the turn end on which Merriam spawns the gate fixer fork in the background (card 16) re-arrives at the gate, because `outcome.yaml` and `summary.md` are still on disk from the first arrival, and the gate verifies the fork's half-edited tree.
 A waiting turn end on a gated run is also not an idle boundary for a pending entry: the next real turn end is.
 
 The change lets a gated run keep polling past a turn end that would have finalized it.
@@ -22,4 +22,4 @@ a gated run whose output files exist and whose last event is `EventWaiting` does
 the next `EventStop` after it evaluates the gate exactly once;
 an ungated run with output files and a last `EventWaiting` still classifies Done, as `TestPollEventsTick_WaitingWithOutputFilesIsDone` pins today.
 
-**ImpactSummary:** every gated shuttle run (Plan-Write, Discussion-Write, Describe, PR-Rework, the gated Burler rows, and Merriam from card 14) stops finalizing on a waiting turn end; ungated runs are unchanged.
+**ImpactSummary:** every gated shuttle run (Plan-Write, Discussion-Write, Describe, PR-Rework, the gated Burler rows, and Merriam from card 15) stops finalizing on a waiting turn end; ungated runs are unchanged.

@@ -24,7 +24,7 @@ Config:
 a hub `webster.yaml` still carrying `poll_wait_s` keeps loading, since the unmarshal ignores an unknown key.
 A new `verify_gate_attempts` key (template default 3, validated positive like the other knobs) lands as `Config.VerifyGateAttempts`;
 a file without it takes the default through `configengine`'s fill-missing path.
-Card 14 reads it.
+Card 15 reads it.
 
 recover-batch:
 a new `websterengine.RecoveryWaitBudget(cfg Config) time.Duration` returns `recovery_timeout_min` plus one poll tick.
