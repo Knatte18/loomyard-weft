@@ -1,0 +1,15 @@
+---
+round: 1
+focus:
+  - "D3 against D6: D6 keeps a no-force refusal for sibling-side changes left outside the scoped pathspec, but D3's read-only probe lists only warp-side dirtiness. Does that residual refusal fire inside Remove after D4 has ended the session and after D6's commit has mutated the sibling branch, breaking D3's guarantee that a refused call leaves session, strands and pair untouched? Settle whether the probe must cover it, or the guarantee must be narrowed."
+  - "D8 and D9 landed rule on the fetched remote tip: the existing checkUnlandedWork counts reachability from --remotes and --tags, excluding only the local branch's own ref. Does the Decision say which refs count as 'another ref' for a remote tip, so that the branch's own refs/remotes/origin tracking ref (or any other copy of the same tip) cannot satisfy the gate by itself? If not, the new remote deletion edge has no effective bound."
+  - "D2 and D4: a parked driver counts as quiet, so `fabric remove` ends a parked driver's session without waiting or refusing. Does D2's bound ('never kills a non-quiet driver') state what a parked strand loses, and is that consistent with the Goal and with D3's concern for interactive operator strands?"
+  - "D7 bound: reed marks any strand retiring on `reed remove --detach`, and `loom start` then removes a retiring driver synchronously. The bound says the mark comes only after the driver's teardown command has committed its records; is that ordering guaranteed by reed or only by loom's teardown command, and what bounds start's removal when the mark was set by some other caller or the detached remover failed?"
+  - "D1 and D5 guard removal: battencli's PairSiblingRemnant refusal and RemovePairBranch re-entry go, and batten maps D5's typed not-found error to done. Does the record bound what batten now accepts as done, for instance a slug that never had a pair, and does D5's 'nothing remains' test cover every artifact the removed batten path used to check?"
+  - "Open risks 1 and 2: the warp-SHA source for D6's trailer in the finish path, and unserialized concurrent teardowns (with D6 now committing and D5 now finishing partial states). Apply the completeness-before-leanness test: does either carry a requirement the plan writer needs as a Decision or Constraint rather than a risk note, and is the warp-SHA pick already decided?"
+  - "Relocation candidates in decision-record.md: D10's dated verification narrative, D4's incident history in its rationale, and Auto-mode assumption 3's account of the driver-restart-race scenario. After extracting any requirement the plan writer needs, does the surrounding deliberation belong in support-log.md?"
+---
+
+Seeded from a first read of both files against the rubric and the writer's stencil.
+The entries lean on the attack-surface question because this task adds two remote deletion edges (D8, D9), an auto-commit that replaces a refusal (D6), a strand removal in `loom start` (D7), and removes batten's half-removed refusal (D1, D5).
+The `Notes for the plan writer` file pointers and any call-site completeness are excluded per the `Do not flag` list.
