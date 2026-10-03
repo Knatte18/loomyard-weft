@@ -34,3 +34,8 @@ Cards 5 and 9 sit in different, sequential batches, so the overlap was harmless;
 
 Want: validation gives the same answer at Plan-Write and at dispatch.
 Either containment places a `plan:` handle by its declared file at plan time, or it does not refuse overlaps between cards in different batches; and a card listing a file and a member of that same file is flagged at plan time as redundant.
+
+## Mechanical caller coverage for deletions (seen 2026-10-03)
+
+In `test-suite-change-amplification`'s plan the Burler found cards 36, 37 and 39 deleting helpers whose callers sit in files the cards do not list; plan-validate could not see it, because a card lists files, not the symbols it deletes or re-signs.
+Once cards name deleted and re-signed members as glyphs, plan-validate can resolve every reference through quarry and flag a referencing file that no card in the same or an earlier batch edits, instead of leaving it to the Burler or to verify's compile failure.
