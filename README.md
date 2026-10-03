@@ -11,7 +11,7 @@ Concretized and claimable.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Test suite, part 1: shared testkit, seam fakes and git helpers** — [`test-suite-change-amplification`](design-test-suite-change-amplification.md) · feature · running · PR-Gate
+1. **Test suite, part 1: shared testkit, seam fakes and git helpers** — [`test-suite-change-amplification`](design-test-suite-change-amplification.md) · feature · awaiting · PR-Gate
    - Test helpers and seam fakes live once: internal/testkit with one fake per cross-package seam, git helpers in gitkit, hubforge as the only fabric fixture
    - **Before:** `test-suite-derived-guards`
 
