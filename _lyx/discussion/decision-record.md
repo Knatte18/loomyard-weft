@@ -20,7 +20,6 @@ In:
 
 Out:
 
-- Tier 1 anomaly filing (`detectAndFileAnomalies`) stays `run`-only.
 - Per-agent end-of-session self-report sessions (a `mill-self-report` analogue for Merriam or the driver).
 - Deduplication against already-open GitHub issues.
 - The board intake that pulls issues back and filters them.
@@ -97,6 +96,13 @@ Bound: filing stays `lyx selfreport create` only, never `gh`; `Knatte18/loomyard
 
 Decision: add a Friction Capture invariant: a loom halt (`blocked` or `failed`) and every `lyx webster` refusal but `validate`'s write a Go-authored friction note when Tier 2 is on, and no code path archives or deletes a friction note before a reflection has covered it.
 Rationale: both are cross-cutting rules a later change could silently break; per CLAUDE.md a new invariant goes into `CONSTRAINTS.md` in the same commit.
+
+## Operator additions after Discussion (relayed by the hub, 2026-10-03)
+
+These are operator-approved scope, relayed by the hub after Discussion; PR-Gate rejected PR 355 for lacking them (review file: `loomyard/.scratch/hub/prgate355/review.md`).
+
+- (a) Tier 1 anomaly filing (`detectAndFileAnomalies`) also runs under `step`, with its existing skips (knob off, `ErrShedBusy`, cancelled context), and does not double-file D2's halt note.
+- (b) A failed `FileIssue` is retried on every later pass (a pending list in the filed-title marker), so a halt that is resumed is still filed.
 
 ## Constraints
 

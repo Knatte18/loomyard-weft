@@ -1,0 +1,31 @@
+{
+  "runGuid": "1246f431e69f3c32e4888cfa61dc443a",
+  "planFingerprint": "5a7ea625ac7c8c366eb7fe6d7dc8f7b1ffe79dd3347dd67b9b915a4719dc6529",
+  "planFileHashes": {
+    "00-overview.md": "0023f2d20fad0a17651f84cf65a525e7d2ee0090492d960f754764f33037d332",
+    "10-anomaly-pending-retry.md": "0dc4fc4ec447d650fec120b988c7dba6e177e46159c1bf47051b21352ea6e10b",
+    "11-anomalies-under-step.md": "fc560a6d1a6ca35eb6a63eb93aca097734a621b3f12131c0d0dc710c871682e5",
+    "12-halt-filing-ownership.md": "b3b7c0e158f20733e9d656ef71b6c6356ba4c832289cafb76a079d5fba9b2b71"
+  },
+  "currentBatch": 10,
+  "masterStrand": "83440f6dc5302721f645a1571701c1e2",
+  "masterSessionId": "57405084-6cc0-4963-8711-ce7eb8a54626",
+  "assertedModel": "sonnet",
+  "batches": {
+    "10": {
+      "slug": "anomaly-pending-retry",
+      "cards": [
+        "10-anomaly-pending-retry"
+      ],
+      "cardHashes": {
+        "10-anomaly-pending-retry": "0dc4fc4ec447d650fec120b988c7dba6e177e46159c1bf47051b21352ea6e10b"
+      },
+      "startSha": "5ee34d63ecf7f8b997e2c6df32a5d33429809f02",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T18:18:37Z",
+      "sessionId": "57405084-6cc0-4963-8711-ce7eb8a54626",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
