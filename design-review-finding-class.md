@@ -1,6 +1,6 @@
 # Review convergence: the judge decides converged, continue or circling from fresh reviews
 
-`review-finding-class` · Tasks · feature · running · Plan-Burler
+`review-finding-class` · Tasks · feature · running · Plan-Bouncer
 
 ## Goal
 
