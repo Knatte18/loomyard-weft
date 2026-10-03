@@ -3,6 +3,8 @@
 **Edit:**
 - `cmd/lyx/helptree_test.go`
 - `cmd/lyx/unknown_subcommand_test.go`
+- `cmd/lyx/seamsignature_test.go`
+- `cmd/lyx/sandbox_coverage_test.go`
 - `CONSTRAINTS.md`
 
 **Delete:**
@@ -22,6 +24,7 @@ A group whose bare or `bogus` invocation legitimately differs is a finding to re
 It replaces `helptree_test.go`'s module and subcommand lists, `unknown_subcommand_test.go`'s hard-coded groups, `longlist_test.go` and `drift_test.go`;
 `TestHelpTree_OrchStartListsAdopt` and `TestUpdateCommandRemoved` stay, since each pins one behaviour rather than a list.
 `registration_test.go` stays the independent mount oracle and is not touched.
+Two comments name the deleted files and are rewritten to name `clitree_test.go`'s walk instead, with no other change: `seamsignature_test.go`'s file comment on `drift_test.go`, and `sandbox_coverage_test.go`'s comment on mirroring `longlist_test.go`'s skip pattern.
 Before deleting anything, check its comments: a test citing a finding or crucible round keeps its assertion in the walk or stays (D21).
 
 What this lets through, bounded per D5: the derived listing no longer notices a verb being deleted, which that verb's own behaviour tests must catch, and `go test` of one CLI package no longer checks `Short`, which `go test ./cmd/lyx` does and the plan-level verify runs.
@@ -30,4 +33,4 @@ What this lets through, bounded per D5: the derived listing no longer notices a 
 per-CLI copies are no longer an obligation.
 Deleted test names go in the commit body for the count accounting.
 
-**ImpactSummary:** `cmd/lyx` tests only plus one `CONSTRAINTS.md` line; the help-tree and drift tests fold into one derived walk.
+**ImpactSummary:** `cmd/lyx` tests only plus one `CONSTRAINTS.md` line; the help-tree and drift tests fold into one derived walk, and two other test files' comments stop naming the deleted files.

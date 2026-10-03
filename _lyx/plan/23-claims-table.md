@@ -12,6 +12,8 @@
 
 **Intent:** Create the one claims table for raw-stencil wording (D12) and move `contracts/stencils`' own wording checks into it.
 `claims_test.go` holds a table keyed by stencil file, each claim a `must` or `mustNot` phrase with a `why`, and one table-driven test that reads each stencil's raw embedded text once and checks its claims, naming file, phrase and `why` on failure.
+A claim may also name a section heading, which limits its check to that heading's section, up to the next `## ` heading, and a claim naming a heading the stencil lacks fails;
+a check scoped to one section today stays scoped, so it is neither weakened into a whole-file `must` nor strengthened into a whole-file `mustNot`.
 A claim's `why` keeps its provenance (crucible round, finding, sabotage proof);
 a claim that cites one is protected (D21).
 The raw `strings.Contains` checks in the listed files move into the table;

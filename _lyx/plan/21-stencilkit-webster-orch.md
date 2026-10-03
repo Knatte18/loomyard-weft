@@ -21,7 +21,8 @@ A deliberate-absence fixture becomes "seed all, then remove X".
 A test that compared seeded bytes against an embedded default compares stamp-stripped bodies instead;
 a verdict that changes because the seeded file now carries the stamp is reported as a finding, not absorbed by a fixture tweak.
 Fixtures that write deliberately modified stencil content keep writing it, on top of a `stencilkit` seed.
-The `smoke`-tagged seeders already reconcile through the registry and are left as they are, so no smoke file changes.
+The `smoke`-tagged seeders in these packages (`burlerengine`'s and `treadleengine`'s) already reconcile through the registry and are left as they are, so no smoke file changes here;
+`loomcli`'s hand-listed smoke seeder converts in card 22.
 After this card none of these files hand-lists stencil byte slices to seed a directory.
 
 **ImpactSummary:** Test fixtures only, in six packages; every converted test keeps its assertions.

@@ -15,6 +15,7 @@
 
 **Uses:**
 - `internal/testkit/scankit/scankit.go`
+- `internal/reedengine/server.go`
 
 **Intent:** Add `internal/testkit/tmuxkit`, one isolated tmux socket directory per test package (D17), with the API named in the overview's `tmuxkit-api` Shared Decision.
 `Main(m)` creates a short per-process directory with `os.MkdirTemp`, sets `TMUX_TMPDIR` to it, unsets `TMUX` and `TMUX_PANE`, runs `m.Run()`, then runs `tmux -S <socket> kill-server` for every socket under its own directory only and removes the directory, returning the run's exit code.
@@ -22,7 +23,9 @@ It fails setup, naming `TMPDIR` as the remedy, when the directory plus `tmux-<ui
 When `tmux` is not on `PATH` it sets the environment and skips the sweep;
 on Windows (psmux) it runs the tests unchanged.
 `Socket(t, tmux)` returns a unique `-L` key and registers `kill-server` on that key in `t.Cleanup`.
+The package doc states the kit's purpose: one isolated tmux socket directory per test package, and its `os/exec` exemption's bound (D23).
 The pure parts (path-length check, environment setup, socket listing of its own directory) are tested untagged in `tmuxkit_test.go` without spawning;
+that file also asserts that `reedengine.ServerName` of an over-long hub path fits the kit's 61-byte key bound, so the bound cannot drift from reed's own key cap unnoticed (`reedengine`'s production code does not import `tmuxkit`, so this adds no cycle);
 `tmuxkit_integration_test.go` proves against a real `tmux` that a server started on a `Socket` key or under `Main`'s directory is gone afterwards and that no socket lands in the default directory.
 `testmain_test.go` runs the kit's own tests through `Main`.
 

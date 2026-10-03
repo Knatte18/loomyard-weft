@@ -16,6 +16,7 @@ It renders a plan directory from an overview (approved flag, framing, optional `
 It exposes the rendered bytes as well as the write, so a rejection test can corrupt one file of an otherwise valid plan without spelling the format itself.
 It also writes the file-tree fixture glyph resolution needs (repository-relative path to content under a directory), the helper copied today as `writeFixtureRepo`/`writeGlyphRepo*`.
 Its only assertions are `t.Fatalf` on its own setup.
+The package doc states the kit's purpose: the one test-side writer of valid plans, rendering through `planparser`'s format constant (D23).
 `plankit_test.go` proves that rendered plans parse through `planparser.ParsePlan` and pass `planparser.ValidateFormat` with zero findings across the shapes the kit offers (single and multi-card, approved and not, a `first_card:` offset, multi-label cards with `Uses:`), and that the approved flag round-trips.
 
 `CONSTRAINTS.md`'s Planparser Sole-Parser Invariant is restated per D10: `planparser` is the sole production parser and writer;

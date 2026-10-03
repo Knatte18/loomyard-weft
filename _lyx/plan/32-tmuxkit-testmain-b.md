@@ -36,7 +36,8 @@
 **Intent:** Run the second half of the packages that have an `integration`- or `smoke`-tagged test file through `tmuxkit.Main`, in the same shape as card 31: existing `TestMain`s exit through `tmuxkit.Main(m)` after their own setup, integration-only `TestMain`s gain a `//go:build !integration` `testmain_test.go` sibling, and packages with none gain an untagged one.
 `orchcli`'s tag-split pair is covered on both sides.
 `logger`'s `TestMain` in `sink_callsite_integration_test.go` keeps its own setup and exits through `tmuxkit.Main`.
-Tests in these packages that relied on running inside the caller's tmux are fixed to set the variable they need.
+At HEAD no test in these packages reads `TMUX` or `TMUX_PANE`, so none relies on running inside the caller's tmux;
+a test that fails for that reason is reported as a finding, not fixed outside this card's targets.
 This card changes no `smoke`-tagged file.
 
 **ImpactSummary:** Test-binary setup only, in the second half of the tagged-test packages; no test body changes.

@@ -17,6 +17,6 @@ Prove the rebuilt scan by planting one violation per rule (a non-test file outsi
 
 `CONSTRAINTS.md`'s Testkit Invariant changes its scope from "a seam faked in two or more packages" to shared test support (fakes, builders, fixtures and the scan harness) used by two or more packages, gains the clause that `scankit` imports the standard library only so every package's tests can import it, and widens the review-discipline sentence: `scankit` asserts scan results, while `plankit` and `stencilkit` assert nothing beyond `t.Fatalf` on their own setup.
 `internal/testkit/doc.go` states the same scope.
-`docs/overview.md`'s Tests passage names `scankit` as the harness every invariant scan runs on.
+`docs/overview.md`'s Tests passage names `scankit` as the harness every invariant scan runs on, and its sentence placing `internal/testkit`'s kits "for seams faked in more than one package" is restated to the same new scope.
 
 **ImpactSummary:** One scan file rebuilt and one invariant restated; no production code and no other test changes.
