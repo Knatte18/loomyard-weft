@@ -1,0 +1,4 @@
+status: OK
+head_sha: 91c0fcd5cbef6c1e70d4614595fb32f2ca5a1ff4
+deviations:
+  - internal/loomcli/circling_integration_test.go

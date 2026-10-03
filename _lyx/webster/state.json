@@ -15,7 +15,7 @@
     "10-circling-verbs.md": "d955190c01f9b3b83cf4978af39a03d6979a480768087670c9102bcd5fd9f294",
     "11-retire-classification-draft.md": "71e280c94862f7bc2360355a64168407980ffc9f44aa7c99acd9b64acdbf0455"
   },
-  "currentBatch": 10,
+  "currentBatch": 0,
   "masterStrand": "6ae6a24e80acfb89e279dcf937eb3c34",
   "masterSessionId": "55ee855a-3447-48c9-b795-18ba3dc1b3a9",
   "assertedModel": "sonnet",
@@ -58,8 +58,22 @@
       "kind": "fork",
       "spawnedAt": "2026-10-03T14:48:53Z",
       "sessionId": "55ee855a-3447-48c9-b795-18ba3dc1b3a9",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "10-circling-verbs",
+        "status": "done",
+        "head_sha": "91c0fcd5cbef6c1e70d4614595fb32f2ca5a1ff4",
+        "deviations": [
+          "internal/loomcli/circling_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "91c0fcd5cbef6c1e70d4614595fb32f2ca5a1ff4"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-finding-class/55ee855a-3447-48c9-b795-18ba3dc1b3a9/subagents/agent-a203cf38fbe660977.jsonl"
+      ]
     },
     "2": {
       "slug": "rubric-class-mapping",
@@ -279,6 +293,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-finding-class/55ee855a-3447-48c9-b795-18ba3dc1b3a9/subagents/agent-a72a654af85dd5f32.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-finding-class/55ee855a-3447-48c9-b795-18ba3dc1b3a9/subagents/agent-ae254ddc183bbd666.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-finding-class/55ee855a-3447-48c9-b795-18ba3dc1b3a9/subagents/agent-aedc2b609591e2ca8.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-finding-class/55ee855a-3447-48c9-b795-18ba3dc1b3a9/subagents/agent-afc14bff1d7c76dd0.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-finding-class/55ee855a-3447-48c9-b795-18ba3dc1b3a9/subagents/agent-afc14bff1d7c76dd0.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-finding-class/55ee855a-3447-48c9-b795-18ba3dc1b3a9/subagents/agent-a203cf38fbe660977.jsonl"
   ]
 }
