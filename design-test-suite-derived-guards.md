@@ -1,6 +1,6 @@
 # Test suite, part 2: derived guards, decoupled recipe tests, no leaked tmux sockets
 
-`test-suite-derived-guards` · Tasks · feature · awaiting · PR-Gate
+`test-suite-derived-guards` · Tasks · feature · running · PR-Gate
 
 ## Goal
 
