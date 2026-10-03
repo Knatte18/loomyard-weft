@@ -1,0 +1,10 @@
+{
+  "slug": "agent-self-reflect",
+  "round": 1,
+  "reviewer": "ly:orch",
+  "opened_at": "2026-10-03T18:52:25.214569228+02:00",
+  "decision_record": "/home/knatte/Code/loomyard-LYXHUB/agent-self-reflect/_lyx/discussion/decision-record.md",
+  "support_log": "/home/knatte/Code/loomyard-LYXHUB/agent-self-reflect/_lyx/discussion/support-log.md",
+  "state": "open",
+  "cap": 1
+}
