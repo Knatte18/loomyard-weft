@@ -1,6 +1,6 @@
 # Review convergence: the judge decides converged, continue or circling from fresh reviews
 
-`review-finding-class` · Tasks · feature · running · Loom-Preflight
+`review-finding-class` · Tasks · feature · running · Discussion-Write
 
 ## Goal
 
