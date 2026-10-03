@@ -1,51 +1,53 @@
-# Friction reaches GitHub on its own, under step and on halts
-Friction from a loom run now reaches GitHub as issues without an operator.
-Before this change the reflection ran only under `lyx loom run`, so no driven run (every driver uses `lyx shed step`) ever reflected, and ly-drive's self-report died in its drive report unless someone approved it.
-Filtering of what was filed moves to the later board intake, not before filing.
+# Friction reaches GitHub on its own, under step as under run
+
+Every loom run's friction now reaches GitHub as issues with no operator in the loop, under `lyx shed step` and `lyx loom step` as well as `lyx loom run`.
+Before this change the reflection ran only under `run`, but every driven run uses `step`, so no driven run ever reflected.
+The hub filed #350 and #352 by hand at a Webster block; with this change the halt files them.
+Filtering moves to the later board intake, so the reflection no longer triages.
 
 ## What changes
 
-- **Friction-Reflect under `step`.**
-  `reflectFrictionRow` drops its `run`-only gate and reflects whenever the friction directory is non-empty.
-  The row still returns Done, and done persists only after the reflection returns, so batten's teardown still waits for it.
-- **Halts reflect under both verbs.**
-  A `step` or `run` that leaves the run `blocked` or `failed` writes a Go-authored halt note (producer, state, reason, history position, trace path) and then runs the non-waiting reflection.
-  Under `step` this happens in the step process before the envelope is written, and step envelopes now carry the `friction` status key (`shedverbs` gains an `AfterStep` hook).
-  `awaiting` and `paused` write and reflect nothing.
-  `run` previously reflected on `blocked` only; `failed` is new.
-- **Webster refusals leave a note.**
-  Every refusal from a `lyx webster` verb except `validate` writes one Go-authored note with the verb, arguments, refusal text and class, when the friction directory resolves.
-  A write failure only logs and never changes the verb's exit or envelope.
-- **`frictionengine.Reflect` is re-entrant.**
-  It records the covered notes in a non-`.md` record file before spawning.
-  On entry it attaches to a live reflection agent instead of spawning, or archives the covered notes when a finished report exists.
-  Archives move only the covered notes, so a note written mid-reflection stays for the next one.
-  Friction-Reflect's interrupt policy stays `reinvoke`, now justified by the attach probe.
+- **Reflection under step.**
+  `reflectFrictionRow` drops its `armedVerb == "run"` gate.
+  The row still returns Done, and done persists only after the reflection returns, so batten's teardown never runs before it.
+- **Halt notes.**
+  A `step` or `run` that leaves the run `blocked` or `failed` first writes a Go-authored halt note (producer, state, reason, history position, trace path), then runs the non-waiting reflection.
+  Under `step` this happens before the envelope is written, and the step envelope gains the `friction` status key `run` already carries.
+  `awaiting` and `paused` write nothing.
+  `run` previously reflected on `blocked` only.
+- **Webster refusal notes.**
+  Every refusal from a `lyx webster` verb except `validate` writes one Go-authored note (verb, arguments, refusal text, class) when the friction directory resolves.
+  A write failure only logs.
+- **Tier 1 anomaly filing under step.**
+  `detectAndFileAnomalies` also runs under `step`, with its existing skips, and does not double-file the halt note.
+  A failed `FileIssue` is kept as a pending title and body in the filed-title marker and retried on every later pass, so a resumed halt is still filed.
+- **Re-entrant `frictionengine.Reflect`.**
+  Reflect records the covered notes in a non-`.md` record file before spawning, probes for a live reflection agent through shuttle's attach seam, and archives covered notes without spawning when a finished report exists.
+  A note written during a reflection stays for the next one.
+  A killed step process no longer leads to a second agent refiling the same notes.
 - **Reflection stencil.**
-  The agent files every distinct lyx problem, merges duplicates, drops only notes about the task's own code or describing nothing wrong, and ends each issue body with a provenance line (task slug and note file names).
-  Issue bodies may not quote task source, diffs, plan text, credentials, environment values or absolute home paths.
-  The report is now a success marker, written only after filing succeeded; a failed `lyx selfreport create` ends the turn without it, so Reflect returns `failed` and archives nothing.
+  The agent files every distinct problem in lyx tooling, merges duplicates, drops only items not about lyx, and ends each issue body with a provenance line (task slug, note file names).
+  A content rule keeps task source, diffs, plan text, credentials, environment values and absolute home paths out of issue bodies, since `Knatte18/loomyard` is public.
+  The report is now a success marker: the agent writes it only after filing succeeded.
 - **ly-drive.**
-  Repair and re-step records go to the envelope's `friction_dir` when non-empty.
-  The driver files nothing; the `## Self-report` section is replaced.
-  A `done` stop with `friction: failed` notifies the parent.
+  Repair and re-step records go into the envelope's `friction_dir` when it is set.
+  The driver files nothing itself, and at a `done` stop with `friction: failed` it notifies the parent.
 - **Docs.**
-  `CONSTRAINTS.md` gains a Friction Capture invariant; `docs/overview.md`, the `internal/friction` and `internal/frictionengine` docs, the loom recipe comment and the `InterruptPolicies` doc are updated.
+  New Friction Capture invariant in `CONSTRAINTS.md`; `docs/overview.md` and the `internal/friction` and `internal/frictionengine` docs updated.
 
 ## Design decisions to check
 
-- The report is the only signal that filing succeeded, since Go never parses it.
-  A reflection killed mid-filing leaves no report, so the next one refiles the issues it had already created.
-- A failed terminal reflection still lets `done` persist; the notes then survive only in the run records and the `archive/` tag.
-  The parent notification is the alert.
-- A halt reflection delays the step envelope by up to `friction_timeout_min`; a held reflection lock skips it rather than waiting.
-- No deduplication against open GitHub issues, and no new label.
-- Tier 1 anomaly filing (`detectAndFileAnomalies`) stays `run`-only, and the board entry's later note that it should also run under `step` is not implemented here.
-- Per-agent end-of-session self-report sessions are out of scope; halt notes, refusal notes and repair records are taken as covering them.
+- Go never parses the report, so its existence is the only proof filing succeeded.
+  A failed `lyx selfreport create` ends the turn without a report: Reflect returns `failed`, nothing is archived, and a done stop carries `friction: failed`.
+- A reflection killed mid-filing leaves no report, so the next one refiles issues it had already created.
+- A halt reflection delays the halting step's envelope by up to `friction_timeout_min`; a held reflection lock skips it rather than waiting.
+- Friction-Reflect's interrupt policy stays `reinvoke`, now justified by the attach probe.
+- `internal/friction` stays a leaf: halt and refusal note writing lives in `loomcli` and `webstercli`/`websterengine`.
+- Filing goes through `lyx selfreport create` only; there is no dedupe against open issues and no new label.
+- A terminal reflection failure still lets `done` persist; refiling then takes a person, alerted by the driver's parent notification.
 
 ## Not run by hand
 
-- No real reflection agent has filed a real issue.
-  The tests use a fake shuttle and a fake issue filer, including a stepped run whose Webster row hits `plan_drifted`, blocks, and reflects over both the refusal note and the halt note.
-  Worth one real driven run through a halt to see the issues land on `Knatte18/loomyard`.
-- Deploy the stencil with `update-plugins.sh`: the board's copy of `friction-template-reflection` is older than the worktree source.
+- The integration suite reported OK on the final commit; no real reflection was driven end to end against GitHub.
+  Check once that a stepped run with a Webster `plan_drifted` block files issues through `lyx selfreport create` and archives its notes.
+- The board copies of the stencils have drifted from the worktree sources; a production deploy (`update-plugins.sh`, operator-run) is needed before the new reflection stencil is live.
