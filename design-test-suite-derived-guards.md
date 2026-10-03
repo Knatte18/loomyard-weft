@@ -1,6 +1,6 @@
 # Test suite, part 2: derived guards, decoupled recipe tests, no leaked tmux sockets
 
-`test-suite-derived-guards` · Planned · feature · running · Plan-Write
+`test-suite-derived-guards` · Planned · feature · running · Plan-Bouncer
 
 ## Goal
 
