@@ -1,6 +1,6 @@
 # Friction reaches GitHub on its own: reflection under step, no approval gate, notes kept until filed
 
-`agent-self-reflect` · Tasks · feature · running · Describe
+`agent-self-reflect` · Tasks · feature · running · Publish
 
 ## Goal
 
