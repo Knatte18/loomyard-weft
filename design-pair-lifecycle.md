@@ -1,6 +1,6 @@
 # Clean pair lifecycle: no leftover sessions, branches, sockets or races
 
-`pair-lifecycle` · Tasks · feature · running · Loom-Preflight
+`pair-lifecycle` · Tasks · feature · running · Discussion-Write
 
 ## Goal
 
