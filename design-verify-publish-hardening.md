@@ -64,3 +64,7 @@ Merriam's strand is named for what it is.
 - A webster run's Merriam strand is named `<shortname>:<slug>:webster`.
 - The webster module doc and `docs/overview.md` describe the gate, and CLAUDE.md's Merriam terminology entry stays accurate.
 
+
+## Drop begin-batch's model assertion (#345, operator 2026-10-03)
+
+`begin-batch` asserts Merriam's model before every fork; the fork inherits Merriam's model, so the assertion has nothing to check and goes.
