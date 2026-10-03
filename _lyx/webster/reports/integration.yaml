@@ -1,25 +1,3 @@
-status: FAILED
-head_sha: f59c63cb75fcd42a54cd43a643fcbc8b50c16065
+status: OK
+head_sha: d4d9f6b96daa562c203f4d64d07af9af07774f36
 deviations: []
-failures:
-    - id: github.com/Knatte18/loomyard/internal/pairteardown
-      kind: package
-      tail: |-
-        # github.com/Knatte18/loomyard/internal/pairteardown
-        package github.com/Knatte18/loomyard/internal/pairteardown
-        	imports github.com/Knatte18/loomyard/internal/hubforge from teardown_integration_test.go
-        	imports github.com/Knatte18/loomyard/internal/fabriccli from hub.go
-        	imports github.com/Knatte18/loomyard/internal/pairteardown from fabric.go: import cycle not allowed in test
-        FAIL	github.com/Knatte18/loomyard/internal/pairteardown [setup failed]
-triage:
-    verdict: regression
-    rerun: failed
-    regressions:
-        - github.com/Knatte18/loomyard/internal/pairteardown
-fix:
-    result: fixed
-    pre_fix_head: f59c63cb75fcd42a54cd43a643fcbc8b50c16065
-    commits:
-        - d4d9f6b96daa562c203f4d64d07af9af07774f36
-    cleared:
-        - github.com/Knatte18/loomyard/internal/pairteardown
