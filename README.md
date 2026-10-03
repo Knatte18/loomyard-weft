@@ -37,8 +37,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Batten teardown deletes an llm-driven child's friction notes** — [`batten-llm-friction`](design-batten-llm-friction.md) · feature
-   - [batten][friction] Parked: #274 — only matters once batten runs llm-driven children
 1. **Convergence: measure hub and driver interventions, fix at the source, hardening freezes** — [`convergence-plan`](design-convergence-plan.md) · feature
    - [process][testing] Plan for lyx to converge rather than accumulate bugs: per-run intervention log, real-wiring tests, feature freezes
 1. **An MCP server over lyx exposing the verbs agents need** — [`lyx-mcp`](design-lyx-mcp.md) · feature
