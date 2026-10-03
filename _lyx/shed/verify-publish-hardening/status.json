@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "blocked",
-  "error": "batch 16: begin-batch refused with plan_drifted: card 17 path \"internal/websterengine/integration_test.go#\" does not exist on disk and is not a Create target or Rename destination of any card (batch 15 deleted that file)",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": "batch 16: begin-batch refused with plan_drifted: card 17 path \"internal/websterengine/integration_test.go#\" does not exist on disk and is not a Create target or Rename destination of any card (batch 15 deleted that file)"
+    "wait": ""
   },
   "history": [
     {
