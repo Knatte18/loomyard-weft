@@ -295,6 +295,17 @@
       "isolated": false,
       "brief": "[orch][batten] The hub watches runs with a hand-written .scratch/hub/watch.sh; drivers already message their parent, so question the watcher, and close any real gap in lyx code",
       "body": "Seen 2026-10-03: the hub orch watches each driven run with a hand-written `.scratch/hub/watch.sh`, a background shell loop that polls the run's `status.json` every 30 s and exits on the first non-running state change.\nIt lives outside lyx, untested and uncommitted, and has to be re-armed by hand after every context cycle.\nThe driver already messages its parent (`ly:orch`) at every stop it cannot handle, which is the path the orch should rely on.\nIdea (operator): question whether the orch needs a watcher at all; if a gap remains that the driver's message does not cover (a driver that dies without messaging, a stop the driver does not report), close it in lyx's own code, never with a scratch script.\nLikely home: `lyx batten run`, whose Run-Shed row already polls the same `status.json` every 30 s.\nBatten could message its parent on a non-running state change, and check the driver strand's liveness through reed to cover the case `internal/battenshed/doc.go` leaves out by design (a driver that dies, parks on a prompt, or stops with the run non-terminal).\nBatten can also be started by hand from a terminal with no orch above it, so the parent is optional: message it when one is recorded, otherwise only log.\n"
+    },
+    {
+      "id": 59,
+      "slug": "batten-windows",
+      "title": "Each batten the orch starts runs in its own tmux window",
+      "tier": 3,
+      "type": "feature",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[orch][batten][reed][ui] Batten runs detached and invisible; a window per run makes the window list show what the orch has in flight",
+      "body": "Seen 2026-10-03: the hub orch starts each batten detached with `setsid nohup lyx batten run \u003cslug\u003e`, so nothing on screen shows what the orch has running; Claude Code's footer shows only \"1 shell\" for a background helper, which says nothing about what it does.\nIdea (operator): when the orch starts a batten, it lands in its own tmux window in the orch's session, so the window list names every run the orch has in flight.\nRelated notes: `runs-overview` (one status line per run, in its own window) and `orch-owns-the-loop` (lyx starts batten detached, leaves the view undecided); `manifest/designs/reed-multi-window.md` sketches reed's own-window anchoring.\n"
     }
   ],
   "legacy_done": [

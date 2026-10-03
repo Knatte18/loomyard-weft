@@ -84,6 +84,8 @@ Waits on nothing open; can start now, in parallel.
    - [board] Labels live as a bracketed brief prefix today; a real field with a filter, and drop the unused tier 2
 1. **The orch relies on driver messages, not a scratch watcher** — [`orch-no-watcher`](design-orch-no-watcher.md) · design
    - [orch][batten] The hub watches runs with a hand-written .scratch/hub/watch.sh; drivers already message their parent, so question the watcher, and close any real gap in lyx code
+1. **Each batten the orch starts runs in its own tmux window** — [`batten-windows`](design-batten-windows.md) · feature
+   - [orch][batten][reed][ui] Batten runs detached and invisible; a window per run makes the window list show what the orch has in flight
 
 ### Layer B
 
