@@ -278,6 +278,116 @@
       "brief": "Friction-Reflect runs under shed step too, ly-drive files without approval, the reflection reads drive reports, repairs and Merriam refusal notes, and batten no longer deletes the notes first",
       "body": "## Goal\n\nEvery run's friction reaches GitHub as issues, with no operator in the loop: agents write it down, a reflection files it through `lyx selfreport`, and nothing deletes it first.\nFiltering happens when issues are pulled back into the board, not before filing (operator, 2026-10-03, as in millhouse).\n\n## Today (seen 2026-10-03)\n\n- Agents write friction notes to `_lyx/loom/friction/` (Webster forks, recovery strands, Burler rounds), and they are committed to weft, but nothing reads them in a driven run.\n- Friction-Reflect reflects only under `lyx loom run` (`internal/loomcli/run.go`, `reflectFrictionRow`, `armedVerb == \"run\"`), because \"the reflection agent files public issues itself\".\n  Every ly-drive driver uses `lyx shed step`, so it always skips.\n- ly-drive's `## Self-report` drafts one `lyx selfreport create` per run, files it only on operator approval, and files nothing in autonomous mode; every orch-driven driver is autonomous, so the draft dies in the drive report.\n- Batten's teardown deletes the friction notes with the pair (#274, note `batten-llm-friction`, folded in here).\n- Everything worth filing on 2026-10-03 (#348–#352: Webster's Delete ordering, a failed batch that cannot be redone, plan_drifted on an already-deleted file) was found and filed by the hub by hand.\n\n## Shape\n\n- **No gate.** Friction-Reflect reflects under `step` as well as `run`; ly-drive files its self-report in every mode, or hands it to Friction-Reflect instead of drafting its own.\n- **Sources.** The reflection also reads the driver's drive reports and repair records (ly-drive already calls repair records friction data), and Merriam writes a friction note whenever a lyx verb refuses it (`rebaseline`, `begin-batch`, `recover-batch`), so that friction exists in writing.\n- **Self-reflection, if the sources are not enough.** Merriam and the driver reflect on their own session at the end of their work and file through `lyx selfreport`, as `mill-self-report` does in millhouse.\n  Decide in Discussion whether the sources above already cover it.\n- **Ordering.** The reflection finishes before batten tears the pair down, and the notes survive a failed reflection.\n- **Filing.** Through `lyx selfreport create` only, never `gh`; dedupe against open issues, or leave that to the intake filter (decide in Discussion).\n\n## From `convergence-plan`: Friction on halt (hub, 2026-10-02)\n\nA refusal or halt makes a friction note mandatory, so every intervention leaves a record the measurement can count.\nCheck first whether `internal/loomengine/anomaly.go` loses a halt that is later resumed.\nTier 1 anomaly filing (`detectAndFileAnomalies`) also runs under `step`, since the no-gate decision covers every filing path (added after Discussion, 2026-10-03; the decision record had kept it `run`-only).\n\n## Open\n\n- Under `step`, the reflection blocks the driver's `shed step` call for up to `friction_timeout_min`; ly-drive must tolerate that wait without taking the run for hung.\n\n## Done when\n\n- A driven run that leaves friction notes, a refusal or a repair ends with matching issues on GitHub, filed without anyone approving them.\n- Re-running the 2026-10-03 failures through a run would have filed #350 and #352 without the hub.\n",
       "status": "running · Plan-Burler"
+    },
+    {
+      "id": 62,
+      "slug": "fabric-windows",
+      "title": "Fabric's Windows path behaviour verified on a Windows host",
+      "tier": 3,
+      "type": "chore",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[fabric][windows] Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant",
+      "body": "From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03: not a priority now, taken only if Windows becomes relevant.\nFabric's Windows path behaviour (directory junctions through `internal/fslink`) is unverified after six hardening rounds; closing it needs a Windows host, not further design.\nSee `manifest/designs/fabric-windows-verification.md`."
+    },
+    {
+      "id": 63,
+      "slug": "semantic-index",
+      "title": "semantic-index: find code by concept, not by literal keyword",
+      "tier": 3,
+      "type": "design",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[agents][search] Semantic search over docstrings and comments; doubtful today, since agents now navigate well with grep",
+      "body": "From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03 as someday.\nIdea: semantic search over docstrings and comments (catalysts, embeddings, temporal decay), to find code by concept rather than literal keyword.\nOperator: millhouse's codeguide (Claude-written `.md` navigation files, designed about six months earlier) gave a large exploration speedup then, but not any more, since Claude now searches well with grep; so the value of this is uncertain.\nSee `manifest/designs/semantic-index.md`."
+    },
+    {
+      "id": 64,
+      "slug": "issue-intake",
+      "title": "A lyx command that pulls GitHub issues into the board and filters them",
+      "tier": 3,
+      "type": "feature",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[board][github] Everything is filed without a gate, so filtering happens at intake: a lyx verb (not a skill) that ingests issues and proposes board entries",
+      "body": "From `manifest/roadmap.md` Someday (board curation/triage automation), kept by the operator on 2026-10-03.\nSince filing has no approval gate (operator, 2026-10-03, see `agent-self-reflect`), filtering happens when issues are pulled back in.\nIdea (operator): a `lyx` command rather than a skill, that ingests open GitHub issues, drops noise and duplicates, and proposes board entries or folds into existing ones.\nSee `manifest/designs/curation-triage.md`."
+    },
+    {
+      "id": 65,
+      "slug": "ide-opt-in",
+      "title": "VS Code only on request; other ways to watch a run",
+      "tier": 3,
+      "type": "design",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[ide][batten][reed] Default to CLI/tmux and start VS Code only on request; alternatives: pop-up terminals or tmux windows",
+      "body": "From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03.\nThe common case is reviewing the final PR rather than watching an agent edit live, so VS Code per worktree should be opt-in.\nAlternatives the operator has considered: separate terminals that pop up instead of VS Code, or tmux windows.\nCheck what batten already opens first.\nRelated: `batten-windows`, `ide-open-verb`, `runs-overview`."
+    },
+    {
+      "id": 66,
+      "slug": "plugin-packaging",
+      "title": "Ship lyx as an installable Claude Code plugin",
+      "tier": 3,
+      "type": "feature",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[plugins] Package lyx and its skills as one installable plugin",
+      "body": "From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03.\nIdea: ship `lyx` as an installable Claude Code plugin."
+    },
+    {
+      "id": 67,
+      "slug": "burler-round-models",
+      "title": "Burler picks the model per review round",
+      "tier": 3,
+      "type": "design",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[burler][models] Round 1, round 2 and later rounds may each use a different base model, not only a different provider",
+      "body": "From `manifest/roadmap.md` Someday (shuttle per-round provider selector), reframed by the operator on 2026-10-03.\nThe roadmap item was a per-round provider selector, meaningless while Claude is the only engine.\nWhat matters (operator): Burler choosing a different base model for round 1, round 2 and later rounds, so a fresh model reviews after the first has converged.\nRelated: `convergence-plan`'s model trial (`fable[high]` for discussion and review)."
+    },
+    {
+      "id": 68,
+      "slug": "codex-engine",
+      "title": "Codex as a second agent engine",
+      "tier": 3,
+      "type": "design",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[shuttle][engines] If lyx gets a second engine, Codex is more relevant than Gemini",
+      "body": "Operator 2026-10-03, while striking the roadmap's bulk-mode clusters (Burler rounds concatenated into one blob so provider-side caching, Gemini's explicit cache, pays off): that does not work for Claude, and Codex is more relevant to support than Gemini.\nIdea: if shuttle gets a second engine, make it Codex."
+    },
+    {
+      "id": 69,
+      "slug": "fabric-monorepo-verbs",
+      "title": "Fabric's ordinary-monorepo verb surface",
+      "tier": 3,
+      "type": "feature",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[fabric][cli] Against plain git, fabric still lacks log, show, branch, tag, stash, revert, restore, rm/mv, rebase, cherry-pick and blame",
+      "body": "From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03.\nAgainst plain git, `fabric` is still missing `log`, `show`, `branch` (create/list/delete), `tag`, `stash`, non-hard `reset`, `revert`, `restore`, `rm`/`mv`, `rebase`, `cherry-pick` and `blame`."
+    },
+    {
+      "id": 70,
+      "slug": "reed-slack-relay",
+      "title": "Talk to the orch through Slack",
+      "tier": 3,
+      "type": "design",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[reed][slack] A Slack relay so the operator can reach the orch from a phone where Claude's own app is not allowed",
+      "body": "From `manifest/roadmap.md` Someday (reed daemon Slack relay), kept by the operator on 2026-10-03.\nOperator: at work the employer's Claude subscription cannot be on the phone, but Slack can, and Claude can talk to Slack.\nIdea: a bidirectional Slack relay to the orch (per worktree in the roadmap's version, on the reed watchdog daemon); how to build it is open."
+    },
+    {
+      "id": 71,
+      "slug": "agent-permission-setup",
+      "title": "Agents run with a deliberate tool and permission setup that never blocks the flow",
+      "tier": 3,
+      "type": "design",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[agents][permissions] A correct deny/allow setup for every lyx-spawned role, so no agent stops on a tool or command it needs",
+      "body": "Operator 2026-10-03, while striking the roadmap's shuttle generic tools-restriction: restricting tools per agent is meaningless today, but lyx needs a correct setup of denied and allowed tools and commands, so nothing gets blocked.\nSeen the same day: the global deny list (`git reset --hard`, removed by the operator; `git push --force` still in) stopped `pair-lifecycle` twice at steps lyx itself prescribed.\nRelated: `no-denied-recovery`, `orch-live-hardening` (permission modes mean what they say)."
     }
   ],
   "legacy_done": [

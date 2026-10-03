@@ -73,6 +73,26 @@ Waits on nothing open; can start now, in parallel.
    - [orch][batten][reed][ui] Batten runs detached and invisible; a window per run makes the window list show what the orch has in flight
 1. **No recovery path needs a command the agents are denied** — [`no-denied-recovery`](design-no-denied-recovery.md) · design
    - [agents][permissions][webster] Webster named git reset --hard as the way forward, the global deny list blocks it even in bypass, and the run stopped for the operator
+1. **Fabric's Windows path behaviour verified on a Windows host** — [`fabric-windows`](design-fabric-windows.md) · chore
+   - [fabric][windows] Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant
+1. **semantic-index: find code by concept, not by literal keyword** — [`semantic-index`](design-semantic-index.md) · design
+   - [agents][search] Semantic search over docstrings and comments; doubtful today, since agents now navigate well with grep
+1. **A lyx command that pulls GitHub issues into the board and filters them** — [`issue-intake`](design-issue-intake.md) · feature
+   - [board][github] Everything is filed without a gate, so filtering happens at intake: a lyx verb (not a skill) that ingests issues and proposes board entries
+1. **VS Code only on request; other ways to watch a run** — [`ide-opt-in`](design-ide-opt-in.md) · design
+   - [ide][batten][reed] Default to CLI/tmux and start VS Code only on request; alternatives: pop-up terminals or tmux windows
+1. **Ship lyx as an installable Claude Code plugin** — [`plugin-packaging`](design-plugin-packaging.md) · feature
+   - [plugins] Package lyx and its skills as one installable plugin
+1. **Burler picks the model per review round** — [`burler-round-models`](design-burler-round-models.md) · design
+   - [burler][models] Round 1, round 2 and later rounds may each use a different base model, not only a different provider
+1. **Codex as a second agent engine** — [`codex-engine`](design-codex-engine.md) · design
+   - [shuttle][engines] If lyx gets a second engine, Codex is more relevant than Gemini
+1. **Fabric's ordinary-monorepo verb surface** — [`fabric-monorepo-verbs`](design-fabric-monorepo-verbs.md) · feature
+   - [fabric][cli] Against plain git, fabric still lacks log, show, branch, tag, stash, revert, restore, rm/mv, rebase, cherry-pick and blame
+1. **Talk to the orch through Slack** — [`reed-slack-relay`](design-reed-slack-relay.md) · design
+   - [reed][slack] A Slack relay so the operator can reach the orch from a phone where Claude's own app is not allowed
+1. **Agents run with a deliberate tool and permission setup that never blocks the flow** — [`agent-permission-setup`](design-agent-permission-setup.md) · design
+   - [agents][permissions] A correct deny/allow setup for every lyx-spawned role, so no agent stops on a tool or command it needs
 
 ### Layer B
 
