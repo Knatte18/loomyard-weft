@@ -17,7 +17,7 @@
     "12-delete-half-removed-helpers.md": "35775b81f792a03e92af9333a491c223b556097f0739392baac1ca9ee6e22867",
     "13-pair-teardown-invariant-and-docs.md": "9fe3d0e0f86fd87c840e35ef2e2c2543a2894fb658f21eb9db1b74e953a8af87"
   },
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "494384ce5deddba4d47cdb0d1769fb44",
   "masterSessionId": "09881b49-bad6-4826-ac64-6ed455c6ae98",
   "assertedModel": "sonnet",
@@ -106,6 +106,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/09881b49-bad6-4826-ac64-6ed455c6ae98/subagents/agent-ad08bb7d8126738ab.jsonl"
       ]
+    },
+    "8": {
+      "slug": "loom-start-replaces-retiring-driver",
+      "cards": [
+        "08-loom-start-replaces-retiring-driver"
+      ],
+      "cardHashes": {
+        "08-loom-start-replaces-retiring-driver": "9bce3cd0d0ba4af5390ed791fc2887ec6a8eca8e333d542c304688335b246735"
+      },
+      "startSha": "ca73623416bf2a2e04113f6960737e2cf3e7a76a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T14:38:22Z",
+      "sessionId": "09881b49-bad6-4826-ac64-6ed455c6ae98",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
