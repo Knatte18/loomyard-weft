@@ -1,0 +1,73 @@
+{
+  "runGuid": "e7a306cd165ea46878b19669fa8d67ad",
+  "planFingerprint": "f1ae70ae725d07794f67773f8ddc104e75d7bc094728a6a3910b69d3ee6578e9",
+  "planFileHashes": {
+    "00-overview.md": "3fdaf7a9d9aa96aef15a28cbec0e63bae4b811ba11451f4319e6c2678ba7e23d",
+    "01-testkit-root.md": "b1aa8a995e13ff9c998ffa20ab407efef5beb61041b80342e741850235f459d3",
+    "02-gitkit-query-helpers.md": "d2e42f500c727e46d1cc018d8e95b95296fb49ba41d058ac3b3ff79a62ca236f",
+    "03-gitkit-spawn-rule.md": "b2834d45f94eb830f24d15011765b8eb27bb51beb5e514c494a00d1fcbdfe4b3",
+    "04-fabricengine-git-queries.md": "69cc3b970ee5c8340bda0f8c3bda8e02a05804c9a35dfe808730177d93d9b844",
+    "05-fabricengine-git-commits.md": "03f9ebf592a5c3342bb350b1570285edeebe0b15e6ed65bbb64feb339c2ab440",
+    "06-git-helpers-other-packages.md": "feeb14a9c99317cf4aa40392858efe59c8f66fd49a9903cbaa91f7f714d28fe5",
+    "07-webster-git-helpers.md": "7d141717f218d9b8046fbf575f31ddc47320739ba38fcce6d32f754604c224dc",
+    "08-hubforge-pair-and-open.md": "174073081f43f1cbc02619f83495eb1f5b713a3d6f56ccd14a3cff7c85a0035a",
+    "09-fabricengine-hub-fixture.md": "3b0a7ec266ac0dd3d5e3a22b04c2769068008adb531c936ff5217f44370cfebe",
+    "10-fabricengine-pair-and-open-sites.md": "65e79499ee1403c44167e11e1ce6c9a75e78897a78b8a989a1ffc96c847174e9",
+    "11-fabricengine-sentinels.md": "4dee2566542dfd71d19df24347fe9a3492785e41d18964f2f859a35230908152",
+    "12-fabriccli-dedupe.md": "33a78dae7816ebf09bae119324c399f4b2b930a4f472df8ca9a6e262311a1dd5",
+    "13-fabricengine-add-dedupe.md": "0fc201a08ea06808561ca7781a01a27b297250a5cba6f59b92201b7be87818eb",
+    "14-reedengine-faketmux.md": "d3ac566206115362c27aa78e25f1d4c0aa34a9bbe255316e6cb6e00e6b16324f",
+    "15-reedengine-faketmux-rest.md": "1f716c7338123f4244ec7d5df07386f8d0e7f697d6266b126b8dd6b14cb3bef4",
+    "16-reedcli-tables.md": "46508c33700b899a95a9e9837efb574ea0b88715660aaadf7dcc4a1c5fc810c7",
+    "17-gitoracle-package.md": "ba246ce07102d7202ac100e3a3c76f37028292d7491edca7f9d7f9c4fd650a42",
+    "18-locationkit.md": "ead07277f9f1ef5f2d522386de77e1bdf93fb880289c27657ca7936ff95f480b",
+    "19-locationkit-callers.md": "ab0787999a6704c679455f153d90c26349a4fea9f909162c992157ac8663daf1",
+    "20-shuttlefake-kit.md": "59fc42a4bbbabad0d167ac4528b72b3699fe9c6b9fb7e7eabd0935a8df7fb736",
+    "21-shuttlefake-webster.md": "6eda0ce02c717e4eb74fe0a1250fa849b2002c9ebd6e81a53ef4e8a7609c2143",
+    "22-shuttlefake-cli.md": "f60ccb4a8f1e01574f2d4591634dfcfc4e5b0a2ef7c1deaa88d1738712458896",
+    "23-shuttleengine-fixture.md": "a9cb990b892f089a22b720700b13ae5ac7bf7f5826a539a93a1c03603709b783",
+    "24-shuttleengine-run-literals.md": "ec528223024102ae126a547d40efd9582a5b67c3dd8d677fc5eff3c346b73441",
+    "25-shedfake-kit.md": "569b4d9fe230ffeb5ea479f24b5d5f797e42154bf093f73cd9fe52e9364b9d3e",
+    "26-shedadapters-shedfake.md": "da55edb9d4098cc3f8f7eb4629d6099cd4243dab6f6740848574f6dc6845b807",
+    "27-shedadapters-bouncer-fixture.md": "26f27faa9815e4f5e8243f00ad35919afffa3d68d956c5f9cebbca7d63e22ed7",
+    "28-landingshed-shedfake.md": "33ae1178a9c548bf9e6c141398e8765db40aceed4472a920204f6278fb49f088",
+    "29-producers-shedfake.md": "fe90104aec782a058330a7c5a82dc1ba0bac5ee8cf8ed3baf5ed1b21865837a2",
+    "30-shedrecipe-shedfake.md": "d56ae8a2198d1042c11b787928a4df118d0e79f937e02b3f4e17b79d2ac75f04",
+    "31-envkit-kit.md": "45333408229d02c3bc5fea8f546dabcadf18b7eb8a93698cfe79166268e11f5b",
+    "32-shedbuild-envkit.md": "ffa4c636d857ae7e401e9d0fdbe5b84700dba5eb4d1cf7a7dde51ce99146fcc3",
+    "33-loomrecipe-envkit.md": "0358ec0ba3485fc8c8b9d9021eee5f680bd0783009d096a0292d5b3e5e987998",
+    "34-battenrecipe-envkit.md": "7faf2ece708125b4186c49fba336ac7aaab5d52afccf1c4c8221c2cb2d87d2b0",
+    "35-loomcli-wiring-reflect.md": "51102ea2ae69adc5ef26cb6d7135d13df24fe5162179bcb7ccfd269602790dee",
+    "36-battencli-wiring-reflect.md": "1517e358ea0db081333789bd84fcc8ca9187b39ba577d0e61c45949583d33ccf",
+    "37-logcapture-kit.md": "d3bdaa49462154f25a857a0804673d649c67cfcf3ff26913e013aff497abfc8e",
+    "38-logcapture-callers.md": "bf8a897667ab864c914ec45460d4ce1805ef260bcf526cbdbe8fefd514a1b0f6",
+    "39-envelope-kit.md": "5d3e8080886c2fff3109dc3adb8ad0ef22abedabfd1725071de674aaa48df366",
+    "40-envelope-decoders.md": "587d51d8f8ede4746bc4dba871136581ba8bc6279623048a4ff277021c649ec4",
+    "41-envelope-assertions.md": "1682fb16bf986b66be26bd28537c2fc4be4f8523832e7e49e9c7c05d271e4fef",
+    "42-lyxbin-kit.md": "7360296cff05b1b559db7c47e3a1a76438eeda0a60a9d33c566c598c0ca60656",
+    "43-lyxbin-callers.md": "877ad58953e778a45dbe3bb4779af0fbb9ae8f6da8051caa53a157cddc52488e",
+    "44-slices-cleanup.md": "d490d1e3c94c8ef7e2f203913f6eb8e3ead0189d217b6020bc9db04d7b247ad5",
+    "45-old-policy-citations.md": "485f164a9c4d89449a927199b09a72c4e6b232d54691f0e6d1a75ae48e754a4e"
+  },
+  "currentBatch": 1,
+  "masterStrand": "4ea15cf8b6c585eea1c4d55a66620653",
+  "masterSessionId": "01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "testkit-root",
+      "cards": [
+        "01-testkit-root"
+      ],
+      "cardHashes": {
+        "01-testkit-root": "b1aa8a995e13ff9c998ffa20ab407efef5beb61041b80342e741850235f459d3"
+      },
+      "startSha": "518dc740073443cf639a8cbde2173e6ae83986f9",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T07:25:58Z",
+      "sessionId": "01c2e3ed-0a6f-4f44-b9d2-8fa24a250fa7",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
