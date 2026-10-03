@@ -1,0 +1,5 @@
+status: OK
+head_sha: 7dcd5539db42bae09f1b93673ac74809285e5b52
+deviations:
+  - internal/loomshed/seam_enforcement_test.go
+  - internal/shedrecipe/fixture_test.go
