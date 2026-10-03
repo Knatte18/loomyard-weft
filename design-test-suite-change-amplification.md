@@ -1,6 +1,6 @@
 # Test suite, part 1: shared testkit, seam fakes and git helpers
 
-`test-suite-change-amplification` · Planned · feature · running · Publish
+`test-suite-change-amplification` · Planned · feature · running · PR-Gate
 
 ## Goal
 
