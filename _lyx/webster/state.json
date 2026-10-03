@@ -17,7 +17,7 @@
     "12-delete-half-removed-helpers.md": "1b53c0cd63687a348a68738bdd7fa03741eca18667651152d474db68ff748e81",
     "13-pair-teardown-invariant-and-docs.md": "9fe3d0e0f86fd87c840e35ef2e2c2543a2894fb658f21eb9db1b74e953a8af87"
   },
-  "currentBatch": 0,
+  "currentBatch": 10,
   "masterStrand": "d40931c07b299f9e2765cbc16d1f4dc8",
   "masterSessionId": "27e00257-9d85-477e-be58-5a6b3e2b8076",
   "assertedModel": "sonnet",
@@ -50,6 +50,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/27e00257-9d85-477e-be58-5a6b3e2b8076/subagents/agent-a61b20b4c8df7208a.jsonl"
       ]
+    },
+    "10": {
+      "slug": "fabric-remove-through-composite",
+      "cards": [
+        "10-fabric-remove-through-composite"
+      ],
+      "cardHashes": {
+        "10-fabric-remove-through-composite": "b9148681ef8b790e84573c9e53ef3d88c5dc2265c2c07a77205586b468ff7025"
+      },
+      "startSha": "4165a69a448eaf0474de799991c673f0ff78a0df",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T15:31:17Z",
+      "sessionId": "27e00257-9d85-477e-be58-5a6b3e2b8076",
+      "terminal": false,
+      "status": ""
     },
     "11": {
       "slug": "batten-teardown-through-composite",
