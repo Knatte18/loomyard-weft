@@ -101,10 +101,3 @@ Starts when every entry it names under After is done.
 1. **A batchifier that groups small related cards into one Webster batch** — [`card-batching`](design-card-batching.md) · feature
    - [webster][batcher] Only the identity batchifier exists; a mechanical batchifier groups cards from their Create/Edit/Uses fields once cards name members as glyphs
    - **After:** `plan-glyph-precision`
-
-## Done
-
-Finished, awaiting `lyx board prune`.
-
-1. **Friction reaches GitHub on its own: reflection under step, no approval gate, notes kept until filed** — [`agent-self-reflect`](design-agent-self-reflect.md) · feature · done
-   - Friction-Reflect runs under shed step too, ly-drive files without approval, the reflection reads drive reports, repairs and Merriam refusal notes, and batten no longer deletes the notes first
