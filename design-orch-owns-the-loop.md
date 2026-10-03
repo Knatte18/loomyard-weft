@@ -53,7 +53,3 @@ The matching file-memory entries on the hub machine are deleted when the role la
 - An orch cycle's resumed session knows the procedure from its role prompt, and its handoff carries state only.
 - A fresh `lyx orch start` on a machine with no file-memory works by the same rules.
 
-## `lyx board upsert` reads a body from a file (seen 2026-10-03)
-
-`lyx board upsert` takes the whole body inside one JSON argument, so changing one section of an entry means reading the body, splicing it and re-encoding JSON in a shell one-liner, which breaks on quoting (an apostrophe in the text) and pushes the orch into throwaway scripts.
-Want: `upsert` accepts the body from a file or stdin (for example `--body-file`), so the orch writes the body with its file tools and sends it unchanged.
