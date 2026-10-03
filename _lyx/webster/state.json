@@ -24,11 +24,26 @@
     "19-docs-and-specs.md": "354cc46fd57e9c63f6d3cfbfe9bd1ed53276d99ff2c2789ac8990165fdb928de",
     "20-retire-detach-primitives.md": "7ebad6ba8e73bedb2e83206627ebcacba9e4751b3618c3d046fdc3f9ea49c178"
   },
-  "currentBatch": 0,
+  "currentBatch": 1,
   "masterStrand": "6999e8c6ee20ddff89c3bc1f8c54b49a",
   "masterSessionId": "099f06c6-5f44-4b91-a2d5-0b41dee65ff2",
   "assertedModel": "sonnet",
   "batches": {
+    "1": {
+      "slug": "verifytree-package",
+      "cards": [
+        "01-verifytree-package"
+      ],
+      "cardHashes": {
+        "01-verifytree-package": "3e7b7d96da52ebaa404964bcf857a6d7c1cea466dd4b9764e8929589902704f9"
+      },
+      "startSha": "e575b01a1aaf7c1525f8079acbeee8b359581d8e",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T15:07:14Z",
+      "sessionId": "099f06c6-5f44-4b91-a2d5-0b41dee65ff2",
+      "terminal": false,
+      "status": ""
+    },
     "10": {
       "slug": "recover-batch-notification-wait",
       "cards": [
