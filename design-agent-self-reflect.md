@@ -1,17 +1,35 @@
-# Merriam and the driver reflect on their own session and file issues at the end
+# Friction reaches GitHub on its own: reflection under step, no approval gate, notes kept until filed
 
-`agent-self-reflect` · Notes · design
+`agent-self-reflect` · Tasks · feature
 
-Seen 2026-10-03: no friction from today's driven runs reached GitHub.
-Friction-Reflect spawns its reflection agent only under `lyx loom run` (`internal/loomcli/run.go`, `reflectFrictionRow`).
-Under `lyx shed step`, which every ly-drive driver uses, it skips, and leaves the notes for an operator-gated filing that autonomous drivers never do ("Self-report draft: none filed").
-Batten's teardown then deletes `_lyx/loom/friction/` with the pair.
-The friction worth filing today (Webster's Delete ordering, a failed batch that cannot be redone, recoveries that need denied commands) was found and filed by the hub by hand.
+## Goal
 
-Idea (operator): the agents that matter, at least Merriam (webster's Master) and the driver, reflect on their own session at the very end and file what they hit through `lyx selfreport create`, lyx's own verb for exactly this, never through `gh`.
-This is the model millhouse uses: `mill-self-report` runs at end-of-work in its orchestrating agents, scans its own session context for tool failures, refusals, prompt mismatches and surprises, and files the candidates in auto mode.
-An agent reflecting on its own context sees what a cold aggregator over notes never sees.
-Decided (operator, 2026-10-03): no approval gate on filing, as in millhouse: everything is filed, and filtering happens when issues are pulled back into the board.
-That removes the reason for both skips: `reflectFrictionRow` reflecting only under `run` ("the reflection agent files public issues itself"), and ly-drive's `## Self-report` filing only on operator approval and nothing in autonomous mode.
-Open: dedupe against open issues before filing, or leave it to the intake filter; the reflection must run before batten tears the pair down; how this relates to the existing note-writing and Friction-Reflect (replace, or keep the aggregator for agents that leave notes but do not self-report).
-Related: `batten-llm-friction` (#274, teardown deletes the notes).
+Every run's friction reaches GitHub as issues, with no operator in the loop: agents write it down, a reflection files it through `lyx selfreport`, and nothing deletes it first.
+Filtering happens when issues are pulled back into the board, not before filing (operator, 2026-10-03, as in millhouse).
+
+## Today (seen 2026-10-03)
+
+- Agents write friction notes to `_lyx/loom/friction/` (Webster forks, recovery strands, Burler rounds), and they are committed to weft, but nothing reads them in a driven run.
+- Friction-Reflect reflects only under `lyx loom run` (`internal/loomcli/run.go`, `reflectFrictionRow`, `armedVerb == "run"`), because "the reflection agent files public issues itself".
+  Every ly-drive driver uses `lyx shed step`, so it always skips.
+- ly-drive's `## Self-report` drafts one `lyx selfreport create` per run, files it only on operator approval, and files nothing in autonomous mode; every orch-driven driver is autonomous, so the draft dies in the drive report.
+- Batten's teardown deletes the friction notes with the pair (#274, note `batten-llm-friction`, folded in here).
+- Everything worth filing on 2026-10-03 (#348–#352: Webster's Delete ordering, a failed batch that cannot be redone, plan_drifted on an already-deleted file) was found and filed by the hub by hand.
+
+## Shape
+
+- **No gate.** Friction-Reflect reflects under `step` as well as `run`; ly-drive files its self-report in every mode, or hands it to Friction-Reflect instead of drafting its own.
+- **Sources.** The reflection also reads the driver's drive reports and repair records (ly-drive already calls repair records friction data), and Merriam writes a friction note whenever a lyx verb refuses it (`rebaseline`, `begin-batch`, `recover-batch`), so that friction exists in writing.
+- **Self-reflection, if the sources are not enough.** Merriam and the driver reflect on their own session at the end of their work and file through `lyx selfreport`, as `mill-self-report` does in millhouse.
+  Decide in Discussion whether the sources above already cover it.
+- **Ordering.** The reflection finishes before batten tears the pair down, and the notes survive a failed reflection.
+- **Filing.** Through `lyx selfreport create` only, never `gh`; dedupe against open issues, or leave that to the intake filter (decide in Discussion).
+
+## Open
+
+- Under `step`, the reflection blocks the driver's `shed step` call for up to `friction_timeout_min`; ly-drive must tolerate that wait without taking the run for hung.
+
+## Done when
+
+- A driven run that leaves friction notes, a refusal or a repair ends with matching issues on GitHub, filed without anyone approving them.
+- Re-running the 2026-10-03 failures through a run would have filed #350 and #352 without the hub.

@@ -14,6 +14,8 @@ Waits on nothing open; can start now, in parallel.
 1. **Verify localizes failures, gates Merriam once, and Publish never runs on a dirty tree** — [`verify-publish-hardening`](design-verify-publish-hardening.md) · feature · running · Webster-Burler
    - Cards verify with the integration tests and repo scans they touch; the plan verify runs once as a gate on Merriam, which fixes a failure in a fork and waits on forks instead of polling; Publish never verifies or pushes a dirty tree; verify is never skipped after a crash; every agent prompt goes through a file
    - **Before:** `pattern-init`
+1. **Friction reaches GitHub on its own: reflection under step, no approval gate, notes kept until filed** — [`agent-self-reflect`](design-agent-self-reflect.md) · feature
+   - Friction-Reflect runs under shed step too, ly-drive files without approval, the reflection reads drive reports, repairs and Merriam refusal notes, and batten no longer deletes the notes first
 
 ### Layer B
 
@@ -82,8 +84,6 @@ Waits on nothing open; can start now, in parallel.
    - [orch][batten][reed][ui] Batten runs detached and invisible; a window per run makes the window list show what the orch has in flight
 1. **No recovery path needs a command the agents are denied** — [`no-denied-recovery`](design-no-denied-recovery.md) · design
    - [agents][permissions][webster] Webster named git reset --hard as the way forward, the global deny list blocks it even in bypass, and the run stopped for the operator
-1. **Merriam and the driver reflect on their own session and file issues at the end** — [`agent-self-reflect`](design-agent-self-reflect.md) · design
-   - [friction][agents][webster] Friction-Reflect never runs under shed step and batten deletes the notes; key agents reflect at end of work and file through lyx selfreport, as millhouse does
 
 ### Layer B
 
