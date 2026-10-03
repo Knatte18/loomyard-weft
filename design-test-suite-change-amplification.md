@@ -1,6 +1,6 @@
 # Test suite, part 1: shared testkit, seam fakes and git helpers
 
-`test-suite-change-amplification` · Planned · feature · running · Plan-Burler
+`test-suite-change-amplification` · Planned · feature · running · Plan-Bouncer
 
 ## Goal
 
