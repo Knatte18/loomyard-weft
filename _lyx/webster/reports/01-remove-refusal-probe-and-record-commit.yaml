@@ -1,0 +1,4 @@
+status: OK
+head_sha: a83236de8ea99f5b3f72746508f3585ad9a49138
+deviations:
+  - internal/fabricengine/remove_weftprobe_test.go
