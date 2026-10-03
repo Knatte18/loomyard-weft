@@ -9,7 +9,7 @@
 - `internal/reedcli#reedCLI.statusCmd`
 
 **Create:**
-- `plan:internal/reedengine#Engine.MarkRetiring` -> `func (e *Engine) MarkRetiring(guid string, retiring bool) error`
+- `internal/reedengine#Engine.MarkRetiring`
 - `internal/reedengine/retiring_test.go`
 - `internal/reedcli/removedetach_test.go`
 

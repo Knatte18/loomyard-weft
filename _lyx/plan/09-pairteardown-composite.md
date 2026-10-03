@@ -18,7 +18,7 @@
 - `internal/fabricengine#Topology.RemoveRefusal`
 - `plan:internal/fabricengine#ErrPairNotFound`
 - `internal/reedengine#EndSessionByName`
-- `plan:internal/reedengine#Engine.MarkRetiring`
+- `internal/reedengine#Engine.MarkRetiring`
 - `internal/fabricengine#Topology.Remove`
 - `internal/fabricengine#WorktreePath`
 - `internal/reedengine#Engine.Down`

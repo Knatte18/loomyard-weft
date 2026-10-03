@@ -1,0 +1,5 @@
+status: OK
+head_sha: ca73623416bf2a2e04113f6960737e2cf3e7a76a
+deviations:
+  - internal/reedcli/strandops.go
+  - internal/reedcli/cli.go
