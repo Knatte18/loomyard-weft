@@ -2,6 +2,8 @@
 
 `card-batching` · Someday · feature
 
+Depends on: [`plan-glyph-precision`](design-plan-glyph-precision.md)
+
 ## Why
 
 `internal/batcher` has a registry but only the `identity` batchifier, so every card is its own Webster batch.
@@ -10,7 +12,13 @@ Many cards there take 40–120 s of work, so for them the overhead is a large sh
 
 ## Want
 
-A batchifier that groups consecutive cards into one fork when they are small and related (same package, or a kit card followed by its first consumer), selected through `batcher.yaml`'s `active` key, the identity batchifier staying the default.
+A mechanical batchifier (operator): it groups cards from the plan's own card fields (`Create`, `Edit`, `Uses`, renames), never from an LLM's judgment, selected through `batcher.yaml`'s `active` key, the identity batchifier staying the default.
+Cards whose fields show no dependency on each other and no shared target can share a fork; a card that `Uses` another's `Create` follows it.
+
+## Waits on `plan-glyph-precision`
+
+Plans list file paths, not member glyphs, so card fields today only support file-level grouping, which is too coarse to be the point.
+The batchifier is built once cards name the members they touch.
 
 ## Trade-offs to settle
 
