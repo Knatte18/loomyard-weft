@@ -1,4 +1,4 @@
-# Plan cards name the members they change as glyphs, after the glyph library is tested properly
+# Plan cards name the members they change as glyphs, after lyx's use of glyphs is tested systematically
 
 `plan-glyph-precision` · Someday · feature
 
@@ -20,10 +20,10 @@ Webster's changed-files guard then compares at file level only, no `quarry resol
 - The plan rubric flags an `Edit` card holding only file paths while its Intent names specific symbols.
 - `handle-unreferenced` does not fire for a handle its own declaring card uses.
 
-## First: test the glyph library properly (operator, 2026-10-02)
+## First: test loomyard's use of glyphs systematically (operator, 2026-10-02, refined 2026-10-03)
 
-The operator is not sure loomyard's glyph library works in practice: it is tested through crucible, not through real plans at scale.
-Pushing planners onto member glyphs makes every plan depend on it, so before the stencil change, exercise it against real plans: resolve every member glyph a sample of real cards would name, the handle bind path, and the containment checks, and record what fails.
+The glyph library is part of quarry and the operator has tested it hard; what has failed is loomyard's own use of it (the plan stencil, the handle rules and the containment checks, in the sections below).
+Before the stencil change pushes every plan onto member glyphs, test that use systematically against real plans: resolve every member glyph a sample of real cards would name, the handle bind path and the containment checks, and record what fails.
 
 ## Validation must not change verdict mid-run (2026-10-02)
 
