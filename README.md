@@ -11,7 +11,7 @@ Concretized and claimable.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Test suite, part 2: derived guards, decoupled recipe tests, no leaked tmux sockets** — [`test-suite-derived-guards`](design-test-suite-derived-guards.md) · feature · running · Plan-Bouncer
+1. **Test suite, part 2: derived guards, decoupled recipe tests, no leaked tmux sockets** — [`test-suite-derived-guards`](design-test-suite-derived-guards.md) · feature · running · Batchifier
    - One invariant-scan harness; registry and CLI-tree tests derived from the real registries; recipe/plan/stencil tests decoupled from their sources; fixtures clean up tmux sockets
    - **Before:** `verify-publish-hardening`, `pair-lifecycle`, `review-finding-class`
 
