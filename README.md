@@ -11,28 +11,17 @@ Concrete and claimable; only an entry here can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Test suite, part 2: derived guards, decoupled recipe tests, no leaked tmux sockets** — [`test-suite-derived-guards`](design-test-suite-derived-guards.md) · feature · running · Finalize
-   - One invariant-scan harness; registry and CLI-tree tests derived from the real registries; recipe/plan/stencil tests decoupled from their sources; fixtures clean up tmux sockets
-   - **Before:** `verify-publish-hardening`, `pair-lifecycle`, `review-finding-class`
-
-### Layer B
-
-Starts when every entry it names under After is done.
-
 1. **Verify localizes failures, gates Merriam once, and Publish never runs on a dirty tree** — [`verify-publish-hardening`](design-verify-publish-hardening.md) · feature
    - Cards verify with the integration tests and repo scans they touch; the plan verify runs once as a gate on Merriam, which fixes a failure in a fork and waits on forks instead of polling; Publish never verifies or pushes a dirty tree; verify is never skipped after a crash; every agent prompt goes through a file
-   - **After:** `test-suite-derived-guards`
    - **Before:** `pattern-init`
 1. **Clean pair lifecycle: no leftover sessions, branches, sockets or races** — [`pair-lifecycle`](design-pair-lifecycle.md) · feature
    - fabric remove ends the pair's tmux session, finishes half-removed pairs and deletes warp branches on origin; loom start never races a dying driver
-   - **After:** `test-suite-derived-guards`
    - **Before:** `pattern-init`
 1. **Review convergence: the judge decides converged, continue or circling from fresh reviews** — [`review-finding-class`](design-review-finding-class.md) · feature
    - The Bouncer judge stops reviewing the artifacts and judges convergence from facts Go hands it (counts, severities, trend, reopened ledger keys), on its own sonnet[medium] key; at least one fresh round, circling escalates; plus finding classes
-   - **After:** `test-suite-derived-guards`
    - **Before:** `pattern-init`
 
-### Layer C
+### Layer B
 
 Starts when every entry it names under After is done.
 
@@ -103,3 +92,10 @@ Starts when every entry it names under After is done.
 1. **A batchifier that groups small related cards into one Webster batch** — [`card-batching`](design-card-batching.md) · feature
    - [webster][batcher] Only the identity batchifier exists; a mechanical batchifier groups cards from their Create/Edit/Uses fields once cards name members as glyphs
    - **After:** `plan-glyph-precision`
+
+## Done
+
+Finished, awaiting `lyx board prune`.
+
+1. **Test suite, part 2: derived guards, decoupled recipe tests, no leaked tmux sockets** — [`test-suite-derived-guards`](design-test-suite-derived-guards.md) · feature · done
+   - One invariant-scan harness; registry and CLI-tree tests derived from the real registries; recipe/plan/stencil tests decoupled from their sources; fixtures clean up tmux sockets
