@@ -65,6 +65,7 @@ Merriam's strand is named for what it is.
 - The webster module doc and `docs/overview.md` describe the gate, and CLAUDE.md's Merriam terminology entry stays accurate.
 
 
-## Drop begin-batch's model assertion (#345, operator 2026-10-03)
+## Landed on main ahead of this task (2026-10-03)
 
-`begin-batch` asserts Merriam's model before every fork; the fork inherits Merriam's model, so the assertion has nothing to check and goes.
+- Merriam waits on its forks' completion notifications instead of polling (`9ae921b24`): the stencil's polling loops are gone, and `await-batch` stays only as an operator verb. The verify gate, the strand rename and the rest of `webster-verify-gate` remain here.
+- `begin-batch`'s model assertion is dormant, not a cost: `run` baselines `AssertedModel` to Merriam's launch model, so the check is a string comparison that never injects. Removing it touches state, docs and a sandbox scenario for no runtime gain; Discussion decides whether it goes.
