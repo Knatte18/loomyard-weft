@@ -1,12 +1,12 @@
 {
   "current_producer": "Publish",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "push rejected by the remote",
   "pause_requested": false,
   "activity": {
     "now": "Publish",
-    "last": "Describe → done",
-    "wait": ""
+    "last": "Publish → stuck",
+    "wait": "push rejected by the remote"
   },
   "history": [
     {
@@ -127,6 +127,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/pair-lifecycle/_lyx/landing/summary.md",
       "at": "2026-10-03T16:05:43Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Publish",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-03T16:07:02Z"
     }
   ],
   "product": {
