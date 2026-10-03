@@ -22,3 +22,8 @@ The hub runs under `lyx orch` for days without hand repair: an adopt keeps the h
 The orch's context cycle uses `/clear` plus a handoff file, which starts a new conversation and may drop a Remote Control link the operator relies on from a phone.
 Cycling through `/compact` keeps the same session, so Remote Control and session identity survive.
 The operator wants the cycle mode as a config option (`clear` or `compact`), not a fixed switch; weigh what the handoff file gives that a compaction summary does not.
+
+## A rescue thread reaches the orch with one lyx command (seen 2026-10-03)
+
+The operator's backup session, also on Remote Control, can type into the orch pane (for example to re-enable Remote Control after a cycle), but it had to hunt for reed's per-hub tmux socket under `/tmp/tmux-1000/`.
+`lyx reed status` in the prime already reports the socket and `ly:orch`'s pane id; want a `lyx reed send <strand> <text>` that delivers keystrokes to a named strand, so an outside thread needs no tmux knowledge.
