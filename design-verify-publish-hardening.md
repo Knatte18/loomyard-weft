@@ -2,8 +2,6 @@
 
 `verify-publish-hardening` · Tasks · feature
 
-Depends on: [`test-suite-derived-guards`](design-test-suite-derived-guards.md)
-
 ## Goal
 
 A failing integration test stops on the card that caused it, Publish never verifies or pushes a dirty tree, and no gate is skipped after a crash.

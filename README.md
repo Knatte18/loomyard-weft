@@ -92,10 +92,3 @@ Starts when every entry it names under After is done.
 1. **A batchifier that groups small related cards into one Webster batch** — [`card-batching`](design-card-batching.md) · feature
    - [webster][batcher] Only the identity batchifier exists; a mechanical batchifier groups cards from their Create/Edit/Uses fields once cards name members as glyphs
    - **After:** `plan-glyph-precision`
-
-## Done
-
-Finished, awaiting `lyx board prune`.
-
-1. **Test suite, part 2: derived guards, decoupled recipe tests, no leaked tmux sockets** — [`test-suite-derived-guards`](design-test-suite-derived-guards.md) · feature · done
-   - One invariant-scan harness; registry and CLI-tree tests derived from the real registries; recipe/plan/stencil tests decoupled from their sources; fixtures clean up tmux sockets

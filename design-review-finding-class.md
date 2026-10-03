@@ -2,8 +2,6 @@
 
 `review-finding-class` · Tasks · feature
 
-Depends on: [`test-suite-derived-guards`](design-test-suite-derived-guards.md)
-
 ## Goal
 
 A review segment stops when it has converged, judged from fresh reviews, and escalates when it circles.

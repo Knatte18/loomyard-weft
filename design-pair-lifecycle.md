@@ -2,8 +2,6 @@
 
 `pair-lifecycle` · Tasks · feature
 
-Depends on: [`test-suite-derived-guards`](design-test-suite-derived-guards.md)
-
 ## Goal
 
 Removing a pair ends its tmux session first, can finish a half-removed pair, and leaves no branches or stray directories behind; starting a run never races a dying driver.
