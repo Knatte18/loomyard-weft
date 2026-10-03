@@ -13,7 +13,7 @@
     "08-reflection-stencil.md": "9e3ac9c6c36234d2ea1c32644c454c8dcc39a7b54f293b1f5abec2e104bafefa",
     "09-friction-capture-docs.md": "ba18d6b7a2640bd1f926b569b4b1a8222c4270b450e0abab4cbce34f256cde1c"
   },
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "75c7eff8c42410c4caf21985fff03086",
   "masterSessionId": "5aebe7e2-f383-487b-92ec-654444d1e65c",
   "assertedModel": "sonnet",
@@ -199,6 +199,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-agent-self-reflect/5aebe7e2-f383-487b-92ec-654444d1e65c/subagents/agent-a06da92ace5d0ea89.jsonl"
       ]
+    },
+    "8": {
+      "slug": "reflection-stencil",
+      "cards": [
+        "08-reflection-stencil"
+      ],
+      "cardHashes": {
+        "08-reflection-stencil": "9e3ac9c6c36234d2ea1c32644c454c8dcc39a7b54f293b1f5abec2e104bafefa"
+      },
+      "startSha": "b97356c9bd768cc69a745d09b0e230d20a6ff85b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T17:45:45Z",
+      "sessionId": "5aebe7e2-f383-487b-92ec-654444d1e65c",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
