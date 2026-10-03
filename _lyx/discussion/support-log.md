@@ -28,12 +28,15 @@ Each turn below is a question the design raised, the evidence read, and the auto
    `lyx shed goto` from an awaiting row moves only strictly before it, so at a Bouncer the only existing exit would be a full rewrite.
    Two recorded-decision verbs, modelled on PR-Gate's approve/reject records, give continue and accept.
 8. **What stops an accept from settling a later generation?**
-   The accept must be recorded as settled, so re-entry clears and re-seeds like after `CONVERGED`; the mechanism is the plan's, the requirement and its test are in the decision record.
+   The accept must be recorded as settled, so re-entry clears and re-seeds like after `CONVERGED`.
+   Round 1's review found that requirement too loose for the plan writer, who never reads this log; D7 now states the pending and settled states and when the Bouncer writes the settled one.
 9. **Which model does the seed use?**
    The seed is a Bouncer pass; one key per row is simpler, and its focus never caps the opus reviewer.
 10. **What about in-flight runs when the binary updates?**
     Three runs are in Discussion-Write now.
-    Read-only verdict aliases and fail-soft facts rows cover a segment straddling the update.
+    Entry-time verdict aliases and fail-soft facts rows cover a segment straddling the update.
+    Round 1's review found two holes: an old-prompt judge harvested by the new binary would settle Done through the alias, and a latest round with a parse-error row had no decision rule.
+    D1 now refuses legacy words at harvest, and D6 makes a parse-error latest round `CONTINUE`.
 11. **Board context.**
     `pattern-init` depends on this task and will retire `manifest/` and convert model keys to short form; this task writes `judge` in short form and deletes only its own draft doc and roadmap entry, so the two do not collide.
     `convergence-plan` owns the reviewer model trial; untouched here.
@@ -61,7 +64,7 @@ _No rounds yet._
 
 | # | Question | Status | Answer |
 |---|---|---|---|
-| Q1 | Judge verdict vocabulary | resolved, auto-pick | `CONVERGED`/`CONTINUE`/`CIRCLING`, legacy words read as aliases (D1) |
+| Q1 | Judge verdict vocabulary | resolved, auto-pick | `CONVERGED`/`CONTINUE`/`CIRCLING`, legacy words read as aliases at Call entry only (D1) |
 | Q2 | Judge reading list | resolved, auto-pick | facts file, latest review, previous ledger; rubric for focus only (D2) |
 | Q3 | Facts format and location | resolved, auto-pick | Go-written `round-<N>-facts.md`, fail-soft rows (D3) |
 | Q4 | Class required or optional | resolved, auto-pick | required, fail-loud like severity (D4) |
@@ -72,3 +75,7 @@ _No rounds yet._
 | Q9 | Seed model | resolved, auto-pick | `judge` key with the judge (D8) |
 | Q10 | Fate of the draft design doc and roadmap entry | resolved, auto-pick | both removed, content into burlerengine's package doc (D9) |
 | Q11 | Verb name `lyx loom circling` | resolved, auto-pick | free in `lyx loom`'s namespace; avoids `review` (parent-review) and `approve`/`reject` (PR-Gate) |
+| Q12 | A legacy verdict harvested in the current Call | resolved, auto-pick | never settles; the round is re-judged under the new prompt (D1) |
+| Q13 | Judge decision when the latest round's facts row is a parse error | resolved, auto-pick | `CONTINUE`; a parse-error row is no evidence for `CONVERGED` or `CIRCLING` (D6) |
+| Q14 | Departure direction and BLOCKING findings | resolved, auto-pick | either direction, per named finding; a BLOCKING-severity finding is never relabeled downward (D6) |
+| Q15 | How a settled accept is told from a pending one | resolved, auto-pick | the verb writes pending; the Bouncer writes settled before the Approve seam (D7) |

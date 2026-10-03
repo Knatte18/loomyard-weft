@@ -35,10 +35,12 @@ Decision: the judge's verdict file carries `verdict:` exactly `CONVERGED`, `CONT
 `CONVERGED` maps to the old approved branch (Approve seam, Commit seam, Done, ledger pointer).
 `CONTINUE` maps to the old blocking branch (Stuck to the round producer, ledger pointer).
 `CIRCLING` maps to a new Awaiting halt (D7).
-Everywhere the Bouncer treats an on-disk APPROVED verdict as "settled earlier" (the clear-and-re-seed at Call entry), it treats `CONVERGED` the same way.
-On read only, a legacy `APPROVED` parses as `CONVERGED` and a legacy `BLOCKING` as `CONTINUE`; the judge prompt asks only for the new words.
+Everywhere the Bouncer treats an on-disk APPROVED verdict as "settled earlier" (the clear-and-re-seed at Call entry), it treats `CONVERGED` and a settled accept (D7) the same way.
+For a verdict already on disk at Call entry only (the clear and the replay), a legacy `APPROVED` reads as `CONVERGED` and a legacy `BLOCKING` as `CONTINUE`; the judge prompt asks only for the new words.
+Bound: a legacy word harvested from a judge this Call spawned or attached never settles, so the round is re-judged under the new prompt; `CONVERGED` from a harvest needs the new word.
 Rationale: three outcomes need three words; reusing APPROVED/BLOCKING would keep the "a reviewer's approval" reading that made the judge act as a reviewer.
-The read-only aliases keep a run dir written by the old binary from being re-judged as unsettled, which would let a rework generation pass on a stale round instead of clearing and re-seeding.
+The entry-time aliases keep a run dir written by the old binary from being re-judged as unsettled, which would let a rework generation pass on a stale round instead of clearing and re-seeding.
+Refusing them at harvest keeps an old-prompt judge still alive at the binary update, which judged from artifacts and the fixer report, from settling the segment.
 
 ### D2. The judge reads facts and the latest review, never the artifacts, the fixer report or code
 
@@ -90,13 +92,16 @@ Rationale: one gating class keeps the rule explainable and testable; each rubric
 
 ### D6. The judge's decision rule
 
-Decision: the judge prompt states the rule the judge applies, with the judge free to depart from it only by naming the finding and why in its rationale:
+Decision: the judge prompt states the rule the judge applies, with the judge free to depart from it only as the departure bullet allows:
 
 - `CONTINUE` while the latest fresh round carries a gating-class finding at MEDIUM or worse, or a BLOCKING finding of any class.
 - `CONVERGED` when the latest fresh round carries neither, whatever the earlier rounds or the fixer did.
 - `CIRCLING` when the latest fresh round still carries such findings and the facts show no progress: gating counts flat or rising across the recent rounds, or gating findings on recurring or reopened keys.
-  Circling needs evidence from at least two fresh rounds.
-- A departure is allowed only for a finding whose own summary shows it is mislabeled (a nitpicky MEDIUM, a `consistency` problem filed as `design`); the rationale names the finding ID.
+  Circling needs evidence from at least two fresh rounds; a parse-error row (D3) is no evidence.
+- When the latest round's facts row is a parse error, the round carries no class evidence and the judge returns `CONTINUE`, so a fresh round runs under the new review contract; `CONVERGED` is unreachable from it.
+- A departure relabels one finding's effective class or severity, in either direction (a nitpicky MEDIUM or a `consistency` problem filed as `design` out of gating, a design problem filed as `scope` into it), and only where the review file's own entry for that finding shows it is mislabeled.
+  A BLOCKING-severity finding is never relabeled downward.
+  The rationale names the ID of every departed finding.
 
 Only two rules stay mechanical in Go: a review segment's Done is reachable only from a judge verdict over a round whose review exists (the seed pass never returns Done, and the `Skip` seam is unchanged), and `max_bounces` stays the upper bound.
 Rationale: the operator rejected a pure mechanical rule (severities are noisy, a reworded old finding looks new), so the judge decides; writing the default rule into the prompt keeps its decisions consistent, and requiring a named finding for a departure keeps them auditable.
@@ -109,11 +114,16 @@ Two new verbs, `lyx loom circling accept [<slug>]` and `lyx loom circling contin
 On the next Call:
 
 - `continue` returns Stuck to the round producer, exactly as `CONTINUE` does; it counts against the segment's `max_bounces`, so a circling at the last budgeted round blocks on budget, and the existing `lyx loom goto` gives a fresh budget.
-- `accept` settles the segment exactly as `CONVERGED` does (Approve seam, Commit seam, Done), and records the acceptance so a later re-entry of the segment clears and re-seeds as it does after a converged generation, never settling again on the same accept.
+  When the circling round is the last budgeted one, the `CIRCLING` Awaiting Reason says that `continue` will block on budget and names `lyx loom goto`.
+- `accept` settles the segment exactly as `CONVERGED` does (Approve seam, Commit seam, Done).
+
+An accept has two recorded states: pending, written by the verb, and settled, written by the Bouncer before it runs the Approve seam, as a `CONVERGED` verdict is on disk before Approve.
+Only a pending accept settles; at Call entry a settled accept is "settled earlier" exactly like an on-disk `CONVERGED` verdict (D1), so a re-entry, including a resume after a failed Commit seam, clears and re-seeds and never settles again on the same accept.
 
 Bound: the verbs refuse unless the addressed run is awaiting at a Bouncer row whose latest judged round's verdict is `CIRCLING`, and refuse a second decision for the same round.
 `accept` lets exactly one circling round pass without a converged judgment; it skips no seam, and the decision file in the committed run directory records the decision for that round.
-The verbs check no caller identity, like `lyx loom review`; the trust boundary is the operator's shell, the same as for every other loom verb.
+The verbs check no caller identity, like `lyx loom review` and `lyx loom approve`: any shell addressing the run can record the decision, an agent's tmux session in the task worktree included.
+That refusal precondition is the whole mechanical bound; no agent stencil names the verbs, and the Reason that does reaches the operator through the run's status.
 Rationale: Awaiting is Shed's planned human hand-off and spends no budget; `lyx loom goto` from an awaiting row moves only strictly before it, so without a verb the only way out would be a full rewrite.
 A recorded decision mirrors PR-Gate's approve/reject records: no record means Awaiting, so a stray resume never guesses.
 
@@ -147,31 +157,33 @@ Rationale: both lines are cross-cutting rules a reviewer must enforce; the draft
 
 - No operator answered; every decision above is an auto-pick recorded in the support log's question ledger.
 - The board entry's "end the round loop when a round returns zero gating-class findings" is read as the judge's default rule (D6), not a Go rule, because the same entry says only two things stay mechanical.
-- `design` alone gates, per the draft design doc, in all three segments.
+- The draft design doc's `design`-only gating is taken as the operator's intent, though the doc says it is not a spec.
 - An escalation needs a resolution route the operator can take without editing files, hence the D7 verbs.
-- The seed pass moves to the `judge` key with the judge.
-- In-flight runs may straddle the binary update; D1's aliases and D3's fail-soft rows cover that, nothing else does.
+- In-flight runs may straddle the binary update; D1, D3 and D6 state how old verdicts and old-format reviews are read.
 
 ## Open risks
 
 - A sonnet[medium] judge may misread a trend; D6's written default and named-departure rule bound it, and `max_bounces` caps the cost.
-- Reviewers may file real problems under a non-gating class to avoid blocking; the fixer still fixes them, and D6 lets the judge treat a mislabeled finding as gating, but only from its summary.
+- Reviewers may file real problems under a non-gating class to avoid blocking; the fixer still fixes them, and D6 lets the judge relabel a mislabeled finding as gating, but only from the review file's entry for it.
 - Requiring `class` adds a new way for a review file to fail parsing; burler's existing malformed-review retry covers it, at the cost of a retried round.
-- `continue` at the last budgeted round blocks immediately on budget; the Reason must say so, or the operator meets a second halt without knowing why.
-- The `accept` record must stay distinguishable from a fresh accept on re-entry; getting that wrong lets a reworked artifact pass with no review.
+- Getting D7's pending and settled accept states wrong lets a reworked artifact pass with no review.
 
 ## Acceptance criteria
 
 - `ParseReview` rejects a finding with a missing, empty or unknown `class`, and accepts each of the four values.
-- The judge verdict parser accepts exactly `CONVERGED`, `CONTINUE`, `CIRCLING`, maps legacy `APPROVED`/`BLOCKING` to `CONVERGED`/`CONTINUE`, and rejects anything else.
+- The judge verdict parser accepts exactly `CONVERGED`, `CONTINUE`, `CIRCLING` and rejects anything else; a legacy `APPROVED`/`BLOCKING` on disk at Call entry is read as `CONVERGED`/`CONTINUE` by the clear and the replay.
+- A judge spawned or attached in the current Call that writes a legacy `APPROVED` does not return Done; the round is re-judged.
 - The rendered judge prompt names no artifact path and no fixer report, and names the facts file, the latest review and the previous ledger.
-- `round-<N>-facts.md` for a fixture of three rounds shows per-round finding count, per-severity counts, highest severity, per-class counts and the gating count, and lists a key seen in rounds 1 and 3 as recurring and, when round 2's ledger had it resolved, as reopened.
+- `round-4-facts.md` for a fixture whose rounds 1 to 3 are judged shows per-round finding count, per-severity counts, highest severity, per-class counts and the gating count, and lists as recurring and reopened a key that round 2's ledger had `resolved` and round 3's ledger has `open` with rounds 1 and 3.
 - A facts fixture whose round-1 review lacks `class` renders a parse-error row for round 1 and still lets the judge call proceed.
+- The rendered judge prompt states that a parse-error row for the latest round means `CONTINUE`, and that a BLOCKING-severity finding is never relabeled downward.
 - The rework-generations case: round 1's review has MEDIUM `design` findings, the fixer report says all fixed; the facts file shows the gating count at round 1 as non-zero, and a judge verdict of `CONTINUE` routes to the round producer.
 - `CONVERGED` runs Approve, Commit and returns Done with the ledger pointer; re-entering the segment afterwards clears and re-seeds.
 - `CONTINUE` returns Stuck to the round producer with the ledger pointer.
 - `CIRCLING` returns Awaiting with the ledger pointer and a Reason naming both `lyx loom circling` verbs; re-calling with no decision returns Awaiting and spawns nothing.
-- After `lyx loom circling continue`, the next Call returns Stuck; after `lyx loom circling accept`, the next Call runs Approve and Commit and returns Done, and a later re-entry clears and re-seeds rather than settling again.
+- On a `CIRCLING` round that is the last budgeted one, the Awaiting Reason says `continue` will block on budget and names `lyx loom goto`.
+- After `lyx loom circling continue`, the next Call returns Stuck; after `lyx loom circling accept`, the next Call records the accept as settled, runs Approve and Commit and returns Done, and a later re-entry clears and re-seeds rather than settling again.
+- An accept whose Commit seam fails clears and re-seeds on the resume, as a `CONVERGED` round does.
 - Both verbs refuse a run not awaiting at a Bouncer row, a latest verdict other than `CIRCLING`, and a second decision for the same round.
 - The seed pass never returns Done.
 - A judge whose process is still alive when the Bouncer is re-called on a `CIRCLING` round is attached and harvested, not respawned and not archived over.
