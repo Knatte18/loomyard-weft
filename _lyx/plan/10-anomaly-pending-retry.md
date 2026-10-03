@@ -3,6 +3,7 @@
 **Edit:**
 - `internal/loomcli/selfreport.go`
 - `internal/loomcli/selfreport_test.go`
+- `internal/loomcli/selfreport_github_test.go`
 - `internal/loomengine/config.go`
 
 **Uses:**
@@ -40,8 +41,11 @@ New `selfreport_test.go` cases, over the existing `selfreportTestFixture`:
 - the done-when case: a `failed` final status and a failing filer leave the producer-hard-failure title pending with its rendered body and unrecorded; the status is then rewritten to `running` with the halt resumed past, and a later pass with a working filer files that title once with the stored body and `DefaultLabels()`, after which the marker records it and holds no pending entry, and a third pass files nothing;
 - a pending entry whose retry fails again stays pending, and the pass still files a newly detected anomaly;
 - a pending title that the same pass detects again is filed once;
-- a missing status file still retries the pending entries;
-- the knob off and a busy run error each leave the pending entries in place and call no filer;
+- a missing status file, an unreadable status file and an undecodable product each still retry the pending entries;
+- the knob off, a busy run error, and a cancelled context with no crash-resume each leave the pending entries in place and call no filer;
+- a cancelled context with a crash-resume entry observation files the crash-resume and retries the pending entries;
 - the marker round-trip test also round-trips a pending entry, and a marker file holding only `titles` reads with no pending entries.
+
+`selfreport_github_test.go`'s `TestDetectAndFileAnomalies_FilingFailure_LeavesMarkerUnfiledAndDoesNotPropagate` keeps its name; its doc says a failed title stays out of `Titles` and is kept pending, and it also asserts the pending entry holds that title and the body the engine boundary was sent.
 
 **ImpactSummary:** confined to `internal/loomcli`'s Tier 1 filing pass and its marker, which only `detectAndFileAnomalies` reads and writes, plus one doc comment in `loomengine`; the marker file stays readable across the change.
