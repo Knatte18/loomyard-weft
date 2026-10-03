@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "blocked",
-  "error": "batch 12-delete-half-removed-helpers: recover-batch refused with batch_failed (delete targets RemovePairBranch, PairBranchResult, PairSiblingRemnant still resolve); card 12 runs before cards 2, 9 and 11 but battencli/wire.go still calls the helpers until card 11 lands",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": "batch 12-delete-half-removed-helpers: recover-batch refused with batch_failed (delete targets RemovePairBranch, PairBranchResult, PairSiblingRemnant still resolve); card 12 runs before cards 2, 9 and 11 but battencli/wire.go still calls the helpers until card 11 lands"
+    "wait": ""
   },
   "history": [
     {
