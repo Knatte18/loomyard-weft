@@ -18,6 +18,7 @@
 - `plan:internal/fabricengine#Topology.RemoveRefusal`
 - `plan:internal/fabricengine#ErrPairNotFound`
 - `plan:internal/reedengine#EndSessionByName`
+- `plan:internal/reedengine#Engine.MarkRetiring`
 - `internal/fabricengine#Topology.Remove`
 - `internal/fabricengine#WorktreePath`
 - `internal/reedengine#Engine.Down`
@@ -45,7 +46,9 @@ It passes `fabricengine.RemoveResult` through whole.
 `EndSession(ctx, req)` runs three steps in order:
 1. **Quiet wait (D2).** It probes until the pair's loom driver is quiet: the run lock (`shedrun.RunLock(task, shedrun.SelfRunID)`, probed non-blockingly and released at once) is free.
    In addition, the driver strand (`loomengine.IsDriverStrand` over `Engine.Status`) must be absent, dead, `Retiring`, or parked (`shedrun.ParkMarker` present).
-   A pair whose task worktree is gone, or whose reed session is absent (`reedengine.ErrNoSession`), is quiet.
+   An absent reed session (`reedengine.ErrNoSession`) satisfies the strand clause only; the run-lock probe still runs whenever the task worktree is present.
+   A pair whose task worktree is gone is quiet, by the bounded exception stated under Bound below.
+   "Gone" means the task worktree path is not a registered linked worktree, the same test card 2 uses for `stray_path`.
    It polls on a fixed interval constant, with the attempt count capped from `QuietWait` and the interval (Live-Substrate Spawn Observability), until `QuietWait` is spent.
    On a spent bound with `RefuseWhenBusy`, it returns an error wrapping a new exported `ErrDriverBusy`, leaving the pair, session and strands untouched.
    That error names the live driver strand and the pair's attach command (`lyx reed attach`, run from the task worktree's anchor path), and says "retry once the driver has written its report, or end it with `lyx reed down` in the pair".
@@ -64,9 +67,17 @@ Its doc comment states it runs only after `EndSession` succeeded for the same re
 
 `doc.go` states the sequence and rationale, the quiet rule, the two caller policies, and that `Remove` repeats the probe's checks, so a refusal raised only by `Remove` means the pair changed between probe and removal and the session is already ended.
 
-Bound: the composite never ends a non-quiet driver when `RefuseWhenBusy` is set.
+Bound: with the task worktree present, the composite never ends a non-quiet driver when `RefuseWhenBusy` is set.
 Only a caller passing a zero wait without it (batten, after its own `driver_exit_grace_s`) ends one.
 A parked driver is ended without refusal, since its park command already committed its records.
+
+The one exception is a gone task worktree, on both caller paths: the session is ended by name with no wait, even when a driver strand in it may still be live.
+Quiet cannot be probed there, since the run lock and reed's strand table both lived under the gone worktree, and a refusal would name `lyx reed down` in a pair that no longer exists.
+The exception is bounded:
+- it applies only when the task worktree path is not a registered linked worktree;
+- it ends only the session named `SessionName(WorktreePath(prime, slug))`, by exact match;
+- nothing such a driver writes after its worktree is gone can reach the archive, because its sync and commit resolve from the gone worktree and its writes are the recreated paths D4 exists to stop;
+- the records already in the sibling worktree are committed before the archive by `Remove`'s pending-record commit (D6).
 
 Tests:
 - `teardown_test.go` (untagged, fakes):
@@ -81,6 +92,7 @@ Tests:
   - A probe refusal for sibling-side changes outside the record pathspec leaves session, strands and sibling branch untouched.
   - After `Run`, the session is gone and `<hub>/<slug>` does not exist.
   - With the task worktree removed by hand and the session still up, `Run` ends the session by name and finishes the pair.
+  - With a stop report committed on the sibling branch and the stub driver strand live, `Run` with `RefuseWhenBusy` waits; the strand is marked retiring through `Engine.MarkRetiring` during the wait, `Run` proceeds, and the archive tag contains the report.
 - `testmain_test.go` (`!integration`) and `testmain_integration_test.go` call `gitkit.HermeticGitEnv` and run under `tmuxkit.Main`, in `internal/battencli`'s two-file shape.
 
 **Commit:** `9: pairteardown composite ends the session before removing a pair`

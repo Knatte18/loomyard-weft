@@ -22,6 +22,10 @@ It runs these steps in order:
 It logs the reap at Info, as `ReapSession` already does (Live-Substrate Spawn Observability).
 The doc comment states why it exists beside `Down` and that it must never be pointed at a session whose worktree is still present, where `Down` is the right call.
 
+Bound: it skips the op lock and the state write only because both lived under the gone worktree, so neither has anything left to guard.
+It reaches only the exact-match session it is named, on the socket it is given, and kills that socket's server only when no session remains on it.
+Its one caller is `internal/pairteardown`, which calls it only when the pair's task worktree path is not a registered linked worktree (card 9); every other session end goes through `Down`.
+
 The body sits in an unexported variant that takes a `TmuxCmd`, the way `reapSessionPanes` and `reapSessionKill` split out of `ReapSession`, so a test can drive it through `TmuxCmd`'s exec seam.
 
 Tests in `endsession_test.go` (untagged) drive that seam with the package's fake tmux (`faketmux_test.go`):

@@ -33,7 +33,7 @@ Lands the cross-cutting rule, its tripwire and the module docs the decision reco
 Session shutdown no longer skips a gone task worktree, and a not-found removal is the done post-condition.
 
 `manifest/designs/pair-teardown.md`: the module doc for `internal/pairteardown`.
-It covers why the package exists (the import cycle, one sequence for two callers), the sequence (quiet wait, refusal probe, session end, removal), the quiet rule including retiring and parked drivers, the two caller policies, the finish path it relies on, and the out-of-scope items from the decision record.
+It covers why the package exists (the import cycle, one sequence for two callers), the sequence (quiet wait, refusal probe, session end, removal), the quiet rule including retiring and parked drivers and its bounded gone-worktree exception, the two caller policies, the finish path it relies on, and the out-of-scope items from the decision record.
 
 `teardown_enforcement_test.go` (untagged, `internal/testkit/scankit` over the repository's production `.go` files) fails on any call of a method named `Remove` with four arguments in a file importing `internal/fabricengine`, outside `internal/fabricengine` and `internal/pairteardown`.
 It also fails on any remaining reference to `RemovePairBranch`.
