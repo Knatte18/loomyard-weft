@@ -95,8 +95,8 @@ Waits on nothing open; can start now, in parallel.
    - [discussion][plan][orch] Additions relayed to Plan-Write were dropped by plan review because the decision record lacked them; extend the discussion instead
 1. **Burler as two parallel agents: a review-only reviewer and a fixer that validates** — [`burler-split`](design-burler-split.md) · design
    - [burler][review] B orients, forks its lenses and writes the report only; A, stronger, orients in parallel, then fixes and validates B findings with a grain of salt
-1. **Tests that spawn Claude get their own opt-in tier; smoke never spawns Claude** — [`claude-test-tier`](design-claude-test-tier.md) · chore
-   - [testing][cost] A card verify ran -tags smoke and spawned ~24 real Claude sessions; move Claude-spawning tests to an explicit tier
+1. **A Claude test tier: only tests in it spawn Claude, and only on explicit request** — [`claude-test-tier`](design-claude-test-tier.md) · chore
+   - [testing][cost] A card verify ran -tags smoke and spawned ~24 real Claude sessions; add a fourth, opt-in Claude tier and keep smoke token-free
 
 ### Layer B
 
