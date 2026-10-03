@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "webster: on-disk plan fingerprint does not match this run's recorded state: on-disk plan fingerprint 2cc36a00f9fa5934c31582fdd1f36291b184d2e70034e6658ac594bdc981df1f does not match this run's recorded fingerprint ae5798feee7caf92252a2748f13354e9aa287be98040e44b18ba9ddf64954838; the plan changed since state.json was created; way forward: run `lyx webster rebaseline --card 12` to accept the edit, or restore the plan the run recorded with \"lyx webster restore-plan\", otherwise reset the branch to the run's start commit and run `lyx webster run --fresh`",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": ""
+    "wait": "webster: on-disk plan fingerprint does not match this run's recorded state: on-disk plan fingerprint 2cc36a00f9fa5934c31582fdd1f36291b184d2e70034e6658ac594bdc981df1f does not match this run's recorded fingerprint ae5798feee7caf92252a2748f13354e9aa287be98040e44b18ba9ddf64954838; the plan changed since state.json was created; way forward: run `lyx webster rebaseline --card 12` to accept the edit, or restore the plan the run recorded with \"lyx webster restore-plan\", otherwise reset the branch to the run's start commit and run `lyx webster run --fresh`"
   },
   "history": [
     {
