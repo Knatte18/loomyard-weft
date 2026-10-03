@@ -1,6 +1,6 @@
 # Clean pair lifecycle: no leftover sessions, branches, sockets or races
 
-`pair-lifecycle` · Tasks · feature · running · PR-Gate
+`pair-lifecycle` · Tasks · feature · running · Finalize
 
 ## Goal
 
