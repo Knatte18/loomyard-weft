@@ -1,6 +1,6 @@
 # A batchifier that groups small related cards into one Webster batch
 
-`card-batching` · Someday · feature
+`card-batching` · Notes · feature
 
 Depends on: [`plan-glyph-precision`](design-plan-glyph-precision.md)
 

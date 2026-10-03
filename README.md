@@ -3,9 +3,9 @@
 Entries grouped by tier, then by dependency layer.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Planned
+## Tasks
 
-Concretized and claimable.
+Concrete and claimable; only an entry here can run.
 
 ### Layer A
 
@@ -44,9 +44,9 @@ Starts when every entry it names under After is done.
 
 Planned next, but not yet concretized.
 
-## Someday
+## Notes
 
-Loose ideas.
+Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ### Layer A
 

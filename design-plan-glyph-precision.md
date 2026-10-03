@@ -1,6 +1,6 @@
 # Plan cards name the members they change as glyphs, after lyx's use of glyphs is tested systematically
 
-`plan-glyph-precision` · Someday · feature
+`plan-glyph-precision` · Notes · feature
 
 ## Why
 

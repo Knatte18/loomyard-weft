@@ -1,6 +1,6 @@
 # Verify localizes failures, gates Merriam once, and Publish never runs on a dirty tree
 
-`verify-publish-hardening` · Planned · feature
+`verify-publish-hardening` · Tasks · feature
 
 Depends on: [`test-suite-derived-guards`](design-test-suite-derived-guards.md)
 
