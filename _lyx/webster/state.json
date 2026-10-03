@@ -13,7 +13,7 @@
     "08-reflection-stencil.md": "9e3ac9c6c36234d2ea1c32644c454c8dcc39a7b54f293b1f5abec2e104bafefa",
     "09-friction-capture-docs.md": "ba18d6b7a2640bd1f926b569b4b1a8222c4270b450e0abab4cbce34f256cde1c"
   },
-  "currentBatch": 8,
+  "currentBatch": 0,
   "masterStrand": "75c7eff8c42410c4caf21985fff03086",
   "masterSessionId": "5aebe7e2-f383-487b-92ec-654444d1e65c",
   "assertedModel": "sonnet",
@@ -212,8 +212,19 @@
       "kind": "fork",
       "spawnedAt": "2026-10-03T17:45:45Z",
       "sessionId": "5aebe7e2-f383-487b-92ec-654444d1e65c",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "08-reflection-stencil",
+        "status": "done",
+        "head_sha": "dcf0d107779b70db93034710328620b16a01b26f"
+      },
+      "cardShas": [
+        "dcf0d107779b70db93034710328620b16a01b26f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-agent-self-reflect/5aebe7e2-f383-487b-92ec-654444d1e65c/subagents/agent-acfa4f36e8748f318.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
@@ -223,6 +234,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-agent-self-reflect/5aebe7e2-f383-487b-92ec-654444d1e65c/subagents/agent-a0951966aaadd4496.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-agent-self-reflect/5aebe7e2-f383-487b-92ec-654444d1e65c/subagents/agent-a1549f013581aec0b.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-agent-self-reflect/5aebe7e2-f383-487b-92ec-654444d1e65c/subagents/agent-a121fcf22973277a5.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-agent-self-reflect/5aebe7e2-f383-487b-92ec-654444d1e65c/subagents/agent-a06da92ace5d0ea89.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-agent-self-reflect/5aebe7e2-f383-487b-92ec-654444d1e65c/subagents/agent-a06da92ace5d0ea89.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-agent-self-reflect/5aebe7e2-f383-487b-92ec-654444d1e65c/subagents/agent-acfa4f36e8748f318.jsonl"
   ]
 }
