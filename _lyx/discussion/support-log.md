@@ -78,4 +78,5 @@ _No rounds yet._
 - **Q10 (resolved, auto-pick):** Race fix: retiring flag in reed, or remover skips re-adopted strands? Retiring flag plus guid-scoped removal, and `loom start` replaces a retiring strand (D7).
 - **Q11 (resolved, auto-pick):** `main-weft`? No code change, one doc sentence (D10).
 - **Q12 (resolved, auto-pick):** "Sockets" in the title? Covered by Down's server teardown; no separate work.
-- **Q13 (open, for Plan):** Warp SHA for the pending-record commit's trailer when the task worktree is gone; see Open risks.
+- **Q13 (resolved, auto-pick):** Warp SHA for the pending-record commit's trailer when the task worktree is gone? The local warp branch tip when present, else the last recorded `Warp-SHA` on the sibling branch (D6).
+- **Q14 (resolved, auto-pick, review round 1):** What happens to the retiring mark when the detached remover fails to spawn? reed clears it (D7). Rationale: the failed spawn returns an error to the requester, so the removal request never took effect and the strand keeps today's handling.
