@@ -1,9 +1,9 @@
 # Card 11 — fabricengine-sentinels
 
 **Create:**
-- `plan:internal/fabricengine#ErrInvalidSlug` -> `var ErrInvalidSlug error`
-- `plan:internal/fabricengine#ErrNoWarpBinding` -> `var ErrNoWarpBinding error`
-- `plan:internal/fabricengine#ErrWarpBindingMismatch` -> `var ErrWarpBindingMismatch error`
+- `internal/fabricengine#ErrInvalidSlug`
+- `internal/fabricengine#ErrNoWarpBinding`
+- `internal/fabricengine#ErrWarpBindingMismatch`
 
 **Edit:**
 - `internal/fabricengine#validateWorktreeSlug`

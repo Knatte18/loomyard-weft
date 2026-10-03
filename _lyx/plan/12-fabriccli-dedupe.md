@@ -9,8 +9,8 @@
 - `fabriccli/help_test.go`
 
 **Uses:**
-- `plan:internal/fabricengine#ErrNoWarpBinding`
-- `plan:internal/fabricengine#ErrWarpBindingMismatch`
+- `internal/fabricengine#ErrNoWarpBinding`
+- `internal/fabricengine#ErrWarpBindingMismatch`
 
 **Intent:**
 Give each fabriccli behaviour one owning test (D7, #325 §5).

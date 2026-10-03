@@ -1,0 +1,5 @@
+status: OK
+head_sha: da9461ccdc18d53a32e6f575b5351cb5519c4efb
+deviations:
+  - internal/fabricengine/sentinel.go
+  - internal/fabricengine/clone.go

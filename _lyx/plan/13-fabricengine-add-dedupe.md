@@ -4,7 +4,7 @@
 - `fabricengine/add_test.go`
 
 **Uses:**
-- `plan:internal/fabricengine#ErrInvalidSlug`
+- `internal/fabricengine#ErrInvalidSlug`
 - `fabricengine/slug_test.go`
 
 **Intent:**
