@@ -391,5 +391,11 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/27e00257-9d85-477e-be58-5a6b3e2b8076/subagents/agent-a4c8bad4429dd512d.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/27e00257-9d85-477e-be58-5a6b3e2b8076/subagents/agent-ad793fa4c6284003b.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/27e00257-9d85-477e-be58-5a6b3e2b8076/subagents/agent-a70f55eeceeb184d4.jsonl"
-  ]
+  ],
+  "integrationFix": {
+    "preFixHead": "f59c63cb75fcd42a54cd43a643fcbc8b50c16065",
+    "strandGuid": "18c108809d9ecff4b16b4b1f25c6057e",
+    "spawnedAt": "2026-10-03T15:42:16Z",
+    "result": "fixed"
+  }
 }
