@@ -1,0 +1,14 @@
+---
+round: 1
+focus:
+  - "Cards 4 and 8, `Bouncer.Call` entry and `settle` in `internal/shedadapters/bouncer.go`: taken together, do the two cards carry D1 and D7's full state machine (strict harvest vs. entry-time legacy aliases, the CIRCLING replay, pending vs. settled accept, the new settled-accept clear)? In particular, does the entry-time attach branch (`attached && judged(n)` settling as a harvest) apply card 4's legacy-word refusal and card 8's accept handling, and does every new archive branch keep the Constraints' probe-before-archive rule?"
+  - "Card 4's legacy-harvest path (archive the judge outputs, then `degrade`): does the plan state how the round reaches a re-judge (via the burler round producer's unjudged-round hand-back) and what bounce budget that costs, so D1's bound holds without a silent extra round?"
+  - "Cards 5 and 6 against D6: D6's CIRCLING criterion includes 'gating findings on recurring or reopened keys', but card 5's recurring-key list comes from ledgers, which carry no class. Does some card give the judge a way to tie a recurring key to the gating class, or state that the judge derives it from the latest review and previous ledger?"
+  - "Card 9's `Env.SegmentBounces` closure reads the status file under its lock from inside a producer Call: does the plan establish that the Shed driver does not hold that same lock across the Call (no self-deadlock or contention), and is the read bounded to fail soft as the Shared Decision `budget-read-through-an-env-seam` promises?"
+  - "Card 8's Awaiting Reason and card 10's verbs: do the commands the Reason spells (`lyx loom circling accept|continue <slug>`, `lyx loom start`, `lyx loom goto --to <Name>`) match the CLI surface and D7's slug-addressing rule (task worktree self-addresses, prime needs the slug)? Does card 10's Intent state the verbs' attack-surface bound as the rubric requires?"
+  - "Fidelity to the decision record's Acceptance criteria: map each criterion to a card's test list. Settle whether 'the seed pass never returns Done' and 'an accept whose Commit seam fails clears and re-seeds on the resume' are each carried by some card, and whether any card adds scope the record does not license (e.g. card 4's `ensureFocus(round+1)` on CIRCLING, card 10's `BouncerRunSubdir` helper)."
+  - "D9 and the 'Docs land in the same commit' constraint: does each card that changes observable behavior update the docs it touches (`docs/overview.md` wherever it describes the review contract or the Bouncer, the `shedadapters` and `burlerengine` package docs, `CONSTRAINTS.md`), and is the D9 invariant split across cards 1 and 6 with both lines landing?"
+---
+
+Seeded from the plan cards, the decision record and the code the cards touch.
+Card 7's pinned `round-<N>-review.md` name matches `entries_bouncer.go`'s pinned `ReportName`, and no review fixture outside `burlerengine` parses findings, so neither is a focus.
