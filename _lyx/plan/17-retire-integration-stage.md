@@ -2,7 +2,6 @@
 
 **Delete:**
 - `internal/websterengine/integration.go`
-- `internal/websterengine/integration_test.go`
 - `internal/websterengine/integrationfix.go`
 - `internal/websterengine/integrationfix_test.go`
 - `internal/websterengine/integrationreport.go`
@@ -53,6 +52,7 @@
 
 **Intent:**
 Remove what cards 15 and 16 left without a caller, per the decision record's retiring list.
+Batch 15 already deleted `internal/websterengine/integration_test.go`, so this card does not list it.
 
 Deleted outright:
 `runIntegrationStage`, `settleInterruptedFix`, `recordTriageResult`, `failuresByID` and `batchStartSHAs` from `runlevel.go`;
