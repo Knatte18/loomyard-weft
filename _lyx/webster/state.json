@@ -17,7 +17,7 @@
     "12-delete-half-removed-helpers.md": "1b53c0cd63687a348a68738bdd7fa03741eca18667651152d474db68ff748e81",
     "13-pair-teardown-invariant-and-docs.md": "9fe3d0e0f86fd87c840e35ef2e2c2543a2894fb658f21eb9db1b74e953a8af87"
   },
-  "currentBatch": 11,
+  "currentBatch": 0,
   "masterStrand": "d40931c07b299f9e2765cbc16d1f4dc8",
   "masterSessionId": "27e00257-9d85-477e-be58-5a6b3e2b8076",
   "assertedModel": "sonnet",
@@ -63,8 +63,19 @@
       "kind": "fork",
       "spawnedAt": "2026-10-03T15:20:27Z",
       "sessionId": "27e00257-9d85-477e-be58-5a6b3e2b8076",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "11-batten-teardown-through-composite",
+        "status": "done",
+        "head_sha": "8a1ff1789ff2a4bb5fc4344069474d021e90ba73"
+      },
+      "cardShas": [
+        "8a1ff1789ff2a4bb5fc4344069474d021e90ba73"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/27e00257-9d85-477e-be58-5a6b3e2b8076/subagents/agent-a22ae2c3752ea234f.jsonl"
+      ]
     },
     "2": {
       "slug": "remove-finishes-half-removed-pair",
@@ -213,6 +224,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/27e00257-9d85-477e-be58-5a6b3e2b8076/subagents/agent-a44f0bd77ed1231ca.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/27e00257-9d85-477e-be58-5a6b3e2b8076/subagents/agent-a66610b441ae3d63f.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/27e00257-9d85-477e-be58-5a6b3e2b8076/subagents/agent-a12a118295252bba9.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/27e00257-9d85-477e-be58-5a6b3e2b8076/subagents/agent-a9b205a9064308558.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/27e00257-9d85-477e-be58-5a6b3e2b8076/subagents/agent-a9b205a9064308558.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/27e00257-9d85-477e-be58-5a6b3e2b8076/subagents/agent-a22ae2c3752ea234f.jsonl"
   ]
 }
