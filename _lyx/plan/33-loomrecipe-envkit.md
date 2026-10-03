@@ -1,8 +1,10 @@
-# Card 32 — loomrecipe-envkit
+# Card 33 — loomrecipe-envkit
 
 **Edit:**
 - `loomrecipe/fixture_test.go`
 - `loomrecipe/shape_test.go`
+- `loomrecipe/sequence_test.go`
+- `loomrecipe/resume_test.go`
 
 **Uses:**
 - `testkit/envkit/envkit.go`
@@ -22,4 +24,4 @@ Helpers that serve only this package (`writeDiscussionFixture`, `seedPlanFixture
 The header comment of `fixture_test.go` that cites the "duplicate-test-helpers-rather-than-share-them Shared Decision" is rewritten to describe the file's remaining helpers, without the policy reference (D1).
 Apply D10 to every touched test.
 
-**ImpactSummary:** Two untagged loomrecipe fixture files drop their copied builders and fakes for the kits; sequence-test scripting is preserved.
+**ImpactSummary:** Untagged loomrecipe tests only: two fixture files drop their copied builders and fakes for the kits, and the sequence and resume tests that construct the loom shuttle and burler fakes switch to the kit types; sequence-test scripting is preserved.

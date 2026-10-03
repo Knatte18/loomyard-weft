@@ -21,17 +21,22 @@ It enforces three rules, each reported by name:
 - Importer rule: walking `internal/`, `cmd/` and `tools/`, no non-`_test.go` file outside `internal/testkit/` imports a path under `internal/testkit/`.
   Files under `internal/testkit/` are exempt so a kit may build on another kit (an `envkit` builder filling seams with `shedfake` fakes); every kit is itself reachable only from tests.
 - `*cli` rule: no non-test file under `internal/testkit/` imports an `internal/*cli` package.
-- Spawn-import rule: no non-test file under `internal/testkit/` imports `os/exec`, `internal/gitexec`, `internal/gitkit` or `internal/hubforge`; `internal/testkit/lyxbin` is the one exemption, and only from `os/exec`.
+- Spawn-import rule: no non-test file under `internal/testkit/` imports `os/exec`, `internal/gitexec`, `internal/gitkit`, `internal/hubforge` or `internal/testkit/lyxbin`; `internal/testkit/lyxbin` is the one exemption, and only from `os/exec`.
+  Banning the `lyxbin` import keeps the kit-on-kit exemption from handing another kit a transitive `go build`.
 
 It carries a vacuous-scan floor: the importer walk must have parsed at least one file.
 The scan's own shape is not final (part 2 may rebuild it on its harness), so keep it to these rules with no extension points.
 
-`CONSTRAINTS.md` gains a "Testkit Invariant" section stating the D3 rules, the kit-on-kit exemption above, the `lyxbin` exemption bounded to `go build` of `./cmd/lyx`, and which parts are review discipline: a kit starts no process, tmux server or agent beyond what its imports allow, and asserts nothing beyond `t.Fatalf` on its own setup, the `shedfake` `Call`/`RequireOutcome` outcome check and the `envelope` `RequireOK`/`RequireErr` shape check (the two named helper pairs #324 specifies).
+`CONSTRAINTS.md` gains a "Testkit Invariant" section stating the D3 rules, the kit-on-kit exemption above with its `lyxbin` import ban, the `lyxbin` exemption bounded to `go build` of `./cmd/lyx`, and which parts are review discipline: a kit starts no process, tmux server or agent beyond what its imports allow, and asserts nothing beyond `t.Fatalf` on its own setup, the `shedfake` `Call`/`RequireOutcome` outcome check and the `envelope` `RequireOK`/`RequireErr` shape check (the two named helper pairs #324 specifies).
 `docs/overview.md`'s test-infrastructure passage beside `gitkit` and `hubforge` gains one paragraph pointing at `internal/testkit` and the invariant, without listing kits.
 
-Prove the scan by planting one violation of each rule in turn: a non-test importer, a `*cli` import in a kit, an `os/exec` import in a kit other than `lyxbin`, and a `gitkit` import in a kit.
+Prove the scan by planting one violation of each rule in turn: a non-test importer, a `*cli` import in a kit, an `os/exec` import in a kit other than `lyxbin`, a `gitkit` import in a kit, and an `internal/testkit/lyxbin` import in another kit.
 Watch each fail, then remove every plant; nothing planted is committed.
 
-What this lets through: a shared fake now misleads every package that uses it, bounded by the kit rule that a fake reproduces the richest copy it replaces.
+What this lets through:
+
+- A shared fake now misleads every package that uses it, bounded by the kit rule that a fake reproduces the richest copy it replaces.
+- The kit-on-kit exemption lets one kit's non-test code import another kit, which D3's importer rule read literally forbids.
+  It is bounded twice: every kit stays reachable only from tests, since no file outside `internal/testkit/` may import one, and no kit may import `lyxbin`, so the exemption never carries a spawn.
 
 **ImpactSummary:** Adds one doc-only package with its scan and one new CONSTRAINTS.md section; no existing code changes.

@@ -15,7 +15,7 @@
 **Intent:**
 Give each fabriccli behaviour one owning test (D7, #325 §5).
 
-Remedy strings: `cli_test.go`'s pins of `"has no recorded warp binding"` and `"lyx fabric clone <weft-url> <warp-url>"` go; card 11 made the engine's `warpbinding_test.go` their single owner.
+Remedy strings: `cli_test.go`'s pins of `"has no recorded warp binding"` and `"lyx fabric clone <weft-url> <warp-url>"` go; the CLI emits `CloneHub`'s one-argument refusal, whose single owner card 11 made `TestCloneHub_UnboundWeftNamesTwoArgForm` in `fabricengine/warpbinding_clone_integration_test.go`.
 In their place one test asserts, generically, that an engine refusal reaches the envelope unchanged: drive `clone <weft-url>` into the no-binding refusal and require the envelope's error to equal the engine error's `Error()` text exactly, not a substring.
 What this lets through: a CLI-side change to remedy wording now fails only that equality check, which is what bounds it.
 

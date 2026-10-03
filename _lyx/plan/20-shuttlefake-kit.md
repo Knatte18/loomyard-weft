@@ -1,4 +1,4 @@
-# Card 19 — shuttlefake-kit
+# Card 20 — shuttlefake-kit
 
 **Create:**
 - `testkit/shuttlefake/shuttlefake.go`
@@ -24,4 +24,6 @@ Provide the one shared `shuttleengine.Engine` fake and `shuttleengine.ReedOps` f
 It asserts nothing (D3): no method calls `t.Errorf`, and the fakes take no `testing.TB` at all.
 Package doc names the seam it fakes and the in-package exception: `internal/shuttleengine`'s own tests keep their richer fake because an import cycle forbids the kit there (D1).
 
-`shuttlefake_test.go` covers the inert defaults, each override path, strand liveness across add/remove, and concurrent `AddStrand`/`Status` calls on one `Reed`, which `go test -race` must pass.
+`shuttlefake_test.go` covers the inert defaults, each override path, strand liveness across add/remove, and concurrent `AddStrand`/`Status` calls on one `Reed`, which `go test -race` must pass; the card's `Verify` runs it under the race detector, which the plain package run does not.
+
+**Verify:** go test -race ./internal/testkit/shuttlefake/...

@@ -1,4 +1,4 @@
-# Card 27 — landingshed-shedfake
+# Card 28 — landingshed-shedfake
 
 **Edit:**
 - `landingshed/commitstatus_test.go`
@@ -25,7 +25,7 @@ The integration-tagged `landingshed.Deps` literals in `finalize_integration_test
 `failingShuttle` (`publish_integration_test.go`) fails the test when called, which is behaviour the kit's fakes do not assert: it stays, or becomes a `MergeShuttle` whose `RunFn` calls `t.Fatalf` in the test.
 
 Every `Call` site followed by the fatal-on-error and outcome-compare block becomes `shedfake.RequireOutcome`/`shedfake.CallOK`.
-The log-capture helper in `publish_test.go` is card 36's.
+The log-capture helper in `publish_test.go` is card 38's.
 Apply D10 to every touched test.
 
 **ImpactSummary:** landingshed tests only; two local Deps builders become one, merge-shuttle fakes and Call boilerplate move to shedfake, assertions unchanged.

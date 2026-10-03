@@ -1,7 +1,11 @@
-# Card 31 — shedbuild-envkit
+# Card 32 — shedbuild-envkit
 
 **Edit:**
 - `shedbuild/fixture_test.go`
+- `shedbuild/build_test.go`
+- `shedbuild/build_engines_test.go`
+- `shedbuild/routing_test.go`
+- `shedbuild/newshed_test.go`
 
 **Uses:**
 - `testkit/envkit/envkit.go`
@@ -18,4 +22,4 @@ The file's header comment, which justifies the copy by package reachability, is 
 The told-geometry property (no path outside the test's own temp dir) holds because `FullEnv` derives every path from one `t.TempDir()`.
 Apply D10 to every touched test.
 
-**ImpactSummary:** One untagged shedbuild fixture file loses its copied builders and fakes; every shedbuild test keeps building from an equivalent full Env.
+**ImpactSummary:** Untagged shedbuild tests only: the fixture file loses its copied builders and fakes and its four calling files switch to `envkit.FullEnv`; every shedbuild test keeps building from an equivalent full Env.

@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 root: internal
 language: go
 ---
@@ -31,29 +31,33 @@ Cards follow D12's order: the testkit root first, then `gitkit` and the #325 ite
 16 — reedcli-tables — reap-cycle table and duplicate watchdog-spawn tests
 17 — gitoracle-package — move the gitrepo parity oracle to its own leaf package
 18 — locationkit — one shared synthetic lyxcwd.Location builder
-19 — shuttlefake-kit — shared Engine and ReedOps fakes
-20 — shuttlefake-webster — webster pair onto shuttlefake
-21 — shuttlefake-cli — shuttlecli and loomcli smoke engines onto shuttlefake
-22 — shuttleengine-fixture — one Runner/Run fixture in shuttleengine
-23 — shuttleengine-run-literals — Run and Config literals through the fixture
-24 — shedfake-kit — shared Shuttle, BurlerRunner, MergeShuttle, webster placeholders and Call helpers
-25 — shedadapters-shedfake — shedadapters onto shedfake
-26 — shedadapters-bouncer-fixture — one bouncer fixture in shedadapters
-27 — landingshed-shedfake — landingshed onto shedfake with one local Deps builder
-28 — producers-shedfake — loomshed, preflightshed, battenshed and loomcli Call sites onto shedfake
-29 — shedrecipe-shedfake — shedrecipe onto shedfake with one local Env builder
-30 — envkit-kit — shared full Env, landing Deps and rework Deps builders
-31 — shedbuild-envkit — shedbuild onto envkit
-32 — loomrecipe-envkit — loomrecipe onto envkit
-33 — battenrecipe-envkit — battenrecipe onto envkit
-34 — loomcli-wiring-reflect — one reflective every-seam-filled test in loomcli
-35 — battencli-wiring-reflect — one reflective every-seam-filled test in battencli
-36 — logcapture-kit — one shared logger capture
-37 — envelope-kit — one shared JSON envelope decoder
-38 — envelope-assertions — fabric, reed and cmd/lyx envelope assertions through the kit
-39 — lyxbin-kit — one shared lyx binary builder
-40 — slices-cleanup — containsPath and equalStringSlices replaced by slices
-41 — old-policy-citations — drop the last old-policy citations and close the test-count accounting
+19 — locationkit-callers — cmd/lyx and fabricengine location builders onto locationkit
+20 — shuttlefake-kit — shared Engine and ReedOps fakes
+21 — shuttlefake-webster — webster pair onto shuttlefake
+22 — shuttlefake-cli — shuttlecli and loomcli smoke engines onto shuttlefake
+23 — shuttleengine-fixture — one Runner/Run fixture in shuttleengine
+24 — shuttleengine-run-literals — Run and Config literals through the fixture
+25 — shedfake-kit — shared Shuttle, BurlerRunner, MergeShuttle, webster placeholders and Call helpers
+26 — shedadapters-shedfake — shedadapters onto shedfake
+27 — shedadapters-bouncer-fixture — one bouncer fixture in shedadapters
+28 — landingshed-shedfake — landingshed onto shedfake with one local Deps builder
+29 — producers-shedfake — loomshed, preflightshed, battenshed and loomcli Call sites, and the mergeresolve and frictionengine shuttle fakes, onto shedfake
+30 — shedrecipe-shedfake — shedrecipe onto shedfake with one local Env builder
+31 — envkit-kit — shared full Env, landing Deps and rework Deps builders
+32 — shedbuild-envkit — shedbuild onto envkit
+33 — loomrecipe-envkit — loomrecipe onto envkit
+34 — battenrecipe-envkit — battenrecipe onto envkit
+35 — loomcli-wiring-reflect — one reflective every-seam-filled test in loomcli
+36 — battencli-wiring-reflect — one reflective every-seam-filled test in battencli
+37 — logcapture-kit — one shared logger capture
+38 — logcapture-callers — every package's log-capture helper onto logcapture
+39 — envelope-kit — one shared JSON envelope decoder
+40 — envelope-decoders — the per-package envelope decoders onto the kit
+41 — envelope-assertions — fabric, reed and cmd/lyx envelope assertions through the kit
+42 — lyxbin-kit — one shared lyx binary builder
+43 — lyxbin-callers — the buildLyxBinary copies onto lyxbin
+44 — slices-cleanup — containsPath and equalStringSlices replaced by slices
+45 — old-policy-citations — drop the last old-policy citations and close the test-count accounting
 
 ## Shared Decisions
 
@@ -61,15 +65,15 @@ Cards follow D12's order: the testkit root first, then `gitkit` and the #325 ite
 
 - **Decision:** the leaf test count is the number of `(package, test)` pairs from `go test -json -tags integration ./...` that have no subtest of their own, computed with:
   `go test -json -tags integration ./... 2>/dev/null | jq -r 'select(.Action=="run") | .Package+"\t"+.Test' | sort -u | awk -F'\t' '{all[$0]; t=$2; while ((i=match(t, /\/[^\/]*$/))>0) { t=substr(t,1,i-1); parent[$1"\t"t] } } END { c=0; for (k in all) if (!(k in parent)) c++; print c }'`
-  Card 1 records the count before its change, card 41 records the count after, and every card that deletes or consolidates a leaf test names each removed or renamed leaf in its commit body.
+  Card 1 records the count before its change, card 45 records the count after, and every card that deletes or consolidates a leaf test names each removed or renamed leaf in its commit body.
 - **Rationale:** the decision record requires every drop to be itemised against an intended deletion; commit bodies keep that record in git, card by card.
-- **Applies to:** cards 1, 12, 13, 16, 34, 35, 41, and any card whose conversion changes a test's leaf shape.
+- **Applies to:** cards 1, 12, 13, 16, 35, 36, 45, and any card whose conversion changes a test's leaf shape.
 
 ### Decision: kit-conventions
 
 - **Decision:** a kit exposes exported fields and optional func overrides rather than option structs, fakes reproduce the richest copy they replace, the only assertions a kit makes are `t.Fatalf` on its own setup plus the `shedfake` `Call`/`RequireOutcome` and `envelope` `RequireOK`/`RequireErr` pairs, and a kit's non-test files avoid bare fabric vocabulary (the Fabric Vocabulary Invariant scans them as production files outside its owner set).
 - **Rationale:** D1, D3 and the Fabric Vocabulary constraint in the decision record.
-- **Applies to:** cards 18, 19, 24, 30, 36, 37, 39
+- **Applies to:** cards 18, 20, 25, 31, 37, 39, 42
 
 ### Decision: locationkit
 
@@ -81,7 +85,7 @@ Cards follow D12's order: the testkit root first, then `gitkit` and the #325 ite
 
 - **Decision:** beyond D1's named cases (`shuttleengine`'s own fakes, `shedrecipe`'s and `landingshed`'s own builders), `internal/burlerengine` keeps its in-package `Shuttle` fake, because `shedfake` imports `burlerengine` for `BurlerRunner`'s types.
 - **Rationale:** D1's rule that a package an import cycle bars from the kit keeps exactly one local copy.
-- **Applies to:** cards 24, 29, 27, 22
+- **Applies to:** cards 25, 30, 28, 23
 
 ### Decision: protected-tests-and-plants
 

@@ -1,4 +1,4 @@
-# Card 22 — shuttleengine-fixture
+# Card 23 — shuttleengine-fixture
 
 **Create:**
 - `shuttleengine/fixture_test.go`
@@ -11,6 +11,11 @@
 - `shuttleengine/session_test.go`
 - `shuttleengine/run_inject_test.go`
 - `shuttleengine/waiting_test.go`
+- `shuttleengine/run_resume_test.go`
+- `shuttleengine/gate_test.go`
+- `shuttleengine/gate_list_test.go`
+- `shuttleengine/gate_pending_test.go`
+- `shuttleengine/attach_asking_test.go`
 
 **Uses:**
 - `shuttleengine/fakes_test.go`
@@ -25,7 +30,7 @@ Give shuttleengine's tests one Runner/Run fixture (#324 §4) in place of the nea
 - `fx.newRun(spec Spec, opts ...runOpt) *Run`, which fills `Run`'s private fields (`runner`, `spec`, `runDir`, `state`, `clock`, `deadline`).
 
 Replace the constructors with it: `newTestRunner`, `newWaitTestRunner`, `newAttachTestRunner`, `newStartupWorktree`/`newStartupTestRunner`, `newSessionTestRunner`, `newInjectTestRunner`, `newInterruptTestRun` and `newPollTickRun`; their callers use `newFixture` (and `fx.newRun` where they built a `Run`).
-The `Config`/`&Run{...}` literals elsewhere are card 23's.
+The `Config`/`&Run{...}` literals elsewhere are card 24's.
 
 These are protected Completion Signal regression tests (D9): restructure only, every table row keeps its assertion.
 The in-package fakes in `fakes_test.go` stay: an import cycle forbids `shuttlefake` here (D1).

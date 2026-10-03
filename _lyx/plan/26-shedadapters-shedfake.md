@@ -1,4 +1,4 @@
-# Card 25 — shedadapters-shedfake
+# Card 26 — shedadapters-shedfake
 
 **Edit:**
 - `shedadapters/attachprobe_test.go`
@@ -26,7 +26,7 @@ A wrapper adding behaviour on top of the shuttle (an attach hook, a per-spec ans
 Every `p.Call(context.Background())` followed by the fatal-on-error and outcome-compare block becomes `shedfake.RequireOutcome(t, p, want)` (or `shedfake.CallOK` where the outcome is checked differently); a site asserting an error from `Call` keeps calling `Call` directly.
 The returned `OutputPointer` keeps feeding whatever the test asserted on it.
 
-The bouncer fixture consolidation is card 26 and the log-capture helper card 36; leave both as they are here.
+The bouncer fixture consolidation is card 27 and the log-capture helper card 38; leave both as they are here.
 Apply D10 to every touched test.
 
 **ImpactSummary:** Untagged shedadapters tests only; two local fakes and the Call boilerplate move to shedfake, every scripted value and assertion kept.

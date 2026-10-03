@@ -1,4 +1,4 @@
-# Card 30 — envkit-kit
+# Card 31 — envkit-kit
 
 **Create:**
 - `testkit/envkit/envkit.go`
@@ -21,7 +21,7 @@ Provide one builder each for a fully filled `shedrecipe.Env`, a `landingshed.Dep
   A seam any registered engine requires non-nil must be filled here.
 
 - `NilSeams(env shedrecipe.Env) []string`: walks `env` with `reflect`, recursing into nested structs (`WebsterDeps`, `Landing`, `Rework`, `SeedChild`, `InnerRun`, `Teardown`, `PrimeLock` and any added later), and returns the dotted path of every func, interface, pointer, map or slice-of-func field that is nil.
-  It reports and never asserts, so the D3 no-assertion rule holds; the CLI wiring tests (cards 34, 35) and this kit's own test assert on its answer.
+  It reports and never asserts, so the D3 no-assertion rule holds; the CLI wiring tests (cards 35, 36) and this kit's own test assert on its answer.
 
 Callers mutate the returned value; there are no option structs.
 The builders `t.Fatalf` only on their own setup failures (D3).
