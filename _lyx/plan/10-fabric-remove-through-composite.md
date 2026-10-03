@@ -10,11 +10,11 @@
 - `internal/fabriccli/removeteardown_integration_test.go`
 
 **Uses:**
-- `plan:internal/pairteardown#Teardown`
-- `plan:internal/pairteardown#New`
-- `plan:internal/pairteardown#Request`
-- `plan:internal/pairteardown#RemoveQuietWait`
-- `plan:internal/pairteardown#Teardown.Run`
+- `internal/pairteardown#Teardown`
+- `internal/pairteardown#New`
+- `internal/pairteardown#Request`
+- `internal/pairteardown#RemoveQuietWait`
+- `internal/pairteardown#Teardown.Run`
 - `internal/fabricengine#ErrPairNotFound`
 
 **Intent:**

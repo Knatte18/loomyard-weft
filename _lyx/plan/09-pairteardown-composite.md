@@ -1,13 +1,13 @@
 # Card 9 — pairteardown-composite
 
 **Create:**
-- `plan:internal/pairteardown#Teardown` -> `type Teardown struct`
-- `plan:internal/pairteardown#New` -> `func New(prime *lyxcwd.Location) (*Teardown, error)`
-- `plan:internal/pairteardown#Request` -> `type Request struct`
-- `plan:internal/pairteardown#RemoveQuietWait` -> `const RemoveQuietWait = 2 * time.Minute`
-- `plan:internal/pairteardown#Teardown.EndSession` -> `func (t *Teardown) EndSession(ctx context.Context, req Request) (SessionResult, error)`
-- `plan:internal/pairteardown#Teardown.RemovePair` -> `func (t *Teardown) RemovePair(req Request) (fabricengine.RemoveResult, error)`
-- `plan:internal/pairteardown#Teardown.Run` -> `func (t *Teardown) Run(ctx context.Context, req Request) (Result, error)`
+- `internal/pairteardown#Teardown`
+- `internal/pairteardown#New`
+- `internal/pairteardown#Request`
+- `internal/pairteardown#RemoveQuietWait`
+- `internal/pairteardown#Teardown.EndSession`
+- `internal/pairteardown#Teardown.RemovePair`
+- `internal/pairteardown#Teardown.Run`
 - `internal/pairteardown/doc.go`
 - `internal/pairteardown/teardown_test.go`
 - `internal/pairteardown/teardown_integration_test.go`

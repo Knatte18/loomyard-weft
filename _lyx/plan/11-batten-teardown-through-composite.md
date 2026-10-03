@@ -9,11 +9,11 @@
 - `internal/battencli/lifecycle_integration_test.go`
 
 **Uses:**
-- `plan:internal/pairteardown#Teardown`
-- `plan:internal/pairteardown#New`
-- `plan:internal/pairteardown#Request`
-- `plan:internal/pairteardown#Teardown.EndSession`
-- `plan:internal/pairteardown#Teardown.RemovePair`
+- `internal/pairteardown#Teardown`
+- `internal/pairteardown#New`
+- `internal/pairteardown#Request`
+- `internal/pairteardown#Teardown.EndSession`
+- `internal/pairteardown#Teardown.RemovePair`
 - `internal/fabricengine#ErrPairNotFound`
 - `internal/battenshed#NewWorktreeTeardown`
 
