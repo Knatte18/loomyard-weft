@@ -4,7 +4,7 @@
      builder via internal/stencil, then handed to shuttle as the resolving agent's whole prompt.
      Every marker below is a top-level {{.X}} substitution; stencil.Fill requires both non-empty and
      there are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=6e626898a7392d36283df679abd6bcf178ab39e38c23600721959a90361f6f32 -->
+lyx-stencil: sha256=84265f03055e914a22c8687caf0099c2c9d853df922d4d3edeee9545a843e573 -->
 
 # Conflict resolution — resolve each listed path in place
 
@@ -34,6 +34,11 @@ For each one:
 
 Never run `git` in any form — resolving a path means editing its file content, not staging, committing, or otherwise touching the repository's history.
 
+## Edits beyond the listed paths
+
+Edit a file outside the listed paths only when the merged tree would otherwise stop building or its tests would fail, and only to keep it building and passing.
+Create no new file: a file you add is never part of the merge, and it halts the merge as stuck.
+
 ## The report — your terminal act
 
 Once every listed path above has been resolved, write a short report to:
@@ -41,6 +46,7 @@ Once every listed path above has been resolved, write a short report to:
 {{.report_path}}
 
 The report is plain prose: one paragraph per resolved path, stating what conflicted and how you resolved it.
+It also names every file you changed beyond the listed paths, with the reason for each.
 Writing this report is the last thing you do in this session — nothing you do afterward is read by anyone.
 
 Never run `git` in any form, including to check the report file's own status once it is written.

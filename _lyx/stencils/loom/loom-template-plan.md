@@ -4,7 +4,7 @@
      to shuttle as the plan agent's entire instruction set.
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires the three original ones non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
-lyx-stencil: sha256=99d59a888d9a6bd30da01a40f14084f303f38227184982f7f9e86fe6ad5f5304 -->
+lyx-stencil: sha256=53fb7c424620f4707fe02320ca7bd6bd0ccbfa9e92e102147a837425d8a40173 -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -67,6 +67,8 @@ Each card is the smallest change that:
 2. **Is independently committable** — a meaningful, revertible git commit on its own.
 3. **Bundles its own test when it introduces new behavior** — implementation plus test file in the same card, structuring the change so it is testable (extract a helper rather than leaving logic inline in `main`, for example). `verify:` commands are not a substitute for a bundled test;
    only pure refactors/renames may rely on existing tests instead.
+4. **Greps for reworded messages** — a card that changes a user-visible message or error text greps the repository for the old text, and every test asserting it joins that card's targets.
+   A stale exact-string assertion then fails on the card that reworded it, under that card's own gate, not at the plan-level gate.
 
 ### On-disk layout
 

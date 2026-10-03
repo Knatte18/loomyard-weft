@@ -11,7 +11,7 @@
      focus_directive is the seventh marker, optional, filled via stencil.FillOptional, and renders
      nothing when the round has no directive.
      All three stay at the top level, before the first work heading, so their optional-blank semantics hold.
-lyx-stencil: sha256=a4b85e09f3ddceaa1ebd63c7cbfd30dd938384968e4c3eae300a74307e822ee3 -->
+lyx-stencil: sha256=32b4318a89f9f46816cd78b59357a921e861d98ab65efdff99f30a7d3ac43ee2 -->
 
 {{.pattern_directive}}
 {{.friction_directive}}
@@ -34,6 +34,7 @@ A review that ignores the fasit degenerates into a pure internal-consistency che
 The rubric tells you what counts as BLOCKING, MEDIUM, LOW, or NIT for THIS target.
 It maps its own criteria onto that fixed four-value severity vocabulary;
 it never introduces a new severity name, and neither do you.
+Each finding also carries one of the four classes — `design`, `scope`, `decision`, `consistency` — and the rubric says what `design` means for this target.
 
 ## Tool-use rules — how you gather evidence in job A
 

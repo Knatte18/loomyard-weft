@@ -6,7 +6,7 @@
      (burler-template-round-orchestrator.md) directs it here, after instruction
      1. Every marker below is a top-level {{.X}} substitution;
         stencil.Fill requires all three non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go).
-lyx-stencil: sha256=f3d4bce6b6455571ad8395cb91e0698979456a5b1904a9ac4cd46b023ada12ef -->
+lyx-stencil: sha256=ae4f86b6e9fbd47af49ddfb75f6292e603cbb882760e36fd637aa21baee3c9de -->
 
 ## Cluster rules
 
@@ -22,6 +22,7 @@ verdict: APPROVED
 findings:
   - id: F1
     severity: MEDIUM
+    class: design
     location: path/to/file.go:42
     summary: one-line description of the defect
 ---
@@ -31,8 +32,16 @@ Frontmatter rules, all strict:
 
 - `verdict` is exactly `APPROVED` or `BLOCKING` — no other spelling.
 - `findings` is a list;
-  every entry has a non-empty `id`, `severity`, `location`, and `summary`.
+  every entry has a non-empty `id`, `severity`, `class`, `location`, and `summary`.
 - `severity` is exactly one of `BLOCKING`, `MEDIUM`, `LOW`, `NIT`.
+- `class` is exactly one of `design`, `scope`, `decision`, `consistency`, lowercase.
+  - `design`: the design itself is wrong, or a decision is missing or rests on a false premise.
+    The rubric says what `design` means for this target.
+  - `scope`: the work missed a call site, file or case.
+    A `scope` gap that recurs across rounds is raised once as a `design` finding about the method that keeps missing it, never as one finding per missed item.
+  - `decision`: a choice is left open that the author must make.
+  - `consistency`: two parts of the artifact disagree, or it departs from its own conventions.
+  Class says who decides and when the loop stops, never whether a finding is fixed: every finding of every class is fixed.
 - Every `id` is unique within the file.
 - A `BLOCKING` verdict requires at least one `BLOCKING`-severity finding.
 - Never write `APPROVED` while any finding is `BLOCKING` — a self-contradictory review file must never happen and must never look approved.

@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- its only markers are the ones ReadRubric fills, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=444837943b15a46cbce25e9eb95a614dd105875b7830b2c79b7b4b2ebc607813 -->
+lyx-stencil: sha256=aece113b249a6183116195231f3ece982b3cf30bb37d23d76829f45787715333 -->
 
 # Plan-Review rubric
 
@@ -70,3 +70,11 @@ Do not flag any of the following as a finding:
 - **The writer/reviewer symmetry note.**
   The plan writer's own stencil is `{{.stencils_dir}}/loom/loom-template-plan.md`.
   Whatever it says not to write, this rubric must not flag as missing.
+
+## Finding class
+
+Every finding carries one class: `design`, `scope`, `decision` or `consistency`.
+Their generic meanings are in burler's review step; this section does not restate them.
+In this segment, `design` means the plan's structure is wrong: batching, sequencing, sizing or `verify:` correctness.
+A recurring enumeration gap is filed once as a `design` finding about the method, not once per missing item.
+Class never changes whether a finding is fixed.

@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- its only markers are the ones ReadRubric fills, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=2ebf5929a5797a55a2ea0057920fca091ea7ecb9a3ca05da64544df7c21b7119 -->
+lyx-stencil: sha256=b1cd337441cd89aa3c4e85732e437b997e477ee13e863442916c10ae4080d6f3 -->
 
 # Discussion-Review rubric
 
@@ -40,3 +40,11 @@ Do not flag any of the following as a finding:
 - **The writer/reviewer symmetry note.**
   The discussion writer's own stencil is `{{.stencils_dir}}/loom/loom-template-discussion.md`: read it to learn what the writer was told not to gather.
   Whatever it says not to gather, this rubric must not flag as missing, or the additive bias reappears even with the writer-side fix in place.
+
+## Finding class
+
+Every finding carries one class: `design`, `scope`, `decision` or `consistency`.
+Their generic meanings are in burler's review step; this section does not restate them.
+In this segment, `design` means the design is wrong: a wrong or missing decision, or a false premise.
+A recurring enumeration gap is filed once as a `design` finding about the method, not once per missing item.
+Class never changes whether a finding is fixed.
