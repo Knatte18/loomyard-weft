@@ -22,15 +22,15 @@ In scope, all of it:
 - #325 §2: `hubforge` as the only fixture vocabulary in fabricengine tests.
 - #325 §3: one scripted `fakeTmux` in `internal/reedengine` tests.
 - #325 §4: exported sentinel errors in `internal/fabricengine` asserted with `errors.Is`.
-- #325 §5: the listed duplicate-behaviour deletions.
+- #325 §5: the listed duplicate-behaviour deletions, bounded by D9's exception.
 - #325 §6: the reedcli reap-cycle table, the gitrepo oracle moved to `internal/gitrepo/internal/gitoracle`, one shared `*lyxcwd.Location` builder.
 - #325 "Rules to adopt going forward": recorded in `CONSTRAINTS.md` and the fabricengine package doc.
-- The board's operator directive "CONSTRAINTS.md may change": an audit of the invariants bearing on #324/#325's tests, with each one's disposition in D13 and the changes it implies (D4's single gitkit spawn rule).
+- The board's operator directive "CONSTRAINTS.md may change": an audit of the invariants bearing on #324/#325's tests, with the ones it changes in D13 and the changes they imply (D4's single gitkit spawn rule).
 
 Out of scope:
 
 - #326, #327 and the tmux socket leak: `test-suite-derived-guards`.
-- Invariants that bear only on #326/#327, listed in D13 as notes for `test-suite-derived-guards`; this task does not change them.
+- Invariants that bear only on #326/#327; this task does not change them.
 - The glyph-plan and file-tree fixture copies in `planglyph`, `loomshed` and `loomcli` (`glyphPlanFixture`, `glyphRepoPlanFixture`, `reworkParityFixture`, `writeGlyphRepoForCLITest`, `writeGlyphRepoForParityTest`, `writeGlyphRepoFixture`): #327 section 2's plan-fixture writer replaces them in `test-suite-derived-guards`; only their old-policy citations change here (D1).
 - #325's "out of scope, noted for later" item (a force axis for the fabricengine `livestate_*` harness).
 - Mutation testing (evaluated and not adopted in #323).
@@ -67,15 +67,17 @@ Decision: a new `CONSTRAINTS.md` section, "Testkit Invariant":
 
 - Packages under `internal/testkit/` are imported only from `_test.go` files.
 - A kit imports no `internal/*cli` package.
-- A kit spawns nothing: it imports neither `os/exec` nor `internal/gitexec`, and starts no process, tmux server or agent.
+- A kit spawns nothing: it imports none of `os/exec`, `internal/gitexec`, `internal/gitkit` and `internal/hubforge`, and starts no process, tmux server or agent.
   Sole exception: `internal/testkit/lyxbin`, which runs only `go build` of `./cmd/lyx`.
 - A kit holds fakes and builders only and asserts nothing about the package it fakes beyond `t.Fatalf` on its own setup failures and the `Call`/`RequireOutcome` helpers' outcome check.
 
 Enforced by one AST scan in `internal/testkit`, modelled on the existing seam-enforcement scans, covering the importer rule, the `*cli` rule and the spawn-import rule with `lyxbin` named as the one exemption.
+The rest is review discipline, stated as such in the section: starting no process beyond those imports, asserting nothing beyond setup and the `Call` check, and `lyxbin` running nothing but `go build` of `./cmd/lyx`.
 The scan obeys the Test Tier Purity Invariant; if it resolves the module root the way the `cmd/lyx` guards do, it gets an allowlist entry with a reason, like theirs.
 
-Bound: the `lyxbin` exemption lets one kit spawn `go build`, and nothing else.
+Bound: the `lyxbin` exemption lets one kit import `os/exec`; review keeps it to `go build` of `./cmd/lyx`.
 The token `lyxbin.` goes on the Tier Purity banned-token list, so only `integration`/`smoke`-tagged files can call into it.
+Tier Purity scans only `_test.go` files, so a kit's own code is outside it; the spawn-import rule is what keeps a kit from spawning git through `gitkit` or `hubforge`.
 
 Rationale: kits that spawn nothing are safe in Tier 1 tests; the `*cli` ban keeps kits below the wiring layer and out of import cycles.
 
@@ -84,18 +86,19 @@ Rationale: kits that spawn nothing are safe in Tier 1 tests; the `*cli` ban keep
 Decision: `gitkit` adds `Git` (trimmed stdout), `RevParse`, `CurrentBranch`, `BranchExists`, `IsAncestor`, `RevListCount`, `LsFiles`, `ExcludeLines`, `CommitFile` and `CommitFileOnBranch`, stdlib-only so the gitkit Leaf Invariant holds.
 The private copies in fabricengine, gitrepo, fabriccli, cmd/lyx, hubforge, the webster pair, loomcli and landingshed convert to them.
 
-The Test Tier Purity and Hermetic Git Test Environment scans stop listing gitkit helpers one by one.
-Today `cmd/lyx/tierpurity_test.go`'s `bannedTokens` and `cmd/lyx/hermeticenv_test.go`'s `gitSpawnTokens` each keep their own list of which gitkit exports spawn git, and the two already disagree (`gitkit.MustRun` and `gitkit.SeedConfig` are git spawns to one scan and not the other, and `gitkit.GitStatusPorcelain` is in neither).
-Both are restated as one rule: every `gitkit` export spawns git except `gitkit.HermeticGitEnv`.
+The Test Tier Purity and Hermetic Git Test Environment scans stop listing gitkit helpers one by one; today each keeps its own list, and the two disagree.
+Both are restated as one rule: every `gitkit` export except `gitkit.HermeticGitEnv` is treated as a git spawn.
 One definition in `cmd/lyx`, shared by both scans, matches any `gitkit.` reference other than `gitkit.HermeticGitEnv`; neither scan names an individual gitkit helper any more.
 The two `CONSTRAINTS.md` sections are reworded to state the rule, not the token list.
-Converted helpers and existing untagged `gitkit` calls (in `internal/fabricengine/export_test.go`, `clone_test.go`, `internal/websterengine/config_test.go` at survey time) move to `integration`-tagged files; no new allowlist entry is added for them.
+Converted helpers and existing untagged `gitkit` calls (in `internal/fabricengine/export_test.go` and `clone_test.go` at survey time) move to `integration`-tagged files; no new allowlist entry is added for them.
+An untagged file that only names a gitkit helper in a comment (e.g. `internal/websterengine/config_test.go`, deliberately spawn-free) rewords the comment and stays untagged.
 
 Bound: this tightens Tier Purity; untagged tests lose `gitkit.MustRun`, `SeedConfig` and `GitStatusPorcelain`, which spawn git today unflagged.
-A future non-spawning gitkit export would be banned too until the shared definition exempts it by name.
+The tests using the moved helpers leave the default `go test ./...` run and run under `-tags integration` only.
+A non-spawning export is banned too until the shared definition exempts it by name: `gitkit.RepoFixture` today, harmless because only the banned `CopyRepo` produces one, and any future one.
 
-Rationale: 84 private helpers, many the same one-liner, exist because external and internal test packages cannot reach each other's helpers; `gitkit` is reachable from both.
-Ten new exports would otherwise mean twenty token-list edits across two scans, and every later gitkit helper two more.
+Rationale: many private helpers, often the same one-liner, exist because external and internal test packages cannot reach each other's helpers; `gitkit` is reachable from both.
+Per-helper tokens would mean two token-list edits for each new export, now and for every later gitkit helper.
 
 ### D5 — `hubforge` is the only hub fixture vocabulary
 
@@ -103,7 +106,7 @@ Decision: the fabricengine `fabricFixture` shim is deleted and tests use `*hubfo
 `hubforge` adds `AddPairWith(tb, h, slug, opts)` and `OpenFabric(tb, h)`.
 New fabricengine test files prefer the external `_test` package plus `export_test.go` accessors; this goes in the fabricengine package doc.
 
-Rationale: one constructor-signature change today touches ~190 sites.
+Rationale: one constructor-signature change today touches every `fabricFixture` site.
 
 ### D6 — Rules going forward land in `CONSTRAINTS.md`
 
@@ -117,6 +120,9 @@ Rationale: without a stated rule the copies regrow; a scan over raw git spawns i
 Decision: `internal/fabricengine` exports `ErrInvalidSlug` (wrapping the specific reason), `ErrNoWarpBinding` and `ErrWarpBindingMismatch`; tests that ask "which refusal" use `errors.Is`.
 Each operator-facing remedy string keeps exactly one test, in the engine; the CLI asserts once, generically, that the engine's message reaches the envelope unchanged.
 Message text is unchanged.
+
+Bound: dropping the CLI substring assertions lets a CLI-side change to a remedy message through only if the generic pass-through assertion misses it; that assertion is what bounds it.
+Where a dropped assertion sits in a D9-protected test, D9's exception governs.
 
 Rationale: the same substrings are pinned in engine and CLI tests today, so a wording change breaks both.
 
@@ -134,6 +140,7 @@ Rationale: a new seam is checked without a new test, so forgetting it is no long
 
 Decision: #323's protected list holds: every `CONSTRAINTS.md` invariant scan, every regression test citing a finding, crucible round, sabotage proof or live observation, every `smoke`/`integration` live test, the gitrepo oracle, the fabricengine `livestate_*` harness and its selftests, and `internal/loomcli/wiring_commitstatus_integration_test.go`.
 These are restructured at most, never deleted, and every assertion they make survives.
+Sole exception: a D7 CLI remedy-string assertion or a #325 §5 duplicate (e.g. one of the integration-tagged fabriccli conflict-envelope tests) may leave a protected test only when the same behaviour stays asserted in the test #325 §5 or D7 names as its owner, and the removal is itemised in the test-count accounting.
 A scan whose scaffolding is touched keeps its allowlist, floor and token set verbatim, and is proved by planting one violation, watching it fail, and removing the plant.
 `shedfake`'s `Call` helpers keep `Fatalf`-on-error semantics exactly.
 Scripted fake answers keep their exact values; tests asserting call order use the fake's call log.
@@ -165,30 +172,13 @@ Rationale: a red suite mid-task hides which conversion broke it.
 
 ### D13 — Invariant audit under the operator directive
 
-Decision: each invariant bearing on #324/#325's tests gets one disposition; no invariant's intent is weakened.
+Decision: of the invariants bearing on #324/#325's tests, only those below change, and no invariant's intent is weakened; every other one is kept unchanged.
 
 Changed by this task:
 
 - The do-not-share-test-helpers decision (recorded only in test comments, never in `CONSTRAINTS.md`): reversed and replaced by the Testkit Invariant (D1, D3).
 - Test Tier Purity Invariant and Hermetic Git Test Environment Invariant: their two hand-kept gitkit token lists become one shared rule (D4); `lyxbin.` joins Tier Purity's tokens (D3).
 - gitkit Leaf Invariant and hubforge Fabric-Fixture Invariant: each gains a review-discipline clause (D6); their import rules are unchanged.
-
-Kept unchanged, with the reason:
-
-- Hermetic Git Test Environment's per-package `TestMain` obligation: a one-time five-line file per git-spawning package that no ordinary change edits.
-- Per-package seam-enforcement scans (Shed Producer-Seam, Treadle Runner-Seam, Shed Recipe Registry, Shed Verb-Set, Batten Bookend's proxy scan, loomrecipe's): their rules are what keep kits out of bound packages (D1); their copied scaffolding is #326's harness work.
-- Completion Signal Invariant: its tripwire pins production return sites; the Runner fixture (#324 §4) restructures the tests it protects without touching the scan.
-- Gate Self-Check Parity Invariant: the parity checks stay one per gate and this task leaves their fixtures in place; #327 section 2 shares them.
-- Refusal Way-Forward Invariant: binds webster, shed and loom, not fabric, so D7's remedy-string rule does not touch it.
-- Fabric Vocabulary Invariant: kits stay outside its owner set and must comply.
-- Live-Substrate Spawn Observability: test-fixture machinery is already outside it, `lyxbin` included.
-
-Notes for `test-suite-derived-guards`, not taken into scope here:
-
-- The per-package `seam_enforcement_test.go` and `leaf_enforcement_test.go` copies share root lookup, walk, allowlist and floor scaffolding: #326's one-harness item, which can host this task's Testkit scan too.
-- Tier Purity's and Hermetic Env's per-file allowlist entries whose only reason is resolving the module root through `go env GOMOD` mirror each guard's implementation; one shared root resolver in the harness retires them.
-- CLI / Cobra Invariant help-tree tests, Sandbox Suite Coverage, the config-section registry, Cwd Resolution's constructor-anchoring and no-transients path mirrors, Shed Recipe Registry's row mirrors, Agent Name and Stencil Ownership tests: hand-kept copies of registries production owns, belonging to #326/#327.
-- The glyph-plan and file-tree fixture copies named in `## Scope` stay for #327 section 2's plan-fixture writer; this task only rewords their old-policy citations.
 
 Rationale: the operator authorized changing invariants that made the suite grow; only the gitkit token lists both bear on this task and force a hand-kept mirror, and the rest either do not amplify change or belong to part 2.
 
@@ -208,7 +198,7 @@ Rationale: the operator authorized changing invariants that made the suite grow;
 ## Auto-mode assumptions
 
 - No operator answered questions; every pick in `## Decisions` was made autonomously, guided by #323–#325.
-- The surveyed duplication still exists at HEAD: spot checks confirmed the old-policy comments, 10 `AuditForksIncremental` fake implementations, 36 files using `newFabricFixture`, 82 `execHook` installations and the `buildLyxBinary`/`containsPath`/`equalStringSlices` copies.
+- The surveyed duplication still exists at HEAD: spot checks confirmed the old-policy comments, the `AuditForksIncremental` fake implementations, the `newFabricFixture` users, the `execHook` installations and the `buildLyxBinary`/`containsPath`/`equalStringSlices` copies.
   Exact file:line references drift; the plan recomputes them.
 - `internal/output/outputtest` is replaced by `internal/testkit/envelope` (D2).
 - The `lyxbin` spawn exemption is accepted to keep #324 §6's `buildLyxBinary` item in scope (D3).
@@ -226,18 +216,22 @@ Rationale: the operator authorized changing invariants that made the suite grow;
 
 ## Acceptance criteria
 
-- `internal/testkit/` exists with `doc.go` and the kits named in D2; the Testkit Invariant is in `CONSTRAINTS.md`; its scan passes, and fails when one violation of each rule (a non-test importer, a `*cli` import, an `os/exec` import in a kit other than `lyxbin`) is planted, with each plant removed afterwards.
+- `internal/testkit/` exists with `doc.go` and the kits named in D2; the Testkit Invariant is in `CONSTRAINTS.md`; its scan passes, and fails when one violation of each rule (a non-test importer, a `*cli` import, an `os/exec` import in a kit other than `lyxbin`, a `gitkit` import in any kit) is planted, with each plant removed afterwards.
 - No comment in the repo cites the "duplicate-test-helpers-rather-than-share-them" decision or says test-helper packages are not shared; at the plan-fixture sites left to #327 the code is unchanged and only the comment is reworded.
 - No consumer package keeps its own `shuttleengine.Engine`, `ReedOps`, `Shuttle`, `BurlerRunner`, merge-shuttle or webster-placeholder fake, or its own full `shedrecipe.Env`/`landingshed.Deps`/loom `Deps` builder, except the cycle-forced cases named in D1.
+  Consumers call producers through `shedfake`'s `Call` helpers, not local copies.
+- No package keeps its own log-capture helper, JSON envelope decoder or `buildLyxBinary` copy; `containsPath` and `equalStringSlices` are gone in favour of `slices`; shedadapters tests use one bouncer fixture.
 - `shuttleengine` tests build Runners and Runs through one fixture; every Completion Signal row keeps its assertion.
 - `loomcli` and `battencli` each have one reflective wiring test; adding a nil seam field to `shedrecipe.Env` without listing it in `intentionallyNil` fails that test (shown by a planted field, removed afterwards).
 - `gitkit` exports the D4 helpers; the private git query/commit helpers they replace are gone; the webster pair uses them.
 - `cmd/lyx`'s Tier Purity and Hermetic Env scans share one gitkit spawn definition and name no individual gitkit helper; planting an untagged `gitkit.RevParse` call fails Tier Purity, planting a `gitkit.GitStatusPorcelain` call in a package without the hermetic `TestMain` fails Hermetic Env, and `gitkit.HermeticGitEnv` in an untagged `TestMain` passes both; plants are removed afterwards.
-- `CONSTRAINTS.md`'s Tier Purity and Hermetic Env sections state the D4 rule, and the gitkit Leaf and hubforge sections carry the D6 clauses.- fabricengine tests have no `fabricFixture`, use `h.Topology`, `hubforge.AddPairWith` and `hubforge.OpenFabric`.
+- `CONSTRAINTS.md`'s Tier Purity and Hermetic Env sections state the D4 rule, and the gitkit Leaf and hubforge sections carry the D6 clauses.
+- fabricengine tests have no `fabricFixture`, use `h.Topology`, `hubforge.AddPairWith` and `hubforge.OpenFabric`.
 - reedengine tests use one `fakeTmux`; the redundant `Width/Height` and `CollapsedRows/MinFullRows` resets are gone.
 - The D7 sentinels exist and the "which refusal" tests use `errors.Is`; each remedy string is pinned in exactly one engine test.
 - The #325 §5 deletions are made, and deleting the `validateWorktreeSlug` call in `Add` still makes a test fail.
 - The gitrepo oracle lives in `internal/gitrepo/internal/gitoracle`, imports `gitexec` and never `gitrepo`, with an import-allowlist row enforcing it; `gogit_test.go`'s verbatim copy is gone.
+- reedcli's `planReapCycle` tests are one scenario table, each scenario keeping its cycle sequence; one shared builder replaces the three identical `*lyxcwd.Location` fixture builders.
 - `docs/overview.md`, `CONSTRAINTS.md`, the fabricengine and kit package docs are updated in the commits that change their subject.
 - Verification: `go test ./...`, `go test -tags integration ./...`, and the `smoke` tier of every package whose smoke files changed, all green before and after.
   Leaf test counts (top-level tests without subtests plus every subtest, from `go test -json`) are recorded before and after, and every drop is itemised against an intended deletion or consolidation.
@@ -246,6 +240,7 @@ Rationale: the operator authorized changing invariants that made the suite grow;
 
 - Evidence lives in `gh issue view 323`, `324` and `325`; recompute every count and location against HEAD.
 - `internal/loomshed` now exists beside `internal/loomrecipe`; locate the loom recipe `Deps` and its fixtures afresh.
-- `internal/fabricengine/export_test.go`, `clone_test.go` and `internal/websterengine/config_test.go` are untagged and call gitkit helpers; D4 moves those calls to tagged files.
+- `internal/fabricengine/export_test.go` and `clone_test.go` are untagged and call gitkit helpers; D4 moves those calls to tagged files.
+  `internal/websterengine/config_test.go` only names `gitkit.SeedConfig` in a comment; reword it.
 - `cmd/lyx/tierpurity_test.go` holds `bannedTokens` and its allowlist, `cmd/lyx/hermeticenv_test.go` holds `gitSpawnTokens`; `internal/shedverbs`, `internal/shedrecipe` and `internal/loomrecipe` hold the seam scans the Testkit scan is modelled on.
 - `docs/overview.md` describes `gitkit` and `hubforge` near its test-infrastructure passage.

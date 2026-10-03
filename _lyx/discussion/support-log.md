@@ -23,7 +23,21 @@ No operator answered questions in this session; every design point was settled b
    Read the invariants bearing on #324/#325's tests.
    Found `cmd/lyx/tierpurity_test.go`'s `bannedTokens` and `cmd/lyx/hermeticenv_test.go`'s `gitSpawnTokens` each hand-keep a list of spawning gitkit helpers, already disagreeing (`MustRun`/`SeedConfig` in one only, `GitStatusPorcelain` in neither).
    D4 rewritten: one shared rule, "every gitkit export but `HermeticGitEnv` spawns git", used by both scans.
-   This tightens Tier Purity; untagged gitkit callers in `fabricengine` and `websterengine` move to tagged files.
+   This tightens Tier Purity; untagged gitkit callers in `fabricengine` move to tagged files.
+   Kept unchanged, with the reason:
+   - Hermetic Git Test Environment's per-package `TestMain` obligation: a one-time five-line file per git-spawning package that no ordinary change edits.
+   - Per-package seam-enforcement scans (Shed Producer-Seam, Treadle Runner-Seam, Shed Recipe Registry, Shed Verb-Set, Batten Bookend's proxy scan, loomrecipe's): their rules are what keep kits out of bound packages (D1); their copied scaffolding is #326's harness work.
+   - Completion Signal Invariant: its tripwire pins production return sites; the Runner fixture (#324 §4) restructures the tests it protects without touching the scan.
+   - Gate Self-Check Parity Invariant: the parity checks stay one per gate and this task leaves their fixtures in place; #327 section 2 shares them.
+   - Refusal Way-Forward Invariant: binds webster, shed and loom, not fabric, so D7's remedy-string rule does not touch it.
+   - Fabric Vocabulary Invariant: kits stay outside its owner set and must comply.
+   - Live-Substrate Spawn Observability: test-fixture machinery is already outside it, `lyxbin` included.
+
+   Noted for `test-suite-derived-guards`, not taken into scope here:
+   - The per-package `seam_enforcement_test.go` and `leaf_enforcement_test.go` copies share root lookup, walk, allowlist and floor scaffolding: #326's one-harness item, which can host this task's Testkit scan too.
+   - Tier Purity's and Hermetic Env's per-file allowlist entries whose only reason is resolving the module root through `go env GOMOD` mirror each guard's implementation; one shared root resolver in the harness retires them.
+   - CLI / Cobra Invariant help-tree tests, Sandbox Suite Coverage, the config-section registry, Cwd Resolution's constructor-anchoring and no-transients path mirrors, Shed Recipe Registry's row mirrors, Agent Name and Stencil Ownership tests: hand-kept copies of registries production owns, belonging to #326/#327.
+   - The glyph-plan and file-tree fixture copies stay for #327 section 2's plan-fixture writer; this task only rewords their old-policy citations.
 8. Old-policy citations beyond #324's list.
    `loomcli`'s validate and parity tests and `loomshed`'s fixture copy glyph-plan and file-tree writers from `planglyph` and `loomshed`.
    First draft added `internal/testkit/plankit` to share them; parent review round 1 (F1) showed #327 section 2 already owns that writer in `test-suite-derived-guards`.
