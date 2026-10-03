@@ -13,7 +13,7 @@ Waits on nothing open; can start now, in parallel.
 
 1. **PATTERN for loomyard, manifest/ retired, plus repo conventions** — [`pattern-init`](design-pattern-init.md) · feature
    - CONSTRAINTS.md becomes _lyx/PATTERN.md so agents get the constraints directive; manifest/ retires into bolt and package docs; warp/weft scan beyond Go code; model specs in short form; role constants; ide workspace cleanups
-1. **Friction reaches GitHub on its own: reflection under step, no approval gate, notes kept until filed** — [`agent-self-reflect`](design-agent-self-reflect.md) · feature · running · Plan-Bouncer
+1. **Friction reaches GitHub on its own: reflection under step, no approval gate, notes kept until filed** — [`agent-self-reflect`](design-agent-self-reflect.md) · feature · running · Batchifier
    - Friction-Reflect runs under shed step too, ly-drive files without approval, the reflection reads drive reports, repairs and Merriam refusal notes, and batten no longer deletes the notes first
 
 ## Next Up
