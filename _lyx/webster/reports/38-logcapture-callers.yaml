@@ -1,0 +1,12 @@
+status: OK
+head_sha: 4be5fc3d8e7d613e2d7e64a8b0d604ac5b1e7bc0
+deviations:
+  - internal/loomshed/gates_test.go
+  - internal/shedadapters/attachprobe_test.go
+  - internal/shedadapters/bouncer_clear_test.go
+  - internal/shedadapters/bouncer_replay_test.go
+  - internal/shuttleengine/gate_pending_test.go
+  - internal/shuttleengine/run_test.go
+  - internal/shuttleengine/startup_test.go
+  - internal/testkit/logcapture/logcapture.go
+  - internal/testkit/logcapture/logcapture_test.go
