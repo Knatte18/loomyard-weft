@@ -1,6 +1,6 @@
 # Parent-review gate: wait bound off the boundary, no mid-turn sends, live smoke
 
-`parent-review-hardening` · Notes · feature
+`parent-review-hardening` · Someday · feature
 
 ## Goal
 

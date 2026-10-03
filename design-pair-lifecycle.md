@@ -1,6 +1,6 @@
 # Clean pair lifecycle: no leftover sessions, branches, sockets or races
 
-`pair-lifecycle` · Tasks · feature
+`pair-lifecycle` · Planned · feature
 
 Depends on: [`test-suite-derived-guards`](design-test-suite-derived-guards.md)
 

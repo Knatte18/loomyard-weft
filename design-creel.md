@@ -1,6 +1,6 @@
 # creel: a mailbox between named lyx processes
 
-`creel` · Notes · feature
+`creel` · Someday · feature
 
 The mail store and verbs from `manifest/designs/reed-mailbox.md` (send, inbox, read, log; the watchdog delivering at idle; `inject` for privileged senders), addressed by `agent-naming`'s names.
 

@@ -1,6 +1,6 @@
 # PATTERN for loomyard, manifest/ retired, plus repo conventions
 
-`pattern-init` · Tasks · feature
+`pattern-init` · Planned · feature
 
 Depends on: [`verify-publish-hardening`](design-verify-publish-hardening.md), [`pair-lifecycle`](design-pair-lifecycle.md), [`review-finding-class`](design-review-finding-class.md)
 

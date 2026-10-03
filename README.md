@@ -3,15 +3,15 @@
 Entries grouped by tier, then by dependency layer.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks
+## Planned
 
-Concrete and claimable; only an entry here can run.
+Concretized and claimable.
 
 ### Layer A
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Test suite, part 2: derived guards, decoupled recipe tests, no leaked tmux sockets** — [`test-suite-derived-guards`](design-test-suite-derived-guards.md) · feature · running · Webster
+1. **Test suite, part 2: derived guards, decoupled recipe tests, no leaked tmux sockets** — [`test-suite-derived-guards`](design-test-suite-derived-guards.md) · feature · running · Webster-Bouncer
    - One invariant-scan harness; registry and CLI-tree tests derived from the real registries; recipe/plan/stencil tests decoupled from their sources; fixtures clean up tmux sockets
    - **Before:** `verify-publish-hardening`, `pair-lifecycle`, `review-finding-class`
 
@@ -44,9 +44,9 @@ Starts when every entry it names under After is done.
 
 Planned next, but not yet concretized.
 
-## Notes
+## Someday
 
-Not tasks: ideas and observations, merged into a task when one is promoted.
+Loose ideas.
 
 ### Layer A
 

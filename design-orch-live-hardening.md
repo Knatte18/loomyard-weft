@@ -1,6 +1,6 @@
 # lyx orch runs for days without hand repair
 
-`orch-live-hardening` · Notes · feature
+`orch-live-hardening` · Someday · feature
 
 ## Goal
 
