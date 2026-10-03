@@ -1,6 +1,6 @@
 {
   "runGuid": "b7c04440dbff304c43f24304a87de12b",
-  "planFingerprint": "1d1023b8c593d8633a2f77acac30ab12dddc89fccee6145efb1ab8d1bff201c0",
+  "planFingerprint": "8fab72e5734c14cf60908793e4450b2b9b9544b213c6e66fa931ed363d863d38",
   "planFileHashes": {
     "00-overview.md": "83bdc51d454c4f8116843d0f025dea0ae275fb3f5b09fff85fae379a9ad6812d",
     "01-remove-refusal-probe-and-record-commit.md": "cd3c469c1c994a7b5a7bb1bb81b7b098ca1f279da2a0d04e581117b8a08129ac",
@@ -8,16 +8,16 @@
     "03-remove-remote-deletes-landed-task-branch.md": "1935d854b6985c57fc304cc636d1c51be5fcd7ba6e93560ef07f866bf4b3b3c1",
     "04-cleanup-remote-task-branch-sweep.md": "4223993a90c41521ae90ef1ba9b3eb0e61c20b07c61f41c29d7c0c05c20222e4",
     "05-cleanup-remote-cli-with-open-prs.md": "feb0ea0ccc8b32ad54557a6c730905bf1159e7a99f82229b6358903070d9afcf",
-    "06-reed-end-session-by-name.md": "01c555f84f4910cdad311de0ef80ec2f33d09b6225d0da5a18cdc1d6757b13b0",
+    "06-reed-end-session-by-name.md": "55582ee29c9cf66ccf864cd82eaa1337b0ba80e56ee43d235187704a73ebe915",
     "07-reed-retiring-mark.md": "66632546a369dba55431a8b0a9b826acb72dcc63aaca483ca03feaf94045effc",
     "08-loom-start-replaces-retiring-driver.md": "9bce3cd0d0ba4af5390ed791fc2887ec6a8eca8e333d542c304688335b246735",
-    "09-pairteardown-composite.md": "2909ae767e4276452f1aab847c3e07028a922e947748f3ffabad77587043b8d6",
+    "09-pairteardown-composite.md": "c77a6e688ab5d0e81429bc0e48366644b7d64ac66ee320ad7410fd9f60789ac6",
     "10-fabric-remove-through-composite.md": "bf1785718963874f6c17f81333ec3c6ade6e0d66a40d94bfbd5e7203077a32d1",
     "11-batten-teardown-through-composite.md": "9ac471da43c8ea5af1f7cf4de4e89a98b1b6200d96cdb56e5c83df82b7eeb122",
     "12-delete-half-removed-helpers.md": "35775b81f792a03e92af9333a491c223b556097f0739392baac1ca9ee6e22867",
     "13-pair-teardown-invariant-and-docs.md": "9fe3d0e0f86fd87c840e35ef2e2c2543a2894fb658f21eb9db1b74e953a8af87"
   },
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "494384ce5deddba4d47cdb0d1769fb44",
   "masterSessionId": "09881b49-bad6-4826-ac64-6ed455c6ae98",
   "assertedModel": "sonnet",
@@ -57,17 +57,29 @@
         "06-reed-end-session-by-name"
       ],
       "cardHashes": {
-        "06-reed-end-session-by-name": "01c555f84f4910cdad311de0ef80ec2f33d09b6225d0da5a18cdc1d6757b13b0"
+        "06-reed-end-session-by-name": "55582ee29c9cf66ccf864cd82eaa1337b0ba80e56ee43d235187704a73ebe915"
       },
       "startSha": "c8d12c8bb8f9e42612db86b377ea275e951fb115",
       "kind": "fork",
       "spawnedAt": "2026-10-03T14:35:29Z",
       "sessionId": "09881b49-bad6-4826-ac64-6ed455c6ae98",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-reed-end-session-by-name",
+        "status": "done",
+        "head_sha": "9113663e6587449d2dec535a3e6fec62162796a0"
+      },
+      "cardShas": [
+        "9113663e6587449d2dec535a3e6fec62162796a0"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/09881b49-bad6-4826-ac64-6ed455c6ae98/subagents/agent-a0d20fba4117bb40f.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/09881b49-bad6-4826-ac64-6ed455c6ae98/subagents/agent-a766de0d5aa6e11f6.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/09881b49-bad6-4826-ac64-6ed455c6ae98/subagents/agent-a766de0d5aa6e11f6.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pair-lifecycle/09881b49-bad6-4826-ac64-6ed455c6ae98/subagents/agent-a0d20fba4117bb40f.jsonl"
   ]
 }

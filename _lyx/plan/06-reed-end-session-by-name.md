@@ -1,7 +1,7 @@
 # Card 6 — reed-end-session-by-name
 
 **Create:**
-- `plan:internal/reedengine#EndSessionByName` -> `func EndSessionByName(tmuxPath, shellPath, socketKey, sessionName string) (ended bool, err error)`
+- `internal/reedengine#EndSessionByName`
 - `internal/reedengine/endsession_test.go`
 
 **Uses:**
