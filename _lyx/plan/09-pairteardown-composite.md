@@ -15,7 +15,7 @@
 - `internal/pairteardown/testmain_integration_test.go`
 
 **Uses:**
-- `plan:internal/fabricengine#Topology.RemoveRefusal`
+- `internal/fabricengine#Topology.RemoveRefusal`
 - `plan:internal/fabricengine#ErrPairNotFound`
 - `plan:internal/reedengine#EndSessionByName`
 - `plan:internal/reedengine#Engine.MarkRetiring`

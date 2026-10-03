@@ -3,14 +3,14 @@
 **Edit:**
 - `internal/fabricengine#Topology.Remove`
 - `internal/fabricengine#RemoveResult`
-- `plan:internal/fabricengine#Topology.RemoveRefusal`
+- `internal/fabricengine#Topology.RemoveRefusal`
 
 **Create:**
 - `plan:internal/fabricengine#ErrPairNotFound` -> `var ErrPairNotFound error`
 - `internal/fabricengine/remove_finish_integration_test.go`
 
 **Uses:**
-- `plan:internal/fabricengine#commitPendingRecords`
+- `internal/fabricengine#commitPendingRecords`
 - `internal/fabricengine#parseWarpSHATrailer`
 - `internal/fabricengine#removeWeftWorktree`
 - `internal/fabricengine#deleteWarpBranch`

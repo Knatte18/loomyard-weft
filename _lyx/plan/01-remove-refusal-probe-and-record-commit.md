@@ -8,8 +8,8 @@
 - `internal/fabricengine/remove_archive_integration_test.go`
 
 **Create:**
-- `plan:internal/fabricengine#Topology.RemoveRefusal` -> `func (t *Topology) RemoveRefusal(l *lyxcwd.Location, slug string, force bool) error`
-- `plan:internal/fabricengine#commitPendingRecords` -> `func commitPendingRecords(rec *Mutations, l *lyxcwd.Location, slug, warpSHA string) (sha string, committed bool, err error)`
+- `internal/fabricengine#Topology.RemoveRefusal`
+- `internal/fabricengine#commitPendingRecords`
 - `internal/fabricengine/remove_records_integration_test.go`
 
 **Uses:**
