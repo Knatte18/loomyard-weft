@@ -1,6 +1,6 @@
 # Clean pair lifecycle: no leftover sessions, branches, sockets or races
 
-`pair-lifecycle` · Tasks · feature · running · Webster
+`pair-lifecycle` · Tasks · feature · failed · Webster
 
 ## Goal
 
