@@ -38,7 +38,7 @@
     "33-tmuxkit-socket-fixture.md": "4f13b206edcf0343a5b12d0bc94d64cf99c838c91140207792e211c07d808e2b",
     "34-tmux-isolation-scan.md": "729ee171db5708a6c50f54de11629c35415e8ad72d826c395c0ebdbb1fb02145"
   },
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "e4a1de44f65a28710965f0d3ed142a38",
   "masterSessionId": "fc4d87f7-c072-4eff-bd8e-de22f27e663f",
   "assertedModel": "sonnet",
@@ -133,13 +133,25 @@
       "kind": "fork",
       "spawnedAt": "2026-10-03T11:55:33Z",
       "sessionId": "fc4d87f7-c072-4eff-bd8e-de22f27e663f",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-cmdlyx-module-guards",
+        "status": "done",
+        "head_sha": "adc7c19e9d9a44ad29d518d4174592b69afaa863"
+      },
+      "cardShas": [
+        "adc7c19e9d9a44ad29d518d4174592b69afaa863"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-derived-guards/fc4d87f7-c072-4eff-bd8e-de22f27e663f/subagents/agent-a73479c6cab1ee9d4.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-derived-guards/fc4d87f7-c072-4eff-bd8e-de22f27e663f/subagents/agent-ae0ac00094ac72e5d.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-derived-guards/fc4d87f7-c072-4eff-bd8e-de22f27e663f/subagents/agent-ab3b57badf762ef78.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-derived-guards/fc4d87f7-c072-4eff-bd8e-de22f27e663f/subagents/agent-a3a51d3a3521fee0d.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-derived-guards/fc4d87f7-c072-4eff-bd8e-de22f27e663f/subagents/agent-a3a51d3a3521fee0d.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-derived-guards/fc4d87f7-c072-4eff-bd8e-de22f27e663f/subagents/agent-a73479c6cab1ee9d4.jsonl"
   ]
 }
