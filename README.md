@@ -87,3 +87,5 @@ Waits on nothing open; can start now, in parallel.
    - Adopt keeps watchers, permission modes mean what they say, attach keeps the orch window size, large-session adopt is tested, status reads the current session
 1. **Hardener: an autonomous behavior-review campaign that replaces crucible** — [`hardener`](design-hardener.md) · feature
    - Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges
+1. **A batchifier that groups small related cards into one Webster batch** — [`card-batching`](design-card-batching.md) · feature
+   - Only the identity batchifier exists, so every card pays a fixed per-batch overhead; group small related cards into one fork without losing failure localization or drift checks
