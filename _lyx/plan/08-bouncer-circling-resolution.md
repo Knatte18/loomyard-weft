@@ -18,17 +18,22 @@ and `Bounces func() (count, budget int, ok bool, err error)`, reporting the segm
 
 `settle` on `verdictCircling` reads `readCirclingDecision` for the round:
 
-- No decision: Awaiting with the ledger pointer, as in card 4, and the Reason names the round, `lyx loom circling accept <slug>` and `lyx loom circling continue <slug>`, then `lyx loom start` to resume.
-  When `Bounces` reports `count >= budget`, the Reason adds that `continue` will block on the bounce budget and that `lyx loom goto --to <Name>` from that block gives the segment a fresh budget.
-  A `Bounces` error logs a Warn and omits the budget sentence.
+- No decision: Awaiting with the ledger pointer, as in card 4, and the Reason names the round, `lyx loom circling accept <slug>` and `lyx loom circling continue <slug>`, then `lyx loom start` in the task worktree to resume.
+  When `Bounces` reports `ok && count >= budget`, the Reason adds that `continue` will block on the bounce budget and that `lyx loom goto --to <Name>` in the task worktree, from that block, gives the segment a fresh budget.
+  `ok` false omits the budget sentence, as a nil seam does;
+  a `Bounces` error logs a Warn and omits it too.
+  Both resume commands address the cwd worktree's own run, so the Reason names the task worktree for them even though the circling verbs take the slug.
 - `continue`: Stuck to the round producer with the ledger pointer, after `ensureFocus(round+1)`, exactly as `CONTINUE`; it spends budget like any Stuck.
 - Pending accept: `settleCirclingAccept`, then Approve, Commit and Done with the ledger pointer, exactly as `CONVERGED`.
   A failed settle write is returned as an error before Approve runs, so an accept never passes without its settled record.
-- Settled accept reached in `settle`: unreachable, since the Call-entry clear intercepts it; it degrades with a Reason rather than settling twice.
+- Settled accept reached in `settle`: reached only through the entry-time attach branch, which calls `settle` before the Call-entry clear runs; it degrades with a Reason rather than settling twice.
 - A malformed decision file degrades to Stuck with the read error as the Reason.
 
 The Call-entry clear also fires when round N's verdict is `CIRCLING` and its decision is a settled accept, so a re-entry, including a resume after a failed Commit seam, archives the run directory and re-seeds instead of settling again.
 The entry-time live-judge probe still runs before both.
+The clear does not fire on an undecided `CIRCLING` round, so a segment re-entered after a `lyx loom goto` to an earlier row halts Awaiting again on that round;
+a `continue` then sends the rewritten artifact to a fresh review round.
+`Call`'s doc comment states this.
 
 The bound, stated in `Call`'s doc comment: an accept lets exactly one circling round pass without a converged judgment, skips no seam, and its record stays in the committed run directory; Done remains reachable only from a judged round whose review exists.
 
@@ -37,7 +42,7 @@ The bound, stated in `Call`'s doc comment: an accept lets exactly one circling r
 Tests in `bouncer_circling_test.go`, with fake Approve and Commit seams that count calls:
 a `CIRCLING` round with no decision returns Awaiting, a Reason naming both verbs with the slug, and no shuttle Run;
 with `Bounces` reporting the budget spent, the Reason names the budget block and `lyx loom goto --to <Name>`, and with budget left it does not;
-a `Bounces` error still returns Awaiting without the budget sentence;
+a `Bounces` reporting `ok` false with zero count and budget, and a `Bounces` error, each still return Awaiting without the budget sentence;
 after a recorded continue, the Call returns Stuck with the ledger pointer and no seam runs;
 after a recorded accept, the Call marks it settled, runs Approve then Commit once each and returns Done with the ledger pointer, and the next Call clears the run directory and re-seeds;
 an accept whose Commit seam fails returns the error with the accept already settled, and the resumed Call clears and re-seeds without calling Approve again;

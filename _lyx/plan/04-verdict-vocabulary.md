@@ -34,7 +34,11 @@ A new `harvestedVerdict(runDir, round)` reports the strict verdict only: legacy 
 `bouncer.go`:
 the two harvest sites — the entry-time attach and `judgeCall`'s post-run check — settle only when `harvestedVerdict` parses.
 When the files hold a legacy word instead, the Bouncer archives the three judge outputs through `archiveStaleOutputs` and degrades with a Reason saying the judge wrote a retired verdict word, so `judged(n)` reads false and the round is re-judged under the new prompt.
+That archive follows a run that returned or an attach that waited, so no live judge owns the paths.
+The re-judge takes the existing degrade route: the degraded Stuck goes to the round producer, whose unjudged-round check hands straight back, and the Bouncer's next Call re-judges.
+The route spends one bounce unit on each row, and on the segment's last budgeted unit the run blocks on budget rather than settling.
 The Call-entry clear fires on `verdictConverged`, including an aliased `APPROVED`.
+`settle` reads the verdict through `parseRecordedVerdict`, since both harvest sites have already applied the strict `harvestedVerdict` check before calling it, so a replay over a legacy word settles as its alias instead of degrading.
 `settle` maps `verdictConverged` to Approve, Commit and Done with the ledger pointer, and `verdictContinue` to `ensureFocus(round+1)` and Stuck with the ledger pointer, as the old two branches did.
 `verdictCircling` returns `shedengine.Awaiting` with the ledger pointer and a Reason naming the segment, the round and that the judge found no progress; it calls `ensureFocus(round+1)` and spawns nothing.
 Because Awaiting re-calls the same producer, a re-call over an on-disk `CIRCLING` verdict reaches the replay and returns the same Awaiting without spawning;
@@ -42,14 +46,14 @@ the existing entry-time probe still attaches a live judge first.
 Awaiting is a returned verdict, so it survives cancellation like the other two.
 Rewrite every doc comment in `bouncer.go` that names APPROVED or BLOCKING, including `NewBouncer`'s budget rule and `Call`'s pointer rule.
 
-`doc.go`: rewrite the Outcome-mapping section's opening (the Bouncer now produces Awaiting) and its Bouncer bullet around the three verdicts and the legacy aliasing, stating the bound: a legacy word never settles a harvest.
+`doc.go`: rewrite the Outcome-mapping section's opening (the Bouncer now produces Awaiting) and its Bouncer bullet around the three verdicts and the legacy aliasing, stating the bound: a legacy word never settles a harvest, and the re-judge runs through the round producer's unjudged-round hand-back at one bounce unit on each row.
 
 `bouncer-template-judge.md`: the verdict file section asks for exactly `CONVERGED`, `CONTINUE` or `CIRCLING`, and every APPROVED mention becomes `CONVERGED`.
 The reading list and role text are rewritten in card 6.
 
 Tests in `bouncer_verdict_test.go`:
 `parseVerdict` accepts each new word and rejects `APPROVED`, `BLOCKING` and a lowercase `converged`;
-an on-disk legacy `APPROVED` at Call entry clears and re-seeds, and a legacy `BLOCKING` replays as Stuck to the round producer;
+an on-disk legacy `APPROVED` at Call entry clears and re-seeds, and a legacy `BLOCKING` replays as Stuck to the round producer with the round's ledger pointer, not a degraded empty pointer;
 a judge spawned in this Call that writes `APPROVED` returns no Done, leaves `judged` false and archives the three outputs;
 an attached judge that writes `APPROVED` is treated the same way;
 `CONVERGED` runs Approve then Commit and returns Done with the ledger pointer, and the next Call clears and re-seeds;

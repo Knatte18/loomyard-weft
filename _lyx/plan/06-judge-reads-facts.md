@@ -30,8 +30,10 @@ A write failure degrades like an unreadable judge template, because the prompt w
   the review's own top-level `verdict:` is no convergence signal.
 - The D6 decision rule as written in the decision record: `CONTINUE` while the latest round carries a gating-class finding at MEDIUM or worse or any BLOCKING finding;
   `CONVERGED` when it carries neither;
-  `CIRCLING` when such findings remain and the facts show no progress across at least two fresh rounds, a parse-error row being no evidence;
+  `CIRCLING` when such findings remain and the facts show no progress: gating counts flat or rising across the recent rounds, or gating findings on recurring or reopened keys;
+  circling needs evidence from at least two fresh rounds, a parse-error row being no evidence;
   a parse-error row for the latest round means `CONTINUE`.
+- How a recurring key is gating: the facts' recurring-key list comes from ledgers, which carry no class, so a recurring or reopened key counts as a gating finding when the latest review's finding the judge maps to that key in the ledger it writes is gating-class at MEDIUM or worse, or BLOCKING.
 - The departure bullet: the judge may relabel one finding's effective class or severity in either direction only where that finding's own review entry shows the mislabel, never relabels a BLOCKING finding downward, and names every departed finding's ID in the rationale.
 - The focus-departures ratification, the three output files, the ledger carry-forward rule and the focus-entry rules stay.
 
@@ -41,7 +43,7 @@ the facts file exists for round N after a judge call;
 a judge call whose round-1 review lacks `class` still spawns the judge;
 the rendered prompt carries the parse-error-means-`CONTINUE` sentence and the never-relabel-BLOCKING-downward sentence.
 `bouncerprompt_test.go` and `bouncer_seed_test.go` fill the judge stencil with the new marker set.
-`claims_test.go` — the judge stencil claims the facts reading list, the decision rule, the departure bound and the fixed-findings rule, and wantNone `{{.artifacts}}`.
+`claims_test.go` — the judge stencil claims the facts reading list, the decision rule with each of its two no-progress signals (flat or rising gating counts, gating findings on recurring or reopened keys), the recurring-key class tie, the departure bound and the fixed-findings rule, and wantNone `{{.artifacts}}`.
 
 `CONSTRAINTS.md`'s Review Round Invariant gains the D9 line: a review segment converges only on a judge verdict over a fresh review, and fixed findings never converge on their own.
 
