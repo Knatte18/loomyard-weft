@@ -11,7 +11,7 @@ Concrete and claimable; only an entry here can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Verify localizes failures, gates Merriam once, and Publish never runs on a dirty tree** — [`verify-publish-hardening`](design-verify-publish-hardening.md) · feature · running · Webster-Bouncer
+1. **Verify localizes failures, gates Merriam once, and Publish never runs on a dirty tree** — [`verify-publish-hardening`](design-verify-publish-hardening.md) · feature · running · Describe
    - Cards verify with the integration tests and repo scans they touch; the plan verify runs once as a gate on Merriam, which fixes a failure in a fork and waits on forks instead of polling; Publish never verifies or pushes a dirty tree; verify is never skipped after a crash; every agent prompt goes through a file
    - **Before:** `pattern-init`
 1. **Friction reaches GitHub on its own: reflection under step, no approval gate, notes kept until filed** — [`agent-self-reflect`](design-agent-self-reflect.md) · feature · running · Discussion-Write

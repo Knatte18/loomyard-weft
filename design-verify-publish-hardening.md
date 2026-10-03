@@ -1,6 +1,6 @@
 # Verify localizes failures, gates Merriam once, and Publish never runs on a dirty tree
 
-`verify-publish-hardening` · Tasks · feature · running · Webster-Bouncer
+`verify-publish-hardening` · Tasks · feature · running · Describe
 
 ## Goal
 
