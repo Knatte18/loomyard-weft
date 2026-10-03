@@ -29,6 +29,7 @@ Filtering happens when issues are pulled back into the board, not before filing 
 
 A refusal or halt makes a friction note mandatory, so every intervention leaves a record the measurement can count.
 Check first whether `internal/loomengine/anomaly.go` loses a halt that is later resumed.
+Tier 1 anomaly filing (`detectAndFileAnomalies`) also runs under `step`, since the no-gate decision covers every filing path (added after Discussion, 2026-10-03; the decision record had kept it `run`-only).
 
 ## Open
 
