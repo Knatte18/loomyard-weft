@@ -32,8 +32,8 @@
 - `fabricengine/warpbinding_reconcile_integration_test.go`
 
 **Uses:**
-- `plan:internal/hubforge#AddPairWith`
-- `plan:internal/hubforge#OpenFabric`
+- `internal/hubforge#AddPairWith`
+- `internal/hubforge#OpenFabric`
 
 **Intent:**
 Route fabricengine's repeated pair-creation and fabric-open setup through the hubforge builders card 8 added (#325 §2).

@@ -1,8 +1,8 @@
 # Card 8 — hubforge-pair-and-open
 
 **Create:**
-- `plan:internal/hubforge#AddPairWith` -> `func AddPairWith(tb testing.TB, h *Hub, slug string, opts fabricengine.AddOptions) fabricengine.AddResult`
-- `plan:internal/hubforge#OpenFabric` -> `func OpenFabric(tb testing.TB, h *Hub) *fabricengine.Fabric`
+- `internal/hubforge#AddPairWith`
+- `internal/hubforge#OpenFabric`
 
 **Edit:**
 - `internal/hubforge#AddPair`
