@@ -9,7 +9,7 @@
 - `internal/fabricengine#RemoveResult`
 
 **Create:**
-- `plan:internal/fabricengine#dirtyUnlandedRemoteTip` -> `func dirtyUnlandedRemoteTip(parentBranch string) branchDirtiness`
+- `internal/fabricengine#dirtyUnlandedRemoteTip`
 - `internal/fabricengine/remove_remotetask_integration_test.go`
 
 **Uses:**

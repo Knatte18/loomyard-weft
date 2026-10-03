@@ -6,7 +6,7 @@
 - `internal/fabricengine/cleanupremotewarp_integration_test.go`
 
 **Uses:**
-- `plan:internal/fabricengine#dirtyUnlandedRemoteTip`
+- `internal/fabricengine#dirtyUnlandedRemoteTip`
 - `internal/fabricengine#deleteRemoteBranch`
 - `internal/fabricengine#ownedPairWarpBranch`
 - `internal/fabricengine#Topology.Cleanup`
