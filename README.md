@@ -93,6 +93,8 @@ Waits on nothing open; can start now, in parallel.
    - [board][cli] Editing one section means splicing JSON in a shell one-liner that breaks on quoting
 1. **A labels field on board entries, and tier 2 retired** — [`board-labels`](design-board-labels.md) · feature
    - [board] Labels live as a bracketed brief prefix today; a real field with a filter, and drop the unused tier 2
+1. **The orch relies on driver messages, not a scratch watcher** — [`orch-no-watcher`](design-orch-no-watcher.md) · design
+   - [orch][batten] The hub watches runs with a hand-written .scratch/hub/watch.sh; drivers already message their parent, so question the watcher, and close any real gap in lyx code
 
 ### Layer B
 

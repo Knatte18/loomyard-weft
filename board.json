@@ -299,6 +299,17 @@
       "isolated": false,
       "brief": "[board] Labels live as a bracketed brief prefix today; a real field with a filter, and drop the unused tier 2",
       "body": "Seen 2026-10-03: the board model is now tasks (tier 1) and notes (tier 3, one per entry), with labels as a bracketed prefix in each note's brief (`[ide][orch] …`) because the board has no labels field; tier 2 is unused, and README rendering already says Tasks and Notes (`6a74ee1be`).\nIdea: a real `labels` field with a filter in `lyx board list` and labels in the README, and dropping tier 2 from the model and the `promote` verb's vocabulary.\n"
+    },
+    {
+      "id": 58,
+      "slug": "orch-no-watcher",
+      "title": "The orch relies on driver messages, not a scratch watcher",
+      "tier": 3,
+      "type": "design",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[orch][batten] The hub watches runs with a hand-written .scratch/hub/watch.sh; drivers already message their parent, so question the watcher, and close any real gap in lyx code",
+      "body": "Seen 2026-10-03: the hub orch watches each driven run with a hand-written `.scratch/hub/watch.sh`, a background shell loop that polls the run's `status.json` every 30 s and exits on the first non-running state change.\nIt lives outside lyx, untested and uncommitted, and has to be re-armed by hand after every context cycle.\nThe driver already messages its parent (`ly:orch`) at every stop it cannot handle, which is the path the orch should rely on.\nIdea (operator): question whether the orch needs a watcher at all; if a gap remains that the driver's message does not cover (a driver that dies without messaging, a stop the driver does not report), close it in lyx's own code, never with a scratch script.\n"
     }
   ],
   "legacy_done": [
