@@ -24,7 +24,7 @@
     "19-docs-and-specs.md": "354cc46fd57e9c63f6d3cfbfe9bd1ed53276d99ff2c2789ac8990165fdb928de",
     "20-retire-detach-primitives.md": "7ebad6ba8e73bedb2e83206627ebcacba9e4751b3618c3d046fdc3f9ea49c178"
   },
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "6999e8c6ee20ddff89c3bc1f8c54b49a",
   "masterSessionId": "099f06c6-5f44-4b91-a2d5-0b41dee65ff2",
   "assertedModel": "sonnet",
@@ -265,6 +265,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-verify-publish-hardening/099f06c6-5f44-4b91-a2d5-0b41dee65ff2/subagents/agent-a72f7286756096831.jsonl"
       ]
+    },
+    "8": {
+      "slug": "webster-burler-verify-gate",
+      "cards": [
+        "08-webster-burler-verify-gate"
+      ],
+      "cardHashes": {
+        "08-webster-burler-verify-gate": "44221f88de7f00d4e20eb1f32a86dfd5d6a36d70ce27eb2f42319ccd8342cda7"
+      },
+      "startSha": "9bda8b9709eb9ede43441d958fcb218195976e1a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T15:08:34Z",
+      "sessionId": "099f06c6-5f44-4b91-a2d5-0b41dee65ff2",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
