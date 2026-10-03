@@ -19,3 +19,9 @@ Each self-contained with file:line evidence in its issue:
 ## From `test-tmux-socket-leak`: Integration tests leave tmux sockets behind
 
 Tests leak tmux sockets: `/tmp/tmux-1000/` holds hundreds of `lyx-Test…`, `lyx-contract-…` and `lyx-warp-bare-…` sockets left by reed/loom integration tests. Test fixtures should kill their tmux server and remove the socket in `t.Cleanup`.
+
+## Operator directive: CONSTRAINTS.md may change
+
+The operator suspects some `CONSTRAINTS.md` invariants, or the way they are enforced, are what made the test suite grow, and authorizes changing them.
+Discussion audits the invariants that bear on this task's tests and, for each one that forces duplicated tests or hand-kept copies (per-package copies of the same scan, per-module test obligations, allowlists that mirror code, the do-not-share-test-helpers decision), proposes a change: restate the rule, move its enforcement to one shared scan, or drop it.
+A changed invariant lands in `CONSTRAINTS.md` in the same commit as its tests; an invariant's intent is weakened only where the discussion says so explicitly and why.
