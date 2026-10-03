@@ -2,8 +2,6 @@
 
 `pattern-init` · Tasks · feature
 
-Depends on: [`verify-publish-hardening`](design-verify-publish-hardening.md)
-
 ## Goal
 
 loomyard gets `_lyx/PATTERN.md` so lyx agents receive the constraints directive, which no run has received so far; CONSTRAINTS.md moves there.
