@@ -15,7 +15,7 @@
     "10-circling-verbs.md": "d955190c01f9b3b83cf4978af39a03d6979a480768087670c9102bcd5fd9f294",
     "11-retire-classification-draft.md": "71e280c94862f7bc2360355a64168407980ffc9f44aa7c99acd9b64acdbf0455"
   },
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "6ae6a24e80acfb89e279dcf937eb3c34",
   "masterSessionId": "55ee855a-3447-48c9-b795-18ba3dc1b3a9",
   "assertedModel": "sonnet",
@@ -175,6 +175,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-finding-class/55ee855a-3447-48c9-b795-18ba3dc1b3a9/subagents/agent-a72a654af85dd5f32.jsonl"
       ]
+    },
+    "7": {
+      "slug": "circling-decision-record",
+      "cards": [
+        "07-circling-decision-record"
+      ],
+      "cardHashes": {
+        "07-circling-decision-record": "c37fa2f4d44d791341d8d0acd26c76dd0f1b09636d95b76225a8d10f072f8883"
+      },
+      "startSha": "d0cf268ad2abbab5e12d7b17ed180d9b7029a422",
+      "kind": "fork",
+      "spawnedAt": "2026-10-03T14:43:50Z",
+      "sessionId": "55ee855a-3447-48c9-b795-18ba3dc1b3a9",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
