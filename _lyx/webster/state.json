@@ -14,7 +14,7 @@
     "09-board-intake-verbs.md": "80bae53962d0aa3ee1f2d3da59c1a3a8dc4ec1ab150e30168c207ec88ef1d248",
     "10-board-model-docs.md": "dcbafb7d81c205a360beadfd5e38f40f87e7d74738a93afe9c448a14a16e59a6"
   },
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "596a359043833313abccb3141fdf4531",
   "masterSessionId": "fbcb0cb7-5297-4d67-bc21-f9f6feb0099f",
   "assertedModel": "sonnet",
@@ -99,6 +99,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-model/fbcb0cb7-5297-4d67-bc21-f9f6feb0099f/subagents/agent-ac680429036a58e89.jsonl"
       ]
+    },
+    "4": {
+      "slug": "board-load-migration",
+      "cards": [
+        "04-board-load-migration"
+      ],
+      "cardHashes": {
+        "04-board-load-migration": "a5dc4117e7a315cc449568afeccc4a8c66f8ac3aa46f4e0ad817b7b92827e0a5"
+      },
+      "startSha": "3e145e9643f9bd9cd4d254dee1a50bf2bdd9ea2b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-04T14:54:36Z",
+      "sessionId": "fbcb0cb7-5297-4d67-bc21-f9f6feb0099f",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
