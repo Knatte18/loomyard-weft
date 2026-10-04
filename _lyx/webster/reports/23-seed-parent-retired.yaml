@@ -1,0 +1,8 @@
+status: OK
+head_sha: 88b63d8501f034130748098ef2507948bf39f1f4
+deviations:
+  - internal/battencli/lifecycle_integration_test.go
+  - internal/hubgeom/doc.go
+  - internal/loomcli/parentreview_wiring_test.go
+  - internal/loomcli/wiring.go
+  - internal/shedrun/doc.go
