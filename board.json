@@ -214,28 +214,6 @@
       "body": "Idea, undecided (operator, 2026-10-03): keep the prime's hub workspace as the one VS Code window, and have fabric add each pair to its `folders` on `add` and drop it on `remove`/teardown; VS Code picks up workspace-file edits live.\nThe operator rarely reads a pair's files (everything goes through the orch) but looks at plan files and similar now and then, which `_portals` (each pair's `_lyx/`) already covers and is kept for.\nOpen points: per-folder `folderOpen` tasks would run in the prime window (and batten's own pair window would then go), a full pair copy multiplies indexing and search unless only `_lyx/` is added or excludes are set, and the prime must stay the first folder or the extension host restarts.\n"
     },
     {
-      "id": 56,
-      "slug": "board-body-file",
-      "title": "lyx board upsert reads the body from a file or stdin",
-      "tier": 3,
-      "type": "feature",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "[board][cli] Editing one section means splicing JSON in a shell one-liner that breaks on quoting",
-      "body": "Seen 2026-10-03: `lyx board upsert` takes the whole body inside one JSON argument, so changing one section of an entry means reading the body, splicing it and re-encoding JSON in a shell one-liner, which breaks on quoting (an apostrophe in the text) and pushed the orch into a throwaway script.\nIdea: `upsert` accepts the body from a file or stdin (for example `--body-file`), so the orch writes the body with its file tools and sends it unchanged.\n"
-    },
-    {
-      "id": 57,
-      "slug": "board-labels",
-      "title": "A labels field on board entries, and tier 2 retired",
-      "tier": 3,
-      "type": "feature",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "[board] Labels live as a bracketed brief prefix today; a real field with a filter, and drop the unused tier 2",
-      "body": "Seen 2026-10-03: the board model is now tasks (tier 1) and notes (tier 3, one per entry), with labels as a bracketed prefix in each note's brief (`[ide][orch] …`) because the board has no labels field; tier 2 is unused, and README rendering already says Tasks and Notes (`6a74ee1be`).\nIdea: a real `labels` field with a filter in `lyx board list` and labels in the README, and dropping tier 2 from the model and the `promote` verb's vocabulary.\n"
-    },
-    {
       "id": 58,
       "slug": "orch-no-watcher",
       "title": "The orch relies on driver messages, not a scratch watcher",
@@ -289,17 +267,6 @@
       "isolated": false,
       "brief": "[agents][search] Semantic search over docstrings and comments; doubtful today, since agents now navigate well with grep",
       "body": "From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03 as someday.\nIdea: semantic search over docstrings and comments (catalysts, embeddings, temporal decay), to find code by concept rather than literal keyword.\nOperator: millhouse's codeguide (Claude-written `.md` navigation files, designed about six months earlier) gave a large exploration speedup then, but not any more, since Claude now searches well with grep; so the value of this is uncertain.\nThe design is under `## Design`.\n\n## Design\n\n\u003e **Status: Speculative, not scoped.** Inspired by [Enzyme](https://www.enzyme.garden/blog/an-lsp-for-your-notes), a semantic search system for personal note vaults. This is the \"deferred idea\" [quarry](https://github.com/Knatte18/quarry)'s own design proposal referred to (\"a semantic/conceptual index... a separate, further-out idea, not part of this proposal\") and the relationship-table row from the original quarry proposal (\"have we written something conceptually similar, without shared vocabulary? — embeddings + temporal-decay weighting; not part of this proposal\") — now named, not yet designed in depth. Per the documentation lifecycle, if this is ever picked up the durable parts fold into the owning package's doc when it lands; if abandoned, this file is simply deleted.\n\n## The problem this responds to\n\nGrep/text-search finds literal keyword matches.\nIt cannot answer \"find code that does X\" when the code implementing X uses none of the words a caller would naturally search for — e.g. \"show me the error-handling patterns in this codebase\" when error handling is spelled out in prose inside docstrings and comments but never literally contains the word \"error\" everywhere it matters. `quarry` (see [quarry](https://github.com/Knatte18/quarry)) doesn't solve this either — it answers \"what exactly references/defines this symbol,\" a precise, compiler-derived question, not \"what have we conceptually written that's similar to this.\"\n\n## Core mechanism, adapted from Enzyme\n\nEnzyme indexes a personal notes vault;\nthe same shape maps onto a codebase's descriptive text (docstrings, comments, package `doc.go` headers):\n\n1. **Catalyst generation.**\n   Enzyme derives \"thematic questions\" from actual content per tag/link/ folder in a notes vault.\n   For code, the analogous unit is likely per-package or per-module: derive thematic questions from that package's docstrings, comments, and `doc.go` header.\n2. **Vector embedding.**\n   Catalysts are embedded as vectors, with cosine similarity precomputed against every text chunk (docstring, comment block, doc header).\n3. **Temporal decay weighting.**\n   Recently written/modified text influences the index more heavily than old, rarely-touched text — the index shifts with the codebase's current shape, not a static snapshot taken once.\n   For code specifically, \"recency\" is naturally available from git history (`git log` per file/function) — plausibly the same kind of SHA-diffing `internal/gitrepo` already does for other consumers, rather than a new mechanism.\n4. **Semantic retrieval.**\n   An agent searches catalyst vectors instead of guessing grep terms, surfacing conceptually related code across files/packages that share no literal vocabulary.\n\n## Relationship to `quarry` and `raddle` — complementary, not overlapping\n\nSame three-way split the original quarry proposal drew, now with a name for the third row:\n\n| Module | Answers | Mechanism |\n|---|---|---|\n| `quarry` | \"What exactly references/defines this symbol, right now?\" | Deterministic, compiler-derived (LSP) |\n| `raddle` | \"Where does this conceptually belong, and why?\" | LLM-authored/maintained narrative docs |\n| `semantic-index` (this) | \"Have we written something conceptually similar, without shared vocabulary?\" | Embeddings + temporal-decay weighting |\n\nNone of these three replace either of the others — different question, different mechanism.\n\n## Open questions (genuinely unscoped)\n\n- **Indexing granularity.**\n  Per-function docstring, per-file, or per-package `doc.go` — Enzyme's own granularity (tag/link/folder) doesn't map onto code 1:1;\n  needs its own design pass.\n- **Embedding provider.**\n  Self-hosted vs. API-based — cost, latency, and offline/air-gapped operation all matter differently here than for a personal notes tool.\n- **Temporal decay source.**\n  Whether it reuses `gitrepo`'s `ChangedFilesSince`/SHA machinery directly, or needs its own recency signal.\n- **Standalone vs. baked into loomyard.**\n  Same question asked of `quarry` and `raddle` — lean build-inside-first, extract only once a second concrete consumer exists.\n- **Consumer.**\n  Presumably the planner (finding existing similar implementations before writing a card) and webster forks (finding a pattern to follow) — not yet concretely designed.\n\n## Related\n\n- [quarry](https://github.com/Knatte18/quarry) — the precise, compiler-derived sibling;\n  quarry's own design proposal named this as an out-of-scope, deferred idea.\n- raddle.md — the curated-narrative sibling.\n- `internal/gitrepo` — plausible source of the temporal-decay recency signal.\n"
-    },
-    {
-      "id": 64,
-      "slug": "issue-intake",
-      "title": "A lyx command that pulls GitHub issues into the board and filters them",
-      "tier": 3,
-      "type": "feature",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "[board][github] Everything is filed without a gate, so filtering happens at intake: a lyx verb (not a skill) that ingests issues and proposes board entries",
-      "body": "From `manifest/roadmap.md` Someday (board curation/triage automation), kept by the operator on 2026-10-03.\nSince filing has no approval gate (operator, 2026-10-03, see `agent-self-reflect`), filtering happens when issues are pulled back in.\nIdea (operator): a `lyx` command rather than a skill, that ingests open GitHub issues, drops noise and duplicates, and proposes board entries or folds into existing ones.\nSee `manifest/designs/curation-triage.md`."
     },
     {
       "id": 65,

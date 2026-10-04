@@ -63,10 +63,6 @@ Waits on nothing open; can start now, in parallel.
    - [ide][batten] spawn configures and launches at once and overwrites a driven pair's attach chain; add a write-nothing open verb
 1. **Pairs as folders in the prime's hub workspace** — [`ide-workspace-pairs`](design-ide-workspace-pairs.md) · design
    - [ide][fabric] Idea, undecided: fabric adds and removes pairs in the prime workspace's folders; _portals stays
-1. **lyx board upsert reads the body from a file or stdin** — [`board-body-file`](design-board-body-file.md) · feature
-   - [board][cli] Editing one section means splicing JSON in a shell one-liner that breaks on quoting
-1. **A labels field on board entries, and tier 2 retired** — [`board-labels`](design-board-labels.md) · feature
-   - [board] Labels live as a bracketed brief prefix today; a real field with a filter, and drop the unused tier 2
 1. **The orch relies on driver messages, not a scratch watcher** — [`orch-no-watcher`](design-orch-no-watcher.md) · design
    - [orch][batten] The hub watches runs with a hand-written .scratch/hub/watch.sh; drivers already message their parent, so question the watcher, and close any real gap in lyx code
 1. **Each batten the orch starts runs in its own tmux window** — [`batten-windows`](design-batten-windows.md) · feature
@@ -77,8 +73,6 @@ Waits on nothing open; can start now, in parallel.
    - [fabric][windows] Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant
 1. **semantic-index: find code by concept, not by literal keyword** — [`semantic-index`](design-semantic-index.md) · design
    - [agents][search] Semantic search over docstrings and comments; doubtful today, since agents now navigate well with grep
-1. **A lyx command that pulls GitHub issues into the board and filters them** — [`issue-intake`](design-issue-intake.md) · feature
-   - [board][github] Everything is filed without a gate, so filtering happens at intake: a lyx verb (not a skill) that ingests issues and proposes board entries
 1. **VS Code only on request; other ways to watch a run** — [`ide-opt-in`](design-ide-opt-in.md) · design
    - [ide][batten][reed] Default to CLI/tmux and start VS Code only on request; alternatives: pop-up terminals or tmux windows
 1. **Ship lyx as an installable Claude Code plugin** — [`plugin-packaging`](design-plugin-packaging.md) · feature
