@@ -11,7 +11,7 @@ Autonomous mode: no operator answered; every pick below is the agent's own, reco
    No other module reads `Tier` or `Type`; batten reads only `Recipe` through a path-only `Board`.
 4. Settled the migration (D12) from the entry's own proposal, adding the brief-prefix parse, the type-name prefix drop and the note-dependency move.
 5. Settled the inbox repo and auth (D11): reuse `selfreport`'s constant and client seam.
-6. Designed the intake verbs (D10) around the hand intake's three moves, with board-first sequencing and an idempotent retry for a failed close.
+6. Designed the intake verbs (D10) around the hand intake's three moves, with board-first sequencing; a failed close is recovered with `close`, not a retry of `import`.
 7. Checked every decision against PATTERN: config-strictness, github-auth, cli-cobra, test-tier-purity, documentation-lifecycle.
 
 ## Rejected alternatives
@@ -47,6 +47,6 @@ Autonomous mode: no operator answered; every pick below is the agent's own, reco
 - Q6 (resolved, auto-pick): validation scope on a patch. Pick: the full resulting entry.
 - Q7 (resolved, auto-pick): how `--label` filters combine. Pick: AND.
 - Q8 (resolved, auto-pick): remove the `notes` and `promote-note` aliases. Pick: remove (D5).
-- Q9 (resolved, auto-pick): how a failed GitHub close recovers. Pick: re-running `import` on a recorded open issue only closes it.
+- Q9 (resolved, auto-pick): how a failed GitHub close recovers. Pick: `close` closes it (orchestrator decision, round 2; it replaced re-running `import`), with the exact payload in the failure report.
 - Q10 (resolved, auto-pick): what happens to a note's `depends_on` on migration. Pick: a closing body sentence, list emptied.
 - Q11 (resolved, auto-pick): how loomyard's migrated area labels pass validation. Pick: the PR description carries the list, and the hub writes it into the parent's live `board.yaml` before deploying (D13, revised after parent review round 1).

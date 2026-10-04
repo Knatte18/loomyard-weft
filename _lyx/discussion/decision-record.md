@@ -65,14 +65,14 @@ Rationale: with two kinds, promotion has one target.
 
 ### D5 — the `notes` and `promote-note` aliases are removed
 
-Decision: the hidden `lyx board notes` group and the hidden `lyx board promote-note` verb are deleted, with their tests and their two `cliTreeFindings` entries in `cmd/lyx/clitree_test.go`.
+Decision: the hidden `lyx board notes` group and the hidden `lyx board promote-note` verb are deleted, with their tests and their `cliTreeFindings` entries in `cmd/lyx/clitree_test.go`.
 Rationale: both are pre-merge back-compat aliases no prompt, skill or script calls, and "notes" now names a kind, so an alias that reaches every entry under that name misleads.
 
 ### D6 — listing and filtering
 
 Decision: `BriefTask` and `--text` output carry `kind` and `labels` in place of `tier` and `type`.
 `list` and `find` take a repeatable `--label <name>` flag; an entry matches when it carries every named label.
-An unknown label in the flag is refused, as on write.
+A label in the flag is refused only when it is in neither config list and no entry of any kind or status carries it, so entries holding a label since removed from config stay listable for relabelling; a path-only `Board` has no config to check, so it filters entries without validating the flag.
 The `--text` line shows kind, slug, title, the labels joined by commas, and status as today.
 Rationale: label filtering is the operator's decided way to see one area; refusing an unknown filter label catches typos that would otherwise return an empty list silently.
 
@@ -89,11 +89,15 @@ Decision: `lyx board upsert` takes `--body-file <path>`, where `-` reads stdin; 
 A payload that also carries `body` is refused, naming both sources.
 Rationale: editing a body no longer means splicing it into a JSON argument in a shell one-liner.
 Bound: the flag only supplies `body`; every other field still comes from the JSON payload and passes the same validation.
+It reads exactly the named path or stdin with the caller's own permissions, and is refused when the payload itself arrives on stdin.
 
 ### D9 — `issues` field
 
 Decision: every entry carries `issues`, a list of inbox issue numbers, settable through `upsert` so merging notes into a task can carry their numbers.
+`issues` replaces the whole list on upsert, as `labels` does, and duplicates are refused; each number must be a positive integer.
 Rationale: a back-link from the board to GitHub, and the record `intake` uses to tell an imported issue from a new one.
+Bound: a number is not checked against GitHub, and a recorded number is skipped by `intake list` and makes `import` a no-op (D10); `intake close` still closes any open issue, so nothing is hidden beyond the list.
+A mistyped number is corrected by `upsert` of `issues`, which replaces the list, after which `intake list` and `import` see the issue again.
 
 ### D10 — `lyx board intake`, a mechanical verb group
 
@@ -102,14 +106,27 @@ Decision: three verbs under `lyx board intake`, all against the inbox repo, all 
 - `list` — every open issue (pull requests excluded, all pages) whose number no board entry records, with number, title, body, labels, URL and creation time.
 - `import '{"issue":N,"slug":…,"title"?,"brief"?,"labels"?}'` creates a note; `import '{"issue":N,"into":"<slug>"}'` folds the issue into an existing entry instead.
   A new note's body is the issue body under a link back to the issue; a fold appends a `## From issue #N` section with the same content to the target's body.
+  `import` never overwrites: it refuses a `slug` that an entry already names, naming that entry, and an `into` that names no entry, each with the way forward (pick another slug, or fold with `into`); both checks run before any board write or GitHub mutation.
   Either way `N` is added to the entry's `issues`.
   Without `labels`, the note takes the issue's GitHub labels that the config lists, and the result reports the dropped ones; the result must still pass D3, so an issue with no usable type label is refused with the way forward (pass `labels`).
   After the board write, the issue gets a comment naming the entry's slug and is closed as completed.
-- `close '{"issue":N,"reason":"…"}'` comments the reason and closes the issue as not planned; `reason` is required and non-empty.
+  `into` accepts an entry of either kind and any status, and the fold passes D3's validation like any write; `title`, `brief` and `labels` beside `into` are refused.
+  A fold appends the issue to the target's `issues` and adds only those of the issue's GitHub labels that the config lists and the target does not already carry, and never adds a type label to a note; the others are dropped and reported, never refused.
+  The fold is still refused by D3 when the target already holds a label the config no longer lists, with the way forward (relabel the entry or restore the label in `board.yaml`).
+  An issue carrying more than one configured type label, imported as a note without `labels`, is refused naming the labels and the way forward (pass `labels`), not as having no usable type label.
+- `close '{"issue":N,"reason":"…","completed"?:true}'` comments the reason and closes the issue as not planned, or as completed with `completed`; `reason` is required and non-empty.
+  It only closes: it writes nothing to the board, and it never changes the issue's content.
+  It refuses an issue that is already closed, naming its state.
+- `import` and `close` refuse a pull request number; `import` also refuses an issue that is closed and not recorded.
 
-Sequencing: the issue is fetched first, the board write runs under the board lock, and the GitHub close runs after the lock is released, so no network call is made while holding the lock.
+An issue is recorded when any entry's `issues` lists it, hand-written through D9 or imported.
+`import` of a recorded issue is a no-op that names the recording entry or entries; there is no separate retry path, and every other payload key is ignored.
+An issue left open after a failed close is closed by running `close` on it, which closes any open issue, a recorded one included, and writes nothing.
+After an `import` whose GitHub step failed, the failure report carries the exact `close` payload to run, with `completed` and a reason naming the entry's slug.
+`intake list` never offers a recorded issue.
+
+Sequencing: the issue is fetched first, the recorded-issue, slug and `into` checks and the board write share one board-lock acquisition, and the GitHub comment and close run after the lock is released, so no network call is made while holding the lock.
 Rationale: the verb does the mechanics, the orchestrator triages, as decided; the first intake (2026-10-04, by hand) showed these three moves are the whole procedure.
-Bound: `import` of an issue some entry already records is refused when the issue is closed, and when it is still open (a previous import whose close failed) it only retries the comment and close, writing nothing to the board.
 `intake` never deletes or edits an issue's content and never touches a repo other than the inbox.
 
 ### D11 — the inbox repo and auth are `selfreport`'s
@@ -124,13 +141,14 @@ Decision: an entry decoded from `board.json` with `tier` and no `kind` converts 
 
 - tier 1 → `task`; tier 2 and 3 → `note`.
 - `type`: `bug` → `bug`; `feature` and `chore` → `enhancement`; `design` → `enhancement` plus `undecided`.
-- Leading `[x]` tokens in the brief become labels in order, and are stripped from the brief; a token equal to a type name is dropped, since the type comes from `type`.
+- Leading `[x]` tokens in the brief become labels in order, and are stripped from the brief; a token equal to a legacy or configured type name is dropped, since the type comes from `type`; a repeated label keeps its first occurrence only.
 - A migrated note's `depends_on` moves into its body as a closing line `Depends on `a`, `b`.` and the list is emptied.
 - `issues` starts empty.
 
-Migration does not validate labels against config, so it never fails; D3's write-time refusal then applies.
+Conversion on load needs no operator step and never fails, because migration does not validate labels against config.
+A later write of an entry carrying an unconfigured label is refused with a message naming the file (`board.yaml`) and the label; status writes included.
 The legacy `tasks.json`/`notes.json` path chains into this conversion.
-Rationale: every hub lyx runs in migrates without an operator step, and nothing is lost.
+Rationale: nothing is lost and no hub needs an operator step to load; the later `board.yaml` edit is the cost, bounded by that refusal and by D13 for loomyard.
 
 ### D13 — loomyard's own area list
 
@@ -140,6 +158,17 @@ The pair may add the same list to its own `_lyx/config/board.yaml` for its own r
 Rationale: the template stays generic for other repos, and loomyard's own vocabulary is loomyard's config;
 `_lyx/` in a pair links into the pair's weft worktree, which does not merge at landing, so the PR description is the channel that reaches the hub.
 Bound: no weft-carry mechanism is added at landing.
+
+## Orchestrator decisions (2026-10-04)
+
+Hub design calls made at the round-2 CIRCLING stop; D10 and D12 above already state them, and these win over any other wording.
+
+1. `intake import` never overwrites: a slug that already names an entry is refused, naming the entry; an `into` that names no entry is refused.
+2. An issue is recorded if any entry's `issues` lists it, hand-written or imported; `import` of a recorded issue is a no-op naming the recording entry or entries, with no separate retry path.
+3. `intake close` only closes and writes nothing to the board; it is also the way to close an issue left open after a failed close.
+4. Folding appends the issue to the entry's `issues` and adds the issue's GitHub labels only if the config lists them; the others are dropped and reported, never refused.
+5. D12: conversion on load needs no operator step; a later write of an entry carrying an unconfigured label is refused naming `board.yaml` and the label.
+6. Parent-review round 1, F1: D13 puts the area-label list in the PR description for the hub to apply to the parent's live `board.yaml` before deploy; no carry mechanism is added.
 
 ## Constraints
 
@@ -168,7 +197,7 @@ Bound: no weft-carry mechanism is added at landing.
   The operator deploys through `update-plugins.sh` between runs; this task's own landing runs on the old binary against the unmigrated store, so it is unaffected.
 - Until the hub writes D13's `labels` list into the parent's live `_lyx/config/board.yaml`, the deployed binary refuses the next write to every migrated entry carrying an area label; the hub must write the list from the PR description before deploying.
 - Config lives per worktree, so a task branch cut before the operator adds a label refuses that label until it merges the newer config; the refusal names the config file.
-- A GitHub close that keeps failing leaves an issue open and recorded; `intake list` does not show it, and only a retried `import` closes it.
+- A GitHub close that keeps failing leaves an issue open and recorded; `intake list` does not show it, and only `intake close` closes it.
 
 ## Acceptance criteria
 
@@ -180,10 +209,16 @@ Bound: no weft-carry mechanism is added at landing.
 - The README renders Tasks by layer, Notes under one section per configured type in config order plus `Other` for an orphaned type, and Done; every entry line shows its labels; no "Next Up" or tier wording remains.
 - `upsert --body-file <path>` and `--body-file -` set the body; a payload with `body` plus the flag is refused.
 - `intake list` excludes pull requests, issues recorded in any entry's `issues`, and closed issues, and follows pagination.
-- `intake import` creates a note with the link-back body, carried-over config labels and the issue number, then comments and closes as completed; with `into` it appends the section to the target and records the number; with no usable type label it is refused before any board write or GitHub mutation.
-- `intake import` of a recorded, still-open issue writes nothing to the board and only closes it; of a recorded, closed issue it is refused.
-- A GitHub failure after the board write reports the written entry and the retry command.
-- `intake close` without a reason is refused; with one it comments and closes as not planned.
+- `intake import` creates a note with the link-back body, carried-over config labels and the issue number, then comments and closes as completed; with `into` it appends the section to the target, records the number and adds the issue's configured GitHub labels, reporting the dropped ones; with no usable type label it is refused before any board write or GitHub mutation.
+- `intake import` of a recorded issue, one recorded by hand included, is a no-op that names the recording entry or entries and writes nothing to the board or to GitHub.
+- `intake import` with a `slug` an entry already names (refusal names the entry), or an `into` naming no entry, is refused before any board write or GitHub mutation.
+- `list --label` on a path-only `Board` filters without validating the label.
+- `intake import` and `intake close` refuse a pull request number; `intake close` on an open issue, a recorded one included, comments and closes it and writes nothing to the board; `into` accepts a done entry and a task; `into` with `title`, `brief` or `labels` is refused.
+- `list --label` of a label removed from config but carried by an entry returns that entry; `upsert` of `issues` replaces the list and refuses duplicates.
+- `upsert --body-file -` is refused when the payload also arrives on stdin.
+- A GitHub failure after the board write reports the written entry and the exact `intake close` payload to run, with `completed`.
+- `intake close` without a reason is refused; with one it comments and closes as not planned, or as completed with `completed`; an already closed issue is refused.
+- A fold never adds a label the target already carries or a type label to a note; an issue with two configured type labels imported without `labels` is refused naming them.
 - `lyx board notes` and `lyx board promote-note` no longer exist, and `cliTreeFindings` has no `board notes` entries.
 - The PR description carries the exact `labels` list for the parent's `board.yaml`, covering every area label the migration yields on loomyard's live board.
 - The clitree walk passes for every new command; `go test ./...` passes.
@@ -194,5 +229,3 @@ Bound: no weft-carry mechanism is added at landing.
 - `internal/boardcli/cli.go` and `text.go` carry the verbs and the compact listing; `promotenote_test.go` and the `notes` alias tests go with D5.
 - `internal/selfreportengine/selfreport.go` holds `targetRepo` and the `NewGitHubClient` seam D11 extends.
 - `plugins/ly/skills/board/SKILL.md` describes tiers and types and the "never name a dependency in a body" rule, which now holds for tasks only.
-- `internal/battencli/wire.go` reads `Recipe` from a path-only `Board`; it must keep working without config.
-- `internal/ideengine/menu.go` and `internal/loomcli/landingdeps.go` open config-built `Board`s.
