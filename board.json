@@ -597,6 +597,17 @@
       "isolated": false,
       "brief": "[bouncer][discussion][orch] Round-2 CIRCLING on a rising finding count halted board-model for a human; judge later, on unchanged recurrence, and escalate to the parent",
       "body": "Seen 2026-10-04 in `board-model`: Discussion-Bouncer judged round 2 CIRCLING because gating findings rose from 1 to 2, both in the D10 intake bound that round 1's fix had widened; the run halted for a human.\nThe hub settled it with five short design calls and the run went on; no operator input was needed.\nOperator (2026-10-04): halting on that is disproportionate.\nIdea: CIRCLING is judged no earlier than round 3 and only when the same finding keys recur unchanged, not on a rising count; and a CIRCLING verdict escalates to the parent orchestrator like a parent-review request (message, fork decides accept/continue with design calls), reaching the operator only when the parent cannot settle it.\nRelated: `post-discussion-additions` (a verb for the parent's decisions to enter the decision record, instead of the driver editing it by hand).\n"
+    },
+    {
+      "id": 97,
+      "slug": "board-viewer",
+      "title": "Interactive board view: a regenerated HTML file and a phone-friendly README",
+      "tier": 3,
+      "type": "feature",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[board][ui] A self-contained board.html at a fixed hub path with filters, opened from a bookmark; collapsible README for the GitHub app",
+      "body": "Operator 2026-10-04: the board needs an interactive view with filters, reachable without typing a lyx command each time.\nIdea: every board write regenerates, next to README.md, one self-contained `board.html` (data embedded, no server) at a fixed hub path (`\u003chub\u003e/_board/board.html`), with filters on kind, type and area labels, free-text search and expandable bodies; the operator opens it from a browser bookmark.\nOptionally the hub VS Code workspace lists `_board` as a folder (a workspace entry, not a junction into a worktree, so `PATTERN-hub-containment` holds).\nPhone: the board repo is private, so GitHub Pages needs a paid plan; instead make README.md easier to read in the GitHub app, grouped by type and area with collapsible `\u003cdetails\u003e` sections per area and per body.\nBuilds on `board-model`'s kind and labels.\n"
     }
   ],
   "legacy_done": [
