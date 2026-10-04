@@ -1,0 +1,5 @@
+status: OK
+head_sha: 84c6a4a9fadcf8d1bed24fa0eeed9a4c8c35c81b
+deviations:
+  - internal/shedadapters/bouncer_seed_test.go
+  - internal/shedadapters/bouncerprompt_test.go
