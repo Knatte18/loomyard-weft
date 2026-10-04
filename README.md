@@ -117,6 +117,8 @@ Waits on nothing open; can start now, in parallel.
    - [cli] lyx doctor checks the _lyx layout, config parse, board reachability and stale locks
 1. **session sync: Claude transcripts across machines** — [`session-sync`](design-session-sync.md) · feature
    - [agents] Copy Claude .jsonl transcripts across machines so --resume works elsewhere
+1. **Orch watcher cycles on a stale reading after /compact** — [`orch-compact-stale-reading`](design-orch-compact-stale-reading.md) · bug
+   - [orch][bug] A /compact leaves the pre-compaction token reading in place, so a soft cycle fires on a near-empty context
 
 ### Layer B
 
