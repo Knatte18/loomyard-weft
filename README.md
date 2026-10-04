@@ -11,8 +11,6 @@ Concrete and claimable; only an entry here can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **PATTERN for loomyard, manifest/ retired, plus repo conventions** — [`pattern-init`](design-pattern-init.md) · feature · running · Finalize
-   - CONSTRAINTS.md becomes a thin repo-root PATTERN.md overview of one-line PATTERN-* entries with background files in pattern/; manifest/ retires into bolt and package docs; warp/weft scan beyond Go code; model-spec leftovers; role constants; ide workspace cleanups
 1. **Board as one list: tasks and notes with labels, GitHub issues pulled in** — [`board-model`](design-board-model.md) · feature
    - [board][github] kind task|note replaces tier, labels field on both (type folds in), upsert body from file, an intake verb that turns GitHub issues into notes
 
@@ -137,3 +135,10 @@ Starts when every entry it names under After is done.
 1. **A batchifier that groups small related cards into one Webster batch** — [`card-batching`](design-card-batching.md) · feature
    - [webster][batcher] Only the identity batchifier exists; a mechanical batchifier groups cards from their Create/Edit/Uses fields once cards name members as glyphs
    - **After:** `plan-glyph-precision`
+
+## Done
+
+Finished, awaiting `lyx board prune`.
+
+1. **PATTERN for loomyard, manifest/ retired, plus repo conventions** — [`pattern-init`](design-pattern-init.md) · feature · done
+   - CONSTRAINTS.md becomes a thin repo-root PATTERN.md overview of one-line PATTERN-* entries with background files in pattern/; manifest/ retires into bolt and package docs; warp/weft scan beyond Go code; model-spec leftovers; role constants; ide workspace cleanups
