@@ -553,6 +553,39 @@
       "isolated": false,
       "brief": "[webster][bug] deriveEdges has no edge from a deleted symbol to the cards editing its callers",
       "body": "Seen 2026-10-03 in the `pair-lifecycle` run: Webster scheduled card 12 (`delete-half-removed-helpers`, which deletes `fabricengine.Topology.RemovePairBranch`, `PairBranchResult` and `PairSiblingRemnant`) before card 11, the card that removes their only production caller in `internal/battencli/wire.go`.\nThe batch then failed, with `recover-batch` refusing because the delete targets still resolve, and the run blocked at Webster.\n\n`websterengine.deriveEdges` (`internal/websterengine/sequence.go`) orders card B after card A only when B's Uses names one of A's targets, or when A and B share a target and A has the lower number.\nA card that deletes a symbol has no edge to the cards that edit its callers, because the callers appear in neither field.\nPlan review did not catch the missing ordering either.\n\nPossible fixes:\n- Derive an edge from a Delete target to every card that edits a member referencing it, resolved through quarry.\n- Have plan validation refuse a Delete whose symbol is still referenced from a member that a lower-numbered card edits, unless an edge already orders them.\n\n\nFrom GitHub #350 (intake 2026-10-04).\n"
+    },
+    {
+      "id": 92,
+      "slug": "cli-tree-exceptions",
+      "title": "Five CLI invariant exceptions in board notes, config, selfreport",
+      "tier": 3,
+      "type": "bug",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[cli][bug] Fix the verbs the CLI tree walk records as exceptions and drop them from cliTreeFindings",
+      "body": "Part 2 of the test-suite cleanup (#347) added a CLI tree walk that checks every verb against the CLI invariant.\nIt records five exceptions in `cliTreeFindings` that pin existing behavior which breaks the invariant:\n\n- `lyx board notes` (bare) and `lyx board notes bogus` print an extra \"not initialized here\" envelope.\n- `lyx config` (bare) and `lyx config bogus` refuse with \"not a git repository\" before listing subcommands or refusing the unknown one.\n- `lyx selfreport bogus` exits 0 and prints help instead of refusing the unknown subcommand.\n\nFix each verb and remove its entry from `cliTreeFindings`, so the walk enforces the invariant for it.\n\n\nFrom GitHub #349 (intake 2026-10-04).\n"
+    },
+    {
+      "id": 93,
+      "slug": "loomcli-smoke-failures",
+      "title": "loomcli smoke tier: five bootstrap/strand tests fail on main",
+      "tier": 3,
+      "type": "bug",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[testing][bug] Five smoke tests find no loom-status or driver strand; stale tests or a bootstrap regression",
+      "body": "`go test -tags smoke ./internal/loomcli/` fails five tests on `main` (seen 2026-10-03 at `6a74ee1be`, during the PR-Gate review of #347, which fails the same five).\nEach expects one `loom-status` or driver strand and finds none:\n\n- `TestSmokeBootstrap_BringsUpSessionStrandAndDriver` — `smoke_test.go:530`: status strands named \"loom-status\" = 0; want exactly 1\n- `TestSmokeBootstrap_SecondInvocationDoesNotSpawnASecondDriver` — `smoke_test.go:592`: status strands named \"loom-status\" after two bootstraps = 0; want exactly 1\n- `TestSmokeDriverStrand_ReentrantAcrossThreeBootstraps` — `smoke_driverstrand_test.go:216`: driver strands after the first bootstrap = 0; want exactly 1\n- `TestSmokeStep_LeavesAPreexistingStatusStrandUntouched` — `smoke_drivingsurface_test.go:100`: status strand guids after step = []; want exactly the one added before the step\n- `TestSmokeStart_LLMRunRemovesEveryStatusStrand`\n\nEither the smoke tests are stale against the current bootstrap, or bootstrap no longer brings up the status and driver strands it should.\nNothing runs the smoke tier in the normal verify, so the failures went unnoticed.\n\n\nFrom GitHub #348 (intake 2026-10-04).\n"
+    },
+    {
+      "id": 94,
+      "slug": "webster-batch-validation-speed",
+      "title": "Webster begin-batch spends a minute validating the plan per batch",
+      "tier": 3,
+      "type": "bug",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[webster][quarry][perf] quarry#34 re-parses per target; fix it or validate incrementally; drop the per-batch model assertion",
+      "body": "Seen on `test-suite-change-amplification` (2026-10-03), a 45-card plan that the Batchifier split into one card per batch.\n\n## Measured\n\n- `lyx webster validate` on that plan takes 64 s of wall time at 100 % of one core, with no child processes: the time is spent in-process, single-threaded.\n- `begin-batch` runs `planglyph.ValidateDispatch` over the whole plan before every batch (`internal/websterengine/beginbatch.go:303`), so each batch pays roughly that cost again.\n- The gap from one batch's report to the next batch's spawn was 143 s, 72 s and 81 s for the first three batches, while the forks themselves took 1–2 min each.\n  Over 45 batches that is on the order of 50 minutes of setup.\n\n## Cause\n\nNot loomyard's own code: `quarry.Repo.Resolve` re-parses every file in a target's directory for each file target (Knatte18/quarry#34).\n\n## Per-batch validation stays (operator)\n\nValidating before every batch is deliberate.\nA fork may drift from the plan when it finds something the plan missed, and the plan changes with it; the per-batch check is what notices.\nIt is also the base for running forks in parallel later: glyphs, quarry and the validator maintain, at every batch, a DAG that decides which cards and batches can run concurrently.\n\n## Want\n\n- quarry#34 fixed and the quarry dependency bumped, so one validation of a plan this size takes seconds.\n- If that is not enough, make the per-batch validation incremental: re-resolve only the targets in files the last batch's delta touched, plus the cards that reference them, and reuse the rest from the previous batch.\n- Drop `begin-batch`'s per-batch model assertion (operator): the fork inherits Merriam's model, so `begin-batch` has no model to check.\n\n## Related\n\nThe one-card-per-batch split makes the per-batch cost dominate; whether the Batchifier should group cards more is a separate question.\n\n\nFrom GitHub #345 (intake 2026-10-04).\n"
     }
   ],
   "legacy_done": [

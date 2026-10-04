@@ -123,6 +123,12 @@ Waits on nothing open; can start now, in parallel.
    - [webster][bug] begin-batch refuses plan_drifted when an earlier batch already deleted a later card's Delete target
 1. **Webster schedules a Delete before its callers are removed** — [`webster-delete-ordering`](design-webster-delete-ordering.md) · bug
    - [webster][bug] deriveEdges has no edge from a deleted symbol to the cards editing its callers
+1. **Five CLI invariant exceptions in board notes, config, selfreport** — [`cli-tree-exceptions`](design-cli-tree-exceptions.md) · bug
+   - [cli][bug] Fix the verbs the CLI tree walk records as exceptions and drop them from cliTreeFindings
+1. **loomcli smoke tier: five bootstrap/strand tests fail on main** — [`loomcli-smoke-failures`](design-loomcli-smoke-failures.md) · bug
+   - [testing][bug] Five smoke tests find no loom-status or driver strand; stale tests or a bootstrap regression
+1. **Webster begin-batch spends a minute validating the plan per batch** — [`webster-batch-validation-speed`](design-webster-batch-validation-speed.md) · bug
+   - [webster][quarry][perf] quarry#34 re-parses per target; fix it or validate incrementally; drop the per-batch model assertion
 
 ### Layer B
 
