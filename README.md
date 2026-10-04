@@ -11,7 +11,7 @@ Concrete and claimable; only an entry here can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Board as one list: tasks and notes with labels, GitHub issues pulled in** — [`board-model`](design-board-model.md) · feature · running · Loom-Preflight
+1. **Board as one list: tasks and notes with labels, GitHub issues pulled in** — [`board-model`](design-board-model.md) · feature · running · Discussion-Write
    - [board][github] kind task|note replaces tier, labels field on both (type folds in), upsert body from file, an intake verb that turns GitHub issues into notes
 
 ## Next Up
