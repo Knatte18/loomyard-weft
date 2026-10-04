@@ -1,12 +1,12 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Discussion-Bouncer: the judge found no progress at round 2 (CIRCLING); decide with `lyx loom circling accept board-model` or `lyx loom circling continue board-model`, then run `lyx loom start` in the task worktree to resume",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler → bounced to Discussion-Bouncer",
-    "wait": ""
+    "last": "Discussion-Bouncer → awaiting",
+    "wait": "bouncer Discussion-Bouncer: the judge found no progress at round 2 (CIRCLING); decide with `lyx loom circling accept board-model` or `lyx loom circling continue board-model`, then run `lyx loom start` in the task worktree to resume"
   },
   "history": [
     {
@@ -53,6 +53,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/reviews/discussion/round-2-review.md",
       "at": "2026-10-04T13:49:53Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/reviews/discussion/round-2-bouncer-ledger.md",
+      "at": "2026-10-04T13:50:28Z"
     }
   ],
   "product": {
