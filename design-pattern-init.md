@@ -4,7 +4,7 @@
 
 ## Goal
 
-loomyard gets `_lyx/PATTERN.md` so lyx agents receive the constraints directive, which no run has received so far; CONSTRAINTS.md moves there.
+loomyard gets `_lyx/PATTERN.md` so lyx agents receive the constraints directive, which no run has received so far; CONSTRAINTS.md moves there, as a thin overview of one-line `PATTERN-*` entries with background files for those that need them (format below).
 `manifest/` is retired in the same pass, since both sweeps repoint the same docs, stencils and CLAUDE.md.
 Runs alone, last: it repoints CONSTRAINTS.md in ~130 files.
 
@@ -18,7 +18,25 @@ Runs alone, last: it repoints CONSTRAINTS.md in ~130 files.
 
 Operator 2026-10-01: CONSTRAINTS.md is millhouse's setup; loomyard's variant is PATTERN, not yet initialized.
 Verified: no _lyx/PATTERN.md in loomyard-weft, and there is no init verb. internal/pattern injects a role directive (implementer, review-fix, orchestrator) pointing at _lyx/PATTERN.md into webster fork/Master, burler and loom plan prompts only when the file exists, so today's runs got no PATTERN directive (they only saw CONSTRAINTS.md through CLAUDE.md and stencil mentions).
-Work: move CONSTRAINTS.md's invariants into _lyx/PATTERN.md (weft, invisible to the code repo; optionally split under _lyx/pattern/); repoint everything that names CONSTRAINTS.md: CLAUDE.md, stencils (loom discussion/plan/rework, webster master and prefix-recovery), the ly-drive skill, contracts/specs, burlercli/run.go, loomshed and treadleengine docs, and contracts/stencils/citation_enforcement_test.go; decide whether a `lyx pattern init` verb is wanted for other repos.
+
+### PATTERN format (operator, 2026-10-04)
+
+- `_lyx/PATTERN.md` is a thin overview: one bullet per entry, grouped under a few topic headings.
+  Each bullet is one line: the entry's name, then a one-liner that says both when the entry applies and what it requires, written so an agent can tell from the line alone whether the entry matters to its task.
+- An entry that needs more than a line gets a background file, linked at the end of its bullet; an entry without a link is complete as written.
+  An agent reads a background file only when it judges the entry relevant.
+- Entry names are `PATTERN-<kebab-name>`, e.g. `PATTERN-paths-passed-in`: one word in a terminal and in `@` references, a valid filename everywhere, and recognisably not a board slug.
+  The `<kebab-name>` part is chosen to read clearly, not copied from CONSTRAINTS.md's heading.
+- A background file is `_lyx/pattern/PATTERN-<kebab-name>.md`, named exactly as its entry, so one grep finds the entry, the file and every citation.
+- Every agent gets the pointer to the whole overview, as `internal/pattern` already does; there is no per-task or per-card selection.
+  Add the directive also to Discussion-Write and the Bouncer judge, which get none today.
+- An entry enforced by `go test` says so in its bullet, e.g. a trailing `(test)`.
+- A format test pins: names unique and matching `PATTERN-[a-z0-9-]+`, each entry one line, every link resolving, and every file under `_lyx/pattern/` having an entry.
+- Citations (review findings, decision records, code comments) use the entry name.
+
+### Work
+
+Move CONSTRAINTS.md's invariants into that format (weft, invisible to the code repo); repoint everything that names CONSTRAINTS.md: CLAUDE.md, stencils (loom discussion/plan/rework, webster master and prefix-recovery), the ly-drive skill, contracts/specs, burlercli/run.go, loomshed and treadleengine docs, and contracts/stencils/citation_enforcement_test.go; decide whether a `lyx pattern init` verb is wanted for other repos.
 
 ## From `fabric-vocabulary-everywhere`: Fabric vocabulary: warp and weft only inside fabric, also in docs, specs and tests
 
@@ -30,6 +48,8 @@ Want: extend the scan to contracts/, docs/, manifest/, plugins/ skills and test 
 
 Seen 2026-10-01: long form in internal/loomengine/template.yaml (discussion, plan, review, friction), internal/websterengine/template.yaml (recovery), internal/landingshed/template.yaml (conflict, describe) and contracts/specs/llm-model-spec.md's examples; the spec only mentions in one sentence that a bare bracket token means effort. Template comments cite docs/reference/model-spec.md, which is missing; the spec lives at contracts/specs/llm-model-spec.md.
 Webster master is plain `sonnet`, so its effort (medium) comes invisibly from models.yaml; write it explicitly.
+Done on `main` 2026-10-04 (`08a365ff9`, `e13537cee`): the templates carry short-form specs with explicit effort.
+Left: contracts/specs/llm-model-spec.md's examples, the dead docs/reference/model-spec.md link in template comments, and the long-form specs in internal/landingshed/config_test.go's malformed-input fixtures.
 Model choice (operator, 2026-10-01): try `fable[high]` for discussion and review, where design judgement matters (refusal-audit's holes came from opus Discussion and opus reviews; a Fable review found the design problem), keep sonnet for implementation; change it only between runs and measure review rounds, PR rejects and interventions before and after (convergence-plan).
 
 ## From `ide-hub-workspace-followups`: ide hub workspace: review follow-ups
@@ -85,4 +105,5 @@ Afterwards: delete manifest/, and update CLAUDE.md (Task completion section name
 
 `shedrun.Seed.Parent` is no longer written; parent comes from the pair's origin record, and the field is read only as a fallback for runs seeded before `aa67fd1d7`.
 Remove the field and the fallback once no such run remains.
+
 
