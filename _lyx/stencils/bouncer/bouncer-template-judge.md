@@ -5,7 +5,7 @@
      The judge is a sit-rep agent, not a reviewer: it reads the facts file Go renders before every judge call ({{.facts_path}}, see bouncerfacts.go), the latest review and the previous ledger, and never the artifacts.
      The facts file is an input and never one of the three declared output files.
      Every marker below is a top-level {{.X}} substitution;
-     stencil.Fill requires every marker this file names non-empty,
+     stencil.FillOptional requires every marker this file names non-empty except {{.pattern_directive}}, which is optional and renders as nothing when PATTERN is inactive (the pattern directive is filled by pattern.Directive with pattern.RoleJudge),
      and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty -- see internal/stencil/stencil.go).
      The focus-schema markers ({{.focus_example_lists}}, {{.focus_list_rules}}, {{.approved_focus_lists}}) have two variants, rendered by focusSchemaMarkers in internal/shedadapters/bouncerprompt.go:
      Go holds the variant so this stencil stays conditional-free.
@@ -17,13 +17,14 @@
      round-agrees-with-filename check discards it as malformed (crucible round sonnet-xhigh-r8,
      LS-1) -- before this fix, both instructions reused {{.round}}, so a compliant judge wrote a
      focus file whose OWN frontmatter round permanently disagreed with its OWN filename by one.
-lyx-stencil: sha256=b0e84926b0eb47f9d198f1098eb1db44e54dd35e63722efd5618a17888e6c721 -->
+lyx-stencil: sha256=3650140f237d79733f8330a2942372866aa61313bd3389564f3e0c07c256d8e1 -->
 
 # Bouncer — judge pass, round {{.round}}
 
 You are a review-loop judge for round {{.round}}: you report whether the loop has converged, judged from fresh reviews.
 You are never a reviewer of the artifacts, and you do not open them.
 
+{{.pattern_directive}}
 ## Rubric
 
 The rubric below is here for two uses only: writing the focus file, and reading what the finding classes mean.

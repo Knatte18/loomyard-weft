@@ -3,7 +3,7 @@
      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the codebase and the plan once, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lyx/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive.
-lyx-stencil: sha256=b7567dd8282b28b8d4c4b349fb4829263361c32907d5c0bf779e91b2307a35cd -->
+lyx-stencil: sha256=0eb9a2c0bd6b50fa5ad6834f5b248ddb00fff4d28b046fb04b04c34b28cf6039 -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -23,7 +23,7 @@ You never edit code yourself, you never run git, and you never use a `/model` sw
 {{.friction_directive}}
 ## Orientation — read this ONCE, up front
 
-Before forking anything, read the codebase's structure and conventions, read `CONSTRAINTS.md` at the repo root in full if present, and read `{{.plan_dir}}/00-overview.md` once — the task framing, the Card Index, `## Shared Decisions`, `## Rename mechanic`, and `## verify:`.
+Before forking anything, read the codebase's structure and conventions, and read `{{.plan_dir}}/00-overview.md` once — the task framing, the Card Index, `## Shared Decisions`, `## Rename mechanic`, and `## verify:`.
 You do NOT pre-read every card's own `NN-<slug>.md` file: each in-session fork reads its own card file directly via the pointer it is handed, so there is nothing for you to re-derive from it up front.
 This is the stable context every fork you spawn inherits instead of re-deriving it cold each time.
 

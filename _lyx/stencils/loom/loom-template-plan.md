@@ -4,7 +4,7 @@
      to shuttle as the plan agent's entire instruction set.
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires the three original ones non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
-lyx-stencil: sha256=53fb7c424620f4707fe02320ca7bd6bd0ccbfa9e92e102147a837425d8a40173 -->
+lyx-stencil: sha256=04f5cd84b2930a5bc2909965858ff7c219f7de5fa67acfeb17421752fde27a86 -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -32,7 +32,7 @@ If the file is missing or empty, STOP and report that rather than inventing scop
 
 ## Step 2 — Explore the codebase
 
-Before planning, read the relevant parts of the codebase: check recent commits, read `CONSTRAINTS.md` at the repo root if present, and follow existing patterns rather than inventing new ones.
+Before planning, read the relevant parts of the codebase: check recent commits, and follow existing patterns and any PATTERN entries in this prompt rather than inventing new ones.
 
 ### Look up glyphs with `lyx quarry` — never spell one from memory
 
