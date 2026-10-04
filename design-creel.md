@@ -2,7 +2,7 @@
 
 `creel` · Notes · feature
 
-The mail store and verbs from `manifest/designs/reed-mailbox.md` (send, inbox, read, log; the watchdog delivering at idle; `inject` for privileged senders), addressed by `agent-naming`'s names.
+The mail store and verbs from the design under `## Design` (send, inbox, read, log; the watchdog delivering at idle; `inject` for privileged senders), addressed by `agent-naming`'s names.
 
 Deferred (operator, 2026-10-02): Claude Code's own SendMessage is enough for now.
 The address grammar in reed-mailbox.md (`name@slug[.hub]`) is superseded by `agent-naming`'s `<repo>:<slug>:<role>`, and its naming half moved into that task.
