@@ -99,6 +99,8 @@ Waits on nothing open; can start now, in parallel.
    - [testing][cost] Four tiers by what a test needs and costs; only an explicit request runs the Claude tier; tier names still open
 1. **Fabric exports without warp/weft in their names** — [`fabric-api-vocabulary`](design-fabric-api-vocabulary.md) · chore
    - [fabric][vocabulary] 13 fabric and hubforge exports name warp/weft, so callers outside fabric must too; rename them and drop the scan exemption
+1. **raddle: codeguide's woven-in successor** — [`raddle`](design-raddle.md) · design
+   - [docs][finalize] Docs regenerated once at merge time over the plan's diff, folded into Finalize's contract; the geometry and the parallel-regeneration design exist
 
 ### Layer B
 
