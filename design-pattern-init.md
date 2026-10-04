@@ -34,6 +34,7 @@ Verified: no _lyx/PATTERN.md in loomyard-weft, and there is no init verb. intern
   This lifts the stencils' marker-free rule and changes `internal/pattern`'s doc on why the pointer stays relative.
   Add the directive also to Discussion-Write and the Bouncer judge, which get none today.
 - The format test also caps the overview's size, so content that outgrows a line moves to a background file.
+- PATTERN's text files carry no tie to the tooling that develops the repo (operator, 2026-10-04): rules for the code only, never text addressed to agents or describing the dev workflow; that wording stays in the stencils and `internal/pattern`.
 - An entry enforced by `go test` says so in its bullet, e.g. a trailing `(test)`.
 - A format test pins: names unique and matching `PATTERN-[a-z0-9-]+`, each entry one line, every link resolving, and every file under `pattern/` having an entry.
 - Citations (review findings, decision records, code comments) use the entry name.
