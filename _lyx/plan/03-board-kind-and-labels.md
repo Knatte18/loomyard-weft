@@ -72,7 +72,7 @@ Board (`board.go`):
 - `Board` keeps the config's `Vocabulary` from `New` and sets it on the store in `boardCriticalSection` and `loadStore`.
 - `Board.Promote(idOrSlug any)` returns `noWrite` for an entry that is already a task (D4), so no save, render or sync happens.
 - Delete `PromoteNote` (its last caller went in card 2).
-- Only a task is claimable: grep the repository for every reader that gated on tier 1 and switch it to `Kind == KindTask`.
+- No code gates claimability on tier; "only a task is claimable" lives in the Tasks section meaning in `render.go` and the CLI help, both rewritten in this card.
 
 Order and render (`layer.go`, `render.go`, D7):
 - `RenderOrder` orders open tasks first, then open notes, then done entries; within each, by dependency layer, then ID.

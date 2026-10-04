@@ -23,6 +23,7 @@ D10: the `lyx board intake` verb group, JSON in and out, against the inbox repo 
   Otherwise the issue gets the comment ``Imported into the board as `<slug>`.`` and is closed as completed through `CommentAndClose`, after the lock is released.
   When that GitHub step fails, the failure envelope (`output.ErrFields`) carries the written entry and the exact `close` payload to run: `{"issue":N,"reason":"Imported into the board as `<slug>`.","completed":true}`.
   The success result carries the entry and the dropped labels.
+  Bound: it acts only on an open, unrecorded issue of the inbox repo that is not a pull request; it writes the board before touching GitHub, never deletes or edits the issue's content, and never touches another repo; a recorded issue is a no-op.
 - `close '{"issue":N,"reason":"…","completed"?:true}'`: `reason` is required and non-empty;
   `GetIssue`, then a pull request is refused and an already closed issue is refused naming its state and state reason;
   otherwise `CommentAndClose` with the reason, as not planned or, with `completed`, as completed.
