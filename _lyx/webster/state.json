@@ -14,7 +14,7 @@
     "09-board-intake-verbs.md": "80bae53962d0aa3ee1f2d3da59c1a3a8dc4ec1ab150e30168c207ec88ef1d248",
     "10-board-model-docs.md": "dcbafb7d81c205a360beadfd5e38f40f87e7d74738a93afe9c448a14a16e59a6"
   },
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "596a359043833313abccb3141fdf4531",
   "masterSessionId": "fbcb0cb7-5297-4d67-bc21-f9f6feb0099f",
   "assertedModel": "sonnet",
@@ -180,6 +180,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-model/fbcb0cb7-5297-4d67-bc21-f9f6feb0099f/subagents/agent-af20c4ae33dba20b1.jsonl"
       ]
+    },
+    "7": {
+      "slug": "inbox-github-calls",
+      "cards": [
+        "07-inbox-github-calls"
+      ],
+      "cardHashes": {
+        "07-inbox-github-calls": "1c6e6aabd7b2306d382e967eda1be4a267de80c1881a19c84142977e8676291c"
+      },
+      "startSha": "66cd301c3cccb08a63ae833ad1bb4f23d06da21a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-04T15:01:53Z",
+      "sessionId": "fbcb0cb7-5297-4d67-bc21-f9f6feb0099f",
+      "terminal": false,
+      "status": ""
     },
     "8": {
       "slug": "board-issue-records",
