@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Write",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Write",
-    "last": "Plan-Write → stuck",
+    "now": "Plan-Bouncer",
+    "last": "Plan-Write → done",
     "wait": ""
   },
   "history": [
@@ -65,6 +65,13 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-04T11:47:07Z"
+    },
+    {
+      "producer": "Plan-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/pattern-init/_lyx/plan/00-overview.md",
+      "at": "2026-10-04T12:04:55Z",
+      "gate_attempts": 0
     }
   ],
   "product": {
