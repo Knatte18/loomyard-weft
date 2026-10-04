@@ -1,0 +1,19 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/boardengine/boardtest.BenchmarkUpsert/n=10
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/boardengine/boardtest
+      tail: '    bench_cli_test.go:66: RunCLI upsert exit 1'
+    - id: github.com/Knatte18/loomyard/internal/boardengine/boardtest.BenchmarkUpsert/n=100
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/boardengine/boardtest
+      tail: '    bench_cli_test.go:66: RunCLI upsert exit 1'
+    - id: github.com/Knatte18/loomyard/internal/boardengine/boardtest.BenchmarkUpsert/n=1000
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/boardengine/boardtest
+      tail: '    bench_cli_test.go:66: RunCLI upsert exit 1'
+log_path: /home/knatte/Code/loomyard-LYXHUB/board-model/.lyx/verify/verify.log
+hint:
+    - 03-board-kind-and-labels
+    - 05-board-label-filter
