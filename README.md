@@ -133,6 +133,8 @@ Waits on nothing open; can start now, in parallel.
    - [bouncer][discussion][orch] Round-2 CIRCLING on a rising finding count halted board-model for a human; judge later, on unchanged recurrence, and escalate to the parent
 1. **Interactive board view: a regenerated HTML file and a phone-friendly README** — [`board-viewer`](design-board-viewer.md) · feature
    - [board][ui] A self-contained board.html at a fixed hub path with filters, opened from a bookmark; collapsible README for the GitHub app
+1. **A parked label hides dormant notes from the default view** — [`board-parked`](design-board-parked.md) · design
+   - [board][undecided] Notes nobody means to act on soon get parked: kept, hidden by default; curated at each intake
 
 ### Layer B
 

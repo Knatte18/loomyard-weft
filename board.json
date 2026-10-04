@@ -608,6 +608,17 @@
       "isolated": false,
       "brief": "[board][ui] A self-contained board.html at a fixed hub path with filters, opened from a bookmark; collapsible README for the GitHub app",
       "body": "Operator 2026-10-04: the board needs an interactive view with filters, reachable without typing a lyx command each time.\nIdea: every board write regenerates, next to README.md, one self-contained `board.html` (data embedded, no server) at a fixed hub path (`\u003chub\u003e/_board/board.html`), with filters on kind, type and area labels, free-text search and expandable bodies; the operator opens it from a browser bookmark.\nOptionally the hub VS Code workspace lists `_board` as a folder (a workspace entry, not a junction into a worktree, so `PATTERN-hub-containment` holds).\nPhone: the board repo is private, so GitHub Pages needs a paid plan; instead make README.md easier to read in the GitHub app, grouped by type and area with collapsible `\u003cdetails\u003e` sections per area and per body.\nBuilds on `board-model`'s kind and labels.\n"
+    },
+    {
+      "id": 98,
+      "slug": "board-parked",
+      "title": "A parked label hides dormant notes from the default view",
+      "tier": 3,
+      "type": "design",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[board][undecided] Notes nobody means to act on soon get parked: kept, hidden by default; curated at each intake",
+      "body": "Operator 2026-10-04, undecided (\"vi tenker på det\"): the board holds every idea, and a long flat list is hard to read.\nIdea: a `parked` label for notes nobody means to act on for a while (e.g. `codex-engine`, `reed-slack-relay`, `semantic-index`), hidden from the default listing and README but kept; the orchestrator proposes merges, parking and deletions at each intake, so the list does not grow unchecked.\nIt is a label, not a layer, so it needs only a config entry and a default filter once `board-model` lands.\n"
     }
   ],
   "legacy_done": [
