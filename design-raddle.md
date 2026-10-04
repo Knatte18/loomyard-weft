@@ -1,6 +1,6 @@
 # raddle: codeguide's woven-in successor
 
-`raddle` · Notes · design
+`raddle` · Note · enhancement, undecided, docs, finalize
 
 From `manifest/roadmap.md` Someday.
 raddle is codeguide's woven-in successor.

@@ -1,6 +1,6 @@
 # creel: a mailbox between named lyx processes
 
-`creel` · Notes · feature
+`creel` · Note · enhancement, reed, messaging
 
 The mail store and verbs from the design under `## Design` (send, inbox, read, log; the watchdog delivering at idle; `inject` for privileged senders), addressed by `agent-naming`'s names.
 

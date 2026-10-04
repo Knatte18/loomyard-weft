@@ -1,6 +1,6 @@
 # Convergence: measure hub and driver interventions, fix at the source, hardening freezes
 
-`convergence-plan` · Notes · feature
+`convergence-plan` · Note · enhancement, process, testing
 
 Operator 2026-09-30: take a step back and plan for convergence, not keep accepting more bugs.
 Observed today: nearly every hub intervention was in same-day new code (#319: approve nil dep, reject reading its file argument as run-id), and both passed tests built on fake deps.

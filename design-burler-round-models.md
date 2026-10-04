@@ -1,6 +1,6 @@
 # Burler picks the model per review round
 
-`burler-round-models` · Notes · design
+`burler-round-models` · Note · enhancement, undecided, burler, models
 
 From `manifest/roadmap.md` Someday (shuttle per-round provider selector), reframed by the operator on 2026-10-03.
 The roadmap item was a per-round provider selector, meaningless while Claude is the only engine.

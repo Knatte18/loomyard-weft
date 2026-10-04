@@ -5,630 +5,911 @@
       "id": 43,
       "slug": "kick-start-pack",
       "title": "Kick-start pack: pre-resolved glyph spans for implementer and Burler",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "webster",
+        "glyph"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[webster][glyph] Someday (roadmap): #227, #228 — measured win, committed, not yet scheduled",
+      "brief": "Someday (roadmap): #227, #228 — measured win, committed, not yet scheduled",
       "body": "Read the closed GitHub issues #227 (implementer prompt) and #228 (Burler, with the operator's architecture-correction comment: inject once before the explore phase so every fork inherits it). Measured basis in quarry's `results/2026-09-06-kickstart`."
     },
     {
       "id": 44,
       "slug": "cache-ttl-per-role",
       "title": "Prompt-cache TTL per agent role",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "agents",
+        "cost"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[agents][cost] Parked: workers on 5m cache TTL, waiting sessions on 1h — operator deciding",
+      "brief": "Parked: workers on 5m cache TTL, waiting sessions on 1h — operator deciding",
       "body": "Claude Code gives a subscription's main session a 1-hour prompt-cache TTL (cache write 2× base input) and subagents/forks 5 minutes (1.25×); every lyx agent is a main session in tmux, so all of them write at the 1-hour price (see https://code.claude.com/docs/en/prompt-caching.md).\n\nMeasured on the `landing` run's transcripts: Discussion, Plan, Bouncer and Burler never paused more than 90 s between turns, so 5 minutes keeps them warm; ly-drive paused up to 508 s (three gaps over 5 minutes), so it needs 1 hour. Webster Master waits on forks via Monitor and is not yet measured.\n\nLikely shape: shuttle sets `CLAUDE_CODE_PROMPT_CACHE_TTL=5m|1h` (Claude Code v2.1.242+) per role when it spawns a session, configurable per role. loomyard was developed with the 5-minute limit in mind, so 5 minutes matches its design assumption."
     },
     {
       "id": 25,
       "slug": "convergence-plan",
       "title": "Convergence: measure hub and driver interventions, fix at the source, hardening freezes",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "process",
+        "testing"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[process][testing] Plan for lyx to converge rather than accumulate bugs: per-run intervention log, real-wiring tests, feature freezes",
+      "brief": "Plan for lyx to converge rather than accumulate bugs: per-run intervention log, real-wiring tests, feature freezes",
       "body": "Operator 2026-09-30: take a step back and plan for convergence, not keep accepting more bugs.\nObserved today: nearly every hub intervention was in same-day new code (#319: approve nil dep, reject reading its file argument as run-id), and both passed tests built on fake deps.\nIngredients: (1) log every hub intervention and ly-drive repair per run with a class and cause, so interventions per run and new-vs-repeat failure classes are visible; (2) every fix at the source with a test that drives the real CLI wiring, not only fakes; (3) freeze periods with no new verbs or recipe rows, hardening only, until the intervention rate flattens.\nGoal: the outside LLM steps in rarely, and for the task rather than for lyx.\n## Model trial (from `model-spec-short-form`, operator 2026-10-01)\n\nTry `fable[high]` for discussion and review, where design judgement matters (refusal-audit's holes came from opus Discussion and opus reviews; a Fable review found the design problem), and keep sonnet for implementation.\nChange it only between runs, and measure review rounds, PR rejects and interventions before and after.\n\n## Friction on halt\n\nMoved to task `agent-self-reflect` (operator, 2026-10-03).\n\n"
     },
     {
       "id": 37,
       "slug": "lyx-mcp",
       "title": "An MCP server over lyx exposing the verbs agents need",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "agents",
+        "cli"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[agents][cli] A few coarse MCP tools over lyx, chosen by measured agent use and exposed per role, so agents see typed schemas instead of guessing CLI shapes",
+      "brief": "A few coarse MCP tools over lyx, chosen by measured agent use and exposed per role, so agents see typed schemas instead of guessing CLI shapes",
       "body": "## Why\n\nAgents misuse or bypass lyx (the hub read `_board/*.json` with jq) because the CLI shape is not discoverable.\nAn MCP tool carries a typed input schema and a description.\n\n## Constraint from the operator (2026-10-01)\n\nNot one tool per verb: MCP entries are heavy.\nOnly the important ones are exposed, and how to pick them is still open.\n\n## Proposed selection\n\n1. **Measure first.** Mine transcripts and logs for which lyx commands agents run, where they fail, and where they read around lyx.\n2. **Few coarse tools.** One tool per area with an `action` enum (the pattern of Claude Code's Artifact tool), e.g. `board`, `run` (status, approve, reject), `webster` (Master only); a handful in total.\n3. **Per-role exposure.** A fork may get none, Master gets `webster`, the hub gets `board` and `run`.\n\n## Shape\n\n- A thin server shipped in the ly plugin; each action calls the same module seam the CLI uses, so behaviour never forks.\n- The CLI stays for humans and scripts.\n- Wins: no shell-quoted JSON payloads, and per-tool permissions (an agent can be denied `accept-audit`).\n\nRelated: `bolt-roadmap-tiers`, `process-naming`.\n\n\n## Status: needs a careful design session first\n\nOperator 2026-10-01: what goes into the MCP must be thought through very carefully; this is not a loom task yet.\nQuestions for that session:\n\n- Which verbs need an MCP tool at all, and which are served well enough by a better `--help` (payload schema and an example per command) and a per-role command card in each stencil, generated from the cobra tree?\n- Is permission gating (an agent denied `accept-audit` or `approve`) the real reason for MCP, since `--help` and cards cannot give it?\n- One tool per module was raised and judged too heavy (long descriptions); what is the cut instead?\n"
     },
     {
       "id": 38,
       "slug": "creel",
       "title": "creel: a mailbox between named lyx processes",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "reed",
+        "messaging"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[reed][messaging] Mail store and verbs on top of agent-naming's names; deferred while Claude's own SendMessage is enough",
+      "brief": "Mail store and verbs on top of agent-naming's names; deferred while Claude's own SendMessage is enough",
       "body": "The mail store and verbs from the design under `## Design` (send, inbox, read, log; the watchdog delivering at idle; `inject` for privileged senders), addressed by `agent-naming`'s names.\n\nDeferred (operator, 2026-10-02): Claude Code's own SendMessage is enough for now.\nThe address grammar in reed-mailbox.md (`name@slug[.hub]`) is superseded by `agent-naming`'s `\u003crepo\u003e:\u003cslug\u003e:\u003crole\u003e`, and its naming half moved into that task.\nThe design doc is kept under `## Design` below, with that superseded address grammar included as history.\n\nLayering (operator, 2026-10-03): only reed talks to tmux, so the keystroke delivery is reed's: `reedengine.Engine.SendText`/`SendKey` exist, and a `lyx reed send \u003cstrand\u003e \u003ctext\u003e` verb exposes them; creel's `send`/`inject` deliver through it and never touch tmux themselves.\nUse case: the operator's backup session on Remote Control rescues the orch, for example by re-enabling Remote Control after a cycle, and today has to find reed's per-hub tmux socket by hand; `lyx reed send ly:orch ...` covers it.\n\n## Design\n\n## The idea\n\nDeliver messages/events to any Strand (agent, operator, `ly-drive` watchdog, orchestrator) by address.\n\n## The send/receive asymmetry\n\nBeing a Strand is only required to *receive* mail — an address needs somewhere durable to deliver to. It is **not** required to *send*: anything able to reach the delivery mechanism can send without needing an address of its own. An in-process Claude Code fork subagent is the clearest example — it can never itself become a Strand (it is never an OS/tmux process), but it can still send.\n\n## Addressing (settled in a 2026-09-20 design discussion)\n\nThe address format is **`name@slug[.hub]`** — the email shape, deliberately: \"deliver to *name* at *place*\" needs no explanation for humans or agents, and the grammar is collision-free because slugs (`[a-z][a-z0-9-]*`) can contain neither `@` nor `.`, so the single `@` splits unambiguously and the optional `.hub` suffix reads exactly like an unqualified-vs-qualified hostname (omitted = own hub).\nThe resemblance to real email is a known confusion risk, accepted on purpose — it buys the mental model.\nReal external channels never ride on it: a raw email address is never a valid recipient, and creel never guesses whether something \"is\" email.\nInstead — **later, not creel v1** — external channels are **connector domains**: the rule is that the rightmost element decides the router — a known hub (or nothing) means internal post, while a reserved connector domain (`slack`, `email`, …) hands *everything left of it* to that connector module to interpret (`user@slack`; possibly `orch@slug.hub.slack` if each slug gets its own Slack channel — the connector owns that mapping, creel's core never parses it).\nEach connector module owns its own list of valid left-side names, and that configured list *is* the allowlist: a confused agent structurally cannot reach an arbitrary third party.\nInbound goes the same way: a reply arriving from Slack enters creel as ordinary mail with the connector address as `from`, so the receiving agent just replies to `from` and never knows Slack exists.\nConnector domains are excluded from the hub-name grammar, so no hub can ever shadow one.\nResolution stays heuristic-free everywhere: a recipient resolves to a strand, or ends in a connector domain, or is refused with the list of names that exist.\nCreel v1 reserves the grammar only; no connector ships with it.\n(The `@` file-mention in Claude Code's interactive input is a UI autocomplete trigger only — an address in a shell argument is just text — so the overlap costs a cosmetic popup when a human types an address in the prompt box, nothing more.)\n\n- **The strand guid is the identity; names are the address.**\n  Every strand has a guid for its whole life, pane or no pane; creel resolves an address at *delivery* time (slug → session, name → strand → guid) and delivers to the guid.\n  Names are what humans and agents write, because names are role-stable while guids are instance-bound:\n  a torn-down-and-respawned orchestrator has a new guid but the same name, and mail to `orchestrator@task-a` should reach whoever holds the role now.\n  A reply can carry the guid when pinning one specific instance matters (detecting \"the one I was talking to is gone\").\n- **Self-identification is injected, not looked up.**\n  Reed owns every spawn/relaunch command line, so it injects `LYX_REED_ID` (the guid) and `LYX_STRAND_NAME` into every process it starts.\n  The full address is *derived*, never injected: worktree slug comes from the cwd resolution the process already lives under, so `\u003cslug\u003e:\u003c$LYX_STRAND_NAME\u003e` composes at the point of use — a third stored copy could only drift.\n  Fallback and verification: `$TMUX_PANE` (the `%`-id, server-unique, never renumbered) joins against the state's `PaneID` field; env and join disagreeing is an anomaly worth surfacing, not just a fallback order.\n  Agents should treat the injected name as their own: ly-drive and sibling stencils read `$LYX_STRAND_NAME` at session start and use it in self-reference and as sender.\n- **Names mirror to pane titles for humans, authority stays in state.**\n  Reed sets the tmux pane title (`select-pane -T`) to the strand name at spawn/relaunch; tmux titles are display-only and enforce nothing, so the state's name field remains the single lookup key — the same volatile-view/durable-truth split `PaneID` already has.\n  Reed owns the title channel alone: `allow-set-title off` on reed-managed panes, because any program in a pane can otherwise retitle it via the OSC 0/2 escape at any time (Claude Code does, continuously), and a cooperating-agent scheme is exactly the drift vector to close, not a feature.\n  The per-hub daemon's tick adds the safety net: compare each tracked pane's actual title against the strand name, rewrite on divergence, and log that it happened — reconcile, same as the rest of reed's repair machinery.\n  And the hard rule that makes display drift harmless rather than merely unlikely: **delivery never resolves through a pane title** — routing is always name → state → guid, so a stale title can mislead an eye but never a message; a send to a name the state doesn't know refuses with the list of names that exist (the same refuse-with-list idiom shed's run addressing uses), which itself surfaces the drift.\n  A listing verb (`lyx reed list`: name, guid, session/worktree, pane-id, actual pane title, alive/dormant, drift flagged) doubles as the address directory and the diagnostic for exactly this concern.\n- **An agent's own session name is the strand name too, and the daemon owns it.**\n  A Claude process in a strand carries a session name of its own (`claude --name`, `/rename`) — the name the operator sees in the session list and that session-to-session messaging addresses.\n  It must equal the strand name, for the same reason the pane title must: two names set by different hands drift apart and go stale.\n  Setting it once at spawn is not enough, because a Claude session's name is reset after a compact, so a long-running agent silently loses it mid-run.\n  So the per-hub daemon's tick owns it as it owns the title: read each tracked agent strand's current session name, and when it differs from the strand name, restore it (e.g. `/rename \u003cstrand name\u003e` sent into the pane at idle, the same idle-only delivery rule as mail), logging the repair.\n  The strand name stays the single source of truth; the session name, like the pane title, is a mirror reed keeps in sync, never a key anything resolves through.\n  \"Every pane has a name\" is then nearly free: everything reed spawns is a strand (the operator's terminal is Selvage, which is not a strand and so not addressable), every strand has a name, every name mirrors to its title; panes outside reed are outside the system and never routed to.\n- **Rename is a relaunch.**\n  Env is frozen at process start, so the name is a birth attribute set at `AddStrand` and never mutated in place — renaming a role means tearing down and respawning its strand.\n- **Well-known role names make addresses guessable.**\n  A small canonical vocabulary (`orchestrator`, `driver`, `operator`, …) lets an agent address `driver@\u003cslug\u003e` with no directory lookup at all; a listing verb covers the rest.\n- **Multi-hub is out of scope, but the grammar reserves the door.**\n  Operating across several repos at once would not need one reed server spanning hubs: each hub keeps its own server and per-hub daemon, and cross-hub mail becomes daemon-to-daemon relay — the optional `hub:` prefix (omitted = own hub) is the entire forward-compatibility cost, paid here in grammar only.\n\n## Dependencies\n\nDeliberately a separate, later task from `ly-drive + orchestrator`'s launch-convention change and the shipped `reed: born-as-strand` item, which it depends on **for the receive side only**: everything that should be addressable must already exist as a Strand before addressing it means anything. Also downstream of `worktree spawn/teardown as Shed producers`' headless-orchestration future, since a mailbox is most useful once external actors can reach a worktree without a human ever having opened it first.\n\n## Delivery (settled in the same 2026-09-20 discussion)\n\nTransport and log are two different jobs, and the terminal is bad at the second one (scrollback dies with the pane, is unsearchable, and mixes mail into everything else) — so delivery is **pull, not full-content injection**, with a durable store carrying the audit trail.\n\n- **Every message is an envelope in the creel store**: `from`, `to`, timestamp, `kind`, status (`sent` → `delivered` → `read`).\n  `from` is filled in by the send verb itself, never free-typed: derived from `$LYX_STRAND_NAME` + the cwd slug when it can be (env is inherited down the whole process tree, so Go code running inside a strand signs with the strand's address for free), falling back to the `$TMUX_PANE`-to-state join.\n  Outside reed there is no address, and creel does not pretend otherwise: `from` becomes a reserved not-addressable marker (`operator`), meaning a reply is impossible and the message must stand on its own — no reply-routing is configured for the marker.\n  So a receiver always knows exactly where the reply goes (or that it can't), and a sender can neither forge nor forget its identity.\n  Replying is just sending to `from`.\n- **Two kinds.**\n  `mail` is stored and *pulled*: the receiver is notified with one short line and reads at its own pace (`lyx creel inbox` for the count, a get-one verb that flips status to `read`).\n  Pulled content arrives as tool output the agent asked for — better context than a giant injected user-message — and a short fixed notification line can never break on escaping the way multi-line `send-keys` can.\n  `inject` is typed verbatim into the receiving pane instead: its body is a command to *execute*, not content to read, so it never sits in an inbox — the first use case is `lyx reed self-compact`, sugar for sending `/compact` to one's own address.\n  Self-injection is free; injecting into *another* strand's pane is the driver privilege, restricted to privileged senders, never something any strand can do to any other.\n- **The daemon delivers, at idle.**\n  Both kinds ride the per-hub daemon's existing per-tick loop (resolving the old open item — no new process): the notification line or injected body is sent-keys into the receiving pane only when the receiver is idle, not mid-turn.\n- **Everything is journaled, regardless of kind.**\n  An `inject` is not mail but is still logged with sender, receiver, body, and delivery time; `lyx creel log` shows all traffic hub-wide — who sent, who read, when — searchable and durable, which is strictly better backtracking than terminal scrollback ever was.\n  The live-watching human still sees traffic as it happens: the notification line carries sender + subject (`2 new: watchdog@prime \"loom stuck at Gate\"`), bodies stay in the store.\n- **Plain CLI verbs, no MCP layer.**\n  Creel needs no streaming or client-side session state, so it stays ordinary `lyx` verbs like every other module; an MCP server could be layered *on top of* the same verbs later if an agent outside a terminal ever needs access — deferred until someone does, not decided against.\n\n## Related\n\n- the shipped `reed: born-as-strand` item — the receive-side prerequisite.\n- `internal/reedengine`'s package documentation — the shipped watchdog daemon this may end up riding on."
     },
     {
       "id": 40,
       "slug": "runs-overview",
       "title": "One-screen overview of every run in the hub, in its own tmux window",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "orch",
+        "reed",
+        "ui"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[orch][reed][ui] One line per run with state, producer and age, instead of polling each run, shown without squeezing the orch pane (likely reed own-window anchoring)",
+      "brief": "One line per run with state, producer and age, instead of polling each run, shown without squeezing the orch pane (likely reed own-window anchoring)",
       "body": "From `manifest/HANDOFF.md`: one screen listing every run in the hub, one line each with state, producer and age.\n`lyx shed status [run-id]` is per run and `lyx orch status` covers only the orchestrator, so the hub today polls each run separately.\n\n\n## Where it shows\n\n\n- Operator 2026-10-02: a status strand under orch would need its height to follow the number of runs, which reed cannot do; an own tmux window may fit better.\n- reed today lays out one strand per pane in one window per worktree; `manifest/designs/reed-multi-window.md` sketches own-window strand anchoring, independent per-window attach via tmux session groups, and cross-worktree columns.\n- Deep enough to stand alone, separate from `orch-owns-the-loop`.\n"
     },
     {
       "id": 41,
       "slug": "discussion-advisor",
       "title": "Discussion advisor: a dedicated agent answers Discussion-Write's questions live",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "discussion",
+        "agents"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[discussion][agents] A second agent spawned beside Discussion-Write studies the task and code and answers its design questions as they arise, a real two-agent dialogue",
+      "brief": "A second agent spawned beside Discussion-Write studies the task and code and answers its design questions as they arise, a real two-agent dialogue",
       "body": "- **ask mode**: Discussion-Write asks its design questions as they arise, and an answerer replies; answers to design questions, not a review.\n- **The answerer is a dedicated agent**, spawned in parallel with Discussion-Write with its own prompt: it studies the task, bolt and the code while the writer drafts, so it is ready when the questions come.\n  It is an address, not hard-wired to `$LYX_PARENT`; the parent is the fallback.\n- Two live sessions both keep their context, so this is a real dialogue, and none of it lands in the parent's context.\n  Two agents designing together beat one agent asking and answering itself.\n- `ask` and `review` are independent switches: an advisor answering interview questions and the parent reviewing the draft can both run on one task.\n- New machinery: one producer running two interactive sessions side by side (e.g. `ly:\u003cslug\u003e:discussion` and `ly:\u003cslug\u003e:advisor`), each waiting on the other through files; shuttle keeps an asking session non-terminal today (`internal/shuttleengine/wait.go`), which is the starting point.\n"
     },
     {
       "id": 42,
       "slug": "plan-glyph-precision",
       "title": "Plan cards name the members they change as glyphs, after lyx's use of glyphs is tested systematically",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "plan",
+        "glyph",
+        "quarry"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[plan][glyph][quarry] Plan-Write lists file paths instead of member glyphs because its stencil shows and allows it, and handle-unreferenced forces invented glyphs; test lyx's use of quarry glyphs systematically first",
+      "brief": "Plan-Write lists file paths instead of member glyphs because its stencil shows and allows it, and handle-unreferenced forces invented glyphs; test lyx's use of quarry glyphs systematically first",
       "body": "## Why\n\nSeen on `gate-list`'s plan (2026-10-02): card 1's `Edit:` lists 24 file paths and no member glyph, although its Intent names the members it changes (`GateSpec`, `GateOutcome`, `Run.evaluateGate`, `resolveGateSpec`, `burlerengine#Engine.Run`).\nWebster's changed-files guard then compares at file level only, no `quarry resolve` confirms the members exist, and a kick-start pack (`kick-start-pack`) has no spans to pre-resolve.\n\n## Causes, in `contracts/stencils/loom/loom-template-plan.md`\n\n- The only card skeleton shows `**Edit:**` with `` - `path/to/file.go` ``, and agents copy the shape they are shown.\n- The glyph rule says a *symbol* target is spelled as a glyph and \"a file path stays a plain path\"; nothing says an `Edit` target should be the members changed, so a file path is always a legal choice.\n- File paths are the path of least resistance: a member glyph must be looked up with `lyx quarry` and resolve at validation, and can fail as `glyph-not-found`, `glyph-ambiguous` or `containment-unit-overlap`; a file path only has to exist.\n- `handle-unreferenced` requires every `plan:` handle to be used by a later card, so a new symbol only its own card uses cannot take a handle; the planner then invents a glyph (`internal/shuttleengine#GateEntry` under `Create:`), which the handle rule exists to prevent.\n\n## Want\n\n- The skeleton and the text say `Edit:` lists the member glyphs changed; a file path only for a file with no symbol to name (tests, non-Go files).\n- The plan rubric flags an `Edit` card holding only file paths while its Intent names specific symbols.\n- `handle-unreferenced` does not fire for a handle its own declaring card uses.\n\n## First: test loomyard's use of glyphs systematically (operator, 2026-10-02, refined 2026-10-03)\n\nThe glyph library is part of quarry and the operator has tested it hard; what has failed is loomyard's own use of it (the plan stencil, the handle rules and the containment checks, in the sections below).\nBefore the stencil change pushes every plan onto member glyphs, test that use systematically against real plans: resolve every member glyph a sample of real cards would name, the handle bind path and the containment checks, and record what fails.\n\n## Validation must not change verdict mid-run (2026-10-02)\n\nSeen on `rework-generations`, batch 5: a plan valid at Plan-Write was refused at `begin-batch` with `containment-file-overlap`.\nCard 4 creates `loomshed#ReworkTold` with a `plan:` handle; card 5 lists both `internal/loomshed/prrework.go` and `loomshed#ReworkTold`; card 9 lists `prrework.go`.\nWhile the unit did not exist the handle had no location, so containment could not place it; once card 4 built it and `begin-batch` canonicalized the handle into a glyph, containment saw the overlap for the first time.\nCards 5 and 9 sit in different, sequential batches, so the overlap was harmless; the member line in card 5 was redundant beside its own file line.\n\nWant: validation gives the same answer at Plan-Write and at dispatch.\nEither containment places a `plan:` handle by its declared file at plan time, or it does not refuse overlaps between cards in different batches; and a card listing a file and a member of that same file is flagged at plan time as redundant.\n\n## Mechanical caller coverage for deletions (seen 2026-10-03)\n\nIn `test-suite-change-amplification`'s plan the Burler found cards 36, 37 and 39 deleting helpers whose callers sit in files the cards do not list; plan-validate could not see it, because a card lists files, not the symbols it deletes or re-signs.\nOnce cards name deleted and re-signed members as glyphs, plan-validate can resolve every reference through quarry and flag a referencing file that no card in the same or an earlier batch edits, instead of leaving it to the Burler or to verify's compile failure.\n"
     },
     {
       "id": 45,
       "slug": "orch-owns-the-loop",
       "title": "Orch owns the run loop: detached batten start, a lyx watch, one land command, --continue, a committed role prompt",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "orch",
+        "batten"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[orch][batten] Replace the hub scratch scripts and remembered procedure with lyx itself, so an orch session runs the loop from its committed role prompt alone and resumes after a reboot",
+      "brief": "Replace the hub scratch scripts and remembered procedure with lyx itself, so an orch session runs the loop from its committed role prompt alone and resumes after a reboot",
       "body": "## Goal\n\nAn orch session runs the whole loop (start, watch, review, land, deploy) with lyx commands and its committed role prompt.\nIt needs no scripts in `.scratch/hub/` and no rules it must remember to read.\n\n## Start a run detached\n\n`lyx batten run \u003cslug\u003e` blocks in the foreground, so the orch backgrounds it from its own shell, and a Claude Code background job is killed at its time limit along with its process group: on 2026-10-02 all three batten runs died that way after 30 minutes.\nThe hub now starts them with `setsid nohup` by hand.\n`lyx batten start \u003cslug\u003e` detaches batten's Go driver itself (`proc.Detach`, as `lyx loom start` does for loom's go driver).\nHow the operator sees many batten runs at once (a status strand, its height, or reed's own-window anchoring) is undecided and stays out of this task.\n\n## A watch command\n\n`.scratch/hub/watch.sh \u003cslug\u003e` (one watcher per run) becomes a lyx command, or a part of orch's own watcher.\nIt wakes the orch session when a run changes to a state that needs it, as a backup to the driver's own message to its parent, which is the primary path.\n\n## One land command\n\n`.scratch/hub/land.sh \u003cslug\u003e` plus the steps after it (pull in the prime, delete the branch on origin, `lyx board prune`) become one lyx command.\nDeploy stays operator-triggered, so the command either stops before deploying or deploys only when told.\n\n## Continue the last orch session\n\nAfter a reboot the operator wants the same conversation back, as `claude --continue` gives, not a fresh session reading a handoff.\nToday that takes `lyx orch start --adopt \u003csession-id\u003e`, with the id dug out of `~/.claude/projects/`.\n`lyx orch` records its session id and offers `lyx orch start --continue` (or makes it the default for a dead strand) to adopt the last orch session.\n\n## The orch role prompt\n\nThe orch's working rules live in one committed role stencil beside the other orch stencils (`contracts/stencils/orch/`), so an orch on any machine works by the same rules; today they sit in one machine's file-memory and in handoffs.\n`lyx orch` puts the role into its start prompt and points the one-line resume and adopt prompts at it.\nThe rules, one section per theme:\n\n- Parent-review: a one-shot fork reads the brief, checks scope against the board entry only, and submits `lyx loom review approve|reject \u003cslug\u003e`; a repeat notice starts no second fork.\n- PR-Gate: judge each run against its own board goal and its tests, never widening scope through rejects; fix a small goal defect on the task branch, and put new hardening on the board instead of rejecting.\n- Board: read and write it only through `lyx board`; a proposal not yet shaped into a task goes on the board as a tier 3 note at once, never in a local draft file; fewer, larger tasks, since each run costs a full Discussion/Plan/Webster/review cycle; a small finding never becomes its own entry, but folds into an open entry whose work overlaps (same files, same context), or into the repo-wide conventions task when it overlaps nothing.\n- Bugs in lyx go to GitHub issues; design, features and hardening go on the board.\n- Act and fix without asking; ask the operator only about what to build.\n- Give `cd \u003cpair\u003e \u0026\u0026 lyx reed attach` for every run in every status report.\n\nThe matching file-memory entries on the hub machine are deleted when the role lands.\n\n## Done when\n\n- The orch starts, watches and lands runs with lyx commands only, and `.scratch/hub/` is gone.\n- A started batten run survives the orch's shell and session ending.\n- `lyx orch start --continue` after a reboot resumes the last orch conversation.\n- An orch cycle's resumed session knows the procedure from its role prompt, and its handoff carries state only.\n- A fresh `lyx orch start` on a machine with no file-memory works by the same rules.\n\n"
     },
     {
       "id": 46,
       "slug": "parent-review-hardening",
       "title": "Parent-review gate: wait bound off the boundary, no mid-turn sends, live smoke",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "parent-review",
+        "orch"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[parent-review][orch] Close the cases the first parent-review gate left open: expiry while the writer is mid-turn, sends into a running turn after restart, poll cost, and one live smoke run",
+      "brief": "Close the cases the first parent-review gate left open: expiry while the writer is mid-turn, sends into a running turn after restart, poll cost, and one live smoke run",
       "body": "## Goal\n\nThe parent-review gate holds its promises in the cases the first version left open: the wait bound fires even when the writer never ends its turn, no gate send lands inside a writer turn after a restart, and a live hand-started hub is proven to receive the notice.\n\n## From the PR #336 review (2026-10-02)\n\n- **Live smoke.** The smoke test uses a stub writer that records the typed line, so the SendMessage hop to a real hand-started parent has never run; run it once live.\n- **Wait bound off the boundary.** Expiry is checked only at a writer turn boundary (`internal/shuttleengine/wait.go`, `gateAtBoundary`), so a writer stuck mid-turn (for example on a permission prompt for `lyx loom review delivered` in interactive mode) holds the run until `discussion_timeout_min` instead of `parent_review_wait_min`; expiry needs no send, so evaluate it on every tick.\n- **Mid-turn sends after a restart.** `AttachGated` replays events from offset 0, so the first tick treats the writer as idle even mid-turn: a notify-carried prompt or a reject re-prompt can be typed into a running turn, and a consumed reject is let through while the writer is still fixing.\n- **Turns the loop cannot see.** A turn started by the parent replying to the writer through SendMessage, or by the operator typing, leaves the loop at a boundary; tell the orch fork not to reply to the writer.\n- **Poll cost.** While pending at a boundary every 500 ms tick re-runs `discussionparser.Validate`, three locked JSON reads and a `MkdirAll`; throttle re-evaluation to a few seconds.\n- **Way-forward from the prime.** The no-open-request refusal names `lyx loom status \u003crun\u003e`, which cannot address the child from the prime; name `lyx batten status` there.\n- **`approve --review` and an empty file.** The refusal spec says it refuses a missing or empty file, the code only a missing one; align them.\n- **Entry order.** `shedrecipe` does not require `parent-review` to be the gate list's last entry; a must-pass entry after it would be `not_reached` at a deadline finalize while the review is pending.\n- **`delivered` after a verdict** can write `delivery.json` after the discussion commit and leave `_lyx` dirty until the next status commit.\n- **Round numbers** grow on every fresh spawn with no reviewer (empty `round-N/`, never committed).\n- **Review scope.** The brief says \"Do not re-review the design's internal quality\", narrower than millhouse's `orch-review`; confirm with the operator.\n"
     },
     {
       "id": 47,
       "slug": "orch-live-hardening",
       "title": "lyx orch runs for days without hand repair",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "orch"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[orch] Adopt keeps watchers, permission modes mean what they say, attach keeps the orch window size, large-session adopt is tested, status reads the current session",
+      "brief": "Adopt keeps watchers, permission modes mean what they say, attach keeps the orch window size, large-session adopt is tested, status reads the current session",
       "body": "## Goal\n\nThe hub runs under `lyx orch` for days without hand repair: an adopt keeps the hub's watchers, the orch pane keeps its height, permission modes mean what they say, and a long transcript stays cheap to read.\n\n## From the PR #337 review (2026-10-02)\n\n- **Watchers after adopt.** The hub's background shells and Monitors die with the session it exits; `orch-template-adopt.md` does not tell the resumed session they are gone or to re-arm them.\n- **Window size on attach.** With `window-size latest`, a `reed attach` from VS Code resizes the orch window to that client (seen on the PR #342 review, after #340's folderOpen fix landed).\n- **`permission_mode: prompt`** adds no flag, so the session falls back to the user's `defaultMode` (`auto` here); the template comment and the orchengine doc promise prompts.\n- **Smoke bypass check** proves nothing where `~/.claude/settings.json` allows `Bash`; assert the bypass footer or use a tool outside the allow list.\n- **Large-session adopt** is untested: startup within `startup_timeout_s` and any resume dialog on a real hub transcript (decision record, open risk 2).\n- **Stale context reading.** `ResetForFreshLaunch` keeps `LastContextTokens`, so `status` shows the previous session's reading until the first turn end after an adopt.\n- **PID reuse** can refuse an adopt falsely; the registry's `procStart` tells a reused pid apart.\n- **Transcript read cost.** `ContextTokens` reads the whole transcript on every idle turn end; read from the end.\n\n"
     },
     {
       "id": 48,
       "slug": "hardener",
       "title": "Hardener: an autonomous behavior-review campaign that replaces crucible",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "testing"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[testing] Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges",
+      "brief": "Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges",
       "body": "## Goal\n\nReplace `crucible`, the hand-run review-and-fix loop, with `Hardener`.\nHardener is an on-demand campaign after loom that runs a live-substrate module in a sandbox, reviews its behavior round after round, and fixes what it finds until the gates are green.\nThen retire `crucible/`, which still writes to `_mill/` and runs its rounds through hand-spawned `crucible-reviewer-\u003ceffort\u003e` agents.\n\n## Starting point\n\n- The design under `## Design` (DRAFT): `Tenter` is the round loop on `Treadle`, and `Hardener` is `Shed` wrapping `Tenter` with its own Preflight.\n  Rounds respawn every time instead of keeping a persistent thread, and a `progress-judge` runs before and after each round.\n- `crucible/README.md` is the method Hardener automates.\n\n## Open before Discussion\n\n- What the handoff must carry losslessly besides the finding-recurrence ledger.\n- Where the line falls between the Go scaffolding and the LLM's orchestrator role.\n- Whether the round agent reuses the `burler` package or only its prompt template.\n- How much of the sandbox provisioning lyx automates.\n\n## Done when\n\n- `lyx` can start a Hardener campaign against a module and run it unattended to convergence or a round cap.\n- `crucible/` is deleted, and the design's durable content lives in package docs.\n\n## Notes\n\n- One of the Someday items on `manifest-retire`'s triage list (`hardener`). Landing this entry removes it from that list.\n\n## Design\n\n\u003e **⚠️ DRAFT. This is an early concept sketch, not a settled design.** Unlike the other module docs (which are *Design — not built* but agreed), this one is still being figured out. The shape below captures what a weekend of hand-running the method taught us and the decisions reached so far in discussion; **expect fields, mechanisms, and even the boundary of the module to change.** Do not implement from this doc yet. When the concept firms up this banner comes off and the doc becomes a normal *Design — not built* entry; per the documentation lifecycle it is eventually deleted into the package header + `overview.md` on landing.\n\u003e\n\u003e **Hand-executed origin:** `crucible` is the method this module would automate — the hand-run version of the same idea, named separately to avoid colliding with this module's own name. This was developed over the last week out of a concrete need: to **run** actual `reed` code hard enough to surface defects a green `go test` never proves. Six hand-orchestrated rounds fixed what many rounds of text-based review could not — it was genuinely *hardening*.\n\u003e\n\u003e Not required to get `loom` running — `loom` only ever uses text-review (its `Bouncer`+`Burler` review segments), never behavior-review. Kept separate from the `Treadle`/`Shed` work for exactly that reason: nothing here blocks `loom`.\n\n## Naming: two things, not one\n\nTwo distinct layers, split out once the shared-engine design (the `internal/treadleengine` and `internal/shedengine` package documentation) was pinned:\n\n- **`Tenter`** — the review-loop alone: `Treadle` (the generic round-loop engine — judge, gate, round-spawn, cap, pause, lock) configured with a live-substrate-driving round-runner and a behavior-review profile, instead of a `burlerengine` round + text-review profile.\n  The direct structural sibling of loom's own text-review segments.\n  Not separately runnable in isolation the simple way a text-review segment is, because behavior-review needs a live sandbox/worktree lifecycle around it.\n- **`Hardener`** — the full, on-demand, autonomous campaign: `Shed` (the generic outer phase-FSM — see `internal/shedengine`'s package documentation) wrapping `Tenter`, plus Hardener's own Preflight (sandbox provisioning, live-suite readiness).\n  This is what gets a worktree spawned for it (via `fabric`) and safe-merges back into parent when done, the same lifecycle `loom` uses, just with `Hardener`'s own producer list carrying `Tenter` where `loom`'s list carries its Discussion, Plan and Webster producers.\n\n`Tenter` is a **behavior-based reviewer**: where a text-review segment reads an artifact, `Tenter` **runs** a live-substrate module, reacts to what it observes, and builds bespoke adversarial scenarios to break it. `Hardener` is a separate, on-demand, **post-loom** campaign — not on the `shuttle → burler → shed → loom` spine — meant to harden a live-substrate module (the archetype: `reed` driving real tmux) before merge.\n\n## Why `Tenter` is not a text-review segment\n\n`Tenter` and a text-review segment share the `burler` *round discipline* (see the `internal/burlerengine` package documentation) — A-review → B-fix, no self-grading, commit-per-fix, fix-everything — but they are different reviewers along two axes:\n\n| | text-review segment | `Tenter` |\n|---|---|---|\n| Mode | **text** — read the artifact | **behavior** — run the module, react, build scenarios |\n| Substrate | in-worktree, fast | a **live sandbox repo**; slow, heavy git/go operations |\n| Gate | LLM verdict (or a light `command` gate) | **deterministic**: run the smoke suite N× concurrent, zero stray state |\n| Cost | cheap, minutes | token- **and** wall-clock-heavy; a single iteration ran 1–2 hours; a campaign, a weekend |\n| When | between every phase (on the spine) | **on demand, after loom**, only when `Hardener` is invoked |\n\nA text-review segment's `command` gate lets a code profile *touch* behavior lightly;\n`Tenter` is the heavy tier — driving real substrate and hand-rolling crash/rebirth/concurrency scenarios is its whole job.\n\n## `Tenter`'s round-loop — resolved: `Treadle` drives per-round respawn, no persistent thread\n\n**The engine underneath `Tenter` is a general one, not Tenter-specific — see the `internal/treadleengine` package documentation.**\nThat doc covers the round-runner interface, the judge-maintained handoff (a general improvement, not just Tenter's),\nand the process for getting there (`Tenter` itself is built on `Treadle` only once `Treadle` exists).\nWhat follows here is Tenter's own instance of that shared design.\n\nIn the hand-run version (see crucible/README.md), **one persistent orchestrator thread** stayed alive across the campaign: it spawned a fresh round agent per round, **independently verified** the round's work (re-ran the gates from cold state on the committed tree — never trusting the round's own \"merge-ready\" verdict), **accumulated** an understanding of where the module's bugs live, **targeted** each next round agent (\"focus on X\"), maintained a **handoff** that survived compaction, and asked the operator what to do next.\nThe targeting + accumulation is what made the reed campaign's rounds succeed where stateless text-review rounds did not — the round agent kept re-discovering the terrain cold otherwise.\n\n**Resolved: no persistent thread.**\nGo itself is the orchestrator (`Treadle`);\neach round is three fresh, one-shot spawns, not a living session accumulating state in a context window:\n\n1. **`progress-judge`, pre-round.** `Treadle` spawns a fresh one-shot agent that reads the handoff file, decides what to target next, and writes the round's seed prompt (the file the reviewer will read).\n   It then terminates — no lingering session.\n2. **Reviewer.** `Treadle` spawns the round agent proper, pointed at the prompt the judge just wrote — the same A-review → B-fix, commit-per-fix, no-self-grading round crucible already runs by hand.\n   This is the `burler`-shaped worker;\n   the *campaign* loop wrapping it is new, the round itself is not.\n3. **`progress-judge`, post-round.** `Treadle` spawns a fresh one-shot agent that reads the handoff plus the round's review/fixer-report artifacts, **independently validates the findings** (crucible's non-negotiable rule — three of the reed campaign's seven rounds self-reported \"merge-ready\" and were wrong each time), rewrites the handoff in place, and decides whether another round is needed or the campaign has converged.\n\n**Naming, fixed:** the pre/post role above is **`progress-judge`**, reusing the term the text-review gate's own description already uses (\"run `burler` rounds → `APPROVED`/`stuck` + `progress-judge` + cap\") — not \"handler.\"\n\"Handler\" already names a different thing in loom's existing vocabulary (the A-review→B-fix round worker itself, i.e. the \"Reviewer\" above) — reusing it for the targeting/validating role would collide with that.\n\nThe handoff file is the sole accumulation vehicle;\nthere is no live memory anywhere in the loop.\nThe one cost this pays versus a text-review segment today: a `progress-judge` spawn on **both** sides of the reviewer, not just post-round — a text-review segment's judge doesn't do this pre-round targeting for Discussion/Plan/Webster today;\nthose rounds reuse a fixed rubric, not a dynamically retargeted prompt.\n\n### Pre-round targeting\n\nSuperseded by the `internal/treadleengine` package documentation — pre-round targeting is designed there as a general capability `Treadle`'s judge can support, exercised by Tenter's profile and simply unused by a text-review profile. See that doc's \"Pre-round targeting\" section instead of resolving this here.\n\n### The handoff — two-tier memory, and the one crux\n\n- **Handoff** — a **distilled summary**, **edited in place each round** (not appended, so per-round context stays bounded regardless of round count).\n  Always read.\n  The orchestrator's compressed understanding + what to target next. *(The hand-run instructions already rewrite it in place per round — this discipline is proven, not new.)*\n- **Raw reviews + fixer-reports** — complete, authoritative, **read on demand** when the handoff points at something needing detail.\n  Reviews inform *targeting*;\n  fixer-reports inform *verification*.\n\nThe read-set is *instructions + handoff (always) + selective raw files (on demand)* — **not** \"all reviews every round,\" which would reintroduce the O(N) context growth the handoff exists to kill.\n\n**The one crux for going stateless (per-round respawn):** in the hand-run version a *live* thread held some things implicitly — above all \"this finding has recurred before.\"\nA respawn has no live memory, so **anything the thread knew implicitly must become explicit in the handoff.**\nThe prime suspect is the **finding-identity / recurrence ledger** (which findings reappeared in which rounds): if an in-place edit \"cleans up\" a finding that looks resolved, the recurrence trail can be silently lost and stuck-detection fails quietly.\nSo: **distill the prose, but keep the key-ledger lossless.**\nThe migration persistent-thread → respawn is essentially this one audit — find what the live thread knew implicitly and make it explicit.\n\n### Reuse: only `Bouncer` carries over\n\n`Tenter`'s own review-loop is expected to land as a `Shed` segment: a round producer (this module's own equivalent of the shipped `shedadapters: Burler-round producer`, wrapping whatever `Tenter`'s round mechanism turns out to be — not `burlerengine`) paired with an instance of the shipped `Bouncer: the generic review-gate producer`, the same hand-wired shape `loom`'s own review producers use (folk name \"perch,\" see `CLAUDE.md`'s terminology note — this segment is \"a perch\" in that same loose sense, same shape, different round producer inside it).\nOnly `Bouncer` is literally reusable code here: `burlerengine`'s own round mechanism is inherently text/diff-specific (Target/Fasit/Rubric over a `shuttle` session editing text), so `Tenter`'s round producer needs its own from-scratch implementation of the same always-`Stuck`-until-approved contract, not a port of `burlerengine`.\nThis is the second data point (after `loom`'s own review producers) for whether `internal/treadleengine` is ever fully retired — see the shipped `Retire perch` item's own note that its retirement is a separate call, made once `Tenter` lands.\n\n## `Hardener` — the campaign\n\nThe operator's role in the hand-run campaign was mostly **gating** — approve, ask for another round — not irreplaceable judgment.\nThat is front-loadable into the seed instructions (\"run until the gates are green or K rounds;\ndo not ask\").\nSo `Hardener` can run **autonomously, overnight**, with reed + Go handling **auto-compaction** (which, per the insight above, *is* per-round respawn).\nModel rotation across rounds (Opus / Fable / Sonnet) stays as a cheap diversity lens — convergence across *different* models is stronger evidence than N passes from one.\n\n`Hardener`'s own worktree-spawn (via `fabric`) and safe-merge-back-to-parent lifecycle is `Shed`'s job (see `internal/shedengine`'s package documentation) — the same `loom`-shared lifecycle described above, with Hardener's own Preflight (below) instead of loom's.\n\n### The sandbox dependency\n\n`Hardener` cannot run against the module's own repo alone — it needs a **live sandbox repo** to do destructive, stateful things (create worktrees, junctions, spawn tmux, tear down) without corrupting the real repo,\nand a maintained **live-driving suite** (`tools/sandbox/SANDBOX-\u003cMODULE\u003e-SUITE.md`) as the substrate-exercising vehicle.\nConsequences carried from the hand-run method:\n\n- **Deploy-first.**\n  The suite runs the **deployed** binary, not the working tree — re-deploy after every source change or you validate a stale binary.\n- **The decisive gate is N× concurrent smoke, not a quiet serial pass** — concurrency + CPU saturation is the amplifier that surfaces teardown races and leaked substrate state.\n- **Zero stray substrate state at teardown** is itself an invariant under test.\n- **Grow the suite with the module** — a bug found live leaves behind both a `//go:build smoke` regression test and, where visual, a suite scenario.\n\n## The likely `lyx` shape (open)\n\n`Tenter`'s defining trait — an accumulating, targeting review-loop — is precisely what lyx's thesis otherwise *replaces* with Go.\nSo this probably is **not** \"Go takes over the orchestrator.\"\nMore likely: **lyx provides the deterministic scaffolding** and the **orchestrator brain stays an LLM** —\n\n- **Go / lyx owns** (split across `Shed` and `Treadle`): provision/reset the sandbox, deploy the binary, run the slow gates (smoke suite, zero-stray-state), collect + structure results, maintain handoff files (via `internal/state`), the per-round respawn loop, teardown.\n- **LLM orch-brain owns** (Tenter's judge, within `Treadle`): read results, accumulate understanding, decide what to target next, write the next round's focused prompt.\n- **`burler`-shaped round agent** (see the `internal/burlerengine` package documentation): the A→B worker, spawned per round (drives the sandbox;\n  `fix-scope: source`;\n  commit-per-fix).\n\nWhether the round agent literally imports the `burler` package or only follows the same `review-prompt-template.md` discipline is an implementation choice for when this is built.\n\n## Dependencies (tentative)\n\n- `internal/treadleengine` package documentation — the generic round-loop engine `Tenter` would configure (as-built;\n  module doc deleted per the documentation lifecycle), independent of whether `Tenter`/`Hardener` ever get built.\n- `internal/shedengine`'s package documentation — the generic outer phase-FSM `Hardener` configures;\n  same independence as above.\n- `shuttle` — spawns the round agents and judges `Treadle`/`Tenter` drive.\n- `internal/stencil` — fills the round-agent / orchestrator prompt templates (shared with `burler` and the review gate).\n- `internal/state` — handoff + round artifacts on disk (the memory that makes respawn work).\n- a **sandbox repo + live suite** — a provisioned environment and a maintained asset, not just code.\n- `reed` transitively, via shuttle;\n  possibly directly for the overnight/autonomous session + auto-compaction.\n\n## Status / open questions\n\n- ~~Persistent thread vs. per-round respawn~~ — resolved: per-round respawn via `Treadle`'s three-step loop (pre-round `progress-judge` → reviewer → post-round `progress-judge`);\n  see above.\n- ~~Naming: one module or two?~~ — resolved: `Tenter` (review-loop) + `Hardener` (`Shed` + `Tenter`, the campaign);\n  see \"Naming\" above.\n- The shared engine designs (round-runner interface, handoff/ledger format, pre-round-targeting mechanics for `Treadle`;\n  the outer FSM for `Shed`) live in their own docs — not decided here, independently of whether `Tenter`/`Hardener` themselves ever get scheduled.\n- Exactly what the handoff must carry losslessly (key-ledger confirmed;\n  what else?).\n- The Go-scaffolding / LLM-brain boundary above.\n- Whether it reuses the `burler` package or just the prompt template.\n- Sandbox provisioning: how much lyx automates vs. a pre-existing sandbox repo.\n\n**This module is post-loom and on-demand;\nnothing here blocks the `burler → shed → loom` spine, nor the `Treadle`/`Shed` work, which proceeds independently of whether `Tenter`/`Hardener` are ever scheduled.**\n"
     },
     {
       "id": 50,
       "slug": "card-batching",
       "title": "A batchifier that groups small related cards into one Webster batch",
-      "tier": 3,
-      "type": "feature",
-      "depends_on": [
-        "plan-glyph-precision"
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "webster",
+        "batcher"
       ],
+      "issues": [],
+      "depends_on": [],
       "isolated": false,
-      "brief": "[webster][batcher] Only the identity batchifier exists; a mechanical batchifier groups cards from their Create/Edit/Uses fields once cards name members as glyphs",
-      "body": "## Why\n\n`internal/batcher` has a registry but only the `identity` batchifier, so every card is its own Webster batch.\nOn `test-suite-change-amplification` (45 cards, 2026-10-03) each batch carried a fixed overhead besides the fork's own work: `record-batch`, `begin-batch`, three short Merriam turns and the fork's start-up, about 16–18 s per batch after quarry v0.2.1 (over a minute before it, #345), plus a fork prompt and Merriam polling per batch.\nMany cards there take 40–120 s of work, so for them the overhead is a large share.\n\n## Want\n\nA mechanical batchifier (operator): it groups cards from the plan's own card fields (`Create`, `Edit`, `Uses`, renames), never from an LLM's judgment, selected through `batcher.yaml`'s `active` key, the identity batchifier staying the default.\nCards whose fields show no dependency on each other and no shared target can share a fork; a card that `Uses` another's `Create` follows it.\n\n## Waits on `plan-glyph-precision`\n\nPlans list file paths, not member glyphs, so card fields today only support file-level grouping, which is too coarse to be the point.\nThe batchifier is built once cards name the members they touch.\n\n## Trade-offs to settle\n\n- A larger batch gives the fork a larger context and makes a failure harder to localize to one card.\n- The per-batch validation and drift check (`begin-batch`, `record-batch`) then runs per group, not per card; the operator wants plan drift caught as it happens.\n- It should fit the parallel-execution direction in `manifest/designs/webster-parallel-execution.md`, where the same DAG decides which groups may run concurrently.\n"
+      "brief": "Only the identity batchifier exists; a mechanical batchifier groups cards from their Create/Edit/Uses fields once cards name members as glyphs",
+      "body": "## Why\n\n`internal/batcher` has a registry but only the `identity` batchifier, so every card is its own Webster batch.\nOn `test-suite-change-amplification` (45 cards, 2026-10-03) each batch carried a fixed overhead besides the fork's own work: `record-batch`, `begin-batch`, three short Merriam turns and the fork's start-up, about 16–18 s per batch after quarry v0.2.1 (over a minute before it, #345), plus a fork prompt and Merriam polling per batch.\nMany cards there take 40–120 s of work, so for them the overhead is a large share.\n\n## Want\n\nA mechanical batchifier (operator): it groups cards from the plan's own card fields (`Create`, `Edit`, `Uses`, renames), never from an LLM's judgment, selected through `batcher.yaml`'s `active` key, the identity batchifier staying the default.\nCards whose fields show no dependency on each other and no shared target can share a fork; a card that `Uses` another's `Create` follows it.\n\n## Waits on `plan-glyph-precision`\n\nPlans list file paths, not member glyphs, so card fields today only support file-level grouping, which is too coarse to be the point.\nThe batchifier is built once cards name the members they touch.\n\n## Trade-offs to settle\n\n- A larger batch gives the fork a larger context and makes a failure harder to localize to one card.\n- The per-batch validation and drift check (`begin-batch`, `record-batch`) then runs per group, not per card; the operator wants plan drift caught as it happens.\n- It should fit the parallel-execution direction in `manifest/designs/webster-parallel-execution.md`, where the same DAG decides which groups may run concurrently.\n\nDepends on `plan-glyph-precision`."
     },
     {
       "id": 51,
       "slug": "orch-any-worktree",
       "title": "Orch and batten run from the operator's own long-lived worktree, not only the prime",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "orch",
+        "batten",
+        "fabric"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[orch][batten][fabric] Every orch and batten verb refuses outside the prime; let a long-lived personal worktree be an orch's home, with pairs branching from and landing into its branch",
+      "brief": "Every orch and batten verb refuses outside the prime; let a long-lived personal worktree be an orch's home, with pairs branching from and landing into its branch",
       "body": "## Why\n\nThe operator works long-term on a branch of their own in its own worktree, not on `main`, which in a large project is not theirs to drive; that worktree is where they want their orch.\nToday every `lyx orch` verb refuses outside the hub's prime (`internal/orchcli/refusal.go`), every batten verb does too (`RefuseUnlessPrime` in `internal/battencli`), and orch keeps its files under the prime's `.lyx/orch/`.\nRun parentage already follows the worktree a pair was created from (`aa67fd1d7`, #341), so a pair created from the operator's worktree would land there; orch and batten are what stand in the way.\n\n## Want\n\n- `lyx orch` and `lyx batten` run from any drivable worktree in the hub, which then acts as that orch's home: pairs branch from its branch and land into it, and orch's scratch, handoffs and reed strand live in that worktree.\n- More than one orch per hub, one per home worktree, without stepping on each other's pairs, board claims or reed sessions.\n\n## Open points\n\n- What \"prime only\" protects today and whether any of it must stay prime-bound (board writes, deploy, `lyx board prune`, the hub workspace).\n- How a home worktree's branch reaches `main` (the operator's own merge, or a landing verb), and whether the board is per hub or per home.\n- What the relevant CONSTRAINTS.md invariants say about prime (batten's prime-anchored status and lock paths, Told-Geometry) and how they change.\n"
     },
     {
       "id": 52,
       "slug": "orch-cycle-compact",
       "title": "Orch cycle mode as config: clear or compact",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "orch",
+        "config"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[orch][config] Cycling by /compact keeps the session and its Remote Control link; make clear/compact a config option",
+      "brief": "Cycling by /compact keeps the session and its Remote Control link; make clear/compact a config option",
       "body": "Seen 2026-10-03: the orch's context cycle uses `/clear` plus a handoff file, which starts a new conversation and may drop a Remote Control link the operator relies on from a phone.\nCycling through `/compact` keeps the same session, so Remote Control and session identity survive.\nIdea (operator): the cycle mode as a config option, `clear` or `compact`; weigh what the handoff file gives that a compaction summary does not.\n"
     },
     {
       "id": 53,
       "slug": "ide-reopen-prime",
       "title": "Reopen the prime VS Code window with one short command",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "ide"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[ide] A snap refresh left the prime window wrong; lyx ide spawn needs the slug and fails from the hub root",
+      "brief": "A snap refresh left the prime window wrong; lyx ide spawn needs the slug and fails from the hub root",
       "body": "Seen 2026-10-03: a snap auto-refresh of VS Code (rev 257 → 267 at 12:44) left the old instance running; batten's next `code \u003cpair\u003e` call then started a second instance, which restored the prime as a bare folder without the hub workspace's title and colour, and the operator had to close windows by hand.\nReopening the prime correctly takes `lyx ide spawn \u003cprime-name\u003e`, whose folderOpen chain (`reed up`, `reed add --unless-name orch`, `reed attach`) reattaches to the orch without starting a second Claude; a plain `code` on the prime gets the stale mill-managed `.vscode/tasks.json` and attaches nothing.\n`lyx ide spawn` needs the slug and fails from the hub root, so the operator had to cd into the prime.\nIdea: with no argument it opens the worktree it is run in, and from the hub root or another hub directory outside a worktree it opens the prime.\n"
     },
     {
       "id": 54,
       "slug": "ide-open-verb",
       "title": "lyx ide open: launch VS Code without writing anything",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "ide",
+        "batten"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[ide][batten] spawn configures and launches at once and overwrites a driven pair's attach chain; add a write-nothing open verb",
+      "brief": "spawn configures and launches at once and overwrites a driven pair's attach chain; add a write-nothing open verb",
       "body": "Seen 2026-10-03: `lyx ide spawn` configures and launches in one step (title colour, `.vscode/settings.json`, an interactive `tasks.json` rewritten every call, `info/exclude`, the prime's hub workspace file).\nOn a driven pair it replaces batten's attach-only chain with the interactive one, whose `reed add claude` can start a second Claude in that pair, so the orch opened the part-2 pair with plain `code` instead.\nIdea: a `lyx ide open [\u003cslug\u003e]` that only launches and writes nothing — the prime through its existing hub workspace file, a pair through its folder and the `tasks.json` already there — with the same no-argument and hub-root defaults as the reopen note; `spawn` stays the configuring verb.\n"
     },
     {
       "id": 55,
       "slug": "ide-workspace-pairs",
       "title": "Pairs as folders in the prime's hub workspace",
-      "tier": 3,
-      "type": "design",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "undecided",
+        "ide",
+        "fabric"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[ide][fabric] Idea, undecided: fabric adds and removes pairs in the prime workspace's folders; _portals stays",
+      "brief": "Idea, undecided: fabric adds and removes pairs in the prime workspace's folders; _portals stays",
       "body": "Idea, undecided (operator, 2026-10-03): keep the prime's hub workspace as the one VS Code window, and have fabric add each pair to its `folders` on `add` and drop it on `remove`/teardown; VS Code picks up workspace-file edits live.\nThe operator rarely reads a pair's files (everything goes through the orch) but looks at plan files and similar now and then, which `_portals` (each pair's `_lyx/`) already covers and is kept for.\nOpen points: per-folder `folderOpen` tasks would run in the prime window (and batten's own pair window would then go), a full pair copy multiplies indexing and search unless only `_lyx/` is added or excludes are set, and the prime must stay the first folder or the extension host restarts.\n"
     },
     {
       "id": 58,
       "slug": "orch-no-watcher",
       "title": "The orch relies on driver messages, not a scratch watcher",
-      "tier": 3,
-      "type": "design",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "undecided",
+        "orch",
+        "batten"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[orch][batten] The hub watches runs with a hand-written .scratch/hub/watch.sh; drivers already message their parent, so question the watcher, and close any real gap in lyx code",
+      "brief": "The hub watches runs with a hand-written .scratch/hub/watch.sh; drivers already message their parent, so question the watcher, and close any real gap in lyx code",
       "body": "Seen 2026-10-03: the hub orch watches each driven run with a hand-written `.scratch/hub/watch.sh`, a background shell loop that polls the run's `status.json` every 30 s and exits on the first non-running state change.\nIt lives outside lyx, untested and uncommitted, and has to be re-armed by hand after every context cycle.\nThe driver already messages its parent (`ly:orch`) at every stop it cannot handle, which is the path the orch should rely on.\nIdea (operator): question whether the orch needs a watcher at all; if a gap remains that the driver's message does not cover (a driver that dies without messaging, a stop the driver does not report), close it in lyx's own code, never with a scratch script.\nLikely home: `lyx batten run`, whose Run-Shed row already polls the same `status.json` every 30 s.\nBatten could message its parent on a non-running state change, and check the driver strand's liveness through reed to cover the case `internal/battenshed/doc.go` leaves out by design (a driver that dies, parks on a prompt, or stops with the run non-terminal).\nBatten can also be started by hand from a terminal with no orch above it, so the parent is optional: message it when one is recorded, otherwise only log.\n"
     },
     {
       "id": 59,
       "slug": "batten-windows",
       "title": "Each batten the orch starts runs in its own tmux window",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "orch",
+        "batten",
+        "reed",
+        "ui"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[orch][batten][reed][ui] Batten runs detached and invisible; a window per run makes the window list show what the orch has in flight",
+      "brief": "Batten runs detached and invisible; a window per run makes the window list show what the orch has in flight",
       "body": "Seen 2026-10-03: the hub orch starts each batten detached with `setsid nohup lyx batten run \u003cslug\u003e`, so nothing on screen shows what the orch has running; Claude Code's footer shows only \"1 shell\" for a background helper, which says nothing about what it does.\nIdea (operator): when the orch starts a batten, it lands in its own tmux window in the orch's session, so the window list names every run the orch has in flight.\nRelated notes: `runs-overview` (one status line per run, in its own window) and `orch-owns-the-loop` (lyx starts batten detached, leaves the view undecided); `manifest/designs/reed-multi-window.md` sketches reed's own-window anchoring.\n"
     },
     {
       "id": 60,
       "slug": "no-denied-recovery",
       "title": "No recovery path needs a command the agents are denied",
-      "tier": 3,
-      "type": "design",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "undecided",
+        "agents",
+        "permissions",
+        "webster"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[agents][permissions][webster] Webster named git reset --hard as the way forward, the global deny list blocks it even in bypass, and the run stopped for the operator",
+      "brief": "Webster named git reset --hard as the way forward, the global deny list blocks it even in bypass, and the run stopped for the operator",
       "body": "Seen 2026-10-03 in the `pair-lifecycle` run: Webster refused a plan fix for a failed batch.\nIts only named way forward was \"reset the branch to the run's start commit with git and run `lyx webster run --fresh`\" (see #350).\nThe driver, even in bypass mode, could not run `git reset --hard`, because `~/.claude/settings.json` denies `Bash(git reset --hard:*)` and a deny rule holds in every mode.\nThe run stopped until the operator ran the reset by hand.\n`contracts/specs/refusal-spec.md` prescribes `git reset --hard \u003cpre-fix head\u003e` for another halt as well.\n\nIdea (operator): a permission refusal must never stop the flow.\nEvery recovery a lyx refusal names must be doable by the agent that receives it.\nEither lyx performs the destructive step itself, in Go, guarded to the run's own branch and start commit (`webster run --fresh` resetting the branch, a `keep|drop` verb for the integration fix commits), or the agents' permission set is loosened for what lyx's recoveries need.\nAudit every refusal and stencil for commands the deny list blocks.\nRelated: `orch-live-hardening` (permission modes mean what they say).\n"
     },
     {
       "id": 62,
       "slug": "fabric-windows",
       "title": "Fabric's Windows path behaviour verified on a Windows host",
-      "tier": 3,
-      "type": "chore",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "windows"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[fabric][windows] Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant",
+      "brief": "Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant",
       "body": "From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03: not a priority now, taken only if Windows becomes relevant.\nFabric's Windows path behaviour (directory junctions through `internal/fslink`) is unverified after six hardening rounds; closing it needs a Windows host, not further design.\nSee `manifest/designs/fabric-windows-verification.md`."
     },
     {
       "id": 63,
       "slug": "semantic-index",
       "title": "semantic-index: find code by concept, not by literal keyword",
-      "tier": 3,
-      "type": "design",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "undecided",
+        "agents",
+        "search"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[agents][search] Semantic search over docstrings and comments; doubtful today, since agents now navigate well with grep",
+      "brief": "Semantic search over docstrings and comments; doubtful today, since agents now navigate well with grep",
       "body": "From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03 as someday.\nIdea: semantic search over docstrings and comments (catalysts, embeddings, temporal decay), to find code by concept rather than literal keyword.\nOperator: millhouse's codeguide (Claude-written `.md` navigation files, designed about six months earlier) gave a large exploration speedup then, but not any more, since Claude now searches well with grep; so the value of this is uncertain.\nThe design is under `## Design`.\n\n## Design\n\n\u003e **Status: Speculative, not scoped.** Inspired by [Enzyme](https://www.enzyme.garden/blog/an-lsp-for-your-notes), a semantic search system for personal note vaults. This is the \"deferred idea\" [quarry](https://github.com/Knatte18/quarry)'s own design proposal referred to (\"a semantic/conceptual index... a separate, further-out idea, not part of this proposal\") and the relationship-table row from the original quarry proposal (\"have we written something conceptually similar, without shared vocabulary? — embeddings + temporal-decay weighting; not part of this proposal\") — now named, not yet designed in depth. Per the documentation lifecycle, if this is ever picked up the durable parts fold into the owning package's doc when it lands; if abandoned, this file is simply deleted.\n\n## The problem this responds to\n\nGrep/text-search finds literal keyword matches.\nIt cannot answer \"find code that does X\" when the code implementing X uses none of the words a caller would naturally search for — e.g. \"show me the error-handling patterns in this codebase\" when error handling is spelled out in prose inside docstrings and comments but never literally contains the word \"error\" everywhere it matters. `quarry` (see [quarry](https://github.com/Knatte18/quarry)) doesn't solve this either — it answers \"what exactly references/defines this symbol,\" a precise, compiler-derived question, not \"what have we conceptually written that's similar to this.\"\n\n## Core mechanism, adapted from Enzyme\n\nEnzyme indexes a personal notes vault;\nthe same shape maps onto a codebase's descriptive text (docstrings, comments, package `doc.go` headers):\n\n1. **Catalyst generation.**\n   Enzyme derives \"thematic questions\" from actual content per tag/link/ folder in a notes vault.\n   For code, the analogous unit is likely per-package or per-module: derive thematic questions from that package's docstrings, comments, and `doc.go` header.\n2. **Vector embedding.**\n   Catalysts are embedded as vectors, with cosine similarity precomputed against every text chunk (docstring, comment block, doc header).\n3. **Temporal decay weighting.**\n   Recently written/modified text influences the index more heavily than old, rarely-touched text — the index shifts with the codebase's current shape, not a static snapshot taken once.\n   For code specifically, \"recency\" is naturally available from git history (`git log` per file/function) — plausibly the same kind of SHA-diffing `internal/gitrepo` already does for other consumers, rather than a new mechanism.\n4. **Semantic retrieval.**\n   An agent searches catalyst vectors instead of guessing grep terms, surfacing conceptually related code across files/packages that share no literal vocabulary.\n\n## Relationship to `quarry` and `raddle` — complementary, not overlapping\n\nSame three-way split the original quarry proposal drew, now with a name for the third row:\n\n| Module | Answers | Mechanism |\n|---|---|---|\n| `quarry` | \"What exactly references/defines this symbol, right now?\" | Deterministic, compiler-derived (LSP) |\n| `raddle` | \"Where does this conceptually belong, and why?\" | LLM-authored/maintained narrative docs |\n| `semantic-index` (this) | \"Have we written something conceptually similar, without shared vocabulary?\" | Embeddings + temporal-decay weighting |\n\nNone of these three replace either of the others — different question, different mechanism.\n\n## Open questions (genuinely unscoped)\n\n- **Indexing granularity.**\n  Per-function docstring, per-file, or per-package `doc.go` — Enzyme's own granularity (tag/link/folder) doesn't map onto code 1:1;\n  needs its own design pass.\n- **Embedding provider.**\n  Self-hosted vs. API-based — cost, latency, and offline/air-gapped operation all matter differently here than for a personal notes tool.\n- **Temporal decay source.**\n  Whether it reuses `gitrepo`'s `ChangedFilesSince`/SHA machinery directly, or needs its own recency signal.\n- **Standalone vs. baked into loomyard.**\n  Same question asked of `quarry` and `raddle` — lean build-inside-first, extract only once a second concrete consumer exists.\n- **Consumer.**\n  Presumably the planner (finding existing similar implementations before writing a card) and webster forks (finding a pattern to follow) — not yet concretely designed.\n\n## Related\n\n- [quarry](https://github.com/Knatte18/quarry) — the precise, compiler-derived sibling;\n  quarry's own design proposal named this as an out-of-scope, deferred idea.\n- raddle.md — the curated-narrative sibling.\n- `internal/gitrepo` — plausible source of the temporal-decay recency signal.\n"
     },
     {
       "id": 65,
       "slug": "ide-opt-in",
       "title": "VS Code only on request; other ways to watch a run",
-      "tier": 3,
-      "type": "design",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "undecided",
+        "ide",
+        "batten",
+        "reed"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[ide][batten][reed] Default to CLI/tmux and start VS Code only on request; alternatives: pop-up terminals or tmux windows",
+      "brief": "Default to CLI/tmux and start VS Code only on request; alternatives: pop-up terminals or tmux windows",
       "body": "From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03.\nThe common case is reviewing the final PR rather than watching an agent edit live, so VS Code per worktree should be opt-in.\nAlternatives the operator has considered: separate terminals that pop up instead of VS Code, or tmux windows.\nCheck what batten already opens first.\nRelated: `batten-windows`, `ide-open-verb`, `runs-overview`."
     },
     {
       "id": 66,
       "slug": "plugin-packaging",
       "title": "Ship lyx as an installable Claude Code plugin",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "plugins"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[plugins] Package lyx and its skills as one installable plugin",
+      "brief": "Package lyx and its skills as one installable plugin",
       "body": "From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03.\nIdea: ship `lyx` as an installable Claude Code plugin."
     },
     {
       "id": 67,
       "slug": "burler-round-models",
       "title": "Burler picks the model per review round",
-      "tier": 3,
-      "type": "design",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "undecided",
+        "burler",
+        "models"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[burler][models] Round 1, round 2 and later rounds may each use a different base model, not only a different provider",
+      "brief": "Round 1, round 2 and later rounds may each use a different base model, not only a different provider",
       "body": "From `manifest/roadmap.md` Someday (shuttle per-round provider selector), reframed by the operator on 2026-10-03.\nThe roadmap item was a per-round provider selector, meaningless while Claude is the only engine.\nWhat matters (operator): Burler choosing a different base model for round 1, round 2 and later rounds, so a fresh model reviews after the first has converged.\nRelated: `convergence-plan`'s model trial (`fable[high]` for discussion and review)."
     },
     {
       "id": 68,
       "slug": "codex-engine",
       "title": "Codex as a second agent engine",
-      "tier": 3,
-      "type": "design",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "undecided",
+        "shuttle",
+        "engines"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[shuttle][engines] If lyx gets a second engine, Codex is more relevant than Gemini",
+      "brief": "If lyx gets a second engine, Codex is more relevant than Gemini",
       "body": "Operator 2026-10-03, while striking the roadmap's bulk-mode clusters (Burler rounds concatenated into one blob so provider-side caching, Gemini's explicit cache, pays off): that does not work for Claude, and Codex is more relevant to support than Gemini.\nIdea: if shuttle gets a second engine, make it Codex."
     },
     {
       "id": 69,
       "slug": "fabric-monorepo-verbs",
       "title": "Fabric's ordinary-monorepo verb surface",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "cli"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[fabric][cli] Against plain git, fabric still lacks log, show, branch, tag, stash, revert, restore, rm/mv, rebase, cherry-pick and blame",
+      "brief": "Against plain git, fabric still lacks log, show, branch, tag, stash, revert, restore, rm/mv, rebase, cherry-pick and blame",
       "body": "From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03.\nAgainst plain git, `fabric` is still missing `log`, `show`, `branch` (create/list/delete), `tag`, `stash`, non-hard `reset`, `revert`, `restore`, `rm`/`mv`, `rebase`, `cherry-pick` and `blame`."
     },
     {
       "id": 70,
       "slug": "reed-slack-relay",
       "title": "Talk to the orch through Slack",
-      "tier": 3,
-      "type": "design",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "undecided",
+        "reed",
+        "slack"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[reed][slack] A Slack relay so the operator can reach the orch from a phone where Claude's own app is not allowed",
+      "brief": "A Slack relay so the operator can reach the orch from a phone where Claude's own app is not allowed",
       "body": "From `manifest/roadmap.md` Someday (reed daemon Slack relay), kept by the operator on 2026-10-03.\nOperator: at work the employer's Claude subscription cannot be on the phone, but Slack can, and Claude can talk to Slack.\nIdea: a bidirectional Slack relay to the orch (per worktree in the roadmap's version, on the reed watchdog daemon); how to build it is open."
     },
     {
       "id": 71,
       "slug": "agent-permission-setup",
       "title": "Agents run with a deliberate tool and permission setup that never blocks the flow",
-      "tier": 3,
-      "type": "design",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "undecided",
+        "agents",
+        "permissions"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[agents][permissions] A correct deny/allow setup for every lyx-spawned role, so no agent stops on a tool or command it needs",
+      "brief": "A correct deny/allow setup for every lyx-spawned role, so no agent stops on a tool or command it needs",
       "body": "Operator 2026-10-03, while striking the roadmap's shuttle generic tools-restriction: restricting tools per agent is meaningless today, but lyx needs a correct setup of denied and allowed tools and commands, so nothing gets blocked.\nSeen the same day: the global deny list (`git reset --hard`, removed by the operator; `git push --force` still in) stopped `pair-lifecycle` twice at steps lyx itself prescribed.\nRelated: `no-denied-recovery`, `orch-live-hardening` (permission modes mean what they say).\n\nSeen 2026-10-04 in `board-model` (#361): Webster Master ran `python3 - …` with a misplaced heredoc, the shell hung on stdin and blocked the verify gate for 75 minutes.\nOperator: lyx agents never use Python. Nothing denies it today: agents run in bypass, and shuttle's PreToolUse hook (`internal/shuttleengine/claudeengine/settings.go`) guards only other cases. Want: the same hook denies `python`/`python3` in Bash for every lyx-spawned agent, with a reason pointing to Edit/Write and grep/awk.\n"
     },
     {
       "id": 72,
       "slug": "post-discussion-additions",
       "title": "Scope added after Discussion amends the decision record",
-      "tier": 3,
-      "type": "design",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "undecided",
+        "discussion",
+        "plan",
+        "orch"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[discussion][plan][orch] Additions relayed to Plan-Write were dropped by plan review because the decision record lacked them; extend the discussion instead",
+      "brief": "Additions relayed to Plan-Write were dropped by plan review because the decision record lacked them; extend the discussion instead",
       "body": "Seen 2026-10-03 in `agent-self-reflect`: the operator added two scope items after Discussion had been approved, and the hub relayed them to the Plan-Write agent.\nOn the hub's instruction, Plan-Write put them in the plan overview as \"operator additions\", and plan review then removed them, because the plan must follow the decision record and the record did not carry them.\nPR-Gate rejected the PR for the missing items, and the driver had to amend the decision record by hand before PR-Rework.\n\nIdea (operator): a scope addition after Discussion amends the decision record, not the plan.\nThe agent that receives it (Plan-Write, or whoever holds the run) extends the discussion with the new decisions before planning on them, even if that is a little messy.\nPossible shape: a lyx verb that appends an \"operator addition\" decision to the record and re-runs the mechanical discussion check, so plan review reads the addition as part of the answer key.\n"
     },
     {
       "id": 73,
       "slug": "burler-split",
       "title": "Burler as two parallel agents: a review-only reviewer and a fixer that validates",
-      "tier": 3,
-      "type": "design",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "undecided",
+        "burler",
+        "review"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[burler][review] B orients, forks its lenses and writes the report only; A, stronger, orients in parallel, then fixes and validates B findings with a grain of salt",
+      "brief": "B orients, forks its lenses and writes the report only; A, stronger, orients in parallel, then fixes and validates B findings with a grain of salt",
       "body": "Idea (operator, 2026-10-03), a large design change for later: split a Burler round into two agents spawned in parallel.\n\n- **A, handler and fixer**, the stronger model.\n- **B, reviewer**, writes the review only and never fixes.\n\nBoth start at once and orient themselves in the code independently.\nB then forks its lens fan as today, and when every fork is done, writes the combined report as Burler does now.\nThe report goes to A, which has already oriented itself, fixes, and acts as an extra validator that takes B's findings with a grain of salt.\n\nWhat it buys: A's orientation overlaps B's review instead of following it, and the reviewer never grades its own fixes.\nRelated: `burler-round-models` (model per round), `review-finding-class` (landed: the judge reads facts, not artifacts).\n"
     },
     {
       "id": 75,
       "slug": "test-tiers",
       "title": "Test tiers: unit, git, tmux and Claude, with Claude opt-in only",
-      "tier": 3,
-      "type": "chore",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "testing",
+        "cost"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[testing][cost] Four tiers by what a test needs and costs; only an explicit request runs the Claude tier; tier names still open",
+      "brief": "Four tiers by what a test needs and costs; only an explicit request runs the Claude tier; tier names still open",
       "body": "Seen 2026-10-03: a Webster implementer fork in `test-suite-derived-guards`, verifying a card that touched smoke-tagged files, ran `-tags smoke` and spawned about 24 real Claude Code sessions through the `orchcli` smoke tests (`TestSmokeOrch_*`), about 5.5 MB of transcripts against the whole run's 31 MB.\nThe smoke tier mixes tests that only drive real tmux and the built binary with tests that spawn real `claude` sessions (orch cycle and adopt, shuttle runs, Burler clusters, the treadle judge, the model pin); the latter skip only when `claude` is not on `PATH`.\n\nDecided (operator): one more tier, a Claude tier, for tests that drive a real Claude session, under its own build tag, run only when explicitly asked, never by a card verify, the plan verify or PR-Gate.\nA smoke test never spawns Claude: smoke stays real tmux and the real binary with a fake or no provider.\nFour tiers, split by what a test needs and costs (operator, 2026-10-03): offline unit tests; git operations (time, no tokens); live tmux and the built binary (time, no tokens); real Claude sessions (tokens).\nToday's names fit poorly (\"smoke\" says nothing about tmux); the names are to be settled later.\nUpdate `CONSTRAINTS.md`'s test-tier rules and Plan-Write's per-card verify accordingly.\n"
     },
     {
       "id": 76,
       "slug": "fabric-api-vocabulary",
       "title": "Fabric exports without warp/weft in their names",
-      "tier": 3,
-      "type": "chore",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "vocabulary"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[fabric][vocabulary] 13 fabric and hubforge exports name warp/weft, so callers outside fabric must too; rename them and drop the scan exemption",
+      "brief": "13 fabric and hubforge exports name warp/weft, so callers outside fabric must too; rename them and drop the scan exemption",
       "body": "Seen 2026-10-04 in `pattern-init`: extending the fabric-vocabulary scan to test files outside fabric flagged 83 files, and 38 of them only name fabric's own exports that carry the words, e.g. `hubforge.Hub.PairWarpWorktree` and `WEFT_SKIP_GIT`.\n`pattern-init` exempts that closed set of 13 identifiers rather than renaming them.\nIdea: rename those exports to neutral names so the vocabulary stays inside fabric, then shrink the exemption set to nothing.\n"
     },
     {
       "id": 77,
       "slug": "raddle",
       "title": "raddle: codeguide's woven-in successor",
-      "tier": 3,
-      "type": "design",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "undecided",
+        "docs",
+        "finalize"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[docs][finalize] Docs regenerated once at merge time over the plan's diff, folded into Finalize's contract; the geometry and the parallel-regeneration design exist",
+      "brief": "Docs regenerated once at merge time over the plan's diff, folded into Finalize's contract; the geometry and the parallel-regeneration design exist",
       "body": "From `manifest/roadmap.md` Someday.\nraddle is codeguide's woven-in successor.\nA parallel-regeneration design exists.\nIt folds into `Finalize`'s own contract rather than a separate producer, since `Shed` has no slots for it to occupy.\n\n## Design\n\n\u003e **Status: Design partially exists, not scheduled.** Deprioritized — not required to land a first `loom` plan. Raddle-regeneration is folded into `Finalize`'s own contract, not a reserved phase slot of its own (see `contracts/recipes/loom-recipe.yaml`). This doc covers the parts of raddle's design settled during the vacation-time discussion, not the whole module.\n\n## What it is\n\nRaddle is codeguide's weaving-vocabulary successor, living in `weft`: it generates docs over the diff a plan produced, building heavily on Millhouse's `codeguide-update`, deliberately not the implementer's job — implementers, busy with code, forget the docs.\nSee When it runs below for when regeneration actually happens.\n\n## Geometry — where raddle content lives\n\nEvery raddle file lives under `_lyx/raddle/` inside each worktree, mirroring that worktree's own code tree.\nIt is resolved by plain path lookup joined onto the anchor path, with no junction of its own and no hub-level presence at all.\nIt reaches the weft through the already-wired `_lyx` junction, like every other `_lyx` subtree.\n\n`_raddle` is **not** a reserved hub name and is never junction-reached.\n\nRaddle content is tracked `_lyx` content and therefore needs no `.lyx` mirror, per the Durable-vs-Ephemeral State Invariant.\n\nThis section records the geometry only — raddle's actual implementation, including the shadow tree's path-lookup code and any accessor, is explicitly out of scope here.\n\n## Parallel regeneration — unlike card implementation, this is safe\n\nUnlike webster's card implementation (which needs real worktree isolation for safe parallelism — see webster-parallel-execution.md), raddle's doc regeneration can safely run as **parallel forks**, for reasons specific to what raddle does:\n\n1. **No per-fork git commit needed mid-flight.**\n   Card parallelism failed partly because concurrent `git add`+commit from multiple forks race on the same git index.\n   Raddle forks don't need this — each fork writes its own module doc to disk;\n   **one combining commit** happens at the end (`fabric.SyncWeft(...)`, see `internal/fabricengine`), covering all raddle changes at once.\n   This eliminates the git-index race entirely.\n2. **Raddle only reads code, never writes it.**\n   Card forks editing code concurrently risked seeing each other's unstable, half-finished intermediate states.\n   Raddle forks read an already-landed, stable code state — no \"who sees what when\" problem.\n3. **True file-disjointness is easy to guarantee.**\n   With a clean module → doc mapping (one changed module → one raddle `.md` file), there's no ambiguity about who writes where, unlike card `changes-files` declarations which could turn out wrong after the fact.\n\n**Structure:** parallel leaf forks (one per changed module, no dependencies between them) → one final step regenerating any top-level summary (`Overview.md`) from the now-updated module docs (must wait for all leaves) → one combined `fabric.SyncWeft(...)` commit covering everything.\n\n**No race on `Overview.md`:** the \"must wait for all leaves\" sequencing above prevents concurrent writers to `Overview.md` within one regeneration run — it's a single, serial final step, never touched by the leaf forks themselves.\nNo additional lock needed there.\n\n## When it runs: deferred to merge-time, not mid-task\n\nRegenerating raddle is token-heavy and takes real wall-clock time, so it should run **once**, not twice.\nRunning it right after Webster (against the task's own fork-point) and then again at actual merge (against parent's real, possibly-since-moved HEAD) would do exactly that: two regenerations, the first thrown away the moment parent has advanced.\n\n**Decision: raddle regenerates once, at merge-time, against parent's actual current HEAD** — not mid-task.\nThis collapses the two potential runs into one and guarantees the output describes the real merge result, not a stale fork-point.\n\n**Consequence for the merge lock:** the lock protecting this step must span the **entire** critical section — read parent's current HEAD, run the leaf-fork + `Overview.md` regeneration against it, commit via `SyncWeft` — as one atomic unit, not just around the final git write.\nIf another task's merge landed in parent partway through regeneration, the docs would be stale against the HEAD they're about to be committed onto.\nSame \"advance only on confirmed success\" discipline the `Warp-SHA` trailer mechanism uses elsewhere in `fabric` for recording a baseline, extended to cover the compute step, not just the write step.\n\n**Decided:** raddle has no reserved phase slot of its own in loom's producer list (`contracts/recipes/loom-recipe.yaml`) — regeneration is folded into `Finalize`'s own contract instead, landed in `internal/landingshed`.\nSee internal/landingshed for Finalize's side of the contract.\n\n## Staleness tracking, via `fabric`\n\nRaddle's snapshot files describe the codebase as of some SHA, and only get regenerated by an explicit, separate command — they can silently drift out of date as cards land.\nUsing `fabric`'s Warp-SHA trailer mechanism (see `internal/fabricengine`):\n\n- Raddle's regeneration command records its baseline by passing `snapshotTags=[\"raddle\"]` to `Fabric.Commit`, alongside whatever raddle files the regeneration produced.\n  **The warp SHA recorded should be the warp code SHA raddle describes — the last warp commit *before* the regeneration — not raddle's own resulting weft commit SHA**, otherwise later staleness checks compute against the wrong baseline;\n  the `Warp-SHA` trailer holds exactly that value, so the trailer form satisfies this requirement naturally.\n- A regeneration that finds the codebase unchanged since its last recorded baseline still needs to advance that baseline, even though it produces no weft content — this is exactly the case that motivated the empty-commit rule (see the tags-force-a-weft-commit Shared Decision in `internal/fabricengine`): tagging a `Commit` call with `snapshotTags=[\"raddle\"]` and no changed files still lands an empty weft commit carrying the baseline, so a no-op regeneration advances the baseline instead of reporting drift forever.\n- A staleness check is the **three-step** idiom `Fabric.SnapshotWarpSHA`'s own doc comment specifies, not the naive two-step composition: read the baseline via `SnapshotWarpSHA(\"raddle\")`, confirm it still resolves via `f.Warp.SHAExists`, and only then call `f.Warp.ChangedFilesSince` to get a precise answer — *\"raddle's map is N commits behind current HEAD, covering these files\"* — instead of a vague, always-true warning that raddle \"might\" be outdated.\n  Skipping the `SHAExists` check and calling `ChangedFilesSince` directly hard-errors on a warp SHA a rebase has since rewritten, exactly the case this mechanism exists to survive: the check lets a post-rebase raddle regenerate cleanly instead.\n\n## Boundary with quarry (deliberately not coupled)\n\n- **quarry** only cares about source code files, never markdown, and has **no knowledge of raddle whatsoever**.\n- **Raddle never modifies code and therefore has no reason to notify quarry** — that coupling was proposed once during design and correctly rejected.\n  Raddle's own use of `fabric` is purely for its own staleness tracking, unrelated to quarry.\n- Both consumers independently depend on `fabric`;\n  they do not depend on each other.\n\n## What Master must know about raddle content (see `internal/websterengine`'s package documentation)\n\nRaddle files are a **snapshot** of the codebase from *before* a plan started — they are only regenerated by a separate, explicit command, not continuously.\nMaster (and any fork inheriting its context) must treat raddle content as \"how things were before this plan,\" never outranking a fresh quarry query or an actual file read once cards have started landing.\n\n## Related\n\n- `internal/fabricengine` — the `Warp-SHA`/`Snapshot` trailer and `SyncWeft` mechanics this design relies on.\n- `contracts/recipes/loom-recipe.yaml` — the flat producer list Raddle has no slot of its own in;\n  regeneration is folded into `Finalize`'s contract instead.\n- The `internal/boardengine` package documentation — `PATTERN.md` (raddle's neighbor in `weft`) mentioned there.\n"
     },
     {
       "id": 78,
       "slug": "webster-parallel-execution",
       "title": "webster: worktree-per-card parallel execution",
-      "tier": 3,
-      "type": "design",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "undecided",
+        "webster",
+        "speed"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[webster][speed] Give each DAG-independent group its own fabric-spawned worktree so concurrent cards stop sharing one git index; parked until measured evidence says it pays",
+      "brief": "Give each DAG-independent group its own fabric-spawned worktree so concurrent cards stop sharing one git index; parked until measured evidence says it pays",
       "body": "From `manifest/roadmap.md` Someday.\nGive each DAG-independent group its own `fabric`-spawned worktree, so concurrent cards stop sharing one git index.\nA speed optimization over an already-correct sequential system.\nThe loom plan spec and `internal/websterengine`'s package documentation describe the sequential model it would extend.\n\n## Design\n\n\u003e **Status: parked, not rejected — one shape was rejected, a second is open.** What two explorations rejected is *concurrent forks inside one working tree*, which race on a single shared git index; the 2026-08-20 worktree-per-group shape below does not share that index and is not covered by that rejection. Read past this banner before concluding the idea is dead — the earlier wording said \"rejected for now both times\" and, until the 2026-08-29 designs audit, sent readers away before the open shape, the measured case study, and the decision gate.\n\u003e Still parked, though one of its original three reasons has since fallen: the **Adopt quarry's glyph alphabet as the plan alphabet** item shipped (`go.mod` now requires `github.com/Knatte18/quarry`), so the DAG source this doc used to wait on exists. What still parks it: it is a speed optimization over an already-correct sequential system, and webster's landed card-list rewrite (`internal/websterengine`) should get real running mileage first. Reopen it on the measured evidence the Decision gate section names, never on estimate.\n\u003e Per the documentation lifecycle, if this is ever picked up the durable parts fold into `internal/websterengine`'s package doc and this file is deleted; if abandoned, this file is simply deleted.\n\n## Why it's parked\n\nloom-plan-spec.md is deliberately a flat, sequential card list with **no DAG wired into scheduling**.\nRunning cards as *parallel* forks would require reintroducing a DAG and worktree isolation, which reopens exactly the problem sequential execution avoids: git's index/staging area is a single shared file per working tree, so two forks concurrently committing — even to fully disjoint files — race on the same lock.\nCurrent (2026) ecosystem guidance treats worktree isolation as effectively required for concurrent subagents on the same repo.\nA declared-disjoint card pair that turns out (via deviation) to actually overlap is a **live corruption risk** in a concurrent-no-worktree model, not just a bookkeeping problem to fix after the fact as it is sequentially;\nquarry would also see other forks' uncommitted, potentially syntactically-broken in-flight edits while serving a concurrent fork's query, since there's no filesystem isolation between them.\n\n**A possible middle ground, if revisited:** let forks edit concurrently (the LLM-thinking-dominated part) but serialize the actual `git add`+commit+verify step through a mutex in webster's Go orchestration (\"edit in parallel, land sequentially\").\nEven this requires *strictly enforced* file-disjointness (not just DAG-edge-absence) to be safe.\nNot built.\n\n## A possible unblocking shape (2026-08-20)\n\nA structural alternative to the rejected concurrent-forks-in-one-tree shape above: each DAG-independent group (a batch, possibly one card) gets its own `fabric`-spawned worktree — genuinely its own git index/HEAD, which is what the rejected shape lacked — running the existing `Preflight → Webster → Finalize` row set unchanged, with `Webster`'s `Geometry.PlanDir` (already told, not derived) pointed at the source plan and a new batch-filter selecting the one group to run.\nMerge-back reuses `fabric`'s existing merge machinery, not new infrastructure, and a group's completion gates on a build+test of the *merged* result rather than of the group's own worktree in isolation.\nThe ready set recomputes wave to wave rather than being precomputed upfront, so a group that turns out to depend on another's output is simply not ready yet instead of being mis-scheduled.\n\nThis shape is what makes the rejection at the top of this doc specific rather than general: that rejection was about concurrent forks sharing one checkout's git index, which worktree-per-group does not do.\n\nGrouping granularity (one card vs. several) is orthogonal to safety — the original rejection above conflated it with the working-tree-sharing hazard, but genuine worktree-per-lane isolation is what actually matters.\nNot yet a plan: the DAG source exists now that the **Adopt quarry's glyph alphabet as the plan alphabet** item has shipped,\nbut it still needs a writeup reconciling this with the still-open questions elsewhere in this doc (typical-plan wave-width evidence, the batchifier/planner change needed to emit groups).\n\nThe per-lane mechanics have since shipped elsewhere: batten's recipe (create, seed, run, teardown as ordinary producers) and its run-id addressing carry N concurrent lane runs side by side, so a lane is a batten-style run whose child seed names a webster-lane recipe — none of that machinery is this item's to build.\nWhat remains genuinely webster's: the wave scheduler (event-driven, recomputing the ready set on each lane's merge-back — never a continuously maintained DAG), the plan group-filter, and a non-forking webster variant.\nThat last one is the real structural change: today's webster runs forks inside the Master session's own context, which binds execution to one session in one worktree;\na lane needs agents spawned into the lane worktree's own reed session instead, scoped to just that lane's group.\n\n## The case study (from an earlier, more detailed design draft, `websterv2.md`, now retired)\n\nA card-level dependency analysis of the 42-card plan that built webster v1 overturned the naive \"linear chain\" assumption:\n\n| Metric | Value |\n|---|---|\n| Cards | 42 |\n| Batches (sequential) | 9 |\n| True card-DAG depth (critical path) | 7 |\n| Peak wave width | 10 |\n| Cards off the critical path | 83% (35 of 42) |\n| Wave widths (1→7) | 10, 9, 7, 7, 6, 2, 1 |\n\n- **The batch DAG over-constrains.**\n  Sequential batching's own dependency declarations were largely spurious at card granularity — ~26 cards (waves 1–3) could have run as three parallel waves instead of spread across four sequential batches.\n- **File-conflicts barely bind** when the plan is create-then-extend — nearly every file-conflict pair is already dependency-ordered into different waves.\n- **The tail is the real ceiling, not dependencies** — a hard funnel near the end of a plan (e.g. final registration → sandbox validation) crashes wave widths regardless of fork budget;\n  speedup is front-loaded.\n- **Honest speedup estimate: ~2–3× wall-clock**, discounted from a naively-computed 3–5× because a wave's wall-clock is its *slowest* card,\n  and the heaviest implementation cards tend to sit on the critical path.\n  Two caveats push it down further: semantic edges were *inferred* from card descriptions (real edit-time dependencies only add edges and shrink waves), and 42 cards is an atypically large plan — a routine 5–10-card task has little fan-out headroom and would show a speedup near 1×, dominated by warm-context, not parallelism.\n\n## Decision gate, if ever revisited\n\nRun the card-DAG width analysis across several *real* completed plans, weighted for **typical** task size, not this one outlier.\nWide (fat waves, short critical path, low file-conflict) → an executor might pay off.\nNarrow (long critical path, most cards chained, or simply few cards) → parallelism won't materialize;\nsequential is the complete correct design, not just the MVP.\n\n## The separable, cheap win already taken\n\nA planner that emits true card dependencies (`depends-on`) instead of an over-constrained batch line recovers most of the *width* insight with **no worktrees and no concurrent execution** — this is exactly what loom-plan-spec.md already does.\nOnly the *executor that actually runs the width* (this entry) remains parked.\n\n## Relationship to quarry (Part B of the retired draft)\n\nThe retired `websterv2.md` draft also had a Part B — structured impact lookup via `go/packages`/`gopls` (find-all-references as a Go verb instead of LLM-driven grep).\nThat idea is superseded, not lost: it's the direct ancestor of [quarry](https://github.com/Knatte18/quarry), which generalizes it to a multi-language, daemon-based design.\n\n## Related\n\n- `internal/websterengine`'s package documentation — the sequential model this would extend.\n- loom-plan-spec.md — already captures the cheap win (`depends-on`).\n- [quarry](https://github.com/Knatte18/quarry) — Part B's successor.\n"
     },
     {
       "id": 79,
       "slug": "reed-multi-window",
       "title": "reed: cross-worktree columns, own-window anchoring, per-window attach",
-      "tier": 3,
-      "type": "design",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "undecided",
+        "reed",
+        "ui"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[reed][ui] Three related ideas for reed beyond one pane per strand and one window per worktree",
+      "brief": "Three related ideas for reed beyond one pane per strand and one window per worktree",
       "body": "From `manifest/roadmap.md` Someday, three items kept together:\n- **reed: cross-worktree columns.** All worktrees in one tmux window, a column per worktree; needs a name for the new per-worktree grouping layer this introduces and a column-count/fallback policy.\n- **reed: own-window strand anchoring.** A `display` anchor that spawns a strand into its own switchable tmux window instead of a pane.\n- **reed: independent per-window attach via tmux session groups.** tmux's session-groups feature would let multiple `lyx reed attach` invocations show different windows independently, instead of sharing one today.\n\n## Design\n\n\u003e Three related, not-yet-scoped ideas about reed outgrowing \"one pane per strand, one window per worktree.\" Grouped here because each is a candidate building block for the others.\n\n## Cross-worktree columns\n\nAll worktrees in one tmux window, a column per worktree.\n\nNeeds its own name for the per-worktree grouping layer this introduces — it cannot be called \"session\": that's already tmux's own term, and already 1:1 with a worktree in reed's plumbing today. Also needs a decision on how many columns fit before falling back to tmux windows-as-pages.\n\nCandidate group-layer names surveyed so far and still free: **Heddle, Batten, Bobbin, Sley**. Already taken elsewhere in this codebase: Warp, Weft, Shuttle, Treadle, Shed, Loom, Reed, Strand, Fabric, Quarry, Crucible, and Selvage (claimed by the shipped header-replacement work — see `internal/reedengine`'s `selvagepane.go`).\n\n## Own-window strand anchoring\n\nA `display` anchor that spawns a strand into its own switchable tmux window instead of a pane.\n\n## Independent per-window attach via tmux session groups\n\nToday two `lyx reed attach` invocations join the same tmux session object — a shared \"current window\" pointer, and mismatched terminal sizes fighting over layout.\n\ntmux's session-groups feature (`new-session -t \u003cexisting-session\u003e`) would let each invocation show a different window independently, which reed's `attach` verb does not use today. This is a candidate building block for both ideas above, likely exposed as something like an `--window \u003cn\u003e` flag, or hidden entirely behind one verb that spawns the needed loose terminal windows automatically.\n\n## Related\n\n- `internal/reedengine`'s package documentation — the shipped work that claims the \"Selvage\" name; reed still has no window support today.\n"
     },
     {
       "id": 80,
       "slug": "warp-visibility",
       "title": "warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history",
-      "tier": 3,
-      "type": "design",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "undecided",
+        "fabric",
+        "ide"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[fabric][ide] Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date",
+      "brief": "Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date",
       "body": "From `manifest/roadmap.md` Someday.\nExpose `CLAUDE.local.md` via symlink (Windows-Developer-Mode note and a copy fallback), so nothing lyx-related shows up in the Fabric repo's own git history.\n\nOut of date as of 2026-10-04: the design below and the roadmap line say the `CONSTRAINTS.md`-equivalent half is covered because `PATTERN.md` lives in weft.\nAfter `pattern-init`, `PATTERN.md` sits at the repo root and is tracked in the warp repo, so that half is not covered; decide it afresh when this is picked up.\nThe ignore entry for `CLAUDE.local.md` goes to `.git/info/exclude` through `fabricengine`, never a tracked `.gitignore` (the Fabric Git entry, `PATTERN-fabric-git`).\n\n## Design\n\n\u003e **Status: Design — not built.** Split out from `internal/fabricengine` — the vacation-time discussion bundled this into the Fabric cutover step opportunistically (\"we're touching that area anyway\"), but the mechanism itself is filesystem-linking/worktree setup, not git coordination — it doesn't depend on `fabric`'s own architecture (`gitrepo`, `SyncWeft`, `RevertWithWeft`) at all. Per the documentation lifecycle, durable parts fold into whichever package ends up owning worktree setup (`warp`/`fabric`'s topology side, or `loom`'s init step) when this lands, and this file is deleted.\n\u003e\n\u003e **Scope reduced (2026-07):** the `CONSTRAINTS.md`-equivalent half of this task is superseded by the `PATTERN.md` item — `PATTERN.md` lives in `weft`, already invisible to the Fabric repo, so there is no constraints directory left to hide. This task now covers only `CLAUDE.local.md`.\n\n## Design principle\n\nNothing lyx-related should be visible in the Fabric repo's own git history — everything lives in `weft`.\n\n## `CONSTRAINTS.md`-equivalent — superseded by `PATTERN.md`\n\n**No longer this task's concern.** `PATTERN.md` is the loomyard-owned `CONSTRAINTS.md`-equivalent,\nand it lives in `weft` (see the `internal/boardengine` package documentation — \"everything that isn't warp already lives in weft\"), a separate repo reached through a junction into the warp worktree — so it is **already invisible to the Fabric repo's git history** simply by living there, with nothing extra to build.\nThis task therefore reduces to `CLAUDE.local.md` below.\n\n## `CLAUDE.local.md` (a single file)\n\nLoads alongside `CLAUDE.md`, additive.\nMust physically exist in warp's working tree, so a directory junction doesn't apply directly:\n\n- **Symlinks, not hard links.**\n  Hard links are inode-based, not path-based — if whatever regenerates the source `CLAUDE.md` in weft uses the standard safe-write pattern (write to a temp file, atomic rename over the target), a hard link on the warp side keeps pointing at the *old* inode and silently stops reflecting updates.\n  Symlinks are path-based and always resolve to whatever currently occupies the target path.\n- **Windows note:** symlinks normally require admin, but Developer Mode (Settings → For Developers, Windows 10 1703+) grants `SeCreateSymbolicLinkPrivilege` to standard users without elevation — worth checking whether this can be enabled on managed/non-admin machines before assuming it's blocked.\n- **Fallback if symlinks aren't available:** explicit re-link (or copy) at `loom` init time, not automatic filesystem-level linking.\n  Accepts staleness only within a single run, not across runs — acceptable since `CLAUDE.md` content changes rarely mid-session.\n- `CLAUDE.local.md` is **not** auto-gitignored by Claude Code — `loom`'s init step must explicitly ensure it's listed in warp's `.gitignore` (same mechanism already used for weft junctions).\n- If warp already has its own pre-existing, committed `CLAUDE.md` (someone deliberately approved Claude's use in that repo), that's fine — `CLAUDE.local.md` loads alongside it and takes precedence on conflict, no special handling needed.\n\n## Related\n\n- The `internal/boardengine` package documentation and the shipped `PATTERN.md` — establish that `PATTERN.md`, the loomyard-owned `CONSTRAINTS.md`-equivalent, lives in `weft`, which supersedes this task's constraints-hiding half.\n- `internal/fabricengine` — owned the junction re-pointing mechanism the now-superseded constraints-dir half would have reused (`CLAUDE.local.md` uses a symlink, not a junction).\n- `internal/loomcli`'s session bootstrap — the init/session-bootstrap step that would trigger the symlink fallback and `.gitignore` entry for `CLAUDE.local.md`.\n"
     },
     {
       "id": 81,
       "slug": "baseline-drift-gate",
       "title": "Baseline producer and numerical-drift gate",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "webster",
+        "testing"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[loom][webster][testing] Capture a before-state so a failure the task caused can be told from a pre-existing one; in numerical repos the failure to catch is drift",
+      "brief": "Capture a before-state so a failure the task caused can be told from a pre-existing one; in numerical repos the failure to catch is drift",
       "body": "From `manifest/roadmap.md` Someday.\nloomyard captures no before-state, so it cannot tell a pre-existing failure from one a task caused ([millhouse#1130](https://github.com/Knatte18/millhouse/issues/1130)).\nIn a numerical target repo (the drilling simulator) the failure to catch is drift, which an exit-code verdict like `plan.Verify`'s cannot express.\n\nAgreed shape, not yet a design doc:\n- A shared `Capture-Baseline` producer row right after `Preflight`, shared by reference the way `preflightshed` and `landingshed` share theirs, so the planner writes against the current numerical signature.\n- The artifact lives in `.lyx/baseline/`, never `_lyx`: a numerical baseline is machine-bound (floating point, BLAS, compiler flags).\n  Capture before the first edit, recompute after, compare, discard.\n- Two seams, both owned by the target repo: `capture` (tree → artifact) and `compare` (before, after → verdict + findings, with per-channel tolerance).\n  Loomyard owns the row, the seam shapes, and the artifact location.\n- The gate rides `shuttleengine.GateSpec` on the `Webster` row; registering a validator name in `resolveGateSpec`'s switch is the unbuilt part.\n\nOpen:\n- Whether compare runs once at Webster's exit (what `GateSpec` gives, since it fires at the Master run's finalize) or per batch (exact localization, a new batch-loop hook, N captures).\n- A middle option: gate once, and localize by making the predicate of Webster's integration-stage `bisect` pluggable, at log₂(N) captures; bisect assumes monotone drift.\n- A baseline tree whose capture itself fails should be recorded, not halt the run."
     },
     {
       "id": 82,
       "slug": "config-overlay",
       "title": "config: repo-wide default plus per-worktree override",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "config"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[config] A repo-wide default layer read from _board with each worktree's own file as an override, the way millhouse's config.local.yaml works",
+      "brief": "A repo-wide default layer read from _board with each worktree's own file as an override, the way millhouse's config.local.yaml works",
       "body": "From `manifest/roadmap.md` Someday.\nEvery module's config resolves only from `\u003ccwd\u003e/_lyx/config/\u003cmodule\u003e.yaml` today, per-worktree with no shared default (`fabric.yaml` is the sole exception, anchored at `_board`).\nAdd a repo-wide default layer read from `_board`, with each worktree's own file as an override on top: the two-layer overlay millhouse already uses with `config.local.yaml`.\nNot yet designed."
     },
     {
       "id": 83,
       "slug": "fabric-reset-to-sha",
       "title": "fabric: two-sided reset-to-SHA verb",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[fabric] The post-conclude undo the merge surface does not ship: reset to a warp SHA, resolve the paired weft SHA through the correspondence index, gate both sides",
+      "brief": "The post-conclude undo the merge surface does not ship: reset to a warp SHA, resolve the paired weft SHA through the correspondence index, gate both sides",
       "body": "From `manifest/roadmap.md` Someday.\nThe post-conclude undo the merge surface deliberately does not ship: `MergeAbort` covers only the uncommitted merge-attempt window, so a landed merge is final at the Fabric layer.\nClosing it means a reset to a visible warp SHA that resolves the paired weft SHA through the correspondence index and routes both sides through the destruction gate.\nSee the `internal/fabricengine` package documentation's merge section."
     },
     {
       "id": 84,
       "slug": "finalize-discrepancy-doc",
       "title": "finalize: the discrepancy-document conflict shape",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "finalize",
+        "fabric"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[finalize][fabric] Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers",
+      "brief": "Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers",
       "body": "From `manifest/roadmap.md` Someday.\nSome divergences cannot be expressed as a git conflict at all, so there are no markers to hand a resolving agent; the answer is a precomputed document describing the disagreement instead.\nOnly the ordinary-git-conflict shape shipped (`internal/mergeresolve`).\n`PullResult.PatternResidue` was this shape for the history-rewrite case; `pattern-init` retired it on 2026-10-04, so design the document once for every such case, whenever this is picked up."
     },
     {
       "id": 85,
       "slug": "shedrecipe-capabilities",
       "title": "shedrecipe: capability declaration instead of manual seam-threading",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shed",
+        "recipes"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[shed][recipes] A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer",
+      "brief": "A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer",
       "body": "From `manifest/roadmap.md` Someday.\nGiving a producer a new capability means hand-threading a passthrough `Env` field through three layers, because the Shed Recipe Registry entry (`PATTERN-shed-recipe-registry`) bars `shedrecipe` from importing the capability's owning package.\nThe idea, not yet designed: let a producer declare what it needs and have the registry wire it.\nDeep, likely touching the invariant itself and every registry entry."
     },
     {
       "id": 86,
       "slug": "doctor",
       "title": "doctor: a lyx diagnostics command",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "cli"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[cli] lyx doctor checks the _lyx layout, config parse, board reachability and stale locks",
+      "brief": "lyx doctor checks the _lyx layout, config parse, board reachability and stale locks",
       "body": "From `manifest/roadmap.md` Someday.\nA diagnostics command (`lyx doctor`): checks `_lyx/` layout, config parse, board reachability, stale locks."
     },
     {
       "id": 87,
       "slug": "session-sync",
       "title": "session sync: Claude transcripts across machines",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "agents"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[agents] Copy Claude .jsonl transcripts across machines so --resume works elsewhere",
+      "brief": "Copy Claude .jsonl transcripts across machines so --resume works elsewhere",
       "body": "From `manifest/roadmap.md` Someday.\nCopy Claude `.jsonl` transcripts across machines so `--resume` works elsewhere."
-    },
-    {
-      "id": 88,
-      "slug": "board-model",
-      "title": "Board as one list: tasks and notes with labels, GitHub issues pulled in",
-      "tier": 1,
-      "type": "feature",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "[board][github] kind task|note replaces tier, labels field on both (type folds in), upsert body from file, an intake verb that turns GitHub issues into notes",
-      "body": "## Goal\n\nThe board becomes the operator's one list: two layers, tasks and notes, both labelled, with GitHub issues pulled in as notes so nobody tracks GitHub and the board side by side.\nGitHub stays the inbox, because `lyx selfreport` files from any repo lyx runs in and only GitHub is reachable from all of them; the board is loomyard's plan.\n\n## Decided (operator, 2026-10-04)\n\n- Two layers: a `kind` field, `task` (concrete, runnable work) or `note` (an idea), replaces `tier`; tier 2 and \"Next up\" are gone from the model, the `promote` verb's vocabulary and the README.\n  `promote` becomes changing `kind` from `note` to `task`.\n- Labels are a field on both tasks and notes; the bracket prefixes in today's briefs (`[orch][ide] …`) migrate into it.\n  `lyx board list` and `find` filter by label, and the README shows labels.\n- `type` (feature, bug, chore, design) folds into labels, so there is one classification, on two axes:\n  - Type: `bug` or `enhancement`. A note carries exactly one; a task carries the type labels of the notes it bundles, so it may carry both.\n    `chore` folds into `enhancement`; `design` is not a type but the maturity label `undecided` (what to build is not yet decided), removed once it is.\n  - Area: any number, e.g. `orch`, `webster`, `board`, `ide`.\n- The type and label lists live in config, so the operator changes them with one edit; a label or type outside the lists is refused.\n- The README and `lyx board list` group notes by type (Bugs, Enhancements), and filter by area.\n- `depends_on` belongs to tasks only; notes have none, and a relation between notes is a sentence in the body (`card-batching`'s dependency on `plan-glyph-precision` migrates that way).\n- `lyx board upsert` reads the body from a file or stdin, so editing a body never means splicing JSON in a shell one-liner.\n- An intake verb pulls GitHub issues in: it lists open issues not yet on the board, imports chosen ones as notes (labels carried over, a link back, the issue number recorded so an issue is never imported twice) and closes the issue with a pointer to its note, and closes noise with a stated reason.\n  The verb is mechanical; the orchestrator makes the triage calls.\n\n## Open, for Discussion\n\n- Migration of existing entries: tier 1 → `task`, tier 2 and 3 → `note`; brief prefixes → area labels; `type` → `bug`/`enhancement`, with `design` entries also getting `undecided`.\n- Which repo the intake verb reads (the selfreport target) and how it authenticates (selfreport's token resolution).\n\n## From `board-labels`\n\nSeen 2026-10-03: the board model is now tasks (tier 1) and notes (tier 3, one per entry), with labels as a bracketed prefix in each note's brief (`[ide][orch] …`) because the board has no labels field; tier 2 is unused, and README rendering already says Tasks and Notes (`6a74ee1be`).\n\n## From `board-body-file`\n\nSeen 2026-10-03: `lyx board upsert` takes the whole body inside one JSON argument, so changing one section of an entry means reading the body, splicing it and re-encoding JSON in a shell one-liner, which breaks on quoting (an apostrophe in the text) and pushed the orch into a throwaway script.\n\n## From `issue-intake`\n\nSince filing has no approval gate (operator, 2026-10-03, see `agent-self-reflect`), filtering happens when issues are pulled back in.\nIdea (operator): a `lyx` command rather than a skill, that ingests open GitHub issues, drops noise and duplicates, and proposes board entries or folds into existing ones.\nSee `manifest/designs/curation-triage.md` (moved to `internal/boardengine`'s doc by `pattern-init`).\nThe first intake was done by hand on 2026-10-04: the open issues became notes and were closed with a pointer.\n",
-      "status": "done"
     },
     {
       "id": 89,
       "slug": "orch-compact-stale-reading",
       "title": "Orch watcher cycles on a stale reading after /compact",
-      "tier": 3,
-      "type": "bug",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "orch"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[orch][bug] A /compact leaves the pre-compaction token reading in place, so a soft cycle fires on a near-empty context",
+      "brief": "A /compact leaves the pre-compaction token reading in place, so a soft cycle fires on a near-empty context",
       "body": "On 2026-10-04 the operator ran `/compact` in the orch session at 10:09:49Z.\nIt finished at 10:11:15Z (`compact_boundary`, trigger manual, preTokens 354815, postTokens 13673).\nAt 10:14:53Z the watcher sent the soft-cycle stencil and then cleared and resumed the session from a handoff, although the context held about 14k tokens.\n`state.json` afterwards shows `cycle_trigger: soft`.\n\nCause: the watcher updates `LastContextTokens` only at a turn end (`internal/orchengine/watcher.go`, the `ContextTokens(ev)` call per turn-end event).\nA `/compact` produces no turn end, so the reading stayed at the pre-compaction 354815, above `soft_threshold_tokens` (300000), and the soft trigger fired once `soft_idle_s` had passed.\n`transcriptContextTokens` in `internal/shuttleengine/claudeengine/usage.go` would return the same stale number even if re-read, since it takes the last main-chain assistant entry's usage, which is still the pre-compaction one.\n\nExpected: a manual compaction resets the reading, so the operator's `/compact` is not followed by a cycle.\nOptions: treat a `compact_boundary` entry newer than the last assistant entry as the reading (its `postTokens`), and re-read the transcript before firing a soft or hard trigger rather than trusting the stored turn-end reading.\nThe same applies to Claude Code's own auto-compaction (a residual named in `internal/orchengine/doc.go`).\n\n\nFrom GitHub #356 (intake 2026-10-04).\n"
     },
     {
       "id": 90,
       "slug": "webster-delete-already-gone",
       "title": "Webster blocks when a Delete target is already gone",
-      "tier": 3,
-      "type": "bug",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[webster][bug] begin-batch refuses plan_drifted when an earlier batch already deleted a later card's Delete target",
+      "brief": "begin-batch refuses plan_drifted when an earlier batch already deleted a later card's Delete target",
       "body": "Seen 2026-10-03 in the `verify-publish-hardening` run, after 12 batches.\nBatch 15 (card 15, `webster-verify-gate`) deleted `internal/websterengine/integration_test.go`, even though card 15 does not list it.\nCard 17 lists the file under **Delete:**, so batch 16's `begin-batch` refused with `plan_drifted`: the path does not exist on disk and is not a Create target or Rename destination of any card.\nThe run blocked until the plan was edited by hand and rebaselined.\n\nA Delete target that is already gone is the state the card wants, so it should not block the run.\nOptions:\n- `begin-batch` accepts a missing **Delete:** path when an earlier batch's commit deleted it, and notes it in the batch record.\n- The per-card check flags a batch that deletes a file outside its card, at the batch where it happens rather than at a later card.\n\n\nFrom GitHub #352 (intake 2026-10-04).\n"
     },
     {
       "id": 91,
       "slug": "webster-delete-ordering",
       "title": "Webster schedules a Delete before its callers are removed",
-      "tier": 3,
-      "type": "bug",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[webster][bug] deriveEdges has no edge from a deleted symbol to the cards editing its callers",
+      "brief": "deriveEdges has no edge from a deleted symbol to the cards editing its callers",
       "body": "Seen 2026-10-03 in the `pair-lifecycle` run: Webster scheduled card 12 (`delete-half-removed-helpers`, which deletes `fabricengine.Topology.RemovePairBranch`, `PairBranchResult` and `PairSiblingRemnant`) before card 11, the card that removes their only production caller in `internal/battencli/wire.go`.\nThe batch then failed, with `recover-batch` refusing because the delete targets still resolve, and the run blocked at Webster.\n\n`websterengine.deriveEdges` (`internal/websterengine/sequence.go`) orders card B after card A only when B's Uses names one of A's targets, or when A and B share a target and A has the lower number.\nA card that deletes a symbol has no edge to the cards that edit its callers, because the callers appear in neither field.\nPlan review did not catch the missing ordering either.\n\nPossible fixes:\n- Derive an edge from a Delete target to every card that edits a member referencing it, resolved through quarry.\n- Have plan validation refuse a Delete whose symbol is still referenced from a member that a lower-numbered card edits, unless an edge already orders them.\n\n\nFrom GitHub #350 (intake 2026-10-04).\n"
     },
     {
       "id": 92,
       "slug": "cli-tree-exceptions",
       "title": "Five CLI invariant exceptions in board notes, config, selfreport",
-      "tier": 3,
-      "type": "bug",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "cli"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[cli][bug] Fix the verbs the CLI tree walk records as exceptions and drop them from cliTreeFindings",
+      "brief": "Fix the verbs the CLI tree walk records as exceptions and drop them from cliTreeFindings",
       "body": "Part 2 of the test-suite cleanup (#347) added a CLI tree walk that checks every verb against the CLI invariant.\nIt records five exceptions in `cliTreeFindings` that pin existing behavior which breaks the invariant:\n\n- `lyx board notes` (bare) and `lyx board notes bogus` print an extra \"not initialized here\" envelope.\n- `lyx config` (bare) and `lyx config bogus` refuse with \"not a git repository\" before listing subcommands or refusing the unknown one.\n- `lyx selfreport bogus` exits 0 and prints help instead of refusing the unknown subcommand.\n\nFix each verb and remove its entry from `cliTreeFindings`, so the walk enforces the invariant for it.\n\n\nFrom GitHub #349 (intake 2026-10-04).\n"
     },
     {
       "id": 93,
       "slug": "loomcli-smoke-failures",
       "title": "loomcli smoke tier: five bootstrap/strand tests fail on main",
-      "tier": 3,
-      "type": "bug",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "testing"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[testing][bug] Five smoke tests find no loom-status or driver strand; stale tests or a bootstrap regression",
+      "brief": "Five smoke tests find no loom-status or driver strand; stale tests or a bootstrap regression",
       "body": "`go test -tags smoke ./internal/loomcli/` fails five tests on `main` (seen 2026-10-03 at `6a74ee1be`, during the PR-Gate review of #347, which fails the same five).\nEach expects one `loom-status` or driver strand and finds none:\n\n- `TestSmokeBootstrap_BringsUpSessionStrandAndDriver` — `smoke_test.go:530`: status strands named \"loom-status\" = 0; want exactly 1\n- `TestSmokeBootstrap_SecondInvocationDoesNotSpawnASecondDriver` — `smoke_test.go:592`: status strands named \"loom-status\" after two bootstraps = 0; want exactly 1\n- `TestSmokeDriverStrand_ReentrantAcrossThreeBootstraps` — `smoke_driverstrand_test.go:216`: driver strands after the first bootstrap = 0; want exactly 1\n- `TestSmokeStep_LeavesAPreexistingStatusStrandUntouched` — `smoke_drivingsurface_test.go:100`: status strand guids after step = []; want exactly the one added before the step\n- `TestSmokeStart_LLMRunRemovesEveryStatusStrand`\n\nEither the smoke tests are stale against the current bootstrap, or bootstrap no longer brings up the status and driver strands it should.\nNothing runs the smoke tier in the normal verify, so the failures went unnoticed.\n\n\nFrom GitHub #348 (intake 2026-10-04).\n"
     },
     {
       "id": 94,
       "slug": "webster-batch-validation-speed",
       "title": "Webster begin-batch spends a minute validating the plan per batch",
-      "tier": 3,
-      "type": "bug",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster",
+        "quarry",
+        "perf"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[webster][quarry][perf] quarry#34 re-parses per target; fix it or validate incrementally; drop the per-batch model assertion",
+      "brief": "quarry#34 re-parses per target; fix it or validate incrementally; drop the per-batch model assertion",
       "body": "Seen on `test-suite-change-amplification` (2026-10-03), a 45-card plan that the Batchifier split into one card per batch.\n\n## Measured\n\n- `lyx webster validate` on that plan takes 64 s of wall time at 100 % of one core, with no child processes: the time is spent in-process, single-threaded.\n- `begin-batch` runs `planglyph.ValidateDispatch` over the whole plan before every batch (`internal/websterengine/beginbatch.go:303`), so each batch pays roughly that cost again.\n- The gap from one batch's report to the next batch's spawn was 143 s, 72 s and 81 s for the first three batches, while the forks themselves took 1–2 min each.\n  Over 45 batches that is on the order of 50 minutes of setup.\n\n## Cause\n\nNot loomyard's own code: `quarry.Repo.Resolve` re-parses every file in a target's directory for each file target (Knatte18/quarry#34).\n\n## Per-batch validation stays (operator)\n\nValidating before every batch is deliberate.\nA fork may drift from the plan when it finds something the plan missed, and the plan changes with it; the per-batch check is what notices.\nIt is also the base for running forks in parallel later: glyphs, quarry and the validator maintain, at every batch, a DAG that decides which cards and batches can run concurrently.\n\n## Want\n\n- quarry#34 fixed and the quarry dependency bumped, so one validation of a plan this size takes seconds.\n- If that is not enough, make the per-batch validation incremental: re-resolve only the targets in files the last batch's delta touched, plus the cards that reference them, and reuse the rest from the previous batch.\n- Drop `begin-batch`'s per-batch model assertion (operator): the fork inherits Merriam's model, so `begin-batch` has no model to check.\n\n## Related\n\nThe one-card-per-batch split makes the per-batch cost dominate; whether the Batchifier should group cards more is a separate question.\n\n\nFrom GitHub #345 (intake 2026-10-04).\n"
     },
     {
       "id": 95,
       "slug": "config-reaches-parent",
       "title": "Config changes a task makes never reach the parent",
-      "tier": 3,
-      "type": "bug",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "fabric",
+        "config",
+        "landing"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[fabric][config][landing] Live config is in weft and task weft dies at landing; carry config changes or make the hub step explicit",
+      "brief": "Live config is in weft and task weft dies at landing; carry config changes or make the hub step explicit",
       "body": "Seen 2026-10-04 twice: `pattern-init` first planned to keep PATTERN under `_lyx/` and needed a landing carry (dropped by moving PATTERN to warp), and `board-model`'s parent review found its D13 label list written into the pair's `_lyx/config/board.yaml`, which never reaches the parent.\nLive config lives in weft, and a task's weft branch dies at landing, so any config change a task makes is lost unless the hub re-applies it by hand on main's weft.\nIdea: either a landing step that carries `_lyx/config/` changes into the parent's weft (with a conflict stop), or task-made config changes declared in the PR description and applied by the hub as a checked step.\n"
     },
     {
       "id": 96,
       "slug": "circling-to-parent",
       "title": "CIRCLING escalates to the parent orchestrator, later and on recurrence only",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "bouncer",
+        "discussion",
+        "orch"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[bouncer][discussion][orch] Round-2 CIRCLING on a rising finding count halted board-model for a human; judge later, on unchanged recurrence, and escalate to the parent",
+      "brief": "Round-2 CIRCLING on a rising finding count halted board-model for a human; judge later, on unchanged recurrence, and escalate to the parent",
       "body": "Seen 2026-10-04 in `board-model`: Discussion-Bouncer judged round 2 CIRCLING because gating findings rose from 1 to 2, both in the D10 intake bound that round 1's fix had widened; the run halted for a human.\nThe hub settled it with five short design calls and the run went on; no operator input was needed.\nOperator (2026-10-04): halting on that is disproportionate.\nIdea: CIRCLING is judged no earlier than round 3 and only when the same finding keys recur unchanged, not on a rising count; and a CIRCLING verdict escalates to the parent orchestrator like a parent-review request (message, fork decides accept/continue with design calls), reaching the operator only when the parent cannot settle it.\nRelated: `post-discussion-additions` (a verb for the parent's decisions to enter the decision record, instead of the driver editing it by hand).\n"
     },
     {
       "id": 97,
       "slug": "board-viewer",
       "title": "Interactive board view: a regenerated HTML file and a phone-friendly README",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "board",
+        "ui",
+        "ide"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[board][ui][ide] board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app",
+      "brief": "board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app",
       "body": "Operator 2026-10-04: the board needs an interactive view with filters, reachable without typing a lyx command each time.\n\n- Rendering (operator, 2026-10-04: mechanical, never an LLM): `board.html` in `_board` is a fixed viewer, changed only when the viewer itself changes, with filters on kind, type and area labels, free-text search and expandable bodies.\n  It loads a sibling `board-data.js` (`window.BOARD = {…}`), which lyx's Go code rewrites from `board.json` on every board write, committed in the same commit as README.md.\n  A plain `fetch` of `board.json` does not work: browsers block it for a page opened from `file://`, while a `\u003cscript src\u003e` loads.\n  A working demo built on today's data was shown to the operator on 2026-10-04 (filters, grouping into Tasks/Bugs/Enhancements, expandable bodies, light and dark).\n- Opening: `lyx ide` writes a VS Code task \"Open board\" into each worktree's VS Code config that opens `\u003chub\u003e/_board/board.html` in the default browser, run from `Tasks: Run Task` or a keybinding; lyx resolves the path, so nothing is linked into the worktree and `PATTERN-hub-containment` holds.\n  With Microsoft's Live Preview extension installed, the task may open it in a VS Code panel instead; VS Code alone shows HTML as source.\n  A link from `_lyx` was considered and rejected: `_lyx` is the pair's weft, the board is hub-level, and file symlinks are not relied on (Windows).\n- Phone: the board repo is private, so GitHub Pages needs a paid plan; instead make README.md easier to read in the GitHub app, grouped by type and area with collapsible `\u003cdetails\u003e` sections per area and per body.\n\nBuilds on `board-model`'s kind and labels.\n\n"
     },
     {
       "id": 98,
       "slug": "board-parked",
       "title": "A parked label hides dormant notes from the default view",
-      "tier": 3,
-      "type": "design",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "undecided",
+        "board"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[board][undecided] Notes nobody means to act on soon get parked: kept, hidden by default; curated at each intake",
+      "brief": "Notes nobody means to act on soon get parked: kept, hidden by default; curated at each intake",
       "body": "Operator 2026-10-04, undecided (\"vi tenker på det\"): the board holds every idea, and a long flat list is hard to read.\nIdea: a `parked` label for notes nobody means to act on for a while (e.g. `codex-engine`, `reed-slack-relay`, `semantic-index`), hidden from the default listing and README but kept; the orchestrator proposes merges, parking and deletions at each intake, so the list does not grow unchecked.\nIt is a label, not a layer, so it needs only a config entry and a default filter once `board-model` lands.\n"
     },
     {
       "id": 99,
       "slug": "ide-prime-setup",
       "title": "lyx seeds the prime VS Code setup: title, orch start task, keybindings",
-      "tier": 3,
-      "type": "feature",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "ide",
+        "orch"
+      ],
+      "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "[ide][orch] LY: prime/LY: \u003cslug\u003e titles, prime opens with reed up+attach only, orch start and open board as tasks with lyx keybindings, no launch.json",
+      "brief": "LY: prime/LY: \u003cslug\u003e titles, prime opens with reed up+attach only, orch start and open board as tasks with lyx keybindings, no launch.json",
       "body": "Operator 2026-10-04: the prime's `.vscode/` was copied by hand from millhouse (title \"LYXHUB\", millhouse keys, a mill `launch.json`); lyx should seed it instead, and the setup should fit the orchestrator workflow.\nAssume no `.vscode/` exists beforehand, or that it may be deleted and re-seeded by lyx.\n\n- Window title: `\u003cSHORTNAME\u003e: \u003cname\u003e` from `.lyx-shortname`, upper-cased: `LY: prime` for the prime, `LY: \u003cslug\u003e` for pairs (today `internal/vscode/config.go` writes the bare slug).\n- Prime folderOpen chain: `reed up` then `reed attach` only; no `reed add claude` (it adds a plain Claude strand the orchestrator workflow does not use).\n- Prime tasks run on demand: \"lyx: orch start\" (`lyx orch start`: launches or attaches the orchestrator and takes the terminal) and \"lyx: open board\" (opens the board viewer, see `board-viewer`).\n- Keybindings: lyx writes a `// lyx:begin` … `// lyx:end` block into the user `keybindings.json`, the way mill writes its `// mill:begin` block (mill holds Alt+Shift+1–6), e.g. Alt+Shift+0 for orch start and Alt+Shift+9 for open board, binding `workbench.action.tasks.runTask` to the task labels.\n- No `launch.json`: mill used it to run Python scripts through the debugger; lyx is a binary, so tasks are the mechanism.\n- Pairs keep their current chains (driven: attach only).\n"
     }
   ],

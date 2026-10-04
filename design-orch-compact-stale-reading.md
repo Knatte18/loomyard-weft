@@ -1,6 +1,6 @@
 # Orch watcher cycles on a stale reading after /compact
 
-`orch-compact-stale-reading` · Notes · bug
+`orch-compact-stale-reading` · Note · bug, orch
 
 On 2026-10-04 the operator ran `/compact` in the orch session at 10:09:49Z.
 It finished at 10:11:15Z (`compact_boundary`, trigger manual, preTokens 354815, postTokens 13673).

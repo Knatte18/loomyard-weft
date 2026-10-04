@@ -1,6 +1,6 @@
 # Talk to the orch through Slack
 
-`reed-slack-relay` · Notes · design
+`reed-slack-relay` · Note · enhancement, undecided, reed, slack
 
 From `manifest/roadmap.md` Someday (reed daemon Slack relay), kept by the operator on 2026-10-03.
 Operator: at work the employer's Claude subscription cannot be on the phone, but Slack can, and Claude can talk to Slack.

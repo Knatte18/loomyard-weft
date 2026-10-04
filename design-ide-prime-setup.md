@@ -1,6 +1,6 @@
 # lyx seeds the prime VS Code setup: title, orch start task, keybindings
 
-`ide-prime-setup` · Notes · feature
+`ide-prime-setup` · Note · enhancement, ide, orch
 
 Operator 2026-10-04: the prime's `.vscode/` was copied by hand from millhouse (title "LYXHUB", millhouse keys, a mill `launch.json`); lyx should seed it instead, and the setup should fit the orchestrator workflow.
 Assume no `.vscode/` exists beforehand, or that it may be deleted and re-seeded by lyx.

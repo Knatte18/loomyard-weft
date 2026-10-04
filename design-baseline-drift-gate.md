@@ -1,6 +1,6 @@
 # Baseline producer and numerical-drift gate
 
-`baseline-drift-gate` · Notes · feature
+`baseline-drift-gate` · Note · enhancement, loom, webster, testing
 
 From `manifest/roadmap.md` Someday.
 loomyard captures no before-state, so it cannot tell a pre-existing failure from one a task caused ([millhouse#1130](https://github.com/Knatte18/millhouse/issues/1130)).

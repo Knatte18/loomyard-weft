@@ -1,6 +1,6 @@
 # Webster blocks when a Delete target is already gone
 
-`webster-delete-already-gone` · Notes · bug
+`webster-delete-already-gone` · Note · bug, webster
 
 Seen 2026-10-03 in the `verify-publish-hardening` run, after 12 batches.
 Batch 15 (card 15, `webster-verify-gate`) deleted `internal/websterengine/integration_test.go`, even though card 15 does not list it.

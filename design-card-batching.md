@@ -1,8 +1,6 @@
 # A batchifier that groups small related cards into one Webster batch
 
-`card-batching` · Notes · feature
-
-Depends on: [`plan-glyph-precision`](design-plan-glyph-precision.md)
+`card-batching` · Note · enhancement, webster, batcher
 
 ## Why
 
@@ -25,3 +23,5 @@ The batchifier is built once cards name the members they touch.
 - A larger batch gives the fork a larger context and makes a failure harder to localize to one card.
 - The per-batch validation and drift check (`begin-batch`, `record-batch`) then runs per group, not per card; the operator wants plan drift caught as it happens.
 - It should fit the parallel-execution direction in `manifest/designs/webster-parallel-execution.md`, where the same DAG decides which groups may run concurrently.
+
+Depends on `plan-glyph-precision`.

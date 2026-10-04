@@ -1,6 +1,6 @@
 # warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history
 
-`warp-visibility` · Notes · design
+`warp-visibility` · Note · enhancement, undecided, fabric, ide
 
 From `manifest/roadmap.md` Someday.
 Expose `CLAUDE.local.md` via symlink (Windows-Developer-Mode note and a copy fallback), so nothing lyx-related shows up in the Fabric repo's own git history.

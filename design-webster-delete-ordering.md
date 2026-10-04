@@ -1,6 +1,6 @@
 # Webster schedules a Delete before its callers are removed
 
-`webster-delete-ordering` · Notes · bug
+`webster-delete-ordering` · Note · bug, webster
 
 Seen 2026-10-03 in the `pair-lifecycle` run: Webster scheduled card 12 (`delete-half-removed-helpers`, which deletes `fabricengine.Topology.RemovePairBranch`, `PairBranchResult` and `PairSiblingRemnant`) before card 11, the card that removes their only production caller in `internal/battencli/wire.go`.
 The batch then failed, with `recover-batch` refusing because the delete targets still resolve, and the run blocked at Webster.

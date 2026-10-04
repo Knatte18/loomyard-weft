@@ -1,6 +1,6 @@
 # Five CLI invariant exceptions in board notes, config, selfreport
 
-`cli-tree-exceptions` · Notes · bug
+`cli-tree-exceptions` · Note · bug, cli
 
 Part 2 of the test-suite cleanup (#347) added a CLI tree walk that checks every verb against the CLI invariant.
 It records five exceptions in `cliTreeFindings` that pin existing behavior which breaks the invariant:

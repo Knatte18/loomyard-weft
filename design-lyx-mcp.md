@@ -1,6 +1,6 @@
 # An MCP server over lyx exposing the verbs agents need
 
-`lyx-mcp` · Notes · feature
+`lyx-mcp` · Note · enhancement, agents, cli
 
 ## Why
 
