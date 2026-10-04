@@ -1,0 +1,4 @@
+status: OK
+head_sha: f2d8ebf70a408104365a4b6816f44918abc15db6
+deviations:
+  - pattern/PATTERN-batten-bookend.md
