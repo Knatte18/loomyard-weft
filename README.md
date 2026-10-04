@@ -129,6 +129,8 @@ Waits on nothing open; can start now, in parallel.
    - [webster][quarry][perf] quarry#34 re-parses per target; fix it or validate incrementally; drop the per-batch model assertion
 1. **Config changes a task makes never reach the parent** — [`config-reaches-parent`](design-config-reaches-parent.md) · bug
    - [fabric][config][landing] Live config is in weft and task weft dies at landing; carry config changes or make the hub step explicit
+1. **CIRCLING escalates to the parent orchestrator, later and on recurrence only** — [`circling-to-parent`](design-circling-to-parent.md) · feature
+   - [bouncer][discussion][orch] Round-2 CIRCLING on a rising finding count halted board-model for a human; judge later, on unchanged recurrence, and escalate to the parent
 
 ### Layer B
 
