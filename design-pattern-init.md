@@ -1,6 +1,6 @@
 # PATTERN for loomyard, manifest/ retired, plus repo conventions
 
-`pattern-init` · Tasks · feature · running · Batchifier
+`pattern-init` · Tasks · feature · running · Webster
 
 ## Goal
 
