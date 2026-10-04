@@ -27,7 +27,7 @@
     "22-ide-spawn-warnings.md": "d0d3043d35fb1975e29bcb70f7f5bde21948e5685babf4fa2ad134abfa383512",
     "23-seed-parent-retired.md": "a45f9dea070da76fe484da210cb6415a4ab419b552aed91b34e6d0a4d87db609"
   },
-  "currentBatch": 0,
+  "currentBatch": 21,
   "masterStrand": "480fb2e9cff09c5b0ebd9ff76a72be0c",
   "masterSessionId": "c8ab255f-7058-4670-a752-d89cc9fff233",
   "assertedModel": "sonnet",
@@ -388,6 +388,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pattern-init/c8ab255f-7058-4670-a752-d89cc9fff233/subagents/agent-aa0a28834a54db343.jsonl"
       ]
+    },
+    "21": {
+      "slug": "hub-workspace-fabric",
+      "cards": [
+        "21-hub-workspace-fabric"
+      ],
+      "cardHashes": {
+        "21-hub-workspace-fabric": "15bd7a7ef822ad118602c11a7584a080f0601fae6aa53aacffa72ef1f7b94997"
+      },
+      "startSha": "3697a6b44eeedfe5a4371aa7209c404d106cae92",
+      "kind": "fork",
+      "spawnedAt": "2026-10-04T13:17:02Z",
+      "sessionId": "c8ab255f-7058-4670-a752-d89cc9fff233",
+      "terminal": false,
+      "status": ""
     },
     "3": {
       "slug": "pattern-designer-role",
