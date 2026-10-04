@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "run-exit audit found 2 correctness finding(s): fork wrote \"/home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/summary.md\" — outcome.yaml and summary.md are Master's own contract files; a fork writing either forges the run's terminal judgment; fork wrote \"/home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/outcome.yaml\" — outcome.yaml and summary.md are Master's own contract files; a fork writing either forges the run's terminal judgment; suspect paths: /home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/summary.md, /home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/outcome.yaml; way forward: reset the branch to the run's start commit with git and run \"lyx webster run --fresh\" and re-step the Webster row (lyx webster run), since nothing the run recorded can check /home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/summary.md, /home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/outcome.yaml",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Batchifier → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "run-exit audit found 2 correctness finding(s): fork wrote \"/home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/summary.md\" — outcome.yaml and summary.md are Master's own contract files; a fork writing either forges the run's terminal judgment; fork wrote \"/home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/outcome.yaml\" — outcome.yaml and summary.md are Master's own contract files; a fork writing either forges the run's terminal judgment; suspect paths: /home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/summary.md, /home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/outcome.yaml; way forward: reset the branch to the run's start commit with git and run \"lyx webster run --fresh\" and re-step the Webster row (lyx webster run), since nothing the run recorded can check /home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/summary.md, /home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/outcome.yaml"
   },
   "history": [
     {
@@ -149,6 +149,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-04T14:42:36Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T16:26:41Z"
     }
   ],
   "product": {
