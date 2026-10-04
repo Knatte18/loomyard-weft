@@ -575,6 +575,17 @@
       "isolated": false,
       "brief": "[webster][quarry][perf] quarry#34 re-parses per target; fix it or validate incrementally; drop the per-batch model assertion",
       "body": "Seen on `test-suite-change-amplification` (2026-10-03), a 45-card plan that the Batchifier split into one card per batch.\n\n## Measured\n\n- `lyx webster validate` on that plan takes 64 s of wall time at 100 % of one core, with no child processes: the time is spent in-process, single-threaded.\n- `begin-batch` runs `planglyph.ValidateDispatch` over the whole plan before every batch (`internal/websterengine/beginbatch.go:303`), so each batch pays roughly that cost again.\n- The gap from one batch's report to the next batch's spawn was 143 s, 72 s and 81 s for the first three batches, while the forks themselves took 1–2 min each.\n  Over 45 batches that is on the order of 50 minutes of setup.\n\n## Cause\n\nNot loomyard's own code: `quarry.Repo.Resolve` re-parses every file in a target's directory for each file target (Knatte18/quarry#34).\n\n## Per-batch validation stays (operator)\n\nValidating before every batch is deliberate.\nA fork may drift from the plan when it finds something the plan missed, and the plan changes with it; the per-batch check is what notices.\nIt is also the base for running forks in parallel later: glyphs, quarry and the validator maintain, at every batch, a DAG that decides which cards and batches can run concurrently.\n\n## Want\n\n- quarry#34 fixed and the quarry dependency bumped, so one validation of a plan this size takes seconds.\n- If that is not enough, make the per-batch validation incremental: re-resolve only the targets in files the last batch's delta touched, plus the cards that reference them, and reuse the rest from the previous batch.\n- Drop `begin-batch`'s per-batch model assertion (operator): the fork inherits Merriam's model, so `begin-batch` has no model to check.\n\n## Related\n\nThe one-card-per-batch split makes the per-batch cost dominate; whether the Batchifier should group cards more is a separate question.\n\n\nFrom GitHub #345 (intake 2026-10-04).\n"
+    },
+    {
+      "id": 95,
+      "slug": "config-reaches-parent",
+      "title": "Config changes a task makes never reach the parent",
+      "tier": 3,
+      "type": "bug",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[fabric][config][landing] Live config is in weft and task weft dies at landing; carry config changes or make the hub step explicit",
+      "body": "Seen 2026-10-04 twice: `pattern-init` first planned to keep PATTERN under `_lyx/` and needed a landing carry (dropped by moving PATTERN to warp), and `board-model`'s parent review found its D13 label list written into the pair's `_lyx/config/board.yaml`, which never reaches the parent.\nLive config lives in weft, and a task's weft branch dies at landing, so any config change a task makes is lost unless the hub re-applies it by hand on main's weft.\nIdea: either a landing step that carries `_lyx/config/` changes into the parent's weft (with a conflict stop), or task-made config changes declared in the PR description and applied by the hub as a checked step.\n"
     }
   ],
   "legacy_done": [

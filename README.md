@@ -127,6 +127,8 @@ Waits on nothing open; can start now, in parallel.
    - [testing][bug] Five smoke tests find no loom-status or driver strand; stale tests or a bootstrap regression
 1. **Webster begin-batch spends a minute validating the plan per batch** — [`webster-batch-validation-speed`](design-webster-batch-validation-speed.md) · bug
    - [webster][quarry][perf] quarry#34 re-parses per target; fix it or validate incrementally; drop the per-batch model assertion
+1. **Config changes a task makes never reach the parent** — [`config-reaches-parent`](design-config-reaches-parent.md) · bug
+   - [fabric][config][landing] Live config is in weft and task weft dies at landing; carry config changes or make the hub step explicit
 
 ### Layer B
 
