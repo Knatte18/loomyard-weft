@@ -1,0 +1,38 @@
+{
+  "runGuid": "71e23f82c86bb33a63d42c31f7f54eac",
+  "planFingerprint": "41bdd1b5ee316950bebfc5813b2af099578800267feaf6602493c3b8a983d158",
+  "planFileHashes": {
+    "00-overview.md": "ff2926cfc0e83ec688525cf84990632ebcc3364a993e4293c0d094957367c458",
+    "01-board-label-vocabulary.md": "e00d387c0a120fc63602460976eec3ccb2470f7f8a117d705a4ccd8b6c25ed58",
+    "02-board-alias-removal.md": "1415331494b752907a88f91602842e00d60278ffff84a75ba2f0a243f9f57c57",
+    "03-board-kind-and-labels.md": "bf9f8fa8b80247a1b0459c144c8101a7e38184fe55424b7541552d79358c6fec",
+    "04-board-load-migration.md": "a5dc4117e7a315cc449568afeccc4a8c66f8ac3aa46f4e0ad817b7b92827e0a5",
+    "05-board-label-filter.md": "7a5151470f60533b33c58ee98767e83e6575aac721bd95472840c7cd4fcb83b6",
+    "06-board-upsert-body-file.md": "ac76b7a23f8325e73c89c57cdc5f3c2efddc6e00cee6995d2170d22311c46f26",
+    "07-inbox-github-calls.md": "1c6e6aabd7b2306d382e967eda1be4a267de80c1881a19c84142977e8676291c",
+    "08-board-issue-records.md": "d12ecdfaef911f69fc083a3e6da6143b8c423992c3df1904425ec50dc3ad2bc5",
+    "09-board-intake-verbs.md": "80bae53962d0aa3ee1f2d3da59c1a3a8dc4ec1ab150e30168c207ec88ef1d248",
+    "10-board-model-docs.md": "dcbafb7d81c205a360beadfd5e38f40f87e7d74738a93afe9c448a14a16e59a6"
+  },
+  "currentBatch": 1,
+  "masterStrand": "596a359043833313abccb3141fdf4531",
+  "masterSessionId": "fbcb0cb7-5297-4d67-bc21-f9f6feb0099f",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "board-label-vocabulary",
+      "cards": [
+        "01-board-label-vocabulary"
+      ],
+      "cardHashes": {
+        "01-board-label-vocabulary": "e00d387c0a120fc63602460976eec3ccb2470f7f8a117d705a4ccd8b6c25ed58"
+      },
+      "startSha": "703439b8256b18b87dca212cfe3902bbfc6f453c",
+      "kind": "fork",
+      "spawnedAt": "2026-10-04T14:42:57Z",
+      "sessionId": "fbcb0cb7-5297-4d67-bc21-f9f6feb0099f",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
