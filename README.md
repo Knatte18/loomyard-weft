@@ -11,7 +11,7 @@ Concrete and claimable; only an entry here can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **PATTERN for loomyard, manifest/ retired, plus repo conventions** — [`pattern-init`](design-pattern-init.md) · feature · running · Plan-Burler
+1. **PATTERN for loomyard, manifest/ retired, plus repo conventions** — [`pattern-init`](design-pattern-init.md) · feature · running · Plan-Bouncer
    - CONSTRAINTS.md becomes a thin repo-root PATTERN.md overview of one-line PATTERN-* entries with background files in pattern/; manifest/ retires into bolt and package docs; warp/weft scan beyond Go code; model-spec leftovers; role constants; ide workspace cleanups
 
 ## Next Up
