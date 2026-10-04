@@ -20,11 +20,24 @@
 - `internal/burlerengine/engine.go`
 - `internal/burlerengine/engine_test.go`
 - `internal/burlerengine/template_test.go`
+- `internal/burlerengine/geometry.go`
+- `internal/websterengine/geometry.go`
+- `internal/hubgeom/hubgeom.go`
+- `internal/hubgeom/hubgeom_test.go`
+- `internal/hubgeom/webstergeom.go`
+- `internal/hubgeom/webstergeom_test.go`
+- `internal/standalonegeom/burlergeom.go`
+- `internal/standalonegeom/webstergeom.go`
+- `internal/standalonegeom/standalonegeom_test.go`
 - `cmd/lyx/pathrules_test.go`
 - `internal/fabricengine/junction_pattern_integration_test.go`
 - `internal/fabricengine/unwire_test.go`
+- `internal/fabricengine/unwire.go`
+- `internal/fabricengine/junction.go`
 
 **Intent:** Move PATTERN to the warp worktree root, inline the overview into every directive, and treat a whitespace-only overview as inactive (D3, D4, Operator additions 1–2).
+Bound on the inactive rule: only whitespace-only content is inactive; any other content, however malformed, is inlined verbatim, so format violations stay the job of card 6's checker.
+An emptied loomyard overview cannot slip through, because card 6's real-file test fails on an empty overview and on one with no entry bullet.
 
 `internal/pattern`:
 - `File(worktreeRoot)` returns `<worktreeRoot>/PATTERN.md`.
@@ -48,12 +61,20 @@ Change the background bullet's literal to `pattern/` (for example "Read every ba
 The pointer stays a fixed literal, never interpolated.
 Each banner drops "must stay marker-free" and states the one marker and who fills it.
 
-Call sites pass the warp worktree root, never the anchor:
+Call sites pass the warp worktree root, never the anchor.
+In hub mode the burler and webster geometries' `WorktreeRoot` is the anchor path (`hubgeom.BurlerGeometry` and `hubgeom.WebsterGeometry` set it to `l.AnchorPath()`, and their comments forbid converging it), so it is wrong for a subpath-anchored hub and neither engine may read `PATTERN.md` through it.
+Each of the two engines' `Geometry` gains a told `RepoRoot` field, the directory holding `PATTERN.md` and `go.mod`:
+- `hubgeom`'s burler and webster geometry constructors fill it with `l.WorktreePath()`.
+- `standalonegeom`'s burler and webster geometry constructors fill it with the target, as for their `WorktreeRoot`.
+- A `Geometry` literal that leaves it empty gets no directive, through `Directive`'s empty-path case.
+- The existing `WorktreeRoot` semantics do not change, and the `hubgeom` comments that explain why they differ stay.
+
+Call sites:
 - `loomengine` passes `layout.WorktreePath()`.
-- `burlerengine` passes `e.geom.WorktreeRoot`.
-- `websterengine.RenderMasterPrompt` passes its `worktreeRoot`.
-- `RenderRecoveryPrompt` replaces its `anchorRoot` parameter with the worktree root the recovery agent edits; `recoverbatch.go` and `runlevel.go` follow.
-  Drop the now-unused `anchorRoot` parameter where it fed only the directive.
+- `burlerengine` passes `e.geom.RepoRoot`.
+- `websterengine.RenderMasterPrompt` and `RenderRecoveryPrompt` take the repo root as the argument they pass to `Directive`.
+  `RenderMasterPrompt` replaces its now-unused `anchorRoot` parameter with `repoRoot`, and `RenderRecoveryPrompt` replaces its `anchorRoot` parameter with `repoRoot` and keeps `promptWorktreeRoot`, which feeds the card pointers.
+  `runlevel.go` and `recoverbatch.go` pass `deps.Geom.RepoRoot`, and `template_test.go`'s calls follow.
 
 Tests:
 - The fixtures that plant `_lyx/PATTERN.md` plant `PATTERN.md` at the fixture's worktree root instead.
@@ -68,6 +89,8 @@ Tests:
 - `TestPlanSpec_PatternDirectiveAnchoredUnderAnchorPath` becomes a subpath-anchored case proving the worktree root, not the anchor, is read.
 - `pathrules_test.go` drops the `pattern.File` row, since the overview is no longer `_lyx` content; its comment follows.
 - `junction_pattern_integration_test.go` tests fabric's pollution handling of a tracked file under warp's `_lyx`, so it keeps its fixture file but spells its expected path locally (for example `lyxdirs.LyxDirName + "/PATTERN.md"`) instead of reading `pattern.PathspecFile`.
-- `unwire_test.go`'s comment that names `_lyx/PATTERN.md` as PATTERN's home is corrected.
+- `unwire_test.go`'s comment, `unwire.go`'s `WeftContent` comment and `junction.go`'s comment on the real-directory refusal all name `_lyx/PATTERN.md` as PATTERN's home; each is corrected to say PATTERN no longer lives under `_lyx`.
+- `hubgeom_test.go`, `webstergeom_test.go` and `standalonegeom_test.go` assert the new `RepoRoot` field: the worktree path on a subpath-anchored hub location, where it differs from the anchor path, and the target in standalone mode.
+- The burler and webster directive tests gain a subpath-anchored case, with `PATTERN.md` planted at the repo root and not at the anchor, proving the directive renders.
 
-**ImpactSummary:** Changes Directive's path root and output across its four engine call sites plus webster's two render callers; no CLI surface changes.
+**ImpactSummary:** Changes Directive's path root and output across the loom, burler and webster call sites, and adds one told field to two engine geometries, filled by the hub and standalone constructors; no CLI surface changes.

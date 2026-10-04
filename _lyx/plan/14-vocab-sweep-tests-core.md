@@ -7,7 +7,6 @@
 - `cmd/lyx/destructiveguard_test.go`
 - `cmd/lyx/rawgitmutation_test.go`
 - `cmd/lyx/spawnobservability_test.go`
-- `cmd/lyx/stencilseed_integration_test.go`
 - `cmd/lyx/uncontainedwrite_test.go`
 - `contracts/stencils/claims_test.go`
 - `internal/batcher/config_test.go`
@@ -20,8 +19,8 @@
 - `internal/battencli/wire_test.go`
 - `internal/burlercli/wiring_test.go`
 - `internal/configcli/configcli_integration_test.go`
+- `internal/configsync/configsync_test.go`
 - `internal/hubgeom/parent_test.go`
-- `internal/hubgeom/reedgeom_integration_test.go`
 - `internal/ideengine/spawn_hub_integration_test.go`
 - `tools/sandbox/main_test.go`
 - `tools/sandbox/report_test.go`
@@ -38,6 +37,8 @@ Follow the Shared Decisions `vocab-sweep` rule:
 A string a test compares against production output (an envelope key, an error message, a CLI flag or usage text owned by fabric) is not reworded here.
 If it names a side, it is an owner-set spelling the test may not change.
 Report it in the card's deviation note, so card 18 can add it to the `vocab-exempt` table with a reason.
+
+`internal/configsync/configsync_test.go` follows `internal/configsync`'s narrow carve-out (see card 18): its string literals and comments may name the legacy `warp.yaml`/`weft.yaml` files, so only its identifiers (for example `warpPath`) are renamed.
 
 Run the package tests, including `-tags integration` for any reworded integration file.
 

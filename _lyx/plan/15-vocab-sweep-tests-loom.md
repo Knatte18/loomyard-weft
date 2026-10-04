@@ -2,21 +2,16 @@
 
 **Edit:**
 - `internal/loomcli/arm_seed_test.go`
-- `internal/loomcli/circling_integration_test.go`
 - `internal/loomcli/cli_test.go`
 - `internal/loomcli/commitrecords_integration_test.go`
 - `internal/loomcli/driverresume_test.go`
 - `internal/loomcli/friction_test.go`
 - `internal/loomcli/halt_test.go`
-- `internal/loomcli/integration_driverbootstrap_test.go`
-- `internal/loomcli/landingdeps_integration_test.go`
 - `internal/loomcli/landingdeps_test.go`
 - `internal/loomcli/landingdeps_verify_test.go`
 - `internal/loomcli/parentreview_integration_test.go`
 - `internal/loomcli/parentreview_wiring_test.go`
 - `internal/loomcli/sharedbootstrap_test.go`
-- `internal/loomcli/smoke_driverstrand_test.go`
-- `internal/loomcli/smoke_drivingsurface_test.go`
 - `internal/loomcli/smoke_test.go`
 - `internal/loomcli/start_driver_test.go`
 - `internal/loomcli/step_test.go`

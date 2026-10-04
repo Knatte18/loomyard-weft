@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -130,7 +130,8 @@ The decision record, including its "Operator additions (2026-10-04)" section, is
 
 - **Decision:** `pattern.Directive` and `pattern.File` take the warp worktree root, never the anchor path.
   The directive stencils carry one required `{{.pattern_overview}}` marker and the fixed background pointer literal `pattern/`.
-  Every role's call site passes its spawn's worktree root.
+  Every role's call site passes the repo root holding `PATTERN.md`, which is the warp worktree root.
+  Burler's and webster's geometries tell it through a `RepoRoot` field, because their `WorktreeRoot` is the anchor path in hub mode.
 - **Rationale:** `PATTERN.md` sits next to `go.mod` at the repo root (Operator additions 1–2).
 - **Applies to:** cards 2, 3, 4
 

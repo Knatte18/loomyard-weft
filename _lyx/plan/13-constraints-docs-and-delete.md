@@ -32,6 +32,10 @@ Every other reference names the PATTERN entry (`PATTERN-<name>` from the `entry-
 `docslink_test.go`'s allowlist entry for it is removed, because the link now resolves.
 A stale allowlist entry fails the scan, so the removal is required.
 
+`docs/overview.md`'s module tree row for `internal/pattern` and its shared-infrastructure sentence describe the leaf by the old rule (`_lyx/PATTERN.md`, three roles, consumed by webster, burler and loom).
+Both are rewritten to the new one: the leaf inlines the root `PATTERN.md` into the prompts of the agents that design, plan, edit or judge, for the roles in `internal/pattern`'s doc, and ships a format checker.
+The doc names no role count.
+
 Measurement reports under `docs/benchmarks/` and `docs/research/` get the same mechanical repoint.
 A bare filename mention changes to `PATTERN.md`; the recorded results are left untouched.
 The ly-drive skill edit ships through `update-plugins.sh` only when the operator runs it, and plugins stay at `1.0.0`.

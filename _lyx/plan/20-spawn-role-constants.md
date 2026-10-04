@@ -36,7 +36,7 @@ Tests that assert the on-the-wire name keep the literal.
 There is no shared list, and `agentname`'s role set stays open.
 
 `cmd/lyx/spawnrole_test.go` is an untagged AST scan over every non-test `.go` file in the module.
-It fails any composite literal of `shuttleengine.Spec` (and of reed's strand-spawn spec type, whatever struct `reedengine`/`reedcli` take a `Role` in) whose `Role` field is a string literal.
+It fails any composite literal of `shuttleengine.Spec` (and of `reedengine.AddSpec`, reed's strand-spawn spec) whose `Role` field is a string literal.
 A constant, a variable or a parameter passes.
 It is a tripwire, not a completeness proof.
 Its failure message names the file, the line and `PATTERN-agent-name`.

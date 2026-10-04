@@ -19,7 +19,7 @@ Scope added to the bare-token rule:
 - `CLAUDE.md` and `README.md`.
 
 Skipped:
-- `_lyx`, `.lyx` and `sandbox/` fixture directories;
+- `_lyx`, `.lyx` and the repo-root `sandbox/` fixture tree, matched on the path's first segment, so `tools/sandbox/` is scanned;
 - a closed path allowlist, each entry with a one-line reason in the test:
   - fabric's own docs (only a doc whose subject is fabric's two-sided design);
   - the measurement reports under `docs/benchmarks/` and `docs/research/`;
@@ -29,6 +29,9 @@ The `vocab-exempt` table (Shared Decisions) becomes a closed list in the test: o
 The scan strips exactly those whole tokens before matching, so any other identifier carrying a side, including a new owner-set export, still fails.
 Adding an entry needs a reason line naming its owner-set declaration.
 Entries reported as deviations by cards 14–17 are added here only when they are owner-set spellings.
+
+`internal/configsync` keeps its existing narrow carve-out for its test files too: string literals and comments may name the sides, identifiers may not, through the same `failsBareVocabularyCheck` split the production scan uses.
+Every other owner directory is skipped whole, test files included.
 
 The `weftname` import rule keeps its `internal/lyxcwd/geometry_test.go` exemption.
 `anchor_test.go`, `geometry_test.go` and `docslink_test.go` are reworded under the `vocab-sweep` rule, except for `vocab-exempt` identifiers and the `weftname` import.
