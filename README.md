@@ -11,7 +11,7 @@ Concrete and claimable; only an entry here can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **PATTERN for loomyard, manifest/ retired, plus repo conventions** — [`pattern-init`](design-pattern-init.md) · feature
+1. **PATTERN for loomyard, manifest/ retired, plus repo conventions** — [`pattern-init`](design-pattern-init.md) · feature · running · Loom-Preflight
    - CONSTRAINTS.md becomes a thin _lyx/PATTERN.md overview of one-line PATTERN-* entries with background files; manifest/ retires into bolt and package docs; warp/weft scan beyond Go code; model-spec leftovers; role constants; ide workspace cleanups
 
 ## Next Up

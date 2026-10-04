@@ -1,6 +1,6 @@
 # PATTERN for loomyard, manifest/ retired, plus repo conventions
 
-`pattern-init` · Tasks · feature
+`pattern-init` · Tasks · feature · running · Loom-Preflight
 
 ## Goal
 
