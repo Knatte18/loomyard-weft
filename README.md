@@ -7,13 +7,6 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only an entry here can run.
 
-### Layer A
-
-Waits on nothing open; can start now, in parallel.
-
-1. **Board as one list: tasks and notes with labels, GitHub issues pulled in** — [`board-model`](design-board-model.md) · feature · running · Finalize
-   - [board][github] kind task|note replaces tier, labels field on both (type folds in), upsert body from file, an intake verb that turns GitHub issues into notes
-
 ## Next Up
 
 Planned next, but not yet concretized.
@@ -145,3 +138,10 @@ Starts when every entry it names under After is done.
 1. **A batchifier that groups small related cards into one Webster batch** — [`card-batching`](design-card-batching.md) · feature
    - [webster][batcher] Only the identity batchifier exists; a mechanical batchifier groups cards from their Create/Edit/Uses fields once cards name members as glyphs
    - **After:** `plan-glyph-precision`
+
+## Done
+
+Finished, awaiting `lyx board prune`.
+
+1. **Board as one list: tasks and notes with labels, GitHub issues pulled in** — [`board-model`](design-board-model.md) · feature · done
+   - [board][github] kind task|note replaces tier, labels field on both (type folds in), upsert body from file, an intake verb that turns GitHub issues into notes
