@@ -1,11 +1,11 @@
 {
-  "current_producer": "Run-Shed",
+  "current_producer": "Worktree-Teardown",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Run-Shed",
-    "last": "Seed-Child → done",
+    "now": "Worktree-Teardown",
+    "last": "Run-Shed → done",
     "wait": ""
   },
   "history": [
@@ -20,6 +20,1446 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-04T11:18:25Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:19:02Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:19:32Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:20:02Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:20:32Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:21:02Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:21:32Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:22:03Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:22:33Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:23:03Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:23:33Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:24:03Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:24:33Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:25:03Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:25:33Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:26:03Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:26:33Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:27:03Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:27:33Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:28:03Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:28:33Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:29:03Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:29:33Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:30:03Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:30:33Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:31:03Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:31:33Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:32:04Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:32:34Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:33:04Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:33:34Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:34:04Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:34:34Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:35:04Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:35:34Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:36:04Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:36:34Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:37:04Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:37:34Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:38:04Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:38:34Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:39:04Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:39:34Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:40:04Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:40:34Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:41:04Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:41:34Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:42:04Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:42:34Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:43:04Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:43:35Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:44:05Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:44:35Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:45:05Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:45:35Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:46:05Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:46:35Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:47:05Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:47:35Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T11:48:05Z",
+      "budget_exempt": true,
+      "repeats": 34,
+      "last_at": "2026-10-04T12:05:06Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:05:36Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:06:06Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:06:36Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:07:06Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:07:36Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:08:07Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:08:37Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:09:07Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:09:37Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:10:07Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:10:37Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:11:07Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:11:37Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:12:07Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:12:37Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:13:07Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:13:37Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:14:07Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:14:37Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:15:07Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:15:37Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:16:07Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:16:37Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:17:07Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:17:37Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:18:08Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:18:38Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:19:08Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:19:38Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:20:08Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:20:38Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:21:08Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:21:38Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:22:08Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:22:38Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:23:08Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:23:38Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:24:08Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:24:38Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:25:08Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:25:38Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:26:08Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:26:38Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:27:08Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:27:38Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:28:08Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:28:38Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:29:08Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:29:39Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:30:09Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:30:39Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:31:09Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:31:39Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:32:09Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:32:39Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:33:09Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:33:39Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:34:09Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:34:39Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:35:09Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:35:39Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:36:09Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:36:39Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:37:09Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:37:39Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:38:09Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:38:39Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:39:09Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:39:40Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:40:10Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:40:40Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:41:10Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:41:40Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:42:10Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:42:40Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:43:10Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:43:40Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:44:10Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:44:40Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:45:10Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:45:40Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:46:10Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:46:40Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:47:10Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:47:40Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:48:10Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:48:40Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:49:10Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:49:40Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:50:11Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:50:41Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:51:11Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:51:41Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:52:11Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:52:41Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:53:11Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:53:41Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:54:11Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:54:41Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:55:11Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:55:41Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:56:11Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:56:41Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:57:11Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:57:41Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:58:11Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:58:41Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:59:11Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T12:59:41Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:00:11Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:00:41Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:01:12Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:01:42Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:02:12Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:02:42Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:03:12Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:03:42Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:04:12Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:04:42Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:05:12Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:05:42Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:06:12Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:06:42Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:07:12Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:07:42Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:08:12Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:08:42Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:09:12Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:09:42Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:10:12Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:10:42Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:11:12Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:11:43Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:12:13Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:12:43Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:13:13Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:13:43Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:14:13Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:14:43Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:15:13Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:15:43Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:16:13Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:16:43Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:17:13Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:17:43Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:18:13Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:18:43Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:19:13Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:19:43Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:20:14Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:20:44Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:21:14Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:21:44Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:22:14Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:22:44Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:23:14Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:23:44Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:24:14Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:24:44Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:25:14Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:25:44Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:26:14Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:26:44Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:27:14Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:27:44Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:28:15Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:28:45Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:29:15Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:29:45Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:30:15Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:30:45Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:31:15Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:31:45Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:32:15Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:32:45Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:33:15Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:33:45Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:34:15Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-04T13:34:45Z",
+      "budget_exempt": true,
+      "repeats": 6,
+      "last_at": "2026-10-04T13:37:47Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-04T13:37:47Z"
     }
   ]
 }
