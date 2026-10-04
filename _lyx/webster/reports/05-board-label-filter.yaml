@@ -1,0 +1,4 @@
+status: OK
+head_sha: 655c196d31eabf41ff3f380daedfe20294357a53
+deviations:
+  - internal/boardengine/boardtest/concurrency_test.go
