@@ -11,7 +11,7 @@ Concrete and claimable; only an entry here can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **PATTERN for loomyard, manifest/ retired, plus repo conventions** — [`pattern-init`](design-pattern-init.md) · feature · running · PR-Gate
+1. **PATTERN for loomyard, manifest/ retired, plus repo conventions** — [`pattern-init`](design-pattern-init.md) · feature · awaiting · PR-Gate
    - CONSTRAINTS.md becomes a thin repo-root PATTERN.md overview of one-line PATTERN-* entries with background files in pattern/; manifest/ retires into bolt and package docs; warp/weft scan beyond Go code; model-spec leftovers; role constants; ide workspace cleanups
 1. **Board as one list: tasks and notes with labels, GitHub issues pulled in** — [`board-model`](design-board-model.md) · feature
    - [board][github] kind task|note replaces tier, labels field on both (type folds in), upsert body from file, an intake verb that turns GitHub issues into notes
