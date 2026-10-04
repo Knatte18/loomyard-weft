@@ -135,6 +135,8 @@ Waits on nothing open; can start now, in parallel.
    - [board][ui][ide] board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app
 1. **A parked label hides dormant notes from the default view** — [`board-parked`](design-board-parked.md) · design
    - [board][undecided] Notes nobody means to act on soon get parked: kept, hidden by default; curated at each intake
+1. **lyx seeds the prime VS Code setup: title, orch start task, keybindings** — [`ide-prime-setup`](design-ide-prime-setup.md) · feature
+   - [ide][orch] LY: prime/LY: <slug> titles, prime opens with reed up+attach only, orch start and open board as tasks with lyx keybindings, no launch.json
 
 ### Layer B
 
