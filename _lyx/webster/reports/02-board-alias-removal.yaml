@@ -1,0 +1,4 @@
+status: OK
+head_sha: 24231bc866edd39603c4af2ed578bd7f02576aa6
+deviations:
+  - internal/boardcli/help_test.go
