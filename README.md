@@ -101,6 +101,26 @@ Waits on nothing open; can start now, in parallel.
    - [fabric][vocabulary] 13 fabric and hubforge exports name warp/weft, so callers outside fabric must too; rename them and drop the scan exemption
 1. **raddle: codeguide's woven-in successor** — [`raddle`](design-raddle.md) · design
    - [docs][finalize] Docs regenerated once at merge time over the plan's diff, folded into Finalize's contract; the geometry and the parallel-regeneration design exist
+1. **webster: worktree-per-card parallel execution** — [`webster-parallel-execution`](design-webster-parallel-execution.md) · design
+   - [webster][speed] Give each DAG-independent group its own fabric-spawned worktree so concurrent cards stop sharing one git index; parked until measured evidence says it pays
+1. **reed: cross-worktree columns, own-window anchoring, per-window attach** — [`reed-multi-window`](design-reed-multi-window.md) · design
+   - [reed][ui] Three related ideas for reed beyond one pane per strand and one window per worktree
+1. **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history** — [`warp-visibility`](design-warp-visibility.md) · design
+   - [fabric][ide] Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date
+1. **Baseline producer and numerical-drift gate** — [`baseline-drift-gate`](design-baseline-drift-gate.md) · feature
+   - [loom][webster][testing] Capture a before-state so a failure the task caused can be told from a pre-existing one; in numerical repos the failure to catch is drift
+1. **config: repo-wide default plus per-worktree override** — [`config-overlay`](design-config-overlay.md) · feature
+   - [config] A repo-wide default layer read from _board with each worktree's own file as an override, the way millhouse's config.local.yaml works
+1. **fabric: two-sided reset-to-SHA verb** — [`fabric-reset-to-sha`](design-fabric-reset-to-sha.md) · feature
+   - [fabric] The post-conclude undo the merge surface does not ship: reset to a warp SHA, resolve the paired weft SHA through the correspondence index, gate both sides
+1. **finalize: the discrepancy-document conflict shape** — [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) · feature
+   - [finalize][fabric] Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers
+1. **shedrecipe: capability declaration instead of manual seam-threading** — [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) · feature
+   - [shed][recipes] A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer
+1. **doctor: a lyx diagnostics command** — [`doctor`](design-doctor.md) · feature
+   - [cli] lyx doctor checks the _lyx layout, config parse, board reachability and stale locks
+1. **session sync: Claude transcripts across machines** — [`session-sync`](design-session-sync.md) · feature
+   - [agents] Copy Claude .jsonl transcripts across machines so --resume works elsewhere
 
 ### Layer B
 
