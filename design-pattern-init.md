@@ -28,8 +28,11 @@ Verified: no _lyx/PATTERN.md in loomyard-weft, and there is no init verb. intern
 - Entry names are `PATTERN-<kebab-name>`, e.g. `PATTERN-paths-passed-in`: one word in a terminal and in `@` references, a valid filename everywhere, and recognisably not a board slug.
   The `<kebab-name>` part is chosen to read clearly, not copied from CONSTRAINTS.md's heading.
 - A background file is `_lyx/pattern/PATTERN-<kebab-name>.md`, named exactly as its entry, so one grep finds the entry, the file and every citation.
-- Every agent gets the pointer to the whole overview, as `internal/pattern` already does; there is no per-task or per-card selection.
+- Every agent gets the whole overview inlined into its prompt, not a pointer: it is guaranteed seen, saves a read turn per agent (each Webster fork included), and stays cheap because it is thin and cache-stable; there is no per-task or per-card selection.
+  Each directive stencil in `contracts/stencils/pattern/` keeps its instruction section (binding, wins over the rest of the prompt, violations are blocking) and gains a marker the overview's content fills, replacing its "Read _lyx/PATTERN.md in full" bullet; background files stay pointers.
+  This lifts the stencils' marker-free rule and changes `internal/pattern`'s doc on why the pointer stays relative.
   Add the directive also to Discussion-Write and the Bouncer judge, which get none today.
+- The format test also caps the overview's size, so content that outgrows a line moves to a background file.
 - An entry enforced by `go test` says so in its bullet, e.g. a trailing `(test)`.
 - A format test pins: names unique and matching `PATTERN-[a-z0-9-]+`, each entry one line, every link resolving, and every file under `_lyx/pattern/` having an entry.
 - Citations (review findings, decision records, code comments) use the entry name.
