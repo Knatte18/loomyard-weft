@@ -119,6 +119,10 @@ Waits on nothing open; can start now, in parallel.
    - [agents] Copy Claude .jsonl transcripts across machines so --resume works elsewhere
 1. **Orch watcher cycles on a stale reading after /compact** — [`orch-compact-stale-reading`](design-orch-compact-stale-reading.md) · bug
    - [orch][bug] A /compact leaves the pre-compaction token reading in place, so a soft cycle fires on a near-empty context
+1. **Webster blocks when a Delete target is already gone** — [`webster-delete-already-gone`](design-webster-delete-already-gone.md) · bug
+   - [webster][bug] begin-batch refuses plan_drifted when an earlier batch already deleted a later card's Delete target
+1. **Webster schedules a Delete before its callers are removed** — [`webster-delete-ordering`](design-webster-delete-ordering.md) · bug
+   - [webster][bug] deriveEdges has no edge from a deleted symbol to the cards editing its callers
 
 ### Layer B
 
