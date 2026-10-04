@@ -1,0 +1,12 @@
+status: OK
+head_sha: 000cb4459e039b3c65a30d1ad96e21b69df699d5
+deviations:
+  - internal/boardengine/boardtest/sync_test.go
+  - internal/pattern/pattern_test.go
+  - internal/shedcli/seed_test.go
+  - plugins/ly/skills/ly-drive/SKILL.md
+  - tools/sandbox/main_test.go
+  - tools/sandbox/report.go
+  - tools/sandbox/report_test.go
+  - tools/sandbox/suite.go
+  - tools/sandbox/suite_test.go
