@@ -51,6 +51,8 @@ names not matching `PATTERN-[a-z0-9-]+` or duplicated;
 an entry bullet spanning more than one line;
 an entry line longer than 320 characters;
 an overview larger than 16 KiB;
+an overview that is empty or whitespace-only;
+an overview with no entry bullet;
 a link that does not resolve or does not point at `pattern/<the entry's own name>.md`;
 a file under `_lyx/pattern/` with no entry.
 The checker is unit-tested on fixtures for each finding kind.
@@ -59,6 +61,7 @@ That test skips only when `_lyx/` itself is absent (a plain clone with no fabric
 The checker is not called at prompt-render time.
 Rationale: the operator asked for a format test with a size cap; a library checker keeps the rules in one place and testable on fixtures, and the real-file test keeps loomyard's PATTERN honest under every verify.
 The skip bound is the presence of `_lyx/`, so a fabric worktree can never silently pass with PATTERN missing.
+The failure is by design for a pair forked before PATTERN reached its parent; its message names the way forward: pull the parent's `_lyx/PATTERN.md` and `_lyx/pattern/` into the pair's `_lyx/`.
 
 ### D3 — The overview is inlined, background files stay pointers
 
@@ -76,6 +79,7 @@ A read error on an existing file stays an error, as today's unreadable-file rule
 The existing pinned edge-case tests are updated to the new rule.
 Rationale: with the overview inlined, an empty file would render a directive with nothing in it, and `stencil.Fill` rejects an empty required marker.
 Bound: only whitespace-only content is treated as inactive; any other content, however malformed, is inlined, and format violations are the D2 test's job, not a runtime refusal.
+An emptied loomyard PATTERN does not slip through, because the D2 checker reports an empty overview and an overview with no entry bullet.
 
 ### D5 — Two new directive roles: Discussion-Write and Bouncer judge
 
@@ -90,9 +94,12 @@ Rationale: operator asked for the directive on both agents; the existing three v
 
 Decision: weft content is per-branch and never merges, so a PATTERN edit made in a task pair would otherwise die in the pair's archive tag.
 Finalize, after its parent-side merge, carries the task pair's `_lyx/PATTERN.md` and `_lyx/pattern/` into the parent pair's `_lyx/` and commits them through fabric on the parent side, through one new `internal/fabricengine` operation scoped to `pattern.PathspecFile` and `pattern.PathspecDir`.
-The carry runs only when the task pair changed those paths since its fork point (the content at the pair's first weft commit).
-If the parent's PATTERN paths also changed since that fork point and differ from the task's, Finalize stops Stuck with a refusal naming the conflicting paths and the way forward (reconcile by hand in the parent's `_lyx/`, then re-run), and carries nothing.
-Bound: the carry writes nothing outside those two pathspecs, never deletes a parent file the task did not delete, and never runs on Publish (only on the landing that merges).
+The carry runs only when the task pair changed those paths since its fork point: the content at the commit that holds the pair's origin record (`_lyx/fabric/origin.json`).
+A pair with no such commit (an adopted weft branch, a legacy-worktree repair or a dormant-weft creation) has no fork point; the carry is skipped and Finalize reports why.
+If the parent's PATTERN paths also changed since that fork point (a parent-side delete counts as a change) and differ from the task's, Finalize stops Stuck with a refusal naming the conflicting paths and the way forward (reconcile by hand in the parent's `_lyx/`, then re-run), and carries nothing.
+The refusal leaves the parent-side merge in place; the re-run skips the finished merge and retries only the carry.
+Identical changes on both sides are no conflict.
+Bound: the carry writes nothing outside those two pathspecs, deletes a parent file only when the task deleted it, and never runs on Publish (only on the landing that merges).
 Landing code reaches the operation without naming the weft side, per `PATTERN-fabric-vocabulary` (the renamed Fabric Vocabulary Invariant).
 Rationale: `CLAUDE.md` requires a new invariant to land with the task that introduces it; without a carry every such addition would be lost at landing.
 
@@ -118,8 +125,16 @@ Rationale: YAGNI; creating a file needs no verb, and no other repo has asked for
 Decision: the implementer adds a tier-3 board note through `lyx board upsert` for each listed Someday item not already on the board (`raddle`, `webster-parallel-execution`, `reed-multi-window`, `warp-visibility`, `baseline-drift-gate`, `config-overlay`, `fabric-reset-to-sha`, `finalize-discrepancy-doc`, `shedrecipe-capabilities`, `doctor`, `session-sync`), with a `[label]` brief prefix, the item's roadmap text, and the content of its `manifest/designs/<name>.md` when one exists and describes unbuilt design.
 Design docs for items already on the board (`hardener`, `semantic-index`, `reed-mailbox` → `creel`) are appended to that entry's body under a `## Design` section.
 The struck items are removed with the rest of `roadmap.md`.
-Durable reference content moves per the board entry's list (orchcli, treadleengine, fabricengine, fslink, websterengine, burlerengine, boardengine docs).
-Inbound links listed on the board are fixed; `manifest/` is deleted.
+Durable reference content moves into package docs:
+- `manifest/HANDOFF.md`: the hub run loop goes to `internal/orchcli`'s doc; the rest is dropped.
+- `hardener.md`: the text-review versus behaviour-review distinction and the respawn rationale go to `internal/treadleengine`'s doc.
+- `fabric-windows-verification.md`: the Linux-only caveat goes to the `internal/fabricengine` and `internal/fslink` docs.
+- `webster-parallel-execution.md`: the case study and the index-race rationale go to `internal/websterengine`'s doc.
+- `review-finding-classification.md`: the convergence case study goes to `internal/burlerengine`'s doc.
+- `curation-triage.md`: one line in `internal/boardengine`'s doc, "anyone adds notes, the orchestrator curates"; the automation is dropped.
+
+Inbound links are fixed in: `internal/treadleengine/doc.go`, `internal/fabricengine/livestate_doc_test.go`, `contracts/specs/loom-plan-spec.md`, `docs/overview.md`, `crucible/README.md`, `crucible/review-prompt-template.md`, `CLAUDE.md`'s task completion rule and `.claude/agents/mill-done-gate-fixer.md`.
+`manifest/` is then deleted.
 `CLAUDE.md`'s "Docs land in the same commit" section and `docs/overview.md`'s Documentation Lifecycle say: an unbuilt design lives in its board entry's body; a built design lives in its package's `doc.go`.
 Bound: the board writes are upserts by slug, so a rework re-run rewrites the same entries instead of duplicating them; the implementer touches no other board entry.
 Rationale: operator decisions of 2026-10-01 to 2026-10-03, recorded on the board entry.
@@ -154,10 +169,11 @@ Decision:
 - `internal/fabricengine/hubworkspace.go` builds the prime path through `WorktreePath` instead of joining it by hand.
 - `resolveSpawnTarget` logs a prime-resolution failure at WARN only when the spawn targets the prime; a task spawn logs it at debug, since only its title-bar color degrades.
 - Removing the last pair no longer prunes `_portals/<anchor>`; only the pair's own entry under it goes, so the hub workspace never lists a missing folder.
+  The emptied anchor directory stays in place; lyx never removes it, and a pair added under it later reuses it.
+  The workspace folder list is built from existing entries only.
 - Relative-path setting values spliced from the prime resolve against `_launchers/`; `vscode.BuildWorkspace`'s caller WARNs once per spawn, naming the keys, when a spliced setting's string value starts with `./` or `../`, and the `internal/vscode` doc states the limitation.
 
 Rationale: the PR #301 review's four findings.
-Rewriting setting values was rejected as a heuristic over arbitrary extension keys (support log).
 
 ### D14 — `shedrun.Seed.Parent` retired
 
@@ -165,6 +181,7 @@ Decision: the `Parent` field and its read fallback are removed; parent comes onl
 A seed file on disk that still carries a `parent` key keeps decoding (the key is ignored) and the run resolves its parent from the origin record; a missing origin `parent_worktree` behaves as it does today for a new run without one.
 Rationale: PR-Gate note of 2026-10-02; the field is no longer written.
 Bound: no run seeded before `aa67fd1d7` is live in the hub (to be confirmed by the plan, see Open risks).
+A pre-`aa67fd1d7` seed that is still live resolves no parent and behaves as a new run without an origin `parent_worktree`.
 
 ## Constraints
 
@@ -189,7 +206,8 @@ Bound: no run seeded before `aa67fd1d7` is live in the hub (to be confirmed by t
 ## Open risks
 
 - This task's own landing runs on the installed `lyx`, which has no D6 carry; the hub must copy `_lyx/PATTERN.md` and `_lyx/pattern/` into the prime's `_lyx/` and commit them after landing, or `main` runs without PATTERN and the D2 real-file test fails in the prime.
-- Pairs forked from `main` before that copy carry no PATTERN; their D2 test fails until they pull it in.
+- Pairs forked from `main` before that copy carry no PATTERN; their D2 test fails until they pull it in (the failure message says how, per D2).
+- A run seeded before `aa67fd1d7` may still be live in the hub; the plan confirms none is before D14 removes the fallback.
 - Inlining makes every directive-bearing prompt larger by the overview's size; the 16 KiB cap bounds it.
 - Board writes from inside a run are not reverted if the PR is rejected outright; they are idempotent, not transactional.
 - The D10 scan may flag many test files; the sweep size is unknown until the scan runs.
@@ -198,15 +216,17 @@ Bound: no run seeded before `aa67fd1d7` is live in the hub (to be confirmed by t
 
 - `CONSTRAINTS.md` is gone; `grep -rn CONSTRAINTS.md` over the code tree finds nothing outside git history.
 - `_lyx/PATTERN.md` holds an entry for every invariant `CONSTRAINTS.md` held (merged entries count), and passes the checker.
-- Checker fixture tests cover: bad name, duplicate name, two-line entry, over-long line, oversize overview, unresolved link, link to another entry's file, orphan background file, and a clean overview.
+- Checker fixture tests cover: bad name, duplicate name, two-line entry, over-long line, oversize overview, empty overview, overview with no entry bullet, unresolved link, link to another entry's file, orphan background file, and a clean overview.
 - The real-file test fails when `_lyx/` exists and `PATTERN.md` is missing, skips when `_lyx/` is absent, and passes on this pair.
 - `pattern.Directive` tests: overview content appears verbatim in every role's directive; whitespace-only `PATTERN.md` yields no directive; an unreadable file is an error; an absent file yields no directive; the background-file pointer stays the relative literal.
 - Discussion-Write's and the Bouncer judge's rendered prompts carry the directive when PATTERN is active and omit it when not.
-- Landing carry tests: a task that changed PATTERN lands it into the parent's `_lyx/`; a task that did not touch PATTERN carries nothing; a parent whose PATTERN diverged from the fork point stops Stuck with the conflicting paths named; nothing outside the two pathspecs is written.
+- Landing carry tests: a task that changed PATTERN lands it into the parent's `_lyx/`; a task that did not touch PATTERN carries nothing; a parent whose PATTERN diverged from the fork point (a parent-side delete included) stops Stuck with the conflicting paths named, and its re-run retries only the carry; identical changes on both sides carry without a refusal; a task that deleted a PATTERN path deletes it in the parent; a pair with no origin-record commit carries nothing; Publish carries nothing; nothing outside the two pathspecs is written.
 - `citation_enforcement_test.go` fails a stencil naming `CONSTRAINTS.md`.
+- `internal/websterengine/template_test.go` asserts the cold-recovery prompt carries the directive, not `CONSTRAINTS.md`.
 - The extended vocabulary scan fails a fixture `.md` under `docs/` and a fixture `_test.go` outside the owner set naming `weft`, passes an allowlisted path, and passes on the swept tree.
 - `manifest/` is gone; no file links into it; the listed board notes exist with their design content.
 - No template comment names `docs/reference/model-spec.md`; `llm-model-spec.md` shows only short-form examples.
+- `internal/landingshed/config_test.go` holds no long-form spec, and its malformed-input cases still hit the same failure paths.
 - No spawn site passes a role as an inline string literal.
 - The four D13 behaviours each have a test (prime-path construction, log level by spawn target, portal dir kept, relative-setting warning).
 - An old seed carrying `parent` decodes and resolves its parent from the origin record.
