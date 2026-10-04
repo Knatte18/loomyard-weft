@@ -1,6 +1,6 @@
 # Board as one list: tasks and notes with labels, GitHub issues pulled in
 
-`board-model` · Tasks · feature · running · Describe
+`board-model` · Tasks · feature · running · Publish
 
 ## Goal
 
