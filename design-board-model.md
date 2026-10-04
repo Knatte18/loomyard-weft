@@ -1,6 +1,6 @@
 # Board as one list: tasks and notes with labels, GitHub issues pulled in
 
-`board-model` · Tasks · feature · awaiting · PR-Gate
+`board-model` · Tasks · feature · running · PR-Gate
 
 ## Goal
 
