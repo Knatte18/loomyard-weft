@@ -1,0 +1,6 @@
+status: OK
+head_sha: 6c532077713195caf095ee1a5527b9cf879018bf
+deviations:
+  - internal/fabricengine/unwire.go
+  - internal/fabricengine/junction.go
+  - internal/fabricengine/unwire_test.go

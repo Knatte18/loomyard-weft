@@ -27,7 +27,7 @@
     "22-ide-spawn-warnings.md": "d0d3043d35fb1975e29bcb70f7f5bde21948e5685babf4fa2ad134abfa383512",
     "23-seed-parent-retired.md": "a45f9dea070da76fe484da210cb6415a4ab419b552aed91b34e6d0a4d87db609"
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "480fb2e9cff09c5b0ebd9ff76a72be0c",
   "masterSessionId": "c8ab255f-7058-4670-a752-d89cc9fff233",
   "assertedModel": "sonnet",
@@ -44,8 +44,27 @@
       "kind": "fork",
       "spawnedAt": "2026-10-04T12:14:33Z",
       "sessionId": "c8ab255f-7058-4670-a752-d89cc9fff233",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-retire-pattern-residue",
+        "status": "done",
+        "head_sha": "6c532077713195caf095ee1a5527b9cf879018bf",
+        "deviations": [
+          "internal/fabricengine/unwire.go",
+          "internal/fabricengine/junction.go",
+          "internal/fabricengine/unwire_test.go"
+        ]
+      },
+      "cardShas": [
+        "6c532077713195caf095ee1a5527b9cf879018bf"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pattern-init/c8ab255f-7058-4670-a752-d89cc9fff233/subagents/agent-a8ccf4bc983fa3216.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pattern-init/c8ab255f-7058-4670-a752-d89cc9fff233/subagents/agent-a8ccf4bc983fa3216.jsonl"
+  ]
 }
