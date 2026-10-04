@@ -97,6 +97,8 @@ Waits on nothing open; can start now, in parallel.
    - [burler][review] B orients, forks its lenses and writes the report only; A, stronger, orients in parallel, then fixes and validates B findings with a grain of salt
 1. **Test tiers: unit, git, tmux and Claude, with Claude opt-in only** — [`test-tiers`](design-test-tiers.md) · chore
    - [testing][cost] Four tiers by what a test needs and costs; only an explicit request runs the Claude tier; tier names still open
+1. **Fabric exports without warp/weft in their names** — [`fabric-api-vocabulary`](design-fabric-api-vocabulary.md) · chore
+   - [fabric][vocabulary] 13 fabric and hubforge exports name warp/weft, so callers outside fabric must too; rename them and drop the scan exemption
 
 ### Layer B
 

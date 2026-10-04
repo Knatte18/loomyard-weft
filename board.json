@@ -410,6 +410,17 @@
       "isolated": false,
       "brief": "[testing][cost] Four tiers by what a test needs and costs; only an explicit request runs the Claude tier; tier names still open",
       "body": "Seen 2026-10-03: a Webster implementer fork in `test-suite-derived-guards`, verifying a card that touched smoke-tagged files, ran `-tags smoke` and spawned about 24 real Claude Code sessions through the `orchcli` smoke tests (`TestSmokeOrch_*`), about 5.5 MB of transcripts against the whole run's 31 MB.\nThe smoke tier mixes tests that only drive real tmux and the built binary with tests that spawn real `claude` sessions (orch cycle and adopt, shuttle runs, Burler clusters, the treadle judge, the model pin); the latter skip only when `claude` is not on `PATH`.\n\nDecided (operator): one more tier, a Claude tier, for tests that drive a real Claude session, under its own build tag, run only when explicitly asked, never by a card verify, the plan verify or PR-Gate.\nA smoke test never spawns Claude: smoke stays real tmux and the real binary with a fake or no provider.\nFour tiers, split by what a test needs and costs (operator, 2026-10-03): offline unit tests; git operations (time, no tokens); live tmux and the built binary (time, no tokens); real Claude sessions (tokens).\nToday's names fit poorly (\"smoke\" says nothing about tmux); the names are to be settled later.\nUpdate `CONSTRAINTS.md`'s test-tier rules and Plan-Write's per-card verify accordingly.\n"
+    },
+    {
+      "id": 76,
+      "slug": "fabric-api-vocabulary",
+      "title": "Fabric exports without warp/weft in their names",
+      "tier": 3,
+      "type": "chore",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "[fabric][vocabulary] 13 fabric and hubforge exports name warp/weft, so callers outside fabric must too; rename them and drop the scan exemption",
+      "body": "Seen 2026-10-04 in `pattern-init`: extending the fabric-vocabulary scan to test files outside fabric flagged 83 files, and 38 of them only name fabric's own exports that carry the words, e.g. `hubforge.Hub.PairWarpWorktree` and `WEFT_SKIP_GIT`.\n`pattern-init` exempts that closed set of 13 identifiers rather than renaming them.\nIdea: rename those exports to neutral names so the vocabulary stays inside fabric, then shrink the exemption set to nothing.\n"
     }
   ],
   "legacy_done": [
