@@ -2,7 +2,7 @@
 
 ## Goal
 
-loomyard's invariants move from `CONSTRAINTS.md` into `_lyx/PATTERN.md`, a thin overview of one-line `PATTERN-*` entries with background files, and every lyx agent that touches design, code or review gets that overview inlined into its prompt.
+loomyard's invariants move from `CONSTRAINTS.md` into `PATTERN.md` at the repo root, a thin overview of one-line `PATTERN-*` entries with background files, and every lyx agent that touches design, code or review gets that overview inlined into its prompt.
 `manifest/` is retired into the board and package docs in the same pass, since both sweeps repoint the same docs, stencils and `CLAUDE.md`.
 The folded-in repo conventions land with it: the fabric-vocabulary scan reaches beyond production Go, the model-spec leftovers are fixed, spawn sites name their agent roles through module constants, the ide hub-workspace follow-ups are closed, and `shedrun.Seed.Parent` is retired.
 
@@ -10,10 +10,10 @@ The folded-in repo conventions land with it: the fabric-vocabulary scan reaches 
 
 In:
 
-- `_lyx/PATTERN.md` and `_lyx/pattern/PATTERN-<name>.md` written in this pair's `_lyx/` (the weft side), carrying every invariant now in `CONSTRAINTS.md`; `CONSTRAINTS.md` deleted.
-- `internal/pattern`: inlined overview, format checker, two new roles (Discussion-Write, Bouncer judge), empty-file handling.
+- `PATTERN.md` and `pattern/PATTERN-<name>.md` at the repo root, tracked warp files, carrying every invariant now in `CONSTRAINTS.md`; `CONSTRAINTS.md` deleted.
+- `internal/pattern`: inlined overview, format checker, two new roles (Discussion-Write, Bouncer judge), empty-file handling, paths resolved from the warp worktree root.
 - The `contracts/stencils/pattern/` directive stencils gain an overview marker; Discussion-Write's and the Bouncer judge's templates gain the directive.
-- Landing carries this pair's PATTERN paths into the parent pair's `_lyx/`, so PATTERN edits survive landing.
+- `fabricengine`'s PATTERN-residue report retired (see Operator additions).
 - Repointing every file that names `CONSTRAINTS.md` (`CLAUDE.md`, stencils, the ly-drive skill, `contracts/specs`, code comments and doc.go files, `docs/`, `citation_enforcement_test.go`, the webster template test).
 - `manifest/` retirement: board notes for the surviving Someday items, durable reference content into package docs, inbound links fixed, folder deleted, `CLAUDE.md`'s and `docs/overview.md`'s lifecycle text rewritten.
 - Fabric-vocabulary scan extended to non-Go files and test files outside the owner set; existing hits swept.
@@ -33,14 +33,14 @@ Out:
 
 ### D1 — PATTERN overview format
 
-Decision: `_lyx/PATTERN.md` opens with a `# PATTERN` heading and one sentence of framing, then a few `##` topic headings (paths and geometry, CLI, fabric and git, shed and loom, agents and prompts, testing, docs — the plan picks the final grouping).
+Decision: `PATTERN.md` opens with a `# PATTERN` heading and one sentence of framing, then a few `##` topic headings (paths and geometry, CLI, fabric and git, shed and loom, agents and prompts, testing, docs — the plan picks the final grouping).
 Under each heading every entry is exactly one bullet line, shaped:
 `` - `PATTERN-<kebab-name>` — <when it applies and what it requires>[ (test)][ — [background](pattern/PATTERN-<kebab-name>.md)] ``.
 The one-liner names both the trigger and the requirement, so an agent can judge relevance from the line alone.
 `(test)` marks an entry enforced by `go test`.
 An entry with no link is complete as written.
 The `<kebab-name>` is chosen to read clearly, not derived from the old heading.
-A background file is `_lyx/pattern/PATTERN-<kebab-name>.md`, named exactly as its entry, holding the rationale, owner sets, enforcement-test names and edge cases that do not fit a line.
+A background file is `pattern/PATTERN-<kebab-name>.md` at the repo root, next to `PATTERN.md`, named exactly as its entry, holding the rationale, owner sets, enforcement-test names and edge cases that do not fit a line.
 Every `CONSTRAINTS.md` section becomes one entry; sections that are near-duplicates (the several sole-parser and leaf invariants) may merge into one entry when one line covers them.
 Rationale: operator format of 2026-10-04; one grep on the entry name finds the entry, its file and every citation.
 
@@ -54,20 +54,19 @@ an overview larger than 16 KiB;
 an overview that is empty or whitespace-only;
 an overview with no entry bullet;
 a link that does not resolve or does not point at `pattern/<the entry's own name>.md`;
-a file under `_lyx/pattern/` with no entry.
+a file under `pattern/` with no entry.
 The checker is unit-tested on fixtures for each finding kind.
-A second test locates the module root (the directory holding `go.mod`) and runs the checker on its `_lyx/PATTERN.md`.
-That test skips only when `_lyx/` itself is absent (a plain clone with no fabric); when `_lyx/` exists and `PATTERN.md` is missing or fails the checker, it fails.
+A second test locates the module root (the directory holding `go.mod`) and runs the checker on its `PATTERN.md`.
+That test never skips: a missing `PATTERN.md` or one that fails the checker fails it.
 The checker is not called at prompt-render time.
 Rationale: the operator asked for a format test with a size cap; a library checker keeps the rules in one place and testable on fixtures, and the real-file test keeps loomyard's PATTERN honest under every verify.
-The skip bound is the presence of `_lyx/`, so a fabric worktree can never silently pass with PATTERN missing.
-The failure is by design for a pair forked before PATTERN reached its parent; its message names the way forward: pull the parent's `_lyx/PATTERN.md` and `_lyx/pattern/` into the pair's `_lyx/`.
+`PATTERN.md` is a tracked warp file that merges normally, so every tree that carries the test also carries the file.
 
 ### D3 — The overview is inlined, background files stay pointers
 
 Decision: each `contracts/stencils/pattern/` directive stencil keeps its instruction section (binding, wins over the rest of the prompt, violations are blocking) and replaces its "Read _lyx/PATTERN.md in full" bullet with a `{{.pattern_overview}}` marker.
-`pattern.Directive` reads `_lyx/PATTERN.md` and fills that marker with the file's content verbatim, then strips the banner as today.
-The "read the background files under `_lyx/pattern/` that touch your change" bullet stays a relative literal pointer.
+`pattern.Directive` reads `PATTERN.md` at the warp worktree root and fills that marker with the file's content verbatim, then strips the banner as today.
+The "read the background files under `pattern/` that touch your change" bullet stays a relative literal pointer.
 The stencils' marker-free rule is lifted; their banners and `internal/pattern`'s doc ("Why the pointer stays relative") are rewritten to say the overview is inlined because it is guaranteed seen, saves a read turn per agent and stays cache-stable, and that background files stay pointers.
 `stencilstore.Validate`'s shipped-vs-on-disk marker check covers the new marker unchanged.
 Rationale: operator decision of 2026-10-04.
@@ -90,23 +89,14 @@ The judge still never opens the artifacts; its directive is worded for judging f
 `internal/pattern`'s doc section "Why three roles, not one" is rewritten for five.
 Rationale: operator asked for the directive on both agents; the existing three variants are worded for editing or forking and would ask these two agents to do something their prompts forbid.
 
-### D6 — Landing carries PATTERN into the parent pair
+### D6 — Removed (2026-10-04)
 
-Decision: weft content is per-branch and never merges, so a PATTERN edit made in a task pair would otherwise die in the pair's archive tag.
-Finalize, after its parent-side merge, carries the task pair's `_lyx/PATTERN.md` and `_lyx/pattern/` into the parent pair's `_lyx/` and commits them through fabric on the parent side, through one new `internal/fabricengine` operation scoped to `pattern.PathspecFile` and `pattern.PathspecDir`.
-The carry runs only when the task pair changed those paths since its fork point: the content at the commit that holds the pair's origin record (`_lyx/fabric/origin.json`).
-A pair with no such commit (an adopted weft branch, a legacy-worktree repair or a dormant-weft creation) has no fork point; the carry is skipped and Finalize reports why.
-If the parent's PATTERN paths also changed since that fork point (a parent-side delete counts as a change) and differ from the task's, Finalize stops Stuck with a refusal naming the conflicting paths and the way forward (reconcile by hand in the parent's `_lyx/`, then re-run), and carries nothing.
-The refusal leaves the parent-side merge in place; the re-run skips the finished merge and retries only the carry.
-Identical changes on both sides are no conflict.
-Bound: the carry writes nothing outside those two pathspecs, deletes a parent file only when the task deleted it, and never runs on Publish (only on the landing that merges).
-Landing code reaches the operation without naming the weft side, per `PATTERN-fabric-vocabulary` (the renamed Fabric Vocabulary Invariant).
-Rationale: `CLAUDE.md` requires a new invariant to land with the task that introduces it; without a carry every such addition would be lost at landing.
+The landing carry of PATTERN into the parent pair, and its fabric operation, are removed: PATTERN is a warp file and lands through the ordinary merge (see Operator additions).
 
 ### D7 — `CONSTRAINTS.md` deleted, every reference repointed
 
 Decision: `CONSTRAINTS.md` is deleted in this task.
-`CLAUDE.md`'s first section becomes "`_lyx/PATTERN.md` is authoritative", says lyx-spawned agents get the overview inlined, and that a new cross-cutting invariant goes into PATTERN in the same task.
+`CLAUDE.md`'s first section becomes "`PATTERN.md` is authoritative", says lyx-spawned agents get the overview inlined, and that a new cross-cutting invariant goes into PATTERN in the same commit as the code.
 Stencils that today say "read `CONSTRAINTS.md` at the repo root if present" (loom discussion, plan, rework; webster master and prefix-recovery) drop that clause and refer to the inlined PATTERN section instead.
 `citation_enforcement_test.go`'s "if present" rule is replaced by a rule that no stencil names `CONSTRAINTS.md`.
 `internal/websterengine/template_test.go`'s cold-recovery assertion moves from `CONSTRAINTS.md` to the directive.
@@ -187,9 +177,9 @@ A pre-`aa67fd1d7` seed that is still live resolves no parent and behaves as a ne
 
 - Runs alone and last on the board: it repoints `CONSTRAINTS.md` across most of the repo.
 - `CLAUDE.md`'s semantic-line-break rule applies to every `.md` written, `PATTERN.md` and background files included.
-- PATTERN files live in this pair's `_lyx/`, not in the code tree; nothing in the code repo copies their content.
-- Fabric Vocabulary: code outside the owner set never names the two sides, including the new landing carry and the extended scan's own messages where they leave fabric.
-- Stencil paths in directive stencils stay relative literals (`_lyx/pattern/`), never interpolated.
+- PATTERN files are tracked warp files at the repo root (`PATTERN.md`, `pattern/`), changed in the same commit as the code they govern.
+- Fabric Vocabulary: code outside the owner set never names the two sides, including the extended scan's own messages where they leave fabric.
+- Stencil paths in directive stencils stay relative literals (`pattern/`), never interpolated.
 - `internal/pattern` stays a leaf (Pattern Leaf Invariant).
 - No new configuration key.
 - Plugins stay at `1.0.0`; the ly-drive skill edit ships through `update-plugins.sh` only when the operator runs it.
@@ -205,8 +195,6 @@ A pre-`aa67fd1d7` seed that is still live resolves no parent and behaves as a ne
 
 ## Open risks
 
-- This task's own landing runs on the installed `lyx`, which has no D6 carry; the hub must copy `_lyx/PATTERN.md` and `_lyx/pattern/` into the prime's `_lyx/` and commit them after landing, or `main` runs without PATTERN and the D2 real-file test fails in the prime.
-- Pairs forked from `main` before that copy carry no PATTERN; their D2 test fails until they pull it in (the failure message says how, per D2).
 - A run seeded before `aa67fd1d7` may still be live in the hub; the plan confirms none is before D14 removes the fallback.
 - Inlining makes every directive-bearing prompt larger by the overview's size; the 16 KiB cap bounds it.
 - Board writes from inside a run are not reverted if the PR is rejected outright; they are idempotent, not transactional.
@@ -215,12 +203,12 @@ A pre-`aa67fd1d7` seed that is still live resolves no parent and behaves as a ne
 ## Acceptance criteria
 
 - `CONSTRAINTS.md` is gone; `grep -rn CONSTRAINTS.md` over the code tree finds nothing outside git history.
-- `_lyx/PATTERN.md` holds an entry for every invariant `CONSTRAINTS.md` held (merged entries count), and passes the checker.
+- `PATTERN.md` holds an entry for every invariant `CONSTRAINTS.md` held (merged entries count), and passes the checker.
 - Checker fixture tests cover: bad name, duplicate name, two-line entry, over-long line, oversize overview, empty overview, overview with no entry bullet, unresolved link, link to another entry's file, orphan background file, and a clean overview.
-- The real-file test fails when `_lyx/` exists and `PATTERN.md` is missing, skips when `_lyx/` is absent, and passes on this pair.
+- The real-file test fails when the module root has no `PATTERN.md`, never skips, and passes on this tree.
 - `pattern.Directive` tests: overview content appears verbatim in every role's directive; whitespace-only `PATTERN.md` yields no directive; an unreadable file is an error; an absent file yields no directive; the background-file pointer stays the relative literal.
 - Discussion-Write's and the Bouncer judge's rendered prompts carry the directive when PATTERN is active and omit it when not.
-- Landing carry tests: a task that changed PATTERN lands it into the parent's `_lyx/`; a task that did not touch PATTERN carries nothing; a parent whose PATTERN diverged from the fork point (a parent-side delete included) stops Stuck with the conflicting paths named, and its re-run retries only the carry; identical changes on both sides carry without a refusal; a task that deleted a PATTERN path deletes it in the parent; a pair with no origin-record commit carries nothing; Publish carries nothing; nothing outside the two pathspecs is written.
+- `fabricengine`'s Pull result, `lyx fabric pull`'s envelope and their tests no longer carry a PATTERN residue.
 - `citation_enforcement_test.go` fails a stencil naming `CONSTRAINTS.md`.
 - `internal/websterengine/template_test.go` asserts the cold-recovery prompt carries the directive, not `CONSTRAINTS.md`.
 - The extended vocabulary scan fails a fixture `.md` under `docs/` and a fixture `_test.go` outside the owner set naming `weft`, passes an allowlisted path, and passes on the swept tree.
@@ -237,6 +225,33 @@ A pre-`aa67fd1d7` seed that is still live resolves no parent and behaves as a ne
 - `internal/pattern/doc.go` sections to rewrite: "The active check is pure existence", "Why three roles, not one", "Why the pointer stays relative".
 - The current directive call sites: `internal/websterengine/render.go`, `internal/loomengine/plan.go` and `rework.go`, `internal/burlerengine/engine.go`; the Bouncer judge renders in `internal/shedadapters/bouncer.go`; Discussion-Write renders in `internal/loomengine/discussion.go`.
 - `internal/friction` already has a role-per-agent pattern (including an interview variant) that the new pattern roles can mirror.
-- Fabric's per-branch-weft rule and the fork-point record are in `internal/fabricengine/doc.go` (the `Add` and origin-record sections); `PathspecFile`/`PathspecDir` already exist for the residue report.
+- `PathspecFile`/`PathspecDir` are consumed today only by `fabricengine`'s PATTERN-residue scan in `pull.go`, surfaced by `internal/fabriccli/weft_verbs.go`.
 - The vocabulary scan lives in `internal/lyxcwd/enforcement_test.go`.
 - The manifest content-move list and inbound links are on the board entry (`lyx board get '{"slug":"pattern-init"}'`).
+
+## Operator additions (2026-10-04)
+
+Decision: PATTERN lives in warp, not weft.
+Rationale (operator): weft is the lyx agents' scratchpad and every weft branch is deleted afterwards;
+PATTERN is binding guidance for the code itself, so it is tracked code that changes in the same commit as the code it governs and lands through the ordinary merge.
+
+1. Location: the overview is `PATTERN.md` at the repo root, next to `CLAUDE.md` and `go.mod`;
+   background files are `pattern/PATTERN-<kebab-name>.md` at the repo root, next to `PATTERN.md`.
+   An entry's background link is `pattern/PATTERN-<kebab-name>.md`, relative to `PATTERN.md`.
+2. `internal/pattern` resolves the overview and the background directory from the warp worktree root it is told, not through `lyxdirs.LyxDirName`.
+   `File`, `PathspecFile` and `PathspecDir` and the `doc.go` rationale change accordingly, and the leaf entry drops `lyxdirs` from `internal/pattern`'s import set if the package no longer needs it.
+   The directive stencils' background-file pointer literal is `pattern/`.
+3. D2: the real-file test checks the module root's `PATTERN.md` and never skips;
+   the failure for a pair forked before PATTERN reached its parent, and its way-forward message, are dropped.
+4. D6 is removed entirely, with its fabric operation, its acceptance criteria and its Open-risks item (the manual copy into the prime after landing).
+5. D7: `CLAUDE.md`'s first section becomes "`PATTERN.md` is authoritative";
+   a new cross-cutting invariant goes into PATTERN in the same commit as the code.
+6. PATTERN's text files (`PATTERN.md` and every `pattern/PATTERN-*.md`) carry no tie to the tooling that develops the repo.
+   They state rules for the code only, never how an agent, a run, a stencil, Claude or a development workflow uses them;
+   the injection, the directive wording and the agent instructions stay in the stencils and `internal/pattern`.
+   Naming loomyard's own code (packages, the `lyx` CLI, its types) is fine, since that is the code the rules govern;
+   what is barred is text addressed to agents or describing the dev tooling's process.
+   Review-enforced, not a format-test rule.
+
+Consequence (Plan-Write, approved by the operator through the orchestrator): `fabricengine`'s PATTERN-residue report scans weft commits for the PATTERN paths, which no longer live in the weft, so it can only ever report nothing.
+It is retired: `PullResult.PatternResidue`, `PatternResidueEntry`, `patternResidueCommits`, `parsePatternResidueRecords`, the residue field in `lyx fabric pull`'s envelope (`internal/fabriccli/weft_verbs.go`) and their tests are removed.

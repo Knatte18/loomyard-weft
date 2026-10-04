@@ -1,0 +1,51 @@
+{
+  "runGuid": "161b54cd8423e7f46980db53c6e5b3a1",
+  "planFingerprint": "0ebeee1161a565eef78a9020ef32fd85ed164b91589aac3ac5b0ec9931d96cd0",
+  "planFileHashes": {
+    "00-overview.md": "b4b1fedff32423c222c913745958cc67775b19cd66a0642e6a288bc142c34bd6",
+    "01-retire-pattern-residue.md": "eaf2c62b57df0831bbc962296404c3b0ecbf87e2f7795f3536115e88c256a6b9",
+    "02-pattern-warp-root.md": "33a93f52343ef19c92cd62fe53239b0c4f9917704d68b0a9fa9d364b46e924e6",
+    "03-pattern-designer-role.md": "49666a47e4df4cb9d184b0a195feb9ccb9b3a6e5a73449470dc07be7317b9787",
+    "04-pattern-judge-role.md": "a9f5f3b954d45d4a6136d1c07f63d541cd2ef21dee3ab8c090bc5a8540c77772",
+    "05-pattern-content.md": "cb921e85c4c98b9f715be7889fd733a9db054d632d358d743d7eb4b28f9f27bc",
+    "06-pattern-format-checker.md": "d08c3793b5b24644230c1e4024158d416263bd6a5d93dea2decbcd084fe96172",
+    "07-constraints-stencil-repoint.md": "fb0c3397dbd9f5dea10509c4c98e8f32f38703248db4b9b72bfa565aa5e15ef8",
+    "08-constraints-repoint-cmd.md": "f43311c344d8e8534e55395c80eff144fbc2f749eb580b50bb7a4e437d9311e7",
+    "09-constraints-repoint-internal-a-l.md": "41ba63f43d8ff3895ccc6ed6ebf76fc68b46790fe08a0261d1dbe80abd4f599f",
+    "10-constraints-repoint-internal-m-z.md": "aa42623b6ee20b6e420e4811cdb2a2cfe9395a1ab7b3a4d4a57837c2c3f40259",
+    "11-manifest-content-moves.md": "4b05eb294eedc796f630ff59b01ad20f0d4ac315735a67ac89f2fbc77e4340b2",
+    "12-manifest-retire.md": "a52a04a11fe1b4e8215de3edd7c25fde8defe12147866fb1f2b9c690b47c8041",
+    "13-constraints-docs-and-delete.md": "9091d7a3e3230be876be0da6a85a23b0814cc5e0b0e713e5df6583e124e5b8b9",
+    "14-vocab-sweep-tests-core.md": "e71aeb6ecbffaf074650f48789bde7e090feb4ee0780dd70147ceabd04db828c",
+    "15-vocab-sweep-tests-loom.md": "fbd3c8df8aed276d0d85f7ea91ff92f00ce47f4dc569c05a3c1b1c957b3f1eb8",
+    "16-vocab-sweep-tests-rest.md": "a49376814bbd0c4ff373954f090aa4d9d10312b582f7484076dba65135c7b5d7",
+    "17-vocab-sweep-docs.md": "cf3552df450b8f2353d67a64f2368ef3d1e90621f9a7b4825ff73183f2bffca9",
+    "18-vocab-scan-extend.md": "ff3c7dcc1c28dc77d605162c3535d91a3fd20af326cd69bcee879c29d336492a",
+    "19-model-spec-leftovers.md": "a7e331fe4f387a7763e41d0d6570fb3c5d0129e14ec8881eb7e89f60e17dcf16",
+    "20-spawn-role-constants.md": "f379b438146f438bcf882ff4e0d3f9fae5327725f484e28e9df24afd991f6db5",
+    "21-hub-workspace-fabric.md": "15bd7a7ef822ad118602c11a7584a080f0601fae6aa53aacffa72ef1f7b94997",
+    "22-ide-spawn-warnings.md": "d0d3043d35fb1975e29bcb70f7f5bde21948e5685babf4fa2ad134abfa383512",
+    "23-seed-parent-retired.md": "a45f9dea070da76fe484da210cb6415a4ab419b552aed91b34e6d0a4d87db609"
+  },
+  "currentBatch": 1,
+  "masterStrand": "480fb2e9cff09c5b0ebd9ff76a72be0c",
+  "masterSessionId": "c8ab255f-7058-4670-a752-d89cc9fff233",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "retire-pattern-residue",
+      "cards": [
+        "01-retire-pattern-residue"
+      ],
+      "cardHashes": {
+        "01-retire-pattern-residue": "eaf2c62b57df0831bbc962296404c3b0ecbf87e2f7795f3536115e88c256a6b9"
+      },
+      "startSha": "e13537cee4d5e6be800cde2e302470d00d9de6b1",
+      "kind": "fork",
+      "spawnedAt": "2026-10-04T12:14:33Z",
+      "sessionId": "c8ab255f-7058-4670-a752-d89cc9fff233",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
