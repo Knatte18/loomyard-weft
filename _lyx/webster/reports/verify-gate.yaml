@@ -1,0 +1,28 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/battencli.TestBattenIntegration_SeedChild_WritesASeedTheChildBootstrapAgreesWith
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/battencli
+      tail: '    lifecycle_integration_test.go:171: load board config: board config /tmp/TestBattenIntegration_SeedChild_WritesASeedTheChildBootstrapAgre958148334/002/warp-bare-LYXHUB/warp-bare/_lyx/config/board.yaml not initialized; run "lyx fabric reconcile"'
+    - id: github.com/Knatte18/loomyard/internal/battencli.TestBattenIntegration_SeedChild_WriteSeedRewrapsARealDisagreeingChildSeed
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/battencli
+      tail: '    lifecycle_integration_test.go:237: load board config: board config /tmp/TestBattenIntegration_SeedChild_WriteSeedRewrapsARealDisagreeing1845895941/002/warp-bare-LYXHUB/warp-bare/_lyx/config/board.yaml not initialized; run "lyx fabric reconcile"'
+    - id: github.com/Knatte18/loomyard/internal/battencli.TestBattenIntegration_FourRowRun_SeedsChildCommitsAndTearsDown
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/battencli
+      tail: '    lifecycle_integration_test.go:305: load board config: board config /tmp/TestBattenIntegration_FourRowRun_SeedsChildCommitsAndTearsDown2599455212/002/warp-bare-LYXHUB/warp-bare/_lyx/config/board.yaml not initialized; run "lyx fabric reconcile"'
+    - id: github.com/Knatte18/loomyard/internal/battencli.TestBattenIntegration_CreateRow_IsIdempotentAgainstAnAlreadyPresentWorktree
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/battencli
+      tail: '    lifecycle_integration_test.go:685: load board config: board config /tmp/TestBattenIntegration_CreateRow_IsIdempotentAgainstAnAlreadyPres1044104281/002/warp-bare-LYXHUB/warp-bare/_lyx/config/board.yaml not initialized; run "lyx fabric reconcile"'
+    - id: github.com/Knatte18/loomyard/internal/battencli.TestBattenIntegration_SeedChild_IgnoresPrimesCommittedBattenRecords
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/battencli
+      tail: '    recordleak_integration_test.go:68: load board config: board config /tmp/TestBattenIntegration_SeedChild_IgnoresPrimesCommittedBattenReco906015456/002/warp-bare-LYXHUB/warp-bare/_lyx/config/board.yaml not initialized; run "lyx fabric reconcile"'
+    - id: github.com/Knatte18/loomyard/internal/battencli.TestBattenIntegration_RealReadStatus_IgnoresPrimesCommittedStatusForTheSameSlug
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/battencli
+      tail: '    recordleak_integration_test.go:117: load board config: board config /tmp/TestBattenIntegration_RealReadStatus_IgnoresPrimesCommittedStatu1422642044/002/warp-bare-LYXHUB/warp-bare/_lyx/config/board.yaml not initialized; run "lyx fabric reconcile"'
+log_path: /home/knatte/Code/loomyard-LYXHUB/board-config-per-worktree/.lyx/verify/verify.log
