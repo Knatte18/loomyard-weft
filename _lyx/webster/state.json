@@ -16,7 +16,7 @@
     "11-adopt-pid-reuse.md": "9ac8e7bf1c0d39c37aab5b3165f234d0a213e2aa37d4a19a9cb3a932b91ccf77",
     "12-orch-smoke.md": "07b993147b708d3d755ec72b278970249ab33b6ff826beb4025bf9cfada6376b"
   },
-  "currentBatch": 0,
+  "currentBatch": 2,
   "masterStrand": "d67879bc330e634575451a44ed0d2120",
   "masterSessionId": "1531b0ca-5912-4b17-8d7c-1834f68aa0eb",
   "assertedModel": "sonnet",
@@ -46,6 +46,21 @@
       "forkTranscripts": [
         "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-orch-cycle-hardening/1531b0ca-5912-4b17-8d7c-1834f68aa0eb/subagents/agent-a8fa01d69d2adad1b.jsonl"
       ]
+    },
+    "2": {
+      "slug": "reread-and-reset",
+      "cards": [
+        "02-reread-and-reset"
+      ],
+      "cardHashes": {
+        "02-reread-and-reset": "c703d5c2b04c941c6409a6008a446d37b1114ad3bd75ff5dfa0252c9f9e22572"
+      },
+      "startSha": "fe6d71c04da30654f275a29659030aae59ee6631",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T07:33:34Z",
+      "sessionId": "1531b0ca-5912-4b17-8d7c-1834f68aa0eb",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
