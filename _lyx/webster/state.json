@@ -19,7 +19,7 @@
     "14-webster-audit-way-forward.md": "8bdbcffab4d2d2954645d2a067e65e90a19441d5f49e22185bb6bb8fce4fb015",
     "15-webster-no-denied-recovery.md": "d81c7316787b41cc1ce1383b0a0e463e71c8c15e123b244b4bd7ffab784315e3"
   },
-  "currentBatch": 3,
+  "currentBatch": 0,
   "masterStrand": "7d141636dc7e313e3780ee8c2b5140a3",
   "masterSessionId": "1b4a02c4-56e0-4d0d-b34d-95153da7fecc",
   "assertedModel": "sonnet",
@@ -88,12 +88,29 @@
       "kind": "fork",
       "spawnedAt": "2026-10-05T07:44:34Z",
       "sessionId": "1b4a02c4-56e0-4d0d-b34d-95153da7fecc",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "03-shuttle-shell-expiry",
+        "status": "done",
+        "head_sha": "0bf70d5d87d5955abd23711d0b032fb2cf0d9da1",
+        "deviations": [
+          "internal/shuttleengine/attach_test.go",
+          "internal/shuttleengine/startup_test.go",
+          "internal/shuttleengine/completionsignal_enforcement_test.go"
+        ]
+      },
+      "cardShas": [
+        "0bf70d5d87d5955abd23711d0b032fb2cf0d9da1"
+      ],
+      "forkTranscripts": [
+        "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-a9539537da7a4293d.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-a4bfe6dfc9e382a80.jsonl",
-    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-ad0c3af82eebb2eca.jsonl"
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-ad0c3af82eebb2eca.jsonl",
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-a9539537da7a4293d.jsonl"
   ]
 }

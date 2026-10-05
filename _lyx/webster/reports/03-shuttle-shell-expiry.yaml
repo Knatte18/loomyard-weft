@@ -1,0 +1,6 @@
+status: OK
+head_sha: 0bf70d5d87d5955abd23711d0b032fb2cf0d9da1
+deviations:
+  - internal/shuttleengine/attach_test.go
+  - internal/shuttleengine/startup_test.go
+  - internal/shuttleengine/completionsignal_enforcement_test.go
