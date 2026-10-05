@@ -1,0 +1,32 @@
+{
+  "runGuid": "a5a086fa55c5b89f71c882f23c4a765a",
+  "planFingerprint": "43d3d4f7e1db7b0ce785263bddfdee8af665c7be578b545a6c7b89e603bc61ae",
+  "planFileHashes": {
+    "00-overview.md": "d3f517bf67fefb539f0c1a6fb31888edcff69831dcd9ec112328a2c81aa08a1e",
+    "01-plan-spec-card-model.md": "9181b0653c238abd300b1096ff83e39292fa918c690404930f3ff2c5a186e3a9",
+    "02-plan-template-coverage.md": "3dc1a1754bd3ee9b1ecd0e38fb0a39bac39659942d9ef876fcac0f9cdabdc261",
+    "03-review-rubrics-test-economy.md": "be8e3d15911591e2d3d3ba83b79830e1a9a9f60485c1475ba49acfd903e7c22d",
+    "04-fix-and-discussion-stencils.md": "1c7c41939e6b66be80399a0e726705ac92acd03801e727d481ef448581df9611"
+  },
+  "currentBatch": 1,
+  "masterStrand": "97b6f20298afee40e58ffeda8ad222bc",
+  "masterSessionId": "2c436b11-fb17-49d3-affb-1576ee937e48",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "plan-spec-card-model",
+      "cards": [
+        "01-plan-spec-card-model"
+      ],
+      "cardHashes": {
+        "01-plan-spec-card-model": "9181b0653c238abd300b1096ff83e39292fa918c690404930f3ff2c5a186e3a9"
+      },
+      "startSha": "13c56c967077bf0a494e9ef2b27d63730313e493",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T14:49:48Z",
+      "sessionId": "2c436b11-fb17-49d3-affb-1576ee937e48",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
