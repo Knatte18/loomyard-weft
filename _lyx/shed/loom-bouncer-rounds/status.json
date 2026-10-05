@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Burler",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Burler",
-    "last": "Discussion-Bouncer → bounced to Discussion-Burler",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Burler → bounced to Discussion-Bouncer",
     "wait": ""
   },
   "history": [
@@ -103,6 +103,13 @@
       "outcome": "stuck",
       "output": "/home/hanf/Code/loomyard-LYXHUB/loom-bouncer-rounds/_lyx/reviews/discussion/round-4-bouncer-ledger.md",
       "at": "2026-10-05T07:31:14Z"
+    },
+    {
+      "producer": "Discussion-Burler",
+      "outcome": "stuck",
+      "output": "/home/hanf/Code/loomyard-LYXHUB/loom-bouncer-rounds/_lyx/reviews/discussion/round-5-review.md",
+      "at": "2026-10-05T07:33:02Z",
+      "gate_attempts": 0
     }
   ],
   "product": {
