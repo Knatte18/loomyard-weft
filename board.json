@@ -794,7 +794,7 @@
       "id": 119,
       "slug": "selfreport-issues-say-nothing",
       "title": "lyx files bug issues from Go code; only reflection agents should",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "selfreport",
