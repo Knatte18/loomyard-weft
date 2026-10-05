@@ -11,8 +11,6 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **The orch role stencil, cycle and distill with a tailored note, ly-drive as a stencil** — [`lyx-skills-and-stencils`](design-lyx-skills-and-stencils.md) · enhancement, stencil, orch, shed · running · Finalize
-   - One orch role stencil absorbs the run loop; cycle clears and a new distill compacts, both via a short orch note; the watcher types skill loads, stencil and note in; ly-drive becomes a stencil; agents escalate to their parent
 1. **Measure the test suite, make it fast, settle its rules** — [`test-suite-measure`](design-test-suite-measure.md) · enhancement · running · Webster
    - Stage 2a: per-test coverage tool and before-state, real-time seams and t.Parallel, tmux socket leak, an LLM test tier, PATTERN Testing consolidated
    - **Before:** `test-suite-prune-core`, `test-suite-prune-rest`
@@ -168,5 +166,7 @@ Finished, awaiting `lyx board prune`.
    - CIRCLING judged later on unchanged recurrence and escalated to the parent orchestrator; fix the five failing loomcli smoke tests
 1. **Label descriptions, board CLI gaps, CLI tree exceptions** — [`board-labels-and-skills`](design-board-labels-and-skills.md) · bug, enhancement, board, config, selfreport · done
    - labels become label→description with lyx board labels; board get --body, merge --body-file, merged issues kept, slug limit in help; fix the five cliTreeFindings exceptions
+1. **The orch role stencil, cycle and distill with a tailored note, ly-drive as a stencil** — [`lyx-skills-and-stencils`](design-lyx-skills-and-stencils.md) · enhancement, stencil, orch, shed · done
+   - One orch role stencil absorbs the run loop; cycle clears and a new distill compacts, both via a short orch note; the watcher types skill loads, stencil and note in; ly-drive becomes a stencil; agents escalate to their parent
 1. **Test-writing rules that stop the suite regrowing** — [`test-writing-rules`](design-test-writing-rules.md) · enhancement, loom, stencil · done
    - Stage 1: tests per behavior not per symbol, no redundant tests, redundant tests are review findings
