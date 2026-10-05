@@ -30,3 +30,46 @@ Problems:
   There is no lighter path, such as regenerating the two files or re-running the audit.
 
 Provenance: task `board-model`, note `webster-refusal-accept-audit.md`.
+
+
+## From issue #360
+
+Imported from [issue #360](https://github.com/Knatte18/loomyard/issues/360).
+
+## escalation-to-human: the run halted with no OnStuck target and needs a human
+
+**Slug:** board-model
+**Parent:** main
+
+**State:** blocked
+**Current producer:** Webster
+
+**Error:**
+```
+run-exit audit found 2 correctness finding(s): fork wrote "/home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/summary.md" — outcome.yaml and summary.md are Master's own contract files; a fork writing either forges the run's terminal judgment; fork wrote "/home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/outcome.yaml" — outcome.yaml and summary.md are Master's own contract files; a fork writing either forges the run's terminal judgment; suspect paths: /home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/summary.md, /home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/outcome.yaml; way forward: reset the branch to the run's start commit with git and run "lyx webster run --fresh" and re-step the Webster row (lyx webster run), since nothing the run recorded can check /home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/summary.md, /home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/outcome.yaml
+```
+
+**History:**
+- Preflight / done / 2026-10-04T13:39:14Z
+- Loom-Preflight / done / 2026-10-04T13:39:23Z
+- Discussion-Write / done / 2026-10-04T13:44:33Z
+- Discussion-Bouncer / stuck / 2026-10-04T13:45:35Z
+- Discussion-Burler / stuck / 2026-10-04T13:47:21Z
+- Discussion-Bouncer / stuck / 2026-10-04T13:47:52Z
+- Discussion-Burler / stuck / 2026-10-04T13:49:53Z
+- Discussion-Bouncer / awaiting / 2026-10-04T13:50:28Z
+- Discussion-Bouncer / stuck / 2026-10-04T14:22:08Z
+- Discussion-Burler / stuck / 2026-10-04T14:23:49Z
+- Discussion-Bouncer / stuck / 2026-10-04T14:24:28Z
+- Discussion-Burler / stuck / 2026-10-04T14:25:42Z
+- Discussion-Bouncer / done / 2026-10-04T14:26:11Z
+- Plan-Write / done / 2026-10-04T14:33:18Z
+- Plan-Bouncer / stuck / 2026-10-04T14:33:52Z
+- Plan-Burler / stuck / 2026-10-04T14:37:55Z
+- Plan-Bouncer / stuck / 2026-10-04T14:38:40Z
+- Plan-Burler / stuck / 2026-10-04T14:40:05Z
+- Plan-Bouncer / stuck / 2026-10-04T14:41:02Z
+- Plan-Burler / stuck / 2026-10-04T14:41:55Z
+- Plan-Bouncer / done / 2026-10-04T14:42:27Z
+- Batchifier / done / 2026-10-04T14:42:36Z
+- Webster / stuck / 2026-10-04T16:26:41Z
