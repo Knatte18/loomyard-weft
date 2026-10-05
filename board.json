@@ -909,6 +909,22 @@
       "isolated": false,
       "brief": "Three Webster recovery sites and standalone mode still instruct git reset --keep; widen the reset verb so every recovery instruction names a lyx verb",
       "body": "## Background\n\n`webster-audit-recovery` (PR #381) added `lyx webster reset --to start|pre-fix` so recovery never needs a denied `git reset --hard`.\nIts plan recorded one deviation not covered by the decision record (D7): three sites still tell the agent to run `git reset --keep \u003csha\u003e` rather than a lyx verb.\nThey move back to the report head or the last-batch head in record-batch, recover-batch and accept-audit (`internal/websterengine/gitwrap.go`), plus standalone mode.\nThe verb was not widened because its targets are only `start` and `pre-fix`.\n`--keep` is not denied and refuses rather than discards, so it was accepted at PR-Gate.\n\n## Proposal\n\nWiden `lyx webster reset` with the report-head and last-batch-head targets, and point the three sites and standalone mode at it, so every Webster recovery instruction names a lyx verb.\n"
+    },
+    {
+      "id": 117,
+      "slug": "weft-lock-dir-drops-parent",
+      "title": "A weft worktree without .weft/ silently drops LYX_PARENT from every strand",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "fabric",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "ReadOriginFor answers no record when the untracked .weft lock dir is missing, so a pair recreated by reconcile launches strands with no parent and no warning",
+      "body": "## Bug\n\nA strand launched in a pair whose weft worktree lacks the untracked `.weft/` lock directory gets no `LYX_PARENT`, silently.\n`hubgeom.ResolveParent` reads the pair's origin record through `fabricengine.ReadOriginFor`, which requires both `_lyx/fabric/origin.json` and `.weft/`, and answers \"no record\" when either is missing.\n`ResolveParent` then returns no parent, `hubgeom.reedGeometry` exports none, and nothing warns.\n\n## Seen 2026-10-05\n\nAfter moving `loom-bouncer-rounds` from another machine, its weft worktree was recreated by `lyx fabric reconcile` from the existing branch, which does not create `.weft/` (`lyx fabric add` does).\nThe driver, launched at 15:36:00, had no `LYX_PARENT`; `.weft/` appeared at 15:36:19 with the first weft write, and the Burler launched at 15:58 carries `LYX_PARENT='ly:orch'`.\nThe driver therefore could not reach its parent orchestrator.\n\n## Fix\n\n- Every path that creates or recreates a weft worktree creates `.weft/` (`reconcile`'s `weft_recreated` path at least).\n- A present origin record with a missing lock directory is an error or a warning naming the gap, never a silent \"no parent\".\n"
     }
   ],
   "legacy_done": [

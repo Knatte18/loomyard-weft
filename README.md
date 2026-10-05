@@ -43,6 +43,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Ryzen Kubuntu idle: 13 s untagged / 60 s integration against 3.6 s / 17 s on 2026-08-13; find and remove what slowed it
 1. **fabric fetches an existing remote warp and weft branch instead of creating new ones** — [`fabric-add-adopt-remote`](design-fabric-add-adopt-remote.md) · bug, fabric
    - A branch that exists on origin is fetched and checked out, never recreated locally; reconcile and checkout today fork a fresh weft and fabric add refuses the warp
+1. **A weft worktree without .weft/ silently drops LYX_PARENT from every strand** — [`weft-lock-dir-drops-parent`](design-weft-lock-dir-drops-parent.md) · bug, fabric, reed
+   - ReadOriginFor answers no record when the untracked .weft lock dir is missing, so a pair recreated by reconcile launches strands with no parent and no warning
 
 ### Enhancements
 
