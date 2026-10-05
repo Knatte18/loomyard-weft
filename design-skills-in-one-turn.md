@@ -9,7 +9,10 @@ Seen 2026-10-05 on `ly:selfreport-issues-say-nothing:burler`; the operator: load
 Claude Code treats only a message's leading `/<name>` as a command, so several skills cannot share one typed message.
 Keep the guarantee that every skill is loaded, without a turn per skill:
 
-1. Inline the skill bodies into the rendered prompt file, the way the `PATTERN.md` overview is inlined: zero extra turns, and the content is there whether or not the model acts on it.
-2. Or one message asking for every skill through the Skill tool in a single turn; one turn, but the model may skip a load again.
+- Chosen: one typed message asking the model to load every listed skill through the Skill tool in a single turn and reply only "ok".
+  Loaded skills are registered as such, so Claude Code re-injects them after a compaction, and the instructions arrive as user input.
+  lyx checks the transcript for each skill's load and retries a missing one.
+- Rejected: inlining the skill bodies into the prompt file.
+  It costs no turn, but the text arrives as a Read result rather than user input, and a compaction summarizes it away instead of re-injecting it, which matters for long-lived sessions such as the Webster master.
 
 The orch watcher types its skills the same way at each cycle; the same fix applies there.

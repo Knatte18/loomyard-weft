@@ -102,7 +102,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **reed shows strands as zoom tabs and runs as session tabs** — [`reed-status-tabs`](design-reed-status-tabs.md) · enhancement, reed
    - Stacked layout stays as VIEW; a strand button or Alt+arrows zooms one strand; runs as session tabs below; reed pins it at boot
 1. **A spawned role loads all its skills at once, not one turn per skill** — [`skills-in-one-turn`](design-skills-in-one-turn.md) · enhancement, shuttle, stencil
-   - lyx types each skill as its own slash-command turn, each ending in chatter; inline the skill bodies into the prompt file instead
+   - lyx types each skill as its own slash-command turn, each ending in chatter; one typed message loads them all through the Skill tool in one turn
 
 ### Features
 
