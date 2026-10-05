@@ -56,6 +56,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Tier 1 anomaly issues carry only keys and blank fields; drop Go-side filing and feed anomalies to Friction-Reflect instead
 1. **Agent Bash calls hang on stdin** — [`agent-stdin-hang`](design-agent-stdin-hang.md) · bug, shuttle
    - The model emits bare cat > /tmp/x or python3 - with no input; a stdin hook ends the hang, but the operator wants it without a per-call hook
+1. **board.yaml is read per worktree though the board is one per hub** — [`board-config-per-worktree`](design-board-config-per-worktree.md) · bug, board, config
+   - A pair with an older board.yaml re-renders README with the old types; move board.yaml beside fabric.yaml in _board
 
 ### Enhancements
 
