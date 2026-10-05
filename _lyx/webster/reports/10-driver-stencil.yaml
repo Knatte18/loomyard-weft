@@ -1,0 +1,5 @@
+status: OK
+head_sha: ca549bb717262bfbfd7b7bbce6b4268d2e8b4dc9
+deviations:
+  - contracts/stencils/citation_enforcement_test.go
+  - internal/loomcli/integration_driverbootstrap_test.go
