@@ -25,7 +25,7 @@
     "20-testtiming-redundancy.md": "315925b61fa54d8d9ff919d2404a9c0121967b9e6eb4e56276c597da224e6a49",
     "21-redundancy-report-and-post-retag.md": "035d8d13db102771578007eb5fa757b64a87ef6436accce7f4887eb74804c1a0"
   },
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "d6515d923cf96c76537e7850a96b9d4e",
   "masterSessionId": "b9451745-c0f7-4015-9ea7-6c77aa520719",
   "assertedModel": "sonnet",
@@ -188,6 +188,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-measure/b9451745-c0f7-4015-9ea7-6c77aa520719/subagents/agent-a8920afc7a96892b2.jsonl"
       ]
+    },
+    "7": {
+      "slug": "vocab-prefilter",
+      "cards": [
+        "07-vocab-prefilter"
+      ],
+      "cardHashes": {
+        "07-vocab-prefilter": "abba959faf065b0bfca7d30465e30719e062c09730ba97dd26da6ed3912a20a1"
+      },
+      "startSha": "72e1d064a195a2d9c1f485aa32dd914bc06e0140",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T16:52:00Z",
+      "sessionId": "b9451745-c0f7-4015-9ea7-6c77aa520719",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
