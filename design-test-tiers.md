@@ -1,8 +1,20 @@
-# Test tiers: unit, git, tmux and Claude, with Claude opt-in only
+# Which gate runs which test tier, after-state and budget guard
 
 `test-tiers` · Task · enhancement, loom, webster
 
-The four tiers themselves (an LLM tier under its own tag, the tier rules in PATTERN) moved into task `test-suite-measure`; this note keeps which gate runs which tier.
+Depends on: [`test-suite-prune-core`](design-test-suite-prune-core.md), [`test-suite-prune-rest`](design-test-suite-prune-rest.md)
+
+Stage 3 of getting the test suite under control, after both prune tasks have landed: decide which gate runs which tier, record the after-state, and guard it.
+The four tiers themselves (an LLM tier under its own tag, the tier rules in PATTERN) are `test-suite-measure`'s.
+
+## After-state
+
+Record the after-state beside `test-suite-measure`'s before-state in `docs/benchmarks/test-suite-timing.md`, by the same method; the PR states the whole suite's test count and the integration tier's wall time before and after.
+
+## Budget guard
+
+A guard test pins a per-package budget at the after-state; exceeding it fails until the budget is raised deliberately in the same commit, so the suite cannot regrow unseen.
+Test count is the stable measure; settle in Discussion whether wall time is pinned too or only reported, since it moves with machine load.
 
 ## Which gate runs which tier (operator, 2026-10-05)
 
@@ -38,5 +50,6 @@ Rounds in between run only what their change can reach.
 Residual risk: a break the import graph cannot see is caught at Publish, before landing, so it costs one extra rework round, never a broken `main`.
 
 Measured 2026-10-05 on the Ryzen with three runs live (load average about 11 on 12 threads): a gate's `go test` phase took 67–90 s, against 60 s idle; only 51 of 114 packages hit the test cache, and every heavy package (`fabricengine`, `reedcli`, `fabriccli`, `battencli`, `reedengine`, `cmd/lyx`) reran each time.
+
 
 

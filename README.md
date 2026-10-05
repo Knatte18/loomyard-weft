@@ -11,8 +11,6 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Test tiers: unit, git, tmux and Claude, with Claude opt-in only** — [`test-tiers`](design-test-tiers.md) · enhancement, loom, webster
-   - Which gate runs which tier: review rounds run the impacted set, the full plan verify only at Webster gate and Publish/Finalize
 1. **The orch role stencil, cycle and distill with a tailored note, ly-drive as a stencil** — [`lyx-skills-and-stencils`](design-lyx-skills-and-stencils.md) · enhancement, stencil, orch, shed · running · Webster
    - One orch role stencil absorbs the run loop; cycle clears and a new distill compacts, both via a short orch note; the watcher types skill loads, stencil and note in; ly-drive becomes a stencil; agents escalate to their parent
 1. **Measure the test suite, make it fast, settle its rules** — [`test-suite-measure`](design-test-suite-measure.md) · enhancement · running · Webster
@@ -26,9 +24,19 @@ Starts when every entry it names under After is done.
 1. **Prune the six largest test packages** — [`test-suite-prune-core`](design-test-suite-prune-core.md) · enhancement
    - Stage 2b: delete redundant tests and fold near-identical ones in fabricengine, websterengine, reedengine, shuttleengine, loomcli, shedadapters
    - **After:** `test-suite-measure`
+   - **Before:** `test-tiers`
 1. **Prune the remaining test packages** — [`test-suite-prune-rest`](design-test-suite-prune-rest.md) · enhancement
    - Stage 2c: delete redundant tests and fold near-identical ones in every package outside prune-core, in parallel with it
    - **After:** `test-suite-measure`
+   - **Before:** `test-tiers`
+
+### Layer C
+
+Starts when every entry it names under After is done.
+
+1. **Which gate runs which test tier, after-state and budget guard** — [`test-tiers`](design-test-tiers.md) · enhancement, loom, webster
+   - Stage 3: review rounds run the impacted set, full plan verify only at Webster gate and Publish/Finalize; after-state recorded; per-package test budget guard
+   - **After:** `test-suite-prune-core`, `test-suite-prune-rest`
 
 ## Notes
 
