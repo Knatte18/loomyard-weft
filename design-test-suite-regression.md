@@ -1,6 +1,6 @@
-# Test suite several times slower than its August benchmark
+# Investigate why the test suite runs several times slower than its August benchmark
 
-`test-suite-regression` · Note · bug
+`test-suite-regression` · Note · enhancement
 
 The test suite has slowed several-fold since its last recorded measurement.
 
