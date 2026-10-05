@@ -1,0 +1,4 @@
+status: OK
+head_sha: 8517580259a3058c0afe98b744eea0580b1a4da9
+deviations:
+  - internal/pairteardown/export_integration_test.go
