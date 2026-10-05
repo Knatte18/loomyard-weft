@@ -1,6 +1,6 @@
 # Label descriptions, CLI tree exceptions, ly-drive as a stencil
 
-`board-labels-and-skills` · Task · bug, enhancement, board, config, selfreport, shed, stencil, orch · running · Loom-Preflight
+`board-labels-and-skills` · Task · bug, enhancement, board, config, selfreport, shed, stencil, orch · running · Discussion-Write
 
 # Goal
 
