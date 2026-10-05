@@ -18,7 +18,7 @@ Waits on nothing open; can start now, in parallel.
    - **Before:** `test-suite-prune-core`, `test-suite-prune-rest`
 1. **board.yaml is read per worktree though the board is one per hub** — [`board-config-per-worktree`](design-board-config-per-worktree.md) · bug, board, config · running · Webster
    - A pair with an older board.yaml re-renders README with the old types; move board.yaml beside fabric.yaml in _board
-1. **Agents stop wrapping commands: stdin without a hook, a bare shed step** — [`agent-command-wrapping`](design-agent-command-wrapping.md) · bug, enhancement, shuttle, shed, stencil · awaiting · Webster-Bouncer
+1. **Agents stop wrapping commands: stdin without a hook, a bare shed step** — [`agent-command-wrapping`](design-agent-command-wrapping.md) · bug, enhancement, shuttle, shed, stencil · running · Webster-Bouncer
    - Give agent shells /dev/null stdin without a per-call hook; lyx shed step prints a short envelope so the driver runs the bare call
 
 ### Layer B
