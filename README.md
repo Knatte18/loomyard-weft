@@ -16,7 +16,7 @@ Waits on nothing open; can start now, in parallel.
 1. **Measure the test suite, make it fast, settle its rules** — [`test-suite-measure`](design-test-suite-measure.md) · enhancement · blocked · Webster
    - Stage 2a: per-test coverage tool and before-state, real-time seams and t.Parallel, tmux socket leak, an LLM test tier, PATTERN Testing consolidated
    - **Before:** `test-suite-prune-core`, `test-suite-prune-rest`
-1. **board.yaml is read per worktree though the board is one per hub** — [`board-config-per-worktree`](design-board-config-per-worktree.md) · bug, board, config · running · Discussion-Bouncer
+1. **board.yaml is read per worktree though the board is one per hub** — [`board-config-per-worktree`](design-board-config-per-worktree.md) · bug, board, config · awaiting · Discussion-Bouncer
    - A pair with an older board.yaml re-renders README with the old types; move board.yaml beside fabric.yaml in _board
 1. **Agents stop wrapping commands: stdin without a hook, a bare shed step** — [`agent-command-wrapping`](design-agent-command-wrapping.md) · bug, enhancement, shuttle, shed, stencil · running · Plan-Write
    - Give agent shells /dev/null stdin without a per-call hook; lyx shed step prints a short envelope so the driver runs the bare call
