@@ -29,6 +29,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Live config is in weft and task weft dies at landing; carry config changes or make the hub step explicit
 1. **Webster verify gate waits forever when Master ends its turn with a hung background shell** — [`webster-gate-hung-shell`](design-webster-gate-hung-shell.md) · bug, webster, shuttle
 1. **Webster run-exit audit: way-forward text ends mid-sentence and repeats paths** — [`webster-audit-way-forward-text`](design-webster-audit-way-forward-text.md) · bug, webster
+1. **Discussion-Bouncer finding stays open across three rounds** — [`discussion-recurring-finding`](design-discussion-recurring-finding.md) · bug, loom
 
 ### Enhancements
 
