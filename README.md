@@ -11,8 +11,6 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **lyx files bug issues from Go code; only reflection agents should** — [`selfreport-issues-say-nothing`](design-selfreport-issues-say-nothing.md) · bug, selfreport, loom · running · Finalize
-   - Tier 1 anomaly issues carry only keys and blank fields; drop Go-side filing and feed anomalies to Friction-Reflect instead
 1. **Measure the test suite, make it fast, settle its rules** — [`test-suite-measure`](design-test-suite-measure.md) · enhancement · running · Webster
    - Stage 2a: per-test coverage tool and before-state, real-time seams and t.Parallel, tmux socket leak, an LLM test tier, PATTERN Testing consolidated
    - **Before:** `test-suite-prune-core`, `test-suite-prune-rest`
@@ -158,3 +156,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Copy Claude .jsonl transcripts across machines so --resume works elsewhere
 1. **Interactive board view: a regenerated HTML file and a phone-friendly README** — [`board-viewer`](design-board-viewer.md) · feature, board, ide
    - board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app
+
+## Done
+
+Finished, awaiting `lyx board prune`.
+
+1. **lyx files bug issues from Go code; only reflection agents should** — [`selfreport-issues-say-nothing`](design-selfreport-issues-say-nothing.md) · bug, selfreport, loom · done
+   - Tier 1 anomaly issues carry only keys and blank fields; drop Go-side filing and feed anomalies to Friction-Reflect instead
