@@ -139,3 +139,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - LY: prime/LY: <slug> titles, prime opens with reed up+attach only, orch start and open board as tasks with lyx keybindings, no launch.json
 1. **A running verify gate is visible in status and on screen** — [`gate-running-visible`](design-gate-running-visible.md) · enhancement, loom, reed
    - After an agent ends its turn, a Go gate can run for minutes with nothing on screen; loom status and something on screen name the gate and its runtime
+1. **fabric add adopts an existing remote warp and weft branch pair** — [`fabric-add-adopt-remote`](design-fabric-add-adopt-remote.md) · enhancement, fabric
+   - Moving a run to another machine needs a pair built from the task branches on origin; fabric add refuses the warp branch, so a manual worktree add plus reconcile is the workaround

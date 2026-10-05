@@ -861,6 +861,21 @@
       "isolated": false,
       "brief": "Ryzen Kubuntu idle: 13 s untagged / 60 s integration against 3.6 s / 17 s on 2026-08-13; find and remove what slowed it",
       "body": "The test suite has slowed several-fold since its last recorded measurement.\n\n| Machine | Untagged | Integration | Smoke | Date |\n| --- | --- | --- | --- | --- |\n| Ryzen, Linux bare metal (`docs/benchmarks/test-suite-timing.md`) | 3.60 s | 17.18 s | | 2026-08-13 |\n| Ryzen, Kubuntu (operator, idle machine) | 13 s | 60 s | 1.6 s | 2026-10-05 |\n\nUntagged is about 3.6× and integration about 3.5× slower on comparable hardware.\nOn the Intel 155U laptop under WSL2 (benchmark 9.0 s / 34.9 s), a full verify (build, both tiers, smoke vet) took 8–9 minutes per gate on 2026-10-05, partly from four parallel runs sharing four cores.\nEvery loom run pays it several times: each Burler round, the Webster verify gate and Publish run the full command.\n\n- Run `go run ./cmd/testtiming -full` on an idle machine and record the result in `docs/benchmarks/test-suite-timing.md`, with its slowest-tests table.\n- Find what landed since 2026-08-13 that the slowest packages and tests point to, and restore the floor; the benchmark doc lists the earlier levers (hermetic git env, real-time-wait seams, tier purity).\n- Related: `test-tiers` (which tier each gate runs).\n"
+    },
+    {
+      "id": 114,
+      "slug": "fabric-add-adopt-remote",
+      "title": "fabric add adopts an existing remote warp and weft branch pair",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Moving a run to another machine needs a pair built from the task branches on origin; fabric add refuses the warp branch, so a manual worktree add plus reconcile is the workaround",
+      "body": "## Problem\n\nMoving a running task to another machine needs a pair built from the task's existing warp and weft branches on origin.\n`lyx fabric add \u003cslug\u003e` cannot do that.\nIt adopts only an existing local weft branch; the warp side always runs `git worktree add -b \u003cbranch\u003e` from the acting worktree's HEAD.\nA local warp branch is refused with `ErrBranchExists`, and an origin warp branch that is not an ancestor of HEAD is refused by `probeWarpLeftover` as a diverged leftover.\n\n## Workaround used on 2026-10-05\n\n```\ngit -C \u003chub\u003e/\u003crepo\u003e-weft branch --track \u003cslug\u003e-weft origin/\u003cslug\u003e-weft\ngit worktree add --track -b \u003cslug\u003e ../\u003cslug\u003e origin/\u003cslug\u003e\nlyx fabric reconcile\n```\n\n`reconcile` then recreates the weft worktree from the existing branch (`weft_recreated`) and wires junctions, portal and launchers.\n`lyx batten run \u003cslug\u003e` from prime resumed both the outer and the inner run, and the inner loom run continued from its producer row with a fresh agent.\n\n## Proposal\n\nAn adopt path in `lyx fabric add` (or a dedicated verb) that tracks both origin branches when they exist, so moving a run between machines is one command.\n"
     }
   ],
   "legacy_done": [
