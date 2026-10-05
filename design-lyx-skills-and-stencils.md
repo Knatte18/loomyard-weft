@@ -1,6 +1,6 @@
 # The orch role stencil, cycle and distill with a tailored note, ly-drive as a stencil
 
-`lyx-skills-and-stencils` · Task · enhancement, stencil, orch, shed · running · Discussion-Bouncer
+`lyx-skills-and-stencils` · Task · enhancement, stencil, orch, shed · running · Plan-Write
 
 Depends on: [`test-writing-rules`](design-test-writing-rules.md)
 
