@@ -20,7 +20,7 @@
     "15-drop-recurring-finding.md": "d5ae19c6e90e324060b3f5bace61f7d8aa350476171db7ad7e1db33f62657d00",
     "16-smoke-strand-matching.md": "2561563bef9c09ccbff8c57dee8012eed1a900fcb7f1bf6df26e63d0723de55e"
   },
-  "currentBatch": 0,
+  "currentBatch": 3,
   "masterStrand": "d2c3e84d54a38997316f661377dc5bc2",
   "masterSessionId": "c05a239b-17ca-4c59-acd3-85fb643ebb30",
   "assertedModel": "sonnet",
@@ -76,6 +76,21 @@
       "forkTranscripts": [
         "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-a8b5fb2ee14496a64.jsonl"
       ]
+    },
+    "3": {
+      "slug": "loom-config-keys",
+      "cards": [
+        "03-loom-config-keys"
+      ],
+      "cardHashes": {
+        "03-loom-config-keys": "0a836d5ce007b57777f1345a6fc02addd7a3a6ab732d0899b09a2d8be3365de1"
+      },
+      "startSha": "8a11030641861c760bf85ed1387408d218a58952",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T07:57:23Z",
+      "sessionId": "c05a239b-17ca-4c59-acd3-85fb643ebb30",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
