@@ -12,8 +12,8 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/discussionparser#AppendDecision`
-- `plan:internal/discussionparser#AddedDecision`
+- `internal/discussionparser#AppendDecision`
+- `internal/discussionparser#AddedDecision`
 - `internal/loomcli/review.go`
 - `internal/loomcli/circling.go`
 

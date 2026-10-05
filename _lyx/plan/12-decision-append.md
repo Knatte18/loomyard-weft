@@ -1,8 +1,8 @@
 # Card 12 — `discussionparser` appends a post-Discussion decision
 
 **Create:**
-- `plan:internal/discussionparser#AddedDecision` -> `type AddedDecision struct`
-- `plan:internal/discussionparser#AppendDecision` -> `func AppendDecision(decisionRecordPath, supportLogPath string, d AddedDecision) ([]Finding, error)`
+- `internal/discussionparser#AddedDecision`
+- `internal/discussionparser#AppendDecision`
 - `internal/discussionparser/append.go`
 - `internal/discussionparser/append_test.go`
 
