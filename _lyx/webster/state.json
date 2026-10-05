@@ -20,7 +20,7 @@
     "15-orch-reload.md": "38ac5b4ab5ffd944c1c75ca71c5c44ec0d822f4de51a77046bac154f6ffd9293",
     "16-pattern-entries.md": "e047737b43baabd460e35807bf459d4799d6a894d825af114c67328a17b7713f"
   },
-  "currentBatch": 0,
+  "currentBatch": 13,
   "masterStrand": "40172dc3ee4d7f3102b0f95aade12453",
   "masterSessionId": "473ae965-3716-422d-9f02-1fa754091f0c",
   "assertedModel": "sonnet",
@@ -140,6 +140,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-skills-and-stencils/473ae965-3716-422d-9f02-1fa754091f0c/subagents/agent-a394a55b5d294289c.jsonl"
       ]
+    },
+    "13": {
+      "slug": "orch-note-gate",
+      "cards": [
+        "13-orch-note-gate"
+      ],
+      "cardHashes": {
+        "13-orch-note-gate": "8431e3edc7bf2d8b69996bdb6844e4e2afdc6bd200bd304fd9ad59deca39e018"
+      },
+      "startSha": "28f966f20ad571a7152c5ac1faf00f24e063f9f5",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T17:11:52Z",
+      "sessionId": "473ae965-3716-422d-9f02-1fa754091f0c",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "claude-skill-loader",
