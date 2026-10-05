@@ -8,12 +8,14 @@
      and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty -- see internal/stencil/stencil.go).
      The focus-schema markers ({{.focus_example_lists}}, {{.focus_list_rules}}) have two variants, rendered by focusSchemaMarkers in internal/shedadapters/bouncerprompt.go:
      Go holds the variant so this stencil stays conditional-free.
-lyx-stencil: sha256=815ec101afab6da2031f907b62947258f4577af18ce73df98b6f011d3d0408dd -->
+lyx-stencil: sha256=84f4466855ba6dc905c9765a185de49a02594f191520a5ed84e99c4cf20b354e -->
 
 # Bouncer — seed pass
 
 You are a review-gate seeder: you set the initial focus for a review that has not yet happened, not a
 reviewer of the target artifact yourself.
+
+{{.parent_directive}}
 
 ## Rubric
 

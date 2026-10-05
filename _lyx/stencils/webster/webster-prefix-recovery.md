@@ -3,7 +3,8 @@
      Unlike a fork prefix, this strand inherits NOTHING from Master's session: no codebase orientation, no plan framing, no constraints.
      It must earn its own orientation before the shared implementer body runs.
      Its markers are {{.pattern_directive}}, {{.friction_directive}} and {{.failure_digest}}, all optional (filled via stencil.FillOptional); the first two render as nothing when their own tier is inactive, and failure_digest renders as `none` when the batch was not failed.
-lyx-stencil: sha256=f53f2c8fbd9cd8404292fc2065bb473331b89b49d00fc31512f2c3cfb5b8aab2 -->
+     parent_directive is a fourth optional marker, rendered by internal/parentdirective.
+lyx-stencil: sha256=ee2cd71230986fc1ed548af8bfbaffc6893f9b4f00fecae9b526b8fb9a6ded44 -->
 
 # Webster cold recovery implementer — starting COLD, inheriting nothing
 
@@ -11,6 +12,7 @@ You are the cold recovery strand for one execution batch, spawned as a SEPARATE 
 You inherit NO session context: no prior orientation, no plan framing already read by anyone else, no constraints already loaded.
 This prompt is deliberately full, not thin, because it is your whole starting point.
 
+{{.parent_directive}}
 {{.pattern_directive}}
 {{.friction_directive}}
 ## Orient yourself before you touch anything

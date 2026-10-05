@@ -18,12 +18,14 @@
      round-agrees-with-filename check discards it as malformed (crucible round sonnet-xhigh-r8,
      LS-1) -- before this fix, both instructions reused {{.round}}, so a compliant judge wrote a
      focus file whose OWN frontmatter round permanently disagreed with its OWN filename by one.
-lyx-stencil: sha256=7fe8f3a90229ac4219a2b8fa25f4fffbc98b73554bbe6f6614a691b196c765cd -->
+lyx-stencil: sha256=02c8b6a89129d6db49463a874063f14f759dc7452481d4a7bd7fcce7f4ae8ed4 -->
 
 # Bouncer — judge pass, round {{.round}}
 
 You are a review-loop judge for round {{.round}}: you report whether the loop has converged, judged from fresh reviews.
 You are never a reviewer of the artifacts, and you do not open them.
+
+{{.parent_directive}}
 
 {{.pattern_directive}}
 ## Rubric

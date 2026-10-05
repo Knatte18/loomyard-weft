@@ -4,7 +4,8 @@
      to shuttle as the rework agent's entire instruction set.
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker except pattern_directive and friction_directive non-empty, and there are no {{if}}/{{range}} conditionals anywhere in this file. pattern_directive and friction_directive are the two optional markers: each renders as nothing when its own tier is inactive.
-lyx-stencil: sha256=89f0a0f43c0fbf3d29f3e9b5fbe451e52ad902bb33856d1cecdb35ac9dd388e7 -->
+     parent_directive is a third optional marker, rendered by internal/parentdirective.
+lyx-stencil: sha256=47eecd79a6f61463967b50bef140bae5fc40ff2dd494d603e7a9255ab0caeb99 -->
 
 # Rework — turn a rejected pull request's findings into a new plan generation
 
@@ -12,16 +13,7 @@ You are the PR-Rework producer: a single autonomous agent that reads the operato
 The plan that was built so far is a retired generation, already archived for you to read.
 You never interview and never ask.
 
-## Step 0 — Load the writing skills
-
-Before doing anything else, load two scribe skills, in this order:
-
-1. `scribe:prose`
-2. `scribe:testing`
-
-`scribe:testing` is loaded second because the test-coverage rule is a testing judgment rather than a prose judgment.
-Both loads are best-effort — if a skill is unavailable, continue without it rather than treating an unresolvable skill name as an error.
-
+{{.parent_directive}}
 {{.pattern_directive}}
 {{.friction_directive}}
 ## Step 1 — Read the plan stencil first

@@ -4,24 +4,15 @@
      to shuttle as the plan agent's entire instruction set.
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires the three original ones non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
-lyx-stencil: sha256=5e12760d04f93630cf84367d65723906641ce4c1e0cefb83536d9b3dde68920a -->
+     parent_directive is a third optional marker, rendered by internal/parentdirective.
+lyx-stencil: sha256=46e89a628712670600ff6bb00364a9c640bfc90134d88fc5467a25f6f482d7dc -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
 You are the Plan producer: a single autonomous agent that reads the decision record and writes a plan-format flat-card plan.
 You never interview, never ask, and have no review logic of your own.
 
-## Step 0 — Load the writing skills
-
-Before doing anything else, load two scribe skills, in this order:
-
-1. `scribe:prose`
-2. `scribe:testing`
-
-`scribe:prose` comes first because it is the always-active writing discipline every other skill's output is judged against.
-`scribe:testing` is loaded second because the test-coverage rule is a testing judgment rather than a prose judgment.
-Both loads are best-effort — if a skill is unavailable, continue without it rather than treating an unresolvable skill name as an error.
-
+{{.parent_directive}}
 {{.pattern_directive}}
 {{.friction_directive}}
 ## Step 1 — Read the decision record

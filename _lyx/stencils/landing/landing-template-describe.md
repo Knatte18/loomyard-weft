@@ -2,11 +2,13 @@
      default in the top-level stencils package (stencils/stencils.go), seeded to
      <hub>/_board/_lyx/stencils/landing/, and read from there at call time by landingshed's
      DescribeSpec via internal/stencil, then handed to shuttle as the describing agent's whole
-     prompt. Every marker below is a top-level {{.X}} substitution; stencil.Fill requires both
-     non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=2f233dfb328d7f204652e5b23d3bd7fbb9c4a059a9b2838dcfe4cc2ee60089a2 -->
+     prompt. Every marker below is a top-level {{.X}} substitution; stencil.Fill requires every
+     marker non-empty, parent_directive included (rendered by internal/parentdirective), and there are no {{if}}/{{range}} conditionals anywhere in this file.
+lyx-stencil: sha256=0ea365e2305b31f34b742e67124029f93b0ef2c04ca8d44f962b0495cf2bf076 -->
 
 # Change description — write the one description this task lands under
+
+{{.parent_directive}}
 
 You are writing the single change description for task `{{.slug}}`.
 It becomes the pull request's title and body and the landing commit's message, so it is written for a reviewer who knows the codebase but has not seen the run that produced the change.

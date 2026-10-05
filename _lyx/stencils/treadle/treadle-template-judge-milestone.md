@@ -1,11 +1,13 @@
 <!-- This is the milestone continuation-gate judge prompt. It is filled via
      internal/stencil.Fill (judge.go's runJudgeCall, reached from runMilestone) and handed to the shuttle as the agent's entire instruction set — the call runs as a single clean-room agent told only "read this file and do exactly what it says".
      Every marker below is a top-level {{.X}} substitution;
-     stencil.Fill requires all six non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go).
+     stencil.Fill requires every marker non-empty, parent_directive included (rendered by internal/parentdirective), and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go).
      This same call also maintains the judge-maintained handoff (previous_handoff in, handoff_path out) — see the handoff-on-disk shared decision: the handoff rides the SAME call as the verdict, never a separate spawn.
-lyx-stencil: sha256=a1011f41dd400b358fcabe6968d0ea43b5e83f1edcb740a23e1b466a3c497bee -->
+lyx-stencil: sha256=e4a15b1c346704ce02409028c7b826d676c4bc4f510b70f889b8abe9972fcf1b -->
 
 # Treadle progress judge — milestone continuation gate
+
+{{.parent_directive}}
 
 You are a progress judge: an ephemeral reviewer of REVIEWS, not of the target artifact itself.
 A treadle block has reached a soft cap at round {{.round}} still BLOCKING (the hard stop for this block is round {{.hard_cap}}).
