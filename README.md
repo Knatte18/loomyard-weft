@@ -16,7 +16,7 @@ Waits on nothing open; can start now, in parallel.
 1. **Orch context cycling and long-run hardening** — [`orch-cycle-hardening`](design-orch-cycle-hardening.md) · bug, enhancement, orch, config, batten · running · Webster
    - Fresh reading after /compact, clear-or-compact as config, and the adopt/attach/permission hardening list
    - **Before:** `lyx-skills-and-stencils`
-1. **Bouncer CIRCLING escalates to the parent; loomcli smoke tier green** — [`loom-bouncer-rounds`](design-loom-bouncer-rounds.md) · bug, enhancement, loom, orch · awaiting · Discussion-Bouncer
+1. **Bouncer CIRCLING escalates to the parent; loomcli smoke tier green** — [`loom-bouncer-rounds`](design-loom-bouncer-rounds.md) · bug, enhancement, loom, orch · running · Discussion-Bouncer
    - CIRCLING judged later on unchanged recurrence and escalated to the parent orchestrator; fix the five failing loomcli smoke tests
    - **Before:** `lyx-skills-and-stencils`
 1. **Label descriptions, board CLI gaps, CLI tree exceptions** — [`board-labels-and-skills`](design-board-labels-and-skills.md) · bug, enhancement, board, config, selfreport · running · Plan-Write
