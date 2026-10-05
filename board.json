@@ -845,6 +845,20 @@
       "isolated": false,
       "brief": "After an agent ends its turn, a Go gate can run for minutes with nothing on screen; loom status and something on screen name the gate and its runtime",
       "body": "Seen 2026-10-05 in `orch-cycle-hardening`: after the Webster-Burler agent ended its turn, the producer ran the task's verify command (`verifyrun`: build, unit, integration, smoke vet) for many minutes.\nNothing on screen said so: the agent's pane sat idle, `lyx loom status` showed only `now=Webster-Burler`, and the operator read it as a hang, asked the agent what it was waiting on, and the agent could not tell either.\n\nIdea (operator): a visible marker whenever a Go gate runs.\n\n- `lyx loom status` (`activity.now`) names the gate and how long it has run, such as `Webster-Burler: verify running 6m (go test -tags integration)`.\n- Something on screen shows the same: under the LLM driver every run uses, `lyx loom start` removes the `loom-status` strand on purpose (`internal/loomcli/start.go`, \"the ly-drive strand is the driving surface\"), so the marker goes in the driver's pane or title, the agent's title, or a status pane that also exists in LLM mode.\n- The agent pane, or its strand's title, shows that the run moved on to a gate, so an idle agent does not look stuck.\n- The same applies to every Go-side wait a producer does after its agent's turn: the Webster verify gate, the Burler round's verify, Publish's merge-in verify.\n"
+    },
+    {
+      "id": 113,
+      "slug": "test-suite-regression",
+      "title": "Test suite several times slower than its August benchmark",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Ryzen Kubuntu idle: 13 s untagged / 60 s integration against 3.6 s / 17 s on 2026-08-13; find and remove what slowed it",
+      "body": "The test suite has slowed several-fold since its last recorded measurement.\n\n| Machine | Untagged | Integration | Smoke | Date |\n| --- | --- | --- | --- | --- |\n| Ryzen, Linux bare metal (`docs/benchmarks/test-suite-timing.md`) | 3.60 s | 17.18 s | | 2026-08-13 |\n| Ryzen, Kubuntu (operator, idle machine) | 13 s | 60 s | 1.6 s | 2026-10-05 |\n\nUntagged is about 3.6× and integration about 3.5× slower on comparable hardware.\nOn the Intel 155U laptop under WSL2 (benchmark 9.0 s / 34.9 s), a full verify (build, both tiers, smoke vet) took 8–9 minutes per gate on 2026-10-05, partly from four parallel runs sharing four cores.\nEvery loom run pays it several times: each Burler round, the Webster verify gate and Publish run the full command.\n\n- Run `go run ./cmd/testtiming -full` on an idle machine and record the result in `docs/benchmarks/test-suite-timing.md`, with its slowest-tests table.\n- Find what landed since 2026-08-13 that the slowest packages and tests point to, and restore the floor; the benchmark doc lists the earlier levers (hermetic git env, real-time-wait seams, tier purity).\n- Related: `test-tiers` (which tier each gate runs).\n"
     }
   ],
   "legacy_done": [

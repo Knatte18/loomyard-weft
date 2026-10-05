@@ -46,6 +46,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Live config is in weft and task weft dies at landing; carry config changes or make the hub step explicit
 1. **Webster Master hangs background shells with a flattened heredoc** — [`master-heredoc-hang`](design-master-heredoc-hang.md) · bug, webster, shuttle
    - cat > /tmp/x; python3 - <<EOF … EOF on one line reads stdin forever; seen twice on 2026-10-05 and in #361
+1. **Test suite several times slower than its August benchmark** — [`test-suite-regression`](design-test-suite-regression.md) · bug
+   - Ryzen Kubuntu idle: 13 s untagged / 60 s integration against 3.6 s / 17 s on 2026-08-13; find and remove what slowed it
 
 ### Enhancements
 
