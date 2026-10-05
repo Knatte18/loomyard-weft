@@ -1,13 +1,14 @@
-# fabric add adopts an existing remote warp and weft branch pair
+# fabric fetches an existing remote warp and weft branch instead of creating new ones
 
 `fabric-add-adopt-remote` · Note · enhancement, fabric
 
 ## Problem
 
 Moving a running task to another machine needs a pair built from the task's existing warp and weft branches on origin.
-`lyx fabric add <slug>` cannot do that.
-It adopts only an existing local weft branch; the warp side always runs `git worktree add -b <branch>` from the acting worktree's HEAD.
-A local warp branch is refused with `ErrBranchExists`, and an origin warp branch that is not an ancestor of HEAD is refused by `probeWarpLeftover` as a diverged leftover.
+Fabric handles an existing warp: `lyx fabric reconcile` adopts a warp worktree created outside lyx.
+Finding the existing weft is the gap: `reconcile`, `checkout` and `add` probe only the local `refs/heads/<slug>-weft` (`weftBranchExists`).
+When that ref is absent, `reconcile` forks a fresh dormant weft from the weft HEAD (`createDormantWeftForRawWarp`) and never looks at `origin/<slug>-weft`, so the run records and status are silently lost and the next push collides with origin.
+Only `clone` adopts a weft branch from origin, and only for the prime.
 
 ## Workaround used on 2026-10-05
 
@@ -17,9 +18,11 @@ git worktree add --track -b <slug> ../<slug> origin/<slug>
 lyx fabric reconcile
 ```
 
-`reconcile` then recreates the weft worktree from the existing branch (`weft_recreated`) and wires junctions, portal and launchers.
-`lyx batten run <slug>` from prime resumed both the outer and the inner run, and the inner loom run continued from its producer row with a fresh agent.
+With the local tracking weft branch in place, `reconcile` takes its `weft_recreated` path and wires junctions, portal and launchers.
+`lyx batten run <slug>` from prime then resumed both the outer and the inner run, and the inner loom run continued from its producer row with a fresh agent.
 
 ## Proposal
 
-An adopt path in `lyx fabric add` (or a dedicated verb) that tracks both origin branches when they exist, so moving a run between machines is one command.
+When a branch exists on origin, fabric fetches it and checks it out as a tracking branch; it never creates a new local branch in its place.
+`lyx fabric add <slug>` fetches `origin/<slug>` and `origin/<slug>-weft` when they exist, instead of refusing the warp branch as a diverged leftover.
+Every other path that resolves a pair's weft branch (`reconcile`, `checkout`) checks `origin/<slug>-weft` the same way before forking a new one, as `clone` does.

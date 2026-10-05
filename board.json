@@ -865,7 +865,7 @@
     {
       "id": 114,
       "slug": "fabric-add-adopt-remote",
-      "title": "fabric add adopts an existing remote warp and weft branch pair",
+      "title": "fabric fetches an existing remote warp and weft branch instead of creating new ones",
       "kind": "note",
       "labels": [
         "enhancement",
@@ -874,8 +874,8 @@
       "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "Moving a run to another machine needs a pair built from the task branches on origin; fabric add refuses the warp branch, so a manual worktree add plus reconcile is the workaround",
-      "body": "## Problem\n\nMoving a running task to another machine needs a pair built from the task's existing warp and weft branches on origin.\n`lyx fabric add \u003cslug\u003e` cannot do that.\nIt adopts only an existing local weft branch; the warp side always runs `git worktree add -b \u003cbranch\u003e` from the acting worktree's HEAD.\nA local warp branch is refused with `ErrBranchExists`, and an origin warp branch that is not an ancestor of HEAD is refused by `probeWarpLeftover` as a diverged leftover.\n\n## Workaround used on 2026-10-05\n\n```\ngit -C \u003chub\u003e/\u003crepo\u003e-weft branch --track \u003cslug\u003e-weft origin/\u003cslug\u003e-weft\ngit worktree add --track -b \u003cslug\u003e ../\u003cslug\u003e origin/\u003cslug\u003e\nlyx fabric reconcile\n```\n\n`reconcile` then recreates the weft worktree from the existing branch (`weft_recreated`) and wires junctions, portal and launchers.\n`lyx batten run \u003cslug\u003e` from prime resumed both the outer and the inner run, and the inner loom run continued from its producer row with a fresh agent.\n\n## Proposal\n\nAn adopt path in `lyx fabric add` (or a dedicated verb) that tracks both origin branches when they exist, so moving a run between machines is one command.\n"
+      "brief": "A branch that exists on origin is fetched and checked out, never recreated locally; reconcile and checkout today fork a fresh weft and fabric add refuses the warp",
+      "body": "## Problem\n\nMoving a running task to another machine needs a pair built from the task's existing warp and weft branches on origin.\nFabric handles an existing warp: `lyx fabric reconcile` adopts a warp worktree created outside lyx.\nFinding the existing weft is the gap: `reconcile`, `checkout` and `add` probe only the local `refs/heads/\u003cslug\u003e-weft` (`weftBranchExists`).\nWhen that ref is absent, `reconcile` forks a fresh dormant weft from the weft HEAD (`createDormantWeftForRawWarp`) and never looks at `origin/\u003cslug\u003e-weft`, so the run records and status are silently lost and the next push collides with origin.\nOnly `clone` adopts a weft branch from origin, and only for the prime.\n\n## Workaround used on 2026-10-05\n\n```\ngit -C \u003chub\u003e/\u003crepo\u003e-weft branch --track \u003cslug\u003e-weft origin/\u003cslug\u003e-weft\ngit worktree add --track -b \u003cslug\u003e ../\u003cslug\u003e origin/\u003cslug\u003e\nlyx fabric reconcile\n```\n\nWith the local tracking weft branch in place, `reconcile` takes its `weft_recreated` path and wires junctions, portal and launchers.\n`lyx batten run \u003cslug\u003e` from prime then resumed both the outer and the inner run, and the inner loom run continued from its producer row with a fresh agent.\n\n## Proposal\n\nWhen a branch exists on origin, fabric fetches it and checks it out as a tracking branch; it never creates a new local branch in its place.\n`lyx fabric add \u003cslug\u003e` fetches `origin/\u003cslug\u003e` and `origin/\u003cslug\u003e-weft` when they exist, instead of refusing the warp branch as a diverged leftover.\nEvery other path that resolves a pair's weft branch (`reconcile`, `checkout`) checks `origin/\u003cslug\u003e-weft` the same way before forking a new one, as `clone` does.\n"
     }
   ],
   "legacy_done": [
