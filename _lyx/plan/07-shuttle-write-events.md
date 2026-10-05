@@ -11,7 +11,7 @@
 - `internal/shuttleengine/claudeengine/audit_test.go`
 
 **Create:**
-- `plan:internal/shuttleengine#WriteEvent` -> `type WriteEvent struct`
+- `internal/shuttleengine#WriteEvent`
 - `internal/shuttleengine/claudeengine/testdata/parent-writes-results.jsonl`
 
 **Intent:**

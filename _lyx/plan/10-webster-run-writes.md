@@ -6,7 +6,7 @@
 - `internal/websterengine/runwrites_test.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#WriteEvent`
+- `internal/shuttleengine#WriteEvent`
 - `internal/shuttleengine#Engine.AuditForks`
 - `internal/websterengine#State`
 

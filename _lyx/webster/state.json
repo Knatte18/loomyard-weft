@@ -1,6 +1,6 @@
 {
   "runGuid": "6f4059c4dc5ef5daf31b16cdbb26e448",
-  "planFingerprint": "97ed3581a5a0f6a067c6cc944204eec685616f17ba32971f0fada0c680aec5c0",
+  "planFingerprint": "3b934920c1f4719744fed9d434ea550f50dd6cea1b3d5eb6f1cf16f022a8b0a5",
   "planFileHashes": {
     "00-overview.md": "de6d7ccccc445d066df81ae2cdb6234a43c62754bcb1b82911c74cf4d7ff7844",
     "01-shuttle-background-tasks.md": "a99d3cf49b0739a2c610bbf0bef3b6061e86b36f12dd421003b34943989254c1",
@@ -9,17 +9,17 @@
     "04-claude-bash-stdin-hook.md": "15b7e86854a5a09554c1e220a80c0a63298c47e57d63f71c6756e219cbfbd069",
     "05-webster-expired-shells.md": "ac07ddcd52044ed69891f52c64d03a12a7b8ff68125722c618ecf08eedeaa18d",
     "06-webster-contract-file-stencils.md": "3a85a700a6012e2b536f526a83cc86c9aff36b63ef6e30e64b9f3df910a53d97",
-    "07-shuttle-write-events.md": "39441e6bcd91d975588eb28caf1d41691263fbe8aab365f94b64999b5b2f7796",
+    "07-shuttle-write-events.md": "14ec0eaaabb38a7a87d7dc3ae652f4163ab72c4f7b5e61c29f58c795dc08714b",
     "08-fabric-reset-pair-warp.md": "7dde681596aa5289e9f8e178f3c103d2f4bc76c098ed091ec530d3dc2ec59d1c",
     "09-webster-prefix-head-persist.md": "40175f8a5f72c82459046c5df0f217d5445109dcd870f0c769bf5eff85b1f758",
-    "10-webster-run-writes.md": "f9bc6644de3b361a064904a06d032132fdf0bea4a9cd92fd5d0a40d3ceeae68f",
+    "10-webster-run-writes.md": "666ccd58058caaa2e014d567a13ae75b579f20f42266ade54d9311032e5f7907",
     "11-webster-reset-plan.md": "48ec4bb723e463855c8468f0f9576c4458c9e94e489592c9a6611ee657940979",
     "12-webster-reset-verb.md": "9353b18fa28fa4bfcfb1bb13c966a64d7102e6e88be19d11df1a4ecbe418eb93",
     "13-webster-contract-file-evidence.md": "88a55d42258d7b5b05960b753b24f446938a15ec2b726ed4283c4ecf3bd7143d",
     "14-webster-audit-way-forward.md": "8bdbcffab4d2d2954645d2a067e65e90a19441d5f49e22185bb6bb8fce4fb015",
     "15-webster-no-denied-recovery.md": "d81c7316787b41cc1ce1383b0a0e463e71c8c15e123b244b4bd7ffab784315e3"
   },
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "7d141636dc7e313e3780ee8c2b5140a3",
   "masterSessionId": "1b4a02c4-56e0-4d0d-b34d-95153da7fecc",
   "assertedModel": "sonnet",
@@ -194,14 +194,25 @@
         "07-shuttle-write-events"
       ],
       "cardHashes": {
-        "07-shuttle-write-events": "39441e6bcd91d975588eb28caf1d41691263fbe8aab365f94b64999b5b2f7796"
+        "07-shuttle-write-events": "14ec0eaaabb38a7a87d7dc3ae652f4163ab72c4f7b5e61c29f58c795dc08714b"
       },
       "startSha": "15f36a771866c2db378336fd7358c1c468a6ad2d",
       "kind": "fork",
       "spawnedAt": "2026-10-05T08:19:57Z",
       "sessionId": "1b4a02c4-56e0-4d0d-b34d-95153da7fecc",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-shuttle-write-events",
+        "status": "done",
+        "head_sha": "4ba69c5e6b15a803015b369035cb356ee9bcb96c"
+      },
+      "cardShas": [
+        "4ba69c5e6b15a803015b369035cb356ee9bcb96c"
+      ],
+      "forkTranscripts": [
+        "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-a57dd577ec1efc74a.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
@@ -210,6 +221,7 @@
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-a9539537da7a4293d.jsonl",
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-a3566771a51a23bf7.jsonl",
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-adfc710bb86745c19.jsonl",
-    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-ac591abcf53fde291.jsonl"
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-ac591abcf53fde291.jsonl",
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-a57dd577ec1efc74a.jsonl"
   ]
 }
