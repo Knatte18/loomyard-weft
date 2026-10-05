@@ -7,6 +7,13 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
+### Layer A
+
+Waits on nothing open; can start now, in parallel.
+
+1. **Webster audit and verify-gate halts are recoverable by the agent** — [`webster-audit-recovery`](design-webster-audit-recovery.md) · bug, enhancement, webster, shuttle
+   - Hung-shell gate wait, unacceptable contract-file findings, garbled way-forward text, recoveries that need denied commands
+
 ## Notes
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
@@ -27,10 +34,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - quarry#34 re-parses per target; fix it or validate incrementally; drop the per-batch model assertion
 1. **Config changes a task makes never reach the parent** — [`config-reaches-parent`](design-config-reaches-parent.md) · bug, config, fabric, loom
    - Live config is in weft and task weft dies at landing; carry config changes or make the hub step explicit
-1. **Webster verify gate waits forever when Master ends its turn with a hung background shell** — [`webster-gate-hung-shell`](design-webster-gate-hung-shell.md) · bug, webster, shuttle
-1. **Webster run-exit audit: way-forward text ends mid-sentence and repeats paths** — [`webster-audit-way-forward-text`](design-webster-audit-way-forward-text.md) · bug, webster
 1. **Discussion-Bouncer finding stays open across three rounds** — [`discussion-recurring-finding`](design-discussion-recurring-finding.md) · bug, loom
-1. **accept-audit can never accept a fork-contract-write finding** — [`webster-accept-audit-contract`](design-webster-accept-audit-contract.md) · bug, webster
 
 ### Enhancements
 
@@ -74,8 +78,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - The hub watches runs with a hand-written .scratch/hub/watch.sh; drivers already message their parent, so question the watcher, and close any real gap in lyx code
 1. **Each batten the orch starts runs in its own tmux window** — [`batten-windows`](design-batten-windows.md) · enhancement, reed, batten, orch
    - Batten runs detached and invisible; a window per run makes the window list show what the orch has in flight
-1. **No recovery path needs a command the agents are denied** — [`no-denied-recovery`](design-no-denied-recovery.md) · enhancement, shuttle, webster
-   - Webster named git reset --hard as the way forward, the global deny list blocks it even in bypass, and the run stopped for the operator
 1. **Fabric's Windows path behaviour verified on a Windows host** — [`fabric-windows`](design-fabric-windows.md) · enhancement, fabric
    - Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant
 1. **semantic-index: find code by concept, not by literal keyword** — [`semantic-index`](design-semantic-index.md) · enhancement
