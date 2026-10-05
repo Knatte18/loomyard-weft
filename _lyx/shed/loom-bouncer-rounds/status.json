@@ -1,12 +1,12 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Discussion-Bouncer: the judge found no progress at round 4 (CIRCLING); decide with `lyx loom circling accept loom-bouncer-rounds` or `lyx loom circling continue loom-bouncer-rounds`, then run `lyx loom start` in the task worktree to resume",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler → bounced to Discussion-Bouncer",
-    "wait": ""
+    "last": "Discussion-Bouncer → awaiting",
+    "wait": "bouncer Discussion-Bouncer: the judge found no progress at round 4 (CIRCLING); decide with `lyx loom circling accept loom-bouncer-rounds` or `lyx loom circling continue loom-bouncer-rounds`, then run `lyx loom start` in the task worktree to resume"
   },
   "history": [
     {
@@ -91,6 +91,12 @@
       "output": "/home/hanf/Code/loomyard-LYXHUB/loom-bouncer-rounds/_lyx/reviews/discussion/round-4-review.md",
       "at": "2026-10-05T07:29:28Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/hanf/Code/loomyard-LYXHUB/loom-bouncer-rounds/_lyx/reviews/discussion/round-4-bouncer-ledger.md",
+      "at": "2026-10-05T07:29:59Z"
     }
   ],
   "product": {
