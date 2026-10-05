@@ -857,7 +857,7 @@
       "id": 127,
       "slug": "board-config-per-worktree",
       "title": "board.yaml is read per worktree though the board is one per hub",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "board",
