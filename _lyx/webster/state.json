@@ -16,7 +16,7 @@
     "11-adopt-pid-reuse.md": "9ac8e7bf1c0d39c37aab5b3165f234d0a213e2aa37d4a19a9cb3a932b91ccf77",
     "12-orch-smoke.md": "07b993147b708d3d755ec72b278970249ab33b6ff826beb4025bf9cfada6376b"
   },
-  "currentBatch": 12,
+  "currentBatch": 0,
   "masterStrand": "d67879bc330e634575451a44ed0d2120",
   "masterSessionId": "1531b0ca-5912-4b17-8d7c-1834f68aa0eb",
   "assertedModel": "sonnet",
@@ -111,8 +111,19 @@
       "kind": "fork",
       "spawnedAt": "2026-10-05T08:22:39Z",
       "sessionId": "1531b0ca-5912-4b17-8d7c-1834f68aa0eb",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "12-orch-smoke",
+        "status": "done",
+        "head_sha": "85603bc60420f63f8419708e3c0ae1938465bf6b"
+      },
+      "cardShas": [
+        "85603bc60420f63f8419708e3c0ae1938465bf6b"
+      ],
+      "forkTranscripts": [
+        "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-orch-cycle-hardening/1531b0ca-5912-4b17-8d7c-1834f68aa0eb/subagents/agent-a0c32b05d465362b8.jsonl"
+      ]
     },
     "2": {
       "slug": "reread-and-reset",
@@ -340,6 +351,7 @@
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-orch-cycle-hardening/1531b0ca-5912-4b17-8d7c-1834f68aa0eb/subagents/agent-a5357478488834e61.jsonl",
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-orch-cycle-hardening/1531b0ca-5912-4b17-8d7c-1834f68aa0eb/subagents/agent-a440e69df1129b592.jsonl",
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-orch-cycle-hardening/1531b0ca-5912-4b17-8d7c-1834f68aa0eb/subagents/agent-a9675a256261025cd.jsonl",
-    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-orch-cycle-hardening/1531b0ca-5912-4b17-8d7c-1834f68aa0eb/subagents/agent-a26ed3ba875e68da1.jsonl"
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-orch-cycle-hardening/1531b0ca-5912-4b17-8d7c-1834f68aa0eb/subagents/agent-a26ed3ba875e68da1.jsonl",
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-orch-cycle-hardening/1531b0ca-5912-4b17-8d7c-1834f68aa0eb/subagents/agent-a0c32b05d465362b8.jsonl"
   ]
 }
