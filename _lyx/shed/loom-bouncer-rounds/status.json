@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster-Bouncer",
-  "state": "blocked",
-  "error": "bounce budget exhausted for Webster-Bouncer; way forward: \"lyx shed goto loom-bouncer-rounds --to Webster-Bouncer\" gives segment \"Webster-Review\" a fresh budget",
+  "state": "paused",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Webster-Bouncer",
-    "last": "Webster-Bouncer → stuck",
-    "wait": "bounce budget exhausted for Webster-Bouncer; way forward: \"lyx shed goto loom-bouncer-rounds --to Webster-Bouncer\" gives segment \"Webster-Review\" a fresh budget"
+    "last": "Webster-Bouncer → goto",
+    "wait": ""
   },
   "history": [
     {
@@ -230,6 +230,12 @@
       "outcome": "stuck",
       "output": "/home/knatte/Code/loomyard-LYXHUB/loom-bouncer-rounds/_lyx/reviews/webster/round-5-bouncer-ledger.md",
       "at": "2026-10-05T14:01:57Z"
+    },
+    {
+      "producer": "Webster-Bouncer",
+      "outcome": "goto",
+      "output": "",
+      "at": "2026-10-05T14:02:26Z"
     }
   ],
   "product": {
