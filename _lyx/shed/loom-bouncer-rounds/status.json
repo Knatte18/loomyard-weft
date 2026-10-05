@@ -1,12 +1,12 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "awaiting",
-  "error": "bouncer Discussion-Bouncer: the judge found no progress at round 2 (CIRCLING); decide with `lyx loom circling accept loom-bouncer-rounds` or `lyx loom circling continue loom-bouncer-rounds`, then run `lyx loom start` in the task worktree to resume",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
     "last": "Discussion-Bouncer → awaiting",
-    "wait": "bouncer Discussion-Bouncer: the judge found no progress at round 2 (CIRCLING); decide with `lyx loom circling accept loom-bouncer-rounds` or `lyx loom circling continue loom-bouncer-rounds`, then run `lyx loom start` in the task worktree to resume"
+    "wait": ""
   },
   "history": [
     {
