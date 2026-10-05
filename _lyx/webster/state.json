@@ -20,7 +20,7 @@
     "15-drop-recurring-finding.md": "d5ae19c6e90e324060b3f5bace61f7d8aa350476171db7ad7e1db33f62657d00",
     "16-smoke-strand-matching.md": "2561563bef9c09ccbff8c57dee8012eed1a900fcb7f1bf6df26e63d0723de55e"
   },
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "d2c3e84d54a38997316f661377dc5bc2",
   "masterSessionId": "c05a239b-17ca-4c59-acd3-85fb643ebb30",
   "assertedModel": "sonnet",
@@ -238,6 +238,21 @@
       "forkTranscripts": [
         "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-a11d5aa957047433c.jsonl"
       ]
+    },
+    "9": {
+      "slug": "checkpoint-judging",
+      "cards": [
+        "09-checkpoint-judging"
+      ],
+      "cardHashes": {
+        "09-checkpoint-judging": "d858428f16448876f47a6fd30be822ef7a0ed2e496aef425ecd8c20f8ae9c71f"
+      },
+      "startSha": "6a1d1a81d8504e6589965520ed2de44c2154300e",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T10:38:20Z",
+      "sessionId": "c05a239b-17ca-4c59-acd3-85fb643ebb30",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
