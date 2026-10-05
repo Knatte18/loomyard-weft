@@ -18,7 +18,7 @@ On 2026-10-05 runs spent 5–7 full plan verifies each, four runs started togeth
 
 Idea (operator): a review round's gate runs the unit tier for the packages the round changed, and the full plan verify runs only at Webster's gate and at Publish/Finalize.
 That cuts a run's full suites from 7–9 to 2–3.
-Related: `test-suite-regression` (the suite itself is about 3.5× slower than its August benchmark).
+Related: `test-suite-measure` (the suite itself is about 3.5× slower than its August benchmark).
 
 ## Proposed gate design (hub, 2026-10-05; operator asked for it)
 
