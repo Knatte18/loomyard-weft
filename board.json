@@ -876,6 +876,22 @@
       "isolated": false,
       "brief": "A branch that exists on origin is fetched and checked out, never recreated locally; reconcile and checkout today fork a fresh weft and fabric add refuses the warp",
       "body": "## Problem\n\nMoving a running task to another machine needs a pair built from the task's existing warp and weft branches on origin.\nFabric handles an existing warp: `lyx fabric reconcile` adopts a warp worktree created outside lyx.\nFinding the existing weft is the gap: `reconcile`, `checkout` and `add` probe only the local `refs/heads/\u003cslug\u003e-weft` (`weftBranchExists`).\nWhen that ref is absent, `reconcile` forks a fresh dormant weft from the weft HEAD (`createDormantWeftForRawWarp`) and never looks at `origin/\u003cslug\u003e-weft`, so the run records and status are silently lost and the next push collides with origin.\nOnly `clone` adopts a weft branch from origin, and only for the prime.\n\n## Workaround used on 2026-10-05\n\n```\ngit -C \u003chub\u003e/\u003crepo\u003e-weft branch --track \u003cslug\u003e-weft origin/\u003cslug\u003e-weft\ngit worktree add --track -b \u003cslug\u003e ../\u003cslug\u003e origin/\u003cslug\u003e\nlyx fabric reconcile\n```\n\nWith the local tracking weft branch in place, `reconcile` takes its `weft_recreated` path and wires junctions, portal and launchers.\n`lyx batten run \u003cslug\u003e` from prime then resumed both the outer and the inner run, and the inner loom run continued from its producer row with a fresh agent.\n\n## Proposal\n\nWhen a branch exists on origin, fabric fetches it and checks it out as a tracking branch; it never creates a new local branch in its place.\n`lyx fabric add \u003cslug\u003e` fetches `origin/\u003cslug\u003e` and `origin/\u003cslug\u003e-weft` when they exist, instead of refusing the warp branch as a diverged leftover.\nEvery other path that resolves a pair's weft branch (`reconcile`, `checkout`) checks `origin/\u003cslug\u003e-weft` the same way before forking a new one, as `clone` does.\n"
+    },
+    {
+      "id": 115,
+      "slug": "strand-colors",
+      "title": "A color per spawned session, so the driver and each loom segment stand apart",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "reed",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Use Claude Code /color on every spawned strand: driver against the rest at least, ideally one color per loom segment",
+      "body": "## Problem\n\nWith a run live, the driver pane and the agents it spawns (Webster, Burler, Bouncer judge, Describe and the rest) look alike in tmux and in Claude Code, so it is often hard to see which session is which.\n\n## Idea (operator, 2026-10-05)\n\nGive each spawned session a color with Claude Code's `/color` command, so the driver stands apart from the agents it spawns.\nOpen question: one color per loom segment (Discussion, Plan, Webster, review, Describe, landing) rather than only driver against the rest; the operator would like that.\n\n## Open\n\n- Where the color is set: by the spawning code through reed when it starts the strand, or by the agent's own launch prompt.\n- Whether the tmux pane border or status line should carry the same color, so the reed layout matches the sessions.\n"
     }
   ],
   "legacy_done": [
