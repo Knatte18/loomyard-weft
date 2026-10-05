@@ -1,6 +1,6 @@
 # Webster verify gate waits forever when Master ends its turn with a hung background shell
 
-`webster-gate-hung-shell` · Note · bug, webster
+`webster-gate-hung-shell` · Note · bug, webster, shuttle
 
 Imported from [issue #361](https://github.com/Knatte18/loomyard/issues/361).
 
