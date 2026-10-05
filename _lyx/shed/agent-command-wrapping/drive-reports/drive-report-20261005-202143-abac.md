@@ -39,4 +39,4 @@ Bouncer ledger: `/home/knatte/Code/loomyard-LYXHUB/agent-command-wrapping/_lyx/r
 
 ## Parent notice
 
-Sent verbatim to `ly:orch` (see below).
+The envelope's `parent_notice` was sent verbatim to `ly:orch` by `SendMessage`; the send succeeded.
