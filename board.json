@@ -809,7 +809,7 @@
       ],
       "issues": [],
       "depends_on": [
-        "test-suite-prune"
+        "test-writing-rules"
       ],
       "isolated": false,
       "brief": "Driver procedure moves into a stencil, a ly:runs workflow skill, and the orch watcher injects skill loading at start, adopt and after every cycle",

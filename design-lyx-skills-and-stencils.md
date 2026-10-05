@@ -2,7 +2,7 @@
 
 `lyx-skills-and-stencils` · Task · enhancement, stencil, orch, shed
 
-Depends on: [`test-suite-prune`](design-test-suite-prune.md)
+Depends on: [`test-writing-rules`](design-test-writing-rules.md)
 
 # Goal
 
