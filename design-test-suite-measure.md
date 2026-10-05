@@ -1,6 +1,6 @@
 # Measure the test suite, make it fast, settle its rules
 
-`test-suite-measure` · Task · enhancement · running · Describe
+`test-suite-measure` · Task · enhancement · running · Publish
 
 Stage 2a of getting the test suite under control: measure it, make it fast, and settle the rules before pruning.
 `test-suite-prune-core` and `test-suite-prune-rest` follow and delete tests using this task's tool and report.
