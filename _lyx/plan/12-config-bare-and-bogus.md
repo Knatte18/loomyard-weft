@@ -22,6 +22,7 @@ Implement D9.
 `lyx config <module>` and bare `lyx config` with `--print` or `--set` keep their present paths, which resolve a cwd.
 A subcommand name always routes as a subcommand.
 The interactive picker goes: `menu.go` is deleted and `dispatch`'s no-module, no-flag branch with it.
+`dispatch`'s `in io.Reader` parameter existed only for the menu, so it goes too, with `runConfig`'s `os.Stdin` argument and the test callers.
 `buildConfigLong` stops describing the menu and says bare `lyx config` lists modules and verbs.
 Grep for the menu's wording and for `menu(`; the `TestMenu*` tests go with it.
 

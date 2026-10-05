@@ -6,6 +6,7 @@
 - `internal/boardcli/verbs_test.go`
 - `plugins/ly/skills/board/SKILL.md`
 - `tools/sandbox/SANDBOX-CORE-SUITE.md`
+- `docs/overview.md`
 
 **Create:**
 - `internal/boardcli/doc.go`
@@ -25,6 +26,7 @@ Tests, integration-tagged with the package's other verb tests: `lyx board labels
 
 `SKILL.md` (D12): read `lyx board labels` before choosing labels; a label names the lyx module an entry mainly touches, and an entry that belongs to no module carries none beyond its type label; `types` and `labels` are maps edited with `lyx config board` (`--set labels.<name>=…` or the editor); the `undecided` examples go.
 `SANDBOX-CORE-SUITE.md`'s S3 scenario runs `lyx board labels` and watches for both lists in file order (`PATTERN-sandbox-coverage`).
+`docs/overview.md`'s board entry says `types` and `labels` are maps from label to description and names `lyx board labels`.
 `doc.go` gains the package doc for `boardcli`: the verb tree, payload conventions, `--body-file`, and the `labels` verb.
 
 **ImpactSummary:** one new board verb, the board CLI's config capture, the board skill and the sandbox S3 scenario.

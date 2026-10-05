@@ -14,6 +14,7 @@
 - `internal/boardengine/boardtest/concurrency_test.go`
 - `internal/boardengine/boardtest/bench_test.go`
 - `internal/boardcli/intake_test.go`
+- `internal/boardcli/verbs_test.go`
 
 **Create:**
 - `plan:internal/boardengine#Label` -> `type Label struct`
@@ -36,6 +37,7 @@ Grep for `undecided` and keep only fixtures that configure it themselves; the `l
 
 Tests: map-shaped and list-shaped files both load with the expected names and descriptions in file order; a scalar `labels`, and a mapping description, are refused naming `board.yaml` and the key; `Outputs().Types` follows the map's file order; validation accepts a key of either map and refuses any other label.
 Fixtures that build `Config` with `[]string` move to `[]Label`.
+`internal/boardcli/verbs_test.go`'s label-filter and `--text` listing tests upsert `undecided` through a `board.yaml` that `seedCwd` writes without `labels`, so they relied on the template default this card removes; they write a `labels` entry for it themselves.
 
 `doc.go`'s Labels section describes the two maps and the read-only list shape; the "loomyard's own area labels" paragraph stays as written, since the list shape still loads.
 
