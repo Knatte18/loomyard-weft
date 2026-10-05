@@ -1,6 +1,6 @@
 # Test-writing rules that stop the suite regrowing
 
-`test-writing-rules` · Task · enhancement, loom, stencil · running · Loom-Preflight
+`test-writing-rules` · Task · enhancement, loom, stencil · running · Discussion-Write
 
 Stage 1 of getting the test suite under control: change how tasks write tests, so that no later task, `test-suite-prune` included, adds tests by the old habit.
 
