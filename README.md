@@ -34,8 +34,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - ReadOriginFor answers no record when the untracked .weft lock dir is missing, so a pair recreated by reconcile launches strands with no parent and no warning
 1. **Tests leave dead tmux sockets in /tmp/tmux-1000** — [`tmux-socket-leak`](design-tmux-socket-leak.md) · bug, reed
    - Hundreds of dead lyx-* socket files accumulate from test runs; clean them up in test teardown or isolate TMUX_TMPDIR
-1. **loom anomaly issues do not say what went wrong** — [`selfreport-issues-say-nothing`](design-selfreport-issues-say-nothing.md) · bug, selfreport, loom
-   - Self-reported issues carry only ledger keys and blank fields; include the finding, reasoning and next action, and skip deliberate resumes
+1. **lyx files bug issues from Go code; only reflection agents should** — [`selfreport-issues-say-nothing`](design-selfreport-issues-say-nothing.md) · bug, selfreport, loom
+   - Tier 1 anomaly issues carry only keys and blank fields; drop Go-side filing and feed anomalies to Friction-Reflect instead
 
 ### Enhancements
 

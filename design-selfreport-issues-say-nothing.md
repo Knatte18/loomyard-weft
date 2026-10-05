@@ -1,16 +1,22 @@
-# loom anomaly issues do not say what went wrong
+# lyx files bug issues from Go code; only reflection agents should
 
 `selfreport-issues-say-nothing` · Note · bug, selfreport, loom
 
-loom's anomaly self-report (`internal/loomengine/anomaly.go`, `internal/loomcli/selfreport.go`) files GitHub issues that do not say what went wrong.
-Issues #366–#382 from 2026-10-05 show it.
+lyx's Go code must not file bug reports itself.
+Self-reported bugs are written by an LLM agent through reflection (the Tier 2 `Friction-Reflect` producer), which can say what went wrong, why it matters and what to do.
 
-- A recurring-finding issue (e.g. #370) carries only the ledger key (`d4-budget-test-off-by-one`), the Bouncer row and the round numbers.
-  It omits the finding's text, the reviewers' reasoning per round, the path to the review files and the decision that closed the loop, so the issue cannot be acted on without the torn-down worktree.
-- State, current producer and error print empty, and history prints "no history entries", even when the run had them.
-  Empty fields should be dropped or filled, never rendered blank.
-- Crash-resume issues (#376–#380) fired for the deliberate migration of four runs from the laptop to the Ryzen machine; a resume the operator or hub started on purpose (adopt, `lyx fabric reconcile`, `lyx loom start` after a takeover) is not an anomaly.
-- Every issue gets the `bug` label, though a recurring finding or a budget exhaustion is a process signal, not a defect.
+Tier 1 (`internal/loomengine/anomaly.go`, `internal/loomcli/selfreport.go`, from `095cfa5b6`) files a GitHub issue per Go-detected structural anomaly, and those issues say nothing.
+Issues #366–#382 from 2026-10-05 show it:
 
-The issue should answer three questions on its own: what happened, why lyx considers it abnormal, and what someone should do about it (or that nothing is needed).
-Recurring findings that ended CONVERGED, and runs that later landed, may be better as one summary per run than one issue per finding.
+- A recurring-finding issue (e.g. #370) carries only the ledger key (`d4-budget-test-off-by-one`), the Bouncer row and the round numbers, not the finding, the reasoning or how it ended.
+- State, current producer and error print blank, and history prints "no history entries", even when the run had them.
+- Crash-resume issues (#376–#380) fired for the deliberate migration of four runs between machines.
+- Every issue gets the `bug` label, though a recurring finding or a spent budget is a process signal, not a defect.
+
+The hub set `selfreport: false` in main-weft's `_lyx/config/loom.yaml` on 2026-10-05 to stop the filing.
+
+Proposal:
+
+- Remove Tier 1's GitHub filing and the `selfreport` config key.
+- Keep the Go detection, and pass the detected anomalies to `Friction-Reflect` as input, so the reflection agent decides whether any of them is worth an issue and writes it with its content: what happened, why it is abnormal, what to do.
+- Treat a deliberate resume (adopt, takeover, `lyx loom start` after a migration) as no anomaly.
