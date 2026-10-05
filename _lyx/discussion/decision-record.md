@@ -43,6 +43,10 @@ Decision:
 - For each candidate the report names the covering tests, ordered by overlap, so a prune finding names the covering test as `PATTERN-test-economy` requires.
 - Because two tests can each be a candidate only through the other, the report also marks a removable set: a greedy pass that drops candidates one at a time, slowest first, and re-checks the rest against what remains.
 - A test that covers no block at all (a pure static scan, a skipped test) is listed apart as "no coverage", never as redundant, since coverage cannot judge it.
+- A test whose run spawns the built `lyx` binary or another subprocess is listed there too, never as redundant: the in-process coverage binary does not see the child's blocks, and the tool does not collect child coverage.
+  The tool recognises such a test by a static scan of the package's test sources: the test, or a helper it calls in the same package, references `os/exec`, `lyxbin`, `tmuxkit` or another testkit spawn helper.
+  The scan over-approximates, and a test it cannot classify counts as spawning, so an error lands in "no coverage", never in "redundant".
+  Unclassifiable means a call the scan cannot resolve to source, such as a function value or an interface method; calls into production packages are not followed, since their blocks are covered in-process, and testkit and `hubforge` helpers are classified by the same scan.
 - Tags default to every tier except `llm`; a test that skips at run time is reported as skipped.
 
 Rationale: coverage blocks are what `go test -cover` gives without new dependencies; module-wide `-coverpkg` lets a CLI test's coverage of an engine count; the removable set keeps the prune tasks from deleting both halves of a mutually redundant pair.
@@ -63,7 +67,7 @@ Rationale: retagging moves tests between tiers and would change the integration 
 
 Decision:
 
-- Each named production wait (watchdog discovery interval, `reapExitTimeout`, verifyrun `waitDelay`) becomes a package-level `var` or an injected field the test shortens, the shape the trend log's `ghAuthTokenTimeout` fix used; production values are unchanged.
+- Each named production wait (watchdog discovery interval, `reapExitTimeout`, verifyrun `waitDelay`) becomes an injected field or option the test shortens, per instance, so the test can still call `t.Parallel`; never a package-level `var`, which a test would set as process-global state; production values are unchanged.
 - fabricengine integration tests gain `t.Parallel` unless they touch process-global state; a test that stays serial gets the comment `PATTERN-test-parallel` (folded into `PATTERN-test-speed`, D8) requires, naming that state.
 - `bareVocabularyTokenIn` returns no token before running its regex when the lowercased text contains neither `weft` nor `warp`; its findings are unchanged.
 - `gitoracle`'s tests run under `gitkit.HermeticGitEnv()` through a `TestMain`, or the package joins the hermetic allowlist with its reason, whichever its shape allows.
@@ -88,14 +92,24 @@ Decision:
 - A file that spawns, or drives `lyx` into spawning, a real LLM session moves to `llm`, whichever tag it carried.
 - Tags do not nest: `-tags integration,tmux` runs both, and `llm` runs only when named.
 - A test that needs two substrates takes the higher tier.
+- Each tag compiles on its own: a helper shared by files of different tiers lives in an untagged `_test.go` file or a testkit kit, never in a file of one tier that another tier's file uses.
 
-Rationale: the operator decided the four tiers on 2026-10-03 and the `llm` name on 2026-10-06; `tmux` names what tier 3 needs, where `smoke` named nothing; keeping `integration` for tier 2 avoids churning the tag on every git test, `cardGateCommand`, every plan verify and the verified-tree records.
+Bound: the retag takes tmux-starting files out of `cardGateCommand`'s `-tags integration` run and compiles nothing for a retired `smoke` tag in in-flight plan verifies.
+`cardGateCommand` is out of scope and stays as it is, so until note `test-tiers` decides gate selection Webster's card gates stop running the `tmux` tier.
+This task's own plan verify, the final gate, runs `-tags tmux` wherever those tests ran under `integration` or `smoke` before.
+Another task's verify runs `tmux` only if its plan writer follows the D10 text, so until `test-tiers` decides, the `tmux` tier outside this task's verify is run by hand or by an explicit verify.
+Files moved to `llm` from `smoke` or from `integration` leave every automatic run, including `cardGateCommand`'s `-tags integration` run and any plan verify that ran `-tags smoke` or `-tags integration` over them; this is intended, since the tier costs tokens.
+They are run by hand, and `go vet -tags llm ./...` compiles them so they do not rot.
+No test file may end up under a tag that neither a run nor a compile check covers: `integration` is run by the standing gates, `tmux` by this task's plan verify and by hand until `test-tiers` decides, and `llm` is compile-checked only; `go vet -tags tmux ./...` compiles `tmux` files as well.
+
+Rationale: the operator decided the four tiers on 2026-10-03 and the `llm` name on 2026-10-05; `tmux` names what tier 3 needs, where `smoke` named nothing; keeping `integration` for tier 2 avoids churning the tag on every git test, `cardGateCommand`, every plan verify and the verified-tree records.
 
 ### D7 — The LLM spawn guard
 
 Decision: a new kit `internal/testkit/llmkit` holds the one helper that locates the LLM binary and skips the test when it is absent, replacing the per-package copies (`smokeClaudeBin` and the like).
 A guard test in `cmd/lyx`, beside `tierpurity_test.go`, fails when a test file without the `llm` tag references `llmkit`, or when any test file outside `llmkit` calls `exec.LookPath` on an LLM binary name.
 `llmkit` imports `os/exec` for `LookPath` only; that is a third, bounded exemption in `PATTERN-testkit`, recorded in its background.
+The guard test also fails when a file under `internal/testkit/llmkit` uses an `exec` identifier other than `LookPath`, because the kit's import check cannot see which `os/exec` identifiers a kit uses.
 Bound: the guard sees the static shape only; a tier-3 test that drives `lyx` into spawning an LLM without calling the helper is caught by review, which the PATTERN entry states.
 Rationale: one helper gives the guard a single static shape to scan, and `PATTERN-testkit` already requires shared test support to live in one kit.
 
@@ -109,7 +123,7 @@ Decision: the Testing section ends with five entries:
 - `PATTERN-testkit` — gains the `llmkit` exemption.
 - `PATTERN-hubforge-fixtures` — unchanged.
 
-The two new entries each get a background file; the five retired IDs' background files are deleted.
+The two new entries each get a background file; the retired IDs' background files are deleted (`PATTERN-test-time-seam` and `PATTERN-test-parallel` had none).
 Enforcement tests keyed to a retired entry (`tierpurity_test.go`, `tmuxisolation_test.go` and the hermetic-git check) keep their checks and name the new entry; every other reference to a retired ID in code comments, stencils, specs and docs is rewritten to the new one.
 Rationale: the operator asked for the section revised, not grown; the merges group rules by what they protect (speed, isolation) rather than by mechanism.
 
@@ -121,7 +135,8 @@ Decision:
 - Tests: every test that starts a tmux server takes its socket from `tmuxkit` (its `Socket` key or one new shared helper there), and that helper removes the socket file after `kill-server` in `t.Cleanup`; `tmuxkit.Main`'s sweep removes the files it kills; a test that builds a subprocess environment from scratch passes `TMUX_TMPDIR` through, so sockets land under `tmuxkit.Main`'s directory.
   Ad hoc key schemes (the reedengine contract keys, the reedcli attach and dotfill harnesses) move onto the helper.
 - Production: if reed's teardown (`kill-server` in standalone geometry, warp-bare or any other geometry) leaves its socket file, reed removes it after confirming the server is gone.
-  Bound: reed removes only the socket file for the `-L` key it killed, only when the path is a socket and no server answers on it; it never globs or sweeps the socket directory.
+  Bound: reed removes only the socket file for the `-L` key it killed, only inside the teardown that just killed that key's server, only when the path is a socket and no server answers on it; it never globs or sweeps the socket directory.
+  A connection that succeeds, or a socket whose identity changed between the check and the removal, leaves the file alone; a server that restarts on the same key in that window is the residual race, accepted because the removal is limited to a key reed has just torn down.
 - Socket files already in `/tmp/tmux-$UID/` from earlier runs are not cleaned by this task.
 
 Rationale: `TMUX_TMPDIR` isolation already exists, so remaining leaks are escapes from it or files `kill-server` leaves behind; a shared helper fixes both in one place, and a bounded production removal keeps reed from touching servers it does not own.
@@ -134,9 +149,10 @@ Rationale: the board asks for the tier rules in Plan-Write's verify text; gate s
 
 ## Constraints
 
-- `PATTERN-test-economy`, `PATTERN-test-time-seam`, `PATTERN-test-parallel`, `PATTERN-test-tier-purity`: the speed fixes follow them, and D8 restates them under new IDs without weakening any rule.
+- `PATTERN-test-economy` and `PATTERN-test-speed` (which absorbs the time-seam, parallel and tier-purity entries, D8): the speed fixes follow them.
 - `PATTERN-testkit`: `llmkit` is a kit under `internal/testkit/`, imported only from tests; its `os/exec` exemption is bounded and recorded (D7).
-- `PATTERN-tmux-test-isolation`, `PATTERN-hermetic-git-tests`: their checks survive the merge into `PATTERN-test-isolation`; the "has a tagged test file" rule keys on `integration`, `tmux` or `llm` instead of `integration` or `smoke`.
+- `PATTERN-test-isolation` (absorbs `PATTERN-tmux-test-isolation` and `PATTERN-hermetic-git-tests`, D8): their checks survive the merge; the "has a tagged test file" rule keys on `integration`, `tmux` or `llm` instead of `integration` or `smoke`; the `!integration` and `integration` `TestMain` file pairs stay paired and both call `tmuxkit.Main`; the `!integration` files keep their constraint, so they are the `TestMain` under `tmux`-only and `llm`-only builds.
+  The check's tag sets cover untagged, each of `integration`, `tmux` and `llm` alone, and `integration,tmux,llm` combined, and exactly one `TestMain` compiles under each set on each platform.
 - `PATTERN-spawn-observability`: the production socket removal in reed is not a process spawn; a new `go test` spawn in `cmd/testtiming` is a dev tool outside `lyx` commands, so the rule does not apply to it.
 - `PATTERN-lyxdirs-single-declarer`: the tool and docs write under `docs/`, not `_lyx` or `.lyx`.
 - `PATTERN-markdown-link-integrity`: every link in the edited and new `docs/` files resolves.
@@ -159,9 +175,6 @@ Rationale: the board asks for the tier rules in Plan-Write's verify text; gate s
 - Measurements taken while other runs load the machine are noisy; the before and after must run under comparable load, and the doc section records the load average.
 - Per-test coverage runs every top-level test in its own process; on the full suite this can take a long time, and tmux-tier tests may behave differently run one at a time.
 - Coverage blocks do not see assertions: a candidate may pin an error message or output shape no other test pins; the prune tasks check each before deleting.
-- Retagging integration files that start tmux removes them from `cardGateCommand`'s `-tags integration` run until note `test-tiers` decides the gate selection.
-- In-flight plans whose verify says `go vet -tags smoke` keep passing but compile nothing tagged after landing.
-- The LLM guard is static; an LLM spawn reached only through the `lyx` binary inside a tier-3 test without the helper slips past it.
 - Socket leaks may come from a source the D9 survey does not reproduce on one run, such as a test killed by timeout.
 
 ## Acceptance criteria
@@ -172,10 +185,12 @@ Rationale: the board asks for the tier rules in Plan-Write's verify text; gate s
 - Each seamed wait (watchdog interval, `reapExitTimeout`, `waitDelay`) is exercised by a test that shortens it, and no test waits out its production value.
 - A full run of every tier but `llm` leaves no new file in `/tmp/tmux-$UID/`.
 - A reed teardown in production geometry leaves no socket file for the server it killed, and never removes a socket whose server still answers.
+- Every test retagged out of `integration` or `smoke` into `integration` or `tmux` still runs under this task's plan verify (`-tags tmux`; other gates follow `test-tiers`), every test retagged into `llm` from either tag is compiled and never run by a gate, every `llm` file compiles under `go vet -tags llm ./...`, and no tagged test file sits under a tag that neither a run (`integration` by the standing gates, `tmux` by this task's verify) nor a compile check covers.
+- A test whose run spawns a subprocess appears in the redundancy report's "no coverage" list, never as a candidate.
 - No `smoke` build tag remains; every tagged test file carries `integration`, `tmux` or `llm`.
 - The LLM guard fails on a non-`llm` file referencing `llmkit` or looking up an LLM binary, and passes on the retagged tree.
-- `PATTERN.md`'s Testing section has five entries; no file references a retired entry ID; the enforcement tests still catch what they caught before under the new IDs.
-- `go build ./...`, `go vet -tags integration,tmux,llm ./...`, `go test ./...` and `go test -tags integration ./...` pass.
+- `PATTERN.md`'s Testing section has five entries; no code comment, stencil, spec or doc references a retired entry ID (the discussion artifacts are exempt); the enforcement tests still catch what they caught before under the new IDs.
+- `go build ./...`, `go vet -tags integration,tmux,llm ./...`, and `go vet -tags integration ./...`, `go vet -tags tmux ./...` and `go vet -tags llm ./...` each on its own, `go test ./...`, `go test -tags integration ./...` and `go test -tags tmux ./...` pass.
 
 ## Notes for the plan writer
 
