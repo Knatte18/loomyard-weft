@@ -10,7 +10,7 @@
     "05-start-vouches.md": "2561b74d654dddb8d2a851e0ea55c4fe019c7d8cd86457f2e5be0535fd4a77ca",
     "06-agent-filed-issues-docs.md": "ed065002c3a21228b03f138e21ee032a6166074ebf4a769decc8eaa36ddbfb8b"
   },
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "ae22342fa34ffa09fe104b6bf9e0a7e4",
   "masterSessionId": "23231edc-2b7b-4a77-a588-677d06cfe568",
   "assertedModel": "sonnet",
@@ -95,6 +95,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-selfreport-issues-say-nothing/23231edc-2b7b-4a77-a588-677d06cfe568/subagents/agent-ada63af1e5d8eddaa.jsonl"
       ]
+    },
+    "4": {
+      "slug": "anomaly-friction-notes",
+      "cards": [
+        "04-anomaly-friction-notes"
+      ],
+      "cardHashes": {
+        "04-anomaly-friction-notes": "3adae340a47cbcb717d05dcd263eeaba59577d4b7a0da8af4ee0f1e1bdd227b2"
+      },
+      "startSha": "a7f69120096a87cf68b5d8d1e9fa202ceb7398bf",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T18:50:36Z",
+      "sessionId": "23231edc-2b7b-4a77-a588-677d06cfe568",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
