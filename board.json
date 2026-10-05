@@ -940,6 +940,22 @@
       "isolated": false,
       "brief": "Hundreds of dead lyx-* socket files accumulate from test runs; clean them up in test teardown or isolate TMUX_TMPDIR",
       "body": "Test runs leave dead tmux socket files in `/tmp/tmux-1000/`; no server runs on them, but the files are never removed.\nOn 2026-10-05 the Ryzen machine held 659 of them, all but one dead, and new ones still appear on every suite run.\n\nPrefixes seen, most to least common:\n\n- `lyx-warp-bare-LYXHUB-*` (the bulk, over 400)\n- `lyx-001-*` (standalone geometry, `internal/standalonegeom/reedgeom.go` `SocketKey`)\n- `lyx-contract-*-test-\u003cpid\u003e-\u003cn\u003e` (`internal/reedengine/contract_integration_test.go`)\n- `lyx-dotfill-harness-*`, `lyx-attach-harness-\u003cpid\u003e` (`internal/reedcli/smoke_attach_test.go`)\n- `lyx-\u003chash8\u003e` and `lyx-Test*`\n\n`kill-server` stops the server but leaves its socket file; a test that boots a tmux server should remove the socket in its cleanup, ideally through one shared helper, and point `TMUX_TMPDIR` at `t.TempDir()` where it can, so the files never reach `/tmp`.\nAlso check whether production reed paths (standalone geometry, warp-bare) leave sockets when they are not tests.\n"
+    },
+    {
+      "id": 119,
+      "slug": "selfreport-issues-say-nothing",
+      "title": "loom anomaly issues do not say what went wrong",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "selfreport",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Self-reported issues carry only ledger keys and blank fields; include the finding, reasoning and next action, and skip deliberate resumes",
+      "body": "loom's anomaly self-report (`internal/loomengine/anomaly.go`, `internal/loomcli/selfreport.go`) files GitHub issues that do not say what went wrong.\nIssues #366–#382 from 2026-10-05 show it.\n\n- A recurring-finding issue (e.g. #370) carries only the ledger key (`d4-budget-test-off-by-one`), the Bouncer row and the round numbers.\n  It omits the finding's text, the reviewers' reasoning per round, the path to the review files and the decision that closed the loop, so the issue cannot be acted on without the torn-down worktree.\n- State, current producer and error print empty, and history prints \"no history entries\", even when the run had them.\n  Empty fields should be dropped or filled, never rendered blank.\n- Crash-resume issues (#376–#380) fired for the deliberate migration of four runs from the laptop to the Ryzen machine; a resume the operator or hub started on purpose (adopt, `lyx fabric reconcile`, `lyx loom start` after a takeover) is not an anomaly.\n- Every issue gets the `bug` label, though a recurring finding or a budget exhaustion is a process signal, not a defect.\n\nThe issue should answer three questions on its own: what happened, why lyx considers it abnormal, and what someone should do about it (or that nothing is needed).\nRecurring findings that ended CONVERGED, and runs that later landed, may be better as one summary per run than one issue per finding.\n"
     }
   ],
   "legacy_done": [
