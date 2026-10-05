@@ -15,7 +15,7 @@ Waits on nothing open; can start now, in parallel.
    - Hung-shell gate wait, unacceptable contract-file findings, garbled way-forward text, recoveries that need denied commands
 1. **Orch context cycling and long-run hardening** — [`orch-cycle-hardening`](design-orch-cycle-hardening.md) · bug, enhancement, orch, config, batten · running · Plan-Write
    - Fresh reading after /compact, clear-or-compact as config, and the adopt/attach/permission hardening list
-1. **Bouncer CIRCLING escalates to the parent; loomcli smoke tier green** — [`loom-bouncer-rounds`](design-loom-bouncer-rounds.md) · bug, enhancement, loom, orch · running · Discussion-Bouncer
+1. **Bouncer CIRCLING escalates to the parent; loomcli smoke tier green** — [`loom-bouncer-rounds`](design-loom-bouncer-rounds.md) · bug, enhancement, loom, orch · running · Discussion-Burler
    - CIRCLING judged later on unchanged recurrence and escalated to the parent orchestrator; fix the five failing loomcli smoke tests
 1. **Label descriptions, CLI tree exceptions, ly-drive as a stencil** — [`board-labels-and-skills`](design-board-labels-and-skills.md) · bug, enhancement, board, config, selfreport, shed, stencil, orch · running · Discussion-Write
    - labels become labelâdescription with lyx board labels; fix the five cliTreeFindings exceptions; ly-drive moves into a stencil
