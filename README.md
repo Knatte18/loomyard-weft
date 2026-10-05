@@ -99,6 +99,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - lyx types each skill as its own slash-command turn, each ending in chatter; one typed message loads them all through the Skill tool in one turn
 1. **Implementers hard-wrap comments and reviews re-find it every round** — [`prose-line-breaks-in-review`](design-prose-line-breaks-in-review.md) · enhancement, webster
    - Bouncer re-finds hard-wrapped Go comments across rounds; catch it in the card gate or the implementer stencil
+1. **Discussion stage has no sanctioned path to land a repository edit ahead of Plan** — [`discussion-lands-invariant`](design-discussion-lands-invariant.md) · enhancement, loom
+   - Discussion has no sanctioned path to commit a PATTERN edit ahead of Plan
 
 ### Features
 
