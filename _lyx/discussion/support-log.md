@@ -50,4 +50,4 @@ _No rounds yet._
 - Q5 Gate for anomaly notes after the knob is gone? — auto-pick: Tier 2 on (D2).
 - Q6 Close #366–#382 in this task? — auto-pick: no, the hub's intake handles them.
 - Q7 Edit main-weft's `loom.yaml`? — auto-pick: no; out of this role's write scope and covered by reconcile, with loadability of a stale key as an acceptance criterion.
-- Q8 Does the config loader reject unknown keys? — open for the plan: `load` fills missing keys and resolves env markers, and strictness on unknown keys was not confirmed at Discussion depth; D2 requires the stale key to keep loading.
+- Q8 Does the config loader reject unknown keys? — resolved in review round 1: no. `load` fills missing keys and resolves env markers, and loom's `LoadConfig` unmarshals without `KnownFields`; D2 states the stale key keeps loading and an acceptance criterion pins it.

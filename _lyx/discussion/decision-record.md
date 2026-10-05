@@ -29,7 +29,7 @@ Out:
 
 ### D1 — No Go code path files an issue
 
-Decision: delete `detectAndFileAnomalies`, `runFilingPass`, `collapseAnomaliesByTitle`, the `selfreportFiledMarker`/`pendingAnomaly` types and their read/write helpers, the `selfreportDeps.FileIssue` seam and `loomCLI.fileIssue`, `loomengine.LoomSelfreportFiled`/`LoomSelfreportFiledLock` and their file-name constants, the anomaly `Title` field with its renderers, and `RenderAnomalyBody`.
+Decision: everything Scope-In removes is deleted outright, with no replacement filer.
 `loomcli` no longer imports `selfreportengine`.
 The only production caller of `selfreportengine.CreateIssue` is `internal/selfreportcli`, so an issue is filed only when an agent (or the operator) runs `lyx selfreport create`.
 
@@ -39,7 +39,8 @@ Rationale: the Go filer can only print fields it holds, so its issues carry keys
 
 Decision: drop `selfreport` from `internal/loomengine/template.yaml` and `Selfreport` from the config struct.
 Every gate that read `cfg.Selfreport` now reads whether Tier 2 is on: a non-empty friction directory, the existing single "off" signal of `internal/friction`.
-A `loom.yaml` that still carries `selfreport` must keep loading; if the loader rejects unknown keys, the plan handles the retired key so that existing configs load unchanged.
+A `loom.yaml` that still carries `selfreport` must keep loading unchanged.
+The loom loader does not reject unknown keys (it fills missing template keys and unmarshals non-strictly), so no loader change is needed; an acceptance criterion pins the behavior.
 
 Rationale: with no filing there is nothing for the knob to gate; anomaly notes are Tier 2 input and follow Tier 2's own on/off.
 
@@ -67,6 +68,9 @@ Start records the persisted history length and state it saw; the driver's first 
 Every resume path (operator, orch, batten's `lyx loom start --no-attach`, a migration between machines) goes through start, so a crash-resume note fires only when a bare `lyx loom run` or `lyx loom step` finds a dead driver's run with no voucher, such as a step killed mid-producer that its own driver re-issues.
 
 Bound: the voucher suppresses at most one entry observation, and only one whose history length and state equal what start or the completed step recorded; it is machine-local under `.lyx`, so it never crosses machines or survives a fabric re-wire.
+Start writes the voucher only after its own refusals have passed, immediately before the spawn, and each write replaces any earlier voucher; it writes one only when Tier 2 is on, the same gate under which the observation consumes it.
+A voucher that start wrote but no driver consumed (a spawn that then failed its readiness check) stays on disk and suppresses at most the one later matching observation, until the next start or completed step overwrites it; that is the accepted cost of the one-shot design.
+The parked-driver resume path spawns nothing and writes no voucher: the run it resumes is halted, and a non-`running` state is already no crash-resume.
 A driver that start spawned and that then dies mid-run is not noted on the next start; its evidence is the driver log and trace, which the halt or operator path already surfaces.
 
 Rationale: on-disk state cannot tell a migration from a crash; the verb that resumes can, and every deliberate resume uses start.
@@ -75,6 +79,8 @@ Rationale: on-disk state cannot tell a migration from a crash; the verb that res
 
 Decision: `contracts/stencils/friction/friction-template-reflection.md` lists `loom-crash-resume` among the Go-written note kinds and drops the Tier 1 sentence.
 For a `loom-halt` or `loom-crash-resume` note, the agent files an issue only when the notes, the reason or the trace show a lyx problem behind the event; a halt caused by the task's own code, or a review segment that legitimately did not converge, is dropped.
+Bound: the drop rule can leave a real lyx fault behind a halt unfiled when the agent misreads it.
+The evidence is not lost: the note names the trace file, the run's status and history stay on disk, and the operator can still file through `lyx selfreport create`.
 Every issue body states what happened, why it is abnormal and what to do, then the existing provenance line.
 The agent picks the label through `lyx selfreport create`'s own `--label` guidance; the stencil says that a process signal (a spent budget, an escalation) is not a defect, and points at the verb's contract rather than restating it (`PATTERN-producer-pointer-rule`).
 
@@ -108,7 +114,6 @@ Rationale: the bug was Go code acquiring a filing path; a test-enforced entry ke
 ## Open risks
 
 - With the voucher, a driver that start spawned and that dies mid-run is never noted as a crash-resume; only the trace and the driver log record it.
-- If the config loader turns out strict on unknown keys, main-weft's `loom.yaml` breaks on deploy unless the plan keeps the key loadable.
 - The reflection agent's judgement replaces a deterministic filer, so a real lyx fault behind a halt may go unfiled if the agent misreads it.
 
 ## Acceptance criteria
@@ -116,7 +121,7 @@ Rationale: the bug was Go code acquiring a filing path; a test-enforced entry ke
 - No `lyx loom run` or `lyx loom step` path calls the GitHub API: `loomcli` has no filing seam, and a test fails if a production package other than `internal/selfreportcli` calls `selfreportengine.CreateIssue`.
 - `loom.yaml`'s template has no `selfreport` key, and a `loom.yaml` that still carries `selfreport: false` loads without error.
 - A `blocked` halt with the bounce-budget prefix, a `blocked` halt with any other reason, and a `failed` halt each write one `loom-halt` note naming its anomaly kind, producer, state, reason, history rows and trace file.
-- A `run` or `step` entry that observes state `running`, a free run lock, a non-empty history and no matching voucher writes one `loom-crash-resume` note carrying slug, parent, state, current producer, history length, last history rows, resuming verb and trace file.
+- A `run` or `step` entry that observes state `running`, a free run lock, a non-empty history and no matching voucher writes one `loom-crash-resume` note carrying the fields D3 lists.
 - No crash-resume note when: `lyx loom start` vouched for the observed history length and state; a completed `lyx loom step` vouched; the run lock is held; the state is not `running`; the history is empty; Tier 2 is off.
 - A voucher is consumed by the first entry observation, so a second observation of the same state without a new voucher writes a note.
 - A note-write failure leaves the verb's exit and envelope unchanged.
@@ -130,4 +135,5 @@ Rationale: the bug was Go code acquiring a filing path; a test-enforced entry ke
 - Tests to delete or rework: `selfreport_test.go`, `selfreport_github_test.go`, `anomaly_test.go`, `anomalybody_test.go`, the `Selfreport` cases in `config_test.go`, `halt_test.go` and `step_test.go`.
 - `lyx loom start`'s driver spawn lives in `internal/loomcli/start.go`; the voucher write goes right before the spawn, after the status read start already performs.
 - Unknown-key handling: `internal/configengine/config.go` `load` and `internal/yamlengine`; `lyx config reconcile` preserves or drops orphan keys per `internal/configcli`.
+  Only a test pinning the stale-key load is needed.
 - The `recurring-finding` kind was already removed in `a0dae77c3`.
