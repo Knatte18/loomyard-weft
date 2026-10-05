@@ -22,7 +22,7 @@ Restore `menu.go` from the base branch (`git show main:internal/configcli/menu.g
 
 Register a `menu` child on `Command`, beside `reconcile`, with `Args: cobra.NoArgs` and a `Short` that says it picks a module to edit interactively.
 Its handler resolves the cwd and builds the real editor and sync exactly as `runConfig` does; extract that shared resolution out of `runConfig` into one helper both call, rather than copying it.
-It reads from `cmd.InOrStdin()`.
+It reads from `cmd.InOrStdin()`, which `clihelp.WrapRunCtx` does not carry, so its `RunE` is hand-written: it checks `clihelp.ShouldAbort` first and records its exit with `clihelp.SetExit`.
 The menu therefore resolves a cwd, which is unchanged from the picker's old behaviour; bare `lyx config` and the unknown-argument refusal still resolve none.
 
 Bare `lyx config` lists `menu` among its subcommands through cobra's help, with no change to its `RunE`.
@@ -40,7 +40,7 @@ Tests, untagged, in `configcli_test.go`, restoring the base branch's `TestMenu*`
 - a non-number and an out-of-range number each exit 1 without calling the editor or sync.
 - a seeded module is listed `(configured)` and an unseeded one `(default)`.
 - bare `lyx config` from a non-git temp dir names `menu` in its output, alongside `reconcile` and every module, in `TestBareConfigListsModulesAndVerbs`.
-- `lyx config menu bogus` from a non-git temp dir exits 1 with an error envelope and calls no editor.
+- `lyx config menu bogus` from a non-git temp dir exits 1 with a JSON error envelope naming `bogus`; cobra's `NoArgs` refuses it before the handler runs.
 
 Bound: `menu` adds one routing edge, reachable only by its exact name; it opens the editor only for a module in `configreg`, through the same `editOne` the module path uses.
 

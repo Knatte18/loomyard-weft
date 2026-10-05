@@ -24,8 +24,9 @@ Extract the choice into an unexported pure function in `edit.go` that takes the 
 The spawn and exit log lines name the resolved binary as today.
 An environment value is still taken as one binary name, as today; splitting `$EDITOR` into arguments is out of scope.
 
-Update `DefaultEditor`'s godoc, `configengine`'s `doc.go` (its `[Edit]` line names the order), `buildConfigLong` and `configcli`'s `doc.go` to state the same order.
-Grep for `falls back to notepad` and `notepad or vi`: every match states the new order.
+Update `DefaultEditor`'s godoc, `buildConfigLong` and `configcli`'s `doc.go` to state the same order.
+`configengine`'s `doc.go` names no order today, since its `[Edit]` line only calls Edit the interactive counterpart of `[Set]`: add the order there as new text on that line.
+Grep for `falls back to notepad` and `notepad or vi`: the three existing matches (`edit.go`, `buildConfigLong`, `configcli`'s `doc.go`) each state the new order.
 
 Tests, untagged, in the new internal test file `editor_test.go` (package `configengine`, since `edit_test.go` is the external `configengine_test` package), table-driven over fake lookups, with no process spawned:
 
@@ -39,6 +40,6 @@ Tests, untagged, in the new internal test file `editor_test.go` (package `config
 
 `TestConfigLong_MentionsEditorFallbackAndSet` also asserts the Long names `code --wait` and `nano`.
 
-**ImpactSummary:** which editor `lyx config <module>` opens when `$VISUAL` and `$EDITOR` are unset; nothing changes when either is set.
+**ImpactSummary:** one production caller of `DefaultEditor`, `runConfig`, so only `lyx config <module>` and `lyx config menu` see the new order, and only when `$VISUAL` and `$EDITOR` are unset; no other module reaches it.
 
 **Commit:** 15: the editor fallback prefers code and nano over vi
