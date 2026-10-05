@@ -134,3 +134,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - LY: prime/LY: <slug> titles, prime opens with reed up+attach only, orch start and open board as tasks with lyx keybindings, no launch.json
 1. **The ly-drive skill becomes a stencil prompt** — [`ly-drive-as-stencil`](design-ly-drive-as-stencil.md) · enhancement, shed, stencil
    - Drivers get their shed-step instructions from a stencil like every other lyx Claude process; ly:board stays the only skill
+1. **Board labels carry a description of what each covers** — [`board-label-descriptions`](design-board-label-descriptions.md) · enhancement, board
+   - labels in board.yaml become label→description, printed by lyx board labels, so a caller can pick the right module label
