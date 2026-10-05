@@ -1,0 +1,4 @@
+status: OK
+head_sha: 574681597f05824f5f6477ed23458ac57a4d0900
+deviations:
+  - internal/shuttlecli/modelpin_test.go
