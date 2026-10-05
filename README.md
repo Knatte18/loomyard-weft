@@ -126,7 +126,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **A running verify gate is visible in status and on screen** — [`gate-running-visible`](design-gate-running-visible.md) · enhancement, loom, reed
    - After an agent ends its turn, a Go gate can run for minutes with nothing on screen; loom status and something on screen name the gate and its runtime
 1. **Investigate why the test suite runs several times slower than its August benchmark** — [`test-suite-regression`](design-test-suite-regression.md) · enhancement
-   - Not a known bug, but suspicious: Ryzen Kubuntu idle 13 s untagged / 60 s integration against 3.6 s / 17 s on 2026-08-13; find what slowed it
+   - Integration 17.9 s → 57.5 s: half growth, the rest real-time waits on production consts, serial fabricengine tests and a slow vocab regex
 1. **fabric fetches an existing remote warp and weft branch instead of creating new ones** — [`fabric-add-adopt-remote`](design-fabric-add-adopt-remote.md) · enhancement, fabric
    - A branch that exists on origin is fetched and checked out, never recreated locally; reconcile and checkout today fork a fresh weft and fabric add refuses the warp
 1. **A color per spawned session, so the driver and each loom segment stand apart** — [`strand-colors`](design-strand-colors.md) · enhancement, reed, loom, shed, shuttle
