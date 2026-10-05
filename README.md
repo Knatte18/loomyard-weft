@@ -15,6 +15,15 @@ Waits on nothing open; can start now, in parallel.
    - Driver procedure moves into a stencil, a ly:runs workflow skill, and the orch watcher injects skill loading at start, adopt and after every cycle
 1. **Measure and prune the test suite** — [`test-suite-prune`](design-test-suite-prune.md) · enhancement
    - Stage 1: per-test coverage tool, delete redundant tests, fold into tables, seam real-time waits, parallelize fabricengine
+   - **Before:** `test-writing-rules`
+
+### Layer B
+
+Starts when every entry it names under After is done.
+
+1. **Test-writing rules that stop the suite regrowing** — [`test-writing-rules`](design-test-writing-rules.md) · enhancement, loom, stencil
+   - Stage 2: tests per behavior not per symbol, no redundant tests, rubric findings, per-package budget guard
+   - **After:** `test-suite-prune`
 
 ## Notes
 

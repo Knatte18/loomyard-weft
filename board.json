@@ -956,6 +956,24 @@
       "isolated": false,
       "brief": "Stage 1: per-test coverage tool, delete redundant tests, fold into tables, seam real-time waits, parallelize fabricengine",
       "body": "Stage 1 of getting the test suite under control: measure it, then cut it down.\nStage 2, `test-writing-rules`, changes how tasks write tests and waits for this one.\n\nThe suite grew from 1967 test functions on 2026-08-13 to 5749 on 2026-10-05, and the integration tier from 17.9 s to 57.5 s on the same idle machine.\nThe two test revisions of 2026-10-03 (`22e46970e`, `5805c58fb`) removed duplicated helpers and hardcoded expectations, but left the count unchanged.\n\n## Measure\n\n- Build a tool (e.g. `cmd/testprune`) that runs per-test coverage and lists tests with no unique coverage: every line they cover is covered by another test.\n  It reports per package: test count, wall time, serial time, and the redundant candidates.\n- Record the before-state in `docs/benchmarks/test-suite-timing.md` with its slowest-tests table.\n\n## Clean\n\nPackage by package, largest first (`internal/fabricengine`, `internal/websterengine`, `internal/reedengine`, `internal/shuttleengine`, `internal/loomcli`, `internal/shedadapters`, then the rest):\n\n- Delete the tests the tool reports as redundant, after checking each one does not pin a contract the coverage view misses (an error message, an output shape).\n- Fold near-identical tests into table-driven tests.\n- Move integration tests that need neither git, tmux nor processes to the untagged tier with `internal/testkit` fakes.\n\n## Speed\n\n- Give real-time waits a test seam: the reed watchdog discovery interval (`watchdog.go`), `reapExitTimeout` (`reedengine/lifecycle.go`), verifyrun's `waitDelay` (`verifyrun/run.go`); use `true` instead of `sleep 5` in `verifytree/verify_integration_test.go`.\n- Add `t.Parallel` to fabricengine's serial integration files where tests are independent (`mergein_recovery_integration_test.go`, `commit_integration_test.go`, `pull_integration_test.go`, `warpbinding_clone_integration_test.go` and others; 425 of 698 tests run serially).\n- In `bareVocabularyTokenIn` (`lyxcwd/enforcement_test.go`), skip the regex when the lowercased text contains neither \"weft\" nor \"warp\".\n- Arm the hermetic git env in `gitrepo/internal/gitoracle`.\n\n## Done when\n\n- The after-state is recorded beside the before-state in the benchmark doc.\n- The test count and the integration tier's wall time have dropped substantially; the task's PR states both numbers.\n- Coverage of non-test code has not dropped beyond what deleted redundant tests explain.\n"
+    },
+    {
+      "id": 121,
+      "slug": "test-writing-rules",
+      "title": "Test-writing rules that stop the suite regrowing",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "loom",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [
+        "test-suite-prune"
+      ],
+      "isolated": false,
+      "brief": "Stage 2: tests per behavior not per symbol, no redundant tests, rubric findings, per-package budget guard",
+      "body": "Stage 2 of getting the test suite under control: stop it growing back after `test-suite-prune`.\n\nToday's contracts drive one test per symbol: `contracts/specs/loom-plan-spec.md` and `contracts/stencils/loom/loom-template-plan.md` say every card that introduces behavior bundles its own test, and every independently testable symbol gets its own card.\nNothing asks whether a new test covers anything not already covered.\n\n- Tests target behavior and contract at a module's public surface, not each helper.\n- A new test must cover something no existing test covers; otherwise it extends an existing table test.\n- A review fix adds a test only when the finding is a coverage gap; otherwise it corrects an existing test.\n- The Bouncer and Burler rubrics treat a redundant test as a finding, like a missing one.\n- A guard test pins a per-package budget for test count and wall time; exceeding it fails until the budget is raised deliberately in the same commit.\n- Check whether `scribe:testing` needs the same change.\n"
     }
   ],
   "legacy_done": [
