@@ -1,0 +1,4 @@
+status: OK
+head_sha: 97d4df8ee66d6ae99aed16b8c8c9c17bcd79ceca
+deviations:
+  - cmd/testtiming/redundancy.go
