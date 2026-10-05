@@ -14,8 +14,8 @@
 - `internal/treadleengine/engine_test.go`
 
 **Uses:**
-- `plan:internal/parentdirective#Directive`
-- `plan:internal/parentdirective#MarkerName`
+- `internal/parentdirective#Directive`
+- `internal/parentdirective#MarkerName`
 - `internal/treadleengine#Options`
 
 **Intent:**

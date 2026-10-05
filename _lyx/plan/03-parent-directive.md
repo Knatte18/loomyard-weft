@@ -7,8 +7,8 @@
 - `contracts/stencils/parent/parent-directive-parent.md`
 - `contracts/stencils/parent/parent-directive-operator-ban.md`
 - `contracts/stencils/parent/parent-directive-none.md`
-- `plan:internal/parentdirective#Directive` -> `func Directive(stencilsDir, parentName string, interactive bool) (string, error)`
-- `plan:internal/parentdirective#MarkerName` -> `const MarkerName = "parent_directive"`
+- `internal/parentdirective#Directive`
+- `internal/parentdirective#MarkerName`
 
 **Edit:**
 - `contracts/stencils/stencils.go`

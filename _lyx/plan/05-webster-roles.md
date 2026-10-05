@@ -15,8 +15,8 @@
 - `internal/hubgeom/webstergeom_test.go`
 
 **Uses:**
-- `plan:internal/parentdirective#Directive`
-- `plan:internal/parentdirective#MarkerName`
+- `internal/parentdirective#Directive`
+- `internal/parentdirective#MarkerName`
 - `internal/hubgeom#ResolveParent`
 - `internal/websterengine#Geometry`
 

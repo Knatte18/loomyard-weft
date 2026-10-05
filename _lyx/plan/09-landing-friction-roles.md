@@ -25,8 +25,8 @@
 - `internal/loomcli/landingdeps_test.go`
 
 **Uses:**
-- `plan:internal/parentdirective#Directive`
-- `plan:internal/parentdirective#MarkerName`
+- `internal/parentdirective#Directive`
+- `internal/parentdirective#MarkerName`
 - `internal/mergeresolve#Deps`
 - `internal/landingshed#Deps`
 - `internal/landingshed#DescribeInputs`

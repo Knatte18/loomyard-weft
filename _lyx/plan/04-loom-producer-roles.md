@@ -18,8 +18,8 @@
 - `contracts/stencils/claims_test.go`
 
 **Uses:**
-- `plan:internal/parentdirective#Directive`
-- `plan:internal/parentdirective#MarkerName`
+- `internal/parentdirective#Directive`
+- `internal/parentdirective#MarkerName`
 - `internal/loomengine#DiscussionSpec`
 - `internal/loomengine#PlanSpec`
 - `internal/loomengine#ReworkSpec`

@@ -10,7 +10,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/parentdirective#MarkerName`
+- `internal/parentdirective#MarkerName`
 
 **Intent:**
 D10: make both rules cross-cutting invariants, test-backed, so every future role follows them.
