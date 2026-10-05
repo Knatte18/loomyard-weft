@@ -39,9 +39,7 @@
       "title": "Convergence: measure hub and driver interventions, fix at the source, hardening freezes",
       "kind": "note",
       "labels": [
-        "enhancement",
-        "process",
-        "testing"
+        "enhancement"
       ],
       "issues": [],
       "depends_on": [],

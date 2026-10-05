@@ -31,7 +31,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ### Enhancements
 
-1. **Convergence: measure hub and driver interventions, fix at the source, hardening freezes** — [`convergence-plan`](design-convergence-plan.md) · enhancement, process, testing
+1. **Convergence: measure hub and driver interventions, fix at the source, hardening freezes** — [`convergence-plan`](design-convergence-plan.md) · enhancement
    - Plan for lyx to converge rather than accumulate bugs: per-run intervention log, real-wiring tests, feature freezes
 1. **An MCP server over lyx exposing the verbs agents need** — [`lyx-mcp`](design-lyx-mcp.md) · enhancement, agents, cli
    - A few coarse MCP tools over lyx, chosen by measured agent use and exposed per role, so agents see typed schemas instead of guessing CLI shapes
