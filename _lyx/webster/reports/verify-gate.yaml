@@ -1,0 +1,10 @@
+attempt: 2
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/reedengine.TestNaming_TaskWorktreeStrandNameTitleAndEnv
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/reedengine
+      tail: '    naming_integration_test.go:65: show-options: exit status 1: invalid option: allow-set-title'
+log_path: /home/hanf/Code/loomyard-LYXHUB/loom-bouncer-rounds/.lyx/verify/verify.log
+fix_commits:
+    - 2b09f7e1353c013a56613acc2b12d862b1892fa4
