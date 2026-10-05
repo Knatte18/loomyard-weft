@@ -20,7 +20,7 @@
     "15-drop-recurring-finding.md": "d5ae19c6e90e324060b3f5bace61f7d8aa350476171db7ad7e1db33f62657d00",
     "16-smoke-strand-matching.md": "2561563bef9c09ccbff8c57dee8012eed1a900fcb7f1bf6df26e63d0723de55e"
   },
-  "currentBatch": 0,
+  "currentBatch": 14,
   "masterStrand": "d2c3e84d54a38997316f661377dc5bc2",
   "masterSessionId": "c05a239b-17ca-4c59-acd3-85fb643ebb30",
   "assertedModel": "sonnet",
@@ -159,6 +159,21 @@
         "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-ae008c871b4b9177b.jsonl",
         "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-ae9c7eeb049dff31f.jsonl"
       ]
+    },
+    "14": {
+      "slug": "verb-in-stencils-and-drive",
+      "cards": [
+        "14-verb-in-stencils-and-drive"
+      ],
+      "cardHashes": {
+        "14-verb-in-stencils-and-drive": "33959240a44cb96834fb02f36d2fd07228a139d7b3b057df81e8fd243c3507c5"
+      },
+      "startSha": "b1b58aacdf8892e11cfd36565b6eae1654a5d650",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T11:16:13Z",
+      "sessionId": "c05a239b-17ca-4c59-acd3-85fb643ebb30",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "circling-evidence",
