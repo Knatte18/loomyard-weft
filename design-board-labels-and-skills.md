@@ -1,6 +1,6 @@
 # Label descriptions, board CLI gaps, CLI tree exceptions
 
-`board-labels-and-skills` · Task · bug, enhancement, board, config, selfreport · running · Plan-Bouncer
+`board-labels-and-skills` · Task · bug, enhancement, board, config, selfreport · running · Plan-Burler
 
 # Goal
 
