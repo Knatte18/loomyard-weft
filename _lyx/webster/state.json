@@ -25,7 +25,7 @@
     "20-testtiming-redundancy.md": "315925b61fa54d8d9ff919d2404a9c0121967b9e6eb4e56276c597da224e6a49",
     "21-redundancy-report-and-post-retag.md": "035d8d13db102771578007eb5fa757b64a87ef6436accce7f4887eb74804c1a0"
   },
-  "currentBatch": 0,
+  "currentBatch": 14,
   "masterStrand": "d6515d923cf96c76537e7850a96b9d4e",
   "masterSessionId": "b9451745-c0f7-4015-9ea7-6c77aa520719",
   "assertedModel": "sonnet",
@@ -168,6 +168,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-measure/b9451745-c0f7-4015-9ea7-6c77aa520719/subagents/agent-aef8e83c5340794f4.jsonl"
       ]
+    },
+    "14": {
+      "slug": "retag-integration-tmux",
+      "cards": [
+        "14-retag-integration-tmux"
+      ],
+      "cardHashes": {
+        "14-retag-integration-tmux": "4d67f1891f409717cfd3c4bdd2661c44fa7bc5b328c4c5189e12ff7c16eed41a"
+      },
+      "startSha": "4f0973f4a675d7bd50c585ec2dce9bd0289f99f5",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T17:09:32Z",
+      "sessionId": "b9451745-c0f7-4015-9ea7-6c77aa520719",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "timing-before-state",
