@@ -95,10 +95,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - After an agent ends its turn, a Go gate can run for minutes with nothing on screen; loom status and something on screen name the gate and its runtime
 1. **fabric fetches an existing remote warp and weft branch instead of creating new ones** — [`fabric-add-adopt-remote`](design-fabric-add-adopt-remote.md) · enhancement, fabric
    - A branch that exists on origin is fetched and checked out, never recreated locally; reconcile and checkout today fork a fresh weft and fabric add refuses the warp
-1. **Tell runs and strands apart: tabs, pane titles and colors** — [`strand-colors`](design-strand-colors.md) · enhancement, reed, loom, shed, shuttle
-   - Clickable run and strand tabs in two status lines plus pane-border titles, pinned by reed at boot; /color per strand role
+1. **Each strand role gets its own color** — [`strand-colors`](design-strand-colors.md) · enhancement, reed, shuttle
+   - Claude Code /color per strand role or loom segment, so the driver and its agents look different
 1. **lyx webster reset covers the report-head and last-batch-head targets** — [`webster-reset-targets`](design-webster-reset-targets.md) · enhancement, webster
    - Three Webster recovery sites and standalone mode still instruct git reset --keep; widen the reset verb so every recovery instruction names a lyx verb
+1. **reed pins clickable run and strand tabs at boot** — [`reed-status-tabs`](design-reed-status-tabs.md) · enhancement, reed
+   - Two status lines (runs as session tabs, the current run strands as pane tabs) plus pane-border titles, set by reed at server boot instead of live
 
 ### Features
 
