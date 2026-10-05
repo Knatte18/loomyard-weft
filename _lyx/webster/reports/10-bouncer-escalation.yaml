@@ -1,0 +1,5 @@
+status: OK
+head_sha: 133ea78779736e44949ecef7ea0751301e301501
+deviations:
+  - internal/shedadapters/bouncer_verdict_test.go
+  - internal/shedrecipe/entries_bouncer_test.go
