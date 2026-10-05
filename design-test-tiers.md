@@ -2,14 +2,7 @@
 
 `test-tiers` · Note · enhancement, loom, webster
 
-Seen 2026-10-03: a Webster implementer fork in `test-suite-derived-guards`, verifying a card that touched smoke-tagged files, ran `-tags smoke` and spawned about 24 real Claude Code sessions through the `orchcli` smoke tests (`TestSmokeOrch_*`), about 5.5 MB of transcripts against the whole run's 31 MB.
-The smoke tier mixes tests that only drive real tmux and the built binary with tests that spawn real `claude` sessions (orch cycle and adopt, shuttle runs, Burler clusters, the treadle judge, the model pin); the latter skip only when `claude` is not on `PATH`.
-
-Decided (operator): one more tier, a Claude tier, for tests that drive a real Claude session, under its own build tag, run only when explicitly asked, never by a card verify, the plan verify or PR-Gate.
-A smoke test never spawns Claude: smoke stays real tmux and the real binary with a fake or no provider.
-Four tiers, split by what a test needs and costs (operator, 2026-10-03): offline unit tests; git operations (time, no tokens); live tmux and the built binary (time, no tokens); real Claude sessions (tokens).
-Today's names fit poorly ("smoke" says nothing about tmux); the names are to be settled later.
-Update `CONSTRAINTS.md`'s test-tier rules and Plan-Write's per-card verify accordingly.
+The four tiers themselves (a Claude tier under its own tag, the tier rules in PATTERN) moved into task `test-suite-measure`; this note keeps which gate runs which tier.
 
 ## Which gate runs which tier (operator, 2026-10-05)
 
@@ -45,4 +38,5 @@ Rounds in between run only what their change can reach.
 Residual risk: a break the import graph cannot see is caught at Publish, before landing, so it costs one extra rework round, never a broken `main`.
 
 Measured 2026-10-05 on the Ryzen with three runs live (load average about 11 on 12 threads): a gate's `go test` phase took 67–90 s, against 60 s idle; only 51 of 114 packages hit the test cache, and every heavy package (`fabricengine`, `reedcli`, `fabriccli`, `battencli`, `reedengine`, `cmd/lyx`) reran each time.
+
 

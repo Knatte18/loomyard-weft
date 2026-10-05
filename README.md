@@ -112,7 +112,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **Burler as two parallel agents: a review-only reviewer and a fixer that validates** — [`burler-split`](design-burler-split.md) · enhancement, burler
    - B orients, forks its lenses and writes the report only; A, stronger, orients in parallel, then fixes and validates B findings with a grain of salt
 1. **Test tiers: unit, git, tmux and Claude, with Claude opt-in only** — [`test-tiers`](design-test-tiers.md) · enhancement, loom, webster
-   - Four tiers by what a test needs and costs; only an explicit request runs the Claude tier; tier names still open
+   - Which gate runs which tier: review rounds run the impacted set, the full plan verify only at Webster gate and Publish/Finalize
 1. **Fabric exports without warp/weft in their names** — [`fabric-api-vocabulary`](design-fabric-api-vocabulary.md) · enhancement, fabric
    - 13 fabric and hubforge exports name warp/weft, so callers outside fabric must too; rename them and drop the scan exemption
 1. **raddle: codeguide's woven-in successor** — [`raddle`](design-raddle.md) · enhancement, loom
