@@ -1,0 +1,5 @@
+status: OK
+head_sha: a5c00c6823d861e20f0f4279c570cc88ec00cbaa
+deviations:
+  - internal/treadleengine/seam_enforcement_test.go
+  - internal/treadleengine/template_test.go
