@@ -913,6 +913,23 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #359](https://github.com/Knatte18/loomyard/issues/359).\n\n## recurring-finding: a ledger finding stayed open across multiple rounds\n\n**Slug:** board-model\n**Parent:** main\n\n**State:** \n**Current producer:** \n\n**Error:**\n```\n\n```\n\n**History:**\nno history entries\n\n**Recurring finding:**\n- Bouncer row: Discussion-Bouncer\n- Ledger key: fold-target-semantics-open\n- Rounds: [1 2 3]\n- Status: open\n"
+    },
+    {
+      "id": 103,
+      "slug": "webster-accept-audit-contract",
+      "title": "accept-audit can never accept a fork-contract-write finding",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster"
+      ],
+      "issues": [
+        363
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #363](https://github.com/Knatte18/loomyard/issues/363).\n\nSeen 2026-10-04 in `board-model`: the run-exit audit flagged the verify-gate fixer fork for writing `_lyx/webster/outcome.yaml` (and `summary.md`), Master's contract files; Master had rewritten both afterwards.\n`lyx webster accept-audit` refused even after HEAD was reset to the last batch head and both untracked files were deleted (their state at that head): \"cannot be checked: …/_lyx/webster/outcome.yaml, …/summary.md; way forward: reset the branch to the run's start commit … and run lyx webster run --fresh\".\n`checkSuspectPaths` treats weft paths as unverifiable, so a `fork-contract-write` finding can never be accepted; the offered way forward throws away every batch (10 here).\nThe hub cleared `pendingAuditFindings` in `state.json` by hand to continue.\n\nExpected: a contract-file finding is acceptable once the contract files are absent (Master rewrites them at its next terminal turn), or the gate fixer is kept from writing them in the first place.\nRelated: #361 (the same run's gate hang).\n"
     }
   ],
   "legacy_done": [

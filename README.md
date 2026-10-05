@@ -30,6 +30,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **Webster verify gate waits forever when Master ends its turn with a hung background shell** — [`webster-gate-hung-shell`](design-webster-gate-hung-shell.md) · bug, webster, shuttle
 1. **Webster run-exit audit: way-forward text ends mid-sentence and repeats paths** — [`webster-audit-way-forward-text`](design-webster-audit-way-forward-text.md) · bug, webster
 1. **Discussion-Bouncer finding stays open across three rounds** — [`discussion-recurring-finding`](design-discussion-recurring-finding.md) · bug, loom
+1. **accept-audit can never accept a fork-contract-write finding** — [`webster-accept-audit-contract`](design-webster-accept-audit-contract.md) · bug, webster
 
 ### Enhancements
 
