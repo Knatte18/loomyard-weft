@@ -20,7 +20,7 @@
     "15-orch-reload.md": "4a10e0eb0864ae86c1536dce7a528e27a986165c47bdd8d70fdb910e69409bbd",
     "16-pattern-entries.md": "e047737b43baabd460e35807bf459d4799d6a894d825af114c67328a17b7713f"
   },
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "40172dc3ee4d7f3102b0f95aade12453",
   "masterSessionId": "473ae965-3716-422d-9f02-1fa754091f0c",
   "assertedModel": "sonnet",
@@ -187,6 +187,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-skills-and-stencils/473ae965-3716-422d-9f02-1fa754091f0c/subagents/agent-a152f9c2602743a49.jsonl"
       ]
+    },
+    "7": {
+      "slug": "bouncer-roles",
+      "cards": [
+        "07-bouncer-roles"
+      ],
+      "cardHashes": {
+        "07-bouncer-roles": "f4ee723213e12dc17074bc10c20c4dc4b28d203e792d3006c979f8387613ac8f"
+      },
+      "startSha": "e5c576c4963a31e2f1f982b104adc53083665bd7",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T16:47:29Z",
+      "sessionId": "473ae965-3716-422d-9f02-1fa754091f0c",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
