@@ -147,6 +147,12 @@ Decision: `docs/benchmarks/running-tests.md` describes the four tiers and their 
 Which gate runs `tmux` is left to note `test-tiers`.
 Rationale: the board asks for the tier rules in Plan-Write's verify text; gate selection is the note's.
 
+### Added after Discussion (parent, 2026-10-05): Cross-tier test helpers carry a disjunctive build constraint
+
+Decision: A test helper file shared by files of two tiers, whose helpers spawn a process or tmux server, carries the disjunction of those tiers as its constraint (for example `//go:build tmux || llm`), so it compiles under each tag alone; D6's untagged-file or testkit-kit placement stays the rule for a helper that spawns nothing.
+
+Rationale: D6 requires each tag to compile on its own, but tier purity bars spawn tokens from untagged test files and PATTERN-testkit bars os/exec from kits, so the reedcli and shuttlecli smoke harnesses shared by tmux and llm files have no other home that compiles under both tags.
+
 ## Constraints
 
 - `PATTERN-test-economy` and `PATTERN-test-speed` (which absorbs the time-seam, parallel and tier-purity entries, D8): the speed fixes follow them.
