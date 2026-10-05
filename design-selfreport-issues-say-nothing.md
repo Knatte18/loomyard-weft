@@ -1,6 +1,6 @@
 # lyx files bug issues from Go code; only reflection agents should
 
-`selfreport-issues-say-nothing` · Task · bug, selfreport, loom · running · Plan-Burler
+`selfreport-issues-say-nothing` · Task · bug, selfreport, loom · running · Plan-Bouncer
 
 lyx's Go code must not file bug reports itself.
 Self-reported bugs are written by an LLM agent through reflection (the Tier 2 `Friction-Reflect` producer), which can say what went wrong, why it matters and what to do.
