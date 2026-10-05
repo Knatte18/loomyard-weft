@@ -35,6 +35,7 @@ then fabric-syncs state.json like `accept-audit`.
 It changes no other Webster state; `run --fresh` or a plain `run` does the rest, as the way-forward texts order them.
 A fabric refusal is surfaced as the verb's error with fabric's own reason.
 In standalone mode (no fabric handle) the verb refuses: standalone has no pair to guard, way forward `git reset --keep <sha>` naming the resolved target, which keeps uncommitted changes and is not a denied command.
+Naming `git reset --keep` here is the overview's departure from D7, awaiting operator confirmation.
 On success the envelope carries `target`, `sha`, and the fixed mutation keys: `mutations`, always an array, holding the `worktree_reset` entry, and `partial`, always false (PATTERN-mutation-record); a refusal before the reset is a bare error envelope.
 Bound: the verb can discard only commits above a run-recorded commit on the task's own branch, plus uncommitted tracked changes to paths the run itself wrote;
 it cannot move another branch, take a raw SHA, touch the parent branch, the weft or untracked files, or override a refusal (no `--force`).

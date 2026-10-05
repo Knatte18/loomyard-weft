@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -39,11 +39,14 @@ Claude Code's hook documentation ("PreToolUse decision control", code.claude.com
 The hook omits the decision, so it grants nothing; D3's fallback (denying interpreter shapes) is not selected.
 Whether Claude Code matches allow and deny rules against the prefixed command as it did against the original is not stated there; card 4's smoke test pins it live, and a failure there is the trigger for D3's fallback.
 
-### Decision: the report-head and last-batch-head moves name `git reset --keep`
+### Departure from D7, for operator confirmation: the report-head and last-batch-head moves name `git reset --keep`
 
-The decision record's D6 and A6 fix the reset verb's targets to `start` and `pre-fix`, yet record-batch, recover-batch and accept-audit also refuse toward moving HEAD back to the report's `head_sha` or the last batch head.
-Rather than widen the verb beyond its decided bound, card 15 names the plain `git reset --keep <sha>` there: it is not on the deny list, it refuses rather than discards uncommitted changes, and refusal-spec rule 3 admits a plain git command no lyx verb covers.
+D7 says every site that moves HEAD back with git names `lyx webster reset`.
+D6 and A6 fix the verb's targets to `start` and `pre-fix`, and A6's premise that every Webster refusal needs one of the two does not hold: record-batch, recover-batch and accept-audit also refuse toward moving HEAD back to the report's `head_sha` or the last batch head.
+The plan does not widen the verb beyond its decided bound.
+Card 15 instead names the plain `git reset --keep <sha>` at those sites: it is not on the deny list, it refuses rather than discards uncommitted changes, and refusal-spec rule 3 admits a plain git command no lyx verb covers.
 Card 12's standalone-mode refusal uses the same command, since standalone has no pair for the fabric gate to guard.
+This is a departure from D7 the record does not grant, so the operator confirms it or widens the verb's targets; D7's verb rule is carried unchanged for every `start` and `pre-fix` site.
 
 ### Decision: D10 lands with the last rewording card
 

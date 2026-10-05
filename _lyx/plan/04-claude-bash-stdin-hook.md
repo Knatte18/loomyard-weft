@@ -16,6 +16,8 @@ D3: every Bash command a lyx-spawned agent runs gets `/dev/null` as its default 
 The primary route applies; the fallback is not selected.
 Claude Code's hook contract (code.claude.com/docs/en/hooks, "PreToolUse decision control") documents `hookSpecificOutput.updatedInput` as "Only allowed when `permissionDecision` is `allow` or omitted", and an omitted `permissionDecision` "doesn't decide; the normal permission flow applies".
 The hook therefore returns `updatedInput` with no `permissionDecision`, so it grants nothing and the agents' allow and deny rules still decide the call; the smoke test below pins that the matching is unchanged.
+The risk the pin guards: the rewritten command is `exec </dev/null; <command>`, and a matcher that splits compound commands would see `exec </dev/null` as a subcommand no allow rule covers, or fail to match a deny rule against the original;
+either result on the smoke test is the trigger for D3's fallback.
 
 `buildSettings` installs, for every run (autonomous and interactive, fork mode or not), one more `PreToolUse` entry with matcher `Bash` whose shell command:
 reads the payload, extracts `tool_input.command` as its JSON-encoded string,
@@ -38,8 +40,9 @@ Tests:
   the rewritten `cat -` exits at once with empty output while the test holds the shell's stdin open;
   the rewritten `cat - <<'EOF'` heredoc command still prints its heredoc body.
 - `smoke_bashstdin_test.go` (`smoke` tag, following `smoke_guardrail_test.go`): a real agent in a hubforge hub with one dirty tracked file is told to run `git status` and `git reset --hard HEAD`;
+  the hub's project-level Claude settings carry an allow rule for `git status` and a deny rule for `git reset --hard`, installed by the test, so it does not depend on the operator's own settings;
   the run reaches done with `git status`'s output written, and the dirty file is still dirty, so an allowed command stays allowed and a denied one stays denied with the prefix applied.
-  It skips when the operator's Claude settings carry no `git reset --hard` deny rule.
+  It skips only when the `claude` binary is absent, like the other smoke tests; `verify:` compiles it with `go vet -tags smoke` and does not run it.
 
 Document the rewrite and why it grants nothing in `claudeengine/doc.go` and in `settings.go`'s file comment.
 
