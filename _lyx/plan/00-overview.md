@@ -1,64 +1,36 @@
 ---
 format: 5
-approved: true
+approved: false
 language: go
+first_card: 17
 ---
 
 # Plan: Skills and stencils — every role gets its procedure from a stencil and its skills from lyx
 
 Every role lyx spawns gets its whole procedure from a stencil, the orch included, and lyx itself loads that procedure and the skills the role needs on every path into a session.
-Shuttle's launch spec names a role's skills and the Claude engine types them before the prompt (cards 1–2).
-A shared parent directive is rendered into every spawned role's opening stencil, so roles escalate to their parent rather than the operator (card 3), and each spawning module moves onto both (cards 4–10).
-The `ly-drive` skill becomes the driver stencil and leaves the `ly` plugin (cards 10–11).
-The orch gets a role stencil and a note in place of `scribe:handoff`, `cycle` and `distill` both write the note first, and the watcher reloads skills, role and note after every clear and compaction (cards 12–15).
-Two PATTERN entries with stencil scans close the plan (card 16).
+Cards 1–16 built that and are in the code.
+The pull request was rejected with two findings, and this generation fixes them.
+The orch role stencil misstates the run loop that batten runs, and Finalize's landing (card 17).
+New tests broke `PATTERN-test-economy`: per-phrase stencil tests move into the claims table and the recipe-blind scan, a constant-getter test and two delegation tests go, and two pairs of skip-cause tests become tables (cards 18–21).
 
 ## Card Index
 
-1 — shuttle-skill-loading — the launch spec names skills that shuttle loads before delivering the prompt
-2 — claude-skill-loader — Claude types each skill as a slash command and defers the prompt pointer
-3 — parent-directive — one shared parent directive package and its stencils
-4 — loom-producer-roles — Discussion, Plan and Rework load skills from the spec and render the directive
-5 — webster-roles — the Webster master and recovery load skills and render the directive
-6 — burler-role — burler rounds load skills and render the directive
-7 — bouncer-roles — the Bouncer judge and seed load their skill and render the directive
-8 — treadle-roles — treadle targeting, judge and triage load their skill and render the directive
-9 — landing-friction-roles — conflict, describe and friction load skills and render the directive
-10 — driver-stencil — the loom driver launches from the shed driver stencil
-11 — retire-ly-drive-skill — remove the ly-drive skill and reword every mention
-12 — orch-role-stencil — the orch role stencil, the note template and the one-line pointers
-13 — orch-note-gate — `cycle` clears, `distill` compacts, and both write the note first
-14 — compaction-since — shuttle reads whether a session compacted since a given time
-15 — orch-reload — the watcher reloads skills, role and note after a clear, a compaction and an auto-compaction
-16 — pattern-entries — PATTERN entries for typed skills and the parent directive, with their scans
+17 — orch-role-run-loop — the orch role stencil describes the loop batten runs and what Finalize does
+18 — driver-stencil-claims — the driver stencil's phrase checks join the claims table and the recipe-blind scan
+19 — orch-prompt-tests — the orch stencil wording checks join the claims table, leaving one render table test
+20 — drop-getter-delegation-tests — delete the constant-getter test and the two delegation tests
+21 — skill-skip-tables — the two skill-skip causes become one table test on each surface
 
 ## Shared Decisions
 
-### Decision: role skill lists live beside the role constant
+### Decision: stencil wording lives in the claims table
 
-Each spawning module declares its role's skill list as an unexported value next to the role constant it already owns (`planRole`, `bouncerJudgeRole`, `RoleMaster`, `orchStrandName`, …) and sets it on the spec it builds.
-The lists are the decision record's D2 table and nothing else; no language-specific scribe skill is listed for any role.
+A check that a stencil contains or omits a phrase is a claim row in `contracts/stencils/claims_test.go`'s `wordingClaims`, never a test of its own.
+A scan over a Go-declared set (recipe names, loom rows) stays a scan, in the existing scan test of that stencil.
 
-### Decision: the parent name is told, from the reed geometry's origin record
+### Decision: the role stencil follows the recipes
 
-Every spawning module is told the parent name the way it is told its stencils directory, never deriving it.
-The source is always the worktree's origin record, the same one reed injects as `LYX_PARENT`: `hubgeom.ResolveParent` for the webster and burler geometries, and the reed geometry's `ParentName` (kept on the loom receiver as `parentName`) for every role loom wires.
-An unresolvable or absent parent is an empty name, which renders the directive's no-parent variant.
-
-### Decision: an unknown skill is detected from the pane, bounded by the timeout
-
-Claude Code's reaction to an unknown `/<skill>` is unverified.
-The Claude engine classifies its unknown-command notice from a pane capture; a reaction that ends a turn confirms the load, and any other reaction is skipped at the skill-load timeout, so every case is bounded.
-
-## Rename mechanic
-
-1. Run `git mv <old> <new>` FIRST, before any other change to the moved file.
-2. Then make ONLY surgical edits (package declaration, imports, identifier
-   retargeting) — no unrelated rewrites.
-3. A genuinely new file with no predecessor belongs in a separate `Create` card, never folded
-   into the `Rename` pair.
-4. Never write the relocated file from scratch and delete the original — that loses
-   git history exactly as an unstructured create+delete pair would.
+The orch role stencil states only what the batten and loom recipes do: batten creates the pair, drives the run, resumes a decided child and tears the pair down, and Finalize lands by pushing to main and closing the pull request.
 
 ## verify:
 
