@@ -1,0 +1,4 @@
+status: OK
+head_sha: e5c576c4963a31e2f1f982b104adc53083665bd7
+deviations:
+  - internal/burlerengine/template_test.go
