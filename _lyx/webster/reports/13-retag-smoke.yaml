@@ -1,0 +1,10 @@
+status: OK
+head_sha: 4f0973f4a675d7bd50c585ec2dce9bd0289f99f5
+deviations:
+  - internal/reedcli/smoke_procalive_linux_test.go
+  - internal/reedcli/smoke_procalive_windows_test.go
+  - internal/reedcli/smoke_proctree_test.go
+  - internal/loomcli/smoke_gate_test.go
+  - internal/loomcli/smoke_parentreview_test.go
+  - internal/reedcli/smoke_test.go
+  - internal/loomcli/smoke_test.go
