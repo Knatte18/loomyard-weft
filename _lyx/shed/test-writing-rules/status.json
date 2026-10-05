@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Bouncer",
+  "current_producer": "Plan-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler → bounced to Discussion-Bouncer",
+    "now": "Plan-Write",
+    "last": "Discussion-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -66,6 +66,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/test-writing-rules/_lyx/reviews/discussion/round-3-review.md",
       "at": "2026-10-05T14:45:28Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/test-writing-rules/_lyx/reviews/discussion/round-3-bouncer-ledger.md",
+      "at": "2026-10-05T14:45:52Z"
     }
   ],
   "product": {
