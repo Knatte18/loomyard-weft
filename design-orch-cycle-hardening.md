@@ -1,6 +1,6 @@
 # Orch context cycling and long-run hardening
 
-`orch-cycle-hardening` · Task · bug, enhancement, orch, config, batten · running · Loom-Preflight
+`orch-cycle-hardening` · Task · bug, enhancement, orch, config, batten · running · Discussion-Write
 
 # Goal
 
