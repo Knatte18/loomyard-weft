@@ -1,0 +1,22 @@
+readme: ${env:LYX_README:-README.md} # readme page file name; relative to board dir
+design_prefix: ${env:LYX_DESIGN_PREFIX:-design-} # prefix for design-doc files
+types: # type labels with their descriptions: a note carries exactly one, a task one or more
+    bug: lyx does something wrong
+    enhancement: something lyx already does gets cheaper, clearer or sturdier, with no new capability
+    feature: lyx gains something it cannot do today
+labels:
+    board: the task tracker, lyx board
+    config: config files under _lyx/config and their loading
+    ide: VS Code integration, lyx ide
+    reed: the tmux server, sessions and strands
+    fabric: warp/weft pairs and their git verbs
+    selfreport: anomalies lyx files about itself
+    shuttle: launching and driving agent sessions
+    burler: review rounds
+    webster: plan execution by cards and batches
+    stencil: prompt templates for spawned roles
+    loom: the task recipe from Discussion to Finalize
+    quarry: the code index and glyphs
+    batten: the outer run lifecycle around a loom
+    shed: the phase machine, its recipes and drivers
+    orch: the hub orchestrator session
