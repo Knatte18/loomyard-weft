@@ -14,6 +14,13 @@ Waits on nothing open; can start now, in parallel.
 1. **ly-drive as a stencil, a ly:runs skill, and lyx-injected skill loading** — [`lyx-skills-and-stencils`](design-lyx-skills-and-stencils.md) · enhancement, stencil, orch, shed
    - Driver procedure moves into a stencil, a ly:runs workflow skill, and the orch watcher injects skill loading at start, adopt and after every cycle
 
+### Independent
+
+Depends on nothing and nothing depends on it, by design.
+
+1. **Measure and prune the test suite** — [`test-suite-prune`](design-test-suite-prune.md) · enhancement
+   - Stage 1: per-test coverage tool, delete redundant tests, fold into tables, seam real-time waits, parallelize fabricengine
+
 ## Notes
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
@@ -127,8 +134,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - LY: prime/LY: <slug> titles, prime opens with reed up+attach only, orch start and open board as tasks with lyx keybindings, no launch.json
 1. **A running verify gate is visible in status and on screen** — [`gate-running-visible`](design-gate-running-visible.md) · enhancement, loom, reed
    - After an agent ends its turn, a Go gate can run for minutes with nothing on screen; loom status and something on screen name the gate and its runtime
-1. **Investigate why the test suite runs several times slower than its August benchmark** — [`test-suite-regression`](design-test-suite-regression.md) · enhancement
-   - Integration 17.9 s → 57.5 s: half growth, the rest real-time waits on production consts, serial fabricengine tests and a slow vocab regex
 1. **fabric fetches an existing remote warp and weft branch instead of creating new ones** — [`fabric-add-adopt-remote`](design-fabric-add-adopt-remote.md) · enhancement, fabric
    - A branch that exists on origin is fetched and checked out, never recreated locally; reconcile and checkout today fork a fresh weft and fabric add refuses the warp
 1. **A color per spawned session, so the driver and each loom segment stand apart** — [`strand-colors`](design-strand-colors.md) · enhancement, reed, loom, shed, shuttle
