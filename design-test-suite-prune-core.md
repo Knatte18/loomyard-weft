@@ -5,7 +5,8 @@
 Depends on: [`test-suite-measure`](design-test-suite-measure.md)
 
 Stage 2b of getting the test suite under control: prune the largest packages.
-It runs after `test-suite-measure`, using its coverage tool, its candidate report and the consolidated Testing rules.
+It runs in parallel with `test-suite-prune-rest`, after `test-suite-measure`, using its coverage tool, its candidate report and the consolidated Testing rules.
+The hub coordinates the two runs; shared test helpers such as `internal/testkit` belong to this task.
 
 ## Clean
 
