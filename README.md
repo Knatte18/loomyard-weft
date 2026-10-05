@@ -138,6 +138,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - A branch that exists on origin is fetched and checked out, never recreated locally; reconcile and checkout today fork a fresh weft and fabric add refuses the warp
 1. **A color per spawned session, so the driver and each loom segment stand apart** — [`strand-colors`](design-strand-colors.md) · enhancement, reed, loom, shed, shuttle
    - Use Claude Code /color on every spawned strand: driver against the rest at least, ideally one color per loom segment
+1. **lyx webster reset covers the report-head and last-batch-head targets** — [`webster-reset-targets`](design-webster-reset-targets.md) · enhancement, webster
+   - Three Webster recovery sites and standalone mode still instruct git reset --keep; widen the reset verb so every recovery instruction names a lyx verb
 
 ## Done
 

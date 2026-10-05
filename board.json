@@ -894,6 +894,21 @@
       "isolated": false,
       "brief": "Use Claude Code /color on every spawned strand: driver against the rest at least, ideally one color per loom segment",
       "body": "## Problem\n\nWith a run live, the driver pane and the agents it spawns (Webster, Burler, Bouncer judge, Describe and the rest) look alike in tmux and in Claude Code, so it is often hard to see which session is which.\n\n## Idea (operator, 2026-10-05)\n\nGive each spawned session a color with Claude Code's `/color` command, so the driver stands apart from the agents it spawns.\nOpen question: one color per loom segment (Discussion, Plan, Webster, review, Describe, landing) rather than only driver against the rest; the operator would like that.\n\n## Open\n\n- Where the color is set: by the spawning code through reed when it starts the strand, or by the agent's own launch prompt.\n- Whether the tmux pane border or status line should carry the same color, so the reed layout matches the sessions.\n"
+    },
+    {
+      "id": 116,
+      "slug": "webster-reset-targets",
+      "title": "lyx webster reset covers the report-head and last-batch-head targets",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "webster"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Three Webster recovery sites and standalone mode still instruct git reset --keep; widen the reset verb so every recovery instruction names a lyx verb",
+      "body": "## Background\n\n`webster-audit-recovery` (PR #381) added `lyx webster reset --to start|pre-fix` so recovery never needs a denied `git reset --hard`.\nIts plan recorded one deviation not covered by the decision record (D7): three sites still tell the agent to run `git reset --keep \u003csha\u003e` rather than a lyx verb.\nThey move back to the report head or the last-batch head in record-batch, recover-batch and accept-audit (`internal/websterengine/gitwrap.go`), plus standalone mode.\nThe verb was not widened because its targets are only `start` and `pre-fix`.\n`--keep` is not denied and refuses rather than discards, so it was accepted at PR-Gate.\n\n## Proposal\n\nWiden `lyx webster reset` with the report-head and last-batch-head targets, and point the three sites and standalone mode at it, so every Webster recovery instruction names a lyx verb.\n"
     }
   ],
   "legacy_done": [
