@@ -99,8 +99,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Claude Code /color per strand role or loom segment, so the driver and its agents look different
 1. **lyx webster reset covers the report-head and last-batch-head targets** — [`webster-reset-targets`](design-webster-reset-targets.md) · enhancement, webster
    - Three Webster recovery sites and standalone mode still instruct git reset --keep; widen the reset verb so every recovery instruction names a lyx verb
-1. **reed pins clickable run and strand tabs at boot** — [`reed-status-tabs`](design-reed-status-tabs.md) · enhancement, reed
-   - Two status lines (runs as session tabs, the current run strands as pane tabs) plus pane-border titles, set by reed at server boot instead of live
+1. **reed shows strands as zoom tabs and runs as session tabs** — [`reed-status-tabs`](design-reed-status-tabs.md) · enhancement, reed
+   - Stacked layout stays as VIEW; a strand button or Alt+arrows zooms one strand; runs as session tabs below; reed pins it at boot
 
 ### Features
 
