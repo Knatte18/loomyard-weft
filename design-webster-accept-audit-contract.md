@@ -11,3 +11,22 @@ The hub cleared `pendingAuditFindings` in `state.json` by hand to continue.
 
 Expected: a contract-file finding is acceptable once the contract files are absent (Master rewrites them at its next terminal turn), or the gate fixer is kept from writing them in the first place.
 Related: #361 (the same run's gate hang).
+
+
+## From issue #365
+
+Imported from [issue #365](https://github.com/Knatte18/loomyard/issues/365).
+
+`lyx webster accept-audit` refused to accept pending audit findings:
+
+```
+webster: pending audit findings cannot be accepted: cannot be checked: _lyx/webster/outcome.yaml, _lyx/webster/summary.md; way forward: reset the branch to the run's start commit <sha> with git and run "lyx webster run --fresh"
+```
+
+Problems:
+
+- The refusal says the two files "cannot be checked" but not why (missing, unreadable, changed since the audit, or not matching an expected state), so the caller cannot tell what to repair.
+- The only way forward offered is resetting the branch to the run's start commit and rerunning with `--fresh`, which discards the run's work.
+  There is no lighter path, such as regenerating the two files or re-running the audit.
+
+Provenance: task `board-model`, note `webster-refusal-accept-audit.md`.
