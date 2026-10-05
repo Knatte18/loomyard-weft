@@ -1,6 +1,6 @@
 # fabric fetches an existing remote warp and weft branch instead of creating new ones
 
-`fabric-add-adopt-remote` · Note · bug, fabric
+`fabric-add-adopt-remote` · Note · enhancement, fabric
 
 ## Problem
 
@@ -21,12 +21,7 @@ lyx fabric reconcile
 With the local tracking weft branch in place, `reconcile` takes its `weft_recreated` path and wires junctions, portal and launchers.
 `lyx batten run <slug>` from prime then resumed both the outer and the inner run, and the inner loom run continued from its producer row with a fresh agent.
 
-## Missing parent after adoption (seen 2026-10-05)
-
-A weft worktree recreated by `reconcile` from an existing branch lacks the untracked `.weft/` lock directory that `fabric add` creates.
-`fabricengine.ReadOriginFor` requires that directory and answers "no record" without one, so `hubgeom.ResolveParent` silently yields no parent and every strand launched before the first weft write gets no `LYX_PARENT`.
-On 2026-10-05 the `loom-bouncer-rounds` driver, launched at 15:36:00, had no `LYX_PARENT`; `.weft/` appeared at 15:36:19, and the Burler launched at 15:58 carries `LYX_PARENT='ly:orch'`.
-Any adopt path creates `.weft/`, and a present origin record with a missing lock directory is an error or a warning, never a silent "no parent".
+The adopted pair's strands also lost their parent until the first weft write: see bug note `weft-lock-dir-drops-parent`.
 
 ## Proposal
 
