@@ -14,6 +14,7 @@
 - `internal/shedadapters/bouncer_fixture_test.go`
 - `internal/shedrecipe/entries_bouncer_test.go`
 - `internal/shedrecipe/fixture_test.go`
+- `internal/testkit/envkit/envkit.go`
 
 **Uses:**
 - `plan:internal/shedadapters#circlingEvidence`
@@ -25,7 +26,8 @@ D1 and D2: the judge may rule `CIRCLING` only from the configured checkpoint rou
 Configuration path:
 - `BouncerConfig` gains `CirclingCheckpoint int`, required positive by `NewBouncer`.
 - `shedrecipe.Env` gains `ReviewCirclingCheckpoint int`, run-wide, which the Bouncer entry requires positive and passes through; `loomcli`'s `wire` fills it from `loomCfg.ReviewCirclingCheckpoint`.
-- Test fixtures that build a `BouncerConfig` or an `Env` set it.
+- The shared `envkit.FullEnv` sets `ReviewCirclingCheckpoint` once (`PATTERN-testkit`), so the loomrecipe fixtures built from it pass the Bouncer entry's check;
+  the other fixtures that build a `BouncerConfig` or an `Env` outside the kit set it too.
 
 Prompt (D1):
 - `bouncerprompt.go` gains a function returning the `decision_rule` marker for a round and checkpoint, held in Go so the stencil stays conditional-free, as `focusSchemaMarkers` already does.

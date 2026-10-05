@@ -13,6 +13,7 @@
 - `internal/loomrecipe/recipe_test.go`
 - `internal/loomrecipe/resume_test.go`
 - `internal/loomcli/wiring_test.go`
+- `internal/testkit/envkit/envkit.go`
 
 **Create:**
 - `internal/loomrecipe/reviewbudget_test.go`
@@ -35,7 +36,8 @@ D3 and D4: the bounce budget of every Bouncer review segment's rows is `review_m
 - `loomcli`: `wire` fills `env.ReviewMaxBounces` from `loomCfg.ReviewMaxBounces`;
   `segmentBounces` takes the budget and calls `loomrecipe.Routing(budget)`;
   `loadRouting` in `arm.go` and the reject verb in `reject.go` pass `c.cfg.ReviewMaxBounces`.
-- Test fixtures that build an `Env` set `ReviewMaxBounces`;
+- The shared `envkit.FullEnv` sets `ReviewMaxBounces` once (`PATTERN-testkit`), so every `Env` built from it passes the new positivity check;
+  per-package fixtures set it only where a test needs a different value, and any other fixture that builds an `Env` outside the kit sets it too;
   `resume_test.go`'s budget-exhaustion test takes its budget from the fixture's `ReviewMaxBounces` rather than a recipe literal, and its comments stop claiming the row declares `max_bounces`;
   `recipe_test.go`'s perch check keeps asserting equal `Segment` and `MaxBounces` over the built rows.
 
