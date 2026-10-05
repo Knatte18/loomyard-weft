@@ -5,7 +5,7 @@
 - `internal/shedadapters/bouncerfacts_test.go`
 
 **Create:**
-- `plan:internal/shedadapters#circlingEvidence` -> `func circlingEvidence(runDir string, round int) []string`
+- `internal/shedadapters#circlingEvidence`
 - `internal/shedadapters/circlingevidence_test.go`
 
 **Uses:**

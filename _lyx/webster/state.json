@@ -1,17 +1,17 @@
 {
   "runGuid": "77587a95023cb1e3657cb9c550b95efa",
-  "planFingerprint": "1de0f9cd22f93594387fdbab43bed6306734ef210eaa87972118cc5935a11f50",
+  "planFingerprint": "e53babe6e16060c83437949315b7d331846feec0fbc92aead1491ccc83654c70",
   "planFileHashes": {
     "00-overview.md": "ad26ad65604901bb4a8c8e7cb372ea65367a53421fc7117f9f9a167d5e6e6900",
     "01-ledger-finding-labels.md": "e6e7a4b0e20c6408f443aaea68aaf22edad6e141ff073c07e93b71dac0b15190",
-    "02-circling-evidence.md": "98021f3e2a0c834d97422338913db4f59802c10bf39d842915de3b9fb76ac747",
+    "02-circling-evidence.md": "d15c71edca468a2fc29cb4ebb79e9cb065a2d744dfcf8806db65f355b9da85dc",
     "03-loom-config-keys.md": "0a836d5ce007b57777f1345a6fc02addd7a3a6ab732d0899b09a2d8be3365de1",
     "04-review-budget-from-config.md": "a5cc5470d42b126137c0e2b84f9b4a9d0670b12cc1acd89b16ebbaf32a20507a",
     "05-shed-parent-notice.md": "b0af028bd552ac4b5f3434d09cb75ab89b94171cf82f1153a79552f4def43a69",
     "06-escalation-stencils.md": "c5cd08d50ca095db9a4227bebeda85b0d466563a494b86e72f600e84d861569a",
     "07-escalation-record.md": "d325e374bbf68b5b61ad052943aa442a507dedb2cdb3d168a35233a6edbf214d",
     "08-circling-verbs-either-cause.md": "f671cc36e20638b602f208863ad85dbde2693ce3f9c14b1847efaf5ef2abe305",
-    "09-checkpoint-judging.md": "e81ed693dc0007cb4eb814a8f54fba7813c2fc0608b708293b530ea967c8a778",
+    "09-checkpoint-judging.md": "d858428f16448876f47a6fd30be822ef7a0ed2e496aef425ecd8c20f8ae9c71f",
     "10-bouncer-escalation.md": "6096097b06271179cd06f6a86c07e6bd7f6529b1ecefd72f63eac99a2806f295",
     "11-burler-exempt-round.md": "87d1e4dfd04388a092a0d8b3acef78bc73d566555ae8afd39ebdda4d318500fe",
     "12-decision-append.md": "489307f805d156b45845aba3101d0aac486e8869560f674325512ee5fa0e2ff0",
@@ -20,7 +20,7 @@
     "15-drop-recurring-finding.md": "d5ae19c6e90e324060b3f5bace61f7d8aa350476171db7ad7e1db33f62657d00",
     "16-smoke-strand-matching.md": "2561563bef9c09ccbff8c57dee8012eed1a900fcb7f1bf6df26e63d0723de55e"
   },
-  "currentBatch": 2,
+  "currentBatch": 0,
   "masterStrand": "d2c3e84d54a38997316f661377dc5bc2",
   "masterSessionId": "c05a239b-17ca-4c59-acd3-85fb643ebb30",
   "assertedModel": "sonnet",
@@ -57,17 +57,29 @@
         "02-circling-evidence"
       ],
       "cardHashes": {
-        "02-circling-evidence": "98021f3e2a0c834d97422338913db4f59802c10bf39d842915de3b9fb76ac747"
+        "02-circling-evidence": "d15c71edca468a2fc29cb4ebb79e9cb065a2d744dfcf8806db65f355b9da85dc"
       },
       "startSha": "1ba0d00d748137774b66e0918dbde273dec33581",
       "kind": "fork",
       "spawnedAt": "2026-10-05T07:52:54Z",
       "sessionId": "c05a239b-17ca-4c59-acd3-85fb643ebb30",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "02-circling-evidence",
+        "status": "done",
+        "head_sha": "8a11030641861c760bf85ed1387408d218a58952"
+      },
+      "cardShas": [
+        "8a11030641861c760bf85ed1387408d218a58952"
+      ],
+      "forkTranscripts": [
+        "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-a8b5fb2ee14496a64.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-adcc8fb3ce4c04172.jsonl"
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-adcc8fb3ce4c04172.jsonl",
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-a8b5fb2ee14496a64.jsonl"
   ]
 }

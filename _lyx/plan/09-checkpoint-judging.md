@@ -17,7 +17,7 @@
 - `internal/testkit/envkit/envkit.go`
 
 **Uses:**
-- `plan:internal/shedadapters#circlingEvidence`
+- `internal/shedadapters#circlingEvidence`
 - `internal/loomengine/config.go`
 
 **Intent:**
