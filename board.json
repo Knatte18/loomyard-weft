@@ -652,8 +652,7 @@
       "kind": "note",
       "labels": [
         "enhancement",
-        "shed",
-        "recipes"
+        "shed"
       ],
       "issues": [],
       "depends_on": [],
@@ -682,7 +681,7 @@
       "kind": "note",
       "labels": [
         "enhancement",
-        "agents"
+        "shuttle"
       ],
       "issues": [],
       "depends_on": [],
@@ -742,7 +741,9 @@
       "kind": "note",
       "labels": [
         "bug",
-        "cli"
+        "board",
+        "config",
+        "selfreport"
       ],
       "issues": [],
       "depends_on": [],
@@ -757,7 +758,7 @@
       "kind": "note",
       "labels": [
         "bug",
-        "testing"
+        "loom"
       ],
       "issues": [],
       "depends_on": [],
@@ -773,8 +774,7 @@
       "labels": [
         "bug",
         "webster",
-        "quarry",
-        "perf"
+        "quarry"
       ],
       "issues": [],
       "depends_on": [],
@@ -789,9 +789,9 @@
       "kind": "note",
       "labels": [
         "bug",
-        "fabric",
         "config",
-        "landing"
+        "fabric",
+        "loom"
       ],
       "issues": [],
       "depends_on": [],
@@ -806,8 +806,7 @@
       "kind": "note",
       "labels": [
         "enhancement",
-        "bouncer",
-        "discussion",
+        "loom",
         "orch"
       ],
       "issues": [],
@@ -824,7 +823,6 @@
       "labels": [
         "enhancement",
         "board",
-        "ui",
         "ide"
       ],
       "issues": [],
@@ -840,7 +838,6 @@
       "kind": "note",
       "labels": [
         "enhancement",
-        "undecided",
         "board"
       ],
       "issues": [],

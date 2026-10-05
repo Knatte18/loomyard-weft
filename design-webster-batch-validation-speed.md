@@ -1,6 +1,6 @@
 # Webster begin-batch spends a minute validating the plan per batch
 
-`webster-batch-validation-speed` · Note · bug, webster, quarry, perf
+`webster-batch-validation-speed` · Note · bug, webster, quarry
 
 Seen on `test-suite-change-amplification` (2026-10-03), a 45-card plan that the Batchifier split into one card per batch.
 

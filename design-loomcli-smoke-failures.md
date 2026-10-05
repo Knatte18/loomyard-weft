@@ -1,6 +1,6 @@
 # loomcli smoke tier: five bootstrap/strand tests fail on main
 
-`loomcli-smoke-failures` · Note · bug, testing
+`loomcli-smoke-failures` · Note · bug, loom
 
 `go test -tags smoke ./internal/loomcli/` fails five tests on `main` (seen 2026-10-03 at `6a74ee1be`, during the PR-Gate review of #347, which fails the same five).
 Each expects one `loom-status` or driver strand and finds none:

@@ -1,6 +1,6 @@
 # Interactive board view: a regenerated HTML file and a phone-friendly README
 
-`board-viewer` · Note · enhancement, board, ui, ide
+`board-viewer` · Note · enhancement, board, ide
 
 Operator 2026-10-04: the board needs an interactive view with filters, reachable without typing a lyx command each time.
 

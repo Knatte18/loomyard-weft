@@ -1,6 +1,6 @@
 # CIRCLING escalates to the parent orchestrator, later and on recurrence only
 
-`circling-to-parent` · Note · enhancement, bouncer, discussion, orch
+`circling-to-parent` · Note · enhancement, loom, orch
 
 Seen 2026-10-04 in `board-model`: Discussion-Bouncer judged round 2 CIRCLING because gating findings rose from 1 to 2, both in the D10 intake bound that round 1's fix had widened; the run halted for a human.
 The hub settled it with five short design calls and the run went on; no operator input was needed.

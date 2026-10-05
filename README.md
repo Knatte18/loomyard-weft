@@ -19,13 +19,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - begin-batch refuses plan_drifted when an earlier batch already deleted a later card's Delete target
 1. **Webster schedules a Delete before its callers are removed** — [`webster-delete-ordering`](design-webster-delete-ordering.md) · bug, webster
    - deriveEdges has no edge from a deleted symbol to the cards editing its callers
-1. **Five CLI invariant exceptions in board notes, config, selfreport** — [`cli-tree-exceptions`](design-cli-tree-exceptions.md) · bug, cli
+1. **Five CLI invariant exceptions in board notes, config, selfreport** — [`cli-tree-exceptions`](design-cli-tree-exceptions.md) · bug, board, config, selfreport
    - Fix the verbs the CLI tree walk records as exceptions and drop them from cliTreeFindings
-1. **loomcli smoke tier: five bootstrap/strand tests fail on main** — [`loomcli-smoke-failures`](design-loomcli-smoke-failures.md) · bug, testing
+1. **loomcli smoke tier: five bootstrap/strand tests fail on main** — [`loomcli-smoke-failures`](design-loomcli-smoke-failures.md) · bug, loom
    - Five smoke tests find no loom-status or driver strand; stale tests or a bootstrap regression
-1. **Webster begin-batch spends a minute validating the plan per batch** — [`webster-batch-validation-speed`](design-webster-batch-validation-speed.md) · bug, webster, quarry, perf
+1. **Webster begin-batch spends a minute validating the plan per batch** — [`webster-batch-validation-speed`](design-webster-batch-validation-speed.md) · bug, webster, quarry
    - quarry#34 re-parses per target; fix it or validate incrementally; drop the per-batch model assertion
-1. **Config changes a task makes never reach the parent** — [`config-reaches-parent`](design-config-reaches-parent.md) · bug, fabric, config, landing
+1. **Config changes a task makes never reach the parent** — [`config-reaches-parent`](design-config-reaches-parent.md) · bug, config, fabric, loom
    - Live config is in weft and task weft dies at landing; carry config changes or make the hub step explicit
 1. **Webster verify gate waits forever when Master ends its turn with a hung background shell** — [`webster-gate-hung-shell`](design-webster-gate-hung-shell.md) · bug, webster
 
@@ -115,17 +115,17 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - The post-conclude undo the merge surface does not ship: reset to a warp SHA, resolve the paired weft SHA through the correspondence index, gate both sides
 1. **finalize: the discrepancy-document conflict shape** — [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) · enhancement, fabric, loom
    - Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers
-1. **shedrecipe: capability declaration instead of manual seam-threading** — [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) · enhancement, shed, recipes
+1. **shedrecipe: capability declaration instead of manual seam-threading** — [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) · enhancement, shed
    - A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer
 1. **doctor: a lyx diagnostics command** — [`doctor`](design-doctor.md) · enhancement
    - lyx doctor checks the _lyx layout, config parse, board reachability and stale locks
-1. **session sync: Claude transcripts across machines** — [`session-sync`](design-session-sync.md) · enhancement, agents
+1. **session sync: Claude transcripts across machines** — [`session-sync`](design-session-sync.md) · enhancement, shuttle
    - Copy Claude .jsonl transcripts across machines so --resume works elsewhere
-1. **CIRCLING escalates to the parent orchestrator, later and on recurrence only** — [`circling-to-parent`](design-circling-to-parent.md) · enhancement, bouncer, discussion, orch
+1. **CIRCLING escalates to the parent orchestrator, later and on recurrence only** — [`circling-to-parent`](design-circling-to-parent.md) · enhancement, loom, orch
    - Round-2 CIRCLING on a rising finding count halted board-model for a human; judge later, on unchanged recurrence, and escalate to the parent
-1. **Interactive board view: a regenerated HTML file and a phone-friendly README** — [`board-viewer`](design-board-viewer.md) · enhancement, board, ui, ide
+1. **Interactive board view: a regenerated HTML file and a phone-friendly README** — [`board-viewer`](design-board-viewer.md) · enhancement, board, ide
    - board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app
-1. **A parked label hides dormant notes from the default view** — [`board-parked`](design-board-parked.md) · enhancement, undecided, board
+1. **A parked label hides dormant notes from the default view** — [`board-parked`](design-board-parked.md) · enhancement, board
    - Notes nobody means to act on soon get parked: kept, hidden by default; curated at each intake
 1. **lyx seeds the prime VS Code setup: title, orch start task, keybindings** — [`ide-prime-setup`](design-ide-prime-setup.md) · enhancement, ide, orch
    - LY: prime/LY: <slug> titles, prime opens with reed up+attach only, orch start and open board as tasks with lyx keybindings, no launch.json
