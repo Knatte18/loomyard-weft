@@ -15,3 +15,5 @@ Open:
 - The operator dislikes hooks: each one delays every tool call.
   Find a way to give the agent's shell `/dev/null` as stdin without a per-call hook (e.g. how shuttle launches Claude Code, or `BASH_ENV`, checking it does not cut stdin from a script fed through a pipe), and drop the hook if one works.
 - If the hook stays: it extracts the command with a `sed` regex taking the last `"command":"` key in the raw payload, so a later `command` field elsewhere in the payload would be rewritten instead; parse the JSON.
+
+Related: `driver-step-clutter`, the same habit in the LLM driver's step calls.
