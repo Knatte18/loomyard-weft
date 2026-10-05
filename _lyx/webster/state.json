@@ -25,7 +25,7 @@
     "20-testtiming-redundancy.md": "315925b61fa54d8d9ff919d2404a9c0121967b9e6eb4e56276c597da224e6a49",
     "21-redundancy-report-and-post-retag.md": "035d8d13db102771578007eb5fa757b64a87ef6436accce7f4887eb74804c1a0"
   },
-  "currentBatch": 0,
+  "currentBatch": 10,
   "masterStrand": "d6515d923cf96c76537e7850a96b9d4e",
   "masterSessionId": "b9451745-c0f7-4015-9ea7-6c77aa520719",
   "assertedModel": "sonnet",
@@ -55,6 +55,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-measure/b9451745-c0f7-4015-9ea7-6c77aa520719/subagents/agent-ae00e84c0061b5622.jsonl"
       ]
+    },
+    "10": {
+      "slug": "pattern-testing-consolidation",
+      "cards": [
+        "10-pattern-testing-consolidation"
+      ],
+      "cardHashes": {
+        "10-pattern-testing-consolidation": "d593be19bf2ecc54b359ca63aab3eef7ddf9682aa582d4f0778a8e577d01d7f9"
+      },
+      "startSha": "69fda830e1b8324f463b6cc8b43965600649cdae",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T16:56:59Z",
+      "sessionId": "b9451745-c0f7-4015-9ea7-6c77aa520719",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "timing-before-state",
