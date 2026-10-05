@@ -1,6 +1,6 @@
 # Label descriptions, board CLI gaps, CLI tree exceptions
 
-`board-labels-and-skills` · Task · bug, enhancement, board, config, selfreport · running · PR-Gate
+`board-labels-and-skills` · Task · bug, enhancement, board, config, selfreport · awaiting · PR-Gate
 
 # Goal
 
