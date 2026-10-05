@@ -1,0 +1,4 @@
+status: OK
+head_sha: d382adf75cd03e968471909a0b658d986a91fa29
+deviations:
+  - internal/loomrecipe/progress_test.go
