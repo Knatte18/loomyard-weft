@@ -829,6 +829,22 @@
       "isolated": false,
       "brief": "cat \u003e /tmp/x; python3 - \u003c\u003cEOF … EOF on one line reads stdin forever; seen twice on 2026-10-05 and in #361",
       "body": "Seen 2026-10-05 in two Webster Masters at once (`orch-cycle-hardening` and `webster-audit-recovery`), each with a background shell hung for about 80 minutes:\n\n```\ncd internal/shuttleengine/claudeengine \u0026\u0026 cat \u003e /tmp/x 2\u003e/dev/null; python3 - \u003c\u003c'EOF' 2\u003e\u00261 | head -1 EOF echo ok\n```\n\nThe heredoc arrived flattened onto one line, so `EOF` never closes it and `cat \u003e /tmp/x` reads stdin forever.\nIt is the same shape as #361 in `board-model` (`python3 - 2\u003e/dev/null; cat \u003e /dev/null \u003c\u003c'EOF' … EOF`), so it is a recurring Master habit, not a one-off.\nIn `orch-cycle-hardening` it held the verify gate from 12:51 until the hub killed the `cat` at 12:56; the gate then ran verify.\n\n`webster-audit-recovery` bounds the wait and gives every agent Bash call `/dev/null` as stdin, which ends the hang but not the habit.\nOperator, 2026-10-05: an agent running Python like this is wrong; it needs a good reason to use Python at all (running a Python project's own tests is one), never as a stand-in for Read, Grep or Edit.\nOpen: why Master writes a multi-line heredoc that reaches the shell as one line, and why it reaches for `python3` and `/tmp` at all; the fix belongs in the Master stencil or the tool guidance it gets.\n"
+    },
+    {
+      "id": 112,
+      "slug": "gate-running-visible",
+      "title": "A running verify gate is visible in status and on screen",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "After an agent ends its turn, a Go gate can run for minutes with nothing on screen; status and the loom-status strand name the gate and its runtime",
+      "body": "Seen 2026-10-05 in `orch-cycle-hardening`: after the Webster-Burler agent ended its turn, the producer ran the task's verify command (`verifyrun`: build, unit, integration, smoke vet) for many minutes.\nNothing on screen said so: the agent's pane sat idle, `lyx loom status` showed only `now=Webster-Burler`, and the operator read it as a hang, asked the agent what it was waiting on, and the agent could not tell either.\n\nIdea (operator): a visible marker whenever a Go gate runs.\n\n- The status (`activity.now`, and the `loom-status` strand) names the gate and how long it has run, such as `Webster-Burler: verify running 6m (go test -tags integration)`.\n- The agent pane, or its strand's title, shows that the run moved on to a gate, so an idle agent does not look stuck.\n- The same applies to every Go-side wait a producer does after its agent's turn: the Webster verify gate, the Burler round's verify, Publish's merge-in verify.\n"
     }
   ],
   "legacy_done": [

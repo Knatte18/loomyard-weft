@@ -135,3 +135,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Notes nobody means to act on soon get parked: kept, hidden by default; curated at each intake
 1. **lyx seeds the prime VS Code setup: title, orch start task, keybindings** — [`ide-prime-setup`](design-ide-prime-setup.md) · enhancement, ide, orch
    - LY: prime/LY: <slug> titles, prime opens with reed up+attach only, orch start and open board as tasks with lyx keybindings, no launch.json
+1. **A running verify gate is visible in status and on screen** — [`gate-running-visible`](design-gate-running-visible.md) · enhancement, loom, reed
+   - After an agent ends its turn, a Go gate can run for minutes with nothing on screen; status and the loom-status strand name the gate and its runtime
