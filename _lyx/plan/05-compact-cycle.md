@@ -41,7 +41,7 @@ Watcher, compact mode only:
   Restart: an unconfirmed injection is typed again only when the idle probe passes and no qualifying boundary has been read.
 - No handoff file is written and `LastHandoff` is untouched; DEFER handling never runs in compact mode.
 
-Bound: compact mode drops the DEFER handshake, so a background task's in-flight completion has no handshake protecting it if it does not survive `/compact`; `cycle_mode: clear` restores the handshake, and card 11's smoke test asserts a completion survives.
+Bound: compact mode drops the DEFER handshake, so a background task's in-flight completion has no handshake protecting it if it does not survive `/compact`; `cycle_mode: clear` restores the handshake, and card 12's smoke test asserts a completion survives.
 The D8 hold delays the hard trigger by at most `SoftIdle()` per failed compaction.
 
 `watcher_test.go`'s shared env sets `CycleMode` to clear, so the existing four-phase tests run unchanged apart from stencil text, and its fake gains `CompactSession` recording `compact:<focus>`.

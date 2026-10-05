@@ -13,7 +13,7 @@
 Take watcher re-arming out of the orch stencils and teach the session the batten notice rule (D11, D14).
 
 - Start stencil: the orch relies on driver messages and batten notices and never starts a polling shell or Monitor for a run; a line starting with `[batten notice]` is a batten notice, checked with `lyx batten status <slug>` and acted on.
-  It also says how the context is cycled without assuming `/clear`, since compact mode is the default.
+  Since compact is the default cycle (D5, D6), it also drops any wording that assumes `/clear` is how the context is cycled, and adds nothing beyond that correction.
 - Resume stencil: drop "check each watcher it lists before re-arming it", and add the same no-watcher rule in one clause.
 - Adopt stencil: add that the previous process's background shells and Monitors are gone and none is re-armed, plus the no-watcher rule.
 - Handoff and soft handoff stencils: drop the watcher list; the soft stencil keeps its DEFER rule.

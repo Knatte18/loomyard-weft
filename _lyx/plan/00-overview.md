@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -9,6 +9,7 @@ language: go
 `lyx orch` cycles its context on a fresh reading, by `/compact` or `/clear` as `orch.yaml`'s `cycle_mode` says, and the hub runs under it for days without hand repair.
 A compaction boundary becomes a context reading read from the transcript's end, the watcher re-reads before firing, compact becomes the default cycle, `permission_mode` narrows to `bypass`, and batten tells the orch about run changes through a notice queue that only the orch watcher types from, so the orch keeps no watcher of its own.
 The hardening items follow: a reset reading on adopt, PID reuse at adopt, a named hold for a too-short pane, and smoke coverage.
+One obligation sits outside the cards: at landing, the `orch-owns-the-loop` board entry's "A watch command" section is amended, since cards 7 to 9 cover it.
 
 ## Card Index
 
