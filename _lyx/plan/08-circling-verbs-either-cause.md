@@ -10,8 +10,8 @@
 - `internal/loomcli/circling_integration_test.go`
 
 **Uses:**
-- `plan:internal/shedadapters#EscalationCause`
-- `plan:internal/shedadapters#readEscalation`
+- `internal/shedadapters#EscalationCause`
+- `internal/shedadapters#readEscalation`
 
 **Intent:**
 D7: `lyx loom circling accept|continue` accept an escalation of either cause, and the decision file records the cause beside the decision.

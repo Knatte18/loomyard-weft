@@ -4,9 +4,9 @@
 - `internal/shedadapters/round.go`
 
 **Create:**
-- `plan:internal/shedadapters#EscalationCause` -> `type EscalationCause string`
-- `plan:internal/shedadapters#writeEscalation` -> `func writeEscalation(runDir string, round int, cause EscalationCause, brief, notice string) error`
-- `plan:internal/shedadapters#readEscalation` -> `func readEscalation(runDir string, round int) (EscalationCause, string, bool, error)`
+- `internal/shedadapters#EscalationCause`
+- `internal/shedadapters#writeEscalation`
+- `internal/shedadapters#readEscalation`
 - `internal/shedadapters/escalation.go`
 - `internal/shedadapters/escalation_test.go`
 

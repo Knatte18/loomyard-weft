@@ -13,9 +13,9 @@
 - `internal/shedadapters/bouncer_escalation_test.go`
 
 **Uses:**
-- `plan:internal/shedadapters#EscalationCause`
-- `plan:internal/shedadapters#writeEscalation`
-- `plan:internal/shedadapters#readEscalation`
+- `internal/shedadapters#EscalationCause`
+- `internal/shedadapters#writeEscalation`
+- `internal/shedadapters#readEscalation`
 - `contracts/stencils/bouncer/bouncer-template-escalation.md`
 - `contracts/stencils/bouncer/bouncer-template-parent-notice.md`
 - `internal/shedengine/producer.go`

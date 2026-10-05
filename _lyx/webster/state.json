@@ -1,6 +1,6 @@
 {
   "runGuid": "77587a95023cb1e3657cb9c550b95efa",
-  "planFingerprint": "e53babe6e16060c83437949315b7d331846feec0fbc92aead1491ccc83654c70",
+  "planFingerprint": "a876ee2ff67fd8f8477e2404610e65e2100981993840dfac66a3b1a6fabad32e",
   "planFileHashes": {
     "00-overview.md": "ad26ad65604901bb4a8c8e7cb372ea65367a53421fc7117f9f9a167d5e6e6900",
     "01-ledger-finding-labels.md": "e6e7a4b0e20c6408f443aaea68aaf22edad6e141ff073c07e93b71dac0b15190",
@@ -9,10 +9,10 @@
     "04-review-budget-from-config.md": "a5cc5470d42b126137c0e2b84f9b4a9d0670b12cc1acd89b16ebbaf32a20507a",
     "05-shed-parent-notice.md": "b0af028bd552ac4b5f3434d09cb75ab89b94171cf82f1153a79552f4def43a69",
     "06-escalation-stencils.md": "c5cd08d50ca095db9a4227bebeda85b0d466563a494b86e72f600e84d861569a",
-    "07-escalation-record.md": "d325e374bbf68b5b61ad052943aa442a507dedb2cdb3d168a35233a6edbf214d",
-    "08-circling-verbs-either-cause.md": "f671cc36e20638b602f208863ad85dbde2693ce3f9c14b1847efaf5ef2abe305",
+    "07-escalation-record.md": "ca7a3e1d2ef18b87ab5887f4af8b6f6a9812804b4044ad26bbe07e5f0e013003",
+    "08-circling-verbs-either-cause.md": "72d55746278397abc16c71c7567cbd9a081322f5bacf3ecbac37895c6de28f45",
     "09-checkpoint-judging.md": "d858428f16448876f47a6fd30be822ef7a0ed2e496aef425ecd8c20f8ae9c71f",
-    "10-bouncer-escalation.md": "6096097b06271179cd06f6a86c07e6bd7f6529b1ecefd72f63eac99a2806f295",
+    "10-bouncer-escalation.md": "2707abc5c44879c4edde6f4e54d5c65e17c5de92a502ffc6e9a800aafc381efc",
     "11-burler-exempt-round.md": "87d1e4dfd04388a092a0d8b3acef78bc73d566555ae8afd39ebdda4d318500fe",
     "12-decision-append.md": "489307f805d156b45845aba3101d0aac486e8869560f674325512ee5fa0e2ff0",
     "13-decision-add-verb.md": "9e603f79c6e4c8b4a463ccf597882fd542a250758acc1734f0989e1bb035f7ac",
@@ -20,7 +20,7 @@
     "15-drop-recurring-finding.md": "d5ae19c6e90e324060b3f5bace61f7d8aa350476171db7ad7e1db33f62657d00",
     "16-smoke-strand-matching.md": "2561563bef9c09ccbff8c57dee8012eed1a900fcb7f1bf6df26e63d0723de55e"
   },
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "d2c3e84d54a38997316f661377dc5bc2",
   "masterSessionId": "c05a239b-17ca-4c59-acd3-85fb643ebb30",
   "assertedModel": "sonnet",
@@ -190,14 +190,25 @@
         "07-escalation-record"
       ],
       "cardHashes": {
-        "07-escalation-record": "d325e374bbf68b5b61ad052943aa442a507dedb2cdb3d168a35233a6edbf214d"
+        "07-escalation-record": "ca7a3e1d2ef18b87ab5887f4af8b6f6a9812804b4044ad26bbe07e5f0e013003"
       },
       "startSha": "12e72a90fe44f728f34f1e537aec8d841060a9ce",
       "kind": "fork",
       "spawnedAt": "2026-10-05T08:23:04Z",
       "sessionId": "c05a239b-17ca-4c59-acd3-85fb643ebb30",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-escalation-record",
+        "status": "done",
+        "head_sha": "f3aabe344b440e3f609b8afe341256f0c562549f"
+      },
+      "cardShas": [
+        "f3aabe344b440e3f609b8afe341256f0c562549f"
+      ],
+      "forkTranscripts": [
+        "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-a9239d57bf1eca848.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
@@ -206,6 +217,7 @@
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-a0d62a47fc3bc74fb.jsonl",
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-a8241e0b850c0375d.jsonl",
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-ac03bfd3ba71a6016.jsonl",
-    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-afe74ac21a0155bc4.jsonl"
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-afe74ac21a0155bc4.jsonl",
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-a9239d57bf1eca848.jsonl"
   ]
 }
