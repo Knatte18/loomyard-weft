@@ -13,6 +13,7 @@ In:
 - Board CLI gaps: `lyx board get --body`, `lyx board merge --body-file`, issue carry-over on merge, the slug length limit in help.
 - The `ly:board` skill documents all of the above and the labels principle.
 - The CLI tree exceptions still recorded: `lyx config` (bare), `lyx config bogus`, `lyx selfreport bogus`.
+- Removing the interactive `lyx config` picker, and deleting the `cliTreeFindings` allowlist once it is empty.
 
 Out:
 
@@ -29,6 +30,7 @@ Decision: both keys in `board.yaml` hold a YAML mapping, label to one-line descr
 They are stored alike; `types` keeps its meaning (a note carries exactly one, a task one or more) and differs only in how it is rendered.
 `boardengine` decodes each into an ordered list of (name, description) pairs in file order, never a Go `map`, because the README renderer sorts Notes sections by the configured type order.
 Validation checks names only, as today; a description may be empty.
+Decode refuses a value that is neither a map nor a sequence of names, and a non-scalar description, with an error naming `board.yaml` and the key.
 Template defaults: `types` holds `bug` and `enhancement` with generic descriptions; `labels` is an empty map, and `undecided` leaves the template.
 Rationale: the operator asked for a map for both; ordered decoding keeps the renderer's type order; `undecided` contradicts the labels principle (an entry that belongs to no module carries no label), and the template is a generic default for any repo, so it seeds no module labels.
 
@@ -51,6 +53,8 @@ For an open-map path P, `yamlengine` applies the rule it already applies to list
 
 Bound: the rule applies only to the declared paths; every undeclared mapping keeps today's exact-key behavior, so a typo in an ordinary key is still reported.
 `Set` under P writes scalar values only; removing a label stays an editor edit.
+What it lets through, by design: `MissingKeys` no longer inspects the value at P, and `--set labels.<name>=…` with a mistyped `<name>` creates a new label instead of refusing; `boardengine`'s decode (D1) is the only shape check on P.
+`Set` under a P whose existing value is a legacy list (D2) refuses with an error that says to rewrite the value as a map, and never converts the list; reconcile still carries that list whole.
 Rationale: without it, reconcile reports every repo-specific label as removed and `--apply` deletes it, and load re-inserts or demands the template's default labels, so a map of user-chosen keys cannot survive the existing machinery.
 
 ### D4 — `lyx board labels`
@@ -75,8 +79,9 @@ Rationale: parity with `upsert`; the hub hand-built JSON to get a multi-line bod
 ### D7 — A merge carries the removed entries' issues
 
 Decision: `MergeTasks` sets the upserted entry's `issues` to its own resulting `issues` (after the patch is applied) followed by each removed entry's `issues`, in `remove_slugs` order, dropping duplicates and keeping first occurrence.
-It applies whether or not the payload names `issues`.
+It applies whether or not the payload names `issues`, and runs before `validateWrite`, so the validated entry is the final one.
 Bound: a merge can only add issue numbers that a removed entry recorded; it never drops one the payload or the existing entry holds.
+A carried number that an untouched third entry also records is carried as-is: uniqueness across entries is not enforced by `validateWrite`, and the merge adds no such check.
 A `remove_slugs` name that matches nothing contributes nothing, as today.
 Rationale: GitHub provenance must survive folding notes into a task; intake's own uniqueness rule then sees each issue recorded by exactly one entry.
 
@@ -90,7 +95,8 @@ Rationale: the hub learned the limit only from a refused import; deriving the te
 Decision: bare `lyx config` prints the command's help, naming `reconcile` and every module in `configreg`, and exits 0 without resolving a cwd.
 The interactive numbered picker in `internal/configcli/menu.go` is removed.
 `lyx config <arg>` where `<arg>` is neither a subcommand nor a `configreg` module refuses before cwd resolution with an error envelope, exit 1, whose message contains `unknown subcommand`, names the argument and says `run "lyx config" to list modules and verbs`.
-`lyx config <module>` keeps today's behavior.
+An argument that is a subcommand always routes as one, and no module may share a subcommand's name.
+`lyx config <module>` keeps today's behavior, and bare `lyx config` with `--print` or `--set` keeps its present path, which resolves a cwd.
 Rationale: the CLI invariant in `PATTERN-cli-cobra` requires a bare group to list and an unknown subcommand to refuse; the picker duplicated what the listing now shows, and `lyx config <module>` remains the way to edit one.
 
 ### D10 — `lyx selfreport bogus` refuses
@@ -142,8 +148,7 @@ Rationale: CLAUDE.md's docs-land-in-the-same-commit rule; `PATTERN-documentation
 
 - R1: until the operator rewrites each worktree's `board.yaml` as maps, `lyx board labels` shows empty descriptions there; the label choice the feature exists for only improves once the prime's file carries them.
 - R2: `lyx config reconcile --apply` run by an older `lyx` binary after a file is rewritten as maps would treat the repo labels as removed keys; the deploy moves every machine's binary at once, so the window is a stale `.dev-bin` or a second machine.
-- R3: burler's `lenses` and `fans` keep today's exposure (repo-local lenses read as removed by reconcile); D3's declaration would fix them with one line each, outside this task.
-- R4: the open-map declaration has to reach `configengine.Load` from `boardengine` and `configsync` from `configreg` without an import cycle between `configreg` and the engines; the Plan settles the exact path.
+- R3: the open-map declaration has to reach `configengine.Load` from `boardengine` and `configsync` from `configreg` without an import cycle between `configreg` and the engines; the Plan settles the exact path.
 
 ## Acceptance criteria
 
