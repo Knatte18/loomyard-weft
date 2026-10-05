@@ -919,6 +919,21 @@
       "isolated": false,
       "brief": "lyx types each skill as its own slash-command turn, each ending in chatter; one typed message loads them all through the Skill tool in one turn",
       "body": "Since `70bf30ae8`, `claudeengine` types each of a role's skills as its own `/\u003cname\u003e` turn before the prompt pointer (`shuttleengine.Spec.Skills`).\nEach turn is a full model turn that ends in a reply like \"Loaded scribe:prose … What would you like to work on?\", so a role with three skills spends three slow turns of chatter before it reads its task.\nSeen 2026-10-05 on `ly:selfreport-issues-say-nothing:burler`; the operator: loading the skills is right, but all of them should load at once.\n\nClaude Code treats only a message's leading `/\u003cname\u003e` as a command, so several skills cannot share one typed message.\nKeep the guarantee that every skill is loaded, without a turn per skill:\n\n- Chosen: one typed message asking the model to load every listed skill through the Skill tool in a single turn and reply only \"ok\".\n  Loaded skills are registered as such, so Claude Code re-injects them after a compaction, and the instructions arrive as user input.\n  lyx checks the transcript for each skill's load and retries a missing one.\n- Rejected: inlining the skill bodies into the prompt file.\n  It costs no turn, but the text arrives as a Read result rather than user input, and a compaction summarizes it away instead of re-injecting it, which matters for long-lived sessions such as the Webster master.\n\nThe orch watcher types its skills the same way at each cycle; the same fix applies there.\n"
+    },
+    {
+      "id": 131,
+      "slug": "prose-line-breaks-in-review",
+      "title": "Implementers hard-wrap comments and reviews re-find it every round",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "webster"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Bouncer re-finds hard-wrapped Go comments across rounds; catch it in the card gate or the implementer stencil",
+      "body": "Webster implementers keep writing prose against `scribe:prose`'s line-break rule, and the Webster-Bouncer re-finds it round after round.\nSeen in `board-labels-and-skills` (closed issues #372 and #373, filed by the removed Go anomaly reporter): `hard-wrapped-go-comments` stayed open in rounds 1, 2 and 4, and `independent-clauses-on-one-line` in rounds 2–4.\nEach round spends a Burler fix and a Bouncer judgment on formatting the tooling could catch.\n\nOptions to settle in Discussion:\n\n1. A guard test or `lyx` lint that flags fixed-column-wrapped comment blocks in changed Go files, run in the card gate, so the implementer fixes it before review.\n2. The implementer stencil loads `scribe:prose` (or inlines its line-break rule), if it does not already.\n\nCheck first whether the stencils from `lyx-skills-and-stencils` already fixed it for new runs.\n"
     }
   ],
   "legacy_done": [

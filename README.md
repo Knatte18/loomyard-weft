@@ -97,6 +97,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Stacked layout stays as VIEW; a strand button or Alt+arrows zooms one strand; runs as session tabs below; reed pins it at boot
 1. **A spawned role loads all its skills at once, not one turn per skill** — [`skills-in-one-turn`](design-skills-in-one-turn.md) · enhancement, shuttle, stencil
    - lyx types each skill as its own slash-command turn, each ending in chatter; one typed message loads them all through the Skill tool in one turn
+1. **Implementers hard-wrap comments and reviews re-find it every round** — [`prose-line-breaks-in-review`](design-prose-line-breaks-in-review.md) · enhancement, webster
+   - Bouncer re-finds hard-wrapped Go comments across rounds; catch it in the card gate or the implementer stencil
 
 ### Features
 
