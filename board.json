@@ -155,21 +155,6 @@
       "body": "## Goal\n\nThe parent-review gate holds its promises in the cases the first version left open: the wait bound fires even when the writer never ends its turn, no gate send lands inside a writer turn after a restart, and a live hand-started hub is proven to receive the notice.\n\n## From the PR #336 review (2026-10-02)\n\n- **Live smoke.** The smoke test uses a stub writer that records the typed line, so the SendMessage hop to a real hand-started parent has never run; run it once live.\n- **Wait bound off the boundary.** Expiry is checked only at a writer turn boundary (`internal/shuttleengine/wait.go`, `gateAtBoundary`), so a writer stuck mid-turn (for example on a permission prompt for `lyx loom review delivered` in interactive mode) holds the run until `discussion_timeout_min` instead of `parent_review_wait_min`; expiry needs no send, so evaluate it on every tick.\n- **Mid-turn sends after a restart.** `AttachGated` replays events from offset 0, so the first tick treats the writer as idle even mid-turn: a notify-carried prompt or a reject re-prompt can be typed into a running turn, and a consumed reject is let through while the writer is still fixing.\n- **Turns the loop cannot see.** A turn started by the parent replying to the writer through SendMessage, or by the operator typing, leaves the loop at a boundary; tell the orch fork not to reply to the writer.\n- **Poll cost.** While pending at a boundary every 500 ms tick re-runs `discussionparser.Validate`, three locked JSON reads and a `MkdirAll`; throttle re-evaluation to a few seconds.\n- **Way-forward from the prime.** The no-open-request refusal names `lyx loom status \u003crun\u003e`, which cannot address the child from the prime; name `lyx batten status` there.\n- **`approve --review` and an empty file.** The refusal spec says it refuses a missing or empty file, the code only a missing one; align them.\n- **Entry order.** `shedrecipe` does not require `parent-review` to be the gate list's last entry; a must-pass entry after it would be `not_reached` at a deadline finalize while the review is pending.\n- **`delivered` after a verdict** can write `delivery.json` after the discussion commit and leave `_lyx` dirty until the next status commit.\n- **Round numbers** grow on every fresh spawn with no reviewer (empty `round-N/`, never committed).\n- **Review scope.** The brief says \"Do not re-review the design's internal quality\", narrower than millhouse's `orch-review`; confirm with the operator.\n"
     },
     {
-      "id": 47,
-      "slug": "orch-live-hardening",
-      "title": "lyx orch runs for days without hand repair",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "orch"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Adopt keeps watchers, permission modes mean what they say, attach keeps the orch window size, large-session adopt is tested, status reads the current session",
-      "body": "## Goal\n\nThe hub runs under `lyx orch` for days without hand repair: an adopt keeps the hub's watchers, the orch pane keeps its height, permission modes mean what they say, and a long transcript stays cheap to read.\n\n## From the PR #337 review (2026-10-02)\n\n- **Watchers after adopt.** The hub's background shells and Monitors die with the session it exits; `orch-template-adopt.md` does not tell the resumed session they are gone or to re-arm them.\n- **Window size on attach.** With `window-size latest`, a `reed attach` from VS Code resizes the orch window to that client (seen on the PR #342 review, after #340's folderOpen fix landed).\n- **`permission_mode: prompt`** adds no flag, so the session falls back to the user's `defaultMode` (`auto` here); the template comment and the orchengine doc promise prompts.\n- **Smoke bypass check** proves nothing where `~/.claude/settings.json` allows `Bash`; assert the bypass footer or use a tool outside the allow list.\n- **Large-session adopt** is untested: startup within `startup_timeout_s` and any resume dialog on a real hub transcript (decision record, open risk 2).\n- **Stale context reading.** `ResetForFreshLaunch` keeps `LastContextTokens`, so `status` shows the previous session's reading until the first turn end after an adopt.\n- **PID reuse** can refuse an adopt falsely; the registry's `procStart` tells a reused pid apart.\n- **Transcript read cost.** `ContextTokens` reads the whole transcript on every idle turn end; read from the end.\n\n"
-    },
-    {
       "id": 48,
       "slug": "hardener",
       "title": "Hardener: an autonomous behavior-review campaign that replaces crucible",
@@ -214,22 +199,6 @@
       "isolated": false,
       "brief": "Every orch and batten verb refuses outside the prime; let a long-lived personal worktree be an orch's home, with pairs branching from and landing into its branch",
       "body": "## Why\n\nThe operator works long-term on a branch of their own in its own worktree, not on `main`, which in a large project is not theirs to drive; that worktree is where they want their orch.\nToday every `lyx orch` verb refuses outside the hub's prime (`internal/orchcli/refusal.go`), every batten verb does too (`RefuseUnlessPrime` in `internal/battencli`), and orch keeps its files under the prime's `.lyx/orch/`.\nRun parentage already follows the worktree a pair was created from (`aa67fd1d7`, #341), so a pair created from the operator's worktree would land there; orch and batten are what stand in the way.\n\n## Want\n\n- `lyx orch` and `lyx batten` run from any drivable worktree in the hub, which then acts as that orch's home: pairs branch from its branch and land into it, and orch's scratch, handoffs and reed strand live in that worktree.\n- More than one orch per hub, one per home worktree, without stepping on each other's pairs, board claims or reed sessions.\n\n## Open points\n\n- What \"prime only\" protects today and whether any of it must stay prime-bound (board writes, deploy, `lyx board prune`, the hub workspace).\n- How a home worktree's branch reaches `main` (the operator's own merge, or a landing verb), and whether the board is per hub or per home.\n- What the relevant CONSTRAINTS.md invariants say about prime (batten's prime-anchored status and lock paths, Told-Geometry) and how they change.\n"
-    },
-    {
-      "id": 52,
-      "slug": "orch-cycle-compact",
-      "title": "Orch cycle mode as config: clear or compact",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "config",
-        "orch"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Cycling by /compact keeps the session and its Remote Control link; make clear/compact a config option",
-      "body": "Seen 2026-10-03: the orch's context cycle uses `/clear` plus a handoff file, which starts a new conversation and may drop a Remote Control link the operator relies on from a phone.\nCycling through `/compact` keeps the same session, so Remote Control and session identity survive.\nIdea (operator): the cycle mode as a config option, `clear` or `compact`; weigh what the handoff file gives that a compaction summary does not.\n"
     },
     {
       "id": 53,
@@ -674,21 +643,6 @@
       "body": "From `manifest/roadmap.md` Someday.\nCopy Claude `.jsonl` transcripts across machines so `--resume` works elsewhere."
     },
     {
-      "id": 89,
-      "slug": "orch-compact-stale-reading",
-      "title": "Orch watcher cycles on a stale reading after /compact",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "orch"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A /compact leaves the pre-compaction token reading in place, so a soft cycle fires on a near-empty context",
-      "body": "On 2026-10-04 the operator ran `/compact` in the orch session at 10:09:49Z.\nIt finished at 10:11:15Z (`compact_boundary`, trigger manual, preTokens 354815, postTokens 13673).\nAt 10:14:53Z the watcher sent the soft-cycle stencil and then cleared and resumed the session from a handoff, although the context held about 14k tokens.\n`state.json` afterwards shows `cycle_trigger: soft`.\n\nCause: the watcher updates `LastContextTokens` only at a turn end (`internal/orchengine/watcher.go`, the `ContextTokens(ev)` call per turn-end event).\nA `/compact` produces no turn end, so the reading stayed at the pre-compaction 354815, above `soft_threshold_tokens` (300000), and the soft trigger fired once `soft_idle_s` had passed.\n`transcriptContextTokens` in `internal/shuttleengine/claudeengine/usage.go` would return the same stale number even if re-read, since it takes the last main-chain assistant entry's usage, which is still the pre-compaction one.\n\nExpected: a manual compaction resets the reading, so the operator's `/compact` is not followed by a cycle.\nOptions: treat a `compact_boundary` entry newer than the last assistant entry as the reading (its `postTokens`), and re-read the transcript before firing a soft or hard trigger rather than trusting the stored turn-end reading.\nThe same applies to Claude Code's own auto-compaction (a residual named in `internal/orchengine/doc.go`).\n\n\nFrom GitHub #356 (intake 2026-10-04).\n"
-    },
-    {
       "id": 90,
       "slug": "webster-delete-already-gone",
       "title": "Webster blocks when a Delete target is already gone",
@@ -717,38 +671,6 @@
       "isolated": false,
       "brief": "deriveEdges has no edge from a deleted symbol to the cards editing its callers",
       "body": "Seen 2026-10-03 in the `pair-lifecycle` run: Webster scheduled card 12 (`delete-half-removed-helpers`, which deletes `fabricengine.Topology.RemovePairBranch`, `PairBranchResult` and `PairSiblingRemnant`) before card 11, the card that removes their only production caller in `internal/battencli/wire.go`.\nThe batch then failed, with `recover-batch` refusing because the delete targets still resolve, and the run blocked at Webster.\n\n`websterengine.deriveEdges` (`internal/websterengine/sequence.go`) orders card B after card A only when B's Uses names one of A's targets, or when A and B share a target and A has the lower number.\nA card that deletes a symbol has no edge to the cards that edit its callers, because the callers appear in neither field.\nPlan review did not catch the missing ordering either.\n\nPossible fixes:\n- Derive an edge from a Delete target to every card that edits a member referencing it, resolved through quarry.\n- Have plan validation refuse a Delete whose symbol is still referenced from a member that a lower-numbered card edits, unless an edge already orders them.\n\n\nFrom GitHub #350 (intake 2026-10-04).\n"
-    },
-    {
-      "id": 92,
-      "slug": "cli-tree-exceptions",
-      "title": "Five CLI invariant exceptions in board notes, config, selfreport",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "board",
-        "config",
-        "selfreport"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Fix the verbs the CLI tree walk records as exceptions and drop them from cliTreeFindings",
-      "body": "Part 2 of the test-suite cleanup (#347) added a CLI tree walk that checks every verb against the CLI invariant.\nIt records five exceptions in `cliTreeFindings` that pin existing behavior which breaks the invariant:\n\n- `lyx board notes` (bare) and `lyx board notes bogus` print an extra \"not initialized here\" envelope.\n- `lyx config` (bare) and `lyx config bogus` refuse with \"not a git repository\" before listing subcommands or refusing the unknown one.\n- `lyx selfreport bogus` exits 0 and prints help instead of refusing the unknown subcommand.\n\nFix each verb and remove its entry from `cliTreeFindings`, so the walk enforces the invariant for it.\n\n\nFrom GitHub #349 (intake 2026-10-04).\n"
-    },
-    {
-      "id": 93,
-      "slug": "loomcli-smoke-failures",
-      "title": "loomcli smoke tier: five bootstrap/strand tests fail on main",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Five smoke tests find no loom-status or driver strand; stale tests or a bootstrap regression",
-      "body": "`go test -tags smoke ./internal/loomcli/` fails five tests on `main` (seen 2026-10-03 at `6a74ee1be`, during the PR-Gate review of #347, which fails the same five).\nEach expects one `loom-status` or driver strand and finds none:\n\n- `TestSmokeBootstrap_BringsUpSessionStrandAndDriver` — `smoke_test.go:530`: status strands named \"loom-status\" = 0; want exactly 1\n- `TestSmokeBootstrap_SecondInvocationDoesNotSpawnASecondDriver` — `smoke_test.go:592`: status strands named \"loom-status\" after two bootstraps = 0; want exactly 1\n- `TestSmokeDriverStrand_ReentrantAcrossThreeBootstraps` — `smoke_driverstrand_test.go:216`: driver strands after the first bootstrap = 0; want exactly 1\n- `TestSmokeStep_LeavesAPreexistingStatusStrandUntouched` — `smoke_drivingsurface_test.go:100`: status strand guids after step = []; want exactly the one added before the step\n- `TestSmokeStart_LLMRunRemovesEveryStatusStrand`\n\nEither the smoke tests are stale against the current bootstrap, or bootstrap no longer brings up the status and driver strands it should.\nNothing runs the smoke tier in the normal verify, so the failures went unnoticed.\n\n\nFrom GitHub #348 (intake 2026-10-04).\n"
     },
     {
       "id": 94,
@@ -782,22 +704,6 @@
       "isolated": false,
       "brief": "Live config is in weft and task weft dies at landing; carry config changes or make the hub step explicit",
       "body": "Seen 2026-10-04 twice: `pattern-init` first planned to keep PATTERN under `_lyx/` and needed a landing carry (dropped by moving PATTERN to warp), and `board-model`'s parent review found its D13 label list written into the pair's `_lyx/config/board.yaml`, which never reaches the parent.\nLive config lives in weft, and a task's weft branch dies at landing, so any config change a task makes is lost unless the hub re-applies it by hand on main's weft.\nIdea: either a landing step that carries `_lyx/config/` changes into the parent's weft (with a conflict stop), or task-made config changes declared in the PR description and applied by the hub as a checked step.\n"
-    },
-    {
-      "id": 96,
-      "slug": "circling-to-parent",
-      "title": "CIRCLING escalates to the parent orchestrator, later and on recurrence only",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "loom",
-        "orch"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Round-2 CIRCLING on a rising finding count halted board-model for a human; judge later, on unchanged recurrence, and escalate to the parent",
-      "body": "Seen 2026-10-04 in `board-model`: Discussion-Bouncer judged round 2 CIRCLING because gating findings rose from 1 to 2, both in the D10 intake bound that round 1's fix had widened; the run halted for a human.\nThe hub settled it with five short design calls and the run went on; no operator input was needed.\nOperator (2026-10-04): halting on that is disproportionate.\nIdea: CIRCLING is judged no earlier than round 3 and only when the same finding keys recur unchanged, not on a rising count; and a CIRCLING verdict escalates to the parent orchestrator like a parent-review request (message, fork decides accept/continue with design calls), reaching the operator only when the parent cannot settle it.\nRelated: `post-discussion-additions` (a verb for the parent's decisions to enter the decision record, instead of the driver editing it by hand).\n"
     },
     {
       "id": 97,
@@ -847,54 +753,6 @@
       "body": "Operator 2026-10-04: the prime's `.vscode/` was copied by hand from millhouse (title \"LYXHUB\", millhouse keys, a mill `launch.json`); lyx should seed it instead, and the setup should fit the orchestrator workflow.\nAssume no `.vscode/` exists beforehand, or that it may be deleted and re-seeded by lyx.\n\n- Window title: `\u003cSHORTNAME\u003e: \u003cname\u003e` from `.lyx-shortname`, upper-cased: `LY: prime` for the prime, `LY: \u003cslug\u003e` for pairs (today `internal/vscode/config.go` writes the bare slug).\n- Prime folderOpen chain: `reed up` then `reed attach` only; no `reed add claude` (it adds a plain Claude strand the orchestrator workflow does not use).\n- Prime tasks run on demand: \"lyx: orch start\" (`lyx orch start`: launches or attaches the orchestrator and takes the terminal) and \"lyx: open board\" (opens the board viewer, see `board-viewer`).\n- Keybindings: lyx writes a `// lyx:begin` … `// lyx:end` block into the user `keybindings.json`, the way mill writes its `// mill:begin` block (mill holds Alt+Shift+1–6), e.g. Alt+Shift+0 for orch start and Alt+Shift+9 for open board, binding `workbench.action.tasks.runTask` to the task labels.\n- No `launch.json`: mill used it to run Python scripts through the debugger; lyx is a binary, so tasks are the mechanism.\n- Pairs keep their current chains (driven: attach only).\n"
     },
     {
-      "id": 102,
-      "slug": "discussion-recurring-finding",
-      "title": "Discussion-Bouncer finding stays open across three rounds",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "loom"
-      ],
-      "issues": [
-        359
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #359](https://github.com/Knatte18/loomyard/issues/359).\n\n## recurring-finding: a ledger finding stayed open across multiple rounds\n\n**Slug:** board-model\n**Parent:** main\n\n**State:** \n**Current producer:** \n\n**Error:**\n```\n\n```\n\n**History:**\nno history entries\n\n**Recurring finding:**\n- Bouncer row: Discussion-Bouncer\n- Ledger key: fold-target-semantics-open\n- Rounds: [1 2 3]\n- Status: open\n"
-    },
-    {
-      "id": 104,
-      "slug": "ly-drive-as-stencil",
-      "title": "The ly-drive skill becomes a stencil prompt",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "shed",
-        "stencil"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Drivers get their shed-step instructions from a stencil like every other lyx Claude process; ly:board stays the only skill",
-      "body": "The `ly:ly-drive` skill exists only to start the drivers that run a loom through Shed with repeated `lyx shed step`.\nNothing about that needs to be a skill: every other Claude process lyx spawns gets its instructions from a stencil prompt, and the driver should too.\n\n- Move ly-drive's content into a stencil under `contracts/stencils/` and have the launch prompt render it.\n- Remove the `ly-drive` skill from the `ly` plugin.\n\n`ly:board` stays a skill: it serves the operator's own sessions and the orchestrator, not a spawned process, and it becomes the only skill Loomyard ships.\n"
-    },
-    {
-      "id": 105,
-      "slug": "board-label-descriptions",
-      "title": "Board labels carry a description of what each covers",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "board"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "labels in board.yaml become label→description, printed by lyx board labels, so a caller can pick the right module label",
-      "body": "Board labels exist only to group entries that belong together, so suitable notes can be merged into one task.\nThey name the lyx module an entry mainly touches; an entry that belongs to no module carries no label.\n\nChoosing the label is not always obvious from the name alone: landing (Describe, Publish, PR-Gate, Finalize) is part of `loom`, Discussion and Plan are `loom`, the batcher is `webster`, glyphs are `quarry`.\nA YAML comment cannot carry that, since agents read the labels as a parsed list and `lyx config --set` rewrites the file.\n\n- `labels` in `_lyx/config/board.yaml` becomes a map from label to a one-line description of what it covers.\n- Validation keeps checking the keys only.\n- A `lyx board labels` verb prints each label with its description.\n- The `ly:board` skill tells the caller to read `lyx board labels` before choosing labels.\n"
-    },
-    {
       "id": 106,
       "slug": "webster-audit-recovery",
       "title": "Webster audit and verify-gate halts are recoverable by the agent",
@@ -910,6 +768,60 @@
       "isolated": false,
       "brief": "Hung-shell gate wait, unacceptable contract-file findings, garbled way-forward text, recoveries that need denied commands",
       "body": "# Goal\n\nA Webster run that halts on its run-exit audit or verify gate can always be recovered by the agent that receives the refusal, without the operator and without throwing away the run's batches.\nThese four notes stopped the `board-model` run on 2026-10-04.\n\n# Decision (operator, 2026-10-05)\n\nThe global deny on `git reset --hard` stays.\nEvery reset a lyx refusal or stencil names is performed by lyx itself, in Go, guarded to the run's own task branch and a commit the run recorded (its start commit or a batch head), refusing on the parent's branch and on uncommitted changes that are not the run's own.\nNo refusal, stencil or spec (`contracts/specs/refusal-spec.md` included) may name a command the agents are denied.\n\n\n## Webster verify gate waits forever when Master ends its turn with a hung background shell\n\nFrom note `webster-gate-hung-shell` (issues #361).\n\nImported from [issue #361](https://github.com/Knatte18/loomyard/issues/361).\n\nSeen 2026-10-04 in `board-model`: after the verify gate re-prompted Master at 17:07:33, Master's fixer fork fixed the failure and Master's turn ended at 17:11, but the step logged nothing more for 75 minutes.\nMaster's Stop events (`.lyx/shuttle/\u003cguid\u003e/events.jsonl`) all carried `background_tasks` with a shell in state `running`: `python3 - 2\u003e/dev/null; cat \u003e /dev/null \u003c\u003c'EOF' … EOF; grep …`, where `python3 -` sat reading stdin forever.\nThe gate apparently does not count a Stop with a running background task as a turn end, so one hung shell blocks the run indefinitely; an operator prompt at 18:25 produced another such Stop and changed nothing.\nKilling the `python3` process let the gate rerun verify at 18:26.\n\nExpected: a turn end whose only running background task is a shell (not a fork) still counts, or the gate bounds the wait and surfaces \"turn ended with background task X running\" to the driver, which today cannot see or stop it (ly-drive has no verb for it, and Webster's interrupt policy is handback).\nAlso: lyx agents should not run `python3` at all (operator rule); the agent settings shuttle writes could deny it.\n\n## accept-audit can never accept a fork-contract-write finding\n\nFrom note `webster-accept-audit-contract` (issues #363, #365, #360).\n\nImported from [issue #363](https://github.com/Knatte18/loomyard/issues/363).\n\nSeen 2026-10-04 in `board-model`: the run-exit audit flagged the verify-gate fixer fork for writing `_lyx/webster/outcome.yaml` (and `summary.md`), Master's contract files; Master had rewritten both afterwards.\n`lyx webster accept-audit` refused even after HEAD was reset to the last batch head and both untracked files were deleted (their state at that head): \"cannot be checked: …/_lyx/webster/outcome.yaml, …/summary.md; way forward: reset the branch to the run's start commit … and run lyx webster run --fresh\".\n`checkSuspectPaths` treats weft paths as unverifiable, so a `fork-contract-write` finding can never be accepted; the offered way forward throws away every batch (10 here).\nThe hub cleared `pendingAuditFindings` in `state.json` by hand to continue.\n\nExpected: a contract-file finding is acceptable once the contract files are absent (Master rewrites them at its next terminal turn), or the gate fixer is kept from writing them in the first place.\nRelated: #361 (the same run's gate hang).\n\n\n### From issue #365\n\nImported from [issue #365](https://github.com/Knatte18/loomyard/issues/365).\n\n`lyx webster accept-audit` refused to accept pending audit findings:\n\n```\nwebster: pending audit findings cannot be accepted: cannot be checked: _lyx/webster/outcome.yaml, _lyx/webster/summary.md; way forward: reset the branch to the run's start commit \u003csha\u003e with git and run \"lyx webster run --fresh\"\n```\n\nProblems:\n\n- The refusal says the two files \"cannot be checked\" but not why (missing, unreadable, changed since the audit, or not matching an expected state), so the caller cannot tell what to repair.\n- The only way forward offered is resetting the branch to the run's start commit and rerunning with `--fresh`, which discards the run's work.\n  There is no lighter path, such as regenerating the two files or re-running the audit.\n\nProvenance: task `board-model`, note `webster-refusal-accept-audit.md`.\n\n\n### From issue #360\n\nImported from [issue #360](https://github.com/Knatte18/loomyard/issues/360).\n\n### escalation-to-human: the run halted with no OnStuck target and needs a human\n\n**Slug:** board-model\n**Parent:** main\n\n**State:** blocked\n**Current producer:** Webster\n\n**Error:**\n```\nrun-exit audit found 2 correctness finding(s): fork wrote \"/home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/summary.md\" — outcome.yaml and summary.md are Master's own contract files; a fork writing either forges the run's terminal judgment; fork wrote \"/home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/outcome.yaml\" — outcome.yaml and summary.md are Master's own contract files; a fork writing either forges the run's terminal judgment; suspect paths: /home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/summary.md, /home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/outcome.yaml; way forward: reset the branch to the run's start commit with git and run \"lyx webster run --fresh\" and re-step the Webster row (lyx webster run), since nothing the run recorded can check /home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/summary.md, /home/knatte/Code/loomyard-LYXHUB/board-model/_lyx/webster/outcome.yaml\n```\n\n**History:**\n- Preflight / done / 2026-10-04T13:39:14Z\n- Loom-Preflight / done / 2026-10-04T13:39:23Z\n- Discussion-Write / done / 2026-10-04T13:44:33Z\n- Discussion-Bouncer / stuck / 2026-10-04T13:45:35Z\n- Discussion-Burler / stuck / 2026-10-04T13:47:21Z\n- Discussion-Bouncer / stuck / 2026-10-04T13:47:52Z\n- Discussion-Burler / stuck / 2026-10-04T13:49:53Z\n- Discussion-Bouncer / awaiting / 2026-10-04T13:50:28Z\n- Discussion-Bouncer / stuck / 2026-10-04T14:22:08Z\n- Discussion-Burler / stuck / 2026-10-04T14:23:49Z\n- Discussion-Bouncer / stuck / 2026-10-04T14:24:28Z\n- Discussion-Burler / stuck / 2026-10-04T14:25:42Z\n- Discussion-Bouncer / done / 2026-10-04T14:26:11Z\n- Plan-Write / done / 2026-10-04T14:33:18Z\n- Plan-Bouncer / stuck / 2026-10-04T14:33:52Z\n- Plan-Burler / stuck / 2026-10-04T14:37:55Z\n- Plan-Bouncer / stuck / 2026-10-04T14:38:40Z\n- Plan-Burler / stuck / 2026-10-04T14:40:05Z\n- Plan-Bouncer / stuck / 2026-10-04T14:41:02Z\n- Plan-Burler / stuck / 2026-10-04T14:41:55Z\n- Plan-Bouncer / done / 2026-10-04T14:42:27Z\n- Batchifier / done / 2026-10-04T14:42:36Z\n- Webster / stuck / 2026-10-04T16:26:41Z\n\n## Webster run-exit audit: way-forward text ends mid-sentence and repeats paths\n\nFrom note `webster-audit-way-forward-text` (issues #362).\n\nImported from [issue #362](https://github.com/Knatte18/loomyard/issues/362).\n\nWhen the Webster run-exit audit halts a run as `blocked` on forged contract files, the way-forward text it prints is garbled.\n\nThe halt note reads:\n\n\u003e way forward: reset the branch to the run's start commit with git and run \"lyx webster run --fresh\" and re-step the Webster row (lyx webster run), since nothing the run recorded can check `_lyx/webster/summary.md`, `_lyx/webster/outcome.yaml`\n\nThe final clause, \"since nothing the run recorded can check \u003cpaths\u003e\", names no consequence and reads as truncated.\nThe same two paths are also printed twice: once in each finding and again as \"suspect paths\".\nThe way forward also tells the operator to run `lyx webster run --fresh` and then `lyx webster run`, without saying whether the second command is a separate step or a restatement of the first.\n\nExpected: a complete sentence stating why the forged files cannot be trusted, and an unambiguous ordered list of commands.\n\nProvenance: task `board-model`, note `loom-halt.md`.\n\n## No recovery path needs a command the agents are denied\n\nFrom note `no-denied-recovery`.\n\nSeen 2026-10-03 in the `pair-lifecycle` run: Webster refused a plan fix for a failed batch.\nIts only named way forward was \"reset the branch to the run's start commit with git and run `lyx webster run --fresh`\" (see #350).\nThe driver, even in bypass mode, could not run `git reset --hard`, because `~/.claude/settings.json` denies `Bash(git reset --hard:*)` and a deny rule holds in every mode.\nThe run stopped until the operator ran the reset by hand.\n`contracts/specs/refusal-spec.md` prescribes `git reset --hard \u003cpre-fix head\u003e` for another halt as well.\n\nIdea (operator): a permission refusal must never stop the flow.\nEvery recovery a lyx refusal names must be doable by the agent that receives it.\nEither lyx performs the destructive step itself, in Go, guarded to the run's own branch and start commit (`webster run --fresh` resetting the branch, a `keep|drop` verb for the integration fix commits), or the agents' permission set is loosened for what lyx's recoveries need.\nAudit every refusal and stencil for commands the deny list blocks.\nRelated: `orch-live-hardening` (permission modes mean what they say).\n"
+    },
+    {
+      "id": 107,
+      "slug": "orch-cycle-hardening",
+      "title": "Orch context cycling and long-run hardening",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "enhancement",
+        "orch",
+        "config"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Fresh reading after /compact, clear-or-compact as config, and the adopt/attach/permission hardening list",
+      "body": "# Goal\n\n`lyx orch` cycles its context correctly and runs for days without hand repair.\nThe stale reading after `/compact` and the clear-or-compact choice live in the same watcher code, and the hardening list touches the same adopt and context-reading paths.\n\n\n## Orch watcher cycles on a stale reading after /compact\n\nFrom note `orch-compact-stale-reading`.\n\nOn 2026-10-04 the operator ran `/compact` in the orch session at 10:09:49Z.\nIt finished at 10:11:15Z (`compact_boundary`, trigger manual, preTokens 354815, postTokens 13673).\nAt 10:14:53Z the watcher sent the soft-cycle stencil and then cleared and resumed the session from a handoff, although the context held about 14k tokens.\n`state.json` afterwards shows `cycle_trigger: soft`.\n\nCause: the watcher updates `LastContextTokens` only at a turn end (`internal/orchengine/watcher.go`, the `ContextTokens(ev)` call per turn-end event).\nA `/compact` produces no turn end, so the reading stayed at the pre-compaction 354815, above `soft_threshold_tokens` (300000), and the soft trigger fired once `soft_idle_s` had passed.\n`transcriptContextTokens` in `internal/shuttleengine/claudeengine/usage.go` would return the same stale number even if re-read, since it takes the last main-chain assistant entry's usage, which is still the pre-compaction one.\n\nExpected: a manual compaction resets the reading, so the operator's `/compact` is not followed by a cycle.\nOptions: treat a `compact_boundary` entry newer than the last assistant entry as the reading (its `postTokens`), and re-read the transcript before firing a soft or hard trigger rather than trusting the stored turn-end reading.\nThe same applies to Claude Code's own auto-compaction (a residual named in `internal/orchengine/doc.go`).\n\n\nFrom GitHub #356 (intake 2026-10-04).\n\n## Orch cycle mode as config: clear or compact\n\nFrom note `orch-cycle-compact`.\n\nSeen 2026-10-03: the orch's context cycle uses `/clear` plus a handoff file, which starts a new conversation and may drop a Remote Control link the operator relies on from a phone.\nCycling through `/compact` keeps the same session, so Remote Control and session identity survive.\nIdea (operator): the cycle mode as a config option, `clear` or `compact`; weigh what the handoff file gives that a compaction summary does not.\n\n## lyx orch runs for days without hand repair\n\nFrom note `orch-live-hardening`.\n\n### Goal\n\nThe hub runs under `lyx orch` for days without hand repair: an adopt keeps the hub's watchers, the orch pane keeps its height, permission modes mean what they say, and a long transcript stays cheap to read.\n\n### From the PR #337 review (2026-10-02)\n\n- **Watchers after adopt.** The hub's background shells and Monitors die with the session it exits; `orch-template-adopt.md` does not tell the resumed session they are gone or to re-arm them.\n- **Window size on attach.** With `window-size latest`, a `reed attach` from VS Code resizes the orch window to that client (seen on the PR #342 review, after #340's folderOpen fix landed).\n- **`permission_mode: prompt`** adds no flag, so the session falls back to the user's `defaultMode` (`auto` here); the template comment and the orchengine doc promise prompts.\n- **Smoke bypass check** proves nothing where `~/.claude/settings.json` allows `Bash`; assert the bypass footer or use a tool outside the allow list.\n- **Large-session adopt** is untested: startup within `startup_timeout_s` and any resume dialog on a real hub transcript (decision record, open risk 2).\n- **Stale context reading.** `ResetForFreshLaunch` keeps `LastContextTokens`, so `status` shows the previous session's reading until the first turn end after an adopt.\n- **PID reuse** can refuse an adopt falsely; the registry's `procStart` tells a reused pid apart.\n- **Transcript read cost.** `ContextTokens` reads the whole transcript on every idle turn end; read from the end.\n"
+    },
+    {
+      "id": 108,
+      "slug": "loom-bouncer-rounds",
+      "title": "Bouncer CIRCLING escalates to the parent; loomcli smoke tier green",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "enhancement",
+        "loom",
+        "orch"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "CIRCLING judged later on unchanged recurrence and escalated to the parent orchestrator; fix the five failing loomcli smoke tests",
+      "body": "# Goal\n\nA Bouncer round loop does not halt a run for a human on something the parent orchestrator can settle, and the loomcli smoke tier is green on `main` before further loom runs depend on it.\n`discussion-recurring-finding` and `circling-to-parent` are the same `board-model` halt seen from the anomaly report and from the Bouncer's verdict.\n\n\n## Discussion-Bouncer finding stays open across three rounds\n\nFrom note `discussion-recurring-finding` (issues #359).\n\nImported from [issue #359](https://github.com/Knatte18/loomyard/issues/359).\n\n### recurring-finding: a ledger finding stayed open across multiple rounds\n\n**Slug:** board-model\n**Parent:** main\n\n**State:** \n**Current producer:** \n\n**Error:**\n```\n\n```\n\n**History:**\nno history entries\n\n**Recurring finding:**\n- Bouncer row: Discussion-Bouncer\n- Ledger key: fold-target-semantics-open\n- Rounds: [1 2 3]\n- Status: open\n\n## CIRCLING escalates to the parent orchestrator, later and on recurrence only\n\nFrom note `circling-to-parent`.\n\nSeen 2026-10-04 in `board-model`: Discussion-Bouncer judged round 2 CIRCLING because gating findings rose from 1 to 2, both in the D10 intake bound that round 1's fix had widened; the run halted for a human.\nThe hub settled it with five short design calls and the run went on; no operator input was needed.\nOperator (2026-10-04): halting on that is disproportionate.\nIdea: CIRCLING is judged no earlier than round 3 and only when the same finding keys recur unchanged, not on a rising count; and a CIRCLING verdict escalates to the parent orchestrator like a parent-review request (message, fork decides accept/continue with design calls), reaching the operator only when the parent cannot settle it.\nRelated: `post-discussion-additions` (a verb for the parent's decisions to enter the decision record, instead of the driver editing it by hand).\n\n## loomcli smoke tier: five bootstrap/strand tests fail on main\n\nFrom note `loomcli-smoke-failures`.\n\n`go test -tags smoke ./internal/loomcli/` fails five tests on `main` (seen 2026-10-03 at `6a74ee1be`, during the PR-Gate review of #347, which fails the same five).\nEach expects one `loom-status` or driver strand and finds none:\n\n- `TestSmokeBootstrap_BringsUpSessionStrandAndDriver` — `smoke_test.go:530`: status strands named \"loom-status\" = 0; want exactly 1\n- `TestSmokeBootstrap_SecondInvocationDoesNotSpawnASecondDriver` — `smoke_test.go:592`: status strands named \"loom-status\" after two bootstraps = 0; want exactly 1\n- `TestSmokeDriverStrand_ReentrantAcrossThreeBootstraps` — `smoke_driverstrand_test.go:216`: driver strands after the first bootstrap = 0; want exactly 1\n- `TestSmokeStep_LeavesAPreexistingStatusStrandUntouched` — `smoke_drivingsurface_test.go:100`: status strand guids after step = []; want exactly the one added before the step\n- `TestSmokeStart_LLMRunRemovesEveryStatusStrand`\n\nEither the smoke tests are stale against the current bootstrap, or bootstrap no longer brings up the status and driver strands it should.\nNothing runs the smoke tier in the normal verify, so the failures went unnoticed.\n\n\nFrom GitHub #348 (intake 2026-10-04).\n"
+    },
+    {
+      "id": 109,
+      "slug": "board-labels-and-skills",
+      "title": "Label descriptions, CLI tree exceptions, ly-drive as a stencil",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "enhancement",
+        "board",
+        "config",
+        "selfreport",
+        "shed",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "labels become labelâdescription with lyx board labels; fix the five cliTreeFindings exceptions; ly-drive moves into a stencil",
+      "body": "# Goal\n\nBoard labels say what they cover, the CLI tree walk has no recorded exceptions left, and the `ly` plugin keeps `ly:board` as its only skill.\n`board-label-descriptions` and `ly-drive-as-stencil` both edit `plugins/ly`.\n\nLabels principle (operator, 2026-10-05): labels exist only to group entries for merging into tasks; they name the lyx module an entry mainly touches, and an entry that belongs to no module carries none.\n\n\n## Board labels carry a description of what each covers\n\nFrom note `board-label-descriptions`.\n\nBoard labels exist only to group entries that belong together, so suitable notes can be merged into one task.\nThey name the lyx module an entry mainly touches; an entry that belongs to no module carries no label.\n\nChoosing the label is not always obvious from the name alone: landing (Describe, Publish, PR-Gate, Finalize) is part of `loom`, Discussion and Plan are `loom`, the batcher is `webster`, glyphs are `quarry`.\nA YAML comment cannot carry that, since agents read the labels as a parsed list and `lyx config --set` rewrites the file.\n\n- `labels` in `_lyx/config/board.yaml` becomes a map from label to a one-line description of what it covers.\n- Validation keeps checking the keys only.\n- A `lyx board labels` verb prints each label with its description.\n- The `ly:board` skill tells the caller to read `lyx board labels` before choosing labels.\n\n## Five CLI invariant exceptions in board notes, config, selfreport\n\nFrom note `cli-tree-exceptions`.\n\nPart 2 of the test-suite cleanup (#347) added a CLI tree walk that checks every verb against the CLI invariant.\nIt records five exceptions in `cliTreeFindings` that pin existing behavior which breaks the invariant:\n\n- `lyx board notes` (bare) and `lyx board notes bogus` print an extra \"not initialized here\" envelope.\n- `lyx config` (bare) and `lyx config bogus` refuse with \"not a git repository\" before listing subcommands or refusing the unknown one.\n- `lyx selfreport bogus` exits 0 and prints help instead of refusing the unknown subcommand.\n\nFix each verb and remove its entry from `cliTreeFindings`, so the walk enforces the invariant for it.\n\n\nFrom GitHub #349 (intake 2026-10-04).\n\n## The ly-drive skill becomes a stencil prompt\n\nFrom note `ly-drive-as-stencil`.\n\nThe `ly:ly-drive` skill exists only to start the drivers that run a loom through Shed with repeated `lyx shed step`.\nNothing about that needs to be a skill: every other Claude process lyx spawns gets its instructions from a stencil prompt, and the driver should too.\n\n- Move ly-drive's content into a stencil under `contracts/stencils/` and have the launch prompt render it.\n- Remove the `ly-drive` skill from the `ly` plugin.\n\n`ly:board` stays a skill: it serves the operator's own sessions and the orchestrator, not a spawned process, and it becomes the only skill Loomyard ships.\n"
     }
   ],
   "legacy_done": [

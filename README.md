@@ -13,6 +13,12 @@ Waits on nothing open; can start now, in parallel.
 
 1. **Webster audit and verify-gate halts are recoverable by the agent** — [`webster-audit-recovery`](design-webster-audit-recovery.md) · bug, enhancement, webster, shuttle
    - Hung-shell gate wait, unacceptable contract-file findings, garbled way-forward text, recoveries that need denied commands
+1. **Orch context cycling and long-run hardening** — [`orch-cycle-hardening`](design-orch-cycle-hardening.md) · bug, enhancement, orch, config
+   - Fresh reading after /compact, clear-or-compact as config, and the adopt/attach/permission hardening list
+1. **Bouncer CIRCLING escalates to the parent; loomcli smoke tier green** — [`loom-bouncer-rounds`](design-loom-bouncer-rounds.md) · bug, enhancement, loom, orch
+   - CIRCLING judged later on unchanged recurrence and escalated to the parent orchestrator; fix the five failing loomcli smoke tests
+1. **Label descriptions, CLI tree exceptions, ly-drive as a stencil** — [`board-labels-and-skills`](design-board-labels-and-skills.md) · bug, enhancement, board, config, selfreport, shed, stencil
+   - labels become labelâdescription with lyx board labels; fix the five cliTreeFindings exceptions; ly-drive moves into a stencil
 
 ## Notes
 
@@ -20,21 +26,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ### Bugs
 
-1. **Orch watcher cycles on a stale reading after /compact** — [`orch-compact-stale-reading`](design-orch-compact-stale-reading.md) · bug, orch
-   - A /compact leaves the pre-compaction token reading in place, so a soft cycle fires on a near-empty context
 1. **Webster blocks when a Delete target is already gone** — [`webster-delete-already-gone`](design-webster-delete-already-gone.md) · bug, webster
    - begin-batch refuses plan_drifted when an earlier batch already deleted a later card's Delete target
 1. **Webster schedules a Delete before its callers are removed** — [`webster-delete-ordering`](design-webster-delete-ordering.md) · bug, webster
    - deriveEdges has no edge from a deleted symbol to the cards editing its callers
-1. **Five CLI invariant exceptions in board notes, config, selfreport** — [`cli-tree-exceptions`](design-cli-tree-exceptions.md) · bug, board, config, selfreport
-   - Fix the verbs the CLI tree walk records as exceptions and drop them from cliTreeFindings
-1. **loomcli smoke tier: five bootstrap/strand tests fail on main** — [`loomcli-smoke-failures`](design-loomcli-smoke-failures.md) · bug, loom
-   - Five smoke tests find no loom-status or driver strand; stale tests or a bootstrap regression
 1. **Webster begin-batch spends a minute validating the plan per batch** — [`webster-batch-validation-speed`](design-webster-batch-validation-speed.md) · bug, webster, quarry
    - quarry#34 re-parses per target; fix it or validate incrementally; drop the per-batch model assertion
 1. **Config changes a task makes never reach the parent** — [`config-reaches-parent`](design-config-reaches-parent.md) · bug, config, fabric, loom
    - Live config is in weft and task weft dies at landing; carry config changes or make the hub step explicit
-1. **Discussion-Bouncer finding stays open across three rounds** — [`discussion-recurring-finding`](design-discussion-recurring-finding.md) · bug, loom
 
 ### Enhancements
 
@@ -58,16 +57,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Replace the hub scratch scripts and remembered procedure with lyx itself, so an orch session runs the loop from its committed role prompt alone and resumes after a reboot
 1. **Parent-review gate: wait bound off the boundary, no mid-turn sends, live smoke** — [`parent-review-hardening`](design-parent-review-hardening.md) · enhancement, orch
    - Close the cases the first parent-review gate left open: expiry while the writer is mid-turn, sends into a running turn after restart, poll cost, and one live smoke run
-1. **lyx orch runs for days without hand repair** — [`orch-live-hardening`](design-orch-live-hardening.md) · enhancement, orch
-   - Adopt keeps watchers, permission modes mean what they say, attach keeps the orch window size, large-session adopt is tested, status reads the current session
 1. **Hardener: an autonomous behavior-review campaign that replaces crucible** — [`hardener`](design-hardener.md) · enhancement
    - Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges
 1. **A batchifier that groups small related cards into one Webster batch** — [`card-batching`](design-card-batching.md) · enhancement, webster
    - Only the identity batchifier exists; a mechanical batchifier groups cards from their Create/Edit/Uses fields once cards name members as glyphs
 1. **Orch and batten run from the operator's own long-lived worktree, not only the prime** — [`orch-any-worktree`](design-orch-any-worktree.md) · enhancement, fabric, batten, orch
    - Every orch and batten verb refuses outside the prime; let a long-lived personal worktree be an orch's home, with pairs branching from and landing into its branch
-1. **Orch cycle mode as config: clear or compact** — [`orch-cycle-compact`](design-orch-cycle-compact.md) · enhancement, config, orch
-   - Cycling by /compact keeps the session and its Remote Control link; make clear/compact a config option
 1. **Reopen the prime VS Code window with one short command** — [`ide-reopen-prime`](design-ide-reopen-prime.md) · enhancement, ide
    - A snap refresh left the prime window wrong; lyx ide spawn needs the slug and fails from the hub root
 1. **lyx ide open: launch VS Code without writing anything** — [`ide-open-verb`](design-ide-open-verb.md) · enhancement, ide, batten
@@ -126,15 +121,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - lyx doctor checks the _lyx layout, config parse, board reachability and stale locks
 1. **session sync: Claude transcripts across machines** — [`session-sync`](design-session-sync.md) · enhancement, shuttle
    - Copy Claude .jsonl transcripts across machines so --resume works elsewhere
-1. **CIRCLING escalates to the parent orchestrator, later and on recurrence only** — [`circling-to-parent`](design-circling-to-parent.md) · enhancement, loom, orch
-   - Round-2 CIRCLING on a rising finding count halted board-model for a human; judge later, on unchanged recurrence, and escalate to the parent
 1. **Interactive board view: a regenerated HTML file and a phone-friendly README** — [`board-viewer`](design-board-viewer.md) · enhancement, board, ide
    - board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app
 1. **A parked label hides dormant notes from the default view** — [`board-parked`](design-board-parked.md) · enhancement, board
    - Notes nobody means to act on soon get parked: kept, hidden by default; curated at each intake
 1. **lyx seeds the prime VS Code setup: title, orch start task, keybindings** — [`ide-prime-setup`](design-ide-prime-setup.md) · enhancement, ide, orch
    - LY: prime/LY: <slug> titles, prime opens with reed up+attach only, orch start and open board as tasks with lyx keybindings, no launch.json
-1. **The ly-drive skill becomes a stencil prompt** — [`ly-drive-as-stencil`](design-ly-drive-as-stencil.md) · enhancement, shed, stencil
-   - Drivers get their shed-step instructions from a stencil like every other lyx Claude process; ly:board stays the only skill
-1. **Board labels carry a description of what each covers** — [`board-label-descriptions`](design-board-label-descriptions.md) · enhancement, board
-   - labels in board.yaml become label→description, printed by lyx board labels, so a caller can pick the right module label
