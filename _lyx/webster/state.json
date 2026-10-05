@@ -18,7 +18,7 @@
     "13-selfreport-bogus.md": "40552ba7a12f1b52d4fc197971f8252408235ccca48ff205044a63a269ffaab1",
     "14-clitree-findings-gone.md": "b70a13fb39e065e373bb6561b08fba9d22335e1303e86b72fa2b8701ca5e04da"
   },
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "705f5093c4333c1d9f8b20d3e57cceaf",
   "masterSessionId": "12d5d743-acaf-4edc-9226-ff1cde781f4f",
   "assertedModel": "sonnet",
@@ -230,6 +230,21 @@
       "forkTranscripts": [
         "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-board-labels-and-skills/12d5d743-acaf-4edc-9226-ff1cde781f4f/subagents/agent-a1e97b5742ff9e385.jsonl"
       ]
+    },
+    "9": {
+      "slug": "merge-issue-carry",
+      "cards": [
+        "09-merge-issue-carry"
+      ],
+      "cardHashes": {
+        "09-merge-issue-carry": "a16a0c8cad09deab2d1d7be4d3944fdadfb2320a70eabf3206d228acf8aa12bc"
+      },
+      "startSha": "da87bcb787a5332796285d5b769e65235efcc39f",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T08:08:10Z",
+      "sessionId": "12d5d743-acaf-4edc-9226-ff1cde781f4f",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
