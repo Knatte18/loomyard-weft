@@ -11,8 +11,6 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **ly-drive as a stencil, a ly:runs skill, and lyx-injected skill loading** — [`lyx-skills-and-stencils`](design-lyx-skills-and-stencils.md) · enhancement, stencil, orch, shed
-   - Driver procedure moves into a stencil, a ly:runs workflow skill, and the orch watcher injects skill loading at start, adopt and after every cycle
 1. **Test-writing rules that stop the suite regrowing** — [`test-writing-rules`](design-test-writing-rules.md) · enhancement, loom, stencil
    - Stage 1: tests per behavior not per symbol, no redundant tests, redundant tests are review findings
    - **Before:** `test-suite-prune`
@@ -24,6 +22,15 @@ Starts when every entry it names under After is done.
 1. **Measure and prune the test suite** — [`test-suite-prune`](design-test-suite-prune.md) · enhancement
    - Stage 2: per-test coverage tool, delete redundant tests, seam real-time waits, parallelize fabricengine, stop the tmux socket leak, budget guard
    - **After:** `test-writing-rules`
+   - **Before:** `lyx-skills-and-stencils`
+
+### Layer C
+
+Starts when every entry it names under After is done.
+
+1. **ly-drive as a stencil, a ly:runs skill, and lyx-injected skill loading** — [`lyx-skills-and-stencils`](design-lyx-skills-and-stencils.md) · enhancement, stencil, orch, shed
+   - Driver procedure moves into a stencil, a ly:runs workflow skill, and the orch watcher injects skill loading at start, adopt and after every cycle
+   - **After:** `test-suite-prune`
 
 ## Notes
 

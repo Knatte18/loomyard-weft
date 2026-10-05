@@ -2,7 +2,7 @@
 
 `lyx-skills-and-stencils` · Task · enhancement, stencil, orch, shed
 
-Depends on: [`orch-cycle-hardening`](design-orch-cycle-hardening.md), [`loom-bouncer-rounds`](design-loom-bouncer-rounds.md)
+Depends on: [`test-suite-prune`](design-test-suite-prune.md)
 
 # Goal
 
