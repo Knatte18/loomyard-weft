@@ -418,7 +418,7 @@
       "id": 75,
       "slug": "test-tiers",
       "title": "Test tiers: unit, git, tmux and Claude, with Claude opt-in only",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "loom",

@@ -1,6 +1,6 @@
 # Test tiers: unit, git, tmux and Claude, with Claude opt-in only
 
-`test-tiers` · Note · enhancement, loom, webster
+`test-tiers` · Task · enhancement, loom, webster
 
 The four tiers themselves (an LLM tier under its own tag, the tier rules in PATTERN) moved into task `test-suite-measure`; this note keeps which gate runs which tier.
 
