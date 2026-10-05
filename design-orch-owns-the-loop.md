@@ -17,6 +17,7 @@ How the operator sees many batten runs at once (a status strand, its height, or 
 ## A watch command
 
 `.scratch/hub/watch.sh <slug>` (one watcher per run) becomes a lyx command, or a part of orch's own watcher.
+Task `orch-cycle-hardening` (decisions D12–D13 of its discussion) builds this as batten run notices that the orch watcher types into an idle orch pane; once it lands, this section is done and is replaced by a pointer to its `doc.go`.
 It wakes the orch session when a run changes to a state that needs it, as a backup to the driver's own message to its parent, which is the primary path.
 
 ## One land command
