@@ -13,7 +13,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/fabricengine#Bolt.CommitWritten`
+- `internal/fabricengine#Bolt.CommitWritten`
 - `plan:internal/configengine#EditPath`
 - `plan:internal/configengine#StagingFile`
 - `internal/configreg#Module`

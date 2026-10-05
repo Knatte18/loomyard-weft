@@ -13,7 +13,7 @@
 - `internal/hubforge/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#Bolt.CommitWritten`
+- `internal/fabricengine#Bolt.CommitWritten`
 - `internal/fabricengine#PrimeName`
 - `internal/configreg#Module`
 - `internal/configengine#ConfigFileRel`

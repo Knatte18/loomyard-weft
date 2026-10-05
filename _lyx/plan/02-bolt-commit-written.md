@@ -1,7 +1,7 @@
 # Card 2 — Bolt: write and commit named paths under the board write lock
 
 **Create:**
-- `plan:internal/fabricengine#Bolt.CommitWritten` -> `func (b *Bolt) CommitWritten(message string, write func() ([]string, error), opts SyncOptions) (sha string, committed bool, err error)`
+- `internal/fabricengine#Bolt.CommitWritten`
 
 **Edit:**
 - `internal/fabricengine/bolt.go`
