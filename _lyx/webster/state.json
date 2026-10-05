@@ -20,7 +20,7 @@
     "15-drop-recurring-finding.md": "d5ae19c6e90e324060b3f5bace61f7d8aa350476171db7ad7e1db33f62657d00",
     "16-smoke-strand-matching.md": "2561563bef9c09ccbff8c57dee8012eed1a900fcb7f1bf6df26e63d0723de55e"
   },
-  "currentBatch": 0,
+  "currentBatch": 11,
   "masterStrand": "d2c3e84d54a38997316f661377dc5bc2",
   "masterSessionId": "c05a239b-17ca-4c59-acd3-85fb643ebb30",
   "assertedModel": "sonnet",
@@ -80,6 +80,21 @@
       "forkTranscripts": [
         "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-a0fa83779b5f140f1.jsonl"
       ]
+    },
+    "11": {
+      "slug": "burler-exempt-round",
+      "cards": [
+        "11-burler-exempt-round"
+      ],
+      "cardHashes": {
+        "11-burler-exempt-round": "87d1e4dfd04388a092a0d8b3acef78bc73d566555ae8afd39ebdda4d318500fe"
+      },
+      "startSha": "133ea78779736e44949ecef7ea0751301e301501",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T10:51:12Z",
+      "sessionId": "c05a239b-17ca-4c59-acd3-85fb643ebb30",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "circling-evidence",
