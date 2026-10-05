@@ -13,7 +13,7 @@ Waits on nothing open; can start now, in parallel.
 
 1. **Webster audit and verify-gate halts are recoverable by the agent** — [`webster-audit-recovery`](design-webster-audit-recovery.md) · bug, enhancement, webster, shuttle · running · Discussion-Write
    - Hung-shell gate wait, unacceptable contract-file findings, garbled way-forward text, recoveries that need denied commands
-1. **Orch context cycling and long-run hardening** — [`orch-cycle-hardening`](design-orch-cycle-hardening.md) · bug, enhancement, orch, config
+1. **Orch context cycling and long-run hardening** — [`orch-cycle-hardening`](design-orch-cycle-hardening.md) · bug, enhancement, orch, config, batten
    - Fresh reading after /compact, clear-or-compact as config, and the adopt/attach/permission hardening list
 1. **Bouncer CIRCLING escalates to the parent; loomcli smoke tier green** — [`loom-bouncer-rounds`](design-loom-bouncer-rounds.md) · bug, enhancement, loom, orch
    - CIRCLING judged later on unchanged recurrence and escalated to the parent orchestrator; fix the five failing loomcli smoke tests
@@ -69,8 +69,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - spawn configures and launches at once and overwrites a driven pair's attach chain; add a write-nothing open verb
 1. **Pairs as folders in the prime's hub workspace** — [`ide-workspace-pairs`](design-ide-workspace-pairs.md) · enhancement, ide, fabric
    - Idea, undecided: fabric adds and removes pairs in the prime workspace's folders; _portals stays
-1. **The orch relies on driver messages, not a scratch watcher** — [`orch-no-watcher`](design-orch-no-watcher.md) · enhancement, batten, orch
-   - The hub watches runs with a hand-written .scratch/hub/watch.sh; drivers already message their parent, so question the watcher, and close any real gap in lyx code
 1. **Each batten the orch starts runs in its own tmux window** — [`batten-windows`](design-batten-windows.md) · enhancement, reed, batten, orch
    - Batten runs detached and invisible; a window per run makes the window list show what the orch has in flight
 1. **Fabric's Windows path behaviour verified on a Windows host** — [`fabric-windows`](design-fabric-windows.md) · enhancement, fabric

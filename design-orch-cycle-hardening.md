@@ -1,11 +1,19 @@
 # Orch context cycling and long-run hardening
 
-`orch-cycle-hardening` · Task · bug, enhancement, orch, config
+`orch-cycle-hardening` · Task · bug, enhancement, orch, config, batten
 
 # Goal
 
 `lyx orch` cycles its context correctly and runs for days without hand repair.
 The stale reading after `/compact` and the clear-or-compact choice live in the same watcher code, and the hardening list touches the same adopt and context-reading paths.
+
+# Decisions from the task discussion (operator, 2026-10-05)
+
+- **Cycle mode.** `cycle_mode: clear|compact` in `orch.yaml`, default `compact`.
+  A compact cycle keeps the session and its Remote Control link and passes the handoff instruction as `/compact`'s focus argument, so it writes no handoff file.
+- **`permission_mode: prompt` is removed.** The orch never prompts for each action; `bypass` is the only mode, and the config key, its template comment and the orchengine doc say so.
+- **Watchers.** `orch-no-watcher` is part of this task: the orch relies on driver and batten messages, and any gap they leave is closed in lyx code, never by a scratch watcher.
+  Background shells and Monitors die with the process, which matters at adopt and reboot (a new `claude --resume` process), not at compact; Discussion verifies whether they survive `/clear`.
 
 
 ## Orch watcher cycles on a stale reading after /compact
@@ -54,3 +62,15 @@ The hub runs under `lyx orch` for days without hand repair: an adopt keeps the h
 - **Stale context reading.** `ResetForFreshLaunch` keeps `LastContextTokens`, so `status` shows the previous session's reading until the first turn end after an adopt.
 - **PID reuse** can refuse an adopt falsely; the registry's `procStart` tells a reused pid apart.
 - **Transcript read cost.** `ContextTokens` reads the whole transcript on every idle turn end; read from the end.
+
+## The orch relies on driver messages, not a scratch watcher
+
+From note `orch-no-watcher`.
+
+Seen 2026-10-03: the hub orch watches each driven run with a hand-written `.scratch/hub/watch.sh`, a background shell loop that polls the run's `status.json` every 30 s and exits on the first non-running state change.
+It lives outside lyx, untested and uncommitted, and has to be re-armed by hand after every context cycle.
+The driver already messages its parent (`ly:orch`) at every stop it cannot handle, which is the path the orch should rely on.
+Idea (operator): question whether the orch needs a watcher at all; if a gap remains that the driver's message does not cover (a driver that dies without messaging, a stop the driver does not report), close it in lyx's own code, never with a scratch script.
+Likely home: `lyx batten run`, whose Run-Shed row already polls the same `status.json` every 30 s.
+Batten could message its parent on a non-running state change, and check the driver strand's liveness through reed to cover the case `internal/battenshed/doc.go` leaves out by design (a driver that dies, parks on a prompt, or stops with the run non-terminal).
+Batten can also be started by hand from a terminal with no orch above it, so the parent is optional: message it when one is recorded, otherwise only log.
