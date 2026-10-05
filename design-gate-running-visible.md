@@ -7,6 +7,7 @@ Nothing on screen said so: the agent's pane sat idle, `lyx loom status` showed o
 
 Idea (operator): a visible marker whenever a Go gate runs.
 
-- The status (`activity.now`, and the `loom-status` strand) names the gate and how long it has run, such as `Webster-Burler: verify running 6m (go test -tags integration)`.
+- `lyx loom status` (`activity.now`) names the gate and how long it has run, such as `Webster-Burler: verify running 6m (go test -tags integration)`.
+- Something on screen shows the same: under the LLM driver every run uses, `lyx loom start` removes the `loom-status` strand on purpose (`internal/loomcli/start.go`, "the ly-drive strand is the driving surface"), so the marker goes in the driver's pane or title, the agent's title, or a status pane that also exists in LLM mode.
 - The agent pane, or its strand's title, shows that the run moved on to a gate, so an idle agent does not look stuck.
 - The same applies to every Go-side wait a producer does after its agent's turn: the Webster verify gate, the Burler round's verify, Publish's merge-in verify.
