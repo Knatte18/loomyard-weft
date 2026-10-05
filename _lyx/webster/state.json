@@ -1,10 +1,10 @@
 {
   "runGuid": "9fcabaeec009f0c697202900dc217a0d",
-  "planFingerprint": "a4ab07f3185ccacd9a313cc99e927712498447f72a299ca4702412599bd8992b",
+  "planFingerprint": "0ee1b43e337fb5d372f396144f8d2381b3d247395fbb619d31b7cfc4d4f6feec",
   "planFileHashes": {
     "00-overview.md": "21ea519b1c2616abbd08f26fc47dceb638037736023b356a3d82a203d5889f43",
-    "01-shuttle-skill-loading.md": "b7b863cf71e8b02d917385e7d0d35af097ee40d0ac2da06a9686358f35404856",
-    "02-claude-skill-loader.md": "27824c8c7409b53c70efe36ed23798549c49eee04bcdaac986fe63e69ff2eaf2",
+    "01-shuttle-skill-loading.md": "98d0269fbe75c0e950d46f2cea95c963ca263a8fabb552a8ad55954e43a42b31",
+    "02-claude-skill-loader.md": "088d132c79ee82ea301e83738f95192e17b7008cf26a27106f0b3fb81bc3c740",
     "03-parent-directive.md": "ec56f9272a4f09cd475c848900280071d5c1aae142f46165ecbd284008b3ca6d",
     "04-loom-producer-roles.md": "720695344dec089f20b8022943de122c2b7152958cd3c480a2addd944f91e678",
     "05-webster-roles.md": "d309de02585a0a38ba0dc5a18b115313d3f85690d2cf6d87ca0727bc3d473f88",
@@ -17,10 +17,10 @@
     "12-orch-role-stencil.md": "85ca0ac606209e9ad6d3729128198106f868a05de61a7338e1c9a5290fe94e2c",
     "13-orch-note-gate.md": "dadf840ac8212a562b9394be3fbfe4cb3ab519fa76e36556badaa2637acb02a2",
     "14-compaction-since.md": "62995596cd67e32df579406b8279a8bae35d5d2a1c526138d3b8ca5e4248aebc",
-    "15-orch-reload.md": "230cc7523df2b27686bebfbf152afd94be8ca4716d65d468e6acfc68713309d1",
+    "15-orch-reload.md": "4a10e0eb0864ae86c1536dce7a528e27a986165c47bdd8d70fdb910e69409bbd",
     "16-pattern-entries.md": "7ec671978f79811ad8b1edff79031d5eb45e599779244d814ece3259a37634f1"
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "40172dc3ee4d7f3102b0f95aade12453",
   "masterSessionId": "473ae965-3716-422d-9f02-1fa754091f0c",
   "assertedModel": "sonnet",
@@ -31,14 +31,28 @@
         "01-shuttle-skill-loading"
       ],
       "cardHashes": {
-        "01-shuttle-skill-loading": "b7b863cf71e8b02d917385e7d0d35af097ee40d0ac2da06a9686358f35404856"
+        "01-shuttle-skill-loading": "98d0269fbe75c0e950d46f2cea95c963ca263a8fabb552a8ad55954e43a42b31"
       },
       "startSha": "b32c30584b43db1ba4bdda8fcbd00325716542c4",
       "kind": "fork",
       "spawnedAt": "2026-10-05T16:31:56Z",
       "sessionId": "473ae965-3716-422d-9f02-1fa754091f0c",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-shuttle-skill-loading",
+        "status": "done",
+        "head_sha": "95cc7e64dfb9db8456a25d3d72dec3007f05732f"
+      },
+      "cardShas": [
+        "95cc7e64dfb9db8456a25d3d72dec3007f05732f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-skills-and-stencils/473ae965-3716-422d-9f02-1fa754091f0c/subagents/agent-a1b205dbfd6200122.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-skills-and-stencils/473ae965-3716-422d-9f02-1fa754091f0c/subagents/agent-a1b205dbfd6200122.jsonl"
+  ]
 }

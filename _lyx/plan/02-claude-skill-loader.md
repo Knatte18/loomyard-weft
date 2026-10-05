@@ -10,7 +10,7 @@
 - `internal/shuttleengine/claudeengine/command_test.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#SkillLoader`
+- `internal/shuttleengine#SkillLoader`
 - `internal/shuttleengine/claudeengine#launchPointer`
 - `internal/shuttleengine/claudeengine#Claude.ClearSessionSequence`
 

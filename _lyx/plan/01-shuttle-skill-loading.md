@@ -11,9 +11,9 @@
 - `internal/shuttleengine/session_test.go`
 
 **Create:**
-- `plan:internal/shuttleengine#SkillLoader` -> `type SkillLoader interface`
-- `plan:internal/shuttleengine#Runner.LoadSkill` -> `func (r *Runner) LoadSkill(guid, skill string) error`
-- `plan:internal/shuttleengine#Runner.SkillUnknown` -> `func (r *Runner) SkillUnknown(guid, skill string) (bool, error)`
+- `internal/shuttleengine#SkillLoader`
+- `internal/shuttleengine#Runner.LoadSkill`
+- `internal/shuttleengine#Runner.SkillUnknown`
 
 **Uses:**
 - `internal/shuttleengine#Run.awaitStartup`

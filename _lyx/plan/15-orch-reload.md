@@ -18,8 +18,8 @@
 - `internal/orchcli/watch_test.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#Runner.LoadSkill`
-- `plan:internal/shuttleengine#Runner.SkillUnknown`
+- `internal/shuttleengine#Runner.LoadSkill`
+- `internal/shuttleengine#Runner.SkillUnknown`
 - `plan:internal/shuttleengine#Runner.CompactedSince`
 - `plan:internal/orchengine#RenderRoleFile`
 - `internal/orchengine#Session`
