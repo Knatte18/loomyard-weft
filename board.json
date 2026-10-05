@@ -879,6 +879,23 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #361](https://github.com/Knatte18/loomyard/issues/361).\n\nSeen 2026-10-04 in `board-model`: after the verify gate re-prompted Master at 17:07:33, Master's fixer fork fixed the failure and Master's turn ended at 17:11, but the step logged nothing more for 75 minutes.\nMaster's Stop events (`.lyx/shuttle/\u003cguid\u003e/events.jsonl`) all carried `background_tasks` with a shell in state `running`: `python3 - 2\u003e/dev/null; cat \u003e /dev/null \u003c\u003c'EOF' … EOF; grep …`, where `python3 -` sat reading stdin forever.\nThe gate apparently does not count a Stop with a running background task as a turn end, so one hung shell blocks the run indefinitely; an operator prompt at 18:25 produced another such Stop and changed nothing.\nKilling the `python3` process let the gate rerun verify at 18:26.\n\nExpected: a turn end whose only running background task is a shell (not a fork) still counts, or the gate bounds the wait and surfaces \"turn ended with background task X running\" to the driver, which today cannot see or stop it (ly-drive has no verb for it, and Webster's interrupt policy is handback).\nAlso: lyx agents should not run `python3` at all (operator rule); the agent settings shuttle writes could deny it.\n"
+    },
+    {
+      "id": 101,
+      "slug": "webster-audit-way-forward-text",
+      "title": "Webster run-exit audit: way-forward text ends mid-sentence and repeats paths",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster"
+      ],
+      "issues": [
+        362
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #362](https://github.com/Knatte18/loomyard/issues/362).\n\nWhen the Webster run-exit audit halts a run as `blocked` on forged contract files, the way-forward text it prints is garbled.\n\nThe halt note reads:\n\n\u003e way forward: reset the branch to the run's start commit with git and run \"lyx webster run --fresh\" and re-step the Webster row (lyx webster run), since nothing the run recorded can check `_lyx/webster/summary.md`, `_lyx/webster/outcome.yaml`\n\nThe final clause, \"since nothing the run recorded can check \u003cpaths\u003e\", names no consequence and reads as truncated.\nThe same two paths are also printed twice: once in each finding and again as \"suspect paths\".\nThe way forward also tells the operator to run `lyx webster run --fresh` and then `lyx webster run`, without saying whether the second command is a separate step or a restatement of the first.\n\nExpected: a complete sentence stating why the forged files cannot be trusted, and an unambiguous ordered list of commands.\n\nProvenance: task `board-model`, note `loom-halt.md`.\n"
     }
   ],
   "legacy_done": [

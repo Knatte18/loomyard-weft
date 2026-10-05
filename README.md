@@ -28,6 +28,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **Config changes a task makes never reach the parent** — [`config-reaches-parent`](design-config-reaches-parent.md) · bug, config, fabric, loom
    - Live config is in weft and task weft dies at landing; carry config changes or make the hub step explicit
 1. **Webster verify gate waits forever when Master ends its turn with a hung background shell** — [`webster-gate-hung-shell`](design-webster-gate-hung-shell.md) · bug, webster, shuttle
+1. **Webster run-exit audit: way-forward text ends mid-sentence and repeats paths** — [`webster-audit-way-forward-text`](design-webster-audit-way-forward-text.md) · bug, webster
 
 ### Enhancements
 
