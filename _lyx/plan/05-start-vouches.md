@@ -19,7 +19,8 @@ State this bound in the doc comment of `recordHandoffVoucher` and of `LoomHandof
 
 Tests, untagged, through the existing fakes:
 
-- `internal/loomcli/start_driver_test.go`: on the llm arm's success path with a seeded running status, Tier 2 on, the voucher holds the status's history length and state; with Tier 2 off no voucher is written; a parked-driver resume writes none.
+- `internal/loomcli/start_driver_test.go`: on the llm arm's success path with a seeded running status, Tier 2 on, the voucher holds the status's history length and state, and a voucher already on disk is replaced; with Tier 2 off no voucher is written; a parked-driver resume writes none, and `TestRunDriverSpawnAndWait_LiveDriverOverRunningRunIsANoOp` also asserts the live-strand no-op writes none.
+  The one-shot consume and the history-length and state match are already pinned by `TestConsumeHandoffVoucher` and `TestObserveEntry_ConsumesHandoffVoucherIntoObservation` (renamed by card 3), so this card adds no consume-side test.
 - `internal/loomcli/start_midmerge_test.go`: the unfinished-merge refusal leaves no voucher.
 
 **ImpactSummary:** `lyx loom start` writes one machine-local file before a spawn; refusals, resumes and exit codes are unchanged.

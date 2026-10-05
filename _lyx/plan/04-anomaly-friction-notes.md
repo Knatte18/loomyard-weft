@@ -37,8 +37,9 @@ Tests, all untagged:
 
 - `internal/loomengine/anomaly_test.go`: `TestDetectCrashResume` rows use `Vouched`.
 - `internal/loomcli/halt_test.go`: `TestWriteHaltNote_NamesProducerAndReason` becomes a table over a budget-prefixed blocked reason, another blocked reason and a failed halt, each asserting one `loom-halt.md` naming its `anomaly:` kind, producer, state, reason, history rows and trace file.
-  Add a step-level test through `stepOver` with a real `PreStep` that observes: a seeded running status with history, a free run lock and no voucher writes one `loom-crash-resume.md` with the fields above; a completed step then a second step does not (the voucher matches); a second observation of the same state after the voucher was consumed writes one.
-- `internal/loomcli/entryobservation_test.go` (or `handoffvoucher_test.go`): a table over the no-note cases — voucher matches, run lock held, state not `running`, empty history, Tier 2 off (empty friction directory) — plus a row where the friction directory is unwritable, asserting the verb's hook still returns nil.
+  Add one step-level test over the `handoffSteps` helper card 1 kept, with a real `PreStep` that observes: `MarkerKept` (a completed step then a second step) writes no `loom-crash-resume.md`, and `MarkerRemoved` writes one carrying the fields above.
+  The consume-once and voucher-match behavior is already pinned by `TestConsumeHandoffVoucher` and `TestObserveEntry_ConsumesHandoffVoucherIntoObservation` (renamed by card 3), so no new test repeats it.
+- `internal/loomcli/entryobservation_test.go`: a table over the no-note cases no existing test covers — run lock held, state not `running`, empty history, Tier 2 off (empty friction directory) — plus a row where the friction directory is unwritable, asserting the verb's hook still returns nil.
 - `internal/loomcli/handoffvoucher_test.go` and `internal/loomcli/gotoentry_test.go`: retarget `CleanStepHandoff` to `Vouched` and any comparison with a zero `EntryObservation`, which `RecentHistory` makes non-comparable.
 - `internal/loomcli/step_test.go`: the busy-refusal test asserts no `loom-crash-resume.md` was written and the voucher is still on disk, instead of reading the deleted `entryObservation` field.
 

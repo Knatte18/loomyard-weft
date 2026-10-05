@@ -23,11 +23,11 @@ Then rename these identifiers and retarget every call site, in the renamed files
 
 - `loomengine.LoomStepHandoff` to `LoomHandoffVoucher`, returning `handoff-voucher.json`, and `LoomStepHandoffLock` to `LoomHandoffVoucherLock`, returning `handoff-voucher.json.lock`, in the same `.lyx` loom directory; a stale `step-handoff.json` is left on disk and read by nothing.
 - `stepHandoffMarker` to `handoffVoucher`, `recordStepHandoff` to `recordHandoffVoucher`, `consumeStepHandoffMatch` to `consumeHandoffVoucher`.
-- The test helpers `writeSelfreportStatus` to `writeStatusFixture` and `stepHandoffPaths` to `handoffVoucherPaths`, and the tests named after the marker (`TestConsumeStepHandoffMatch`, `TestObserveEntry_ConsumesStepHandoffIntoObservation`, `TestSmokeStep_RecordsCleanHandoffMarkerMatchingPersistedStatus`) to the voucher.
+- The test helpers `writeSelfreportStatus` to `writeStatusFixture` and `stepHandoffPaths` to `handoffVoucherPaths`, and the tests named after the marker to the voucher: `TestConsumeStepHandoffMatch` to `TestConsumeHandoffVoucher`, `TestObserveEntry_ConsumesStepHandoffIntoObservation` to `TestObserveEntry_ConsumesHandoffVoucherIntoObservation`, and `TestSmokeStep_RecordsCleanHandoffMarkerMatchingPersistedStatus` to `TestSmokeStep_RecordsHandoffVoucherMatchingPersistedStatus`.
 
-Update the doc comments of the renamed symbols and the two renamed source and test file headers to say "handoff voucher" where they said "step clean-handoff marker", keeping their content otherwise; the second writer is described by card 5, not here.
+Update the doc comments of the renamed symbols, the two renamed source and test file headers, and every other comment in the Edit targets (`arm.go`'s `loomPreStep`, `loomPostStep` and `observeStepEntry` comments, `halt_test.go`, `smoke_bootstrapwiring_test.go`) to say "handoff voucher" where they said "step clean-handoff marker" or "clean-handoff marker", keeping their content otherwise; the second writer is described by card 5, not here.
 
-Run `grep -rn "StepHandoff\|stepHandoff\|step-handoff\|writeSelfreportStatus" --include=*.go .` afterwards; only `EntryObservation.CleanStepHandoff`, which card 4 renames, may still match.
+Run `grep -rn "StepHandoff\|stepHandoff\|step-handoff\|clean-handoff\|writeSelfreportStatus" --include=*.go .` afterwards; only `EntryObservation.CleanStepHandoff` and its comments in `internal/loomengine/anomaly.go`, which card 4 renames, may still match.
 
 **ImpactSummary:** identifier and file renames inside `loomcli` and `loomengine`, plus one comment in `shedverbs`; the voucher file's name on disk changes, its content and behavior do not.
 

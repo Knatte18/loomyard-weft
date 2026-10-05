@@ -42,7 +42,9 @@ Tests for removed code are deleted, not adapted:
 - `internal/loomengine/awaiting_test.go`: retarget `TestDetectHaltAnomaly_AwaitingFilesNone` onto `ClassifyHalt`, or fold it into the `ClassifyHalt` table if that covers awaiting.
 - `internal/loomengine/anomalybody_test.go`, `internal/loomengine/loomstatus_test.go` (only the deleted accessors) and `internal/loomcli/selfreport_github_test.go`: delete.
 - `internal/loomcli/selfreport_test.go`: delete every `detectAndFileAnomalies` and marker test, `filedCall`, `selfreportTestFixture` and `pendHaltTitle`; keep the helpers other files still use (`writeSelfreportStatus`, `productJSON`, `crashResumeEntry`, `haltStatus` if used) and delete any left unused.
-- `internal/loomcli/halt_test.go`: drop the fixture's `fileIssue` fake, `filed` slice, `tierOneOn`, `requireFiledOnce`, `requireNothingFiled`, `requireFiledBeforeReflection`, `tierOneLine` and every `TierOne` test; keep the halt-note and reflection tests, and drop `handoffSteps` and producer vars left unused.
+- `internal/loomcli/halt_test.go`: drop the fixture's `fileIssue` fake, `filed` slice, `tierOneOn`, `requireFiledOnce`, `requireNothingFiled`, `requireFiledBeforeReflection`, `tierOneLine` and every `TierOne` test; keep the halt-note and reflection tests, and drop producer vars left unused.
+  Keep the `handoffSteps` helper: `TestStep_TierOne_HandoffMarkerSuppressesCrashResume` asserts only on filed titles and goes with the filer, and card 4 re-asserts the same two-step voucher behavior on the friction directory over the kept helper.
+  `newHaltFixture`'s directory loop calls `LoomSelfreportFiledLock`: drop that entry and reword the comment above the loop, which names the filed-title marker.
 - `cmd/lyx/pathrules_test.go`: delete the two `LoomSelfreportFiled` rows.
 
 Run `grep -rn "Tier 1 anomaly\|selfreport-filed\|RenderAnomalyBody\|DetectAnomalies\|fileIssue" --include=*.go .` after the edit; only `contracts/stencils/claims_test.go`'s stencil claim may still match, and card 6 rewrites it with the stencil.
