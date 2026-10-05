@@ -7,7 +7,7 @@
       "title": "Kick-start pack: pre-resolved glyph spans for implementer and Burler",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "webster",
         "quarry"
       ],
@@ -66,7 +66,7 @@
       "title": "creel: a mailbox between named lyx processes",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "reed"
       ],
       "issues": [],
@@ -81,7 +81,7 @@
       "title": "One-screen overview of every run in the hub, in its own tmux window",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "reed",
         "orch"
       ],
@@ -97,7 +97,7 @@
       "title": "Discussion advisor: a dedicated agent answers Discussion-Write's questions live",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "shuttle",
         "loom"
       ],
@@ -129,7 +129,7 @@
       "title": "Orch owns the run loop: detached batten start, a lyx watch, one land command, --continue, a committed role prompt",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "batten",
         "orch"
       ],
@@ -160,7 +160,7 @@
       "title": "Hardener: an autonomous behavior-review campaign that replaces crucible",
       "kind": "note",
       "labels": [
-        "enhancement"
+        "feature"
       ],
       "issues": [],
       "depends_on": [],
@@ -174,7 +174,7 @@
       "title": "A batchifier that groups small related cards into one Webster batch",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "webster"
       ],
       "issues": [],
@@ -189,7 +189,7 @@
       "title": "Orch and batten run from the operator's own long-lived worktree, not only the prime",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "fabric",
         "batten",
         "orch"
@@ -221,7 +221,7 @@
       "title": "lyx ide open: launch VS Code without writing anything",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "ide",
         "batten"
       ],
@@ -237,7 +237,7 @@
       "title": "Pairs as folders in the prime's hub workspace",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "ide",
         "fabric"
       ],
@@ -253,7 +253,7 @@
       "title": "Each batten the orch starts runs in its own tmux window",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "reed",
         "batten",
         "orch"
@@ -285,7 +285,7 @@
       "title": "semantic-index: find code by concept, not by literal keyword",
       "kind": "note",
       "labels": [
-        "enhancement"
+        "feature"
       ],
       "issues": [],
       "depends_on": [],
@@ -316,7 +316,7 @@
       "title": "Ship lyx as an installable Claude Code plugin",
       "kind": "note",
       "labels": [
-        "enhancement"
+        "feature"
       ],
       "issues": [],
       "depends_on": [],
@@ -330,7 +330,7 @@
       "title": "Burler picks the model per review round",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "burler"
       ],
       "issues": [],
@@ -345,7 +345,7 @@
       "title": "Codex as a second agent engine",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "shuttle"
       ],
       "issues": [],
@@ -360,7 +360,7 @@
       "title": "Fabric's ordinary-monorepo verb surface",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "fabric"
       ],
       "issues": [],
@@ -375,7 +375,7 @@
       "title": "Talk to the orch through Slack",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "reed"
       ],
       "issues": [],
@@ -454,7 +454,7 @@
       "title": "raddle: codeguide's woven-in successor",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "loom"
       ],
       "issues": [],
@@ -484,7 +484,7 @@
       "title": "reed: cross-worktree columns, own-window anchoring, per-window attach",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "reed"
       ],
       "issues": [],
@@ -515,7 +515,7 @@
       "title": "Baseline producer and numerical-drift gate",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "webster",
         "loom"
       ],
@@ -531,7 +531,7 @@
       "title": "config: repo-wide default plus per-worktree override",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "config"
       ],
       "issues": [],
@@ -546,7 +546,7 @@
       "title": "fabric: two-sided reset-to-SHA verb",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "fabric"
       ],
       "issues": [],
@@ -592,7 +592,7 @@
       "title": "doctor: a lyx diagnostics command",
       "kind": "note",
       "labels": [
-        "enhancement"
+        "feature"
       ],
       "issues": [],
       "depends_on": [],
@@ -606,7 +606,7 @@
       "title": "session sync: Claude transcripts across machines",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "shuttle"
       ],
       "issues": [],
@@ -684,7 +684,7 @@
       "title": "Interactive board view: a regenerated HTML file and a phone-friendly README",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "board",
         "ide"
       ],
@@ -700,7 +700,7 @@
       "title": "A parked label hides dormant notes from the default view",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "board"
       ],
       "issues": [],

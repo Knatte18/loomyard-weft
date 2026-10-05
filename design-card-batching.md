@@ -1,6 +1,6 @@
 # A batchifier that groups small related cards into one Webster batch
 
-`card-batching` · Note · enhancement, webster
+`card-batching` · Note · feature, webster
 
 ## Why
 

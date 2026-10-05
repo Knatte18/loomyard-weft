@@ -1,6 +1,6 @@
 # fabric: two-sided reset-to-SHA verb
 
-`fabric-reset-to-sha` · Note · enhancement, fabric
+`fabric-reset-to-sha` · Note · feature, fabric
 
 From `manifest/roadmap.md` Someday.
 The post-conclude undo the merge surface deliberately does not ship: `MergeAbort` covers only the uncommitted merge-attempt window, so a landed merge is final at the Fabric layer.

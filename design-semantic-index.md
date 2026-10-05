@@ -1,6 +1,6 @@
 # semantic-index: find code by concept, not by literal keyword
 
-`semantic-index` · Note · enhancement
+`semantic-index` · Note · feature
 
 From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03 as someday.
 Idea: semantic search over docstrings and comments (catalysts, embeddings, temporal decay), to find code by concept rather than literal keyword.

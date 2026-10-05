@@ -1,6 +1,6 @@
 # config: repo-wide default plus per-worktree override
 
-`config-overlay` · Note · enhancement, config
+`config-overlay` · Note · feature, config
 
 From `manifest/roadmap.md` Someday.
 Every module's config resolves only from `<cwd>/_lyx/config/<module>.yaml` today, per-worktree with no shared default (`fabric.yaml` is the sole exception, anchored at `_board`).

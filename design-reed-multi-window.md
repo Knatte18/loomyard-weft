@@ -1,6 +1,6 @@
 # reed: cross-worktree columns, own-window anchoring, per-window attach
 
-`reed-multi-window` · Note · enhancement, reed
+`reed-multi-window` · Note · feature, reed
 
 From `manifest/roadmap.md` Someday, three items kept together:
 - **reed: cross-worktree columns.** All worktrees in one tmux window, a column per worktree; needs a name for the new per-worktree grouping layer this introduces and a column-count/fallback policy.
