@@ -1,6 +1,6 @@
 # board.yaml is read per worktree though the board is one per hub
 
-`board-config-per-worktree` · Task · bug, board, config · running · Plan-Bouncer
+`board-config-per-worktree` · Task · bug, board, config · running · Plan-Burler
 
 The board is one per hub (`<hub>/_board`), but its config, `board.yaml` (types, labels, README settings), is read from each worktree's own `_lyx/config/`.
 Seen 2026-10-05: after the hub added the `feature` type in the prime's config, the landing of `lyx-skills-and-stencils` wrote to the board from its pair, whose copy predates the change, and re-rendered README with every `feature` note under "Other"; the hub re-rendered from the prime.
