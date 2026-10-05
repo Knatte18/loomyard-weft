@@ -39,3 +39,6 @@ _No rounds yet._
 - Q6 What happens to per-worktree copies? Auto-pick: `lyx config reconcile --apply` deletes them once the hub copy exists (D6). Resolved.
 - Q7 Does this need a PATTERN entry? Auto-pick: yes, `PATTERN-hub-wide-config` (D7). Resolved.
 - Q8 Re-render README on config edit? Auto-pick: no, out of scope. Resolved.
+- Q9 How does the seeded hub file reach git, and what if there is no prime copy? Auto-pick: committed through `Bolt` under the board write lock like D5; template seed with a warning in reconcile, silent in clone (D4). Resolved.
+- Q10 What bounds a bad `lyx config board` edit and a failed commit? Auto-pick: strict-load validation before commit, write and commit under the write lock, a failed commit leaves the file on disk with an error saying so (D5). Resolved.
+- Q11 Can `--apply` drop an unmerged per-worktree edit? Auto-pick: no, a copy with content the hub file lacks is reported divergent and kept (D6). Resolved.
