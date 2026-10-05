@@ -54,6 +54,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - ReadOriginFor answers no record when the untracked .weft lock dir is missing, so a pair recreated by reconcile launches strands with no parent and no warning
 1. **Burler review with invalid YAML frontmatter fails the run after three attempts** — [`burler-yaml-frontmatter-repair`](design-burler-yaml-frontmatter-repair.md) · bug, burler
    - An invalid review-file frontmatter fails the run instead of a repair turn
+1. **orch watcher reloads the session for a compaction hours old after a restart** — [`orch-watcher-stale-reload`](design-orch-watcher-stale-reload.md) · bug, orch
+   - A restarted orch watcher reloads for a compaction hours old
 
 ### Enhancements
 
