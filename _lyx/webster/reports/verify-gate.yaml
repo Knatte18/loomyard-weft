@@ -1,0 +1,18 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/reedcli.TestSmokeDotFillCrossClientControl
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/reedcli
+      tail: |4-
+            smoke_dotfill_test.go:477: pane %1 never showed "DOTFILL-MARKER-BETA" within 20s; last capture:
+                539675/003/warp-bare-LYXHUB/warp-bare/.lyx/reed/launch/07a4f1bdefcf693523829e3f2c1f94fc.sh'
+                DOTFILL-MARKER-ALPHA
+log_path: /home/knatte/Code/loomyard-LYXHUB/test-suite-measure/.lyx/verify/verify.log
+hint:
+    - 04-reap-timeout-seam
+    - 03-watchdog-timing-seam
+    - 10-pattern-testing-consolidation
+    - 13-retag-smoke
+    - 14-retag-integration-tmux
+    - 18-test-socket-keys
