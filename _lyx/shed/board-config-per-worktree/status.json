@@ -1,12 +1,13 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Discussion-Bouncer: round 1 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYXHUB/board-config-per-worktree/_lyx/reviews/discussion/round-1-escalation.md; decide with `lyx loom circling accept board-config-per-worktree` or `lyx loom circling continue board-config-per-worktree`, then run `lyx loom start` in the task worktree to resume",
+  "parent_notice": "Review segment of task `board-config-per-worktree` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/board-config-per-worktree/_lyx/reviews/discussion/round-1-escalation.md` with a one-shot fork.",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler → bounced to Discussion-Bouncer",
-    "wait": ""
+    "last": "Discussion-Bouncer → awaiting",
+    "wait": "bouncer Discussion-Bouncer: round 1 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYXHUB/board-config-per-worktree/_lyx/reviews/discussion/round-1-escalation.md; decide with `lyx loom circling accept board-config-per-worktree` or `lyx loom circling continue board-config-per-worktree`, then run `lyx loom start` in the task worktree to resume"
   },
   "history": [
     {
@@ -40,6 +41,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/board-config-per-worktree/_lyx/reviews/discussion/round-1-review.md",
       "at": "2026-10-05T18:35:58Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/board-config-per-worktree/_lyx/reviews/discussion/round-1-bouncer-ledger.md",
+      "at": "2026-10-05T18:36:34Z"
     }
   ],
   "product": {
