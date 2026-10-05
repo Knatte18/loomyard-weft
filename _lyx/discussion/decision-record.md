@@ -5,6 +5,7 @@
 Every role lyx spawns gets its whole procedure from a stencil, the orch included, and lyx itself loads that procedure and the skills the role needs on every path into a session.
 No session depends on an agent remembering rules, reading file-memory or choosing to load a skill.
 Every spawned role escalates to its parent, never to the operator in its own pane, and acts on its parent's answer as on an operator instruction.
+There are two exceptions: the interactive discussion role, whose interview is with the operator by design, and the orch, which has no parent and answers to the operator.
 
 ## Scope
 
@@ -35,8 +36,17 @@ Decision: `shuttleengine.Spec` gains a skill list (provider-neutral skill names,
 `claudeengine` realizes each as a typed, submitted `/<name>` turn once the session is ready, in order, each after the previous turn has ended, and only then delivers the run's prompt.
 An empty list changes nothing about a launch.
 The slash-command form lives only in `claudeengine`, beside `ClearSessionSequence` and `CompactSessionSequence`, as a skill-load sequence the orch watcher also uses.
-A skill that does not load (no turn end within a bound the engine owns, or the provider reporting it unknown) is logged through `internal/logger` and skipped; it never hangs or fails the launch.
+A skill that does not load is logged through `internal/logger` and skipped; it never hangs or fails the launch.
+There are two skip causes: no turn end within the skill-load timeout, and the provider reporting the skill unknown.
 This keeps today's best-effort semantics of the stencils' Step 0.
+A skipped skill lets its role run on its stencil alone.
+For a spawned role the stencil carries the whole procedure, so what is lost is the skill's style and quality guidance.
+For the orch, a skipped `ly:board` also loses the board mechanics D3 leaves to that skill, so the orch runs without them until the next reload.
+The skip is visible only in the log.
+The skill-load timeout is one provider-neutral spec field next to the skill list.
+`claudeengine` owns the default, a constant beside the skill-load sequence; a spawning module that sets none gets it, and may override it on the spec.
+The orch sets its existing handoff timeout on its launch spec and also hands it to the watcher, which passes it to the skill-load sequence at each reload.
+It is the single bound for every skill load, launch or reload; D7 refers to it.
 
 Rationale: the operator decided lyx loads skills itself and never relies on a hook or the agent's choice; `PATTERN-shuttle-provider-seam` puts the slash syntax in `claudeengine`; one mechanism serves every spawn and the orch watcher.
 
@@ -105,7 +115,7 @@ The two handoff stencils become one-line requests naming the template's path and
 Notes are written where handoffs are today, one timestamped file per cycle under `.lyx/orch/handoffs/`, all kept.
 
 Rationale: the operator's decision; the note holds only what lyx cannot read elsewhere, so it stays short.
-The board named the template `orch-note.md`; the `orch-template-` prefix matches every other file in the family.
+The `orch-template-` prefix matches every other file in the family.
 
 ### D6 — `cycle` clears, `distill` compacts, and both write the note first
 
@@ -117,6 +127,11 @@ Decision:
 - Compact mode then types `/compact` with the focus stencil; clear mode types `/clear`.
 - A cycle in either mode that passes the note gate moves `LastHandoff` to the note, so a later fresh `start` resumes from the newest note.
 - `distill` is a new cobra verb under `lyx orch`, with a `Short`, JSON errors and the same `watcher_live` envelope as `cycle` (`PATTERN-cli-cobra`).
+- Bound: nothing is cleared or compacted without a passed note gate.
+  A request whose note is not written, or whose idle probe does not pass, within the existing handoff timeout is abandoned with a log entry and its marker removed.
+  The marker records its request time, and the timeout runs from that time across watcher restarts.
+  A watcher that finds a marker older than the timeout, such as one left by a watcher that died, removes it with a log entry and acts on nothing.
+  With no live watcher the verb reports `watcher_live` false and leaves no marker that a later watcher acts on.
 
 Rationale: the operator's decision.
 Compact mode gains the `DEFER` handshake and a written note, closing the residual that a compaction protected no in-flight work.
@@ -135,9 +150,11 @@ It runs:
 At a fresh launch or adopt the skills and pointer go through D1's spec field; after a clear or compaction the watcher types them through the same `claudeengine` sequence.
 Each typed line obeys the existing rule: nothing is typed unless the idle probe passed on the same tick.
 Every step persists its phase before typing, and a restarted watcher re-types an unconfirmed skill load or pointer; a skill loaded twice costs one turn and changes nothing.
-A skill load is confirmed by its turn end; a skill that never ends a turn within the handoff timeout is logged and skipped, as in D1.
+A skill load is confirmed by its turn end; a skill that ends no turn within D1's skill-load timeout, or that the provider reports unknown, is logged and skipped as in D1.
+Either skip is persisted in the phase like a confirmation, so a restart does not re-type it or give it a fresh timeout.
+The watcher's skill-load timeout is the orch's existing handoff timeout, handed to it as D1 sets.
 
-Rationale: compaction drops loaded skills' content and the role stencil, `/clear` drops everything, and on 2026-10-05 the orch ignored the `SessionStart` hook's request; only lyx typing the commands is reliable.
+Rationale: compaction drops loaded skills' content and the role stencil, `/clear` drops everything, and an orch has ignored a `SessionStart` hook's request; only lyx typing the commands is reliable.
 Covering auto-compaction meets "every path in" for the one session lyx watches.
 
 ### D8 — The driver procedure becomes a stencil, launch-only
@@ -155,18 +172,26 @@ The orch now spawns runs with `lyx batten run`, and an operator resumes a run wi
 
 ### D9 — A shared parent directive in every spawned role's stencil
 
-Decision: a new directive stencil, rendered by the spawning module into the top-level stencil of every role in D2's table except the orch, says:
+Decision: a new directive stencil, rendered by the spawning module into the stencil that opens each role's session, for every role in D2's table except the orch, says:
 
 - your parent is `<name>`, the session that spawned this worktree's run, and it is the one to ask, by `SendMessage`;
 - a question to the operator in your pane is never the way forward;
 - a message from your parent is the operator's delegate and is acted on like an operator instruction, within your role's limits;
 - an instruction outside those limits is answered to the parent, naming the limit, never relayed to the operator.
 
+A role's opening stencil is the first stencil its spawning module reads for that D2 row's session: the one passed as the spec's prompt, or, for a role built from a prefix or step files, the prefix or top-level file that opens the session.
+A D2 row with several such stencils (treadle judge and triage, bouncer judge and seed, webster master and recovery, burler) lists each of them in the mapping; for the burler the opening stencil is the round prompt that points at its `burler-step-*` files.
+Step and body files (`burler-step-*`, `webster-body-*`) never carry the directive, and a fork inherits it through its master's context.
+The registry declares the row-to-opening-stencils mapping beside the role constants, and D10's test reads it.
+The discussion role in interactive mode is the one exception: its interview questions go to the operator in the pane by design, so the operator-ban line is not rendered there; a blocked step of that role still goes to the parent.
+In autonomous mode the discussion role renders the whole directive.
+A role recognises its parent's message by matching the sender against the parent name the directive was rendered with.
 The parent name comes from the same origin record reed injects as `LYX_PARENT`.
+It is one name per worktree: a role spawned inside the run (burler, conflict, bouncer) names that same parent, not its direct spawner, and a question from it reaches the orch through its own session's `SendMessage`; a fork of a master still goes through the master's context.
 With no parent recorded (a run started by hand with no orch above it), the directive's no-parent variant keeps the role's existing stop behaviour: write the report and stop.
 The directive adds an escalation target and widens trust only for the parent: a role still decides on its own judgment whatever its stencil lets it decide, still obeys every limit and deny its stencil and settings set, and trusts no other session's message.
 
-Rationale: the operator's decision of 2026-10-05; Claude Code's default treats a cross-session message as an untrusted peer, so the stencil must say otherwise.
+Rationale: the operator's decision; Claude Code's default treats a cross-session message as an untrusted peer, so the stencil must say otherwise.
 One directive rendered everywhere follows `PATTERN-producer-pointer-rule` and the existing `pattern-directive-*` and `friction-directive-*` precedent.
 
 ### D10 — Two PATTERN entries, test-backed
@@ -174,9 +199,14 @@ One directive rendered everywhere follows `PATTERN-producer-pointer-rule` and th
 Decision: two entries land in `PATTERN.md` under "Agents and prompts":
 
 - `PATTERN-role-skills-typed` — Loading a skill into a spawned session: the spawning module names it on the launch spec and lyx types it; no stencil asks an agent to load a skill. (test)
-- `PATTERN-parent-directive` — Writing a spawned role's top-level stencil: it renders the parent directive, and no stencil tells an agent to ask the operator in its pane. (test)
+- `PATTERN-parent-directive` — Writing a spawned role's top-level stencil: it renders the parent directive, and no stencil tells an agent to ask the operator in its pane; the discussion role's interactive questions come from the `{{.mode_rules}}` marker, not stencil text, and the orch stencils are outside the rule. (test)
 
-Each test scans the registered stencils: the first fails on a load-a-skill instruction, the second on a top-level role stencil without the directive's marker.
+Each test scans the registered stencils: the first fails on a load-a-skill instruction, the second on a role's opening stencil (from D9's mapping) without the directive's marker, or on an ask-the-operator instruction in stencil text.
+The load-a-skill scan matches an imperative load verb ("load", "invoke") followed by a skill name, or a mention of the `Skill` tool; naming a skill as a pointer, as the orch stencil does for `ly:board`, is not a match.
+The ask-the-operator scan matches this closed list, which the registry declares beside the role constants: "ask the operator", "ask the user", "ask the human", "ask your operator", "check with the operator", "confirm with the operator".
+A match is skipped when its sentence also carries a negation or bound ("do not", "don't", "never", "must not", "may not", "before"), so the discussion stencil's Step 2 and 3 wording ("Do not ask", "MUST NOT ask the operator", "before asking the operator") passes, as does its "MAY ask" line, which matches no phrase.
+Every stencil under `contracts/stencils/orch/` is exempt by family, since the orch answers to the operator; the scan covers every other registered stencil.
+The scan reads stencil text only; the interactive branch of `modeRules` in `internal/loomengine/prompt.go` is Go text the scan never sees, and the discussion stencil reaches it only through the `{{.mode_rules}}` marker.
 
 Rationale: both are cross-cutting rules every future role must follow; CLAUDE.md requires a new cross-cutting invariant in PATTERN in the same commit.
 
@@ -207,7 +237,7 @@ Rationale: both are cross-cutting rules every future role must follow; CLAUDE.md
 
 ## Open risks
 
-- Claude Code's reaction to an unknown `/<skill>` (a local error with no turn, or a plain prompt) is not verified; D1's bound must hold for both, and Plan chooses the detection.
+- Claude Code's reaction to an unknown `/<skill>` (a local error with no turn, or a plain prompt) is not verified; D1's skip must hold for both, and Plan chooses the detection.
 - Each skill load is one model turn per launch: three for the orch and one to three per spawned role, a small cost in time and tokens on every spawn.
 - A long Webster master that Claude Code auto-compacts loses its skills, and nothing re-types them.
 - When `orch-owns-the-loop` lands `lyx batten start`, the orch stencil's run-loop section must change with it.
@@ -215,16 +245,17 @@ Rationale: both are cross-cutting rules every future role must follow; CLAUDE.md
 
 ## Acceptance criteria
 
-- A spawn whose spec names skills types each as a turn, in order, before its prompt; an empty list launches as today; a skill that does not load is logged and skipped within a bound.
+- A spawn whose spec names skills types each as a turn, in order, before its prompt; an empty list launches as today; a skill that does not load, by timeout or an unknown-skill report, is logged and skipped within the skill-load timeout.
 - Every role in D2's table launches with its listed skills, and no registered stencil asks an agent to load a skill.
-- `lyx orch start`, with and without a note, `--adopt`, a clear cycle, a compact cycle and an auto-compaction each end with the orch skills loaded and the role stencil's pointer typed, with the note named exactly when one exists.
-- No reload step types into the orch pane unless the idle probe passed on that tick; a restarted watcher re-types an unconfirmed step and never skips one.
+- `lyx orch start`, with and without a note, `--adopt`, a clear cycle, a compact cycle and an auto-compaction each end with each orch skill loaded or, on a timeout or an unknown-skill report, logged and skipped, and the role stencil's pointer typed, with the note named exactly when one exists.
+- No reload step types into the orch pane unless the idle probe passed on that tick; a restarted watcher re-types an unconfirmed step and never loses one; only a skill load that exceeds the skill-load timeout or that the provider reports unknown is skipped and logged, and a persisted skip is not re-typed after a restart.
 - `lyx orch cycle` clears and `lyx orch distill` compacts whatever `cycle_mode` says; an automatic trigger follows `cycle_mode`; `distill` reports `watcher_live` like `cycle`.
 - Both modes write a note before clearing or compacting; a soft trigger's `DEFER` declines in both; a passed note gate moves `LastHandoff` in both.
 - The note request stencils name the note template and the note path and no longer name `scribe:handoff`.
 - The orch role stencil has a section for each theme in D3, and the start, resume and adopt stencils carry no procedural text.
 - `plugins/ly/skills/ly-drive/` is gone; the loom driver's launch prompt renders the driver stencil with its markers; the recipe-blind and park-marker pins pass against the stencil.
-- Every top-level stencil of a role in D2's table except the orch's renders the parent directive, with the parent's name when one is recorded and the no-parent variant otherwise.
+- Every opening stencil of a role in D2's table except the orch's renders the parent directive, with the parent's name when one is recorded and the no-parent variant otherwise; the interactive discussion role omits only the operator-ban line.
+- A cycle or distill request whose note is never written, or whose idle probe never passes, is abandoned within the handoff timeout and clears or compacts nothing; a marker older than the timeout, left by a dead watcher, is removed by the next watcher and acted on by none.
 - The two PATTERN entries exist, and their tests fail on a stencil that breaks them.
 - `go test ./...` passes, and the orch smoke suite still passes.
 
