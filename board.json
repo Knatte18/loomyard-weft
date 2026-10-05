@@ -308,7 +308,7 @@
       "depends_on": [],
       "isolated": false,
       "brief": "Default to CLI/tmux and start VS Code only on request; alternatives: pop-up terminals or tmux windows",
-      "body": "From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03.\nThe common case is reviewing the final PR rather than watching an agent edit live, so VS Code per worktree should be opt-in.\nAlternatives the operator has considered: separate terminals that pop up instead of VS Code, or tmux windows.\nCheck what batten already opens first.\nRelated: `batten-windows`, `ide-open-verb`, `runs-overview`."
+      "body": "From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03.\nThe common case is reviewing the final PR rather than watching an agent edit live, so VS Code per worktree should be opt-in.\nAlternatives the operator has considered: separate terminals that pop up instead of VS Code, or tmux windows.\nCheck what batten already opens first.\nRelated: `batten-windows`, `ide-open-verb`, `runs-overview`.\n\n## Operator, 2026-10-05\n\nOn a small laptop screen a reed session inside a VS Code window is hard to read.\nInstead of VS Code, a run opens one terminal **window** per worktree that runs `lyx reed attach` there.\nA window, not a tab: the operator tiles several runs side by side to watch them at once, which tabs cannot do.\nOn WSL that is a new Windows Terminal window (`wt.exe -w new …`) running `wsl.exe` into the worktree; other platforms need their own launcher.\nTabs fit the agents inside one run instead (see `reed-multi-window`).\nVS Code opens only on request."
     },
     {
       "id": 66,
