@@ -15,7 +15,7 @@
 - `plan:internal/websterengine#ResetDeps`
 - `plan:internal/websterengine#ResetPlan`
 - `plan:internal/websterengine#ResetTarget`
-- `plan:internal/fabricengine#Fabric.ResetPairWarp`
+- `internal/fabricengine#Fabric.ResetPairWarp`
 - `internal/fabricengine#NewMutations`
 - `internal/fabricengine#MutationRecord`
 - `internal/fabricengine#Fabric.CurrentBranch`

@@ -11,7 +11,7 @@
 - `internal/fabricengine/destroy_test.go`
 
 **Create:**
-- `plan:internal/fabricengine#Fabric.ResetPairWarp` -> `func (f *Fabric) ResetPairWarp(rec *Mutations, sha, parentBranch string, ownPaths []string) error`
+- `internal/fabricengine#Fabric.ResetPairWarp`
 - `internal/fabricengine/resetpairwarp_integration_test.go`
 
 **Uses:**
