@@ -5,7 +5,7 @@
 A Bouncer review loop never halts a run for a human on something the run's parent orchestrator can settle.
 The judge rules `CIRCLING` only from a configured checkpoint round on, and only on unchanged or reopened finding keys, never on a rising count.
 A `CIRCLING` ruling and a bounce budget spent without convergence both escalate to the parent, whose one-shot fork accepts or continues and records any design calls in the decision record through a new verb.
-That verb is also how any scope addition made after Discussion enters the decision record, so plan review and PR review read it as part of the answer key.
+That verb is also how any scope addition made after Discussion enters the decision record, so plan review reads it as part of the answer key.
 A recurring ledger finding is no longer filed as a `selfreport` GitHub issue.
 `go test -tags smoke ./internal/loomcli/` passes.
 
@@ -21,7 +21,7 @@ In:
 - A new verb, `lyx loom decision add`, that appends one decision to the decision record and re-runs the mechanical discussion check.
 - Naming that verb in the Plan-Write stencil and the escalation brief, so post-Discussion additions go through it.
 - Removing the `recurring-finding` anomaly trigger from `loomengine`'s detector and `loomcli`'s selfreport filing.
-- Fixing the five failing loomcli smoke tests.
+- Fixing the failing loomcli smoke tests.
 - Docs: `internal/shedadapters/doc.go`, `internal/loomcli` docs, `docs/overview.md` (the circling and budget paragraphs), `contracts/specs/refusal-spec.md` rows for every new refusal.
 
 Out:
@@ -37,7 +37,7 @@ Out:
 ### D1 — Checkpoint judging
 
 Decision: Below the checkpoint round the judge may rule only `CONVERGED` or `CONTINUE`.
-From the checkpoint round on, every judge call may also rule `CIRCLING`; with progress it rules `CONTINUE`, which extends the loop up to the review budget (D3) and never past it.
+From the checkpoint round on, every judge call may also rule `CIRCLING`; with progress it rules `CONTINUE`, which by itself extends the loop only up to the review budget (D3); a round past the budget needs a recorded decision (D4).
 Go renders the judge stencil's decision rule per round through a marker, one variant below the checkpoint without `CIRCLING` and one at or above it, so the stencil stays conditional-free.
 
 Rationale: The operator's decision of 2026-10-05.
@@ -48,7 +48,8 @@ Applying the checkpoint test at every round from the checkpoint on, rather than 
 Decision: `CIRCLING` means no progress: a gating finding (the existing gating definition: `design` class at MEDIUM or worse, or any BLOCKING) sits on a ledger key that is open in the round being judged and was open in an earlier round, either unchanged or reopened after being resolved.
 A rising finding count alone, or new keys alone, is never circling.
 The facts file Go renders gains, per recurring open key, the rounds it was open in, so the judge reads recurrence from the facts rather than inferring it.
-Go guards the harvest: a `CIRCLING` verdict is read as `CONTINUE`, with a Warn naming the round and the reason, when the round is below the checkpoint, or when the ledger the judge wrote for that round carries no open key whose `rounds` include the judged round and at least one earlier round.
+Go computes each key's `rounds` from the ledgers of the earlier rounds; the judge's ledger for the judged round supplies only the keys, their status, class and severity.
+Go guards the harvest: a `CIRCLING` verdict is read as `CONTINUE`, with a Warn naming the round and the reason, when the round is below the checkpoint, or when the ledger the judge wrote for that round carries no gating finding on an open key whose `rounds` include the judged round and at least one earlier round.
 
 Bound: the guard only narrows `CIRCLING` to `CONTINUE`; it never produces `CIRCLING` or `CONVERGED`, and it never touches a `CONTINUE` or `CONVERGED` verdict.
 A legacy verdict on disk keeps its existing reading.
@@ -69,12 +70,22 @@ One key per number, uniform across review segments, avoids designing per-segment
 
 ### D4 — A spent review budget escalates instead of blocking
 
-Decision: When the judge rules `CONTINUE` and the segment's bounce count has reached `review_max_bounces`, the Bouncer returns `awaiting` with an escalation (D5) instead of the `Stuck` that Shed would turn into a `bounce-budget-exhausted` block.
+Decision: When the judge rules `CONTINUE` and the `Bounces` seam reports the budget reached (below), the Bouncer returns `awaiting` with an escalation (D5) instead of the `Stuck` that Shed would turn into a `bounce-budget-exhausted` block.
 The Bouncer reads the count through its existing `Bounces` seam; Shed's generic budget block is unchanged and stays the backstop for every other row and for a failed seam read.
+"Reached" is the `Bounces` seam's own `count >= budget`: `count` is the Bouncer row's own counted `Stuck`s before this round's `Stuck`, the seed `Stuck` included, and `budget` is Shed's effective budget for that row; this is the `>=` Shed applies to the history it read before appending.
+The seam's budget is the config-applied `review_max_bounces` (D3) that Shed's engine blocks on, never the bare embedded recipe, whose rows no longer carry `max_bounces`:
+the routing projection that feeds the seam (`loomrecipe.Routing()` and `segmentBounces` in `internal/loomcli/wiring.go`) applies it through the assembly D3 uses for the engine, and a test pins that the seam and Shed agree.
+No separate `review_max_bounces` comparison exists, so the Nth judged round of N escalates exactly where Shed would block.
+The escalation cause is `budget` whenever the budget is reached in that sense, even when the judge also ruled `CIRCLING`; otherwise it is `circling`.
+A `continue` on a circling escalation is an ordinary counted `Stuck`; when the `Bounces` seam returns `ok` true, it cannot hit Shed's block, because the round at which Shed would block has cause `budget`.
+Every review-segment Bouncer is wired with the `Bounces` seam.
+An unwired Bouncer, an `ok` false read or an errored read does not escalate on budget and falls to Shed's generic block.
+The existing `circlingReason` clause that a continue will block on the budget is removed.
 A `continue` decision on a budget escalation grants exactly one more round: the Bouncer's `Stuck` for that decision and the round producer's following `Stuck` are both `BudgetExempt`.
 The next judge call finds the budget still spent and escalates again.
 
 Bound: the exemption covers only the two `Stuck`s of the one round a recorded `continue` decision on a budget escalation names; it cannot be granted without a decision file for that round, and each further round needs its own decision.
+No count caps the decisions; the committed decision files record each one (Open risks).
 `lyx loom goto` still grants a fresh budget as today.
 
 Rationale: The operator's decision: a budget spent without convergence messages the parent like a `CIRCLING` ruling.
@@ -91,6 +102,7 @@ Re-calling the Bouncer over the same on-disk state returns the same `awaiting` a
 The brief and notice are durable run-directory files the wiring commits like the rest of the run directory.
 
 Bound: `parent_notice` is advisory text; nothing in Go reads it back for control flow, and a missing or failed render degrades to the plain Reason with a Warn.
+The notice interpolates only the slug and the brief path, never judge, review or ledger text, because the parent session acts on it as an instruction.
 
 Rationale: The parent-review gate's shape (a brief plus a one-line message) is what the operator named; keeping the wording in stencils respects `PATTERN-stencil-ownership` and `PATTERN-shuttle-provider-seam`.
 
@@ -113,6 +125,9 @@ When it cannot settle the question, it records nothing and reports back to its p
 The `circling` verbs accept an escalation of either cause; the decision file records the cause beside the decision.
 `accept` ends the segment unconverged on that round, exactly as the existing circling accept does.
 
+Bound: `accept` lets the run proceed past one segment that may still hold open gating findings, including on a budget escalation whose verdict was plain `CONTINUE`; it passes only that segment, once, at the awaiting Bouncer row, and the committed decision file records it as unconverged with its cause, where the operator and later reviews can read it.
+Shed's generic budget block stays the backstop for every other row.
+
 Rationale: The operator's decision: a fork decides accept or continue and adds design calls; the operator is asked only when the parent cannot settle it or there is no parent.
 
 ### D8 — `lyx loom decision add`
@@ -131,6 +146,10 @@ an empty title, decision or rationale;
 a `--by` other than `parent` or `operator`.
 
 Bound: append-only, one decision per call; it never edits or removes existing text, never routes the run, and never touches the support log or the plan.
+It lets any shell addressing the run append to the answer key, the Plan-Write agent included, and `--by` is an unverified label, not an identity.
+What is provided: every entry carries the `Added after Discussion` heading with its claimed label and date, and the append is a committed diff, so an addition is visible to a human reader in the record and in history.
+Nothing checks the entries, and no reviewer is changed to read marked entries differently.
+The entry lands in `## Decisions`, where Plan-Review already reads every Decision as answer key, so it licenses scope there; a Plan-Write addition is licensed by Plan-Review without a second reader, which stays an open risk.
 A plan already approved is not re-planned by an addition; routing back is the caller's `lyx loom goto`.
 
 Rationale: The `post-discussion-additions` note: an addition must enter the record, not the plan, so plan review reads it as answer key.
@@ -161,7 +180,7 @@ Rationale: The operator's decision; issue #359 carried no state or history and d
 
 ### D12 — Smoke tier
 
-Decision: The five failing smoke tests are fixed at their cause.
+Decision: The failing smoke tests are fixed at their cause.
 The working hypothesis is that the tests are stale: they count strands by exact name equality with `loom-status` and the driver role, while production names strands through `internal/agentname` and finds them with `agentname.Matches`.
 If so, the tests match strands through `agentname.Matches`; if running them shows a production regression instead, production is fixed.
 `TestSmokeStart_LLMRunRemovesEveryStatusStrand` is diagnosed the same way.
@@ -199,13 +218,20 @@ Rationale: The board entry asks for the tier green before further loom runs depe
 - `ly-drive` lives in `plugins/ly/skills/`, and the `board-labels-and-skills` entry moves it into a stencil; whichever lands second rebases the D6 edit onto the other's location.
 - Under `discussion_interactive: false` the parent fork is an LLM; a fork that accepts too readily ends a review loop with open findings, visible only in the decision file and ledger.
 - The D2 guard trusts the judge's own ledger keys; a judge that renames a key each round evades circling and reaches the budget escalation instead.
+- A fork that records `continue` repeatedly extends a review loop one round per decision with no count cap; only the decision files show it.
+- A `decision add` entry is unverified and no reviewer is changed to check marked entries; only the heading marker and the committed diff expose it.
+- An unwired `Bounces` seam, or a read that is `ok` false or errored, at a spent budget falls to Shed's generic block, the one residual path that halts a review segment for a human.
 - An awaiting run whose parent never answers stays awaiting without a bound, as `awaiting` does today.
 
 ## Acceptance criteria
 
 - Below the checkpoint, the rendered judge prompt offers no `CIRCLING`; at and above it, it does.
 - A `CIRCLING` verdict below the checkpoint is harvested as `CONTINUE` with a Warn.
-- A `CIRCLING` verdict at the checkpoint whose ledger has no open key spanning the judged round and an earlier one is harvested as `CONTINUE`; one with such a key, unchanged or reopened (`rounds: [1, 3]`), escalates.
+- A `CIRCLING` verdict at the checkpoint whose ledger has no open key spanning the judged round and an earlier one is harvested as `CONTINUE`; one with a gating finding on such a key, unchanged or reopened (`rounds: [1, 3]`), escalates; a non-gating recurring key alone does not.
+- A `CIRCLING` verdict at a spent budget escalates with cause `budget`, and a recorded `continue` on it is exempt for one round.
+- At round N of a budget of N, a `CONTINUE` escalates with cause `budget` instead of blocking; a `continue` on a `circling` escalation below that round is counted and, with the seam returning `ok` true, never blocked.
+- The `Bounces` seam's budget for a review row equals `review_max_bounces`, not the embedded recipe's or the engine default.
+- With the `Bounces` seam unwired, `ok` false or erroring at a spent budget, a `CONTINUE` takes Shed's generic `bounce-budget-exhausted` block and does not escalate.
 - A rising count over new keys at the checkpoint does not escalate.
 - `loom.yaml` without the new keys resolves to checkpoint 3 and budget 5 through the template; a zero or negative value is a load error naming the key; review-segment rows take the config budget and `PR-Gate` keeps the recipe's.
 - A `CONTINUE` at the spent budget returns `awaiting` with an escalation brief and `parent_notice`, not a `blocked` halt, and raises no `bounce-budget-exhausted` anomaly.
