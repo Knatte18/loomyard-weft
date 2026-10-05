@@ -16,7 +16,8 @@ First, survey the leak (D9): snapshot `/tmp/tmux-$UID/`, run `go test -tags inte
 Record the list in this card's commit message; card 18 fixes each source it names that this card does not.
 
 `KillOnCleanup` registers, in `t.Cleanup`, a `kill-server` on the `-L` key `key` and then the removal of that key's socket file under the current `TMUX_TMPDIR`'s per-user directory.
-It removes only a path that is a socket, and only after `kill-server` has run, so it never touches a live server another test owns under a different key.
+It removes only the one path for its key, never globs or sweeps the directory, and only when the path is a socket and a connection to it fails after `kill-server` ran, so it never touches a live server, including one another test owns under a different key.
+It resolves the directory from `TMUX_TMPDIR` as tmux does, so a test outside `tmuxkit.Main`'s isolation reaches only its own key's file in the default directory.
 It is the one helper for a key a test did not mint itself, such as a `reedengine.ServerName` key of a fixture hub;
 `Socket` mints its random key as today and delegates its cleanup to `KillOnCleanup`.
 `sweep` removes each socket file after killing its server, so `Main`'s temp directory holds no socket when it is removed.

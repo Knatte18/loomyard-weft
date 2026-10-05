@@ -65,7 +65,7 @@ cards 11, 13, 15 and 17 then add the `llmkit` exemption, the tier table, the LLM
 Each entry line stays one line within `internal/pattern`'s `MaxEntryLineChars`, and the overview within `MaxOverviewBytes`;
 `TestOverview_RealFilePassesCheck` checks both and that every `pattern/` file is named by exactly one entry, so the three retired background files are deleted here (the time-seam and parallel entries had none).
 
-The enforcement tests keep every check and name the new entry: `cmd/lyx/tierpurity_test.go` and `cmd/lyx/tiersleep_test.go` report `PATTERN-test-speed`, and `cmd/lyx/tmuxisolation_test.go` and `cmd/lyx/hermeticenv_test.go` report `PATTERN-test-isolation`.
+The enforcement tests keep every check and name the new entry: `cmd/lyx/tierpurity_test.go` reports `PATTERN-test-speed`, and `cmd/lyx/tmuxisolation_test.go` and `cmd/lyx/hermeticenv_test.go` report `PATTERN-test-isolation`.
 Every other reference to a retired ID in a code comment, test message, stencil, spec or doc is rewritten to the entry that absorbed it; the target list above is every file `grep -rln` finds for the five retired IDs outside `_lyx/` (discussion artifacts are exempt).
 A prose invariant name such as "Test Tier Purity Invariant" is not an entry ID and stays.
 Run the same grep after the edit; it returns nothing outside `_lyx/`.

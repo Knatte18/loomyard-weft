@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -36,7 +36,8 @@ No test is deleted.
 
 ## Shared Decisions
 
-- **Measurement order (D4).** Cards 2 and 9 measure on the same pre-retag test set, before and after the speed fixes (cards 3–8); no card before 9 adds, removes or retags a test file.
+- **Measurement order (D4).** Cards 2 and 9 measure on the same pre-retag test set, before and after the speed fixes (cards 3–8); no card before 9 adds, removes or retags a tagged test file.
+  The untagged files cards 1 and 8 create are in both measured runs.
   Card 21 records the post-retag numbers separately.
 - **Seams are per instance (D5).** A shortened wait is a struct field or a parameter, never a package-level `var`, so tests keep `t.Parallel`; production always passes today's value.
 - **PATTERN lands with its code.** Card 10 merges the Testing entries on today's rules; each later rule (the `llmkit` exemption, the tier table, the LLM guard, the socket rule) lands in `PATTERN.md` and its background in the same card as the code that enforces it.

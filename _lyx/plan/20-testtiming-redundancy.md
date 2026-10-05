@@ -11,6 +11,10 @@
 - `cmd/testtiming/main_test.go`
 - `pattern/PATTERN-test-economy.md`
 
+**Uses:**
+- `cmd/testtiming#pkgResult`
+- `cmd/testtiming#parseLine`
+
 **Intent:**
 `cmd/testtiming` gains a redundancy mode, `-redundancy`, beside its timing mode (D1, D2).
 Flags: `-out <path>` names the markdown report it writes (default `docs/benchmarks/test-redundancy.md`), `-pkg <pattern>` limits the packages (default `./...`), and `-tags` (card 1) defaults to `integration,tmux` in this mode, every tier but `llm`.
@@ -23,7 +27,8 @@ Flags: `-out <path>` names the markdown report it writes (default `docs/benchmar
 - classifies each test: "no coverage" when it covers no block, ran skipped, or the spawn scan marks it; otherwise a candidate when its block set is a subset of the union of the other tests' sets in the package, with the covering tests named in order of overlap;
 - marks the removable set: a greedy pass over the candidates, slowest first, that drops one, re-checks each remaining candidate against the tests still kept, and continues.
 
-Wall time is the package's own run of all its tests (one `go test -json` run, as timing mode does), serial time the sum of the per-test elapsed times, and the count the number of top-level tests.
+Wall time is the package's own run of all its tests (one `go test -json` run, as timing mode does), serial time the sum of the per-test elapsed times, and the count the number of top-level tests;
+the three come from card 1's `parseLine` and `pkgResult` aggregation over that stream, not a second parser.
 A package whose binary fails to build or whose test fails is reported with that error and the run exits 1 at the end, after writing the report.
 
 `spawnscan.go` decides "spawns a subprocess" statically over the package's `_test.go` sources with `go/parser`: a test spawns when it, or a function it calls that is declared in the package's own test or production sources, references `os/exec`, `lyxbin`, `tmuxkit` (other than `Main`), `gitkit` (other than `HermeticGitEnv`), `hubforge`, or another testkit spawn helper found by the same scan over `internal/testkit/`.
