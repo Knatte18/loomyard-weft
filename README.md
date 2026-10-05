@@ -15,6 +15,24 @@ Waits on nothing open; can start now, in parallel.
    - Driver procedure moves into a stencil, a ly:runs workflow skill, and the orch watcher injects skill loading at start, adopt and after every cycle
 1. **Measure the test suite, make it fast, settle its rules** — [`test-suite-measure`](design-test-suite-measure.md) · enhancement
    - Stage 2a: per-test coverage tool and before-state, real-time seams and t.Parallel, tmux socket leak, a Claude test tier, PATTERN Testing consolidated
+   - **Before:** `test-suite-prune-core`
+
+### Layer B
+
+Starts when every entry it names under After is done.
+
+1. **Prune the six largest test packages** — [`test-suite-prune-core`](design-test-suite-prune-core.md) · enhancement
+   - Stage 2b: delete redundant tests and fold near-identical ones in fabricengine, websterengine, reedengine, shuttleengine, loomcli, shedadapters
+   - **After:** `test-suite-measure`
+   - **Before:** `test-suite-prune-rest`
+
+### Layer C
+
+Starts when every entry it names under After is done.
+
+1. **Prune the remaining test packages and guard the budget** — [`test-suite-prune-rest`](design-test-suite-prune-rest.md) · enhancement
+   - Stage 2c: prune the remaining packages, record the after-state, pin a per-package test budget
+   - **After:** `test-suite-prune-core`
 
 ## Notes
 
