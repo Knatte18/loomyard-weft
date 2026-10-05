@@ -8,7 +8,7 @@ Depends on: [`test-writing-rules`](design-test-writing-rules.md)
 
 Every role lyx spawns gets its whole procedure from a stencil, the orch included, and lyx itself reloads that procedure and the skills it needs on every path in, so no session depends on an agent remembering rules or choosing to load a skill.
 
-# Decisions (operator, 2026-10-05 and 2026-10-06)
+# Decisions (operator, 2026-10-05)
 
 - **Skill or stencil.** A skill carries what any session needs to use lyx, the operator's own sessions included; a stencil carries one spawned role's procedure.
   `ly:board` stays a skill, since any agent may add to the board.

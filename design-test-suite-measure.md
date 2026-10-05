@@ -44,7 +44,7 @@ Decided (operator, 2026-10-03): four tiers, split by what a test needs and costs
 3. live tmux and the built binary (time, no tokens);
 4. real LLM sessions (tokens), under its own build tag, run only when explicitly asked, never by a card verify, the plan verify or PR-Gate.
 
-The fourth tier is named for LLMs, not Claude (e.g. `llm`): lyx is not meant to drive Claude only (operator, 2026-10-06).
+The fourth tier is named for LLMs, not Claude (e.g. `llm`): lyx is not meant to drive Claude only (operator, 2026-10-05).
 A tier-3 test never spawns an LLM: it uses a fake or no provider.
 Settle the other tier names in Discussion ("smoke" says nothing about tmux), retag the tests that spawn an LLM, and state the tier rules in PATTERN's Testing section (below) and in Plan-Write's per-card verify.
 Which gate runs which tier stays in note `test-tiers`.
