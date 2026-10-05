@@ -11,10 +11,10 @@
 - `internal/webstercli/reset_test.go`
 
 **Uses:**
-- `plan:internal/websterengine#PlanReset`
-- `plan:internal/websterengine#ResetDeps`
-- `plan:internal/websterengine#ResetPlan`
-- `plan:internal/websterengine#ResetTarget`
+- `internal/websterengine#PlanReset`
+- `internal/websterengine#ResetDeps`
+- `internal/websterengine#ResetPlan`
+- `internal/websterengine#ResetTarget`
 - `internal/fabricengine#Fabric.ResetPairWarp`
 - `internal/fabricengine#NewMutations`
 - `internal/fabricengine#MutationRecord`

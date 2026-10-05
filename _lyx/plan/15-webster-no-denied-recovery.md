@@ -28,7 +28,7 @@
 - `cmd/lyx/norecoverydeny_test.go`
 
 **Uses:**
-- `plan:internal/websterengine#wayForwardSteps`
+- `internal/websterengine#wayForwardSteps`
 
 **Intent:**
 D7 for the remaining Webster sites, and D10: no refusal, stencil or spec names a command the agents are denied, with a PATTERN entry and its scan landing in the commit that completes the rewording.

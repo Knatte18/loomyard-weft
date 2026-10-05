@@ -25,7 +25,7 @@
 - `internal/shedadapters/webster_test.go`
 
 **Uses:**
-- `plan:internal/websterengine#wayForwardSteps`
+- `internal/websterengine#wayForwardSteps`
 - `plan:internal/websterengine#contractFileStatus`
 - `internal/websterengine#checkSuspectPaths`
 - `internal/websterengine#trackedRel`

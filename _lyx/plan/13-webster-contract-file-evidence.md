@@ -24,7 +24,7 @@
 **Uses:**
 - `internal/websterengine#RunWrites`
 - `internal/websterengine#loadRunWrites`
-- `plan:internal/websterengine#wayForwardSteps`
+- `internal/websterengine#wayForwardSteps`
 - `internal/websterengine#OutcomePath`
 - `internal/websterengine#checkSuspectPaths`
 

@@ -1,11 +1,11 @@
 # Card 11 — webster-reset-plan
 
 **Create:**
-- `plan:internal/websterengine#ResetTarget` -> `type ResetTarget string`
-- `plan:internal/websterengine#ResetDeps` -> `type ResetDeps struct`
-- `plan:internal/websterengine#ResetPlan` -> `type ResetPlan struct`
-- `plan:internal/websterengine#PlanReset` -> `func PlanReset(deps ResetDeps, to ResetTarget) (ResetPlan, error)`
-- `plan:internal/websterengine#wayForwardSteps` -> `func wayForwardSteps(steps ...string) string`
+- `internal/websterengine#ResetTarget`
+- `internal/websterengine#ResetDeps`
+- `internal/websterengine#ResetPlan`
+- `internal/websterengine#PlanReset`
+- `internal/websterengine#wayForwardSteps`
 - `internal/websterengine/reset_test.go`
 - `internal/websterengine/reset_integration_test.go`
 
