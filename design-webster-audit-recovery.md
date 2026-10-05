@@ -1,6 +1,6 @@
 # Webster audit and verify-gate halts are recoverable by the agent
 
-`webster-audit-recovery` · Task · bug, enhancement, webster, shuttle · running · Publish
+`webster-audit-recovery` · Task · bug, enhancement, webster, shuttle · running · PR-Gate
 
 # Goal
 
