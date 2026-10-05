@@ -127,3 +127,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Notes nobody means to act on soon get parked: kept, hidden by default; curated at each intake
 1. **lyx seeds the prime VS Code setup: title, orch start task, keybindings** — [`ide-prime-setup`](design-ide-prime-setup.md) · enhancement, ide, orch
    - LY: prime/LY: <slug> titles, prime opens with reed up+attach only, orch start and open board as tasks with lyx keybindings, no launch.json
+1. **Stencils make sessions load scribe:conversation and scribe:prose** — [`stencil-loads-skills`](design-stencil-loads-skills.md) · enhancement, stencil, orch
+   - The plugin hook only asks and the orch ignored it; lyx-rendered prompts open with an imperative to load both skills
