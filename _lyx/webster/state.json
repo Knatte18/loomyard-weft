@@ -1,6 +1,6 @@
 {
   "runGuid": "25cb2417c045a8913168844600de9f14",
-  "planFingerprint": "84d635fc7040ecbc797873c881418bf0ee7a329bb4a2679945199d49b43f0c3b",
+  "planFingerprint": "bb5cfb40bfdd53a04d2839dd88dcf8a71fb17f1df980ffdf760ad1e3365f6126",
   "planFileHashes": {
     "00-overview.md": "03aba6e4f2294ee19e470413f92e32ae068ba5cf2ca471e06a6e10d46703792d",
     "01-configreg-hub-wide.md": "8ca390be72567a38bc849b4618ea73738ec2fe53aeb7fe5ea2e984f16a765106",
@@ -8,10 +8,10 @@
     "03-hub-wide-reconcile.md": "734b7f093e1ef470eaa2c896c6b49307343efa90624d07ba65c2774af21a881d",
     "04-board-readers-hub-file.md": "751d7b7d110e3d7c0b589fbcfeca8710711673d1f2cece210349b4e8080e18f0",
     "05-retire-worktree-copy.md": "b28efbb13b46b212c6eefe05450e1a4a100e5ac0e4320f7692db54672c690c69",
-    "06-configengine-staged-edit.md": "3d3a868757d822a52d918543f882628f823c87b49aa150227a5c4fc89d12059a",
-    "07-config-cli-hub-wide.md": "8dac35da6501fdbcee76b684140297a345c226ea29a76b79d465257e85a90ad0"
+    "06-configengine-staged-edit.md": "0651633ad58ebcf967d9d58fa3a917d071bf0d4b821d6c484d569b1c9651f72b",
+    "07-config-cli-hub-wide.md": "49af4c914fddc52b9e76f8cf4a47f7ed783542af3cef6b71e344c7095af091fb"
   },
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "08f77d30e10194f6fe1f235b2c65df1a",
   "masterSessionId": "796cd30e-0090-4614-89af-4ad1258a80bd",
   "assertedModel": "sonnet",
@@ -152,14 +152,25 @@
         "06-configengine-staged-edit"
       ],
       "cardHashes": {
-        "06-configengine-staged-edit": "3d3a868757d822a52d918543f882628f823c87b49aa150227a5c4fc89d12059a"
+        "06-configengine-staged-edit": "0651633ad58ebcf967d9d58fa3a917d071bf0d4b821d6c484d569b1c9651f72b"
       },
       "startSha": "d9bb0cb77cf87443f3b01654caa8726d605bfa2b",
       "kind": "fork",
       "spawnedAt": "2026-10-05T19:06:52Z",
       "sessionId": "796cd30e-0090-4614-89af-4ad1258a80bd",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-configengine-staged-edit",
+        "status": "done",
+        "head_sha": "d920230e953683d21d081b03779d172801f60206"
+      },
+      "cardShas": [
+        "d920230e953683d21d081b03779d172801f60206"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-ab0598fa73fefb6a6.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
@@ -167,6 +178,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-a64a5d6ea369256e0.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-aa211604a2d216e97.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-ad6de7f5a9ce768ff.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-a172c74626eba0c56.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-a172c74626eba0c56.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-ab0598fa73fefb6a6.jsonl"
   ]
 }

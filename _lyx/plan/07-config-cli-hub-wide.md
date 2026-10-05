@@ -14,8 +14,8 @@
 
 **Uses:**
 - `internal/fabricengine#Bolt.CommitWritten`
-- `plan:internal/configengine#EditPath`
-- `plan:internal/configengine#StagingFile`
+- `internal/configengine#EditPath`
+- `internal/configengine#StagingFile`
 - `internal/configreg#Module`
 - `internal/configengine#Set`
 - `internal/configengine#Load`

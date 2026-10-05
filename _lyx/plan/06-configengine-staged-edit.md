@@ -1,8 +1,8 @@
 # Card 6 — configengine: edit a file at a told path, and name its staging file
 
 **Create:**
-- `plan:internal/configengine#EditPath` -> `func EditPath(path, template string, edit EditorFunc) error`
-- `plan:internal/configengine#StagingFile` -> `func StagingFile(baseDir, module string) string`
+- `internal/configengine#EditPath`
+- `internal/configengine#StagingFile`
 
 **Edit:**
 - `internal/configengine#Edit`
