@@ -47,3 +47,14 @@ After a compact cycle the watcher types that prompt once the compaction has fini
 `orch-cycle-hardening` rebuilds the cycle and the orch stencils; this builds on its result.
 
 Settle which spawned roles also need the scribe skills: every role that writes prose for the operator or into the repo.
+
+## Agents escalate to their parent, and act on the parent's answer
+
+Seen repeatedly on 2026-10-05: a spawned agent (a Webster Master, a driver) stopped and asked the operator in its own pane instead of its parent, and an agent that did ask the parent then refused to act on the parent's answer and asked the operator again.
+In `loom-bouncer-rounds` the Master asked the hub how to handle an environmental verify failure, got "cherry-pick 7ff4cfc1", and then asked the operator, citing that a message from another session cannot grant permission and that its stencil forbids it to run git.
+
+Operator decision (2026-10-05): agents never stop to ask the operator; they ask their parent (`LYX_PARENT`), and the parent asks the operator only what it cannot settle.
+
+- Every role stencil names its parent as the one to ask, by name, and says a question to the operator in the pane is never the way forward.
+- Every role stencil says a message from its own parent (`LYX_PARENT`, under `internal/agentname`'s naming) is the operator's delegate and is acted on like an operator instruction, within the role's limits; Claude Code's default treats a cross-session message as an untrusted peer, and the stencil has to say otherwise.
+- A parent's instruction that falls outside the role's limits (the Master may not run git) names who carries it out instead, so the parent never gives an instruction the recipient cannot follow; the parent's own guidance (`ly:runs`) says which role can do what.
