@@ -1,0 +1,17 @@
+---
+round: 1
+focus:
+  - "Card 4, `internal/loomcli/halt.go`, `arm.go`, `entryobservation.go`: does every Go-detected anomaly write exactly one note through `friction.NotePath`, only when `c.frictionDir != \"\"`, with a write failure warned and never changing the verb's exit or envelope (`PATTERN-friction-capture`)? Check `loomAfterStep`, `loomPostRun` and `failedHalt` each write one halt note, not two."
+  - "Card 4, `loomPreStepUnmarked` and the single observe-and-note method: a refused step (busy probe, run lock held) must neither observe nor consume the voucher, and a busy probe must stay no anomaly. Does the call position match the plan for `run` and `step`?"
+  - "Card 5, `runDriverSpawnAndWait` in `internal/loomcli/start.go`: is the voucher written on the `mustSpawn` path only, after the unfinished-merge refusal and park-marker removal, immediately before either arm spawns, and gated on Tier 2? Confirm the parked-driver resume, the live-strand no-op and every refusal write none, and that a missing status file or failed write is warned without changing anything else."
+  - "Card 5 doc comments: do `recordHandoffVoucher`, `LoomHandoffVoucher` and `runDriverSpawnAndWait` all state the bound the plan names (suppresses at most one first matching observation, machine-local under `.lyx`, a stale voucher after a failed readiness check, a dead start-spawned driver not noted)?"
+  - "Card 1 and card 3 per-card mechanical checks: did the plan's post-edit greps for removed identifiers (card 1) and for the renamed marker names (card 3) come back clean except for the exceptions each card names, and does the `git mv` rename keep history for all three renamed files in the card-3 commit?"
+  - "Card 6, `cmd/lyx/agentfiledissues_test.go`: does the scan walk non-test `.go` files, allow only `internal/selfreportcli/` and `internal/selfreportengine/`, use `scankit.NewAllowlist` with `RequireNoStale`, mirror `cmd/lyx/ghguard_test.go`, and name `PATTERN-agent-filed-issues` in its failure? Does the `PATTERN.md` entry sit after `PATTERN-github-auth`, one line, within the entry-line cap, marked (test)?"
+  - "Card 6 stencil and docs: does `friction-template-reflection.md` keep `{{.parent_directive}}` and every other marker, carry the lyx-problem-only filing rule and its recoverability bound, and point at `lyx selfreport create`'s own `--label` guidance without restating it (`PATTERN-producer-pointer-rule`)? Do the `claims_test.go` claims match the stencil text, with a `mustNot` on `Tier 1`?"
+  - "Test economy: card 4 and card 5 tests that re-assert consume-once or voucher-match behavior already pinned by `TestConsumeHandoffVoucher` and `TestObserveEntry_ConsumesHandoffVoucherIntoObservation`; and any behavior the diff adds with no test, notably the `RecentHistory` cap of five and the history-section rendering of the crash-resume note."
+  - "Comment conventions in the new and rewritten doc comments (`anomaly.go`, `entryobservation.go`, `halt.go`, `arm.go`, `config.go`, `friction/doc.go`): they follow the repo's `CLAUDE.md` and `PATTERN.md` conventions (semantic line breaks in `.md`, no stale references to Tier 1 filing, the filed marker or `selfreport` key)."
+---
+
+The focus follows the plan's cards.
+It spends attention on the new behavior (cards 4 and 5, where the risk is wrong call position or gating) and on the mechanical checks the plan prescribes.
+Items the plan's own gates or `Plan-Review` already cover are left out.
