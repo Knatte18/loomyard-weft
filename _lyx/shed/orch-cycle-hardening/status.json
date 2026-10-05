@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "blocked",
-  "error": "verify gate failed after 1 attempt(s) of 3: github.com/Knatte18/loomyard/internal/reedengine.TestNaming_TaskWorktreeStrandNameTitleAndEnv",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": "verify gate failed after 1 attempt(s) of 3: github.com/Knatte18/loomyard/internal/reedengine.TestNaming_TaskWorktreeStrandNameTitleAndEnv"
+    "wait": ""
   },
   "history": [
     {
