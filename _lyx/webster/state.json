@@ -20,7 +20,7 @@
     "15-orch-reload.md": "4a10e0eb0864ae86c1536dce7a528e27a986165c47bdd8d70fdb910e69409bbd",
     "16-pattern-entries.md": "e047737b43baabd460e35807bf459d4799d6a894d825af114c67328a17b7713f"
   },
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "40172dc3ee4d7f3102b0f95aade12453",
   "masterSessionId": "473ae965-3716-422d-9f02-1fa754091f0c",
   "assertedModel": "sonnet",
@@ -128,6 +128,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-skills-and-stencils/473ae965-3716-422d-9f02-1fa754091f0c/subagents/agent-a895286afa84e4f2a.jsonl"
       ]
+    },
+    "5": {
+      "slug": "webster-roles",
+      "cards": [
+        "05-webster-roles"
+      ],
+      "cardHashes": {
+        "05-webster-roles": "7e7fef1a7451e730b25f62f6e2c08188bb09f7b908cc010ce5622b4d483aa45a"
+      },
+      "startSha": "67e251abab0e132a04aa493f4750941372fa320a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T16:40:57Z",
+      "sessionId": "473ae965-3716-422d-9f02-1fa754091f0c",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
