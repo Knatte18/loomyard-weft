@@ -1,12 +1,13 @@
 {
   "current_producer": "Webster-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Webster-Bouncer: round 1 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYXHUB/agent-command-wrapping/_lyx/reviews/webster/round-1-escalation.md; decide with `lyx loom circling accept agent-command-wrapping` or `lyx loom circling continue agent-command-wrapping`, then run `lyx loom start` in the task worktree to resume",
+  "parent_notice": "Review segment of task `agent-command-wrapping` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/agent-command-wrapping/_lyx/reviews/webster/round-1-escalation.md` with a one-shot fork.",
   "pause_requested": false,
   "activity": {
     "now": "Webster-Bouncer",
-    "last": "Webster-Burler → bounced to Webster-Bouncer",
-    "wait": ""
+    "last": "Webster-Bouncer → awaiting",
+    "wait": "bouncer Webster-Bouncer: round 1 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYXHUB/agent-command-wrapping/_lyx/reviews/webster/round-1-escalation.md; decide with `lyx loom circling accept agent-command-wrapping` or `lyx loom circling continue agent-command-wrapping`, then run `lyx loom start` in the task worktree to resume"
   },
   "history": [
     {
@@ -97,6 +98,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/agent-command-wrapping/_lyx/reviews/webster/round-1-review.md",
       "at": "2026-10-05T18:52:53Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Webster-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/agent-command-wrapping/_lyx/reviews/webster/round-1-bouncer-ledger.md",
+      "at": "2026-10-05T18:53:29Z"
     }
   ],
   "product": {
