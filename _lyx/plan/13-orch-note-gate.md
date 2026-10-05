@@ -19,7 +19,7 @@
 - `internal/orchcli/smoke_live_test.go`
 
 **Uses:**
-- `plan:internal/orchengine#RenderNoteTemplateFile`
+- `internal/orchengine#RenderNoteTemplateFile`
 - `internal/orchengine#RequestCycle`
 - `internal/orchengine#CycleRequested`
 

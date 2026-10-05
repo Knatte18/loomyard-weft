@@ -1,6 +1,6 @@
 {
   "runGuid": "9fcabaeec009f0c697202900dc217a0d",
-  "planFingerprint": "35ecf2d203918c8d8eb0d33f092147ef5c943dccbf7e3e03f0429c29c072dae2",
+  "planFingerprint": "93bcacc1a37d709bf3142baedf5392efb1af7fdc84efb750f00c94eaf7d2d90a",
   "planFileHashes": {
     "00-overview.md": "21ea519b1c2616abbd08f26fc47dceb638037736023b356a3d82a203d5889f43",
     "01-shuttle-skill-loading.md": "98d0269fbe75c0e950d46f2cea95c963ca263a8fabb552a8ad55954e43a42b31",
@@ -14,13 +14,13 @@
     "09-landing-friction-roles.md": "30e973e70224ea4aa53936bd40a6fbbbb5d904c76392811246573f1cac73ae7b",
     "10-driver-stencil.md": "be4cce6821cc5c9af7bb141630e2ebd74cd426070ceb15a8a0f727ca6fcf75c6",
     "11-retire-ly-drive-skill.md": "b2c1c8cf841fa8cb18e1b33c224132f1bbd0dc19b63dd7bb553978762f8495f4",
-    "12-orch-role-stencil.md": "85ca0ac606209e9ad6d3729128198106f868a05de61a7338e1c9a5290fe94e2c",
-    "13-orch-note-gate.md": "dadf840ac8212a562b9394be3fbfe4cb3ab519fa76e36556badaa2637acb02a2",
+    "12-orch-role-stencil.md": "a50dcca53f318866c514a93f7df0320437106b911b990cee67ad57da46208e39",
+    "13-orch-note-gate.md": "8431e3edc7bf2d8b69996bdb6844e4e2afdc6bd200bd304fd9ad59deca39e018",
     "14-compaction-since.md": "62995596cd67e32df579406b8279a8bae35d5d2a1c526138d3b8ca5e4248aebc",
-    "15-orch-reload.md": "4a10e0eb0864ae86c1536dce7a528e27a986165c47bdd8d70fdb910e69409bbd",
+    "15-orch-reload.md": "38ac5b4ab5ffd944c1c75ca71c5c44ec0d822f4de51a77046bac154f6ffd9293",
     "16-pattern-entries.md": "e047737b43baabd460e35807bf459d4799d6a894d825af114c67328a17b7713f"
   },
-  "currentBatch": 12,
+  "currentBatch": 0,
   "masterStrand": "40172dc3ee4d7f3102b0f95aade12453",
   "masterSessionId": "473ae965-3716-422d-9f02-1fa754091f0c",
   "assertedModel": "sonnet",
@@ -118,14 +118,28 @@
         "12-orch-role-stencil"
       ],
       "cardHashes": {
-        "12-orch-role-stencil": "85ca0ac606209e9ad6d3729128198106f868a05de61a7338e1c9a5290fe94e2c"
+        "12-orch-role-stencil": "a50dcca53f318866c514a93f7df0320437106b911b990cee67ad57da46208e39"
       },
       "startSha": "9d50872cee1f7e70e52f219e2dc181bc3b3c3ab2",
       "kind": "fork",
       "spawnedAt": "2026-10-05T17:07:55Z",
       "sessionId": "473ae965-3716-422d-9f02-1fa754091f0c",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "12-orch-role-stencil",
+        "status": "done",
+        "head_sha": "28f966f20ad571a7152c5ac1faf00f24e063f9f5",
+        "deviations": [
+          "internal/orchengine/state_test.go"
+        ]
+      },
+      "cardShas": [
+        "28f966f20ad571a7152c5ac1faf00f24e063f9f5"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-skills-and-stencils/473ae965-3716-422d-9f02-1fa754091f0c/subagents/agent-a394a55b5d294289c.jsonl"
+      ]
     },
     "2": {
       "slug": "claude-skill-loader",
@@ -371,6 +385,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-skills-and-stencils/473ae965-3716-422d-9f02-1fa754091f0c/subagents/agent-a77a42fe1ea471299.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-skills-and-stencils/473ae965-3716-422d-9f02-1fa754091f0c/subagents/agent-a0964e636895ac926.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-skills-and-stencils/473ae965-3716-422d-9f02-1fa754091f0c/subagents/agent-a9c0aa6fc613cfc01.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-skills-and-stencils/473ae965-3716-422d-9f02-1fa754091f0c/subagents/agent-ac2ff12f6a6aa3f59.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-skills-and-stencils/473ae965-3716-422d-9f02-1fa754091f0c/subagents/agent-ac2ff12f6a6aa3f59.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-skills-and-stencils/473ae965-3716-422d-9f02-1fa754091f0c/subagents/agent-a394a55b5d294289c.jsonl"
   ]
 }

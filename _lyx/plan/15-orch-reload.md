@@ -21,7 +21,7 @@
 - `internal/shuttleengine#Runner.LoadSkill`
 - `internal/shuttleengine#Runner.SkillUnknown`
 - `plan:internal/shuttleengine#Runner.CompactedSince`
-- `plan:internal/orchengine#RenderRoleFile`
+- `internal/orchengine#RenderRoleFile`
 - `internal/orchengine#Session`
 - `internal/orchengine#Watcher`
 

@@ -3,8 +3,8 @@
 **Create:**
 - `contracts/stencils/orch/orch-template-role.md`
 - `contracts/stencils/orch/orch-template-note.md`
-- `plan:internal/orchengine#RenderRoleFile` -> `func RenderRoleFile(stencilsDir, path string) error`
-- `plan:internal/orchengine#RenderNoteTemplateFile` -> `func RenderNoteTemplateFile(stencilsDir, path string) error`
+- `internal/orchengine#RenderRoleFile`
+- `internal/orchengine#RenderNoteTemplateFile`
 
 **Edit:**
 - `contracts/stencils/stencils.go`
