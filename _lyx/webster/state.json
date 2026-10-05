@@ -18,7 +18,7 @@
     "13-selfreport-bogus.md": "40552ba7a12f1b52d4fc197971f8252408235ccca48ff205044a63a269ffaab1",
     "14-clitree-findings-gone.md": "b70a13fb39e065e373bb6561b08fba9d22335e1303e86b72fa2b8701ca5e04da"
   },
-  "currentBatch": 11,
+  "currentBatch": 0,
   "masterStrand": "705f5093c4333c1d9f8b20d3e57cceaf",
   "masterSessionId": "12d5d743-acaf-4edc-9226-ff1cde781f4f",
   "assertedModel": "sonnet",
@@ -87,8 +87,22 @@
       "kind": "fork",
       "spawnedAt": "2026-10-05T08:14:18Z",
       "sessionId": "12d5d743-acaf-4edc-9226-ff1cde781f4f",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "11-slug-limit-help",
+        "status": "done",
+        "head_sha": "ad3c27a7a9c03f838fef8ae78f474dabb7efea73",
+        "deviations": [
+          "internal/boardcli/intake.go"
+        ]
+      },
+      "cardShas": [
+        "ad3c27a7a9c03f838fef8ae78f474dabb7efea73"
+      ],
+      "forkTranscripts": [
+        "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-board-labels-and-skills/12d5d743-acaf-4edc-9226-ff1cde781f4f/subagents/agent-abfc51658d214bdc5.jsonl"
+      ]
     },
     "2": {
       "slug": "configengine-open-maps",
@@ -309,6 +323,7 @@
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-board-labels-and-skills/12d5d743-acaf-4edc-9226-ff1cde781f4f/subagents/agent-adddce3c1a3127081.jsonl",
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-board-labels-and-skills/12d5d743-acaf-4edc-9226-ff1cde781f4f/subagents/agent-a1e97b5742ff9e385.jsonl",
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-board-labels-and-skills/12d5d743-acaf-4edc-9226-ff1cde781f4f/subagents/agent-a1f8af9c5fed85401.jsonl",
-    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-board-labels-and-skills/12d5d743-acaf-4edc-9226-ff1cde781f4f/subagents/agent-a960155091c9854b7.jsonl"
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-board-labels-and-skills/12d5d743-acaf-4edc-9226-ff1cde781f4f/subagents/agent-a960155091c9854b7.jsonl",
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-board-labels-and-skills/12d5d743-acaf-4edc-9226-ff1cde781f4f/subagents/agent-abfc51658d214bdc5.jsonl"
   ]
 }
