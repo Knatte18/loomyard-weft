@@ -1,0 +1,5 @@
+status: OK
+head_sha: 441ce2ffcaec9344975bf65dbd61a58a433f056d
+deviations:
+  - internal/testkit/shuttlefake/shuttlefake.go
+  - internal/hubgeom/webstergeom_integration_test.go
