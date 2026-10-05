@@ -11,7 +11,7 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Test-writing rules that stop the suite regrowing** — [`test-writing-rules`](design-test-writing-rules.md) · enhancement, loom, stencil · running · Publish
+1. **Test-writing rules that stop the suite regrowing** — [`test-writing-rules`](design-test-writing-rules.md) · enhancement, loom, stencil · running · PR-Gate
    - Stage 1: tests per behavior not per symbol, no redundant tests, redundant tests are review findings
    - **Before:** `lyx-skills-and-stencils`, `test-suite-prune`
 
