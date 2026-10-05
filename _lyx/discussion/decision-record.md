@@ -30,11 +30,9 @@ Out:
 Decision: Prepare writes a file `bash-env.sh` into the run directory containing `exec </dev/null`, and `buildLaunchCmd` and `buildResumeCmd` set `CLAUDE_ENV_FILE` to its absolute path through `sh.WithEnv`, the way `CLAUDE_CODE_FORK_SUBAGENT` already rides the pane command.
 The PreToolUse(Bash) stdin rewrite hook and its constants are deleted; every lyx-spawned Claude session (loom producers, webster, burler, orch, shuttle) gets the change, since all launch through `claudeengine.Prepare`.
 
-Rationale: Claude Code 2.1.289's Bash tool spawns each command as `bash -c '<prelude> && eval <cmd> && pwd …'` with `stdin: "pipe"`, a pipe it never closes.
-It appends `< /dev/null` to the eval only when the command contains no heredoc and no `<` redirect, so a bare `cat > /tmp/x;` sharing a command with a heredoc reads that open pipe and hangs: the observed shape.
-Claude Code reads `CLAUDE_ENV_FILE` once per session and pushes its content into that same prelude, ahead of the eval, in the same shell.
-`exec </dev/null` there replaces the shell's default stdin before the agent's command runs; a heredoc, pipe or redirect attached to a command still supplies that command's stdin.
-Unlike `BASH_ENV`, the file is not an environment-driven bash startup file, so a child `bash` the agent starts (`… | bash script.sh`) does not re-run it and keeps its piped stdin.
+Rationale: the Bash tool leaves the shell's default stdin an open pipe, and appends `< /dev/null` only to a command with no heredoc and no `<` redirect, so a bare `cat > /tmp/x;` sharing a command with a heredoc reads that pipe and hangs: the observed shape.
+The content of `CLAUDE_ENV_FILE` runs in the same shell, ahead of the agent's command, so `exec </dev/null` there replaces the default stdin before the command runs.
+A heredoc, pipe or redirect attached to a command still supplies that command's stdin, and a child `bash` the agent starts (`… | bash script.sh`) does not re-run the file and keeps its piped stdin.
 It costs nothing per call, and the run directory already holds the run's `settings.json`, so a resume finds the file where the launch left it.
 The variable is the provider's own mechanism, so it stays inside `claudeengine` (`PATTERN-shuttle-provider-seam`), and the command string is built only through `internal/shell` (`PATTERN-shell-mechanics-seam`).
 
@@ -55,7 +53,7 @@ The closed `StepKinds` vocabulary and `continue`'s derivation are unchanged.
 
 Rationale: the clutter is the long absolute paths (`status_file`, `friction_dir`, `scratch_dir`) and fields the driver reads elsewhere (`next_interrupt_policy` is read from status as `interrupt_policy`; `trace_id` from `last_step`).
 The short line keeps every field the driver branches on at each step, plus `trace_file`, which it reads after every step, so a bare call's completion notice is readable without `cut` or a temp file.
-The fields needed only at parking or repair stay one read away in the record the step already keeps.
+The fields needed only at a stop or a repair stay one read away in the record the step already keeps.
 The flag lives in `internal/shedverbs`, so every module arming the verb set gets it with no per-module wiring (`PATTERN-shed-verb-set`).
 
 Bound: `--full` changes only what stdout prints; the record, the exit code and the run's state are the same with or without it.
@@ -65,8 +63,11 @@ Bound: `--full` changes only what stdout prints; the record, the exit code and t
 Decision: `## How to invoke a step` in `shed-template-driver.md` shows a fenced block holding exactly `lyx shed step {{.run_id}}`, run as one background job from the session's cwd, and states that this is the whole command: no `exec`, no `LYX_TRACE_ID`, no redirect, no temp file, no `cut`, no script file.
 It says the printed envelope is the whole output to read, `trace_file` names the trace and `envelope_path` the full envelope.
 The `## Drive directory` rule changes from wrapping every `lyx` call in `(cd <drive-dir> && lyx …)` to never changing the session's own cwd: `lyx` calls run bare from it, and a command that needs another directory uses `git -C` or its own `(cd … && …)` subshell.
-`## Error envelopes`, `## Parking` and `## Repair records and the stop report` say that `friction_dir`, `scratch_dir` and `next_interrupt_policy` are read from the file at `envelope_path`.
-The `When the job left no output` fallback through `last_step.envelope_path` stays.
+`## Error envelopes`, `## Parking` and `## Repair records and the stop report` say that `friction_dir`, `scratch_dir` and `next_interrupt_policy` are read from the file at `envelope_path`, or from the printed envelope itself when it carries no `envelope_path` (the D2 fallback).
+The `When the job left no output` fallback through `last_step.envelope_path` stays, and so does the sentence that a wrong directory surfaces as the recipe's own refusal text, reported verbatim.
+
+Bound: the no-`cd` rule is a prose guard, not a structural one.
+A bare `lyx shed step <run-id>` from another directory resolves the run from that directory's own seed, so it refuses (missing seed, ownership) or steps a run seeded there under the same run-id; the run-id the stencil names bounds it, and the stencil's refusal-verbatim rule reports the refusal case.
 
 Rationale: the wrapper outlived the instruction that once prescribed it, and the likely motive (minting an id to find the trace) is answered when the envelope itself names the trace.
 A literal block is the shape a model copies; the subshell rule was itself a wrapper around every call, and the session's cwd already is the drive directory.
@@ -96,7 +97,8 @@ Rationale: CLAUDE.md requires observable CLI changes and their module docs in on
 ## Auto-mode assumptions
 
 - No operator answered; every choice below was self-picked (see the support log's question ledger).
-- `CLAUDE_ENV_FILE` keeps the behavior observed in Claude Code 2.1.289: read once per session from the process environment and prepended to every Bash command's shell, unless the session scrubs credential env (sandbox mode, which lyx agents do not use).
+- `CLAUDE_ENV_FILE` keeps the behavior observed in Claude Code 2.1.289: read from the process environment and its content prepended to every Bash command's shell, unless the session scrubs credential env (sandbox mode, which lyx agents do not use).
+  A release that changes this brings the hang back, as the first Open risk states.
 - No operator workflow depends on its own `CLAUDE_ENV_FILE` inside lyx-spawned sessions.
 - No Go code parses `lyx shed step`'s stdout for `status_file`, `friction_dir`, `scratch_dir`, `trace_id` or `next_interrupt_policy`; tests that do are updated to read the record or pass `--full`.
 
@@ -105,7 +107,7 @@ Rationale: CLAUDE.md requires observable CLI changes and their module docs in on
 - A future Claude Code release may drop or move `CLAUDE_ENV_FILE`; the hang then returns silently.
   The live check in the acceptance criteria detects it at the time of landing only.
 - Drivers already trained on the wrapper may keep it for a while despite the stencil; the task removes the reasons, not the habit itself.
-- A driver whose cwd drifts after a `cd` gets the recipe's own refusal text from the bare `lyx` call; the stencil's no-`cd` rule is the only guard.
+- A driver whose cwd drifts after a `cd` runs bare `lyx` calls from the wrong directory, bounded as D3 states; the stencil's no-`cd` rule is the only guard.
 
 ## Acceptance criteria
 
@@ -116,9 +118,9 @@ Rationale: CLAUDE.md requires observable CLI changes and their module docs in on
 - `lyx shed step` with a record kept prints the short success envelope with exactly the D2 keys, and the file at `envelope_path` holds the full envelope with today's key set.
 - An error step prints the short error envelope with the D2 keys, and its record holds the full error envelope.
 - `--full` prints the full envelope on stdout; the record is identical with and without it.
-- A step with no record kept (empty `StepsDir`) prints the full envelope.
+- A step with no record kept (empty `StepsDir`) or whose record write fails prints the full envelope.
 - `lyx shed status`'s `last_step.envelope_path` names the same file the step's short envelope named.
-- The driver stencil shows `lyx shed step {{.run_id}}` as the one command in a fenced block, contains no `(cd <drive-dir> && lyx` form, and names `trace_file` and `envelope_path`; the existing driver-stencil tests (`cmd/lyx/driverstencil_test.go`, `internal/loomcli/driverprompt_test.go`) pass or are updated for the changed text.
+- The driver stencil shows `lyx shed step {{.run_id}}` as the one command in a fenced block, contains no `(cd <drive-dir> && lyx` form, states the never-change-cwd rule, says where to read `friction_dir`, `scratch_dir` and `next_interrupt_policy` when the envelope carries no `envelope_path`, and names `trace_file` and `envelope_path`; the existing driver-stencil tests (`cmd/lyx/driverstencil_test.go`, `internal/loomcli/driverprompt_test.go`) pass or are updated for the changed text.
 - `go test ./...` and the `integration` tier pass for the touched packages.
 
 ## Notes for the plan writer
@@ -126,4 +128,4 @@ Rationale: CLAUDE.md requires observable CLI changes and their module docs in on
 - The record writer today tees stdout (`stepRecorder.tee`/`finish` in `internal/shedverbs/steprecord.go`); D2 needs it to write the full envelope independently of what stdout prints, before printing.
 - `bashstdin_integration_test.go` pins the deleted hook and is replaced by the D1 integration test.
 - `internal/loomcli/step_test.go` calls `StepEnvelope` directly for `next_interrupt_policy`; that function keeps building the full envelope.
-- Claude Code's prelude shape seen in a live session: `/bin/bash -c source <snapshot> 2>/dev/null || true && shopt -u extglob … && eval '<cmd>' && pwd -P >| /tmp/claude-<id>-cwd`, with the env-file content pushed into the prelude list before the eval.
+- Claude Code's prelude shape seen in a live session: `/bin/bash -c source <snapshot> 2>/dev/null || true && shopt -u extglob … && eval '<cmd>' && pwd -P >| /tmp/claude-<id>-cwd`, with the env-file content in the prelude before the eval; the integration test reproduces this shape.
