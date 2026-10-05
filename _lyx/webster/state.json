@@ -7,7 +7,7 @@
     "02-short-step-envelope.md": "04115e25a416f2d39f56591d364b225634b3261a04915a9854fbf9e6e5d0003a",
     "03-driver-bare-step.md": "e730faac363c9afd84fa822dec87a5e675e1b1a92c7f725db6028dd2ad93be32"
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "2650f69dc4caa5fa9a840aa0be47b328",
   "masterSessionId": "58c6fad1-52cf-42ea-a760-513b36298a5d",
   "assertedModel": "sonnet",
@@ -24,8 +24,25 @@
       "kind": "fork",
       "spawnedAt": "2026-10-05T18:42:58Z",
       "sessionId": "58c6fad1-52cf-42ea-a760-513b36298a5d",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-claude-env-file",
+        "status": "done",
+        "head_sha": "1c46e61aa27a9e06c4e35ec3893ca97bf671a6d8",
+        "deviations": [
+          "internal/shuttlecli/modelpin_test.go"
+        ]
+      },
+      "cardShas": [
+        "1c46e61aa27a9e06c4e35ec3893ca97bf671a6d8"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-agent-command-wrapping/58c6fad1-52cf-42ea-a760-513b36298a5d/subagents/agent-a6fb9b1275db1ee36.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-agent-command-wrapping/58c6fad1-52cf-42ea-a760-513b36298a5d/subagents/agent-a6fb9b1275db1ee36.jsonl"
+  ]
 }
