@@ -1,0 +1,34 @@
+{
+  "runGuid": "46e89764395b1833c0b62f82ddc24a0d",
+  "planFingerprint": "4893c8995954be56fe09a07958b97c68836f286fc3a8c530b406cef473e57fcb",
+  "planFileHashes": {
+    "00-overview.md": "a4c33dee9ae8e39994d799d392328f384a8eab8fecda674c5558f7c2a009aceb",
+    "01-remove-tier1-filing.md": "1f48245184539739c426a7b2c5bd10b5a8befefd18a821597f5963f34706ef12",
+    "02-retire-selfreport-key.md": "03f78b0ca4c52a829f8ce7b1ed33c6e56deeba190b645220bdeceac8ad4117da",
+    "03-rename-handoff-voucher.md": "0a0b38731866348f03c89c49934232c0cf9c43f6685d01c5e058df5531775e9f",
+    "04-anomaly-friction-notes.md": "3adae340a47cbcb717d05dcd263eeaba59577d4b7a0da8af4ee0f1e1bdd227b2",
+    "05-start-vouches.md": "2561b74d654dddb8d2a851e0ea55c4fe019c7d8cd86457f2e5be0535fd4a77ca",
+    "06-agent-filed-issues-docs.md": "ed065002c3a21228b03f138e21ee032a6166074ebf4a769decc8eaa36ddbfb8b"
+  },
+  "currentBatch": 1,
+  "masterStrand": "ae22342fa34ffa09fe104b6bf9e0a7e4",
+  "masterSessionId": "23231edc-2b7b-4a77-a588-677d06cfe568",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "remove-tier1-filing",
+      "cards": [
+        "01-remove-tier1-filing"
+      ],
+      "cardHashes": {
+        "01-remove-tier1-filing": "1f48245184539739c426a7b2c5bd10b5a8befefd18a821597f5963f34706ef12"
+      },
+      "startSha": "70bf30ae88f7ce42b2f6329b741579cf7fa2d973",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T18:44:07Z",
+      "sessionId": "23231edc-2b7b-4a77-a588-677d06cfe568",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
