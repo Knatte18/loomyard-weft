@@ -19,7 +19,7 @@
     "14-webster-audit-way-forward.md": "8bdbcffab4d2d2954645d2a067e65e90a19441d5f49e22185bb6bb8fce4fb015",
     "15-webster-no-denied-recovery.md": "d81c7316787b41cc1ce1383b0a0e463e71c8c15e123b244b4bd7ffab784315e3"
   },
-  "currentBatch": 0,
+  "currentBatch": 3,
   "masterStrand": "7d141636dc7e313e3780ee8c2b5140a3",
   "masterSessionId": "1b4a02c4-56e0-4d0d-b34d-95153da7fecc",
   "assertedModel": "sonnet",
@@ -75,6 +75,21 @@
       "forkTranscripts": [
         "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-ad0c3af82eebb2eca.jsonl"
       ]
+    },
+    "3": {
+      "slug": "shuttle-shell-expiry",
+      "cards": [
+        "03-shuttle-shell-expiry"
+      ],
+      "cardHashes": {
+        "03-shuttle-shell-expiry": "581be50d1fc8c15724fb862bb8e1afe004e180517c0bb419346cf814bc80f8b5"
+      },
+      "startSha": "2324a543f04182287c21213e5171f614a31b52d2",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T07:44:34Z",
+      "sessionId": "1b4a02c4-56e0-4d0d-b34d-95153da7fecc",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
