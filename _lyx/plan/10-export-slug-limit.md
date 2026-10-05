@@ -1,7 +1,7 @@
 # Card 10 — export the slug length limit
 
 **Rename:**
-- `internal/boardengine#maxSlugLength` -> `plan:internal/boardengine#MaxSlugLength`
+- `internal/boardengine#maxSlugLength` -> `internal/boardengine#MaxSlugLength`
 
 **Edit:**
 - `internal/boardengine#validateSlugLength`

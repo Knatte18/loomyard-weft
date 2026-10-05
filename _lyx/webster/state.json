@@ -1,6 +1,6 @@
 {
   "runGuid": "269b227b6b7a319c08f4c71431853fee",
-  "planFingerprint": "c1dd69400940216486c9f3794e70b327387d229b4b30bb5b65d0f70fbb0cdb00",
+  "planFingerprint": "abf29b4b4a7aaca66624e6cf8c14dcef823dd0ecb94b1cecb9382b88013e94b5",
   "planFileHashes": {
     "00-overview.md": "189f2bb2ef9ff449ce4bfc980ddb58ce5c980b9fb4a60848efb506a79c935d36",
     "01-yamlengine-open-maps.md": "37ec8e6672e0a35a9ffc59bdc5151dcf1b450489a1217ee01df7809a05847bf9",
@@ -12,13 +12,13 @@
     "07-board-get-body.md": "c1659d7263ec2e3b36d58923bc15fc6365e2d32a4344d0081f90f6c3629b6722",
     "08-board-merge-body-file.md": "4cecdb182d9d3057a4dcf10f60f2a6cc0bc299004614eba4a2faab35407ea05e",
     "09-merge-issue-carry.md": "a16a0c8cad09deab2d1d7be4d3944fdadfb2320a70eabf3206d228acf8aa12bc",
-    "10-export-slug-limit.md": "0ae5beff55f2b20638276dc2587a4a5a15c3b72c40050cab124a0b91f83540fa",
-    "11-slug-limit-help.md": "2e3c34b76c7522c9a7e0f635af28a3737449b1ad74844fea355cef1d6aa41a48",
+    "10-export-slug-limit.md": "59b3c2fb659df79667cc1b04df6c621bfc664f54a41ff32367021a0c41a98f02",
+    "11-slug-limit-help.md": "d62f144d5121331056e4c6e85c198e0f7297d70974b6cd0cb0ba9787201c5cbd",
     "12-config-bare-and-bogus.md": "eebb260e22cd38802f2937ea55a83b89bae8af5f3dbfee7937fe85f9fa16abbf",
     "13-selfreport-bogus.md": "40552ba7a12f1b52d4fc197971f8252408235ccca48ff205044a63a269ffaab1",
     "14-clitree-findings-gone.md": "b70a13fb39e065e373bb6561b08fba9d22335e1303e86b72fa2b8701ca5e04da"
   },
-  "currentBatch": 10,
+  "currentBatch": 0,
   "masterStrand": "705f5093c4333c1d9f8b20d3e57cceaf",
   "masterSessionId": "12d5d743-acaf-4edc-9226-ff1cde781f4f",
   "assertedModel": "sonnet",
@@ -55,14 +55,25 @@
         "10-export-slug-limit"
       ],
       "cardHashes": {
-        "10-export-slug-limit": "0ae5beff55f2b20638276dc2587a4a5a15c3b72c40050cab124a0b91f83540fa"
+        "10-export-slug-limit": "59b3c2fb659df79667cc1b04df6c621bfc664f54a41ff32367021a0c41a98f02"
       },
       "startSha": "093b147075b198a2ab27fbd6bdce481694fd1628",
       "kind": "fork",
       "spawnedAt": "2026-10-05T08:12:18Z",
       "sessionId": "12d5d743-acaf-4edc-9226-ff1cde781f4f",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "10-export-slug-limit",
+        "status": "done",
+        "head_sha": "c942010d0aaeacd133d9ae62c3bd7f7d97ca90d9"
+      },
+      "cardShas": [
+        "c942010d0aaeacd133d9ae62c3bd7f7d97ca90d9"
+      ],
+      "forkTranscripts": [
+        "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-board-labels-and-skills/12d5d743-acaf-4edc-9226-ff1cde781f4f/subagents/agent-a960155091c9854b7.jsonl"
+      ]
     },
     "2": {
       "slug": "configengine-open-maps",
@@ -282,6 +293,7 @@
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-board-labels-and-skills/12d5d743-acaf-4edc-9226-ff1cde781f4f/subagents/agent-a1664e1da88616f51.jsonl",
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-board-labels-and-skills/12d5d743-acaf-4edc-9226-ff1cde781f4f/subagents/agent-adddce3c1a3127081.jsonl",
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-board-labels-and-skills/12d5d743-acaf-4edc-9226-ff1cde781f4f/subagents/agent-a1e97b5742ff9e385.jsonl",
-    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-board-labels-and-skills/12d5d743-acaf-4edc-9226-ff1cde781f4f/subagents/agent-a1f8af9c5fed85401.jsonl"
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-board-labels-and-skills/12d5d743-acaf-4edc-9226-ff1cde781f4f/subagents/agent-a1f8af9c5fed85401.jsonl",
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-board-labels-and-skills/12d5d743-acaf-4edc-9226-ff1cde781f4f/subagents/agent-a960155091c9854b7.jsonl"
   ]
 }

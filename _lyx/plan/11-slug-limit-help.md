@@ -9,7 +9,7 @@
 - `plugins/ly/skills/board/SKILL.md`
 
 **Uses:**
-- `plan:internal/boardengine#MaxSlugLength`
+- `internal/boardengine#MaxSlugLength`
 
 **Intent:**
 The `Long` help of every board verb that takes a slug states the limit, formatted from `boardengine.MaxSlugLength` so help and validation cannot drift (D8): `get`, `upsert`, `upsert-batch`, `set-status`, `remove`, `merge`, `promote`, `set-deps` and `intake import`.
