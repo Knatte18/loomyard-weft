@@ -1,6 +1,6 @@
 # doctor: a lyx diagnostics command
 
-`doctor` · Note · enhancement, cli
+`doctor` · Note · enhancement
 
 From `manifest/roadmap.md` Someday.
 A diagnostics command (`lyx doctor`): checks `_lyx/` layout, config parse, board reachability, stale locks.

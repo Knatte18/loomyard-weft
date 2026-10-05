@@ -713,8 +713,7 @@
       "title": "doctor: a lyx diagnostics command",
       "kind": "note",
       "labels": [
-        "enhancement",
-        "cli"
+        "enhancement"
       ],
       "issues": [],
       "depends_on": [],

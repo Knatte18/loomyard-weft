@@ -117,7 +117,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers
 1. **shedrecipe: capability declaration instead of manual seam-threading** — [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) · enhancement, shed, recipes
    - A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer
-1. **doctor: a lyx diagnostics command** — [`doctor`](design-doctor.md) · enhancement, cli
+1. **doctor: a lyx diagnostics command** — [`doctor`](design-doctor.md) · enhancement
    - lyx doctor checks the _lyx layout, config parse, board reachability and stale locks
 1. **session sync: Claude transcripts across machines** — [`session-sync`](design-session-sync.md) · enhancement, agents
    - Copy Claude .jsonl transcripts across machines so --resume works elsewhere
