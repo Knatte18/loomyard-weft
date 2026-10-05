@@ -48,12 +48,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - quarry#34 re-parses per target; fix it or validate incrementally; drop the per-batch model assertion
 1. **Config changes a task makes never reach the parent** — [`config-reaches-parent`](design-config-reaches-parent.md) · bug, config, fabric, loom
    - Live config is in weft and task weft dies at landing; carry config changes or make the hub step explicit
-1. **Webster Master hangs background shells with a flattened heredoc** — [`master-heredoc-hang`](design-master-heredoc-hang.md) · bug, webster, shuttle
-   - cat > /tmp/x; python3 - <<EOF … EOF on one line reads stdin forever; seen twice on 2026-10-05 and in #361
 1. **A weft worktree without .weft/ silently drops LYX_PARENT from every strand** — [`weft-lock-dir-drops-parent`](design-weft-lock-dir-drops-parent.md) · bug, fabric, reed
    - ReadOriginFor answers no record when the untracked .weft lock dir is missing, so a pair recreated by reconcile launches strands with no parent and no warning
 1. **lyx files bug issues from Go code; only reflection agents should** — [`selfreport-issues-say-nothing`](design-selfreport-issues-say-nothing.md) · bug, selfreport, loom
    - Tier 1 anomaly issues carry only keys and blank fields; drop Go-side filing and feed anomalies to Friction-Reflect instead
+1. **Agent Bash calls hang on stdin** — [`agent-stdin-hang`](design-agent-stdin-hang.md) · bug
+   - The model emits bare cat > /tmp/x or python3 - with no input; a stdin hook ends the hang, but the operator wants it without a per-call hook
 
 ### Enhancements
 
