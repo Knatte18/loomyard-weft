@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Bouncer",
+  "current_producer": "Discussion-Burler",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler → bounced to Discussion-Bouncer",
+    "now": "Discussion-Burler",
+    "last": "Discussion-Bouncer → bounced to Discussion-Burler",
     "wait": ""
   },
   "history": [
@@ -53,6 +53,12 @@
       "output": "/home/hanf/Code/loomyard-LYXHUB/webster-audit-recovery/_lyx/reviews/discussion/round-2-review.md",
       "at": "2026-10-05T07:13:00Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/hanf/Code/loomyard-LYXHUB/webster-audit-recovery/_lyx/reviews/discussion/round-2-bouncer-ledger.md",
+      "at": "2026-10-05T07:13:54Z"
     }
   ],
   "product": {
