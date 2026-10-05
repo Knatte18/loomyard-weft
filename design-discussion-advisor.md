@@ -1,6 +1,6 @@
 # Discussion advisor: a dedicated agent answers Discussion-Write's questions live
 
-`discussion-advisor` · Note · enhancement, discussion, agents
+`discussion-advisor` · Note · enhancement, shuttle, loom
 
 - **ask mode**: Discussion-Write asks its design questions as they arise, and an answerer replies; answers to design questions, not a review.
 - **The answerer is a dedicated agent**, spawned in parallel with Discussion-Write with its own prompt: it studies the task, bolt and the code while the writer drafts, so it is ready when the questions come.

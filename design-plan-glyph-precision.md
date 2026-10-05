@@ -1,6 +1,6 @@
 # Plan cards name the members they change as glyphs, after lyx's use of glyphs is tested systematically
 
-`plan-glyph-precision` · Note · enhancement, plan, glyph, quarry
+`plan-glyph-precision` · Note · enhancement, loom, quarry
 
 ## Why
 

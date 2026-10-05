@@ -1,6 +1,6 @@
 # finalize: the discrepancy-document conflict shape
 
-`finalize-discrepancy-doc` · Note · enhancement, finalize, fabric
+`finalize-discrepancy-doc` · Note · enhancement, fabric, loom
 
 From `manifest/roadmap.md` Someday.
 Some divergences cannot be expressed as a git conflict at all, so there are no markers to hand a resolving agent; the answer is a precomputed document describing the disagreement instead.

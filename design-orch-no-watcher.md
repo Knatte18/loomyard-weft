@@ -1,6 +1,6 @@
 # The orch relies on driver messages, not a scratch watcher
 
-`orch-no-watcher` · Note · enhancement, undecided, orch, batten
+`orch-no-watcher` · Note · enhancement, batten, orch
 
 Seen 2026-10-03: the hub orch watches each driven run with a hand-written `.scratch/hub/watch.sh`, a background shell loop that polls the run's `status.json` every 30 s and exits on the first non-running state change.
 It lives outside lyx, untested and uncommitted, and has to be re-armed by hand after every context cycle.

@@ -1,6 +1,6 @@
 # webster: worktree-per-card parallel execution
 
-`webster-parallel-execution` · Note · enhancement, undecided, webster, speed
+`webster-parallel-execution` · Note · enhancement, webster
 
 From `manifest/roadmap.md` Someday.
 Give each DAG-independent group its own `fabric`-spawned worktree, so concurrent cards stop sharing one git index.

@@ -1,6 +1,6 @@
 # Orch owns the run loop: detached batten start, a lyx watch, one land command, --continue, a committed role prompt
 
-`orch-owns-the-loop` · Note · enhancement, orch, batten
+`orch-owns-the-loop` · Note · enhancement, batten, orch
 
 ## Goal
 

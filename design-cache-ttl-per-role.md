@@ -1,6 +1,6 @@
 # Prompt-cache TTL per agent role
 
-`cache-ttl-per-role` · Note · enhancement, agents, cost
+`cache-ttl-per-role` · Note · enhancement, shuttle
 
 Claude Code gives a subscription's main session a 1-hour prompt-cache TTL (cache write 2× base input) and subagents/forks 5 minutes (1.25×); every lyx agent is a main session in tmux, so all of them write at the 1-hour price (see https://code.claude.com/docs/en/prompt-caching.md).
 

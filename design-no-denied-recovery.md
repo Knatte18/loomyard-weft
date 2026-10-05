@@ -1,6 +1,6 @@
 # No recovery path needs a command the agents are denied
 
-`no-denied-recovery` · Note · enhancement, undecided, agents, permissions, webster
+`no-denied-recovery` · Note · enhancement, shuttle, webster
 
 Seen 2026-10-03 in the `pair-lifecycle` run: Webster refused a plan fix for a failed batch.
 Its only named way forward was "reset the branch to the run's start commit with git and run `lyx webster run --fresh`" (see #350).

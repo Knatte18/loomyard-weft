@@ -1,6 +1,6 @@
 # VS Code only on request; other ways to watch a run
 
-`ide-opt-in` · Note · enhancement, undecided, ide, batten, reed
+`ide-opt-in` · Note · enhancement, ide, reed, batten
 
 From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03.
 The common case is reviewing the final PR rather than watching an agent edit live, so VS Code per worktree should be opt-in.
