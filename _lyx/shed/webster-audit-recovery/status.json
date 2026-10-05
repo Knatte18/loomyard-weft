@@ -1,11 +1,11 @@
 {
-  "current_producer": "Batchifier",
+  "current_producer": "Webster",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Batchifier",
-    "last": "Plan-Bouncer → done",
+    "now": "Webster",
+    "last": "Batchifier → done",
     "wait": ""
   },
   "history": [
@@ -98,6 +98,12 @@
       "outcome": "done",
       "output": "/home/hanf/Code/loomyard-LYXHUB/webster-audit-recovery/_lyx/reviews/plan/round-1-bouncer-ledger.md",
       "at": "2026-10-05T07:34:22Z"
+    },
+    {
+      "producer": "Batchifier",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-05T07:34:29Z"
     }
   ],
   "product": {
