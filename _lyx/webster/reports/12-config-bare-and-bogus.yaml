@@ -1,0 +1,6 @@
+status: OK
+head_sha: aa5a363550cc372c0ca352dba1c76dcc6dc8c641
+deviations:
+  - cmd/lyx/clitree_test.go
+  - cmd/lyx/main_test.go
+  - internal/configcli/configcli_integration_test.go
