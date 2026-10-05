@@ -11,7 +11,7 @@
     "06-configengine-staged-edit.md": "3d3a868757d822a52d918543f882628f823c87b49aa150227a5c4fc89d12059a",
     "07-config-cli-hub-wide.md": "a09238c0fee62fb798b386f138d2de3506526404f56a103a6f60e128d5a643f0"
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "08f77d30e10194f6fe1f235b2c65df1a",
   "masterSessionId": "796cd30e-0090-4614-89af-4ad1258a80bd",
   "assertedModel": "sonnet",
@@ -28,8 +28,22 @@
       "kind": "fork",
       "spawnedAt": "2026-10-05T18:52:27Z",
       "sessionId": "796cd30e-0090-4614-89af-4ad1258a80bd",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-configreg-hub-wide",
+        "status": "done",
+        "head_sha": "51d85f244dab5a608ad2239f0aac2f5e858077dd"
+      },
+      "cardShas": [
+        "51d85f244dab5a608ad2239f0aac2f5e858077dd"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-ad60141a5b6d6c834.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-ad60141a5b6d6c834.jsonl"
+  ]
 }
