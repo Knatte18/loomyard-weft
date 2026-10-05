@@ -42,10 +42,11 @@ Decided (operator, 2026-10-03): four tiers, split by what a test needs and costs
 1. offline unit tests;
 2. git operations (time, no tokens);
 3. live tmux and the built binary (time, no tokens);
-4. real Claude sessions (tokens), under its own build tag, run only when explicitly asked, never by a card verify, the plan verify or PR-Gate.
+4. real LLM sessions (tokens), under its own build tag, run only when explicitly asked, never by a card verify, the plan verify or PR-Gate.
 
-A tier-3 test never spawns Claude: it uses a fake or no provider.
-Settle the tier names in Discussion ("smoke" says nothing about tmux), retag the tests that spawn Claude, and state the tier rules in PATTERN's Testing section (below) and in Plan-Write's per-card verify.
+The fourth tier is named for LLMs, not Claude (e.g. `llm`): lyx is not meant to drive Claude only (operator, 2026-10-06).
+A tier-3 test never spawns an LLM: it uses a fake or no provider.
+Settle the other tier names in Discussion ("smoke" says nothing about tmux), retag the tests that spawn an LLM, and state the tier rules in PATTERN's Testing section (below) and in Plan-Write's per-card verify.
 Which gate runs which tier stays in note `test-tiers`.
 
 ## Consolidate PATTERN's Testing section
@@ -61,5 +62,5 @@ Let `PATTERN-test-economy`'s background point at the skill for the general rules
 
 - The tool runs and its report and the before-state are committed.
 - The integration tier's wall time has dropped from the speed fixes alone; the PR states before and after.
-- A full suite run leaves no new socket file, and no tier below the Claude tier spawns `claude`.
+- A full suite run leaves no new socket file, and no tier below the LLM tier spawns an LLM.
 - PATTERN's Testing section has fewer entries than before this task.

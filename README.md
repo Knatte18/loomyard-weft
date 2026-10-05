@@ -14,7 +14,7 @@ Waits on nothing open; can start now, in parallel.
 1. **ly-drive as a stencil, a ly:runs skill, and lyx-injected skill loading** — [`lyx-skills-and-stencils`](design-lyx-skills-and-stencils.md) · enhancement, stencil, orch, shed
    - Driver procedure moves into a stencil, a ly:runs workflow skill, and the orch watcher injects skill loading at start, adopt and after every cycle
 1. **Measure the test suite, make it fast, settle its rules** — [`test-suite-measure`](design-test-suite-measure.md) · enhancement
-   - Stage 2a: per-test coverage tool and before-state, real-time seams and t.Parallel, tmux socket leak, a Claude test tier, PATTERN Testing consolidated
+   - Stage 2a: per-test coverage tool and before-state, real-time seams and t.Parallel, tmux socket leak, an LLM test tier, PATTERN Testing consolidated
    - **Before:** `test-suite-prune-core`
 
 ### Layer B
