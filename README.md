@@ -153,6 +153,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Clickable run and strand tabs in two status lines plus pane-border titles, pinned by reed at boot; /color per strand role
 1. **lyx webster reset covers the report-head and last-batch-head targets** — [`webster-reset-targets`](design-webster-reset-targets.md) · enhancement, webster
    - Three Webster recovery sites and standalone mode still instruct git reset --keep; widen the reset verb so every recovery instruction names a lyx verb
+1. **The LLM driver wraps every shed step in trace ids, temp files and cut** — [`driver-step-clutter`](design-driver-step-clutter.md) · enhancement, shed
+   - Every step notice repeats a long wrapper the driver stencil forbids; make lyx shed step print a short envelope so the bare call is the easy one
 
 ## Done
 

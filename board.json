@@ -995,6 +995,21 @@
       "isolated": false,
       "brief": "The model emits bare cat \u003e /tmp/x or python3 - with no input; a stdin hook ends the hang, but the operator wants it without a per-call hook",
       "body": "Agents' Bash shells hung on stdin for up to 80 minutes, holding verify gates (`board-model` #361 on 2026-10-04; `orch-cycle-hardening` and `webster-audit-recovery` on 2026-10-05).\n\nCause (transcript study, 2026-10-05): the model, mostly Sonnet fork subagents, emits a bare `cat \u003e /tmp/x;` or `python3 -;` with no input attached, often as a no-op (`cat \u003e /tmp/x 2\u003e/dev/null; true`); 54 such calls between 2026-09-24 and 2026-10-04.\nThe stored commands keep their newlines and no layer rewrote them; the \"flattened heredoc\" first reported here was read off a display that shows newlines as spaces.\nNo stencil shows the shape, and lyx cannot change the habit.\n\n`3c5bfdb04` gave every Bash call `/dev/null` as stdin through a PreToolUse(Bash) rewrite hook (`bashStdinHookCommand`, `internal/shuttleengine/claudeengine/settings.go`), so such a command ends at once while heredocs, pipes and redirects still work.\n\nOpen:\n\n- The operator dislikes hooks: each one delays every tool call.\n  Find a way to give the agent's shell `/dev/null` as stdin without a per-call hook (e.g. how shuttle launches Claude Code, or `BASH_ENV`, checking it does not cut stdin from a script fed through a pipe), and drop the hook if one works.\n- If the hook stays: it extracts the command with a `sed` regex taking the last `\"command\":\"` key in the raw payload, so a later `command` field elsewhere in the payload would be rewritten instead; parse the JSON.\n"
+    },
+    {
+      "id": 126,
+      "slug": "driver-step-clutter",
+      "title": "The LLM driver wraps every shed step in trace ids, temp files and cut",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Every step notice repeats a long wrapper the driver stencil forbids; make lyx shed step print a short envelope so the bare call is the easy one",
+      "body": "Seen 2026-10-05 in `lyx-skills-and-stencils`: the LLM driver wraps every step as\n\n```\nexec \u003c/dev/null; export LYX_TRACE_ID=$(od -An -N8 -tx1 /dev/urandom | tr -d ' \\n') \u0026\u0026 lyx shed step \u003crun-id\u003e 2\u003e/dev/null \u003e /tmp/tmp.XXXX/step-28.json; echo exit $?; cut -c1-1000 /tmp/tmp.XXXX/step-28.json\n```\n\nand each background job's completion notice repeats the whole line into the driver's context and pane.\n`ly-drive` already says \"Mint no `LYX_TRACE_ID`, create no `mktemp` step directory and add no redirects\", since `lyx shed step` mints its own trace id and records each invocation under `.lyx`; the driver does it anyway.\nIt is the same model habit as `agent-stdin-hang` (wrapping a command it has no reason to wrap); the `exec \u003c/dev/null;` prefix is that note's stdin hook.\n\nProposal: make the bare call the convenient one, so the model has nothing to wrap.\n\n- `lyx shed step` prints a short envelope by default (outcome, producer, state, the next action), with the full envelope behind a flag or in its own record, so no `cut` or temp file is needed to read it.\n- The driver stencil shows the one exact command to run, `lyx shed step \u003crun-id\u003e`, as a background job, and nothing else.\n- Check whether the step could instead block in the foreground within the Bash tool's limit when the producer is quick, so only long producers produce a completion notice.\n"
     }
   ],
   "legacy_done": [
