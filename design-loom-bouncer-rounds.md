@@ -7,6 +7,18 @@
 A Bouncer round loop does not halt a run for a human on something the parent orchestrator can settle, and the loomcli smoke tier is green on `main` before further loom runs depend on it.
 `discussion-recurring-finding` and `circling-to-parent` are the same `board-model` halt seen from the anomaly report and from the Bouncer's verdict.
 
+# Decisions from the task discussion (operator, 2026-10-05)
+
+- **Checkpoint judging.** Below a checkpoint round the judge rules only `CONVERGED` or `CONTINUE`; it never rules `CIRCLING` there.
+  At the checkpoint it decides whether more rounds are worth it: with progress it extends, never past `max_bounces`; with no progress (the same finding keys unchanged or reopened) it rules `CIRCLING`.
+  A rising finding count alone is never circling.
+- **Both numbers are configuration.** The checkpoint round (default 3) and `max_bounces` are configuration values;
+  `max_bounces` lives in the recipe (`contracts/recipes/loom-recipe.yaml`) today, and Discussion settles where both live.
+- **Escalation goes to the parent.** A `CIRCLING` ruling, and a budget spent without convergence, message the parent orchestrator the way a parent-review request does: a fork decides accept or continue and adds whatever design calls are needed.
+  The operator is asked only when the parent cannot settle it, or the run has no parent.
+- **The parent's decisions enter the decision record.** `post-discussion-additions` is part of this task: a verb records a parent's or operator's decision in the decision record, so plan review reads it as part of the answer key.
+- **No GitHub issue for a recurring finding.** A recurring ledger finding goes to the parent as part of the circling escalation, not as a `selfreport` anomaly issue (#359 arrived with empty state and history).
+
 
 ## Discussion-Bouncer finding stays open across three rounds
 
@@ -64,3 +76,15 @@ Nothing runs the smoke tier in the normal verify, so the failures went unnoticed
 
 
 From GitHub #348 (intake 2026-10-04).
+
+## Scope added after Discussion amends the decision record
+
+From note `post-discussion-additions`.
+
+Seen 2026-10-03 in `agent-self-reflect`: the operator added two scope items after Discussion had been approved, and the hub relayed them to the Plan-Write agent.
+On the hub's instruction, Plan-Write put them in the plan overview as "operator additions", and plan review then removed them, because the plan must follow the decision record and the record did not carry them.
+PR-Gate rejected the PR for the missing items, and the driver had to amend the decision record by hand before PR-Rework.
+
+Idea (operator): a scope addition after Discussion amends the decision record, not the plan.
+The agent that receives it (Plan-Write, or whoever holds the run) extends the discussion with the new decisions before planning on them, even if that is a little messy.
+Possible shape: a lyx verb that appends an "operator addition" decision to the record and re-runs the mechanical discussion check, so plan review reads the addition as part of the answer key.

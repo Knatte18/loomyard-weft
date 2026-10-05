@@ -89,8 +89,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - A Slack relay so the operator can reach the orch from a phone where Claude's own app is not allowed
 1. **Agents run with a deliberate tool and permission setup that never blocks the flow** — [`agent-permission-setup`](design-agent-permission-setup.md) · enhancement, shuttle
    - A correct deny/allow setup for every lyx-spawned role, so no agent stops on a tool or command it needs
-1. **Scope added after Discussion amends the decision record** — [`post-discussion-additions`](design-post-discussion-additions.md) · enhancement, loom, orch
-   - Additions relayed to Plan-Write were dropped by plan review because the decision record lacked them; extend the discussion instead
 1. **Burler as two parallel agents: a review-only reviewer and a fixer that validates** — [`burler-split`](design-burler-split.md) · enhancement, burler
    - B orients, forks its lenses and writes the report only; A, stronger, orients in parallel, then fixes and validates B findings with a grain of salt
 1. **Test tiers: unit, git, tmux and Claude, with Claude opt-in only** — [`test-tiers`](design-test-tiers.md) · enhancement
