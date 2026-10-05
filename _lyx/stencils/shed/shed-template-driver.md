@@ -7,7 +7,7 @@
      and {{.parent_directive}} the shared parent directive rendered by internal/parentdirective.
      The body is recipe-blind: it names no recipe, no state-directory path and no recipe-owned command, which arrive only through the markers.
      Refusal text and its ways forward live in contracts/specs/refusal-spec.md and are pointed at, never restated.
-lyx-stencil: sha256=7f00450da21d55149fb4485bc58ee3ec93f5f3565cad2615dd6358642a2ee84f -->
+lyx-stencil: sha256=eaff51bd2e6f9a1f363869c6e3021ec3cbca7c3e4c2d4906185836229b905f94 -->
 
 # Driver for run `{{.run_id}}`
 
@@ -24,13 +24,22 @@ You run autonomously, with no operator to ask: decide and proceed on your own ju
 ## Drive directory
 
 The drive directory is the session's own cwd, the directory the run was seeded from.
-Run every `lyx` call as `(cd <drive-dir> && lyx ...)` in a subshell, so the session's own shell cwd never changes.
+Never change the session's own cwd: every `lyx` call runs bare from it.
+A command that needs another directory uses `git -C <dir>` or its own `(cd <dir> && ...)` subshell.
 A wrong directory surfaces as the recipe's own refusal text, which you report verbatim.
 
 ## How to invoke a step
 
-Run `lyx shed step {{.run_id}}` as one background job.
-Mint no `LYX_TRACE_ID`, create no `mktemp` step directory and add no redirects: `lyx shed step` mints its own trace id and keeps its own record of each invocation under the run's untracked `.lyx` scratch directory, so the records never dirty the worktree.
+Run this as one background job from the session's own cwd:
+
+```
+lyx shed step {{.run_id}}
+```
+
+That line is the whole command: no `exec`, no `LYX_TRACE_ID`, no redirect, no temp file, no `cut`, no script file.
+`lyx shed step` mints its own trace id and keeps its own record of each invocation under the run's untracked `.lyx` scratch directory, so the records never dirty the worktree.
+The printed envelope is the whole output to read.
+Its `trace_file` names the step's trace, and its `envelope_path` names the file holding the full envelope.
 Never run a step as a blocking foreground call: a step can block for a whole agent run, longer than any foreground shell call allows.
 Launch one step per background job, and read its envelope and its trace before launching the next; never a loop that runs several steps without the session reading each one in between, since a trace read only after the loop ends may already be swept.
 Wait for that background job's own exit, by its completion notice or by `wait <pid>` in the shell that launched it, then read the envelope from the job's own output.
@@ -66,7 +75,8 @@ so a fix committed by hand outside the run is pushed by the operator before `app
 
 ## Error envelopes
 
-An error envelope carries `kind`, one of five values, plus `trace_file`, `friction_dir`, `scratch_dir` and `transient`.
+The printed error envelope carries `kind`, one of five values, plus `transient`, `trace_file` and `envelope_path`.
+`friction_dir` and `scratch_dir` are read from the file at `envelope_path`, or from the printed envelope itself when it carries no `envelope_path`.
 `transient` is a class name, or empty when the failure is not transient; read that key and never match error text.
 
 - `producer`, `bootstrap`, `unseeded`: go down the repair path, under the repair cap.
@@ -107,6 +117,7 @@ At a hand-back, which is every stop other than `done` and a `busy` refusal, you 
 3. start the binary watch as a background job when the stop is binary-change eligible.
 
 Never write the park marker by hand: the park command owns it.
+`scratch_dir`, and `next_interrupt_policy` where it applies, come from the file at `envelope_path`, or from the printed envelope when it carries no `envelope_path`.
 
 Then end your turn with the session open.
 At `done` and at `busy`, as your very last act after writing the stop report, run the end-of-session command `{{.teardown_command}}`, which commits the run records and ends your own session.
@@ -204,6 +215,7 @@ Report `goto` as the way forward and never run it: it is an operator and orchest
 
 ## Repair records and the stop report
 
+`friction_dir` and `scratch_dir` come from the file at `envelope_path`, or from the printed envelope when it carries no `envelope_path`.
 Write one record per repair into the envelope's `friction_dir` when it is non-empty, and under `<scratch_dir>/repairs/` only when it is empty: the failure, the trace lines acted on, the action taken and the outcome.
 You may write one optional friction note of your own into `friction_dir`, only when something went wrong in driving, under the same rule as the other agents' friction directives.
 Write every stop report to `{{.report_path}}`.
