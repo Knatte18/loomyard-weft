@@ -11,3 +11,8 @@ Idea (operator): a visible marker whenever a Go gate runs.
 - Something on screen shows the same: under the LLM driver every run uses, `lyx loom start` removes the `loom-status` strand on purpose (`internal/loomcli/start.go`, "the ly-drive strand is the driving surface"), so the marker goes in the driver's pane or title, the agent's title, or a status pane that also exists in LLM mode.
 - The agent pane, or its strand's title, shows that the run moved on to a gate, so an idle agent does not look stuck.
 - The same applies to every Go-side wait a producer does after its agent's turn: the Webster verify gate, the Burler round's verify, Publish's merge-in verify.
+
+Seen again 2026-10-05 in `board-config-per-worktree`: Merriam sat idle while shuttle's verify gate (`internal/shuttleengine/gate.go`) ran, then got `Gate findings recorded at …` typed in; the operator could not tell a gate was running.
+
+Where the marker can go once `reed-status-tabs` lands: shuttle sets a pane user option on the agent's strand (e.g. `@gate` = `verify`) when a gate starts and clears it when the gate ends, and reed's status format shows it on the strand's button and pane border (e.g. `webster ⏳verify`).
+The gate is shuttle's, not the agent's, so shuttle is the one place that knows when it starts and ends.
