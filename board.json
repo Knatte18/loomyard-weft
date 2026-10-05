@@ -958,7 +958,7 @@
       "isolated": false,
       "brief": "Stage 1: tests per behavior not per symbol, no redundant tests, redundant tests are review findings",
       "body": "Stage 1 of getting the test suite under control: change how tasks write tests, so that no later task, `test-suite-prune` included, adds tests by the old habit.\n\nToday's contracts drive one test per symbol: `contracts/specs/loom-plan-spec.md` and `contracts/stencils/loom/loom-template-plan.md` say every card that introduces behavior bundles its own test, and every independently testable symbol gets its own card.\nNothing asks whether a new test covers anything not already covered.\n\n- Tests target behavior and contract at a module's public surface, not each helper.\n- A new test must cover something no existing test covers; otherwise it extends an existing table test.\n- A review fix adds a test only when the finding is a coverage gap; otherwise it corrects an existing test.\n- The Bouncer and Burler rubrics treat a redundant test as a finding, like a missing one.\n- The card-granularity rule changes with the test rule: cards and their tests follow behavior, not symbols.\n- Audit `PATTERN.md` and `pattern/` for rules that demand a test per item (e.g. `PATTERN-refusal-way-forward`'s reaching test per refusal) and let one table-driven or contract-level test cover many items; add a Testing-section PATTERN entry for the new rule.\n- Check whether `scribe:testing` (separate repo `~/Code/scribe`) needs the same change; name it, do not edit it.\n",
-      "status": "running · Plan-Burler"
+      "status": "running · Plan-Bouncer"
     }
   ],
   "legacy_done": [
