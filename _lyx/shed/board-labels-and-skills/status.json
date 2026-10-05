@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster-Burler",
+  "current_producer": "Webster-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster-Burler",
-    "last": "Webster-Bouncer → bounced to Webster-Burler",
+    "now": "Webster-Bouncer",
+    "last": "Webster-Burler → bounced to Webster-Bouncer",
     "wait": ""
   },
   "history": [
@@ -116,6 +116,13 @@
       "outcome": "stuck",
       "output": "/home/hanf/Code/loomyard-LYXHUB/board-labels-and-skills/_lyx/reviews/webster/round-2-bouncer-ledger.md",
       "at": "2026-10-05T10:55:47Z"
+    },
+    {
+      "producer": "Webster-Burler",
+      "outcome": "stuck",
+      "output": "/home/hanf/Code/loomyard-LYXHUB/board-labels-and-skills/_lyx/reviews/webster/round-3-review.md",
+      "at": "2026-10-05T11:04:40Z",
+      "gate_attempts": 0
     }
   ],
   "product": {
