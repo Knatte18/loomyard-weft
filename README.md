@@ -106,8 +106,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - A few coarse MCP tools over lyx, chosen by measured agent use and exposed per role, so agents see typed schemas instead of guessing CLI shapes
 1. **creel: a mailbox between named lyx processes** — [`creel`](design-creel.md) · feature, reed
    - Mail store and verbs on top of agent-naming's names; deferred while Claude's own SendMessage is enough
-1. **One-screen overview of every run in the hub, in its own tmux window** — [`runs-overview`](design-runs-overview.md) · feature, reed, orch
-   - One line per run with state, producer and age, instead of polling each run, shown without squeezing the orch pane (likely reed own-window anchoring)
+1. **Runs overview and event log in their own window in the prime session** — [`runs-overview`](design-runs-overview.md) · feature, reed, orch, batten
+   - An own tmux window beside the orch: one line per run on top, a log of batten notices with attach commands below; the orch notice drops its attach command
 1. **Discussion advisor: a dedicated agent answers Discussion-Write's questions live** — [`discussion-advisor`](design-discussion-advisor.md) · feature, shuttle, loom
    - A second agent spawned beside Discussion-Write studies the task and code and answers its design questions as they arise, a real two-agent dialogue
 1. **Kick-start pack: pre-resolved glyph spans for implementer and Burler** — [`kick-start-pack`](design-kick-start-pack.md) · feature, webster, quarry

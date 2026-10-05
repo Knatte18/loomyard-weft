@@ -1,14 +1,23 @@
-# One-screen overview of every run in the hub, in its own tmux window
+# Runs overview and event log in their own window in the prime session
 
-`runs-overview` · Note · feature, reed, orch
+`runs-overview` · Note · feature, reed, orch, batten
 
-From `manifest/HANDOFF.md`: one screen listing every run in the hub, one line each with state, producer and age.
-`lyx shed status [run-id]` is per run and `lyx orch status` covers only the orchestrator, so the hub today polls each run separately.
-
+One screen for the operator: every run in the hub, and a running log of what happened to them.
+`lyx shed status [run-id]` is per run and `lyx orch status` covers only the orchestrator, so today the hub polls each run separately and the operator sees run events only through the orch's chat.
 
 ## Where it shows
 
+Operator 2026-10-05: its own tmux window in the prime's reed session, beside the orch's window, so the orch pane keeps its full height.
+An own window also removes the 2026-10-02 problem of a status strand under the orch whose height would have to follow the number of runs.
+With `reed-status-tabs`, a session with more than one window shows window tabs, and Alt+Left/Right switches between the orch and the overview.
 
-- Operator 2026-10-02: a status strand under orch would need its height to follow the number of runs, which reed cannot do; an own tmux window may fit better.
-- reed today lays out one strand per pane in one window per worktree; `manifest/designs/reed-multi-window.md` sketches own-window strand anchoring, independent per-window attach via tmux session groups, and cross-worktree columns.
-- Deep enough to stand alone, separate from `orch-owns-the-loop`.
+## What it shows
+
+- Top: one line per run with state, current producer and age.
+- Below: a running event log, one line per batten notice, each with the run's attach command (`cd <pair> && lyx reed attach`), so the operator can jump into a run from it.
+  Batten appends every notice to a hub log file under the prime's `.lyx`, and the window tails it.
+
+## Notices to the orch get shorter
+
+The `[batten notice]` line typed into the orch drops the trailing `cd <pair> && lyx reed attach`: the orch knows where a run's pair is, and the attach command is for the operator, who now gets it in the log.
+`renderNotice` in `internal/battenshed/notice.go` builds that line; the orch's line and the log's line come from the same notice.
