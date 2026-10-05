@@ -951,6 +951,23 @@
       "isolated": false,
       "brief": "Discussion has no sanctioned path to commit a PATTERN edit ahead of Plan",
       "body": "Imported from [issue #385](https://github.com/Knatte18/loomyard/issues/385).\n\nDuring the Discussion stage of a loom task, the parent (`ly:orch`) relayed an operator request to edit `PATTERN.md` and `pattern/` directly in the task worktree, so the review rounds would read the revised rules.\n\nThe Discussion launch prompt allows only the two discussion files and no git.\nAn uncommitted repository edit would leave the tree dirty for the `PATTERN-verified-tree` check.\nIt took an extra round trip to get the operator's explicit instruction and a named committer (the driver) before the edit could be made.\n\nDiscussion has no sanctioned path for \"land this invariant now, ahead of Plan\".\nIf this should be supported, the Discussion launch prompt or the parent-review flow needs a carve-out that names who commits such an edit, instead of leaving it to an ad-hoc message exchange.\n\nProvenance: task `test-writing-rules`, note `Discussion-Write.md`.\n"
+    },
+    {
+      "id": 133,
+      "slug": "burler-yaml-frontmatter-repair",
+      "title": "Burler review with invalid YAML frontmatter fails the run after three attempts",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "burler"
+      ],
+      "issues": [
+        386
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "An invalid review-file frontmatter fails the run instead of a repair turn",
+      "body": "Imported from [issue #386](https://github.com/Knatte18/loomyard/issues/386).\n\nA loom run halted as `failed` at the `Discussion-Burler` producer (burler adapter in `internal/shedadapters`).\n\nHalt output:\n\n```\nshedadapters: Discussion-Burler (burler): round 3 attempt 3: run: burler: round reached done but its review file is invalid: burler: review file frontmatter is not valid YAML: yaml: line 12: did not find expected key (a summary containing a \" character must be ONE double-quoted string covering the whole value, not a quoted fragment followed by trailing prose)\n```\n\nThe reviewer agent wrote a review file whose frontmatter summary contained a quoted fragment followed by trailing prose, which is invalid YAML.\nThe error text already states the rule, yet the run still failed at round 3 attempt 3 with history_entries 8.\nPossible fixes: have the burler round prompt show the quoting rule up front, feed the parse error back to the reviewer for a repair turn, or have the frontmatter reader tolerate or normalise an unquoted summary.\n\nProvenance: task `test-suite-measure`, from note `loom-halt.md`.\n"
     }
   ],
   "legacy_done": [

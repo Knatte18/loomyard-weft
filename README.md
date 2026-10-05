@@ -52,6 +52,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Live config is in weft and task weft dies at landing; carry config changes or make the hub step explicit
 1. **A weft worktree without .weft/ silently drops LYX_PARENT from every strand** — [`weft-lock-dir-drops-parent`](design-weft-lock-dir-drops-parent.md) · bug, fabric, reed
    - ReadOriginFor answers no record when the untracked .weft lock dir is missing, so a pair recreated by reconcile launches strands with no parent and no warning
+1. **Burler review with invalid YAML frontmatter fails the run after three attempts** — [`burler-yaml-frontmatter-repair`](design-burler-yaml-frontmatter-repair.md) · bug, burler
+   - An invalid review-file frontmatter fails the run instead of a repair turn
 
 ### Enhancements
 
