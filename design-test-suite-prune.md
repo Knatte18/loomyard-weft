@@ -48,12 +48,8 @@ Enforcement tests that name the old entries move with them.
 
 ## Align with the rewritten scribe testing skills
 
-`test-writing-rules` landed (`e41896d25`) before the general skills `scribe:testing` and `scribe:golang-testing` were rewritten to match it (scribe `cfad880`); a check found no contradiction, but these follow-ups:
-
-- `contracts/stencils/loom/loom-template-plan.md` Step 0 says `scribe:testing` is loaded for "the card-granularity rule and the test-coverage rule"; the skill has no card-granularity rule. Name only the test-coverage rule; card granularity stays a plan rule.
-- `contracts/stencils/loom/loom-template-rework.md` Step 0 loads `scribe:testing` with no reason; give the same one-line reason as the plan stencil.
-- `loom-template-plan.md`'s card rule 3 and `contracts/specs/loom-plan-spec.md`'s "What a card is" restate the skill's one-test-per-behavior rule; keep only the card-specific part (the card carries its coverage) and point at `PATTERN-test-economy`, updating the pinning row in `contracts/stencils/claims_test.go`.
-- While consolidating Testing (above), let `PATTERN-test-economy`'s background point at the skill for the general rules and keep only what is project-specific or stricter (e.g. a redundancy finding names the covering test).
+The general skills `scribe:testing` and `scribe:golang-testing` were rewritten to match `test-writing-rules` (scribe `cfad880`), and that run aligned its stencils with them.
+While consolidating Testing (above), let `PATTERN-test-economy`'s background point at the skill for the general rules and keep only what is project-specific or stricter (e.g. a redundancy finding names the covering test).
 
 ## Budget guard
 
