@@ -1,0 +1,40 @@
+{
+  "runGuid": "2509f276ed948634f160dd0f309673bf",
+  "planFingerprint": "9e23ce056c22cf5371647e9e3bf442474d14680b8ce77398317d1ca4fce1fcae",
+  "planFileHashes": {
+    "00-overview.md": "74b1e5a985b848694c2770047759e7dd53445d0a0fe84c871fd74239701a1d58",
+    "01-context-reading.md": "fb0a9953033b1cab7311337aaf8862e3a2f30cb38fc856acb9de0c1804fb5a69",
+    "02-reread-and-reset.md": "c703d5c2b04c941c6409a6008a446d37b1114ad3bd75ff5dfa0252c9f9e22572",
+    "03-orch-config-modes.md": "f0853a7e517382640e1222f01b1a9a43ee46d0a59fdf6801fc5de9fd31b014ce",
+    "04-compact-seam.md": "cc739ffafdb71bc4107ecc1b0183e1050a58fe6fa1cfe7f176b3e36750ba7ca7",
+    "05-compact-cycle.md": "247b10cf43fd85ef524f636631ee7cae2aa4f6855dc7a83223b17fb495d50aaa",
+    "06-pane-too-short.md": "108cd6d2b29fe021312735630d8465985b6acbac58870082db818b4a67ab7551",
+    "07-notice-queue.md": "e9231f1a3a1fbb07075d30a893cd40832496953f87c1b86c56a7368526ca8a6e",
+    "08-batten-notices.md": "b8226dcd5119a392bdf3c711399336b5355dbec9f6099de76443012aea017cc8",
+    "09-batten-notice-wiring.md": "72ddd4d0e5662247afe973b029222c216e878a1bc80aa519b79cb52ad427f657",
+    "10-stencils-no-watcher.md": "120d329b33a9d2ef55a10037e89ab135e343bf4bf1332b2030a13a5959db628c",
+    "11-adopt-pid-reuse.md": "9ac8e7bf1c0d39c37aab5b3165f234d0a213e2aa37d4a19a9cb3a932b91ccf77",
+    "12-orch-smoke.md": "07b993147b708d3d755ec72b278970249ab33b6ff826beb4025bf9cfada6376b"
+  },
+  "currentBatch": 1,
+  "masterStrand": "d67879bc330e634575451a44ed0d2120",
+  "masterSessionId": "1531b0ca-5912-4b17-8d7c-1834f68aa0eb",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "context-reading",
+      "cards": [
+        "01-context-reading"
+      ],
+      "cardHashes": {
+        "01-context-reading": "fb0a9953033b1cab7311337aaf8862e3a2f30cb38fc856acb9de0c1804fb5a69"
+      },
+      "startSha": "ee1ffa4b8e9374af6aba06c5df5b4b15111f8828",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T07:27:54Z",
+      "sessionId": "1531b0ca-5912-4b17-8d7c-1834f68aa0eb",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
