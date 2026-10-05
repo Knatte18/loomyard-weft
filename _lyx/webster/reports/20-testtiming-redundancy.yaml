@@ -1,0 +1,5 @@
+status: OK
+head_sha: 04d9b57c052710252fd93bbb0269b704d8cf6a03
+deviations:
+  - cmd/lyx/spawnobservability_test.go
+  - cmd/lyx/tierpurity_test.go
