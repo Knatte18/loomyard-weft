@@ -18,7 +18,7 @@ Waits on nothing open; can start now, in parallel.
    - **Before:** `test-suite-prune-core`, `test-suite-prune-rest`
 1. **board.yaml is read per worktree though the board is one per hub** — [`board-config-per-worktree`](design-board-config-per-worktree.md) · bug, board, config · running · Webster
    - A pair with an older board.yaml re-renders README with the old types; move board.yaml beside fabric.yaml in _board
-1. **Agents stop wrapping commands: stdin without a hook, a bare shed step** — [`agent-command-wrapping`](design-agent-command-wrapping.md) · bug, enhancement, shuttle, shed, stencil · running · PR-Gate
+1. **Agents stop wrapping commands: stdin without a hook, a bare shed step** — [`agent-command-wrapping`](design-agent-command-wrapping.md) · bug, enhancement, shuttle, shed, stencil · awaiting · PR-Gate
    - Give agent shells /dev/null stdin without a per-call hook; lyx shed step prints a short envelope so the driver runs the bare call
 
 ### Layer B
@@ -102,7 +102,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **reed shows strands as zoom tabs and runs as session tabs** — [`reed-status-tabs`](design-reed-status-tabs.md) · enhancement, reed
    - Stacked layout stays as VIEW; a strand button or Alt+arrows zooms one strand; runs as session tabs below; reed pins it at boot
 
-### Other
+### Features
 
 1. **An MCP server over lyx exposing the verbs agents need** — [`lyx-mcp`](design-lyx-mcp.md) · feature
    - A few coarse MCP tools over lyx, chosen by measured agent use and exposed per role, so agents see typed schemas instead of guessing CLI shapes
