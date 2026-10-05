@@ -1,6 +1,6 @@
 # A color per spawned session, so the driver and each loom segment stand apart
 
-`strand-colors` · Note · enhancement, reed, loom
+`strand-colors` · Note · enhancement, reed, loom, shed
 
 ## Problem
 

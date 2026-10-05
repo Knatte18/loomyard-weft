@@ -136,7 +136,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - After an agent ends its turn, a Go gate can run for minutes with nothing on screen; loom status and something on screen name the gate and its runtime
 1. **fabric fetches an existing remote warp and weft branch instead of creating new ones** — [`fabric-add-adopt-remote`](design-fabric-add-adopt-remote.md) · enhancement, fabric
    - A branch that exists on origin is fetched and checked out, never recreated locally; reconcile and checkout today fork a fresh weft and fabric add refuses the warp
-1. **A color per spawned session, so the driver and each loom segment stand apart** — [`strand-colors`](design-strand-colors.md) · enhancement, reed, loom
+1. **A color per spawned session, so the driver and each loom segment stand apart** — [`strand-colors`](design-strand-colors.md) · enhancement, reed, loom, shed
    - Use Claude Code /color on every spawned strand: driver against the rest at least, ideally one color per loom segment
 
 ## Done
