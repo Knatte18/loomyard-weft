@@ -20,7 +20,7 @@
     "15-orch-reload.md": "38ac5b4ab5ffd944c1c75ca71c5c44ec0d822f4de51a77046bac154f6ffd9293",
     "16-pattern-entries.md": "e047737b43baabd460e35807bf459d4799d6a894d825af114c67328a17b7713f"
   },
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "40172dc3ee4d7f3102b0f95aade12453",
   "masterSessionId": "473ae965-3716-422d-9f02-1fa754091f0c",
   "assertedModel": "sonnet",
@@ -153,8 +153,19 @@
       "kind": "fork",
       "spawnedAt": "2026-10-05T17:11:52Z",
       "sessionId": "473ae965-3716-422d-9f02-1fa754091f0c",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-orch-note-gate",
+        "status": "done",
+        "head_sha": "8f34ae9f09a4b28ce3f0978a5c598d3ce7b7a76d"
+      },
+      "cardShas": [
+        "8f34ae9f09a4b28ce3f0978a5c598d3ce7b7a76d"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-skills-and-stencils/473ae965-3716-422d-9f02-1fa754091f0c/subagents/agent-a12b5eb7bb5bc43e3.jsonl"
+      ]
     },
     "2": {
       "slug": "claude-skill-loader",
@@ -401,6 +412,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-skills-and-stencils/473ae965-3716-422d-9f02-1fa754091f0c/subagents/agent-a0964e636895ac926.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-skills-and-stencils/473ae965-3716-422d-9f02-1fa754091f0c/subagents/agent-a9c0aa6fc613cfc01.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-skills-and-stencils/473ae965-3716-422d-9f02-1fa754091f0c/subagents/agent-ac2ff12f6a6aa3f59.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-skills-and-stencils/473ae965-3716-422d-9f02-1fa754091f0c/subagents/agent-a394a55b5d294289c.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-skills-and-stencils/473ae965-3716-422d-9f02-1fa754091f0c/subagents/agent-a394a55b5d294289c.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-skills-and-stencils/473ae965-3716-422d-9f02-1fa754091f0c/subagents/agent-a12b5eb7bb5bc43e3.jsonl"
   ]
 }
