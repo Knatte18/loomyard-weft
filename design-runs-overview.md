@@ -21,3 +21,10 @@ With `reed-status-tabs`, a session with more than one window shows window tabs, 
 
 The `[batten notice]` line typed into the orch drops the trailing `cd <pair> && lyx reed attach`: the orch knows where a run's pair is, and the attach command is for the operator, who now gets it in the log.
 `renderNotice` in `internal/battenshed/notice.go` builds that line; the orch's line and the log's line come from the same notice.
+
+## Notice wording: a wait is not an error (operator, 2026-10-05)
+
+Shed keeps the reason for every halt in `Status.Error`, including an awaiting PR-Gate, and `renderNotice` labels it `error:` whatever the state.
+Seen: `child left running; child state awaiting, error: the pull request awaits review; …`.
+Label the text by state: `error:` only for failed and blocked, and `waiting:` (or the bare reason) for awaiting and paused.
+Phrase the condition by what happened, e.g. `board-config-per-worktree: awaiting at PR-Gate: the pull request awaits review`, not `child left running; child state awaiting`.
