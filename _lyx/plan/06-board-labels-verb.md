@@ -12,7 +12,7 @@
 - `internal/boardcli/doc.go`
 
 **Uses:**
-- `plan:internal/boardengine#Label`
+- `internal/boardengine#Label`
 - `internal/boardengine#LoadConfig`
 
 **Intent:**

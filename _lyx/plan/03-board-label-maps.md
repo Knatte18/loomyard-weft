@@ -17,8 +17,8 @@
 - `internal/boardcli/verbs_test.go`
 
 **Create:**
-- `plan:internal/boardengine#Label` -> `type Label struct`
-- `plan:internal/boardengine#ConfigOpenMaps` -> `func ConfigOpenMaps() []string`
+- `internal/boardengine#Label`
+- `internal/boardengine#ConfigOpenMaps`
 
 **Uses:**
 - `internal/configengine#Load`

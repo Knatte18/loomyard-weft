@@ -11,7 +11,7 @@
 - `plan:internal/configreg#Lookup` -> `func Lookup(name string) (Module, bool)`
 
 **Uses:**
-- `plan:internal/boardengine#ConfigOpenMaps`
+- `internal/boardengine#ConfigOpenMaps`
 - `internal/yamlengine#Reconcile`
 
 **Intent:**
