@@ -13,11 +13,6 @@ Waits on nothing open; can start now, in parallel.
 
 1. **ly-drive as a stencil, a ly:runs skill, and lyx-injected skill loading** — [`lyx-skills-and-stencils`](design-lyx-skills-and-stencils.md) · enhancement, stencil, orch, shed
    - Driver procedure moves into a stencil, a ly:runs workflow skill, and the orch watcher injects skill loading at start, adopt and after every cycle
-
-### Independent
-
-Depends on nothing and nothing depends on it, by design.
-
 1. **Measure and prune the test suite** — [`test-suite-prune`](design-test-suite-prune.md) · enhancement
    - Stage 1: per-test coverage tool, delete redundant tests, fold into tables, seam real-time waits, parallelize fabricengine
 
