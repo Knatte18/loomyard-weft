@@ -11,7 +11,7 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Webster audit and verify-gate halts are recoverable by the agent** — [`webster-audit-recovery`](design-webster-audit-recovery.md) · bug, enhancement, webster, shuttle · running · PR-Gate
+1. **Webster audit and verify-gate halts are recoverable by the agent** — [`webster-audit-recovery`](design-webster-audit-recovery.md) · bug, enhancement, webster, shuttle · awaiting · PR-Gate
    - Hung-shell gate wait, unacceptable contract-file findings, garbled way-forward text, recoveries that need denied commands
 1. **Bouncer CIRCLING escalates to the parent; loomcli smoke tier green** — [`loom-bouncer-rounds`](design-loom-bouncer-rounds.md) · bug, enhancement, loom, orch · running · Webster-Burler
    - CIRCLING judged later on unchanged recurrence and escalated to the parent orchestrator; fix the five failing loomcli smoke tests
