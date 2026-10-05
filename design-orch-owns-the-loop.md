@@ -31,7 +31,7 @@ Today that takes `lyx orch start --adopt <session-id>`, with the id dug out of `
 
 ## The orch role prompt
 
-Moved into task `lyx-skills-and-stencils` (operator, 2026-10-06).
+Moved into task `lyx-skills-and-stencils` (operator, 2026-10-05).
 
 ## Done when
 
