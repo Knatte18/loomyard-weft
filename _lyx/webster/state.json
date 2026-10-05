@@ -11,7 +11,7 @@
     "06-configengine-staged-edit.md": "3d3a868757d822a52d918543f882628f823c87b49aa150227a5c4fc89d12059a",
     "07-config-cli-hub-wide.md": "8dac35da6501fdbcee76b684140297a345c226ea29a76b79d465257e85a90ad0"
   },
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "08f77d30e10194f6fe1f235b2c65df1a",
   "masterSessionId": "796cd30e-0090-4614-89af-4ad1258a80bd",
   "assertedModel": "sonnet",
@@ -132,14 +132,26 @@
       "kind": "fork",
       "spawnedAt": "2026-10-05T19:03:09Z",
       "sessionId": "796cd30e-0090-4614-89af-4ad1258a80bd",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-retire-worktree-copy",
+        "status": "done",
+        "head_sha": "d9bb0cb77cf87443f3b01654caa8726d605bfa2b"
+      },
+      "cardShas": [
+        "d9bb0cb77cf87443f3b01654caa8726d605bfa2b"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-a172c74626eba0c56.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-ad60141a5b6d6c834.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-a64a5d6ea369256e0.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-aa211604a2d216e97.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-ad6de7f5a9ce768ff.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-ad6de7f5a9ce768ff.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-a172c74626eba0c56.jsonl"
   ]
 }
