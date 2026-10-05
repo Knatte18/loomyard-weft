@@ -1,0 +1,4 @@
+status: OK
+head_sha: 6a1d1a81d8504e6589965520ed2de44c2154300e
+deviations:
+  - internal/shedadapters/bouncer_circling_test.go
