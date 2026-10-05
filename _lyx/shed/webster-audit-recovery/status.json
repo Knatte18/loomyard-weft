@@ -1,11 +1,11 @@
 {
-  "current_producer": "Run-Shed",
+  "current_producer": "Worktree-Teardown",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Run-Shed",
-    "last": "Run-Shed → bounced to Run-Shed",
+    "now": "Worktree-Teardown",
+    "last": "Run-Shed → done",
     "wait": ""
   },
   "history": [
@@ -2222,6 +2222,141 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-05T13:14:59Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-05T13:37:04Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-05T13:37:35Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-05T13:38:05Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-05T13:38:35Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-05T13:39:05Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-05T13:39:35Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-05T13:40:05Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-05T13:40:35Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-05T13:41:05Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-05T13:41:35Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-05T13:42:05Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-05T13:42:36Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-05T13:43:06Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-05T13:43:36Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-05T13:44:06Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-05T13:44:36Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-05T13:45:06Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-05T13:45:36Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-05T13:46:06Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-05T13:46:36Z",
+      "budget_exempt": true,
+      "repeats": 22,
+      "last_at": "2026-10-05T13:57:38Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-05T13:58:08Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-05T13:58:08Z"
     }
   ]
 }
