@@ -20,7 +20,7 @@
     "15-orch-reload.md": "4a10e0eb0864ae86c1536dce7a528e27a986165c47bdd8d70fdb910e69409bbd",
     "16-pattern-entries.md": "7ec671978f79811ad8b1edff79031d5eb45e599779244d814ece3259a37634f1"
   },
-  "currentBatch": 0,
+  "currentBatch": 2,
   "masterStrand": "40172dc3ee4d7f3102b0f95aade12453",
   "masterSessionId": "473ae965-3716-422d-9f02-1fa754091f0c",
   "assertedModel": "sonnet",
@@ -50,6 +50,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-skills-and-stencils/473ae965-3716-422d-9f02-1fa754091f0c/subagents/agent-a1b205dbfd6200122.jsonl"
       ]
+    },
+    "2": {
+      "slug": "claude-skill-loader",
+      "cards": [
+        "02-claude-skill-loader"
+      ],
+      "cardHashes": {
+        "02-claude-skill-loader": "088d132c79ee82ea301e83738f95192e17b7008cf26a27106f0b3fb81bc3c740"
+      },
+      "startSha": "95cc7e64dfb9db8456a25d3d72dec3007f05732f",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T16:34:27Z",
+      "sessionId": "473ae965-3716-422d-9f02-1fa754091f0c",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
