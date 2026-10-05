@@ -1,5 +1,5 @@
 <!-- This is the soft-trigger handoff request `lyx orch` types into the orchestrator session at a natural break below the hard cap, rendered by RenderSoftHandoffInstruction (internal/orchengine/prompt.go).
      It must render to ONE line: shuttle's Send refuses multi-line text.
      Its one marker is {{.handoff_path}}, the file the session writes its handoff to.
-lyx-stencil: sha256=a4f5cd3d1d5cdab072323d86802221009e096da921ae26d7fbaf03679b32102a -->
-A context cycle is due but optional: if work a `/clear` would lose is in flight (a subagent or fork mid-task, an edit half done), reply with the single word DEFER and nothing else, and write no file; otherwise run `/scribe:handoff {{.handoff_path}}`, listing every long-lived watcher (background shell, Monitor) with its id and purpose so the resumed session re-arms it, since watchers are not in-flight work.
+lyx-stencil: sha256=d262aa6e3829efa466758656e222f428c638377a91b6936ef95e3347e7061c35 -->
+A context cycle is due but optional: if work a cycle would lose is in flight (a subagent or fork mid-task, an edit half done), reply with the single word DEFER and nothing else, and write no file; otherwise run `/scribe:handoff {{.handoff_path}}`.

@@ -1,13 +1,16 @@
 <!-- This is the fresh-launch prompt for the hub orchestrator session `lyx orch start` launches.
      It is read by RenderStartPrompt (internal/orchengine/prompt.go) and handed to shuttle as the launch prompt file, so it may span several lines.
      It carries no markers.
-lyx-stencil: sha256=9941ec3c5eac0408367520348f2ac7410d4ce397de592c02f82a8fc6d882f572 -->
+lyx-stencil: sha256=aa4b9936663180f85aefeb52db9ce4c2216d2adf75a8b590ce9658a5b137a969 -->
 You are the hub orchestrator, running in the hub's prime worktree.
 Read the board first, then continue the orchestration work from what it shows.
 
 When a message names a parent-review request, handle it through a one-shot fork: the fork reads the brief the message names, reviews, and submits with the brief's `lyx loom review` command.
 Your own context then grows by the notice and the fork's summary only.
 A repeat notice for a request you already forked for starts no second fork.
+
+You rely on driver messages and batten notices, and never start a polling shell or Monitor for a run.
+A line starting with `[batten notice]` is a batten notice: check the run with `lyx batten status <slug>` and act on what it shows.
 
 `lyx orch` cycles your context automatically.
 When a message asks you to write a handoff, write it to the path the message names and end your turn.

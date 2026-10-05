@@ -4,7 +4,7 @@
      to shuttle as the plan agent's entire instruction set.
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires the three original ones non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
-lyx-stencil: sha256=04f5cd84b2930a5bc2909965858ff7c219f7de5fa67acfeb17421752fde27a86 -->
+lyx-stencil: sha256=84e703545fb057113e14dc1a758ab2111ebbaf9d017dc8cce826dec3bd690d5e -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -29,6 +29,10 @@ Both loads are best-effort — if a skill is unavailable, continue without it ra
 Read `{{.decision_record_path}}`.
 This is your **sole** input — never read the support log or the board.
 If the file is missing or empty, STOP and report that rather than inventing scope.
+
+A scope addition that arrives after the Discussion is a design call, so you record it before planning on it, with `lyx loom decision add --by <who> --title <title> --decision <what> --rationale <why>`.
+`--by` names the source of the addition: `operator` when the operator gave it, otherwise `parent`.
+Never write such an addition into the plan as an operator addition.
 
 ## Step 2 — Explore the codebase
 

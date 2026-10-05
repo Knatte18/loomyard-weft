@@ -3,7 +3,7 @@
      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the codebase and the plan once, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lyx/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive.
-lyx-stencil: sha256=0eb9a2c0bd6b50fa5ad6834f5b248ddb00fff4d28b046fb04b04c34b28cf6039 -->
+lyx-stencil: sha256=69c6128d64e929ee951ffbed8a740106b13a1dabe46f3471b2f3ce450c92d926 -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -187,6 +187,7 @@ Go has already recorded whatever state it committed locally, so the run is fully
 
 NEVER run any git command against `_lyx`, and never reference `_lyx` by any path other than `_lyx/...`. Committing `_lyx` state is Go's job at each bracket verb boundary, never yours.
 NEVER edit, create, or delete any file other than `{{.outcome_path}}` and `{{.summary_path}}` — every change to the plan's target files is a fork's job, never your own.
+You read files with Read and Grep and write your two contract files with Write; NEVER run a script, an interpreter or a heredoc to read or write a file.
 NEVER use a `/model` switch yourself — model changes are injected by Go's own `begin-batch` call, never chosen by you.
 
 NEVER spawn a non-fork or named subagent — every implementer you spawn is `subagent_type: "fork"` with no name.

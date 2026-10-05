@@ -3,9 +3,10 @@
      Master's own Agent-tool fork call is exactly "Read this file and follow it exactly: <this file's own path>" — the prompt text itself never sits in Master's own context, so there is no paraphrase surface between what Go rendered and what the fork reads.
      This fork is forked IN-SESSION from Master, so it inherits Master's whole context already: the codebase orientation, the plan's framing, and every constraint Master already read up front.
      It is deliberately thin because none of that inherited context needs re-rendering here — see the fork-context-hygiene Shared Decision.
-     Its ONLY marker is {{.friction_directive}}, optional (filled via stencil.FillOptional), rendering as nothing when Tier 2 is off;
+     Its required markers are {{.outcome_path}} and {{.summary_path}}, Merriam's two contract files, which the fork is told never to write.
+     Its one optional marker is {{.friction_directive}} (filled via stencil.FillOptional), rendering as nothing when Tier 2 is off;
      every other marker in the composed template lives in webster-body-implementer.md.
-lyx-stencil: sha256=87ebb7a204900e5943cab6b5e227cd5cf18907c9146f6a379c51f35578f418ad -->
+lyx-stencil: sha256=6e283ded5e4bb0f8e862d1b1d87fb09f20bc4cc48cf156eaaab3c464de3868ea -->
 
 # Webster fork implementer — one batch of cards, inheriting Master's context
 
@@ -23,3 +24,9 @@ In particular, do NOT poll `await-batch` for your own report: YOU are the one wh
 From this fork's turn, your actions are only: implement your cards (below) in your worktree, and write your batch-report file.
 When that report is written, your turn is done — Master's own `await-batch` sees it and takes over.
 Ignore any inherited instinct to drive the webster loop.
+
+## Merriam's contract files are not yours
+
+`{{.outcome_path}}` and `{{.summary_path}}` are Merriam's own contract files.
+**NEVER write, create or delete either of them.**
+A fork that writes one forges the run's terminal judgment and halts the run at its exit audit.

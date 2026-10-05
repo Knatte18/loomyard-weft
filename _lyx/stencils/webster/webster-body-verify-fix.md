@@ -1,11 +1,11 @@
 <!-- This is the verify-gate fixer fork prompt for webster.
      It is filled by RenderVerifyFixPrompt (render.go) via internal/stencil and written to a prompt file under the webster prompts directory at run entry;
      Merriam's Agent-tool fork call is the same "Read this file and do exactly and only what it says: <this file's own path>" idiom used for a batch's own fork prompt.
-     Three markers below are required top-level {{.X}} substitutions;
-     stencil.FillOptional requires all three non-empty.
+     Five markers below are required top-level {{.X}} substitutions ({{.report_path}}, {{.plan_dir}}, {{.worktree_root}}, {{.outcome_path}}, {{.summary_path}});
+     stencil.FillOptional requires all of them non-empty.
      {{.friction_directive}} is the one optional marker (filled via stencil.FillOptional), rendering as nothing when Tier 2 is off.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=d89728947e803d7ac426c4b7ce04591c1b62fd045d03994aa74c0697c285cd72 -->
+lyx-stencil: sha256=6d3398d3eda591dc9f89056777984ebd26c245e83e1001f65ba2b5795f3afce8 -->
 
 # Webster verify-gate fixer fork — fix the recorded failures in source, commit, report
 
@@ -39,6 +39,8 @@ A report that lists dirty paths instead of failures means the worktree held unco
 - Never touch the plan directory `{{.plan_dir}}` or anything under `_lyx`: they sit outside every code commit, and the run-exit audit flags a fork that writes there.
 - Commit each fix to the repo with normal git from `{{.worktree_root}}`, with the subject `fix: <summary>`, where `<summary>` says what the fix repairs.
   Never commit a path under `_lyx`.
+- Never write, create or delete Merriam's contract files `{{.outcome_path}}` and `{{.summary_path}}`, even though you inherit Merriam's instruction to write them as a final action.
+  A fixer writing either forges the run's terminal judgment and halts the run at its exit audit.
 - Before you report, run the failing packages' tests with `-tags integration` and fix what they still report.
 - Leave the worktree clean: no uncommitted change may remain when you end your turn.
 

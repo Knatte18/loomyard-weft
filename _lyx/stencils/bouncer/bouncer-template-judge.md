@@ -9,6 +9,7 @@
      and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty -- see internal/stencil/stencil.go).
      The focus-schema markers ({{.focus_example_lists}}, {{.focus_list_rules}}, {{.approved_focus_lists}}) have two variants, rendered by focusSchemaMarkers in internal/shedadapters/bouncerprompt.go:
      Go holds the variant so this stencil stays conditional-free.
+     {{.decision_rule}} is the same kind of Go-held variant, rendered by decisionRuleMarker in the same file: it offers CIRCLING only from the configured checkpoint round on.
      {{.round}} and {{.next_round}} are deliberately DIFFERENT markers, not a typo: the ledger file
      (`{{.ledger_path}}`, built from ledgerPath(runDir, round)) records the round being judged, while
      the focus file (`{{.focus_path}}`, built from focusPath(runDir, round+1) -- see focusPath's own
@@ -17,7 +18,7 @@
      round-agrees-with-filename check discards it as malformed (crucible round sonnet-xhigh-r8,
      LS-1) -- before this fix, both instructions reused {{.round}}, so a compliant judge wrote a
      focus file whose OWN frontmatter round permanently disagreed with its OWN filename by one.
-lyx-stencil: sha256=3650140f237d79733f8330a2942372866aa61313bd3389564f3e0c07c256d8e1 -->
+lyx-stencil: sha256=7fe8f3a90229ac4219a2b8fa25f4fffbc98b73554bbe6f6614a691b196c765cd -->
 
 # Bouncer — judge pass, round {{.round}}
 
@@ -46,13 +47,7 @@ The review's own top-level `verdict:` is no convergence signal either; decide fr
 
 ## Decision rule
 
-A finding is gating when its class is `design`.
-
-- `CONTINUE` while the latest round carries a gating-class finding at MEDIUM or worse, or any BLOCKING finding.
-- `CONVERGED` when the latest round carries neither.
-- `CIRCLING` when such findings remain and the facts show no progress: gating counts flat or rising across the recent rounds, or gating findings on recurring or reopened keys.
-  Circling needs evidence from at least two fresh rounds, and a parse-error row is no evidence.
-- A parse-error row for the latest round means `CONTINUE`.
+{{.decision_rule}}
 
 The facts' recurring-key list comes from ledgers, which carry no class.
 A recurring or reopened key counts as a gating finding when the latest review's finding that you map to that key in the ledger you write is gating-class at MEDIUM or worse, or BLOCKING.
@@ -82,6 +77,7 @@ rationale: "one-line summary of why, citing concrete evidence"
 Frontmatter rules, all strict:
 
 - `verdict` is exactly `CONVERGED`, `CONTINUE` or `CIRCLING` -- no other spelling, case-sensitive.
+  `CIRCLING` is legal only where the decision rule above offers it.
 - `rationale` MUST be a double-quoted, single-line YAML string, exactly as in the example above.
   This is load-bearing: an unquoted rationale containing a colon (`: `) is invalid YAML, the whole
   verdict file is rejected, and your verdict is DISCARDED as if you never answered.
@@ -101,6 +97,8 @@ ledger:
   - key: short-stable-finding-identity
     rounds: [1, 3]
     status: open
+    class: design
+    severity: MEDIUM
   - key: another-finding-identity
     rounds: [2]
     status: resolved
@@ -112,6 +110,9 @@ Frontmatter rules, all strict:
 - `round` is a positive integer, here {{.round}}.
 - `ledger` is a list of entries, each with a non-empty `key`, a non-empty `rounds` list of positive
   integers, and a `status` of exactly `open` or `resolved`.
+- Every `status: open` entry also carries `class` and `severity`, copied from the latest review's finding that you map to that key (after any relabel you name in the rationale).
+  A `status: resolved` entry may omit them.
+  `class` is one of `design`, `scope`, `decision`, `consistency`; `severity` is one of `BLOCKING`, `MEDIUM`, `LOW`, `NIT`.
 - REQUIRED — lossless carry-forward rule: every entry present in the previous ledger reappears in
   this ledger, as either `status: open` (still applies) or `status: resolved` (no longer applies),
   never silently dropped.
