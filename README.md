@@ -44,6 +44,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - quarry#34 re-parses per target; fix it or validate incrementally; drop the per-batch model assertion
 1. **Config changes a task makes never reach the parent** — [`config-reaches-parent`](design-config-reaches-parent.md) · bug, config, fabric, loom
    - Live config is in weft and task weft dies at landing; carry config changes or make the hub step explicit
+1. **Webster Master hangs background shells with a flattened heredoc** — [`master-heredoc-hang`](design-master-heredoc-hang.md) · bug, webster, shuttle
+   - cat > /tmp/x; python3 - <<EOF … EOF on one line reads stdin forever; seen twice on 2026-10-05 and in #361
 
 ### Enhancements
 
