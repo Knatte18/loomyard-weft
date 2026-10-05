@@ -1,6 +1,6 @@
 # Measure the test suite, make it fast, settle its rules
 
-`test-suite-measure` · Task · enhancement · running · Loom-Preflight
+`test-suite-measure` · Task · enhancement · running · Discussion-Write
 
 Depends on: [`test-writing-rules`](design-test-writing-rules.md)
 
