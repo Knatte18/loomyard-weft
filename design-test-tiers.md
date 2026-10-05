@@ -16,6 +16,13 @@ Record the after-state beside `test-suite-measure`'s before-state in `docs/bench
 A guard test pins a per-package budget at the after-state; exceeding it fails until the budget is raised deliberately in the same commit, so the suite cannot regrow unseen.
 Test count is the stable measure; settle in Discussion whether wall time is pinned too or only reported, since it moves with machine load.
 
+## Link cost: cgo where it is not needed (operator, 2026-10-05)
+
+`go test ./...` builds one test binary per package: 115 of the module's 118 packages have tests, and gates run with `-count=1`, so every binary is relinked on every run even when its compiled packages are cached.
+35 of those test binaries link the cgo tree-sitter grammars (`go list -test -deps <pkg> | grep go-tree-sitter`), the heaviest links; with two or three runs in a gate at once this is most of the CPU load.
+Measure each package's link time, find which import chain pulls tree-sitter into packages that never use the code index, and cut the chain (an interface or a narrower package), so only quarry and its real users link cgo.
+A guard test fails when a package outside an allowed list gains tree-sitter in its test deps.
+
 ## Which gate runs which tier (operator, 2026-10-05)
 
 Card verifies are already scoped: each Webster card runs its own `verify:` (`internal/websterengine/cardverify.go`), typically the touched packages.
