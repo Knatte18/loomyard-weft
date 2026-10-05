@@ -1,11 +1,12 @@
 # Label descriptions, CLI tree exceptions, ly-drive as a stencil
 
-`board-labels-and-skills` · Task · bug, enhancement, board, config, selfreport, shed, stencil
+`board-labels-and-skills` · Task · bug, enhancement, board, config, selfreport, shed, stencil, orch
 
 # Goal
 
 Board labels say what they cover, the CLI tree walk has no recorded exceptions left, and the `ly` plugin keeps `ly:board` as its only skill.
 `board-label-descriptions` and `ly-drive-as-stencil` both edit `plugins/ly`.
+Every lyx-rendered Claude prompt also opens with an imperative to load `scribe:conversation` and `scribe:prose` (`stencil-loads-skills`, operator 2026-10-05), which touches the same stencils as `ly-drive-as-stencil`.
 
 Labels principle (operator, 2026-10-05): labels exist only to group entries for merging into tasks; they name the lyx module an entry mainly touches, and an entry that belongs to no module carries none.
 
@@ -52,3 +53,15 @@ Nothing about that needs to be a skill: every other Claude process lyx spawns ge
 - Remove the `ly-drive` skill from the `ly` plugin.
 
 `ly:board` stays a skill: it serves the operator's own sessions and the orchestrator, not a spawned process, and it becomes the only skill Loomyard ships.
+
+## Stencils make sessions load scribe:conversation and scribe:prose
+
+From note `stencil-loads-skills`.
+
+The scribe plugin's `SessionStart` hook asks a session to load `scribe:conversation` and `scribe:prose`, but a hook can only ask: on 2026-10-05 the orch session saw the request and did not load either skill.
+
+Idea (operator): lyx makes the loading imperative itself.
+The stencils lyx renders for its Claude sessions open with an injected instruction to load both skills before anything else, so no session depends on the plugin hook being obeyed.
+
+- The orch prompt carries it first.
+- Settle which spawned roles need it too: every role that writes prose for the operator or into the repo.

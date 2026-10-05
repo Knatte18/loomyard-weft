@@ -17,7 +17,7 @@ Waits on nothing open; can start now, in parallel.
    - Fresh reading after /compact, clear-or-compact as config, and the adopt/attach/permission hardening list
 1. **Bouncer CIRCLING escalates to the parent; loomcli smoke tier green** — [`loom-bouncer-rounds`](design-loom-bouncer-rounds.md) · bug, enhancement, loom, orch · running · Discussion-Write
    - CIRCLING judged later on unchanged recurrence and escalated to the parent orchestrator; fix the five failing loomcli smoke tests
-1. **Label descriptions, CLI tree exceptions, ly-drive as a stencil** — [`board-labels-and-skills`](design-board-labels-and-skills.md) · bug, enhancement, board, config, selfreport, shed, stencil
+1. **Label descriptions, CLI tree exceptions, ly-drive as a stencil** — [`board-labels-and-skills`](design-board-labels-and-skills.md) · bug, enhancement, board, config, selfreport, shed, stencil, orch
    - labels become labelâdescription with lyx board labels; fix the five cliTreeFindings exceptions; ly-drive moves into a stencil
 
 ## Notes
@@ -123,5 +123,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Notes nobody means to act on soon get parked: kept, hidden by default; curated at each intake
 1. **lyx seeds the prime VS Code setup: title, orch start task, keybindings** — [`ide-prime-setup`](design-ide-prime-setup.md) · enhancement, ide, orch
    - LY: prime/LY: <slug> titles, prime opens with reed up+attach only, orch start and open board as tasks with lyx keybindings, no launch.json
-1. **Stencils make sessions load scribe:conversation and scribe:prose** — [`stencil-loads-skills`](design-stencil-loads-skills.md) · enhancement, stencil, orch
-   - The plugin hook only asks and the orch ignored it; lyx-rendered prompts open with an imperative to load both skills
