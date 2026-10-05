@@ -1,0 +1,4 @@
+status: OK
+head_sha: fcb9738d7c6874cbecd707ecf4492fa37d54bab0
+deviations:
+  - internal/loomcli/gotoentry_test.go
