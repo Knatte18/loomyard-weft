@@ -100,7 +100,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **The LLM driver wraps every shed step in trace ids, temp files and cut** — [`driver-step-clutter`](design-driver-step-clutter.md) · enhancement, shed
    - Every step notice repeats a long wrapper the driver stencil forbids; make lyx shed step print a short envelope so the bare call is the easy one
 
-### Other
+### Features
 
 1. **An MCP server over lyx exposing the verbs agents need** — [`lyx-mcp`](design-lyx-mcp.md) · feature
    - A few coarse MCP tools over lyx, chosen by measured agent use and exposed per role, so agents see typed schemas instead of guessing CLI shapes
