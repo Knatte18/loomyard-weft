@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster-Bouncer",
-  "state": "awaiting",
-  "error": "bouncer Webster-Bouncer: the judge found no progress at round 3 (CIRCLING); decide with `lyx loom circling accept board-labels-and-skills` or `lyx loom circling continue board-labels-and-skills`, then run `lyx loom start` in the task worktree to resume",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Webster-Bouncer",
     "last": "Webster-Bouncer → awaiting",
-    "wait": "bouncer Webster-Bouncer: the judge found no progress at round 3 (CIRCLING); decide with `lyx loom circling accept board-labels-and-skills` or `lyx loom circling continue board-labels-and-skills`, then run `lyx loom start` in the task worktree to resume"
+    "wait": ""
   },
   "history": [
     {
