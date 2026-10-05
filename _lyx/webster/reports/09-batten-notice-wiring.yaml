@@ -1,0 +1,4 @@
+status: OK
+head_sha: 01869ef3cb5f368d5f1318d2d3c2bbbf2f34bd06
+deviations:
+  - internal/battencli/lifecycle_integration_test.go
