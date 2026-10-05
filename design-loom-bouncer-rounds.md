@@ -1,6 +1,6 @@
 # Bouncer CIRCLING escalates to the parent; loomcli smoke tier green
 
-`loom-bouncer-rounds` · Task · bug, enhancement, loom, orch · running · Discussion-Burler
+`loom-bouncer-rounds` · Task · bug, enhancement, loom, orch · running · Discussion-Bouncer
 
 # Goal
 
