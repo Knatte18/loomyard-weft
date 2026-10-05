@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=0abde708fa51546be4e0b2216452fc55710ad69aebb574ee39cb28c9595f64f7 -->
+<!-- lyx-stencil: sha256=94a000971350d280cc2973d79f05cabc83969b49c572e433ed449d912cbe01b7 -->
 
 # Loom plan-spec — flat card list
 
@@ -20,7 +20,7 @@ The smallest change that:
 1. **Compiles/builds on its own** — `go build ./...` succeeds immediately after the card's commit.
    No broken syntax, no reference to a symbol that doesn't yet exist.
 2. **Is independently committable** — a meaningful, revertible git commit on its own.
-3. **Bundles its own test, when it introduces new behavior** (implementation + `_test.go` in the same card).
+3. **Carries the coverage for any new behavior it introduces**; the card's own targets include the test that covers it (`PATTERN-test-economy`).
    Pure refactors/renames may rely on existing tests instead.
 
 **Key insight,
@@ -298,9 +298,10 @@ It stays genuinely exceptional; the default automatic tier 1 run is what most ca
 
 ## Card granularity
 
-One card per independently reviewable and testable unit, never one card per literal symbol.
-A symbol with no independent meaning or testability apart from another symbol in the same card — a private supporting type, a constructor inseparable from its type — is bundled into that other symbol's card.
-A symbol that is independently testable or reusable gets its own card even when one card happens to be its first consumer.
+One card per independently reviewable unit, never one card per literal symbol.
+A symbol with no independent meaning apart from another symbol in the same card — a private supporting type, a constructor inseparable from its type — is bundled into that other symbol's card.
+A symbol that is part of a module's public surface, or reused across packages, gets its own card even when one card happens to be its first consumer.
+A helper serving one surface is bundled into that surface's card.
 
 Removing the last caller of a symbol and deleting the symbol are two cards, not one: a symbol can have N callers, each requiring its own `Edit` card, and only one final `Delete` card once all are gone.
 
@@ -402,7 +403,7 @@ Only the rework gate runs it: `planglyph.ValidateRework` runs it after the forma
 
 A complete plan for a fictional task ("add a `--json` flag to `lyx board list`"), byte-consistent with the golden fixture `internal/planparser`'s own tests parse.
 Across its seven card files this example demonstrates every plan-format feature: all seven type labels are exercised across the suite of cards below (`Create`, `Edit`, `Custom`, `Delete`, `Rename`, `Move`, `Prosa`), flat `N` card headings, a `## Shared Decisions` overview entry, a plan-level `root:` with `//`-escaped entries, a pinned `Commit:`/`Verify:` pair, and a `Rename` card with its plan-level `## Rename mechanic` section.
-Card 2 is additionally the multi-label example: it carries an `**Edit:**` group followed by a `**Create:**` group, for the implementation-plus-its-own-new-test-file shape.
+Card 2 is additionally the multi-label example: it carries an `**Edit:**` group followed by a `**Create:**` group.
 
 `_lyx/plan/00-overview.md`:
 
