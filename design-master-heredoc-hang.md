@@ -13,4 +13,5 @@ It is the same shape as #361 in `board-model` (`python3 - 2>/dev/null; cat > /de
 In `orch-cycle-hardening` it held the verify gate from 12:51 until the hub killed the `cat` at 12:56; the gate then ran verify.
 
 `webster-audit-recovery` bounds the wait and gives every agent Bash call `/dev/null` as stdin, which ends the hang but not the habit.
+Operator, 2026-10-05: an agent running Python like this is wrong; it needs a good reason to use Python at all (running a Python project's own tests is one), never as a stand-in for Read, Grep or Edit.
 Open: why Master writes a multi-line heredoc that reaches the shell as one line, and why it reaches for `python3` and `/tmp` at all; the fix belongs in the Master stencil or the tool guidance it gets.
