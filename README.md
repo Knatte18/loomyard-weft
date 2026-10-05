@@ -11,20 +11,10 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Test-writing rules that stop the suite regrowing** — [`test-writing-rules`](design-test-writing-rules.md) · enhancement, loom, stencil · running · Finalize
-   - Stage 1: tests per behavior not per symbol, no redundant tests, redundant tests are review findings
-   - **Before:** `lyx-skills-and-stencils`, `test-suite-prune`
-
-### Layer B
-
-Starts when every entry it names under After is done.
-
 1. **ly-drive as a stencil, a ly:runs skill, and lyx-injected skill loading** — [`lyx-skills-and-stencils`](design-lyx-skills-and-stencils.md) · enhancement, stencil, orch, shed
    - Driver procedure moves into a stencil, a ly:runs workflow skill, and the orch watcher injects skill loading at start, adopt and after every cycle
-   - **After:** `test-writing-rules`
 1. **Measure and prune the test suite** — [`test-suite-prune`](design-test-suite-prune.md) · enhancement
    - Stage 2: per-test coverage tool, delete redundant tests, seam real-time waits, parallelize fabricengine, stop the tmux socket leak, budget guard
-   - **After:** `test-writing-rules`
 
 ## Notes
 
@@ -156,3 +146,5 @@ Finished, awaiting `lyx board prune`.
    - CIRCLING judged later on unchanged recurrence and escalated to the parent orchestrator; fix the five failing loomcli smoke tests
 1. **Label descriptions, board CLI gaps, CLI tree exceptions** — [`board-labels-and-skills`](design-board-labels-and-skills.md) · bug, enhancement, board, config, selfreport · done
    - labels become label→description with lyx board labels; board get --body, merge --body-file, merged issues kept, slug limit in help; fix the five cliTreeFindings exceptions
+1. **Test-writing rules that stop the suite regrowing** — [`test-writing-rules`](design-test-writing-rules.md) · enhancement, loom, stencil · done
+   - Stage 1: tests per behavior not per symbol, no redundant tests, redundant tests are review findings
