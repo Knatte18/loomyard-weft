@@ -911,6 +911,23 @@
       "isolated": false,
       "brief": "LY: prime/LY: \u003cslug\u003e titles, prime opens with reed up+attach only, orch start and open board as tasks with lyx keybindings, no launch.json",
       "body": "Operator 2026-10-04: the prime's `.vscode/` was copied by hand from millhouse (title \"LYXHUB\", millhouse keys, a mill `launch.json`); lyx should seed it instead, and the setup should fit the orchestrator workflow.\nAssume no `.vscode/` exists beforehand, or that it may be deleted and re-seeded by lyx.\n\n- Window title: `\u003cSHORTNAME\u003e: \u003cname\u003e` from `.lyx-shortname`, upper-cased: `LY: prime` for the prime, `LY: \u003cslug\u003e` for pairs (today `internal/vscode/config.go` writes the bare slug).\n- Prime folderOpen chain: `reed up` then `reed attach` only; no `reed add claude` (it adds a plain Claude strand the orchestrator workflow does not use).\n- Prime tasks run on demand: \"lyx: orch start\" (`lyx orch start`: launches or attaches the orchestrator and takes the terminal) and \"lyx: open board\" (opens the board viewer, see `board-viewer`).\n- Keybindings: lyx writes a `// lyx:begin` … `// lyx:end` block into the user `keybindings.json`, the way mill writes its `// mill:begin` block (mill holds Alt+Shift+1–6), e.g. Alt+Shift+0 for orch start and Alt+Shift+9 for open board, binding `workbench.action.tasks.runTask` to the task labels.\n- No `launch.json`: mill used it to run Python scripts through the debugger; lyx is a binary, so tasks are the mechanism.\n- Pairs keep their current chains (driven: attach only).\n"
+    },
+    {
+      "id": 100,
+      "slug": "webster-gate-hung-shell",
+      "title": "Webster verify gate waits forever when Master ends its turn with a hung background shell",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster"
+      ],
+      "issues": [
+        361
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #361](https://github.com/Knatte18/loomyard/issues/361).\n\nSeen 2026-10-04 in `board-model`: after the verify gate re-prompted Master at 17:07:33, Master's fixer fork fixed the failure and Master's turn ended at 17:11, but the step logged nothing more for 75 minutes.\nMaster's Stop events (`.lyx/shuttle/\u003cguid\u003e/events.jsonl`) all carried `background_tasks` with a shell in state `running`: `python3 - 2\u003e/dev/null; cat \u003e /dev/null \u003c\u003c'EOF' … EOF; grep …`, where `python3 -` sat reading stdin forever.\nThe gate apparently does not count a Stop with a running background task as a turn end, so one hung shell blocks the run indefinitely; an operator prompt at 18:25 produced another such Stop and changed nothing.\nKilling the `python3` process let the gate rerun verify at 18:26.\n\nExpected: a turn end whose only running background task is a shell (not a fork) still counts, or the gate bounds the wait and surfaces \"turn ended with background task X running\" to the driver, which today cannot see or stop it (ly-drive has no verb for it, and Webster's interrupt policy is handback).\nAlso: lyx agents should not run `python3` at all (operator rule); the agent settings shuttle writes could deny it.\n"
     }
   ],
   "legacy_done": [
