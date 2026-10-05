@@ -11,7 +11,7 @@
     "06-configengine-staged-edit.md": "3d3a868757d822a52d918543f882628f823c87b49aa150227a5c4fc89d12059a",
     "07-config-cli-hub-wide.md": "a09238c0fee62fb798b386f138d2de3506526404f56a103a6f60e128d5a643f0"
   },
-  "currentBatch": 0,
+  "currentBatch": 2,
   "masterStrand": "08f77d30e10194f6fe1f235b2c65df1a",
   "masterSessionId": "796cd30e-0090-4614-89af-4ad1258a80bd",
   "assertedModel": "sonnet",
@@ -41,6 +41,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-ad60141a5b6d6c834.jsonl"
       ]
+    },
+    "2": {
+      "slug": "bolt-commit-written",
+      "cards": [
+        "02-bolt-commit-written"
+      ],
+      "cardHashes": {
+        "02-bolt-commit-written": "7e9982f9448ea95fd9ab475df0092d1dc9381c849679dd0f5c2cb063b99f092f"
+      },
+      "startSha": "51d85f244dab5a608ad2239f0aac2f5e858077dd",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T18:53:24Z",
+      "sessionId": "796cd30e-0090-4614-89af-4ad1258a80bd",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
