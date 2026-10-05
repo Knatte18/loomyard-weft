@@ -132,3 +132,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Notes nobody means to act on soon get parked: kept, hidden by default; curated at each intake
 1. **lyx seeds the prime VS Code setup: title, orch start task, keybindings** — [`ide-prime-setup`](design-ide-prime-setup.md) · enhancement, ide, orch
    - LY: prime/LY: <slug> titles, prime opens with reed up+attach only, orch start and open board as tasks with lyx keybindings, no launch.json
+1. **The ly-drive skill becomes a stencil prompt** — [`ly-drive-as-stencil`](design-ly-drive-as-stencil.md) · enhancement, shed, stencil
+   - Drivers get their shed-step instructions from a stencil like every other lyx Claude process; ly:board stays the only skill
