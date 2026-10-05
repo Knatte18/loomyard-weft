@@ -16,7 +16,7 @@
     "11-adopt-pid-reuse.md": "9ac8e7bf1c0d39c37aab5b3165f234d0a213e2aa37d4a19a9cb3a932b91ccf77",
     "12-orch-smoke.md": "07b993147b708d3d755ec72b278970249ab33b6ff826beb4025bf9cfada6376b"
   },
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "d67879bc330e634575451a44ed0d2120",
   "masterSessionId": "1531b0ca-5912-4b17-8d7c-1834f68aa0eb",
   "assertedModel": "sonnet",
@@ -189,8 +189,19 @@
       "kind": "fork",
       "spawnedAt": "2026-10-05T07:53:15Z",
       "sessionId": "1531b0ca-5912-4b17-8d7c-1834f68aa0eb",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-notice-queue",
+        "status": "done",
+        "head_sha": "12067d13a0bed4188369964cded18039ff7cf204"
+      },
+      "cardShas": [
+        "12067d13a0bed4188369964cded18039ff7cf204"
+      ],
+      "forkTranscripts": [
+        "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-orch-cycle-hardening/1531b0ca-5912-4b17-8d7c-1834f68aa0eb/subagents/agent-a480ffc5b7aa09a50.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
@@ -199,6 +210,7 @@
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-orch-cycle-hardening/1531b0ca-5912-4b17-8d7c-1834f68aa0eb/subagents/agent-a23fc3f8ff5ad7859.jsonl",
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-orch-cycle-hardening/1531b0ca-5912-4b17-8d7c-1834f68aa0eb/subagents/agent-ad5c1921c4f7d2ada.jsonl",
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-orch-cycle-hardening/1531b0ca-5912-4b17-8d7c-1834f68aa0eb/subagents/agent-a8ff5a5be47132156.jsonl",
-    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-orch-cycle-hardening/1531b0ca-5912-4b17-8d7c-1834f68aa0eb/subagents/agent-a9e47c6bd36a14099.jsonl"
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-orch-cycle-hardening/1531b0ca-5912-4b17-8d7c-1834f68aa0eb/subagents/agent-a9e47c6bd36a14099.jsonl",
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-orch-cycle-hardening/1531b0ca-5912-4b17-8d7c-1834f68aa0eb/subagents/agent-a480ffc5b7aa09a50.jsonl"
   ]
 }
