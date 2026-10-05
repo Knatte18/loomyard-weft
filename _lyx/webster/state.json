@@ -1,6 +1,6 @@
 {
   "runGuid": "47afb7a47d41b8de9a9e138182269e7a",
-  "planFingerprint": "3e072e211680df22f4aaf9929199b7baeb8606598e6e90bd302196603fad8305",
+  "planFingerprint": "db5da0cd77bdf5ccb28cf115bab096ac9d7a9c8dfc254964c280512f056a8afe",
   "planFileHashes": {
     "00-overview.md": "4abf17177bcad80cc163e9bd27745f67b90629f25639c6e0732b7a9066585248",
     "01-testtiming-package-stats.md": "64e7ed880dfbff97d7afcf8f48ba637697ccb8394d8283c41314fa8dfce43a78",
@@ -19,13 +19,13 @@
     "14-retag-integration-tmux.md": "4d67f1891f409717cfd3c4bdd2661c44fa7bc5b328c4c5189e12ff7c16eed41a",
     "15-llm-spawn-guard.md": "4f32395d9f23b224b669e6a894663efdd97d936a3e4d7395a695a0a4d2ce6c17",
     "16-tier-docs-and-stencils.md": "2d9c3fbb31de2f15e4ce9846fd30f191cf8684024a9897d0dde8ac28f6962e80",
-    "17-tmuxkit-socket-cleanup.md": "89154f567a8fd0f38829fc783cb0b583072ed0b8ca03b3365a8cc6a81cb8f6d7",
-    "18-test-socket-keys.md": "51e928269ba6c8791513d4c2bd5e940b68ab89cb6ac10450254a551d011df017",
+    "17-tmuxkit-socket-cleanup.md": "06a3a4057e8a9c668c79c971796387ace0f99d61bee9c17a25b8d045e80eb300",
+    "18-test-socket-keys.md": "e7714da851b752892778b9a4f1595d2ac5a62df341439c941d78563fc4ab2d28",
     "19-reed-socket-removal.md": "6f425d0d60472a5a42531ebcdfec1278e359f53465999df02bc1a7ac2c9e2fc6",
     "20-testtiming-redundancy.md": "315925b61fa54d8d9ff919d2404a9c0121967b9e6eb4e56276c597da224e6a49",
     "21-redundancy-report-and-post-retag.md": "035d8d13db102771578007eb5fa757b64a87ef6436accce7f4887eb74804c1a0"
   },
-  "currentBatch": 17,
+  "currentBatch": 0,
   "masterStrand": "d6515d923cf96c76537e7850a96b9d4e",
   "masterSessionId": "b9451745-c0f7-4015-9ea7-6c77aa520719",
   "assertedModel": "sonnet",
@@ -256,14 +256,25 @@
         "17-tmuxkit-socket-cleanup"
       ],
       "cardHashes": {
-        "17-tmuxkit-socket-cleanup": "89154f567a8fd0f38829fc783cb0b583072ed0b8ca03b3365a8cc6a81cb8f6d7"
+        "17-tmuxkit-socket-cleanup": "06a3a4057e8a9c668c79c971796387ace0f99d61bee9c17a25b8d045e80eb300"
       },
       "startSha": "4c0b485e5b977cda4376815b7f4fae24d5b9f92b",
       "kind": "fork",
       "spawnedAt": "2026-10-05T17:38:02Z",
       "sessionId": "b9451745-c0f7-4015-9ea7-6c77aa520719",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "17-tmuxkit-socket-cleanup",
+        "status": "done",
+        "head_sha": "be65e306ef4fb823be94d011946fcab06d9ee546"
+      },
+      "cardShas": [
+        "be65e306ef4fb823be94d011946fcab06d9ee546"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-measure/b9451745-c0f7-4015-9ea7-6c77aa520719/subagents/agent-a09a76b72a1afb2ce.jsonl"
+      ]
     },
     "2": {
       "slug": "timing-before-state",
@@ -493,6 +504,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-measure/b9451745-c0f7-4015-9ea7-6c77aa520719/subagents/agent-aef8e83c5340794f4.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-measure/b9451745-c0f7-4015-9ea7-6c77aa520719/subagents/agent-ac27dd34ddfc1d0a0.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-measure/b9451745-c0f7-4015-9ea7-6c77aa520719/subagents/agent-a256747c172a15357.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-measure/b9451745-c0f7-4015-9ea7-6c77aa520719/subagents/agent-aed9911887c96f20d.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-measure/b9451745-c0f7-4015-9ea7-6c77aa520719/subagents/agent-aed9911887c96f20d.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-measure/b9451745-c0f7-4015-9ea7-6c77aa520719/subagents/agent-a09a76b72a1afb2ce.jsonl"
   ]
 }

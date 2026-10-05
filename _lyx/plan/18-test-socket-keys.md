@@ -16,7 +16,7 @@
 - `internal/standalonegeom/naming_integration_test.go`
 
 **Uses:**
-- `plan:internal/testkit/tmuxkit#KillOnCleanup`
+- `internal/testkit/tmuxkit#KillOnCleanup`
 
 **Intent:**
 Every test that starts a tmux server takes its key from `tmuxkit` (D9), so its socket file is removed after `kill-server`.

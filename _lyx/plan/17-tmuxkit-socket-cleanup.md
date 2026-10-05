@@ -1,7 +1,7 @@
 # Card 17 — tmuxkit removes the socket files of the servers it kills
 
 **Create:**
-- `plan:internal/testkit/tmuxkit#KillOnCleanup` -> `func KillOnCleanup(t *testing.T, tmux, key string)`
+- `internal/testkit/tmuxkit#KillOnCleanup`
 
 **Edit:**
 - `internal/testkit/tmuxkit#Socket`
