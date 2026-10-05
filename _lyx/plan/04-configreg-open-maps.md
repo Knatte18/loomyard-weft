@@ -8,7 +8,7 @@
 - `internal/configsync/configsync_test.go`
 
 **Create:**
-- `plan:internal/configreg#Lookup` -> `func Lookup(name string) (Module, bool)`
+- `internal/configreg#Lookup`
 
 **Uses:**
 - `internal/boardengine#ConfigOpenMaps`

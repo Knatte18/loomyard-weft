@@ -10,7 +10,7 @@
 - `internal/configcli/doc.go`
 
 **Uses:**
-- `plan:internal/configreg#Lookup`
+- `internal/configreg#Lookup`
 - `internal/configengine#Set`
 
 **Intent:**
