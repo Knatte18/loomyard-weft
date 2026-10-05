@@ -1,0 +1,6 @@
+status: OK
+head_sha: 305a5a2bee7cdb8ed5251719ecba0aa6d4ddbda7
+deviations:
+  - internal/websterengine/contractevidence_test.go
+  - internal/websterengine/doc.go
+  - internal/shedadapters/doc.go
