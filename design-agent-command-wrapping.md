@@ -1,6 +1,6 @@
 # Agents stop wrapping commands: stdin without a hook, a bare shed step
 
-`agent-command-wrapping` · Task · bug, enhancement, shuttle, shed, stencil
+`agent-command-wrapping` · Task · bug, enhancement, shuttle, shed, stencil · running · Loom-Preflight
 
 Agents wrap commands they have no reason to wrap.
 Two symptoms of the one habit, merged from the notes `agent-stdin-hang` and `driver-step-clutter`.
