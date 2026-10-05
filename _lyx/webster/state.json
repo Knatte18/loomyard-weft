@@ -1,6 +1,6 @@
 {
   "runGuid": "6f4059c4dc5ef5daf31b16cdbb26e448",
-  "planFingerprint": "3df73fc4fcf17e7b9a68eaad4acc1683c6a378d676d7ec13d7c6aa2516a8a8f2",
+  "planFingerprint": "6272effdd2471e1a206081d8614b384b73e01a0e8ae8429e73748d8e28fe9099",
   "planFileHashes": {
     "00-overview.md": "de6d7ccccc445d066df81ae2cdb6234a43c62754bcb1b82911c74cf4d7ff7844",
     "01-shuttle-background-tasks.md": "a99d3cf49b0739a2c610bbf0bef3b6061e86b36f12dd421003b34943989254c1",
@@ -15,11 +15,11 @@
     "10-webster-run-writes.md": "faf14dd44b360425006a3131fbefc883230a8014300ff58c93393eab2b26e6a3",
     "11-webster-reset-plan.md": "ad7c1f416460731d7805a331f2221ba3e4149670d6e279e39b1da3f491a26892",
     "12-webster-reset-verb.md": "b497f6c645f70b6b4f208f05e9a6bedbeed2539aa1f7e43da3295276b8210c1c",
-    "13-webster-contract-file-evidence.md": "61cf641675e342cc54200e9033bdec52fe95539914601c8585e12c61226a8558",
-    "14-webster-audit-way-forward.md": "8be5f0107343b6e7f40b181b687eccfb56f2f7d64ac903e8ca87f8ddccbc097d",
+    "13-webster-contract-file-evidence.md": "9b8d03c44aa97a808756d20562a895fe7734d382591ad87073b4d4c4cd5b5e2d",
+    "14-webster-audit-way-forward.md": "4c930c3b96744624a79bcf2a17ceb49fc32a458a73dfe9c6fed8a3333a407255",
     "15-webster-no-denied-recovery.md": "61ed9962cd5be1dc7de3b06df8ce91e53296239aaf5d33d9b06ca24685c07e21"
   },
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "7d141636dc7e313e3780ee8c2b5140a3",
   "masterSessionId": "1b4a02c4-56e0-4d0d-b34d-95153da7fecc",
   "assertedModel": "sonnet",
@@ -142,14 +142,25 @@
         "13-webster-contract-file-evidence"
       ],
       "cardHashes": {
-        "13-webster-contract-file-evidence": "61cf641675e342cc54200e9033bdec52fe95539914601c8585e12c61226a8558"
+        "13-webster-contract-file-evidence": "9b8d03c44aa97a808756d20562a895fe7734d382591ad87073b4d4c4cd5b5e2d"
       },
       "startSha": "3e3af1826a87af8110b90eb11b50d081b6304a0c",
       "kind": "fork",
       "spawnedAt": "2026-10-05T11:18:50Z",
       "sessionId": "1b4a02c4-56e0-4d0d-b34d-95153da7fecc",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-webster-contract-file-evidence",
+        "status": "done",
+        "head_sha": "1d8f1e62955c5153ad9a15198bbb8e6d4a2670f1"
+      },
+      "cardShas": [
+        "1d8f1e62955c5153ad9a15198bbb8e6d4a2670f1"
+      ],
+      "forkTranscripts": [
+        "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-a76e6f740a06995e7.jsonl"
+      ]
     },
     "2": {
       "slug": "shuttle-shell-wait-config",
@@ -381,6 +392,7 @@
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-af1500c33127254cd.jsonl",
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-ad9975508969bf6cf.jsonl",
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-a41b5d8850c5fcff1.jsonl",
-    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-a2f7e69242dc944b2.jsonl"
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-a2f7e69242dc944b2.jsonl",
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-a76e6f740a06995e7.jsonl"
   ]
 }

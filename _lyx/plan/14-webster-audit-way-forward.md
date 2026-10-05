@@ -26,7 +26,7 @@
 
 **Uses:**
 - `internal/websterengine#wayForwardSteps`
-- `plan:internal/websterengine#contractFileStatus`
+- `internal/websterengine#contractFileStatus`
 - `internal/websterengine#checkSuspectPaths`
 - `internal/websterengine#trackedRel`
 

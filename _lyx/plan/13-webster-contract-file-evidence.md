@@ -1,7 +1,7 @@
 # Card 13 — webster-contract-file-evidence
 
 **Create:**
-- `plan:internal/websterengine#contractFileStatus` -> `func contractFileStatus(geom Geometry, writes RunWrites, path string) (contract, cleared bool, err error)`
+- `internal/websterengine#contractFileStatus`
 - `internal/websterengine/contractevidence_test.go`
 
 **Edit:**
