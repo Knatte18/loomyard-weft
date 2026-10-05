@@ -52,7 +52,7 @@
       "title": "An MCP server over lyx exposing the verbs agents need",
       "kind": "note",
       "labels": [
-        "enhancement"
+        "feature"
       ],
       "issues": [],
       "depends_on": [],

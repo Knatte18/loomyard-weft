@@ -61,8 +61,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 1. **Convergence: measure hub and driver interventions, fix at the source, hardening freezes** — [`convergence-plan`](design-convergence-plan.md) · enhancement
    - Plan for lyx to converge rather than accumulate bugs: per-run intervention log, real-wiring tests, feature freezes
-1. **An MCP server over lyx exposing the verbs agents need** — [`lyx-mcp`](design-lyx-mcp.md) · enhancement
-   - A few coarse MCP tools over lyx, chosen by measured agent use and exposed per role, so agents see typed schemas instead of guessing CLI shapes
 1. **creel: a mailbox between named lyx processes** — [`creel`](design-creel.md) · enhancement, reed
    - Mail store and verbs on top of agent-naming's names; deferred while Claude's own SendMessage is enough
 1. **One-screen overview of every run in the hub, in its own tmux window** — [`runs-overview`](design-runs-overview.md) · enhancement, reed, orch
@@ -153,6 +151,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Three Webster recovery sites and standalone mode still instruct git reset --keep; widen the reset verb so every recovery instruction names a lyx verb
 1. **The LLM driver wraps every shed step in trace ids, temp files and cut** — [`driver-step-clutter`](design-driver-step-clutter.md) · enhancement, shed
    - Every step notice repeats a long wrapper the driver stencil forbids; make lyx shed step print a short envelope so the bare call is the easy one
+
+### Features
+
+1. **An MCP server over lyx exposing the verbs agents need** — [`lyx-mcp`](design-lyx-mcp.md) · feature
+   - A few coarse MCP tools over lyx, chosen by measured agent use and exposed per role, so agents see typed schemas instead of guessing CLI shapes
 
 ## Done
 
