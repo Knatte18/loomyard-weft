@@ -14,6 +14,18 @@ Every reset a lyx refusal or stencil names is performed by lyx itself, in Go, gu
 No refusal, stencil or spec (`contracts/specs/refusal-spec.md` included) may name a command the agents are denied.
 
 
+# Decisions from the task discussion (operator, 2026-10-05)
+
+- **Hung background shell.** The gate waits on a running background shell only up to a configurable bound; past it the turn counts as ended and the driver gets a message naming the shell.
+  Subagent forks are still waited on as before.
+  The deeper fix is that an agent never starts such a shell at all: find why Master ran `python3 -` reading stdin, and close that at its source (stencil or tooling).
+- **No `python3` deny.** Loomyard must develop Python in other repos, whose tests run Python, so the agents' settings never deny it.
+  What gets fixed is an agent reaching for Python where it did not need it.
+- **Contract-file findings (hub's recommendation, not contested).** The verify gate's fixer stencil forbids writing `outcome.yaml` and `summary.md`,
+  and accept-audit accepts a fork-contract-write finding once Master has rewritten those files in a later turn or they are absent.
+- **Reset scope.** Whether the reset verb covers Webster only, or fabric's manual weft reset (`git -C <weft> reset --hard origin/<branch>`) as well, is left to Discussion: decide from what the refusals in each module need.
+  The decision above on `git reset --hard` holds either way.
+
 ## Webster verify gate waits forever when Master ends its turn with a hung background shell
 
 From note `webster-gate-hung-shell` (issues #361).
