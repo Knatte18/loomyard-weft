@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "Publish",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Webster-Bouncer → done",
+    "now": "Publish",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -154,6 +154,13 @@
       "outcome": "done",
       "output": "/home/hanf/Code/loomyard-LYXHUB/board-labels-and-skills/_lyx/reviews/webster/round-4-bouncer-ledger.md",
       "at": "2026-10-05T11:29:33Z"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/hanf/Code/loomyard-LYXHUB/board-labels-and-skills/_lyx/landing/summary.md",
+      "at": "2026-10-05T11:30:10Z",
+      "gate_attempts": 0
     }
   ],
   "product": {
