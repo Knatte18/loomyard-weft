@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Webster-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Batchifier → done",
+    "now": "Webster-Bouncer",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -210,6 +210,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-05T13:03:51Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/hanf/Code/loomyard-LYXHUB/board-labels-and-skills/_lyx/webster/summary.md",
+      "at": "2026-10-05T13:18:39Z"
     }
   ],
   "product": {
