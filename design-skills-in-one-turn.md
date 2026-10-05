@@ -16,3 +16,20 @@ Keep the guarantee that every skill is loaded, without a turn per skill:
   It costs no turn, but the text arrives as a Read result rather than user input, and a compaction summarizes it away instead of re-injecting it, which matters for long-lived sessions such as the Webster master.
 
 The orch watcher types its skills the same way at each cycle; the same fix applies there.
+
+
+## From issue #394
+
+Imported from [issue #394](https://github.com/Knatte18/loomyard/issues/394).
+
+A skill the session does not know stalls a shuttle launch for the whole skill timeout, though a missing skill should be skipped at once.
+
+Seen 2026-10-05 with `lyx orch start --handoff .scratch/handoff.md`: the `ly` plugin was read from a stale checkout without the `board` skill.
+Shuttle typed `/ly:board`, Claude Code answered `Unknown command: /ly:board` in the pane, and the launch sat there until the skill timeout (600 s) skipped it.
+To the operator, `lyx orch start` looked hung.
+
+The orch docs (`internal/orchengine/doc.go`, "The reload sequence") already say a skill step is skipped "when the provider reports it unknown", but the provider does not see this answer:
+`Unknown command` is printed by the slash-command parser, ends no turn and fires no Stop hook, so the step waits for a turn end that never comes.
+
+Fix: detect the unknown-command answer (pane text after typing, or the transcript's local-command record) and skip the skill at once with a Warn naming it, in shuttle's launch skill loading and in the orch watcher's reload sequence alike.
+A missing skill should never block a launch.
