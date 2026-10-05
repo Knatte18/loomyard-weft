@@ -7,18 +7,17 @@ This is stage 1 of getting the test suite under control; `test-suite-prune` (sta
 
 ## Scope
 
+Already done, not Plan's (D13): the PATTERN.md revision (D1, D10, D11, D12) and the PATTERN half of D8, written and committed during Discussion.
+
 In:
 
-- A revision of PATTERN.md's Testing section: the test-writing rule as its first entry, rules for time-driven tests and parallelism, a narrowed `PATTERN-hubforge-fixtures`, and the build and tooling entries moved out (D1, D10, D11, D12).
-  This part is already written and committed during Discussion (D13); Plan does not plan it again.
 - The card model in `contracts/specs/loom-plan-spec.md`: the "bundles its own test" criterion, the card-granularity rule, and the prose describing the worked example's new-test-file shape.
-- The plan writer's stencil `contracts/stencils/loom/loom-template-plan.md`: the same two rules and the "normal shape" sentence about `**Create:**` for a new test file.
+- The plan writer's stencil `contracts/stencils/loom/loom-template-plan.md`: the "bundles its own test" criterion, the "normal shape" sentence about `**Create:**` for a new test file, and Step 0's rationale naming the bundle-your-own-test rule.
+  The stencil carries no card-granularity rule of its own.
 - The review rubrics both Bouncer and Burler interpolate: `loom-rubric-plan-review.md` (granularity bullet, a test-economy bullet) and `loom-rubric-webster-review.md` (a test-economy bullet).
 - The Burler fix step `contracts/stencils/burler/burler-step-3-fix.md`: the rule on when a fix adds a test.
 - The Discussion stencil `contracts/stencils/loom/loom-template-discussion.md`: what a must-cover test scenario is.
-- A PATTERN audit: every entry or background file that mandates a test per item is reworded so one table-driven or contract-level test may cover many items.
-  The audit found `PATTERN-refusal-way-forward` (entry line and background) and the matching text in `contracts/specs/refusal-spec.md`.
-  The PATTERN half is already committed (D13); `refusal-spec.md` is Plan's.
+- `contracts/specs/refusal-spec.md`, aligned wherever it implies one test per refusal (D8's audit result).
 - The wording claims in `contracts/stencils/claims_test.go` that pin the old phrases, updated to the new ones.
 
 Out:
@@ -33,7 +32,8 @@ Out:
 
 ### D1 — One PATTERN entry states the rule
 
-**Decision:** Add `PATTERN-test-economy` as the first entry of PATTERN.md's Testing section, since it decides what a test is; the existing how-to entries follow it.
+**Decision:** Landed in the Discussion commit (D13).
+`PATTERN-test-economy` is the first entry of PATTERN.md's Testing section, since it decides what a test is; the existing how-to entries follow it.
 It is review-enforced (no `(test)` tag), with a background file `pattern/PATTERN-test-economy.md`.
 Overview line, verbatim:
 
@@ -49,7 +49,6 @@ The background file carries the full rule:
 - A review fix adds a test only when the finding is a coverage gap; for any other finding it corrects the existing test that asserted the wrong thing.
 - A redundant test is a finding exactly as a missing one is.
   The finding names the existing test that already covers the behavior, so it stays grounded and fixable (fold or delete).
-- Out of scope of the rule: the coverage of existing tests, which `test-suite-prune` measures.
 
 **Rationale:** PATTERN.md is inlined into every producer and reviewer lyx spawns (designer, implementer, judge, review-fix directives), so one entry reaches the plan writer, Webster's implementers, both Bouncer and Burler, and sessions outside loom, without restating the rule in each stencil (`PATTERN-producer-pointer-rule`).
 The review-fix directive already makes every PATTERN violation a BLOCKING finding, which is how a redundant test becomes a finding in every segment.
@@ -66,8 +65,10 @@ The "extract a helper so it is testable" example goes: the helper is tested thro
 
 ### D3 — Card granularity keys on reviewability and reuse, not testability
 
-**Decision:** In `loom-plan-spec.md`'s Card granularity, `loom-template-plan.md` and the Plan-Review rubric's granularity bullet, replace "a symbol that is independently testable or reusable gets its own card" with: a symbol that is part of a module's public surface, or reused across packages, gets its own card even when one card is its first consumer; a helper serving one surface is bundled into that surface's card.
-"One card per independently reviewable and testable unit" becomes "one card per independently reviewable unit".
+**Decision:** In `loom-plan-spec.md`'s Card granularity and the Plan-Review rubric's granularity bullet, replace "a symbol that is independently testable or reusable gets its own card" with: a symbol that is part of a module's public surface, or reused across packages, gets its own card even when one card is its first consumer; a helper serving one surface is bundled into that surface's card.
+`loom-template-plan.md` carries no granularity rule and is not edited for this decision.
+The old "one card per independently reviewable/testable unit" becomes "one card per independently reviewable unit".
+The spec's private-supporting-type sentence drops "or testability": a symbol with no independent meaning apart from another symbol in the same card is bundled into that other symbol's card.
 
 **Rationale:** "Independently testable" is what turns every helper into a card with a test; tying cards to the public surface makes the test unit and the card unit the same thing.
 
@@ -80,9 +81,16 @@ The "extract a helper so it is testable" example goes: the helper is tested thro
 
 ### D5 — Rubrics flag redundant tests
 
-**Decision:** Add a "Test economy" bullet under `## Also flag` in `loom-rubric-webster-review.md`: a new test that duplicates an existing test's coverage, a per-helper test where the public surface's test covers it, or a review-fix test added for a finding that was not a coverage gap is a finding, which names the covering test; a behavior the diff adds with no coverage is a finding too.
+**Decision:** Add a "Test economy" bullet under `## Also flag` in `loom-rubric-webster-review.md`.
+Each case is a finding, and the finding names what grounds it:
+- a new test that duplicates an existing test's coverage: the covering test;
+- a per-helper test where the public surface's test covers it: that public-surface test;
+- a review-fix test added for a finding that was not a coverage gap: that finding;
+- a behavior the diff adds with no coverage: the uncovered behavior.
+
 Add a matching bullet in `loom-rubric-plan-review.md`: a card that plans a new test function or file for behavior an existing test already covers, or one test per symbol, is a finding.
-Both bullets point at `PATTERN-test-economy` for the rule and restate none of it beyond the finding condition.
+That finding names the existing test that covers the behavior, or, for a per-symbol test, the public-surface test that covers the symbol; a vague "seems redundant" is not a finding.
+Both bullets point at `PATTERN-test-economy` for the rule and restate none of it beyond the finding condition and what the finding names.
 The Discussion-Review rubric gets no bullet.
 
 **Rationale:** Bouncer (seed and judge) and Burler all interpolate these two rubrics, so the two edits put the rule into both review loops of plan and code.
@@ -103,9 +111,10 @@ Discussion produces no tests, so its rubric has nothing to check.
 
 ### D8 — PATTERN audit: refusal tests are per behavior, not per row
 
-**Decision:** Reword `PATTERN-refusal-way-forward`'s overview line to "its spec row lands in the same commit, and a test reaches it", the background's "lands with its row and its reaching test" to "lands with its row in the same commit, and a test reaches it; one table-driven test may reach many refusals", and "the per-row tests" to "the tests that reach each row".
-Align `contracts/specs/refusal-spec.md` wherever it implies one test per row (the wiring-guard row's "no per-row test" stays: it states those rows need no reaching test at all).
-The audit applies the same reading to every other PATTERN entry and background file; at discussion time no other one mandates a test per item (the meta-tests in `PATTERN-ref-shape-registry` are named obligations of one registry each, not per-item tests).
+**Decision:** The audit applied one reading to every PATTERN entry and background file: a test obligation is per behavior, and one table-driven test may reach many items.
+Only `PATTERN-refusal-way-forward` mandated a test per item (the meta-tests in `PATTERN-ref-shape-registry` are named obligations of one registry each, not per-item tests); no further audit is Plan's.
+Done in the Discussion commit (D13): its overview line now reads "its spec row lands in the same commit, and a test reaches it", and its background reads "lands with its row in the same commit, and a test reaches it; one table-driven test may reach many refusals" and "the tests that reach each row".
+Plan's half: align `contracts/specs/refusal-spec.md` wherever it implies one test per row (the wiring-guard row's "no per-row test" stays: it states those rows need no reaching test at all).
 
 **Rationale:** The operator's scope decision names this rule as a source of one-test-per-item; the obligation that a refusal is reached by a test stays, only its granularity changes.
 
@@ -118,7 +127,8 @@ No new test function is added; PATTERN.md's own format check (`internal/pattern`
 
 ### D10 — No test waits out a production duration
 
-**Decision:** Add a review-enforced Testing entry, second after `PATTERN-test-economy`, with no background file:
+**Decision:** Landed in the Discussion commit (D13).
+A review-enforced Testing entry, second after `PATTERN-test-economy`, with no background file:
 
 - `PATTERN-test-time-seam` — Testing time-driven behavior: the interval, timeout or clock is injectable and the test shortens it; no test in any tier waits out a production duration.
 
@@ -129,16 +139,20 @@ The rule binds new and changed tests; existing tests are `test-suite-prune`'s.
 
 ### D11 — Tests run in parallel unless they touch process-global state
 
-**Decision:** Add a review-enforced Testing entry, third, with no background file:
+**Decision:** Landed in the Discussion commit (D13).
+A review-enforced Testing entry, third, with no background file:
 
 - `PATTERN-test-parallel` — Writing a test: it calls `t.Parallel` unless it touches process-global state (env, cwd, a shared fixture), and a comment at the test, or once atop its file, names that state.
 
+The opt-out is bounded by the named state: a file-level comment excuses only the tests that touch the state it names, and a test touching none calls `t.Parallel` whatever the file comment says.
+
 **Rationale:** Most of fabricengine's tests run serially with no stated reason.
-The opt-out is bounded by the named state, which is also what makes `t.Setenv` and `t.Chdir` panic under `t.Parallel`; a file-level comment covers a file whose tests all share one fixture.
+The named state is also what makes `t.Setenv` and `t.Chdir` panic under `t.Parallel`; a file-level comment covers a file whose tests all share one fixture.
 
 ### D12 — Testing holds only test-writing rules
 
-**Decision:** The Testing section is ordered `PATTERN-test-economy`, `PATTERN-test-time-seam`, `PATTERN-test-parallel`, then the existing how-to entries in their current order.
+**Decision:** Landed in the Discussion commit (D13).
+The Testing section is ordered `PATTERN-test-economy`, `PATTERN-test-time-seam`, `PATTERN-test-parallel`, then the existing how-to entries in their current order.
 `PATTERN-hubforge-fixtures`' line gains a leading condition, "Building a hub fixture, where no fake or in-memory fixture can test the behavior:", with the rest of the line unchanged.
 `PATTERN-sandbox-coverage`, `PATTERN-dev-prod-binary-separation` and `PATTERN-quarry-cgo` move, lines unchanged, to a new `## Build and tooling` section between `## Packages` and `## Testing`.
 
@@ -147,7 +161,7 @@ The overview stays well under `internal/pattern`'s size cap and each new line un
 
 ### D13 — The PATTERN revision lands during Discussion
 
-**Decision:** At the operator's explicit instruction, relayed by `ly:orch`, the Discussion agent wrote the PATTERN part of D1, D8, D10, D11 and D12 into the worktree, and the driver commits it before Discussion-Review.
+**Decision:** At the operator's explicit instruction, relayed by `ly:orch`, the Discussion agent wrote the PATTERN part of D1, D8, D10, D11 and D12 into the worktree, and the driver committed it before Discussion-Review.
 The edited files are `PATTERN.md`, `pattern/PATTERN-test-economy.md` (new) and `pattern/PATTERN-refusal-way-forward.md`, and nothing else.
 Plan treats them as done: no card re-creates or rewords them, and a card touches them only to fix a defect a later review finds.
 Everything else in this record (D2–D7, D9, and the `refusal-spec.md` half of D8) is Plan's.
@@ -159,8 +173,6 @@ This departs from CLAUDE.md's rule that a new invariant lands in the same commit
 
 - `PATTERN-producer-pointer-rule`: rubrics, stencils and the spec point at `PATTERN-test-economy` for the rule and restate it at most as a finding condition or a one-clause card criterion.
 - `PATTERN-stencil-ownership`: the stencils stay files read through `internal/stencilstore`; nothing is embedded anew.
-- `PATTERN-markdown-link-integrity` applies to any link added under `docs/`; the PATTERN background link must resolve.
-- PATTERN.md's overview line format is checked by `internal/pattern`'s `Check`; the new line must pass it.
 - CLAUDE.md "A new cross-cutting invariant goes into PATTERN in the same commit as the code": departed from by D13 on the operator's instruction; the PATTERN commit precedes the stencil and spec commits on the same branch.
 - Markdown follows semantic line breaks, one sentence per line.
 - `contracts/specs/loom-plan-spec.md`'s worked example stays byte-consistent with the planparser golden fixture.
@@ -184,7 +196,11 @@ This departs from CLAUDE.md's rule that a new invariant lands in the same commit
 ## Acceptance criteria
 
 - Already met by the Discussion commit (D13), and kept true: PATTERN.md's Testing section opens with `PATTERN-test-economy`, `PATTERN-test-time-seam` and `PATTERN-test-parallel` as worded in D1, D10 and D11; `pattern/PATTERN-test-economy.md` states every rule in D1; `PATTERN-hubforge-fixtures` carries D12's condition; the three build and tooling entries sit in `## Build and tooling`; `PATTERN-refusal-way-forward` matches D8; `internal/pattern`'s overview check passes.
-- `loom-plan-spec.md` and `loom-template-plan.md` no longer contain "Bundles its own test", "independently testable or reusable" or "normal shape" for a new test file; they carry D2's and D3's criteria.
+- `loom-plan-spec.md`, `loom-template-plan.md` and the Plan-Review rubric no longer contain any of the phrases listed below for that file; they carry D2's, D3's and D4's wording, with no "normal shape" claim for a new test file.
+  The phrases as the files carry them:
+  - `loom-plan-spec.md`: "Bundles its own test, when it introduces new behavior", "independently reviewable and testable unit", "independent meaning or testability", "independently testable or reusable", "the implementation-plus-its-own-new-test-file shape".
+  - `loom-template-plan.md`: "Bundles its own test when it introduces new behavior", "so it is testable", "not a substitute for a bundled test", "the bundle-your-own-test rule", "this is the normal shape for such a card".
+  - `loom-rubric-plan-review.md`: "independently reviewable/testable unit", "an independently testable symbol gets its own card".
 - The Plan-Review rubric's granularity bullet matches D3, and both the Plan-Review and Webster-Review rubrics carry D5's test-economy bullet pointing at `PATTERN-test-economy`.
 - `burler-step-3-fix.md` carries D6's rule; `webster-body-verify-fix.md`'s no-delete rule is unchanged.
 - `loom-template-discussion.md` carries D7's sentence.
