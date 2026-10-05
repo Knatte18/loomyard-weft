@@ -33,6 +33,10 @@ The hub orch on 2026-10-05 had to find the loop through `--help`: what a skill s
 - A parent-review request arrives as a message naming a brief; a one-shot fork reads it, reviews and submits with the brief's `lyx loom review` command.
 - Escalations from a child (CIRCLING, a spent review budget) arrive the same way, once `loom-bouncer-rounds` has landed.
 - Landing and what the hub does after it, such as amending board entries a landed task superseded.
+- Every lyx agent is reachable by name through Claude Code's `ListAgents` and `SendMessage`.
+  Names follow `internal/agentname`'s fixed form: `<shortname>:<role>` in the prime, such as `ly:orch`, and `<shortname>:<slug>:<role>` in a task worktree, such as `ly:<slug>:driver` or `ly:<slug>:discussion`; reed injects a strand's own name as `LYX_STRAND_NAME` and its parent's as `LYX_PARENT`.
+  So the orch can address any run's driver or writer directly, for a scope change or a resume, without going through the operator.
+  Only `internal/agentname`'s doc states the form today; no skill or stencil tells an agent.
 - Same shape as `ly:board`: concepts, steps, one example per verb, `--help` for the key set.
 
 ## The orch watcher injects skill loading at every entry
