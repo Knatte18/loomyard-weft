@@ -19,7 +19,7 @@
     "14-webster-audit-way-forward.md": "8bdbcffab4d2d2954645d2a067e65e90a19441d5f49e22185bb6bb8fce4fb015",
     "15-webster-no-denied-recovery.md": "d81c7316787b41cc1ce1383b0a0e463e71c8c15e123b244b4bd7ffab784315e3"
   },
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "7d141636dc7e313e3780ee8c2b5140a3",
   "masterSessionId": "1b4a02c4-56e0-4d0d-b34d-95153da7fecc",
   "assertedModel": "sonnet",
@@ -148,14 +148,26 @@
       "kind": "fork",
       "spawnedAt": "2026-10-05T08:01:42Z",
       "sessionId": "1b4a02c4-56e0-4d0d-b34d-95153da7fecc",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-webster-expired-shells",
+        "status": "done",
+        "head_sha": "a852e24da5da531d0102840d63dc62b202349500"
+      },
+      "cardShas": [
+        "a852e24da5da531d0102840d63dc62b202349500"
+      ],
+      "forkTranscripts": [
+        "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-adfc710bb86745c19.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-a4bfe6dfc9e382a80.jsonl",
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-ad0c3af82eebb2eca.jsonl",
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-a9539537da7a4293d.jsonl",
-    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-a3566771a51a23bf7.jsonl"
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-a3566771a51a23bf7.jsonl",
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-adfc710bb86745c19.jsonl"
   ]
 }
