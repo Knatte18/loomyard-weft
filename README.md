@@ -32,6 +32,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - cat > /tmp/x; python3 - <<EOF … EOF on one line reads stdin forever; seen twice on 2026-10-05 and in #361
 1. **A weft worktree without .weft/ silently drops LYX_PARENT from every strand** — [`weft-lock-dir-drops-parent`](design-weft-lock-dir-drops-parent.md) · bug, fabric, reed
    - ReadOriginFor answers no record when the untracked .weft lock dir is missing, so a pair recreated by reconcile launches strands with no parent and no warning
+1. **Tests leave dead tmux sockets in /tmp/tmux-1000** — [`tmux-socket-leak`](design-tmux-socket-leak.md) · bug, reed
+   - Hundreds of dead lyx-* socket files accumulate from test runs; clean them up in test teardown or isolate TMUX_TMPDIR
 
 ### Enhancements
 

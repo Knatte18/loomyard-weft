@@ -925,6 +925,21 @@
       "isolated": false,
       "brief": "ReadOriginFor answers no record when the untracked .weft lock dir is missing, so a pair recreated by reconcile launches strands with no parent and no warning",
       "body": "## Bug\n\nA strand launched in a pair whose weft worktree lacks the untracked `.weft/` lock directory gets no `LYX_PARENT`, silently.\n`hubgeom.ResolveParent` reads the pair's origin record through `fabricengine.ReadOriginFor`, which requires both `_lyx/fabric/origin.json` and `.weft/`, and answers \"no record\" when either is missing.\n`ResolveParent` then returns no parent, `hubgeom.reedGeometry` exports none, and nothing warns.\n\n## Seen 2026-10-05\n\nAfter moving `loom-bouncer-rounds` from another machine, its weft worktree was recreated by `lyx fabric reconcile` from the existing branch, which does not create `.weft/` (`lyx fabric add` does).\nThe driver, launched at 15:36:00, had no `LYX_PARENT`; `.weft/` appeared at 15:36:19 with the first weft write, and the Burler launched at 15:58 carries `LYX_PARENT='ly:orch'`.\nThe driver therefore could not reach its parent orchestrator.\n\n## Fix\n\n- Every path that creates or recreates a weft worktree creates `.weft/` (`reconcile`'s `weft_recreated` path at least).\n- A present origin record with a missing lock directory is an error or a warning naming the gap, never a silent \"no parent\".\n"
+    },
+    {
+      "id": 118,
+      "slug": "tmux-socket-leak",
+      "title": "Tests leave dead tmux sockets in /tmp/tmux-1000",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Hundreds of dead lyx-* socket files accumulate from test runs; clean them up in test teardown or isolate TMUX_TMPDIR",
+      "body": "Test runs leave dead tmux socket files in `/tmp/tmux-1000/`; no server runs on them, but the files are never removed.\nOn 2026-10-05 the Ryzen machine held 659 of them, all but one dead, and new ones still appear on every suite run.\n\nPrefixes seen, most to least common:\n\n- `lyx-warp-bare-LYXHUB-*` (the bulk, over 400)\n- `lyx-001-*` (standalone geometry, `internal/standalonegeom/reedgeom.go` `SocketKey`)\n- `lyx-contract-*-test-\u003cpid\u003e-\u003cn\u003e` (`internal/reedengine/contract_integration_test.go`)\n- `lyx-dotfill-harness-*`, `lyx-attach-harness-\u003cpid\u003e` (`internal/reedcli/smoke_attach_test.go`)\n- `lyx-\u003chash8\u003e` and `lyx-Test*`\n\n`kill-server` stops the server but leaves its socket file; a test that boots a tmux server should remove the socket in its cleanup, ideally through one shared helper, and point `TMUX_TMPDIR` at `t.TempDir()` where it can, so the files never reach `/tmp`.\nAlso check whether production reed paths (standalone geometry, warp-bare) leave sockets when they are not tests.\n"
     }
   ],
   "legacy_done": [
