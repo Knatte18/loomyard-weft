@@ -11,7 +11,7 @@
     "06-configengine-staged-edit.md": "0651633ad58ebcf967d9d58fa3a917d071bf0d4b821d6c484d569b1c9651f72b",
     "07-config-cli-hub-wide.md": "49af4c914fddc52b9e76f8cf4a47f7ed783542af3cef6b71e344c7095af091fb"
   },
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "08f77d30e10194f6fe1f235b2c65df1a",
   "masterSessionId": "796cd30e-0090-4614-89af-4ad1258a80bd",
   "assertedModel": "sonnet",
@@ -171,6 +171,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-ab0598fa73fefb6a6.jsonl"
       ]
+    },
+    "7": {
+      "slug": "config-cli-hub-wide",
+      "cards": [
+        "07-config-cli-hub-wide"
+      ],
+      "cardHashes": {
+        "07-config-cli-hub-wide": "49af4c914fddc52b9e76f8cf4a47f7ed783542af3cef6b71e344c7095af091fb"
+      },
+      "startSha": "d920230e953683d21d081b03779d172801f60206",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T19:08:08Z",
+      "sessionId": "796cd30e-0090-4614-89af-4ad1258a80bd",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
