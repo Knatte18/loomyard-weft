@@ -10,8 +10,8 @@
 - `internal/shuttleengine/waiting_test.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#BackgroundTask`
-- `plan:internal/shuttleengine/claudeengine#outstandingBackgroundTasks`
+- `internal/shuttleengine#BackgroundTask`
+- `internal/shuttleengine/claudeengine#outstandingBackgroundTasks`
 - `internal/shuttleengine#Config`
 
 **Intent:**

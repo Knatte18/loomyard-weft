@@ -1,10 +1,10 @@
 # Card 1 — shuttle-background-tasks
 
 **Create:**
-- `plan:internal/shuttleengine#BackgroundTask` -> `type BackgroundTask struct`
+- `internal/shuttleengine#BackgroundTask`
 
 **Rename:**
-- `internal/shuttleengine/claudeengine#hasOutstandingBackgroundWork` -> `plan:internal/shuttleengine/claudeengine#outstandingBackgroundTasks`
+- `internal/shuttleengine/claudeengine#hasOutstandingBackgroundWork` -> `internal/shuttleengine/claudeengine#outstandingBackgroundTasks`
 
 **Edit:**
 - `internal/shuttleengine#Event`

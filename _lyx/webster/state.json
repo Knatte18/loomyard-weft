@@ -1,11 +1,11 @@
 {
   "runGuid": "6f4059c4dc5ef5daf31b16cdbb26e448",
-  "planFingerprint": "5085bfec4cba33bc90f44b0fef19b77c1e5ed20a4860b936bed541a0c874dd08",
+  "planFingerprint": "97ed3581a5a0f6a067c6cc944204eec685616f17ba32971f0fada0c680aec5c0",
   "planFileHashes": {
     "00-overview.md": "de6d7ccccc445d066df81ae2cdb6234a43c62754bcb1b82911c74cf4d7ff7844",
-    "01-shuttle-background-tasks.md": "e5114477bd442d257fb7f69cd669874777dcb540b2eabef16b97b0e5f9b91118",
+    "01-shuttle-background-tasks.md": "a99d3cf49b0739a2c610bbf0bef3b6061e86b36f12dd421003b34943989254c1",
     "02-shuttle-shell-wait-config.md": "ffa4d53e418acf48736e9a19ff82957c0a0d5f6da148bb3d06232724adf2e465",
-    "03-shuttle-shell-expiry.md": "c7301c24b1452483db56577bc227320216d8bfabfafef118b44c8f20ff0dd4e1",
+    "03-shuttle-shell-expiry.md": "581be50d1fc8c15724fb862bb8e1afe004e180517c0bb419346cf814bc80f8b5",
     "04-claude-bash-stdin-hook.md": "15b7e86854a5a09554c1e220a80c0a63298c47e57d63f71c6756e219cbfbd069",
     "05-webster-expired-shells.md": "ac07ddcd52044ed69891f52c64d03a12a7b8ff68125722c618ecf08eedeaa18d",
     "06-webster-contract-file-stencils.md": "3a85a700a6012e2b536f526a83cc86c9aff36b63ef6e30e64b9f3df910a53d97",
@@ -19,7 +19,7 @@
     "14-webster-audit-way-forward.md": "8bdbcffab4d2d2954645d2a067e65e90a19441d5f49e22185bb6bb8fce4fb015",
     "15-webster-no-denied-recovery.md": "d81c7316787b41cc1ce1383b0a0e463e71c8c15e123b244b4bd7ffab784315e3"
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "7d141636dc7e313e3780ee8c2b5140a3",
   "masterSessionId": "1b4a02c4-56e0-4d0d-b34d-95153da7fecc",
   "assertedModel": "sonnet",
@@ -30,14 +30,28 @@
         "01-shuttle-background-tasks"
       ],
       "cardHashes": {
-        "01-shuttle-background-tasks": "e5114477bd442d257fb7f69cd669874777dcb540b2eabef16b97b0e5f9b91118"
+        "01-shuttle-background-tasks": "a99d3cf49b0739a2c610bbf0bef3b6061e86b36f12dd421003b34943989254c1"
       },
       "startSha": "ee1ffa4b8e9374af6aba06c5df5b4b15111f8828",
       "kind": "fork",
       "spawnedAt": "2026-10-05T07:35:02Z",
       "sessionId": "1b4a02c4-56e0-4d0d-b34d-95153da7fecc",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-shuttle-background-tasks",
+        "status": "done",
+        "head_sha": "2074f1c5bf89c033160ba77385927fa18affb776"
+      },
+      "cardShas": [
+        "2074f1c5bf89c033160ba77385927fa18affb776"
+      ],
+      "forkTranscripts": [
+        "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-a4bfe6dfc9e382a80.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-a4bfe6dfc9e382a80.jsonl"
+  ]
 }
