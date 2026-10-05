@@ -6,7 +6,7 @@
      (burler-template-round-orchestrator.md) directs it here, after instructions 1 and 2.
      Every marker below is a top-level {{.X}} substitution;
      stencil.Fill requires all three non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go).
-lyx-stencil: sha256=d64cf5951257da3784d636e6cb2a53222ac2e8123c1c2c6bbcbf4814f90cfc1b -->
+lyx-stencil: sha256=44f1b82d9a662d9cee00689772b78ef4e7d9429853e0dc9585ef6cda58857f2a -->
 
 ## Fix-everything rule (BLOCKING — do not skip low-severity findings)
 
@@ -16,6 +16,7 @@ The only legitimate reason to leave a finding unfixed is something you genuinely
 or a capability you do not have);
 even then you must say so explicitly, with the specific reason, in the fixer-report's deferred section.
 Never leave a finding unfixed just because it looked small — small findings are usually the cheapest to fix, not a reason to skip them.
+A fix adds a test only when the finding is a coverage gap; for any other finding it corrects the existing test that asserted the wrong thing, per `PATTERN-test-economy`.
 
 ## Fix-scope rules — your write surface and git discipline for job B
 

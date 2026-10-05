@@ -4,7 +4,7 @@
      to shuttle as the rework agent's entire instruction set.
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker except pattern_directive and friction_directive non-empty, and there are no {{if}}/{{range}} conditionals anywhere in this file. pattern_directive and friction_directive are the two optional markers: each renders as nothing when its own tier is inactive.
-lyx-stencil: sha256=53eca372f1daac9a1390103122df389a8cc2e9bf41499161cf71b5f1d4759234 -->
+lyx-stencil: sha256=89f0a0f43c0fbf3d29f3e9b5fbe451e52ad902bb33856d1cecdb35ac9dd388e7 -->
 
 # Rework — turn a rejected pull request's findings into a new plan generation
 
@@ -19,6 +19,7 @@ Before doing anything else, load two scribe skills, in this order:
 1. `scribe:prose`
 2. `scribe:testing`
 
+`scribe:testing` is loaded second because the test-coverage rule is a testing judgment rather than a prose judgment.
 Both loads are best-effort — if a skill is unavailable, continue without it rather than treating an unresolvable skill name as an error.
 
 {{.pattern_directive}}

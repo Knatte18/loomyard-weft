@@ -4,7 +4,7 @@
      to shuttle as the plan agent's entire instruction set.
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires the three original ones non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
-lyx-stencil: sha256=84e703545fb057113e14dc1a758ab2111ebbaf9d017dc8cce826dec3bd690d5e -->
+lyx-stencil: sha256=5e12760d04f93630cf84367d65723906641ce4c1e0cefb83536d9b3dde68920a -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -19,7 +19,7 @@ Before doing anything else, load two scribe skills, in this order:
 2. `scribe:testing`
 
 `scribe:prose` comes first because it is the always-active writing discipline every other skill's output is judged against.
-`scribe:testing` is loaded second because the card-granularity rule and the bundle-your-own-test rule are testing judgments rather than prose judgments.
+`scribe:testing` is loaded second because the test-coverage rule is a testing judgment rather than a prose judgment.
 Both loads are best-effort — if a skill is unavailable, continue without it rather than treating an unresolvable skill name as an error.
 
 {{.pattern_directive}}
@@ -69,7 +69,8 @@ Each card is the smallest change that:
 1. **Builds on its own** — the project compiles (`go build ./...` or the repo's equivalent) immediately after the card's commit;
    never reference a symbol that no earlier card creates.
 2. **Is independently committable** — a meaningful, revertible git commit on its own.
-3. **Bundles its own test when it introduces new behavior** — implementation plus test file in the same card, structuring the change so it is testable (extract a helper rather than leaving logic inline in `main`, for example). `verify:` commands are not a substitute for a bundled test;
+3. **Carries the coverage for the behavior it introduces** — the card's own targets include the test that covers it (`PATTERN-test-economy`).
+   `verify:` commands are no substitute for test coverage;
    only pure refactors/renames may rely on existing tests instead.
 4. **Greps for reworded messages** — a card that changes a user-visible message or error text greps the repository for the old text, and every test asserting it joins that card's targets.
    A stale exact-string assertion then fails on the card that reworded it, under that card's own gate, not at the plan-level gate.
@@ -137,7 +138,8 @@ a required, multi-line `**Intent:**` (prose — what, and why);
 `**ImpactSummary:**` on `Edit`/`Delete` cards only, taking its value inline on the label line;
 optionally `**Commit:**` (must start `N: `) and `**Verify:**`.
 
-An implementation card that bundles its own new test file writes `**Edit:**` for the implementation and `**Create:**` for the new test file, in that order — this is the normal shape for such a card, not an exception.
+An implementation card normally writes `**Edit:**` for the implementation and `**Edit:**` for the existing test file that covers its surface.
+A `**Create:**` test file, after the implementation's `**Edit:**`, appears only for a surface no existing test file covers.
 
 `**Custom:**` is a last resort, used only where none of the other six genuinely fits.
 A card whose targets can be expressed as a multi-label combination of the other six is not `Custom`.
