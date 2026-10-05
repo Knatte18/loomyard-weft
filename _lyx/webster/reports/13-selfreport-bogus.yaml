@@ -1,0 +1,4 @@
+status: OK
+head_sha: 4f4d7f40afe015361f2d3a9fc1b059ed23f31c54
+deviations:
+  - cmd/lyx/clitree_test.go
