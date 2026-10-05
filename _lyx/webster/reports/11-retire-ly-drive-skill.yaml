@@ -1,0 +1,6 @@
+status: OK
+head_sha: 9d50872cee1f7e70e52f219e2dc181bc3b3c3ab2
+deviations:
+  - internal/loomcli/start.go
+  - internal/loomcli/driverprompt.go
+  - internal/loomcli/bootstrap_test.go
