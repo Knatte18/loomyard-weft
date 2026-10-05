@@ -43,6 +43,7 @@ The file and the variable name are provider specifics and stay inside `claudeeng
 
 Tests:
 - `settings_test.go`: replace `TestBuildSettings_BashStdinRewrite` with a test over the same run-mode matrix (autonomous, interactive, fork, fork with allow-agent) asserting that the only Bash PreToolUse entry a document carries is the webster fork guard in a fork run, and that a non-fork run carries no Bash entry at all.
+  Update the tail assertion of `TestBuildSettings_DenyToggleMatrix`, which today requires exactly one PreToolUse entry (the Bash stdin rewrite) when no Agent or AskUserQuestion entry is configured: with the hook gone it requires none, and the fork guard stays covered by `TestBuildSettings_ForkContextWebsterGuard`.
   Extend `TestPrepare_WritesArtifactsAndReturnsConsistentLaunch`: `bash-env.sh` exists in the run directory with exactly the content const, and both `Launch.Cmd` and `Launch.ResumeCmd` carry `shell.ForGOOS().WithEnv` of the variable over the file's absolute path as their leading assignment.
 - `command_test.go`: thread an env-file path through every `TestBuildLaunchCmd`, `TestBuildResumeCmd` and `TestBuildResumeCmd_NoticePosix` row and update each exact `want` to its new leading assignment, for the posix and pwsh shells alike.
 - Delete `bashstdin_integration_test.go`, which pins the deleted hook, and `internal/shuttlecli/smoke_bashstdin_test.go`, the live proof that the deleted hook kept permission rules in charge; with no hook nothing rewrites a command, so there is nothing left for it to prove.

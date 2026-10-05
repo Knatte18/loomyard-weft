@@ -9,6 +9,7 @@
 - `internal/shedcli/parity_test.go`
 - `internal/loomcli/cli.go`
 - `pattern/PATTERN-shed-verb-set.md`
+- `docs/overview.md`
 
 **Uses:**
 - `internal/output/output.go`
@@ -46,6 +47,8 @@ The short line never names a missing file: without a record written, stdout carr
 Grep the repository for the old `Long` sentences ("it also names", "Every error envelope carries the same three keys") before rewording, and add any test asserting them to this card.
 `pattern/PATTERN-shed-verb-set.md`, `## Step envelope`: the closed key set is the full envelope's, held in the step record; stdout prints the short envelope by default, whose two closed key sets are stated in `internal/shedverbs`, enforced by `internal/shedverbs/steprecord_test.go` beside `step_test.go`.
 No `PATTERN.md` line changes.
+`docs/overview.md`: the sentence in the shed module paragraph saying the generic `step` envelope names `friction_dir` and `scratch_dir` on success and every error now says the printed envelope names `trace_file` and `envelope_path` and the record holds `friction_dir` and `scratch_dir`.
+Only that sentence changes; no module table or execution-stack entry does.
 
 Tests (`steprecord_test.go`):
 - Replace `TestStepCmd_EnvelopeRecordEqualsPrintedLine` with one table over success and refusal, each run without and with `--full`, each with its own trace id where the logger allows, or its own steps dir:
@@ -53,7 +56,7 @@ Tests (`steprecord_test.go`):
   the record decodes to the full key set (`StepEnvelope`'s keys plus `ok`, or `stepErrFields`'s keys plus `ok` and `error`);
   with `--full`, stdout bytes equal the record bytes, and the record's decoded content equals the run without `--full`;
   the exit code is the same in both runs.
-- `TestStatusCmd_LastStep`, or the table above: after a recorded step, `statusCmd` over the same `StepsDir` reports `last_step.envelope_path` equal to the short envelope's `envelope_path`.
+- The table above also reads `statusCmd` over the same `StepsDir` after each recorded step and asserts `last_step.envelope_path` equals the short envelope's `envelope_path`; `TestStatusCmd_LastStep` stays unchanged.
 - `TestStepCmd_NoStepsDirKeepsNoRecords` and `TestStepCmd_RecordWriteFailureLeavesEnvelopeUnchanged`: also assert stdout is the full envelope (e.g. `status_file`, `scratch_dir` and `trace_id` present, no `envelope_path`).
 - `internal/shedcli/parity_test.go` (`TestParity_LoomStep_RunLockBusy`, `TestParity_BattenStep_RunLockBusy`): the busy refusal in a real hub keeps a record, so its stdout no longer carries `scratch_dir`/`friction_dir`; read those two keys from the file at the envelope's `envelope_path` instead, and assert `envelope_path` is non-empty on both paths.
   The existing step tests with no `StepsDir` print the full envelope and keep passing unchanged.

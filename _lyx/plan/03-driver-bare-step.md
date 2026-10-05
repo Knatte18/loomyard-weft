@@ -18,7 +18,8 @@ Decision record D3: the driver stencil gives a driver no reason to wrap its step
 - `## Drive directory`: replace the `(cd <drive-dir> && lyx ...)` subshell rule with: never change the session's own cwd; `lyx` calls run bare from it, and a command that needs another directory uses `git -C` or its own `(cd … && …)` subshell.
   Keep the sentence that a wrong directory surfaces as the recipe's own refusal text, reported verbatim.
 - `## Error envelopes`: the printed error envelope carries `kind`, `transient`, `trace_file` and `envelope_path`; `friction_dir` and `scratch_dir` are read from the file at `envelope_path`, or from the printed envelope itself when it carries no `envelope_path`.
-- `## Parking` (the park marker under `scratch_dir`) and `## Repair records and the stop report` (`friction_dir`, `scratch_dir`): say once, in the first section that needs them, that both, and `next_interrupt_policy`, come from the file at `envelope_path`, or from the printed envelope when it carries no `envelope_path`; later sections point back rather than restate it.
+- `## Parking` (the park marker under `scratch_dir`) and `## Repair records and the stop report` (`friction_dir`, `scratch_dir`): each says, in one sentence of its own, that the keys it uses, and `next_interrupt_policy` where it applies, come from the file at `envelope_path`, or from the printed envelope when it carries no `envelope_path`.
+  All three sections carry the sentence, as the decision record requires; no section points back to another for it.
 The stencil keeps its header comment, every marker, its parent-directive marker and its recipe-blindness, asks no operator (`PATTERN-parent-directive`), and keeps pointing at `contracts/specs/refusal-spec.md` rather than restating it (`PATTERN-producer-pointer-rule`).
 One sentence per line.
 
