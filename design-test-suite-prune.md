@@ -29,6 +29,15 @@ Package by package, largest first (`internal/fabricengine`, `internal/webstereng
 - In `bareVocabularyTokenIn` (`lyxcwd/enforcement_test.go`), skip the regex when the lowercased text contains neither "weft" nor "warp".
 - Arm the hermetic git env in `gitrepo/internal/gitoracle`.
 
+## Socket leak (from note `tmux-socket-leak`)
+
+Test runs leave dead tmux socket files in `/tmp/tmux-1000/`: 659 on 2026-10-05, and every suite run adds more.
+Prefixes, most to least common: `lyx-warp-bare-LYXHUB-*` (over 400), `lyx-001-*` (standalone geometry, `internal/standalonegeom/reedgeom.go` `SocketKey`), `lyx-contract-*-test-<pid>-<n>` (`internal/reedengine/contract_integration_test.go`), `lyx-dotfill-harness-*`, `lyx-attach-harness-<pid>` (`internal/reedcli/smoke_attach_test.go`), `lyx-<hash8>`, `lyx-Test*`.
+
+- `kill-server` stops a server but leaves its socket file: remove the socket in test cleanup through one shared helper (see `pattern/PATTERN-tmux-test-isolation.md`), and point `TMUX_TMPDIR` at `t.TempDir()` where possible so the files never reach `/tmp`.
+- Check whether production reed paths (standalone geometry, warp-bare) also leave sockets.
+- A full suite run leaves no new file in `/tmp/tmux-$UID/`.
+
 ## Done when
 
 - The after-state is recorded beside the before-state in the benchmark doc.

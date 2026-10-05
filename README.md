@@ -14,7 +14,7 @@ Waits on nothing open; can start now, in parallel.
 1. **ly-drive as a stencil, a ly:runs skill, and lyx-injected skill loading** — [`lyx-skills-and-stencils`](design-lyx-skills-and-stencils.md) · enhancement, stencil, orch, shed
    - Driver procedure moves into a stencil, a ly:runs workflow skill, and the orch watcher injects skill loading at start, adopt and after every cycle
 1. **Measure and prune the test suite** — [`test-suite-prune`](design-test-suite-prune.md) · enhancement
-   - Stage 1: per-test coverage tool, delete redundant tests, fold into tables, seam real-time waits, parallelize fabricengine
+   - Stage 1: per-test coverage tool, delete redundant tests, seam real-time waits, parallelize fabricengine, stop the tmux socket leak
    - **Before:** `test-writing-rules`
 
 ### Layer B
@@ -43,8 +43,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - cat > /tmp/x; python3 - <<EOF … EOF on one line reads stdin forever; seen twice on 2026-10-05 and in #361
 1. **A weft worktree without .weft/ silently drops LYX_PARENT from every strand** — [`weft-lock-dir-drops-parent`](design-weft-lock-dir-drops-parent.md) · bug, fabric, reed
    - ReadOriginFor answers no record when the untracked .weft lock dir is missing, so a pair recreated by reconcile launches strands with no parent and no warning
-1. **Tests leave dead tmux sockets in /tmp/tmux-1000** — [`tmux-socket-leak`](design-tmux-socket-leak.md) · bug, reed
-   - Hundreds of dead lyx-* socket files accumulate from test runs; clean them up in test teardown or isolate TMUX_TMPDIR
 1. **lyx files bug issues from Go code; only reflection agents should** — [`selfreport-issues-say-nothing`](design-selfreport-issues-say-nothing.md) · bug, selfreport, loom
    - Tier 1 anomaly issues carry only keys and blank fields; drop Go-side filing and feed anomalies to Friction-Reflect instead
 
