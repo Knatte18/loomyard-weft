@@ -1,12 +1,12 @@
 {
   "current_producer": "Discussion-Burler",
-  "state": "failed",
-  "error": "shedadapters: Discussion-Burler (burler): round 3 attempt 3: run: burler: round reached done but its review file is invalid: burler: review file frontmatter is not valid YAML: yaml: line 12: did not find expected key (a summary containing a \" character must be ONE double-quoted string covering the whole value, not a quoted fragment followed by trailing prose)",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Burler",
     "last": "Discussion-Bouncer → bounced to Discussion-Burler",
-    "wait": "shedadapters: Discussion-Burler (burler): round 3 attempt 3: run: burler: round reached done but its review file is invalid: burler: review file frontmatter is not valid YAML: yaml: line 12: did not find expected key (a summary containing a \" character must be ONE double-quoted string covering the whole value, not a quoted fragment followed by trailing prose)"
+    "wait": ""
   },
   "history": [
     {
