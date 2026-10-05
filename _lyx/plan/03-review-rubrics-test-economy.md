@@ -25,6 +25,7 @@
 - a behavior the diff adds with no coverage, naming the uncovered behavior.
 
 The bound on this new BLOCKING edge: a reviewer may raise a redundancy finding only by naming the existing test that covers the behavior, so it cannot block on a vague suspicion.
+The same file's intro sentence "The two dimensions under `## Also flag` are added on top of that base" becomes "The dimensions under `## Also flag` are added on top of that base", since the section now holds a third bullet and the sentence should carry no count.
 The Discussion-Review rubric is not touched.
 After the edit, "independently reviewable/testable unit" and "an independently testable symbol gets its own card" are gone from the Plan-Review rubric.
 
