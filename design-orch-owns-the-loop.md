@@ -11,7 +11,14 @@ It needs no scripts in `.scratch/hub/` and no rules it must remember to read.
 
 `lyx batten run <slug>` blocks in the foreground, so the orch backgrounds it from its own shell, and a Claude Code background job is killed at its time limit along with its process group: on 2026-10-02 all three batten runs died that way after 30 minutes.
 The hub now starts them with `setsid nohup` by hand.
-`lyx batten start <slug>` detaches batten's Go driver itself (`proc.Detach`, as `lyx loom start` does for loom's go driver).
+
+Starting a driver belongs in shed, not in each recipe (operator, 2026-10-05).
+Today only `lyx loom start` reads a run's seed and spawns the driver it records (`--driver llm|go` on `lyx shed seed`): the detached Go runner, or an LLM strand running the driver stencil (`contracts/stencils/shed/shed-template-driver.md` once `lyx-skills-and-stencils` lands).
+`lyx shed` has no such verb, so every other recipe would need its own start.
+
+- `lyx shed start <run-id>` reads the seed and spawns the recorded driver, detached for Go (`proc.Detach`), as a reed strand for LLM, for any recipe.
+- `lyx loom start` keeps its bootstrap steps (substrate, merge-in-progress refusal, parked-driver resume, terminal handover) and spawns the driver through the same code.
+- `lyx batten start <slug>` is the same verb for batten's run, so a batten run survives the orch's shell without `setsid nohup`.
 How the operator sees many batten runs at once (a status strand, its height, or reed's own-window anchoring) is undecided and stays out of this task.
 
 ## A watch command
@@ -38,6 +45,7 @@ Moved into task `lyx-skills-and-stencils` (operator, 2026-10-05).
 - The orch starts, watches and lands runs with lyx commands only, and `.scratch/hub/` is gone.
 - A started batten run survives the orch's shell and session ending.
 - `lyx orch start --continue` after a reboot resumes the last orch conversation.
+
 
 
 
