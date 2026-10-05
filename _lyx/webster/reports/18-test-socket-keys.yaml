@@ -1,0 +1,5 @@
+status: OK
+head_sha: 34296534a08efda920d23d4602ddb7c899089224
+deviations:
+  - internal/reedcli/cli_integration_test.go
+  - internal/reedcli/smoke_warmpath_test.go
