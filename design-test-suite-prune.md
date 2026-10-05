@@ -2,8 +2,10 @@
 
 `test-suite-prune` · Task · enhancement
 
-Stage 1 of getting the test suite under control: measure it, then cut it down.
-Stage 2, `test-writing-rules`, changes how tasks write tests and waits for this one.
+Depends on: [`test-writing-rules`](design-test-writing-rules.md)
+
+Stage 2 of getting the test suite under control: measure it, then cut it down.
+It runs after `test-writing-rules`, so its own changes follow the new rules, and runs alone: it touches test files in nearly every package.
 
 The suite grew from 1967 test functions on 2026-08-13 to 5749 on 2026-10-05, and the integration tier from 17.9 s to 57.5 s on the same idle machine.
 The two test revisions of 2026-10-03 (`22e46970e`, `5805c58fb`) removed duplicated helpers and hardcoded expectations, but left the count unchanged.
@@ -37,6 +39,10 @@ Prefixes, most to least common: `lyx-warp-bare-LYXHUB-*` (over 400), `lyx-001-*`
 - `kill-server` stops a server but leaves its socket file: remove the socket in test cleanup through one shared helper (see `pattern/PATTERN-tmux-test-isolation.md`), and point `TMUX_TMPDIR` at `t.TempDir()` where possible so the files never reach `/tmp`.
 - Check whether production reed paths (standalone geometry, warp-bare) also leave sockets.
 - A full suite run leaves no new file in `/tmp/tmux-$UID/`.
+
+## Budget guard
+
+Once the suite is pruned, a guard test pins a per-package budget for test count and wall time at the after-state; exceeding it fails until the budget is raised deliberately in the same commit.
 
 ## Done when
 
