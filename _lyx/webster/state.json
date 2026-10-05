@@ -16,7 +16,7 @@
     "11-adopt-pid-reuse.md": "9ac8e7bf1c0d39c37aab5b3165f234d0a213e2aa37d4a19a9cb3a932b91ccf77",
     "12-orch-smoke.md": "07b993147b708d3d755ec72b278970249ab33b6ff826beb4025bf9cfada6376b"
   },
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "d67879bc330e634575451a44ed0d2120",
   "masterSessionId": "1531b0ca-5912-4b17-8d7c-1834f68aa0eb",
   "assertedModel": "sonnet",
@@ -231,6 +231,21 @@
       "forkTranscripts": [
         "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-orch-cycle-hardening/1531b0ca-5912-4b17-8d7c-1834f68aa0eb/subagents/agent-a5357478488834e61.jsonl"
       ]
+    },
+    "9": {
+      "slug": "batten-notice-wiring",
+      "cards": [
+        "09-batten-notice-wiring"
+      ],
+      "cardHashes": {
+        "09-batten-notice-wiring": "72ddd4d0e5662247afe973b029222c216e878a1bc80aa519b79cb52ad427f657"
+      },
+      "startSha": "8a5850276fbce0289d02c3e8a4c81589cf27acdb",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T08:08:04Z",
+      "sessionId": "1531b0ca-5912-4b17-8d7c-1834f68aa0eb",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
