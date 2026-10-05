@@ -1,6 +1,6 @@
 # Measure the test suite, make it fast, settle its rules
 
-`test-suite-measure` · Task · enhancement · running · Plan-Bouncer
+`test-suite-measure` · Task · enhancement · running · Plan-Burler
 
 Depends on: [`test-writing-rules`](design-test-writing-rules.md)
 
