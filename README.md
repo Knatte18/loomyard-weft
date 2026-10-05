@@ -41,6 +41,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - cat > /tmp/x; python3 - <<EOF … EOF on one line reads stdin forever; seen twice on 2026-10-05 and in #361
 1. **Test suite several times slower than its August benchmark** — [`test-suite-regression`](design-test-suite-regression.md) · bug
    - Ryzen Kubuntu idle: 13 s untagged / 60 s integration against 3.6 s / 17 s on 2026-08-13; find and remove what slowed it
+1. **fabric fetches an existing remote warp and weft branch instead of creating new ones** — [`fabric-add-adopt-remote`](design-fabric-add-adopt-remote.md) · bug, fabric
+   - A branch that exists on origin is fetched and checked out, never recreated locally; reconcile and checkout today fork a fresh weft and fabric add refuses the warp
 
 ### Enhancements
 
@@ -132,8 +134,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - LY: prime/LY: <slug> titles, prime opens with reed up+attach only, orch start and open board as tasks with lyx keybindings, no launch.json
 1. **A running verify gate is visible in status and on screen** — [`gate-running-visible`](design-gate-running-visible.md) · enhancement, loom, reed
    - After an agent ends its turn, a Go gate can run for minutes with nothing on screen; loom status and something on screen name the gate and its runtime
-1. **fabric fetches an existing remote warp and weft branch instead of creating new ones** — [`fabric-add-adopt-remote`](design-fabric-add-adopt-remote.md) · enhancement, fabric
-   - A branch that exists on origin is fetched and checked out, never recreated locally; reconcile and checkout today fork a fresh weft and fabric add refuses the warp
 1. **A color per spawned session, so the driver and each loom segment stand apart** — [`strand-colors`](design-strand-colors.md) · enhancement, reed, loom, shed, shuttle
    - Use Claude Code /color on every spawned strand: driver against the rest at least, ideally one color per loom segment
 1. **lyx webster reset covers the report-head and last-batch-head targets** — [`webster-reset-targets`](design-webster-reset-targets.md) · enhancement, webster
