@@ -1,0 +1,35 @@
+{
+  "runGuid": "25cb2417c045a8913168844600de9f14",
+  "planFingerprint": "b3aef0e49ff8a911553bd8b7381d219b46b888e8197cef6e0c4d833a757b02a2",
+  "planFileHashes": {
+    "00-overview.md": "03aba6e4f2294ee19e470413f92e32ae068ba5cf2ca471e06a6e10d46703792d",
+    "01-configreg-hub-wide.md": "8ca390be72567a38bc849b4618ea73738ec2fe53aeb7fe5ea2e984f16a765106",
+    "02-bolt-commit-written.md": "7e9982f9448ea95fd9ab475df0092d1dc9381c849679dd0f5c2cb063b99f092f",
+    "03-hub-wide-reconcile.md": "6945e2a9a659828ad51fb69da404933fb5d9622a2d033bee59f5114364d0b331",
+    "04-board-readers-hub-file.md": "751d7b7d110e3d7c0b589fbcfeca8710711673d1f2cece210349b4e8080e18f0",
+    "05-retire-worktree-copy.md": "618f568295cb97a1fef2a9d739484dfab0853557ad7750f6b9e13da8dad6860d",
+    "06-configengine-staged-edit.md": "3d3a868757d822a52d918543f882628f823c87b49aa150227a5c4fc89d12059a",
+    "07-config-cli-hub-wide.md": "a09238c0fee62fb798b386f138d2de3506526404f56a103a6f60e128d5a643f0"
+  },
+  "currentBatch": 1,
+  "masterStrand": "08f77d30e10194f6fe1f235b2c65df1a",
+  "masterSessionId": "796cd30e-0090-4614-89af-4ad1258a80bd",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "configreg-hub-wide",
+      "cards": [
+        "01-configreg-hub-wide"
+      ],
+      "cardHashes": {
+        "01-configreg-hub-wide": "8ca390be72567a38bc849b4618ea73738ec2fe53aeb7fe5ea2e984f16a765106"
+      },
+      "startSha": "70bf30ae88f7ce42b2f6329b741579cf7fa2d973",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T18:52:27Z",
+      "sessionId": "796cd30e-0090-4614-89af-4ad1258a80bd",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
