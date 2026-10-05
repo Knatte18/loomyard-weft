@@ -12,7 +12,7 @@
 - `internal/hubforge/hub_test.go`
 
 **Uses:**
-- `plan:internal/configsync#ReconcileHubWideAt`
+- `internal/configsync#ReconcileHubWideAt`
 - `internal/configreg#Module`
 - `internal/fabricengine#BoardDir`
 - `internal/fabricengine#CommitAnchoredPaths`

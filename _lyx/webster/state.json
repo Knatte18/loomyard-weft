@@ -1,17 +1,17 @@
 {
   "runGuid": "25cb2417c045a8913168844600de9f14",
-  "planFingerprint": "c3afd457bd0922f61a88e733860413f055a512d2cee8637b5bfe00ad6ff765a6",
+  "planFingerprint": "84d635fc7040ecbc797873c881418bf0ee7a329bb4a2679945199d49b43f0c3b",
   "planFileHashes": {
     "00-overview.md": "03aba6e4f2294ee19e470413f92e32ae068ba5cf2ca471e06a6e10d46703792d",
     "01-configreg-hub-wide.md": "8ca390be72567a38bc849b4618ea73738ec2fe53aeb7fe5ea2e984f16a765106",
     "02-bolt-commit-written.md": "aca5b596b14f9fe627bb5c1a9b89abada202112793d58248f07dea893c864d54",
-    "03-hub-wide-reconcile.md": "d0b42818bc541b04e3fd568960cc7daf3cb028117db08352feee1a14a6eb2e54",
+    "03-hub-wide-reconcile.md": "734b7f093e1ef470eaa2c896c6b49307343efa90624d07ba65c2774af21a881d",
     "04-board-readers-hub-file.md": "751d7b7d110e3d7c0b589fbcfeca8710711673d1f2cece210349b4e8080e18f0",
-    "05-retire-worktree-copy.md": "618f568295cb97a1fef2a9d739484dfab0853557ad7750f6b9e13da8dad6860d",
+    "05-retire-worktree-copy.md": "b28efbb13b46b212c6eefe05450e1a4a100e5ac0e4320f7692db54672c690c69",
     "06-configengine-staged-edit.md": "3d3a868757d822a52d918543f882628f823c87b49aa150227a5c4fc89d12059a",
     "07-config-cli-hub-wide.md": "8dac35da6501fdbcee76b684140297a345c226ea29a76b79d465257e85a90ad0"
   },
-  "currentBatch": 3,
+  "currentBatch": 0,
   "masterStrand": "08f77d30e10194f6fe1f235b2c65df1a",
   "masterSessionId": "796cd30e-0090-4614-89af-4ad1258a80bd",
   "assertedModel": "sonnet",
@@ -74,18 +74,30 @@
         "03-hub-wide-reconcile"
       ],
       "cardHashes": {
-        "03-hub-wide-reconcile": "d0b42818bc541b04e3fd568960cc7daf3cb028117db08352feee1a14a6eb2e54"
+        "03-hub-wide-reconcile": "734b7f093e1ef470eaa2c896c6b49307343efa90624d07ba65c2774af21a881d"
       },
       "startSha": "e802552dd6c23e464cd5aa76ffc4c7a763a6c193",
       "kind": "fork",
       "spawnedAt": "2026-10-05T18:55:41Z",
       "sessionId": "796cd30e-0090-4614-89af-4ad1258a80bd",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "03-hub-wide-reconcile",
+        "status": "done",
+        "head_sha": "c6d0221b47691eeac17099b5e27df0ebd81eea23"
+      },
+      "cardShas": [
+        "c6d0221b47691eeac17099b5e27df0ebd81eea23"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-aa211604a2d216e97.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-ad60141a5b6d6c834.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-a64a5d6ea369256e0.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-a64a5d6ea369256e0.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-board-config-per-worktree/796cd30e-0090-4614-89af-4ad1258a80bd/subagents/agent-aa211604a2d216e97.jsonl"
   ]
 }

@@ -1,7 +1,7 @@
 # Card 3 — Reconcile every hub-wide module at the board dir, seeding board.yaml from the prime
 
 **Create:**
-- `plan:internal/configsync#ReconcileHubWideAt` -> `func ReconcileHubWideAt(boardDir, primeBaseDir string, apply bool) ([]Result, error)`
+- `internal/configsync#ReconcileHubWideAt`
 
 **Edit:**
 - `internal/configsync/configsync.go`
