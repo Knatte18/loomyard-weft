@@ -19,8 +19,6 @@ Waits on nothing open; can start now, in parallel.
 1. **Bouncer CIRCLING escalates to the parent; loomcli smoke tier green** — [`loom-bouncer-rounds`](design-loom-bouncer-rounds.md) · bug, enhancement, loom, orch · running · Webster-Bouncer
    - CIRCLING judged later on unchanged recurrence and escalated to the parent orchestrator; fix the five failing loomcli smoke tests
    - **Before:** `lyx-skills-and-stencils`
-1. **Label descriptions, board CLI gaps, CLI tree exceptions** — [`board-labels-and-skills`](design-board-labels-and-skills.md) · bug, enhancement, board, config, selfreport · running · Finalize
-   - labels become label→description with lyx board labels; board get --body, merge --body-file, merged issues kept, slug limit in help; fix the five cliTreeFindings exceptions
 
 ### Layer B
 
@@ -141,3 +139,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - After an agent ends its turn, a Go gate can run for minutes with nothing on screen; loom status and something on screen name the gate and its runtime
 1. **fabric fetches an existing remote warp and weft branch instead of creating new ones** — [`fabric-add-adopt-remote`](design-fabric-add-adopt-remote.md) · enhancement, fabric
    - A branch that exists on origin is fetched and checked out, never recreated locally; reconcile and checkout today fork a fresh weft and fabric add refuses the warp
+
+## Done
+
+Finished, awaiting `lyx board prune`.
+
+1. **Label descriptions, board CLI gaps, CLI tree exceptions** — [`board-labels-and-skills`](design-board-labels-and-skills.md) · bug, enhancement, board, config, selfreport · done
+   - labels become label→description with lyx board labels; board get --body, merge --body-file, merged issues kept, slug limit in help; fix the five cliTreeFindings exceptions
