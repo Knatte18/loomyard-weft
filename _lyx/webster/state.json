@@ -20,7 +20,7 @@
     "15-orch-reload.md": "4a10e0eb0864ae86c1536dce7a528e27a986165c47bdd8d70fdb910e69409bbd",
     "16-pattern-entries.md": "e047737b43baabd460e35807bf459d4799d6a894d825af114c67328a17b7713f"
   },
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "40172dc3ee4d7f3102b0f95aade12453",
   "masterSessionId": "473ae965-3716-422d-9f02-1fa754091f0c",
   "assertedModel": "sonnet",
@@ -216,6 +216,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-skills-and-stencils/473ae965-3716-422d-9f02-1fa754091f0c/subagents/agent-a7d914138ef9d0adf.jsonl"
       ]
+    },
+    "8": {
+      "slug": "treadle-roles",
+      "cards": [
+        "08-treadle-roles"
+      ],
+      "cardHashes": {
+        "08-treadle-roles": "0fefad43f831a0f4dfa2e04321fbc0cf87ca5a0a833165ac1e2b6a5b525eae25"
+      },
+      "startSha": "85b87bcf3dd9f6eb991ec368619a48c4c5dd92a0",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T16:50:50Z",
+      "sessionId": "473ae965-3716-422d-9f02-1fa754091f0c",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
