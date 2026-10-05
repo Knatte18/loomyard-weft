@@ -40,6 +40,12 @@ Prefixes, most to least common: `lyx-warp-bare-LYXHUB-*` (over 400), `lyx-001-*`
 - Check whether production reed paths (standalone geometry, warp-bare) also leave sockets.
 - A full suite run leaves no new file in `/tmp/tmux-$UID/`.
 
+## Consolidate PATTERN's Testing section
+
+`test-writing-rules` added three Testing entries (`PATTERN-test-economy`, `PATTERN-test-time-seam`, `PATTERN-test-parallel`); the operator wants the section revised, not grown.
+Proposal to settle in Discussion: merge `test-tier-purity`, `test-time-seam` and `test-parallel` into one `PATTERN-test-speed`, and `hermetic-git-tests` and `tmux-test-isolation` into one `PATTERN-test-isolation`, leaving Testing with test-economy, test-speed, test-isolation, testkit and hubforge-fixtures.
+Enforcement tests that name the old entries move with them.
+
 ## Budget guard
 
 Once the suite is pruned, a guard test pins a per-package budget for test count and wall time at the after-state; exceeding it fails until the budget is raised deliberately in the same commit.
@@ -49,3 +55,4 @@ Once the suite is pruned, a guard test pins a per-package budget for test count 
 - The after-state is recorded beside the before-state in the benchmark doc.
 - The test count and the integration tier's wall time have dropped substantially; the task's PR states both numbers.
 - Coverage of non-test code has not dropped beyond what deleted redundant tests explain.
+
