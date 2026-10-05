@@ -20,7 +20,7 @@
 **Uses:**
 - `internal/shuttleengine#Runner.LoadSkill`
 - `internal/shuttleengine#Runner.SkillUnknown`
-- `plan:internal/shuttleengine#Runner.CompactedSince`
+- `internal/shuttleengine#Runner.CompactedSince`
 - `internal/orchengine#RenderRoleFile`
 - `internal/orchengine#Session`
 - `internal/orchengine#Watcher`

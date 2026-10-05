@@ -9,7 +9,7 @@
 - `internal/shuttleengine/claudeengine/usage_test.go`
 
 **Create:**
-- `plan:internal/shuttleengine#Runner.CompactedSince` -> `func (r *Runner) CompactedSince(turnEnd Event, since time.Time) (time.Time, bool, error)`
+- `internal/shuttleengine#Runner.CompactedSince`
 
 **Uses:**
 - `internal/shuttleengine#SessionCycler`
