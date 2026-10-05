@@ -1,0 +1,11 @@
+status: OK
+head_sha: 05e9988b4fc0dd481830400cad09aa593b52ca1f
+deviations:
+  - internal/loomcli/arm.go
+  - internal/loomcli/sharedbootstrap.go
+  - internal/loomcli/landingdeps_integration_test.go
+  - internal/loomcli/landingdeps_verify_test.go
+  - internal/landingshed/finalize_integration_test.go
+  - internal/landingshed/seam_enforcement_test.go
+  - internal/mergeresolve/seam_enforcement_test.go
+  - internal/frictionengine/seam_enforcement_test.go
