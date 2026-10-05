@@ -695,21 +695,6 @@
       "body": "Operator 2026-10-04: the board needs an interactive view with filters, reachable without typing a lyx command each time.\n\n- Rendering (operator, 2026-10-04: mechanical, never an LLM): `board.html` in `_board` is a fixed viewer, changed only when the viewer itself changes, with filters on kind, type and area labels, free-text search and expandable bodies.\n  It loads a sibling `board-data.js` (`window.BOARD = {…}`), which lyx's Go code rewrites from `board.json` on every board write, committed in the same commit as README.md.\n  A plain `fetch` of `board.json` does not work: browsers block it for a page opened from `file://`, while a `\u003cscript src\u003e` loads.\n  A working demo built on today's data was shown to the operator on 2026-10-04 (filters, grouping into Tasks/Bugs/Enhancements, expandable bodies, light and dark).\n- Opening: `lyx ide` writes a VS Code task \"Open board\" into each worktree's VS Code config that opens `\u003chub\u003e/_board/board.html` in the default browser, run from `Tasks: Run Task` or a keybinding; lyx resolves the path, so nothing is linked into the worktree and `PATTERN-hub-containment` holds.\n  With Microsoft's Live Preview extension installed, the task may open it in a VS Code panel instead; VS Code alone shows HTML as source.\n  A link from `_lyx` was considered and rejected: `_lyx` is the pair's weft, the board is hub-level, and file symlinks are not relied on (Windows).\n- Phone: the board repo is private, so GitHub Pages needs a paid plan; instead make README.md easier to read in the GitHub app, grouped by type and area with collapsible `\u003cdetails\u003e` sections per area and per body.\n\nBuilds on `board-model`'s kind and labels.\n\n"
     },
     {
-      "id": 98,
-      "slug": "board-parked",
-      "title": "A parked label hides dormant notes from the default view",
-      "kind": "note",
-      "labels": [
-        "feature",
-        "board"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Notes nobody means to act on soon get parked: kept, hidden by default; curated at each intake",
-      "body": "Operator 2026-10-04, undecided (\"vi tenker på det\"): the board holds every idea, and a long flat list is hard to read.\nIdea: a `parked` label for notes nobody means to act on for a while (e.g. `codex-engine`, `reed-slack-relay`, `semantic-index`), hidden from the default listing and README but kept; the orchestrator proposes merges, parking and deletions at each intake, so the list does not grow unchecked.\nIt is a label, not a layer, so it needs only a config entry and a default filter once `board-model` lands.\n"
-    },
-    {
       "id": 99,
       "slug": "ide-prime-setup",
       "title": "lyx seeds the prime VS Code setup: title, orch start task, keybindings",

@@ -154,5 +154,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Copy Claude .jsonl transcripts across machines so --resume works elsewhere
 1. **Interactive board view: a regenerated HTML file and a phone-friendly README** — [`board-viewer`](design-board-viewer.md) · feature, board, ide
    - board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app
-1. **A parked label hides dormant notes from the default view** — [`board-parked`](design-board-parked.md) · feature, board
-   - Notes nobody means to act on soon get parked: kept, hidden by default; curated at each intake
