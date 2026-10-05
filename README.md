@@ -52,7 +52,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - ReadOriginFor answers no record when the untracked .weft lock dir is missing, so a pair recreated by reconcile launches strands with no parent and no warning
 1. **lyx files bug issues from Go code; only reflection agents should** — [`selfreport-issues-say-nothing`](design-selfreport-issues-say-nothing.md) · bug, selfreport, loom
    - Tier 1 anomaly issues carry only keys and blank fields; drop Go-side filing and feed anomalies to Friction-Reflect instead
-1. **Agent Bash calls hang on stdin** — [`agent-stdin-hang`](design-agent-stdin-hang.md) · bug
+1. **Agent Bash calls hang on stdin** — [`agent-stdin-hang`](design-agent-stdin-hang.md) · bug, shuttle
    - The model emits bare cat > /tmp/x or python3 - with no input; a stdin hook ends the hang, but the operator wants it without a per-call hook
 
 ### Enhancements

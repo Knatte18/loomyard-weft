@@ -1,6 +1,6 @@
 # Agent Bash calls hang on stdin
 
-`agent-stdin-hang` · Note · bug
+`agent-stdin-hang` · Note · bug, shuttle
 
 Agents' Bash shells hung on stdin for up to 80 minutes, holding verify gates (`board-model` #361 on 2026-10-04; `orch-cycle-hardening` and `webster-audit-recovery` on 2026-10-05).
 

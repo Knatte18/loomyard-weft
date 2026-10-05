@@ -982,7 +982,8 @@
       "title": "Agent Bash calls hang on stdin",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "shuttle"
       ],
       "issues": [],
       "depends_on": [],
