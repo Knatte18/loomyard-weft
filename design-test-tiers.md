@@ -2,7 +2,7 @@
 
 `test-tiers` · Note · enhancement, loom, webster
 
-The four tiers themselves (a Claude tier under its own tag, the tier rules in PATTERN) moved into task `test-suite-measure`; this note keeps which gate runs which tier.
+The four tiers themselves (an LLM tier under its own tag, the tier rules in PATTERN) moved into task `test-suite-measure`; this note keeps which gate runs which tier.
 
 ## Which gate runs which tier (operator, 2026-10-05)
 
@@ -33,7 +33,7 @@ Rounds in between run only what their change can reach.
 4. Binary-building tests: a test that builds `lyx` through `internal/testkit/lyxbin` depends on the whole module, not its imports, so it joins the impacted set whenever a package the binary links changes.
    Without this, both the selection and Go's test cache miss it.
 5. Fail fast: build, vet and the unit tier run before the integration tier, so a compile error costs seconds.
-6. The live-tmux tier runs at Publish only; the Claude tier never runs from a gate.
+6. The live-tmux tier runs at Publish only; the LLM tier never runs from a gate.
 
 Residual risk: a break the import graph cannot see is caught at Publish, before landing, so it costs one extra rework round, never a broken `main`.
 
