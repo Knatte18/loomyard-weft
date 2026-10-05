@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Webster-Bouncer: the judge found no progress at round 3 (CIRCLING); decide with `lyx loom circling accept board-labels-and-skills` or `lyx loom circling continue board-labels-and-skills`, then run `lyx loom start` in the task worktree to resume",
   "pause_requested": false,
   "activity": {
     "now": "Webster-Bouncer",
-    "last": "Webster-Burler → bounced to Webster-Bouncer",
-    "wait": ""
+    "last": "Webster-Bouncer → awaiting",
+    "wait": "bouncer Webster-Bouncer: the judge found no progress at round 3 (CIRCLING); decide with `lyx loom circling accept board-labels-and-skills` or `lyx loom circling continue board-labels-and-skills`, then run `lyx loom start` in the task worktree to resume"
   },
   "history": [
     {
@@ -123,6 +123,12 @@
       "output": "/home/hanf/Code/loomyard-LYXHUB/board-labels-and-skills/_lyx/reviews/webster/round-3-review.md",
       "at": "2026-10-05T11:04:40Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Webster-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/hanf/Code/loomyard-LYXHUB/board-labels-and-skills/_lyx/reviews/webster/round-3-bouncer-ledger.md",
+      "at": "2026-10-05T11:14:41Z"
     }
   ],
   "product": {
