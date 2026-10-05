@@ -19,7 +19,7 @@
     "14-webster-audit-way-forward.md": "8be5f0107343b6e7f40b181b687eccfb56f2f7d64ac903e8ca87f8ddccbc097d",
     "15-webster-no-denied-recovery.md": "61ed9962cd5be1dc7de3b06df8ce91e53296239aaf5d33d9b06ca24685c07e21"
   },
-  "currentBatch": 0,
+  "currentBatch": 12,
   "masterStrand": "7d141636dc7e313e3780ee8c2b5140a3",
   "masterSessionId": "1b4a02c4-56e0-4d0d-b34d-95153da7fecc",
   "assertedModel": "sonnet",
@@ -105,6 +105,21 @@
       "forkTranscripts": [
         "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-ad9975508969bf6cf.jsonl"
       ]
+    },
+    "12": {
+      "slug": "webster-reset-verb",
+      "cards": [
+        "12-webster-reset-verb"
+      ],
+      "cardHashes": {
+        "12-webster-reset-verb": "b497f6c645f70b6b4f208f05e9a6bedbeed2539aa1f7e43da3295276b8210c1c"
+      },
+      "startSha": "fd49e0ef3ea9cc3bfef64cb55db683aad3a415e6",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T10:55:14Z",
+      "sessionId": "1b4a02c4-56e0-4d0d-b34d-95153da7fecc",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "shuttle-shell-wait-config",
