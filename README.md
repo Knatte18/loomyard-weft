@@ -15,10 +15,20 @@ Waits on nothing open; can start now, in parallel.
    - Hung-shell gate wait, unacceptable contract-file findings, garbled way-forward text, recoveries that need denied commands
 1. **Orch context cycling and long-run hardening** — [`orch-cycle-hardening`](design-orch-cycle-hardening.md) · bug, enhancement, orch, config, batten · running · Plan-Write
    - Fresh reading after /compact, clear-or-compact as config, and the adopt/attach/permission hardening list
+   - **Before:** `lyx-skills-and-stencils`
 1. **Bouncer CIRCLING escalates to the parent; loomcli smoke tier green** — [`loom-bouncer-rounds`](design-loom-bouncer-rounds.md) · bug, enhancement, loom, orch · running · Discussion-Burler
    - CIRCLING judged later on unchanged recurrence and escalated to the parent orchestrator; fix the five failing loomcli smoke tests
+   - **Before:** `lyx-skills-and-stencils`
 1. **Label descriptions, board CLI gaps, CLI tree exceptions** — [`board-labels-and-skills`](design-board-labels-and-skills.md) · bug, enhancement, board, config, selfreport · running · Discussion-Write
    - labels become label→description with lyx board labels; board get --body, merge --body-file, merged issues kept, slug limit in help; fix the five cliTreeFindings exceptions
+
+### Layer B
+
+Starts when every entry it names under After is done.
+
+1. **ly-drive as a stencil, a ly:runs skill, and lyx-injected skill loading** — [`lyx-skills-and-stencils`](design-lyx-skills-and-stencils.md) · enhancement, stencil, orch, shed
+   - Driver procedure moves into a stencil, a ly:runs workflow skill, and the orch watcher injects skill loading at start, adopt and after every cycle
+   - **After:** `orch-cycle-hardening`, `loom-bouncer-rounds`
 
 ## Notes
 
