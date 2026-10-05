@@ -19,7 +19,7 @@
     "14-webster-audit-way-forward.md": "8bdbcffab4d2d2954645d2a067e65e90a19441d5f49e22185bb6bb8fce4fb015",
     "15-webster-no-denied-recovery.md": "d81c7316787b41cc1ce1383b0a0e463e71c8c15e123b244b4bd7ffab784315e3"
   },
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "7d141636dc7e313e3780ee8c2b5140a3",
   "masterSessionId": "1b4a02c4-56e0-4d0d-b34d-95153da7fecc",
   "assertedModel": "sonnet",
@@ -239,6 +239,21 @@
       "forkTranscripts": [
         "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-webster-audit-recovery/1b4a02c4-56e0-4d0d-b34d-95153da7fecc/subagents/agent-acd967e3ddf227e51.jsonl"
       ]
+    },
+    "9": {
+      "slug": "webster-prefix-head-persist",
+      "cards": [
+        "09-webster-prefix-head-persist"
+      ],
+      "cardHashes": {
+        "09-webster-prefix-head-persist": "40175f8a5f72c82459046c5df0f217d5445109dcd870f0c769bf5eff85b1f758"
+      },
+      "startSha": "b6d777c9f66692266000e853090ae342f37cd3f8",
+      "kind": "fork",
+      "spawnedAt": "2026-10-05T10:41:09Z",
+      "sessionId": "1b4a02c4-56e0-4d0d-b34d-95153da7fecc",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
