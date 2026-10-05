@@ -1,0 +1,4 @@
+status: OK
+head_sha: a9c4eb07395c854bbe1a78ae09d7827e61b4a39a
+deviations:
+  - internal/loomcli/selfreport_github_test.go
