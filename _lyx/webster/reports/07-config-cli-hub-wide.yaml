@@ -1,0 +1,5 @@
+status: OK
+head_sha: 609291c4b5d214a129e080e3208b4c90cbbe3eaa
+deviations:
+  - cmd/lyx/configstrictness_test.go
+  - pattern/PATTERN-config-strictness.md
