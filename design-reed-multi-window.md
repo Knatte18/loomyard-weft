@@ -29,6 +29,17 @@ Today two `lyx reed attach` invocations join the same tmux session object — a 
 
 tmux's session-groups feature (`new-session -t <existing-session>`) would let each invocation show a different window independently, which reed's `attach` verb does not use today. This is a candidate building block for both ideas above, likely exposed as something like an `--window <n>` flag, or hidden entirely behind one verb that spawns the needed loose terminal windows automatically.
 
+## Operator, 2026-10-05: strands in depth, not stacked in height
+
+Two strands stacked as panes in one window are unreadable on a small laptop screen.
+Stack them in depth instead: one tmux window per strand, behaving like tabs within the run's terminal window.
+
+- The driver always lives in window 0, with its `loom-status` strand beside it.
+- Each agent the driver spawns (Discussion-Write, a Burler round, Webster's Master) gets its own window, named by its role, so the tmux status line lists what runs.
+- The window closes when the agent ends, and the view falls back to the driver.
+- **No focus stealing.** A new window must never pull focus away from a window the operator is typing in; an automatic switch on spawn is unwanted for that reason.
+  Open: how a new window announces itself instead (status-line highlight, tmux activity flag, a switch only when the current window is idle), and whether tmux session groups are needed so each attached terminal keeps its own current window.
+
 ## Related
 
 - `internal/reedengine`'s package documentation — the shipped work that claims the "Selvage" name; reed still has no window support today.
