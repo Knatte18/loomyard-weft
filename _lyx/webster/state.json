@@ -8,7 +8,7 @@
     "03-review-rubrics-test-economy.md": "be8e3d15911591e2d3d3ba83b79830e1a9a9f60485c1475ba49acfd903e7c22d",
     "04-fix-and-discussion-stencils.md": "1c7c41939e6b66be80399a0e726705ac92acd03801e727d481ef448581df9611"
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "97b6f20298afee40e58ffeda8ad222bc",
   "masterSessionId": "2c436b11-fb17-49d3-affb-1576ee937e48",
   "assertedModel": "sonnet",
@@ -25,8 +25,22 @@
       "kind": "fork",
       "spawnedAt": "2026-10-05T14:49:48Z",
       "sessionId": "2c436b11-fb17-49d3-affb-1576ee937e48",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-plan-spec-card-model",
+        "status": "done",
+        "head_sha": "0cfbfb430b529d8f8a599cd2f77aa3e55b6eecef"
+      },
+      "cardShas": [
+        "0cfbfb430b529d8f8a599cd2f77aa3e55b6eecef"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-writing-rules/2c436b11-fb17-49d3-affb-1576ee937e48/subagents/agent-aca3b14bd428268b3.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-writing-rules/2c436b11-fb17-49d3-affb-1576ee937e48/subagents/agent-aca3b14bd428268b3.jsonl"
+  ]
 }
