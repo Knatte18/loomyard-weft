@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -18,8 +18,8 @@ Deployment note for the PR description: after the landed binary is deployed, run
 1 — configreg-hub-wide — add `Module.HubWide`, set for `fabric` and `board`
 2 — bolt-commit-written — `Bolt.CommitWritten` writes and commits named paths under the board write lock
 3 — hub-wide-reconcile — `ReconcileHubWideAt` replaces the fabric-only reconcile, seeds `board.yaml` from the prime, and `fabric reconcile` commits it in `_board`
-4 — retire-worktree-copy — `ReconcileAll` skips hub-wide modules by the registry field and retires subsumed per-worktree copies
-5 — board-readers-hub-file — `lyx board`, loom's landing board and `lyx ide` menu load the hub `board.yaml`
+4 — board-readers-hub-file — `lyx board`, loom's landing board and `lyx ide` menu load the hub `board.yaml`
+5 — retire-worktree-copy — `ReconcileAll` skips hub-wide modules by the registry field and retires subsumed per-worktree copies; it runs after the readers card, since clone stops materializing a per-worktree `board.yaml` there
 6 — configengine-staged-edit — `EditPath` and `StagingFile` so an editor can work on an untracked staging copy
 7 — config-cli-hub-wide — `lyx config` edits, sets, prints and menus hub-wide modules at the board dir, commits in `_board`, and PATTERN gains `PATTERN-hub-wide-config`
 

@@ -1,4 +1,4 @@
-# Card 5 — Every board-config reader loads the hub's board.yaml
+# Card 4 — Every board-config reader loads the hub's board.yaml
 
 **Edit:**
 - `internal/boardengine#LoadConfig`
@@ -14,6 +14,7 @@
 - `internal/ideengine#Menu`
 - `internal/ideengine/menu_test.go`
 - `cmd/lyx/main_integration_test.go`
+- `plugins/ly/skills/board/SKILL.md`
 
 **Uses:**
 - `internal/fabricengine#BoardDir`
@@ -37,6 +38,7 @@ Docs in this commit:
 - `boardcli/doc.go` and `board`'s cobra `Long` say the config is the hub's `<hub>/_board/_lyx/config/board.yaml`, read whatever worktree the verb runs in.
 - `boardengine/doc.go`'s label-list paragraph (the "write this list into the parent's live `_lyx/config/board.yaml`" note) points at the hub file.
 - `Config.Path`'s comment in `config.go` stays accurate.
+- `plugins/ly/skills/board/SKILL.md`'s sentence placing the label maps in `_lyx/config/board.yaml` names the hub's `board.yaml` instead; `lyx config board` stays the way to edit it.
 
 Tests that seeded a worktree's `board.yaml` and then ran a board reader now seed `configengine.ConfigFile(fabricengine.BoardDir(<hub>), "board")` instead:
 - `seedCwd` and the `--board-path` test's seeding in `boardcli/cli_test.go`, where the hub is the temp dir's parent;
@@ -53,4 +55,4 @@ Coverage:
 
 **ImpactSummary:** Three board-config call sites switch base dir and `LoadConfig`'s absence message changes; tests that seeded a per-worktree `board.yaml` now seed the hub file.
 
-**Commit:** 5: board: load board.yaml from the hub's board dir
+**Commit:** 4: board: load board.yaml from the hub's board dir

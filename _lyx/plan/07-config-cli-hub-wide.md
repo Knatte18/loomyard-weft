@@ -35,15 +35,20 @@ Wiring in `configcli.go`:
 Hub-wide write paths, in `hubwide.go`:
 - `--set`: inside the commit seam's `write`, snapshot the hub file (or its absence), run `configengine.Set` at the board dir, then validate with the strict `configengine.Load(boardDir, module, template, openMaps...)`.
   On a `Set` or validation error, restore the snapshot (or remove a file that was absent) and return the error.
+  The restore is written with `fsx.AtomicWriteBytes`.
+  If the restore itself fails, the returned error joins the restore error and names the hub file as possibly invalid.
+  Two windows are left: `configengine.Set` writes with a plain `os.WriteFile`, and a process kill between that write and the restore can leave a torn or schema-invalid file in `_board`'s working tree for the next board sync to commit.
+  Every later strict load then refuses that file, naming it, so the damage is a refused board verb that `lyx config board` repairs, and never a silently wrong vocabulary.
 - Edit: outside the lock, copy the hub file's bytes (the template when absent) to `configengine.StagingFile(<worktree base>, module)` and run `configengine.EditPath` on it, so the editor never holds the board write lock.
   Then, inside `write`: refuse if the hub file no longer matches the bytes the staging copy was taken from (a concurrent edit), and otherwise write the staged bytes to the hub file atomically, validate with the strict load, and restore the snapshot on failure.
-  The staging file is removed on every exit.
+  The staging file is removed on every exit except the concurrent-edit refusal, which keeps it so the operator's edit is not lost.
 - The caller tells a refused write from a failed commit by recording the `write` closure's own error.
 
 Messages name the file actually edited, its absolute hub path for a hub-wide module:
 - success: `edited and committed <path> in _board`;
 - refused edit or set: the validation error plus `<path> unchanged`;
 - editor abort: `aborted: <path> unchanged`;
+- concurrent edit: `<path> changed while the editor was open; your edit is kept at <staging path>, re-apply it`, with the staging file kept for this one exit and the hub file untouched;
 - failed commit or push: `edited <path> but it is uncommitted: <err>; the next board sync commits it`, with the file left on disk.
 The per-worktree messages keep their `_lyx/config/<module>.yaml` wording.
 
@@ -68,7 +73,8 @@ Coverage:
   - a `--set` the strict load rejects (a list where the template has a scalar) is refused, and the board-dir file is byte-identical afterwards;
   - a commit-seam error leaves the edited file on disk, and the error names the hub path and "uncommitted";
   - an editor edit writes the staged bytes to the board-dir file;
-  - an editor edit the strict load rejects leaves the board-dir file unchanged, and no staging file remains.
+  - an editor edit the strict load rejects leaves the board-dir file unchanged, and no staging file remains;
+  - a board-dir file changed between the staging copy and the locked step is refused with the concurrent-edit message, the board-dir file keeps the other writer's bytes, and the staging file remains.
 - `configcli_integration_test.go` (integration, `hubforge` hub with one pair): `lyx config board --set labels.x=desc` run from the pair (`RunCLIIn`) changes the hub `board.yaml`, leaves `_board` clean with HEAD's commit touching that file, and writes no per-worktree `board.yaml`.
   A second row does the same for `lyx config fabric --set branch_prefix=x`.
 

@@ -1,4 +1,4 @@
-# Card 4 — `lyx config reconcile` skips hub-wide modules and retires their per-worktree copies
+# Card 5 — `lyx config reconcile` skips hub-wide modules and retires their per-worktree copies
 
 **Edit:**
 - `internal/configsync/configsync.go`
@@ -35,6 +35,7 @@ Bound: the only file this deletes is `_lyx/config/<module>.yaml` of a registry-m
 `lyx config reconcile` (`runReconcile` in `configcli.go`) passes `fabricengine.BoardDir(l.HubPath)`.
 It adds `retired` and `divergent` to a module's JSON object only when set, as `migratedFrom` is handled today.
 Update the reconcile subcommand's `Long` text to say hub-wide modules are reported, not reconciled.
+Update `ReconcileAll`'s doc and the `Result.Retired`/`Result.Divergent` field comments in `configsync.go` to describe the retire and divergence outcomes and the `boardDir` parameter.
 `CloneAndWire` passes `res.BoardDir`.
 Its weft commit of applied per-worktree paths now also carries a retired copy's deletion, since a retired result is `Applied`.
 
@@ -57,4 +58,4 @@ In `reconcile_integration_test.go`, add one assertion that `--apply` over a subs
 
 **ImpactSummary:** `ReconcileAll` gains a `boardDir` parameter, with its two production callers and their tests updated; clone stops materializing a per-worktree `board.yaml`, and tests that used `board` as a generic module move to `loom`.
 
-**Commit:** 4: configsync: reconcile retires per-worktree copies of hub-wide modules
+**Commit:** 5: configsync: reconcile retires per-worktree copies of hub-wide modules

@@ -24,6 +24,7 @@ This card adds the two primitives that needs, with no behaviour change for exist
 
 Docs: `docs/shared-libs/configengine.md` documents `EditPath` and `StagingFile` beside `Edit` and `ConfigFile`.
 It also corrects its directory tree, which places `board.yaml` and `fabric.yaml` under a worktree's `_lyx/config/`, to show them under `<hub>/_board/_lyx/config/`, with a one-line note that `configreg` marks them hub-wide.
+Its two generic `ConfigFile` examples that name `_lyx/config/board.yaml` use a per-worktree module such as `loom.yaml` instead.
 
 Coverage:
 - `edit_test.go`: one test that `EditPath` on a path whose parent dir does not exist scaffolds the template there, applies the editor's write and returns nil.
