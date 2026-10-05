@@ -1,6 +1,6 @@
 # Orch context cycling and long-run hardening
 
-`orch-cycle-hardening` · Task · bug, enhancement, orch, config, batten · running · Webster-Burler
+`orch-cycle-hardening` · Task · bug, enhancement, orch, config, batten · running · Webster-Bouncer
 
 # Goal
 
