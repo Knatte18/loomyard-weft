@@ -22,8 +22,8 @@
 - `internal/webstercli/acceptaudit_test.go`
 
 **Uses:**
-- `plan:internal/websterengine#RunWrites`
-- `plan:internal/websterengine#loadRunWrites`
+- `internal/websterengine#RunWrites`
+- `internal/websterengine#loadRunWrites`
 - `plan:internal/websterengine#wayForwardSteps`
 - `internal/websterengine#OutcomePath`
 - `internal/websterengine#checkSuspectPaths`

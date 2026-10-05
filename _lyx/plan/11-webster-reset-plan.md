@@ -10,8 +10,8 @@
 - `internal/websterengine/reset_integration_test.go`
 
 **Uses:**
-- `plan:internal/websterengine#RunWrites`
-- `plan:internal/websterengine#loadRunWrites`
+- `internal/websterengine#RunWrites`
+- `internal/websterengine#loadRunWrites`
 - `internal/websterengine#State`
 - `internal/websterengine#runEvidenceBases`
 - `internal/websterengine#missingCommitsClause`

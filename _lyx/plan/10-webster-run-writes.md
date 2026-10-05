@@ -1,8 +1,8 @@
 # Card 10 — webster-run-writes
 
 **Create:**
-- `plan:internal/websterengine#RunWrites` -> `type RunWrites struct`
-- `plan:internal/websterengine#loadRunWrites` -> `func loadRunWrites(engine shuttleengine.Engine, st *State, worktree string) (RunWrites, error)`
+- `internal/websterengine#RunWrites`
+- `internal/websterengine#loadRunWrites`
 - `internal/websterengine/runwrites_test.go`
 
 **Uses:**
