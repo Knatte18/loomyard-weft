@@ -61,7 +61,8 @@ _No rounds yet._
 - Q10 (auto-pick): what clears a contract-file finding, and where does the rule apply? — Absent, or Master's later write; every checkability site (D5).
 - Q11 (auto-pick): does the run-exit audit still halt on a fork-contract-write? — Yes (A5).
 - Q12 (auto-pick): reset verb shape? — `lyx webster reset --to start|pre-fix`, through a new destroy.go primitive, pre-fix head persisted (D6).
-- Q13 (auto-pick): what are "the run's own" uncommitted changes? — Tracked paths the run's transcripts record a write to (D6, R4).
+- Q13 (auto-pick): what are "the run's own" uncommitted changes? — Tracked paths the run's transcripts record a successful write to (D6, R4).
+  The set is by path, narrower than the operator's "not the run's own": a run-written path another party edited afterwards is still discarded by the reset (R4).
 - Q14 (auto-pick): exact sequence for a shed-driven run after `run --fresh`? — Left to the Plan producer to read from the code; the decision fixes only the shape (numbered, each step distinct) (D8).
 - Q15 (auto-pick): enforce the operator's rule mechanically? — Yes, new `PATTERN-no-denied-recovery` with a scan test over a closed denied-command list (D10).
 - Q16 (open, environment): the `board-model` Master transcript is on another machine (`/home/knatte/...`) and not readable here, so the reason Master reached for a script is unknown beyond its command line.

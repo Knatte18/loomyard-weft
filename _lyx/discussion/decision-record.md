@@ -65,11 +65,14 @@ Shuttle's existing PreToolUse hook for Bash (`internal/shuttleengine/claudeengin
 A heredoc, pipe or explicit redirect in the command still supplies stdin to the command it is attached to, so no legitimate use changes.
 The prefix is applied once: a command that already carries it is left unchanged.
 Bound: the hook only rewrites the default stdin; it denies nothing and changes no other part of the command.
+The rewrite must leave the agents' allow and deny matching of the original command unchanged, since the permission rules see the prefixed command; a test pins this for an allowed command and a denied one, and if Claude Code's matching breaks it, the fallback condition applies.
+Fallback, selected only when the Plan producer finds that Claude Code does not honour an updated Bash input from the hook in the mode lyx agents run in, runs the hook after its own permission step, or matches allow or deny rules differently against the prefixed command: the hook denies a Bash command whose interpreter (`python`, `python3`, `node`, `perl`, `ruby`, `sh`, `bash`, `cat`) is invoked with `-`, or with no file argument, and no heredoc, pipe or redirect attached to it.
+The fallback's bound: it denies only that command shape, with a message naming the way forward (attach a heredoc or pass a file); it does not catch an interpreter reached through `xargs`, `bash -c` or a wrapper script, which stays a residual the stdin rewrite would have closed.
 
 Rationale:
 The hung shell was `python3 -` reading the Bash tool's open stdin because its heredoc was attached to the next command.
 The operator wants the source closed without denying Python; closing the default stdin closes the whole class (any interpreter, `cat`, `read`) while every intended stdin use keeps working.
-The Master transcript from `board-model` ran on another machine and is not reachable here, so why Master reached for a script at all cannot be traced further than its command line; D4 covers the stencil side.
+D4 covers the stencil side.
 
 ### D4 — Stencils: forks never write the contract files; Master needs no script
 
@@ -84,9 +87,12 @@ The fixer fork inherits Master's context, including Master's "your final action 
 ### D5 — A fork-contract-write finding is checkable
 
 Decision:
-One evidence function in `internal/websterengine` decides a contract-file path's checkability: the path is cleared when the file is absent, or when Master's own session transcript records a Write or Edit of that path later than the last fork write the finding names.
+One evidence function in `internal/websterengine` decides a contract-file path's checkability: the path is cleared when the file is absent, or when Master's own session transcript records a Write or Edit of that path whose tool result succeeded, later than the last fork write the finding names.
 Every site that classifies a suspect path uses it: `AcceptPendingAudit`, `recover-batch`'s findings check, `pendingPathsWayForward` and `--fresh`'s pending-drop check.
 A contract-file path that is not yet cleared gets its own way forward: delete the contract file(s), then re-run the verb (`rm <path>`, not a denied command); at run exit Master has normally already rewritten them, so `lyx webster accept-audit` clears the finding directly.
+Absence clears the audit finding only: a run whose contract files are absent is still in flight.
+When `accept-audit` accepts on absent contract files, its way forward names a step that re-enters Master so Master writes them again, and the run ends only on a contract file Master wrote.
+The condition is "accepted on absent contract files and no Master-written contract file exists"; the Plan producer reads from the code whether `lyx webster run` already re-enters Master for a run that reached its exit audit, names that step, and adds the re-entry if no existing step does.
 The run-exit audit still halts on a fork-contract-write finding; this task changes what clears it, not whether it halts.
 Bound: only the two contract-file paths of this run use this rule; every other path under `_lyx`, `.lyx` or the scratch directory stays unverifiable, and the rule clears a finding on evidence (absence, or Master's later write), never on an acknowledgement, keeping refusal-spec's "a correctness halt clears only on evidence" line true.
 
@@ -101,15 +107,18 @@ A new verb, `lyx webster reset --to start|pre-fix`, resets the task worktree's b
 
 - `start`: the run's start commit; when the batches' recorded starts share no single oldest commit, the octopus merge-base of those recorded starts (the case `--fresh` today names `git merge-base --octopus` for).
 - `pre-fix`: the verify gate's pre-fix head, which the gate now persists in `state.json` when it records it (it lives only in the gate closure's memory today); the closure's per-shuttle-run attempt semantics stay as they are.
+  The persisted value is written at the closure's first failed evaluation in each shuttle run and overwrites any earlier value, so it is always the head the latest gate run started its fixes from; a passing gate clears it, and `--to pre-fix` with no persisted value refuses as "no recorded target".
+  A successful `reset` (either target) and `run --fresh` also clear it; a value left by an earlier gate is otherwise used as recorded, and the ancestor check still applies.
 
 Webster refuses before calling fabric when: the run lock is held (transient; way forward names `lyx webster status`); HEAD is detached; the checked-out branch is the parent branch or is not the task's pair branch; the target is not recorded (no start commit, no pre-fix head); the target commit is missing from the repository (the existing missing-commit way forward); the target is not an ancestor of HEAD; a git merge is in progress (`refuseMidMerge`).
 The destructive step runs through a new exported method in `internal/fabricengine/destroy.go`, beside `Fabric.ResetHard`, with containment the hub, ownership a registered linked pair worktree whose branch is pair-owned and not the parent branch, dirtiness "tracked changes except a caller-supplied path set", and force always false.
-Webster supplies, as that set, the tracked paths the run's own transcripts (Master's and every fork's, as the audit already parses them) record a write to; any other dirty tracked path refuses, naming each path.
+Webster supplies, as that set, the tracked paths the run's own transcripts (Master's and every fork's, as the audit already parses them) record a write to whose tool result succeeded; any other dirty tracked path refuses, naming each path.
 Untracked files are left alone, as `git reset --hard` leaves them.
 The verb accumulates a `*Mutations` record and its envelope embeds `MutationRecord` (PATTERN-mutation-record); the weft is never touched.
-The verb changes no Webster state besides the reset itself; `run --fresh` or a plain `run` does the rest, as the way-forward text orders them.
+The verb changes no Webster state besides the reset itself and clearing the persisted pre-fix head; `run --fresh` or a plain `run` does the rest, as the way-forward text orders them.
 Every new refusal gets a refusal-spec row and a reaching test in the same commit (PATTERN-refusal-way-forward).
 Bound: the verb can discard only commits above a run-recorded commit on the task's own branch, plus uncommitted tracked changes to paths the run itself wrote; it cannot move any other branch, reset to an arbitrary SHA, touch the parent branch, the weft or untracked files, or override a refusal (no `--force`).
+The own-path exemption is by path: a path the run wrote and another party edited afterwards is still discarded (R4).
 
 Rationale:
 The operator decided the global deny on `git reset --hard` stays and that lyx performs every reset in Go, guarded to the run's own task branch and a recorded commit, refusing on the parent's branch and on uncommitted changes that are not the run's own.
@@ -120,7 +129,7 @@ A verb of its own keeps the destructive step explicit and serves the `pre-fix` r
 
 Decision:
 Every Webster refusal message, every refusal-spec row and every stencil sentence that says "reset the branch … with git", "move HEAD back … with git" or names `git merge-base --octopus` as a reset target names `lyx webster reset --to start` or `--to pre-fix` instead.
-This covers at least the rows `rebaseline card set changed`, `rebaseline overview changed`, `plan fingerprint mismatch`, `plan changed before the verb's own rewrite`, `restore-plan: copy missing`, the audit rows, `verify gate: fixer commit rejected`, `run-exit audit correctness`, `pending audit findings`, `recover-batch: findings recovery cannot check`, `accept-audit: finding not checkable` and the three `--fresh` rows, and the matching Go sites (`auditledger.go`, `runlevel.go`, `rebaseline.go`, `recoverbatch.go`, `planbaseline.go`, `beginbatch.go`, `gitwrap.go`, `internal/webstercli/rebaseline.go`, `doc.go`).
+The rule covers every such site in Webster's Go strings, refusal-spec rows and stencils, found by the D10 scan and the compiler.
 "Restore the named paths to the last batch head with git" stays: `git checkout <head> -- <path>` and a plain file delete are not denied.
 
 Rationale:
@@ -131,8 +140,9 @@ The operator's rule: no refusal, stencil or spec may name a command the agents a
 Decision:
 The run-exit audit's stuck reason and the pending-findings refusal name each finding once with its path and drop the separate "suspect paths" list.
 An uncheckable path carries its reason (for example "under `_lyx`, outside the task worktree's tracked tree", "ignored by git", "no plan copy recorded"), replacing the bare "cannot be checked" and the truncated "since nothing the run recorded can check <paths>" clause; `AcceptPendingAudit` uses the same reasons.
-The way forward is a numbered, ordered command list in one clause (`way forward: 1) lyx webster reset --to start; 2) lyx webster run --fresh; …`), where each step is a distinct action and no step restates another.
-The Plan producer settles the exact sequence for a shed-driven run (whether re-stepping the Webster row follows `run --fresh` or replaces it) from the code, and the spec row quotes the resulting text.
+The way forward is a numbered, ordered command list in one clause (`way forward: 1) lyx webster reset --to start; 2) lyx webster run --fresh`), where each step is a distinct action and no step restates another.
+The list has exactly one step that re-enters the run, and the reset step precedes it; for a shed-driven run the re-entry step is whichever the shed Webster row's own contract names, and the Plan producer reads it from the code.
+The spec row quotes the resulting text.
 
 Rationale:
 Issues #362 and #365: the clause read as truncated, the paths printed twice, "cannot be checked" gave no reason, and the `run --fresh` / `run` pair read as either one step or two.
@@ -153,6 +163,7 @@ A weft reset to `origin/<branch>` discards local weft commits, a different guard
 Decision:
 `PATTERN.md` gains `PATTERN-no-denied-recovery` under "CLI", beside `PATTERN-refusal-way-forward`: "Naming a way forward or a step in a refusal, stencil or spec: never a command the agents' settings deny (`git reset --hard`, `git push --force`/`-f`, `rm -rf`); lyx performs that step itself. (test)", with a `pattern/` background file.
 Its test scans `contracts/specs/`, `contracts/stencils/`, `plugins/ly/skills/` and the Go string literals of the modules with a refusal-spec section (webster, shed, loom) for those command forms, with the denied set as one closed list in the test.
+The scan matches a denied form only where it is offered as a step or way forward; a sentence that forbids it (a marked prohibition such as "never `git reset --hard`") is exempt, the exemption is one marker form pinned in the test, and `pattern/` background files are outside the scanned surface.
 It lands in the same commit as D6 and D7.
 
 Rationale:
@@ -189,19 +200,20 @@ CLAUDE.md's docs-in-the-same-commit rule.
 - A1: The bound's default is 10 minutes; nothing in Master's loop legitimately runs a non-declared background shell, so any value well under the 75-minute hang serves.
 - A2: The awaited-prefix carve-out is preferred over one long bound above `recovery_timeout_min`, which would keep a hang at an hour.
 - A3: Monitor counts as a shell, not a fork; Master's template never starts one.
-- A4: Closing default stdin through the PreToolUse hook is the tooling fix at the source; Claude Code's PreToolUse hook supports returning an updated tool input in the mode lyx agents run in (verified at Plan time; see Open risks).
+- A4: Closing default stdin through the PreToolUse hook is the tooling fix at the source; Claude Code's PreToolUse hook is assumed to support returning an updated tool input in the mode lyx agents run in, which the Plan producer verifies (R1; D3's fallback applies if not).
 - A5: The run-exit audit keeps halting on a fork-contract-write finding; the operator decision named `accept-audit` as the clearing step, not a downgrade at the audit.
 - A6: The reset verb takes named targets (`start`, `pre-fix`) and no raw SHA, since every Webster refusal needs one of those two.
-- A7: The pre-fix head is persisted in `state.json`; it is HEAD at the gate's first failed evaluation, normally the last batch head.
+- A7: The pre-fix head is persisted in `state.json`; it is HEAD at the gate's first failed evaluation in the current shuttle run (D6 fixes its overwrite and clear rules).
 - A8: The deny set the PATTERN test pins is today's global deny list from `~/.claude/settings.json`.
 - A9: Fabric is out of the reset verb's scope (D9).
 
 ## Open risks
 
-- R1: Claude Code may not honour an updated Bash input from a PreToolUse hook in bypass mode, or may run the hook after its own permission step; if the Plan producer finds it unsupported, D3 falls back to the hook denying a Bash command whose interpreter reads stdin with nothing attached, which is narrower and needs shell parsing.
+- R1: Claude Code may not honour an updated Bash input from a PreToolUse hook in bypass mode, or may run the hook after its own permission step; if the Plan producer finds it unsupported, D3's stated fallback applies, which is narrower and needs shell parsing.
 - R2: Stop payloads for a backgrounded Bash may lack the command text; the label then falls back to the shell id and the transcript's launch input.
 - R3: A legitimate long non-declared background shell in some other shuttle caller is cut at the bound; the run then classifies as it would at a plain turn end, and the warning names the shell.
 - R4: The "run's own paths" set comes from transcripts, which see Write/Edit/NotebookEdit writes only; a tracked change the run made through Bash is not in the set, so the reset refuses on it and names the path (safe direction).
+  The set is by path, not by content: a path the run wrote and another party edited afterwards is still exempt, so the reset discards that edit; this residual is an auto-pick (Q13), not an operator decision.
 - R5: Timestamps for "Master wrote later than the fork" depend on transcript entry timestamps across Master's and the fork's transcripts; clock skew is nil on one machine, but a moved run could compare across machines.
 
 ## Acceptance criteria
@@ -216,6 +228,10 @@ CLAUDE.md's docs-in-the-same-commit rule.
 - The fixer and batch fork stencils name both contract files as forbidden; the Master template forbids scripts and interpreters for file reads and writes; stencil tests assert both.
 - `accept-audit` accepts a fork-contract-write finding when both files are absent; accepts it when Master's transcript wrote the file after the fork; refuses, naming the delete way forward and the reason, when the fork's write is the last one and the file exists.
 - `recover-batch` and `--fresh` apply the same contract-file rule.
+- A Write or Edit whose transcript result failed is not evidence: it neither clears a contract-file finding (D5) nor enters the reset's own-path set (D6).
+- After `accept-audit` accepts on absent contract files, its way forward names the step that has Master write them again.
+- The pre-fix head is written at the first failed evaluation of a shuttle run, overwritten by a later run's first failed evaluation, and cleared by a passing gate, a successful `reset` and `run --fresh`.
+- The D3 rewrite leaves allow and deny matching of an allowed and a denied command unchanged.
 - `lyx webster reset --to start` resets a task worktree whose branch has batch commits on top of the start commit and dirty tracked paths the run wrote; the envelope embeds a mutation record with `worktree_reset`.
 - `lyx webster reset` refuses, each with a refusal-spec row and reaching test: on the parent branch, on detached HEAD, on a non-pair branch, with the run lock held, with no recorded target, with a missing target commit, with a target not an ancestor of HEAD, mid-merge, and with a dirty tracked path the run did not write.
 - `--to start` resolves the octopus merge-base when recorded starts diverge; `--to pre-fix` resets to the persisted pre-fix head after a rejected fixer commit.
@@ -231,3 +247,4 @@ CLAUDE.md's docs-in-the-same-commit rule.
 - The pre-fix head and attempt count live in the verify-gate closure (`websterengine/verifygate.go`); `fixCommitRejection` in `gitwrap.go` builds the "move HEAD back" text.
 - `pendingPathsWayForward` and the stuck-reason builder sit in `websterengine/runlevel.go`; `AcceptPendingAudit` in `auditledger.go`; `checkSuspectPaths` in `suspect.go`.
 - `plugins/ly/skills/ly-drive/SKILL.md` reads refusal-spec for escalations; check whether it names any reset.
+- D7's sites: the refusal-spec rows for rebaseline, plan fingerprint, restore-plan, the audit, the verify-gate fixer rejection, pending findings, recover-batch, accept-audit and `--fresh`, and the Go sites in `auditledger.go`, `runlevel.go`, `rebaseline.go`, `recoverbatch.go`, `planbaseline.go`, `beginbatch.go`, `gitwrap.go`, `internal/webstercli/rebaseline.go` and `doc.go`; a non-exhaustive start.
