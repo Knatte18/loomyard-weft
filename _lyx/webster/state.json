@@ -20,7 +20,7 @@
     "15-drop-recurring-finding.md": "d5ae19c6e90e324060b3f5bace61f7d8aa350476171db7ad7e1db33f62657d00",
     "16-smoke-strand-matching.md": "2561563bef9c09ccbff8c57dee8012eed1a900fcb7f1bf6df26e63d0723de55e"
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "d2c3e84d54a38997316f661377dc5bc2",
   "masterSessionId": "c05a239b-17ca-4c59-acd3-85fb643ebb30",
   "assertedModel": "sonnet",
@@ -37,8 +37,22 @@
       "kind": "fork",
       "spawnedAt": "2026-10-05T07:48:55Z",
       "sessionId": "c05a239b-17ca-4c59-acd3-85fb643ebb30",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-ledger-finding-labels",
+        "status": "done",
+        "head_sha": "1ba0d00d748137774b66e0918dbde273dec33581"
+      },
+      "cardShas": [
+        "1ba0d00d748137774b66e0918dbde273dec33581"
+      ],
+      "forkTranscripts": [
+        "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-adcc8fb3ce4c04172.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-adcc8fb3ce4c04172.jsonl"
+  ]
 }
