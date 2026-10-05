@@ -20,7 +20,7 @@
     "15-drop-recurring-finding.md": "d5ae19c6e90e324060b3f5bace61f7d8aa350476171db7ad7e1db33f62657d00",
     "16-smoke-strand-matching.md": "2561563bef9c09ccbff8c57dee8012eed1a900fcb7f1bf6df26e63d0723de55e"
   },
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "d2c3e84d54a38997316f661377dc5bc2",
   "masterSessionId": "c05a239b-17ca-4c59-acd3-85fb643ebb30",
   "assertedModel": "sonnet",
@@ -170,8 +170,19 @@
       "kind": "fork",
       "spawnedAt": "2026-10-05T08:19:54Z",
       "sessionId": "c05a239b-17ca-4c59-acd3-85fb643ebb30",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-escalation-stencils",
+        "status": "done",
+        "head_sha": "12e72a90fe44f728f34f1e537aec8d841060a9ce"
+      },
+      "cardShas": [
+        "12e72a90fe44f728f34f1e537aec8d841060a9ce"
+      ],
+      "forkTranscripts": [
+        "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-afe74ac21a0155bc4.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
@@ -179,6 +190,7 @@
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-a8b5fb2ee14496a64.jsonl",
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-a0d62a47fc3bc74fb.jsonl",
     "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-a8241e0b850c0375d.jsonl",
-    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-ac03bfd3ba71a6016.jsonl"
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-ac03bfd3ba71a6016.jsonl",
+    "/home/hanf/.claude/projects/-home-hanf-Code-loomyard-LYXHUB-loom-bouncer-rounds/c05a239b-17ca-4c59-acd3-85fb643ebb30/subagents/agent-afe74ac21a0155bc4.jsonl"
   ]
 }
