@@ -1,7 +1,7 @@
 # Card 11 — Add the llmkit test kit
 
 **Create:**
-- `plan:internal/testkit/llmkit#Claude` -> `func Claude(t *testing.T, overrideEnv string) string`
+- `internal/testkit/llmkit#Claude`
 - `internal/testkit/llmkit/llmkit_test.go`
 
 **Edit:**

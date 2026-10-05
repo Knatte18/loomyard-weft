@@ -54,7 +54,7 @@
 - `pattern/PATTERN-test-isolation.md`
 
 **Uses:**
-- `plan:internal/testkit/llmkit#Claude`
+- `internal/testkit/llmkit#Claude`
 
 **Intent:**
 Every `smoke` file moves to `tmux` or `llm` (D6), and no `smoke` build tag remains.

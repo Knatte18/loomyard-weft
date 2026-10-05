@@ -9,7 +9,7 @@
 - `pattern/PATTERN-test-speed.md`
 
 **Uses:**
-- `plan:internal/testkit/llmkit#Claude`
+- `internal/testkit/llmkit#Claude`
 
 **Intent:**
 A guard test in `cmd/lyx`, beside `tierpurity_test.go`, keeps LLM spawns in the `llm` tier (D7).

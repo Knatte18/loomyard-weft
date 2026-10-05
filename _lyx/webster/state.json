@@ -1,6 +1,6 @@
 {
   "runGuid": "47afb7a47d41b8de9a9e138182269e7a",
-  "planFingerprint": "ba79335e431d8d1280b8c04d11f051993dbdc24a749878967ce212b5e158c9b5",
+  "planFingerprint": "3e072e211680df22f4aaf9929199b7baeb8606598e6e90bd302196603fad8305",
   "planFileHashes": {
     "00-overview.md": "4abf17177bcad80cc163e9bd27745f67b90629f25639c6e0732b7a9066585248",
     "01-testtiming-package-stats.md": "64e7ed880dfbff97d7afcf8f48ba637697ccb8394d8283c41314fa8dfce43a78",
@@ -13,11 +13,11 @@
     "08-gitoracle-hermetic.md": "543b94b7cacd1d800aa6a64870bde393631aae8f8213aaaaaeb6c988a0b599fc",
     "09-timing-after-speed.md": "80d606e26a162e83f9bb7be328b169d8d25f5d9c9285ed69d0d6c516005720d4",
     "10-pattern-testing-consolidation.md": "d593be19bf2ecc54b359ca63aab3eef7ddf9682aa582d4f0778a8e577d01d7f9",
-    "11-llmkit.md": "8568e9c266fef98a4e954e77f9a98e579cdde50939da5185a7f499cb1564cc8c",
+    "11-llmkit.md": "64fce5979244e5f3f995b88bd4aa1e0840966d93b0152b0ccdc6b386ecdb35fb",
     "12-guards-know-tier-tags.md": "13868fc113bbff205bac7891eb30c42bd9a463fccd0903eb0c10f294d99e0895",
-    "13-retag-smoke.md": "5480f082971e64519a07d841d3a2ff26b1c8c643749c87b602840b353777ae58",
+    "13-retag-smoke.md": "9fc0b2b650eb9cfb0e7b4eff0aad794bacbfdee54307428395a32a2abf03e432",
     "14-retag-integration-tmux.md": "4d67f1891f409717cfd3c4bdd2661c44fa7bc5b328c4c5189e12ff7c16eed41a",
-    "15-llm-spawn-guard.md": "f827f438d6a52c9db7d5cae44ea7d52d4d142cf23a16411d3101bb8225ac8700",
+    "15-llm-spawn-guard.md": "4f32395d9f23b224b669e6a894663efdd97d936a3e4d7395a695a0a4d2ce6c17",
     "16-tier-docs-and-stencils.md": "2d9c3fbb31de2f15e4ce9846fd30f191cf8684024a9897d0dde8ac28f6962e80",
     "17-tmuxkit-socket-cleanup.md": "89154f567a8fd0f38829fc783cb0b583072ed0b8ca03b3365a8cc6a81cb8f6d7",
     "18-test-socket-keys.md": "51e928269ba6c8791513d4c2bd5e940b68ab89cb6ac10450254a551d011df017",
@@ -25,7 +25,7 @@
     "20-testtiming-redundancy.md": "315925b61fa54d8d9ff919d2404a9c0121967b9e6eb4e56276c597da224e6a49",
     "21-redundancy-report-and-post-retag.md": "035d8d13db102771578007eb5fa757b64a87ef6436accce7f4887eb74804c1a0"
   },
-  "currentBatch": 11,
+  "currentBatch": 0,
   "masterStrand": "d6515d923cf96c76537e7850a96b9d4e",
   "masterSessionId": "b9451745-c0f7-4015-9ea7-6c77aa520719",
   "assertedModel": "sonnet",
@@ -88,14 +88,25 @@
         "11-llmkit"
       ],
       "cardHashes": {
-        "11-llmkit": "8568e9c266fef98a4e954e77f9a98e579cdde50939da5185a7f499cb1564cc8c"
+        "11-llmkit": "64fce5979244e5f3f995b88bd4aa1e0840966d93b0152b0ccdc6b386ecdb35fb"
       },
       "startSha": "d11e9936f2de2dfd740d28430e7f70adcbf75946",
       "kind": "fork",
       "spawnedAt": "2026-10-05T17:00:32Z",
       "sessionId": "b9451745-c0f7-4015-9ea7-6c77aa520719",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "11-llmkit",
+        "status": "done",
+        "head_sha": "13060a7d1c788a209d6ade5ecd72c51eda905d52"
+      },
+      "cardShas": [
+        "13060a7d1c788a209d6ade5ecd72c51eda905d52"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-measure/b9451745-c0f7-4015-9ea7-6c77aa520719/subagents/agent-a68a680eb3281d377.jsonl"
+      ]
     },
     "2": {
       "slug": "timing-before-state",
@@ -319,6 +330,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-measure/b9451745-c0f7-4015-9ea7-6c77aa520719/subagents/agent-a4b87d51b3b4d1114.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-measure/b9451745-c0f7-4015-9ea7-6c77aa520719/subagents/agent-ac8b5b08a9807ccf4.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-measure/b9451745-c0f7-4015-9ea7-6c77aa520719/subagents/agent-ad328a7753b544b9f.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-measure/b9451745-c0f7-4015-9ea7-6c77aa520719/subagents/agent-aba41b7ed3d6479e5.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-measure/b9451745-c0f7-4015-9ea7-6c77aa520719/subagents/agent-aba41b7ed3d6479e5.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-measure/b9451745-c0f7-4015-9ea7-6c77aa520719/subagents/agent-a68a680eb3281d377.jsonl"
   ]
 }
