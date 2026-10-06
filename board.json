@@ -1019,6 +1019,21 @@
       "isolated": false,
       "brief": "An embedded shortcut file, git-alias style: attach for reed attach, and one shortcut that starts the orch and attaches in the prime",
       "body": "Idea (operator, 2026-10-06): top-level shortcuts for the lyx commands the operator types most, declared in one simple file in this repo rather than as Go commands.\n\nExamples:\n\n- `attach` expands to `reed attach`.\n- One shortcut for the prime runs `orch start`, then `reed attach`; the orch always runs in the prime.\n  Name open: `spawn` was floated; `up` would read like `reed up`.\n  It fits the decision recorded in task `bugfix-sessions` that start verbs never attach: the shortcut is where both happen, by naming `reed attach` explicitly.\n\n## Shape (operator, 2026-10-06)\n\n- The shortcuts are part of the deployed `lyx` binary, the same on every hub and repo: a committed file in the loomyard repo, embedded at build time (`go:embed`), never runtime config.\n  No hub, repo or user can add or change one; changing a shortcut is a commit here and a deploy.\n- The file maps a shortcut name to one lyx argv, or to a list of argvs run in order that stops at the first failure.\n  Only lyx commands, never a shell string.\n- At root construction lyx adds one cobra command per shortcut, in its own help group, whose `Short` names the expansion; running it re-dispatches the expanded args through the same root, so flags, envelopes and exit codes are the real command's.\n  Extra args after the shortcut append to the last argv.\n- A test fails when a shortcut names an existing command or another shortcut, or expands to a command that does not exist, so a broken file never builds into a binary that passes CI.\n\n## Open\n\n- Whether a shortcut may carry flags of its own or only append args.\n\nMore shortcuts get added here as the operator notices them.\nRelated notes: `ide-prime-setup` (a VS Code task that starts the orch) and `ide-reopen-prime` (reopen the prime window with one command).\n"
+    },
+    {
+      "id": 144,
+      "slug": "agents-no-scripted-edits",
+      "title": "Spawned agents edit files with scripts; the no-script rule never reaches them",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Seen 2026-10-06 in `test-suite-prune-core`, batch 10's recovery strand: the agent edited `internal/websterengine/beginbatch_test.go` with an inline `python3 - \u003c\u003c'EOF'` script, and the edit left an unused `strconv` import that vet caught.\n\nThe rule \"change files only with Edit or Write, never with a script that rewrites them (sed, awk, perl, python, node)\" lives in `scribe:conversation`, a chat skill.\nSpawned implementer, recovery and fixer roles load `scribe:prose`, `scribe:code-quality` and `scribe:testing`, so they never see it.\n\nFix direction: state the rule where every file-editing role reads it: the implementer and recovery stencils under `contracts/stencils/webster/`, the Burler fixer and Rework stencils, or one shared prefix they all compose.\n"
     }
   ],
   "legacy_done": [
