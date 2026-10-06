@@ -1,0 +1,10 @@
+{
+  "slug": "test-suite-prune-rest",
+  "round": 1,
+  "reviewer": "ly:orch",
+  "opened_at": "2026-10-06T09:19:01.769869005+02:00",
+  "decision_record": "/home/knatte/Code/loomyard-LYXHUB/test-suite-prune-rest/_lyx/discussion/decision-record.md",
+  "support_log": "/home/knatte/Code/loomyard-LYXHUB/test-suite-prune-rest/_lyx/discussion/support-log.md",
+  "state": "open",
+  "cap": 1
+}
