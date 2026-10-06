@@ -135,6 +135,12 @@ Decision: A scenario merges only tests of one tier. A merge never moves a test t
 
 Rationale: A higher tier is run by fewer gates, so a merge across tiers would silently take a test out of a gate that ran it.
 
+### Added after Discussion (parent, 2026-10-06): Scenario steps share state by design
+
+Decision: A scenario is an ordered sequence of named t.Run steps on one fixture, and a step may build on what earlier steps did. No restore bound applies. A family is merged only when its tests can run in one order on one fixture; tests that each need a pristine fixture stay separate. A step that relies on an earlier step's state says so in a comment, and the steps run serially within the scenario.
+
+Rationale: The point of a scenario is to pay for the fixture once and walk it through steps; requiring each step to restore everything it touched would cost more than it saves and cannot be checked in general. The scenario's own assertions are the guard.
+
 ## Constraints
 
 - `PATTERN-test-economy`: candidate reading rules, removable-set-only deletion, folding into tables. D2's keep directive extends its background.
