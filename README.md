@@ -52,6 +52,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Lost Enter on typed prompts, a reflection spawned during an escalation, and a re-invoked producer leaving its old session alive
 1. **loom flags a clean producer handoff as a suspected driver crash** — [`false-crash-resume`](design-false-crash-resume.md) · bug, loom, shed
    - A crash-resume note fires in the gap between a finished producer and the next one
+1. **Webster counts Master's turn end past a still-running background shell** — [`webster-background-shell-wait`](design-webster-background-shell-wait.md) · bug, webster
+   - Decide what happens when background_shell_wait_min elapses with a shell alive, and say it in the note
 
 ### Enhancements
 
