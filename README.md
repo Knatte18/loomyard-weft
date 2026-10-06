@@ -28,7 +28,7 @@ Starts when every entry it names under After is done.
 1. **Bugfix: session lifecycle, notices and run halts** — [`bugfix-sessions`](design-bugfix-sessions.md) · bug, shuttle, reed, loom, orch, burler · running · Discussion-Bouncer
    - Bugfix only: prompt delivery, stale producer sessions, false crash notes, watcher restart, Burler YAML repair, no client switch from agents
    - **After:** `test-suite-prune-core`
-1. **Bugfix: Webster and plan validity** — [`bugfix-webster`](design-bugfix-webster.md) · bug, webster, loom, quarry · running · Discussion-Burler
+1. **Bugfix: Webster and plan validity** — [`bugfix-webster`](design-bugfix-webster.md) · bug, webster, loom, quarry · running · Discussion-Bouncer
    - Bugfix only: Plan-Gate refuses backward dependencies, Delete of a gone target, background-shell wait, slow batch validation
    - **After:** `test-suite-prune-core`
 1. **Bugfix: fabric and config propagation** — [`bugfix-fabric`](design-bugfix-fabric.md) · bug, fabric, config, reed
