@@ -1,6 +1,6 @@
 # Bugfix: Webster and plan validity
 
-`bugfix-webster` · Task · bug, webster, loom, quarry · running · Plan-Bouncer
+`bugfix-webster` · Task · bug, webster, loom, quarry · running · Plan-Burler
 
 Depends on: [`test-suite-prune-core`](design-test-suite-prune-core.md)
 
