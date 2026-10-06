@@ -10,7 +10,7 @@ Everything below is tmux's own options and bindings; reed pins them at server bo
 - Line 1: a `VIEW` button lit when nothing is zoomed, then one button per strand, lit when that strand is zoomed; Selvage gets no button.
 - Strand names come from a pane user option `@strand` that reed sets when it starts the strand (e.g. `driver`, `discussion-writer`), not from `pane_title`, which Claude Code overwrites with its own title; Selvage carries no `@strand`, which is what skips it.
 - Line 2: one button per run (session), the current one lit, and the clock.
-- Alt+z toggles between the overview and the zoomed strand; Alt+Left/Right moves to the previous/next strand and keeps the zoom; Alt+Up/Down switches run.
+- Alt+z toggles between the overview and the zoomed strand; Alt+Up/Down moves to the previous/next strand and keeps the zoom; Alt+Left/Right switches run (operator, 2026-10-06).
 - Pane borders carry the strand's title.
 
 ```
@@ -21,10 +21,10 @@ status-format[1] "#[align=left]#{S:#[range=session|#{session_id}]#{?#{==:#{sessi
 pane-border-status top
 pane-border-format " #{?pane_active,#[bold],}#{?#{@strand},#{@strand},selvage} "
 bind -n M-z resize-pane -Z
-bind -n M-Left select-pane -t :.- -Z
-bind -n M-Right select-pane -t :.+ -Z
-bind -n M-Up switch-client -p
-bind -n M-Down switch-client -n
+bind -n M-Up select-pane -t :.- -Z
+bind -n M-Down select-pane -t :.+ -Z
+bind -n M-Left switch-client -p
+bind -n M-Right switch-client -n
 ```
 
 Status formats are one array: setting one index on a single session drops the global lines for that session, so set them globally only.
@@ -33,7 +33,8 @@ Open:
 
 - Clicking a strand button while zoomed unzooms (tmux's default `MouseDown1Status` selects the pane); a root binding that re-zooms after the switch when the window was zoomed keeps it zoomed.
 - Check that Claude Code does not need Alt+arrows or Alt+z in its input; tmux takes them first.
-- Alt+Left/Right cycles every pane, Selvage included; skip it, e.g. by binding to a short reed-free tmux command that steps over panes without `@strand`.
+- VS Code's terminal swallows Alt+arrows and Alt+z, while Konsole passes them through; on 2026-10-06 the operator's user `keybindings.json` got one `workbench.action.terminal.sendSequence` entry per key (`\u001b[1;3A`–`D`, `\u001bz`, `when: terminalFocus`), which made them reach tmux. `lyx ide` could install these.
+- Alt+Up/Down cycles every pane, Selvage included; skip it, e.g. by binding to a short reed-free tmux command that steps over panes without `@strand`.
 
 Rejected in the demo: one window per strand (loses the overview, since a pane lives in one window only) and grouped sessions for a second view (hard to attach).
 
