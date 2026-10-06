@@ -27,7 +27,7 @@
     "22-friction-leaf-prune.md": "0047c99a27d5a25f36a2e20def43f52e12c5c2940269384a47a4d298bd704176",
     "23-rerun-measure-after.md": "7bb4730bca45bc8e6b19ba841b95ad5a3abc730ca6574e1c3d32af53ee4de503"
   },
-  "currentBatch": 0,
+  "currentBatch": 20,
   "masterStrand": "e0d72f390b1804de39fde512613c494d",
   "masterSessionId": "bd330a6d-f411-48d9-a340-35f575841176",
   "assertedModel": "sonnet",
@@ -355,6 +355,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/01f9207a-a471-4d2d-a76c-62df57e91dd4/subagents/agent-a23487bbc50aca584.jsonl"
       ]
+    },
+    "20": {
+      "slug": "stencil-state-prune",
+      "cards": [
+        "20-stencil-state-prune"
+      ],
+      "cardHashes": {
+        "20-stencil-state-prune": "7bdcea9679e6123dacd0a1ebbcbb4505f8ff8560e803bf3db0a54eb55edac256"
+      },
+      "startSha": "14881d3e1ccaf1741574def97b57faade97dd1b8",
+      "kind": "fork",
+      "spawnedAt": "2026-10-06T12:41:27Z",
+      "sessionId": "bd330a6d-f411-48d9-a340-35f575841176",
+      "terminal": false,
+      "status": ""
     },
     "3": {
       "slug": "tooling-contracts-prune",
