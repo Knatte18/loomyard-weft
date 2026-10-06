@@ -21,7 +21,7 @@
     "16-fabricengine-prune.md": "9ea90985fa19a188d2db879ec2a1247a0d96846b48d2a11e46c73eaf93e33d2f",
     "17-measure-after.md": "6abb65ef310e121a380eed579ccbe75a0c3cdda7d674618f48dab9b79bd074cd"
   },
-  "currentBatch": 14,
+  "currentBatch": 0,
   "masterStrand": "b63cd236de04de2fe381084bc6626c99",
   "masterSessionId": "10330750-d8de-40c1-ba25-4d9793b60931",
   "assertedModel": "sonnet",
@@ -172,8 +172,19 @@
       "kind": "fork",
       "spawnedAt": "2026-10-06T11:36:39Z",
       "sessionId": "10330750-d8de-40c1-ba25-4d9793b60931",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "14-loomcli-prune",
+        "status": "done",
+        "head_sha": "5715397d5156deacd95c4537328db1946eaad8d1"
+      },
+      "cardShas": [
+        "5715397d5156deacd95c4537328db1946eaad8d1"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/10330750-d8de-40c1-ba25-4d9793b60931/subagents/agent-a33cf686080f86145.jsonl"
+      ]
     },
     "2": {
       "slug": "exclusion-out-of-process",
@@ -401,6 +412,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/700a9836-446d-4e89-a079-a12fa9d382c2/subagents/agent-a349bdce8ca3f55a6.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/10330750-d8de-40c1-ba25-4d9793b60931/subagents/agent-a6ca9f152b4aa1209.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/10330750-d8de-40c1-ba25-4d9793b60931/subagents/agent-a1b83834d41e66edf.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/10330750-d8de-40c1-ba25-4d9793b60931/subagents/agent-a240c0e5674e90048.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/10330750-d8de-40c1-ba25-4d9793b60931/subagents/agent-a240c0e5674e90048.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/10330750-d8de-40c1-ba25-4d9793b60931/subagents/agent-a33cf686080f86145.jsonl"
   ]
 }
