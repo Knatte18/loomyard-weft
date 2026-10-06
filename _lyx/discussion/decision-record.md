@@ -117,6 +117,12 @@ Decision: Where several integration or tmux tests in this task's packages each b
 
 Rationale: Operator, 2026-10-06: the suite's cost sits in the git and tmux fixtures each test rebuilds, which deleting redundant tests and folding into tables barely touches. These tasks already read every test file in their packages, so a later pass for the same files would repeat the work. Note composite-tests records the idea.
 
+### Added after Discussion (parent, 2026-10-06): Stub driver helpers stay untouched
+
+Decision: This task leaves writeStubDriverScript in internal/loomcli/integration_driverbootstrap_test.go and integrationWriteStubDriverScript in internal/loomcli/smoke_driverstrand_test.go unchanged: no edit, move, fold or deletion, and no change elsewhere that requires one. Tests in those files may still be pruned, folded or retagged as long as both helpers keep their names, signatures and bodies.
+
+Rationale: The parallel task skills-in-one-turn edits both helpers; leaving them alone keeps the two PRs from conflicting.
+
 ## Constraints
 
 - `PATTERN-test-economy`: candidate reading rules, removable-set-only deletion, folding into tables. D2's keep directive extends its background.
