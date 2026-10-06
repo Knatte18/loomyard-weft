@@ -12,3 +12,7 @@ Two parts:
 
 - A replay corpus: every misread from a real run is saved as a fixture (the transcript and shuttle's events, with what happened), and shuttle's classification is tested against the whole corpus. Cheap and deterministic; today's cases are the first fixtures.
 - Live runs: real Claude sessions driven through scripted scenarios that provoke the hard cases (long background shells, forks, a message mid-turn, skill loads, a compact, an interrupt, a question), checking shuttle's reading against the known answer. Costs tokens; catches a Claude Code release that changes behaviour before a task run meets it.
+
+Starting point (operator, 2026-10-06): loomyard has no crucible of its own yet.
+The repo's `crucible/` holds the hand-run review-and-fix loop that hardened reed, written for millhouse (`_mill/` paths, round-agent profiles copied into `.claude/agents/`), and the operator expects it can be rewritten for this more easily than starting over.
+Its README names the behaviour-based form, running a live-substrate module in a sandbox, a `hardener` board note, which is no longer on the board.
