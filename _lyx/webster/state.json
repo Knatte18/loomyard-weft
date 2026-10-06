@@ -27,7 +27,7 @@
     "22-friction-leaf-prune.md": "0047c99a27d5a25f36a2e20def43f52e12c5c2940269384a47a4d298bd704176",
     "23-rerun-measure-after.md": "7bb4730bca45bc8e6b19ba841b95ad5a3abc730ca6574e1c3d32af53ee4de503"
   },
-  "currentBatch": 8,
+  "currentBatch": 0,
   "masterStrand": "e0d72f390b1804de39fde512613c494d",
   "masterSessionId": "bd330a6d-f411-48d9-a340-35f575841176",
   "assertedModel": "sonnet",
@@ -226,8 +226,19 @@
       "kind": "fork",
       "spawnedAt": "2026-10-06T09:13:13Z",
       "sessionId": "bd330a6d-f411-48d9-a340-35f575841176",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "08-landingshed-prune",
+        "status": "done",
+        "head_sha": "fca3b7ea557952e1f99220a06f0cb87c3a329c66"
+      },
+      "cardShas": [
+        "fca3b7ea557952e1f99220a06f0cb87c3a329c66"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/bd330a6d-f411-48d9-a340-35f575841176/subagents/agent-a611923dec2fc8ebf.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
@@ -237,6 +248,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/bd330a6d-f411-48d9-a340-35f575841176/subagents/agent-ab69e5c0b1565f0f5.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/bd330a6d-f411-48d9-a340-35f575841176/subagents/agent-a9f62d80f463fcff0.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/bd330a6d-f411-48d9-a340-35f575841176/subagents/agent-a4d25f4a959bedc54.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/bd330a6d-f411-48d9-a340-35f575841176/subagents/agent-a23c015d050d36abb.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/bd330a6d-f411-48d9-a340-35f575841176/subagents/agent-a23c015d050d36abb.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/bd330a6d-f411-48d9-a340-35f575841176/subagents/agent-a611923dec2fc8ebf.jsonl"
   ]
 }
