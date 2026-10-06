@@ -11,23 +11,14 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Prune the remaining test packages** — [`test-suite-prune-rest`](design-test-suite-prune-rest.md) · enhancement · running · Finalize
-   - Stage 2c: delete redundant tests and fold near-identical ones in every package outside prune-core, in parallel with it
-   - **Before:** `test-tiers`
+1. **Which gate runs which test tier, after-state and budget guard** — [`test-tiers`](design-test-tiers.md) · enhancement, loom, webster
+   - Stage 3: review rounds run the impacted set, full plan verify only at Webster gate and Publish/Finalize; after-state recorded; per-package test budget guard
 1. **Bugfix: session lifecycle, notices and run halts** — [`bugfix-sessions`](design-bugfix-sessions.md) · bug, shuttle, reed, loom, orch, burler · running · Webster
    - Bugfix only: prompt delivery, stale producer sessions, false crash notes, watcher restart, Burler YAML repair, no client switch from agents
 1. **Bugfix: Webster and plan validity** — [`bugfix-webster`](design-bugfix-webster.md) · bug, webster, loom, quarry · running · Webster
    - Bugfix only: Plan-Gate refuses backward dependencies, Delete of a gone target, background-shell wait, slow batch validation
 1. **Bugfix: fabric and config propagation** — [`bugfix-fabric`](design-bugfix-fabric.md) · bug, fabric, config, reed · running · Webster
    - Bugfix only: a weft without .weft/ drops LYX_PARENT, task config changes never reach the parent, and fabric ignores existing origin branches when it builds a pair
-
-### Layer B
-
-Starts when every entry it names under After is done.
-
-1. **Which gate runs which test tier, after-state and budget guard** — [`test-tiers`](design-test-tiers.md) · enhancement, loom, webster
-   - Stage 3: review rounds run the impacted set, full plan verify only at Webster gate and Publish/Finalize; after-state recorded; per-package test budget guard
-   - **After:** `test-suite-prune-rest`
 
 ## Notes
 
@@ -171,6 +162,8 @@ Finished, awaiting `lyx board prune`.
    - Stage 2a: per-test coverage tool and before-state, real-time seams and t.Parallel, tmux socket leak, an LLM test tier, PATTERN Testing consolidated
 1. **Prune the six largest test packages** — [`test-suite-prune-core`](design-test-suite-prune-core.md) · enhancement · done
    - Stage 2b: delete redundant tests and fold near-identical ones in fabricengine, websterengine, reedengine, shuttleengine, loomcli, shedadapters
+1. **Prune the remaining test packages** — [`test-suite-prune-rest`](design-test-suite-prune-rest.md) · enhancement · done
+   - Stage 2c: delete redundant tests and fold near-identical ones in every package outside prune-core, in parallel with it
 1. **board.yaml is read per worktree though the board is one per hub** — [`board-config-per-worktree`](design-board-config-per-worktree.md) · bug, board, config · done
    - A pair with an older board.yaml re-renders README with the old types; move board.yaml beside fabric.yaml in _board
 1. **Agents stop wrapping commands: stdin without a hook, a bare shed step** — [`agent-command-wrapping`](design-agent-command-wrapping.md) · bug, enhancement, shuttle, shed, stencil · done
