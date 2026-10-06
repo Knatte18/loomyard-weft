@@ -130,6 +130,12 @@ A state.json written before this change, still carrying `assertedModel`, loads u
 
 Rationale: the fork inherits Merriam's model, so `begin-batch` has no model to check (operator, `webster-batch-validation-speed`).
 
+### Added after Discussion (operator, 2026-10-06): Both test prunes land before implementation
+
+Decision: Webster for this task starts only after test-suite-prune-core and test-suite-prune-rest have both landed on main; the plan writer reads both landed states, since prune-rest rewrites the landingshed, fabric and planparser tests this task extends.
+
+Rationale: Operator decision 2026-10-06: the two prunes rewrite the tests this task's regression tests build on, so implementing first would conflict with them.
+
 ## Constraints
 
 - `PATTERN-refusal-way-forward`: every changed or new refusal (D4, D5, D6, D7, D8) gets its `contracts/specs/refusal-spec.md` row in the same commit and a test that reaches it.
