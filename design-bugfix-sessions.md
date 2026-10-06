@@ -1,6 +1,6 @@
 # Bugfix: session lifecycle, notices and run halts
 
-`bugfix-sessions` · Task · bug, shuttle, reed, loom, orch, burler · running · Batchifier
+`bugfix-sessions` · Task · bug, shuttle, reed, loom, orch, burler · running · Webster
 
 Bugfix only (operator, 2026-10-06): fix what each section below reports, with a regression test per fix that drives the real CLI wiring, not only fakes.
 No new verbs, config keys or features; a reviewer treats any extension as a scope finding.
