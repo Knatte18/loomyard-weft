@@ -1,0 +1,4 @@
+status: OK
+head_sha: e4031997086542f70ee9cf65b363a95a47c9b488
+deviations:
+  - contracts/stencils/burler/burler-template-round-orchestrator.md
