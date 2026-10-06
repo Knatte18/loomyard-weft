@@ -1061,6 +1061,21 @@
       "isolated": false,
       "brief": "After a crash, folder-open adds a bare claude above a dormant orch, and reed resume revives strands whose work is done",
       "body": "Two reed bugs seen on 2026-10-06 when the machine crashed and the runs were brought back.\n\n## Bare claude strand above a dormant orch (issue #408)\n\nAfter a machine crash, opening the hub prime in VS Code left an empty `ly:claude` strand in the prime's reed session, with the `ly:orch` strand stacked below it.\n\nCause: the folder-open task chain written by `internal/vscode/config.go` runs `lyx reed add --if-absent --unless-name orch --name claude`.\n`--unless-name` skips the add only while the orch strand is live (`AddStrandUnless`, `internal/reedengine/strand.go`).\nAfter a reboot the orch strand is persisted but dormant, so the check passes, a bare `claude` strand is added, and the orch is resumed into the same session afterwards.\n\nExpected: a prime whose reed state holds an orch strand, live or dormant, gets no bare `claude` strand on folder-open.\nPossible fixes: let `--unless-name` also match a persisted dormant strand, or have the folder-open chain run `lyx reed resume` before the add.\n\n## Resume revives strands whose work is done (issue #409)\n\nAfter a machine crash, `lyx reed resume` in the `test-suite-prune-core` pair recreated two strands: the driver and `ly:test-suite-prune-core:burler`.\nThe burler's round had finished before the crash (verdict written and committed), and the run had moved on.\nWhen the driver re-ran its shed step, the next producer spawned its own strand (`describe`), so the pair showed a dead-weight burler pane beside the live one.\n\nCause: a strand stays persisted in reed's state after the work it was spawned for is done, since only the shuttle wait that would tear it down died with the crash; `resume` replays every persisted, non-live strand without asking whether its work is still pending.\n\nExpected: after a crash, `reed resume` brings back only strands with work left, or a strand is removed from reed's state as soon as its shuttle run reaches a final outcome, independent of the waiting process.\n"
+    },
+    {
+      "id": 148,
+      "slug": "board-lock-running",
+      "title": "board: mark running tasks and refuse scope edits to them",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The board shows which tasks have a run in flight and refuses writes that change their scope",
+      "body": "A task whose run has started can still be edited on the board, and nothing tells a writer that it is running.\nOn 2026-10-06 the orch folded two new issues into `bugfix-sessions` with `lyx board intake import --into` while that run sat planned and parked before Webster, so the board entry no longer matched the plan its run was executing.\n\nWanted (operator, 2026-10-06):\n- The board marks which tasks are active, from the moment their run starts until it lands or is abandoned, and `lyx board list --text` and the README show the marker.\n- A write that changes an active task's scope (body, brief, issues, labels, a merge or an intake `into`) is refused with the reason, naming the run.\n  Where new findings go instead: a note of their own, or the next bugfix bucket.\n"
     }
   ],
   "legacy_done": [

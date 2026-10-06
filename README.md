@@ -47,6 +47,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - An asking stop ends the run while the agent lives on, so an answer is lost and a resume spawns a second agent; hold the run and wait on the same agent instead.
 1. **reed: stray strands after a crash** — [`reed-crash-strands`](design-reed-crash-strands.md) · bug, reed
    - After a crash, folder-open adds a bare claude above a dormant orch, and reed resume revives strands whose work is done
+1. **board: mark running tasks and refuse scope edits to them** — [`board-lock-running`](design-board-lock-running.md) · bug, board
+   - The board shows which tasks have a run in flight and refuses writes that change their scope
 
 ### Enhancements
 
