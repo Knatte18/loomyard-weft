@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Bouncer",
+  "current_producer": "Discussion-Burler",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Bouncer",
-    "last": "Discussion-Write → done",
+    "now": "Discussion-Burler",
+    "last": "Discussion-Bouncer → bounced to Discussion-Burler",
     "wait": ""
   },
   "history": [
@@ -27,6 +27,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/bugfix-fabric/_lyx/discussion/decision-record.md",
       "at": "2026-10-06T11:35:14Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-06T11:35:52Z"
     }
   ],
   "product": {
