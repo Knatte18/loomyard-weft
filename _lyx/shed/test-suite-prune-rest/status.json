@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "webster master is asking a question; session 01f9207a-a471-4d2d-a76c-62df57e91dd4, run dir /home/knatte/Code/loomyard-LYXHUB/test-suite-prune-rest/.lyx/shuttle/e12e6806c7c7d6a03d2eae752a340f39",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Batchifier → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "webster master is asking a question; session 01f9207a-a471-4d2d-a76c-62df57e91dd4, run dir /home/knatte/Code/loomyard-LYXHUB/test-suite-prune-rest/.lyx/shuttle/e12e6806c7c7d6a03d2eae752a340f39"
   },
   "history": [
     {
@@ -175,6 +175,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-06T08:02:21Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-06T08:28:38Z"
     }
   ],
   "product": {
