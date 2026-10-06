@@ -16,3 +16,8 @@ Two parts:
 Starting point (operator, 2026-10-06): loomyard has no crucible of its own yet.
 The repo's `crucible/` holds the hand-run review-and-fix loop that hardened reed, written for millhouse (`_mill/` paths, round-agent profiles copied into `.claude/agents/`), and the operator expects it can be rewritten for this more easily than starting over.
 Its README names the behaviour-based form, running a live-substrate module in a sandbox, a `hardener` board note, which is no longer on the board.
+
+What the crucible should settle is which signals tell the truth.
+Shuttle already gets turn ends from Claude Code's official Stop hook, written into each run's `events.jsonl` with its `background_tasks`; the misreads come from treating "the turn ended" as "the work is done", and #411 is a Stop that arrived and was never taken.
+Candidates to combine: the Notification hook Claude Code sends when it waits for input, a non-empty `background_tasks` meaning not done whatever the turn says, and quiet over time.
+Codex, a planned second engine (`codex-engine`), has its own turn-complete hook with a different shape, so each engine needs its own hard cases behind shuttle's common outcomes.
