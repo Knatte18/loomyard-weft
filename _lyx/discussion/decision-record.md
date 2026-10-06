@@ -1,7 +1,7 @@
 ## Goal
 
 Shrink the test suite in every Go package outside `test-suite-prune-core`'s set without losing a pinned contract.
-Delete the tests that `docs/benchmarks/test-redundancy.md` reports as redundant once each one is checked, fold near-identical tests into table-driven tests, and move `integration` tests that spawn nothing down to the untagged tier.
+Delete the tests that `docs/benchmarks/test-redundancy.md` reports as redundant once each one is checked, fold near-identical tests into table-driven tests, merge tests that rebuild one expensive fixture into scenario tests, and move `integration` tests that spawn nothing down to the untagged tier.
 The PR reports per-package test count and wall time before and after, and shows coverage has not dropped beyond what the deletions explain.
 
 ## Scope
@@ -27,7 +27,7 @@ Out of scope:
    A file in an in-scope package that names a core file stays as is unless an in-scope change requires an edit.
    Example: a guard allowlist in `cmd/lyx` listing a path under a core package.
    Bound: a reference or helper dependency that would need an edit under a core directory or `internal/testkit/` is left alone, and the PR body lists it for the hub.
-   The in-scope change is then shaped so core stays correct: a test that a core or testkit file names is kept, not deleted or renamed.
+   The in-scope change is then shaped so core stays correct: a test that a core or testkit file names is kept: never deleted, renamed, folded away or merged away.
    If the rerun lists such a test, it carries a keep reason naming that file (Decision 10).
 
 2. **Deletion rule.**
@@ -35,11 +35,12 @@ Out of scope:
    A candidate whose assertions pin something its covering tests do not pin is handled in one of two ways.
    Either that assertion moves into a covering test (a new row or an extra check) and the candidate is deleted, or the candidate is kept with a reason on the test (Decision 10).
    Examples of such assertions: an error message, an output or envelope shape, a refusal's way-forward text, a file's exact contents.
-   Bound: the PR body lists, per deleted candidate whose assertion moved, the receiving covering test.
+   Bound: the PR body lists every deleted candidate, each with its receiving covering test or the words "no unique assertion".
    A deletion with unique assertions and no listed receiver is not allowed.
-   A receiving test is never deleted later in the prune.
+   A receiving test is never deleted, renamed, folded away or merged away later in the prune; a fold may use it as the host table, under its own name, and a merge never does (Decision 13).
    If a rerun lists it, it carries a keep reason naming the moved assertion and its source test (Decision 10).
-   A `Removable: no` candidate is never deleted on the report's evidence alone; it may still be folded (Decision 4).
+   A `Removable: no` candidate is never deleted, whatever its assertions show.
+   It is folded (Decision 4), merged into a scenario (Decision 13) or kept with a directive (Decision 10).
    Rationale: coverage blocks do not see assertions (`PATTERN-test-economy`), and only the removable set is safe to delete together.
 
 3. **Guard self-checks are kept.**
@@ -53,6 +54,7 @@ Out of scope:
    Each such group becomes one table-driven test with `t.Run` subtests, named after the behavior.
    The candidates and their covering tests come first, then the rest of the package.
    A fold keeps every assertion of the tests it replaces.
+   A test that Decision 1 or 2 protects is not folded away: it stays under its own name, or hosts the table.
    A folded table follows `PATTERN-test-speed`: `t.Parallel` at the top level and per subtest, unless a comment names the global state.
    Rationale: the board's Clean list asks for it in every package, and `PATTERN-test-economy` requires one table for many items of one kind.
 
@@ -63,7 +65,8 @@ Out of scope:
    A moved test uses an existing `internal/testkit` fake, or a fake that only its own package uses, local to that package's `_test.go` files (`PATTERN-testkit`).
    A move that needs a new shared fake is not made.
    The test stays where it is.
-   A one-line comment above it names the missing fake, so the reason lives with the test, and the PR body repeats it so the hub can have `test-suite-prune-core` add the kit.
+   A one-line comment `// tiermove: needs shared fake <name>` sits above it, so the reason lives with the test and a later pass finds it by grep.
+   The PR body lists each such test with its fake, so the hub can have `test-suite-prune-core` add the kit.
    Rationale: `internal/testkit` is core's (Decision 1), and duplicating a fake across packages breaks `PATTERN-testkit`.
 
 6. **Leftovers from deletion.**
@@ -74,11 +77,12 @@ Out of scope:
    A spare `tmuxkit.Main` is harmless, and removing it would have to be undone when a tagged test returns.
 
 7. **References to renamed or deleted tests.**
-   Folding or deleting a test that a doc, a `pattern/` background, a stencil, a spec or a code comment names updates that reference in the same commit.
+   Folding, merging (Decision 13) or deleting a test that a doc, a `pattern/` background, a stencil, a spec or a code comment names updates that reference in the same commit.
    Rationale: `PATTERN-documentation-lifecycle` and the docs-in-the-same-commit rule in `CLAUDE.md`.
 
 8. **"failed" entries.**
-   Each in-scope test the report lists as `failed` is re-run alone with `go test -tags integration,tmux -run '^Name$' <package>`.
+   Each in-scope test the report lists as `failed` is re-run alone with `go test -count=1 -tags integration,tmux -run '^Name$' <package>`.
+   A run that reports no tests to run is not a verdict.
    If it fails alone, it has a hidden order or environment dependence, which this task fixes in the test.
    If it passes alone, the failure is a tool artifact, and the PR records it as such.
    Rationale: a test that fails in isolation is broken, and the tool cannot judge its redundancy until it runs.
@@ -90,7 +94,6 @@ Out of scope:
    This task therefore splices outside the tool, and the final card performs it: each final scratch file's `## <package>` section replaces the section of the same name in `docs/benchmarks/test-redundancy.md`, one section at a time.
    The header and the core packages' sections are left untouched.
    Bound: the splice replaces only in-scope `## <package>` sections and adds none.
-   A package left with no tests has no section in its scratch file, and its old section is removed.
    Rationale: core regenerates its own sections in parallel, and each package's redundancy is judged against its own tests only, so disjoint sections merge cleanly.
 
 10. **Stated reasons live on the test, as `//testtiming:keep <reason>`.**
@@ -99,7 +102,8 @@ Out of scope:
     The reason is non-empty and is one of these:
     what the test pins that its covering tests do not, for example a guard that fires, an error message, an output shape, or a kept partner of a removed test;
     the core or testkit file that names the test (Decision 1);
-    the assertion it received and the test it came from (Decision 2).
+    the assertion it received and the test it came from (Decision 2);
+    for a `Removable: no` candidate that no fold or merge applies to, the covering test the report ties it to.
     The PR body also groups the reasons by package and by reason class.
     This task makes no tool change: the tool at this task's base ignores the comment, and the task is judged against that tool.
     The check is therefore a comparison: every candidate the final rerun lists has the directive in the source.
@@ -117,16 +121,49 @@ Out of scope:
 
 12. **Coverage check.**
     Per in-scope package, the package's own tests run under `-tags integration,tmux` with `-coverprofile` and `-coverpkg=./...`, before and after, as the report measures them.
-    The figure is the covered fraction of statements in the package's own non-test files, taken from the profile filtered by directory.
+    The profile is written with `-covermode=set`, as the report's tool does.
+    The figure is covered statements over total statements in the non-test files that sit directly in the package's own directory, matched exactly, so a nested package's files count only for that package.
+    Statements are summed from the statement field of each profile block, not counted per block, and the run starts at the repository root so `./...` names the whole module.
     Any drop is a mistake and is restored by bringing back or extending a test.
-    A drop traced to a block that flips between two runs of the unchanged tree is recorded in the PR as noise instead.
-    Rationale: the report's removable set leaves every block covered by construction, so a deletion, fold or tier move explains no drop.
+    A drop traced to a block that flips between two runs of the base commit is recorded in the PR as noise instead; a noise claim needs that second run.
+    Rationale: the report's removable set leaves every block covered by construction, so a deletion, fold, merge or tier move explains no drop.
 
-### Added after Discussion (operator, 2026-10-06): Scenario tests share one expensive fixture
+13. **Scenario tests share one expensive fixture.**
+    Where several integration or tmux tests in this task's packages each build the same expensive fixture (a git hub or pair through hubforge, a reed or tmux server, a seeded worktree) and differ only in the steps they run and the checks they make after that setup, they become one scenario test that builds the fixture once and runs the steps in order.
+    Each former test becomes a named `t.Run` step inside it, so a failure still names the step that broke.
+    Bounds:
+    - A family is merged only among tests of one tier, and a merge never raises a test's tier: an `integration` test never joins a `tmux` scenario, since the card gates run `integration` and not `tmux`.
+    - Only tests that are independent of each other are merged: a step leaves the fixture as it found it, by being read-only on it or by restoring it before it returns.
+      The fixture's state is everything a later step can observe: files, refs and commits, worktree contents, sessions and panes, status and lock files.
+      A step that cannot return all of it to what it found is not merged, and a comment naming the mutation does not make it eligible.
+      A step that restores asserts the restored state, so a leak fails the scenario.
+      A test whose behavior needs an earlier step's state is not merged.
+    - Steps run serially.
+      The scenario's top-level test calls `t.Parallel`, no step does, and a comment atop the scenario names the shared fixture as the state that forbids it (`PATTERN-test-speed`).
+      Decision 4's per-subtest `t.Parallel` applies to folded tables only, never to scenario steps.
+      A parallel step would make `t.Run` return before it runs and so defeat the stop below.
+    - A failing step stops the scenario (`if !t.Run(...) { return }`), so later steps never report on state a failure left.
+    - A `failed` entry (Decision 8) gets its verdict under its base name before it may be merged.
+      After a merge the alone-rerun is `go test -count=1 -tags integration,tmux -run '^<Scenario>$' <package>` on the scenario as a whole, never on one step, since a step has no fixture of its own.
+    - A merge keeps every assertion of the merged tests, and leaves a test that Decision 1 or 2 protects under its own name, as its own top-level test; it is never a step.
+    - Scope is bounded to such fixture families, judged by reading the tests.
+      A family is merged only when its own tests run faster after the merge.
+      That is measured per family with `go test -count=1 -tags integration,tmux -run <the family's tests> <package>`, median of three, before and after the merge.
+      The measure is the package elapsed time `go test` reports, so build and link time never counts.
+      The three before runs are taken on the unmerged tests, then the merge is made, then the three after runs, back to back, with the load average recorded for each run.
+      A run whose load average differs from the first before run's by more than 25% is discarded and repeated.
+      The after median must beat the before median by more than the spread of the before runs, the range of the three; a tie, or a lower after median within that spread, reverts the merge and leaves the tests unmerged.
+      The PR lists each merged family with both times and the load averages.
+    - Cheap unit tests are not merged into scenarios; they stay table-driven.
 
-Decision: Where several integration or tmux tests in this task's packages each build the same expensive fixture (a git hub or pair through hubforge, a reed or tmux server, a seeded worktree) and differ only in the steps they run and the checks they make after that setup, they become one scenario test that builds the fixture once and runs the steps in order. Each former test becomes a named t.Run step inside it, so a failure still names the step that broke; a step that depends on an earlier step's state says so in a comment. Scope is bounded to such fixture families, judged by reading the tests; a family is merged only when it cuts the package's wall time, which the before and after measurement shows. Every assertion of the merged tests is kept. Cheap unit tests are not merged into scenarios; they stay table-driven.
+    Rationale: the suite's cost sits in the git and tmux fixtures each test rebuilds, which deleting redundant tests and folding into tables barely touches.
+    These tasks already read every test file in their packages, so a later pass over the same files would repeat the work.
 
-Rationale: Operator, 2026-10-06: the suite's cost sits in the git and tmux fixtures each test rebuilds, which deleting redundant tests and folding into tables barely touches. These tasks already read every test file in their packages, so a later pass for the same files would repeat the work. Note composite-tests records the idea.
+### Added after Discussion (parent, 2026-10-06): A scenario stays within one tier
+
+Decision: A scenario merges only tests of one tier. A merge never moves a test to a higher tier: an integration test never joins a tmux scenario.
+
+Rationale: A higher tier is run by fewer gates, so a merge across tiers would silently take a test out of a gate that ran it.
 
 ## Constraints
 
@@ -168,7 +205,10 @@ Rationale: Operator, 2026-10-06: the suite's cost sits in the git and tmux fixtu
 - Every candidate that the final rerun of `cmd/testtiming -redundancy` on the in-scope packages lists carries a non-empty `//testtiming:keep <reason>` directly above its `func Test…` line, checked by comparing the rerun's lists with the source.
 - No test in the six core packages or under `internal/testkit/` is changed.
 - Every deleted candidate was `Removable: yes`.
-  Each one's unique assertions, if any, live on in a covering test, and the PR lists that receiving test.
+  The PR lists every deleted candidate with its receiving covering test or "no unique assertion", and each named receiver exists in the final tree.
+  A deleted candidate's unique assertions, if any, live on in that receiver.
+- Each integration test that stayed for a missing shared fake carries the `// tiermove:` comment and appears in the PR body.
+- Each merged scenario family appears in the PR with its before and after time, and no merged step lost an assertion.
 - Guard self-check tests in `cmd/lyx` still prove their guard fires on an offending input.
 - Each moved test sits in an untagged file, and `cmd/lyx/tierpurity_test.go` passes.
 - The PR states test count and wall time per in-scope package, before and after.

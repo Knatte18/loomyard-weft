@@ -39,8 +39,6 @@ Autonomous mode: no operator answered, so every question below was answered by a
 
 ## Review rounds
 
-_No rounds yet._
-
 ### Parent review, round 1
 
 - F1 (BLOCKING, consistency): reasons only in the PR body clash with core's `//testtiming:keep` directive. Fixed.
@@ -63,3 +61,4 @@ _No rounds yet._
 - Q9 "failed" report entries? — auto-pick: diagnose, fix if failing alone (Decision 8). Resolved.
 - Q10 Measurement and coverage method? — auto-pick: Decisions 11 and 12. Resolved.
 - Q11 Unused helpers and empty files after deletion? — auto-pick: deleted; `TestMain` kept (Decision 6). Resolved.
+- Q12 Share one expensive fixture across scenario tests? — added by the operator on 2026-10-06, after Discussion (Decision 13). Resolved.
