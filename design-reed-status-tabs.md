@@ -1,6 +1,6 @@
 # reed shows strands as zoom tabs and runs as session tabs
 
-`reed-status-tabs` · Note · enhancement, reed
+`reed-status-tabs` · Note · enhancement, reed, ide
 
 reed runs one tmux session per run on the hub's one server, each with one window named `claude` whose panes are the run's strands, so the default status line shows nothing to switch between and a strand is hard to see on its own.
 
@@ -33,7 +33,9 @@ Open:
 
 - Clicking a strand button while zoomed unzooms (tmux's default `MouseDown1Status` selects the pane); a root binding that re-zooms after the switch when the window was zoomed keeps it zoomed.
 - Check that Claude Code does not need Alt+arrows or Alt+z in its input; tmux takes them first.
-- VS Code's terminal swallows Alt+arrows and Alt+z, while Konsole passes them through; on 2026-10-06 the operator's user `keybindings.json` got one `workbench.action.terminal.sendSequence` entry per key (`\u001b[1;3A`–`D`, `\u001bz`, `when: terminalFocus`), which made them reach tmux. `lyx ide` could install these.
+- VS Code's terminal swallows Alt+arrows and Alt+z, while Konsole passes them through; on 2026-10-06 the operator's user `keybindings.json` got one `workbench.action.terminal.sendSequence` entry per key (`\u001b[1;3A`–`D`, `\u001bz`, `when: terminalFocus`), which made them reach tmux.
+  VS Code binds these keys itself (Alt+Left/Right focus the previous/next terminal in a group, Alt+z toggles word wrap), so the terminal never forwards them.
+  `lyx ide` seeds these entries as part of its setup (operator, 2026-10-06); VS Code has no per-workspace keybindings, so they go in the user `keybindings.json` as a marked `// lyx:begin` … `// lyx:end` block that `lyx ide` rewrites, as mill does with its own block.
 - `switch-client -n`/`-p` steps sessions in name order, but the `#{S:}` loop draws them in session-id order, so Alt+Left/Right jumped around the bar; on 2026-10-06 the bindings were replaced by a `run-shell` helper that steps through `list-sessions` sorted by session id.
 - Alt+Up/Down cycles every pane, Selvage included; skip it, e.g. by binding to a short reed-free tmux command that steps over panes without `@strand`.
 
