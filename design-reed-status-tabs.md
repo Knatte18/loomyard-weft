@@ -43,6 +43,8 @@ Open:
 - Alt+Up/Down cycles every pane, Selvage included; skip it, e.g. by binding to a short reed-free tmux command that steps over panes without `@strand`.
 - Extra strands the operator asks for (operator, 2026-10-06): the operator wants extra Claude strands beside the orch in the prime, such as one for exploring, which the orch adds with `lyx reed add --name <name> --cmd claude`.
   Where such a strand goes in the layout relative to the orch, and how several share the space, is open.
+  Tried 2026-10-06: `lyx reed add --name explore --cmd claude` runs a bare `claude`, so the pane title is `ly:explore` but the Claude session gets no `--name`, and reed records no session id, so the watchdog's session-name repair (`internal/reedengine/namerepair.go`) skips it.
+  The verb should start Claude with the strand name and record its session id, as a shuttle spawn does.
 
 Rejected in the demo: one window per strand (loses the overview, since a pane lives in one window only) and grouped sessions for a second view (hard to attach).
 
