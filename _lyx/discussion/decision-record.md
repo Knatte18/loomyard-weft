@@ -177,6 +177,12 @@ Decision: A family is merged when the merge removes fixture builds: N tests that
 
 Rationale: Per-family timing on a loaded machine is noise, and a removed fixture build is a cost cut that can be counted. This replaces the condition 'only where the before and after measurement shows a wall-time cut' in the operator decision on scenario tests.
 
+### Added after Discussion (parent, 2026-10-06): Measurements go in a committed benchmark report
+
+Decision: The before and after numbers Decisions 11 and 12 require (per in-scope package: top-level test count, wall and serial time as medians of three runs, non-test statement coverage, and the load average of each run) are written to a new measurement report, docs/benchmarks/test-suite-prune-rest.md, linked from docs/benchmarks/running-tests.md on its own line next to test-suite-prune-core's link. The before half is committed before any test change, the after half at the end, together with each lost coverage block and the deleted test that alone covered it, or the noise record Decision 12 allows. test-suite-timing.md stays untouched.
+
+Rationale: The Describe session that writes the PR description reads only the decision record, the board entry, the task diff and the run records, so numbers kept outside the diff never reach the PR. A measurement report may record one run at a point in time, and a separate link line keeps this run's edit to running-tests.md apart from core's.
+
 ## Constraints
 
 - `PATTERN-test-economy`: candidates are evidence, not verdicts; only the removable set is deleted together; a finding names its covering test.
