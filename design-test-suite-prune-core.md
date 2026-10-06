@@ -1,6 +1,6 @@
 # Prune the six largest test packages
 
-`test-suite-prune-core` · Task · enhancement · running · Webster-Bouncer
+`test-suite-prune-core` · Task · enhancement · running · Describe
 
 Depends on: [`test-suite-measure`](design-test-suite-measure.md)
 
