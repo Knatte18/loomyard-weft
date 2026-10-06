@@ -25,7 +25,7 @@ Starts when every entry it names under After is done.
 1. **Which gate runs which test tier, after-state and budget guard** — [`test-tiers`](design-test-tiers.md) · enhancement, loom, webster
    - Stage 3: review rounds run the impacted set, full plan verify only at Webster gate and Publish/Finalize; after-state recorded; per-package test budget guard
    - **After:** `test-suite-prune-core`, `test-suite-prune-rest`
-1. **Bugfix: session lifecycle, notices and run halts** — [`bugfix-sessions`](design-bugfix-sessions.md) · bug, shuttle, reed, loom, orch, burler · running · Discussion-Write
+1. **Bugfix: session lifecycle, notices and run halts** — [`bugfix-sessions`](design-bugfix-sessions.md) · bug, shuttle, reed, loom, orch, burler · running · Discussion-Bouncer
    - Bugfix only: prompt delivery, stale producer sessions, false crash notes, watcher restart, Burler YAML repair, no client switch from agents
    - **After:** `test-suite-prune-core`
 1. **Bugfix: Webster and plan validity** — [`bugfix-webster`](design-bugfix-webster.md) · bug, webster, loom, quarry · running · Discussion-Write
