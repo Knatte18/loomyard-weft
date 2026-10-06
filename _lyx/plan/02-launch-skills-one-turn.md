@@ -13,8 +13,8 @@
 - `internal/loomcli#writeStubDriverScript`
 
 **Create:**
-- `plan:internal/shuttleengine#Runner.LoadSkills` -> `func (r *Runner) LoadSkills(guid string, skills []string) error`
-- `plan:internal/shuttleengine#Runner.ClassifySkillLoad` -> `func (r *Runner) ClassifySkillLoad(turnEnd Event, skills []string) (SkillLoadReport, error)`
+- `internal/shuttleengine#Runner.LoadSkills`
+- `internal/shuttleengine#Runner.ClassifySkillLoad`
 
 **Prosa:**
 - `internal/shuttleengine/doc.go`

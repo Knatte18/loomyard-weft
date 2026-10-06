@@ -19,8 +19,8 @@
 - `internal/orchengine/doc.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#Runner.LoadSkills`
-- `plan:internal/shuttleengine#Runner.ClassifySkillLoad`
+- `internal/shuttleengine#Runner.LoadSkills`
+- `internal/shuttleengine#Runner.ClassifySkillLoad`
 - `internal/shuttleengine#SkillLoadReport`
 
 **Intent:**
