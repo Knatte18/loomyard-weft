@@ -113,6 +113,16 @@ The journal under "Everything is journaled" covers all of it, so `lyx creel log`
 - Senders that today relay through an LLM move to creel directly. The `parent-review` gate on Discussion-Write (`internal/parentreview/gate.go`) sends nothing itself: it prompts the Discussion-Write session to `SendMessage` the parent, so the request reaches the orch through another agent's turn, outside the watcher's queue. The gate itself should `lyx creel send` the request. The same holds for a driver's stop reports to its parent, which today duplicate batten's notices over `SendMessage`.
 - A filesystem drop-box (sender writes a file into the receiver's queue directory) was considered and set aside: several writers in one directory, and no receipt for the sender. Delivery latency is not the deciding factor, since delivery waits for the receiver to be idle either way.
 
+## Build in stages (operator, 2026-10-06)
+
+Creel is a new module that every delivery will depend on, so it is built and tested standalone before anything is wired to it.
+
+1. Creel alone: the daemon, a queue per receiver, the journal, `lyx creel send`, and delivery into a pane gated on the receiver being idle, tested against fake panes and in the tmux tier. No other module sends through it yet; the operator can try it with `lyx creel send`.
+2. System notices: the orch watcher's and batten's notices go through creel, and the watcher's notice queue goes.
+3. Agents: the parent-review gate, drivers' stop reports and cross-hub sends.
+
+Fixes that do not need creel, such as `shuttle-asking-holds`, go ahead of it.
+
 ## Related
 
 - the shipped `reed: born-as-strand` item — the receive-side prerequisite.
