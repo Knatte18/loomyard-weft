@@ -1110,6 +1110,22 @@
       "isolated": false,
       "brief": "Open a named Claude session in a strand with no task, through shuttle, so it keeps its name; for extra strands in the prime",
       "body": "The operator wants extra Claude strands beside the orch in the prime, such as one for exploring the repo, added by the orch on request (operator, 2026-10-06).\n\nTried 2026-10-06: `lyx reed add --name explore --cmd claude` runs a bare `claude`, so the pane title is `ly:explore` but the Claude session gets no `--name`, and reed records no session id, so the watchdog's session-name repair (`internal/reedengine/namerepair.go`) skips it.\n\nEvery agent in lyx runs through shuttle (operator), so this needs a shuttle engine extension: open a named LLM session in a strand with no turn and no prompt, started with the strand name and its session id recorded, so the watchdog keeps the name across a compact.\nThe verb that calls it sits above shuttle, which has no CLI of its own (see the `creel` note), and not in reed, which shuttle depends on.\n\nOpen: where such a strand goes in the reed layout relative to the orch, and how several share the space.\n"
+    },
+    {
+      "id": 151,
+      "slug": "shuttle-stop-never-taken",
+      "title": "shuttle: Wait never takes a valid Stop; a burler round's shed step stalls",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        411
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #411](https://github.com/Knatte18/loomyard/issues/411).\n\nSeen 2026-10-06 in `test-suite-prune-rest`, Webster-Burler round 2.\n\n- `lyx shed step` (trace a1d89adb0a964012) started the burler shuttle run at 19:29:12 (run dir `.lyx/shuttle/976daeeb219e18f87d1a6954c562b64e`, session 97d818aa-8fb0-4103-9b56-0ae4da2a75b7).\n- The burler ended its turn at 19:36:12: `events.jsonl` holds a valid Stop past `promptOffset`, with `background_tasks: []`, and both output files (round-2 review and fixer report) exist.\n- The step never returned. 15 minutes later it had no child processes, the verify gate had not run (`.lyx/verify/` unchanged since 19:28), and the binary already included c4d924316.\n- The burler's transcript ends at 19:41:38 with a `continued-in` entry pointing at session 8e5a1d83, cause unknown.\n\nA SIGQUIT goroutine dump shows the step parked in the poll loop:\n\n```\nshuttleengine.(*Run).Wait            internal/shuttleengine/wait.go:305 (realClock.Sleep)\nshuttleengine.(*Runner).RunGated     internal/shuttleengine/run.go:643\nburlerengine.(*Engine).Run           internal/burlerengine/engine.go:197\nshedadapters.(*BurlerProducer).Call  internal/shedadapters/burler.go:419\nshedengine.(*Shed).stepLocked        internal/shedengine/run.go:232\n```\n\nSo `pollEventsTick` (`wait.go:613`) kept not returning Done for a Stop that looks complete.\nWorth checking whether the `continued-in` session switch, or an output-file or offset check, keeps the Stop from being taken.\nThe `shuttle-asking-holds` note and #407 cover a turn end read too early; this is a turn end never read.\n"
     }
   ],
   "legacy_done": [

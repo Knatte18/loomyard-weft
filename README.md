@@ -47,6 +47,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **board: mark running tasks and refuse scope edits to them** — [`board-lock-running`](design-board-lock-running.md) · bug, board
    - The board shows which tasks have a run in flight and refuses writes that change their scope
 1. **Recovery prompt gives no guidance on uncommitted changes left by the prior attempt** — [`webster-recovery-dirty-tree`](design-webster-recovery-dirty-tree.md) · bug, webster
+1. **shuttle: Wait never takes a valid Stop; a burler round's shed step stalls** — [`shuttle-stop-never-taken`](design-shuttle-stop-never-taken.md) · bug
 
 ### Enhancements
 
