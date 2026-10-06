@@ -1,0 +1,9 @@
+status: OK
+head_sha: 316f4659d2067fdc475ff75aeebcf9a4ca39dfc8
+deviations:
+  - internal/configcli/configcli_test.go
+  - internal/shedcli/cli_test.go
+  - internal/shedrecipe/config_test.go
+  - internal/shedrun/seed_test.go
+  - internal/shedtransient/shedtransient_test.go
+  - internal/shedverbs/buildidentity_test.go

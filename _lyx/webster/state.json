@@ -27,7 +27,7 @@
     "22-friction-leaf-prune.md": "0047c99a27d5a25f36a2e20def43f52e12c5c2940269384a47a4d298bd704176",
     "23-rerun-measure-after.md": "7bb4730bca45bc8e6b19ba841b95ad5a3abc730ca6574e1c3d32af53ee4de503"
   },
-  "currentBatch": 23,
+  "currentBatch": 0,
   "masterStrand": "459f588f6247967a711693f97453847f",
   "masterSessionId": "df42a642-05b4-4a84-85ec-221624cbdc94",
   "assertedModel": "sonnet",
@@ -446,8 +446,27 @@
       "kind": "fork",
       "spawnedAt": "2026-10-06T13:25:57Z",
       "sessionId": "df42a642-05b4-4a84-85ec-221624cbdc94",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "23-rerun-measure-after",
+        "status": "done",
+        "head_sha": "316f4659d2067fdc475ff75aeebcf9a4ca39dfc8",
+        "deviations": [
+          "internal/configcli/configcli_test.go",
+          "internal/shedcli/cli_test.go",
+          "internal/shedrecipe/config_test.go",
+          "internal/shedrun/seed_test.go",
+          "internal/shedtransient/shedtransient_test.go",
+          "internal/shedverbs/buildidentity_test.go"
+        ]
+      },
+      "cardShas": [
+        "316f4659d2067fdc475ff75aeebcf9a4ca39dfc8"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/df42a642-05b4-4a84-85ec-221624cbdc94/subagents/agent-a1550c7b56f0779cd.jsonl"
+      ]
     },
     "3": {
       "slug": "tooling-contracts-prune",
@@ -657,6 +676,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/bd330a6d-f411-48d9-a340-35f575841176/subagents/agent-aa8c4c23f2d0bc5a4.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/bd330a6d-f411-48d9-a340-35f575841176/subagents/agent-a6d06b72a6b4a9ef9.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/bd330a6d-f411-48d9-a340-35f575841176/subagents/agent-a76211e845701f7c6.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/bd330a6d-f411-48d9-a340-35f575841176/subagents/agent-a542d018a6b4f231d.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/bd330a6d-f411-48d9-a340-35f575841176/subagents/agent-a542d018a6b4f231d.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/df42a642-05b4-4a84-85ec-221624cbdc94/subagents/agent-a1550c7b56f0779cd.jsonl"
   ]
 }
