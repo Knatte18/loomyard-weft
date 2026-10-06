@@ -1,6 +1,6 @@
 # Burler as two parallel agents: a review-only reviewer and a fixer that validates
 
-`burler-split` · Note · enhancement, burler
+`burler-split` · Note · feature, burler
 
 Idea (operator, 2026-10-03), a large design change for later: split a Burler round into two agents spawned in parallel.
 

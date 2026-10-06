@@ -64,8 +64,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Default to CLI/tmux and start VS Code only on request; alternatives: pop-up terminals or tmux windows
 1. **Agents run with a deliberate tool and permission setup that never blocks the flow** — [`agent-permission-setup`](design-agent-permission-setup.md) · enhancement, shuttle
    - A correct deny/allow setup for every lyx-spawned role, so no agent stops on a tool or command it needs
-1. **Burler as two parallel agents: a review-only reviewer and a fixer that validates** — [`burler-split`](design-burler-split.md) · enhancement, burler
-   - B orients, forks its lenses and writes the report only; A, stronger, orients in parallel, then fixes and validates B findings with a grain of salt
 1. **Fabric exports without warp/weft in their names** — [`fabric-api-vocabulary`](design-fabric-api-vocabulary.md) · enhancement, fabric
    - 13 fabric and hubforge exports name warp/weft, so callers outside fabric must too; rename them and drop the scan exemption
 1. **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history** — [`warp-visibility`](design-warp-visibility.md) · enhancement, ide, fabric
@@ -131,6 +129,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Against plain git, fabric still lacks log, show, branch, tag, stash, revert, restore, rm/mv, rebase, cherry-pick and blame
 1. **Talk to the orch through Slack** — [`reed-slack-relay`](design-reed-slack-relay.md) · feature, reed
    - A Slack relay so the operator can reach the orch from a phone where Claude's own app is not allowed
+1. **Burler as two parallel agents: a review-only reviewer and a fixer that validates** — [`burler-split`](design-burler-split.md) · feature, burler
+   - B orients, forks its lenses and writes the report only; A, stronger, orients in parallel, then fixes and validates B findings with a grain of salt
 1. **raddle: codeguide's woven-in successor** — [`raddle`](design-raddle.md) · feature, loom
    - Docs regenerated once at merge time over the plan's diff, folded into Finalize's contract; the geometry and the parallel-regeneration design exist
 1. **webster: worktree-per-card parallel execution** — [`webster-parallel-execution`](design-webster-parallel-execution.md) · feature, webster
