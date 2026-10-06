@@ -21,6 +21,10 @@ Waits on nothing open; can start now, in parallel.
    - lyx types each skill as its own slash-command turn, each ending in chatter; one typed message loads them all through the Skill tool in one turn
 1. **Bugfix: session lifecycle, notices and run halts** — [`bugfix-sessions`](design-bugfix-sessions.md) · bug, shuttle, reed, loom, orch, burler
    - Bugfix only: prompt delivery, stale producer sessions, false crash notes, watcher restart, Burler YAML repair, no client switch from agents
+1. **Bugfix: Webster and plan validity** — [`bugfix-webster`](design-bugfix-webster.md) · bug, webster, loom, quarry
+   - Bugfix only: Plan-Gate refuses backward dependencies, Delete of a gone target, background-shell wait, slow batch validation
+1. **Bugfix: fabric and config propagation** — [`bugfix-fabric`](design-bugfix-fabric.md) · bug, fabric, config, reed
+   - Bugfix only: a weft without .weft/ drops LYX_PARENT, and task config changes never reach the parent
 
 ### Layer B
 
@@ -36,18 +40,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ### Bugs
 
-1. **Webster blocks when a Delete target is already gone** — [`webster-delete-already-gone`](design-webster-delete-already-gone.md) · bug, webster
-   - begin-batch refuses plan_drifted when an earlier batch already deleted a later card's Delete target
 1. **A valid plan runs in card order: Plan-Gate refuses backward dependencies, Webster never reorders** — [`webster-delete-ordering`](design-webster-delete-ordering.md) · bug, webster
    - Card N never depends on a later card; Plan-Gate enforces it and Webster drops its own sequencing
-1. **Webster begin-batch spends a minute validating the plan per batch** — [`webster-batch-validation-speed`](design-webster-batch-validation-speed.md) · bug, webster, quarry
-   - quarry#34 re-parses per target; fix it or validate incrementally; drop the per-batch model assertion
-1. **Config changes a task makes never reach the parent** — [`config-reaches-parent`](design-config-reaches-parent.md) · bug, config, fabric, loom
-   - Live config is in weft and task weft dies at landing; carry config changes or make the hub step explicit
-1. **A weft worktree without .weft/ silently drops LYX_PARENT from every strand** — [`weft-lock-dir-drops-parent`](design-weft-lock-dir-drops-parent.md) · bug, fabric, reed
-   - ReadOriginFor answers no record when the untracked .weft lock dir is missing, so a pair recreated by reconcile launches strands with no parent and no warning
-1. **Webster counts Master's turn end past a still-running background shell** — [`webster-background-shell-wait`](design-webster-background-shell-wait.md) · bug, webster
-   - Decide what happens when background_shell_wait_min elapses with a shell alive, and say it in the note
 1. **The orch resumes runs without commands that take over the operator's terminal** — [`orch-resume-without-attach`](design-orch-resume-without-attach.md) · bug, orch, loom, reed
    - lyx loom start from the orch switches the operator's tmux client; the orch needs a side-effect-free resume verb
 
