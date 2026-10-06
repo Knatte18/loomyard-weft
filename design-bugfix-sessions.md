@@ -1,6 +1,6 @@
 # Bugfix: session lifecycle, notices and run halts
 
-`bugfix-sessions` · Task · bug, shuttle, reed, loom, orch, burler · blocked · Plan-Write
+`bugfix-sessions` · Task · bug, shuttle, reed, loom, orch, burler · running · Plan-Write
 
 Depends on: [`skills-in-one-turn`](design-skills-in-one-turn.md), [`test-suite-prune-core`](design-test-suite-prune-core.md)
 
