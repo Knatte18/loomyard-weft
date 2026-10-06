@@ -41,6 +41,8 @@ Open:
   The binding passes `--socket '#{socket_path}' --client '#{client_name}'`, so the verb resolves nothing from a working directory: it lists the server's sessions, sorts them by session id and switches that client.
   Session ids are reassigned when the server restarts, so reed recreates the sessions in spawn order (the prime first, then each pair by its run's start time, read from the pair's own records), which keeps the order across a restart.
 - Alt+Up/Down cycles every pane, Selvage included; skip it, e.g. by binding to a short reed-free tmux command that steps over panes without `@strand`.
+- Extra strands the operator asks for (operator, 2026-10-06): the operator wants extra Claude strands beside the orch in the prime, such as one for exploring, which the orch adds with `lyx reed add --name <name> --cmd claude`.
+  Where such a strand goes in the layout relative to the orch, and how several share the space, is open.
 
 Rejected in the demo: one window per strand (loses the overview, since a pane lives in one window only) and grouped sessions for a second view (hard to attach).
 
