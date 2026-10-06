@@ -27,7 +27,7 @@
     "22-friction-leaf-prune.md": "0047c99a27d5a25f36a2e20def43f52e12c5c2940269384a47a4d298bd704176",
     "23-rerun-measure-after.md": "7bb4730bca45bc8e6b19ba841b95ad5a3abc730ca6574e1c3d32af53ee4de503"
   },
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "e0d72f390b1804de39fde512613c494d",
   "masterSessionId": "bd330a6d-f411-48d9-a340-35f575841176",
   "assertedModel": "sonnet",
@@ -135,6 +135,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/bd330a6d-f411-48d9-a340-35f575841176/subagents/agent-ab69e5c0b1565f0f5.jsonl"
       ]
+    },
+    "5": {
+      "slug": "planglyph-prune",
+      "cards": [
+        "05-planglyph-prune"
+      ],
+      "cardHashes": {
+        "05-planglyph-prune": "d9e2402dda1e42e7cecd08d6f09fb462d1794f532d8fa35a363fdabf3f887017"
+      },
+      "startSha": "eb9f3d124239459bf387ec0ecafa0dd0e8dbe0fe",
+      "kind": "fork",
+      "spawnedAt": "2026-10-06T08:50:19Z",
+      "sessionId": "bd330a6d-f411-48d9-a340-35f575841176",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
