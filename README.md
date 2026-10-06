@@ -95,8 +95,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Bouncer re-finds hard-wrapped Go comments across rounds; catch it in the card gate or the implementer stencil
 1. **Discussion stage has no sanctioned path to land a repository edit ahead of Plan** — [`discussion-lands-invariant`](design-discussion-lands-invariant.md) · enhancement, loom
    - Discussion has no sanctioned path to commit a PATTERN edit ahead of Plan
-1. **Composite scenario tests instead of one test per corner** — [`composite-tests`](design-composite-tests.md) · enhancement
-   - Shrink the suite further by sharing one expensive fixture across a scenario of assertions
 
 ### Features
 
