@@ -129,6 +129,12 @@ Decision: D8's before and after numbers (per package: top-level test count, wall
 
 Rationale: The Describe session that writes the PR description reads only the decision record, the board entry, the task diff and the run records, so numbers kept outside the diff never reach the PR. docs/benchmarks already holds measurement reports of this kind (fixture-copy.md), and a measurement report is allowed to record one run at a point in time.
 
+### Added after Discussion (parent, 2026-10-06): A scenario stays within one tier
+
+Decision: A scenario merges only tests of one tier. A merge never moves a test to a higher tier: an integration test never joins a tmux scenario.
+
+Rationale: A higher tier is run by fewer gates, so a merge across tiers would silently take a test out of a gate that ran it.
+
 ## Constraints
 
 - `PATTERN-test-economy`: candidate reading rules, removable-set-only deletion, folding into tables. D2's keep directive extends its background.
