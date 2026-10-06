@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=94a000971350d280cc2973d79f05cabc83969b49c572e433ed449d912cbe01b7 -->
+<!-- lyx-stencil: sha256=caf3ac2ab7727255acb0719a0ae6584178fd7a4992eda5534ed42f560d3cc5f8 -->
 
 # Loom plan-spec — flat card list
 
@@ -289,8 +289,9 @@ The three tiers match this repo's own test-tier discipline — `internal/planpar
   the plan-level `## verify:` stays the once-per-plan run, now a must-pass gate on Merriam that sends a failure back to Merriam to fix.
   The Concurrency section's post-merge backstop assumes the same gate.
 - **Tier 3 (rare, explicit only, never automatic).**
-  Tests that drive a real LLM — expensive in both wall-clock and tokens, and rare to nonexistent in this repo today.
-  Never swept into an automatic per-card or per-plan gate under any circumstance.
+  Tests that drive a real LLM, gated by the `llm` build tag — expensive in both wall-clock and tokens.
+  Never swept into an automatic per-card or per-plan gate under any circumstance; a plan's `## verify:` compiles them (`go vet -tags llm`) and never runs them.
+  The `tmux` tag is a separate, token-free tier that a plan's `## verify:` may run; which gate runs it by default is left to the board note `test-tiers`.
   A card that genuinely needs one is exactly what the optional `Verify:` field is for: an explicit, author-named exception, never something inferred.
 
 The optional per-card `Verify:` field exists for what tier 1's automatic gate cannot catch on its own — a specific CLI smoke test, a targeted tier 2 scenario, or, rarely, a tier 3 case.
