@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "blocked",
-  "error": "Batch 10 (websterengine-prune) is dead: its recovery already failed terminally in a previous session, so the run is exhausted for it and no later batch may begin.",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": "Batch 10 (websterengine-prune) is dead: its recovery already failed terminally in a previous session, so the run is exhausted for it and no later batch may begin."
+    "wait": ""
   },
   "history": [
     {
