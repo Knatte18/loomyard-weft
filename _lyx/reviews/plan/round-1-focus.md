@@ -1,0 +1,18 @@
+---
+round: 1
+focus:
+  - "Fidelity: the decision-record entry 'Skill-loading tests are left to skills-in-one-turn' (no edit, fold, merge or deletion of tests naming Spec.Skills, SkillLoadSequence, SkillUnknown, DefaultSkillLoadTimeout, loadSkill or loadSkillsThenPrompt in shuttleengine and claudeengine, their SkillLoader fakes, and the loomcli stub driver scripts; a candidate among them is kept with //testtiming:keep naming skills-in-one-turn). Settle whether any card or Shared Decision carries it. Look at card 8 (folds TestSpec_Validate_* and TestLoadConfig_*, may extend shuttlefake), card 14 and the prune-procedure keep/fold steps, since those are where a skill-loading test could be folded or deleted."
+  - "Fidelity: every other Decision, 'Added after Discussion' entry and Constraint in decision-record.md, each against a card that carries it. In particular settle whether the PATTERN-hubforge-fixtures and PATTERN-test-isolation constraints, the 'scenario stays within one tier' entry, and the acceptance line that a tool-excluded test (lyxbin, os.Executable, os.Args, go toolchain, tmux file, unresolved call in a tagged file) stays excluded are each carried by a card, and whether card 2 licenses anything the record does not (for example the os.Args rule and the exec.Command(\"go\") literal rule)."
+  - "Design, targets vs. Intent: settle whether each card's Targets cover every file its Intent lets it change. Cards 9, 11, 13 and 15 target only their own package, yet the untag-procedure lets them add a shared fake under internal/testkit/<kit>/. Card 8 may extend internal/testkit/shuttlefake. Cards 6 and 17 name test-file fixes in the six packages that are not in their Targets."
+  - "Design, sequencing: settle whether the card order keeps the before measurement clean and the tool usable before it is relied on. Cards 1-4 each edit redundancy.go, PATTERN-test-economy.md and running-tests.md; check card 5 (before measurement) against card 6's conditional tool edit, and check that prune cards 7-16 can rely on card 6's regenerated sections."
+  - "Granularity and test economy on cards 1-4: card 1 tests one pure argument-vector function; card 2 reworks TestScanSpawns rows; card 3 adds keep_test.go plus TestRenderPackage and TestClassify rows; card 4 adds splice_test.go. For each planned new test, settle whether an existing test already covers the behavior, naming it, or whether one test per symbol is planned."
+  - "Attack-surface: card 2 narrows the tool's exclusion (a guard downgraded), cards 9, 11, 13 and 15 add production seams and let tests drop real git or tmux, and card 4 adds a splice that overwrites a committed report. Settle whether each card's Intent states what the change can now let through and what bounds it."
+  - "Verify coverage: settle whether the plan's verify: section runs the tests of every package a card targets, including cmd/testtiming, cmd/lyx (tierpurity_test.go, llmtier_test.go), internal/testkit/..., the six packages under integration and tmux, and any package that a production seam could touch. Apply the llm and tmux rules from the rubric."
+  - "Per-card Verify blocks (cards 9, 11, 12, 13, 14, 15): settle whether each is correct for the tags its card changes, for example card 9 and card 15 verify with vet only, not run, under the tags they retag."
+---
+
+Seed focus drawn from reading `00-overview.md`, all card files and `decision-record.md`.
+`support-log.md` was not read.
+The first entry is the one concrete gap I found: no card file mentions skills at all.
+The rest are questions to settle; none is a verdict.
+No entry restates a mechanical check or a `Do not flag` item.
