@@ -2,6 +2,8 @@
 
 `bugfix-fabric` · Task · bug, fabric, config, reed
 
+Depends on: [`test-suite-prune-core`](design-test-suite-prune-core.md), [`test-suite-prune-rest`](design-test-suite-prune-rest.md)
+
 Bugfix only (operator, 2026-10-06): fix what each section below reports, with a regression test per fix that drives the real CLI wiring, not only fakes.
 No new verbs, config keys or features; a reviewer treats any extension as a scope finding.
 The board adds more bug sections here until the task starts.

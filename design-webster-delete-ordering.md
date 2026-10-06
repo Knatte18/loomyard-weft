@@ -23,3 +23,5 @@ This reverses `contracts/specs/loom-plan-spec.md`, which today calls the card li
   `SequenceBatches` condensed the cycle {2, 4} and ran 01, 02, 04, 03, so card 4 deleted `SkillLoader.SkillLoadSequence`, `SkillUnknown` and `Runner.LoadSkill` before card 3 moved `internal/orchengine` and `internal/orchcli` off them.
   The cycle surfaced only as an unread `Cycle` warning.
   `webster rebaseline` refused the fix because batch 4 had begun, so the run needed `webster reset --to start`, an archived `state.json` and a goto, redoing two finished batches.
+
+The Plan-Gate refusal is in task `bugfix-webster`; this note keeps Webster dropping its own sequencing and the plan-spec change.
