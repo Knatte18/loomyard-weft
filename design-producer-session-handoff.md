@@ -20,3 +20,18 @@ Fix options:
 
 Option 2 also covers other causes of a lost Enter; the two combine.
 Every typed delivery (shuttle launch pointers and skill loads, orch watcher reloads, batten notices, `SendMessage`-style relays through reed) goes through this path.
+
+
+## From issue #399
+
+Imported from [issue #399](https://github.com/Knatte18/loomyard/issues/399).
+
+`reflectHalt` (`internal/loomcli/halt.go`) writes `loom-halt.md` and at once runs `reflectFriction(false)`, which spawns a reflection agent session on every halt.
+That includes a `blocked` halt classified `escalation-to-human`, where the producer's own session is still live and holds the open question.
+
+Seen 2026-10-06 on `test-suite-prune-core`: Plan-Write halted `blocked` with "agent is asking a question".
+While the plan session stood waiting, the run spawned a friction-reflection session; its report said only "an escalation, a process signal and not a lyx defect".
+To the operator this looked like the run moving on while its producer hung.
+
+Expected: an `escalation-to-human` halt writes the halt note but spawns no reflection.
+The terminal Friction-Reflect row reads the note anyway.
