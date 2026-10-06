@@ -27,7 +27,7 @@
     "22-friction-leaf-prune.md": "0047c99a27d5a25f36a2e20def43f52e12c5c2940269384a47a4d298bd704176",
     "23-rerun-measure-after.md": "7bb4730bca45bc8e6b19ba841b95ad5a3abc730ca6574e1c3d32af53ee4de503"
   },
-  "currentBatch": 0,
+  "currentBatch": 19,
   "masterStrand": "e0d72f390b1804de39fde512613c494d",
   "masterSessionId": "bd330a6d-f411-48d9-a340-35f575841176",
   "assertedModel": "sonnet",
@@ -303,6 +303,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/bd330a6d-f411-48d9-a340-35f575841176/subagents/agent-a482dcd6ff5181d46.jsonl"
       ]
+    },
+    "19": {
+      "slug": "git-fs-prune",
+      "cards": [
+        "19-git-fs-prune"
+      ],
+      "cardHashes": {
+        "19-git-fs-prune": "528947ff25f2cdbc66f6da98f4c63e679a19c8eefec952ee8741ecdb69ba47d3"
+      },
+      "startSha": "a0fc9828893382d37bc4a43ec5124eeab92da28c",
+      "kind": "fork",
+      "spawnedAt": "2026-10-06T12:26:33Z",
+      "sessionId": "bd330a6d-f411-48d9-a340-35f575841176",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "cmd-lyx-prune",
