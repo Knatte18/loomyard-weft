@@ -27,7 +27,7 @@
     "22-friction-leaf-prune.md": "0047c99a27d5a25f36a2e20def43f52e12c5c2940269384a47a4d298bd704176",
     "23-rerun-measure-after.md": "7bb4730bca45bc8e6b19ba841b95ad5a3abc730ca6574e1c3d32af53ee4de503"
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "1c82a365fdc481059fca109d5b910c3f",
   "masterSessionId": "01f9207a-a471-4d2d-a76c-62df57e91dd4",
   "assertedModel": "sonnet",
@@ -44,8 +44,22 @@
       "kind": "fork",
       "spawnedAt": "2026-10-06T08:02:58Z",
       "sessionId": "01f9207a-a471-4d2d-a76c-62df57e91dd4",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-measure-before",
+        "status": "done",
+        "head_sha": "0738e93626a230b8f68a01a59142c75fbc3b8e76"
+      },
+      "cardShas": [
+        "0738e93626a230b8f68a01a59142c75fbc3b8e76"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/01f9207a-a471-4d2d-a76c-62df57e91dd4/subagents/agent-a1f141b13fb510999.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/01f9207a-a471-4d2d-a76c-62df57e91dd4/subagents/agent-a1f141b13fb510999.jsonl"
+  ]
 }
