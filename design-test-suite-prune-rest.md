@@ -21,3 +21,9 @@ In every package outside `internal/fabricengine`, `internal/websterengine`, `int
 - The tool, rerun on these packages, reports no redundant candidate left without a stated reason.
 - The PR states the test count and wall time per package before and after.
 - Coverage of non-test code in these packages has not dropped beyond what deleted redundant tests explain.
+
+
+## Scenario tests (operator, 2026-10-06)
+
+Integration and tmux tests that each build the same expensive fixture (a hubforge hub or pair, a reed or tmux server) and differ only in their steps and checks become one scenario test that builds the fixture once, with each former test a named `t.Run` step.
+A family is merged only where the before and after measurement shows a wall-time cut, and every assertion is kept.
