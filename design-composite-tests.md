@@ -14,3 +14,6 @@ Open:
 - Where the line goes between a composite scenario and a test that names one failure: a composite test must still say which step broke.
 - Which packages gain most: those whose tests each rebuild a git hub or a tmux server (`fabricengine`, `reedcli`, `battencli`, `loomcli`).
 - How it fits `PATTERN-test-economy`, which today favours one table-driven test per kind of item.
+
+Distinct from the earlier clean-up: `22e46970e` shared test fakes and helpers in `internal/testkit` and `gitkit`, `5805c58fb` derived expectations from code and put scans on one harness, and `b32c30584` set the test-writing rules.
+Those reuse test code; this note shares one fixture's runtime across several checks.
