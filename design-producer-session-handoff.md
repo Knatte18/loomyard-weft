@@ -35,3 +35,16 @@ To the operator this looked like the run moving on while its producer hung.
 
 Expected: an `escalation-to-human` halt writes the halt note but spawns no reflection.
 The terminal Friction-Reflect row reads the note anyway.
+
+
+## From issue #400
+
+Imported from [issue #400](https://github.com/Knatte18/loomyard/issues/400).
+
+When a halted run is moved back to a producer with `lyx loom goto --to <producer>` and resumed, the producer spawns a fresh session (`ly:<slug>:plan-2`) but leaves the halted attempt's session (`ly:<slug>:plan`) alive.
+Both sessions then hold the same producer's instructions, and anything that wakes the old one (an operator message, a submitted input) puts two agents on the same output files.
+
+Seen 2026-10-06 on `test-suite-prune-core`: Plan-Write halted `blocked` because its prompt pointer was never submitted (#395) and a hub message ended a turn.
+After `goto --to Plan-Write` and a re-step, `plan-2` started while `plan` still held the unsubmitted pointer; submitting it ran two plan writers at once until `plan` was removed with `lyx reed remove`.
+
+Expected: re-invoking a producer after a halt removes that producer's previous strand before spawning the new one, or reattaches to it, never both alive.
