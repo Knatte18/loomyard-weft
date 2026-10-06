@@ -1,6 +1,6 @@
 # Prune the six largest test packages
 
-`test-suite-prune-core` · Task · enhancement · paused · Plan-Bouncer
+`test-suite-prune-core` · Task · enhancement · running · Plan-Bouncer
 
 Depends on: [`test-suite-measure`](design-test-suite-measure.md)
 
