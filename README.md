@@ -19,7 +19,7 @@ Waits on nothing open; can start now, in parallel.
    - **Before:** `test-tiers`, `bugfix-fabric`
 1. **Bugfix: session lifecycle, notices and run halts** — [`bugfix-sessions`](design-bugfix-sessions.md) · bug, shuttle, reed, loom, orch, burler · running · Plan-Burler
    - Bugfix only: prompt delivery, stale producer sessions, false crash notes, watcher restart, Burler YAML repair, no client switch from agents
-1. **Bugfix: Webster and plan validity** — [`bugfix-webster`](design-bugfix-webster.md) · bug, webster, loom, quarry · running · Plan-Bouncer
+1. **Bugfix: Webster and plan validity** — [`bugfix-webster`](design-bugfix-webster.md) · bug, webster, loom, quarry · running · Plan-Burler
    - Bugfix only: Plan-Gate refuses backward dependencies, Delete of a gone target, background-shell wait, slow batch validation
 
 ### Layer B
