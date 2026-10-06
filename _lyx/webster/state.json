@@ -61,15 +61,17 @@
         "10-websterengine-prune": "01c23aa803d6073d731214a26291024d6995cb38dfbc5f90658c74be65688867"
       },
       "startSha": "7baa517626f3f0f891e75abe4f6886fb4cb790df",
-      "kind": "fork",
-      "spawnedAt": "2026-10-06T09:26:45Z",
-      "sessionId": "700a9836-446d-4e89-a079-a12fa9d382c2",
+      "kind": "recovery",
+      "spawnedAt": "2026-10-06T10:43:26Z",
       "terminal": false,
       "status": "",
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/700a9836-446d-4e89-a079-a12fa9d382c2/subagents/agent-a6c4cc2acd32951a3.jsonl",
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/700a9836-446d-4e89-a079-a12fa9d382c2/subagents/agent-a349bdce8ca3f55a6.jsonl"
-      ]
+      ],
+      "strandGuid": "480f86f4574fad27a08b7f000e577d3f",
+      "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/test-suite-prune-core/.lyx/shuttle/c8848afd5859a0b49b557e588fc92eef",
+      "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/test-suite-prune-core/.lyx/shuttle/c8848afd5859a0b49b557e588fc92eef/events.jsonl"
     },
     "2": {
       "slug": "exclusion-out-of-process",
