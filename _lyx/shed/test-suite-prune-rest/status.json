@@ -1,12 +1,13 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Discussion-Bouncer: round 5 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYXHUB/test-suite-prune-rest/_lyx/reviews/discussion/round-5-escalation.md; decide with `lyx loom circling accept test-suite-prune-rest` or `lyx loom circling continue test-suite-prune-rest`, then run `lyx loom start` in the task worktree to resume",
+  "parent_notice": "Review segment of task `test-suite-prune-rest` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/test-suite-prune-rest/_lyx/reviews/discussion/round-5-escalation.md` with a one-shot fork.",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler → bounced to Discussion-Bouncer",
-    "wait": ""
+    "last": "Discussion-Bouncer → awaiting",
+    "wait": "bouncer Discussion-Bouncer: round 5 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYXHUB/test-suite-prune-rest/_lyx/reviews/discussion/round-5-escalation.md; decide with `lyx loom circling accept test-suite-prune-rest` or `lyx loom circling continue test-suite-prune-rest`, then run `lyx loom start` in the task worktree to resume"
   },
   "history": [
     {
@@ -92,6 +93,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/test-suite-prune-rest/_lyx/reviews/discussion/round-5-review.md",
       "at": "2026-10-06T07:36:50Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/test-suite-prune-rest/_lyx/reviews/discussion/round-5-bouncer-ledger.md",
+      "at": "2026-10-06T07:37:43Z"
     }
   ],
   "product": {
