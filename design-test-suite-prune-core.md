@@ -1,6 +1,6 @@
 # Prune the six largest test packages
 
-`test-suite-prune-core` · Task · enhancement · running · Publish
+`test-suite-prune-core` · Task · enhancement · running · PR-Gate
 
 Depends on: [`test-suite-measure`](design-test-suite-measure.md)
 
