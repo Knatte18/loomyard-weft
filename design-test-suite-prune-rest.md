@@ -1,6 +1,6 @@
 # Prune the remaining test packages
 
-`test-suite-prune-rest` · Task · enhancement · running · Plan-Write
+`test-suite-prune-rest` · Task · enhancement · running · Plan-Bouncer
 
 Depends on: [`test-suite-measure`](design-test-suite-measure.md)
 
