@@ -15,3 +15,7 @@ Possible fixes:
 
 
 From GitHub #350 (intake 2026-10-04).
+
+Seen again 2026-10-06 in `skills-in-one-turn`: card 4 deleted `SkillLoader.SkillLoadSequence`, `SkillUnknown` and `Runner.LoadSkill` before card 3 moved `internal/orchengine` and `internal/orchcli` off them.
+The recovery batch failed twice, and because batch 4 had begun, `webster rebaseline` refused the one-line `Uses:` fix; the run needed `webster reset --to start`, an archived `state.json` and a goto, redoing two finished batches.
+A Plan-Gate check would have cost nothing at plan time.
