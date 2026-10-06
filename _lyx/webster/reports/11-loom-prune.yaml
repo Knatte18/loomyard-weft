@@ -1,0 +1,5 @@
+status: OK
+head_sha: 4840b6e7c4e02d9afd1e9f4a4f0fd8c4f88da23d
+deviations:
+  - cmd/lyx/pathrules_test.go
+  - internal/pattern/pattern_test.go
