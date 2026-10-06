@@ -135,3 +135,27 @@ The run halted `blocked` at Webster with anomaly `escalation-to-human` (history 
 - When `delete-not-done` is blocking and a later batch still references the target, say so in the refusal, and do not suggest `recover-batch` as the way forward when nothing has changed since the failure.
 
 Provenance: task `skills-in-one-turn`; notes `04-drop-per-skill-load.md`, `loom-halt.md`, `webster-refusal-record-batch.md`, `webster-refusal-recover-batch.md`.
+
+
+## From issue #402
+
+Imported from [issue #402](https://github.com/Knatte18/loomyard/issues/402).
+
+What happened:
+In one loom run, for three separate batches, `lyx webster begin-batch <n>` was refused because a report for the batch already existed under `_lyx/webster/reports/`.
+The refusal text says a report left behind by a crashed session is consumed by `lyx webster record-batch <n>`.
+`lyx webster record-batch <n>` was then refused for the same batch: "record-batch called with no begin-batch record for this batch".
+It archived the report with a timestamp suffix and told the caller to run `lyx webster begin-batch <nn>` again.
+
+Why it is abnormal:
+The two verbs' guidance points at each other.
+begin-batch says "record the existing report", and record-batch says "no begin-batch record exists, begin again".
+Only the archive side effect of the failed record-batch breaks the loop, which makes the recovery path indirect and costs two refused calls per batch.
+It happened for every batch in the run, so it looks like a systematic ordering problem (a report being present before begin-batch recorded its start), not a one-off crash.
+
+What to do:
+Find what writes the batch report before the begin-batch record exists.
+Make begin-batch either adopt or archive a report that has no begin-batch record, so the refusal message names a path that works the first time.
+The webster-refusal notes also don't say which of the two states the caller was in, so the refusal could include it.
+
+Provenance: task skills-in-one-turn; notes webster-refusal-begin-batch.md, webster-refusal-begin-batch-2.md, webster-refusal-begin-batch-3.md, webster-refusal-record-batch.md, webster-refusal-record-batch-2.md, webster-refusal-record-batch-3.md.
