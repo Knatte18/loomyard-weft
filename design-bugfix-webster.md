@@ -159,3 +159,21 @@ Make begin-batch either adopt or archive a report that has no begin-batch record
 The webster-refusal notes also don't say which of the two states the caller was in, so the refusal could include it.
 
 Provenance: task skills-in-one-turn; notes webster-refusal-begin-batch.md, webster-refusal-begin-batch-2.md, webster-refusal-begin-batch-3.md, webster-refusal-record-batch.md, webster-refusal-record-batch-2.md, webster-refusal-record-batch-3.md.
+
+
+## From issue #403
+
+Imported from [issue #403](https://github.com/Knatte18/loomyard/issues/403).
+
+What happened:
+`lyx webster rebaseline --card=04` was refused: "the edited plan changes the cards of a batch this run already begun: batch 4 card ... changed since it was begun".
+The only way forward offered was to restore the cards in the plan, or `lyx webster reset --to start` followed by `lyx webster run --fresh`.
+
+Why it is abnormal:
+The `--card` flag implies a targeted rebaseline of one card.
+The refusal then only allows discarding the whole run's progress, which is disproportionate for a one-card edit and is not a path an agent can take on its own mid-run.
+
+What to do:
+Either let rebaseline accept an intentional edit to a begun card when `--card` names it (resetting only that batch), or have the refusal explain why `--card` cannot do so and offer a narrower way forward such as `lyx webster recover-batch`.
+
+Provenance: task skills-in-one-turn; note webster-refusal-rebaseline.md.
