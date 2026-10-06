@@ -177,3 +177,25 @@ What to do:
 Either let rebaseline accept an intentional edit to a begun card when `--card` names it (resetting only that batch), or have the refusal explain why `--card` cannot do so and offer a narrower way forward such as `lyx webster recover-batch`.
 
 Provenance: task skills-in-one-turn; note webster-refusal-rebaseline.md.
+
+
+## From issue #404
+
+Imported from [issue #404](https://github.com/Knatte18/loomyard/issues/404).
+
+What happened:
+The loom run halted `blocked` at the Publish producer with anomaly `escalation-to-human` and reason "push rejected by the remote".
+The trace shows `landingshed: producer stuck` with error "gitrepo: push rejected (remote diverged)", right after "post-merge verify skipped because the tree is already verified".
+The run's earlier steps (Webster review, Describe) were all done.
+The step ended with `state=blocked next=Publish`.
+
+Why it is abnormal:
+A diverged remote at push time is a routine race when other runs or pushes land on the parent branch.
+Halting for a human at the last step of a finished run throws away no work but needs manual intervention for a condition lyx could handle.
+It is unclear from the halt note whether Publish re-fetched and re-integrated before giving up.
+
+What to do:
+Check whether landingshed's Publish refetches, re-integrates and re-verifies once on a diverged push before escalating.
+If it does not, add a bounded retry, and make the halt note say what Publish tried and what the operator should run to resume.
+
+Provenance: task skills-in-one-turn; note loom-halt.md.
