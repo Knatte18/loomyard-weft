@@ -140,6 +140,12 @@ Decision: Webster for this task starts only after test-suite-prune-core and test
 
 Rationale: Operator decision 2026-10-06: the two prunes rewrite the tests this task's regression tests build on, so implementing first would conflict with them.
 
+### Added after Discussion (parent, 2026-10-06): Plan now, re-check test targets after the prunes
+
+Decision: Plan-Write writes the plan now against the current tree; the 'reads both landed states' clause of the prune decision applies before Webster, not before Plan-Write. Cards name production code as their main targets and test files by path rather than by test-function glyph where they can. Once both prunes land, the pair is synced with main and the plan's test targets are re-validated, re-planned only where a prune renamed or deleted them.
+
+Rationale: The operator's intent was to use the waiting time for Discussion and Plan, with implementation held until the prunes land; blocking Plan-Write on the prunes defeats that.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: input-box reading (D1), pacing (D2) and `/reload-plugins` (D10) live under `internal/shuttleengine/claudeengine`; `shuttleengine` and `reedengine` stay provider-free.
