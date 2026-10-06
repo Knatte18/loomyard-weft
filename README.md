@@ -17,6 +17,8 @@ Waits on nothing open; can start now, in parallel.
 1. **Prune the remaining test packages** — [`test-suite-prune-rest`](design-test-suite-prune-rest.md) · enhancement · running · Discussion-Write
    - Stage 2c: delete redundant tests and fold near-identical ones in every package outside prune-core, in parallel with it
    - **Before:** `test-tiers`
+1. **A spawned role loads all its skills at once, not one turn per skill** — [`skills-in-one-turn`](design-skills-in-one-turn.md) · enhancement, shuttle, stencil
+   - lyx types each skill as its own slash-command turn, each ending in chatter; one typed message loads them all through the Skill tool in one turn
 
 ### Layer B
 
@@ -89,8 +91,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Three Webster recovery sites and standalone mode still instruct git reset --keep; widen the reset verb so every recovery instruction names a lyx verb
 1. **reed shows strands as zoom tabs and runs as session tabs** — [`reed-status-tabs`](design-reed-status-tabs.md) · enhancement, reed
    - Stacked layout stays as VIEW; a strand button or Alt+arrows zooms one strand; runs as session tabs below; reed pins it at boot
-1. **A spawned role loads all its skills at once, not one turn per skill** — [`skills-in-one-turn`](design-skills-in-one-turn.md) · enhancement, shuttle, stencil
-   - lyx types each skill as its own slash-command turn, each ending in chatter; one typed message loads them all through the Skill tool in one turn
 1. **Implementers hard-wrap comments and reviews re-find it every round** — [`prose-line-breaks-in-review`](design-prose-line-breaks-in-review.md) · enhancement, webster
    - Bouncer re-finds hard-wrapped Go comments across rounds; catch it in the card gate or the implementer stencil
 1. **Discussion stage has no sanctioned path to land a repository edit ahead of Plan** — [`discussion-lands-invariant`](design-discussion-lands-invariant.md) · enhancement, loom

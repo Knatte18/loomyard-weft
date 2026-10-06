@@ -910,7 +910,7 @@
       "id": 130,
       "slug": "skills-in-one-turn",
       "title": "A spawned role loads all its skills at once, not one turn per skill",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "shuttle",
