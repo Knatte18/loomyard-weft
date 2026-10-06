@@ -183,6 +183,12 @@ Decision: The before and after numbers Decisions 11 and 12 require (per in-scope
 
 Rationale: The Describe session that writes the PR description reads only the decision record, the board entry, the task diff and the run records, so numbers kept outside the diff never reach the PR. A measurement report may record one run at a point in time, and a separate link line keeps this run's edit to running-tests.md apart from core's.
 
+### Added after Discussion (parent, 2026-10-06): Skill-loading tests are left to skills-in-one-turn
+
+Decision: No test that exercises skill loading is edited, folded, merged or deleted: tests naming Spec.Skills, SkillLoadSequence, SkillUnknown, DefaultSkillLoadTimeout, loadSkill or loadSkillsThenPrompt in internal/shuttleengine and internal/shuttleengine/claudeengine, the SkillLoader fakes they use, and the stub driver scripts in internal/loomcli. A redundancy candidate among them is kept with //testtiming:keep naming skills-in-one-turn.
+
+Rationale: The parallel task skills-in-one-turn rewrites skill loading and its tests; pruning the same tests at the same time would conflict at landing and could delete a test that task changes.
+
 ## Constraints
 
 - `PATTERN-test-economy`: candidates are evidence, not verdicts; only the removable set is deleted together; a finding names its covering test.
