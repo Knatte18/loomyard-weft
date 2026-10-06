@@ -8,7 +8,7 @@
     "03-orch-reload-one-turn.md": "63919f670aed9f7a4b7d6e601632204278125681587740be51b1d921c6baab0c",
     "04-drop-per-skill-load.md": "2f843c1b51d73b45482eed33ffa9b11eae1649efc9e90cc6a09742810cec6bce"
   },
-  "currentBatch": 0,
+  "currentBatch": 2,
   "masterStrand": "5cb094fcf51118efe78a00cfaac33ab5",
   "masterSessionId": "1d365c19-8158-48fa-8cfa-29693666179c",
   "assertedModel": "sonnet",
@@ -38,6 +38,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-skills-in-one-turn/1d365c19-8158-48fa-8cfa-29693666179c/subagents/agent-a07543728e0752e6e.jsonl"
       ]
+    },
+    "2": {
+      "slug": "launch-skills-one-turn",
+      "cards": [
+        "02-launch-skills-one-turn"
+      ],
+      "cardHashes": {
+        "02-launch-skills-one-turn": "2e21f042d8426bf55a6005b7006354a4b90be43ecbd6b3bc2d57e4979cb9cea7"
+      },
+      "startSha": "c42c70995c958f5c74699974a5664db04d17e6f3",
+      "kind": "fork",
+      "spawnedAt": "2026-10-06T07:40:33Z",
+      "sessionId": "1d365c19-8158-48fa-8cfa-29693666179c",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
