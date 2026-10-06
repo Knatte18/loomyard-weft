@@ -16,3 +16,5 @@ In practice the call also did not move the runs: a live driver resumed only once
 - `lyx loom start` and `lyx orch start` never switch the tmux client when called from an agent (`LYX_STRAND_NAME` set), whatever the flags; the terminal handoff is for an operator's shell only.
 
 The bug half (no tmux switch-client from an agent) is in task `bugfix-sessions`; this note keeps the orch resume verb.
+
+Operator decision 2026-10-06: start verbs never attach a terminal for any caller; attaching is only `lyx reed attach` (implemented in `bugfix-sessions`).
