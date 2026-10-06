@@ -105,3 +105,33 @@ The one-card-per-batch split makes the per-batch cost dominate; whether the Batc
 
 
 From GitHub #345 (intake 2026-10-04).
+
+
+## From issue #401
+
+Imported from [issue #401](https://github.com/Knatte18/loomyard/issues/401).
+
+## What happened
+
+A loom run passed Plan-Write, Plan-Bouncer and Batchifier with a batch order in which batch 04 (a delete-only card) ran before batch 03.
+Batch 04 deletes symbols that batch 03 still uses, so the delete cannot be done without doing batch 03's work.
+The agent assigned to batch 04 noticed this, stopped without editing anything and wrote a friction note.
+`lyx webster record-batch 04` then refused with `batch_failed` and ten `delete-not-done/...[blocking]` findings ("Delete target ... still resolves").
+The refusal output ends with `way forward: lyx webster recover-batch 04`.
+`lyx webster recover-batch 04` refused with the same ten findings and the same `way forward: lyx webster recover-batch 04`.
+The run halted `blocked` at Webster with anomaly `escalation-to-human` (history ends `Webster / stuck`).
+
+## Why it is abnormal
+
+- The plan and batch order carried a dependency inversion that neither Plan-Bouncer nor Batchifier caught, although the card's own text referred to the other card as already done.
+  Batch ordering has no dependency check, or it ignores the dependency the plan states.
+- The refusal's `way forward` points at a verb that cannot succeed.
+  `recover-batch` re-runs the same `delete-not-done` check against an unchanged tree, so following the hint loops.
+  The real cause (batch order) is not named in the refusal.
+
+## What to do
+
+- Have Plan-Bouncer or Batchifier reject or reorder a batch whose delete targets are still referenced by a later batch, or that depends on a batch ordered after it.
+- When `delete-not-done` is blocking and a later batch still references the target, say so in the refusal, and do not suggest `recover-batch` as the way forward when nothing has changed since the failure.
+
+Provenance: task `skills-in-one-turn`; notes `04-drop-per-skill-load.md`, `loom-halt.md`, `webster-refusal-record-batch.md`, `webster-refusal-recover-batch.md`.
