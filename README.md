@@ -17,7 +17,7 @@ Waits on nothing open; can start now, in parallel.
 1. **Prune the remaining test packages** — [`test-suite-prune-rest`](design-test-suite-prune-rest.md) · enhancement · running · Discussion-Write
    - Stage 2c: delete redundant tests and fold near-identical ones in every package outside prune-core, in parallel with it
    - **Before:** `test-tiers`
-1. **A spawned role loads all its skills at once, not one turn per skill** — [`skills-in-one-turn`](design-skills-in-one-turn.md) · enhancement, shuttle, stencil · running · Loom-Preflight
+1. **A spawned role loads all its skills at once, not one turn per skill** — [`skills-in-one-turn`](design-skills-in-one-turn.md) · enhancement, shuttle, stencil · running · Discussion-Write
    - lyx types each skill as its own slash-command turn, each ending in chatter; one typed message loads them all through the Skill tool in one turn
 
 ### Layer B
