@@ -105,6 +105,12 @@ Rationale: the board names both paths as forking past an existing origin weft.
 Decision: each fix's regression test runs the `lyx fabric` cobra commands (or, for D4, the loom Finalize wiring) on a `hubforge` fixture built through `fabriccli.CloneAndWire` with a bare origin, in the `integration` tier, under `gitkit.HermeticGitEnv()`; fakes may cover extra rows but never replace the wiring test.
 Rationale: the board requires CLI-wiring regression tests; `PATTERN-hubforge-fixtures` and `PATTERN-test-speed` set the fixture and tier.
 
+### Added after Discussion (parent, 2026-10-06): Plan now, implement after both test prunes land
+
+Decision: Plan-Write writes the plan now against the current tree. Cards name production code as their main targets and test files by path rather than by test-function glyph. Webster starts only after test-suite-prune-core and test-suite-prune-rest have both landed on main; then the pair is synced with main and the plan's test targets are re-validated, re-planned only where a prune renamed or deleted them.
+
+Rationale: The operator runs Discussion and Plan while the prunes run, and holds implementation until they land, since prune-rest rewrites the fabric tests this task extends.
+
 ## Constraints
 
 - `PATTERN-fabric-git`: all git on warp or weft, including the D4 diff and the D5 fetch, stays in `internal/fabricengine` through `gitexec.Run` (`PATTERN-gitexec-checked-call`); no new `//gitexec:raw` site unless it is a bool predicate, as `weftBranchExists` is.
