@@ -27,7 +27,7 @@
     "22-friction-leaf-prune.md": "0047c99a27d5a25f36a2e20def43f52e12c5c2940269384a47a4d298bd704176",
     "23-rerun-measure-after.md": "7bb4730bca45bc8e6b19ba841b95ad5a3abc730ca6574e1c3d32af53ee4de503"
   },
-  "currentBatch": 0,
+  "currentBatch": 3,
   "masterStrand": "1c82a365fdc481059fca109d5b910c3f",
   "masterSessionId": "01f9207a-a471-4d2d-a76c-62df57e91dd4",
   "assertedModel": "sonnet",
@@ -83,6 +83,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/01f9207a-a471-4d2d-a76c-62df57e91dd4/subagents/agent-a23487bbc50aca584.jsonl"
       ]
+    },
+    "3": {
+      "slug": "tooling-contracts-prune",
+      "cards": [
+        "03-tooling-contracts-prune"
+      ],
+      "cardHashes": {
+        "03-tooling-contracts-prune": "9843faa4ecd29c90baf8f409f4b42023638a47883000bd84d64b7c04372a2281"
+      },
+      "startSha": "d1809a385d0709e9922c3a482e9d39345cb7f127",
+      "kind": "fork",
+      "spawnedAt": "2026-10-06T08:28:45Z",
+      "sessionId": "01f9207a-a471-4d2d-a76c-62df57e91dd4",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
