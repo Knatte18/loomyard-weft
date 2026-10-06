@@ -470,7 +470,7 @@
       "title": "webster: worktree-per-card parallel execution",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "feature",
         "webster"
       ],
       "issues": [],
