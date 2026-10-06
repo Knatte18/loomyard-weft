@@ -1,12 +1,12 @@
 {
   "current_producer": "Publish",
-  "state": "blocked",
-  "error": "verify failed after merging parent branch \"main\" (exit code 1); output: /home/knatte/Code/loomyard-LYXHUB/test-suite-measure/.lyx/verify/verify.log; fix forward on the task branch, then resume",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Publish",
     "last": "Publish → stuck",
-    "wait": "verify failed after merging parent branch \"main\" (exit code 1); output: /home/knatte/Code/loomyard-LYXHUB/test-suite-measure/.lyx/verify/verify.log; fix forward on the task branch, then resume"
+    "wait": ""
   },
   "history": [
     {
