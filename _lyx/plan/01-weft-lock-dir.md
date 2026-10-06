@@ -12,9 +12,6 @@
 - `internal/hubgeom/parent_test.go`
 - `internal/hubgeom/reedgeom_integration_test.go`
 
-**Create:**
-- `internal/fabriccli/weftlockdir_integration_test.go`
-
 **Uses:**
 - `internal/fabricengine#ensureWeftLockDirAt`
 - `internal/hubgeom#ResolveParent`
@@ -43,8 +40,8 @@ Tests:
 - `internal/hubgeom/parent_test.go`: a row where `hubWithOrigin`'s record is present and the `.weft` directory is not; `ResolveParent` returns an error containing the lock-directory wording and `lyx fabric reconcile`.
 - `internal/hubgeom/reedgeom_integration_test.go`, driving `fabriccli.RunCLIIn(..., []string{"reconcile"})` on a `hubforge` hub with a pair:
   (a) remove the pair's weft worktree (keeping the local weft branch), run `reconcile`, assert `.weft/` exists and `hubgeom.ResolveParent` yields the prime's orch name;
-  (b) delete only the pair's `.weft/` directory, assert `ResolveParent` errors naming the missing lock directory and `lyx fabric reconcile`, run `reconcile`, assert `.weft/` exists, the parent resolves, and the pair's envelope `detail` names the restored lock directory while its `action` is `already_healthy`.
-- `internal/fabriccli/weftlockdir_integration_test.go` (`integration` tag, package `fabriccli_test`): `lyx fabric add` on the fork path, and on the local-adopt path (a local `<slug>-weft` branch created in the weft repo before the add), leaves `.weft/` in the new weft worktree.
+  (b) assert the freshly added pair's `.weft/` exists (the `add` fork path, which already creates it through the origin record's write), then delete only that `.weft/` directory, assert `ResolveParent` errors naming the missing lock directory and `lyx fabric reconcile`, run `reconcile`, assert `.weft/` exists, the parent resolves, and the pair's envelope `detail` names the restored lock directory while its `action` is `already_healthy`.
+- No new test file covers `add`'s adopt-path `.weft/`: `add` writes the origin record on every path but an adopted weft that already carries one, so only card 4's record-carrying adopt row can fail without this card's `Topology.Add` edit, and it asserts `.weft/`; card 3's dormant-fork row asserts it for `createWeftWorktree`.
 
 **ImpactSummary:** fabricengine weft-creation helpers, Add's adopt branch, Reconcile's per-pair loop and ReadOriginFor's gap answer; hubgeom callers inherit the new error, Remove ignores it.
 

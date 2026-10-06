@@ -31,6 +31,7 @@ Bound: step 2 only creates a local branch whose content is already on origin; it
 
 `switchOrForkWeft` calls `resolveWeftBranch(rec, l, weftBranch, true)` in place of its `weftBranchExists` check.
 An existing branch (local or just created from origin) is switched to, recording `KindWorktreeSwitched` as today; the method reports `forked=true` when the branch was created from origin as well as when it forked, so `Checkout` hands it to `rollbackSwitch` as a created branch and a later failure deletes only that local branch through the existing `deleteBranch` gate, leaving origin untouched.
+When the weft switch itself fails after the resolver created the branch from origin, `switchOrForkWeft` returns `created=true` together with the error, and `Checkout` hands that branch to `rollbackSwitch` on the error path too, so the branch is deleted through `deleteBranch` and no origin-created branch outlives a failed checkout.
 Rename the return to `created` and update its doc comment and `Checkout`'s.
 A resolver error returns from `switchOrForkWeft`, and `Checkout` rolls the warp side back through its existing `rollbackSwitch(..., "")` call, so both sides stay on their original branches and no weft branch is forked.
 Checkout adopts an origin weft whether or not an archive tag covers it.
@@ -39,7 +40,7 @@ A hub whose weft repo has no `origin` remote forks as today.
 
 Tests:
 - `internal/fabriccli/adoptremote_integration_test.go` (new, `integration` tag, package `fabriccli_test`, `hubforge` hub, every verb through `fabriccli.RunCLIIn`): this card adds the checkout rows: in a pair, a warp branch `<b>` exists locally and only `origin/<b>-weft` exists (pushed from a scratch clone of `h.WeftBare`, carrying a marker file) — `lyx fabric checkout <b>` switches the weft worktree to a local `<b>-weft` that tracks `origin/<b>-weft` and holds the marker, also when an `archive/<b>/*` tag covers that origin tip; with the weft repo's `origin` URL pointed at a missing path and no local `<b>-weft`, the verb exits non-zero naming `origin`, both worktrees stay on their original branches, and no `<b>-weft` exists locally; with the weft repo's `origin` remote removed, checkout forks as today.
-- `internal/fabricengine/checkout_rollback_test.go`: a row in the junction-failure rollback test where the weft branch came from origin: after the injected failure the local `<b>-weft` is gone and the bare's `<b>-weft` tip is unchanged.
+- `internal/fabricengine/checkout_rollback_test.go`: a row in the junction-failure rollback test where the weft branch came from origin: after the injected failure the local `<b>-weft` is gone and the bare's `<b>-weft` tip is unchanged; and a second row where the weft switch itself fails (an untracked file in the weft worktree at the path of the marker file the origin branch tracks, which the pre-switch tracked-dirty check ignores and `git switch` refuses to overwrite): the local `<b>-weft` created from origin is gone, origin is unchanged and both sides stay on their original branches.
 
 **ImpactSummary:** fabricengine Checkout's weft branch selection now consults origin before forking; rollback scope unchanged apart from origin-created branches counting as created.
 

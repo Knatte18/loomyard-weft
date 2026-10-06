@@ -33,7 +33,7 @@ Tests, in `internal/fabriccli/adoptremote_integration_test.go` through `lyx fabr
   the same with an `archive/<slug>/*` tag covering the origin tip still adopts;
   with the weft repo's `origin` URL pointed at a missing path, the pair reports an `error` and no `<slug>-weft` branch exists locally;
 - a managed pair whose weft worktree and local weft branch were removed (origin keeps `<slug>-weft`): `action` is `weft_recreated`, the weft tracks origin, and the wiring is repaired;
-- with the weft repo's `origin` remote removed, a raw warp worktree still gets today's dormant `raw_adopted` fork.
+- with the weft repo's `origin` remote removed, a raw warp worktree still gets today's dormant `raw_adopted` fork, and the dormant weft worktree has `.weft/` (card 1's `createWeftWorktree` edit).
 
 **ImpactSummary:** Reconcile's missing-weft branch adopts an origin weft before the raw/unmanaged branches; raw worktrees with an origin weft now end wired as weft_recreated instead of dormant raw_adopted.
 
