@@ -38,6 +38,7 @@ Open:
   `lyx ide` seeds these entries as part of its setup (operator, 2026-10-06); VS Code has no per-workspace keybindings, so they go in the user `keybindings.json` as a marked `// lyx:begin` … `// lyx:end` block that `lyx ide` rewrites, as mill does with its own block.
 - `switch-client -n`/`-p` steps sessions in name order, but the `#{S:}` loop draws them in session-id order, so Alt+Left/Right jumped around the bar; on 2026-10-06 the bindings were replaced by a `run-shell` helper that steps through `list-sessions` sorted by session id.
   The operator wants spawn order (it matches how the runs sit on their desktop), so the bar keeps session-id order and switching follows it; the helper becomes a lyx verb such as `lyx reed switch --next|--prev` that the keys call.
+  The binding passes `--socket '#{socket_path}' --client '#{client_name}'`, so the verb resolves nothing from a working directory: it lists the server's sessions, sorts them by session id and switches that client.
   Session ids are reassigned when the server restarts, so reed recreates the sessions in spawn order (the prime first, then each pair by its run's start time, read from the pair's own records), which keeps the order across a restart.
 - Alt+Up/Down cycles every pane, Selvage included; skip it, e.g. by binding to a short reed-free tmux command that steps over panes without `@strand`.
 
