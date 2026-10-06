@@ -48,8 +48,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - The board already marks running tasks; a write that changes the scope of a running task is refused
 1. **Recovery prompt gives no guidance on uncommitted changes left by the prior attempt** — [`webster-recovery-dirty-tree`](design-webster-recovery-dirty-tree.md) · bug, webster
 1. **shuttle: Wait never takes a valid Stop; a burler round's shed step stalls** — [`shuttle-stop-never-taken`](design-shuttle-stop-never-taken.md) · bug, shuttle
-1. **A task branch is pushed after every step that commits** — [`pair-always-pushed`](design-pair-always-pushed.md) · bug, loom
-   - Review rounds commit but nothing pushes until Publish; push after every committing step so the remote is never behind
+1. **Agents commit through lyx fabric, which pushes warp and weft together** — [`pair-always-pushed`](design-pair-always-pushed.md) · bug, loom
+   - Agents run bare git commit on warp and only Webster and Publish push it; one fabric verb commits and pushes warp with weft
 
 ### Enhancements
 
