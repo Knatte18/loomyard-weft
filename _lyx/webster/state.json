@@ -1,0 +1,51 @@
+{
+  "runGuid": "0480c15e86c05938d4cfc2655b5f0946",
+  "planFingerprint": "3f03ea97acf9d54309b2aa4f5abe5ecbdf7e57fd6502c27ff1f68e5d573e6bdb",
+  "planFileHashes": {
+    "00-overview.md": "7fc380930533a139cec7c11af9180e285b0f40a1b66b492673f2937b76b4ea2f",
+    "01-measure-before.md": "761cfba934dcdc87a813c2e47247ea576f5054fd3c4eaed0d8dc6e31e311e806",
+    "02-cmd-lyx-prune.md": "f1573dd027577e991a9f13d0a640886010ce60d4c7877250964d71c9e89053c7",
+    "03-tooling-contracts-prune.md": "9843faa4ecd29c90baf8f409f4b42023638a47883000bd84d64b7c04372a2281",
+    "04-parsers-prune.md": "e2663058c69926b4e5edd0bb3f0831dd9b79d72a84c96f0be8dd51e3c3c744b7",
+    "05-planglyph-prune.md": "d9e2402dda1e42e7cecd08d6f09fb462d1794f532d8fa35a363fdabf3f887017",
+    "06-logger-prune.md": "f5cb9d0247a631b70410096906e8414b287ba637b476539cfcdddf904e8756ce",
+    "07-yaml-config-prune.md": "9703cc105ce3c56daf6d14c44b6c27422bc1df414dc16e03d8728bc9cddce641",
+    "08-landingshed-prune.md": "4544dfe5045e07a6ede8519b84a85176afc6071e8932bf3971b8b36c90cab03d",
+    "09-batten-prune.md": "a2d176a2fbdf1f5c246255d0239194c01c082e127a8c90462a9b2b8b6ffc5834",
+    "10-board-prune.md": "8229993d5d47126ccef9ab26c3349358ba801f4199f5917eb49702c119a91ed6",
+    "11-loom-prune.md": "17c0a3614e2ffba7f89aa7285f9d54f4454b81f5feebf2bc5fda24ed30bff60b",
+    "12-shed-prune.md": "0abaaadf50b814540fda6baebd1372f2ebb1f1b0ad55d1bd754fe4cdbc8c424c",
+    "13-review-gates-prune.md": "7c33322235a8134d6f44193598fa0af114af6c5feac7de14abbd2d99a4254729",
+    "14-reed-prune.md": "24a7f5fc3280bd13d2ecc93fea52c72cbc9b1b1121ed33cc042fe7f9a57123e9",
+    "15-shuttle-prune.md": "51c00c282a32659e7e70b054ad3bcda5a6afa2de6a7303328a8ff9965522c347",
+    "16-webster-orch-prune.md": "7cbee5f5e18f686d3f5861e9de737f4d7581c594f2ebdc58f8c4118054882957",
+    "17-fabric-hub-prune.md": "838d80b5c191e8a3f4082e615cb7aa71da2d71f52ecac84569f89189b034afdf",
+    "18-geometry-prune.md": "af160eea6b646e4c6cb2a1b21654f0cb1a5ce264c6d59dc54798ce5a86f5d3fc",
+    "19-git-fs-prune.md": "528947ff25f2cdbc66f6da98f4c63e679a19c8eefec952ee8741ecdb69ba47d3",
+    "20-stencil-state-prune.md": "7bdcea9679e6123dacd0a1ebbcbb4505f8ff8560e803bf3db0a54eb55edac256",
+    "21-cli-ide-prune.md": "dc5549979a105f2d3e0e0b8ac1807b51fd0a27214b6d434120a45f8f50b7f00f",
+    "22-friction-leaf-prune.md": "0047c99a27d5a25f36a2e20def43f52e12c5c2940269384a47a4d298bd704176",
+    "23-rerun-measure-after.md": "7bb4730bca45bc8e6b19ba841b95ad5a3abc730ca6574e1c3d32af53ee4de503"
+  },
+  "currentBatch": 1,
+  "masterStrand": "1c82a365fdc481059fca109d5b910c3f",
+  "masterSessionId": "01f9207a-a471-4d2d-a76c-62df57e91dd4",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "measure-before",
+      "cards": [
+        "01-measure-before"
+      ],
+      "cardHashes": {
+        "01-measure-before": "761cfba934dcdc87a813c2e47247ea576f5054fd3c4eaed0d8dc6e31e311e806"
+      },
+      "startSha": "9cd12fd198c1a295fa70b4d12dd455a249d6f8ef",
+      "kind": "fork",
+      "spawnedAt": "2026-10-06T08:02:58Z",
+      "sessionId": "01f9207a-a471-4d2d-a76c-62df57e91dd4",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
