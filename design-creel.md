@@ -67,7 +67,11 @@ The orch watcher holds `ly:orch`'s reminders during a context cycle, while its o
 
 - A creel daemon of its own per hub, apart from reed's watchdog, since reed must not depend on creel. It owns the queues, the reminders and the read status.
 - It listens on a Unix socket named by the hub's shortname, such as `$XDG_RUNTIME_DIR/lyx/creel-<shortname>.sock`, acknowledges receipt, and is started by any creel verb that finds it down, as `lyx reed` starts its tmux server.
-- The sender is named from the environment: `LYX_STRAND_NAME` for an agent, a name the caller passes for a Go program, and `operator` (prefixed with the hub shortname inside a repo) for a terminal.
+- The sender is named from the environment: `LYX_STRAND_NAME` for a strand in reed, and a name the caller passes for a Go program.
+  Anything else (a terminal, or a Claude session started outside reed) is `<shortname>:EXTERNAL`, such as `ly:EXTERNAL`: upper case, so it never collides with a strand name, and it claims only what creel knows, that the sender is not a strand.
+  The envelope adds what creel can see of an external sender: its terminal, the process that ran the verb (`claude`, `bash`) and its directory, shown as `from ly:EXTERNAL (claude, pts/4, ~/Code/…)`.
+  An external sender has no address, so a reply reaches it only through `--wait-reply`.
+- A Claude session the operator adds to reed by hand (`lyx reed add --name explore --cmd claude`) is a strand with an address, though shuttle did not start it; shuttle's idle check must work on such a pane too, and stage 1 tests it.
 - A filesystem drop-box (sender writes a file into the receiver's queue directory) was set aside: several writers in one directory, and no receipt for the sender.
 
 ### Storage
