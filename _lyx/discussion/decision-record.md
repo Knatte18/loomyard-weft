@@ -122,6 +122,12 @@ Decision: each fix gets a regression test that enters through the cobra command 
 Each test sits in the lowest tier its substrate allows, per `PATTERN-test-speed`, and extends an existing test where one covers the path, per `PATTERN-test-economy`.
 Rationale: the operator's instruction on the board entry.
 
+### Added after Discussion (operator, 2026-10-06): Both test prunes land before implementation
+
+Decision: Webster for this task starts only after test-suite-prune-core and test-suite-prune-rest have both landed on main; the plan writer reads both landed states, since prune-rest rewrites the orchcli, orchengine, burler, batten and loom tests this task extends.
+
+Rationale: Operator decision 2026-10-06: the two prunes rewrite the tests this task's regression tests build on, so implementing first would conflict with them.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: input-box reading (D1), pacing (D2) and `/reload-plugins` (D10) live under `internal/shuttleengine/claudeengine`; `shuttleengine` and `reedengine` stay provider-free.
