@@ -96,7 +96,10 @@ Claude's `SendMessage` lands straight in the orch session, past the orch watcher
 A message that arrives while the orch writes its note is seen, but the note request says to write and end the turn, so it is lost at `/clear` unless the note happens to carry it.
 A message that arrives after the note is written starts a turn whose end opens the clear gate, so that turn's work never reaches the note.
 Batten notices do not have this problem: they go through the watcher's notice queue, which holds them during a cycle and delivers them after.
-Agent-to-orch messages through creel could get the same treatment: queued while a cycle runs, delivered once the session is resumed.
+Operator direction: every message goes through creel, agent to agent and module to agent alike.
+Batten notices become creel messages, and the orch watcher's own notice queue (`orchengine.QueueNotice`, `.lyx/orch/notices/`) folds into creel's queue instead of living beside it.
+One queue per receiver holds delivery during a context cycle or a running turn, for every sender.
+The journal under "Everything is journaled" covers all of it, so `lyx creel log` answers what was sent to whom and when, batten notices included.
 
 ## Related
 
