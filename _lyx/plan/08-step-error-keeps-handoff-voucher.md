@@ -2,6 +2,7 @@
 
 **Edit:**
 - `internal/loomcli/halt.go`
+- `internal/loomcli/arm.go`
 - `internal/loomcli/entryobservation.go`
 - `internal/loomcli/halt_test.go`
 
@@ -18,7 +19,8 @@ If it does not, this is not the cause: reproduce the reported sequence through t
 Fix: add `recordHandoffVoucherFromStatus` in `entryobservation.go`, which reads the status file strictly (as `failedHalt` does) and records the voucher with the persisted history length and state, warning and recording nothing when the read fails.
 In `loomAfterStep`'s `stepErr` branch, unless the error is `shedengine.ErrShedBusy` (another driver owns the run, and its own exit vouches), call it before the `failedHalt` check.
 The success path keeps `loomPostStep`'s voucher unchanged.
-Update `recordHandoffVoucher`'s doc comment and `loomAfterStep`'s to say that every step that returns, with or without an error, vouches for what it left on disk.
+Update `recordHandoffVoucher`'s doc comment, `loomAfterStep`'s and `loomPostStep`'s in `arm.go`, which says the voucher is recorded after a successful `shed.Step`, to say that every step that returns, with or without an error, vouches for what it left on disk.
+`arm.go` is also where the fallback below fixes a step path that bypasses `PostStep` or a voucher read in `loomPreStep`.
 
 Bound: a driver that dies before it records the voucher, mid-producer or between a finished step and the voucher, never reaches `loomAfterStep` and is still reported; a busy refusal records nothing; a refusal from `PreStep` or `BuildShed` runs no step and records nothing.
 The existing `MarkerRemoved` row, which deletes the voucher between two clean steps, keeps proving that a death right after a finished step is still noted.

@@ -4,6 +4,7 @@
 - `internal/loomcli/halt.go`
 - `internal/loomcli/halt_test.go`
 - `pattern/PATTERN-friction-capture.md`
+- `docs/overview.md`
 
 **Intent:** D3: a halt classified `escalation-to-human` writes its halt note and spawns no reflection session.
 The producer's own session holds the open question, and a second session reflecting on it looks like the run moving on and finds nothing but a process signal.
@@ -16,6 +17,7 @@ Update `reflectHalt`'s doc comment and the file comment of `halt.go` ("A halt ha
 Bound, stated in the doc comment: only the `escalation-to-human` kind skips, and the skipped reflection is the only thing lost; the note stays on disk unarchived until a later reflection (the terminal Friction-Reflect row of the resumed run, or the next halt's reflection) covers it, so `PATTERN-friction-capture` holds.
 
 Add one sentence to `pattern/PATTERN-friction-capture.md`'s halt bullet: an escalation halt writes its note but spawns no reflection, and the next reflection covers the note.
+`docs/overview.md`'s `internal/frictionengine` entry, which says loom runs the reflection "after a `blocked` or `failed` halt", says an escalation halt writes its note and runs no reflection.
 
 Tests in `halt_test.go`:
 

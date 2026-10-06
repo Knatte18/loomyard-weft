@@ -19,9 +19,9 @@ The doc comment says a provider without it keeps the appearance-only send check,
 Implement both on `*Claude` in `session.go`, with a compile-time assertion beside the existing ones.
 `InputBoxText` locates the box exactly as `Claude.IdleSession` does (the last caret line, walking up to the first top rule and down to the first rule), and returns the interior lines joined with the caret marker and side bars removed; no box found answers ok false.
 Factor the box location out of `IdleSession` into one helper both methods call, so the two cannot disagree about where the box is.
-`SubmitSettle` returns a provider-owned constant of a few hundred milliseconds (`submitRedrawSettle`), long enough for Claude Code to redraw the box after an Enter.
+`SubmitSettle` returns a provider-owned constant, `submitRedrawSettle = 300 * time.Millisecond`, long enough for Claude Code to redraw the box after an Enter.
 
-Tests in `session_test.go`, table-driven over capture fixtures (the existing `testdata/pane-idle-empty.txt` and `pane-idle-draft.txt` plus inline captures): an empty box answers ok true with empty text; a box holding a draft answers its text; a wrapped two-line draft answers both lines' text; a collapsed paste placeholder answers the placeholder text verbatim; a capture with no box (a permission prompt, `testdata/pane-permission-prompt.txt`) answers ok false.
+Tests in `session_test.go`, table-driven over capture fixtures (the existing `testdata/pane-idle-empty.txt` and `pane-idle-draft.txt` plus inline captures): an empty box answers ok true with empty text; a box holding a draft answers its text; a wrapped two-line draft answers both lines' text; a collapsed paste placeholder answers the placeholder text verbatim; a running turn (`testdata/pane-turn-running.txt`, `esc to interrupt` over an empty box) answers ok true with empty text; a capture with no box (a permission prompt, `testdata/pane-permission-prompt.txt`) answers ok false.
 `SubmitSettle` is pinned to the constant.
 
 **ImpactSummary:** Adds a new optional shuttleengine capability and its Claude implementation; IdleSession keeps its behaviour through the shared box-location helper.

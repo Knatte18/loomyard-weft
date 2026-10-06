@@ -21,12 +21,13 @@ Declare `CompactionBoundary` in `internal/shuttleengine/engine.go`, beside `Cont
 
 `Claude.CompactedSince` in `usage.go` keeps finding the newest main-chain boundary after since, and while walking back from the end to that boundary counts the main-chain turn ends after it: an `assistant` entry, not a sidechain, whose `message.stop_reason` is set and is not `tool_use`.
 Claude writes that entry before its Stop hook fires, so a turn end being read is always already in the transcript.
-`ReadTurnEndAfter` is true when at least one turn end follows the boundary and the newest one's final text block equals the Stop payload's `last_assistant_message`, or the payload carries none; it is false when both texts are present and differ, which is the watcher reading an older turn end than the transcript's newest.
+`ReadTurnEndAfter` is true only when at least one turn end follows the boundary, the Stop payload carries a `last_assistant_message`, and the newest turn end's final text block equals it; it is false when the payload carries none, or when both texts are present and differ, which is the watcher reading an older turn end than the transcript's newest.
+A payload without a message cannot be matched to a turn end, so the watcher types nothing and leaves the baseline until a turn end it can match is read (D8).
 Every read failure still degrades to not found.
 
 `internal/orchcli/session.go`'s `runnerSession.CompactedSince` adapts the new return to the `orchengine.Session` signature it implements today (`b.At, found, err`) until the next card moves the watcher onto the boundary.
 The fake cycler in `session_test.go` takes the new signature.
 
-Tests in `usage_test.go`, over transcript fixtures written inline or under `testdata/`: a boundary followed by no turn end (count 0); by one turn end whose text matches the Stop payload (count 1, read true); by one turn end whose text differs from the payload's (count 1, read false); by two turn ends (count 2); a sidechain assistant entry and a `tool_use` stop reason are not counted; the existing `TestCompactedSince_*` tests assert `At` through the new type.
+Tests in `usage_test.go`, over transcript fixtures written inline or under `testdata/`: a boundary followed by no turn end (count 0); by one turn end whose text matches the Stop payload (count 1, read true); by one turn end whose text differs from the payload's (count 1, read false); by one turn end with a payload carrying no message (count 1, read false); by two turn ends (count 2); a sidechain assistant entry and a `tool_use` stop reason are not counted; the existing `TestCompactedSince_*` tests assert `At` through the new type.
 
 **ImpactSummary:** The SessionCycler CompactedSince signature changes; its one implementation, the Runner wrapper, the orch adapter and the test fake move with it, and the watcher sees no behaviour change yet.

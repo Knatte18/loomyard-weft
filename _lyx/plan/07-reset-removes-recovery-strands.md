@@ -2,6 +2,7 @@
 
 **Edit:**
 - `internal/websterengine/strand.go`
+- `internal/websterengine/doc.go`
 - `internal/webstercli/reset.go`
 - `internal/webstercli/reset_test.go`
 - `contracts/specs/refusal-spec.md`
@@ -13,7 +14,7 @@ A nil state removes nothing.
 
 In the `reset` verb, call it after `PlanReset` succeeds and the standalone refusal has passed, and before `ResetPairWarp`, only for `--to start`, which resets every recorded batch; `--to pre-fix` resets only the verify gate's fixes, no batch, and removes nothing.
 A failure refuses the reset with nothing changed: `webster: reset --to start refused: could not remove recovery strand <guid>: <cause>; way forward: run "lyx reed remove <guid>", then re-run "lyx webster reset --to start"`.
-Update the verb's `Long` help to say `--to start` removes the run's live recovery strands first.
+Update the verb's `Long` help to say `--to start` removes the run's live recovery strands first, and add the same sentence to the recovery paragraphs of `internal/websterengine/doc.go`.
 
 Add the refusal's row to `contracts/specs/refusal-spec.md`'s webster section, per `PATTERN-refusal-way-forward`: `reset: recovery strand not removed`, transient, with that way forward.
 

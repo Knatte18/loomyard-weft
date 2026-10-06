@@ -8,6 +8,7 @@
 - `internal/orchengine/launch.go`
 - `internal/orchengine/launch_test.go`
 - `internal/orchengine/doc.go`
+- `pattern/PATTERN-cli-cobra.md`
 
 **Delete:**
 - `internal/orchcli/handover.go`
@@ -26,7 +27,7 @@ Rewrite the verb's `Long` help: the strand-and-watcher-live case changes nothing
 Delete `handover.go` and `handover_test.go`.
 The receiver's `reed` field in `cli.go` is read only by the handover, so drop the field and its assignment; the local reed engine still feeds the strand operations and `reedUp` as today.
 
-Docs: `internal/orchengine/doc.go`'s module overview stops saying start hands the terminal over to reed's attach; `internal/orchcli/doc.go`'s worktree recipe drops `--no-attach` from its two `lyx loom start` steps.
+Docs: `internal/orchengine/doc.go`'s module overview stops saying start hands the terminal over to reed's attach, and its sentence naming `DecideStart`'s outcomes ("attach only, spawn a watcher, or relaunch") says already running; `internal/orchcli/doc.go`'s worktree recipe drops `--no-attach` from its two `lyx loom start` steps; `pattern/PATTERN-cli-cobra.md`'s interactive-handoff exception list drops `lyx orch start`, beside the loom entries Card 14 drops.
 
 Tests:
 

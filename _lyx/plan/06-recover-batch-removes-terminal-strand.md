@@ -3,6 +3,7 @@
 **Edit:**
 - `internal/websterengine#awaitTerminal`
 - `internal/websterengine/recoverbatch_test.go`
+- `internal/websterengine/doc.go`
 
 **Intent:** D5, recover-batch half: `recover-batch` removes its recovery strand on every terminal outcome whose strand is still live, so a finished recovery strand never stays alive beside its successor.
 
@@ -10,7 +11,7 @@ In `awaitTerminal`, call `removeStrand()` for every terminal digest status: done
 Move the strand removal ahead of `refuseMidMerge` and `reconcileReportHead`, right after the running check, leaving the done digest's run-dir removal where it is, so a terminal digest that then refuses (a merge in progress, a report head mismatch) leaves no live strand either; the batch stays non-terminal and retryable as today, and the next call re-classifies from the report and events on disk.
 The failed-batch path (`PersistRecoveryTerminal` failing the batch after a done digest) runs after `awaitTerminal`, so its strand is already gone.
 `removeStrandIfLive` already logs each teardown at Warn; a removal failure stays a warning on the result, as today.
-Update `awaitTerminal`'s doc comment, which today says "dead keeps both".
+Update `awaitTerminal`'s doc comment, which today says "dead keeps both", and the recovery paragraphs of `doc.go`, which say a terminal recovery digest removes its recovery strand.
 
 Bound: only the strand webster's own batch state names as the batch's recovery strand (`bs.StrandGUID`); an implementer fork or Master strand is never touched.
 

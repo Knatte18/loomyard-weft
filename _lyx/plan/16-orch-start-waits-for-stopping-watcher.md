@@ -29,7 +29,9 @@ Bound: the wait happens only while the stopping record is present, and lasts at 
 
 Tests:
 
-- `watchloop_test.go`: cancelling `Run`'s context while a tick is blocked in the session fake persists `WatcherStopping` before `Run` returns and before the lock is free; a new `Run` clears it at start; `WaitWatcherGone` returns not live once a lock holder recording stopping releases within the bound, returns live past the bound, and probes exactly once with no stopping record.
+- `watchloop_test.go`: cancelling `Run`'s context while a tick is blocked in the session fake persists `WatcherStopping` before `Run` returns and before the lock is free; a new `Run` clears it at start.
+  `WaitWatcherGone` gets no test of its own: its wait, its bound and its no-wait case are all reached through the verb below.
 - `start_test.go`, through the cobra `start` verb with the harness's fakes and an injected `sleep` that releases a held `watch.lock` (taken through `internal/lock` on the harness's paths) after the first probe: with the state recording the watcher stopping and a live strand, start spawns a watcher; with the lock never released, start reports the watcher live with `watcher_stopping: true` and the hint, and spawns none.
+  `TestStart_LiveStrandAndWatcherDoesNothing`, whose state records no stopping watcher, also asserts the injected `sleep` is never called, so a healthy live watcher costs no wait.
 
 **ImpactSummary:** Adds one orch state field, one watcher-loop goroutine and one probe helper used only by orch start; a healthy live watcher and every other orch verb are unaffected.

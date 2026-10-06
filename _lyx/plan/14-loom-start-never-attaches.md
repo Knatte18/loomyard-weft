@@ -7,6 +7,8 @@
 - `internal/loomcli/cli.go`
 - `internal/loomcli/cli_test.go`
 - `internal/loomcli/smoke_starttail_test.go`
+- `internal/loomcli/smoke_test.go`
+- `internal/loomcli/integration_driverbootstrap_test.go`
 - `README.md`
 - `docs/overview.md`
 - `docs/reference/claude-trust-dialog-repro.md`
@@ -25,6 +27,7 @@ Update the file comment, which says the verb finally hands the terminal over.
 
 `bootstrap.go`: delete the `handover` type, its constants and `decideHandover`.
 Rename `noAttachFields` to `startEnvelopeFields(driver, slug, runID, statusFile string)`, dropping the `attached` and `hint` keys, which only described the skipped tail; the envelope carries the driver, slug, run id and status file.
+The comments on `dispositionForHandshake` and the handshake constants, which describe a proceed that "continues to its terminal handover", say instead that the bootstrap proceeds to its success envelope.
 
 `cli.go`: the `run` and `step` help texts that contrast themselves with start's terminal handover say instead that they spawn no detached driver.
 
@@ -36,5 +39,8 @@ Tests:
 - `bootstrap_test.go`: drop the default-attach test that calls `decideHandover`; `TestNoAttachFields_PinsSuccessEnvelope` pins `startEnvelopeFields`' key set under its new name.
 - `cli_test.go`: the two `--no-attach` lookups stay and also assert the flag is hidden.
 - `smoke_starttail_test.go` (tmux tier, the real built binary): `TestSmokeStart_AttachTailAddsNoOperatorStrand` asserts that `lyx loom start` without `--no-attach` now exits 0 with an `ok` envelope, where the attach used to fail without a TTY, and keeps its strand-table assertions; add a case running `lyx loom start` with `TMUX` set to reed's own server socket, with and without `--no-attach`, asserting exit 0, an `ok` envelope and no change to the reed session's attached clients.
+- `smoke_test.go` (tmux tier): `TestSmokeBootstrap_MalformedStatusProceedsToHandoverAndLogsWhy` and `TestSmokeBootstrap_DiedDriverProceedsToHandoverAndLogsWhy` require `not a terminal` on stdout as evidence the tmux handover was reached, which no longer exists.
+  They keep their driver-log and bootstrap-lock assertions, assert the `ok` envelope in place of the handover evidence, and drop `Handover` from their names and comments.
+  `integration_driverbootstrap_test.go`'s comment about the terminal-handover code is reworded the same way.
 
-**ImpactSummary:** Removes loom start's handover tail and the handover decision; the hidden --no-attach stays for batten, and only help, docs and the start envelope's two attach keys change.
+**ImpactSummary:** Removes loom start's handover tail and the handover decision; the hidden --no-attach stays for batten, and help, docs, the start envelope's two attach keys, the two smoke tests that used the handover as evidence and the comments naming the handover change.
