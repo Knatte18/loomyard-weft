@@ -90,6 +90,14 @@ Transport and log are two different jobs, and the terminal is bad at the second 
 - **Plain CLI verbs, no MCP layer.**
   Creel needs no streaming or client-side session state, so it stays ordinary `lyx` verbs like every other module; an MCP server could be layered *on top of* the same verbs later if an agent outside a terminal ever needs access — deferred until someone does, not decided against.
 
+## Reason to resume: messages lost across an orch context cycle (2026-10-06)
+
+Claude's `SendMessage` lands straight in the orch session, past the orch watcher, so nothing holds it during a context cycle.
+A message that arrives while the orch writes its note is seen, but the note request says to write and end the turn, so it is lost at `/clear` unless the note happens to carry it.
+A message that arrives after the note is written starts a turn whose end opens the clear gate, so that turn's work never reaches the note.
+Batten notices do not have this problem: they go through the watcher's notice queue, which holds them during a cycle and delivers them after.
+Agent-to-orch messages through creel could get the same treatment: queued while a cycle runs, delivered once the session is resumed.
+
 ## Related
 
 - the shipped `reed: born-as-strand` item — the receive-side prerequisite.
