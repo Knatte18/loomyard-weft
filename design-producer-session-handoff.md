@@ -48,3 +48,9 @@ Seen 2026-10-06 on `test-suite-prune-core`: Plan-Write halted `blocked` because 
 After `goto --to Plan-Write` and a re-step, `plan-2` started while `plan` still held the unsubmitted pointer; submitting it ran two plan writers at once until `plan` was removed with `lyx reed remove`.
 
 Expected: re-invoking a producer after a halt removes that producer's previous strand before spawning the new one, or reattaches to it, never both alive.
+
+## Webster recovery strand left behind (2026-10-06)
+
+A failed `recover-batch` leaves its `ly:<slug>:recovery` strand alive and idle after reporting.
+On `skills-in-one-turn` it stayed beside the new Webster Master after a `webster reset --to start` and `goto --to Webster`, until removed by hand.
+The same rule applies: a finished or superseded session is removed, never left beside its successor.
