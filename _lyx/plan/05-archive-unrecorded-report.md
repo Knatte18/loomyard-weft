@@ -21,7 +21,7 @@ Docs: update the refusal-spec row "report already present" to say it fires for a
 
 Tests:
 in `beginbatch_test.go`, extend `TestBeginBatch_PreExistingReportRefused` (or its table) with the no-record case: the report is renamed to an archive path under the reports dir, the call succeeds, `ArchivedReport` names it and the batch is recorded; and with a recorded non-terminal batch and a recorded terminal one the call refuses, names the state it saw, and moves nothing.
-`TestBeginBatch_WayForward_ReportExistsIsRecorded` keeps pinning the way forward against a recorded batch.
+`TestBeginBatch_WayForward_ReportExistsIsRecorded` seeds a report on a fixture with no batch record, which D5 now archives instead of refusing, so it is edited to seed a begun, non-terminal batch record beside the report, which keeps pinning the `record-batch` way forward and the report left in place.
 In `internal/webstercli/verbs_test.go`, drive `begin-batch` through the cobra command on the verbs fixture with a report on disk and no record: exit 0, the envelope carries `archived_report`; with a record present it exits 1 naming the record's state.
 
 **ImpactSummary:** One branch in BeginBatch's report check plus an archived-path field on its result and envelope; the recorded-batch refusal keeps its way forward with a richer message.

@@ -5,6 +5,7 @@
 - `internal/planglyph/resolve.go`
 - `internal/planglyph/repo.go`
 - `internal/planglyph/doc.go`
+- `contracts/specs/loom-plan-spec.md`
 - `internal/planglyph/planglyph_test.go`
 - `internal/planparser/validate.go`
 - `internal/websterengine/beginbatch.go`
@@ -24,11 +25,11 @@ Bound, stated in `ValidateDispatch`'s doc comment: this lets through a Delete ta
 `record-batch`'s `delete-not-done` does not bound it, since it reads a not-found target as the wanted state.
 
 `BeginBatch` already returns informational findings in `BeginResult.Advisories`; update its comment block on the dispatch re-resolution to say an already-deleted Delete target arrives there.
-Add `delete-target-gone` (informational) to `internal/planglyph/doc.go`'s check list, and to the `loom-plan-spec.md` paragraph card 2 added only if that paragraph enumerates resolve-backed IDs.
+Add `delete-target-gone` (informational) to `internal/planglyph/doc.go`'s check list, and give it the row after card 2's `delete-before-reference` row at the end of `loom-plan-spec.md`'s "Validation checks" list, with its dispatch-only scope in one sentence.
 
 Tests:
 in `planglyph_test.go`, `ValidateDispatch` with one completed card and a pending card whose Delete target (once as a file path, once as a member glyph) is absent returns `delete-target-gone` as informational and no blocking finding for it; a pending card that `Uses:` the same absent target still gets its blocking finding; with no completed cards the same plan returns the blocking finding.
 In `internal/webstercli/verbs_test.go`, drive `begin-batch` through the cobra command on the verbs fixture: batch 1 removes a file that card 2 also lists under **Delete:**; batch 1 recorded, `begin-batch 2` succeeds and its envelope's advisories name the target as already deleted.
-In `internal/webstercli/cli_test.go`, `lyx webster validate` over the same plan with no run state exits 1 with the missing Delete target as a blocking finding.
+In `internal/webstercli/cli_test.go`, extend `TestValidateCmd_ScopeFollowsRunProgress`, which already pins the whole-plan answer with no run recorded against the pending-scope answer once a batch is begun: give its fixture a Delete card whose target is already gone, so the no-run sub-test exits 1 with the missing Delete target as a blocking finding and the begun-batch sub-tests exit 0 carrying it as `delete-target-gone`.
 
 **ImpactSummary:** ValidateDispatch gains a scoped downgrade for absent Delete targets of pending cards once a batch is begun; findings gain a Ref field; the whole-plan entry points are unchanged.

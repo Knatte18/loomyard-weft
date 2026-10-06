@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -22,8 +22,9 @@ Each fix carries a regression test that drives the real `lyx` cobra command wher
 7 — delete-blocked-by-later-card — delete-not-done caused by a later card names it, and recover-batch refuses to loop (D4)
 8 — background-shell-outcome — the background-shell note and warning state what happened and the run's outcome (D9)
 9 — gitrepo-leased-update — leased remote branch update and remote-only commit listing in gitrepo (D7 groundwork)
-10 — reset-moves-remote-branch — webster reset moves the remote task branch under an ancestry gate and a lease (D7)
-11 — publish-push-rejected — Publish's push-rejected halt names the remote tip, the count and the resume (D8)
+10 — fabric-remote-only-commits — Fabric.RemoteOnlyCommits, the remote task branch's tip and the commits HEAD lacks (D7, D8 groundwork)
+11 — reset-moves-remote-branch — webster reset moves the remote task branch under an ancestry gate and a lease (D7)
+12 — publish-push-rejected — Publish's push-rejected halt names the remote tip, the count and the resume (D8)
 
 ## Shared Decisions
 
@@ -41,9 +42,10 @@ Each fix carries a regression test that drives the real `lyx` cobra command wher
 
 ### Decision: cli-drive
 
-- **Decision:** each fix's regression drives the `lyx` cobra command (`lyx webster validate`, `begin-batch`, `record-batch`, `recover-batch`, `rebaseline`, `run`, `reset`) through `internal/webstercli`'s tests; Publish (card 11) is driven through its real producer over a hubforge hub with the real fabric closure.
-- **Rationale:** Publish is a loom row whose GitHub step only `landingshed`'s integration tier can fake; driving it through `lyx loom step` would need a GitHub fake in loomcli's harness, which is new test infrastructure outside this task.
-- **Applies to:** cards 1–8, 10, 11
+- **Decision:** each fix's regression drives the `lyx` cobra command (`lyx webster validate`, `begin-batch`, `record-batch`, `recover-batch`, `rebaseline`, `run`, `reset`) through `internal/webstercli`'s tests; Publish (card 12) is driven through its real producer over a hubforge hub with the real fabric closure.
+- **Rationale:** card 12 departs from the decision record's "driven through the `lyx` CLI command" for D8, whose acceptance item is the push-rejected stuck reason alone: no loomcli test steps the Publish row today, so driving it through `lyx loom step` needs a new loom-step harness, which is new test infrastructure outside this task.
+  The stuck reason is verified at `landingshed`'s integration tier over a hubforge hub with a real fabric push and remote-read closure, whose resumed half also reaches the GitHub step that only that tier fakes, and the production closure's real wiring is driven in loomcli's `landingdeps_integration_test.go`.
+- **Applies to:** cards 1–8, 11, and card 12 as the rationale states
 
 ### Decision: dispatch-scope
 
@@ -56,6 +58,6 @@ Each fix carries a regression test that drives the real `lyx` cobra command wher
 go build ./...
 go vet ./...
 go test ./...
-go test -tags integration ./internal/planparser/... ./internal/planglyph/... ./internal/websterengine/... ./internal/webstercli/... ./internal/gitrepo/... ./internal/fabricengine/... ./internal/landingshed/... ./internal/loomcli/... ./contracts/...
-go test -tags tmux ./internal/webstercli/...
+go test -tags integration ./internal/planparser/... ./internal/planglyph/... ./internal/websterengine/... ./internal/webstercli/... ./internal/gitrepo/... ./internal/fabricengine/... ./internal/landingshed/... ./internal/loomcli/... ./cmd/lyx/... ./contracts/...
+go test -tags tmux ./internal/webstercli/... ./internal/loomcli/...
 go vet -tags llm ./internal/planparser/... ./internal/planglyph/... ./internal/websterengine/... ./internal/webstercli/... ./internal/gitrepo/... ./internal/fabricengine/... ./internal/landingshed/... ./internal/loomcli/...

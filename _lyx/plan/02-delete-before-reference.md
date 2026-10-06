@@ -30,10 +30,11 @@ Wire it into `resolvePass` in `planglyph.go`, after the canonicalization reload,
 Bound, stated in the `LaterDeleteReferences` doc comment: the match is textual, so a same-named unrelated symbol inside a later card's span is also flagged; the fix it names (move the delete later) is always available, which is what makes a blocking false positive acceptable, and it never fires on code outside a later card's **Edit:** targets.
 
 Docs: add `delete-before-reference` (blocking) to `doc.go`'s resolve-backed check list.
-In `contracts/specs/loom-plan-spec.md`, add a paragraph after the "Validation checks" list, beside the `rework-first-card` paragraph, naming `delete-before-reference` as the resolve-backed check `internal/planglyph` adds to the same entry points, with its rule in one sentence.
+In `contracts/specs/loom-plan-spec.md`, add a row for `delete-before-reference` at the end of the "Validation checks" list, after `commit-subject-mismatch` and numbered next, so the list stays the one row per emitted ID the decision record asks for.
+The row says the check is emitted by `internal/planglyph`'s resolve pass, not by `internal/planparser`, at `ValidateFormat`, `Validate`, `ValidateRework` and `ValidateDispatch`, with its rule in one sentence, and the list's intro sentence on the two planparser entry points gets a clause for the rows `internal/planglyph` emits.
 
 Tests:
 `deleteorder_test.go` drives `LaterDeleteReferences` over a small fixture repository (the shape `resolve_test.go` builds), table-driven: a card N deleting a function that card N+1's Edit file still calls is refused naming both cards, the target and the file:line; the same plan with the deleting card numbered after the editing card (the `pair-lifecycle` order) passes; a same-package bare reference and a cross-package `pkg.Name` reference both match, an unqualified same name in another package does not; a method target matches `.Name`; a reference outside a later card's member-glyph span does not match; a file-path Delete target is not checked.
-In `internal/webstercli/cli_test.go`, drive `lyx webster validate` over a plan whose card 1 deletes a function card 2 still calls: exit 1 with `delete-before-reference` under card 1's key; with the two cards swapped it exits 0.
+In `internal/webstercli/cli_test.go`, add rows to card 1's table-driven `TestValidateCmd_PlanGateChecks`: a plan whose card 1 deletes a function card 2 still calls exits 1 with `delete-before-reference` under card 1's key; with the two cards swapped it exits 0.
 
 **ImpactSummary:** Adds one resolve-backed pass to planglyph's shared resolvePass, so every plan gate and webster entry point gains one blocking check; no existing check changes.

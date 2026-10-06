@@ -6,7 +6,6 @@
 - `internal/webstercli/rebaseline.go`
 - `contracts/specs/refusal-spec.md`
 - `internal/websterengine/rebaseline_test.go`
-- `internal/websterengine/recoverbatch_test.go`
 - `internal/webstercli/verbs_test.go`
 
 **Intent:**
@@ -28,9 +27,10 @@ What it lets through: for a dead batch the restamp lands while its strand, kept 
 Docs: in the refusal-spec, reword the "rebaseline card set changed" row's trigger so an edited card of a failed, dead or stuck batch is no longer in it, and add rows "rebaseline: begun card of a done batch", "rebaseline: begun card of an unfinished batch" and "rebaseline: failed batch recovery cannot check", each with the way forward above; update `doc.go`'s rebaseline paragraph and the `rebaseline` `Long` text in `internal/webstercli/rebaseline.go`.
 
 Tests:
-in `rebaseline_test.go`, a table over the batch record's state with one named edited card: `failed`, `dead` and `stuck` accept it, restamp that card's hash and keep StartSHA and warnings; `done`, begun non-terminal, and `failed` with an uncheckable entry each refuse with their reason and way forward and leave the state unchanged; an unnamed edited card of a failed batch still refuses as unnamed.
-`TestRebaseline_RefusesChangedBegunCardBody` and `TestRebaseline_ForeignEditToBegunCardStaysRefused` keep pinning the done or unnamed case they cover; adjust their fixtures if they used a failed batch.
-In `recoverbatch_test.go`, a dead batch whose card was rebaselined and whose recorded strand is still live: `RecoverSpawnOrAttach` stops that strand before it starts the new one, and the rendered recovery prompt carries the edited card's text.
+in `rebaseline_test.go`, a table over the batch record's state with one named edited card: `failed`, `dead` and `stuck` accept it, restamp that card's hash and keep StartSHA and warnings; begun non-terminal and `failed` with an uncheckable entry each refuse with their reason and way forward and leave the state unchanged; an unnamed edited card of a failed batch still refuses as unnamed.
+The done-batch refusal is already driven by `TestRebaseline_RefusesChangedBegunCardBody` and `TestRebaseline_ForeignEditToBegunCardStaysRefused`, so the table has no `done` row: the first test is extended to assert the new done-batch reason beside its existing `changed since it was begun` substring, which the reworded refusal keeps, and the second keeps pinning the unnamed case.
+Adjust either fixture if it used a failed batch.
+A dead batch's live strand being stopped before the recovery spawns is already pinned by `TestRecoverBatch_FirstCallSpawnsArchivesStaleReportAndStopsLiveStrand`, so no `recoverbatch_test.go` test is added.
 In `internal/webstercli/verbs_test.go`, drive `rebaseline --card NN` through the cobra command over a failed batch: exit 0 and the batch record keeps its start SHA; then `recover-batch NN` through its command spawns with the edited card in its prompt; and `rebaseline --card NN` over a done batch exits 1 with D6's reason.
 
 **ImpactSummary:** Rebaseline accepts a named card edit inside a terminal failed, dead or stuck batch by restamping that card's hash; done, unfinished and uncheckable batches keep refusing with clearer reasons.
