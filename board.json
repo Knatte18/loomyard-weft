@@ -1043,6 +1043,24 @@
       "isolated": false,
       "brief": "The status line row of run tabs prints full session names, so with five runs the rightmost fall off a narrow terminal unseen",
       "body": "## Seen 2026-10-06\n\nWith five runs and the prime open, the session row of the status line (the run tabs from `reed-status-tabs`) is wider than a narrow terminal, and the rightmost runs fall off the edge with no sign that they exist.\nThe row prints every session's full name with padding, and run slugs such as `test-suite-prune-core` are long.\n\n## Options\n\n1. Current session full, others truncated, overflow scrolls (recommended): the session the client is in shows its full name, every other session is cut to about 12 characters (`#{=12:session_name}`), and the row uses tmux's list mode (`list=on`, `list=focus`, left and right markers), so a row that still overflows scrolls with `\u003c` and `\u003e` markers and keeps the current session visible.\n2. Index only for other sessions, the current one by full name: the most compact, but the operator has to remember which number is which run.\n3. List-mode scrolling alone, full names kept: the least change, with the fewest sessions visible at once.\n4. Wrap the session row onto further status lines: costs terminal height, and tmux has no automatic wrap, so reed would compute the split itself.\n\nThe run tabs' design is in the note `reed-status-tabs`.\n"
+    },
+    {
+      "id": 147,
+      "slug": "reed-crash-strands",
+      "title": "reed: stray strands after a crash",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reed"
+      ],
+      "issues": [
+        408,
+        409
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "After a crash, folder-open adds a bare claude above a dormant orch, and reed resume revives strands whose work is done",
+      "body": "Two reed bugs seen on 2026-10-06 when the machine crashed and the runs were brought back.\n\n## Bare claude strand above a dormant orch (issue #408)\n\nAfter a machine crash, opening the hub prime in VS Code left an empty `ly:claude` strand in the prime's reed session, with the `ly:orch` strand stacked below it.\n\nCause: the folder-open task chain written by `internal/vscode/config.go` runs `lyx reed add --if-absent --unless-name orch --name claude`.\n`--unless-name` skips the add only while the orch strand is live (`AddStrandUnless`, `internal/reedengine/strand.go`).\nAfter a reboot the orch strand is persisted but dormant, so the check passes, a bare `claude` strand is added, and the orch is resumed into the same session afterwards.\n\nExpected: a prime whose reed state holds an orch strand, live or dormant, gets no bare `claude` strand on folder-open.\nPossible fixes: let `--unless-name` also match a persisted dormant strand, or have the folder-open chain run `lyx reed resume` before the add.\n\n## Resume revives strands whose work is done (issue #409)\n\nAfter a machine crash, `lyx reed resume` in the `test-suite-prune-core` pair recreated two strands: the driver and `ly:test-suite-prune-core:burler`.\nThe burler's round had finished before the crash (verdict written and committed), and the run had moved on.\nWhen the driver re-ran its shed step, the next producer spawned its own strand (`describe`), so the pair showed a dead-weight burler pane beside the live one.\n\nCause: a strand stays persisted in reed's state after the work it was spawned for is done, since only the shuttle wait that would tear it down died with the crash; `resume` replays every persisted, non-live strand without asking whether its work is still pending.\n\nExpected: after a crash, `reed resume` brings back only strands with work left, or a strand is removed from reed's state as soon as its shuttle run reaches a final outcome, independent of the waiting process.\n"
     }
   ],
   "legacy_done": [

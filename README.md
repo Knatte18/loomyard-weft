@@ -45,6 +45,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **Spawned agents edit files with scripts; the no-script rule never reaches them** — [`agents-no-scripted-edits`](design-agents-no-scripted-edits.md) · bug, stencil
 1. **Shuttle: a turn end without output holds the run instead of ending it** — [`shuttle-asking-holds`](design-shuttle-asking-holds.md) · bug, shuttle
    - An asking stop ends the run while the agent lives on, so an answer is lost and a resume spawns a second agent; hold the run and wait on the same agent instead.
+1. **reed: stray strands after a crash** — [`reed-crash-strands`](design-reed-crash-strands.md) · bug, reed
+   - After a crash, folder-open adds a bare claude above a dormant orch, and reed resume revives strands whose work is done
 
 ### Enhancements
 
