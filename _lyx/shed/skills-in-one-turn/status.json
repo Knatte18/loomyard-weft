@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "batch 04-drop-per-skill-load: recover-batch refused with batch_failed (delete-not-done: SkillLoader.SkillLoadSequence, SkillLoader.SkillUnknown, Runner.LoadSkill, Runner.SkillUnknown and the claudeengine equivalents still resolve); card 4 deletes code that card 3 (orch reload) still uses, and the batch order runs 04 before 03",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Batchifier → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "batch 04-drop-per-skill-load: recover-batch refused with batch_failed (delete-not-done: SkillLoader.SkillLoadSequence, SkillLoader.SkillUnknown, Runner.LoadSkill, Runner.SkillUnknown and the claudeengine equivalents still resolve); card 4 deletes code that card 3 (orch reload) still uses, and the batch order runs 04 before 03"
   },
   "history": [
     {
@@ -78,6 +78,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-06T07:38:01Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-06T07:46:36Z"
     }
   ],
   "product": {
