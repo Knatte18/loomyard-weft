@@ -1,6 +1,6 @@
 # Prune the remaining test packages
 
-`test-suite-prune-rest` · Task · enhancement
+`test-suite-prune-rest` · Task · enhancement · running · Loom-Preflight
 
 Depends on: [`test-suite-measure`](design-test-suite-measure.md)
 
