@@ -67,7 +67,8 @@
       "terminal": false,
       "status": "",
       "forkTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/700a9836-446d-4e89-a079-a12fa9d382c2/subagents/agent-a6c4cc2acd32951a3.jsonl"
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/700a9836-446d-4e89-a079-a12fa9d382c2/subagents/agent-a6c4cc2acd32951a3.jsonl",
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/700a9836-446d-4e89-a079-a12fa9d382c2/subagents/agent-a349bdce8ca3f55a6.jsonl"
       ]
     },
     "2": {
@@ -292,6 +293,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/700a9836-446d-4e89-a079-a12fa9d382c2/subagents/agent-a002f8eef530f453e.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/700a9836-446d-4e89-a079-a12fa9d382c2/subagents/agent-aa1c6a96eac228dc3.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/700a9836-446d-4e89-a079-a12fa9d382c2/subagents/agent-ac3f0c1e53f2e932d.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/700a9836-446d-4e89-a079-a12fa9d382c2/subagents/agent-a6c4cc2acd32951a3.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/700a9836-446d-4e89-a079-a12fa9d382c2/subagents/agent-a6c4cc2acd32951a3.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/700a9836-446d-4e89-a079-a12fa9d382c2/subagents/agent-a349bdce8ca3f55a6.jsonl"
   ]
 }
