@@ -12,7 +12,7 @@ Autonomous mode: no operator answered; every pick below is the Discussion produc
 6. #390. Picked "no turn end between boundary and trigger" as the freshness rule, and skipping the skills step after a compaction.
 7. #393. A web check found Claude Code's `/reload-plugins`, which rebuilds the model-facing skill list but not the slash-command parser; since `skills-in-one-turn` loads skills through the Skill tool, that suffices. Picked typing it before every reload.
 8. Restart race. The watcher already handles SIGINT/SIGTERM through a cancel context; picked a stopping record in state and a bounded wait in `start`.
-9. #386. Burler rounds already run through a shuttle gate; picked adding a review-parse gate entry so the session repairs its own file.
+9. #386. Burler rounds already run through a shuttle gate; picked adding a review-parse gate entry so the session repairs its own file, and one self-check verb under `lyx burler`, since the gate-parity pattern requires it.
 10. Attach. Operator decision 2026-10-06 settles it; picked keeping `--no-attach` as a hidden no-op since batten passes it.
 11. Testing. The board asks for a regression test per fix through real CLI wiring; picked the CLI entry per fix with substrate fakes only.
 
@@ -49,6 +49,6 @@ _No rounds yet._
 - Q8 (auto-pick): skills after a compaction? Not retyped; only after `/clear` (D9).
 - Q9 (auto-pick): #393 fix? `/reload-plugins` before every reload (D10). Open risk R1 if the command misbehaves.
 - Q10 (auto-pick): restart race? Stopping record plus bounded wait in `start` (D11).
-- Q11 (auto-pick): #386? A review-parse gate entry reusing `ParseReview` (D12).
+- Q11 (auto-pick): #386? A review-parse gate entry reusing `ParseReview`, plus the self-check verb `PATTERN-gate-self-check-parity` requires beside every mechanical gate (D12). Rationale: the pattern wins over the board's no-new-verbs line.
 - Q12 (auto-pick): `--no-attach`? Hidden accepted no-op (D13).
 - Q13 (auto-pick): test entry per fix? The CLI wiring named in D14, substrate fakes only.
