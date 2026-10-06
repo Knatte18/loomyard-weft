@@ -17,7 +17,7 @@ The commit message names each merged family and how many fixture builds it remov
 `TestMain` keeps `tmuxkit.Main` while any tagged file remains.
 `spawnwatchdog_test.go` and `panebin_test.go` keep their `os.Executable` guard rules: no test may call `SpawnWatchdog` or re-exec the test binary.
 
-**ImpactSummary:** Test files of one package, plus a seam field in its production code only where a moved test needs one; production passes today's value, so reed's callers see no change.
+**ImpactSummary:** Test files of one package, plus a shared fake under `internal/testkit/` where `untag-procedure` allows one, plus a seam field in its production code only where a moved test needs one; production passes today's value, so reed's callers see no change.
 
 **Verify:**
 go test -tags tmux -count=1 ./internal/reedengine/

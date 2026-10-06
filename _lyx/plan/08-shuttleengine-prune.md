@@ -2,6 +2,7 @@
 
 **Edit:**
 - `internal/shuttleengine#`
+- `internal/testkit/shuttlefake#`
 - `docs/benchmarks/test-redundancy.md`
 
 **Intent:**
@@ -13,5 +14,8 @@ Then delete or keep the remaining candidates, rerunning `-pkg ./internal/shuttle
 
 `internal/testkit/shuttlefake` is the package's existing fake; extend it only where a test of another package also needs the extension, per `PATTERN-testkit`.
 Do not touch `internal/shuttleengine/claudeengine`: it is a separate package outside this task.
+
+The `skill-loading-tests-untouched` Shared Decision binds this card: the tests in `startup_test.go` and `session_test.go` that name `Spec.Skills`, `SkillUnknown` or `loadSkill`, and the `skillFakeEngine` in `fakes_test.go`, are neither folded, merged nor deleted, and a candidate among them is kept with `//testtiming:keep` naming `skills-in-one-turn`.
+An extension of `shuttlefake` leaves its `SkillLoader` methods as they are.
 
 **ImpactSummary:** Test files of one package and its report section only; production code is not expected to change.

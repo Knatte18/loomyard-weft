@@ -13,11 +13,11 @@ Then merge scenario families (Shared Decisions, `scenario-merge`) among the test
 The commit message names each merged family and how many fixture builds it removed.
 
 The "Stub driver helpers stay untouched" decision binds this card: `writeStubDriverScript` in `integration_driverbootstrap_test.go` and `integrationWriteStubDriverScript` in `smoke_driverstrand_test.go` keep their names, signatures and bodies, and nothing changes that would require editing them.
-Tests in those two files may still move, fold or merge around them.
+Tests in those two files may still move, fold or merge around them, except a test that exercises the stub driver scripts' skill loading, which `skill-loading-tests-untouched` leaves as it is.
 
 `TestMain` keeps `tmuxkit.Main` and `gitkit.HermeticGitEnv()` while tagged files remain.
 
-**ImpactSummary:** Test files of one package, plus a seam field in its production code only where a moved test needs one; production passes today's value, so `lyx loom` behaves as before.
+**ImpactSummary:** Test files of one package, plus a shared fake under `internal/testkit/` where `untag-procedure` allows one, plus a seam field in its production code only where a moved test needs one; production passes today's value, so `lyx loom` behaves as before.
 
 **Verify:**
 go test -tags tmux -count=1 ./internal/loomcli/

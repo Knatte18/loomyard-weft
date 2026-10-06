@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -37,6 +37,10 @@ The plan ends with the after measurement and a final rerun of the six sections.
 - **Decision:** An untag card reads every `integration` or `tmux` test of its package.
   A test whose behavior does not depend on real git, tmux or a process moves to an untagged file and runs against a fake or in-memory fixture (D6).
   A fake used by one package stays in its `_test.go` files; a fake also needed by another of the six goes under `internal/testkit/<kit>/` (`PATTERN-testkit`), which is the one change outside the card's own package an untag card may make.
+  An untag card's declared write scope is therefore its Targets plus that kit directory, whether the kit is new or an existing one the card extends.
+  The files cannot be named before the tests are read, so the card's Targets do not list them; the card's commit message names every kit path it created or changed.
+  An extension leaves the `SkillLoader` methods of `shuttlefake` as they are (`skill-loading-tests-untouched`).
+  A test that needs a real hub builds it through `internal/hubforge` (`PATTERN-hubforge-fixtures`); a moved test drops the hub, and no card hand-assembles one in a temp dir.
   A missing seam is added as a struct field or option, never a package-level variable, with production passing today's value.
   A moved test passes `cmd/lyx`'s `tierpurity_test.go` and `PATTERN-test-isolation`, or it stays tagged.
   When the package's last tagged test file goes, its `TestMain` may drop `tmuxkit.Main`; a package that still spawns git keeps `gitkit.HermeticGitEnv()`.
@@ -64,12 +68,22 @@ The plan ends with the after measurement and a final rerun of the six sections.
   2. Fold (D5): tests that share setup and differ only in inputs and expected outputs become one table-driven test, judged by reading every test of the package, including the ones the tool excludes.
      Each former test survives as a named `t.Run` subtest, and the folded test keeps `t.Parallel`.
   3. Delete or keep (D4): a candidate is deleted only when it is in the current removable set and a read of its assertions finds nothing its covering tests do not also assert, and it does not make git run module code through a hook, alias or helper it installs.
+     A candidate that `skill-loading-tests-untouched` protects is never deleted or folded; it is kept.
      A candidate whose assertions add something is folded into its covering test as an assertion or row, or kept with `//testtiming:keep <reason>` naming what it pins that its covering tests do not.
   4. A test listed as "failed" is fixed so it passes alone (D7).
   5. Rerun step 1 and repeat 2–4 until the section lists no candidate outside "Kept" and no test as "failed", then commit the test changes with the regenerated section.
-  The six packages' test files are this task's; no other package's test file is edited (`test-suite-prune-rest` owns them), except a shared kit under `internal/testkit/` per `untag-procedure`.
+  The six packages' test files are this task's; no other package's test file is edited (`test-suite-prune-rest` owns them).
+  A prune card writes no kit file unless its own Targets name the kit (card 8's `internal/testkit/shuttlefake#`).
 - **Rationale:** D4, D5 and D7, and `PATTERN-test-economy`'s rule that only the removable set may be deleted together.
-- **Applies to:** cards 7, 8, 10, 12, 14, 16
+- **Applies to:** cards 7, 8, 10, 12, 14
+
+### Decision: skill-loading-tests-untouched
+
+- **Decision:** No test that exercises skill loading is edited, folded, merged or deleted: tests naming `Spec.Skills`, `SkillLoadSequence`, `SkillUnknown`, `DefaultSkillLoadTimeout`, `loadSkill` or `loadSkillsThenPrompt` in `internal/shuttleengine` and `internal/shuttleengine/claudeengine`, the `SkillLoader` fakes they use (in the package's test files and in `internal/testkit/shuttlefake`), and the stub driver scripts in `internal/loomcli`.
+  A redundancy candidate among them is kept with `//testtiming:keep` whose reason names `skills-in-one-turn`.
+  A table that folds neighbouring tests leaves a protected test out of the fold, and a fake extension leaves the `SkillLoader` methods as they are.
+- **Rationale:** The parallel task `skills-in-one-turn` rewrites skill loading and its tests; pruning the same tests now would conflict at landing and could delete a test that task changes.
+- **Applies to:** cards 7, 8, 10, 12, 13, 14, 16, 17
 
 ## verify:
 

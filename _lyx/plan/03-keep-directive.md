@@ -30,7 +30,7 @@ Bound: the directive changes the report's output only, never which tests run or 
 
 Tests: `keep_test.go` drives the scan over fixture files in `t.TempDir()` — a valid directive with and without a preceding doc comment, an empty reason, a whitespace-only reason, a directive separated from its test, a doubled directive, a directive followed by a non-test function, and a directive at end of file — asserting the exact map or the error's file, line and test.
 `TestRenderPackage` gains a row with a kept candidate (absent from the table, present under "Kept") and a kept non-candidate (listed under "Kept").
-`TestClassify` gains an assertion or row that a kept test still covers another test's blocks, if `classify` reads the keep at all; otherwise the render row suffices.
+`TestRenderPackage`'s kept-candidate row also has another candidate whose Covering column names the kept test, pinning that a kept test stays in the covering pool.
 
 Docs, same commit: the `main.go` package doc and `docs/benchmarks/running-tests.md` describe the directive; `pattern/PATTERN-test-economy.md` says a kept candidate carries the directive with what it pins that its covering tests do not (an error message, an output shape, an ordering).
 
