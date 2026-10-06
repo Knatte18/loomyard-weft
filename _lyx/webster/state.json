@@ -8,7 +8,7 @@
     "03-orch-reload-one-turn.md": "d6e5fc1983cd1abe75cbc135667378900e0fac13ae7ef1c5c40e5f23a5f72f14",
     "04-drop-per-skill-load.md": "2f843c1b51d73b45482eed33ffa9b11eae1649efc9e90cc6a09742810cec6bce"
   },
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "5cb094fcf51118efe78a00cfaac33ab5",
   "masterSessionId": "1d365c19-8158-48fa-8cfa-29693666179c",
   "assertedModel": "sonnet",
@@ -77,12 +77,33 @@
       "kind": "fork",
       "spawnedAt": "2026-10-06T07:45:34Z",
       "sessionId": "1d365c19-8158-48fa-8cfa-29693666179c",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "failed",
+      "digest": {
+        "batch": "04-drop-per-skill-load",
+        "status": "failed",
+        "head_sha": "f3cd9b136a5f72c263db621f9dd929f0acd3e198",
+        "reasons": [
+          "delete-not-done/4-drop-per-skill-load[blocking]: Delete target \"internal/shuttleengine#SkillLoader.SkillLoadSequence\" still resolves found",
+          "delete-not-done/4-drop-per-skill-load[blocking]: Delete target \"internal/shuttleengine#SkillLoader.SkillUnknown\" still resolves found",
+          "delete-not-done/4-drop-per-skill-load[blocking]: Delete target \"internal/shuttleengine#Runner.LoadSkill\" still resolves found",
+          "delete-not-done/4-drop-per-skill-load[blocking]: Delete target \"internal/shuttleengine#Runner.SkillUnknown\" still resolves found",
+          "delete-not-done/4-drop-per-skill-load[blocking]: Delete target \"internal/shuttleengine/claudeengine#Claude.SkillLoadSequence\" still resolves found",
+          "delete-not-done/4-drop-per-skill-load[blocking]: Delete target \"internal/shuttleengine/claudeengine#Claude.SkillUnknown\" still resolves found",
+          "delete-not-done/4-drop-per-skill-load[blocking]: Delete target \"internal/shuttleengine/claudeengine#unknownSkillNeedle\" still resolves found",
+          "delete-not-done/4-drop-per-skill-load[blocking]: Delete target \"internal/shuttleengine/claudeengine#unknownCommandNeedle\" still resolves found",
+          "delete-not-done/4-drop-per-skill-load[blocking]: Delete target \"internal/shuttleengine/claudeengine#TestSkillLoadSequence\" still resolves found",
+          "delete-not-done/4-drop-per-skill-load[blocking]: Delete target \"internal/shuttleengine/claudeengine#TestSkillUnknown\" still resolves found"
+        ]
+      },
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-skills-in-one-turn/1d365c19-8158-48fa-8cfa-29693666179c/subagents/agent-a2125c0b6abe3bc92.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-skills-in-one-turn/1d365c19-8158-48fa-8cfa-29693666179c/subagents/agent-a07543728e0752e6e.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-skills-in-one-turn/1d365c19-8158-48fa-8cfa-29693666179c/subagents/agent-a018e58d4efea4a39.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-skills-in-one-turn/1d365c19-8158-48fa-8cfa-29693666179c/subagents/agent-a018e58d4efea4a39.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-skills-in-one-turn/1d365c19-8158-48fa-8cfa-29693666179c/subagents/agent-a2125c0b6abe3bc92.jsonl"
   ]
 }
