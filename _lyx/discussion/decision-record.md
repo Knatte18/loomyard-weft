@@ -123,6 +123,12 @@ Decision: This task leaves writeStubDriverScript in internal/loomcli/integration
 
 Rationale: The parallel task skills-in-one-turn edits both helpers; leaving them alone keeps the two PRs from conflicting.
 
+### Added after Discussion (parent, 2026-10-06): Measurements go in a committed benchmark report
+
+Decision: D8's before and after numbers (per package: top-level test count, wall and serial time as medians of three runs, statement coverage, and the load average of each run) are written to a new measurement report, docs/benchmarks/test-suite-prune-core.md, linked from docs/benchmarks/running-tests.md. The before half is committed before any test change, the after half at the end, together with each lost coverage block and the deleted test that alone covered it. test-suite-timing.md stays untouched.
+
+Rationale: The Describe session that writes the PR description reads only the decision record, the board entry, the task diff and the run records, so numbers kept outside the diff never reach the PR. docs/benchmarks already holds measurement reports of this kind (fixture-copy.md), and a measurement report is allowed to record one run at a point in time.
+
 ## Constraints
 
 - `PATTERN-test-economy`: candidate reading rules, removable-set-only deletion, folding into tables. D2's keep directive extends its background.
