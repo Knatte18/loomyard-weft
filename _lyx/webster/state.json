@@ -21,7 +21,7 @@
     "16-fabricengine-prune.md": "9ea90985fa19a188d2db879ec2a1247a0d96846b48d2a11e46c73eaf93e33d2f",
     "17-measure-after.md": "6abb65ef310e121a380eed579ccbe75a0c3cdda7d674618f48dab9b79bd074cd"
   },
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "13051109d82b94d235127d1375fa7f7f",
   "masterSessionId": "700a9836-446d-4e89-a079-a12fa9d382c2",
   "assertedModel": "sonnet",
@@ -207,6 +207,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/700a9836-446d-4e89-a079-a12fa9d382c2/subagents/agent-a002f8eef530f453e.jsonl"
       ]
+    },
+    "8": {
+      "slug": "shuttleengine-prune",
+      "cards": [
+        "08-shuttleengine-prune"
+      ],
+      "cardHashes": {
+        "08-shuttleengine-prune": "f175d54265d284d7e694a5b7fab430a2e4e463a4c5674da3b05ffafa3e6b6eee"
+      },
+      "startSha": "f6d52f1ea3d3ed540ece3e70985ef6218fc71103",
+      "kind": "fork",
+      "spawnedAt": "2026-10-06T08:42:38Z",
+      "sessionId": "700a9836-446d-4e89-a079-a12fa9d382c2",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
