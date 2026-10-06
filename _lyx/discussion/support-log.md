@@ -33,7 +33,7 @@ Autonomous mode: no operator answers; every decision below is an auto-pick recor
 - D6, accepting an edit to a begun non-terminal batch: its fork may be in flight on the old card.
 - D6, resetting only that batch's record: a new partial-reset mechanic; restamping the hash of a failed batch is enough for `recover-batch`.
 - D7, Publish refetching and retrying the push: the parent is already merged in, so a retry meets the same diverged task branch.
-- D7, Publish force-pushing on rejection: Publish cannot tell the run's abandoned commits from someone else's; reset can, from the pre-reset HEAD.
+- D7, Publish force-pushing on rejection: Publish cannot tell the run's abandoned commits from someone else's; reset can only while the local HEAD still holds them, and not in the #404 state of an already rewound local branch, where the operator's judgment is the guard.
 - D9, waiting until the shell exits: can hang a run forever.
 - D9, killing the shell: needs a provider-specific stop mechanism shuttle lacks.
 - D9, escalating: turns finished runs into stuck ones over a shell that may be harmless.
