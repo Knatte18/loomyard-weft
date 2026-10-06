@@ -54,6 +54,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - A crash-resume note fires in the gap between a finished producer and the next one
 1. **Webster counts Master's turn end past a still-running background shell** — [`webster-background-shell-wait`](design-webster-background-shell-wait.md) · bug, webster
    - Decide what happens when background_shell_wait_min elapses with a shell alive, and say it in the note
+1. **The orch resumes runs without commands that take over the operator's terminal** — [`orch-resume-without-attach`](design-orch-resume-without-attach.md) · bug, orch, loom, reed
+   - lyx loom start from the orch switches the operator's tmux client; the orch needs a side-effect-free resume verb
 
 ### Enhancements
 

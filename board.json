@@ -1048,6 +1048,23 @@
       "isolated": false,
       "brief": "Decide what happens when background_shell_wait_min elapses with a shell alive, and say it in the note",
       "body": "Imported from [issue #397](https://github.com/Knatte18/loomyard/issues/397).\n\n## What happened\n\n`lyx webster` wrote a `webster-background-shell` note titled \"Master's wait counted a turn end past a background shell\".\nIt lists a background shell, a polling `until grep -q '^done$' \u003clog\u003e; do sleep 5; done` loop, that had run past `background_shell_wait_min` (10 minutes) while Master's turn end was being judged.\nThe note says the shell may still be running in the session.\n\n## Why it is abnormal\n\nThe note records that Master's turn end was counted although a background shell was still alive past the wait limit.\nIt is unclear whether the turn end should have been held until the shell finished, or whether the shell should have been stopped.\nA shell left running across a turn end can outlive its purpose or race with the next step, and the note gives the operator no outcome: whether the shell was killed, whether the wait gave up, and what the run did next.\n\n## What to do\n\nDecide the intended behavior when `background_shell_wait_min` elapses with a shell still running: keep waiting, kill the shell, or escalate.\nMake the note state which of these happened.\n\nProvenance: task `test-suite-measure`; notes: `webster-background-shell.md`.\n"
+    },
+    {
+      "id": 138,
+      "slug": "orch-resume-without-attach",
+      "title": "The orch resumes runs without commands that take over the operator's terminal",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "orch",
+        "loom",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "lyx loom start from the orch switches the operator's tmux client; the orch needs a side-effect-free resume verb",
+      "body": "Seen 2026-10-06: the prime's reed window jumped to other sessions \"by itself\" while the operator watched the orch.\nThe cause was the orch's own `lyx loom start` calls in task worktrees: the orch runs inside reed's tmux, so `$TMUX` is set, and `lyx loom start` without `--no-attach` runs `tmux switch-client` onto the task's session (`internal/loomcli/start.go`), taking the operator's terminal with it.\n`lyx orch start` does the same without `--no-attach` (`internal/orchcli/handover.go`).\n\nThe orch role (`contracts/stencils/orch/orch-template-role.md`) tells the orch to resume a halted child with `lyx loom start`, an operator verb whose job includes handing over the terminal.\nIn practice the call also did not move the runs: a live driver resumed only once the orch messaged it.\n\n## Direction\n\n- The orch resumes a child through a verb with no interactive side effect: a resume verb that only records the decision and wakes the run's driver (or batten), never spawning or attaching anything.\n  The role stencil names that verb and never `lyx loom start`.\n- `lyx loom start` and `lyx orch start` never switch the tmux client when called from an agent (`LYX_STRAND_NAME` set), whatever the flags; the terminal handoff is for an operator's shell only.\n"
     }
   ],
   "legacy_done": [
