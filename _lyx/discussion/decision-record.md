@@ -35,20 +35,25 @@ A test in an untagged file is never excluded as spawning or unresolved, because 
 A test in a tagged file with a call the scan cannot resolve stays excluded.
 
 Rationale: coverage misses only code that runs in a child process, and git's own execution is not module code, so a test that runs git keeps every block it reaches in-process.
-The current rule leaves 483 of fabricengine's 697 tests and all 212 judged-out shedadapters tests outside the report, which makes the tool useless for this task.
+The current rule leaves most tests of these packages outside the report, which makes the tool useless for this task.
 Bound: the change only adds candidates to the report.
 Every candidate is still checked by hand for assertion-only contracts before deletion (D4), so a wrong classification costs review time, never a silent deletion.
+The scan does not detect a hook, alias or helper a test installs so that git runs module code; D4's hand check therefore asks whether the candidate makes git run module code, and such a candidate is kept under D2.
 An untagged test that spawns anyway breaks `PATTERN-test-speed`, and its under-reported coverage can only turn it into a candidate that D4's check sees.
 
 ### D2 — A kept candidate carries `//testtiming:keep <reason>`
 
 Decision: a candidate the prune keeps carries a `//testtiming:keep <reason>` directive comment directly above its `func Test…` line.
 The tool lists such a test under a separate "Kept" list in its package section, with the reason, instead of as a candidate.
-An empty reason is an error: the tool exits non-zero naming the file and test.
+An empty reason, including one of only whitespace, is an error: the tool exits non-zero naming the file and test.
 The reason names what the test pins that its covering tests do not (an error message, an output shape, an ordering).
 
 Rationale: "no redundant candidate left without a stated reason" is checkable only if the reason is where the tool reads it, and the test source is the one durable place a rerun sees.
 Bound: the directive changes report output only, never which tests run, and the reason is printed beside the test, so a keep is always visible.
+A directive counts only as the comment line directly above its test function.
+A second directive on one test, or a directive whose next line does not start a top-level `func Test…`, is an error naming file and line, like the empty reason.
+A kept test stays in the covering pool and in the removable computation.
+A directive on a test that is not a candidate is listed under "Kept" with its reason.
 
 ### D3 — A narrowed run rewrites only its own sections
 
@@ -56,12 +61,17 @@ Decision: when `-redundancy` runs with a `-pkg` narrower than the module and the
 A package section that no longer has tests is removed.
 
 Rationale: this task and `test-suite-prune-rest` both update the one committed report in parallel; disjoint section rewrites merge cleanly where a whole-file rewrite conflicts.
+Bound: the splice happens only when the run's tag set equals the one in the existing header; otherwise the tool exits non-zero and writes nothing.
+A section is removed only when the package lists no tests; a package that fails to list or build keeps its old section and makes the run exit non-zero, while the sections of the other measured packages are still written.
+A measured package with no section in the existing report gets a new one, placed in the report's package order (sorted by import path).
+A missing `-out` file is written whole.
 
 ### D4 — Deleting a candidate
 
 Decision: a candidate is deleted only if it is in the removable set of the current report and a read of its assertions finds nothing its covering tests do not also assert.
+The same read asks whether the candidate makes git run module code, through a hook, alias or helper it installs; the scan cannot see that, and such a candidate is kept under D2.
 Otherwise it is folded into its covering test as an assertion or a table row, or kept under D2.
-After a deletion pass the tool is rerun on the six packages and the pass repeats until no unhandled candidate remains.
+After a deletion pass the tool is rerun on the six packages and the pass repeats until no candidate outside the Kept list remains.
 
 Rationale: `PATTERN-test-economy`: coverage blocks do not see assertions, and only the removable set may go together.
 
@@ -82,11 +92,12 @@ Where the production code offers no seam for the fake, the task adds one as a st
 
 Rationale: `PATTERN-test-economy`: a behavior testable with a fake is tested untagged.
 Bound: a seam changes no production behavior, since production passes the current dependency; the moved test passes `tierpurity_test` and `PATTERN-test-isolation`, or it stays tagged.
-A package left with no tagged test file drops its `tmuxkit.Main` wiring only if `PATTERN-test-isolation` no longer requires it.
+A package whose last `integration`, `tmux` or `llm` test file is retagged untagged may remove the `tmuxkit.Main` call from its `TestMain`, and a package that keeps any such file keeps the call.
+A package that still spawns git keeps `gitkit.HermeticGitEnv()`.
 
 ### D7 — Tests the tool cannot run alone
 
-Decision: a test the report lists as "failed" when run alone (nine in loomcli) is fixed so it passes alone, or the tool's single-test run is fixed if the fault is the tool's.
+Decision: a test the report lists as "failed" when run alone is fixed so it passes alone, or the tool's single-test run is fixed if the fault is the tool's.
 The rerun lists none of the six packages' tests as "failed".
 
 Rationale: a test that fails alone either depends on another test's side effect, which `PATTERN-test-speed`'s parallel rule forbids, or exposes a tool defect; either way the test stays outside judgment until fixed.
@@ -122,7 +133,7 @@ Rationale: the board's done-when asks the PR to state count and wall time, and t
 ## Open risks
 
 - `test-suite-prune-rest` runs in parallel against the pre-D1 tool and may also edit `cmd/testtiming` or the report header; the hub compares both PRs at PR-Gate.
-- D1 raises the candidate count sharply in fabricengine and websterengine, so the hand check under D4 is the bulk of the work.
+- D1 raises the candidate count sharply, so the hand check under D4 is the bulk of the work.
 - Wall time moves with machine load; the before and after runs may not be comparable if other runs are live, which the recorded load averages expose.
 - A seam added for D6 touches production code in a package other tasks also change.
 
@@ -130,13 +141,20 @@ Rationale: the board's done-when asks the PR to state count and wall time, and t
 
 - `go run ./cmd/testtiming -redundancy -tags integration,tmux -pkg <the six packages>` lists, for each of the six packages, no candidate outside the "Kept" list and no test as "failed".
 - Every "Kept" entry has a non-empty reason; the tool refuses a `//testtiming:keep` with an empty reason.
-- A test that spawns only git in an integration file, and every test in an untagged file, is judged by the tool rather than listed as "no coverage"; a test that references `lyxbin` or lives in a `tmux` file is still excluded.
-- A narrowed rerun rewrites only the measured packages' sections of an existing report and leaves the others byte-identical.
+- A test that spawns only git in an integration file is judged by the tool; no test in an untagged file is listed with the spawns or unclassifiable reason.
+- A test that references `lyxbin`, `os.Executable`, `os.Args[0]` or the `go` toolchain, or lives in a `tmux` file, is still excluded, and so is a test in a tagged file with a call the scan cannot resolve.
+- A `//testtiming:keep` directive that is separated from its test, duplicated on one test, or has no test below it is refused like an empty reason.
+- A narrowed rerun rewrites only the measured packages' sections of an existing report and leaves the others and the header byte-identical.
+- A narrowed rerun removes the section of a package that lists no tests, refuses a tag set that differs from the header's and writes nothing, and writes a missing `-out` file whole.
+- A narrowed rerun with a package that fails to list or build keeps that package's old section, still writes the other measured sections, and exits non-zero.
+- A narrowed rerun for a package with no section in the existing report adds one in import-path order.
+- A `//testtiming:keep` on a test that is not a candidate is listed under "Kept" with its reason, and a kept test still counts among the covering tests of the others.
+- A `//testtiming:keep` with a whitespace-only reason is refused like an empty one.
 - Each package's statement coverage after is at least its coverage before, or the PR names each lost block and the deleted test that alone covered it.
 - The PR states, per package, top-level test count, wall time and coverage before and after.
 - Every folded test keeps each former test as a named subtest.
 - `go vet` under each tag, `go test ./...`, and `go test -tags integration ./...` and `-tags tmux` on the six packages and `cmd/lyx` and `cmd/testtiming` pass.
-- `pattern/PATTERN-test-economy.md` and `docs/benchmarks/running-tests.md` describe D1's exclusion rule and D2's directive.
+- `pattern/PATTERN-test-economy.md`, `docs/benchmarks/running-tests.md` and the `cmd/testtiming` package doc describe D1's exclusion rule, D2's directive and D3's splice.
 
 ## Notes for the plan writer
 
