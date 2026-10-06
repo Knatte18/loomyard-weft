@@ -36,8 +36,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 1. **Webster blocks when a Delete target is already gone** — [`webster-delete-already-gone`](design-webster-delete-already-gone.md) · bug, webster
    - begin-batch refuses plan_drifted when an earlier batch already deleted a later card's Delete target
-1. **Plan-Gate refuses a Delete card not ordered after the cards that remove its callers** — [`webster-delete-ordering`](design-webster-delete-ordering.md) · bug, webster
-   - The plan carries the order; Plan-Gate refuses an unordered Delete, Webster follows the plan as written
+1. **A valid plan runs in card order: Plan-Gate refuses backward dependencies, Webster never reorders** — [`webster-delete-ordering`](design-webster-delete-ordering.md) · bug, webster
+   - Card N never depends on a later card; Plan-Gate enforces it and Webster drops its own sequencing
 1. **Webster begin-batch spends a minute validating the plan per batch** — [`webster-batch-validation-speed`](design-webster-batch-validation-speed.md) · bug, webster, quarry
    - quarry#34 re-parses per target; fix it or validate incrementally; drop the per-batch model assertion
 1. **Config changes a task makes never reach the parent** — [`config-reaches-parent`](design-config-reaches-parent.md) · bug, config, fabric, loom
