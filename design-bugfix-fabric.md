@@ -1,6 +1,6 @@
 # Bugfix: fabric and config propagation
 
-`bugfix-fabric` · Task · bug, fabric, config, reed · running · Plan-Bouncer
+`bugfix-fabric` · Task · bug, fabric, config, reed · running · Batchifier
 
 Bugfix only (operator, 2026-10-06): fix what each section below reports, with a regression test per fix that drives the real CLI wiring, not only fakes.
 No new verbs, config keys or features; a reviewer treats any extension as a scope finding.
