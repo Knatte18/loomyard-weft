@@ -1,6 +1,6 @@
 # Prune the six largest test packages
 
-`test-suite-prune-core` · Task · enhancement · running · Loom-Preflight
+`test-suite-prune-core` · Task · enhancement · running · Discussion-Write
 
 Depends on: [`test-suite-measure`](design-test-suite-measure.md)
 
