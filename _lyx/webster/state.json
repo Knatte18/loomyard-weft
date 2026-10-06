@@ -21,9 +21,9 @@
     "16-fabricengine-prune.md": "9ea90985fa19a188d2db879ec2a1247a0d96846b48d2a11e46c73eaf93e33d2f",
     "17-measure-after.md": "6abb65ef310e121a380eed579ccbe75a0c3cdda7d674618f48dab9b79bd074cd"
   },
-  "currentBatch": 0,
-  "masterStrand": "896a2dda3764d20af697d31a9874d8da",
-  "masterSessionId": "eefd2b00-f9b4-4c0d-9b83-22999b70d67d",
+  "currentBatch": 11,
+  "masterStrand": "b63cd236de04de2fe381084bc6626c99",
+  "masterSessionId": "10330750-d8de-40c1-ba25-4d9793b60931",
   "assertedModel": "sonnet",
   "batches": {
     "1": {
@@ -81,6 +81,21 @@
       "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/test-suite-prune-core/.lyx/shuttle/64497684fe95b8316469dfb86ab1e7df",
       "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/test-suite-prune-core/.lyx/shuttle/64497684fe95b8316469dfb86ab1e7df/events.jsonl",
       "eventsOffset": 694
+    },
+    "11": {
+      "slug": "reedengine-untag",
+      "cards": [
+        "11-reedengine-untag"
+      ],
+      "cardHashes": {
+        "11-reedengine-untag": "6b91bad28829d99dfbc05431a565d526683603574dffe5cfb35b65cd0a1320b3"
+      },
+      "startSha": "64669c8ee776434bf352a5cde75b78fb7ee86fad",
+      "kind": "fork",
+      "spawnedAt": "2026-10-06T11:00:33Z",
+      "sessionId": "10330750-d8de-40c1-ba25-4d9793b60931",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "exclusion-out-of-process",
