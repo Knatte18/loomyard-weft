@@ -1,12 +1,12 @@
 {
   "current_producer": "Publish",
-  "state": "blocked",
-  "error": "push rejected by the remote",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Publish",
     "last": "Publish → stuck",
-    "wait": "push rejected by the remote"
+    "wait": ""
   },
   "history": [
     {
