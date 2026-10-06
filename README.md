@@ -30,7 +30,7 @@ Starts when every entry it names under After is done.
    - Stage 3: review rounds run the impacted set, full plan verify only at Webster gate and Publish/Finalize; after-state recorded; per-package test budget guard
    - **After:** `test-suite-prune-core`, `test-suite-prune-rest`
 1. **Bugfix: fabric and config propagation** — [`bugfix-fabric`](design-bugfix-fabric.md) · bug, fabric, config, reed
-   - Bugfix only: a weft without .weft/ drops LYX_PARENT, and task config changes never reach the parent
+   - Bugfix only: a weft without .weft/ drops LYX_PARENT, task config changes never reach the parent, and fabric ignores existing origin branches when it builds a pair
    - **After:** `test-suite-prune-core`, `test-suite-prune-rest`
 
 ## Notes
