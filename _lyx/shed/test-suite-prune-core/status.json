@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "Batch 10-websterengine-prune: the fork was killed mid-work and its single re-fork died on an API error, so no report was written; recover-batch 10 ended status dead (dead_reason: asking).",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Batchifier → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "Batch 10-websterengine-prune: the fork was killed mid-work and its single re-fork died on an API error, so no report was written; recover-batch 10 ended status dead (dead_reason: asking)."
   },
   "history": [
     {
@@ -116,6 +116,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-06T07:54:32Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-06T10:43:39Z"
     }
   ],
   "product": {
