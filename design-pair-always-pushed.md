@@ -1,4 +1,4 @@
-# Agents commit through lyx fabric, which pushes warp and weft together
+# The warp branch is pushed with the weft after every step
 
 `pair-always-pushed` · Note · bug, loom
 
@@ -11,4 +11,6 @@ Cause: agents commit warp with their own `git commit`, and pushing is left to wh
 A Burler round commits each fix and never pushes (`internal/burlerengine/doc.go`, `FixScopeSource`, and its prompt in `internal/burlerengine/prompt.go`).
 `lyx fabric commit`, `push` and `sync` cover the weft only, so a weft push never carries the warp along.
 
-Operator direction: every agent in loomyard commits through a `lyx fabric` verb, never a bare `git commit`, and that verb commits and pushes the warp together with the weft, so the remote is never behind.
+Operator direction: the remote is never behind, and that must not rest on agents.
+The operator first wanted every agent to commit through a `lyx fabric` verb that pushes warp with weft, then judged that agents will keep running `git commit` whatever their prompt says.
+So the push belongs to Go: wherever the weft is pushed after a step, the warp branch is pushed with it, whatever made the commits.
