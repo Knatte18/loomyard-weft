@@ -11,9 +11,6 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Prune the six largest test packages** — [`test-suite-prune-core`](design-test-suite-prune-core.md) · enhancement · running · Finalize
-   - Stage 2b: delete redundant tests and fold near-identical ones in fabricengine, websterengine, reedengine, shuttleengine, loomcli, shedadapters
-   - **Before:** `test-tiers`
 1. **Prune the remaining test packages** — [`test-suite-prune-rest`](design-test-suite-prune-rest.md) · enhancement · running · Webster
    - Stage 2c: delete redundant tests and fold near-identical ones in every package outside prune-core, in parallel with it
    - **Before:** `test-tiers`
@@ -30,7 +27,7 @@ Starts when every entry it names under After is done.
 
 1. **Which gate runs which test tier, after-state and budget guard** — [`test-tiers`](design-test-tiers.md) · enhancement, loom, webster
    - Stage 3: review rounds run the impacted set, full plan verify only at Webster gate and Publish/Finalize; after-state recorded; per-package test budget guard
-   - **After:** `test-suite-prune-core`, `test-suite-prune-rest`
+   - **After:** `test-suite-prune-rest`
 
 ## Notes
 
@@ -164,6 +161,8 @@ Finished, awaiting `lyx board prune`.
    - Tier 1 anomaly issues carry only keys and blank fields; drop Go-side filing and feed anomalies to Friction-Reflect instead
 1. **Measure the test suite, make it fast, settle its rules** — [`test-suite-measure`](design-test-suite-measure.md) · enhancement · done
    - Stage 2a: per-test coverage tool and before-state, real-time seams and t.Parallel, tmux socket leak, an LLM test tier, PATTERN Testing consolidated
+1. **Prune the six largest test packages** — [`test-suite-prune-core`](design-test-suite-prune-core.md) · enhancement · done
+   - Stage 2b: delete redundant tests and fold near-identical ones in fabricengine, websterengine, reedengine, shuttleengine, loomcli, shedadapters
 1. **board.yaml is read per worktree though the board is one per hub** — [`board-config-per-worktree`](design-board-config-per-worktree.md) · bug, board, config · done
    - A pair with an older board.yaml re-renders README with the old types; move board.yaml beside fabric.yaml in _board
 1. **Agents stop wrapping commands: stdin without a hook, a bare shed step** — [`agent-command-wrapping`](design-agent-command-wrapping.md) · bug, enhancement, shuttle, shed, stencil · done

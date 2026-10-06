@@ -1,6 +1,6 @@
 # Prune the six largest test packages
 
-`test-suite-prune-core` · Task · enhancement · running · Finalize
+`test-suite-prune-core` · Task · enhancement · done
 
 Depends on: [`test-suite-measure`](design-test-suite-measure.md)
 
