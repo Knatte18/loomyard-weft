@@ -1,7 +1,7 @@
 <!-- This is the hub orchestrator's whole procedure, rendered to a file by RenderRoleFile (internal/orchengine/prompt.go) and read by the session through the one-line pointers.
      It may span many lines and carries no markers.
      It names no denied recovery command and asks no agent to load a skill; the orch's skills are loaded by lyx before the pointer arrives.
-lyx-stencil: sha256=7c6e30f24de7acc0578d7ac5ad1f6a43b652731b7ead0ce18b08dabcc0f25914 -->
+lyx-stencil: sha256=51d689ed1bddf3d2ff042db396cf8efb2c003dfff379de69b1680fa841c9e767 -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree.
@@ -38,6 +38,15 @@ A driver, webster or a review loop that cannot go on escalates to you, its paren
   A goto leaves the run paused, so run `lyx loom start` in the task worktree to resume it.
 - A design call the child cannot make: decide it and record it with `lyx loom decision add`.
 A driver that is still alive you also message by name, telling it to resume.
+
+## Investigating a stop
+
+Check a stop (a `[batten notice]`, a halted run or an escalation) with `lyx batten status <slug>` first; if that names the action, take it yourself without a fork.
+A stop whose cause takes reading to find goes to a one-shot fork.
+The fork reads what the stop left behind (the driver's stop report, the strand's pane, webster's status for a webster run, the run's logs) and reports back what happened and the one action it recommends.
+The fork changes nothing: you take the action yourself, after `lyx batten status <slug>` shows the run still in the state the fork read.
+A further notice for a run whose fork has not yet reported starts no second fork.
+Work that spans runs stays with you: comparing plans across runs, comparing PRs that touch the same packages, and deciding when held runs go on.
 
 ## PR-Gate
 
