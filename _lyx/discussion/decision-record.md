@@ -147,6 +147,12 @@ Decision: A family is merged when the merge removes fixture builds: N tests that
 
 Rationale: Per-family timing on a loaded machine is noise, and a removed fixture build is a cost cut that can be counted. This replaces the condition 'only where the before and after measurement shows a wall-time cut' in the operator decision on scenario tests.
 
+### Added after Discussion (parent, 2026-10-06): Skill-loading tests are left to skills-in-one-turn
+
+Decision: No test that exercises skill loading is edited, folded, merged or deleted: tests naming Spec.Skills, SkillLoadSequence, SkillUnknown, DefaultSkillLoadTimeout, loadSkill or loadSkillsThenPrompt in internal/shuttleengine and internal/shuttleengine/claudeengine, the SkillLoader fakes they use, and the stub driver scripts in internal/loomcli. A redundancy candidate among them is kept with //testtiming:keep naming skills-in-one-turn.
+
+Rationale: The parallel task skills-in-one-turn rewrites skill loading and its tests; pruning the same tests at the same time would conflict at landing and could delete a test that task changes.
+
 ## Constraints
 
 - `PATTERN-test-economy`: candidate reading rules, removable-set-only deletion, folding into tables. D2's keep directive extends its background.
