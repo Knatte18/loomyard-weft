@@ -1,6 +1,6 @@
 # Prune the six largest test packages
 
-`test-suite-prune-core` · Task · enhancement · running · Plan-Write
+`test-suite-prune-core` · Task · enhancement · blocked · Plan-Write
 
 Depends on: [`test-suite-measure`](design-test-suite-measure.md)
 
