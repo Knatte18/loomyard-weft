@@ -21,7 +21,7 @@ Waits on nothing open; can start now, in parallel.
    - Bugfix only: prompt delivery, stale producer sessions, false crash notes, watcher restart, Burler YAML repair, no client switch from agents
 1. **Bugfix: Webster and plan validity** — [`bugfix-webster`](design-bugfix-webster.md) · bug, webster, loom, quarry · running · Webster
    - Bugfix only: Plan-Gate refuses backward dependencies, Delete of a gone target, background-shell wait, slow batch validation
-1. **Bugfix: fabric and config propagation** — [`bugfix-fabric`](design-bugfix-fabric.md) · bug, fabric, config, reed · running · Plan-Write
+1. **Bugfix: fabric and config propagation** — [`bugfix-fabric`](design-bugfix-fabric.md) · bug, fabric, config, reed · running · Plan-Bouncer
    - Bugfix only: a weft without .weft/ drops LYX_PARENT, task config changes never reach the parent, and fabric ignores existing origin branches when it builds a pair
 
 ### Layer B
