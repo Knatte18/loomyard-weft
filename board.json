@@ -1142,6 +1142,21 @@
       "isolated": false,
       "brief": "A replay corpus of real misreads plus scripted live Claude runs that test how shuttle reads turns",
       "body": "Harden shuttle against how Claude Code behaves in practice, found by running it, rather than one fix per misread found in a live run (operator, 2026-10-06).\n\nSeen on 2026-10-06 alone: false \"asking\" stops at Plan-Write (twice, one spawning a second plan agent) and on a Webster master whose fork was still measuring (#407), a fork killed by an API error recorded as `dead_reason: asking`, and a burler turn end never taken at all (#411).\nEach came from behaviour shuttle had not been written for: forks and background shells outliving a turn, messages arriving mid-run, skill loads, a session `continued-in` another, API errors.\nShuttle reads undocumented Claude Code internals (transcript line shapes, `custom-title`), which change between Claude Code versions.\n\nTwo parts:\n\n- A replay corpus: every misread from a real run is saved as a fixture (the transcript and shuttle's events, with what happened), and shuttle's classification is tested against the whole corpus. Cheap and deterministic; today's cases are the first fixtures.\n- Live runs: real Claude sessions driven through scripted scenarios that provoke the hard cases (long background shells, forks, a message mid-turn, skill loads, a compact, an interrupt, a question), checking shuttle's reading against the known answer. Costs tokens; catches a Claude Code release that changes behaviour before a task run meets it.\n\nStarting point (operator, 2026-10-06): loomyard has no crucible of its own yet.\nThe repo's `crucible/` holds the hand-run review-and-fix loop that hardened reed, written for millhouse (`_mill/` paths, round-agent profiles copied into `.claude/agents/`), and the operator expects it can be rewritten for this more easily than starting over.\nIts README names the behaviour-based form, running a live-substrate module in a sandbox, a `hardener` board note, which is no longer on the board.\n\nWhat the crucible should settle is which signals tell the truth.\nShuttle already gets turn ends from Claude Code's official Stop hook, written into each run's `events.jsonl` with its `background_tasks`; the misreads come from treating \"the turn ended\" as \"the work is done\", and #411 is a Stop that arrived and was never taken.\nCandidates to combine: the Notification hook Claude Code sends when it waits for input, a non-empty `background_tasks` meaning not done whatever the turn says, and quiet over time.\nCodex, a planned second engine (`codex-engine`), has its own turn-complete hook with a different shape, so each engine needs its own hard cases behind shuttle's common outcomes.\n"
+    },
+    {
+      "id": 153,
+      "slug": "pair-always-pushed",
+      "title": "A task branch is pushed after every step that commits",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Review rounds commit but nothing pushes until Publish; push after every committing step so the remote is never behind",
+      "body": "A task branch should be on the remote at all times (operator, 2026-10-06), so that a crash, a lost machine or a look from another machine never meets work that exists only locally.\n\nSeen 2026-10-06 in `test-suite-prune-rest`: the branch was 19 commits ahead of `origin/test-suite-prune-rest`.\nThe last push was at 15:40 by Webster (`internal/websterengine/sequence.go` pushes after its batches); the eleven Webster-Burler fix commits from 19:11 on and a merge of main at 19:52 were never pushed.\nBy design a Burler round commits each fix and never pushes (`internal/burlerengine/doc.go`, `FixScopeSource`), and nothing after it pushes until Publish, so every review round's work stays local until the PR is opened.\n\nWanted: the loop owner pushes the task branch after every step that committed, not only Webster, so the remote is never more than one step behind.\n"
     }
   ],
   "legacy_done": [
