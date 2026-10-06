@@ -116,6 +116,7 @@ The journal under "Everything is journaled" covers all of it, so `lyx creel log`
 ## Build in stages (operator, 2026-10-06)
 
 Creel is a new module that every delivery will depend on, so it is built and tested standalone before anything is wired to it.
+Each stage below becomes its own task when creel is promoted.
 
 1. Creel alone: the daemon, a queue per receiver, the journal, `lyx creel send`, and delivery into a pane gated on the receiver being idle, tested against fake panes and in the tmux tier. No other module sends through it yet; the operator can try it with `lyx creel send`.
 2. System notices: the orch watcher's and batten's notices go through creel, and the watcher's notice queue goes.
