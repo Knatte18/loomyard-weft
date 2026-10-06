@@ -18,11 +18,10 @@ For every in-scope package (the decision record's Scope: every package with a `#
 
 Record the commit measured, which is this branch's base commit.
 A small helper that turns a profile into the per-package figure lives under `.scratch/`, never in the repo.
-Also run each in-scope test the report lists as `failed` alone, as Decision 8 prescribes, and keep the verdicts for the package cards.
-Keep the before coverage profiles under `.scratch/` so card 18 can name a lost block, and say in the report that they are reproducible from the measured commit.
+Keep the before coverage profiles under `.scratch/` so card 23 can name a lost block, and say in the report that they are reproducible from the measured commit.
 
 Write `docs/benchmarks/test-suite-prune-rest.md` as a measurement report: a title, one sentence on what was measured with the exact commands, the commit, a before table with one row per in-scope package (tests, wall, serial, coverage), and the load averages.
-An after section that card 18 fills is described in one sentence, so the file reads as complete now.
+An after section that card 23 fills is described in one sentence, so the file reads as complete now.
 
 In `docs/benchmarks/running-tests.md`, add one line linking the new report, as its own line directly after the line linking `test-redundancy.md`, so `test-suite-prune-core`'s own link line merges beside it.
 Semantic line breaks throughout, and every link resolves (`PATTERN-markdown-link-integrity`).

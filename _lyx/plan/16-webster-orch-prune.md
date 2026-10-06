@@ -1,4 +1,4 @@
-# Card 15 — webster-orch-prune
+# Card 16 — webster-orch-prune
 
 **Edit:**
 - `internal/webstercli#`
@@ -17,7 +17,7 @@ Each gets its Decision 8 verdict under its own name before any fold or merge tou
 
 **ImpactSummary:** Test files of three webster and orch packages only; no production change.
 
-**Commit:** 15: Prune webster and orch CLI tests
+**Commit:** 16: Prune webster and orch CLI tests
 
 **Verify:**
 go test -count=1 -tags tmux ./internal/webstercli/
