@@ -211,3 +211,17 @@ After a reboot the orch strand is persisted but dormant, so the check passes, a 
 
 Expected: a prime whose reed state holds an orch strand, live or dormant, gets no bare `claude` strand on folder-open.
 Possible fixes: let `--unless-name` also match a persisted dormant strand, or have the folder-open chain run `lyx reed resume` before the add.
+
+
+## From issue #409
+
+Imported from [issue #409](https://github.com/Knatte18/loomyard/issues/409).
+
+After a machine crash, `lyx reed resume` in the `test-suite-prune-core` pair recreated two strands: the driver and `ly:test-suite-prune-core:burler`.
+The burler's round had finished before the crash (verdict written and committed), and the run had moved on.
+When the driver re-ran its shed step, the next producer spawned its own strand (`describe`), so the pair showed a dead-weight burler pane beside the live one.
+The same happened in the hub prime, where a fresh bare `claude` strand appeared (#408).
+
+Cause: a strand stays persisted in reed's state after the work it was spawned for is done, since only the shuttle wait that would tear it down died with the crash; `resume` replays every persisted, non-live strand without asking whether its work is still pending.
+
+Expected: after a crash, `reed resume` brings back only strands with work left, or a strand is removed from reed's state as soon as its shuttle run reaches a final outcome, independent of the waiting process.
