@@ -19,6 +19,8 @@ Waits on nothing open; can start now, in parallel.
    - **Before:** `test-tiers`
 1. **A spawned role loads all its skills at once, not one turn per skill** — [`skills-in-one-turn`](design-skills-in-one-turn.md) · enhancement, shuttle, stencil · running · Webster
    - lyx types each skill as its own slash-command turn, each ending in chatter; one typed message loads them all through the Skill tool in one turn
+1. **Bugfix: session lifecycle, notices and run halts** — [`bugfix-sessions`](design-bugfix-sessions.md) · bug, shuttle, reed, loom, orch, burler
+   - Bugfix only: prompt delivery, stale producer sessions, false crash notes, watcher restart, Burler YAML repair, no client switch from agents
 
 ### Layer B
 
@@ -44,14 +46,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Live config is in weft and task weft dies at landing; carry config changes or make the hub step explicit
 1. **A weft worktree without .weft/ silently drops LYX_PARENT from every strand** — [`weft-lock-dir-drops-parent`](design-weft-lock-dir-drops-parent.md) · bug, fabric, reed
    - ReadOriginFor answers no record when the untracked .weft lock dir is missing, so a pair recreated by reconcile launches strands with no parent and no warning
-1. **Burler review with invalid YAML frontmatter fails the run after three attempts** — [`burler-yaml-frontmatter-repair`](design-burler-yaml-frontmatter-repair.md) · bug, burler
-   - An invalid review-file frontmatter fails the run instead of a repair turn
-1. **orch watcher: stale reload after restart, and a restart race** — [`orch-watcher-stale-reload`](design-orch-watcher-stale-reload.md) · bug, orch
-   - A restarted watcher reloads for an hours-old compaction, and start right after kill spawns no watcher
-1. **A producer session starts without its prompt delivered, or beside a stale one** — [`producer-session-handoff`](design-producer-session-handoff.md) · bug, reed, shuttle, loom
-   - Lost Enter on typed prompts, a reflection spawned during an escalation, and a re-invoked producer leaving its old session alive
-1. **loom flags a clean producer handoff as a suspected driver crash** — [`false-crash-resume`](design-false-crash-resume.md) · bug, loom, shed
-   - A crash-resume note fires in the gap between a finished producer and the next one
 1. **Webster counts Master's turn end past a still-running background shell** — [`webster-background-shell-wait`](design-webster-background-shell-wait.md) · bug, webster
    - Decide what happens when background_shell_wait_min elapses with a shell alive, and say it in the note
 1. **The orch resumes runs without commands that take over the operator's terminal** — [`orch-resume-without-attach`](design-orch-resume-without-attach.md) · bug, orch, loom, reed
