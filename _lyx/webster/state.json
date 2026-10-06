@@ -21,7 +21,7 @@
     "16-fabricengine-prune.md": "9ea90985fa19a188d2db879ec2a1247a0d96846b48d2a11e46c73eaf93e33d2f",
     "17-measure-after.md": "6abb65ef310e121a380eed579ccbe75a0c3cdda7d674618f48dab9b79bd074cd"
   },
-  "currentBatch": 10,
+  "currentBatch": 0,
   "masterStrand": "13051109d82b94d235127d1375fa7f7f",
   "masterSessionId": "700a9836-446d-4e89-a079-a12fa9d382c2",
   "assertedModel": "sonnet",
@@ -63,8 +63,13 @@
       "startSha": "7baa517626f3f0f891e75abe4f6886fb4cb790df",
       "kind": "recovery",
       "spawnedAt": "2026-10-06T10:43:26Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "dead",
+      "digest": {
+        "batch": "10-websterengine-prune",
+        "status": "dead",
+        "dead_reason": "asking"
+      },
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/700a9836-446d-4e89-a079-a12fa9d382c2/subagents/agent-a6c4cc2acd32951a3.jsonl",
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/700a9836-446d-4e89-a079-a12fa9d382c2/subagents/agent-a349bdce8ca3f55a6.jsonl"
