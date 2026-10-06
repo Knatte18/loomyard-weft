@@ -39,7 +39,7 @@ The steps, each typed only on a tick whose idle probe passed (`PATTERN-orch-pane
 - The skills step types `LoadSkills(w.skills)`; an empty skill list starts the sequence at the pointer step.
   Its first turn end after the typing (`w.seen.firstTurnEnd`) is classified with `ClassifySkillLoad`.
   `Unknown` skills are skipped with `logger.Warn` naming each and cause `unknown`;
-  an unverified report logs one `skill load unverified` Warn listing the skills and goes to the pointer;
+  an unverified report logs one `skill load unverified` Warn listing the skills and goes to the pointer, so an unknown skill on that turn goes undetected and shows only in the Warn's list, with no stall;
   a non-empty `Missing` list moves to the retry step, writing the step and `ReloadRetry` in one save, else the pointer step follows.
   Past the handoff timeout with no turn end, every skill is skipped with cause `timeout`, with no retry.
 - The retry step types `LoadSkills(st.ReloadRetry)` and classifies its turn end against `ReloadRetry`: `Unknown` with cause `unknown`, still `Missing` with cause `not loaded`, unverified with the one Warn, and a timeout with cause `timeout`; then the pointer step.

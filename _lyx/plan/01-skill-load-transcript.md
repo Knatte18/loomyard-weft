@@ -45,7 +45,7 @@ The fixtures are trimmed copies of a real Claude Code transcript.
 one table over `ClassifySkillLoad` with rows for the mixed fixture (`a`, `b` loaded; `ghost` and `err` unknown; `c` missing despite its pre-message and sidechain calls), the no-listing fixture (unverified, never unknown by absence), a transcript whose load message names a different list (unverified), an unreadable path, and a Stop payload with no `transcript_path`;
 and one test that `SkillLoadMessage` is a single line, starts with no `/`, and names every skill in list order.
 
-`claudeengine/doc.go`'s skill-loading paragraph is rewritten to describe the one typed message and the turn-end transcript check with its unverified degrade, dropping the `/<skill>` line and the unknown-command notice.
+`claudeengine/doc.go` gains a paragraph beside its skill-loading one describing the one typed message and the turn-end transcript check with its unverified degrade, and says the per-skill `/<skill>` path remains until it is replaced; the old paragraph stays true until card 4 removes it.
 
 **ImpactSummary:** Additive: one new shuttleengine type and two new Claude methods with no caller yet; the claudeengine doc paragraph is rewritten.
 

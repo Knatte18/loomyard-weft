@@ -40,7 +40,7 @@ It may be renamed for its new shape (e.g. `loadSkillTurn`); the run's offset sti
 `loadSkillsThenPrompt` runs the first turn over `spec.Skills` and acts on its outcome:
 
 - timed out: every requested skill is skipped with `logger.Warn` cause `timeout`, and there is no retry (Decision 7);
-- `Verified` false: one `logger.Warn` `skill load unverified` listing the skills, and no retry (Decision 6);
+- `Verified` false: one `logger.Warn` `skill load unverified` listing the skills, and no retry (Decision 6); an unknown skill on such a turn goes undetected and shows only in that Warn's list, which never stalls or fails the launch;
 - otherwise each `Unknown` skill is skipped with a Warn naming it and cause `unknown`, and a non-empty `Missing` list gets exactly one retry turn naming only those skills.
 
 The retry turn is classified the same way: timeout and unverified as above, `Unknown` with cause `unknown`, and whatever is still `Missing` with cause `not loaded`.
