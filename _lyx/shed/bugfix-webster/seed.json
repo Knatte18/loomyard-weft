@@ -1,0 +1,7 @@
+{
+  "recipe": "batten",
+  "driver": "go",
+  "params": {
+    "child_driver": "llm"
+  }
+}
