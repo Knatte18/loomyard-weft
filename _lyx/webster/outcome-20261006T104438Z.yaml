@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "Batch 10-websterengine-prune: the fork was killed mid-work and its single re-fork died on an API error, so no report was written; recover-batch 10 ended status dead (dead_reason: asking)."
+batches_done: 9

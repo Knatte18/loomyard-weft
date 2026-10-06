@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "Batch 10 (websterengine-prune) is dead: its recovery already failed terminally in a previous session, so the run is exhausted for it and no later batch may begin."
+batches_done: 9
