@@ -1,27 +1,111 @@
-# creel: a mailbox between named lyx processes
+# creel: the one way to reach an agent
 
 `creel` · Note · feature, reed
 
-The mail store and verbs from the design under `## Design` (send, inbox, read, log; the watchdog delivering at idle; `inject` for privileged senders), addressed by `agent-naming`'s names.
+Creel is the one module anything uses to reach an agent: a Go program, another agent or the operator in a terminal.
+Every agent in lyx runs through shuttle and lives in a reed strand, so every agent has an address (`agent-naming`'s `<shortname>:<slug>:<role>`).
+The decisions below are the operator's of 2026-10-06 and govern; the 2026-09-20 design under History is superseded where it differs.
 
-Deferred (operator, 2026-10-02): Claude Code's own SendMessage is enough for now.
-The address grammar in reed-mailbox.md (`name@slug[.hub]`) is superseded by `agent-naming`'s `<repo>:<slug>:<role>`, and its naming half moved into that task.
-The design doc is kept under `## Design` below, with that superseded address grammar included as history.
+## Why
 
-Layering (operator, 2026-10-03): only reed talks to tmux, so the keystroke delivery is reed's: `reedengine.Engine.SendText`/`SendKey` exist, and a `lyx reed send <strand> <text>` verb exposes them; creel's `send`/`inject` deliver through it and never touch tmux themselves.
-Use case: the operator's backup session on Remote Control rescues the orch, for example by re-enabling Remote Control after a cycle, and today has to find reed's per-hub tmux socket by hand; `lyx reed send ly:orch ...` covers it.
+Claude's `SendMessage` lands straight in the orch session, past the orch watcher, so nothing holds it during a context cycle.
+A message that arrives while the orch writes its note is seen, but the note request says to write and end the turn, so it is lost at `/clear` unless the note happens to carry it.
+A message that arrives after the note is written starts a turn whose end opens the clear gate, so that turn's work never reaches the note.
+Batten notices do not have this problem: they go through the watcher's notice queue (`orchengine.QueueNotice`, `.lyx/orch/notices/`), which holds them during a cycle.
+Every message goes through creel instead, agent to agent and module to agent alike, and the watcher's notice queue folds into creel.
 
-## Design
+## Decisions (operator, 2026-10-06)
 
-## The idea
+### Verbs: one module, separate verbs per guarantee
+
+- `lyx creel post <receiver> "<text>"`: mail. Stored in the receiver's mailbox; the receiver is reminded until it reads it.
+- `lyx creel inject <receiver> "<text>"`: typed straight into the receiver's pane as its next input, once the receiver is idle. For commands (`/clear`, `/compact`), the orch watcher's cycle messages, and creel's own reminder lines. No read receipt. Only privileged senders may inject into another strand; injecting into one's own strand is free.
+- `lyx creel inject --interrupt <receiver> "<text>"`: interrupt the receiver's running turn, wait until it is idle, then type the text: "stop, and do this instead".
+- `lyx creel interrupt <receiver>`: stop the receiver's running turn without killing its pane. It bypasses the queue, since it must act while the receiver is busy.
+- `lyx creel read`, `lyx creel inbox`, `lyx creel log`: below.
+
+The operator deals with creel only.
+No other module offers a verb that types into an agent's pane: `lyx shuttle send` and `lyx shuttle interrupt` move behind creel when it is wired (stage 2 or 3).
+
+### Layering
+
+`creel → shuttle → reed → tmux`, each layer owning one thing:
+
+- **creel** decides what is delivered and when: the queue per receiver, priority (an inject goes ahead of mail reminders), holding, the journal and read status.
+- **shuttle** knows the LLM: whether its session is idle (`IdleProbe`), and how text and keys reach it safely (paste, submit, the interrupt key). Creel asks shuttle and owns no idle probe itself. Shuttle knows nothing of queues or senders and exposes no send verb.
+- **reed** knows which pane a strand lives in and does the keystrokes (`SendText` for literal text, `SendKey` for named keys such as Escape).
+
+`PATTERN-orch-pane-single-writer` becomes: only creel decides what is delivered into an agent's pane.
+
+### Mail is pulled
+
+- `post` puts the message in the receiver's mailbox, and creel injects one short line, such as `[creel] 2 unread from ly:x:driver, ly:batten`.
+- The line repeats each time the receiver goes idle, until it runs `lyx creel read`; only then is the message marked read. So "delivered" means "read", and creel knows it for certain.
+- A busy receiver need not read at once: it knows it has mail and picks it up when it is done. An orch close to a context cycle leaves its mail unread, and creel reminds it after the cycle.
+- No extra turn: the reminder starts a turn and the agent reads within it.
+- A long message is a file the sender writes, and the mail says which file to read.
+
+### Reading
+
+- `read`: the oldest unread message, together with every other unread message from the same sender.
+- `read --from <sender>`: every unread message from that sender.
+- `read --all`: every unread message.
+- `inbox`: the senders with their unread counts.
+
+### Holding
+
+A sender may hold mail reminders to a receiver and release them later.
+The orch watcher holds `ly:orch`'s reminders during a context cycle, while its own injects (the note request, `/clear`, the reload) still pass.
+
+### Receivers
+
+- An unknown name is refused, listing the names that exist.
+- A known receiver that is dead or dormant keeps its queue, and delivery resumes when its strand is live again.
+- A terminal is never typed into: what is typed into a shell is a command. A terminal or program that wants an answer waits on creel's socket instead (`post --wait-reply`, `read --wait`) and prints it.
+
+### Daemon and transport
+
+- A creel daemon of its own per hub, apart from reed's watchdog, since reed must not depend on creel. It owns the queues, the reminders and the read status.
+- It listens on a Unix socket named by the hub's shortname, such as `$XDG_RUNTIME_DIR/lyx/creel-<shortname>.sock`, acknowledges receipt, and is started by any creel verb that finds it down, as `lyx reed` starts its tmux server.
+- The sender is named from the environment: `LYX_STRAND_NAME` for an agent, a name the caller passes for a Go program, and `operator` (prefixed with the hub shortname inside a repo) for a terminal.
+- A filesystem drop-box (sender writes a file into the receiver's queue directory) was set aside: several writers in one directory, and no receipt for the sender.
+
+### Storage
+
+- JSONL files under the hub's `.lyx/creel/`, written only by the daemon.
+- Unread messages stay until read; read messages and journal lines are deleted after 7 days, so a week of traffic stays available for debugging.
+- The journal holds one line per event (posted, reminded, read, injected, interrupted), and `lyx creel log` shows it.
+
+### Later, not stage 1
+
+- Sending across hubs is a feature of its own. The address already picks the hub's socket, so it costs nothing in stage 1.
+- An MCP layer on top of the verbs, if an agent outside a terminal ever needs one.
+
+## Build in stages (operator, 2026-10-06)
+
+Creel is a new module that every delivery will depend on, so it is built and tested standalone before anything is wired to it.
+Each stage below becomes its own task when creel is promoted.
+
+1. Creel alone: the daemon, the queues, the journal, every verb above, and delivery through shuttle gated on the receiver being idle, tested against fake panes and in the tmux tier. No other module sends through it yet; the operator tries it from a terminal.
+2. System notices: the orch watcher's and batten's notices and the watcher's injects go through creel, and the watcher's notice queue and idle probe go. The watcher keeps only its cycle logic (tracking tokens, choosing `refresh`/`distill`/automatic cycles, waiting for the note, sequencing the reload, its state and lifecycle), and advances a cycle phase only once creel confirms its inject was typed.
+3. Agents: the parent-review gate (`internal/parentreview/gate.go`, which today prompts Discussion-Write to `SendMessage` the parent) posts itself, drivers' stop reports post instead of duplicating batten's notices over `SendMessage`, and `lyx shuttle send`/`interrupt` move behind creel.
+
+Fixes that do not need creel, such as `shuttle-asking-holds`, go ahead of it.
+
+## History: the 2026-09-20 design (superseded where the decisions differ)
+
+Deferred 2026-10-02 while Claude Code's `SendMessage` was enough; resumed 2026-10-06 for the reason under Why.
+Its address grammar (`name@slug[.hub]`) is superseded by `agent-naming`'s `<shortname>:<slug>:<role>`, and its pane-title and session-name reconcile belongs to reed.
+
+### The idea
 
 Deliver messages/events to any Strand (agent, operator, `ly-drive` watchdog, orchestrator) by address.
 
-## The send/receive asymmetry
+### The send/receive asymmetry
 
 Being a Strand is only required to *receive* mail — an address needs somewhere durable to deliver to. It is **not** required to *send*: anything able to reach the delivery mechanism can send without needing an address of its own. An in-process Claude Code fork subagent is the clearest example — it can never itself become a Strand (it is never an OS/tmux process), but it can still send.
 
-## Addressing (settled in a 2026-09-20 design discussion)
+### Addressing
 
 The address format is **`name@slug[.hub]`** — the email shape, deliberately: "deliver to *name* at *place*" needs no explanation for humans or agents, and the grammar is collision-free because slugs (`[a-z][a-z0-9-]*`) can contain neither `@` nor `.`, so the single `@` splits unambiguously and the optional `.hub` suffix reads exactly like an unqualified-vs-qualified hostname (omitted = own hub).
 The resemblance to real email is a known confusion risk, accepted on purpose — it buys the mental model.
@@ -64,11 +148,11 @@ Creel v1 reserves the grammar only; no connector ships with it.
 - **Multi-hub is out of scope, but the grammar reserves the door.**
   Operating across several repos at once would not need one reed server spanning hubs: each hub keeps its own server and per-hub daemon, and cross-hub mail becomes daemon-to-daemon relay — the optional `hub:` prefix (omitted = own hub) is the entire forward-compatibility cost, paid here in grammar only.
 
-## Dependencies
+### Dependencies
 
 Deliberately a separate, later task from `ly-drive + orchestrator`'s launch-convention change and the shipped `reed: born-as-strand` item, which it depends on **for the receive side only**: everything that should be addressable must already exist as a Strand before addressing it means anything. Also downstream of `worktree spawn/teardown as Shed producers`' headless-orchestration future, since a mailbox is most useful once external actors can reach a worktree without a human ever having opened it first.
 
-## Delivery (settled in the same 2026-09-20 discussion)
+### Delivery
 
 Transport and log are two different jobs, and the terminal is bad at the second one (scrollback dies with the pane, is unsearchable, and mixes mail into everything else) — so delivery is **pull, not full-content injection**, with a durable store carrying the audit trail.
 
@@ -90,41 +174,8 @@ Transport and log are two different jobs, and the terminal is bad at the second 
 - **Plain CLI verbs, no MCP layer.**
   Creel needs no streaming or client-side session state, so it stays ordinary `lyx` verbs like every other module; an MCP server could be layered *on top of* the same verbs later if an agent outside a terminal ever needs access — deferred until someone does, not decided against.
 
-## Reason to resume: messages lost across an orch context cycle (2026-10-06)
-
-Claude's `SendMessage` lands straight in the orch session, past the orch watcher, so nothing holds it during a context cycle.
-A message that arrives while the orch writes its note is seen, but the note request says to write and end the turn, so it is lost at `/clear` unless the note happens to carry it.
-A message that arrives after the note is written starts a turn whose end opens the clear gate, so that turn's work never reaches the note.
-Batten notices do not have this problem: they go through the watcher's notice queue, which holds them during a cycle and delivers them after.
-Operator direction: every message goes through creel, agent to agent and module to agent alike.
-Batten notices become creel messages, and the orch watcher's own notice queue (`orchengine.QueueNotice`, `.lyx/orch/notices/`) folds into creel's queue instead of living beside it.
-One queue per receiver holds delivery during a context cycle or a running turn, for every sender.
-The journal under "Everything is journaled" covers all of it, so `lyx creel log` answers what was sent to whom and when, batten notices included.
-
-## Operator direction: creel owns every delivery (2026-10-06)
-
-- Creel is the only writer into an agent's pane. The orch watcher keeps its cycle and reload logic but types nothing itself: its handoff request, `/clear`, `/compact` and reload messages go through creel, which takes over `PATTERN-orch-pane-single-writer`.
-- Anything can send: a Go program (batten, the orch watcher), an agent, an agent in another hub, and the operator in a terminal, all through `lyx creel send <receiver> "<text>"`.
-- One daemon per hub owns one queue per receiver in that hub; an agent has a queue, not a process.
-- Transport: each hub's daemon listens on a Unix socket named by the hub's shortname, such as `$XDG_RUNTIME_DIR/lyx/creel-<shortname>.sock`. The receiver's address picks the daemon, so `lyx creel send qy:orch "…"` works from any directory with no hub registry. The daemon acknowledges receipt and keeps its queue and journal in its own durable store. `send` to a hub whose daemon is down starts it, as `lyx reed` starts its tmux server.
-- The sender is named from the environment: `LYX_STRAND_NAME` for an agent, a name the caller passes for a Go program, and `operator` (prefixed with the hub shortname when run inside a repo) for a terminal.
-- The orch watcher keeps only its cycle logic: tracking tokens, choosing `refresh`/`distill`/automatic cycles, waiting for the note, sequencing the reload, its state and its own lifecycle. The idle probe and notice delivery move to creel, and batten sends to `ly:orch` through creel directly.
-- Creel reports delivery back to a sender that needs it: the watcher advances a cycle phase only once creel confirms its message was typed, through a receipt or a journal lookup.
-- Senders that today relay through an LLM move to creel directly. The `parent-review` gate on Discussion-Write (`internal/parentreview/gate.go`) sends nothing itself: it prompts the Discussion-Write session to `SendMessage` the parent, so the request reaches the orch through another agent's turn, outside the watcher's queue. The gate itself should `lyx creel send` the request. The same holds for a driver's stop reports to its parent, which today duplicate batten's notices over `SendMessage`.
-- A filesystem drop-box (sender writes a file into the receiver's queue directory) was considered and set aside: several writers in one directory, and no receipt for the sender. Delivery latency is not the deciding factor, since delivery waits for the receiver to be idle either way.
-
-## Build in stages (operator, 2026-10-06)
-
-Creel is a new module that every delivery will depend on, so it is built and tested standalone before anything is wired to it.
-Each stage below becomes its own task when creel is promoted.
-
-1. Creel alone: the daemon, a queue per receiver, the journal, `lyx creel send`, and delivery into a pane gated on the receiver being idle, tested against fake panes and in the tmux tier. No other module sends through it yet; the operator can try it with `lyx creel send`.
-2. System notices: the orch watcher's and batten's notices go through creel, and the watcher's notice queue goes.
-3. Agents: the parent-review gate, drivers' stop reports and cross-hub sends.
-
-Fixes that do not need creel, such as `shuttle-asking-holds`, go ahead of it.
-
 ## Related
 
 - the shipped `reed: born-as-strand` item — the receive-side prerequisite.
-- `internal/reedengine`'s package documentation — the shipped watchdog daemon this may end up riding on.
+- `internal/reedengine`'s package documentation — reed's watchdog daemon, which creel's daemon stays apart from.
+- `shuttle-asking-holds` — the false asking stop, fixed ahead of creel.

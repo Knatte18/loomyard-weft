@@ -97,8 +97,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 1. **An MCP server over lyx exposing the verbs agents need** — [`lyx-mcp`](design-lyx-mcp.md) · feature
    - A few coarse MCP tools over lyx, chosen by measured agent use and exposed per role, so agents see typed schemas instead of guessing CLI shapes
-1. **creel: a mailbox between named lyx processes** — [`creel`](design-creel.md) · feature, reed
-   - Mail store and verbs on top of agent-naming's names; deferred while Claude's own SendMessage is enough
+1. **creel: the one way to reach an agent** — [`creel`](design-creel.md) · feature, reed
+   - Post (pulled mail with reminders), inject and interrupt to any agent by name, through one daemon per hub; built standalone first, then wired in two stages
 1. **Runs overview and event log in their own window in the prime session** — [`runs-overview`](design-runs-overview.md) · feature, reed, orch, batten
    - An own tmux window beside the orch: one line per run on top, a log of batten notices with attach commands below; the orch notice drops its attach command
 1. **Discussion advisor: a dedicated agent answers Discussion-Write's questions live** — [`discussion-advisor`](design-discussion-advisor.md) · feature, shuttle, loom
