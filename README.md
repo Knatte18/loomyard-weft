@@ -11,7 +11,7 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Prune the six largest test packages** — [`test-suite-prune-core`](design-test-suite-prune-core.md) · enhancement · running · Webster-Bouncer
+1. **Prune the six largest test packages** — [`test-suite-prune-core`](design-test-suite-prune-core.md) · enhancement · running · Webster-Burler
    - Stage 2b: delete redundant tests and fold near-identical ones in fabricengine, websterengine, reedengine, shuttleengine, loomcli, shedadapters
    - **Before:** `test-tiers`
 1. **Prune the remaining test packages** — [`test-suite-prune-rest`](design-test-suite-prune-rest.md) · enhancement · running · Webster
