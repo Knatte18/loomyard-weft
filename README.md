@@ -17,9 +17,6 @@ Waits on nothing open; can start now, in parallel.
 1. **Prune the remaining test packages** — [`test-suite-prune-rest`](design-test-suite-prune-rest.md) · enhancement · blocked · Webster
    - Stage 2c: delete redundant tests and fold near-identical ones in every package outside prune-core, in parallel with it
    - **Before:** `test-tiers`, `bugfix-fabric`
-1. **A spawned role loads all its skills at once, not one turn per skill** — [`skills-in-one-turn`](design-skills-in-one-turn.md) · enhancement, shuttle, stencil · running · Finalize
-   - lyx types each skill as its own slash-command turn, each ending in chatter; one typed message loads them all through the Skill tool in one turn
-   - **Before:** `bugfix-sessions`
 
 ### Layer B
 
@@ -30,7 +27,7 @@ Starts when every entry it names under After is done.
    - **After:** `test-suite-prune-core`, `test-suite-prune-rest`
 1. **Bugfix: session lifecycle, notices and run halts** — [`bugfix-sessions`](design-bugfix-sessions.md) · bug, shuttle, reed, loom, orch, burler
    - Bugfix only: prompt delivery, stale producer sessions, false crash notes, watcher restart, Burler YAML repair, no client switch from agents
-   - **After:** `skills-in-one-turn`, `test-suite-prune-core`
+   - **After:** `test-suite-prune-core`
 1. **Bugfix: Webster and plan validity** — [`bugfix-webster`](design-bugfix-webster.md) · bug, webster, loom, quarry
    - Bugfix only: Plan-Gate refuses backward dependencies, Delete of a gone target, background-shell wait, slow batch validation
    - **After:** `test-suite-prune-core`
@@ -167,3 +164,5 @@ Finished, awaiting `lyx board prune`.
    - A pair with an older board.yaml re-renders README with the old types; move board.yaml beside fabric.yaml in _board
 1. **Agents stop wrapping commands: stdin without a hook, a bare shed step** — [`agent-command-wrapping`](design-agent-command-wrapping.md) · bug, enhancement, shuttle, shed, stencil · done
    - Give agent shells /dev/null stdin without a per-call hook; lyx shed step prints a short envelope so the driver runs the bare call
+1. **A spawned role loads all its skills at once, not one turn per skill** — [`skills-in-one-turn`](design-skills-in-one-turn.md) · enhancement, shuttle, stencil · done
+   - lyx types each skill as its own slash-command turn, each ending in chatter; one typed message loads them all through the Skill tool in one turn
