@@ -1127,6 +1127,21 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #411](https://github.com/Knatte18/loomyard/issues/411).\n\nSeen 2026-10-06 in `test-suite-prune-rest`, Webster-Burler round 2.\n\n- `lyx shed step` (trace a1d89adb0a964012) started the burler shuttle run at 19:29:12 (run dir `.lyx/shuttle/976daeeb219e18f87d1a6954c562b64e`, session 97d818aa-8fb0-4103-9b56-0ae4da2a75b7).\n- The burler ended its turn at 19:36:12: `events.jsonl` holds a valid Stop past `promptOffset`, with `background_tasks: []`, and both output files (round-2 review and fixer report) exist.\n- The step never returned. 15 minutes later it had no child processes, the verify gate had not run (`.lyx/verify/` unchanged since 19:28), and the binary already included c4d924316.\n- The burler's transcript ends at 19:41:38 with a `continued-in` entry pointing at session 8e5a1d83, cause unknown.\n\nA SIGQUIT goroutine dump shows the step parked in the poll loop:\n\n```\nshuttleengine.(*Run).Wait            internal/shuttleengine/wait.go:305 (realClock.Sleep)\nshuttleengine.(*Runner).RunGated     internal/shuttleengine/run.go:643\nburlerengine.(*Engine).Run           internal/burlerengine/engine.go:197\nshedadapters.(*BurlerProducer).Call  internal/shedadapters/burler.go:419\nshedengine.(*Shed).stepLocked        internal/shedengine/run.go:232\n```\n\nSo `pollEventsTick` (`wait.go:613`) kept not returning Done for a Stop that looks complete.\nWorth checking whether the `continued-in` session switch, or an output-file or offset check, keeps the Stop from being taken.\nThe `shuttle-asking-holds` note and #407 cover a turn end read too early; this is a turn end never read.\n"
+    },
+    {
+      "id": 152,
+      "slug": "shuttle-crucible",
+      "title": "Shuttle crucible: harden turn reading against real Claude behaviour",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A replay corpus of real misreads plus scripted live Claude runs that test how shuttle reads turns",
+      "body": "Harden shuttle against how Claude Code behaves in practice, found by running it, rather than one fix per misread found in a live run (operator, 2026-10-06).\n\nSeen on 2026-10-06 alone: false \"asking\" stops at Plan-Write (twice, one spawning a second plan agent) and on a Webster master whose fork was still measuring (#407), a fork killed by an API error recorded as `dead_reason: asking`, and a burler turn end never taken at all (#411).\nEach came from behaviour shuttle had not been written for: forks and background shells outliving a turn, messages arriving mid-run, skill loads, a session `continued-in` another, API errors.\nShuttle reads undocumented Claude Code internals (transcript line shapes, `custom-title`), which change between Claude Code versions.\n\nTwo parts:\n\n- A replay corpus: every misread from a real run is saved as a fixture (the transcript and shuttle's events, with what happened), and shuttle's classification is tested against the whole corpus. Cheap and deterministic; today's cases are the first fixtures.\n- Live runs: real Claude sessions driven through scripted scenarios that provoke the hard cases (long background shells, forks, a message mid-turn, skill loads, a compact, an interrupt, a question), checking shuttle's reading against the known answer. Costs tokens; catches a Claude Code release that changes behaviour before a task run meets it.\n"
     }
   ],
   "legacy_done": [
