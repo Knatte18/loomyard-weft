@@ -997,6 +997,22 @@
       "isolated": false,
       "brief": "Bugfix only: a weft without .weft/ drops LYX_PARENT, and task config changes never reach the parent",
       "body": "Bugfix only (operator, 2026-10-06): fix what each section below reports, with a regression test per fix that drives the real CLI wiring, not only fakes.\nNo new verbs, config keys or features; a reviewer treats any extension as a scope finding.\nThe board adds more bug sections here until the task starts.\n\n## weft-lock-dir-drops-parent\n\n### Bug\n\nA strand launched in a pair whose weft worktree lacks the untracked `.weft/` lock directory gets no `LYX_PARENT`, silently.\n`hubgeom.ResolveParent` reads the pair's origin record through `fabricengine.ReadOriginFor`, which requires both `_lyx/fabric/origin.json` and `.weft/`, and answers \"no record\" when either is missing.\n`ResolveParent` then returns no parent, `hubgeom.reedGeometry` exports none, and nothing warns.\n\n### Seen 2026-10-05\n\nAfter moving `loom-bouncer-rounds` from another machine, its weft worktree was recreated by `lyx fabric reconcile` from the existing branch, which does not create `.weft/` (`lyx fabric add` does).\nThe driver, launched at 15:36:00, had no `LYX_PARENT`; `.weft/` appeared at 15:36:19 with the first weft write, and the Burler launched at 15:58 carries `LYX_PARENT='ly:orch'`.\nThe driver therefore could not reach its parent orchestrator.\n\n### Fix\n\n- Every path that creates or recreates a weft worktree creates `.weft/` (`reconcile`'s `weft_recreated` path at least).\n- A present origin record with a missing lock directory is an error or a warning naming the gap, never a silent \"no parent\".\n\n## config-reaches-parent\n\nSeen 2026-10-04 twice: `pattern-init` first planned to keep PATTERN under `_lyx/` and needed a landing carry (dropped by moving PATTERN to warp), and `board-model`'s parent review found its D13 label list written into the pair's `_lyx/config/board.yaml`, which never reaches the parent.\nLive config lives in weft, and a task's weft branch dies at landing, so any config change a task makes is lost unless the hub re-applies it by hand on main's weft.\nIdea: either a landing step that carries `_lyx/config/` changes into the parent's weft (with a conflict stop), or task-made config changes declared in the PR description and applied by the hub as a checked step.\n"
+    },
+    {
+      "id": 143,
+      "slug": "operator-shortcuts",
+      "title": "Short top-level commands for what the operator types most",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "orch",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "lyx attach for lyx reed attach, and one command that starts the orch and attaches in the prime",
+      "body": "Idea (operator, 2026-10-06): top-level shortcuts for the lyx commands the operator types most, so the common path is one short word.\n\n- `lyx attach`: the same as `lyx reed attach`.\n- One command for the prime that starts the orch (`lyx orch start`, which also spawns its watcher) and then attaches the terminal to the prime's reed session (`lyx reed attach`); the orch always runs in the prime.\n  Name open: `lyx spawn` was floated; `lyx up` would clash in meaning with `lyx reed up`.\n  It fits the decision recorded in task `bugfix-sessions` that start verbs never attach: this command is the one place that does both, by calling `lyx reed attach` explicitly.\n\nShortcuts are thin wrappers: same flags, same JSON envelope, listed in `lyx --help`, and each names the full command in its help so the two never drift.\nMore shortcuts get added here as the operator notices them.\n\nRelated notes: `ide-prime-setup` (a VS Code task that starts the orch) and `ide-reopen-prime` (reopen the prime window with one command).\n"
     }
   ],
   "legacy_done": [
