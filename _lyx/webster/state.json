@@ -8,9 +8,25 @@
     "03-orch-reload-one-turn.md": "d6e5fc1983cd1abe75cbc135667378900e0fac13ae7ef1c5c40e5f23a5f72f14",
     "04-drop-per-skill-load.md": "37a4ca1d6be0774ff7875e8227a25dbe329686c806c3272f3ce83d1ad11eac4e"
   },
-  "currentBatch": 0,
+  "currentBatch": 1,
   "masterStrand": "8d7bd0c1c6c957bd3a8c46fe7447634b",
   "masterSessionId": "31bd7934-b7d8-4905-b0e8-22d2027c5030",
   "assertedModel": "sonnet",
-  "batches": {}
+  "batches": {
+    "1": {
+      "slug": "skill-load-transcript",
+      "cards": [
+        "01-skill-load-transcript"
+      ],
+      "cardHashes": {
+        "01-skill-load-transcript": "1f5d267ab9bf20a7d70c0e23a822698fbdea296d53a548e70033e0c8080824e5"
+      },
+      "startSha": "9cd12fd198c1a295fa70b4d12dd455a249d6f8ef",
+      "kind": "fork",
+      "spawnedAt": "2026-10-06T07:49:17Z",
+      "sessionId": "31bd7934-b7d8-4905-b0e8-22d2027c5030",
+      "terminal": false,
+      "status": ""
+    }
+  }
 }
