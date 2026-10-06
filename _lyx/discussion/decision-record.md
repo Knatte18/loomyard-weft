@@ -3,7 +3,7 @@
 ## Goal
 
 A spawned role, and the orch after each cycle, loads every skill on its list in one model turn instead of one slash-command turn per skill.
-A skill the session does not know never stalls a launch or a reload: it is skipped at the end of that turn with a Warn naming it.
+A skill the session does not know never stalls a launch or a reload: it is skipped when that turn ends, or when it times out, with a Warn naming it.
 
 ## Scope
 
@@ -36,25 +36,30 @@ Out:
 4. **The load is verified from the transcript at the load turn's end.**
    At the turn end, the engine reads the transcript the Stop payload names and classifies every requested skill as one of:
    - **loaded** — a main-chain Skill tool call naming it, after the load message, with a successful result;
-   - **unknown** — it is absent from the session's skill listing in the transcript, or its Skill call returned an error;
+   - **unknown** — a skill listing was found in the transcript and the skill is absent from it, or its Skill call returned an error;
    - **missing** — none of the above (the model skipped or never reached it).
    Only entries after the load message count, so a Skill call from before a compaction or an earlier reload never confirms a new load.
+   A transcript with no skill listing never classifies a skill `unknown` by absence (Decision 6 applies); a truncated listing can only misclassify a skill past the cut as `missing`, which costs one retry and never a silent skip.
    Rationale: the turn end alone proves nothing about which skills loaded; the transcript is where `claudeengine` already reads session facts (`ContextTokens`, `CompactedSince`).
 5. **Unknown skills are skipped at once; missing skills are retried once.**
    An unknown skill is logged with `logger.Warn` naming the skill and cause `unknown` and is never retried.
-   Missing skills get exactly one retry: one more message, same form, naming only the missing skills.
-   Whatever is still not loaded after the retry turn is logged with cause `not loaded` and skipped.
+   Missing skills get exactly one retry: one more message, same form, naming only the skills the first turn classified `missing`.
+   The retry turn is classified with Decision 4's three classes; a skill that is `unknown` there is logged with cause `unknown`, and whatever is still `missing` is logged with cause `not loaded`, then skipped.
    Bound: at most two load turns per launch or reload, each bounded by the load timeout; a skip never fails or hangs the launch.
 6. **An unreadable transcript degrades to "unverified", not to a retry.**
-   No `transcript_path`, an unreadable file, or no load message found: the turn end confirms the load, as today, with one Warn `skill load unverified` listing the skills.
-   Bound: this lets an unverified load through without a retry, never a failure; retrying cannot help when the evidence is unreadable, and the transcript format is a Claude Code internal (the same degrade rule as `usage.go`).
+   No `transcript_path`, an unreadable file, no load message found, or no skill listing found: the turn end confirms the load, as today, with one Warn `skill load unverified` listing the skills.
+   This applies to every load turn including the retry, whose skills are then confirmed unverified.
+   Bound: this lets an unverified load through without a retry, never a failure; an unknown skill on such a turn goes undetected and appears only in that Warn's list.
+   Retrying cannot help when the evidence is unreadable, and the transcript format is a Claude Code internal (the same degrade rule as `usage.go`).
 7. **The timeout bounds one load turn, not one skill.**
    `Spec.SkillLoadTimeout` and `DefaultSkillLoadTimeout` keep their names and defaults and now bound each load turn (the first and the retry).
-   A load turn that does not end in time skips every skill it asked for that is not confirmed, with cause `timeout`; a timed-out first turn is not retried.
+   A load turn that does not end in time has no turn end and no transcript read, so nothing confirms a skill: every skill the turn asked for is skipped with cause `timeout`, and a timed-out first turn is not retried.
+   Bound: a skill that did load before the hang is logged as skipped but stays loaded in the session, and the prompt pointer is typed afterwards.
    The orch watcher keeps the handoff timeout as its per-step bound.
 8. **The pane-text unknown-skill classifier is removed.**
    `SkillUnknown(capture, skill)` and its needles go from the `SkillLoader` capability, `Runner`, and the orch `Session` seam.
    Rationale: with no slash line typed, Claude Code's slash-command parser never answers; its `Unknown command: /<name>` notice (which the old needles never matched, the cause of #394's 600 s stall) cannot occur, and unknown skills now surface in the transcript at the turn end.
+   Bound: on a turn whose transcript is unreadable an unknown skill is no longer detected and appears only in the `skill load unverified` Warn's list (Decision 6), with no stall.
 9. **The `SkillLoader` capability becomes list-shaped.**
    It provides: the load sequence for a list of skills, the turn-end classification of a list against the transcript, and the default per-turn timeout.
    `Runner` exposes the same two per-list primitives for the orch watcher in place of `LoadSkill`/`SkillUnknown`.
@@ -63,17 +68,19 @@ Out:
 11. **The orch reload sequence becomes: skills step, optional retry step, pointer step.**
     The skills step types the one message when the idle probe passed on that tick; its turn end triggers the classification; unknown skills are skipped, missing ones move to a retry step typed under the same idle rule; then the pointer step runs as today.
     Persisted state carries the step, its first-typing time and events offset (as today) plus the skills still to retry, so a restarted watcher never re-sends a confirmed step, never retries twice, and never restarts a step's timeout.
+    The retry step is its own persisted step value, distinct from every old per-skill index, and the move into it writes the step and the retry list as one state update; a watcher restarted before that write classifies the same transcript again to the same result.
     Rationale: the watcher's restart and idle-gating rules (`PATTERN-orch-pane-single-writer`) stay intact; only the step list shrinks.
 12. **No migration for a reload in flight across an upgrade.**
-    A persisted `reload_step` from the old per-skill indexing that falls past the new skills step is read as the pointer step.
+    A persisted `reload_step` from the old per-skill indexing that falls past the new skills step, including an old index that would collide with the retry step's value, is read as the pointer step.
     Bound: the worst case is one reload that skips the remaining skills of that one cycle; the next cycle reloads them all.
 13. **No extra reload for Webster or other spawned roles after compaction.**
-    Rationale: Decision 1's Skill-tool load is what Claude Code re-injects after a compaction, which closes the gap 70bf30ae8 listed ("A Webster master that Claude Code auto-compacts loses its skills"); the orch keeps reloading per Scope.
+    Rationale: Decision 1's Skill-tool load is assumed to be what Claude Code re-injects after a compaction, which would close the gap 70bf30ae8 listed ("A Webster master that Claude Code auto-compacts loses its skills"); the orch keeps reloading per Scope.
+    Bound: the premise is unverified (Auto-mode assumptions); if it is wrong, a compacted Webster master or other spawned role runs without its skills, nothing detects it, and no fallback exists, as before this change.
 14. **The loomcli stub-driver tests answer the new load message by ending the turn.**
     Both stubs stand in for `claude` and today answer a typed `/<skill>` line with `Unknown skill: <name>`, which only the removed pane classifier read.
     Each stub instead treats the first typed line as the skill-load message and ends that turn by appending a Stop event, with no `transcript_path`, to the run's events file, which it locates from its own launch arguments (the settings file sits in the run directory); the next typed line is the prompt pointer, as today.
     The load then confirms under Decision 6 at once, so `lyx loom start` stays within the tests' 30 s bound.
-    Rationale: it exercises the real protocol end to end, where a short `SkillLoadTimeout` would only wait out a timeout, and the driver spec is built in production code, which a test-only timeout would have to reach.
+    Rationale: it exercises the real protocol end to end.
     Bound: the edit touches only each stub's skill-load answer and its comment, since `test-suite-prune-core` prunes `internal/loomcli` tests in parallel and the two runs must touch disjoint hunks.
 
 ## Constraints
@@ -108,7 +115,7 @@ Out:
 - A skill absent from the skill listing, or whose Skill call errors, is skipped with a Warn naming it and cause `unknown`, with no retry and no wait past the load turn's end.
 - A listed skill the model did not load is retried once in a message naming only the missing skills; still missing after that is skipped with a Warn.
 - A Skill call from before the load message (earlier reload, pre-compaction) never confirms a skill.
-- An unreadable or absent transcript confirms the load at the turn end with one `skill load unverified` Warn and no retry.
+- An unreadable or absent transcript, or a readable one with no skill listing, confirms the load at the turn end with one `skill load unverified` Warn and no retry, on the retry turn as on the first.
 - A load turn that never ends is skipped at the load timeout, and the launch proceeds to the prompt.
 - A pane that dies during a load turn is a died startup, as today.
 - The run's events offset lies past every load turn end, including a retry's.
