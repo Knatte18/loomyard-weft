@@ -1,111 +1,16 @@
 {
-  "runGuid": "f1bc3922138238b17704e93ea63919ef",
-  "planFingerprint": "7edbb12d2b13a9498406fecc6bfc64c006d65d5ad77375bcc2325db1ec15cd54",
+  "runGuid": "1d3cc18ca9b02a10d3d565106f29f7e3",
+  "planFingerprint": "f985ccbe4439ebb562bf0606e3ec4a9d45e547823858bf66b38b385468d7b127",
   "planFileHashes": {
     "00-overview.md": "f1937c90462b54d7836d0d7052323a7de3151a5a880a399f528d4ad0089d8ff3",
     "01-skill-load-transcript.md": "1f5d267ab9bf20a7d70c0e23a822698fbdea296d53a548e70033e0c8080824e5",
     "02-launch-skills-one-turn.md": "71a8d14ec18145fc4ab94cc011498acf0166421eadecf4f881c80ee7c8fb3796",
     "03-orch-reload-one-turn.md": "d6e5fc1983cd1abe75cbc135667378900e0fac13ae7ef1c5c40e5f23a5f72f14",
-    "04-drop-per-skill-load.md": "2f843c1b51d73b45482eed33ffa9b11eae1649efc9e90cc6a09742810cec6bce"
+    "04-drop-per-skill-load.md": "37a4ca1d6be0774ff7875e8227a25dbe329686c806c3272f3ce83d1ad11eac4e"
   },
   "currentBatch": 0,
-  "masterStrand": "5cb094fcf51118efe78a00cfaac33ab5",
-  "masterSessionId": "1d365c19-8158-48fa-8cfa-29693666179c",
+  "masterStrand": "8d7bd0c1c6c957bd3a8c46fe7447634b",
+  "masterSessionId": "31bd7934-b7d8-4905-b0e8-22d2027c5030",
   "assertedModel": "sonnet",
-  "batches": {
-    "1": {
-      "slug": "skill-load-transcript",
-      "cards": [
-        "01-skill-load-transcript"
-      ],
-      "cardHashes": {
-        "01-skill-load-transcript": "1f5d267ab9bf20a7d70c0e23a822698fbdea296d53a548e70033e0c8080824e5"
-      },
-      "startSha": "9cd12fd198c1a295fa70b4d12dd455a249d6f8ef",
-      "kind": "fork",
-      "spawnedAt": "2026-10-06T07:38:38Z",
-      "sessionId": "1d365c19-8158-48fa-8cfa-29693666179c",
-      "terminal": true,
-      "status": "done",
-      "digest": {
-        "batch": "01-skill-load-transcript",
-        "status": "done",
-        "head_sha": "c42c70995c958f5c74699974a5664db04d17e6f3"
-      },
-      "cardShas": [
-        "c42c70995c958f5c74699974a5664db04d17e6f3"
-      ],
-      "forkTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-skills-in-one-turn/1d365c19-8158-48fa-8cfa-29693666179c/subagents/agent-a07543728e0752e6e.jsonl"
-      ]
-    },
-    "2": {
-      "slug": "launch-skills-one-turn",
-      "cards": [
-        "02-launch-skills-one-turn"
-      ],
-      "cardHashes": {
-        "02-launch-skills-one-turn": "71a8d14ec18145fc4ab94cc011498acf0166421eadecf4f881c80ee7c8fb3796"
-      },
-      "startSha": "c42c70995c958f5c74699974a5664db04d17e6f3",
-      "kind": "fork",
-      "spawnedAt": "2026-10-06T07:40:33Z",
-      "sessionId": "1d365c19-8158-48fa-8cfa-29693666179c",
-      "terminal": true,
-      "status": "done",
-      "digest": {
-        "batch": "02-launch-skills-one-turn",
-        "status": "done",
-        "head_sha": "f3cd9b136a5f72c263db621f9dd929f0acd3e198"
-      },
-      "cardShas": [
-        "f3cd9b136a5f72c263db621f9dd929f0acd3e198"
-      ],
-      "forkTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-skills-in-one-turn/1d365c19-8158-48fa-8cfa-29693666179c/subagents/agent-a018e58d4efea4a39.jsonl"
-      ]
-    },
-    "4": {
-      "slug": "drop-per-skill-load",
-      "cards": [
-        "04-drop-per-skill-load"
-      ],
-      "cardHashes": {
-        "04-drop-per-skill-load": "2f843c1b51d73b45482eed33ffa9b11eae1649efc9e90cc6a09742810cec6bce"
-      },
-      "startSha": "f3cd9b136a5f72c263db621f9dd929f0acd3e198",
-      "kind": "recovery",
-      "spawnedAt": "2026-10-06T07:46:21Z",
-      "terminal": true,
-      "status": "failed",
-      "digest": {
-        "batch": "04-drop-per-skill-load",
-        "status": "failed",
-        "head_sha": "f3cd9b136a5f72c263db621f9dd929f0acd3e198",
-        "reasons": [
-          "delete-not-done/4-drop-per-skill-load[blocking]: Delete target \"internal/shuttleengine#SkillLoader.SkillLoadSequence\" still resolves found",
-          "delete-not-done/4-drop-per-skill-load[blocking]: Delete target \"internal/shuttleengine#SkillLoader.SkillUnknown\" still resolves found",
-          "delete-not-done/4-drop-per-skill-load[blocking]: Delete target \"internal/shuttleengine#Runner.LoadSkill\" still resolves found",
-          "delete-not-done/4-drop-per-skill-load[blocking]: Delete target \"internal/shuttleengine#Runner.SkillUnknown\" still resolves found",
-          "delete-not-done/4-drop-per-skill-load[blocking]: Delete target \"internal/shuttleengine/claudeengine#Claude.SkillLoadSequence\" still resolves found",
-          "delete-not-done/4-drop-per-skill-load[blocking]: Delete target \"internal/shuttleengine/claudeengine#Claude.SkillUnknown\" still resolves found",
-          "delete-not-done/4-drop-per-skill-load[blocking]: Delete target \"internal/shuttleengine/claudeengine#unknownSkillNeedle\" still resolves found",
-          "delete-not-done/4-drop-per-skill-load[blocking]: Delete target \"internal/shuttleengine/claudeengine#unknownCommandNeedle\" still resolves found",
-          "delete-not-done/4-drop-per-skill-load[blocking]: Delete target \"internal/shuttleengine/claudeengine#TestSkillLoadSequence\" still resolves found",
-          "delete-not-done/4-drop-per-skill-load[blocking]: Delete target \"internal/shuttleengine/claudeengine#TestSkillUnknown\" still resolves found"
-        ]
-      },
-      "forkTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-skills-in-one-turn/1d365c19-8158-48fa-8cfa-29693666179c/subagents/agent-a2125c0b6abe3bc92.jsonl"
-      ],
-      "strandGuid": "135c74441a3940d22b7fd213fd02eb40",
-      "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/skills-in-one-turn/.lyx/shuttle/b7beb8ce745457d5cfd953a2852cd4f3",
-      "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/skills-in-one-turn/.lyx/shuttle/b7beb8ce745457d5cfd953a2852cd4f3/events.jsonl"
-    }
-  },
-  "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-skills-in-one-turn/1d365c19-8158-48fa-8cfa-29693666179c/subagents/agent-a07543728e0752e6e.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-skills-in-one-turn/1d365c19-8158-48fa-8cfa-29693666179c/subagents/agent-a018e58d4efea4a39.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-skills-in-one-turn/1d365c19-8158-48fa-8cfa-29693666179c/subagents/agent-a2125c0b6abe3bc92.jsonl"
-  ]
+  "batches": {}
 }
