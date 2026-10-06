@@ -26,3 +26,10 @@ Webster follows the plan as written and never derives order on its own; the firs
 The plan carries the order: a card that deletes a symbol names, in `Uses:`, the cards' targets that move its callers off it.
 Plan-Gate refuses a plan whose Delete target is still referenced from a member another card edits when no `Uses:` edge orders the two, so an invalid plan never reaches Webster.
 The plan spec and the plan template say so to the plan writer.
+
+## Root cause in skills-in-one-turn (2026-10-06)
+
+Card 2's `Uses:` named `internal/shuttleengine#Runner.skillLoader`, which card 4 edits, giving an edge 4 → 2; cards 2 and 4 also shared test-file targets, giving 2 → 4.
+`SequenceBatches` condensed the cycle {2, 4}, ran it as 02 then 04, and placed card 3 (which uses card 2's new symbols) after the whole block, so 04 ran before 03.
+The cycle was reported only as a `Cycle` warning nobody surfaced.
+Plan-Gate refuses a plan whose derived edges form a cycle, alongside the unordered-Delete check above.
