@@ -108,6 +108,8 @@ The journal under "Everything is journaled" covers all of it, so `lyx creel log`
 - One daemon per hub owns one queue per receiver in that hub; an agent has a queue, not a process.
 - Transport: each hub's daemon listens on a Unix socket named by the hub's shortname, such as `$XDG_RUNTIME_DIR/lyx/creel-<shortname>.sock`. The receiver's address picks the daemon, so `lyx creel send qy:orch "…"` works from any directory with no hub registry. The daemon acknowledges receipt and keeps its queue and journal in its own durable store. `send` to a hub whose daemon is down starts it, as `lyx reed` starts its tmux server.
 - The sender is named from the environment: `LYX_STRAND_NAME` for an agent, a name the caller passes for a Go program, and `operator` (prefixed with the hub shortname when run inside a repo) for a terminal.
+- The orch watcher keeps only its cycle logic: tracking tokens, choosing `refresh`/`distill`/automatic cycles, waiting for the note, sequencing the reload, its state and its own lifecycle. The idle probe and notice delivery move to creel, and batten sends to `ly:orch` through creel directly.
+- Creel reports delivery back to a sender that needs it: the watcher advances a cycle phase only once creel confirms its message was typed, through a receipt or a journal lookup.
 - A filesystem drop-box (sender writes a file into the receiver's queue directory) was considered and set aside: several writers in one directory, and no receipt for the sender. Delivery latency is not the deciding factor, since delivery waits for the receiver to be idle either way.
 
 ## Related
