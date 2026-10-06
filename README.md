@@ -92,6 +92,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Discussion has no sanctioned path to commit a PATTERN edit ahead of Plan
 1. **One prompt notice channel to the orch: batten, event-driven, timestamped** — [`orch-notice-channel`](design-orch-notice-channel.md) · enhancement, batten, orch
    - Driver and batten both report every halt, and batten's 30 s poll makes its notices late and stale
+1. **Run tabs overflow a narrow terminal once several runs are open** — [`reed-tabs-narrow`](design-reed-tabs-narrow.md) · enhancement, reed
+   - The status line row of run tabs prints full session names, so with five runs the rightmost fall off a narrow terminal unseen
 
 ### Features
 
