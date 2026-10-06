@@ -1078,6 +1078,22 @@
       "isolated": false,
       "brief": "The board shows which tasks have a run in flight and refuses writes that change their scope",
       "body": "A task whose run has started can still be edited on the board, and nothing tells a writer that it is running.\nOn 2026-10-06 the orch folded two new issues into `bugfix-sessions` with `lyx board intake import --into` while that run sat planned and parked before Webster, so the board entry no longer matched the plan its run was executing.\n\nWanted (operator, 2026-10-06):\n- The board marks which tasks are active, from the moment their run starts until it lands or is abandoned, and `lyx board list --text` and the README show the marker.\n- A write that changes an active task's scope (body, brief, issues, labels, a merge or an intake `into`) is refused with the reason, naming the run.\n  Where new findings go instead: a note of their own, or the next bugfix bucket.\n"
+    },
+    {
+      "id": 149,
+      "slug": "webster-recovery-dirty-tree",
+      "title": "Recovery prompt gives no guidance on uncommitted changes left by the prior attempt",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        406
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #406](https://github.com/Knatte18/loomyard/issues/406).\n\nA recovery run for a Webster task segment was started with the reason `none` and an instruction to continue from the committed tree.\nThe worktree nevertheless held a large uncommitted body of work from the earlier attempt (dozens of files, thousands of changed lines).\nThe recovery prompt did not mention these changes or say whether to trust and keep them or to discard them, so the agent had to judge on its own whether the earlier work was sound.\n\nThis is abnormal because the recovery prompt contradicts the worktree state: \"continue from the committed tree\" is not true when the tree is dirty.\nThe agent kept the work only after verifying it independently (build, both test tiers, a fresh rerun of the segment's check).\n\nSuggested fix: when lyx starts a recovery, have it detect uncommitted changes in the worktree and name them in the recovery prompt, together with an explicit keep-or-discard instruction.\n\nProvenance: task `test-suite-prune-core`; note `10-websterengine-prune-recovery.md`.\n"
     }
   ],
   "legacy_done": [

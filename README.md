@@ -46,6 +46,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - After a crash, folder-open adds a bare claude above a dormant orch, and reed resume revives strands whose work is done
 1. **board: mark running tasks and refuse scope edits to them** — [`board-lock-running`](design-board-lock-running.md) · bug, board
    - The board shows which tasks have a run in flight and refuses writes that change their scope
+1. **Recovery prompt gives no guidance on uncommitted changes left by the prior attempt** — [`webster-recovery-dirty-tree`](design-webster-recovery-dirty-tree.md) · bug
 
 ### Enhancements
 
