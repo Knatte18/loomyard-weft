@@ -427,8 +427,9 @@
       ],
       "issues": [],
       "depends_on": [
-        "test-suite-prune-core",
-        "test-suite-prune-rest"
+        "bugfix-sessions",
+        "bugfix-webster",
+        "bugfix-fabric"
       ],
       "isolated": false,
       "brief": "Stage 3: review rounds run the impacted set, full plan verify only at Webster gate and Publish/Finalize; after-state recorded; per-package test budget guard",

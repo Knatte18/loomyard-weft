@@ -2,7 +2,7 @@
 
 `test-tiers` · Task · enhancement, loom, webster
 
-Depends on: [`test-suite-prune-core`](design-test-suite-prune-core.md), [`test-suite-prune-rest`](design-test-suite-prune-rest.md)
+Depends on: [`bugfix-sessions`](design-bugfix-sessions.md), [`bugfix-webster`](design-bugfix-webster.md), [`bugfix-fabric`](design-bugfix-fabric.md)
 
 Stage 3 of getting the test suite under control, after both prune tasks have landed: decide which gate runs which tier, record the after-state, and guard it.
 The four tiers themselves (an LLM tier under its own tag, the tier rules in PATTERN) are `test-suite-measure`'s.
