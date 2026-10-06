@@ -46,8 +46,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - ReadOriginFor answers no record when the untracked .weft lock dir is missing, so a pair recreated by reconcile launches strands with no parent and no warning
 1. **Burler review with invalid YAML frontmatter fails the run after three attempts** — [`burler-yaml-frontmatter-repair`](design-burler-yaml-frontmatter-repair.md) · bug, burler
    - An invalid review-file frontmatter fails the run instead of a repair turn
-1. **orch watcher reloads the session for a compaction hours old after a restart** — [`orch-watcher-stale-reload`](design-orch-watcher-stale-reload.md) · bug, orch
-   - A restarted orch watcher reloads for a compaction hours old
+1. **orch watcher: stale reload after restart, and a restart race** — [`orch-watcher-stale-reload`](design-orch-watcher-stale-reload.md) · bug, orch
+   - A restarted watcher reloads for an hours-old compaction, and start right after kill spawns no watcher
 1. **A producer session starts without its prompt delivered, or beside a stale one** — [`producer-session-handoff`](design-producer-session-handoff.md) · bug, reed, shuttle, loom
    - Lost Enter on typed prompts, a reflection spawned during an escalation, and a re-invoked producer leaving its old session alive
 1. **loom flags a clean producer handoff as a suspected driver crash** — [`false-crash-resume`](design-false-crash-resume.md) · bug, loom, shed

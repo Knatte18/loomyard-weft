@@ -1,4 +1,4 @@
-# orch watcher reloads the session for a compaction hours old after a restart
+# orch watcher: stale reload after restart, and a restart race
 
 `orch-watcher-stale-reload` · Note · bug, orch
 
@@ -36,3 +36,9 @@ Possible fixes:
 1. A context cycle, or the first cycle after a deploy, restarts the Claude Code process (`claude --resume` or a fresh session with the orch note) instead of compacting in place.
 2. `update-plugins.sh` tells the running orch that skills changed, and the watcher schedules a restart.
 3. The reload message checks that each skill it names loads, and reports a missing one to the operator instead of failing silently in the session.
+
+## Restart race (2026-10-06)
+
+`kill <pid of lyx orch watch>` followed at once by `lyx orch start --no-attach` answered `attach-only` and spawned no watcher, since the old watcher still read as live.
+A second `lyx orch start --no-attach` a moment later spawned it.
+`start` should wait for a watcher it sees dying, or the restart needs its own verb.
