@@ -1,6 +1,6 @@
 # Recovery prompt gives no guidance on uncommitted changes left by the prior attempt
 
-`webster-recovery-dirty-tree` · Note · bug
+`webster-recovery-dirty-tree` · Note · bug, webster
 
 Imported from [issue #406](https://github.com/Knatte18/loomyard/issues/406).
 

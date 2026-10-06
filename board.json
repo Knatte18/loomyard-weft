@@ -1085,7 +1085,8 @@
       "title": "Recovery prompt gives no guidance on uncommitted changes left by the prior attempt",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "webster"
       ],
       "issues": [
         406
