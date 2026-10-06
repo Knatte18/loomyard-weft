@@ -21,7 +21,7 @@
     "16-fabricengine-prune.md": "9ea90985fa19a188d2db879ec2a1247a0d96846b48d2a11e46c73eaf93e33d2f",
     "17-measure-after.md": "6abb65ef310e121a380eed579ccbe75a0c3cdda7d674618f48dab9b79bd074cd"
   },
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "13051109d82b94d235127d1375fa7f7f",
   "masterSessionId": "700a9836-446d-4e89-a079-a12fa9d382c2",
   "assertedModel": "sonnet",
@@ -181,6 +181,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/700a9836-446d-4e89-a079-a12fa9d382c2/subagents/agent-ae7c11c308ca94a95.jsonl"
       ]
+    },
+    "7": {
+      "slug": "shedadapters-prune",
+      "cards": [
+        "07-shedadapters-prune"
+      ],
+      "cardHashes": {
+        "07-shedadapters-prune": "7cbc0cc79ffd8cdaa931617f8aaef8006fbd37198b27743d2d7aa8eb9fe07559"
+      },
+      "startSha": "b8aef79376cf13cf69d0a594b8748db7ff183396",
+      "kind": "fork",
+      "spawnedAt": "2026-10-06T08:22:02Z",
+      "sessionId": "700a9836-446d-4e89-a079-a12fa9d382c2",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
