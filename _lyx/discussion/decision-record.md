@@ -26,19 +26,26 @@ Out of scope:
    Rationale: the two runs work in parallel, and disjoint file sets keep them mergeable without hub arbitration.
    A file in an in-scope package that names a core file stays as is unless an in-scope change requires an edit.
    Example: a guard allowlist in `cmd/lyx` listing a path under a core package.
+   Bound: a reference or helper dependency that would need an edit under a core directory or `internal/testkit/` is left alone, and the PR body lists it for the hub.
+   The in-scope change is then shaped so core stays correct: a test that a core or testkit file names is kept, not deleted or renamed.
+   If the rerun lists such a test, it carries a keep reason naming that file (Decision 10).
 
 2. **Deletion rule.**
    A candidate is deleted only when the report marks it `Removable: yes`, and only after its assertions are read against those of its covering tests.
    A candidate whose assertions pin something its covering tests do not pin is handled in one of two ways.
-   Either that assertion moves into a covering test (a new row or an extra check) and the candidate is deleted, or the candidate is kept with a stated reason.
+   Either that assertion moves into a covering test (a new row or an extra check) and the candidate is deleted, or the candidate is kept with a reason on the test (Decision 10).
    Examples of such assertions: an error message, an output or envelope shape, a refusal's way-forward text, a file's exact contents.
+   Bound: the PR body lists, per deleted candidate whose assertion moved, the receiving covering test.
+   A deletion with unique assertions and no listed receiver is not allowed.
+   A receiving test is never deleted later in the prune.
+   If a rerun lists it, it carries a keep reason naming the moved assertion and its source test (Decision 10).
    A `Removable: no` candidate is never deleted on the report's evidence alone; it may still be folded (Decision 4).
    Rationale: coverage blocks do not see assertions (`PATTERN-test-economy`), and only the removable set is safe to delete together.
 
 3. **Guard self-checks are kept.**
    Some candidates exist to prove that a repo-scanning guard fires on an offending input, such as `*_NotVacuous`, `*_DetectionHelper` and `*FiresOnOffendingStaysQuietOnCompliant` in `cmd/lyx`.
    These tests pin a contract the coverage view cannot see: on a compliant tree, the guard's scan covers the same blocks but asserts nothing about firing.
-   Each is kept with that reason, or folded into a table with its siblings if they share a shape.
+   Each is kept with that reason on the test (Decision 10), or folded into a table with its siblings if they share a shape.
    Rationale: deleting them would leave the guards able to pass vacuously.
 
 4. **Folding.**
@@ -55,11 +62,12 @@ Out of scope:
    Each lead is confirmed by reading the test.
    A moved test uses an existing `internal/testkit` fake, or a fake that only its own package uses, local to that package's `_test.go` files (`PATTERN-testkit`).
    A move that needs a new shared fake is not made.
-   The test stays where it is with that reason stated, and the hub is told so `test-suite-prune-core` can add the kit.
+   The test stays where it is.
+   A one-line comment above it names the missing fake, so the reason lives with the test, and the PR body repeats it so the hub can have `test-suite-prune-core` add the kit.
    Rationale: `internal/testkit` is core's (Decision 1), and duplicating a fake across packages breaks `PATTERN-testkit`.
 
 6. **Leftovers from deletion.**
-   A test helper that pruning leaves unused is deleted.
+   A test helper that pruning leaves unused is deleted; a helper is unused only when no file under any tag, `llm` included, calls it.
    A test file left with no tests or helpers is deleted.
    A `TestMain` stays even when its package loses its last tagged file.
    Rationale: dead helpers are noise.
@@ -70,24 +78,33 @@ Out of scope:
    Rationale: `PATTERN-documentation-lifecycle` and the docs-in-the-same-commit rule in `CLAUDE.md`.
 
 8. **"failed" entries.**
-   Each in-scope test the report lists as `failed` is re-run alone with `go test -tags integration,tmux -run '^Name$'`.
+   Each in-scope test the report lists as `failed` is re-run alone with `go test -tags integration,tmux -run '^Name$' <package>`.
    If it fails alone, it has a hidden order or environment dependence, which this task fixes in the test.
    If it passes alone, the failure is a tool artifact, and the PR records it as such.
    Rationale: a test that fails in isolation is broken, and the tool cannot judge its redundancy until it runs.
 
 9. **Report rerun scoped to this task's packages.**
-   After pruning, `go run ./cmd/testtiming -redundancy -tags integration,tmux -pkg <in-scope packages> -out <scratch path>` is run.
-   Its package sections replace those packages' sections in `docs/benchmarks/test-redundancy.md`.
+   The reruns of Decision 10 run `go run ./cmd/testtiming -redundancy -tags integration,tmux -pkg <package> -out <scratch path>` for one package at a time, each to its own scratch file under `.scratch/`.
+   The final rerun runs it once per in-scope package.
+   The tool at this task's base takes one go pattern for `-pkg`, which cannot name the in-scope set, and rewrites its `-out` file whole.
+   This task therefore splices outside the tool, and the final card performs it: each final scratch file's `## <package>` section replaces the section of the same name in `docs/benchmarks/test-redundancy.md`, one section at a time.
    The header and the core packages' sections are left untouched.
-   Bound: the edit replaces only in-scope `## <package>` sections and adds or removes none.
+   Bound: the splice replaces only in-scope `## <package>` sections and adds none.
+   A package left with no tests has no section in its scratch file, and its old section is removed.
    Rationale: core regenerates its own sections in parallel, and each package's redundancy is judged against its own tests only, so disjoint sections merge cleanly.
 
 10. **Stated reasons live on the test, as `//testtiming:keep <reason>`.**
     Every candidate the rerun still lists carries a `//testtiming:keep <reason>` directive comment directly above its `func Test…` line.
     The spelling is the one `test-suite-prune-core` defines in its D2.
-    The reason is non-empty and names what the test pins that its covering tests do not, for example a guard that fires, an error message, an output shape, or a kept partner of a removed test.
+    The reason is non-empty and is one of these:
+    what the test pins that its covering tests do not, for example a guard that fires, an error message, an output shape, or a kept partner of a removed test;
+    the core or testkit file that names the test (Decision 1);
+    the assertion it received and the test it came from (Decision 2).
     The PR body also groups the reasons by package and by reason class.
     This task makes no tool change: the tool at this task's base ignores the comment, and the task is judged against that tool.
+    The check is therefore a comparison: every candidate the final rerun lists has the directive in the source.
+    The prune repeats rerun, then Decision 2 per listed candidate, until the rerun lists only candidates that carry a directive.
+    A candidate with none of those reasons is deleted or folded, never annotated.
     Rationale: core's tool reads the directive and lists the test under "Kept" once both tasks land, so the done-when keeps holding on `main`.
     A reason only in the PR body would show every kept candidate as unexplained on the first rerun after landing.
 
@@ -99,10 +116,17 @@ Out of scope:
     Rationale: the report's numbers come from coverage-instrumented binaries and are not timing data.
 
 12. **Coverage check.**
-    Per in-scope package, statement coverage of non-test code is taken under `-tags integration,tmux` with `-coverprofile`, before and after.
-    A package whose coverage drops is named in the PR with the deleted or moved tests that explain the drop.
-    An unexplained drop is restored by bringing back or extending a test.
-    Rationale: a `Removable: yes` deletion leaves every block covered by construction, so any drop points at a mistake.
+    Per in-scope package, the package's own tests run under `-tags integration,tmux` with `-coverprofile` and `-coverpkg=./...`, before and after, as the report measures them.
+    The figure is the covered fraction of statements in the package's own non-test files, taken from the profile filtered by directory.
+    Any drop is a mistake and is restored by bringing back or extending a test.
+    A drop traced to a block that flips between two runs of the unchanged tree is recorded in the PR as noise instead.
+    Rationale: the report's removable set leaves every block covered by construction, so a deletion, fold or tier move explains no drop.
+
+### Added after Discussion (operator, 2026-10-06): Scenario tests share one expensive fixture
+
+Decision: Where several integration or tmux tests in this task's packages each build the same expensive fixture (a git hub or pair through hubforge, a reed or tmux server, a seeded worktree) and differ only in the steps they run and the checks they make after that setup, they become one scenario test that builds the fixture once and runs the steps in order. Each former test becomes a named t.Run step inside it, so a failure still names the step that broke; a step that depends on an earlier step's state says so in a comment. Scope is bounded to such fixture families, judged by reading the tests; a family is merged only when it cuts the package's wall time, which the before and after measurement shows. Every assertion of the merged tests is kept. Cheap unit tests are not merged into scenarios; they stay table-driven.
+
+Rationale: Operator, 2026-10-06: the suite's cost sits in the git and tmux fixtures each test rebuilds, which deleting redundant tests and folding into tables barely touches. These tasks already read every test file in their packages, so a later pass for the same files would repeat the work. Note composite-tests records the idea.
 
 ## Constraints
 
@@ -141,21 +165,22 @@ Out of scope:
 
 ## Acceptance criteria
 
-- Every candidate that a rerun of `cmd/testtiming -redundancy` on the in-scope packages still lists carries a non-empty `//testtiming:keep <reason>` directly above its `func Test…` line.
+- Every candidate that the final rerun of `cmd/testtiming -redundancy` on the in-scope packages lists carries a non-empty `//testtiming:keep <reason>` directly above its `func Test…` line, checked by comparing the rerun's lists with the source.
 - No test in the six core packages or under `internal/testkit/` is changed.
 - Every deleted candidate was `Removable: yes`.
-  Each one's unique assertions, if any, live on in a covering test.
+  Each one's unique assertions, if any, live on in a covering test, and the PR lists that receiving test.
 - Guard self-check tests in `cmd/lyx` still prove their guard fires on an offending input.
 - Each moved test sits in an untagged file, and `cmd/lyx/tierpurity_test.go` passes.
 - The PR states test count and wall time per in-scope package, before and after.
-- The PR states non-test statement coverage per in-scope package, before and after, and explains every drop.
+- The PR states non-test statement coverage per in-scope package, before and after, and no package's coverage dropped, except a drop the PR records as noise.
 - Each in-scope `failed` entry is either fixed or recorded as a tool artifact.
 - `docs/benchmarks/test-redundancy.md`: in-scope sections regenerated, core sections and header unchanged.
 - `go build ./...` passes.
 - `go vet ./...` passes, as does `go vet -tags X ./...` for each of `integration`, `tmux` and `llm`.
 - `go test ./...` passes.
 - `go test -tags integration,tmux` passes on the in-scope packages.
-- No doc, background, stencil, spec or comment names a test this task deleted or renamed.
+- No doc, background, stencil, spec or comment outside the core directories and `internal/testkit/` names a test this task deleted or renamed.
+- Each reference that would have needed an edit under a core directory or `internal/testkit/` is listed in the PR body, and its test is kept.
 
 ## Notes for the plan writer
 
