@@ -39,3 +39,9 @@ Either containment places a `plan:` handle by its declared file at plan time, or
 
 In `test-suite-change-amplification`'s plan the Burler found cards 36, 37 and 39 deleting helpers whose callers sit in files the cards do not list; plan-validate could not see it, because a card lists files, not the symbols it deletes or re-signs.
 Once cards name deleted and re-signed members as glyphs, plan-validate can resolve every reference through quarry and flag a referencing file that no card in the same or an earlier batch edits, instead of leaving it to the Burler or to verify's compile failure.
+
+## Priority (operator, 2026-10-06)
+
+The operator wants this fixed soon: file-level targets waste tokens, since every agent downstream of the plan re-reads whole files to find the members a card changes.
+It waits for `bugfix-webster`, whose Plan-Gate card-order checks change `internal/planglyph`.
+The 2026-10-06 bugfix plans name targets by file on purpose, to survive the test prunes; that choice is not a precedent.
