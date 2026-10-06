@@ -21,7 +21,7 @@
     "16-fabricengine-prune.md": "9ea90985fa19a188d2db879ec2a1247a0d96846b48d2a11e46c73eaf93e33d2f",
     "17-measure-after.md": "6abb65ef310e121a380eed579ccbe75a0c3cdda7d674618f48dab9b79bd074cd"
   },
-  "currentBatch": 0,
+  "currentBatch": 16,
   "masterStrand": "b63cd236de04de2fe381084bc6626c99",
   "masterSessionId": "10330750-d8de-40c1-ba25-4d9793b60931",
   "assertedModel": "sonnet",
@@ -211,6 +211,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-core/10330750-d8de-40c1-ba25-4d9793b60931/subagents/agent-abc0259ca74836a0c.jsonl"
       ]
+    },
+    "16": {
+      "slug": "fabricengine-prune",
+      "cards": [
+        "16-fabricengine-prune"
+      ],
+      "cardHashes": {
+        "16-fabricengine-prune": "9ea90985fa19a188d2db879ec2a1247a0d96846b48d2a11e46c73eaf93e33d2f"
+      },
+      "startSha": "02ebef63a17a6c54173674330a64680eee07afeb",
+      "kind": "fork",
+      "spawnedAt": "2026-10-06T12:00:45Z",
+      "sessionId": "10330750-d8de-40c1-ba25-4d9793b60931",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "exclusion-out-of-process",
