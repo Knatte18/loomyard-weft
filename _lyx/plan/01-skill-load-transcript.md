@@ -1,9 +1,9 @@
 # Card 1 — skill-load-transcript
 
 **Create:**
-- `plan:internal/shuttleengine#SkillLoadReport` -> `type SkillLoadReport struct`
-- `plan:internal/shuttleengine/claudeengine#Claude.SkillLoadMessage` -> `func (c *Claude) SkillLoadMessage(skills []string) string`
-- `plan:internal/shuttleengine/claudeengine#Claude.ClassifySkillLoad` -> `func (c *Claude) ClassifySkillLoad(turnEnd shuttleengine.Event, skills []string) shuttleengine.SkillLoadReport`
+- `internal/shuttleengine#SkillLoadReport`
+- `internal/shuttleengine/claudeengine#Claude.SkillLoadMessage`
+- `internal/shuttleengine/claudeengine#Claude.ClassifySkillLoad`
 - `internal/shuttleengine/claudeengine/skillload.go`
 - `internal/shuttleengine/claudeengine/skillload_test.go`
 - `internal/shuttleengine/claudeengine/testdata/skillload-mixed.jsonl`

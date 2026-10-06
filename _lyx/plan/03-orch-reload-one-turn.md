@@ -21,7 +21,7 @@
 **Uses:**
 - `plan:internal/shuttleengine#Runner.LoadSkills`
 - `plan:internal/shuttleengine#Runner.ClassifySkillLoad`
-- `plan:internal/shuttleengine#SkillLoadReport`
+- `internal/shuttleengine#SkillLoadReport`
 
 **Intent:**
 Shrink the orch reload sequence to a skills step, an optional retry step and the pointer step, on the per-list primitives card 2 added (Decisions 5, 6, 7, 11, 12; issue #394 on the orch side).

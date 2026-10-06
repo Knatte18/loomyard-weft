@@ -20,9 +20,9 @@
 - `internal/shuttleengine/doc.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#SkillLoadReport`
-- `plan:internal/shuttleengine/claudeengine#Claude.SkillLoadMessage`
-- `plan:internal/shuttleengine/claudeengine#Claude.ClassifySkillLoad`
+- `internal/shuttleengine#SkillLoadReport`
+- `internal/shuttleengine/claudeengine#Claude.SkillLoadMessage`
+- `internal/shuttleengine/claudeengine#Claude.ClassifySkillLoad`
 - `internal/shuttleengine#sendVerified`
 - `internal/shuttleengine#Runner.skillLoader`
 
