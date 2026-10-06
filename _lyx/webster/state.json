@@ -27,9 +27,9 @@
     "22-friction-leaf-prune.md": "0047c99a27d5a25f36a2e20def43f52e12c5c2940269384a47a4d298bd704176",
     "23-rerun-measure-after.md": "7bb4730bca45bc8e6b19ba841b95ad5a3abc730ca6574e1c3d32af53ee4de503"
   },
-  "currentBatch": 0,
-  "masterStrand": "1c82a365fdc481059fca109d5b910c3f",
-  "masterSessionId": "01f9207a-a471-4d2d-a76c-62df57e91dd4",
+  "currentBatch": 4,
+  "masterStrand": "e0d72f390b1804de39fde512613c494d",
+  "masterSessionId": "bd330a6d-f411-48d9-a340-35f575841176",
   "assertedModel": "sonnet",
   "batches": {
     "1": {
@@ -109,6 +109,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/01f9207a-a471-4d2d-a76c-62df57e91dd4/subagents/agent-ae305446f0a7034ce.jsonl"
       ]
+    },
+    "4": {
+      "slug": "parsers-prune",
+      "cards": [
+        "04-parsers-prune"
+      ],
+      "cardHashes": {
+        "04-parsers-prune": "e2663058c69926b4e5edd0bb3f0831dd9b79d72a84c96f0be8dd51e3c3c744b7"
+      },
+      "startSha": "7c9ef9210e979122c24551991cef2919458bd828",
+      "kind": "fork",
+      "spawnedAt": "2026-10-06T08:40:05Z",
+      "sessionId": "bd330a6d-f411-48d9-a340-35f575841176",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
