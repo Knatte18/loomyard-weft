@@ -1,6 +1,6 @@
 # A spawned role loads all its skills at once, not one turn per skill
 
-`skills-in-one-turn` · Task · enhancement, shuttle, stencil · running · Plan-Burler
+`skills-in-one-turn` · Task · enhancement, shuttle, stencil · running · Plan-Bouncer
 
 Since `70bf30ae8`, `claudeengine` types each of a role's skills as its own `/<name>` turn before the prompt pointer (`shuttleengine.Spec.Skills`).
 Each turn is a full model turn that ends in a reply like "Loaded scribe:prose … What would you like to work on?", so a role with three skills spends three slow turns of chatter before it reads its task.
