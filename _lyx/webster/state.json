@@ -8,7 +8,7 @@
     "03-orch-reload-one-turn.md": "d6e5fc1983cd1abe75cbc135667378900e0fac13ae7ef1c5c40e5f23a5f72f14",
     "04-drop-per-skill-load.md": "37a4ca1d6be0774ff7875e8227a25dbe329686c806c3272f3ce83d1ad11eac4e"
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "8d7bd0c1c6c957bd3a8c46fe7447634b",
   "masterSessionId": "31bd7934-b7d8-4905-b0e8-22d2027c5030",
   "assertedModel": "sonnet",
@@ -25,8 +25,22 @@
       "kind": "fork",
       "spawnedAt": "2026-10-06T07:49:17Z",
       "sessionId": "31bd7934-b7d8-4905-b0e8-22d2027c5030",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-skill-load-transcript",
+        "status": "done",
+        "head_sha": "f7d90b63fad51b2800ba4c7b0074b9826da5a2c7"
+      },
+      "cardShas": [
+        "f7d90b63fad51b2800ba4c7b0074b9826da5a2c7"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-skills-in-one-turn/31bd7934-b7d8-4905-b0e8-22d2027c5030/subagents/agent-a13e5edfa5f4bf4e7.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-skills-in-one-turn/31bd7934-b7d8-4905-b0e8-22d2027c5030/subagents/agent-a13e5edfa5f4bf4e7.jsonl"
+  ]
 }
