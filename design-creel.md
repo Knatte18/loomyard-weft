@@ -101,6 +101,15 @@ Batten notices become creel messages, and the orch watcher's own notice queue (`
 One queue per receiver holds delivery during a context cycle or a running turn, for every sender.
 The journal under "Everything is journaled" covers all of it, so `lyx creel log` answers what was sent to whom and when, batten notices included.
 
+## Operator direction: creel owns every delivery (2026-10-06)
+
+- Creel is the only writer into an agent's pane. The orch watcher keeps its cycle and reload logic but types nothing itself: its handoff request, `/clear`, `/compact` and reload messages go through creel, which takes over `PATTERN-orch-pane-single-writer`.
+- Anything can send: a Go program (batten, the orch watcher), an agent, an agent in another hub, and the operator in a terminal, all through `lyx creel send <receiver> "<text>"`.
+- One daemon per hub owns one queue per receiver in that hub; an agent has a queue, not a process.
+- Transport: each hub's daemon listens on a Unix socket named by the hub's shortname, such as `$XDG_RUNTIME_DIR/lyx/creel-<shortname>.sock`. The receiver's address picks the daemon, so `lyx creel send qy:orch "…"` works from any directory with no hub registry. The daemon acknowledges receipt and keeps its queue and journal in its own durable store. `send` to a hub whose daemon is down starts it, as `lyx reed` starts its tmux server.
+- The sender is named from the environment: `LYX_STRAND_NAME` for an agent, a name the caller passes for a Go program, and `operator` (prefixed with the hub shortname when run inside a repo) for a terminal.
+- A filesystem drop-box (sender writes a file into the receiver's queue directory) was considered and set aside: several writers in one directory, and no receipt for the sender. Delivery latency is not the deciding factor, since delivery waits for the receiver to be idle either way.
+
 ## Related
 
 - the shipped `reed: born-as-strand` item — the receive-side prerequisite.
