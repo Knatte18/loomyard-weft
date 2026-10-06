@@ -30,3 +30,19 @@ The cost: a stop no longer halts the run at once; the parent's notice and the ru
 
 `bugfix-sessions` card 5 removes a live agent of the same outputs before a fresh run, which ends the duplicate but not the lost answer.
 The `creel` note owns message delivery and would add the tail.
+
+
+## From issue #407
+
+Imported from [issue #407](https://github.com/Knatte18/loomyard/issues/407).
+
+lyx wrote a note, "Master's wait counted a turn end past a background shell", stating that background shells ran past `background_shell_wait_min` (10 minutes) while Master's turn end was being judged, and may still be running in the session.
+The shell was a multi-step measurement script launched by Master and still unfinished when the turn end was classified.
+
+This is abnormal because the turn end was judged, and the wait counted, while work Master had started was unfinished.
+The note itself says the shell may still be running, so lyx does not know whether the turn end was genuine or whether Master was merely waiting on its own background job.
+That risks a premature stuck or escalation verdict (this run's Webster segment subsequently went stuck several times and halted with an escalation-to-human anomaly).
+
+Suggested fix: when a background shell exceeds `background_shell_wait_min`, have lyx either keep waiting on it or report its final state, rather than only noting that it may still be running.
+
+Provenance: task `test-suite-prune-core`; notes `webster-background-shell.md`, `loom-halt.md`.
