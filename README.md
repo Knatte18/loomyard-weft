@@ -152,8 +152,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Copy Claude .jsonl transcripts across machines so --resume works elsewhere
 1. **Interactive board view: a regenerated HTML file and a phone-friendly README** — [`board-viewer`](design-board-viewer.md) · feature, board, ide
    - board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app
-1. **Config-defined shortcut commands for what the operator types most** — [`operator-shortcuts`](design-operator-shortcuts.md) · feature, orch, reed
-   - Aliases in config, git/gh style: attach for reed attach, and one shortcut that starts the orch and attaches in the prime
+1. **Shortcut commands built into lyx from one committed file** — [`operator-shortcuts`](design-operator-shortcuts.md) · feature, orch, reed
+   - An embedded shortcut file, git-alias style: attach for reed attach, and one shortcut that starts the orch and attaches in the prime
 
 ## Done
 
