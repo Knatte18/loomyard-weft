@@ -111,6 +111,12 @@ These numbers are not committed to `docs/benchmarks/test-suite-timing.md`; `test
 
 Rationale: the board's done-when asks the PR to state count and wall time, and the coverage figure checks that nothing beyond redundant coverage was lost.
 
+### Added after Discussion (operator, 2026-10-06): Scenario tests share one expensive fixture
+
+Decision: Where several integration or tmux tests in this task's packages each build the same expensive fixture (a git hub or pair through hubforge, a reed or tmux server, a seeded worktree) and differ only in the steps they run and the checks they make after that setup, they become one scenario test that builds the fixture once and runs the steps in order. Each former test becomes a named t.Run step inside it, so a failure still names the step that broke; a step that depends on an earlier step's state says so in a comment. Scope is bounded to such fixture families, judged by reading the tests; a family is merged only when it cuts the package's wall time, which the before and after measurement shows. Every assertion of the merged tests is kept. Cheap unit tests are not merged into scenarios; they stay table-driven.
+
+Rationale: Operator, 2026-10-06: the suite's cost sits in the git and tmux fixtures each test rebuilds, which deleting redundant tests and folding into tables barely touches. These tasks already read every test file in their packages, so a later pass for the same files would repeat the work. Note composite-tests records the idea.
+
 ## Constraints
 
 - `PATTERN-test-economy`: candidate reading rules, removable-set-only deletion, folding into tables. D2's keep directive extends its background.
