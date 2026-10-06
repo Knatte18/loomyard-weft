@@ -1,0 +1,32 @@
+{
+  "runGuid": "f1bc3922138238b17704e93ea63919ef",
+  "planFingerprint": "06862cf460b1acadb12e4b8b6c15ef313cc25db5d0b02b00ef2d306ff771d7eb",
+  "planFileHashes": {
+    "00-overview.md": "f1937c90462b54d7836d0d7052323a7de3151a5a880a399f528d4ad0089d8ff3",
+    "01-skill-load-transcript.md": "503348b536936e4d6c1789a16e7c8917e6aced289da95b2274931c6e7697f7a0",
+    "02-launch-skills-one-turn.md": "fce6a7a0ae8e1aaf9c87413a625d9e61bf3187a684c3bba1f7f99caea7c73f5e",
+    "03-orch-reload-one-turn.md": "bcb3f5c9867e178481d92156cba8ce5c3fb69afd88f5f291eb53b0e0239b5b37",
+    "04-drop-per-skill-load.md": "2f843c1b51d73b45482eed33ffa9b11eae1649efc9e90cc6a09742810cec6bce"
+  },
+  "currentBatch": 1,
+  "masterStrand": "5cb094fcf51118efe78a00cfaac33ab5",
+  "masterSessionId": "1d365c19-8158-48fa-8cfa-29693666179c",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "skill-load-transcript",
+      "cards": [
+        "01-skill-load-transcript"
+      ],
+      "cardHashes": {
+        "01-skill-load-transcript": "503348b536936e4d6c1789a16e7c8917e6aced289da95b2274931c6e7697f7a0"
+      },
+      "startSha": "9cd12fd198c1a295fa70b4d12dd455a249d6f8ef",
+      "kind": "fork",
+      "spawnedAt": "2026-10-06T07:38:38Z",
+      "sessionId": "1d365c19-8158-48fa-8cfa-29693666179c",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
