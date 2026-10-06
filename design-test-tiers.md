@@ -60,3 +60,6 @@ Measured 2026-10-05 on the Ryzen with three runs live (load average about 11 on 
 
 
 
+
+Seen in `test-suite-prune-core` (PR #410, 2026-10-06): `internal/reedengine` failed once under full-suite contention in a timing run and passed in later runs, including `-count=3`; the failing test's name was not captured.
+A contention-only flake like this is a candidate for the tier that runs heavy packages apart.
