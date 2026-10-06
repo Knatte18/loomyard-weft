@@ -110,6 +110,7 @@ The journal under "Everything is journaled" covers all of it, so `lyx creel log`
 - The sender is named from the environment: `LYX_STRAND_NAME` for an agent, a name the caller passes for a Go program, and `operator` (prefixed with the hub shortname when run inside a repo) for a terminal.
 - The orch watcher keeps only its cycle logic: tracking tokens, choosing `refresh`/`distill`/automatic cycles, waiting for the note, sequencing the reload, its state and its own lifecycle. The idle probe and notice delivery move to creel, and batten sends to `ly:orch` through creel directly.
 - Creel reports delivery back to a sender that needs it: the watcher advances a cycle phase only once creel confirms its message was typed, through a receipt or a journal lookup.
+- Senders that today relay through an LLM move to creel directly. The `parent-review` gate on Discussion-Write (`internal/parentreview/gate.go`) sends nothing itself: it prompts the Discussion-Write session to `SendMessage` the parent, so the request reaches the orch through another agent's turn, outside the watcher's queue. The gate itself should `lyx creel send` the request. The same holds for a driver's stop reports to its parent, which today duplicate batten's notices over `SendMessage`.
 - A filesystem drop-box (sender writes a file into the receiver's queue directory) was considered and set aside: several writers in one directory, and no receipt for the sender. Delivery latency is not the deciding factor, since delivery waits for the receiver to be idle either way.
 
 ## Related
