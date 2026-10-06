@@ -1,0 +1,45 @@
+{
+  "runGuid": "edbafb9f27cedd3ceddbf2eede9a557a",
+  "planFingerprint": "f13882b9a753c02e1e8a417e22b55b8f39a59165fe5aa03587bcb1e49f4740fa",
+  "planFileHashes": {
+    "00-overview.md": "e432847cda1cd6d009b4d1acb4e5226f0579f2913b64c0ac062342217e1cb905",
+    "01-run-alone-flag-form.md": "ca391efd1442cd7e720545e0ac64633d78ec8c2a291b7da421d40785e666ac08",
+    "02-exclusion-out-of-process.md": "4a13f9ff9d3e0e4adbd2e616cf598cba0a6b555e1b7071f061baff5e8e28bc42",
+    "03-keep-directive.md": "72066f4bcf12b4bf030cf2f62152a927b775031c8b55ccc6a296fb68d334a063",
+    "04-report-splice.md": "5c39f463cfd997730b1700943a4d73cd41bb887475d7a06e6982021a6d624e13",
+    "05-measure-before.md": "34c38120e8327ed63b2f31cc0a1feaec5b2fcdb706ab16e29dec7b74256fe9ff",
+    "06-redundancy-rerun.md": "b03aa7bcc2e322637cbde9eb9cb52ca65bc4d7f99bdefed9103cda3d1c5b3411",
+    "07-shedadapters-prune.md": "7cbc0cc79ffd8cdaa931617f8aaef8006fbd37198b27743d2d7aa8eb9fe07559",
+    "08-shuttleengine-prune.md": "f175d54265d284d7e694a5b7fab430a2e4e463a4c5674da3b05ffafa3e6b6eee",
+    "09-websterengine-untag.md": "b7d85857f9db3d3dce29b9ecb560381992f2d8941103fffea2f393d94bb97f69",
+    "10-websterengine-prune.md": "01c23aa803d6073d731214a26291024d6995cb38dfbc5f90658c74be65688867",
+    "11-reedengine-untag.md": "6b91bad28829d99dfbc05431a565d526683603574dffe5cfb35b65cd0a1320b3",
+    "12-reedengine-prune.md": "a12d3a947d791c96fa377efc7dd638a7bf6f52db35d5e2cc9423bfedf13d624c",
+    "13-loomcli-untag.md": "f8ad44ea5df128712cae86b4d85016ea0f58f1cf77b18390b6e2aa2b8f90e42f",
+    "14-loomcli-prune.md": "d71fda4fb6ac4e030fa04a33ab38e9287e25d4b1264ed172a12997bc36b35679",
+    "15-fabricengine-untag.md": "5ef0b67aa29eeb7a3759ba2ce08833eb8747e820305f712cd5f7d6abc47120d6",
+    "16-fabricengine-prune.md": "9ea90985fa19a188d2db879ec2a1247a0d96846b48d2a11e46c73eaf93e33d2f",
+    "17-measure-after.md": "6abb65ef310e121a380eed579ccbe75a0c3cdda7d674618f48dab9b79bd074cd"
+  },
+  "currentBatch": 1,
+  "masterStrand": "13051109d82b94d235127d1375fa7f7f",
+  "masterSessionId": "700a9836-446d-4e89-a079-a12fa9d382c2",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "run-alone-flag-form",
+      "cards": [
+        "01-run-alone-flag-form"
+      ],
+      "cardHashes": {
+        "01-run-alone-flag-form": "ca391efd1442cd7e720545e0ac64633d78ec8c2a291b7da421d40785e666ac08"
+      },
+      "startSha": "9cd12fd198c1a295fa70b4d12dd455a249d6f8ef",
+      "kind": "fork",
+      "spawnedAt": "2026-10-06T07:55:04Z",
+      "sessionId": "700a9836-446d-4e89-a079-a12fa9d382c2",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
