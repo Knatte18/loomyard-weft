@@ -55,4 +55,5 @@ _No rounds yet._
 - Q8 (auto-pick): Intended behavior once `background_shell_wait_min` elapses? — Count the turn end, leave the shell, state the outcome, D9.
 - Q9 (auto-pick): Is incremental validation in scope? — No; the quarry bump already landed, D10 is the only remaining change.
 - Q10 (auto-pick): Does the plan spec get the new checks despite the scope limit? — Only their rows in the validation-check list; the prose rewrite stays with the note.
+- Q12 (auto-pick, review round 2): How does reset converge when the remote holds the run's abandoned commits and the local branch was already rewound? — The refusal stays, and names a plain merge and, on the operator's judgment that the commits are the run's own, `git merge --strategy ours`; the remote update moves inside the pair-warp reset after its gate checks, D7.
 - Q11 (open, for the plan): What ends Master's session after Webster finishes, for D9's note text.
