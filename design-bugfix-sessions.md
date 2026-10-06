@@ -197,3 +197,17 @@ In practice the call also did not move the runs: a live driver resumed only once
 - The orch resumes a child through a verb with no interactive side effect: a resume verb that only records the decision and wakes the run's driver (or batten), never spawning or attaching anything.
   The role stencil names that verb and never `lyx loom start`.
 - `lyx loom start` and `lyx orch start` never switch the tmux client when called from an agent (`LYX_STRAND_NAME` set), whatever the flags; the terminal handoff is for an operator's shell only.
+
+
+## From issue #408
+
+Imported from [issue #408](https://github.com/Knatte18/loomyard/issues/408).
+
+After a machine crash, opening the hub prime in VS Code left an empty `ly:claude` strand in the prime's reed session, with the `ly:orch` strand stacked below it.
+
+Cause: the folder-open task chain written by `internal/vscode/config.go` runs `lyx reed add --if-absent --unless-name orch --name claude`.
+`--unless-name` skips the add only while the orch strand is live (`AddStrandUnless`, `internal/reedengine/strand.go`).
+After a reboot the orch strand is persisted but dormant, so the check passes, a bare `claude` strand is added, and the orch is resumed into the same session afterwards.
+
+Expected: a prime whose reed state holds an orch strand, live or dormant, gets no bare `claude` strand on folder-open.
+Possible fixes: let `--unless-name` also match a persisted dormant strand, or have the folder-open chain run `lyx reed resume` before the add.
