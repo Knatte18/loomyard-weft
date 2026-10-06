@@ -8,7 +8,9 @@ Bugfix only (operator, 2026-10-06): fix what each section below reports, with a 
 No new verbs, config keys or features; a reviewer treats any extension as a scope finding.
 The board adds more bug sections here until the task starts.
 
-Scope limits: from `orch-resume-without-attach`, only that `lyx loom start` and `lyx orch start` never switch the tmux client when called from an agent; the orch resume verb is not part of this task.
+Scope limits: from `orch-resume-without-attach`, only the terminal handoff, and the orch resume verb is not part of this task.
+Operator decision 2026-10-06: `lyx loom start` and `lyx orch start` never attach or switch a tmux client, for any caller; attaching to reed is only `lyx reed attach`.
+The attach code path and the `--no-attach` flag go (the flag may stay as an accepted no-op for one release if callers pass it); docs and stencils that mention the handoff follow.
 
 ## producer-session-handoff
 
