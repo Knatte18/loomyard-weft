@@ -1,4 +1,4 @@
-# Webster schedules a Delete before its callers are removed
+# Plan-Gate refuses a Delete card not ordered after the cards that remove its callers
 
 `webster-delete-ordering` · Note · bug, webster
 
@@ -19,3 +19,10 @@ From GitHub #350 (intake 2026-10-04).
 Seen again 2026-10-06 in `skills-in-one-turn`: card 4 deleted `SkillLoader.SkillLoadSequence`, `SkillUnknown` and `Runner.LoadSkill` before card 3 moved `internal/orchengine` and `internal/orchcli` off them.
 The recovery batch failed twice, and because batch 4 had begun, `webster rebaseline` refused the one-line `Uses:` fix; the run needed `webster reset --to start`, an archived `state.json` and a goto, redoing two finished batches.
 A Plan-Gate check would have cost nothing at plan time.
+
+## Decision (operator, 2026-10-06)
+
+Webster follows the plan as written and never derives order on its own; the first fix option (an edge derived through quarry inside Webster) is ruled out.
+The plan carries the order: a card that deletes a symbol names, in `Uses:`, the cards' targets that move its callers off it.
+Plan-Gate refuses a plan whose Delete target is still referenced from a member another card edits when no `Uses:` edge orders the two, so an invalid plan never reaches Webster.
+The plan spec and the plan template say so to the plan writer.
