@@ -1001,7 +1001,7 @@
     {
       "id": 143,
       "slug": "operator-shortcuts",
-      "title": "Short top-level commands for what the operator types most",
+      "title": "Config-defined shortcut commands for what the operator types most",
       "kind": "note",
       "labels": [
         "feature",
@@ -1011,8 +1011,8 @@
       "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "lyx attach for lyx reed attach, and one command that starts the orch and attaches in the prime",
-      "body": "Idea (operator, 2026-10-06): top-level shortcuts for the lyx commands the operator types most, so the common path is one short word.\n\n- `lyx attach`: the same as `lyx reed attach`.\n- One command for the prime that starts the orch (`lyx orch start`, which also spawns its watcher) and then attaches the terminal to the prime's reed session (`lyx reed attach`); the orch always runs in the prime.\n  Name open: `lyx spawn` was floated; `lyx up` would clash in meaning with `lyx reed up`.\n  It fits the decision recorded in task `bugfix-sessions` that start verbs never attach: this command is the one place that does both, by calling `lyx reed attach` explicitly.\n\nShortcuts are thin wrappers: same flags, same JSON envelope, listed in `lyx --help`, and each names the full command in its help so the two never drift.\nMore shortcuts get added here as the operator notices them.\n\nRelated notes: `ide-prime-setup` (a VS Code task that starts the orch) and `ide-reopen-prime` (reopen the prime window with one command).\n"
+      "brief": "Aliases in config, git/gh style: attach for reed attach, and one shortcut that starts the orch and attaches in the prime",
+      "body": "Idea (operator, 2026-10-06): top-level shortcuts for the lyx commands the operator types most, defined in config rather than code, the way `git` and `gh` aliases work.\n\nExamples:\n\n- `attach` expands to `reed attach`.\n- One shortcut for the prime runs `orch start`, then `reed attach`; the orch always runs in the prime.\n  Name open: `spawn` was floated; `up` would read like `reed up`.\n  It fits the decision recorded in task `bugfix-sessions` that start verbs never attach: the shortcut is where both happen, by naming `reed attach` explicitly.\n\n## Shape\n\n- A config section maps an alias name to one lyx argv, or to a list of argvs run in order that stops at the first failure.\n  Only lyx commands, never a shell string, so an alias cannot hide arbitrary shell.\n- At root construction lyx adds one cobra command per alias, in its own help group, whose `Short` names the expansion; running it re-dispatches the expanded args through the same root, so flags, envelopes and exit codes are the real command's.\n  Extra args after the alias append to the last argv.\n- An alias that names an existing command or another alias is refused at load, with the config path in the error.\n- Where the config lives is open: hub-wide under `_lyx/config` (registered in `configreg`) or per operator under the user's config dir; `lyx config` edits it either way.\n\n## Open\n\n- The CLI-tree tests walk `newRoot()`; aliases load from config, so tests build the root without them or with a fixed fixture set.\n- Whether an alias may carry flags of its own (`attach --x`) or only append args.\n\nMore shortcuts get added here as the operator notices them.\nRelated notes: `ide-prime-setup` (a VS Code task that starts the orch) and `ide-reopen-prime` (reopen the prime window with one command).\n"
     }
   ],
   "legacy_done": [
