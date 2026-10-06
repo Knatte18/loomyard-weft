@@ -27,7 +27,7 @@
     "22-friction-leaf-prune.md": "0047c99a27d5a25f36a2e20def43f52e12c5c2940269384a47a4d298bd704176",
     "23-rerun-measure-after.md": "7bb4730bca45bc8e6b19ba841b95ad5a3abc730ca6574e1c3d32af53ee4de503"
   },
-  "currentBatch": 0,
+  "currentBatch": 17,
   "masterStrand": "e0d72f390b1804de39fde512613c494d",
   "masterSessionId": "bd330a6d-f411-48d9-a340-35f575841176",
   "assertedModel": "sonnet",
@@ -251,6 +251,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/bd330a6d-f411-48d9-a340-35f575841176/subagents/agent-a75c4251410f93667.jsonl"
       ]
+    },
+    "17": {
+      "slug": "fabric-hub-prune",
+      "cards": [
+        "17-fabric-hub-prune"
+      ],
+      "cardHashes": {
+        "17-fabric-hub-prune": "838d80b5c191e8a3f4082e615cb7aa71da2d71f52ecac84569f89189b034afdf"
+      },
+      "startSha": "6f01f28581fb13ebd6d8ff25df22617ecd7b66b0",
+      "kind": "fork",
+      "spawnedAt": "2026-10-06T12:05:03Z",
+      "sessionId": "bd330a6d-f411-48d9-a340-35f575841176",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "cmd-lyx-prune",
