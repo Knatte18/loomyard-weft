@@ -189,6 +189,12 @@ Decision: No test that exercises skill loading is edited, folded, merged or dele
 
 Rationale: The parallel task skills-in-one-turn rewrites skill loading and its tests; pruning the same tests at the same time would conflict at landing and could delete a test that task changes.
 
+### Added after Discussion (parent, 2026-10-06): cmd/testtiming's tests are core's
+
+Decision: This task edits no file under cmd/testtiming, tests included. Card 3 drops cmd/testtiming from its package list.
+
+Rationale: test-suite-prune-core changes cmd/testtiming's redundancy mode and its tests; two runs editing the same test files conflict at landing.
+
 ## Constraints
 
 - `PATTERN-test-economy`: candidates are evidence, not verdicts; only the removable set is deleted together; a finding names its covering test.
