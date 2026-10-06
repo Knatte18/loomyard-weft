@@ -8,7 +8,7 @@
     "03-orch-reload-one-turn.md": "d6e5fc1983cd1abe75cbc135667378900e0fac13ae7ef1c5c40e5f23a5f72f14",
     "04-drop-per-skill-load.md": "37a4ca1d6be0774ff7875e8227a25dbe329686c806c3272f3ce83d1ad11eac4e"
   },
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "8d7bd0c1c6c957bd3a8c46fe7447634b",
   "masterSessionId": "31bd7934-b7d8-4905-b0e8-22d2027c5030",
   "assertedModel": "sonnet",
@@ -103,13 +103,25 @@
       "kind": "fork",
       "spawnedAt": "2026-10-06T07:58:55Z",
       "sessionId": "31bd7934-b7d8-4905-b0e8-22d2027c5030",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-drop-per-skill-load",
+        "status": "done",
+        "head_sha": "9c471a9243f4be36a81d2884914559105f43b392"
+      },
+      "cardShas": [
+        "9c471a9243f4be36a81d2884914559105f43b392"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-skills-in-one-turn/31bd7934-b7d8-4905-b0e8-22d2027c5030/subagents/agent-a3b05be10a20912d5.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-skills-in-one-turn/31bd7934-b7d8-4905-b0e8-22d2027c5030/subagents/agent-a13e5edfa5f4bf4e7.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-skills-in-one-turn/31bd7934-b7d8-4905-b0e8-22d2027c5030/subagents/agent-a60f90749072da2a8.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-skills-in-one-turn/31bd7934-b7d8-4905-b0e8-22d2027c5030/subagents/agent-a4b8abd0749a1efa0.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-skills-in-one-turn/31bd7934-b7d8-4905-b0e8-22d2027c5030/subagents/agent-a4b8abd0749a1efa0.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-skills-in-one-turn/31bd7934-b7d8-4905-b0e8-22d2027c5030/subagents/agent-a3b05be10a20912d5.jsonl"
   ]
 }
