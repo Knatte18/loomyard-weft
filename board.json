@@ -1117,7 +1117,8 @@
       "title": "shuttle: Wait never takes a valid Stop; a burler round's shed step stalls",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "shuttle"
       ],
       "issues": [
         411

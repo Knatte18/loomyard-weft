@@ -1,6 +1,6 @@
 # shuttle: Wait never takes a valid Stop; a burler round's shed step stalls
 
-`shuttle-stop-never-taken` · Note · bug
+`shuttle-stop-never-taken` · Note · bug, shuttle
 
 Imported from [issue #411](https://github.com/Knatte18/loomyard/issues/411).
 
