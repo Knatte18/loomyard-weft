@@ -55,10 +55,14 @@ Bound: the only answer that changes is the "record present, lock missing" case, 
 Decision: Finalize computes the task's changes to its per-worktree config files: the diff restricted to `_lyx/config/` between the merge-base of the task's weft branch and its parent's weft branch, and the task's weft tip.
 Only files of config modules not marked `HubWide` in `configreg` count; a HubWide module's worktree copy is never read.
 The computation is a fabricengine function (git on weft stays in fabricengine per `PATTERN-fabric-git`), handed to landingshed through its deps as a told function (landingshed derives no path per `PATTERN-told-geometry`, and names no fabric side per `PATTERN-fabric-vocabulary`).
-The diff is read before the parent-side merge; a read failure is Stuck with the parent untouched, naming a rerun of the run as the way forward.
-When the diff is non-empty and Finalize reaches Done (on the merge path and on the already-landed path alike), it queues one single-line orch notice through `orchengine.QueueNotice` at the prime's paths, as batten does: the task slug, the changed config files, the fork-point and tip SHAs, and the instruction to re-apply on the parent's `_lyx/config/` each change meant for the parent.
+The diff is read at the start of Finalize, before any parent-side mutation.
+Landing never merges the weft, so the merge-base is always the task's fork point and every run of Finalize, resumed or not, computes the same diff.
+A read failure never halts the landing: Finalize logs a warning, lands as usual, and at Done queues one notice saying the slug's config diff could not be read and naming the two branches, so the hub diffs them by hand.
+When the diff is non-empty and Finalize reaches Done, it queues one single-line orch notice through `orchengine.QueueNotice` at the prime's paths, as batten does: the task slug, the changed config files, the merge-base and tip SHAs, and the instruction to re-apply on the parent's `_lyx/config/` each change meant for the parent.
 An empty diff queues nothing.
-Bound: Finalize never writes the parent's config; the notice is the only new output, and a resumed Finalize may queue it twice.
+A `QueueNotice` error is a logged warning and never changes the verdict.
+`queued=false` because the orch state records no strand is accepted as is, since `QueueNotice` already logs the notice and returns no error; the hub sees a notice only where a strand is recorded.
+Bound: Finalize never writes the parent's config and never stops on this output; the notice is the only new output, and a Finalize that reaches Done again after a resume queues it again.
 Rationale: per-pair tuning is legitimate (the hub sets a small task's `review_max_bounces` in the pair's `loom.yaml`), so an automatic carry would push per-pair overrides into the parent; the bug is the silence, and the hub is the only party that knows which change was meant for the parent.
 The two cases the board cites were `board.yaml`, now HubWide since `board-config-per-worktree`, and PATTERN, now in warp; the remaining exposure is the per-worktree modules.
 
@@ -71,13 +75,18 @@ Decision: fabricengine gets one function that resolves a pair's weft branch for 
 3. else: no branch, and the caller forks as today.
 
 A failed origin probe or fetch is an error from the resolver, never a fall-through to step 3.
-The branch name comes from `WeftBranchName`; the resolver honors the verbs' existing skip-git and skip-push options by skipping step 2 when set.
+A weft repo with no `origin` remote configured skips step 2, as `cleanup` already treats it; only an unreachable or failing origin is an error.
+The branch name comes from `WeftBranchName`.
+`add` passes its skip-git and skip-push options, and the resolver skips step 2 when either is set, which leaves today's fork behavior for that offline opt-out; `reconcile` and `checkout` take no such option and always consult origin.
 Bound: step 2 only creates a local branch whose content is already on origin, so nothing is lost; the new failure mode is an unreachable origin, which now stops the verb instead of forking.
+Only `add`'s skip opt-out forks past an origin weft; `reconcile` and `checkout` have no opt-out and the scope adds none, so for them an unreachable origin stops the pair or verb with an error naming origin, and the way forward is restoring access, including for `checkout` to a branch with no weft anywhere, which forked offline before.
 Rationale: forking a fresh weft beside a live origin weft is the bug; `clone` already adopts this way for the prime.
 
 ### D6 — `add`'s live-pair rule
 
-Decision: `lyx fabric add <slug>` treats the pair as live when the weft branch exists locally, or exists on origin with no `archive/<slug>/*` tag covering its tip.
+Decision: `lyx fabric add <slug>` treats the pair as live when the weft branch exists locally, or exists on origin with no `archive/<slug>/*` tag covering its tip; archive tags are consulted only when there is no local weft branch.
+With `SkipGit` or `SkipPush` no origin is consulted: the pair is live only by a local weft branch, and the warp branch forks from HEAD as today.
+The live-pair decision, the divergence refusal and the origin probes run before the first creation, so a refusal leaves nothing behind.
 For a live pair:
 
 - the weft comes from D5 (local, or origin-tracked);
@@ -85,19 +94,27 @@ For a live pair:
 - if `origin/<slug>` exists, the warp branch is created tracking it, whatever its relation to HEAD, replacing the `leftoverDivergedWarp` refusal for this case;
 - if `origin/<slug>` is absent, the warp branch forks from HEAD as today.
 
-For a pair that is not live, behavior is unchanged: an archived remote weft is replaced, an uncovered one cannot occur (it would make the pair live), and a diverged remote warp is still refused.
+For a pair that is not live (no local weft branch, and an origin weft that is absent or archive-covered), behavior is unchanged: an archived remote weft is replaced, and a diverged remote warp is still refused.
+The refusal for an uncovered remote weft (`leftoverUnarchivedWeft` and its message) is retired, since that weft now makes the pair live.
 A local warp branch that already exists is still `ErrBranchExists`.
-Add's origin record is written and committed on the adopted weft as on today's local-adopt path, naming the acting worktree as parent, and pushed.
-Rollback deletes only local branches this Add created (an origin-tracked branch included), never an origin branch.
-Bound: the replaced refusal now lets a remote warp branch with commits HEAD lacks into a new local branch, only when the weft side proves a live pair; a removed pair's leftovers (archived weft) still hit today's refusals.
+A live pair's adopted weft that already carries an origin record keeps it: Add neither rewrites nor commits it, so a stacked task moved between machines keeps its recorded parent.
+An adopted weft with no record gets one written and committed as on today's local-adopt path, naming the acting worktree as parent; the weft is then pushed.
+Rollback deletes only local branches this Add created (an origin-tracked branch included), never an origin branch; a pre-existing local weft branch that was fast-forwarded is not rewound, since it only moved to a tip origin already holds.
+Bound: the replaced refusal now lets a remote warp branch with commits HEAD lacks into a new local branch, only when the weft side proves a live pair: a surviving local weft branch (`Remove` deletes the pair's local branches, so it is the moved-back case) or an unarchived origin weft.
+A removed pair's leftovers with an archived weft and no local weft still hit today's refusals; an unarchived weft whose archive step failed is the accepted case in R3, and nothing on origin is replaced in it.
 Rationale: moving a running task to another machine is the case; tying warp adoption to a live weft keeps a removed pair's stale warp branch from being resurrected.
 
 ### D7 — `reconcile` and `checkout` consult origin before forking
 
 Decision: `reconcileMissingWeft` calls D5 before its raw-warp and unmanaged branches; an origin weft is adopted through the `weft_recreated` path, so junctions, portal and launchers are wired as with a local branch.
-`reconcile` adopts an origin weft whether or not an archive tag covers it, because a live warp worktree on that branch is present.
+`reconcile` adopts an origin weft whether or not an archive tag covers it; this covers the raw-warp and the unmanaged (managed warp worktree, no weft sibling) cases alike, and both end as `weft_recreated` with the wiring repair, where the raw path alone ended as a dormant `raw_adopted` with a fresh weft before.
+For the unmanaged case the justification is the managed warp worktree on that branch, which proves a pair; the raw case rests on the weaker bound below.
+Bound: that bypass of the archive guard only creates a local branch from origin and pushes or replaces nothing, and only for a slug whose warp worktree already exists locally on that branch, so no removed pair is revived without a local warp worktree; `add`'s replace-archived rule applies only where `add` itself creates the pair, so the two never decide the same slug.
+A raw warp worktree proves no live pair, so for it the bound is weaker: a raw worktree on a branch reusing a removed pair's slug adopts that pair's archived weft and has junctions wired into it, which is accepted because the content was already on origin, nothing is pushed or replaced, and the hub can remove the pair again.
 A resolver error is a per-pair `Error`, and no dormant weft is forked.
 `Checkout`'s `switchOrForkWeft` calls D5 before forking; an origin-tracked branch is switched to, and the rollback treats it as a created branch (deleted on rollback, origin untouched).
+`checkout` adopts an origin weft whether or not an archive tag covers it, as `reconcile` does; its bound is that it creates no pair and only switches an existing weft worktree onto a local branch tracking content origin already holds, so a checkout of a branch reusing a removed pair's slug replaces the worktree's own per-worktree config and run records with the archived weft's, and nothing on origin changes.
+That replacement is bounded by the operator having named the branch and by D4's notice reporting config changes at landing.
 Rationale: the board names both paths as forking past an existing origin weft.
 
 ### D8 — Regression tests drive the real CLI wiring
@@ -105,11 +122,10 @@ Rationale: the board names both paths as forking past an existing origin weft.
 Decision: each fix's regression test runs the `lyx fabric` cobra commands (or, for D4, the loom Finalize wiring) on a `hubforge` fixture built through `fabriccli.CloneAndWire` with a bare origin, in the `integration` tier, under `gitkit.HermeticGitEnv()`; fakes may cover extra rows but never replace the wiring test.
 Rationale: the board requires CLI-wiring regression tests; `PATTERN-hubforge-fixtures` and `PATTERN-test-speed` set the fixture and tier.
 
-### Added after Discussion (parent, 2026-10-06): Plan now, implement after both test prunes land
+### D9 — Plan test targets by file path
 
-Decision: Plan-Write writes the plan now against the current tree. Cards name production code as their main targets and test files by path rather than by test-function glyph. Webster starts only after test-suite-prune-core and test-suite-prune-rest have both landed on main; then the pair is synced with main and the plan's test targets are re-validated, re-planned only where a prune renamed or deleted them.
-
-Rationale: The operator runs Discussion and Plan while the prunes run, and holds implementation until they land, since prune-rest rewrites the fabric tests this task extends.
+Decision: cards name production code as their main targets and name test files by path, never by test-function glyph.
+Rationale: a test-suite prune in flight can rename or delete the fabric test functions this task extends; a file path stays valid, and only the functions inside it are re-validated.
 
 ## Constraints
 
@@ -127,35 +143,37 @@ Rationale: The operator runs Discussion and Plan while the prunes run, and holds
 
 ## Auto-mode assumptions
 
-- A1: The notice channel, not a Stuck gate, is the right surface for D4, since a stop could only be cleared by a new verb, which the scope forbids.
+- A1: The notice channel, not a Stuck gate, is the right surface for D4, since a stop could only be cleared by a new verb, which the scope forbids; a failed diff read uses the same channel, since the notice protects no correctness of the landing; a notice that cannot be queued, the failed-read one included, is logged, never a halt, and reaches the hub only where an orch strand is recorded.
 - A2: The prime's orch notice queue is the D4 recipient even for a stacked task whose parent is another pair, matching batten's existing notices.
 - A3: For a live pair, adopting `origin/<slug>` even when it is an ancestor of HEAD is right; the board's "never creates a new local branch in its place" outweighs starting from a newer base.
-- A4: `reconcile` may need network now for a pair with no local weft branch; failing that pair is preferred to forking.
+- A4: `reconcile` and `checkout` may need network now for a pair or branch with no local weft branch; failing that pair or verb is preferred to forking.
 - A5: The local-behind-origin fast-forward in D6 is part of adoption, not an extension: without it, moving a task back to the machine it came from refuses.
 
 ## Open risks
 
 - R1: D4's diff includes the hub's own per-pair tuning, so tuned tasks raise a notice the hub then ignores; accepted as one line per landing.
-- R2: A crash between Finalize's push and the notice loses the notice on the merge path unless the resume reaches the already-landed path, which re-queues it (D4 covers both paths).
-- R3: An unarchived remote weft from a removed pair whose archive step failed now makes `add` adopt it instead of refusing; nothing is lost, but stale run records come back with it.
+- R2: A Finalize resumed after its landing completed computes the same diff again, for a squash and a non-squash landing alike, so the hub may get the notice twice; a notice is never lost to a resume.
+- R3: An unarchived remote weft from a removed pair whose archive step failed now makes `add` adopt it, and its remote warp branch with it, instead of refusing; nothing is lost and nothing on origin is replaced, but stale run records and the stale warp branch come back, and a plain `lyx fabric remove` archives the pair again.
 - R4: The ReadOriginFor error changes `loomcli`'s reviewer resolution from "no reviewer" to an error for the gap case; reconcile fixes the gap, and D1 stops it arising.
 
 ## Acceptance criteria
 
 - After `lyx fabric reconcile` recreates a weft worktree from an existing local weft branch, `.weft/` exists, and `hubgeom.ResolveParent` (through the reed geometry) yields the recorded parent's orch name.
 - After `lyx fabric add`, on both the fork and adopt paths, the new weft worktree has `.weft/`.
-- A pair whose weft worktree has the origin record but no `.weft/`: `ResolveParent` returns an error naming the missing lock directory and `lyx fabric reconcile`; running `lyx fabric reconcile` then creates `.weft/` and the parent resolves.
+- A pair whose weft worktree has the origin record but no `.weft/`: `ResolveParent` returns an error naming the missing lock directory and `lyx fabric reconcile`; running `lyx fabric reconcile` then creates `.weft/` and the parent resolves; the pair's reconcile `Detail` names the repair and its action is the one it would otherwise have had.
 - A task whose weft changed a per-worktree config file (for example `loom.yaml`) since its fork point: Finalize queues one orch notice naming the slug and the file; a task with no such change queues none; a change to a HubWide module's worktree copy is not reported; the parent's config is unchanged in all cases.
-- `lyx fabric add <slug>` on a hub with no local branches, where origin holds a live pair's `<slug>` and `<slug>-weft` (with commits the hub's HEAD lacks and run records on the weft): the pair is built on both origin tips, both local branches track origin, the run records are present, and the add's push is a fast-forward.
-- `lyx fabric add <slug>` where origin's weft is covered by an archive tag and origin's warp diverges: today's refusal is unchanged.
-- `lyx fabric add <slug>` where the local weft branch is behind origin's: it is fast-forwarded and adopted; a true divergence still refuses.
-- `lyx fabric reconcile` on a raw warp worktree checked out on `<slug>` with only `origin/<slug>-weft` present: the action is `weft_recreated`, the weft tracks origin, and junctions, portal and launchers are wired; with origin unreachable, the pair reports an error and no weft branch is forked.
-- `lyx fabric checkout <branch>` where only `origin/<branch>-weft` exists: the weft worktree switches to a local branch tracking it; a later failure rolls the local branch back and leaves origin untouched.
+- A Finalize whose config diff read fails still lands and queues one notice saying the diff could not be read, with the parent's config unchanged; a notice that cannot be queued, whether `QueueNotice` returns an error or `queued=false` for want of an orch strand, leaves the verdict unchanged.
+- A Finalize resumed after its landing completed computes the same diff and queues the notice again, whether the landing squashed or not.
+- `lyx fabric add <slug>` on a hub with no local branches, where origin holds a live pair's `<slug>` and `<slug>-weft` (with commits the hub's HEAD lacks and run records on the weft): the pair is built on both origin tips, both local branches track origin, the run records are present, the weft worktree has `.weft/`, and the add's push is a fast-forward.
+- `lyx fabric add <slug>` where origin holds only a live pair's `<slug>-weft`: the weft is adopted tracking origin and the warp branch forks from HEAD.
+- `lyx fabric add <slug>` with a skip option and an origin weft present: both branches fork as today and origin is not consulted.
+- `lyx fabric add <slug>` with no local weft branch, where origin's weft is covered by an archive tag and origin's warp diverges: today's refusal is unchanged.
+- `lyx fabric add <slug>` with a local weft branch, where origin's weft is archive-tagged and its warp diverges: the pair is live and the warp branch is adopted tracking origin.
+- `lyx fabric add <slug>` where the local weft branch is behind origin's: it is fast-forwarded and adopted; a true divergence still refuses; an Add that then fails leaves the fast-forwarded branch at origin's tip.
+- `lyx fabric reconcile` on a raw warp worktree checked out on `<slug>` with only `origin/<slug>-weft` present: the action is `weft_recreated`, the weft tracks origin, `.weft/` exists, and junctions, portal and launchers are wired; with origin unreachable, the pair reports an error and no weft branch is forked; with an archive tag covering the origin weft, the weft is still adopted.
+- `lyx fabric reconcile` on a managed warp worktree (its `_lyx` wired) with no weft sibling and only `origin/<slug>-weft` present: the action is `weft_recreated`, the weft tracks origin, and the wiring is repaired.
+- `lyx fabric checkout <branch>` where only `origin/<branch>-weft` exists: the weft worktree switches to a local branch tracking it, also when an archive tag covers that origin weft; a later failure rolls the local branch back and leaves origin untouched.
+- `lyx fabric add <slug>` adopting a live pair's weft that already carries an origin record: the record keeps its recorded parent, and no new record commit is made.
+- `lyx fabric checkout <branch>` with origin unreachable and no local weft branch: the verb fails naming origin, both sides stay on their original branches, and no weft branch is forked.
+- `lyx fabric reconcile` and `lyx fabric checkout` on a hub whose weft repo has no `origin` remote fork as today.
 - An Add that fails after creating an origin-tracked branch rolls back the local branch and leaves every origin branch as it was.
-
-## Notes for the plan writer
-
-- Weft creation sites to start from: `createWeftWorktree` and `createWeftWorktreeDroppingRuns` (`weftwiring.go`), `Add`'s adopt branch (`add.go`), `adoptWeftWorktree` (`reconcile.go`).
-- Origin probes to reuse: `remoteHeadTip`, `remoteArchiveTags`, `isAncestorOrEqual` (`remoteleftover.go`); `suffixWeftPrimaryBranch` (`clone.go`) shows the tracking checkout.
-- The leftover probes in `Add` run before the first mutation; the live-pair decision belongs there, so a refusal still comes before any creation.
-- Finalize's parent-side merge is landingshed's merge critical section; the diff read goes before it.
