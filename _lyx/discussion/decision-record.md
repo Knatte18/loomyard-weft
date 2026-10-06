@@ -141,6 +141,12 @@ Decision: A scenario is an ordered sequence of named t.Run steps on one fixture,
 
 Rationale: The point of a scenario is to pay for the fixture once and walk it through steps; requiring each step to restore everything it touched would cost more than it saves and cannot be checked in general. The scenario's own assertions are the guard.
 
+### Added after Discussion (parent, 2026-10-06): Scenario merges are judged by fixture builds, not per-family timing
+
+Decision: A family is merged when the merge removes fixture builds: N tests that each build the same hub, pair or tmux server become one build. No per-family timing is taken. The per-package before and after wall time already required for the PR is the measurement; a package whose wall time rose names the merges behind it in the PR.
+
+Rationale: Per-family timing on a loaded machine is noise, and a removed fixture build is a cost cut that can be counted. This replaces the condition 'only where the before and after measurement shows a wall-time cut' in the operator decision on scenario tests.
+
 ## Constraints
 
 - `PATTERN-test-economy`: candidate reading rules, removable-set-only deletion, folding into tables. D2's keep directive extends its background.
