@@ -103,6 +103,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Bouncer re-finds hard-wrapped Go comments across rounds; catch it in the card gate or the implementer stencil
 1. **Discussion stage has no sanctioned path to land a repository edit ahead of Plan** — [`discussion-lands-invariant`](design-discussion-lands-invariant.md) · enhancement, loom
    - Discussion has no sanctioned path to commit a PATTERN edit ahead of Plan
+1. **One prompt notice channel to the orch: batten, event-driven, timestamped** — [`orch-notice-channel`](design-orch-notice-channel.md) · enhancement, batten, orch
+   - Driver and batten both report every halt, and batten's 30 s poll makes its notices late and stale
 
 ### Features
 
