@@ -20,6 +20,10 @@
 - `internal/shuttleengine/claudeengine/session.go`
 - `internal/shuttleengine/claudeengine/doc.go`
 
+**Uses:**
+- `internal/orchcli/session.go`
+- `internal/orchengine#Watcher.typeReloadStep`
+
 **Intent:**
 Remove the pane-text unknown-skill classifier and the per-skill `/<skill>` load now that no caller uses them (Decision 8).
 The removal lets one case through: on a turn whose transcript is unreadable, an unknown skill is no longer detected and appears only in the `skill load unverified` Warn's list.

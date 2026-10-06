@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "batch 04-drop-per-skill-load: recover-batch refused with batch_failed (delete-not-done: SkillLoader.SkillLoadSequence, SkillLoader.SkillUnknown, Runner.LoadSkill, Runner.SkillUnknown and the claudeengine equivalents still resolve); card 4 deletes code that card 3 (orch reload) still uses, and the batch order runs 04 before 03"
+batches_done: 2
