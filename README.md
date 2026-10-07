@@ -13,7 +13,7 @@ Waits on nothing open; can start now, in parallel.
 
 1. **Prompt-cache TTL per agent role** — [`cache-ttl-per-role`](design-cache-ttl-per-role.md) · enhancement, shuttle · running · Webster
    - Shuttle sets the prompt-cache TTL per role: 1 hour for the driver and Webster Master, 5 minutes for the rest
-1. **Batcher v2: Merriam context at fork time, a fitted model, plans in card order** — [`batcher-v2`](design-batcher-v2.md) · bug, enhancement, webster · running · Discussion-Bouncer
+1. **Batcher v2: Merriam context at fork time, a fitted model, plans in card order** — [`batcher-v2`](design-batcher-v2.md) · bug, enhancement, webster · running · Discussion-Burler
    - Size batches from Merriam measured context, fit the batchifier from logged runs, one tokencount weft flag, card order in the plan spec, and card commands that never reach the fabric repo
 1. **Burler: a parallel reviewer and fixer, a model per round** — [`burler-cost`](design-burler-cost.md) · feature, burler · running · Plan-Write
    - Split a Burler round into a cheap reviewer and a stronger fixer that start together, and pick the model per round
