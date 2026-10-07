@@ -13,8 +13,8 @@ Waits on nothing open; can start now, in parallel.
 
 1. **Prompt-cache TTL per agent role** — [`cache-ttl-per-role`](design-cache-ttl-per-role.md) · enhancement, shuttle · running · Discussion-Burler
    - Shuttle sets the prompt-cache TTL per role: 1 hour for the driver and Webster Master, 5 minutes for the rest
-1. **Batcher v2: Merriam context at fork time, a fitted model, plans in card order** — [`batcher-v2`](design-batcher-v2.md) · enhancement, webster · running · Discussion-Burler
-   - Size batches from Merriam measured context, fit the batchifier from logged runs, one tokencount weft flag, card order in the plan spec
+1. **Batcher v2: Merriam context at fork time, a fitted model, plans in card order** — [`batcher-v2`](design-batcher-v2.md) · bug, enhancement, webster · running · Discussion-Burler
+   - Size batches from Merriam measured context, fit the batchifier from logged runs, one tokencount weft flag, card order in the plan spec, and card commands that never reach the fabric repo
 1. **Burler: a parallel reviewer and fixer, a model per round** — [`burler-cost`](design-burler-cost.md) · feature, burler · running · Discussion-Bouncer
    - Split a Burler round into a cheap reviewer and a stronger fixer that start together, and pick the model per round
 
@@ -32,8 +32,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - rebaseline refuses begun cards and reset needs a fresh run loom cannot start, so a mid-run decision never reaches the plan
 1. **Orch compact cycle always times out before reload** — [`orch-compact-timeout`](design-orch-compact-timeout.md) · bug, orch
    - tickCompacting reads a stale pre-compact turn end, so every compact cycle waits out the handoff timeout and reloads late
-1. **Plan checks let a card command reach the fabric repo** — [`plan-fabric-reference`](design-plan-fabric-reference.md) · bug, webster, loom
-   - card-batching card 08 told its fork to run tokencount on ../card-batching-weft; neither validate-plan nor Plan-Review caught it, and Webster audit then wedged the run
 1. **A Webster stuck outcome is reported as the master asking a question** — [`stuck-read-as-question`](design-stuck-read-as-question.md) · bug, loom, shuttle
    - loom said webster master is asking a question when the master had written outcome: stuck and ended its turn
 
