@@ -12,7 +12,7 @@
     "07-rebaseline-tail.md": "835faee58926b006fd8387f9d00fa216126db7bbd54287c8841ea4ede2ae8f12",
     "08-calibrate-template.md": "ec8f3be48359a9417b4ed9b9124ef40bccad192d7c473e2452023be92f038034"
   },
-  "currentBatch": 0,
+  "currentBatch": 2,
   "masterStrand": "026fdf1c0dc2367ffedeb3f977ced46f",
   "masterSessionId": "74a42312-8d0f-4201-aafb-a1681a5404aa",
   "batches": {
@@ -41,6 +41,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/74a42312-8d0f-4201-aafb-a1681a5404aa/subagents/agent-a530e8fa4808269ca.jsonl"
       ]
+    },
+    "2": {
+      "slug": "batcher-estimator",
+      "cards": [
+        "02-batcher-estimator"
+      ],
+      "cardHashes": {
+        "02-batcher-estimator": "da44b28bec7983c300795054b2a193eeb278d0e5a1eb675d1830fff12831f3e8"
+      },
+      "startSha": "f28990732f362f550cf449ca8911433c9dec78b8",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T10:51:44Z",
+      "sessionId": "74a42312-8d0f-4201-aafb-a1681a5404aa",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
