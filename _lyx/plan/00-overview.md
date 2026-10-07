@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -42,10 +42,10 @@ Each fix carries a regression test that drives the real `lyx` cobra command wher
 
 ### Decision: cli-drive
 
-- **Decision:** each fix's regression drives the `lyx` cobra command (`lyx webster validate`, `begin-batch`, `record-batch`, `recover-batch`, `rebaseline`, `run`, `reset`) through `internal/webstercli`'s tests; Publish (card 12) is driven through its real producer over a hubforge hub with the real fabric closure.
-- **Rationale:** card 12 departs from the decision record's "driven through the `lyx` CLI command" for D8, whose acceptance item is the push-rejected stuck reason alone: no loomcli test steps the Publish row today, so driving it through `lyx loom step` needs a new loom-step harness, which is new test infrastructure outside this task.
-  The stuck reason is verified at `landingshed`'s integration tier over a hubforge hub with a real fabric push and remote-read closure, whose resumed half also reaches the GitHub step that only that tier fakes, and the production closure's real wiring is driven in loomcli's new `landingdeps_integration_test.go`.
-- **Applies to:** cards 1–8, 11, and card 12 as the rationale states
+- **Decision:** each fix's regression drives the `lyx` cobra command (`lyx webster validate`, `begin-batch`, `record-batch`, `recover-batch`, `rebaseline`, `run`, `reset`) through `internal/webstercli`'s tests; Publish (card 12) is driven through `internal/loomcli`'s real `wire()` seams and the production `landingDeps` closure, as the `wiring_*_integration_test.go` files drive their rows.
+- **Rationale:** no loomcli test steps the Publish row today, and `lyx loom step` is not driven by a test that reaches GitHub.
+  Card 12's rejected half halts before any GitHub call, so `wire()` reaches it with no new harness; its resumed half reaches the GitHub step that only `landingshed`'s integration tier fakes, so that tier also drives both halves of one scenario over a hubforge hub with a real fabric push and remote-read closure.
+- **Applies to:** cards 1–8, 11 and 12
 
 ### Decision: dispatch-scope
 

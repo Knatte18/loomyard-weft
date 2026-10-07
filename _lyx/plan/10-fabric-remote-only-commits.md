@@ -24,4 +24,4 @@ Docs: `doc.go` names `RemoteOnlyCommits` and what its empty tip means.
 Tests (hubforge hub with its origin, `PATTERN-hubforge-fixtures`):
 `remoteonly_integration_test.go`, one table-driven test over the three answers: a remote task branch holding a commit the local HEAD lacks returns that tip and that commit; a remote task branch at or behind the local HEAD returns its tip and no commits; a branch absent on the remote, and a repository with no remote, each return an empty tip and no commits.
 
-**ImpactSummary:** One new exported Fabric method with two consumers in other packages, read-only apart from the fetch's remote-tracking refs; no existing symbol changes.
+**ImpactSummary:** One new exported Fabric method, read-only apart from the fetch's remote-tracking refs; no existing symbol changes.

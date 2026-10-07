@@ -33,6 +33,7 @@ The same tallies are pinned elsewhere and go false with the new executor, token 
 The update is skipped when the remote tip already equals `sha` or is an ancestor of it, when the remote has no such branch, when the repository has no remote configured, and under `SkipPush`; skipped means no fetch-dependent refusal and no record entry.
 `SkipGit` does not skip the fetch or the remote update, because D7 names `SkipPush` as the only bypass; `internal/webstercli/reset_test.go`'s fixture sets `WEFT_SKIP_GIT=1` on every test, so the new CLI rows run the remote update under it.
 This makes the remote update the one push-shaped fabric step that ignores `SkipGit`, unlike the other pushes, which bypass on `SkipGit || SkipPush`.
+What that lets through is a remote rewrite in an environment that asked for no git; what bounds it is that the update is the same gated, ancestry-checked and leased one, rewriting only the pair's own task branch to the reset commit, and only when the remote holds nothing the local HEAD lacks.
 
 `ResetPairWarp`'s ancestry check reads the remote task branch's tip and the commits the local HEAD lacks through `Fabric.RemoteOnlyCommits`, so it and the Publish halt read the same answer.
 All git runs through `gitrepo`/`gitexec`; `websterengine` stays fabric-blind.
