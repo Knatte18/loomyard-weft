@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "webster master is asking a question; session c3d70426-a3ed-485f-b1f4-8df4b578ff73, run dir /home/knatte/Code/loomyard-LYXHUB/card-batching/.lyx/shuttle/d8c077b0e98a3908162f50622ee90e50",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": ""
+    "wait": "webster master is asking a question; session c3d70426-a3ed-485f-b1f4-8df4b578ff73, run dir /home/knatte/Code/loomyard-LYXHUB/card-batching/.lyx/shuttle/d8c077b0e98a3908162f50622ee90e50"
   },
   "history": [
     {
@@ -142,6 +142,12 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-07T12:41:51Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-07T13:00:33Z"
     }
   ],
   "product": {
