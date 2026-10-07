@@ -1,0 +1,4 @@
+status: OK
+head_sha: d2f5fddfeb1733b31b9d2da6ffc6b4cdb7b3571d
+deviations:
+  - internal/shedrecipe/fixture_test.go

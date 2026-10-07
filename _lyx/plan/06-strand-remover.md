@@ -1,8 +1,8 @@
 # Card 6 — The strand remover D1 and D6 stop a half with
 
 **Create:**
-- `plan:internal/burlerengine#StrandRemover` -> `type StrandRemover interface`
-- `plan:internal/burlerengine#NewReedStrandRemover` -> `func NewReedStrandRemover(reed shuttleengine.ReedOps) StrandRemover`
+- `internal/burlerengine#StrandRemover`
+- `internal/burlerengine#NewReedStrandRemover`
 - `internal/burlerengine/remover.go`
 - `internal/burlerengine/remover_test.go`
 

@@ -1,6 +1,6 @@
 {
   "runGuid": "3f70ff4f0dedeef254ef8e00f0a4fdad",
-  "planFingerprint": "4b630fab93db9c9e685bb084c2dea773f934544f4b795bbbd38632bba46b9ce4",
+  "planFingerprint": "f16da5d53410c1000cc0f01e6b9e19eebc963a46bd9d6e1071ddeb278e60fcee",
   "planFileHashes": {
     "00-overview.md": "aaf97681e76341a086e25270bad7d666b413259ccc2932c0bcee4c317311997c",
     "01-shuttle-probe.md": "57be32869f30b1a086e316368a25b8625e915b91d4225b46bdcf0c3fc3969f47",
@@ -8,9 +8,9 @@
     "03-per-round-models.md": "0ce8989cdac13e49abbff54b27efb15f908742eb57afee15353b4c94df426bf5",
     "04-await-review-verb.md": "e47d066776fa34a0c24964c26e1b58f129f8c4eabb4cd97e65b73f8d6f40f23e",
     "05-round-stencils.md": "2582a2eeb74dd2181725a3abc4a0f90572298cd6eb80a58d2ae538bce270b9c4",
-    "06-strand-remover.md": "e7ba7552299e01686a395346f9c39170d68dff9cfd8ab79efb0893b6cc2ea6d8",
-    "07-two-agent-round.md": "ce75b7d74ec8aabc49440a18a1faf4335eff2a680c1e730a85ede1533536b601",
-    "08-two-half-resume.md": "bf88f133efcdc67aa94ccc052565c48038eef8ef75c31791dc07e795064b46b5"
+    "06-strand-remover.md": "2765b74d88688d778852845f66ebf76abfd7eca6eb74571d928b304464c294b7",
+    "07-two-agent-round.md": "1cd979cd7931dc6441fec8aafcabcf57192564c28e05bf1927ca19cd71ede4db",
+    "08-two-half-resume.md": "9761706a0b9df041d1a9778e65b56f21daf028e1b5818a2f566da0c618f3bf2d"
   },
   "partition": [
     {
@@ -350,7 +350,7 @@
       }
     }
   ],
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "590235e54e047e09a509b232f6386ad8",
   "masterSessionId": "947162f0-91d4-4ee3-a7ab-5dde96fdaba3",
   "batches": {
@@ -395,18 +395,33 @@
       ],
       "cardHashes": {
         "05-round-stencils": "2582a2eeb74dd2181725a3abc4a0f90572298cd6eb80a58d2ae538bce270b9c4",
-        "06-strand-remover": "e7ba7552299e01686a395346f9c39170d68dff9cfd8ab79efb0893b6cc2ea6d8",
-        "07-two-agent-round": "ce75b7d74ec8aabc49440a18a1faf4335eff2a680c1e730a85ede1533536b601"
+        "06-strand-remover": "2765b74d88688d778852845f66ebf76abfd7eca6eb74571d928b304464c294b7",
+        "07-two-agent-round": "1cd979cd7931dc6441fec8aafcabcf57192564c28e05bf1927ca19cd71ede4db"
       },
       "startSha": "63a6e8a4e6937cd1af02b641bbbb7052034f953c",
       "kind": "fork",
       "spawnedAt": "2026-10-07T18:56:54Z",
       "sessionId": "947162f0-91d4-4ee3-a7ab-5dde96fdaba3",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-round-stencils",
+        "status": "done",
+        "head_sha": "d2f5fddfeb1733b31b9d2da6ffc6b4cdb7b3571d",
+        "deviations": [
+          "internal/shedrecipe/fixture_test.go"
+        ]
+      },
+      "cardShas": [
+        "d2f5fddfeb1733b31b9d2da6ffc6b4cdb7b3571d"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-cost/947162f0-91d4-4ee3-a7ab-5dde96fdaba3/subagents/agent-a3385f6ec815684e3.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-cost/947162f0-91d4-4ee3-a7ab-5dde96fdaba3/subagents/agent-a6a55210cd3c146bd.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-cost/947162f0-91d4-4ee3-a7ab-5dde96fdaba3/subagents/agent-a6a55210cd3c146bd.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-cost/947162f0-91d4-4ee3-a7ab-5dde96fdaba3/subagents/agent-a3385f6ec815684e3.jsonl"
   ]
 }

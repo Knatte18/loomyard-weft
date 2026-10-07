@@ -1,10 +1,10 @@
 # Card 7 — Split the round into a concurrent reviewer and fixer
 
 **Create:**
-- `plan:internal/burlerengine#Handle` -> `type Handle interface`
-- `plan:internal/burlerengine#RunnerShuttle` -> `func RunnerShuttle(r *shuttleengine.Runner) Shuttle`
-- `plan:internal/burlerengine#ErrHalfNotStopped` -> `var ErrHalfNotStopped error`
-- `plan:internal/burlerengine#Engine.join` -> `func (e *Engine) join(p *Profile, opts RunOpts, review, fix Handle) (Result, error)`
+- `internal/burlerengine#Handle`
+- `internal/burlerengine#RunnerShuttle`
+- `internal/burlerengine#ErrHalfNotStopped`
+- `internal/burlerengine#Engine.join`
 - `internal/burlerengine/shuttle.go`
 - `internal/burlerengine/shuttle_test.go`
 - `internal/burlerengine/handoff.go`
@@ -47,8 +47,8 @@
 
 **Uses:**
 - `internal/burlermarker#Path`
-- `plan:internal/burlerengine#StrandRemover`
-- `plan:internal/burlerengine#NewReedStrandRemover`
+- `internal/burlerengine#StrandRemover`
+- `internal/burlerengine#NewReedStrandRemover`
 - `internal/burlerengine#ModelChoice`
 - `internal/burlerengine#RoundModels`
 - `internal/burlerengine#RoundModels.Pick`

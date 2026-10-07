@@ -4,7 +4,7 @@
 - `internal/burlerengine/resume.go`
 
 **Edit:**
-- `plan:internal/burlerengine#RunnerShuttle`
+- `internal/burlerengine#RunnerShuttle`
 - `internal/burlerengine/shuttle.go`
 - `internal/burlerengine/engine_test.go`
 - `internal/burlerengine/doc.go`
@@ -29,10 +29,10 @@
 
 **Uses:**
 - `internal/shuttleengine#Runner.ProbeGated`
-- `plan:internal/burlerengine#Handle`
-- `plan:internal/burlerengine#StrandRemover`
-- `plan:internal/burlerengine#ErrHalfNotStopped`
-- `plan:internal/burlerengine#Engine.join`
+- `internal/burlerengine#Handle`
+- `internal/burlerengine#StrandRemover`
+- `internal/burlerengine#ErrHalfNotStopped`
+- `internal/burlerengine#Engine.join`
 - `internal/shedadapters#BurlerDeps`
 - `internal/shedadapters#BurlerProducer.probeLiveRound`
 - `internal/shedadapters#archiveStaleOutputs`
