@@ -489,7 +489,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 11,
   "masterStrand": "079119ce1835bb673c50f32129cce045",
   "masterSessionId": "c49f023a-9153-4106-ac1f-0444b0d813d8",
   "batches": {
@@ -531,6 +531,23 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-turns/c49f023a-9153-4106-ac1f-0444b0d813d8/subagents/agent-a61267fefad3a2cbb.jsonl"
       ]
+    },
+    "11": {
+      "slug": "treadle-triage-retire",
+      "cards": [
+        "11-treadle-triage-retire",
+        "12-retire-outcome-asking"
+      ],
+      "cardHashes": {
+        "11-treadle-triage-retire": "dab7fe4c3704bcd5cb1a79f1d40de63746fef6ba0753be9cc7e50d081c39088e",
+        "12-retire-outcome-asking": "99463773270c6397c6b0e182da44c08ee4147a92a193aa360c70f3c72df0b704"
+      },
+      "startSha": "766db1e0975fd54496e327f5471029d3b08fb9dd",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T14:25:42Z",
+      "sessionId": "c49f023a-9153-4106-ac1f-0444b0d813d8",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "attach-held-runs",
