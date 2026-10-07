@@ -89,6 +89,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Start from a guessed model, log each batch's estimate inputs, and fit coefficients and limits from real runs: what is actually optimal
 1. **Batchifier: a fork starts with Merriam context at fork time, not a constant** — [`batchifier-master-context`](design-batchifier-master-context.md) · enhancement, webster
    - Replace startup_context with the computable base context of Merriam plus a per-batch growth term
+1. **A shuttle hold shows as a wait mark and in the loom status waiting line** — [`hold-wait-mark`](design-hold-wait-mark.md) · enhancement, shuttle
+   - The turn-end-without-output hold from shuttle-turns gets the wait mark run-recovery added for gate and shell waits
 
 ### Features
 
