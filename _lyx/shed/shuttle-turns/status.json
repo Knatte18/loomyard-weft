@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "Publish",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Webster-Bouncer → done",
+    "now": "Publish",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -238,6 +238,13 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/shuttle-turns/_lyx/reviews/webster/round-4-bouncer-ledger.md",
       "at": "2026-10-07T16:15:31Z"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/shuttle-turns/_lyx/landing/summary.md",
+      "at": "2026-10-07T16:16:13Z",
+      "gate_attempts": 0
     }
   ],
   "product": {
