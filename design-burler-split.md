@@ -13,3 +13,7 @@ The report goes to A, which has already oriented itself, fixes, and acts as an e
 
 What it buys: A's orientation overlaps B's review instead of following it, and the reviewer never grades its own fixes.
 Related: `burler-round-models` (model per round), `review-finding-class` (landed: the judge reads facts, not artifacts).
+
+Models (operator, 2026-10-07): the review half, one agent forking a lens each into a broad review, is good enough on `sonnet[medium]`; the fixer and validator is the one that must be stronger.
+Today one agent does both under the single `review` model-spec in `loom.yaml`, so they cannot be set apart; the split gives each half its own model-spec.
+Seen 2026-10-07 in `bugfix-fabric`: on `sonnet[medium]` the fix half cleared only the lines a review named, re-broke a line fixed the round before, and circled through rounds 3 and 4 on comment line breaks alone; `review` was raised to `opus[medium]` for both halves as a stopgap.
