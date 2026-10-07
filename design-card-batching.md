@@ -2,6 +2,8 @@
 
 `card-batching` · Task · feature, webster
 
+Depends on: [`bugfix-webster`](design-bugfix-webster.md)
+
 ## Why
 
 `internal/batcher` has a registry but only the `identity` batchifier, so every card is its own Webster batch.
