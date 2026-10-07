@@ -21,7 +21,7 @@
 - `internal/fabricengine#leftoverUnarchivedWeft`
 
 **Uses:**
-- `plan:internal/fabricengine#resolveWeftBranch`
+- `internal/fabricengine#resolveWeftBranch`
 - `internal/fabricengine#remoteHeadTip`
 - `internal/fabricengine#remoteArchiveTags`
 - `internal/fabricengine#isAncestorOrEqual`

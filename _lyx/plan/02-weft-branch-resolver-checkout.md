@@ -1,7 +1,7 @@
 # Card 2 — weft-branch-resolver-checkout
 
 **Create:**
-- `plan:internal/fabricengine#resolveWeftBranch` -> `func resolveWeftBranch(rec *Mutations, l *lyxcwd.Location, weftBranch string, consultOrigin bool) (exists bool, fromOrigin bool, err error)`
+- `internal/fabricengine#resolveWeftBranch`
 - `internal/fabricengine/weftbranch.go`
 - `internal/fabriccli/adoptremote_integration_test.go`
 

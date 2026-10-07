@@ -7,7 +7,7 @@
 - `internal/fabriccli/adoptremote_integration_test.go`
 
 **Uses:**
-- `plan:internal/fabricengine#resolveWeftBranch`
+- `internal/fabricengine#resolveWeftBranch`
 - `internal/fabricengine#adoptWeftWorktree`
 - `internal/fabricengine#Topology.repairPairWiring`
 - `internal/fabricengine#ReconcileActionRawAdopted`
