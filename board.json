@@ -396,21 +396,6 @@
       "status": "done"
     },
     {
-      "id": 76,
-      "slug": "fabric-api-vocabulary",
-      "title": "Fabric exports without warp/weft in their names",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "fabric"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "13 fabric and hubforge exports name warp/weft, so callers outside fabric must too; rename them and drop the scan exemption",
-      "body": "Seen 2026-10-04 in `pattern-init`: extending the fabric-vocabulary scan to test files outside fabric flagged 83 files, and 38 of them only name fabric's own exports that carry the words, e.g. `hubforge.Hub.PairWarpWorktree` and `WEFT_SKIP_GIT`.\n`pattern-init` exempts that closed set of 13 identifiers rather than renaming them.\nIdea: rename those exports to neutral names so the vocabulary stays inside fabric, then shrink the exemption set to nothing.\n"
-    },
-    {
       "id": 77,
       "slug": "raddle",
       "title": "raddle: codeguide's woven-in successor",
@@ -1101,21 +1086,6 @@
       "body": "Decided in direction by the operator 2026-10-07: unify how lyx knows what an agent session is doing, owned by shuttle.\n\n## Why\n\nEvery module guesses an agent's state its own way, and each guess has failed:\n\n- Batten judges a run quiet from the child's status file, which changes only at a step's end; on 2026-10-07 an API error stalled all five runs and the quiet notices came 45 min later, long after the agents were resumed by hand, naming no cause.\n- The orch watcher runs its own idle probe and reads turn ends, and its compact cycle missed its own compaction (`orch-compact-timeout`).\n- Shuttle's turn reading misses Stops and waits on finished background shells (#411, #420; `shuttle-turns`).\n- An injected text races the operator's typing between the idle probe and the Enter (see `creel`).\n- Nothing notices a live session stopped by an API error, machine sleep or a dropped network; elapsed time and transcript growth cannot tell it apart from a long simulation or test run.\n\n## Direction\n\nShuttle owns one session-state model per agent strand, and batten, the orch watcher, creel and reed read it instead of inferring their own:\n\n- `busy`: a turn is running, however long; a long tool call or simulation is never mistaken for a stall.\n- `idle-done`: the turn ended with its output.\n- `idle-stalled`: the session is idle but its step is not done, or the turn ended on an API error or an interrupt; detected in seconds from state, not from a timeout.\n- `asking`: the agent waits on an answer.\n- `dead`: the pane or process is gone.\n\nEach state change is an event with a timestamp, so a consumer reacts to the change and keeps a history of changes only, never ticks (see `orch-notice-channel`).\n`idle-stalled` gets a bounded resume: shuttle tells the session to continue, with a retry cap and backoff, then halts the run visibly with the cause.\n\n## Sources, never guesses\n\nToday's misreads all came from inference: scraping the pane (the idle probe, the paste race), scanning the transcript heuristically (missed `queued_command` lines, #411/#420), and judging from mtime or elapsed time (the 45 min quiet notice).\nThe model rests on what Claude Code itself reports:\n\n- Hooks are the truth: `UserPromptSubmit` is a turn start, `Stop` a turn end (its payload carries `background_tasks`), `Notification` an agent asking or waiting on a permission. Shuttle already installs the Stop hook; the others are a few lines in the same hook config writing to the same event file. Hooks are only for agent sessions; lyx's own Go processes know their state already.\n- An API error is a marked transcript entry; whether Claude Code also has a hook for it is to be checked.\n- Liveness is the process: a dead pid is `dead`.\n- The pane is a cross-check only, never the basis.\n- Missing or contradicting signals give `unknown`, shown, never a silent guess.\n\nTests replay the real transcripts and hook payloads that today's and yesterday's failures left behind as fixtures.\n\n## Built in small steps\n\nA big-bang rewrite of shuttle is the risk; nothing changes behavior until it is proven:\n\n1. `shuttle-turns` lands first.\n2. Shadow mode: shuttle computes and logs the state beside today's guesses, with no consumer reading it; disagreements are read against real runs.\n3. One consumer moves at a time, each its own small task: batten's quiet notice first (worst case a wrong notice), then the orch watcher, then creel.\n\n## Relations\n\n`shuttle-turns` fixes turn reading and is a first piece of this; this note is the step after it lands.\n`run-recovery` covers dead processes; `orch-notice-channel` and `orch-compact-timeout` are consumers that would read this state; `creel` stage 2 delivers on it.\n"
     },
     {
-      "id": 165,
-      "slug": "prime-push-gate",
-      "title": "Prime-side fabric push and sync publish unpushed main commits",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "fabric"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Since run-pushes, lyx fabric push/sync in the prime (and lyx config) push main too, so unpushed hub commits skip the full test suite",
-      "body": "Found at run-pushes' PR-Gate (PR #422), 2026-10-07; a deliberate design choice there (its Decision 5), not a defect.\n\nIn the prime, `lyx fabric push` and `sync` now push the parent branch (`main`) as well as the records side.\nThat includes the `sync` that `lyx config` runs after a change, which pushes whether or not the call made a commit.\nSo when the hub holds local `main` commits not yet pushed, a `lyx config --set` publishes them without the full `go test ./...` the hub runs before every push to `main`.\n\n## Direction\n\nEither gate the prime-side push of the parent branch (refuse, or push only the records side, when the parent branch has unpushed commits the call did not make), or keep the hub from ever holding unpushed local `main` commits.\n"
-    },
-    {
       "id": 167,
       "slug": "stuck-read-as-question",
       "title": "A Webster stuck outcome is reported as the master asking a question",
@@ -1216,6 +1186,39 @@
       "brief": "The orch reloads as soon as compaction lands, batten sends one timely notice per state change without ticks, and each batten gets its own tmux window",
       "body": "The orch and batten side of a run's lifecycle: the orch reloads as soon as its compaction lands, it hears each state change once and on time, and it can see which batten runs it has in flight.\n\n## Orch compact cycle times out before reload\n\nA compact cycle never sees its own compaction finish, so it always waits out the handoff timeout and aborts.\nSeen 2026-10-07 on the hub orch:\n\n- 12:05:39 the watcher enters `compacting` and types `/compact`.\n- 12:06:41 the compaction boundary is written to the transcript.\n- 12:15:41 the phase ends with `last_abort_reason: \"compaction timed out\"`.\n- The next idle turn end finds the boundary through the auto-compaction path (`CompactedSince`) and only then sends the reload, about ten minutes late.\n\nCause: `tickCompacting` (`internal/orchengine/watcher.go`) decides the compaction landed from the context reading of `st.ReadingTurnEnd`.\nThat field is written only in the idle phase (the `st.Phase == PhaseIdle \u0026\u0026 isTurnEnd(ev)` branch of the tick's event read), never while the phase is `compacting`.\nSo it stays on the turn end from before `/compact`, whose reading can never show `Compacted`, and the turn ends after the compaction are not read.\n\nSide effects:\n\n- The cycle counts as aborted: `cycle_count` does not move and `last_deferral` is set, which can push back the next automatic cycle.\n- A `distill` request queued during the cycle is removed as stale (`orch: stale cycle request removed`) instead of being acted on.\n\nFix direction: in `compacting`, take each turn end read after the phase entry as the reading candidate, or ask the transcript for a boundary after `PhaseEnteredAt` directly, as the auto path does.\nA test drives a compact cycle through a turn end that follows the boundary and asserts the reload starts without the timeout.\n\n## One notice channel to the orch\n\nSeen 2026-10-06: the orch gets two messages for every halt, and the batten one is often stale.\n\n- The driver messages the orch at once with its stop report.\n- Batten's Run-Shed row polls the child only every `poll_interval_s: 30` (`contracts/recipes/batten-recipe.yaml`), so its `[batten notice]` lags up to half a minute.\n- The notice is typed into the orch pane and read only when the orch's current turn ends; by then the orch has often resumed the run, and the notice reports a state that no longer holds (twice on 2026-10-06: \"paused\" and \"awaiting\" for runs already running again; on 2026-10-07 most notices of the day were stale on arrival).\n\nDirection:\n\n- One channel per event: batten owns state changes (blocked, paused, awaiting PR-Gate, done) and its notice carries the drive report path; the driver messages the orch only with a question it cannot settle itself, never with \"the run stopped\".\n  Parent-review requests and escalation briefs keep coming from the producer session.\n- The notice is event-driven, not polled: batten wakes on the child's status-file change (or polls at a few seconds), since the orch relies on it as its only wake-up.\n- Batten has no ticks (operator, 2026-10-07): the wait on the child is one step that blocks until the child's state changes, not a Run-Shed row that bounces `stuck` every 30 s.\n  Batten's history records only the child's state changes, each with its timestamp; today every bounce adds a history entry (83 entries for `test-tiers` within an hour, all `Run-Shed → stuck`), which is noise, not history.\n- The quiet notice measures the wrong thing: it fires when the child's status file is unchanged for 45 min, but the status file changes only at a step's end, so a live agent working a long step, or one already resumed, still trips it.\n  On 2026-10-07 all five runs stalled on an API error; the quiet notices arrived 45 min later, long after the agents were resumed by hand, and said nothing about the cause.\n  Quiet should be judged from the agent's own activity (transcript growth, turn ends) and should name an API-error turn end when that is what it sees.\n- Each notice carries the time the state held and the child's history length, so a stale notice is recognisable without a status call.\n\n## A window per batten\n\nSeen 2026-10-03: the hub orch starts each batten detached with `setsid nohup lyx batten run \u003cslug\u003e`, so nothing on screen shows what the orch has running; Claude Code's footer shows only \"1 shell\" for a background helper, which says nothing about what it does.\nIdea (operator): when the orch starts a batten, it lands in its own tmux window in the orch's session, so the window list names every run the orch has in flight.\n`manifest/designs/reed-multi-window.md` sketches reed's own-window anchoring.\n\nRelated notes, not in this task: `orch-owns-the-loop` (lyx starts batten detached, a lyx watch, one land command) and `runs-overview` (one status line per run, the event log in its own window).\n",
       "status": "running · Discussion-Write"
+    },
+    {
+      "id": 177,
+      "slug": "verify-watchdog",
+      "title": "Step-level watchdog and a Windows verify timeout that kills the process tree",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A lyx shed step that never returns is noticed, and the Windows verify timeout kills the whole process tree",
+      "body": "From run-recovery PR-Gate (2026-10-07): run-recovery gave `verifytree` a 60-minute timeout and kills the process group on Unix. Still open from #420: a step-level watchdog, so a `lyx shed step` that never returns is noticed without the hub reading panes; and on Windows the timeout kills only the shell, not the process tree it started."
+    },
+    {
+      "id": 178,
+      "slug": "fabric-pushes",
+      "title": "Fabric: pair create survives a refused push, no untested main from the prime, neutral export names",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "enhancement",
+        "fabric"
+      ],
+      "issues": [
+        433
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Retry a refused weft push and roll back the own branch, gate the prime-side push of main, rename fabric exports that carry warp/weft",
+      "body": "Fabric's pushes and its exported names: pair creation survives a refused push, the prime never publishes untested `main` commits by the way, and fabric's vocabulary stays inside fabric.\n\n## Pair creation retries a refused weft push and rolls back its own branch\n\nFrom issue #433, seen 2026-10-07 when the hub started three batten runs at once (`cache-ttl-per-role`, `batcher-v2`, `burler-cost`).\n\n- `cache-ttl-per-role`'s Worktree-Create pushed its weft branch at the same moment as the other two pairs and GitHub answered `! [remote rejected] cache-ttl-per-role-weft -\u003e cache-ttl-per-role-weft (failed)`, with no hook message; the other two pushes went through.\n- `rollbackAdd` then could not delete the warp branch: \"warp-branch deletion was refused by the destructive gate (check=ownership); the branch is left behind\". The branch was already pushed to origin.\n- Resuming the run blocked on \"branch already exists, left behind by an earlier pair\", so the hub had to delete the branch locally and on the remote by hand; the next resume went through.\n\nWanted:\n\n- Retry a weft push that GitHub rejects with a bare `(failed)` a few times with backoff before giving up; a bare `(failed)` reads as a transient server-side refusal.\n- `rollbackAdd` removes the warp branch it created itself in the same call, locally and on the remote, instead of the ownership check refusing it.\n\n## The prime pushes no untested main commits\n\nFound at run-pushes' PR-Gate (PR #422), 2026-10-07; a deliberate design choice there (its Decision 5), not a defect.\n\nIn the prime, `lyx fabric push` and `sync` now push the parent branch (`main`) as well as the records side.\nThat includes the `sync` that `lyx config` runs after a change, which pushes whether or not the call made a commit.\nSo when the hub holds local `main` commits not yet pushed, a `lyx config --set` publishes them without the full `go test ./...` the hub runs before every push to `main`.\n\nDirection: either gate the prime-side push of the parent branch (refuse, or push only the records side, when the parent branch has unpushed commits the call did not make), or keep the hub from ever holding unpushed local `main` commits.\n\n## Fabric exports without warp/weft in their names\n\nSeen 2026-10-04 in `pattern-init`: extending the fabric-vocabulary scan to test files outside fabric flagged 83 files, and 38 of them only name fabric's own exports that carry the words, e.g. `hubforge.Hub.PairWarpWorktree` and `WEFT_SKIP_GIT`.\n`pattern-init` exempts that closed set of identifiers rather than renaming them.\nRename those exports to neutral names so the vocabulary stays inside fabric, then shrink the exemption set to nothing.\n"
     }
   ],
   "legacy_done": [

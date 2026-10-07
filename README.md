@@ -17,6 +17,8 @@ Waits on nothing open; can start now, in parallel.
    - Split a Burler round into a cheap reviewer and a stronger fixer that start together, and pick the model per round
 1. **Orch and batten: compact reload, one event-driven notice channel, a window per batten** — [`lifecycle-waits`](design-lifecycle-waits.md) · bug, enhancement, orch, batten · running · Discussion-Write
    - The orch reloads as soon as compaction lands, batten sends one timely notice per state change without ticks, and each batten gets its own tmux window
+1. **Fabric: pair create survives a refused push, no untested main from the prime, neutral export names** — [`fabric-pushes`](design-fabric-pushes.md) · bug, enhancement, fabric
+   - Retry a refused weft push and roll back the own branch, gate the prime-side push of main, rename fabric exports that carry warp/weft
 
 ## Notes
 
@@ -49,8 +51,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Default to CLI/tmux and start VS Code only on request; alternatives: pop-up terminals or tmux windows
 1. **Agents run with a deliberate tool and permission setup that never blocks the flow** — [`agent-permission-setup`](design-agent-permission-setup.md) · enhancement, shuttle
    - A correct deny/allow setup for every lyx-spawned role, so no agent stops on a tool or command it needs
-1. **Fabric exports without warp/weft in their names** — [`fabric-api-vocabulary`](design-fabric-api-vocabulary.md) · enhancement, fabric
-   - 13 fabric and hubforge exports name warp/weft, so callers outside fabric must too; rename them and drop the scan exemption
 1. **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history** — [`warp-visibility`](design-warp-visibility.md) · enhancement, ide, fabric
    - Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date
 1. **finalize: the discrepancy-document conflict shape** — [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) · enhancement, fabric, loom
@@ -71,12 +71,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - The status line row of run tabs prints full session names, so with five runs the rightmost fall off a narrow terminal unseen
 1. **One session-state model in shuttle that every module reads** — [`session-state`](design-session-state.md) · enhancement, shuttle
    - Shuttle owns busy/idle-done/idle-stalled/asking/dead per agent as timestamped events; batten, the orch watcher, creel and reed stop guessing
-1. **Prime-side fabric push and sync publish unpushed main commits** — [`prime-push-gate`](design-prime-push-gate.md) · enhancement, fabric
-   - Since run-pushes, lyx fabric push/sync in the prime (and lyx config) push main too, so unpushed hub commits skip the full test suite
 1. **A shuttle hold shows as a wait mark and in the loom status waiting line** — [`hold-wait-mark`](design-hold-wait-mark.md) · enhancement, shuttle
    - The turn-end-without-output hold from shuttle-turns gets the wait mark run-recovery added for gate and shell waits
 1. **Test tiers: an llm-tier gate, a guarded publish_verify, a stricter comment lint** — [`test-tiers-hardening`](design-test-tiers-hardening.md) · enhancement, loom
    - Follow-ups from test-tiers PR-Gate
+1. **Step-level watchdog and a Windows verify timeout that kills the process tree** — [`verify-watchdog`](design-verify-watchdog.md) · enhancement, shed
+   - A lyx shed step that never returns is noticed, and the Windows verify timeout kills the whole process tree
 
 ### Features
 
