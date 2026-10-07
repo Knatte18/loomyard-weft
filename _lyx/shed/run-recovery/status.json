@@ -1,12 +1,12 @@
 {
   "current_producer": "Worktree-Create",
-  "state": "blocked",
-  "error": "push weft branch \"run-recovery-weft\" failed: git push -u origin run-recovery-weft: exit 1: remote: fatal error in commit_refs         To https://github.com/Knatte18/loomyard-weft.git  ! [remote rejected]   run-recovery-weft -\u003e run-recovery-weft (failure) error: failed to push some refs to 'https://github.com/Knatte18/loomyard-weft.git'",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Worktree-Create",
     "last": "Worktree-Create → stuck",
-    "wait": "push weft branch \"run-recovery-weft\" failed: git push -u origin run-recovery-weft: exit 1: remote: fatal error in commit_refs         To https://github.com/Knatte18/loomyard-weft.git  ! [remote rejected]   run-recovery-weft -\u003e run-recovery-weft (failure) error: failed to push some refs to 'https://github.com/Knatte18/loomyard-weft.git'"
+    "wait": ""
   },
   "history": [
     {
