@@ -1,10 +1,10 @@
 # Card 5 — fabricengine's side-named exports take the code/records names
 
 **Rename:**
-- `internal/fabricengine#WeftBranchName` -> `plan:internal/fabricengine#RecordsBranchName`
-- `internal/fabricengine#WeftRepoRoot` -> `plan:internal/fabricengine#RecordsRepoRoot`
-- `internal/fabricengine#CommitWeftPaths` -> `plan:internal/fabricengine#CommitRecordsPaths`
-- `internal/fabricengine#WarpLyxLink` -> `plan:internal/fabricengine#CodeLyxLink`
+- `internal/fabricengine#WeftBranchName` -> `internal/fabricengine#RecordsBranchName`
+- `internal/fabricengine#WeftRepoRoot` -> `internal/fabricengine#RecordsRepoRoot`
+- `internal/fabricengine#CommitWeftPaths` -> `internal/fabricengine#CommitRecordsPaths`
+- `internal/fabricengine#WarpLyxLink` -> `internal/fabricengine#CodeLyxLink`
 
 **Edit:**
 - `internal/battencli/lifecycle_integration_test.go`

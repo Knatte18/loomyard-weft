@@ -1,13 +1,13 @@
 {
   "runGuid": "21400b77bf25f698481793470857ce9f",
-  "planFingerprint": "82d57b61703cce2db2041675f47701d0ee9df25b30479875648ff99d90c7f8bd",
+  "planFingerprint": "c70f5c64167864fd608a1c9ec7dd0fa81160c80037222f37dbd854ef998aaf67",
   "planFileHashes": {
     "00-overview.md": "f9bd63a8df887c04aedb913666f6a12e6eed780e26f8dbcfc05df9292e576aa3",
     "01-add-push-retry.md": "e33563f09b1066b1995b32bcb25e406d138c08a841f27f3a54f775115309a0fc",
     "02-rollback-created-warp-branch.md": "2d964534ff4171470e35849281645aa9002e7c641b7f38c1c298dc9e796f864e",
     "03-prime-records-only-push.md": "bbab2e54a756e88349ec08b82864733fc56640fd4ea262e79c8932d6d0f14bff",
     "04-hubforge-neutral-names.md": "faffb3a3add547d7dd29a3c1c61a8feee5359bafaf31ab11d1206e285af78f67",
-    "05-fabricengine-neutral-exports.md": "a990512145610cc3a579713cf0cf1d8f009f1e5f4e763da7c75e7b720bc15ccf",
+    "05-fabricengine-neutral-exports.md": "f10d4972b363d9c85bbec11028e005a17d48f4192d91ed868278755fa61a073d",
     "06-neutral-env-and-refusal.md": "ddea9f1c706790f62c25fe0d3b978b69ad0cf78a5cceeec39f1ea704b18fdaa9",
     "07-neutral-result-keys-and-trace.md": "00a283c7fa7dd2abbde02951b7555ceaf6173929225f54a3474d69707f21da78",
     "08-neutral-files-and-handles.md": "a48f02e15bc2f8535f4941c801834cfe637bbae5dab8c6982e48d0b8ff9a366f",
@@ -697,7 +697,7 @@
       }
     }
   ],
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "a5aaa2c78e5ff47a11293eb086aa4d5d",
   "masterSessionId": "e4e7daa2-7973-476b-855c-2e68a5b306a0",
   "batches": {
@@ -766,18 +766,51 @@
         "05-fabricengine-neutral-exports"
       ],
       "cardHashes": {
-        "05-fabricengine-neutral-exports": "a990512145610cc3a579713cf0cf1d8f009f1e5f4e763da7c75e7b720bc15ccf"
+        "05-fabricengine-neutral-exports": "f10d4972b363d9c85bbec11028e005a17d48f4192d91ed868278755fa61a073d"
       },
       "startSha": "6fc3ca79f4b0b45db35d73165602de6f5b00ea8e",
       "kind": "fork",
       "spawnedAt": "2026-10-07T19:56:13Z",
       "sessionId": "e4e7daa2-7973-476b-855c-2e68a5b306a0",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-fabricengine-neutral-exports",
+        "status": "done",
+        "head_sha": "9a6dc2ad82baeec6a142d6b3da5edfc30c0c70a1",
+        "deviations": [
+          "internal/fabriccli/adoptremote_integration_test.go",
+          "internal/fabricengine/archive.go",
+          "internal/fabricengine/cleanup_primary_integration_test.go",
+          "internal/fabricengine/cleanupremotewarp_integration_test.go",
+          "internal/fabricengine/clone_emptyweft_integration_test.go",
+          "internal/fabricengine/coalesce_integration_test.go",
+          "internal/fabricengine/configchanges.go",
+          "internal/fabricengine/configchanges_integration_test.go",
+          "internal/fabricengine/destructivegaps_integration_test.go",
+          "internal/fabricengine/livestate_verbs_test.go",
+          "internal/fabricengine/mergecrucible_integration_test.go",
+          "internal/fabricengine/mergesiblings_integration_test.go",
+          "internal/fabricengine/mergestate.go",
+          "internal/fabricengine/pairbranch_archive_integration_test.go",
+          "internal/fabricengine/pushanchored_integration_test.go",
+          "internal/fabricengine/remoteleftover.go",
+          "internal/fabricengine/weftbranch.go",
+          "internal/hubforge/hub_test.go",
+          "internal/preflight/preflight_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "9a6dc2ad82baeec6a142d6b3da5edfc30c0c70a1"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fabric-pushes/e4e7daa2-7973-476b-855c-2e68a5b306a0/subagents/agent-a01f307bca78d87ce.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fabric-pushes/e4e7daa2-7973-476b-855c-2e68a5b306a0/subagents/agent-aafa8e69877d9dc57.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fabric-pushes/e4e7daa2-7973-476b-855c-2e68a5b306a0/subagents/agent-a27f4c952d4b36241.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fabric-pushes/e4e7daa2-7973-476b-855c-2e68a5b306a0/subagents/agent-a27f4c952d4b36241.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fabric-pushes/e4e7daa2-7973-476b-855c-2e68a5b306a0/subagents/agent-a01f307bca78d87ce.jsonl"
   ]
 }

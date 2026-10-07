@@ -1,0 +1,22 @@
+status: OK
+head_sha: 9a6dc2ad82baeec6a142d6b3da5edfc30c0c70a1
+deviations:
+  - internal/fabriccli/adoptremote_integration_test.go
+  - internal/fabricengine/archive.go
+  - internal/fabricengine/cleanup_primary_integration_test.go
+  - internal/fabricengine/cleanupremotewarp_integration_test.go
+  - internal/fabricengine/clone_emptyweft_integration_test.go
+  - internal/fabricengine/coalesce_integration_test.go
+  - internal/fabricengine/configchanges.go
+  - internal/fabricengine/configchanges_integration_test.go
+  - internal/fabricengine/destructivegaps_integration_test.go
+  - internal/fabricengine/livestate_verbs_test.go
+  - internal/fabricengine/mergecrucible_integration_test.go
+  - internal/fabricengine/mergesiblings_integration_test.go
+  - internal/fabricengine/mergestate.go
+  - internal/fabricengine/pairbranch_archive_integration_test.go
+  - internal/fabricengine/pushanchored_integration_test.go
+  - internal/fabricengine/remoteleftover.go
+  - internal/fabricengine/weftbranch.go
+  - internal/hubforge/hub_test.go
+  - internal/preflight/preflight_integration_test.go
