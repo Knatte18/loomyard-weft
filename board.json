@@ -1313,6 +1313,21 @@
       "isolated": false,
       "brief": "The rest of issue #420: a watchdog per shed step, and the verify timeout killing the whole tree on Windows",
       "body": "From run-recovery PR-Gate (2026-10-07): run-recovery gave `verifytree` a 60-minute timeout and kills the process group on Unix. Still open from #420: a step-level watchdog, so a `lyx shed step` that never returns is noticed without the hub reading panes; and on Windows the timeout kills only the shell, not the process tree it started."
+    },
+    {
+      "id": 173,
+      "slug": "test-tiers-hardening",
+      "title": "Test tiers: an llm-tier gate, a guarded publish_verify, a stricter comment lint",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Follow-ups from test-tiers PR-Gate",
+      "body": "From test-tiers PR-Gate (2026-10-07):\n\n- No gate runs the `llm` test tier.\n- A task can empty its own `publish_verify` in the pair`s `landing.yaml`, and the hub learns it only after landing, since per-worktree config never lands.\n- The comment lint lets every comma-plus-conjunction break through, so the clause-boundary rule is still judged by reviewers."
     }
   ],
   "legacy_done": [
