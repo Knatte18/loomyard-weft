@@ -11,8 +11,6 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Batcher v2: Merriam context at fork time, a fitted model, plans in card order** — [`batcher-v2`](design-batcher-v2.md) · bug, enhancement, webster · running · Finalize
-   - Size batches from Merriam measured context, fit the batchifier from logged runs, one tokencount weft flag, card order in the plan spec, and card commands that never reach the fabric repo
 1. **Burler: a parallel reviewer and fixer, a model per round** — [`burler-cost`](design-burler-cost.md) · feature, burler · running · Webster
    - Split a Burler round into a cheap reviewer and a stronger fixer that start together, and pick the model per round
 1. **Orch and batten: compact reload, one event-driven notice channel, a window per batten** — [`lifecycle-waits`](design-lifecycle-waits.md) · bug, enhancement, orch, batten · running · Webster
@@ -177,3 +175,5 @@ Finished, awaiting `lyx board prune`.
    - A running gate visible in status and on screen; no stray strands after a crash (#408/#409); batten run brings its child back; an orch resume verb that wakes the driver
 1. **A task branch is always on the remote** — [`run-pushes`](design-run-pushes.md) · bug, loom, fabric · done
    - Go pushes the warp branch wherever it pushes the weft; a loom status push survives a diverged remote (#418)
+1. **Batcher v2: Merriam context at fork time, a fitted model, plans in card order** — [`batcher-v2`](design-batcher-v2.md) · bug, enhancement, webster · done
+   - Size batches from Merriam measured context, fit the batchifier from logged runs, one tokencount weft flag, card order in the plan spec, and card commands that never reach the fabric repo
