@@ -1,0 +1,10 @@
+{
+  "slug": "cache-ttl-per-role",
+  "round": 1,
+  "reviewer": "ly:orch",
+  "opened_at": "2026-10-07T19:17:13.424600425+02:00",
+  "decision_record": "/home/knatte/Code/loomyard-LYXHUB/cache-ttl-per-role/_lyx/discussion/decision-record.md",
+  "support_log": "/home/knatte/Code/loomyard-LYXHUB/cache-ttl-per-role/_lyx/discussion/support-log.md",
+  "state": "open",
+  "cap": 1
+}
