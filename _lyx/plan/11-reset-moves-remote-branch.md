@@ -16,7 +16,7 @@
 **Uses:**
 - `internal/gitrepo#Repo.UpdateRemoteBranchLeased`
 - `internal/gitrepo#ErrLeaseRejected`
-- `plan:internal/fabricengine#Fabric.RemoteOnlyCommits`
+- `internal/fabricengine#Fabric.RemoteOnlyCommits`
 
 **Intent:**
 Implement decision D7 (#404): `lyx webster reset` leaves the remote task branch consistent with the rewound local one, so a later push is not rejected.

@@ -13,7 +13,7 @@
 - `internal/landingshed/publish_integration_test.go`
 
 **Uses:**
-- `plan:internal/fabricengine#Fabric.RemoteOnlyCommits`
+- `internal/fabricengine#Fabric.RemoteOnlyCommits`
 
 **Intent:**
 Implement decision D8 (#404's Publish half): Publish keeps escalating on `gitrepo.ErrPushRejected` with no retry, and its stuck reason now states what it tried and how to resume.

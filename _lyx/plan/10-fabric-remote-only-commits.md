@@ -2,7 +2,7 @@
 
 **Create:**
 - `internal/fabricengine/remoteonly.go`
-- `plan:internal/fabricengine#Fabric.RemoteOnlyCommits` -> `func (f *Fabric) RemoteOnlyCommits() (tip string, commits []string, err error)`
+- `internal/fabricengine#Fabric.RemoteOnlyCommits`
 - `internal/fabricengine/remoteonly_integration_test.go`
 
 **Edit:**
