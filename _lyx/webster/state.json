@@ -9,7 +9,7 @@
     "04-loom-pushes-both-sides.md": "a11f4304a1ff6dd12f4089795e84c0d005c3da51c312862742a69612118ceac0",
     "05-fabric-push-sync-both-sides.md": "b9740ffcaa28aef324a5596b5f2f4af0509960500096099f7cb614327201c5be"
   },
-  "currentBatch": 0,
+  "currentBatch": 3,
   "masterStrand": "e91559ab3050c327aae41f9db1724795",
   "masterSessionId": "44cbfd05-ec82-45ec-bf99-d385e8850965",
   "batches": {
@@ -64,6 +64,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-pushes/44cbfd05-ec82-45ec-bf99-d385e8850965/subagents/agent-a7c2953ed680c5ae8.jsonl"
       ]
+    },
+    "3": {
+      "slug": "fabric-pair-anchored-push",
+      "cards": [
+        "03-fabric-pair-anchored-push"
+      ],
+      "cardHashes": {
+        "03-fabric-pair-anchored-push": "799d5430432c421ff9fca87241bea5f37c0c2c1cddcf3858d6a86f493ad39f71"
+      },
+      "startSha": "7ae3f9711253a6d14d17e10a321ea170334eb282",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T10:30:33Z",
+      "sessionId": "44cbfd05-ec82-45ec-bf99-d385e8850965",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
