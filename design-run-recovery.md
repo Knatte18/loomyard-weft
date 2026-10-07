@@ -50,3 +50,37 @@ Direction:
 
 Start verbs no longer attach for any caller; attaching is only `lyx reed attach` (operator decision 2026-10-06, landed in `bugfix-sessions`, 26f329be7).
 This note keeps the orch resume verb.
+
+
+## From issue #420
+
+Imported from [issue #420](https://github.com/Knatte18/loomyard/issues/420).
+
+## What happened
+
+A `lyx shed step` on a Burler round (Webster-Burler, round 3) never returned an envelope.
+The round's agent finished, but the step stayed in the gated boundary for about 19 minutes until the operator's delegate sent SIGQUIT; the process exited with code 2.
+The trace held `shed: step` and no `shed: step done`, and no `fabric: mutation` records.
+The status afterwards was unchanged: `state: running`, `last_step.finished: false`, `interrupt_policy: reinvoke`.
+The next `lyx loom step` then wrote a `loom-crash-resume` note for a suspected driver crash.
+
+The goroutine dump shows the main goroutine blocked in a syscall wait on the child process, with the stack:
+
+`verifyrun.run` -> `os/exec.(*Cmd).Wait` <- `verifytree.Verify` <- `loomshed.NewVerifyGate` <- `burlerengine.repairReportBeforeGate` <- `shuttleengine.(*Run).evaluateGate` <- `handleGatedBoundary` <- `Wait` <- `RunGated` <- `burlerengine.(*Engine).Run` <- `shedadapters.(*BurlerProducer).Call` <- `shedengine.(*Shed).Step`.
+
+All other goroutines were idle, so nothing else was working: the step was waiting only on the verify command's `Cmd.Wait`.
+
+## Why this is abnormal
+
+The verify gate is meant to end in a pass or fail verdict.
+`verifyrun.run` is passed a duration argument (a timeout), yet the wait outlived it by many minutes.
+A likely cause is that the verify command's descendants keep the output pipes open, or the child is not killed on timeout, so `Cmd.Wait` does not return.
+Which of those it was is not established by the dump.
+
+## What to do
+
+- Make the verify command's wait bounded: kill the whole process group on timeout and set `Cmd.WaitDelay` so `Wait` returns even when a grandchild holds the pipes.
+- Treat a timed-out verify as a gate failure with a clear reason, not a silent hang.
+- Consider a step-level watchdog that logs which gate the step is waiting in, so an operator can see the hang without a SIGQUIT dump.
+
+Provenance: task `bugfix-webster`; notes `repair-20261007-webster-burler-r3-sigquit.md`, `loom-crash-resume.md`.
