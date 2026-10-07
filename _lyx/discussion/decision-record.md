@@ -4,7 +4,7 @@
 
 Fabric's pushes and exported names, three parts in one task:
 
-- A pair creation survives a transiently refused push: a bare `(failed)` rejection is retried, and a rollback leaves no warp branch behind, locally or on origin (issue #433).
+- A pair creation survives a transiently refused push: a bare `(failed)` rejection is retried, and a rollback leaves no warp branch this `Add` created, locally or on origin (issue #433).
 - The prime never publishes unpushed parent-branch (`main`) commits as a side effect of `lyx fabric push`, `lyx fabric sync` or the `sync` that `lyx config` runs.
 - Fabric's vocabulary stays inside fabric's owner set: every spelling in `vocabExempt` is renamed or moved, and the exemption mechanism is deleted.
 
@@ -13,7 +13,7 @@ Fabric's pushes and exported names, three parts in one task:
 In:
 
 - `fabricengine.Add`'s two branch pushes (warp step 11, weft step 12) and `rollbackAdd`.
-- The code-side push of `lyx fabric push` (`PushPairAnchored`) and `lyx fabric sync` (its detached child) when run in the prime.
+- The code-side push of `lyx fabric push` (`PushPairAnchored`) and every detached push child, `lyx fabric sync`'s own spawn and `Fabric.Commit`'s spawn after a landed commit included, when run in the prime.
 - Every entry of `vocabExempt` in `internal/lyxcwd/enforcement_test.go`, the scan's stripping code, and every non-owner file that carries one of those spellings.
 - Docs in the same commit: `internal/fabricengine/doc.go`, the `add.go` file header and `rollbackAdd` doc, `fabric push`/`sync` long help, `docs/overview.md`, `docs/shared-libs/lyxcwd.md`, `PATTERN.md` and `pattern/PATTERN-fabric-vocabulary.md`, `pattern/PATTERN-fabric-git.md`, `pattern/PATTERN-batten-bookend.md` where they name renamed identifiers or the changed behaviour.
 - Close issue #433.
@@ -30,13 +30,14 @@ Out:
 
 ### D1 — A bare `(failed)` push rejection is transient and retried in Add
 
-Decision: `Add`'s warp push (step 11) and weft push (step 12) go through one fabricengine helper that retries a push whose stderr carries `[remote rejected] <ref> (failed)` — the remote-rejected form whose reason is exactly `failed`, with no hook message.
+Decision: `Add`'s warp push (step 11) and weft push (step 12) go through one fabricengine helper that retries a push whose stderr holds a `! [remote rejected] <ref> -> <ref> (failed)` line for the pushed ref, the reason being exactly `failed`.
+Other stderr lines, `remote:` lines included, neither qualify nor disqualify a push: the reason on the ref line alone decides, so `(pre-receive hook declined)` and every other reason are not retried.
 It makes at most 4 attempts with exponential backoff and jitter (about 1s, 2s, 4s), with the sleep and jitter injectable for tests (`PATTERN-test-speed`).
 Every other push failure (non-fast-forward, `pre-receive hook declined`, any rejection with another reason, an exec or auth error) returns on the first attempt, as today.
 Each retry is logged through `internal/logger` with the attempt number and the stderr line.
 The push stays a plain `git push -u origin <branch>` through `gitexec`, never forced.
-Rationale: GitHub answered three simultaneous pushes to the same weft repo with one bare `(failed)`; a retry clears it, and the bound keeps a real outage from stalling `Add` for more than about 10 seconds.
-Bound: the retry can repeat only a push that left the remote ref unchanged (a `(failed)` rejection updates nothing), only inside `Add`, and only the bounded attempt count.
+Rationale: a bare `(failed)` reads as a transient server-side refusal that a retry clears, and the bound keeps a real outage from stalling `Add` for more than about 10 seconds.
+Bound: the retry repeats only a non-forced push of one commit to one ref, which is a no-op when an earlier attempt had already landed; it runs only inside `Add`, and only up to the attempt count.
 
 ### D2 — rollbackAdd deletes the warp branch it created, locally and on origin
 
@@ -46,29 +47,34 @@ The gate order stays containment, ownership, dirtiness, force.
 The local branch is deleted whenever this `Add` created it, in both the forked and the adopted-from-origin case, since an adopted local copy carries only origin's tip.
 The origin branch is deleted only when both hold:
 
-- this `Add` created the remote ref: the warp branch was forked, not adopted (no `warpAdoptTip`);
-- this `Add`'s step 11 push succeeded.
+- the pre-flight probe ran and found no such branch on origin, so this `Add` alone can have created the remote ref; `Add` carries the probe's outcome (absent, present, or not run) to the rollback, only absent qualifies, and a branch the probe found is never deleted, whether it was adopted or was a leftover at or behind `HEAD` that step 11 pushes forward;
+- this `Add` attempted step 11's push.
 
-The remote deletion goes through `deleteRemoteBranch` with `leaseSHA` set to the tip step 11 pushed, so a branch someone moved since is refused, logged and left.
-Any refusal or failure is logged with `logger.Warn`, as today, and recorded in `rec`.
-Rationale: the branch is fabric's own one-call artifact; leaving it blocks the resumed run with "branch already exists", which is what the hub had to clear by hand in #433.
-Bound: this weakens the rollback's "no origin branch is ever touched" rule only for the one warp ref the same `Add` call created and pushed, pinned to the SHA it pushed; an adopted origin branch, any weft branch and any other ref stay untouched.
-`pattern/PATTERN-fabric-git.md`'s rolled-back-`Add` exception gains this sentence.
+The remote deletion goes through `deleteRemoteBranch` with `leaseSHA` set to the commit step 11 pushed, so a branch someone moved since is refused, logged and left.
+When step 11 never landed (its attempts were exhausted), the lease finds no ref at that commit and the deletion is refused and logged; a ref that landed despite the refusals is deleted.
+Any refusal or failure is logged with `logger.Warn`, as today, and returned; only a deletion that happened is recorded in `rec`.
+Rationale: the branch is fabric's own one-call artifact; leaving it blocks the resumed run with "branch already exists".
+Bound: this weakens the rollback's "no origin branch is ever touched" rule only for the one warp ref the same `Add` call created, pinned to the commit it pushed; an adopted or pre-existing origin branch, any weft branch and any other ref stay untouched.
+When the probe ran and found the branch absent, a real non-fast-forward or hook rejection at step 12 deletes the warp branch pushed seconds earlier.
+Under `SkipGit` or `SkipPush` the probe does not run while step 11 still pushes, so the rollback there deletes the local branch only and leaves origin's.
+`rollbackAdd`'s doc states this exception to its "no origin branch is ever touched" rule, and `pattern/PATTERN-fabric-git.md`'s teardown section gains one line stating it.
 
 ### D3 — The prime pushes its records side only
 
-Decision: when the acting worktree is the hub's prime (`fabricengine.PrimeName(l) == l.WorktreeName`), `lyx fabric push` pushes the records side only, and `lyx fabric sync` hands the detached child an empty code-side path, so it pushes the records side only.
-`lyx config`'s post-edit `sync` follows, since it calls `fabric sync`.
+Decision: when the acting worktree is the hub's prime (`fabricengine.PrimeName(l) == l.WorktreeName`), fabric hands the code side to no push.
+`lyx fabric push` pushes the records side only, and every detached push child fabric spawns gets an empty code-side path, so it pushes the records side only.
+That covers the `sync` verb's own spawn and the spawn `Fabric.Commit` fires after any landed commit, so `lyx fabric commit`, `lyx fabric sync`, `lyx config`'s post-edit `sync` and every other `Commit` caller leave the code branch alone.
+`PushPairAnchored` and the `sync` verb decide from the `Location` they already hold, and `Fabric.Commit` from the one it resolves from its warp path, so no route is handed a flag from outside.
 In every other worktree, task pairs included, both sides push as today.
-When the prime's code branch has unpushed commits, the push envelope carries a `code_push_skipped` field naming the branch and saying it was left for the operator; `sync`'s envelope records no `push_spawned` entry for the code side.
-A prime-name resolution failure fails the verb before anything is pushed.
+When the prime's code branch has unpushed commits, `push`'s envelope carries a `code_push_skipped` field naming the branch and saying it was left for the operator; `sync`'s envelope records no `push_spawned` entry for the code side.
+A prime-name resolution failure fails the call before it commits or pushes anything: `push` and `sync` return the error, and `Fabric.Commit` returns it before taking any lock, like its other pre-flight refusals, so no commit lands and no push spawns.
 Rationale: in the prime, `fabric push`/`sync` never make a code-side commit (`fab.Commit` commits the records side), so every unpushed parent-branch commit is one the call did not make; the hub publishes `main` only after its own full `go test ./...`.
 This matches `PATTERN-push-both-sides`, whose per-transition prime push is already records-only.
-Bound: the change removes a push, never adds one; it skips only the prime's code side, and landing's own push of the parent branch is untouched.
+Bound: the change removes a push, never adds one; it skips only the prime's code side, on every route above, and landing's own push of the parent branch is untouched.
 
 ### D4 — Neutral names: warp becomes "code", weft becomes "records"
 
-Decision: every `vocabExempt` spelling that is an identifier, env var, envelope key or trace detail is renamed, using the code/records vocabulary fabric's prose already uses ("code side", "records side", "records worktree").
+Decision: every `vocabExempt` spelling that is an identifier, env var, result key or trace detail is renamed, using the code/records vocabulary fabric's prose already uses ("code side", "records side", "records worktree").
 Mapping, with the Plan free to adjust a name that collides:
 
 | Old | New |
@@ -83,13 +89,14 @@ Mapping, with the Plan free to adjust a name that collides:
 | `Fabric.ResetPairWarp` | `ResetPairCode` |
 | result field `WarpWorktree` (Prune, Reconcile, Status) | `CodeWorktree` |
 | `WEFT_SKIP_GIT`, `WEFT_SKIP_PUSH` | `FABRIC_SKIP_GIT`, `FABRIC_SKIP_PUSH` |
-| envelope keys `warp_branch_deleted`, `warp_branch_kept_reason`, `remote_warp_branch_deleted`, `remote_warp_branch_kept_reason` | `code_branch_deleted`, `code_branch_kept_reason`, `remote_code_branch_deleted`, `remote_code_branch_kept_reason` |
+| `remove` result keys `warp_branch_deleted`, `warp_branch_kept_reason`, `remote_warp_branch_deleted`, `remote_warp_branch_kept_reason` | `code_branch_deleted`, `code_branch_kept_reason`, `remote_code_branch_deleted`, `remote_code_branch_kept_reason` |
 | trace detail `side=warp`, `side=weft` | `side=code`, `side=records` |
 | `RequireWarpWorktree`'s refusal wording "weft sibling" | "records sibling" |
 
 The JSON tags on the renamed result fields follow the new names.
-The renames are hard cuts: no alias, no fallback read of the old env var or key.
+The renames are hard cuts: no alias, no fallback read of the old env var, key or trace detail.
 `contracts/stencils/shed/shed-template-driver.md`'s stranded-branch rule reads `side=code`.
+Bound: the hard cut of `WEFT_SKIP_GIT` and `WEFT_SKIP_PUSH` can only let git and push work run in a process that still sets the old name; the repository's setters are tests, renamed in the same commit, and the skip variables are a test and sandbox switch with no production consumer.
 Rationale: the board entry asks for the vocabulary to stay inside fabric and the exemption set to shrink to nothing; there is no versioning (`CLAUDE.md`), so a compatibility layer has no consumer to serve.
 
 ### D5 — Spellings that are not names move or are reached through fabric
@@ -116,7 +123,8 @@ Rationale: an empty closed list kept with its machinery is dead code and an invi
 - `PATTERN-fabric-destruction-chokepoint`: the new branch-ownership proof and every deletion live in `destroy.go`; minting the proof follows the `createdToken{` guard.
 - `PATTERN-push-both-sides`: D3 narrows the code-side push of `fabric push`/`sync` to non-prime worktrees; the PATTERN line is updated in the same commit to say the prime's `fabric push`/`sync` are records-only too.
 - `PATTERN-fabric-vocabulary`: D4–D6 change its background file, see D6.
-- `PATTERN-mutation-record`: the rollback's remote deletion and the push retries land in `Add`'s `*Mutations` record; the envelope key set is unchanged apart from D3's `code_push_skipped` field, which is a verb field, not an envelope key.
+- `PATTERN-mutation-record`: the rollback's remote deletion records through `deleteRemoteBranch`'s existing success-only entry, and a push retry adds no entry of its own, so the one accepted push records `branch_pushed` as before.
+  The pattern's `mutations` and `partial` keys are untouched; D3's `code_push_skipped` and D4's renamed result fields are verb-specific fields outside that set, and D4's `side=` rename changes a `detail` value inside the `mutations` entries, which the fixed key set does not constrain.
 - `PATTERN-no-denied-recovery`: no new message names `git push --force`, `git reset --hard` or `rm -rf`.
 - `PATTERN-spawn-observability`: each retry attempt is logged.
 - `PATTERN-test-speed`, `PATTERN-test-isolation`, `PATTERN-hubforge-fixtures`: retry sleeps are injectable; remote-backed tests are `integration`-tagged, build hubs through `hubforge`, and run under `gitkit.HermeticGitEnv()`.
@@ -125,33 +133,40 @@ Rationale: an empty closed list kept with its machinery is dead code and an invi
 
 ## Auto-mode assumptions
 
-- The task runs without an operator; every choice below is an auto-pick recorded in the support log's question ledger.
+- The task runs without an operator; every choice in this record is an auto-pick.
 - A bare `(failed)` is transient; the board entry states it, and nothing in #433 contradicts it.
 - The prime is identified by `PrimeName`, the predicate batten's refusal already uses.
 - "code" and "records" are the neutral side names; fabric's prose already uses them.
-- A hard cut of the env vars, envelope keys and trace detail is acceptable because nothing outside this repository consumes them.
+- A hard cut of the env vars, result keys and trace detail is acceptable because nothing outside this repository consumes them live; the one in-repository reader of persisted data is the driver stencil's trace rule, see Open risks.
 
 ## Open risks
 
 - `batcher-v2` is running in parallel and touches `tools/tokencount`, which resolves the records repo through fabric; the D4 renames may conflict with its branch at landing, resolved as a mechanical rename.
-- A run whose failed step was traced by the old binary carries `side=warp`; a driver reading it after deploy does not recognise the stranded warp branch, so the branch stays until removed by hand.
+- A run whose failed step was traced by the old binary carries `side=warp`; a driver reading it after deploy does not recognise the stranded warp branch.
+  The driver's stranded-branch rule escalates on a `side` it does not recognise, so an operator removes the branch, the same remedy as for the branches Out names that earlier binaries left behind.
 - GitHub may answer a sustained outage with `(failed)` too; D1's bound caps the delay at about 10 seconds before `Add` fails and rolls back.
-- A real non-fast-forward or hook rejection reaching the rollback now deletes the warp branch on origin that this `Add` pushed seconds earlier; the lease keeps it from deleting anything another actor pushed.
 
 ## Acceptance criteria
 
 - An `Add` whose weft push is refused with a bare `(failed)` and then accepted succeeds, with the pair fully created.
 - An `Add` whose weft push keeps failing with `(failed)` stops after the attempt bound, rolls back, and leaves under the default empty `branch_prefix` no warp branch locally or on origin; a re-add of the same slug then succeeds.
-- A push refused for any other reason (hook declined, non-fast-forward) is attempted once.
+- A push whose stderr holds `remote:` lines and a bare `(failed)` line for the pushed ref is retried.
+- A push refused for any other reason (hook declined, non-fast-forward) is attempted once, and so is one whose stderr holds `remote:` lines with a non-`failed` reason.
+- An `Add` whose step 11 push keeps failing with `(failed)` stops after the attempt bound and rolls back; the origin deletion is refused and logged when nothing landed, and deletes the warp branch when the ref landed despite the refusals.
 - A rollback whose warp branch was adopted from origin deletes only the local copy; origin's branch is untouched.
+- A rollback of an `Add` whose step 11 pushed forward a pre-existing origin branch at or behind `HEAD` deletes only the local copy; origin's branch is untouched.
 - A rollback whose warp branch moved on origin after step 11's push leaves the remote branch and logs the refusal.
-- In the prime with an unpushed local `main` commit, `lyx fabric push`, `lyx fabric sync` and `lyx config --set` push the records side and leave origin's `main` unchanged; `fabric push` reports `code_push_skipped`.
-- In a task pair, `lyx fabric push` and `sync` still push both sides.
+- A rollback of an `Add` run under `SkipGit` or `SkipPush`, whose probe did not run, deletes only the local branch; origin's branch is untouched.
+- In the prime with an unpushed local `main` commit, `lyx fabric push`, `lyx fabric commit`, `lyx fabric sync` and `lyx config --set` push the records side only and leave origin's `main` unchanged; `fabric push` reports `code_push_skipped`, and `sync`'s envelope has no code-side `push_spawned` entry.
+- A prime-name resolution failure makes `lyx fabric push`, `sync` and `Fabric.Commit` fail before anything is committed or pushed, and `Commit` spawns no push.
+- In a task pair, `lyx fabric push`, `commit` and `sync` still push both sides.
 - `vocabExempt` and its stripping code are gone and `TestEnforcement_FabricVocabulary` passes; a non-owner file spelling a side-named identifier still fails the scan.
 - The destructive guard still fails on a raw `ResetHard` through a `Fabric` handle field outside `destroy.go`.
 - `RefScanner` still classifies each retired spelling as a fabric reference.
 - `FABRIC_SKIP_GIT` and `FABRIC_SKIP_PUSH` take effect wherever the old variables did.
 - `lyx fabric remove`'s envelope carries the renamed `code_branch_*` keys, and the driver stencil's stranded-branch rule matches the `side=code` trace detail.
+- The Prune, Reconcile and Status results carry `code_worktree` where they carried `warp_worktree`, and `RequireWarpWorktree`'s refusal says "records sibling".
+- `internal/hubgeom`'s tests reach the records worktree's lock directory through the neutral fabricengine helper and still assert it exists.
 - `go test ./...` passes, with the `integration` tag for the remote-backed cases.
 
 ## Notes for the plan writer
