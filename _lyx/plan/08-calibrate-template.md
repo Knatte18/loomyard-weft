@@ -1,4 +1,4 @@
-# Card 10 — set the cautious profile from the calibration report
+# Card 8 — set the cautious profile from the calibration report
 
 **Edit:**
 - `internal/batcher/template.yaml`
@@ -16,7 +16,7 @@ Run, from the worktree root:
 go run ./tools/tokencount -last 40 -calibrate cautious -history ../card-batching-weft
 ```
 
-`-history` names the sibling checkout that holds the hub's `loom: plan artifacts for <slug>` commits and archive tags; `-config` defaults to the worktree root, whose `batcher.yaml` resolves to the template when absent.
+`-history` names the sibling checkout that holds the hub's `loom: plan artifacts for <slug>` commits and archive tags; `-config` defaults to the worktree root, whose `batcher.yaml` holds no `profiles:`, so the template's profiles fill in.
 
 Read the overall fit summary.
 The fit is good when at least 10 cards were measured and the spread (75th percentile of the ratios over the 25th) is at most 3.

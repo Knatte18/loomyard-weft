@@ -21,7 +21,10 @@ A `ForkTally` carries:
 - `Started`, the timestamp of the transcript's first line that carries one (the `timestamp` field of a transcript line).
 
 Attribution reads the fork's prompt, never commit times.
-The fork's prompt is the first tool result in its transcript that holds a card pointer line, the shape `renderCardPointers` in `internal/websterengine/render.go` renders: a line `` - `<path>/NN-<slug>.md` `` whose file name starts with two digits and a hyphen and is not `00-overview.md`.
+A fork reads its prompt file with the `Read` tool, so its prompt is the first tool result in its transcript that holds a card pointer line.
+A `Read` result prefixes every line with its number and a tab (`58<TAB>- ...`); the prefix is ignored when matching.
+A card pointer line is the shape `renderCardPointers` in `internal/websterengine/render.go` renders: a bullet `` - `<path>/NN-<slug>.md` `` with nothing after the closing backtick, whose file name starts with two digits and a hyphen and is not `00-overview.md`.
+The prompt's card gate lines hold the same backticked path followed by `: <command>`, so the nothing-after rule keeps them out.
 The fork's cards are every such pointer line of that one tool result, in order.
 A tool result's content is either a string or a list of text items; read both.
 A fork whose transcript holds no such tool result is listed as unattributed, never dropped.
@@ -30,7 +33,7 @@ A fork whose transcript holds no such tool result is listed as unattributed, nev
 
 The package comment in `main.go` describes the fork table, what one fork is and the attribution rule.
 
-`count_test.go`: extend `TestCountRun`'s fixture so the `webster` session has two sub-agent transcripts, one whose first pointer-holding tool result names `01-alpha` and `02-beta` (plus a later tool result naming another card file, which must not count) and one with no pointer, and assert both `ForkTally` values field by field (cards, messages after the dedupe, peak context, usage, started) and the two report rows exactly, the second reading `unattributed`.
+`count_test.go`: extend `TestCountRun`'s fixture so the `webster` session has two sub-agent transcripts, one whose first pointer-holding tool result, built in the `Read` form with a line-number prefix, names `01-alpha` and `02-beta` (plus a gate line naming a third card, and a later tool result naming another card file, neither of which may count) and one with no pointer, and assert both `ForkTally` values field by field (cards, messages after the dedupe, peak context, usage, started) and the two report rows exactly, the second reading `unattributed`.
 `tools/` test files fall under the fabric-vocabulary scan: never name either fabric side in them.
 
 **ImpactSummary:** `tools/tokencount` only; the role tables and their totals are unchanged, the report gains one section.

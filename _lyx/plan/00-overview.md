@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 ---
 
 # Plan: card-batching
@@ -15,13 +15,11 @@ Webster records the partition once per run in `state.json`, runs batches in the 
 1 — tokencount-fork-report — tokencount lists each Webster fork with its cards, messages, peak context and weight
 2 — batcher-estimator — per-card estimate, size source, segment-cost function and profile weights parse
 3 — calibration-report — estimator on past plans against each run's base tree beside measured fork weight
-4 — batcher-takes-sizes — Batcher.Batch takes the plan, cards and a size source; batches carry profile and estimate
+4 — recorded-partition — Batcher.Batch takes the plan, cards and a size source, batches carry profile and estimate; webster records the partition at first init, every verb reads it, and batches run in the batchifier's order under an order assertion
 5 — cost-batchifier — hard limits and an exact DP over contiguous segments; plan spec drops Batchable?
 6 — batcher-profiles — named profiles and active: resolution, load errors naming batcher.yaml, template profiles
-7 — batch-order-assertion — SequenceBatches becomes an order assertion; batches run in the batchifier's order
-8 — recorded-partition — webster records the partition at first init and every verb reads it
-9 — rebaseline-tail — rebaseline keeps begun batches and re-batches the unbegun tail
-10 — calibrate-template — rescale the cautious profile from the calibration report when the fit is good
+7 — rebaseline-tail — rebaseline keeps begun batches and re-batches the unbegun tail
+8 — calibrate-template — rescale the cautious profile from the calibration report when the fit is good
 
 ## Shared Decisions
 
@@ -30,7 +28,7 @@ Webster records the partition once per run in `state.json`, runs batches in the 
 - **Coefficient keys.** A profile's `weights:` keys are `startup_context`, `fork_messages`, `target_messages`, `test_file_messages`, `uses_messages`, `context_per_line`, `package_context`.
 - **Past-run lookups.** A run's plan is read from the newest `loom: plan artifacts for <slug>` commit before its earliest Webster fork, in the repository `-history` names; its base tree is the `start_sha` of the earliest `lyx webster begin-batch` envelope in its Webster transcripts, the HEAD before its first batch forked, read from the current repository. A run or card that cannot be reconstructed is listed as skipped with its reason.
 - **Batch identity.** A batch is numbered and named by its first card, as `batchIdentity` does today, so `begin-batch NN` names a batch by its first card's number.
-- **No commit for a poor fit.** Card 10 may end without a commit when the calibration fit is poor; its report says why.
+- **No commit for a poor fit.** Card 8 may end without a commit when the calibration fit is poor; its report says why.
 
 ## verify:
 

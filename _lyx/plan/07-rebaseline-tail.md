@@ -1,4 +1,4 @@
-# Card 9 — rebaseline keeps begun batches and re-batches the tail
+# Card 7 — rebaseline keeps begun batches and re-batches the tail
 
 **Edit:**
 - `internal/websterengine/rebaseline.go`
@@ -15,7 +15,7 @@
 **Intent:**
 An accepted rebaseline keeps every begun batch as recorded and re-batches only the cards after the last begun batch with the then-active profile (Decision 11).
 
-`RebaselineDeps` replaces `Batches` with `Active batcher.Batcher` and `Sizes batcher.SizeSource`; webstercli passes `c.batcher` and `batcher.DiskSizes(c.geom.WorktreeRoot)`.
+`RebaselineDeps` already carries `Active` and `Sizes` from card 4, and webstercli already passes `c.batcher` and `batcher.DiskSizes(c.geom.WorktreeRoot)`.
 
 **With a recorded partition.**
 1. A recorded batch is begun when `State.Batches` holds a record under its number; the kept prefix is every recorded batch up to and including the last begun one.
@@ -26,16 +26,17 @@ An accepted rebaseline keeps every begun batch as recorded and re-batches only t
 6. Only once every check passes is `State.Partition` replaced by the kept batches, with their recorded card ids, profile names and estimates, followed by the tail's.
 Cards added, removed or reordered after the prefix are accepted and re-batched, each changed plan file named with `--card NN` as the changed-file guard already requires.
 
-**Without a recorded partition** (a state from before card 8), the tail stays on `batcher.Identity()`, the checks run against the identity batches as today, and no partition is recorded, so the run stays on identity until it ends.
+**Without a recorded partition** (a state from before card 4), the tail stays on `batcher.Identity()`, the checks run against the identity batches as today, and no partition is recorded, so the run stays on identity until it ends.
 
 What it lets through, and its bound: only unbegun cards regroup, and only at a rebaseline the operator or Master triggers; a refusal leaves `State`, `Partition` included, unchanged; a profile that does not load is refused earlier, by card 6's prologue refusal.
 
 `webstercli/rebaseline.go`'s help text says the unbegun tail is re-batched by the active profile.
 
-**Tests** (`rebaseline_test.go`, `rebaseline_git_test.go` adjusted to the new deps):
+**Tests** (`rebaseline_test.go`, `rebaseline_git_test.go`):
 an accepted rebaseline keeps each begun batch's card ids, profile and estimate and re-batches the tail with a grouping batcher's profile and estimates;
 a card added after the last begun card is accepted and grouped into the tail;
 a card added, removed or reordered at or before the last begun batch's last card refuses with `ErrRebaselineCardSetChanged`, leaving `Partition` unchanged;
+a plan whose unbegun tail holds a card that uses a later card's target refuses with `ErrBatchOrder`, a row of that same refusal test, leaving `State`, `Partition` included, unchanged;
 a state without a partition re-batches with identity and records none.
 
 `doc.go`'s rebaseline paragraph describes the kept prefix and the tail re-batch.

@@ -4,6 +4,7 @@
 - `internal/gitrepo/blobread.go`
 - `internal/gitrepo/blobread_integration_test.go`
 - `tools/tokencount/count.go`
+- `tools/tokencount/count_test.go`
 - `tools/tokencount/main.go`
 
 **Create:**
@@ -28,9 +29,10 @@ It is read-only and calls the same `batcher.SegmentCost` the live batchifier wil
 `TestHistoryReads` gains steps for both: a subject matched on two branches and a tag counted once, a subject absent, a directory listing, an absent directory.
 
 **Run base from the transcripts** (`count.go`).
-While reading a `webster` session, `CountRun` records `RunTally.BaseSHA`: the `start_sha` of the earliest `lyx webster begin-batch` result envelope in the run's `webster` session transcripts.
+While reading a `webster` session, `CountRun` records `RunTally.BaseSHA`: the `start_sha` of the earliest `lyx webster begin-batch` result envelope in the run's `webster` session transcripts, earliest meaning the smallest `timestamp` on the envelope's `tool_result` line across every `webster` session file of the run, since file-name order is not time order.
 That is the HEAD before the run's first batch forked, so the parent of the first commit that batch made: the tree the batch started from.
 Reading it from the transcript needs no `state.json` lookup, and an absent envelope leaves `BaseSHA` empty.
+An envelope is the `tool_result` paired by `tool_use_id` with a `Bash` `tool_use` whose command invokes `lyx webster begin-batch`, whose content (a string or a list of text items) parses as a JSON object with a non-empty `start_sha`; a refused call returns an error envelope without one and is not an envelope here.
 
 **Calibration** (`calibrate.go`).
 Per run of the report:
@@ -52,6 +54,7 @@ The code repository is the current directory, through `lyxcwd.Getwd` as today.
 The package comment describes the calibration section, the lookups and every skip reason.
 
 **Tests.**
+`count_test.go`: `TestCountRun`'s fixture extends its existing `webster` session, and adds a second `webster` session file whose name sorts before the first, so that two successful `begin-batch` `Bash` tool-use and tool-result pairs sit one in each file with the later-timestamped pair in the file that sorts first; the fixture also gains an error envelope without `start_sha` placed before them and an unrelated tool result that mentions `start_sha`; the test asserts `BaseSHA` equals the earliest-timestamped successful envelope's `start_sha`, and that a run whose `webster` sessions hold no such pair keeps it empty.
 `calibrate_test.go` (untagged) drives the calibration over an in-memory history and size source and a fixture `batcher.yaml` seeded under `t.TempDir()`: exact estimate (equal to `batcher.SegmentCost` on the same inputs), measured weight and ratio for an attributed card; a card two forks name takes their sum; skips for a run without a plan commit before its first fork, a run without a base, a card no fork names, a card a multi-card fork names; the per-run and overall median and spread.
 `calibrate_integration_test.go` (`integration`) builds one repository with `gitkit` holding a plan commit and the base tree, and asserts the gitrepo-backed history and size source give the same row as the in-memory ones.
 `testmain_test.go` declares `TestMain` calling `gitkit.HermeticGitEnv()` and running through `tmuxkit.Main` (`PATTERN-test-isolation`).
