@@ -13,6 +13,9 @@
 - `docs/overview.md`
 - `docs/reference/claude-trust-dialog-repro.md`
 - `pattern/PATTERN-cli-cobra.md`
+- `internal/loomengine/config.go`
+- `internal/loomengine/seed.go`
+- `tools/sandbox/SANDBOX-CORE-SUITE.md`
 
 **Delete:**
 - `internal/loomcli/handover_test.go`
@@ -32,6 +35,7 @@ The comments on `dispositionForHandshake` and the handshake constants, which des
 `cli.go`: the `run` and `step` help texts that contrast themselves with start's terminal handover say instead that they spawn no detached driver.
 
 Docs, per the repo's CLAUDE.md rule for observable CLI behaviour: `README.md`'s quickstart line (`lyx start` hands the terminal to its driver) says the command bootstraps the task and `lyx reed attach` shows its session; `docs/overview.md`'s loom entries stop listing `start` as an interactive-handoff exception and drop the `$TMUX` handover and `--no-attach` sentences; `docs/reference/claude-trust-dialog-repro.md` drops `--no-attach` from its `lyx loom start` step; `pattern/PATTERN-cli-cobra.md`'s interactive-handoff exception list drops `lyx loom start` and `lyx start`.
+Three more places still describe the handover and are reworded to the success-envelope behavior: the `LoomBootstrapLock` comment in `internal/loomengine/config.go` ("released before the terminal handover because that handover blocks for the operator's entire session" says instead that the lock is released before the success envelope is printed), the `CheckSeed` comment in `internal/loomengine/seed.go` that names "the tmux handover", and the fixture note in `tools/sandbox/SANDBOX-CORE-SUITE.md` that names `lyx loom start`'s "tmux bootstrap handover" as the reason no shipped verb seeds a state.
 
 Tests:
 

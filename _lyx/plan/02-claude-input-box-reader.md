@@ -22,6 +22,6 @@ Factor the box location out of `IdleSession` into one helper both methods call, 
 `SubmitSettle` returns a provider-owned constant, `submitRedrawSettle = 300 * time.Millisecond`, long enough for Claude Code to redraw the box after an Enter.
 
 Tests in `session_test.go`, table-driven over capture fixtures (the existing `testdata/pane-idle-empty.txt` and `pane-idle-draft.txt` plus inline captures): an empty box answers ok true with empty text; a box holding a draft answers its text; a wrapped two-line draft answers both lines' text; a collapsed paste placeholder answers the placeholder text verbatim; a running turn (`testdata/pane-turn-running.txt`, `esc to interrupt` over an empty box) answers ok true with empty text; a capture with no box (a permission prompt, `testdata/pane-permission-prompt.txt`) answers ok false.
-`SubmitSettle` is pinned to the constant.
+`SubmitSettle` gets no test of its own: Card 3's `Sleep:<settle>` log rows prove the settle is used.
 
 **ImpactSummary:** Adds a new optional shuttleengine capability and its Claude implementation; IdleSession keeps its behaviour through the shared box-location helper.

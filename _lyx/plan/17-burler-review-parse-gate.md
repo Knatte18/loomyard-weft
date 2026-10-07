@@ -7,6 +7,8 @@
 **Edit:**
 - `internal/burlerengine#Engine.Run`
 - `internal/burlerengine/engine_test.go`
+- `internal/shedadapters/burler.go`
+- `internal/shedadapters/burler_test.go`
 
 **Intent:** D12, gate half: a Burler round whose review file has invalid frontmatter is re-prompted to the reviewer in its own session with the parse error and its quoting hint, instead of failing the run (#386).
 The error text already states the fix, and the session that wrote the file is the one that can repair it.
@@ -16,8 +18,13 @@ In `internal/burlerengine/verdict.go`, beside `ParseReview`:
 - `CheckReviewFile(path)` reads the file and returns `ParseReview`'s error, or nil when it parses; a read failure is returned wrapped with the path.
 - `ReviewGate(reviewPath)` returns a `shuttleengine.Gate` closure that calls `CheckReviewFile` and answers passed on nil, or failed with findings carrying the error text verbatim, which already includes `quotedSummaryHint`'s hint, and a closing line naming the review file to rewrite; a missing file is a failed result with the same shape, never a gate error.
 
-In `Engine.Run`, append one entry to every round's gate spec, after the wrapped `opts.Gate` entries, so the Webster segment's otherwise ungated round gets it too: `{Name: "review", Gate: ReviewGate(p.ReviewPath), Attempts: reviewGateAttempts, PassOnCap: true}`.
+`ReviewGateEntry(reviewPath string) shuttleengine.GateEntry`, a helper beside `ReviewGate` that only this card's two call sites use and so has no card handle of its own, is the one place the entry is built: `{Name: "review", Gate: ReviewGate(reviewPath), Attempts: reviewGateAttempts, PassOnCap: true}`.
+
+In `Engine.Run`, append `ReviewGateEntry(p.ReviewPath)` to every round's gate spec, after the wrapped `opts.Gate` entries, so the Webster segment's otherwise ungated round gets it too.
 It is not wrapped in `repairReportBeforeGate`, since its own findings already name the file.
+
+In `internal/shedadapters/burler.go`, `probeLiveRound` attaches to a still-live round with `AttachGated(spec, p.opts.Gate)`, a gate that never passes through `Engine.Run`, so a round resumed after a driver death would escape the entry.
+It attaches with a fresh copy of `p.opts.Gate` plus `burlerengine.ReviewGateEntry(reviewPath)` instead, keeping "one GateSpec at every hop" true for the new entry; the caller's slice is never mutated.
 `reviewGateAttempts` is an engine-owned constant, 3, the re-prompt budget the recipe's artifact gates use; no config key is added (A4).
 `PassOnCap` is what keeps the strict post-gate parse in place: once the budget is spent the entry lets the run through, and the existing `ParseReview` call after the gate fails the round with today's error, so a file still invalid after the budget fails as today.
 Update `Engine.Run`'s doc comment for the new entry and its bound.
@@ -29,6 +36,7 @@ Tests in `engine_test.go`, through `Engine.Run` with the fake shuttle extended t
 
 - a round whose first review fails `ParseReview` sees the `review` entry fail with the parse error and the quoting hint in its findings, the fake rewrites a valid file, the entry passes, and Run returns the verdict;
 - a file still invalid after the budget lets the entry through and Run returns today's `round reached done but its review file is invalid` error;
+- in `internal/shedadapters/burler_test.go`, `TestBurlerProducer_Gate_ProbeLiveRoundPassesGateAndMapsFailedGateIdentically` gains an assertion that the gate spec the fake attach seam received ends with the `review` entry after the told entries (`GotAttachGateSpec`), and that a failed review entry maps onto the same gate-failed Stuck as a told entry;
 - the test-suite prune folded the gate-spec tests into `TestEngine_Run_GateOutcomes`: its `zero gate spec` row now asserts the spec holds exactly the `review` entry, and its rows with told entries assert the `review` entry sits last after them, unwrapped.
 
-**ImpactSummary:** Every burler round's gate spec gains a trailing review-parse entry; producers calling Engine.Run need no change, and a malformed review now costs re-prompts before it fails.
+**ImpactSummary:** Every burler round's gate spec, the spawn hop and the re-attach hop alike, gains a trailing review-parse entry; producers calling Engine.Run need no change, and a malformed review now costs re-prompts before it fails.
