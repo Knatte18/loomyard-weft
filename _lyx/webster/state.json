@@ -1,0 +1,317 @@
+{
+  "runGuid": "bb22bdc7366d58a54fadd28f414d10d9",
+  "planFingerprint": "e6d9fb428cd93ab255b1809bb52f53d67d084a8033d1cf37298d1fa20974176c",
+  "planFileHashes": {
+    "00-overview.md": "fba0655b095dfc99b2e33b22be7f81ba9667e7fe91b7dec2387efceb6fc4de89",
+    "01-batcher-start-model.md": "957ba67b6c24ed59a99594164835c08ca8d207ecb0a875f58ee125ac97ac62f4",
+    "02-handover-position.md": "f938d01c3e7f0bd603210f3b03cda85b0f180e5e20faa063d83f053d8595cfdb",
+    "03-tokencount-one-repo-flag.md": "4337fa5043cee7409b2f7d1dbacd331067d54bb0208e42c4ae9418a4c0ce3a1d",
+    "04-tokencount-fork-start.md": "d784d450f22da776ed6985709d60e299331bc0aff9f22865c8052ca28190bc5e",
+    "05-calibrate-per-fork.md": "a76922947df058e35b8f157dfab23947a3120871845546829a95d768571cbe83",
+    "06-profile-cost-quality.md": "3597cd09091ebfa337e73b3d7f50ee3c3f1af3b03afff83c4ef9fd2bda6b1c48",
+    "07-card-order-rule.md": "a7032adadd9a37b712ce44a8a55db3cf5e86418cc9ba189969ac3021a0a2dc44",
+    "08-location-free-ref-rules.md": "089e3587939062e97092c37425402da2bd0004c71a8b253c45ac386fd66a4fe9",
+    "09-plan-fabric-reference-check.md": "20a7bc2a11b7b89f784fcc391f19cbe5a3d565dc351b9f7fa5792f7b9f1c8d42",
+    "10-gate-fabric-reference.md": "7c3a994e38b5422db311b4969b146a9df8204fc1b77a32f487e0c3cd13e5b383",
+    "11-accept-committed-readonly.md": "d9abf3486075d30b8809fadf9922c47d75307e332f3c4295cd59379dec6c60cf"
+  },
+  "partition": [
+    {
+      "cards": [
+        "01-batcher-start-model",
+        "02-handover-position",
+        "03-tokencount-one-repo-flag",
+        "04-tokencount-fork-start",
+        "05-calibrate-per-fork",
+        "06-profile-cost-quality"
+      ],
+      "profile": "cautious",
+      "estimate": 320852,
+      "breakdown": {
+        "weights": {
+          "startup_context": 60000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "startup": 61200,
+        "read_union": 158216,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 576,
+            "reads": {
+              "file:internal/batcher/config.go": 1008,
+              "file:internal/batcher/config_test.go": 3000,
+              "file:internal/batcher/cost.go": 1152,
+              "file:internal/batcher/cost_test.go": 3060,
+              "file:internal/batcher/doc.go": 648,
+              "file:internal/batcher/estimate.go": 4248,
+              "file:internal/batcher/estimate_test.go": 2652,
+              "file:internal/batcher/template.yaml": 216,
+              "file:internal/webstercli/cli_test.go": 17364,
+              "file:internal/websterengine/state_test.go": 3132,
+              "file:tools/tokencount/calibrate.go": 3672,
+              "file:tools/tokencount/calibrate_test.go": 3024,
+              "package:internal/batcher": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "package:tools/tokencount": 2000,
+              "tests:internal/batcher": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 110.5,
+            "written": 33726
+          },
+          {
+            "card": 2,
+            "card_text": 444,
+            "reads": {
+              "file:internal/batcher/batcher.go": 408,
+              "file:internal/batcher/cost.go": 1152,
+              "file:internal/batcher/cost_test.go": 3060,
+              "file:internal/batcher/doc.go": 648,
+              "file:internal/batcher/identity.go": 360,
+              "file:internal/batcher/identity_test.go": 720,
+              "file:internal/websterengine/partition.go": 1572,
+              "file:internal/websterengine/partition_test.go": 2172,
+              "file:internal/websterengine/rebaseline.go": 2952,
+              "file:internal/websterengine/rebaseline_test.go": 7704,
+              "file:internal/websterengine/runlevel.go": 16116,
+              "file:internal/websterengine/runlevel_test.go": 29232,
+              "package:internal/batcher": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/batcher": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 102,
+            "written": 31044
+          },
+          {
+            "card": 3,
+            "card_text": 288,
+            "reads": {
+              "file:tools/tokencount/calibrate_integration_test.go": 1032,
+              "file:tools/tokencount/main.go": 2088,
+              "package:tools/tokencount": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 20,
+            "written": 6288
+          },
+          {
+            "card": 4,
+            "card_text": 204,
+            "reads": {
+              "file:tools/tokencount/count.go": 6360,
+              "file:tools/tokencount/count_test.go": 2820,
+              "file:tools/tokencount/main.go": 2088,
+              "package:tools/tokencount": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 20,
+            "written": 6204
+          },
+          {
+            "card": 5,
+            "card_text": 360,
+            "reads": {
+              "file:tools/tokencount/calibrate.go": 3672,
+              "file:tools/tokencount/calibrate_integration_test.go": 1032,
+              "file:tools/tokencount/calibrate_test.go": 3024,
+              "file:tools/tokencount/main.go": 2088,
+              "package:tools/tokencount": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 26,
+            "written": 8160
+          },
+          {
+            "card": 6,
+            "card_text": 564,
+            "reads": {
+              "file:internal/burlerengine/verdict.go": 3252,
+              "file:internal/loomengine/config.go": 4824,
+              "file:internal/shedadapters/burler.go": 6828,
+              "file:internal/websterengine/state.go": 4164,
+              "file:tools/tokencount/calibrate_integration_test.go": 1032,
+              "file:tools/tokencount/main.go": 2088,
+              "package:internal/shedadapters": 2000,
+              "package:tools/tokencount": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 51.5,
+            "written": 16014
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-card-order-rule",
+        "08-location-free-ref-rules",
+        "09-plan-fabric-reference-check",
+        "10-gate-fabric-reference",
+        "11-accept-committed-readonly"
+      ],
+      "profile": "cautious",
+      "estimate": 375846,
+      "breakdown": {
+        "weights": {
+          "startup_context": 60000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "startup": 61200,
+        "read_union": 165036,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 168,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 6948,
+              "file:contracts/stencils/loom/loom-rubric-plan-review.md": 1032,
+              "file:contracts/stencils/loom/loom-template-plan.md": 2748,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils/loom": 2000
+            },
+            "messages": 18.5,
+            "written": 5718
+          },
+          {
+            "card": 8,
+            "card_text": 264,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 16284,
+              "file:internal/fabricengine/refscanner.go": 1560,
+              "file:internal/fabricengine/refscanner_test.go": 888,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 101,
+            "written": 30564
+          },
+          {
+            "card": 9,
+            "card_text": 384,
+            "reads": {
+              "file:internal/planparser/doc.go": 1332,
+              "file:internal/planparser/parse.go": 8748,
+              "file:internal/planparser/plan.go": 2928,
+              "package:internal/planparser": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 38.5,
+            "written": 11934
+          },
+          {
+            "card": 10,
+            "card_text": 504,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 6948,
+              "file:contracts/stencils/loom/loom-template-plan.md": 2748,
+              "file:internal/loomcli/parity_test.go": 6852,
+              "file:internal/loomcli/validate.go": 2772,
+              "file:internal/loomcli/validate_test.go": 6252,
+              "file:internal/loomcli/wiring.go": 9264,
+              "file:internal/loomshed/gatefindings_test.go": 2184,
+              "file:internal/loomshed/gates_test.go": 6720,
+              "file:internal/planglyph/delta_integration_test.go": 2424,
+              "file:internal/planglyph/index.go": 852,
+              "file:internal/webstercli/verbs_test.go": 14472,
+              "file:internal/webstercli/wiring.go": 4104,
+              "file:internal/websterengine/gitfake_test.go": 2940,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/planglyph": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 162.5,
+            "written": 49254
+          },
+          {
+            "card": 11,
+            "card_text": 540,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3000,
+              "file:internal/fabricengine/refscanner.go": 1560,
+              "file:internal/fabricengine/refscanner_test.go": 888,
+              "file:internal/webstercli/acceptaudit.go": 1800,
+              "file:internal/webstercli/acceptaudit_test.go": 2844,
+              "file:internal/websterengine/acceptbatch_test.go": 1500,
+              "file:internal/websterengine/audit.go": 6996,
+              "file:internal/websterengine/auditledger.go": 3552,
+              "file:internal/websterengine/doc.go": 6180,
+              "package:contracts/specs": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 172,
+            "written": 52140
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "e9f42bbade7257f07aec8eded6a9aef0",
+  "masterSessionId": "4854de3f-a57c-4be0-b959-ad7479c9f19d",
+  "batches": {
+    "1": {
+      "slug": "batcher-start-model",
+      "cards": [
+        "01-batcher-start-model",
+        "02-handover-position",
+        "03-tokencount-one-repo-flag",
+        "04-tokencount-fork-start",
+        "05-calibrate-per-fork",
+        "06-profile-cost-quality"
+      ],
+      "cardHashes": {
+        "01-batcher-start-model": "957ba67b6c24ed59a99594164835c08ca8d207ecb0a875f58ee125ac97ac62f4",
+        "02-handover-position": "f938d01c3e7f0bd603210f3b03cda85b0f180e5e20faa063d83f053d8595cfdb",
+        "03-tokencount-one-repo-flag": "4337fa5043cee7409b2f7d1dbacd331067d54bb0208e42c4ae9418a4c0ce3a1d",
+        "04-tokencount-fork-start": "d784d450f22da776ed6985709d60e299331bc0aff9f22865c8052ca28190bc5e",
+        "05-calibrate-per-fork": "a76922947df058e35b8f157dfab23947a3120871845546829a95d768571cbe83",
+        "06-profile-cost-quality": "3597cd09091ebfa337e73b3d7f50ee3c3f1af3b03afff83c4ef9fd2bda6b1c48"
+      },
+      "startSha": "35e36281eab76e18bcd1ffa8ad6fe9a18563f679",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T18:16:36Z",
+      "sessionId": "4854de3f-a57c-4be0-b959-ad7479c9f19d",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
