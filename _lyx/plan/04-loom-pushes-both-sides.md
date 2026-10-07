@@ -49,6 +49,6 @@ Tests:
   before the existing remote-failure steps, with the task branch diverged on its remote by a second clone, `commitRecordsVerb` returns the rejection envelope naming the task worktree's path, the records remote is at the records HEAD, and the task branch's local HEAD is unchanged.
   The existing rejected-push and unreachable-remote steps keep asserting the seam warns and returns nil.
 
-**ImpactSummary:** loom's per-transition seam and `commit-records` now push the task branch too; the `commit-records` push-failure envelope and its spec row split in two; statuscommit changes in comments only.
+**ImpactSummary:** one production caller (`loomCommitStatusDeps`'s `Push`) moves to `PushPairAnchored`; one error message and one spec row split in two, and the one test asserting the old text is updated in this card; `statuscommit` changes in comments only, and `battencli` is untouched.
 
 **Commit:** 4: loom: push the task branch with the run records

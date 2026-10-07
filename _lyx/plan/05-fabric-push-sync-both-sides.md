@@ -38,6 +38,6 @@ Tests:
   placed with the late, damaging steps, with the prime's code branch diverged on its bare by a second clone, `lyx fabric push` returns an error envelope naming the warp side and its worktree, the weft bare sits at the weft HEAD, and the local warp HEAD is unchanged.
 - `weftskippush_integration_test.go`'s sync step asserts the record holds a `push_spawned` entry for each side, and its push step asserts neither bare moved under `WEFT_SKIP_PUSH`.
 
-**ImpactSummary:** `lyx fabric push` now pushes both sides through the anchored entry and reports rejections as errors; `lyx fabric sync`'s detached child now pushes both sides; the bypass child is unchanged.
+**ImpactSummary:** `PushPairAnchored` gains its second production caller (the `push` verb) and `spawnPush` keeps its one caller (`sync`); `Fabric.PushWeft` loses its only production caller and keeps a test caller only; the detached child's bypass path is unchanged.
 
 **Commit:** 5: fabric: push and sync push both sides

@@ -60,6 +60,7 @@ The three existing `PushAnchored` callers pass `fabricengine.StatusPushLockWait`
 Batten's seam keeps pushing the records side only.
 
 `doc.go`'s anchored entry-point paragraph names `PushPairAnchored`, `IsPushRejected` and the lock, and its "treat `gitrepo.ErrPushRejected` as a human-decidable condition rather than retrying" sentence states the one bounded retry instead.
+The same file's list of vocabulary-neutral `l`-in entry points names `PushAnchored(l, opts)`; it becomes `PushAnchored(l, opts, lockWait)` and gains `PushPairAnchored(l, opts, lockWait)`.
 
 What this lets through, and its bound: the retry pushes a second time without a human, only when the fetched remote tip is already an ancestor of or equal to local HEAD, once per side per call.
 The bounded lock wait lets a status push give up without pushing; the run continues and the next transition retries.
@@ -71,11 +72,13 @@ Tests, extending `pushanchored_integration_test.go` on hubforge pairs (`hubforge
   a remote that rejects once (a `pre-receive` hook in the code side's bare that declines the first push it sees and accepts after) is retried and succeeds;
   a code side diverged on its remote (a second clone pushed a commit) returns an error naming the warp side and its worktree path that satisfies `errors.Is(err, gitrepo.ErrPushRejected)`, while the records side's new commit is still pushed and both local HEADs are unchanged;
   with the code side still diverged and the records side's origin pointing at a missing path, the error names both sides and still satisfies `errors.Is(err, gitrepo.ErrPushRejected)`.
-- A table-driven lock test: with the push lock held by the test, a bounded wait returns an error satisfying `errors.Is(err, fabricengine.ErrPushLockBusy)` that names neither side, and neither remote moves;
+- A table-driven lock test over both entries: with the push lock held by the test, a bounded wait returns an error satisfying `errors.Is(err, fabricengine.ErrPushLockBusy)` that names neither side, and no remote moves, for `PushPairAnchored` and for `PushAnchored`;
   `SkipPush` and `SkipGit` each return nil at once with the lock still held;
   `LockWaitUnbounded` returns only after the test releases the lock, then pushes both sides.
 - `PushAnchored` gains its parameter in the existing tests, and `TestPushAnchored_DivergedWeftRemote_ReturnsErrPushRejectedUnwrapped` keeps pinning the bare sentinel after the retry.
+  The scenario test's retry step also runs `PushAnchored` against a records remote that declines once, and the push succeeds on the second attempt; this is a row of that step, not a new test function.
+- `TestPushAnchored_PushesAndRecordsBranchPush` also makes a raw commit in the pair's warp worktree and asserts, after `PushAnchored`, that the warp bare remote has not moved: this pins that batten's seam still pushes the records side only, as an assertion of the existing test.
 
-**ImpactSummary:** fabricengine gains the both-sides entry and puts `PushAnchored` under the absorbing lock with a retry; batten's and loom's status pushes now contend on `fabric.push.lock` with a bounded wait; batten still pushes the records side only.
+**ImpactSummary:** `PushAnchored` gains a parameter and its three callers (two in `battencli`, one in `loomcli`) are all updated in this card; `PushPairAnchored` has no caller until cards 4 and 5; no other package's signature changes.
 
 **Commit:** 3: fabricengine: both-sides anchored push under the absorbing lock, retrying once
