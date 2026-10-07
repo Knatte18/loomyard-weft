@@ -31,3 +31,18 @@ The operator wants better batches now, as a quick fix for token use, not one bat
 A token count over the five latest runs (`.scratch/tokens/count.py`, 2026-10-07) put Webster's implementer forks at about 54% of all weighted tokens, nearly all of it cache reads: each fork reads a large context afresh (574M cache-read tokens over 81 forks; the two test-suite prunes ran 26 and 18).
 For tokens, file-level grouping is enough: cards that edit the same files or package and follow each other in plan order share one fork, so their shared context is read once, with a cap on cards per batch to keep the context and failure localisation in bounds.
 So this quick fix does not wait on `plan-glyph-precision`; finer member-level grouping can follow once cards name members.
+
+## Design so far (operator, 2026-10-07)
+
+A Go batchifier, never an LLM agent.
+It cannot merge cards blindly: on 2026-10-07 single cards cost a Webster fork hundreds of thousands of tokens, and such a card must never share a fork.
+
+- **Size each card mechanically**, from what the card and the disk say before the run: how many files it creates, edits or deletes, the line count of the files it edits, its test files and their size, and its `Uses` entries. A fork spends its tokens reading files and running tests, so these are the signals.
+- **A card above a size threshold always runs alone.**
+- **Small cards group** only when they follow each other in plan order (so no dependency is broken), share files or a package (so the shared context is read once), and stay within a size budget and a cap on cards per batch.
+- **Calibrate** the estimate against real use: `tools/tokencount` extended to report tokens per fork, one fork being one Webster batch, compared with each batch's estimate to tune the weights. Start cautious, with a low budget and a cap of three or four cards.
+
+## Profiles in `batcher.yaml`
+
+Several named batchifier profiles, all configured in `batcher.yaml`, with `active` naming the one in use, so the operator switches between them by changing one key (operator, 2026-10-07).
+Not a single batchifier with one setting: each profile carries its own threshold, budget, card cap and weights, and the identity batchifier (one card, one batch) stays available as a profile of its own.

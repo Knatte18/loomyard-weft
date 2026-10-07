@@ -116,7 +116,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **Hardener: an autonomous behavior-review campaign that replaces crucible** — [`hardener`](design-hardener.md) · feature
    - Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges
 1. **A batchifier that groups small related cards into one Webster batch** — [`card-batching`](design-card-batching.md) · feature, webster
-   - A mechanical batchifier that groups cards sharing files into one fork; wanted now as a quick token fix, file-level grouping first
+   - A Go batchifier that sizes each card, runs large cards alone and groups small ones sharing files within a budget; several named profiles in batcher.yaml
 1. **Orch and batten run from the operator's own long-lived worktree, not only the prime** — [`orch-any-worktree`](design-orch-any-worktree.md) · feature, fabric, batten, orch
    - Every orch and batten verb refuses outside the prime; let a long-lived personal worktree be an orch's home, with pairs branching from and landing into its branch
 1. **lyx ide open: launch VS Code without writing anything** — [`ide-open-verb`](design-ide-open-verb.md) · feature, ide, batten
