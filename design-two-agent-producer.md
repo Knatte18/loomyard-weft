@@ -12,3 +12,6 @@ Two notes need it:
 
 What the shared capability has to cover: shuttle starting both agents with their own model-specs, waiting on both and knowing when each is done (the hard part, see `shuttle-crucible`), ending the step when the producer's own rule says so, and the two agents talking to each other directly, which points at `creel`.
 Built once, it serves both notes.
+
+Inside one producer, not two parallel shed producers (operator, 2026-10-07): shed is a linear machine, one current producer, one history, and pause, goto and routing each assume one step at a time.
+Parallel producers would need fork and join in the recipe and rules for one branch halting while the other is done; inside one producer the two agents are invisible to shed, which sees one step with one outcome.
