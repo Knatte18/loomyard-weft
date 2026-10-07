@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Plan-Write",
   "state": "paused",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Batchifier → done",
+    "now": "Plan-Write",
+    "last": "Plan-Write → goto",
     "wait": ""
   },
   "history": [
@@ -129,6 +129,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-06T11:30:22Z"
+    },
+    {
+      "producer": "Plan-Write",
+      "outcome": "goto",
+      "output": "",
+      "at": "2026-10-07T05:12:17Z"
     }
   ],
   "product": {
