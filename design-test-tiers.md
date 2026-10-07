@@ -78,3 +78,29 @@ Options to settle in Discussion:
 Check first whether the stencils from `lyx-skills-and-stencils` already fixed it for new runs.
 
 Seen again 2026-10-07: `bugfix-fabric`, `bugfix-sessions` and `bugfix-webster` all ended their Webster review unconverged on comment line breaks alone, each accepted by the orch after the last round.
+
+
+## From issue #421
+
+Imported from [issue #421](https://github.com/Knatte18/loomyard/issues/421).
+
+## What happened
+
+A Burler round reviewing comment line breaks had to decide what the `PATTERN-comment-line-breaks` rule allows, and the background text does not say.
+The rule asks for one sentence per line, with a further break at an independent-clause boundary.
+It does not say whether a break at a comma before a compound predicate, a list item or a relative clause is a violation, nor whether the further break is required or only permitted.
+Authors break at such commas often, so the answer decided most of the round's comment sites.
+
+The agent settled on "breaks at non-clause commas are violations; breaks before an independent clause are allowed, not required".
+It reached that only partway through the fix, so the review's list of sites included seven the fix then left alone, which cost an extra pass.
+
+## Why this is abnormal
+
+A rule that reviewers and fixers enforce should answer the common cases itself; here two agents on the same task have to guess, and their guesses can differ.
+
+## What to do
+
+Add one or two sentences to the `pattern/` background file for comment line breaks stating which comma breaks are allowed, which are violations, and that the clause-boundary break is permitted but not required (or the opposite, if that is the intent).
+Keep the `scribe:prose` line-break rule and this background file consistent.
+
+Provenance: task `bugfix-webster`; note `burler-webster-r2.md`.
