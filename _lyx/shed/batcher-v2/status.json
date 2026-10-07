@@ -1,11 +1,11 @@
 {
-  "current_producer": "PR-Gate",
+  "current_producer": "Finalize",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "PR-Gate",
-    "last": "PR-Gate → awaiting",
+    "now": "Finalize",
+    "last": "PR-Gate → done",
     "wait": ""
   },
   "history": [
@@ -200,6 +200,12 @@
       "outcome": "awaiting",
       "output": "",
       "at": "2026-10-07T19:17:39Z"
+    },
+    {
+      "producer": "PR-Gate",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-07T19:26:15Z"
     }
   ],
   "product": {
