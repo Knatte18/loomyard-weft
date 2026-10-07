@@ -364,9 +364,9 @@
       }
     }
   ],
-  "currentBatch": 1,
-  "masterStrand": "03f42b8631a93a1cf0fdf690cc3b0f4c",
-  "masterSessionId": "b42219b0-cb29-4e92-ac15-b4fa2035c012",
+  "currentBatch": 0,
+  "masterStrand": "692034ca1020e7c71d6e4acffa4cb0fe",
+  "masterSessionId": "4c79fcb8-4645-4a33-8765-66a595274bdf",
   "batches": {
     "1": {
       "slug": "orch-compact-boundary",
@@ -386,8 +386,25 @@
       "kind": "fork",
       "spawnedAt": "2026-10-07T19:15:42Z",
       "sessionId": "b42219b0-cb29-4e92-ac15-b4fa2035c012",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-orch-compact-boundary",
+        "status": "done",
+        "head_sha": "3034635dac4a4fd9b996b4d5ed9c462ae8362775",
+        "deviations": [
+          "cmd/lyx/testdata/test-budget.yaml"
+        ]
+      },
+      "cardShas": [
+        "3034635dac4a4fd9b996b4d5ed9c462ae8362775"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lifecycle-waits/b42219b0-cb29-4e92-ac15-b4fa2035c012/subagents/agent-ad0d717d6122b099e.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lifecycle-waits/b42219b0-cb29-4e92-ac15-b4fa2035c012/subagents/agent-ad0d717d6122b099e.jsonl"
+  ]
 }
