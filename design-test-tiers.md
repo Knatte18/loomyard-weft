@@ -1,6 +1,6 @@
 # Which gate runs which test tier, after-state and budget guard
 
-`test-tiers` · Task · enhancement, loom, webster · running · Plan-Bouncer
+`test-tiers` · Task · enhancement, loom, webster · running · Batchifier
 
 Depends on: [`bugfix-sessions`](design-bugfix-sessions.md), [`bugfix-webster`](design-bugfix-webster.md), [`bugfix-fabric`](design-bugfix-fabric.md)
 
