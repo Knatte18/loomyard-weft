@@ -25,3 +25,9 @@ The batchifier is built once cards name the members they touch.
 - It should fit the parallel-execution direction in `manifest/designs/webster-parallel-execution.md`, where the same DAG decides which groups may run concurrently.
 
 Depends on `plan-glyph-precision`.
+## Quick fix for tokens (operator, 2026-10-07)
+
+The operator wants better batches now, as a quick fix for token use, not one batch per card.
+A token count over the five latest runs (`.scratch/tokens/count.py`, 2026-10-07) put Webster's implementer forks at about 54% of all weighted tokens, nearly all of it cache reads: each fork reads a large context afresh (574M cache-read tokens over 81 forks; the two test-suite prunes ran 26 and 18).
+For tokens, file-level grouping is enough: cards that edit the same files or package and follow each other in plan order share one fork, so their shared context is read once, with a cap on cards per batch to keep the context and failure localisation in bounds.
+So this quick fix does not wait on `plan-glyph-precision`; finer member-level grouping can follow once cards name members.
