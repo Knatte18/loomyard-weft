@@ -20,6 +20,6 @@ Add the refusal's row to `contracts/specs/refusal-spec.md`'s webster section, pe
 
 Bound: only strands webster's own batch state names as a recovery strand; implementer forks have no strand and the Master strand is never named there.
 
-Tests in `reset_test.go`, through the cobra `reset` verb with a `shuttlefake` reed on the fixture's `websterCLI`: a `--to start` reset over a state recording one live and one dead recovery strand removes exactly the live one and resets; a `--to pre-fix` reset removes nothing; a removal failure refuses with the way forward, leaves HEAD where it was and saves no state.
+Tests in `reset_test.go`, as steps of the `TestResetCmd` scenario the test-suite prune built, through the cobra `reset` verb with a `shuttlefake` reed set on the `reed` field of `newResetFixture`'s `websterCLI`: a `--to start` reset over a state recording one live and one dead recovery strand removes exactly the live one and resets; a `--to pre-fix` reset removes nothing; a removal failure refuses with the way forward, leaves HEAD where it was and saves no state.
 
 **ImpactSummary:** Adds one websterengine helper and one call in the reset verb's start path; pre-fix resets and every other webster verb are unchanged.

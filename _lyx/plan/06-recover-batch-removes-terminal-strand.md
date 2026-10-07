@@ -16,6 +16,8 @@ Update `awaitTerminal`'s doc comment, which today says "dead keeps both", and th
 Bound: only the strand webster's own batch state names as the batch's recovery strand (`bs.StrandGUID`); an implementer fork or Master strand is never touched.
 
 Tests in `recoverbatch_test.go`, through `RecoverAwait`, the call `lyx webster recover-batch` makes after its spawn-or-attach:
-`TestRecoverBatch_TimeoutAcrossCallsClassifiesDead` asserts the dead digest now removes the live strand and keeps the run dir; add a row or case where the digest is terminal but `refuseMidMerge` refuses, asserting the error and that the strand was removed.
+the test-suite prune folded the dead-digest and mid-merge cases into rows of `TestRecoverBatch_SecondCall`.
+Its row `the recovery timeout is measured across calls and a dead strand is kept` flips its strand assertion: the dead digest now removes the live strand (its guid is in `fx.Reed.RemovedGUIDs`) and still keeps the run dir, and the row is renamed to say so.
+Its row `a conflicting merge left in progress is refused with the continue/abort pointer` gains a `check` asserting that the recovery strand was removed although the call refused.
 
 **ImpactSummary:** One function in websterengine's recover path; a dead or refused-terminal recovery now tears down its own recovery strand, nothing else changes.

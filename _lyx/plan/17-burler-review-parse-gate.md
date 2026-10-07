@@ -29,6 +29,6 @@ Tests in `engine_test.go`, through `Engine.Run` with the fake shuttle extended t
 
 - a round whose first review fails `ParseReview` sees the `review` entry fail with the parse error and the quoting hint in its findings, the fake rewrites a valid file, the entry passes, and Run returns the verdict;
 - a file still invalid after the budget lets the entry through and Run returns today's `round reached done but its review file is invalid` error;
-- `TestEngine_Run_ZeroGateSpec` now asserts the spec holds exactly the `review` entry, and `TestEngine_Run_SpecConstruction` (or the gate-spec tests beside it) asserts it sits last after the told entries, unwrapped.
+- the test-suite prune folded the gate-spec tests into `TestEngine_Run_GateOutcomes`: its `zero gate spec` row now asserts the spec holds exactly the `review` entry, and its rows with told entries assert the `review` entry sits last after them, unwrapped.
 
 **ImpactSummary:** Every burler round's gate spec gains a trailing review-parse entry; producers calling Engine.Run need no change, and a malformed review now costs re-prompts before it fails.

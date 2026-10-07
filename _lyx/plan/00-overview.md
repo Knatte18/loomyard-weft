@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: true
+approved: false
 language: go
 ---
 
@@ -44,11 +44,11 @@ Typed prompts are paced and confirmed submitted; an escalation halt spawns no re
 - **Rationale:** D14; `PATTERN-test-speed`, `PATTERN-test-economy`, `PATTERN-test-isolation`, `PATTERN-testkit`.
 - **Applies to:** all cards
 
-### Decision: test-targets-revalidated-after-the-prunes
+### Decision: test-targets-follow-the-pruned-suites
 
-- **Decision:** cards name production files as their main targets and test files by path; once test-suite-prune-core and test-suite-prune-rest land and the pair is synced with main, the test targets are re-validated and re-planned only where a prune renamed or deleted them.
-- **Rationale:** the parent's post-Discussion decision of 2026-10-06; Webster starts only after both prunes land.
-- **Applies to:** all cards
+- **Decision:** the plan is re-checked against the tree after test-suite-prune-core and test-suite-prune-rest merged into this branch; cards whose named tests the prunes deleted, folded or renamed (4, 6, 7, 14, 15, 16, 17) point at the test, scenario or table row that now holds that coverage, and a new case is a row or step of that test rather than a new top-level test.
+- **Rationale:** the parent's post-Discussion decision of 2026-10-07; the prunes' scenario and table folds are where `PATTERN-test-economy` puts each new case.
+- **Applies to:** cards 4, 6, 7, 14, 15, 16, 17
 
 ## verify:
 

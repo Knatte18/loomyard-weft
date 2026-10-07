@@ -32,6 +32,6 @@ Docs: `internal/orchengine/doc.go`'s module overview stops saying start hands th
 Tests:
 
 - `launch_test.go`: the `DecideStart` table's live-and-live row expects `StartAlreadyRunning`.
-- `start_test.go`: the harness stops prepending `--no-attach`; `TestStart_LiveStrandAndWatcherDoesNothing` asserts the `already-running` action; `TestStart_NoStrandLaunchesAndSpawnsWatcher` drops its `attached` assertion; add one test, not parallel since it sets process-global `TMUX` with `t.Setenv` (named in a comment, per `PATTERN-test-speed`), running start with `TMUX` set, once with and once without `--no-attach`, asserting exit 0 and the success envelope in both runs.
+- `start_test.go`: the harness stops prepending `--no-attach`, and the file comment stops saying it drives start with `--no-attach`; the test-suite prune folded the live-strand cases into `TestStart_LiveStrand`, whose `with a watcher does nothing` row expects `actionAlreadyRunning`; `TestStart_NoStrandLaunchesAndSpawnsWatcher` drops its `attached` assertion; add one test, not parallel since it sets process-global `TMUX` with `t.Setenv` (named in a comment, per `PATTERN-test-speed`), running start with `TMUX` set, once with and once without `--no-attach`, asserting exit 0 and the success envelope in both runs.
 
 **ImpactSummary:** Removes orch start's terminal handover and renames one StartAction; the start envelope loses its attached key, and the receiver drops its handover-only reed field.
