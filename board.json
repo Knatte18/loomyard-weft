@@ -1188,6 +1188,21 @@
       "isolated": false,
       "brief": "rebaseline refuses begun cards and reset needs a fresh run loom cannot start, so a mid-run decision never reaches the plan",
       "body": "An operator decision made while Webster runs cannot reach the plan card of a batch that has begun.\nSeen 2026-10-07 in `bugfix-sessions`: the operator decided that the submit settle of card 1 comes from config, while batch 1 was running.\nThe decision went into the decision record, but `lyx webster rebaseline --card 01` refused (\"the edited plan changes the cards of a batch this run already begun\"), and its way forward, `lyx webster reset --to start` then `lyx webster run --fresh`, has no path through loom: the Webster producer always runs with `Fresh: false` (`internal/shedadapters/webster.go`).\nAn edit left on disk while the master recorded the batch blocked the run with `plan_drifted` until the plan was restored.\nSo the card still says \"hard-coded constant\" while the code reads config, and the Webster review sees a deviation the operator approved.\n\nWanted (operator, 2026-10-07): an operator decision taken mid-Webster lands in the plan and the decision record together, without extra review or PR-Gate steps, whether or not the card's batch has begun.\n"
+    },
+    {
+      "id": 156,
+      "slug": "run-message-routing",
+      "title": "Who in a running task receives an instruction",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Driver forwarding, a creel alias for the active strand, or an on-call LLM per run: open for a brainstorm",
+      "body": "Who in a running task receives an instruction from the orch or the operator, open for a brainstorm (operator, 2026-10-07).\n\nSeen 2026-10-07: an operator decision about card 1 of `bugfix-sessions` arrived while Webster ran.\nThe orch has to know which agent owns the content at that moment (Discussion-Write, the plan agent, the Webster master, a Burler round) and message it, or fall back on a goto; mid-Webster no agent can change a begun card at all (`webster-amend-begun-card`).\nThe orch editing the run's files itself is never the answer.\n\nOptions raised:\n\n- The driver forwards: it knows its current producer and the strand doing the work. One address per run, but an LLM relays in a turn of its own, may reword, and its stencil does not do this today.\n- Creel resolves an alias such as `ly:\u003cslug\u003e:active` from the run's status to the strand that owns the current step: deterministic, no LLM between (see the `creel` note).\n- An on-call LLM per run, woken when an instruction needs judgment about the run (what a decision means for the plan, who must do what). The operator considered this before the driver existed, when the driver was a Go process; it rebuilds its context each time it wakes, and it adds a role.\n- The driver itself becomes that on-call role, with read access to the plan: it already lives the whole run, but grows heavier than a step driver.\n\nPlain routing (\"deliver to whoever works now\") and judgment (\"what does this mean for the run\") may want different answers.\n"
     }
   ],
   "legacy_done": [

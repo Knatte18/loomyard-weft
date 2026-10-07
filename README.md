@@ -164,6 +164,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - An embedded shortcut file, git-alias style: attach for reed attach, and one shortcut that starts the orch and attaches in the prime
 1. **Open an extra named agent strand through shuttle** — [`extra-agent-strand`](design-extra-agent-strand.md) · feature, shuttle
    - Open a named Claude session in a strand with no task, through shuttle, so it keeps its name; for extra strands in the prime
+1. **Who in a running task receives an instruction** — [`run-message-routing`](design-run-message-routing.md) · feature, loom
+   - Driver forwarding, a creel alias for the active strand, or an on-call LLM per run: open for a brainstorm
 
 ## Done
 
