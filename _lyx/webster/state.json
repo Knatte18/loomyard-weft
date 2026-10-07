@@ -1,0 +1,40 @@
+{
+  "runGuid": "2d69baccca8f0ea77a25d94150e3c226",
+  "planFingerprint": "15fa2237368be423c37951a2590ada9062d814f55af7357d542b3fbb88dd3c8f",
+  "planFileHashes": {
+    "00-overview.md": "354ced48f907765ace7e1bbea2db45c2e79a4db407545e177aebfdfa825d00e0",
+    "01-uses-later-target.md": "2172ce8a98cdca267283ae942a29e2ec5b92934c5ff0b2af401d77e6286e029b",
+    "02-delete-before-reference.md": "105eb595e0c4cfb8178d23d916bbe9814b61ec77bc8dfe5df49910280b3f0b34",
+    "03-delete-target-gone.md": "cc544916bcc897c0a1202db328cb955b729481a35f1cc863104dc9d60022ee14",
+    "04-drop-model-assertion.md": "26b740d9ed0468d2f0148548af9447bba6eb867435b02990495bbcadd4d027f3",
+    "05-archive-unrecorded-report.md": "819820e336abb79451258d64087459427040d76a36c424b6ec59e13656775ea3",
+    "06-rebaseline-terminal-batch.md": "6c54ca5741fc804214e25539faff4c8a5041b95ec52837a2f4df9d50c22e9bb9",
+    "07-delete-blocked-by-later-card.md": "3585c8210dca87c3e5a936aa2ec4af6353be867a7f395c09af8cf8587ae8b0ef",
+    "08-background-shell-outcome.md": "0ee7a68dc30001c7be7b0f80959e723071f7ecae4dee12f0760f407148fa85ed",
+    "09-gitrepo-leased-update.md": "692095c1a57a6b723e6ba69c134569c2c5371013c0d83dafb8188f0d2b4202c1",
+    "10-fabric-remote-only-commits.md": "e39044c32464e431ea2e538ba74ba65b070255f5e7d1d011eb8037a2e8018226",
+    "11-reset-moves-remote-branch.md": "b2c49caa70294305ef5f96cf15415444294223ddad853db74302129543262462",
+    "12-publish-push-rejected.md": "5c23271ad97a663a45ebb6c6c93bd49023cf5ce080d632daec28a34f985efe65"
+  },
+  "currentBatch": 1,
+  "masterStrand": "ae2b27694ca3f431bc5f75f29629fff7",
+  "masterSessionId": "13fadd3a-7482-46e1-b69a-41bed6ceab03",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "uses-later-target",
+      "cards": [
+        "01-uses-later-target"
+      ],
+      "cardHashes": {
+        "01-uses-later-target": "2172ce8a98cdca267283ae942a29e2ec5b92934c5ff0b2af401d77e6286e029b"
+      },
+      "startSha": "95902574438724313613715b9a2e677264dee77b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T05:24:52Z",
+      "sessionId": "13fadd3a-7482-46e1-b69a-41bed6ceab03",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
