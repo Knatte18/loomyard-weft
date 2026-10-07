@@ -49,6 +49,29 @@ It cannot merge cards blindly: on 2026-10-07 single cards cost a Webster fork hu
 - **Small cards group** only when they follow each other in plan order (so no dependency is broken), share files or a package (so the shared context is read once), and stay within a size budget and a cap on cards per batch.
 - **Calibrate** the estimate against real use: `tools/tokencount` extended to report tokens per fork, one fork being one Webster batch, compared with each batch's estimate to tune the weights. Start cautious, with a low budget and a cap of three or four cards.
 
+## Deciding a batch from a cost model (proposed by the hub, accepted by the operator, 2026-10-07)
+
+Grouping cards that merely follow each other and belong together is a start, not the rule (operator).
+The batchifier decides from an estimated cost instead:
+
+- **Cost model.** A fork costs roughly its messages times its context size, since every message reads the whole context again.
+  Each card gets an estimate of its messages and of how much context it adds, from the signals above.
+  Running card B in card A's fork saves B's fork start-up and the files they share, which are read once; it costs B carrying A's accumulated context in every message.
+  So merging pays only when the cards share much and both are small, and the model, not a judgment, says when.
+- **Overlap** is measured between the cards' read sets: the files they edit or use, their package and their test package.
+  Two cards editing the same file share more than two cards in the same package.
+- **Hard limits** hold whatever the model says: plan order and dependencies are never broken, a card above the threshold runs alone, and a batch stays within its card cap and budget.
+- **Optimal split.** Plan order is a valid order, so the batchifier splits the card sequence into contiguous segments with the lowest total estimated cost: a small dynamic program over segments, exact and testable, rather than greedy merging.
+  Moving cards next to each other where the dependencies allow, so cards of one package separated by an unrelated card can join, is a later step.
+
+## Testing
+
+- **The batchifier itself** is a pure function from cards and file stats to batches, so unit tests pin the hard limits on every input: order and dependencies kept, an oversized card alone, caps and budget kept.
+- **The estimator offline**: past runs ran the identity batchifier, one fork per card, so `tools/tokencount` extended to tokens per fork gives a measured cost for every past card.
+  Running the estimator on those plans and comparing with the measured cost calibrates the weights without running anything new.
+- **The saving itself** cannot be measured offline, since a merged batch's cost was never observed.
+  It is measured on real runs, switching profiles in `batcher.yaml` and comparing tokens per card against the identity profile's history, starting cautious.
+
 ## Profiles in `batcher.yaml`
 
 Several named batchifier profiles, all configured in `batcher.yaml`, with `active` naming the one in use, so the operator switches between them by changing one key (operator, 2026-10-07).
