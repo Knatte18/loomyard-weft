@@ -22,7 +22,7 @@
     "17-burler-review-parse-gate.md": "d52ec9e6c409be5dfb1af1881ecd5064303e9c00570ee30878d0a128e9a69db3",
     "18-burler-validate-review-verb.md": "213f099e161824ee483f764d6952f180eeacce22e7983d3d39cc4acb40aa6354"
   },
-  "currentBatch": 0,
+  "currentBatch": 10,
   "masterStrand": "82b43112c805ff52fede8404a7366217",
   "masterSessionId": "48bc4037-b210-4022-bbb4-e30516d6c209",
   "assertedModel": "sonnet",
@@ -63,6 +63,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/203a3a3c-e2ed-4759-aa24-8aea6a10ee06/subagents/agent-a6087999c73e94be3.jsonl"
       ]
+    },
+    "10": {
+      "slug": "compaction-boundary-turn-ends",
+      "cards": [
+        "10-compaction-boundary-turn-ends"
+      ],
+      "cardHashes": {
+        "10-compaction-boundary-turn-ends": "290d7c113b773a3e94018a80ef00dfe1c054af2569e946c24929e75bb517993a"
+      },
+      "startSha": "9142abfd8819a9785b550e6086b5348a8ffdee9b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T05:45:04Z",
+      "sessionId": "48bc4037-b210-4022-bbb4-e30516d6c209",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "claude-input-box-reader",
