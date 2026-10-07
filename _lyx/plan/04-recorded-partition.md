@@ -3,9 +3,9 @@
 **Create:**
 - `internal/websterengine/partition.go`
 - `internal/websterengine/partition_test.go`
-- `plan:internal/websterengine#PartitionBatch` -> `type PartitionBatch struct`
-- `plan:internal/websterengine#CheckBatchOrder` -> `func CheckBatchOrder(batches []batcher.Batch) error`
-- `plan:internal/batcher#Identity` -> `func Identity() Batcher`
+- `internal/websterengine#PartitionBatch`
+- `internal/websterengine#CheckBatchOrder`
+- `internal/batcher#Identity`
 
 **Edit:**
 - `internal/batcher/batcher.go`

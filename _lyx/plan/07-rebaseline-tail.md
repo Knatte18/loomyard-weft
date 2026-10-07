@@ -9,8 +9,8 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/websterengine#PartitionBatch`
-- `plan:internal/websterengine#CheckBatchOrder`
+- `internal/websterengine#PartitionBatch`
+- `internal/websterengine#CheckBatchOrder`
 
 **Intent:**
 An accepted rebaseline keeps every begun batch as recorded and re-batches only the cards after the last begun batch with the then-active profile (Decision 11).

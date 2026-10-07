@@ -26,7 +26,7 @@
 **Uses:**
 - `plan:internal/batcher#NewCost`
 - `plan:internal/batcher#CostParams`
-- `plan:internal/batcher#Identity`
+- `internal/batcher#Identity`
 
 **Intent:**
 `batcher.yaml` names profiles and `active:` picks one (Decision 8).
