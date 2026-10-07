@@ -1,12 +1,13 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Discussion-Bouncer: round 4 escalated to the parent (cause: circling); brief at /home/knatte/Code/loomyard-LYXHUB/burler-cost/_lyx/reviews/discussion/round-4-escalation.md; decide with `lyx loom circling accept burler-cost` or `lyx loom circling continue burler-cost`, then run `lyx loom start` in the task worktree to resume",
+  "parent_notice": "Review segment of task `burler-cost` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/burler-cost/_lyx/reviews/discussion/round-4-escalation.md` with a one-shot fork.",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler → bounced to Discussion-Bouncer",
-    "wait": ""
+    "last": "Discussion-Bouncer → awaiting",
+    "wait": "bouncer Discussion-Bouncer: round 4 escalated to the parent (cause: circling); brief at /home/knatte/Code/loomyard-LYXHUB/burler-cost/_lyx/reviews/discussion/round-4-escalation.md; decide with `lyx loom circling accept burler-cost` or `lyx loom circling continue burler-cost`, then run `lyx loom start` in the task worktree to resume"
   },
   "history": [
     {
@@ -79,6 +80,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/burler-cost/_lyx/reviews/discussion/round-4-review.md",
       "at": "2026-10-07T17:39:38Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/burler-cost/_lyx/reviews/discussion/round-4-bouncer-ledger.md",
+      "at": "2026-10-07T17:40:28Z"
     }
   ],
   "product": {
