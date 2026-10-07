@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "batch 08-calibrate-template: recover-batch refused with needs_fresh on a fabric-reference audit finding (the fork ran tokencount with -history ../card-batching-weft); the batch made no commit and the worktree is clean, so the refusal's way forward is lyx webster accept-audit --batch 8 then recover-batch 8"
+batches_done: 7
