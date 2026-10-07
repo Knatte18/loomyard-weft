@@ -84,3 +84,9 @@ Which of those it was is not established by the dump.
 - Consider a step-level watchdog that logs which gate the step is waiting in, so an operator can see the hang without a SIGQUIT dump.
 
 Provenance: task `bugfix-webster`; notes `repair-20261007-webster-burler-r3-sigquit.md`, `loom-crash-resume.md`.
+
+Correction (orch, 2026-10-07): the premise above does not hold.
+`verifyrun.run`'s duration argument is `cmd.WaitDelay` (10 s), which only bounds the pipe read after the process exits (`internal/verifyrun/run.go`); nothing puts a deadline on the gate.
+The dump caught a gate about 20 s old: `.lyx/verify/running.yaml` appeared at 10:33:37 and the SIGQUIT came at 10:34, while the burler's turn ended at 10:23.
+The ten minutes before the gate were most likely shuttle's `background_shell_wait_min` (10) wait after the burler's turn end, with background agents showing in its pane.
+So two things belong here: that wait is silent in status and on screen, looking the same as a hang or a gate, and a verify gate has no deadline.
