@@ -1,6 +1,6 @@
 # Shuttle reads turns right: a Stop is always taken, a turn end without output holds
 
-`shuttle-turns` · Task · bug, enhancement, shuttle · running · Loom-Preflight
+`shuttle-turns` · Task · bug, enhancement, shuttle · running · Discussion-Write
 
 ## Goal
 
