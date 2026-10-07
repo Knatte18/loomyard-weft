@@ -1,0 +1,5 @@
+# Card 8 took its "report cannot be produced" branch: no tokencount run, no edit, no commit.
+# The calibration needs the hub's plan-artifact history, which lives only in the fabric repository an implementer fork must not read,
+# so it is left to the hub to run from its prime after this task lands.
+status: OK
+head_sha: 9c7f6d2634b193d8719984b7067da01c49a57d10

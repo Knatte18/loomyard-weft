@@ -12,7 +12,7 @@
     "07-rebaseline-tail.md": "443a8d4c6681a849dfc52c4c57084ba754787ff7bc20c8687227d6fb2d4c164d",
     "08-calibrate-template.md": "e642a0ac78377220aeec2cb2efee4c3055410eaf836592a084266baef8176b7c"
   },
-  "currentBatch": 8,
+  "currentBatch": 0,
   "masterStrand": "191452446f12b9435f65f09c652076b8",
   "masterSessionId": "e25bf7bd-d5f4-4dbf-9278-ca57e5ecb7fb",
   "batches": {
@@ -210,8 +210,16 @@
       "startSha": "9c7f6d2634b193d8719984b7067da01c49a57d10",
       "kind": "recovery",
       "spawnedAt": "2026-10-07T13:07:43Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "08-calibrate-template",
+        "status": "done",
+        "head_sha": "9c7f6d2634b193d8719984b7067da01c49a57d10"
+      },
+      "cardShas": [
+        "9c7f6d2634b193d8719984b7067da01c49a57d10"
+      ],
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/74a42312-8d0f-4201-aafb-a1681a5404aa/subagents/agent-a59d8f9791c216703.jsonl",
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/c3d70426-a3ed-485f-b1f4-8df4b578ff73/subagents/agent-a7c787384729cc465.jsonl",
