@@ -422,10 +422,14 @@
       "spawnedAt": "2026-10-07T19:28:10Z",
       "sessionId": "4c79fcb8-4645-4a33-8765-66a595274bdf",
       "terminal": false,
-      "status": ""
+      "status": "",
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lifecycle-waits/4c79fcb8-4645-4a33-8765-66a595274bdf/subagents/agent-a666d4198227ada85.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lifecycle-waits/b42219b0-cb29-4e92-ac15-b4fa2035c012/subagents/agent-ad0d717d6122b099e.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lifecycle-waits/b42219b0-cb29-4e92-ac15-b4fa2035c012/subagents/agent-ad0d717d6122b099e.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lifecycle-waits/4c79fcb8-4645-4a33-8765-66a595274bdf/subagents/agent-a666d4198227ada85.jsonl"
   ]
 }
