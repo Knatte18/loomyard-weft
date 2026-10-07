@@ -85,6 +85,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Shuttle owns busy/idle-done/idle-stalled/asking/dead per agent as timestamped events; batten, the orch watcher, creel and reed stop guessing
 1. **Prime-side fabric push and sync publish unpushed main commits** — [`prime-push-gate`](design-prime-push-gate.md) · enhancement, fabric
    - Since run-pushes, lyx fabric push/sync in the prime (and lyx config) push main too, so unpushed hub commits skip the full test suite
+1. **Batchifier dry run and profile weights that actually batch** — [`batchifier-dry-run`](design-batchifier-dry-run.md) · enhancement, webster
+   - No verb prints a plan's batches before Webster, and the cautious template profile batches at most about two small cards because budget binds before max_cards
 
 ### Features
 
