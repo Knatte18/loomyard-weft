@@ -36,6 +36,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **Recovery prompt gives no guidance on uncommitted changes left by the prior attempt** — [`webster-recovery-dirty-tree`](design-webster-recovery-dirty-tree.md) · bug, webster
 1. **An operator decision can amend the card of a begun Webster batch** — [`webster-amend-begun-card`](design-webster-amend-begun-card.md) · bug, webster
    - rebaseline refuses begun cards and reset needs a fresh run loom cannot start, so a mid-run decision never reaches the plan
+1. **Orch compact cycle always times out before reload** — [`orch-compact-timeout`](design-orch-compact-timeout.md) · bug, orch
+   - tickCompacting reads a stale pre-compact turn end, so every compact cycle waits out the handoff timeout and reloads late
 
 ### Enhancements
 
