@@ -15,8 +15,8 @@ Waits on nothing open; can start now, in parallel.
    - Size batches from Merriam measured context, fit the batchifier from logged runs, one tokencount weft flag, card order in the plan spec, and card commands that never reach the fabric repo
 1. **Burler: a parallel reviewer and fixer, a model per round** — [`burler-cost`](design-burler-cost.md) · feature, burler · running · Plan-Burler
    - Split a Burler round into a cheap reviewer and a stronger fixer that start together, and pick the model per round
-1. **Run lifecycle waits: orch compact reload, a step watchdog, a pair create that retries** — [`lifecycle-waits`](design-lifecycle-waits.md) · bug, enhancement, orch, shed, fabric · running · Discussion-Write
-   - The orch reloads as soon as compaction lands, a hung shed step is noticed, and pair creation retries a refused weft push and rolls back its own branch
+1. **Orch and batten: compact reload, one event-driven notice channel, a window per batten** — [`lifecycle-waits`](design-lifecycle-waits.md) · bug, enhancement, orch, batten · running · Discussion-Write
+   - The orch reloads as soon as compaction lands, batten sends one timely notice per state change without ticks, and each batten gets its own tmux window
 
 ## Notes
 
@@ -67,8 +67,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Stacked layout stays as VIEW; a strand button or Alt+arrows zooms one strand; runs as session tabs below; reed pins it at boot
 1. **Discussion stage has no sanctioned path to land a repository edit ahead of Plan** — [`discussion-lands-invariant`](design-discussion-lands-invariant.md) · enhancement, loom
    - Discussion has no sanctioned path to commit a PATTERN edit ahead of Plan
-1. **One prompt notice channel to the orch: batten, event-driven, timestamped** — [`orch-notice-channel`](design-orch-notice-channel.md) · enhancement, batten, orch
-   - Driver and batten both report every halt, and batten's 30 s poll makes its notices late and stale
 1. **Run tabs overflow a narrow terminal once several runs are open** — [`reed-tabs-narrow`](design-reed-tabs-narrow.md) · enhancement, reed
    - The status line row of run tabs prints full session names, so with five runs the rightmost fall off a narrow terminal unseen
 1. **One session-state model in shuttle that every module reads** — [`session-state`](design-session-state.md) · enhancement, shuttle
@@ -102,8 +100,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - spawn configures and launches at once and overwrites a driven pair's attach chain; add a write-nothing open verb
 1. **Pairs as folders in the prime's hub workspace** — [`ide-workspace-pairs`](design-ide-workspace-pairs.md) · feature, ide, fabric
    - Idea, undecided: fabric adds and removes pairs in the prime workspace's folders; _portals stays
-1. **Each batten the orch starts runs in its own tmux window** — [`batten-windows`](design-batten-windows.md) · feature, reed, batten, orch
-   - Batten runs detached and invisible; a window per run makes the window list show what the orch has in flight
 1. **semantic-index: find code by concept, not by literal keyword** — [`semantic-index`](design-semantic-index.md) · feature
    - Semantic search over docstrings and comments; doubtful today, since agents now navigate well with grep
 1. **Ship lyx as an installable Claude Code plugin** — [`plugin-packaging`](design-plugin-packaging.md) · feature

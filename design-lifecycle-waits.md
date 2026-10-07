@@ -1,8 +1,8 @@
-# Run lifecycle waits: orch compact reload, a step watchdog, a pair create that retries
+# Orch and batten: compact reload, one event-driven notice channel, a window per batten
 
-`lifecycle-waits` · Task · bug, enhancement, orch, shed, fabric · running · Discussion-Write
+`lifecycle-waits` · Task · bug, enhancement, orch, batten · running · Discussion-Write
 
-Three places where a run or the orch waits far longer than it needs to, or hangs unnoticed.
+The orch and batten side of a run's lifecycle: the orch reloads as soon as its compaction lands, it hears each state change once and on time, and it can see which batten runs it has in flight.
 
 ## Orch compact cycle times out before reload
 
@@ -26,25 +26,30 @@ Side effects:
 Fix direction: in `compacting`, take each turn end read after the phase entry as the reading candidate, or ask the transcript for a boundary after `PhaseEnteredAt` directly, as the auto path does.
 A test drives a compact cycle through a turn end that follows the boundary and asserts the reload starts without the timeout.
 
-## A step that never returns
+## One notice channel to the orch
 
-From run-recovery PR-Gate (2026-10-07): run-recovery gave `verifytree` a 60-minute timeout and kills the process group on Unix.
-Still open from #420: a step-level watchdog, so a `lyx shed step` that never returns is noticed without the hub reading panes; and on Windows the timeout kills only the shell, not the process tree it started.
+Seen 2026-10-06: the orch gets two messages for every halt, and the batten one is often stale.
 
+- The driver messages the orch at once with its stop report.
+- Batten's Run-Shed row polls the child only every `poll_interval_s: 30` (`contracts/recipes/batten-recipe.yaml`), so its `[batten notice]` lags up to half a minute.
+- The notice is typed into the orch pane and read only when the orch's current turn ends; by then the orch has often resumed the run, and the notice reports a state that no longer holds (twice on 2026-10-06: "paused" and "awaiting" for runs already running again; on 2026-10-07 most notices of the day were stale on arrival).
 
-## From issue #433
+Direction:
 
-Imported from [issue #433](https://github.com/Knatte18/loomyard/issues/433).
+- One channel per event: batten owns state changes (blocked, paused, awaiting PR-Gate, done) and its notice carries the drive report path; the driver messages the orch only with a question it cannot settle itself, never with "the run stopped".
+  Parent-review requests and escalation briefs keep coming from the producer session.
+- The notice is event-driven, not polled: batten wakes on the child's status-file change (or polls at a few seconds), since the orch relies on it as its only wake-up.
+- Batten has no ticks (operator, 2026-10-07): the wait on the child is one step that blocks until the child's state changes, not a Run-Shed row that bounces `stuck` every 30 s.
+  Batten's history records only the child's state changes, each with its timestamp; today every bounce adds a history entry (83 entries for `test-tiers` within an hour, all `Run-Shed → stuck`), which is noise, not history.
+- The quiet notice measures the wrong thing: it fires when the child's status file is unchanged for 45 min, but the status file changes only at a step's end, so a live agent working a long step, or one already resumed, still trips it.
+  On 2026-10-07 all five runs stalled on an API error; the quiet notices arrived 45 min later, long after the agents were resumed by hand, and said nothing about the cause.
+  Quiet should be judged from the agent's own activity (transcript growth, turn ends) and should name an API-error turn end when that is what it sees.
+- Each notice carries the time the state held and the child's history length, so a stale notice is recognisable without a status call.
 
-Seen 2026-10-07 when the hub started three batten runs at once (`cache-ttl-per-role`, `batcher-v2`, `burler-cost`).
+## A window per batten
 
-- `cache-ttl-per-role`'s Worktree-Create pushed its weft branch at the same moment as the other two pairs and GitHub answered `! [remote rejected] cache-ttl-per-role-weft -> cache-ttl-per-role-weft (failed)`, with no hook message; the other two pushes went through.
-- `rollbackAdd` then could not delete the warp branch: "warp-branch deletion was refused by the destructive gate (check=ownership); the branch is left behind". The branch was already pushed to origin.
-- Resuming the run blocked on "branch already exists, left behind by an earlier pair", so the hub had to delete the branch locally and on the remote by hand; the next resume went through.
+Seen 2026-10-03: the hub orch starts each batten detached with `setsid nohup lyx batten run <slug>`, so nothing on screen shows what the orch has running; Claude Code's footer shows only "1 shell" for a background helper, which says nothing about what it does.
+Idea (operator): when the orch starts a batten, it lands in its own tmux window in the orch's session, so the window list names every run the orch has in flight.
+`manifest/designs/reed-multi-window.md` sketches reed's own-window anchoring.
 
-Wanted:
-
-- Retry a weft push that GitHub rejects with a bare `(failed)` a few times with backoff before giving up; a bare `(failed)` reads as a transient server-side refusal.
-- `rollbackAdd` removes the warp branch it created itself in the same call, locally and on the remote, instead of the ownership check refusing it.
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
+Related notes, not in this task: `orch-owns-the-loop` (lyx starts batten detached, a lyx watch, one land command) and `runs-overview` (one status line per run, the event log in its own window).
