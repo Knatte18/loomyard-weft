@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "batch 13-tail-in-stencils-and-steer: webster: batch 13 failed on findings recovery cannot check: fabric-reference: the implementer fork ran fabric-referencing commands (reading other worktrees' .lyx/shuttle events files under the hub) that can rewrite run state"
+batches_done: 3
