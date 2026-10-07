@@ -87,6 +87,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - tools/tokencount has both -weft and -history naming the same repository
 1. **Fit the batchifier from logged runs: estimate vs actual peak context and cost** — [`batchifier-learning-loop`](design-batchifier-learning-loop.md) · enhancement, webster
    - Start from a guessed model, log each batch's estimate inputs, and fit coefficients and limits from real runs: what is actually optimal
+1. **Batchifier: a fork starts with Merriam context at fork time, not a constant** — [`batchifier-master-context`](design-batchifier-master-context.md) · enhancement, webster
+   - Replace startup_context with the computable base context of Merriam plus a per-batch growth term
 
 ### Features
 
