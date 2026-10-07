@@ -15,6 +15,9 @@ Seen 2026-10-06: the orch gets two messages for every halt, and the batten one i
 - The notice is event-driven, not polled: batten wakes on the child's status-file change (or polls at a few seconds), since the orch relies on it as its only wake-up.
 - Batten has no ticks (operator, 2026-10-07): the wait on the child is one step that blocks until the child's state changes, not a Run-Shed row that bounces `stuck` every 30 s.
   Batten's history records only the child's state changes, each with its timestamp; today every bounce adds a history entry (83 entries for `test-tiers` within an hour, all `Run-Shed → stuck`), which is noise, not history.
+- The quiet notice measures the wrong thing: it fires when the child's status file is unchanged for 45 min, but the status file changes only at a step's end, so a live agent working a long step, or one already resumed, still trips it.
+  On 2026-10-07 all five runs stalled on an API error; the quiet notices arrived 45 min later, long after the agents were resumed by hand, and said nothing about the cause.
+  Quiet should be judged from the agent's own activity (transcript growth, turn ends) and should name an API-error turn end when that is what it sees.
 - Each notice carries the time the state held and the child's history length, so a stale notice is recognisable without a status call.
 
 Related notes: `orch-owns-the-loop` (detached batten start, a lyx watch) and `runs-overview` (notices shortened, the event log in its own window).
