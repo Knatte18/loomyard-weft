@@ -30,7 +30,7 @@ A nil `MarkWatched` resolves to one reporting not held, in both constructors.
 The marker's directory is created as needed, and the write is atomic (temp file and rename) so the render never reads a torn pid.
 An absent task worktree is an error the seam returns.
 
-Bound, stated in `internal/battenshed/doc.go`: only the driver's "run stopped" message is removed, and only where a live batten with a notice destination replaces it at render time; a driver launched unwatched and adopted later keeps today's rule (a duplicate, never a loss), and one launched watched keeps the silent rule whatever happens to batten afterwards (Open risks).
+Bound, stated in `internal/battenshed/doc.go`: only the driver's "run stopped" message is removed, and only where a live batten with a notice destination replaces it at render time; a driver launched unwatched and adopted later keeps today's rule (a duplicate, never a loss), and one launched watched keeps the silent rule whatever happens to batten afterwards, so a batten that dies after the render, or an orch strand that disappears after it, leaves the run's stops unannounced until a batten runs again, which then sends the notices not yet sent.
 
 Tests:
 - `seamchild_test.go`: Seed-Child calls `MarkWatched` after the commit, and a failing one still returns `Done`;

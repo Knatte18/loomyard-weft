@@ -14,7 +14,6 @@
 - `internal/reedengine/doc.go`
 
 **Uses:**
-- `internal/reedengine/windowtarget.go`
 - `internal/shell/shell.go`
 - `internal/logger/logger.go`
 

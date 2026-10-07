@@ -10,6 +10,8 @@
 - `internal/shuttleengine/rundir.go`
 - `internal/shuttleengine/run.go`
 - `internal/shuttleengine/attach.go`
+- `internal/shuttleengine/run_test.go`
+- `internal/shuttleengine/attach_test.go`
 - `internal/shuttleengine/doc.go`
 - `internal/shuttleengine/claudeengine/doc.go`
 
@@ -18,7 +20,7 @@
 - `internal/shuttleengine/claudeengine/usage.go`
 
 **Intent:**
-D5, data side: a provider-neutral reading of a worktree's agent activity, for batten's quiet and api-error notices (card 7).
+D5, data side: a provider-neutral reading of a worktree's agent activity, for batten's quiet and api-error notices (card 8).
 
 A shuttle run's liveness needs a pid, which `RunState` lacks: `RunState` gains `PID int` (`json:"pid,omitempty"`), the pid of the process that waits on the run.
 `Runner.start` records `os.Getpid()` in the first persist, and `reconstructAndWait` in `attach.go` rewrites it to the attaching process's pid before it waits (a persist failure there is a `logger.Warn`, since the field is informational).
@@ -35,7 +37,8 @@ The marker knowledge stays in `claudeengine` (`PATTERN-shuttle-provider-seam`); 
 
 Tests (tier 1, injected `isAlive`, temp run directories and transcript fixtures written by the test):
 - `activity_test.go`: a live run with a transcript newer than its events file reports the transcript time; a dead-pid run, a pid-less record and a finished run are skipped; an unreadable transcript falls back to the events file, and a run with no events to its `CreatedAt`; an API-error turn end is reported with its text; an absent root returns none;
-- `claudeengine/activity_test.go`: a transcript whose newest main-chain assistant turn end carries `isApiErrorMessage` reads as an API error with its text, one whose error is only on a sidechain entry or followed by a normal turn end does not, and a missing `transcript_path` or file reads as unreadable.
+- `claudeengine/activity_test.go`: a transcript whose newest main-chain assistant turn end carries `isApiErrorMessage` reads as an API error with its text, one whose error is only on a sidechain entry or followed by a normal turn end does not, and a missing `transcript_path` or file reads as unreadable;
+- the pid the liveness reading rests on gets assertions in the tests that already read the persisted record back, and no new test function: `TestRunner_Start_HappyPath` (`run_test.go`), which already loads `run.json` through `loadRunState`, asserts it carries `os.Getpid()`, and `TestAttach_StartedSeededTrue` (`attach_test.go`) loads the record after `Attach` and asserts the pid is the attaching process's.
 Document the reading in both packages' `doc.go`.
 
-**ImpactSummary:** `RunState` gains one optional field written by `start` and `reconstructAndWait`; every existing reader ignores it; the new surface has no caller until card 7.
+**ImpactSummary:** `RunState` gains one optional field written by `start` and `reconstructAndWait` and pinned by two existing tests; every existing reader ignores it; the new surface has no caller until card 8.

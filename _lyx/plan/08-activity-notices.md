@@ -31,7 +31,7 @@ The driver-dead condition stays first, as today.
 Update `conditionText`, the condition constants' comments, `InnerRunDeps.NoticeQuiet`'s doc and the notice section of `doc.go`, stating the limits D5 lists (dead pids skipped, a run that keeps writing or hangs in a live wait is never quiet, both notices informational).
 
 Tests (`notice_test.go`, on the injected clock and a fake `Activity`):
-- a running child whose producer keeps reporting new activity gets no quiet notice however long its status file is unchanged; agents idle for `notice_quiet_min` with no live wait marker give one; a live wait marker suppresses it;
+- `TestNotice_QuietOnlyForRunningChildWithLiveDriver` pins quiet by the status file's modification time, which this card replaces, so its rows are rewritten to the activity and not paralleled: a running child whose producer keeps reporting new activity gets no quiet notice however long its status file is unchanged; agents idle for `notice_quiet_min` with no live wait marker give one; a live wait marker suppresses it;
 - a newest API-error turn end idle for 2 minutes gives one `api-error` notice naming the producer and the one-line error text; activity afterwards ends the episode, and a later stall is a new notice;
 - with no live run, the fallback quiet goes after `notice_quiet_min` since the later of the newest history entry and `since`;
 - `wire_seams_test.go`: the `Activity` seam reads a fixture run directory with a live pid and a wait marker.

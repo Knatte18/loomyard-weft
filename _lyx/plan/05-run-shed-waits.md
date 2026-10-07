@@ -15,6 +15,7 @@
 - `internal/battencli/wire.go`
 - `internal/battencli/wire_seams_test.go`
 - `internal/battencli/commitstatus.go`
+- `internal/battencli/arm.go`
 - `internal/battencli/lifecycle_integration_test.go`
 - `docs/overview.md`
 
@@ -33,24 +34,35 @@ The status file is decoded only when its modification time differs from the base
 The baseline modification time is stat'ed before the status read that defines the state the call began with (the spawn arm's second read included), so a write landing between that read and the first check is seen.
 Every read that costs a process or a multiplexer round trip runs at most once per `notice_probe_s`: `DriverAlive` and `DriverStrand` wherever read, the review-wait note, the forced decode, and the retry of a resume the child's driver refused as `ErrChildNotParked` (which logs once per episode and goes on until the driver parks or the state changes).
 The running arm writes its wait reason through `reportStuck` at entry and again when the review-wait note changes, so `lyx batten status` still shows what the child waits on.
-Today's `noticeStep` runs at the call's start and once per `notice_probe_s` inside the wait (card 6 replaces it).
+Today's `noticeStep` runs at the call's start and once per `notice_probe_s` inside the wait (card 7 replaces it).
 Every `Stuck` the row returns is budget-exempt; the row no longer returns a counted `Stuck`.
 
 `InnerRunDeps` gains `PauseRequested` (a nil one reads as never paused) and `NoticeProbe time.Duration`; `innerRunEntry` reads a new `notice_probe_s` key (default 30, negative refused, the same shape as `poll_interval_s`) into it, and `defaultInnerRunPollIntervalS` becomes 2.
 In `batten-recipe.yaml` `poll_interval_s` becomes 2, `notice_probe_s: 30` is added, `max_bounces: 1440` is removed, and the header comment is rewritten for the in-call wait (the self-route remains for the exempt returns; no running watch window).
 `battenrecipe/recipe_test.go`'s twelve-hour pin is replaced by a pin on the new values and on the absence of a counted budget.
-`battencli/wire.go` wires `PauseRequested` to batten's own status file (`StatusFile`/`StatusLock` of the prime location and slug) through `state.ReadJSONStrict`, and `NoticeProbe` arrives through the entry; `commitstatus.go`'s comment about per-poll status rewrites is updated, since an uncommitted per-bounce rewrite no longer happens every poll.
+`battencli/wire.go` wires `PauseRequested` to batten's own status file (`StatusFile`/`StatusLock` of the prime location and slug) through `state.ReadJSONStrict`, and `NoticeProbe` arrives through the entry; `commitstatus.go`'s comment about per-poll status rewrites is updated, since an uncommitted per-bounce rewrite no longer happens every poll, and so is `arm.go`'s comment on `maxStatusHistoryEntries`, which says the running watch appends one entry per poll within a 1440-bounce budget: history now grows only on a state change, a pause or a failed status stat.
 
-Bound, stated in the `Call` doc comment and `internal/battenshed/doc.go`: the row now waits on a running child without a time limit; `lyx batten pause` (honoured within one check), cancellation, and the notices (cards 6 and 7) bound it; a running child whose driver is dead and whose status file does not change returns nothing from the wait, the driver-dead notice being the only signal.
+Bound, stated in the `Call` doc comment and `internal/battenshed/doc.go`: the row now waits on a running child without a time limit; `lyx batten pause` (honoured within one check), cancellation, and the notices (cards 7 and 8) bound it; a running child whose driver is dead and whose status file does not change returns nothing from the wait, the driver-dead notice being the only signal.
 Rewrite `Call`'s disposition table and the producer type's comment for the wait; update the batten section of `docs/overview.md` where it describes the per-poll bounce, the 12-hour running budget and the 1440 history entries.
 
-Tests, on the injected `Sleep`/`Now` and a status file the test rewrites between checks (extending the existing table and arm tests rather than adding parallel ones):
+Tests, on the injected `Sleep`/`Now` and a status file the test rewrites between checks.
+The arm behaviors keep their existing tests, which change only where the call now waits instead of returning:
+`TestInnerRun_AwaitingResumesOncePerApproval`, `TestInnerRun_AwaitingResumesOnARejectionOnceAndAgainOnASameSecondApproval` and `TestInnerRun_AwaitingNotParkedRetriesWithoutMarkerThenResumes` for the decision resume, which gains the assertions that it is acted on within one check and that the call returns once the child leaves `awaiting`, and for the not-parked retry, which gains the once-per-`notice_probe_s` assertion;
+`TestInnerRun_DoneWaitsForLiveDriverThenFinishes` and `TestInnerRun_DoneFinishesPastGraceWithLiveDriverAndWarns` for the done arm, which gains the assertion that `DriverAlive` is read no more than once per `notice_probe_s`.
+`TestInnerRun_AwaitingPollsFoldIntoOneHistoryEntry` pins the per-poll fold that D3 removes, so it is rewritten to the new premise (no polls, one entry per change) and not left beside a parallel test.
+The existing tests whose premise is a `Stuck` returned from a child whose status never changes cannot stay as they are, because the statuses fake repeats its last status forever and the call would now wait without returning.
+They are rewritten in place so that the call returns on a change the test makes (a new status, a pause flag, a decision record or a failed stat) and keeps its current assertion on the returned reason and the spawn count:
+- the `StillRunningIsStuck`, `AbsentStatusSpawnsThenRunningIsStuck`, `BlockedIsAWait`, `PausedIsAWait` and `FailedIsAWait` rows of `TestInnerRun_VerdictTable`;
+- `TestInnerRun_RunningArmReviewWaitNote`, whose reason cases stay and whose one-`Sleep` assertion becomes one reason write per note change;
+- `TestInnerRun_AwaitingWithoutApprovalWaitsExempt` and `TestInnerRun_HaltedStatesWaitExemptWithoutSpawning`, whose exempt wait with one `Sleep` becomes a wait that ends on the change or pause the test makes;
+- `TestInnerRun_HaltWarnsOncePerEpisode` and the other halted-episode tests in `innerrun_halted_test.go` that call the producer repeatedly at one unchanged status, which drive their episodes through status changes instead of repeated calls.
+
+The decision resume and the call returning once the child leaves `awaiting` are the named awaiting tests' own behavior, so they gain that assertion and are not new cases.
+New cases, as rows or arm tests with no existing equivalent:
 - a child that stays running for many checks makes the call return nothing until it changes to `blocked`, then one exempt `Stuck` whose `Path` names the change; a later change back to `running` returns a distinct `Path`;
 - a write between the call's status read and its first check is seen on that check; a write that leaves the modification time unchanged is seen within `notice_probe_s`;
 - a pause flag set while the child runs returns within one check with the `pause requested at` path, and a second pause later returns a distinct path;
 - a failed stat returns an exempt `Stuck` naming the file;
-- an awaiting child's decision record is acted on within one check, and the call returns once the child leaves `awaiting`; a not-parked refusal is retried no more than once per `notice_probe_s`;
-- a done child returns `Done` once `DriverAlive` reports the driver ended, read no more than once per `notice_probe_s`, or once the grace elapses;
 - `entries_batten_test.go`: `notice_probe_s` default, explicit value and negative refusal;
 - `wire_seams_test.go`: `PauseRequested` reads batten's own `pause_requested`;
 - `lifecycle_integration_test.go`: the short-poll recipe drops `max_bounces`, and the step-driven Run-Shed test asserts that a step returns once the child's state changes rather than after one poll interval.

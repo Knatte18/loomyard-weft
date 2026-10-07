@@ -42,12 +42,15 @@ A batten started again sends the notices not yet sent, since the marker records 
 
 Bound, in `doc.go`: the report wait delays a notice by at most 3 minutes and the relay wait by at most 10 minutes after the report, never losing it; one notice per episode as before.
 
-Tests (`notice_test.go` table rows and arm tests on the injected clock):
+Tests (`notice_test.go` table rows and arm tests on the injected clock).
+The existing `TestNotice_StateChangeNotifiesOncePerEpisode`, `TestNotice_StatusChangeStartsNewEpisode`, `TestNotice_RestartDoesNotRenotify` and `TestNotice_NotifyErrorDoesNotChangeOutcome` keep covering once-per-episode, a new episode on a state change, no re-notice after a restart and an error not changing the outcome;
+they change only for the new `Notify` signature, the `condition|state|since` key, the sent-only-when-queued rule and the capped retry, and so do `TestNotice_ReturnToRunningStartsNewEpisode`, `TestNotice_DeadDriverWhileRunning` and `TestNotice_NilNotifyRunsNoStep`;
+`TestRenderNotice`, the table that pins the rendered line, gains rows for `since`, `history`, `report <path>`, `report none yet` and a done notice with no report, and the cases below add only what these do not cover:
 - a halted child whose driver writes a report gets one notice with `since`, `history` and that path, sent by the wait of the call that begins in the new state; with no report, one notice 3 minutes after the change with `report none yet`; a report older than `since` is never carried;
 - a paused or failed child takes `since` and its 3 minutes from the status file's time at first sight; a same-state rewrite between two calls moves neither `since` nor the key and sends nothing more;
 - a done child's notice goes on first sight with no report, and the `Done` return attempts a pending one;
 - an awaiting child with no `ParentNotice` gets one notice with its report; with one, none while the driver is alive, a report exists and the marker is held, and one when the driver ends, after 3 minutes with no report, or 10 minutes after the report undecided; without the marker it goes at once;
 - a queued notice is recorded sent; with no strand recorded `Notify` is not called and one `Warn` is logged per episode; a failing `Notify` is retried no more often than once per `notice_probe_s`, at most 3 times; a restarted batten sends a notice not yet sent;
-- `wire_seams_test.go`: `Notify` reports `QueueNotice`'s answer, `OrchStrandRecorded` reads the prime orch state, `StopReport` reads the park marker's content and time.
+- `wire_seams_test.go`: `TestWire_NotifyQueuesOnThePrimesOrch` and `TestWire_NotifyWritesNothingWithoutAnOrchStrand` already cover the `Notify` wiring and the no-strand case, and gain the assertion that `Notify` reports `QueueNotice`'s answer; the new cases are that `OrchStrandRecorded` reads the prime orch state and `StopReport` reads the park marker's content and time.
 
 **ImpactSummary:** the notice step of the InnerRun producer is rewritten and `InnerRunDeps.Notify` changes signature, its one production wiring in `battencli` updated in this card; the orch notice queue is unchanged.
