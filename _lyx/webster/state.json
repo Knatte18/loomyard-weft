@@ -9,7 +9,7 @@
     "04-loom-pushes-both-sides.md": "a11f4304a1ff6dd12f4089795e84c0d005c3da51c312862742a69612118ceac0",
     "05-fabric-push-sync-both-sides.md": "b9740ffcaa28aef324a5596b5f2f4af0509960500096099f7cb614327201c5be"
   },
-  "currentBatch": 0,
+  "currentBatch": 2,
   "masterStrand": "e91559ab3050c327aae41f9db1724795",
   "masterSessionId": "44cbfd05-ec82-45ec-bf99-d385e8850965",
   "batches": {
@@ -38,6 +38,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-pushes/44cbfd05-ec82-45ec-bf99-d385e8850965/subagents/agent-a26952c824816c7df.jsonl"
       ]
+    },
+    "2": {
+      "slug": "gitrepo-has-unpulled",
+      "cards": [
+        "02-gitrepo-has-unpulled"
+      ],
+      "cardHashes": {
+        "02-gitrepo-has-unpulled": "ffafde8b06dd974f317beb4c74c8db4718eab79329a5972c1bfb81df1bbf227c"
+      },
+      "startSha": "fc22c2608e66dd764cfe0b37cecf04784d87bfcb",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T10:29:13Z",
+      "sessionId": "44cbfd05-ec82-45ec-bf99-d385e8850965",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
