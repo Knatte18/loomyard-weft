@@ -451,7 +451,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "0491f02e5a5532b00da4c179c2b82323",
   "masterSessionId": "1714ddcb-4a58-4227-87b8-bea1ffe360f4",
   "batches": {
@@ -495,6 +495,29 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-recovery/1714ddcb-4a58-4227-87b8-bea1ffe360f4/subagents/agent-a60b5c8295299e168.jsonl"
       ]
+    },
+    "7": {
+      "slug": "verifyrun-process-group",
+      "cards": [
+        "07-verifyrun-process-group",
+        "08-verifytree-timeout",
+        "09-verify-timeout-findings",
+        "10-verify-wait-note",
+        "11-shuttle-wait-marker"
+      ],
+      "cardHashes": {
+        "07-verifyrun-process-group": "ef558ebfc83cc07d0e7d82d8ef8dbb24c5a942cba30c3af86b02114e23ee4611",
+        "08-verifytree-timeout": "66fd9bc83f18c6398b5cffc2473321c9341e24bb57e25da4f9f77c1d05c30fb1",
+        "09-verify-timeout-findings": "3aaacf6357c4590d0cfd13fc4158078aa94adfcd44c6de9bef643497f067a485",
+        "10-verify-wait-note": "25ab42fae8c5998433658b65224825661977ccc0fea1e16aaa01ad1be81476c2",
+        "11-shuttle-wait-marker": "e66c54782a3e88ba1a081b95a26b3b1d945b261ee057933c75a0bc5ab230715a"
+      },
+      "startSha": "2b6678422a5dcabbd5cb4d6fc8f7552cf1805201",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T14:17:55Z",
+      "sessionId": "1714ddcb-4a58-4227-87b8-bea1ffe360f4",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
