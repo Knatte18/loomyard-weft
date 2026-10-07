@@ -98,8 +98,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - A replay corpus of real misreads plus scripted live Claude runs that test how shuttle reads turns
 1. **batten run brings its loom run back up as it was** — [`batten-run-resumes-child`](design-batten-run-resumes-child.md) · enhancement, batten
    - An explicit lyx batten run restarts the loom run and its driver where they stood; the loom halt itself stays until resumed
-1. **Batten notices drop the pair path and attach command** — [`batten-notice-no-attach`](design-batten-notice-no-attach.md) · enhancement, batten
-   - Every batten notice ends with cd <pair> && lyx reed attach, clutter in the orch pane that crowds out the error
 
 ### Features
 
