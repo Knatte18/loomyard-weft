@@ -49,3 +49,11 @@ Moved into task `lyx-skills-and-stencils` (operator, 2026-10-05).
 
 
 
+
+## How `batten start` detaches (operator and orch, 2026-10-07)
+
+Claude Code kills the shells it starts, with their process group, after a while (about 30 minutes for a background shell), so a batten run started from the orch's shell must leave that group; today the orch uses `setsid nohup … > <log> &`, and the log it redirects to is the orch's choice, not lyx's.
+Two ways for lyx to do this itself:
+
+- A self-detaching `batten start`: it re-executes `lyx batten run <slug>` as a child in its own session (`internal/proc`'s `Detach`, `Setsid` on Linux and a new process group on Windows), with stdin from the null device and output in a log lyx owns, such as `.lyx/batten/<slug>.log`, prints the pid and log path, and exits. A lock per slug refuses a second start while a batten run for the slug is alive.
+- Preferred by the operator: batten runs as a hidden reed strand (`anchor: hidden`, no pane in the layout). Reed's tmux server is outside Claude Code's reach altogether, and nobody needs to watch the process: the operator follows the runs in the prime's overview window (`runs-overview`), with the raw output kept for debugging.
