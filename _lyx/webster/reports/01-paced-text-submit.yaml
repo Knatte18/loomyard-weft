@@ -1,0 +1,12 @@
+status: OK
+head_sha: 4c547b4266a785d9dfc71f92e8b8a819f7f163bf
+deviations:
+  - internal/shuttleengine/config.go
+  - internal/shuttleengine/config_test.go
+  - internal/shuttleengine/template.yaml
+  - internal/shuttleengine/claudeengine/claudeengine.go
+  - internal/burlercli/wiring.go
+  - internal/loomcli/wiring.go
+  - internal/orchcli/cli.go
+  - internal/shuttlecli/cli.go
+  - internal/webstercli/wiring.go
