@@ -1,0 +1,46 @@
+{
+  "runGuid": "304b2112b8e1db2d554c23ca52932eb3",
+  "planFingerprint": "83f0527d24b6e8dfa9dd5ab6b476a2aca7ff21fcbb151d60ccec2983c77e22a3",
+  "planFileHashes": {
+    "00-overview.md": "0cebeca8b581ae44f62ba7ddd02a7d68b53dddc664b28a498e668b82e7ff1863",
+    "01-paced-text-submit.md": "4fba8a160b0478a37e7e71fc247fbd6e819bb6b7ee25a0ff34a79871fbd69dd2",
+    "02-claude-input-box-reader.md": "66cec39c0710d362f86581ca06d572334e4465fddf667b33e92e33e65b3e0c9c",
+    "03-send-confirms-submission.md": "7458fb483037e392ea68947b405f1537f1385f19980b26d3831138e90c0cb71e",
+    "04-escalation-halt-skips-reflection.md": "0970a1476661ebb487b7916a8a17f660b0272a1bea603932720f1f8b5597836f",
+    "05-rerun-removes-superseded-strand.md": "cf560772287358f469b3cf6cf699868996bd5c253d3c094285f3f82de308194b",
+    "06-recover-batch-removes-terminal-strand.md": "5fd04f2de67db7c6da098c560bfdd99f7a28005a0d8d444e614e3a369ed0de0b",
+    "07-reset-removes-recovery-strands.md": "6e3cb7fdf3000a199324dc36067dcc1eef485c127b9a5f049e06d266f9f5bbe7",
+    "08-step-error-keeps-handoff-voucher.md": "f5641098a0a97b3f7638151f6c4615418fe28ea85adb9e75a8c71cb2a29c2cf2",
+    "09-crash-resume-note-evidence.md": "c1f6fda5adcc9854e9cf53e802be327636cc828f65a642f6c7127217a76ea653",
+    "10-compaction-boundary-turn-ends.md": "290d7c113b773a3e94018a80ef00dfe1c054af2569e946c24929e75bb517993a",
+    "11-watcher-reloads-fresh-compaction-only.md": "f29824825b8bd892fb59031c604e5ed064996f7594da397f0b81ca62c14a6f0d",
+    "12-reload-plugins-sequence.md": "ef8efccb02c0ffe3774c809f063b58c855d1d60cbfb1e105c2a5d0065b1990fa",
+    "13-orch-reload-sequence.md": "698debd472de30b1015327fd811248d68176938eb44c981898afb4c7eb8ce217",
+    "14-loom-start-never-attaches.md": "06af76fcecf181137c8e0e6c4f08b338477b520e7146cf1ffa6610ef299f4538",
+    "15-orch-start-never-attaches.md": "f3a0be6519de79dbad457d8e810a6097dc659a82ad0df4c2b904b5fc900b81d9",
+    "16-orch-start-waits-for-stopping-watcher.md": "3e1b02e7b3bb54857ad96e3e0be68ae2722676f6dd054cbfcf5a6734d827839c",
+    "17-burler-review-parse-gate.md": "d52ec9e6c409be5dfb1af1881ecd5064303e9c00570ee30878d0a128e9a69db3",
+    "18-burler-validate-review-verb.md": "213f099e161824ee483f764d6952f180eeacce22e7983d3d39cc4acb40aa6354"
+  },
+  "currentBatch": 1,
+  "masterStrand": "33611a771cad326474331c2194f476d2",
+  "masterSessionId": "203a3a3c-e2ed-4759-aa24-8aea6a10ee06",
+  "assertedModel": "sonnet",
+  "batches": {
+    "1": {
+      "slug": "paced-text-submit",
+      "cards": [
+        "01-paced-text-submit"
+      ],
+      "cardHashes": {
+        "01-paced-text-submit": "4fba8a160b0478a37e7e71fc247fbd6e819bb6b7ee25a0ff34a79871fbd69dd2"
+      },
+      "startSha": "95902574438724313613715b9a2e677264dee77b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T05:28:51Z",
+      "sessionId": "203a3a3c-e2ed-4759-aa24-8aea6a10ee06",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
