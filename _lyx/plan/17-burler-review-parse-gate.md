@@ -1,8 +1,8 @@
 # Card 17 — burler-review-parse-gate
 
 **Create:**
-- `plan:internal/burlerengine#CheckReviewFile` -> `func CheckReviewFile(path string) error`
-- `plan:internal/burlerengine#ReviewGate` -> `func ReviewGate(reviewPath string) shuttleengine.Gate`
+- `internal/burlerengine#CheckReviewFile`
+- `internal/burlerengine#ReviewGate`
 
 **Edit:**
 - `internal/burlerengine#Engine.Run`

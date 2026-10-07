@@ -11,8 +11,8 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/burlerengine#CheckReviewFile`
-- `plan:internal/burlerengine#ReviewGate`
+- `internal/burlerengine#CheckReviewFile`
+- `internal/burlerengine#ReviewGate`
 
 **Intent:** D12, verb half: `PATTERN-gate-self-check-parity` binds the new review gate to a self-check verb, so `lyx burler validate-review <review-file>` lands in the same task.
 This is the one new verb the decision record admits.

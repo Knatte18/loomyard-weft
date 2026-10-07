@@ -1,6 +1,6 @@
 {
   "runGuid": "304b2112b8e1db2d554c23ca52932eb3",
-  "planFingerprint": "8f53812be802dd5c1e7b3d41cbb262aba858dd9d4ce419a6cb9583fa2f3d75ae",
+  "planFingerprint": "b657ea27e5386b9f27d9dec167288781028d8290b9d6d6fae2fda75ff469b712",
   "planFileHashes": {
     "00-overview.md": "0cebeca8b581ae44f62ba7ddd02a7d68b53dddc664b28a498e668b82e7ff1863",
     "01-paced-text-submit.md": "4fba8a160b0478a37e7e71fc247fbd6e819bb6b7ee25a0ff34a79871fbd69dd2",
@@ -19,10 +19,10 @@
     "14-loom-start-never-attaches.md": "06af76fcecf181137c8e0e6c4f08b338477b520e7146cf1ffa6610ef299f4538",
     "15-orch-start-never-attaches.md": "f3a0be6519de79dbad457d8e810a6097dc659a82ad0df4c2b904b5fc900b81d9",
     "16-orch-start-waits-for-stopping-watcher.md": "3e1b02e7b3bb54857ad96e3e0be68ae2722676f6dd054cbfcf5a6734d827839c",
-    "17-burler-review-parse-gate.md": "d52ec9e6c409be5dfb1af1881ecd5064303e9c00570ee30878d0a128e9a69db3",
-    "18-burler-validate-review-verb.md": "213f099e161824ee483f764d6952f180eeacce22e7983d3d39cc4acb40aa6354"
+    "17-burler-review-parse-gate.md": "9928dac540e7db2ced7dbf0133b97c271bb24c608f6e49792d369285541e884e",
+    "18-burler-validate-review-verb.md": "5c8859cb76355f2c594d3cc838b40fde3a193151deac440fa3f86d0e0bad78a2"
   },
-  "currentBatch": 17,
+  "currentBatch": 0,
   "masterStrand": "82b43112c805ff52fede8404a7366217",
   "masterSessionId": "48bc4037-b210-4022-bbb4-e30516d6c209",
   "assertedModel": "sonnet",
@@ -259,14 +259,29 @@
         "17-burler-review-parse-gate"
       ],
       "cardHashes": {
-        "17-burler-review-parse-gate": "d52ec9e6c409be5dfb1af1881ecd5064303e9c00570ee30878d0a128e9a69db3"
+        "17-burler-review-parse-gate": "9928dac540e7db2ced7dbf0133b97c271bb24c608f6e49792d369285541e884e"
       },
       "startSha": "5b3d343d6872ccdef3855534ecc3b73591cc78b3",
       "kind": "fork",
       "spawnedAt": "2026-10-07T06:00:39Z",
       "sessionId": "48bc4037-b210-4022-bbb4-e30516d6c209",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "17-burler-review-parse-gate",
+        "status": "done",
+        "head_sha": "82d64bbe75bd0bb62c3276121f64066968d5db3e",
+        "deviations": [
+          "internal/shedadapters/attachprobe_test.go",
+          "internal/burlerengine/doc.go"
+        ]
+      },
+      "cardShas": [
+        "82d64bbe75bd0bb62c3276121f64066968d5db3e"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-af42debfb23ab4f0f.jsonl"
+      ]
     },
     "2": {
       "slug": "claude-input-box-reader",
@@ -503,6 +518,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-ab3dca94a59485744.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-aa55e0c7bd5023aef.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-a0204c5e96bb2a8a6.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-a2e0ba610048a4285.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-a2e0ba610048a4285.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-af42debfb23ab4f0f.jsonl"
   ]
 }
