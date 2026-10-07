@@ -72,6 +72,17 @@ The batchifier decides from an estimated cost instead:
 - **The saving itself** cannot be measured offline, since a merged batch's cost was never observed.
   It is measured on real runs, switching profiles in `batcher.yaml` and comparing tokens per card against the identity profile's history, starting cautious.
 
+## First step: calibration against past plans (operator, 2026-10-07)
+
+The first cards of this task build the calibration, before any grouping:
+
+- **Tokens per fork, tied to its card.** `tools/tokencount` reports each Webster fork's usage, and ties the fork to the card it ran, through the card name in the fork's prompt or the `begin-batch` and `record-batch` commits' times.
+- **The past plans.** Every past run's plan is in the weft history (the `loom: plan artifacts for <slug>` commits), with the cards' `Create`, `Edit` and `Uses`.
+- **The disk as it was.** File and test sizes come from the run's base commit on main, not today's tree.
+- **The comparison.** The estimator runs on each past plan and its estimate per card is set against the card's measured tokens, to tune the weights before a profile groups anything.
+
+`tools/` follows PATTERN.md and the repository's enforcement scans like every other package.
+
 ## Profiles in `batcher.yaml`
 
 Several named batchifier profiles, all configured in `batcher.yaml`, with `active` naming the one in use, so the operator switches between them by changing one key (operator, 2026-10-07).
