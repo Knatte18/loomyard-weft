@@ -19,8 +19,6 @@ Waits on nothing open; can start now, in parallel.
    - Wait misses a valid Stop (#411/#415); an asking turn end ends the run (#407); a replay corpus and live runs test turn reading; the post-Enter redraw wait in shuttle.yaml
 1. **A run shows what it waits on and comes back up as it was** — [`run-recovery`](design-run-recovery.md) · bug, enhancement, loom, reed, batten, orch · running · Batchifier
    - A running gate visible in status and on screen; no stray strands after a crash (#408/#409); batten run brings its child back; an orch resume verb that wakes the driver
-1. **A task branch is always on the remote** — [`run-pushes`](design-run-pushes.md) · bug, loom, fabric · running · Finalize
-   - Go pushes the warp branch wherever it pushes the weft; a loom status push survives a diverged remote (#418)
 
 ## Notes
 
@@ -175,3 +173,5 @@ Finished, awaiting `lyx board prune`.
    - Bugfix only: Plan-Gate refuses backward dependencies, Delete of a gone target, background-shell wait, slow batch validation
 1. **Bugfix: fabric and config propagation** — [`bugfix-fabric`](design-bugfix-fabric.md) · bug, fabric, config, reed · done
    - Bugfix only: a weft without .weft/ drops LYX_PARENT, task config changes never reach the parent, and fabric ignores existing origin branches when it builds a pair
+1. **A task branch is always on the remote** — [`run-pushes`](design-run-pushes.md) · bug, loom, fabric · done
+   - Go pushes the warp branch wherever it pushes the weft; a loom status push survives a diverged remote (#418)

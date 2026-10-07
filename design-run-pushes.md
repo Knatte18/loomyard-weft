@@ -1,6 +1,6 @@
 # A task branch is always on the remote
 
-`run-pushes` · Task · bug, loom, fabric · running · Finalize
+`run-pushes` · Task · bug, loom, fabric · done
 
 ## Goal
 
