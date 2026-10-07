@@ -1,0 +1,113 @@
+{
+  "runGuid": "d537f60ff360b8038b32f4979a29863d",
+  "planFingerprint": "1679947db91a2e56d9bf265ab7078f93702c60d1355eb9e96474e51cb63fc434",
+  "planFileHashes": {
+    "00-overview.md": "d76ad0eb21307737f57a7cce8dd924608a04e81d8c70a609c892287ec6131a58",
+    "01-shuttle-ttl-config.md": "5ce7a06798c0931c7dbc027f985432e2a40c3a9e1d30d459c865075127948202",
+    "02-configreg-shuttle-open-map.md": "787806c174d58b5a36542be1cf984c333ab829d54cc6f37cfab9ff1bc378cb82",
+    "03-claudeengine-prompt-cache-ttl.md": "c27856d478024814df8c40cf1ea834e73aabb1d8cdd7e2be5d7a1655c0204563"
+  },
+  "partition": [
+    {
+      "cards": [
+        "01-shuttle-ttl-config",
+        "02-configreg-shuttle-open-map",
+        "03-claudeengine-prompt-cache-ttl"
+      ],
+      "profile": "cautious",
+      "estimate": 170724,
+      "breakdown": {
+        "weights": {
+          "startup_context": 60000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "startup": 61200,
+        "read_union": 63744,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 444,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1476,
+              "file:internal/shuttleengine/config_test.go": 2952,
+              "file:internal/shuttleengine/doc.go": 2208,
+              "file:internal/shuttleengine/template.yaml": 132,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 54,
+            "written": 16644
+          },
+          {
+            "card": 2,
+            "card_text": 216,
+            "reads": {
+              "package:internal/configreg": 2000,
+              "tests:internal/configreg": 2000
+            },
+            "messages": 15.5,
+            "written": 4866
+          },
+          {
+            "card": 3,
+            "card_text": 720,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1476,
+              "file:docs/overview.md": 7908,
+              "file:internal/shuttleengine/claudeengine/command.go": 2376,
+              "file:internal/shuttleengine/claudeengine/command_test.go": 5748,
+              "file:internal/shuttleengine/claudeengine/doc.go": 936,
+              "file:internal/shuttleengine/claudeengine/envfile_integration_test.go": 828,
+              "file:internal/shuttleengine/claudeengine/prepare_test.go": 2712,
+              "file:internal/shuttleengine/claudeengine/settings_test.go": 6456,
+              "file:internal/webstercli/smoke_test.go": 4632,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/webstercli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 78.5,
+            "written": 24270
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "b406a35f4d25d6e836f9a842a394cea6",
+  "masterSessionId": "5300fb18-d16e-4a96-9e93-9c80944133fb",
+  "batches": {
+    "1": {
+      "slug": "shuttle-ttl-config",
+      "cards": [
+        "01-shuttle-ttl-config",
+        "02-configreg-shuttle-open-map",
+        "03-claudeengine-prompt-cache-ttl"
+      ],
+      "cardHashes": {
+        "01-shuttle-ttl-config": "5ce7a06798c0931c7dbc027f985432e2a40c3a9e1d30d459c865075127948202",
+        "02-configreg-shuttle-open-map": "787806c174d58b5a36542be1cf984c333ab829d54cc6f37cfab9ff1bc378cb82",
+        "03-claudeengine-prompt-cache-ttl": "c27856d478024814df8c40cf1ea834e73aabb1d8cdd7e2be5d7a1655c0204563"
+      },
+      "startSha": "35e36281eab76e18bcd1ffa8ad6fe9a18563f679",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T17:42:38Z",
+      "sessionId": "5300fb18-d16e-4a96-9e93-9c80944133fb",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
