@@ -1298,6 +1298,21 @@
       "isolated": false,
       "brief": "The turn-end-without-output hold from shuttle-turns gets the wait mark run-recovery added for gate and shell waits",
       "body": "From run-recovery PR-Gate (2026-10-07): run-recovery made every wait visible (reed `@lyx_wait` mark, `waits` token, `lyx loom status` waiting line) for verify, gate and background-shell waits. shuttle-turns adds a new hold state, a turn end without output that holds; unless it sets a wait mark too, a held session looks like a hang. Wire the hold into the same marker files once both have landed."
+    },
+    {
+      "id": 172,
+      "slug": "verify-watchdog",
+      "title": "Step-level watchdog and a Windows verify timeout that kills the process tree",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The rest of issue #420: a watchdog per shed step, and the verify timeout killing the whole tree on Windows",
+      "body": "From run-recovery PR-Gate (2026-10-07): run-recovery gave `verifytree` a 60-minute timeout and kills the process group on Unix. Still open from #420: a step-level watchdog, so a `lyx shed step` that never returns is noticed without the hub reading panes; and on Windows the timeout kills only the shell, not the process tree it started."
     }
   ],
   "legacy_done": [

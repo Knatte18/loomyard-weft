@@ -91,6 +91,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Replace startup_context with the computable base context of Merriam plus a per-batch growth term
 1. **A shuttle hold shows as a wait mark and in the loom status waiting line** — [`hold-wait-mark`](design-hold-wait-mark.md) · enhancement, shuttle
    - The turn-end-without-output hold from shuttle-turns gets the wait mark run-recovery added for gate and shell waits
+1. **Step-level watchdog and a Windows verify timeout that kills the process tree** — [`verify-watchdog`](design-verify-watchdog.md) · enhancement, shed
+   - The rest of issue #420: a watchdog per shed step, and the verify timeout killing the whole tree on Windows
 
 ### Features
 
