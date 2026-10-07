@@ -139,6 +139,12 @@ Decision: The next Webster review round fixes PATTERN-comment-line-breaks by a s
 
 Rationale: Rounds 1-3 found no code defect; the two open keys recur only because each fix cleared the named sites and left or introduced others. The rule is gating in the repo, so the run continues rather than landing open findings.
 
+### Added after Discussion (parent, 2026-10-07): Accept Webster review with comment-line-break nits open
+
+Decision: End the Webster review segment unconverged after round 4. Open, formatting-only: PATTERN-comment-line-breaks at checkout.go:137, remoteleftover.go:2 and :20, deps.go:126 and :138. No code defect was found in any round.
+
+Rationale: Four rounds circled on one mechanical comment-formatting family with a flat count; round 4's whole-range sweep still reopened a fixed site. Further rounds cost more than the nits; they can be swept before landing without blocking the bug fixes.
+
 ## Constraints
 
 - `PATTERN-fabric-git`: all git on warp or weft, including the D4 diff and the D5 fetch, stays in `internal/fabricengine` through `gitexec.Run` (`PATTERN-gitexec-checked-call`); no new `//gitexec:raw` site unless it is a bool predicate, as `weftBranchExists` is.
