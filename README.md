@@ -168,6 +168,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Driver forwarding, an alias for the active strand kept by loom, or an on-call LLM per run: open for a brainstorm
 1. **A pane listing every gate of a run as a checklist with timings** — [`gate-checklist-pane`](design-gate-checklist-pane.md) · feature, reed
    - Every gate of the run with a tick box and its elapsed time, in a pane of its own; an idea, not a priority
+1. **A producer runs two live agents side by side** — [`two-agent-producer`](design-two-agent-producer.md) · feature, shuttle
+   - Shuttle starts and waits on two agents in one step and lets them talk; the base discussion-advisor and burler-split both need
 
 ## Done
 
