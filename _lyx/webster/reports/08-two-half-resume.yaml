@@ -1,0 +1,4 @@
+status: OK
+head_sha: c6c4d88e5aff30123026835778fc3508ede14f51
+deviations:
+  - internal/burlercli/wiring_test.go

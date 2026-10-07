@@ -24,6 +24,8 @@
       "estimate": 378390,
       "breakdown": {
         "weights": {
+          "master_base": 0,
+          "batch_growth": 0,
           "startup_context": 60000,
           "fork_messages": 4,
           "message_context": 300,
@@ -34,6 +36,7 @@
           "package_context": 2000,
           "write_per_card_line": 12
         },
+        "position": 0,
         "startup": 61200,
         "read_union": 198600,
         "cards": [
@@ -155,6 +158,8 @@
       "estimate": 408628,
       "breakdown": {
         "weights": {
+          "master_base": 0,
+          "batch_growth": 0,
           "startup_context": 60000,
           "fork_messages": 4,
           "message_context": 300,
@@ -165,6 +170,7 @@
           "package_context": 2000,
           "write_per_card_line": 12
         },
+        "position": 0,
         "startup": 61200,
         "read_union": 212908,
         "cards": [
@@ -290,6 +296,8 @@
       "estimate": 255266,
       "breakdown": {
         "weights": {
+          "master_base": 0,
+          "batch_growth": 0,
           "startup_context": 60000,
           "fork_messages": 4,
           "message_context": 300,
@@ -300,6 +308,7 @@
           "package_context": 2000,
           "write_per_card_line": 12
         },
+        "position": 0,
         "startup": 61200,
         "read_union": 125960,
         "cards": [
@@ -350,7 +359,7 @@
       }
     }
   ],
-  "currentBatch": 8,
+  "currentBatch": 0,
   "masterStrand": "590235e54e047e09a509b232f6386ad8",
   "masterSessionId": "947162f0-91d4-4ee3-a7ab-5dde96fdaba3",
   "batches": {
@@ -431,12 +440,27 @@
       "kind": "fork",
       "spawnedAt": "2026-10-07T19:22:05Z",
       "sessionId": "947162f0-91d4-4ee3-a7ab-5dde96fdaba3",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "08-two-half-resume",
+        "status": "done",
+        "head_sha": "c6c4d88e5aff30123026835778fc3508ede14f51",
+        "deviations": [
+          "internal/burlercli/wiring_test.go"
+        ]
+      },
+      "cardShas": [
+        "c6c4d88e5aff30123026835778fc3508ede14f51"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-cost/947162f0-91d4-4ee3-a7ab-5dde96fdaba3/subagents/agent-a2a110bde1e5e61a4.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-cost/947162f0-91d4-4ee3-a7ab-5dde96fdaba3/subagents/agent-a6a55210cd3c146bd.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-cost/947162f0-91d4-4ee3-a7ab-5dde96fdaba3/subagents/agent-a3385f6ec815684e3.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-cost/947162f0-91d4-4ee3-a7ab-5dde96fdaba3/subagents/agent-a3385f6ec815684e3.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-cost/947162f0-91d4-4ee3-a7ab-5dde96fdaba3/subagents/agent-a2a110bde1e5e61a4.jsonl"
   ]
 }
