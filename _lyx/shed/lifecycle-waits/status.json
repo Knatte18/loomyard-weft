@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "batch 01-orch-compact-boundary: record-batch refused, batcher.yaml did not load: profile \"cautious\" carries weights key startup_context, which no longer exists; set master_base and batch_growth under _lyx/config",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Batchifier → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "batch 01-orch-compact-boundary: record-batch refused, batcher.yaml did not load: profile \"cautious\" carries weights key startup_context, which no longer exists; set master_base and batch_growth under _lyx/config"
   },
   "history": [
     {
@@ -149,6 +149,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-07T19:15:06Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-07T19:27:12Z"
     }
   ],
   "product": {
