@@ -10,7 +10,7 @@
     "05-read-config-changes.md": "cb813999e7670995d72876df32f6d03ccda8f4c2ef444dc638ee919bcc3ac6d8",
     "06-finalize-config-notice.md": "2b729bbcbb5b4ff5a6eed82f19ce7c17357c55a2cba7061a13a32885d39fcb8c"
   },
-  "currentBatch": 0,
+  "currentBatch": 3,
   "masterStrand": "5231f47c9afd424b694420622223e089",
   "masterSessionId": "5058ed2e-8234-4a47-9890-ee7d0f7c7a47",
   "assertedModel": "sonnet",
@@ -66,6 +66,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-fabric/5058ed2e-8234-4a47-9890-ee7d0f7c7a47/subagents/agent-af0f29c9161fe35c2.jsonl"
       ]
+    },
+    "3": {
+      "slug": "reconcile-adopts-origin-weft",
+      "cards": [
+        "03-reconcile-adopts-origin-weft"
+      ],
+      "cardHashes": {
+        "03-reconcile-adopts-origin-weft": "a36b2f2a087ec9395e817a2135dfef3be3fbb0d1a11fd44eed2d7e7f44a0e64d"
+      },
+      "startSha": "4ab6ab7746e7961e5dfc809f0c5a7a1aedb88ae5",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T05:37:54Z",
+      "sessionId": "5058ed2e-8234-4a47-9890-ee7d0f7c7a47",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
