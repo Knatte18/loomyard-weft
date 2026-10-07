@@ -12,7 +12,7 @@
     "07-rebaseline-tail.md": "835faee58926b006fd8387f9d00fa216126db7bbd54287c8841ea4ede2ae8f12",
     "08-calibrate-template.md": "ec8f3be48359a9417b4ed9b9124ef40bccad192d7c473e2452023be92f038034"
   },
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "026fdf1c0dc2367ffedeb3f977ced46f",
   "masterSessionId": "74a42312-8d0f-4201-aafb-a1681a5404aa",
   "batches": {
@@ -94,6 +94,21 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/74a42312-8d0f-4201-aafb-a1681a5404aa/subagents/agent-a27eca52738f2239a.jsonl",
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/74a42312-8d0f-4201-aafb-a1681a5404aa/subagents/agent-afb597a692202e929.jsonl"
       ]
+    },
+    "4": {
+      "slug": "recorded-partition",
+      "cards": [
+        "04-recorded-partition"
+      ],
+      "cardHashes": {
+        "04-recorded-partition": "c07a9c06b5d7853fb6ad7770a6191f6961f06cf5ee0b7933e727d042916cdb68"
+      },
+      "startSha": "3c9604e410b6b2fa314af70c49bb467b1cffa0f2",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T12:24:38Z",
+      "sessionId": "74a42312-8d0f-4201-aafb-a1681a5404aa",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
