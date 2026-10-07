@@ -173,7 +173,7 @@
       "id": 50,
       "slug": "card-batching",
       "title": "A batchifier that groups small related cards into one Webster batch",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "feature",
         "webster"
