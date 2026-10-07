@@ -1254,6 +1254,23 @@
       "isolated": false,
       "brief": "submitRedrawSettle in claudeengine is a hardcoded 300 ms; move it to config beside submit_settle_ms",
       "body": "`bugfix-sessions` (PR #417) moved the wait between pasted text and Enter into `shuttle.yaml` as `submit_settle_ms`, as the operator asked for that 300 ms constant.\nThe wait after Enter before the input box is read again, `submitRedrawSettle` in `internal/claudeengine/session.go`, is still a hardcoded 300 ms.\nIt should come from `shuttle.yaml` too, beside `submit_settle_ms`, read through `claudeengine.NewFromConfig`.\n\nFound by the hub's PR-Gate reviewer on 2026-10-07; outside that task's goal, so not a reject.\n"
+    },
+    {
+      "id": 160,
+      "slug": "status-push-diverged",
+      "title": "loom: status push can hit a diverged remote mid-run",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom"
+      ],
+      "issues": [
+        418
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #418](https://github.com/Knatte18/loomyard/issues/418).\n\nSeen in bugfix-sessions (drive report 20261006-121941): during Discussion-Burler round 1, loomcli logged `status push failed ... remote diverged`. The next transition pushed fine, so the run recovered, but the failure was logged and the status was briefly unpushed. Distinct from #404 (Publish push). Seen once."
     }
   ],
   "legacy_done": [

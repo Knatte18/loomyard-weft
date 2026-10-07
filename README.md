@@ -49,6 +49,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Agents commit warp with git commit and only Webster and Publish push it; Go pushes warp wherever it pushes weft
 1. **An operator decision can amend the card of a begun Webster batch** — [`webster-amend-begun-card`](design-webster-amend-begun-card.md) · bug, webster
    - rebaseline refuses begun cards and reset needs a fresh run loom cannot start, so a mid-run decision never reaches the plan
+1. **loom: status push can hit a diverged remote mid-run** — [`status-push-diverged`](design-status-push-diverged.md) · bug, loom
 
 ### Enhancements
 
