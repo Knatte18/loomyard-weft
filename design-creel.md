@@ -62,7 +62,7 @@ The orch watcher holds `ly:orch`'s reminders during a context cycle, while its o
 
 - An unknown name is refused, listing the names that exist.
 - A known receiver that is dead or dormant keeps its queue, and delivery resumes when its strand is live again.
-- A receiver whose strand is removed (a producer's agent ending, for one) leaves no mail behind unread: each unread message goes back to whoever put it there, the `forwarded-by` strand for a forwarded message and the sender otherwise, marked with the receiver that ended without reading it, so it can be routed again. Creel learns only that the strand no longer exists, never why.
+- A receiver whose strand is removed (a producer's agent ending, for one) leaves no mail behind unread: each unread message goes back to whoever put it there, the `forwarded-by` strand for a forwarded message and the sender otherwise, marked with the receiver that ended without reading it, so it can be routed again. Creel learns only that the strand no longer exists, never why: the daemon sweeps the pool (below) on each tick for unread messages whose holder is no longer a strand, so no event is needed when a strand dies.
 - A terminal is never typed into: what is typed into a shell is a command. A terminal or program that wants an answer waits on creel's socket instead (`post --wait-reply`, `read --wait`) and prints it.
 
 ### Daemon and transport
@@ -78,6 +78,8 @@ The orch watcher holds `ly:orch`'s reminders during a context cycle, while its o
 
 ### Storage
 
+- One pool per hub, not a mailbox per receiver (operator, 2026-10-07): every message is stored once with its id, its sender and its current holder, so `forward` only changes the holder, and a sweep finds every message whose holder is gone.
+- Access follows the holder: `read` and `forward` work only on messages the caller holds, so "read" always means the holder read it and no agent reads another's mail by mistake or by guessing an id. A sender may see the status of its own messages (read, by whom), never take them back.
 - JSONL files under the hub's `.lyx/creel/`, written only by the daemon.
 - Unread messages stay until read; read messages and journal lines are deleted after 7 days, so a week of traffic stays available for debugging.
 - The journal holds one line per event (posted, reminded, read, injected, interrupted), and `lyx creel log` shows it.
