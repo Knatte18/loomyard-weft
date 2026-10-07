@@ -35,7 +35,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **A valid plan runs in card order: Plan-Gate refuses backward dependencies, Webster never reorders** — [`webster-delete-ordering`](design-webster-delete-ordering.md) · bug, webster
    - Card N never depends on a later card; Plan-Gate enforces it and Webster drops its own sequencing
 1. **The orch resumes runs without commands that take over the operator's terminal** — [`orch-resume-without-attach`](design-orch-resume-without-attach.md) · bug, orch, loom, reed
-   - lyx loom start from the orch switches the operator's tmux client; the orch needs a side-effect-free resume verb
+   - The orch needs a side-effect-free resume verb that wakes the run's driver
 1. **Spawned agents edit files with scripts; the no-script rule never reaches them** — [`agents-no-scripted-edits`](design-agents-no-scripted-edits.md) · bug, stencil
 1. **Shuttle: a turn end without output holds the run instead of ending it** — [`shuttle-asking-holds`](design-shuttle-asking-holds.md) · bug, shuttle
    - An asking stop ends the run while the agent lives on, so an answer is lost and a resume spawns a second agent; hold the run and wait on the same agent instead.

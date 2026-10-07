@@ -13,8 +13,6 @@ In practice the call also did not move the runs: a live driver resumed only once
 
 - The orch resumes a child through a verb with no interactive side effect: a resume verb that only records the decision and wakes the run's driver (or batten), never spawning or attaching anything.
   The role stencil names that verb and never `lyx loom start`.
-- `lyx loom start` and `lyx orch start` never switch the tmux client when called from an agent (`LYX_STRAND_NAME` set), whatever the flags; the terminal handoff is for an operator's shell only.
 
-The bug half (no tmux switch-client from an agent) is in task `bugfix-sessions`; this note keeps the orch resume verb.
-
-Operator decision 2026-10-06: start verbs never attach a terminal for any caller; attaching is only `lyx reed attach` (implemented in `bugfix-sessions`).
+Start verbs no longer attach for any caller; attaching is only `lyx reed attach` (operator decision 2026-10-06, landed in `bugfix-sessions`, 26f329be7).
+This note keeps the orch resume verb.
