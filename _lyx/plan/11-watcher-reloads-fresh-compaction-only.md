@@ -7,7 +7,7 @@
 - `internal/orchcli/session.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#CompactionBoundary`
+- `internal/shuttleengine#CompactionBoundary`
 
 **Intent:** D8, watcher half: an auto-compaction boundary enters the reload sequence only when exactly one turn end follows it in the transcript and that turn end is the one being read, the newest turn end among the events read on the tick.
 A reload typed after turns that ran without it no longer answers the compaction it was meant for, and a watcher restarted on an old cursor otherwise types a reload into a session working normally (#390).

@@ -1,6 +1,6 @@
 {
   "runGuid": "304b2112b8e1db2d554c23ca52932eb3",
-  "planFingerprint": "5e72f5f0967f237aa7292024cf6910a955727b06fedd524bbd0fd71d7c42c24c",
+  "planFingerprint": "35f4b6133a1061dbd364546654f3b9a158c929eec4f888c375692a9289e2ed1f",
   "planFileHashes": {
     "00-overview.md": "0cebeca8b581ae44f62ba7ddd02a7d68b53dddc664b28a498e668b82e7ff1863",
     "01-paced-text-submit.md": "4fba8a160b0478a37e7e71fc247fbd6e819bb6b7ee25a0ff34a79871fbd69dd2",
@@ -12,8 +12,8 @@
     "07-reset-removes-recovery-strands.md": "6e3cb7fdf3000a199324dc36067dcc1eef485c127b9a5f049e06d266f9f5bbe7",
     "08-step-error-keeps-handoff-voucher.md": "f5641098a0a97b3f7638151f6c4615418fe28ea85adb9e75a8c71cb2a29c2cf2",
     "09-crash-resume-note-evidence.md": "c1f6fda5adcc9854e9cf53e802be327636cc828f65a642f6c7127217a76ea653",
-    "10-compaction-boundary-turn-ends.md": "290d7c113b773a3e94018a80ef00dfe1c054af2569e946c24929e75bb517993a",
-    "11-watcher-reloads-fresh-compaction-only.md": "f29824825b8bd892fb59031c604e5ed064996f7594da397f0b81ca62c14a6f0d",
+    "10-compaction-boundary-turn-ends.md": "518748e71e0ae842ab2a9b0b860fdce1b0b7a9a14abd980fde07d3a74d4fb83e",
+    "11-watcher-reloads-fresh-compaction-only.md": "03a62683245effbd427756b8af9cbeabaf5d1ace6c8578ac0339502af9550e6d",
     "12-reload-plugins-sequence.md": "ef8efccb02c0ffe3774c809f063b58c855d1d60cbfb1e105c2a5d0065b1990fa",
     "13-orch-reload-sequence.md": "698debd472de30b1015327fd811248d68176938eb44c981898afb4c7eb8ce217",
     "14-loom-start-never-attaches.md": "06af76fcecf181137c8e0e6c4f08b338477b520e7146cf1ffa6610ef299f4538",
@@ -22,7 +22,7 @@
     "17-burler-review-parse-gate.md": "d52ec9e6c409be5dfb1af1881ecd5064303e9c00570ee30878d0a128e9a69db3",
     "18-burler-validate-review-verb.md": "213f099e161824ee483f764d6952f180eeacce22e7983d3d39cc4acb40aa6354"
   },
-  "currentBatch": 10,
+  "currentBatch": 0,
   "masterStrand": "82b43112c805ff52fede8404a7366217",
   "masterSessionId": "48bc4037-b210-4022-bbb4-e30516d6c209",
   "assertedModel": "sonnet",
@@ -70,14 +70,25 @@
         "10-compaction-boundary-turn-ends"
       ],
       "cardHashes": {
-        "10-compaction-boundary-turn-ends": "290d7c113b773a3e94018a80ef00dfe1c054af2569e946c24929e75bb517993a"
+        "10-compaction-boundary-turn-ends": "518748e71e0ae842ab2a9b0b860fdce1b0b7a9a14abd980fde07d3a74d4fb83e"
       },
       "startSha": "9142abfd8819a9785b550e6086b5348a8ffdee9b",
       "kind": "fork",
       "spawnedAt": "2026-10-07T05:45:04Z",
       "sessionId": "48bc4037-b210-4022-bbb4-e30516d6c209",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "10-compaction-boundary-turn-ends",
+        "status": "done",
+        "head_sha": "bddbfd2f5cb50e305c41bdc02ecdf1bba6bc43db"
+      },
+      "cardShas": [
+        "bddbfd2f5cb50e305c41bdc02ecdf1bba6bc43db"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-adddab4eeb4872900.jsonl"
+      ]
     },
     "2": {
       "slug": "claude-input-box-reader",
@@ -307,6 +318,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-aedb6721f5a11df3e.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-a645850293c0b2f81.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-a2be1fc1404e8103f.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-ad222a05e63e45936.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-ad222a05e63e45936.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-adddab4eeb4872900.jsonl"
   ]
 }

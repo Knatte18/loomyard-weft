@@ -1,7 +1,7 @@
 # Card 10 — compaction-boundary-turn-ends
 
 **Create:**
-- `plan:internal/shuttleengine#CompactionBoundary` -> `type CompactionBoundary struct`
+- `internal/shuttleengine#CompactionBoundary`
 
 **Edit:**
 - `internal/shuttleengine#SessionCycler`
