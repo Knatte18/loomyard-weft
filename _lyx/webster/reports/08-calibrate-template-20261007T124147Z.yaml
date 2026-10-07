@@ -1,0 +1,5 @@
+# Poor fit, no commit: the overall spread (75th percentile of the ratios over the 25th) is 4.450, above the limit of 3.
+# Fit figures: 14 runs reconstructed, 165 cards measured (at least 10), overall median ratio 0.044, spread 4.450.
+# Per-run medians run from 0.017 to 0.410, so no single scale factor fits.
+status: OK
+head_sha: 9c7f6d2634b193d8719984b7067da01c49a57d10
