@@ -1,0 +1,4 @@
+status: OK
+head_sha: f451782d10b82713a0fb11c4000d8edc4ff3515a
+deviations:
+  - internal/planglyph/status_enforcement_test.go

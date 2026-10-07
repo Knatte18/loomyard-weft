@@ -2,7 +2,7 @@
 
 **Create:**
 - `internal/planglyph/deleteorder.go`
-- `plan:internal/planglyph#LaterDeleteReferences` -> `func LaterDeleteReferences(plan *planparser.Plan, deleting, later []planparser.Card, worktreeRoot string) ([]Finding, error)`
+- `internal/planglyph#LaterDeleteReferences`
 - `internal/planglyph/deleteorder_test.go`
 
 **Edit:**

@@ -14,7 +14,7 @@
 - `internal/webstercli/verbs_test.go`
 
 **Uses:**
-- `plan:internal/planglyph#LaterDeleteReferences`
+- `internal/planglyph#LaterDeleteReferences`
 
 **Intent:**
 Implement decision D4 (#401's second half): a `delete-not-done` failure caused by a later card still referencing the target names that card and a way forward that does not loop through `recover-batch`.
