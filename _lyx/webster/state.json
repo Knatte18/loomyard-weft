@@ -1,0 +1,384 @@
+{
+  "runGuid": "a5d667eeed7b0bd3d3d98caf0c99078c",
+  "planFingerprint": "33ef1ec08e2bd91c6b72fd1da2a095586a2b53b9c954511674312e30196a740b",
+  "planFileHashes": {
+    "00-overview.md": "825e2a1b5304cf66023615e85ca4278088fc6e919adb8ba8618471df4187da92",
+    "01-orch-compact-boundary.md": "eea79b15d4553a0e347e46b9fba2e05dcdcad3797886015f667dc6663786aead",
+    "02-orch-satisfied-cycle-request.md": "6fab0f0acb52407b662575f693b2f6a631d2c1789c356cfb7ad8cb3edac5f24c",
+    "03-driver-notify-rule.md": "2f21b8bf101e46fbe78875e00c8e22a25525e8e72ae8bbb2af60fb30fdbcaf4e",
+    "04-shuttle-agent-activity.md": "12e88c80ab615521794237582350e484156116fdf9c15b0253e4955e3fca95a9",
+    "05-run-shed-waits.md": "855fd96fd40169253ca3b7a9e99f4a312ca4846d43ba9e386215f8c6ed2ca968",
+    "06-batten-watched-marker.md": "f0b1431bed99755ca06766bb3940b82ce65c6b88491f154b23cc73058b8a0260",
+    "07-state-change-notices.md": "cbac6b509c6e7dd482030465ef6ec183d59ae973e40ea38d61198f753e033b61",
+    "08-activity-notices.md": "d8ada7b93088beceaf24fbe6ff007369447c55ddffd3e4e418862f212a2c9994",
+    "09-reed-strand-window.md": "57ae56a9be9e3b711a039afaf9b267be783337dbb13a6613590f7d9cffabfcff",
+    "10-reed-window-op.md": "53209d6b1a53a5952e9c81a3ef974b2a784c2b6912c0f77d679cd78f938ed514",
+    "11-batten-run-window.md": "c44ad9a9fa2e0152781c4667d81cd78c40e4359a19ee9d4405535047fde6721d"
+  },
+  "partition": [
+    {
+      "cards": [
+        "01-orch-compact-boundary",
+        "02-orch-satisfied-cycle-request",
+        "03-driver-notify-rule",
+        "04-shuttle-agent-activity"
+      ],
+      "profile": "cautious",
+      "estimate": 313658,
+      "breakdown": {
+        "weights": {
+          "startup_context": 60000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "startup": 61200,
+        "read_union": 170216,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 324,
+            "reads": {
+              "file:internal/orchengine/doc.go": 3888,
+              "file:internal/orchengine/watcher.go": 11064,
+              "file:internal/orchengine/watcher_compact_test.go": 6792,
+              "file:internal/shuttleengine/engine.go": 3252,
+              "package:internal/orchengine": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 24.5,
+            "written": 7674
+          },
+          {
+            "card": 2,
+            "card_text": 312,
+            "reads": {
+              "file:internal/orchengine/doc.go": 3888,
+              "file:internal/orchengine/watcher.go": 11064,
+              "file:internal/orchengine/watcher_compact_test.go": 6792,
+              "file:internal/orchengine/watcher_test.go": 23376,
+              "package:internal/orchengine": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 28.5,
+            "written": 8862
+          },
+          {
+            "card": 3,
+            "card_text": 528,
+            "reads": {
+              "file:cmd/lyx/driverstencil_test.go": 852,
+              "file:contracts/stencils/claims_test.go": 7392,
+              "file:contracts/stencils/shed/shed-template-driver.md": 2964,
+              "file:contracts/stencils/stencils.go": 4896,
+              "file:internal/loomcli/driverprompt.go": 792,
+              "file:internal/loomcli/driverprompt_test.go": 1236,
+              "file:internal/loomcli/start.go": 7296,
+              "file:internal/shedrun/paths.go": 1692,
+              "file:internal/shedrun/paths_test.go": 1836,
+              "package:cmd/lyx": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/shed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedrun": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/shed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 123.5,
+            "written": 37578
+          },
+          {
+            "card": 4,
+            "card_text": 528,
+            "reads": {
+              "file:internal/shuttleengine/attach.go": 6888,
+              "file:internal/shuttleengine/attach_test.go": 13512,
+              "file:internal/shuttleengine/claudeengine/doc.go": 936,
+              "file:internal/shuttleengine/claudeengine/usage.go": 3168,
+              "file:internal/shuttleengine/doc.go": 2208,
+              "file:internal/shuttleengine/run.go": 13692,
+              "file:internal/shuttleengine/run_test.go": 12816,
+              "file:internal/shuttleengine/rundir.go": 3516,
+              "file:internal/shuttleengine/waitmark.go": 2460,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 92,
+            "written": 28128
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-run-shed-waits",
+        "06-batten-watched-marker",
+        "07-state-change-notices",
+        "08-activity-notices"
+      ],
+      "profile": "cautious",
+      "estimate": 297024,
+      "breakdown": {
+        "weights": {
+          "startup_context": 60000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "startup": 61200,
+        "read_union": 132864,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 840,
+            "reads": {
+              "file:contracts/recipes/batten-recipe.yaml": 612,
+              "file:docs/overview.md": 7908,
+              "file:internal/battencli/arm.go": 7848,
+              "file:internal/battencli/commitstatus.go": 1776,
+              "file:internal/battencli/lifecycle_integration_test.go": 12816,
+              "file:internal/battencli/wire.go": 8868,
+              "file:internal/battencli/wire_seams_test.go": 1776,
+              "file:internal/battenrecipe/recipe_test.go": 2232,
+              "file:internal/battenshed/deps.go": 2652,
+              "file:internal/battenshed/doc.go": 624,
+              "file:internal/battenshed/innerrun.go": 7944,
+              "file:internal/battenshed/innerrun_awaiting_test.go": 6468,
+              "file:internal/battenshed/innerrun_halted_test.go": 3828,
+              "file:internal/battenshed/innerrun_ide_test.go": 2484,
+              "file:internal/battenshed/innerrun_test.go": 6408,
+              "file:internal/shedrecipe/entries_batten.go": 2220,
+              "file:internal/shedrecipe/entries_batten_test.go": 3720,
+              "package:contracts/recipes": 2000,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/battenrecipe": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenrecipe": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 128,
+            "written": 39240
+          },
+          {
+            "card": 6,
+            "card_text": 480,
+            "reads": {
+              "file:internal/battencli/wire.go": 8868,
+              "file:internal/battencli/wire_seams_test.go": 1776,
+              "file:internal/battencli/wire_test.go": 6852,
+              "file:internal/battenshed/deps.go": 2652,
+              "file:internal/battenshed/doc.go": 624,
+              "file:internal/battenshed/innerrun.go": 7944,
+              "file:internal/battenshed/innerrun_test.go": 6408,
+              "file:internal/battenshed/seamchild.go": 1620,
+              "file:internal/battenshed/seamchild_test.go": 3732,
+              "file:internal/hubgeom/parent.go": 1140,
+              "file:internal/orchcli/paths.go": 444,
+              "file:internal/shedrun/paths.go": 1692,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 75,
+            "written": 22980
+          },
+          {
+            "card": 7,
+            "card_text": 672,
+            "reads": {
+              "file:internal/battencli/wire.go": 8868,
+              "file:internal/battencli/wire_seams_test.go": 1776,
+              "file:internal/battenshed/deps.go": 2652,
+              "file:internal/battenshed/doc.go": 624,
+              "file:internal/battenshed/innerrun.go": 7944,
+              "file:internal/battenshed/innerrun_awaiting_test.go": 6468,
+              "file:internal/battenshed/innerrun_halted_test.go": 3828,
+              "file:internal/battenshed/notice.go": 2376,
+              "file:internal/battenshed/notice_test.go": 3240,
+              "file:internal/orchengine/notice.go": 1956,
+              "file:internal/shedrun/paths.go": 1692,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 73,
+            "written": 22572
+          },
+          {
+            "card": 8,
+            "card_text": 468,
+            "reads": {
+              "file:internal/battencli/wire.go": 8868,
+              "file:internal/battencli/wire_seams_test.go": 1776,
+              "file:internal/battenshed/deps.go": 2652,
+              "file:internal/battenshed/doc.go": 624,
+              "file:internal/battenshed/notice.go": 2376,
+              "file:internal/battenshed/notice_test.go": 3240,
+              "file:internal/shuttleengine/waitmark.go": 2460,
+              "file:internal/verifytree/marker.go": 708,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 59,
+            "written": 18168
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-reed-strand-window",
+        "10-reed-window-op",
+        "11-batten-run-window"
+      ],
+      "profile": "cautious",
+      "estimate": 333666,
+      "breakdown": {
+        "weights": {
+          "startup_context": 60000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "startup": 61200,
+        "read_union": 174156,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 672,
+            "reads": {
+              "file:internal/reedengine/apply.go": 3024,
+              "file:internal/reedengine/attach.go": 2868,
+              "file:internal/reedengine/attach_test.go": 5316,
+              "file:internal/reedengine/attachgeometry_integration_test.go": 6456,
+              "file:internal/reedengine/contract_integration_test.go": 11664,
+              "file:internal/reedengine/directory.go": 948,
+              "file:internal/reedengine/doc.go": 9420,
+              "file:internal/reedengine/faketmux_test.go": 2520,
+              "file:internal/reedengine/generation.go": 3372,
+              "file:internal/reedengine/io.go": 2472,
+              "file:internal/reedengine/lifecycle.go": 14028,
+              "file:internal/reedengine/namerepair.go": 1872,
+              "file:internal/reedengine/naming_integration_test.go": 1536,
+              "file:internal/reedengine/overlay.go": 3312,
+              "file:internal/reedengine/parse.go": 1008,
+              "file:internal/reedengine/reapply.go": 1908,
+              "file:internal/reedengine/selvagepane.go": 4308,
+              "file:internal/reedengine/spawn.go": 2856,
+              "file:internal/reedengine/state.go": 2388,
+              "file:internal/reedengine/strand.go": 10128,
+              "file:internal/reedengine/strandops_integration_test.go": 1932,
+              "file:internal/reedengine/waitmark_integration_test.go": 660,
+              "file:internal/reedengine/watchdog_integration_test.go": 4968,
+              "file:internal/reedengine/windowsize.go": 4980,
+              "file:internal/reedengine/windowsize_test.go": 8016,
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 180,
+            "written": 54672
+          },
+          {
+            "card": 10,
+            "card_text": 492,
+            "reads": {
+              "file:internal/logger/logger.go": 5136,
+              "file:internal/reedengine/doc.go": 9420,
+              "file:internal/reedengine/faketmux_test.go": 2520,
+              "file:internal/reedengine/panebin.go": 1776,
+              "file:internal/reedengine/panebin_enforcement_test.go": 1608,
+              "file:internal/reedengine/probe.go": 1404,
+              "file:internal/reedengine/probe_test.go": 1608,
+              "file:internal/shell/shell.go": 972,
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 84,
+            "written": 25692
+          },
+          {
+            "card": 11,
+            "card_text": 396,
+            "reads": {
+              "file:contracts/stencils/claims_test.go": 7392,
+              "file:contracts/stencils/orch/orch-template-role.md": 1512,
+              "file:docs/overview.md": 7908,
+              "file:internal/battencli/cli.go": 3444,
+              "file:internal/battencli/cli_test.go": 1932,
+              "file:internal/battenshed/doc.go": 624,
+              "file:internal/hubgeom/hubgeom.go": 1320,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/orch": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 58.5,
+            "written": 17946
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "03f42b8631a93a1cf0fdf690cc3b0f4c",
+  "masterSessionId": "b42219b0-cb29-4e92-ac15-b4fa2035c012",
+  "batches": {
+    "1": {
+      "slug": "orch-compact-boundary",
+      "cards": [
+        "01-orch-compact-boundary",
+        "02-orch-satisfied-cycle-request",
+        "03-driver-notify-rule",
+        "04-shuttle-agent-activity"
+      ],
+      "cardHashes": {
+        "01-orch-compact-boundary": "eea79b15d4553a0e347e46b9fba2e05dcdcad3797886015f667dc6663786aead",
+        "02-orch-satisfied-cycle-request": "6fab0f0acb52407b662575f693b2f6a631d2c1789c356cfb7ad8cb3edac5f24c",
+        "03-driver-notify-rule": "2f21b8bf101e46fbe78875e00c8e22a25525e8e72ae8bbb2af60fb30fdbcaf4e",
+        "04-shuttle-agent-activity": "12e88c80ab615521794237582350e484156116fdf9c15b0253e4955e3fca95a9"
+      },
+      "startSha": "35e36281eab76e18bcd1ffa8ad6fe9a18563f679",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T19:15:42Z",
+      "sessionId": "b42219b0-cb29-4e92-ac15-b4fa2035c012",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
