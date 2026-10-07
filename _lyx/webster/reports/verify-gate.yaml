@@ -1,0 +1,15 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/loomcli.TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/loomcli
+      tail: '    integration_driverbootstrap_test.go:162: startLLMDriverArm took 2.515514373s; want well under the stub''s own 2s settle delay -- Start must return once the provider is ready, not wait on the whole driver session'
+log_path: /home/knatte/Code/loomyard-LYXHUB/bugfix-sessions/.lyx/verify/verify.log
+hint:
+    - 01-paced-text-submit
+    - 04-escalation-halt-skips-reflection
+    - 05-rerun-removes-superseded-strand
+    - 08-step-error-keeps-handoff-voucher
+    - 09-crash-resume-note-evidence
+    - 14-loom-start-never-attaches
