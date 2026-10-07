@@ -50,6 +50,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **shuttle: Wait never takes a valid Stop; a burler round's shed step stalls** — [`shuttle-stop-never-taken`](design-shuttle-stop-never-taken.md) · bug, shuttle
 1. **The warp branch is pushed with the weft after every step** — [`pair-always-pushed`](design-pair-always-pushed.md) · bug, loom
    - Agents commit warp with git commit and only Webster and Publish push it; Go pushes warp wherever it pushes weft
+1. **An operator decision can amend the card of a begun Webster batch** — [`webster-amend-begun-card`](design-webster-amend-begun-card.md) · bug, webster
+   - rebaseline refuses begun cards and reset needs a fresh run loom cannot start, so a mid-run decision never reaches the plan
 
 ### Enhancements
 
