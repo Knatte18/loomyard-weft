@@ -1119,21 +1119,6 @@
       "status": "done"
     },
     {
-      "id": 163,
-      "slug": "orch-compact-timeout",
-      "title": "Orch compact cycle always times out before reload",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "orch"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "tickCompacting reads a stale pre-compact turn end, so every compact cycle waits out the handoff timeout and reloads late",
-      "body": "## What happens\n\nA compact cycle never sees its own compaction finish, so it always waits out the handoff timeout and aborts.\nSeen 2026-10-07 on the hub orch:\n\n- 12:05:39 the watcher enters `compacting` and types `/compact`.\n- 12:06:41 the compaction boundary is written to the transcript.\n- 12:15:41 the phase ends with `last_abort_reason: \"compaction timed out\"`.\n- The next idle turn end finds the boundary through the auto-compaction path (`CompactedSince`) and only then sends the reload, about ten minutes late.\n\n## Cause\n\n`tickCompacting` (`internal/orchengine/watcher.go`) decides the compaction landed from the context reading of `st.ReadingTurnEnd`.\nThat field is written only in the idle phase (the `st.Phase == PhaseIdle \u0026\u0026 isTurnEnd(ev)` branch of the tick's event read), never while the phase is `compacting`.\nSo it stays on the turn end from before `/compact`, whose reading can never show `Compacted`, and the turn ends after the compaction are not read.\n\n## Side effects\n\n- The cycle counts as aborted: `cycle_count` does not move and `last_deferral` is set, which can push back the next automatic cycle.\n- A `distill` request queued during the cycle is removed as stale (`orch: stale cycle request removed`) instead of being acted on.\n\n## Fix direction\n\nIn `compacting`, take each turn end read after the phase entry as the reading candidate, or ask the transcript for a boundary after `PhaseEnteredAt` directly, as the auto path does.\nA test drives a compact cycle through a turn end that follows the boundary and asserts the reload starts without the timeout.\n"
-    },
-    {
       "id": 164,
       "slug": "session-state",
       "title": "One session-state model in shuttle that every module reads",
@@ -1197,21 +1182,6 @@
       "body": "From run-recovery PR-Gate (2026-10-07): run-recovery made every wait visible (reed `@lyx_wait` mark, `waits` token, `lyx loom status` waiting line) for verify, gate and background-shell waits. shuttle-turns adds a new hold state, a turn end without output that holds; unless it sets a wait mark too, a held session looks like a hang. Wire the hold into the same marker files once both have landed.\nAlso from shuttle-turns PR-Gate (2026-10-07): a gated run whose last event is a waiting turn end with every output file present can sit up to `background_shell_wait_min` (10 min) before it finishes Done.\n"
     },
     {
-      "id": 172,
-      "slug": "verify-watchdog",
-      "title": "Step-level watchdog and a Windows verify timeout that kills the process tree",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "shed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The rest of issue #420: a watchdog per shed step, and the verify timeout killing the whole tree on Windows",
-      "body": "From run-recovery PR-Gate (2026-10-07): run-recovery gave `verifytree` a 60-minute timeout and kills the process group on Unix. Still open from #420: a step-level watchdog, so a `lyx shed step` that never returns is noticed without the hub reading panes; and on Windows the timeout kills only the shell, not the process tree it started."
-    },
-    {
       "id": 173,
       "slug": "test-tiers-hardening",
       "title": "Test tiers: an llm-tier gate, a guarded publish_verify, a stricter comment lint",
@@ -1261,6 +1231,24 @@
       "brief": "Split a Burler round into a cheap reviewer and a stronger fixer that start together, and pick the model per round",
       "body": "Both halves aim at the cost and time of a Burler round.\n\n## Split a round into reviewer and fixer\n\nIdea (operator, 2026-10-03): split a Burler round into two agents spawned in parallel.\n\n- **A, handler and fixer**, the stronger model.\n- **B, reviewer**, writes the review only and never fixes.\n\nBoth start at once and orient themselves in the code independently.\nB then forks its lens fan as today, and when every fork is done, writes the combined report as Burler does now.\nThe report goes to A, which has already oriented itself, fixes, and acts as an extra validator that takes B's findings with a grain of salt.\n\nWhat it buys: A's orientation overlaps B's review instead of following it, and the reviewer never grades its own fixes.\n\nModels (operator, 2026-10-07): the review half, one agent forking a lens each into a broad review, is good enough on `sonnet[medium]`; the fixer and validator is the one that must be stronger.\nToday one agent does both under the single `review` model-spec in `loom.yaml`, so they cannot be set apart; the split gives each half its own model-spec.\nSeen 2026-10-07 in `bugfix-fabric`: on `sonnet[medium]` the fix half cleared only the lines a review named, re-broke a line fixed the round before, and circled through rounds 3 and 4 on comment line breaks alone; `review` was raised to `opus[medium]` for both halves as a stopgap.\n\n## A model per round\n\nFrom `manifest/roadmap.md` Someday (shuttle per-round provider selector), reframed by the operator on 2026-10-03: Burler chooses a different base model for round 1, round 2 and later rounds, so a fresh model reviews after the first has converged.\nRelated: `convergence-plan`'s model trial (`fable[high]` for discussion and review).\n",
       "status": "running · Plan-Write"
+    },
+    {
+      "id": 176,
+      "slug": "lifecycle-waits",
+      "title": "Run lifecycle waits: orch compact reload, a step watchdog, a pair create that retries",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "enhancement",
+        "orch",
+        "shed",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The orch reloads as soon as compaction lands, a hung shed step is noticed, and pair creation retries a refused weft push and rolls back its own branch",
+      "body": "Three places where a run or the orch waits far longer than it needs to, or hangs unnoticed.\n\n## Orch compact cycle times out before reload\n\nA compact cycle never sees its own compaction finish, so it always waits out the handoff timeout and aborts.\nSeen 2026-10-07 on the hub orch:\n\n- 12:05:39 the watcher enters `compacting` and types `/compact`.\n- 12:06:41 the compaction boundary is written to the transcript.\n- 12:15:41 the phase ends with `last_abort_reason: \"compaction timed out\"`.\n- The next idle turn end finds the boundary through the auto-compaction path (`CompactedSince`) and only then sends the reload, about ten minutes late.\n\nCause: `tickCompacting` (`internal/orchengine/watcher.go`) decides the compaction landed from the context reading of `st.ReadingTurnEnd`.\nThat field is written only in the idle phase (the `st.Phase == PhaseIdle \u0026\u0026 isTurnEnd(ev)` branch of the tick's event read), never while the phase is `compacting`.\nSo it stays on the turn end from before `/compact`, whose reading can never show `Compacted`, and the turn ends after the compaction are not read.\n\nSide effects:\n\n- The cycle counts as aborted: `cycle_count` does not move and `last_deferral` is set, which can push back the next automatic cycle.\n- A `distill` request queued during the cycle is removed as stale (`orch: stale cycle request removed`) instead of being acted on.\n\nFix direction: in `compacting`, take each turn end read after the phase entry as the reading candidate, or ask the transcript for a boundary after `PhaseEnteredAt` directly, as the auto path does.\nA test drives a compact cycle through a turn end that follows the boundary and asserts the reload starts without the timeout.\n\n## A step that never returns\n\nFrom run-recovery PR-Gate (2026-10-07): run-recovery gave `verifytree` a 60-minute timeout and kills the process group on Unix.\nStill open from #420: a step-level watchdog, so a `lyx shed step` that never returns is noticed without the hub reading panes; and on Windows the timeout kills only the shell, not the process tree it started.\n"
     }
   ],
   "legacy_done": [
