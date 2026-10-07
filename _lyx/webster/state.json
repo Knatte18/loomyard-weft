@@ -1,0 +1,32 @@
+{
+  "runGuid": "2fcc4af0a5a3fcf62322ace0a89fc950",
+  "planFingerprint": "51f90cf1815bd5b2c88e84e70afe9f9038b4fd430f26e4db0cfc41110bc858dc",
+  "planFileHashes": {
+    "00-overview.md": "6df5b6d9a7a272dc211a272deab9a26938d4afff0efb343441e5c1635a15f02e",
+    "01-lock-bounded-wait.md": "2e814074f838a351b600ea99082b14a3c108b8c1160d22517dee6b13aab53fbe",
+    "02-gitrepo-has-unpulled.md": "ffafde8b06dd974f317beb4c74c8db4718eab79329a5972c1bfb81df1bbf227c",
+    "03-fabric-pair-anchored-push.md": "f081d3e3375b4d5d4fa1406fb10ed4e5733ccdf214a87a80dbe73f3dc047ef3e",
+    "04-loom-pushes-both-sides.md": "a11f4304a1ff6dd12f4089795e84c0d005c3da51c312862742a69612118ceac0",
+    "05-fabric-push-sync-both-sides.md": "b9740ffcaa28aef324a5596b5f2f4af0509960500096099f7cb614327201c5be"
+  },
+  "currentBatch": 1,
+  "masterStrand": "e91559ab3050c327aae41f9db1724795",
+  "masterSessionId": "44cbfd05-ec82-45ec-bf99-d385e8850965",
+  "batches": {
+    "1": {
+      "slug": "lock-bounded-wait",
+      "cards": [
+        "01-lock-bounded-wait"
+      ],
+      "cardHashes": {
+        "01-lock-bounded-wait": "2e814074f838a351b600ea99082b14a3c108b8c1160d22517dee6b13aab53fbe"
+      },
+      "startSha": "d536a1a4edaa5f55d999282207b8bdfd75ca698e",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T10:27:59Z",
+      "sessionId": "44cbfd05-ec82-45ec-bf99-d385e8850965",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
