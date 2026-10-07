@@ -28,3 +28,6 @@ This suggests a split to discuss:
 Operator leaning (2026-10-07): the driver takes the message.
 It runs a Sonnet agent on purpose, to have judgment; it is the one LLM alive for the whole run, Go steps included, it knows where the run stands, and it receives messages while its `shed step` runs in the background.
 With a message it could record content with `lyx loom decision add` (a lyx verb, not a source edit), forward it to the strand that owns the current step, or pause the run or ask for a goto.
+
+Refined (operator, 2026-10-07): every instruction for a run is posted to its driver, which gets only the short reminder (sender and subject) and does not read the body by default.
+Knowing which agent works now, it either reads it itself or forwards it with `lyx creel forward` (see the `creel` note), so the receiving agent talks to the original sender, not to the driver: a minimal routing job.
