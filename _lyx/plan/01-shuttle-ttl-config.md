@@ -1,7 +1,7 @@
 # Card 1 — shuttle.yaml carries the prompt-cache TTL keys
 
 **Create:**
-- `plan:internal/shuttleengine#ConfigOpenMaps` -> `func ConfigOpenMaps() []string`
+- `internal/shuttleengine#ConfigOpenMaps`
 
 **Edit:**
 - `internal/shuttleengine#Config`

@@ -5,7 +5,7 @@
 - `internal/configreg#TestLookup`
 
 **Uses:**
-- `plan:internal/shuttleengine#ConfigOpenMaps`
+- `internal/shuttleengine#ConfigOpenMaps`
 
 **Intent:**
 The `shuttle` entry in `Modules` gains `OpenMaps: shuttleengine.ConfigOpenMaps()`, as the `batcher` entry does.

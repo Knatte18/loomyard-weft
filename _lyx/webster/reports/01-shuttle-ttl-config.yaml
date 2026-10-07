@@ -1,0 +1,8 @@
+status: OK
+head_sha: bcf4d90e1b08b0864946e221a4c6731ce16d2a20
+deviations:
+  - internal/shuttleengine/wait_test.go
+  - internal/testkit/envkit/envkit.go
+  - internal/shuttleengine/claudeengine/command.go
+  - internal/configreg/configreg.go
+  - internal/configreg/configreg_test.go

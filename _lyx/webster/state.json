@@ -1,10 +1,10 @@
 {
   "runGuid": "d537f60ff360b8038b32f4979a29863d",
-  "planFingerprint": "1679947db91a2e56d9bf265ab7078f93702c60d1355eb9e96474e51cb63fc434",
+  "planFingerprint": "e52a2506714ccc8a5467929060de413063b57455a753f2687afda1a5270d3a0e",
   "planFileHashes": {
     "00-overview.md": "d76ad0eb21307737f57a7cce8dd924608a04e81d8c70a609c892287ec6131a58",
-    "01-shuttle-ttl-config.md": "5ce7a06798c0931c7dbc027f985432e2a40c3a9e1d30d459c865075127948202",
-    "02-configreg-shuttle-open-map.md": "787806c174d58b5a36542be1cf984c333ab829d54cc6f37cfab9ff1bc378cb82",
+    "01-shuttle-ttl-config.md": "f01e92d9707d1a64f77838d52fa390bd65574591b67e2b60940e313fffa0157f",
+    "02-configreg-shuttle-open-map.md": "e564cde29a4006bc25becb41ad1b18f78dd31d072a6044307f51a23d0b312a4c",
     "03-claudeengine-prompt-cache-ttl.md": "c27856d478024814df8c40cf1ea834e73aabb1d8cdd7e2be5d7a1655c0204563"
   },
   "partition": [
@@ -86,7 +86,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "b406a35f4d25d6e836f9a842a394cea6",
   "masterSessionId": "5300fb18-d16e-4a96-9e93-9c80944133fb",
   "batches": {
@@ -98,16 +98,37 @@
         "03-claudeengine-prompt-cache-ttl"
       ],
       "cardHashes": {
-        "01-shuttle-ttl-config": "5ce7a06798c0931c7dbc027f985432e2a40c3a9e1d30d459c865075127948202",
-        "02-configreg-shuttle-open-map": "787806c174d58b5a36542be1cf984c333ab829d54cc6f37cfab9ff1bc378cb82",
+        "01-shuttle-ttl-config": "f01e92d9707d1a64f77838d52fa390bd65574591b67e2b60940e313fffa0157f",
+        "02-configreg-shuttle-open-map": "e564cde29a4006bc25becb41ad1b18f78dd31d072a6044307f51a23d0b312a4c",
         "03-claudeengine-prompt-cache-ttl": "c27856d478024814df8c40cf1ea834e73aabb1d8cdd7e2be5d7a1655c0204563"
       },
       "startSha": "35e36281eab76e18bcd1ffa8ad6fe9a18563f679",
       "kind": "fork",
       "spawnedAt": "2026-10-07T17:42:38Z",
       "sessionId": "5300fb18-d16e-4a96-9e93-9c80944133fb",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-shuttle-ttl-config",
+        "status": "done",
+        "head_sha": "bcf4d90e1b08b0864946e221a4c6731ce16d2a20",
+        "deviations": [
+          "internal/shuttleengine/wait_test.go",
+          "internal/testkit/envkit/envkit.go",
+          "internal/shuttleengine/claudeengine/command.go",
+          "internal/configreg/configreg.go",
+          "internal/configreg/configreg_test.go"
+        ]
+      },
+      "cardShas": [
+        "bcf4d90e1b08b0864946e221a4c6731ce16d2a20"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cache-ttl-per-role/5300fb18-d16e-4a96-9e93-9c80944133fb/subagents/agent-a6d6542787d463028.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cache-ttl-per-role/5300fb18-d16e-4a96-9e93-9c80944133fb/subagents/agent-a6d6542787d463028.jsonl"
+  ]
 }
