@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "blocked",
-  "error": "webster master is asking a question; session c49f023a-9153-4106-ac1f-0444b0d813d8, run dir /home/knatte/Code/loomyard-LYXHUB/shuttle-turns/.lyx/shuttle/f37cc9b4d97c59775990407377c81689",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": "webster master is asking a question; session c49f023a-9153-4106-ac1f-0444b0d813d8, run dir /home/knatte/Code/loomyard-LYXHUB/shuttle-turns/.lyx/shuttle/f37cc9b4d97c59775990407377c81689"
+    "wait": ""
   },
   "history": [
     {
