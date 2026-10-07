@@ -1,0 +1,13 @@
+status: OK
+head_sha: 685ffe648347aa5988dc1b9fefbc41b4912c7a41
+deviations:
+  - internal/battencli/wire_seams_test.go
+  - internal/shedrecipe/seam_enforcement_test.go
+  - internal/shedrecipe/fixture_test.go
+  - internal/loomcli/parity_test.go
+  - cmd/lyx/treesitterlink_test.go
+  - internal/loomshed/gates.go
+  - internal/loomshed/seam_enforcement_test.go
+  - internal/commentlint/doc.go
+  - internal/loomcli/lintcomments.go
+  - pattern/PATTERN-gate-self-check-parity.md

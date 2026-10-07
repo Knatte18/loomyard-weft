@@ -9,7 +9,7 @@
 - `internal/impactset/guards_test.go`
 - `internal/impactset/derive_integration_test.go`
 - `internal/impactset/testmain_test.go`
-- `plan:internal/impactset#Derive` -> `func Derive(worktree, base string) (Derivation, error)`
+- `internal/impactset#Derive`
 
 **Edit:**
 - `docs/overview.md`

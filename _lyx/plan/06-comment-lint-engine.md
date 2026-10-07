@@ -7,7 +7,7 @@
 - `internal/commentlint/lint_test.go`
 - `internal/commentlint/lint_integration_test.go`
 - `internal/commentlint/testmain_test.go`
-- `plan:internal/commentlint#Lint` -> `func Lint(worktree, base string) ([]Finding, error)`
+- `internal/commentlint#Lint`
 
 **Edit:**
 - `docs/overview.md`

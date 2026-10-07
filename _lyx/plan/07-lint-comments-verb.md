@@ -18,7 +18,7 @@
 - `PATTERN.md`
 
 **Uses:**
-- `plan:internal/commentlint#Lint`
+- `internal/commentlint#Lint`
 
 **Intent:**
 Decision D7's standalone verb and card gate, and decision D6's reading of the line-break rule (issue #421).

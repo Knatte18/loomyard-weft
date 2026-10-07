@@ -14,8 +14,8 @@
 
 **Uses:**
 - `internal/verifytree#LatestPass`
-- `plan:internal/commentlint#Lint`
-- `plan:internal/impactset#Derive`
+- `internal/commentlint#Lint`
+- `internal/impactset#Derive`
 
 **Intent:**
 Decisions D1, D2 and D7 at the Webster-Burler round gate: the gate `NewVerifyGate` builds runs the comment lint, then the impacted-set command, instead of the plan's `## verify:`.
