@@ -12,7 +12,7 @@
     "07-rebaseline-tail.md": "443a8d4c6681a849dfc52c4c57084ba754787ff7bc20c8687227d6fb2d4c164d",
     "08-calibrate-template.md": "ec8f3be48359a9417b4ed9b9124ef40bccad192d7c473e2452023be92f038034"
   },
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "b02b69c2d6fab339ff04b0b13fd0f5af",
   "masterSessionId": "c3d70426-a3ed-485f-b1f4-8df4b578ff73",
   "batches": {
@@ -208,19 +208,10 @@
         "08-calibrate-template": "ec8f3be48359a9417b4ed9b9124ef40bccad192d7c473e2452023be92f038034"
       },
       "startSha": "9c7f6d2634b193d8719984b7067da01c49a57d10",
-      "kind": "fork",
-      "spawnedAt": "2026-10-07T12:59:55Z",
-      "sessionId": "c3d70426-a3ed-485f-b1f4-8df4b578ff73",
-      "terminal": true,
-      "status": "failed",
-      "digest": {
-        "batch": "08-calibrate-template",
-        "status": "failed",
-        "head_sha": "9c7f6d2634b193d8719984b7067da01c49a57d10",
-        "reasons": [
-          "webster: fabric-reference violation in \"/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/c3d70426-a3ed-485f-b1f4-8df4b578ff73/subagents/agent-a7c787384729cc465.jsonl\": ran a fabric-referencing command (\"cat internal/batcher/template.yaml; ls ../card-batching-weft 2\u003e\u00261 | head; go run ./tools/tokencount -last 40 -calibrate cautious -history ../card-batching-weft 2\u003e\u00261 | tail -60\") that can rewrite run state — an implementer fork must never touch the fabric repo directly"
-        ]
-      },
+      "kind": "recovery",
+      "spawnedAt": "2026-10-07T13:01:20Z",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/74a42312-8d0f-4201-aafb-a1681a5404aa/subagents/agent-a59d8f9791c216703.jsonl",
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/c3d70426-a3ed-485f-b1f4-8df4b578ff73/subagents/agent-a7c787384729cc465.jsonl"
@@ -236,7 +227,11 @@
           "class": "fabric-reference",
           "detail": "accepted by accept-audit --batch, the batch made no commit and left a clean tree: ran a fabric-referencing command (\"cat internal/batcher/template.yaml; ls ../card-batching-weft 2\u003e\u00261 | head; go run ./tools/tokencount -last 40 -calibrate cautious -history ../card-batching-weft 2\u003e\u00261 | tail -60\") that can rewrite run state — an implementer fork must never touch the fabric repo directly"
         }
-      ]
+      ],
+      "strandGuid": "29d7b9a34e1b9e59f9fbff05533daedd",
+      "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/card-batching/.lyx/shuttle/60755110472205e7951094ab922378fe",
+      "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/card-batching/.lyx/shuttle/60755110472205e7951094ab922378fe/events.jsonl",
+      "eventsOffset": 670
     }
   },
   "seenForkTranscripts": [
