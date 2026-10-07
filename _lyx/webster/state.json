@@ -451,7 +451,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 12,
   "masterStrand": "0491f02e5a5532b00da4c179c2b82323",
   "masterSessionId": "1714ddcb-4a58-4227-87b8-bea1ffe360f4",
   "batches": {
@@ -495,6 +495,31 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-recovery/1714ddcb-4a58-4227-87b8-bea1ffe360f4/subagents/agent-a60b5c8295299e168.jsonl"
       ]
+    },
+    "12": {
+      "slug": "loom-status-shuttle-wait",
+      "cards": [
+        "12-loom-status-shuttle-wait",
+        "13-landing-verify-wait-mark",
+        "14-loom-resume-verb",
+        "15-orch-stencil-resume",
+        "16-batten-respawn-scoped",
+        "17-batten-halted-revive"
+      ],
+      "cardHashes": {
+        "12-loom-status-shuttle-wait": "8c279ff20f43e0ce6118e2bfd4ed11290fa9de10896171587927257c90a54f8e",
+        "13-landing-verify-wait-mark": "8c07d7816dc2b9b6622c3d06739c24cd5b87fedae653850b99171c52d51370be",
+        "14-loom-resume-verb": "a874f9cc7b3ae9737557785fd753b4a46b9995a78fd035312dde0c2318c4fe86",
+        "15-orch-stencil-resume": "cdf79f1620ea3a5ea444b7962e8a1af4a114607b4f0c0b0f8071e06795ff0194",
+        "16-batten-respawn-scoped": "da2b924eab7282c48cd6f0c1e389c19285ef7641650536ece45ec019252bca3c",
+        "17-batten-halted-revive": "cf6d43dd20caf5fafc5ca1a41b59825bbd94cb54d4bde4e3996e62f8110c05eb"
+      },
+      "startSha": "f8be0b201720564af58d4e885d85606eacb2f174",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T14:24:53Z",
+      "sessionId": "1714ddcb-4a58-4227-87b8-bea1ffe360f4",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "verifyrun-process-group",
