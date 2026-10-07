@@ -3,15 +3,15 @@
 ## Goal
 
 Every lyx agent runs as a Claude Code main session, so on a subscription each one writes its prompt cache at the 1-hour price (2× base input) even when it never idles past 5 minutes.
-Shuttle sets the prompt-cache TTL per role when it starts or resumes a session: 1 hour for the loom driver and the Webster Master (Merriam), 5 minutes for every other role, configurable per role.
+Shuttle sets the prompt-cache TTL per role when it starts a session, on both the launch line and the resume line: 1 hour for the loom driver and the Webster Master (Merriam), 5 minutes for every other role, configurable per role.
 
 ## Scope
 
 In:
 
-- Two new keys in `shuttle.yaml` and its embedded template: a default TTL and a per-role override map.
+- Two new keys in `shuttle.yaml` and its embedded template: a default TTL and a per-role override map, the map declared an open map and registered as one on the `shuttle` module in `configreg`.
 - `claudeengine` resolving the run's TTL from those keys and the spec's role, and putting `CLAUDE_CODE_PROMPT_CACHE_TTL` on both the launch line and the resume line.
-- Validation of TTL values in `claudeengine`, and the resolved TTL in the spawn log.
+- Validation of TTL values in `claudeengine`, and a log line from `claudeengine` carrying the resolved TTL and role.
 - Docs: `shuttleengine`'s and `claudeengine`'s `doc.go`, and `docs/overview.md` where it lists the shuttle config keys or the env carried on the pane line.
 
 Out:
@@ -27,6 +27,8 @@ Out:
 Decision: claudeengine wraps the launch line and the resume line in `CLAUDE_CODE_PROMPT_CACHE_TTL=<ttl>` through `sh.WithEnv`, the way it already carries `CLAUDE_CODE_FORK_SUBAGENT` and `CLAUDE_ENV_FILE`.
 Rationale: the reed server env is scrubbed of `CLAUDE_CODE_*` at boot, so the pane line is the only route; the env var outranks every Claude Code control but `FORCE_PROMPT_CACHING_5M`, so an operator's `promptCacheTtl` setting or `ENABLE_PROMPT_CACHING_1H` cannot override the role's TTL.
 The resume line carries it too, because reed replays that line verbatim when it rebuilds a session and the resumed claude inherits nothing from the launch.
+The TTL is resolved once, in `claudeengine.Prepare`, from `spec.Role` and the `cfg` it is handed, and passed to both line builders, so the two lines carry the same value by construction.
+Nothing builds a resume line later: a rebuilt or resumed session runs at the TTL its run started with, and a later `shuttle.yaml` edit reaches only runs started afterwards.
 
 ### D2 — Two flat config keys in `shuttle.yaml`
 
@@ -34,6 +36,8 @@ Decision: `shuttleengine.Config` gains `claude_prompt_cache_ttl` (string, templa
 Rationale: `claude_`-prefixed keys already live in `shuttleengine.Config` (`claude`, `claude_deny_agent_tool`), so this follows the existing split: shuttleengine carries the value, claudeengine interprets it.
 A key absent from an existing `shuttle.yaml` resolves to its template default under `PATTERN-config-strictness`, so existing worktrees get the split without an edit.
 A `claude_prompt_cache_ttl_roles` map present in the file replaces the template's map whole, never merges with it, so an operator can drop a role back to the default by leaving it out.
+That needs the key declared an open map: `shuttleengine` gains a `ConfigOpenMaps()` returning `claude_prompt_cache_ttl_roles`, `LoadConfig` passes it to `LoadOrTemplate`, and the `shuttle` entry in `configreg` carries it as `OpenMaps`.
+Without the declaration the loader appends the template's `driver` and `webster` entries back into a present map, and `lyx config reconcile` prunes an operator's own entry such as `orch`.
 
 ### D3 — The role key is `Spec.Role`, matched exactly
 
@@ -47,12 +51,15 @@ Bound: a map key naming no real role matches nothing and its runs fall to the de
 
 Decision: claudeengine accepts exactly `5m` and `1h` for the default and for every map value, and refuses a run's start otherwise, with an error that names the offending key, the role when it is a map entry, the accepted values, and `shuttle.yaml` as the file to fix.
 The check covers the whole configured set, not only the value the run resolves to, so one bad entry is found on the first spawn rather than on the first spawn of that role.
+An empty value is refused whatever its source, a programmatic `shuttleengine.Config{}` included, so test fixtures that hand `Prepare` a `Config` set both TTL fields from the template defaults.
+Bound: the refusal happens in `Prepare`, before any artifact is written and before reed creates a pane, so it blocks only a new run, one that adopts a session by `Spec.ResumeSessionID` included, and never a started or rebuilt session, whose resume line is already stored.
+Because the whole set is checked, a bad entry for any role refuses the next spawn of every role, the driver and the orch included, even one starting mid-loom; one edit to `shuttle.yaml` clears it, and the error names that file.
 Rationale: `5m|1h` is Claude Code vocabulary, and under `PATTERN-shuttle-provider-seam` provider vocabulary is validated by the engine, as `Effort` and `PermissionMode` are; Claude Code itself ignores any other value silently, so without the check a typo would quietly fall back to Claude Code's default.
 
 ### D5 — The resolved TTL rides the spawn log
 
-Decision: the existing spawn log line for a claude session (`PATTERN-spawn-observability`) records the resolved TTL and the role it was resolved for.
-Rationale: it is the only place a run's TTL is visible without reading the pane command, and D3's bound relies on it.
+Decision: `claudeengine.Prepare` logs one `Info` line through `internal/logger` carrying the role and the resolved TTL.
+Rationale: the value is resolved inside `claudeengine`, and `shuttleengine` never interprets it, so the line cannot be the `shuttleengine` "run started" line without a `Launch` field passing the value through; the log is the only place a run's TTL is visible without reading the pane command, and D3's bound relies on it.
 
 ### D6 — The orch keeps the default
 
@@ -64,7 +71,7 @@ Rationale: the operator's decision on the board entry (2026-10-07) names the dri
 - `PATTERN-shuttle-provider-seam`: the env var name and the `5m|1h` vocabulary live only in `claudeengine`; `shuttleengine` holds the two config fields and their template defaults, and never interprets the values.
 - `PATTERN-config-strictness`: `shuttleengine` stays a degrading caller (`LoadOrTemplate`); missing keys resolve to template defaults and are logged.
 - `PATTERN-shell-mechanics-seam`: the env assignment is built through `internal/shell` (`sh.WithEnv`), never by string concatenation.
-- `PATTERN-spawn-observability`: the TTL goes on the existing spawn log line through `internal/logger`.
+- The TTL and role are logged from `claudeengine` through `internal/logger`, because the resolved value exists nowhere else.
 - `PATTERN-test-speed`, `PATTERN-test-economy`: the behavior is covered by untagged unit tests at claudeengine's and shuttleengine's surfaces, extending the existing launch-line, resume-line and config tests where they fit.
 - `PATTERN-comment-line-breaks`: new Go comments use semantic line breaks.
 - Claude Code v2.1.242 or later honors the variable; the installed version (2.1.292) does.
@@ -75,7 +82,7 @@ Rationale: the operator's decision on the board entry (2026-10-07) names the dri
 - The orch keeps 5 minutes, per the board entry's literal "every other role" (D6).
 - Webster's recovery session (`recovery` role) keeps 5 minutes: it is a short focused session, not a waiting one.
 - lyx does not set the subagent-bucket TTL; Merriam's implementer forks stay at 5 minutes, which suits forks that run without idle gaps.
-- Unknown role keys are accepted, not refused: `lyx reed add` and `lyx shuttle run` take caller-chosen roles, so the set of valid roles is open.
+- Unknown role keys are accepted, not refused: `lyx shuttle run --role` takes a caller-chosen role, so the set of valid roles is open.
 
 ## Open risks
 
@@ -89,15 +96,18 @@ Rationale: the operator's decision on the board entry (2026-10-07) names the dri
 
 - A driver run's launch line and resume line both carry `CLAUDE_CODE_PROMPT_CACHE_TTL=1h`; a Webster Master run's lines carry `1h`; a run of any other role, and a run with an empty role, carry `5m` — all under the template's defaults.
 - A `claude_prompt_cache_ttl_roles` entry for a role changes that role's TTL, and a map present in the file without `driver` gives the driver the default.
+- A present map is carried whole: an entry for a role the template lacks survives load, and an entry the template has is not restored when the file leaves it out.
 - A changed `claude_prompt_cache_ttl` changes the TTL of every role without a map entry.
 - A `shuttle.yaml` lacking both keys resolves to the template's defaults.
 - A default or map value other than `5m` or `1h` refuses the run's start with an error naming the key, the role when it is a map entry, and the accepted values; no pane is spawned.
-- The spawn log line records the resolved TTL and role.
-- No `shuttleengine` (non-`claudeengine`) file names `CLAUDE_CODE_PROMPT_CACHE_TTL` or the `5m|1h` vocabulary beyond the template defaults; the existing seam enforcement test stays green.
+  The refused values include an empty, null, differently cased (`1H`) and numeric one, and the refusal holds when the bad entry is for a role other than the one starting.
+- The log line from `claudeengine` records the resolved TTL and role; the test captures the logger output and runs without `t.Parallel`, with a comment naming the process-global logger.
+- No `shuttleengine` (non-`claudeengine`) file names `CLAUDE_CODE_PROMPT_CACHE_TTL` or the `5m|1h` vocabulary beyond the template defaults, checked in review under `PATTERN-shuttle-provider-seam`; the existing import-seam test stays green.
 - `go test ./...` passes.
 
 ## Notes for the plan writer
 
 - The launch and resume line builders sit side by side in `internal/shuttleengine/claudeengine/command.go`, with `forkSubagentEnvKey` as the precedent for a `CLAUDE_CODE_*` variable that must ride the pane line.
 - `internal/shuttleengine/template.yaml` and `config.go` hold the existing `claude_*` keys; the hub's live `_lyx/config/shuttle.yaml` is not part of this task's diff unless reconcile convention says otherwise.
+- `batcher.ConfigOpenMaps` and its `configreg` entry are the precedent for declaring an open map on a degrading module.
 - Role constants: `loomcli.driverRole` (`driver`), `websterengine.MerriamStrandRole` (`webster`), `orchcli`'s `orchStrandName`.
