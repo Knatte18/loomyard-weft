@@ -2,5 +2,5 @@
 round: 4
 decision: accept
 cause: circling
-settled: false
+settled: true
 ---
