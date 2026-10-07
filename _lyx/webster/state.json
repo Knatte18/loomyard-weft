@@ -12,7 +12,7 @@
     "07-rebaseline-tail.md": "443a8d4c6681a849dfc52c4c57084ba754787ff7bc20c8687227d6fb2d4c164d",
     "08-calibrate-template.md": "ec8f3be48359a9417b4ed9b9124ef40bccad192d7c473e2452023be92f038034"
   },
-  "currentBatch": 8,
+  "currentBatch": 0,
   "masterStrand": "591e2bfbcf75360f83bfa980d8ca5a80",
   "masterSessionId": "cf289898-39b1-4295-b31d-572f6aa47c61",
   "batches": {
@@ -211,11 +211,20 @@
       "kind": "fork",
       "spawnedAt": "2026-10-07T13:01:40Z",
       "sessionId": "cf289898-39b1-4295-b31d-572f6aa47c61",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "failed",
+      "digest": {
+        "batch": "08-calibrate-template",
+        "status": "failed",
+        "head_sha": "9c7f6d2634b193d8719984b7067da01c49a57d10",
+        "reasons": [
+          "webster: fabric-reference violation in \"/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/cf289898-39b1-4295-b31d-572f6aa47c61/subagents/agent-a626f76fa86652e87.jsonl\": ran a fabric-referencing command (\"ls ..; cat internal/batcher/template.yaml; go run ./tools/tokencount -last 40 -calibrate cautious -history ../card-batching-weft 2\u003e\u00261 | tail -60\") that can rewrite run state — an implementer fork must never touch the fabric repo directly"
+        ]
+      },
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/74a42312-8d0f-4201-aafb-a1681a5404aa/subagents/agent-a59d8f9791c216703.jsonl",
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/c3d70426-a3ed-485f-b1f4-8df4b578ff73/subagents/agent-a7c787384729cc465.jsonl"
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/c3d70426-a3ed-485f-b1f4-8df4b578ff73/subagents/agent-a7c787384729cc465.jsonl",
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/cf289898-39b1-4295-b31d-572f6aa47c61/subagents/agent-a626f76fa86652e87.jsonl"
       ],
       "auditWarnings": [
         {
@@ -228,6 +237,9 @@
           "class": "fabric-reference",
           "detail": "accepted by accept-audit --batch, the batch made no commit and left a clean tree: ran a fabric-referencing command (\"cat internal/batcher/template.yaml; ls ../card-batching-weft 2\u003e\u00261 | head; go run ./tools/tokencount -last 40 -calibrate cautious -history ../card-batching-weft 2\u003e\u00261 | tail -60\") that can rewrite run state — an implementer fork must never touch the fabric repo directly"
         }
+      ],
+      "uncheckable": [
+        "fabric-reference: ran a fabric-referencing command (\"ls ..; cat internal/batcher/template.yaml; go run ./tools/tokencount -last 40 -calibrate cautious -history ../card-batching-weft 2\u003e\u00261 | tail -60\") that can rewrite run state — an implementer fork must never touch the fabric repo directly"
       ]
     }
   },
@@ -241,11 +253,13 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/74a42312-8d0f-4201-aafb-a1681a5404aa/subagents/agent-a08ebc57a43d4a2f4.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/74a42312-8d0f-4201-aafb-a1681a5404aa/subagents/agent-a3a455f65551224dc.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/74a42312-8d0f-4201-aafb-a1681a5404aa/subagents/agent-a59d8f9791c216703.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/c3d70426-a3ed-485f-b1f4-8df4b578ff73/subagents/agent-a7c787384729cc465.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/c3d70426-a3ed-485f-b1f4-8df4b578ff73/subagents/agent-a7c787384729cc465.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/cf289898-39b1-4295-b31d-572f6aa47c61/subagents/agent-a626f76fa86652e87.jsonl"
   ],
   "auditDispositions": {
     "accepted:batch-08:1": "warned",
     "fork:/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/74a42312-8d0f-4201-aafb-a1681a5404aa/subagents/agent-a59d8f9791c216703.jsonl:fabric-reference:1": "failed",
-    "fork:/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/c3d70426-a3ed-485f-b1f4-8df4b578ff73/subagents/agent-a7c787384729cc465.jsonl:fabric-reference:1": "failed"
+    "fork:/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/c3d70426-a3ed-485f-b1f4-8df4b578ff73/subagents/agent-a7c787384729cc465.jsonl:fabric-reference:1": "failed",
+    "fork:/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/cf289898-39b1-4295-b31d-572f6aa47c61/subagents/agent-a626f76fa86652e87.jsonl:fabric-reference:1": "failed"
   }
 }
