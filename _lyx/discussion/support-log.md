@@ -42,6 +42,8 @@ Autonomous mode: no operator answered; every decision below is a self-pick recor
   The same parser serves both keys, and a fixer that circles benefits from a change of model too.
 - **Keep row-level `model`/`effort` as reviewer overrides.**
   Ambiguous between halves and unused by any row.
+- **Attempt token in the marker's content instead of joining the stopped half.**
+  The verb would read the file's content and compare it with an attempt it is not told, and the round would still return with a goroutine that can write; joining the goroutines before `Run` returns closes the race without a second token.
 - **Mechanical enforcement of the pre-handoff read-only rule (snapshot the tree, audit write calls).**
   Today's A-before-B is prompt-enforced; adding a guard is beyond the task's goal of cost and time. Kept as an open risk.
 - **Friction directive to both halves.**
