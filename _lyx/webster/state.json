@@ -498,7 +498,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 10,
   "masterStrand": "727e268dfb679f3d5ac4184fcfabec1f",
   "masterSessionId": "39aea993-b483-4287-a488-e26c7cdbd727",
   "batches": {
@@ -538,6 +538,31 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tiers/39aea993-b483-4287-a488-e26c7cdbd727/subagents/agent-abdd61954f2e6290f.jsonl"
       ]
+    },
+    "10": {
+      "slug": "round-gate",
+      "cards": [
+        "10-round-gate",
+        "11-tmux-tier-green",
+        "12-publish-verify",
+        "13-plan-verify-guidance",
+        "14-test-budget-guard",
+        "15-after-state"
+      ],
+      "cardHashes": {
+        "10-round-gate": "15111c29e4b9c4c819c83b65531ab1c6d04fa850515fb22e7f2d36e60c4faf86",
+        "11-tmux-tier-green": "b11fff976f59c7b4af74dee8d710ceb427623ae456f5a093f35ab1ea36e412b0",
+        "12-publish-verify": "70c9a7c58ad2eb406755b8df3c158e8bb4cddbbec4eee9f45331fc019c6b7ece",
+        "13-plan-verify-guidance": "6fcfc535de2504530f5c0e9d8682f49cae9d07e0161bb365fd027c6e68b412a2",
+        "14-test-budget-guard": "04ed77e443acd9d15669f3a14a24288b2028ee54fd8c7c8123e4a841bde72c65",
+        "15-after-state": "eeeb323dabea3ce008768d7a1c1f6156f8a17cf59da02f5adc896ae00ca9ab45"
+      },
+      "startSha": "36a59c15f0a17413e370dee113b9b789fd1cc3dd",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T14:34:15Z",
+      "sessionId": "39aea993-b483-4287-a488-e26c7cdbd727",
+      "terminal": false,
+      "status": ""
     },
     "4": {
       "slug": "loomshed-index-seam",
