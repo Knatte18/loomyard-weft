@@ -85,6 +85,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Since run-pushes, lyx fabric push/sync in the prime (and lyx config) push main too, so unpushed hub commits skip the full test suite
 1. **Batchifier dry run and profile weights that actually batch** — [`batchifier-dry-run`](design-batchifier-dry-run.md) · enhancement, webster
    - No verb prints a plan's batches before Webster, and the cautious template profile batches at most about two small cards because budget binds before max_cards
+1. **Fit the batchifier from logged runs: estimate vs actual peak context and cost** — [`batchifier-learning-loop`](design-batchifier-learning-loop.md) · enhancement, webster
+   - Start from a guessed model, log each batch's estimate inputs, and fit coefficients and limits from real runs: what is actually optimal
 
 ### Features
 

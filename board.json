@@ -1253,6 +1253,21 @@
       "isolated": false,
       "brief": "No verb prints a plan's batches before Webster, and the cautious template profile batches at most about two small cards because budget binds before max_cards",
       "body": "Found at card-batching's PR-Gate (PR #423), 2026-10-07.\n\n- No lyx verb prints the partition before a run: `lyx webster validate` computes it but reports only valid/cards/scope, and `lyx webster status` lists batches only once `state.json` exists. Add `lyx webster validate --batches` (or a tool) that prints each batch with its estimate for a plan and a named profile, so a profile is chosen on numbers, not guesses.\n- By hand with `estimate.go` and the template weights, a small card costs about 0.87M, so `budget` 2M fits two small cards and a card with 2+ targets and ~15 test files (~1.8M) exceeds `alone_above` 1.2M and runs alone. `cautious` therefore batches at most about two small cards; raising `max_cards` alone changes nothing, `budget` and `alone_above` must rise with it.\n- `tools/tokencount` has both `-weft` (finished runs) and `-history` (calibration) naming the same repository; one default would do."
+    },
+    {
+      "id": 169,
+      "slug": "batchifier-learning-loop",
+      "title": "Fit the batchifier from logged runs: estimate vs actual peak context and cost",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "webster"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Start from a guessed model, log each batch's estimate inputs, and fit coefficients and limits from real runs: what is actually optimal",
+      "body": "Operator, 2026-10-07: the batchifier's model is a first guess; treat tuning as a learning loop rather than a design-time decision.\n\n- Log: each batch records its profile, coefficients and per-card estimate components in webster's `state.json` (being added with the peak-context budget change); the fork transcripts give the actual peak context (max input+cache tokens of any message) and the actual weight.\n- Analyse: extend `tools/tokencount -calibrate` to read those records from finished runs and fit the peak-context coefficients (estimate vs actual peak) and the cost side (weight per batch vs batch size).\n- Decide on data: the batch size and budget that minimise weight per card without a rise in failed batches, recoveries or Webster-Review findings; quality outcomes (batch failed, recover-batch, review findings per card) belong in the same table.\n- Re-fit as runs accumulate, and compare profiles across runs before changing the default."
     }
   ],
   "legacy_done": [
