@@ -1,6 +1,6 @@
 {
   "runGuid": "304b2112b8e1db2d554c23ca52932eb3",
-  "planFingerprint": "35f4b6133a1061dbd364546654f3b9a158c929eec4f888c375692a9289e2ed1f",
+  "planFingerprint": "8f53812be802dd5c1e7b3d41cbb262aba858dd9d4ce419a6cb9583fa2f3d75ae",
   "planFileHashes": {
     "00-overview.md": "0cebeca8b581ae44f62ba7ddd02a7d68b53dddc664b28a498e668b82e7ff1863",
     "01-paced-text-submit.md": "4fba8a160b0478a37e7e71fc247fbd6e819bb6b7ee25a0ff34a79871fbd69dd2",
@@ -14,15 +14,15 @@
     "09-crash-resume-note-evidence.md": "c1f6fda5adcc9854e9cf53e802be327636cc828f65a642f6c7127217a76ea653",
     "10-compaction-boundary-turn-ends.md": "518748e71e0ae842ab2a9b0b860fdce1b0b7a9a14abd980fde07d3a74d4fb83e",
     "11-watcher-reloads-fresh-compaction-only.md": "03a62683245effbd427756b8af9cbeabaf5d1ace6c8578ac0339502af9550e6d",
-    "12-reload-plugins-sequence.md": "ef8efccb02c0ffe3774c809f063b58c855d1d60cbfb1e105c2a5d0065b1990fa",
-    "13-orch-reload-sequence.md": "698debd472de30b1015327fd811248d68176938eb44c981898afb4c7eb8ce217",
+    "12-reload-plugins-sequence.md": "392638e484897884feb193b99ebc98835de9fe62d9eb791edab5f2961241d801",
+    "13-orch-reload-sequence.md": "4b5b5b34aa5f4f9269963cccea4c53444cf5b6ccd2c6c8f157f9155ede250b2f",
     "14-loom-start-never-attaches.md": "06af76fcecf181137c8e0e6c4f08b338477b520e7146cf1ffa6610ef299f4538",
     "15-orch-start-never-attaches.md": "f3a0be6519de79dbad457d8e810a6097dc659a82ad0df4c2b904b5fc900b81d9",
     "16-orch-start-waits-for-stopping-watcher.md": "3e1b02e7b3bb54857ad96e3e0be68ae2722676f6dd054cbfcf5a6734d827839c",
     "17-burler-review-parse-gate.md": "d52ec9e6c409be5dfb1af1881ecd5064303e9c00570ee30878d0a128e9a69db3",
     "18-burler-validate-review-verb.md": "213f099e161824ee483f764d6952f180eeacce22e7983d3d39cc4acb40aa6354"
   },
-  "currentBatch": 12,
+  "currentBatch": 0,
   "masterStrand": "82b43112c805ff52fede8404a7366217",
   "masterSessionId": "48bc4037-b210-4022-bbb4-e30516d6c209",
   "assertedModel": "sonnet",
@@ -122,14 +122,29 @@
         "12-reload-plugins-sequence"
       ],
       "cardHashes": {
-        "12-reload-plugins-sequence": "ef8efccb02c0ffe3774c809f063b58c855d1d60cbfb1e105c2a5d0065b1990fa"
+        "12-reload-plugins-sequence": "392638e484897884feb193b99ebc98835de9fe62d9eb791edab5f2961241d801"
       },
       "startSha": "e6394ad3f4b4cc23cb23a377dafff740261effe9",
       "kind": "fork",
       "spawnedAt": "2026-10-07T05:48:28Z",
       "sessionId": "48bc4037-b210-4022-bbb4-e30516d6c209",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "12-reload-plugins-sequence",
+        "status": "done",
+        "head_sha": "aee27f14fcba5fe3327de9bc44eb984d325cc694",
+        "deviations": [
+          "internal/shuttleengine/engine.go",
+          "internal/shuttleengine/session.go"
+        ]
+      },
+      "cardShas": [
+        "aee27f14fcba5fe3327de9bc44eb984d325cc694"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-a4c2f2a3a1d6025a5.jsonl"
+      ]
     },
     "2": {
       "slug": "claude-input-box-reader",
@@ -361,6 +376,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-a2be1fc1404e8103f.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-ad222a05e63e45936.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-adddab4eeb4872900.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-ae1ef3b8b99cf5ba4.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-ae1ef3b8b99cf5ba4.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-a4c2f2a3a1d6025a5.jsonl"
   ]
 }

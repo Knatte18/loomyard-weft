@@ -9,7 +9,7 @@
 - `internal/orchengine/watcher_compact_test.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#Runner.ReloadPlugins`
+- `internal/shuttleengine#Runner.ReloadPlugins`
 
 **Intent:** D9 and D10, watcher half: every reload sequence starts by typing `/reload-plugins`, and only the reload after `/clear` runs the skills and retry steps.
 Claude Code re-injects the skills a session invoked after a compaction (A2), so retyping them after a compaction costs a turn and changes nothing; `/clear` loses them.

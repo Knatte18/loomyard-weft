@@ -1,7 +1,7 @@
 # Card 12 — reload-plugins-sequence
 
 **Create:**
-- `plan:internal/shuttleengine#Runner.ReloadPlugins` -> `func (r *Runner) ReloadPlugins(guid string) error`
+- `internal/shuttleengine#Runner.ReloadPlugins`
 
 **Edit:**
 - `internal/shuttleengine#SessionCycler`

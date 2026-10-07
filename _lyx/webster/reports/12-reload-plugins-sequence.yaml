@@ -1,0 +1,5 @@
+status: OK
+head_sha: aee27f14fcba5fe3327de9bc44eb984d325cc694
+deviations:
+  - internal/shuttleengine/engine.go
+  - internal/shuttleengine/session.go
