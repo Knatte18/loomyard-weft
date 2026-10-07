@@ -1,0 +1,7 @@
+status: OK
+head_sha: f07c432cd03c8d59202afc1a4aec5e6a857e3d36
+deviations:
+  - internal/battencli/wire_seams_test.go
+  - internal/loomcli/wiring_seams_test.go
+  - internal/shedrecipe/entries_simple_test.go
+  - internal/testkit/envkit/envkit.go
