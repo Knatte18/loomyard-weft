@@ -11,7 +11,7 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Prompt-cache TTL per agent role** — [`cache-ttl-per-role`](design-cache-ttl-per-role.md) · enhancement, shuttle · running · Discussion-Write
+1. **Prompt-cache TTL per agent role** — [`cache-ttl-per-role`](design-cache-ttl-per-role.md) · enhancement, shuttle · running · Discussion-Bouncer
    - Shuttle sets the prompt-cache TTL per role: 1 hour for the driver and Webster Master, 5 minutes for the rest
 1. **Batcher v2: Merriam context at fork time, a fitted model, plans in card order** — [`batcher-v2`](design-batcher-v2.md) · enhancement, webster · running · Discussion-Bouncer
    - Size batches from Merriam measured context, fit the batchifier from logged runs, one tokencount weft flag, card order in the plan spec
