@@ -697,7 +697,7 @@
       }
     }
   ],
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "a5aaa2c78e5ff47a11293eb086aa4d5d",
   "masterSessionId": "e4e7daa2-7973-476b-855c-2e68a5b306a0",
   "batches": {
@@ -746,11 +746,23 @@
       "kind": "fork",
       "spawnedAt": "2026-10-07T19:54:26Z",
       "sessionId": "e4e7daa2-7973-476b-855c-2e68a5b306a0",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-hubforge-neutral-names",
+        "status": "done",
+        "head_sha": "6fc3ca79f4b0b45db35d73165602de6f5b00ea8e"
+      },
+      "cardShas": [
+        "6fc3ca79f4b0b45db35d73165602de6f5b00ea8e"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fabric-pushes/e4e7daa2-7973-476b-855c-2e68a5b306a0/subagents/agent-a27f4c952d4b36241.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fabric-pushes/e4e7daa2-7973-476b-855c-2e68a5b306a0/subagents/agent-aafa8e69877d9dc57.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fabric-pushes/e4e7daa2-7973-476b-855c-2e68a5b306a0/subagents/agent-aafa8e69877d9dc57.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fabric-pushes/e4e7daa2-7973-476b-855c-2e68a5b306a0/subagents/agent-a27f4c952d4b36241.jsonl"
   ]
 }
