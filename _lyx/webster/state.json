@@ -16,7 +16,7 @@
     "11-reset-moves-remote-branch.md": "b2c49caa70294305ef5f96cf15415444294223ddad853db74302129543262462",
     "12-publish-push-rejected.md": "5c23271ad97a663a45ebb6c6c93bd49023cf5ce080d632daec28a34f985efe65"
   },
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "ae2b27694ca3f431bc5f75f29629fff7",
   "masterSessionId": "13fadd3a-7482-46e1-b69a-41bed6ceab03",
   "assertedModel": "sonnet",
@@ -183,6 +183,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-webster/13fadd3a-7482-46e1-b69a-41bed6ceab03/subagents/agent-a24925ba2821d1275.jsonl"
       ]
+    },
+    "7": {
+      "slug": "delete-blocked-by-later-card",
+      "cards": [
+        "07-delete-blocked-by-later-card"
+      ],
+      "cardHashes": {
+        "07-delete-blocked-by-later-card": "3b05579b65bf3918454346b85334f126348b6d2898467dd051a9249e0f925566"
+      },
+      "startSha": "4620a079148a9a2723013b9c2e8208f8429a71b2",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T05:45:24Z",
+      "sessionId": "13fadd3a-7482-46e1-b69a-41bed6ceab03",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
