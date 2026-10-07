@@ -34,3 +34,27 @@ Correction (operator, 2026-10-07): the machine was suspended during the second c
 The wait still should have recovered on wake, since the Stop was already on disk; a sleep or deadline that does not survive a suspend in `shuttleengine.(*Run).Wait` is the first place to look, and whether the first case also spanned a suspend is open.
 Checked against the system journal (orch, 2026-10-07), the suspend is not the cause: the machine hibernated 08:39:12–09:56:11, so the second case had over four minutes awake after the 08:34:51 Stop without taking it, and three more after waking; the first case (19:29–19:45 on 2026-10-06) ran wholly awake, between a wake at 19:03:23 and a hibernate at 20:06:14.
 The hibernate only explains the length of the second stall.
+
+
+## From issue #415
+
+Imported from [issue #415](https://github.com/Knatte18/loomyard/issues/415).
+
+## What happened
+
+A `lyx shed step` run at producer `Webster-Burler` (round 2) stalled in shuttle's wait.
+The orchestrator sent SIGQUIT to capture a stack dump, so the step exited with no envelope and no `shed: step done` trace line.
+Status afterwards was unchanged (`current_producer` Webster-Burler, `interrupt_policy: reinvoke`), so the driver re-invoked `lyx shed step`.
+That re-invocation printed a `loom resumed after a suspected driver crash` note (`loom-crash-resume`) and then handed round 2 back for judgment normally.
+
+## Why it is abnormal
+
+A step should not stall in shuttle's wait; the only way out was killing the process.
+This is the already known bug #411; filed again because the friction notes show it recurring during a webster run, with the stall at a Burler round.
+
+## What to do
+
+Find why shuttle's wait does not return, and give the wait a bounded exit path so no SIGQUIT is needed.
+The crash-resume path itself worked as designed.
+
+Provenance: task `bugfix-sessions`; notes `driver-repair-20261007-reinvoke-webster-burler.md`, `loom-crash-resume.md`.
