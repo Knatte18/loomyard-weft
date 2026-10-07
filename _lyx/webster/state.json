@@ -1,0 +1,379 @@
+{
+  "runGuid": "3f70ff4f0dedeef254ef8e00f0a4fdad",
+  "planFingerprint": "4a048998472966b9a71b65731c3b353583b28de1cd1e242038c40346e4256346",
+  "planFileHashes": {
+    "00-overview.md": "aaf97681e76341a086e25270bad7d666b413259ccc2932c0bcee4c317311997c",
+    "01-shuttle-probe.md": "6dd08c4c793bf4ebb2ae391c0cd8b7e209594ba4586b3f941dfa427d12ea32ca",
+    "02-ready-marker-path.md": "3e62842f3d2b471d65c7dae200de9debb6853ae984c8a01c01450ad13aeebeb6",
+    "03-per-round-models.md": "313202a2aa0d14389b1b25ecc52533ea948996c1175589f849b750558f3e376e",
+    "04-await-review-verb.md": "e47d066776fa34a0c24964c26e1b58f129f8c4eabb4cd97e65b73f8d6f40f23e",
+    "05-round-stencils.md": "2582a2eeb74dd2181725a3abc4a0f90572298cd6eb80a58d2ae538bce270b9c4",
+    "06-strand-remover.md": "e7ba7552299e01686a395346f9c39170d68dff9cfd8ab79efb0893b6cc2ea6d8",
+    "07-two-agent-round.md": "cfd51269577de144e508c45d121efedb1a314c1c9b21a7d600d100b420ea31db",
+    "08-two-half-resume.md": "0d4dfbceaad1f32c3178e4ea1b37c4cb448c791221aa7daef261ee1bbaf79059"
+  },
+  "partition": [
+    {
+      "cards": [
+        "01-shuttle-probe",
+        "02-ready-marker-path",
+        "03-per-round-models",
+        "04-await-review-verb"
+      ],
+      "profile": "cautious",
+      "estimate": 378390,
+      "breakdown": {
+        "weights": {
+          "startup_context": 60000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "startup": 61200,
+        "read_union": 198600,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 420,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1476,
+              "file:internal/shuttleengine/attach.go": 6888,
+              "file:internal/shuttleengine/attach_test.go": 13512,
+              "file:internal/shuttleengine/doc.go": 2208,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 48,
+            "written": 14820
+          },
+          {
+            "card": 2,
+            "card_text": 444,
+            "reads": {
+              "file:cmd/lyx/pathrules_test.go": 2196,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1476,
+              "file:docs/overview.md": 7908,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/burlermarker": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/burlermarker": 2000
+            },
+            "messages": 62.5,
+            "written": 19194
+          },
+          {
+            "card": 3,
+            "card_text": 984,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1476,
+              "file:contracts/recipes/loom-recipe.yaml": 4764,
+              "file:contracts/specs/refusal-spec.md": 3000,
+              "file:docs/overview.md": 7908,
+              "file:internal/configreg/configreg.go": 1176,
+              "file:internal/configreg/configreg_test.go": 1320,
+              "file:internal/loomcli/smoke_attachprobe_test.go": 5628,
+              "file:internal/loomcli/wiring.go": 9264,
+              "file:internal/loomcli/wiring_test.go": 7860,
+              "file:internal/loomengine/config.go": 4824,
+              "file:internal/loomengine/config_test.go": 4740,
+              "file:internal/loomengine/review.go": 936,
+              "file:internal/loomengine/review_test.go": 1872,
+              "file:internal/loomengine/template.yaml": 168,
+              "file:internal/shedadapters/bouncer_fixture_test.go": 2892,
+              "file:internal/shedadapters/burler.go": 6828,
+              "file:internal/shedadapters/burler_test.go": 13164,
+              "file:internal/shedrecipe/entries_bouncer_test.go": 11484,
+              "file:internal/shedrecipe/entries_burler.go": 2988,
+              "file:internal/shedrecipe/entries_burler_test.go": 7260,
+              "file:internal/shedrecipe/recipe.go": 2544,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/recipes": 2000,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 234.5,
+            "written": 71334
+          },
+          {
+            "card": 4,
+            "card_text": 492,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1476,
+              "file:docs/overview.md": 7908,
+              "file:internal/burlercli/cli.go": 2088,
+              "file:internal/burlercli/cli_test.go": 5040,
+              "file:tools/sandbox/SANDBOX-BURLER-SUITE.md": 2232,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/burlercli": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 42.5,
+            "written": 13242
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-round-stencils",
+        "06-strand-remover",
+        "07-two-agent-round"
+      ],
+      "profile": "cautious",
+      "estimate": 408628,
+      "breakdown": {
+        "weights": {
+          "startup_context": 60000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "startup": 61200,
+        "read_union": 212908,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 720,
+            "reads": {
+              "file:.gitattributes": 432,
+              "file:PATTERN.md": 1140,
+              "file:contracts/stencils/burler/burler-step-1-explore.md": 480,
+              "file:contracts/stencils/burler/burler-step-2-review.md": 816,
+              "file:contracts/stencils/burler/burler-step-3-fix.md": 420,
+              "file:contracts/stencils/claims_test.go": 7392,
+              "file:contracts/stencils/friction/friction-directive-review-fix.md": 336,
+              "file:contracts/stencils/pattern/pattern-directive-review-fix.md": 240,
+              "file:contracts/stencils/stencils.go": 4896,
+              "file:pattern/PATTERN-review-round.md": 72,
+              "package:.": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/burler": 2000,
+              "package:contracts/stencils/friction": 2000,
+              "package:contracts/stencils/pattern": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/burler": 2000,
+              "tests:contracts/stencils/friction": 2000,
+              "tests:contracts/stencils/pattern": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 75.5,
+            "written": 23370
+          },
+          {
+            "card": 6,
+            "card_text": 396,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1476,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/burlerengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/burlerengine": 2000
+            },
+            "messages": 39,
+            "written": 12096
+          },
+          {
+            "card": 7,
+            "card_text": 2004,
+            "reads": {
+              "file:.gitattributes": 432,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1476,
+              "file:contracts/specs/refusal-spec.md": 3000,
+              "file:contracts/stencils/burler/burler-template-round-orchestrator.md": 480,
+              "file:contracts/stencils/claims_test.go": 7392,
+              "file:contracts/stencils/stencils.go": 4896,
+              "file:docs/overview.md": 7908,
+              "file:docs/shared-libs/stencil.md": 1056,
+              "file:internal/burlercli/cli.go": 2088,
+              "file:internal/burlercli/cli_test.go": 5040,
+              "file:internal/burlercli/run.go": 2760,
+              "file:internal/burlercli/wiring.go": 2640,
+              "file:internal/burlercli/wiring_test.go": 8004,
+              "file:internal/burlerengine/doc.go": 3456,
+              "file:internal/burlerengine/engine.go": 3456,
+              "file:internal/burlerengine/engine_test.go": 9972,
+              "file:internal/burlerengine/profile.go": 2796,
+              "file:internal/burlerengine/profile_test.go": 6096,
+              "file:internal/burlerengine/prompt.go": 3600,
+              "file:internal/burlerengine/prompt_test.go": 6372,
+              "file:internal/burlerengine/smoke_cluster_test.go": 3792,
+              "file:internal/burlerengine/smoke_round_test.go": 4140,
+              "file:internal/burlerengine/template_test.go": 2796,
+              "file:internal/loomcli/wiring.go": 9264,
+              "file:internal/shedadapters/bouncer_fixture_test.go": 2892,
+              "file:internal/shedadapters/burler.go": 6828,
+              "file:internal/shedadapters/burler_test.go": 13164,
+              "file:internal/shedadapters/doc.go": 2952,
+              "file:internal/shedrecipe/entries_burler.go": 2988,
+              "file:internal/shedrecipe/entries_burler_test.go": 7260,
+              "file:internal/testkit/shedfake/shedfake.go": 3288,
+              "file:pattern/PATTERN-review-round.md": 72,
+              "package:.": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/burler": 2000,
+              "package:docs": 2000,
+              "package:docs/shared-libs": 2000,
+              "package:internal/burlercli": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/shedfake": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/burler": 2000,
+              "tests:docs": 2000,
+              "tests:docs/shared-libs": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/shedfake": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 323.5,
+            "written": 99054
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-two-half-resume"
+      ],
+      "profile": "cautious",
+      "estimate": 255266,
+      "breakdown": {
+        "weights": {
+          "startup_context": 60000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "startup": 61200,
+        "read_union": 125960,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 1056,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1476,
+              "file:internal/battencli/wire_seams_test.go": 1776,
+              "file:internal/burlerengine/doc.go": 3456,
+              "file:internal/burlerengine/engine_test.go": 9972,
+              "file:internal/loomcli/smoke_attachprobe_test.go": 5628,
+              "file:internal/loomcli/wiring.go": 9264,
+              "file:internal/loomcli/wiring_test.go": 7860,
+              "file:internal/shedadapters/attachprobe_test.go": 4380,
+              "file:internal/shedadapters/bouncer_fixture_test.go": 2892,
+              "file:internal/shedadapters/burler.go": 6828,
+              "file:internal/shedadapters/burler_test.go": 13164,
+              "file:internal/shedadapters/doc.go": 2952,
+              "file:internal/shedrecipe/entries_burler.go": 2988,
+              "file:internal/shedrecipe/entries_burler_test.go": 7260,
+              "file:internal/shedrecipe/fixture_test.go": 1428,
+              "file:internal/shedrecipe/recipe.go": 2544,
+              "file:internal/testkit/envkit/envkit.go": 3108,
+              "file:internal/testkit/shedfake/shedfake.go": 3288,
+              "file:internal/testkit/shedfake/shedfake_test.go": 2640,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:internal/testkit/shedfake": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:internal/testkit/shedfake": 2000
+            },
+            "messages": 223.5,
+            "written": 68106
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "590235e54e047e09a509b232f6386ad8",
+  "masterSessionId": "947162f0-91d4-4ee3-a7ab-5dde96fdaba3",
+  "batches": {
+    "1": {
+      "slug": "shuttle-probe",
+      "cards": [
+        "01-shuttle-probe",
+        "02-ready-marker-path",
+        "03-per-round-models",
+        "04-await-review-verb"
+      ],
+      "cardHashes": {
+        "01-shuttle-probe": "6dd08c4c793bf4ebb2ae391c0cd8b7e209594ba4586b3f941dfa427d12ea32ca",
+        "02-ready-marker-path": "3e62842f3d2b471d65c7dae200de9debb6853ae984c8a01c01450ad13aeebeb6",
+        "03-per-round-models": "313202a2aa0d14389b1b25ecc52533ea948996c1175589f849b750558f3e376e",
+        "04-await-review-verb": "e47d066776fa34a0c24964c26e1b58f129f8c4eabb4cd97e65b73f8d6f40f23e"
+      },
+      "startSha": "35e36281eab76e18bcd1ffa8ad6fe9a18563f679",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T18:48:40Z",
+      "sessionId": "947162f0-91d4-4ee3-a7ab-5dde96fdaba3",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
