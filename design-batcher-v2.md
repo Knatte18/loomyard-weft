@@ -1,6 +1,6 @@
 # Batcher v2: Merriam context at fork time, a fitted model, plans in card order
 
-`batcher-v2` · Task · bug, enhancement, webster · running · Discussion-Bouncer
+`batcher-v2` · Task · bug, enhancement, webster · running · Plan-Write
 
 Card batching (landed 2026-10-07) cut Webster's time and tokens visibly; this task makes its model measured instead of guessed.
 
