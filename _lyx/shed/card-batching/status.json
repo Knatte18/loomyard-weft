@@ -1,12 +1,13 @@
 {
   "current_producer": "Plan-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Plan-Bouncer: round 3 escalated to the parent (cause: circling); brief at /home/knatte/Code/loomyard-LYXHUB/card-batching/_lyx/reviews/plan/round-3-escalation.md; decide with `lyx loom circling accept card-batching` or `lyx loom circling continue card-batching`, then run `lyx loom start` in the task worktree to resume",
+  "parent_notice": "Review segment of task `card-batching` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/card-batching/_lyx/reviews/plan/round-3-escalation.md` with a one-shot fork.",
   "pause_requested": false,
   "activity": {
     "now": "Plan-Bouncer",
-    "last": "Plan-Burler → bounced to Plan-Bouncer",
-    "wait": ""
+    "last": "Plan-Bouncer → awaiting",
+    "wait": "bouncer Plan-Bouncer: round 3 escalated to the parent (cause: circling); brief at /home/knatte/Code/loomyard-LYXHUB/card-batching/_lyx/reviews/plan/round-3-escalation.md; decide with `lyx loom circling accept card-batching` or `lyx loom circling continue card-batching`, then run `lyx loom start` in the task worktree to resume"
   },
   "history": [
     {
@@ -118,6 +119,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/card-batching/_lyx/reviews/plan/round-3-review.md",
       "at": "2026-10-07T10:47:26Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/card-batching/_lyx/reviews/plan/round-3-bouncer-ledger.md",
+      "at": "2026-10-07T10:48:16Z"
     }
   ],
   "product": {
