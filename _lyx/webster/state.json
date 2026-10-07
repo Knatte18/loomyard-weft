@@ -9,7 +9,7 @@
     "04-loom-pushes-both-sides.md": "faf91a2b23efa9936c87b367fae4ab14989b78444c831420af738bb93721d291",
     "05-fabric-push-sync-both-sides.md": "41ceb62d4b3fa003fb42abccee53b04cb1e6c6562b122c1a5d85cc1119e18c4d"
   },
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "e91559ab3050c327aae41f9db1724795",
   "masterSessionId": "44cbfd05-ec82-45ec-bf99-d385e8850965",
   "batches": {
@@ -90,6 +90,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-pushes/44cbfd05-ec82-45ec-bf99-d385e8850965/subagents/agent-a7a0645680bc401a4.jsonl"
       ]
+    },
+    "4": {
+      "slug": "loom-pushes-both-sides",
+      "cards": [
+        "04-loom-pushes-both-sides"
+      ],
+      "cardHashes": {
+        "04-loom-pushes-both-sides": "faf91a2b23efa9936c87b367fae4ab14989b78444c831420af738bb93721d291"
+      },
+      "startSha": "1df0ac6193756485fb444c6bf7ffbcac547bc780",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T10:34:18Z",
+      "sessionId": "44cbfd05-ec82-45ec-bf99-d385e8850965",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
