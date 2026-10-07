@@ -498,7 +498,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "727e268dfb679f3d5ac4184fcfabec1f",
   "masterSessionId": "39aea993-b483-4287-a488-e26c7cdbd727",
   "batches": {
@@ -538,6 +538,29 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tiers/39aea993-b483-4287-a488-e26c7cdbd727/subagents/agent-abdd61954f2e6290f.jsonl"
       ]
+    },
+    "4": {
+      "slug": "loomshed-index-seam",
+      "cards": [
+        "04-loomshed-index-seam",
+        "05-treesitter-link-guard",
+        "06-comment-lint-engine",
+        "07-lint-comments-verb",
+        "08-impact-set-engine"
+      ],
+      "cardHashes": {
+        "04-loomshed-index-seam": "0d8637a250157e04d156f34aa88b6deee175c994505044b8451930f20fa34f51",
+        "05-treesitter-link-guard": "135f6b3f4bd1a2c0e81c1c11ad304207b9a7f292745f21c65ea22fcaac31ae89",
+        "06-comment-lint-engine": "7bb8a7be5515eae8f95a9e874502e7f7ffcbeef12e127ad99e5298d30df9bada",
+        "07-lint-comments-verb": "c06559085e5022f1ce03cf31fd125a563ae3ef9c2cae350adbbbda4824aa45af",
+        "08-impact-set-engine": "2b2db1319da2a39c9dd152613deeea52de5abf437a98fb06a51d24d46f968bce"
+      },
+      "startSha": "a802732b1a8b9d9977bd56f393e3ef6cca2d50df",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T14:17:03Z",
+      "sessionId": "39aea993-b483-4287-a488-e26c7cdbd727",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
