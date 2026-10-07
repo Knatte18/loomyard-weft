@@ -22,7 +22,7 @@
     "17-burler-review-parse-gate.md": "d52ec9e6c409be5dfb1af1881ecd5064303e9c00570ee30878d0a128e9a69db3",
     "18-burler-validate-review-verb.md": "213f099e161824ee483f764d6952f180eeacce22e7983d3d39cc4acb40aa6354"
   },
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "82b43112c805ff52fede8404a7366217",
   "masterSessionId": "48bc4037-b210-4022-bbb4-e30516d6c209",
   "assertedModel": "sonnet",
@@ -203,6 +203,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-aedb6721f5a11df3e.jsonl"
       ]
+    },
+    "7": {
+      "slug": "reset-removes-recovery-strands",
+      "cards": [
+        "07-reset-removes-recovery-strands"
+      ],
+      "cardHashes": {
+        "07-reset-removes-recovery-strands": "6e3cb7fdf3000a199324dc36067dcc1eef485c127b9a5f049e06d266f9f5bbe7"
+      },
+      "startSha": "0c6a26d5706a0c38075ba3e53c0f8ba2df2b541e",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T05:40:51Z",
+      "sessionId": "48bc4037-b210-4022-bbb4-e30516d6c209",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
