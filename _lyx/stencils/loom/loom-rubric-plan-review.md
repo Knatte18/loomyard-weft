@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- its only markers are the ones ReadRubric fills, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=2faaf884678da58b278547c37e18ce6f45c95e2ea03876c8cb8714f2abd53a38 -->
+lyx-stencil: sha256=7ce7ff9d63bfee69ad7d32dbaceeaf9a4099d2cd1c37918c4691813217006f1c -->
 
 # Plan-Review rubric
 
@@ -69,7 +69,8 @@ Do not flag any of the following as a finding:
 - **Verify coverage.**
   A package a card targets whose tests the plan's `## verify:` section does not run is a finding against the plan, hermetic build-tagged tests (for example `-tags integration`) included.
   The `llm` tag that the section compiles rather than runs (for example `go vet -tags llm <packages>`) is not a finding.
-  The `tmux` tag is token-free, so a section that runs it (for example `go test -tags tmux <packages>`) is not a finding either.
+  A section that compiles the `tmux` tier (for example `go vet -tags tmux <packages>`) rather than running it is not a finding either; Publish runs that tier.
+  A section out of the order the plan template states is a finding.
 - **The attack-surface question.**
   For every new verb, flag, escape hatch or routing edge, and every guard that is removed, downgraded or bypassable, the card that introduces the change states in its `**Intent:**` what it can now skip or let through and what bounds it.
   A card that introduces one with no stated bound is a finding.
