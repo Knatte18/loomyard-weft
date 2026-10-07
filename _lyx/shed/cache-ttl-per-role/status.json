@@ -1,0 +1,19 @@
+{
+  "current_producer": "Worktree-Create",
+  "state": "blocked",
+  "error": "push weft branch \"cache-ttl-per-role-weft\" failed: git push -u origin cache-ttl-per-role-weft: exit 1: To https://github.com/Knatte18/loomyard-weft.git  ! [remote rejected]   cache-ttl-per-role-weft -\u003e cache-ttl-per-role-weft (failed) error: failed to push some refs to 'https://github.com/Knatte18/loomyard-weft.git'",
+  "pause_requested": false,
+  "activity": {
+    "now": "Worktree-Create",
+    "last": "Worktree-Create → stuck",
+    "wait": "push weft branch \"cache-ttl-per-role-weft\" failed: git push -u origin cache-ttl-per-role-weft: exit 1: To https://github.com/Knatte18/loomyard-weft.git  ! [remote rejected]   cache-ttl-per-role-weft -\u003e cache-ttl-per-role-weft (failed) error: failed to push some refs to 'https://github.com/Knatte18/loomyard-weft.git'"
+  },
+  "history": [
+    {
+      "producer": "Worktree-Create",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-07T17:11:24Z"
+    }
+  ]
+}
