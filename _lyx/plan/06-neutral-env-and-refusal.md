@@ -22,6 +22,10 @@
 - `internal/webstercli/sync_integration_test.go`
 - `internal/webstercli/verbs_test.go`
 - `internal/battencli/lifecycle_integration_test.go`
+- `internal/fabriccli/cleanhub_integration_test.go`
+
+**Prosa:**
+- `tools/sandbox/SANDBOX-FABRIC-SUITE.md`
 
 **Intent:**
 D4, env and wording part.
@@ -31,7 +35,8 @@ A final grep over the module, scripts and docs included, finds no `WEFT_SKIP_`.
 What the hard cut lets through, and its bound: a process that still sets an old name gets real git and push work; the only setters are this repository's tests and sandbox, changed in this commit, and the variables have no production consumer.
 
 `RequireWarpWorktree`'s refusal says "records sibling" where it said "weft sibling".
-The tests that assert that wording, `fabric_test.go` and `battencli`'s `lifecycle_integration_test.go`, assert the new text; a grep for the old phrase finds no other assertion.
+The tests that assert that wording, `battencli`'s `lifecycle_integration_test.go` ("weft sibling") and `fabriccli`'s `cleanhub_integration_test.go` ("weft sibling of a pair"), assert the new text; `fabric_test.go` asserts only the wrapped `ErrNotAWarpWorktree`, so it is a target for `FABRIC_SKIP_*` alone.
+`tools/sandbox/SANDBOX-FABRIC-SUITE.md`'s instruction to confirm a refusal "naming the weft sibling" names the records sibling instead; a grep for the old phrase finds no other assertion or instruction.
 
 The renamed variables are covered by the existing skip-gated tests, which now set `FABRIC_SKIP_*` and would push for real if the gate still read the old names.
 

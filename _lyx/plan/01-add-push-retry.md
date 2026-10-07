@@ -10,6 +10,8 @@
 - `internal/fabricengine/add.go`
 - `internal/fabricengine/weftwiring.go`
 - `internal/fabricengine/export_test.go`
+- `internal/fabricengine/doc.go`
+- `//cmd/lyx/testdata/test-budget.yaml`
 
 **Intent:**
 D1: `Add`'s warp push (step 11) and weft push (step 12, inside `pushWeftBranch`) go through one new fabricengine helper in `pushretry.go` that retries a transient server-side refusal.
@@ -29,9 +31,13 @@ Hold them on an unexported field of `Topology`, nil in production meaning `gitex
 What this lets through, and its bound: the retry repeats only a non-forced push of one commit to one ref, a no-op when an earlier attempt had already landed; it runs only inside `Add`, and at most 4 times, capping the delay at about 10 seconds.
 A push retry adds no mutation entry of its own: the one accepted push records `branch_pushed` exactly as today (`PATTERN-mutation-record`).
 
+Docs in this commit: `internal/fabricengine/doc.go`'s `Add` section gains one sentence stating that the two branch pushes retry a bare `(failed)` refusal, how many attempts, and that every other push failure returns on the first.
+
+The new test files add top-level test functions to `internal/fabricengine`, whose row in `cmd/lyx/testdata/test-budget.yaml` has no headroom, so this card raises that row to the package's top-level test count after the card (`PATTERN-test-speed`); the budget test fails otherwise.
+
 Coverage:
 - `pushretry_test.go` (untagged, `t.Parallel`): a table over the classifier: a bare `(failed)` line for the pushed ref is transient; the same line with `remote:` lines around it is transient; `(pre-receive hook declined)`, `(non-fast-forward)` and any other reason are not, with or without `remote:` lines; a `(failed)` line for a different ref is not.
   A second table drives the retry loop with a fake runner and a recording sleep: a refusal then success pushes twice and sleeps once; a persistent `(failed)` stops after 4 attempts and returns the last error; a hook-declined and a non-`failed` rejection are attempted once; the sleeps grow.
 - `add_pushretry_integration_test.go` (`integration`, hubforge hub): an `Add` whose injected runner refuses the weft push once with a synthetic `(failed)` `*gitexec.GitError` and then delegates to `gitexec.Run` succeeds, with both worktrees, the warp branch and the weft branch present locally and on origin.
 
-**ImpactSummary:** `Add`'s two push sites and its only weft-push helper change; no other verb pushes through them, and `NewTopology`'s callers see no signature change.
+**ImpactSummary:** `Add`'s two push sites and its only weft-push helper change; no other verb pushes through them, `NewTopology`'s callers see no signature change, and the only other files touched are the package doc and the test budget row.

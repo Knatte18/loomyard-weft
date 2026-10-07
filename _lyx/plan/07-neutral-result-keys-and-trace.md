@@ -12,6 +12,8 @@
 - `internal/fabricengine/weftbranch.go`
 - `internal/fabricengine/weftgit.go`
 - `internal/fabricengine/weftwiring.go`
+- `internal/fabricengine/spawn.go`
+- `internal/fabricengine/mutation.go`
 - `internal/fabricengine/add.go`
 - `internal/fabricengine/doc.go`
 - `internal/fabriccli/fabric.go`
@@ -44,6 +46,7 @@ D4, result and trace part, all hard cuts with no alias.
   `PairStatus`'s branch fields are spelled by no non-owner file and stay.
 - `RemoveResult`'s `WarpBranchDeleted`, `WarpBranchKeptReason`, `RemoteWarpBranchDeleted` and `RemoteWarpBranchKeptReason` become `CodeBranchDeleted`, `CodeBranchKeptReason`, `RemoteCodeBranchDeleted` and `RemoteCodeBranchKeptReason`, with JSON and envelope keys `code_branch_deleted`, `code_branch_kept_reason`, `remote_code_branch_deleted` and `remote_code_branch_kept_reason`; `lyx fabric remove`'s long help names the new keys.
 - Every `refDetail` and `recordPushIfAdvanced` call site passes the side as `code` or `records`, so a mutation entry's detail reads `side=code` or `side=records`.
+  `PushWarpAt` and `PushWarpRebaseFreeAt` in `spawn.go` pass `code` too, and `mutation.go`'s two `Kind` docs and `refDetail`'s doc name `side=<code|records>` and the side values `code` and `records`.
   `PushPairAnchored` names its sides the same way, so a failing side's error reads `push code side at <path>` or `push records side at <path>`.
 - `contracts/stencils/shed/shed-template-driver.md`'s stranded-branch rule matches `side=code`.
 - `docs/overview.md` names the renamed `remove` keys; `internal/fabricengine/doc.go` names the renamed fields, keys and side values.

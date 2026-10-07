@@ -11,8 +11,10 @@
 - `internal/fabriccli/hubmutation_integration_test.go`
 - `internal/fabriccli/mergescenario_integration_test.go`
 - `internal/fabriccli/weftskippush_integration_test.go`
+- `internal/fabricengine/add_pushretry_integration_test.go`
 - `internal/fabricengine/add_remoteleftover_integration_test.go`
 - `internal/fabricengine/add_rollback_adopt_test.go`
+- `internal/fabricengine/add_rollback_branch_integration_test.go`
 - `internal/fabricengine/archive_integration_test.go`
 - `internal/fabricengine/checkout_rollback_test.go`
 - `internal/fabricengine/cleanreason_integration_test.go`
@@ -31,6 +33,7 @@
 - `internal/fabricengine/livestate_refusal_selftest_test.go`
 - `internal/fabricengine/livestate_states_selftest_test.go`
 - `internal/fabricengine/livestate_verbs_test.go`
+- `internal/fabricengine/merge_target_integration_test.go`
 - `internal/fabricengine/mergecrucible_integration_test.go`
 - `internal/fabricengine/mergein_integration_test.go`
 - `internal/fabricengine/mergein_recovery_integration_test.go`
@@ -38,9 +41,8 @@
 - `internal/fabricengine/mergesiblings_integration_test.go`
 - `internal/fabricengine/mergestage_integration_test.go`
 - `internal/fabricengine/mergestagetracked_integration_test.go`
-- `internal/fabricengine/mergestateactive_integration_test.go`
 - `internal/fabricengine/mergestate_integration_test.go`
-- `internal/fabricengine/merge_target_integration_test.go`
+- `internal/fabricengine/mergestateactive_integration_test.go`
 - `internal/fabricengine/mergeweftlocal_integration_test.go`
 - `internal/fabricengine/midmerge_integration_test.go`
 - `internal/fabricengine/openparent_integration_test.go`
@@ -55,9 +57,9 @@
 - `internal/fabricengine/remove_junctions_integration_test.go`
 - `internal/fabricengine/remove_records_integration_test.go`
 - `internal/fabricengine/remove_refusal_remedy_integration_test.go`
-- `internal/fabricengine/removeremote_integration_test.go`
 - `internal/fabricengine/remove_remotetask_integration_test.go`
 - `internal/fabricengine/remove_siblingdirty_integration_test.go`
+- `internal/fabricengine/removeremote_integration_test.go`
 - `internal/fabricengine/resetpairwarp_integration_test.go`
 - `internal/fabricengine/snapshot_integration_test.go`
 - `internal/fabricengine/syncweft_integration_test.go`
@@ -107,7 +109,8 @@ D4, hubforge part: the test hub's side-named accessors and fields take the neutr
 | `Hub.WarpBare` field | `Hub.CodeBare` |
 | `Hub.WeftBare` field | `Hub.RecordsBare` |
 
-Each is renamed with an AST-aware rename over the whole module, every build tag included, never a text replace; the Edit list is every file that spells an old name today.
+Each is renamed with an AST-aware rename over the whole module, every build tag included, never a text replace; the Edit list is every file that spells an old name today, plus the two test files Cards 1 and 2 create, which need the bare paths and the accessors.
+The three methods are `Edit` rather than `Rename` because `hub.go` also holds call sites Card 5 edits, and the gate blocks a member glyph that overlaps another card's whole-file target (`containment-file-overlap`); the two fields are not indexed by `lyx quarry`.
 A grep pass then confirms no old spelling survives in code or comments, `internal/hubforge/doc.go` and `seed.go` included.
 Each renamed symbol's own doc comment opens with its new name.
 

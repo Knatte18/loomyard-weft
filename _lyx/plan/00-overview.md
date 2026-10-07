@@ -30,8 +30,12 @@ Fabric's side vocabulary stays inside fabric's owner set: every `vocabExempt` sp
 - The `WeftWorktree` result field (status, prune, reconcile) is a `vocabExempt` spelling too, so Card 7 renames it to `RecordsWorktree` with JSON `records_worktree`, beside the `CodeWorktree` rename D4 names; the JSON tags follow the new names, as D4 requires.
 - The prime is identified by `fabricengine.PrimeName(l) == l.WorktreeName`, the predicate batten's refusal already uses.
 - Every symbol rename runs as an AST-aware rename over the whole module with all build tags (`integration`, `tmux`, `llm`), followed by a grep pass for the old spelling in code, comments and docs; `docs/benchmarks/` and `docs/research/` are measurement reports and are never rewritten.
+- Cards 7 and 8 type their symbol renames `Edit`, because what they rename is a struct field, a JSON tag or a string literal, none of which `lyx quarry` indexes; the `Rename` group is also used for Card 8's file renames.
+- Card 5 types the four renames of a function declared in a file no other card targets whole (`WeftBranchName`, `WeftRepoRoot`, `CommitWeftPaths`, `WarpLyxLink`) `Rename`, and the other quarry-indexed renames `Edit`, because the gate blocks a member glyph that overlaps another card's file target (`containment-file-overlap`): `WeftWorktree`, `WeftWorktreePath` and `Fabric.ResetPairWarp` are declared in `fabric.go`, `weftwiring.go` and `destroy.go`, each a whole-file target of two other cards, and Card 4's three `Hub` methods are declared in `hub.go`, a whole-file target of Card 5.
 - Remote-backed tests are `integration`-tagged, build hubs through `hubforge`, and run under `gitkit.HermeticGitEnv()`; retry sleeps are injected so no test waits out a backoff.
 - Card 1's push seam lives on `Topology`, so Card 2's rollback tests inject push refusals per instance and stay parallel.
+- Every touched Go comment uses semantic line breaks (`PATTERN-comment-line-breaks`), every doc link a card touches keeps resolving (`PATTERN-markdown-link-integrity`), and no new message, help text or doc names `git push --force`, `git reset --hard` or `rm -rf` as a way forward (`PATTERN-no-denied-recovery`).
+- A card that adds top-level test functions raises its package's row in `cmd/lyx/testdata/test-budget.yaml` in the same commit (`PATTERN-test-speed`).
 
 ## Rename mechanic
 
