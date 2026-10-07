@@ -1,6 +1,6 @@
 # A task branch is always on the remote
 
-`run-pushes` · Task · bug, loom, fabric · running · Webster-Bouncer
+`run-pushes` · Task · bug, loom, fabric · running · Describe
 
 ## Goal
 
