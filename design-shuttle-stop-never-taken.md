@@ -30,3 +30,5 @@ The `shuttle-asking-holds` note and #407 cover a turn end read too early; this i
 `bugfix-sessions`, Webster-Burler round 2: the burler ended its turn at 08:34:51 (Stop in `.lyx/shuttle/d9a47c207a52c3c94532ffc39927988b/events.jsonl`, `background_tasks: []`, both output files written), and `lyx shed step` (pid 3956223) sat 94 minutes with no child process until the orch sent SIGQUIT.
 The goroutine dump is the same as the first case: parked in `shuttleengine.(*Run).Wait` at `wait.go:305`, under `RunGated` (`run.go:643`) and `burlerengine.(*Engine).Run`.
 Both cases are a Webster-Burler round 2 whose shuttle run started a fresh strand while the round-1 strand of the same role had been used before, which may be the condition to test first.
+Correction (operator, 2026-10-07): the machine was suspended during the second case, so the trigger is likely a suspend, not round 2.
+The wait still should have recovered on wake, since the Stop was already on disk; a sleep or deadline that does not survive a suspend in `shuttleengine.(*Run).Wait` is the first place to look, and whether the first case also spanned a suspend is open.
