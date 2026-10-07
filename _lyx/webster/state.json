@@ -13,8 +13,8 @@
     "08-calibrate-template.md": "ec8f3be48359a9417b4ed9b9124ef40bccad192d7c473e2452023be92f038034"
   },
   "currentBatch": 8,
-  "masterStrand": "026fdf1c0dc2367ffedeb3f977ced46f",
-  "masterSessionId": "74a42312-8d0f-4201-aafb-a1681a5404aa",
+  "masterStrand": "b02b69c2d6fab339ff04b0b13fd0f5af",
+  "masterSessionId": "c3d70426-a3ed-485f-b1f4-8df4b578ff73",
   "batches": {
     "1": {
       "slug": "tokencount-fork-report",
@@ -208,8 +208,9 @@
         "08-calibrate-template": "ec8f3be48359a9417b4ed9b9124ef40bccad192d7c473e2452023be92f038034"
       },
       "startSha": "9c7f6d2634b193d8719984b7067da01c49a57d10",
-      "kind": "recovery",
-      "spawnedAt": "2026-10-07T12:59:31Z",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T12:59:55Z",
+      "sessionId": "c3d70426-a3ed-485f-b1f4-8df4b578ff73",
       "terminal": false,
       "status": "",
       "forkTranscripts": [
@@ -221,11 +222,7 @@
           "class": "fabric-reference",
           "detail": "accepted by accept-audit --batch, the batch made no commit and left a clean tree: ran a fabric-referencing command (\"ls -d ../card-batching-weft 2\u003e\u00261 | head; go run ./tools/tokencount -last 40 -calibrate cautious -history ../card-batching-weft 2\u003e\u00261 | tail -60\") that can rewrite run state — an implementer fork must never touch the fabric repo directly"
         }
-      ],
-      "strandGuid": "8b7a368160ae7055719f2bb6ca087e57",
-      "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/card-batching/.lyx/shuttle/24692a8b08f01478dd146111f4fb2120",
-      "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/card-batching/.lyx/shuttle/24692a8b08f01478dd146111f4fb2120/events.jsonl",
-      "eventsOffset": 670
+      ]
     }
   },
   "seenForkTranscripts": [
