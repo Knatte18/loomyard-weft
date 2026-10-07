@@ -19,6 +19,7 @@ Peak (D10): replace the one-card rows with one row per fork whose cards are all 
 Each row also carries the fork's own growth, measured peak minus measured start against estimated peak minus estimated start, and its ratio.
 The fit lines report, per run and overall, the peak ratio's median and spread as now, and the in-fork growth ratio's median and spread.
 The run-level skip reasons stay; the card-level "no fork names it" stays; the "ran in a multi-card fork" reason and its constant are retired; a fork naming a card the plan lacks is skipped with that reason; "estimate is 0" stays, per fork.
+The read of a run's plan, which `Calibration.addRun` does inline (the newest plan commit before the run's first fork, parsed with `planparser.ParsePlanFrom` over the history), becomes one function that `addRun` and card 6's profile report both call.
 `main.go`'s package comment describes the two tables, the position rule, the least-squares fit and its not-fitted and unusable marks, and the growth ratio, in place of the one-card description.
 
 Tests:
@@ -26,4 +27,4 @@ Tests:
 - `calibrate_integration_test.go`: the git-backed calibration still equals the in-memory one under the per-fork rows.
   Comments and strings in test files must not name the fabric side (`PATTERN-fabric-vocabulary`).
 
-**ImpactSummary:** tokencount's calibration section changes shape from per-card rows to start and per-fork peak tables; its tests follow.
+**ImpactSummary:** only tokencount's own calibration report format and tests change; no internal package or command consumes the section.

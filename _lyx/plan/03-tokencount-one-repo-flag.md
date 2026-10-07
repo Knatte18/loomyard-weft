@@ -18,6 +18,7 @@ The package comment drops the `history` paragraph and states that the one flag n
 Tests:
 - `main_test.go` (untagged): `run` refuses the retired `history` flag with the flag package's undefined-flag error and writes no report.
 - `calibrate_integration_test.go`: extend the existing test so it also drives `run` end to end with `-calibrate`, `-config`, `-hub`, `-projects`, one slug whose transcript the test writes into a temp projects directory, and the one repository flag (built from the constant) naming the test's own git fixture, and asserts the report holds the calibration section with the fixture's row.
+  `run` reads the base trees from the process's working directory, so the test makes the fixture that directory with `t.Chdir`, which bars `t.Parallel`, and a comment on the test names that global state (`PATTERN-test-speed`).
   Comments and strings in both test files must not name the fabric side.
 
 **ImpactSummary:** tokencount's flag set and its package comment change; no internal package is touched.

@@ -17,7 +17,9 @@
 Implement D14.
 
 Classifier, in `refscanner.go` beside the reference rule: an exported function reporting whether a command is read-only.
-It is when the command is built only from the readers `cat`, `head`, `tail`, `ls`, `wc`, `grep`, `jq` and `cut`, each in command position, joined by `|`, `;` or `&&`, with no output redirection of any kind (`>`, `>>`, `>|`, `&>`, a numbered fd redirection, `<>`), no command or process substitution (`$(`, backtick, `<(`, `>(`) and no backgrounding (a lone `&`); separators and operators inside quoted spans are text (reuse `blankQuoted`).
+It is when the command is built only from the readers `cat`, `head`, `tail`, `ls`, `wc`, `grep`, `jq` and `cut`, each in command position, joined by `|`, `;` or `&&`, with no output redirection of any kind (`>`, `>>`, `>|`, `&>`, a numbered fd redirection, `<>`), no command or process substitution (`$(`, backtick, `<(`, `>(`) and no backgrounding (a lone `&`).
+Separators and redirection characters inside quoted spans are text, found by `blankQuoted`'s scan.
+Substitution is the exception: a shell runs `$(` and a backtick inside double quotes, so the substitution check blanks single-quoted spans only, by a flag on that same scan rather than a second quote parser, and `"$(…)"` or a double-quoted backtick is not read-only.
 The list is closed: anything else, `sort`, `uniq`, `tee`, `xargs`, `find`, an interpreter, `lyx`, `git` and `go` included, is not read-only.
 The implementer audit never calls it, so a fabric-reference finding still fails the batch as correctness.
 
@@ -35,8 +37,9 @@ State the bound in the function's comment: the evidence shows the start still li
 Wording outside the fabric side says "fabric repo".
 
 Tests:
-- `refscanner_test.go`: a table over the classifier — each listed reader alone and in a pipeline, `;` and `&&` chains, a `|` or `>` inside quotes, against `>`, `>>`, `2>/dev/null`, `$(…)`, a backtick, `<(…)`, a trailing `&`, and `sort`, `uniq`, `tee`, `xargs`, `find`, `python3 -c`, `git` and `go`.
+- `refscanner_test.go`: a table over the classifier — each listed reader alone and in a pipeline, `;` and `&&` chains, a `|` or `>` inside quotes and a `$(…)` inside single quotes, against `>`, `>>`, `2>/dev/null`, `$(…)` bare and inside double quotes, a backtick bare and inside double quotes, `<(…)`, a trailing `&`, and `sort`, `uniq`, `tee`, `xargs`, `find`, `python3 -c`, `git` and `go`.
 - `acceptbatch_test.go`: rows in `TestAcceptBatchFabricReference_Refusals` and a new acceptance test: a batch with commits, its start an ancestor of HEAD and a clean tree, whose entries are read-only, is cleared with one audit warning per entry; one entry with a redirection, with `tee`, `sort` or `uniq`, or with no recorded command refuses the whole call naming the reset-to-start and fresh-run steps and changes nothing; a start that is not an ancestor and a dirty tree refuse as before.
+  The existing `HEAD moved past the start` row of `TestAcceptBatchFabricReference_Refusals` is reworded: its `go run …` entry is not a listed reader, so with the start an ancestor and the tree clean the call now refuses with the reset-to-start and fresh-run steps, and the row expects that text instead of `git reset --keep`.
 - `acceptaudit_test.go`: `TestAcceptAuditCmd_BatchClearsFabricReference` gains the committed read-only case through the verb.
 
 **ImpactSummary:** the explicit accept-audit --batch route widens to committed batches with read-only fabric-reference commands; the audit itself and every other route are unchanged.

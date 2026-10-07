@@ -16,6 +16,7 @@ Each returns the matched text, taken from the copy its pattern ran on and trimme
 The suffix still comes from `weftname`, which only this side may import.
 `doc.go` names the new type beside `RefScanner`.
 
-Tests: `refscanner_test.go` keeps `TestRefScanner_Matches` unchanged as the proof the audit's matches do not move, and adds a table over the location-free rule: the path rule's hits and misses (quoted separator path, bare word outside quotes, string literal inside quotes, heredoc body, slug merely containing the suffix) with the matched text, and the spelling rule's hits and misses (command position, behind a separator, inside a quoted search pattern) with the matched text.
+Tests: `refscanner_test.go` keeps `TestRefScanner_Matches` unchanged as the proof the audit's matches do not move, since `Matches` runs on this rule and its rows already cover the hits and misses of both rules.
+The new table covers only what that test cannot see, the matched text and the two rules being callable apart: a quoted separator path, whose matched text is read from the text with its quotes intact, a bare word and a spelling, whose matched text is read from the quote-blanked copy, a command that only the path rule matches and one that only the spelling rule matches, and a heredoc body that neither returns.
 
 **ImpactSummary:** fabricengine's reference scanner is refactored around a new location-free rule type; the audit's own match results are unchanged.
