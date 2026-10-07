@@ -24,3 +24,9 @@ shedengine.(*Shed).stepLocked        internal/shedengine/run.go:232
 So `pollEventsTick` (`wait.go:613`) kept not returning Done for a Stop that looks complete.
 Worth checking whether the `continued-in` session switch, or an output-file or offset check, keeps the Stop from being taken.
 The `shuttle-asking-holds` note and #407 cover a turn end read too early; this is a turn end never read.
+
+## Second case (2026-10-07)
+
+`bugfix-sessions`, Webster-Burler round 2: the burler ended its turn at 08:34:51 (Stop in `.lyx/shuttle/d9a47c207a52c3c94532ffc39927988b/events.jsonl`, `background_tasks: []`, both output files written), and `lyx shed step` (pid 3956223) sat 94 minutes with no child process until the orch sent SIGQUIT.
+The goroutine dump is the same as the first case: parked in `shuttleengine.(*Run).Wait` at `wait.go:305`, under `RunGated` (`run.go:643`) and `burlerengine.(*Engine).Run`.
+Both cases are a Webster-Burler round 2 whose shuttle run started a fresh strand while the round-1 strand of the same role had been used before, which may be the condition to test first.
