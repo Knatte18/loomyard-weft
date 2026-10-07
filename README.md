@@ -13,7 +13,6 @@ Waits on nothing open; can start now, in parallel.
 
 1. **A batchifier that groups small related cards into one Webster batch** — [`card-batching`](design-card-batching.md) · feature, webster
    - A Go batchifier that sizes each card, runs large cards alone and groups small ones sharing files within a budget; several named profiles in batcher.yaml
-   - **Before:** `bugfix-run-stalls`
 1. **Which gate runs which test tier, after-state and budget guard** — [`test-tiers`](design-test-tiers.md) · enhancement, loom, webster
    - Stage 3: review rounds run the impacted set, full plan verify only at Webster gate and Publish/Finalize; after-state recorded; per-package test budget guard
 1. **Shuttle reads turns right: a Stop is always taken, a turn end without output holds** — [`shuttle-turns`](design-shuttle-turns.md) · bug, enhancement, shuttle
@@ -22,14 +21,6 @@ Waits on nothing open; can start now, in parallel.
    - A running gate visible in status and on screen; no stray strands after a crash (#408/#409); batten run brings its child back; an orch resume verb that wakes the driver
 1. **A task branch is always on the remote** — [`run-pushes`](design-run-pushes.md) · bug, loom, fabric
    - Go pushes the warp branch wherever it pushes the weft; a loom status push survives a diverged remote (#418)
-
-### Layer B
-
-Starts when every entry it names under After is done.
-
-1. **Runs stop stalling, and a waiting run shows what it waits on** — [`bugfix-run-stalls`](design-bugfix-run-stalls.md) · bug, enhancement, shuttle, loom, reed
-   - Shuttle misses a valid Stop; an asking turn end ends the run; gates look like hangs; stray strands after a crash; status push on a diverged remote; redraw wait in config
-   - **After:** `card-batching`
 
 ## Notes
 
