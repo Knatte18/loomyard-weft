@@ -11,7 +11,7 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Shuttle reads turns right: a Stop is always taken, a turn end without output holds** — [`shuttle-turns`](design-shuttle-turns.md) · bug, enhancement, shuttle · running · Webster-Bouncer
+1. **Shuttle reads turns right: a Stop is always taken, a turn end without output holds** — [`shuttle-turns`](design-shuttle-turns.md) · bug, enhancement, shuttle · running · Describe
    - Wait misses a valid Stop (#411/#415); an asking turn end ends the run (#407); a replay corpus and live runs test turn reading; the post-Enter redraw wait in shuttle.yaml
 
 ## Notes
