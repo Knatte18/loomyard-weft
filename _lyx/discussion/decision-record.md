@@ -127,6 +127,12 @@ Rationale: the board requires CLI-wiring regression tests; `PATTERN-hubforge-fix
 Decision: cards name production code as their main targets and name test files by path, never by test-function glyph.
 Rationale: a test-suite prune in flight can rename or delete the fabric test functions this task extends; a file path stays valid, and only the functions inside it are re-validated.
 
+### Added after Discussion (parent, 2026-10-07): Re-plan the cards the test prunes touched
+
+Decision: Both test prunes (test-suite-prune-core dd8f4ffcd, test-suite-prune-rest 959025744) are now merged into this branch; they deleted, merged and renamed many tests. Revise only the cards whose test files or named tests the prunes deleted, merged or renamed, pointing them at where the coverage now lives; keep every other card as it is. Run lyx webster validate until clean.
+
+Rationale: The plan was written against main before the prunes landed; Webster must not start on cards that name missing files or tests.
+
 ## Constraints
 
 - `PATTERN-fabric-git`: all git on warp or weft, including the D4 diff and the D5 fetch, stays in `internal/fabricengine` through `gitexec.Run` (`PATTERN-gitexec-checked-call`); no new `//gitexec:raw` site unless it is a bool predicate, as `weftBranchExists` is.
