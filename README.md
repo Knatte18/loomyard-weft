@@ -14,8 +14,6 @@ Waits on nothing open; can start now, in parallel.
 1. **Bugfix: Webster and plan validity** — [`bugfix-webster`](design-bugfix-webster.md) · bug, webster, loom, quarry · running · Describe
    - Bugfix only: Plan-Gate refuses backward dependencies, Delete of a gone target, background-shell wait, slow batch validation
    - **Before:** `card-batching`, `test-tiers`
-1. **Runs stop stalling, and a waiting run shows what it waits on** — [`bugfix-run-stalls`](design-bugfix-run-stalls.md) · bug, enhancement, shuttle, loom, reed
-   - Shuttle misses a valid Stop; an asking turn end ends the run; gates look like hangs; stray strands after a crash; status push on a diverged remote; redraw wait in config
 
 ### Layer B
 
@@ -24,9 +22,18 @@ Starts when every entry it names under After is done.
 1. **A batchifier that groups small related cards into one Webster batch** — [`card-batching`](design-card-batching.md) · feature, webster
    - A Go batchifier that sizes each card, runs large cards alone and groups small ones sharing files within a budget; several named profiles in batcher.yaml
    - **After:** `bugfix-webster`
+   - **Before:** `bugfix-run-stalls`
 1. **Which gate runs which test tier, after-state and budget guard** — [`test-tiers`](design-test-tiers.md) · enhancement, loom, webster
    - Stage 3: review rounds run the impacted set, full plan verify only at Webster gate and Publish/Finalize; after-state recorded; per-package test budget guard
    - **After:** `bugfix-webster`
+
+### Layer C
+
+Starts when every entry it names under After is done.
+
+1. **Runs stop stalling, and a waiting run shows what it waits on** — [`bugfix-run-stalls`](design-bugfix-run-stalls.md) · bug, enhancement, shuttle, loom, reed
+   - Shuttle misses a valid Stop; an asking turn end ends the run; gates look like hangs; stray strands after a crash; status push on a diverged remote; redraw wait in config
+   - **After:** `card-batching`
 
 ## Notes
 

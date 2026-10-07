@@ -2,6 +2,8 @@
 
 `bugfix-run-stalls` · Task · bug, enhancement, shuttle, loom, reed
 
+Depends on: [`card-batching`](design-card-batching.md)
+
 ## Goal
 
 Runs stop stalling, and a run that waits on purpose shows what it waits on.
