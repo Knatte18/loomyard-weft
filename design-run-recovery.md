@@ -1,6 +1,6 @@
 # A run shows what it waits on and comes back up as it was
 
-`run-recovery` · Task · bug, enhancement, loom, reed, batten, orch · running · Loom-Preflight
+`run-recovery` · Task · bug, enhancement, loom, reed, batten, orch · running · Discussion-Write
 
 ## Goal
 
