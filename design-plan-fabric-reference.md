@@ -13,3 +13,34 @@ Two wants:
 
 - `accept-audit --batch` accepts pathless `fabric-reference` findings on a batch with commits when the findings come from read-only commands, or the audit tells a read from a write in the first place.
 - The plan stencil steers a corpus or fixture card to committed test data, never to live files of other worktrees.
+
+
+## From issue #424
+
+Imported from [issue #424](https://github.com/Knatte18/loomyard/issues/424).
+
+## What happened
+
+In one loom run, webster batch 08 failed `lyx webster record-batch 8` three separate times with the same `batch_failed` cause.
+Each time the implementer fork ran `go run ./tools/tokencount -last 40 -calibrate cautious -history <sibling fabric repo path>`, and the audit reported:
+
+`fabric-reference violation ... ran a fabric-referencing command (...) that can rewrite run state — an implementer fork must never touch the fabric repo directly`
+
+Each failure was followed by `lyx webster recover-batch 8`, which refused with `needs_fresh: true` ("batch 08 failed on findings recovery cannot check: fabric-reference ... (the finding names no path)").
+The webster master then escalated to the human each time, so the loom run halted as `blocked` (anomaly `escalation-to-human`) three times.
+A driver re-step after a `lyx` binary change (`last_step.binary_changed`) respawned the master, which asked again for the same cause, so the new build did not change the outcome.
+
+## Why it is abnormal
+
+- The fork repeats the same command in every attempt, so whatever instructs it (batch brief or plan) and the audit disagree; no attempt can pass, and the loop is only broken by a human.
+- The audit treats any command mentioning the fabric path as one that "can rewrite run state", without distinguishing a read-only calibration invocation, and the finding carries no path, so `recover-batch` cannot verify it and refuses.
+- The `recover-batch` refusal's way forward is inconsistent between attempts: the first offered only `reset --to start` then `run --fresh`, the later ones also offered `accept-audit --batch 8` then `recover-batch 8` (when the batch made no commit and the worktree is clean).
+  A batch that failed only on an audit finding should say up front which of these applies.
+
+## What to do
+
+- Decide whether `tools/tokencount` with `-history` is a legitimate implementer-fork command; if so, whitelist read-only tokencount calibration in the fabric-reference audit, or make the batch brief tell the fork not to run it.
+- Make the audit explain what the fork should do instead, and have `recover-batch` offer `accept-audit` consistently whenever it is applicable.
+- Consider a halt that repeats the identical audit finding to be surfaced as one escalation with the cause, rather than three master questions.
+
+Provenance: task `card-batching`; notes `webster-refusal-record-batch.md`, `webster-refusal-record-batch-2.md`, `webster-refusal-record-batch-3.md`, `webster-refusal-recover-batch.md`, `webster-refusal-recover-batch-2.md`, `webster-refusal-recover-batch-3.md`, `loom-halt.md`, `loom-halt-2.md`, `loom-halt-3.md`, `driver-binary-change-restep-20261007.md`.
