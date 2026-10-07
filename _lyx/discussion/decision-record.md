@@ -170,6 +170,12 @@ Decision: Plan-Write writes the plan now against the current tree; the 'reads bo
 
 Rationale: The operator's intent was to use the waiting time for Discussion and Plan, with implementation held until the prunes land; blocking Plan-Write on the prunes defeats that.
 
+### Added after Discussion (parent, 2026-10-07): Re-plan the cards the test prunes touched
+
+Decision: Both test prunes (test-suite-prune-core dd8f4ffcd, test-suite-prune-rest 959025744) are now merged into this branch; they deleted, merged and renamed many tests. Revise only the cards whose test files or named tests the prunes deleted, merged or renamed, pointing them at where the coverage now lives; keep every other card as it is. Run lyx webster validate until clean.
+
+Rationale: The plan was written against main before the prunes landed; Webster must not start on cards that name missing files or tests.
+
 ## Constraints
 
 - `PATTERN-refusal-way-forward`: every changed or new refusal (D4, D5, D6, D7, D8) gets its `contracts/specs/refusal-spec.md` row in the same commit and a test that reaches it.
