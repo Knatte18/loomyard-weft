@@ -1,6 +1,6 @@
 # Bugfix: Webster and plan validity
 
-`bugfix-webster` · Task · bug, webster, loom, quarry · running · Plan-Bouncer
+`bugfix-webster` · Task · bug, webster, loom, quarry · running · Plan-Burler
 
 Bugfix only (operator, 2026-10-06): fix what each section below reports, with a regression test per fix that drives the real CLI wiring, not only fakes.
 No new verbs, config keys or features; a reviewer treats any extension as a scope finding.
