@@ -16,3 +16,7 @@ Seen again 2026-10-05 in `board-config-per-worktree`: Merriam sat idle while shu
 
 Where the marker can go once `reed-status-tabs` lands: shuttle sets a pane user option on the agent's strand (e.g. `@gate` = `verify`) when a gate starts and clears it when the gate ends, and reed's status format shows it on the strand's button and pane border (e.g. `webster ⏳verify`).
 The gate is shuttle's, not the agent's, so shuttle is the one place that knows when it starts and ends.
+
+Elapsed time on screen too (operator, 2026-10-07): the on-screen marker shows how long each running gate has run so far, such as `webster ⏳verify 2m14s`, not only that it runs.
+The pane option can carry the gate's start time (e.g. `@gate_start`) so reed's status format computes the elapsed time at each refresh, with no writer ticking it.
+Seen 2026-10-07 in `bugfix-fabric`: the operator read the Webster-Burler round's 2.5-minute verify gate as a hang.
