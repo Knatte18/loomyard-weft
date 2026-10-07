@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster-Bouncer",
+  "current_producer": "Webster-Burler",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster-Bouncer",
-    "last": "Webster-Bouncer → awaiting",
+    "now": "Webster-Burler",
+    "last": "Webster-Bouncer → bounced to Webster-Burler",
     "wait": ""
   },
   "history": [
@@ -219,6 +219,12 @@
       "outcome": "awaiting",
       "output": "/home/knatte/Code/loomyard-LYXHUB/bugfix-fabric/_lyx/reviews/webster/round-3-bouncer-ledger.md",
       "at": "2026-10-07T06:14:55Z"
+    },
+    {
+      "producer": "Webster-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/bugfix-fabric/_lyx/reviews/webster/round-3-bouncer-ledger.md",
+      "at": "2026-10-07T06:15:44Z"
     }
   ],
   "product": {
