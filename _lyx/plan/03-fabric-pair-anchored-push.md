@@ -18,7 +18,7 @@
 
 **Uses:**
 - `internal/lock#AcquireWriteLockWithin`
-- `plan:internal/gitrepo#Repo.HasUnpulled`
+- `internal/gitrepo#Repo.HasUnpulled`
 - `internal/lock#AcquireWriteLock`
 - `internal/gitrepo#Repo.PushRebaseFree`
 - `internal/gitrepo#Repo.Fetch`

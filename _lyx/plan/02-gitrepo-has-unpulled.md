@@ -1,7 +1,7 @@
 # Card 2 — gitrepo reports commits the upstream holds that HEAD lacks
 
 **Create:**
-- `plan:internal/gitrepo#Repo.HasUnpulled` -> `func (r *Repo) HasUnpulled() (bool, error)`
+- `internal/gitrepo#Repo.HasUnpulled`
 
 **Edit:**
 - `internal/gitrepo/push.go`

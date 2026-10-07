@@ -1,15 +1,15 @@
 {
   "runGuid": "2fcc4af0a5a3fcf62322ace0a89fc950",
-  "planFingerprint": "d46da800ae4cc154f8658fc7f26a2b7e974485bc9d570e270e920107f45f7194",
+  "planFingerprint": "0e0074cba3719c273dc19705dafd54088558364967325f05dd112b744b712a3d",
   "planFileHashes": {
     "00-overview.md": "6df5b6d9a7a272dc211a272deab9a26938d4afff0efb343441e5c1635a15f02e",
     "01-lock-bounded-wait.md": "68f20ddc147e6e891b3fb048e3faa1eb18cce5aa8afb051d3a904af974171799",
-    "02-gitrepo-has-unpulled.md": "ffafde8b06dd974f317beb4c74c8db4718eab79329a5972c1bfb81df1bbf227c",
-    "03-fabric-pair-anchored-push.md": "4181c0e9182fd4ebd4941c57af77503672e03ef41a196d92ed83620beda31773",
+    "02-gitrepo-has-unpulled.md": "db8e816441ed85691e916445e02730d4571b9bc06a2d4b93353b7ce54997dfb2",
+    "03-fabric-pair-anchored-push.md": "799d5430432c421ff9fca87241bea5f37c0c2c1cddcf3858d6a86f493ad39f71",
     "04-loom-pushes-both-sides.md": "a11f4304a1ff6dd12f4089795e84c0d005c3da51c312862742a69612118ceac0",
     "05-fabric-push-sync-both-sides.md": "b9740ffcaa28aef324a5596b5f2f4af0509960500096099f7cb614327201c5be"
   },
-  "currentBatch": 2,
+  "currentBatch": 0,
   "masterStrand": "e91559ab3050c327aae41f9db1724795",
   "masterSessionId": "44cbfd05-ec82-45ec-bf99-d385e8850965",
   "batches": {
@@ -45,17 +45,29 @@
         "02-gitrepo-has-unpulled"
       ],
       "cardHashes": {
-        "02-gitrepo-has-unpulled": "ffafde8b06dd974f317beb4c74c8db4718eab79329a5972c1bfb81df1bbf227c"
+        "02-gitrepo-has-unpulled": "db8e816441ed85691e916445e02730d4571b9bc06a2d4b93353b7ce54997dfb2"
       },
       "startSha": "fc22c2608e66dd764cfe0b37cecf04784d87bfcb",
       "kind": "fork",
       "spawnedAt": "2026-10-07T10:29:13Z",
       "sessionId": "44cbfd05-ec82-45ec-bf99-d385e8850965",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "02-gitrepo-has-unpulled",
+        "status": "done",
+        "head_sha": "7ae3f9711253a6d14d17e10a321ea170334eb282"
+      },
+      "cardShas": [
+        "7ae3f9711253a6d14d17e10a321ea170334eb282"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-pushes/44cbfd05-ec82-45ec-bf99-d385e8850965/subagents/agent-a7c2953ed680c5ae8.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-pushes/44cbfd05-ec82-45ec-bf99-d385e8850965/subagents/agent-a26952c824816c7df.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-pushes/44cbfd05-ec82-45ec-bf99-d385e8850965/subagents/agent-a26952c824816c7df.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-pushes/44cbfd05-ec82-45ec-bf99-d385e8850965/subagents/agent-a7c2953ed680c5ae8.jsonl"
   ]
 }
