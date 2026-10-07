@@ -5,13 +5,15 @@
 Autonomous mode: no operator answered; the design was settled from the board entry, the code and a read-only measurement.
 
 1. Board read: `batcher-v2` (four parts: Merriam's context at fork time, learning loop, one weft flag, plans in card order).
-   Related entries read: `card-batching` (done; the cost model and DP this task extends), `cache-ttl-per-role` (Merriam idles between batches; no overlap), `plan-fabric-reference` (forks that read the weft fail the audit, so no card may run the measurement).
+   Related entries read: `card-batching` (done; the cost model and DP this task extends), `cache-ttl-per-role` (Merriam idles between batches; no overlap).
+   `plan-fabric-reference` (forks that read the weft fail the audit, so no card may run the measurement) was folded into this entry while the run was in Discussion, as the section "Card commands that reach the fabric repo" with issues #424 and #432.
 2. Code read at module level: `internal/batcher` (estimator, cost DP, template, retired-key precedent `alone_above`), `internal/websterengine/partition.go` (partition recorded once, breakdown in state.json), the rebaseline caller, `tools/tokencount` (`-weft` and `-history`), the Webster master stencil (orientation reads the overview and the codebase before the first fork), `loom-plan-spec.md` "Plan vs. schedule".
 3. Measurement: Merriam's context before each fork in `shuttle-turns`, `test-tiers` and `run-recovery`, and each fork's first-message context; they are equal.
    Base 50.3–53.5K at the first fork, growth 2.5–13.0K per batch with no visible dependence on the previous batch's card count; a resumed session restarts near base (51.4K).
    `tools/tokencount` over the three `cautious` runs and five identity runs: about 0.30M versus 0.40M fork weight per card.
 4. Challenge to the problem: the board expected the base to be computable exactly; Merriam's orientation is agent-driven, so the base became a fitted constant (D2).
 5. Settled the DP extension (position dimension), the position hand-over for rebaseline, the breakdown fields, the template numbers, the single flag, the calibration rework, and the card-order wording.
+6. Folded-in section: read the fabric-reference audit (`RefScanner`, the Uncheckable record, `AcceptBatchFabricReference`) and the Plan-Gate check list, then settled the plan check (D13), the committed-batch accept route (D14) and the template steer (D15).
 
 ## Rejected alternatives
 
@@ -23,6 +25,10 @@ Autonomous mode: no operator answered; the design was settled from the board ent
 - **Calibrate from recorded estimates only**: the recorded estimate uses the weights in force at the time, so it cannot evaluate a candidate profile; recomputing with the named profile does, and the recorded profile still groups runs for the cost table.
 - **Grid search over all coefficients inside tokencount**: the two start coefficients have a closed-form fit; the in-fork coefficients are reported as ratio and spread, and the operator re-fits by editing a profile and re-running.
 - **Attribute Webster-Review findings to cards**: findings name files and lines, not cards; per-run findings divided by cards is enough to compare profiles.
+- **Teach the audit to tell a read from a write and downgrade read-only fabric references to warnings**: that turns a correctness class into a warning on a regex's judgement with no explicit call; D14 widens only the explicit `accept-audit --batch` route and keeps the audit as the classifier.
+- **Give the fabric-reference finding a path so recovery can check it**: the finding is about a command, not a file in the tracked tree, so a path would be invented; the committed-batch accept route and the plan check remove the need.
+- **Refuse any path outside the tracked tree in the plan check (absolute paths, `..` escapes)**: legitimate verify commands use temp directories and tool paths, and the gate cannot tell a read from a write; the check is limited to the weft path and spelling the audit flags.
+- **Scan all card prose for the weft path and the spelling**: cards that document fabric commands would be refused for text; the scan covers only command-bearing text.
 - **A card that runs `tools/tokencount` against the weft to produce the template numbers**: the implementer audit fails such a batch (`plan-fabric-reference`, #424, #432); the numbers were measured in Discussion instead.
 - **Keep both `-weft` and `-history` with a shared default**: still two names for one repository.
 
@@ -40,6 +46,8 @@ _No rounds yet._
 - Q6 Which numbers go in the template? — auto-pick: `master_base: 52000`, `batch_growth: 7000`, means of the measurement (D7).
 - Q7 Does a resume reset the position? — auto-pick: calibration counts position per Merriam session (D9); the partition assumes no resume and is conservative after one.
 - Q8 Which flag name survives? — auto-pick: `-weft`, already the tool's name for the repository and its default (D8).
-- Q9 How are quality outcomes sourced? — auto-pick: failed batches and recoveries from the run's webster state in the weft history, Webster-Review findings from its review round files through their owning parser; missing data is marked, never zero (D11).
+- Q9 How are quality outcomes sourced? — auto-pick: failed batches and recoveries from the run's webster state in the weft history, Webster-Review findings from its review round files through `burlerengine.ParseReview`; missing data is marked, never zero (D11).
 - Q10 Where does the card-order rule go? — auto-pick: the spec states it; template and rubric point at it (D12, `PATTERN-producer-pointer-rule`).
-- Environment note: during measurement a read-only `sed -n` was used once to view a scratch report, against the user's global no-`sed` rule; no file was changed by it.
+- Q11 Which commands does the plan gate refuse? — auto-pick: a weft-sibling path in any command-bearing text, a fabric-driving spelling in Verify, the verify section and fenced blocks (D13).
+- Q12 How does a committed batch with read-only fabric references get accepted? — auto-pick: `accept-audit --batch` classifies the recorded command against a closed reader list; the audit is unchanged (D14).
+- Q13 Does the template or the rubric carry the committed-data steer? — auto-pick: the template; it points at the check by ID (D15).
