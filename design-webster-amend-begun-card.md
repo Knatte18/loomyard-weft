@@ -47,3 +47,6 @@ The loom halted `blocked` at `Webster` with anomaly `escalation-to-human`.
 - Have `lyx webster record-batch` check whether `rebaseline` would be accepted and only offer it as a way forward when it would; otherwise name the reset path first.
 
 Provenance: task `bugfix-sessions`; notes `loom-halt.md`, `webster-refusal-record-batch.md`, `webster-refusal-rebaseline.md`.
+
+Correction to issue #413 (orch, 2026-10-07): the reflection read the drift as produced by the goto to Plan-Write; the drift came from the orch's hand edit of card 1 while batch 1 was recorded, and the goto had happened before this Webster run began.
+Its finding stands: `record-batch` offers `rebaseline` as the way forward for a begun card, where `rebaseline` always refuses, so the advice should name only paths that can succeed.
