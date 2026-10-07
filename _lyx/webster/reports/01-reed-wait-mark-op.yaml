@@ -1,0 +1,6 @@
+status: OK
+head_sha: 2b6678422a5dcabbd5cb4d6fc8f7552cf1805201
+deviations:
+  - internal/reedengine/statusline_test.go
+  - internal/reedengine/state_test.go
+  - internal/shuttleengine/startup_test.go
