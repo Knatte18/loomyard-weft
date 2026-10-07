@@ -1,12 +1,13 @@
 {
   "current_producer": "Webster-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Webster-Bouncer: round 4 escalated to the parent (cause: circling); brief at /home/knatte/Code/loomyard-LYXHUB/shuttle-turns/_lyx/reviews/webster/round-4-escalation.md; decide with `lyx loom circling accept shuttle-turns` or `lyx loom circling continue shuttle-turns`, then run `lyx loom start` in the task worktree to resume",
+  "parent_notice": "Review segment of task `shuttle-turns` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/shuttle-turns/_lyx/reviews/webster/round-4-escalation.md` with a one-shot fork.",
   "pause_requested": false,
   "activity": {
     "now": "Webster-Bouncer",
-    "last": "Webster-Burler → bounced to Webster-Bouncer",
-    "wait": ""
+    "last": "Webster-Bouncer → awaiting",
+    "wait": "bouncer Webster-Bouncer: round 4 escalated to the parent (cause: circling); brief at /home/knatte/Code/loomyard-LYXHUB/shuttle-turns/_lyx/reviews/webster/round-4-escalation.md; decide with `lyx loom circling accept shuttle-turns` or `lyx loom circling continue shuttle-turns`, then run `lyx loom start` in the task worktree to resume"
   },
   "history": [
     {
@@ -226,6 +227,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/shuttle-turns/_lyx/reviews/webster/round-4-review.md",
       "at": "2026-10-07T16:12:43Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Webster-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/shuttle-turns/_lyx/reviews/webster/round-4-bouncer-ledger.md",
+      "at": "2026-10-07T16:13:25Z"
     }
   ],
   "product": {
