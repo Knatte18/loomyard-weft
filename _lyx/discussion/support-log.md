@@ -52,3 +52,10 @@ _No rounds yet._
 - **Q11 — Where exactly is the tree-sitter chain cut?** Delegated to Plan-Write after the link-time measurement, with the goal and guard fixed (D8).
 - **Q12 — New PATTERN entries?** Resolved (auto-pick): none; the operator wanted the Testing section revised, not grown, so `PATTERN-test-speed`, `PATTERN-verified-tree` and `PATTERN-comment-line-breaks` absorb the changes (D11).
 - **Q13 — The `reedengine` contention flake.** Resolved (auto-pick): out of scope; no measured case for a heavy-package tier.
+- **Q14 — Who can set `publish_verify`, and what bounds it?** Resolved (auto-pick): `landing` is a per-worktree config kept in the weft repo, so a task can edit its own value; accepted, since the full plan verify still runs.
+The edit is not in the PR diff, which is the warp branch's; the hub sees it only in Finalize's config-change notice after the landing, and an emptied value skips the `tmux` gate for that landing (D4, Open risks).
+The same fact means the value this task commits reaches `main`'s copy only when the hub re-applies it, and a task forked earlier has no key and runs no `tmux` tier (D4, Open risks).
+- **Q15 — Does the round gate compile the `tmux` and `llm` tags?** Resolved (auto-pick): yes, `go vet` under every tag over the set, with the set computed under every tag; the tiers themselves are never run (D2).
+- **Q16 — Is the lint block-level or line-level?** Resolved (auto-pick): line-level, so an untouched legacy wrapped line is never flagged (D7).
+- **Q17 — How are `verifytree` entries retained?** Resolved (auto-pick): one entry per command; other commands' entries for a different tree are dropped, the plan-verify entry kept (D3).
+- **Q18 — How is a very large impacted set run?** Resolved (auto-pick): a derived command over 8000 characters falls back to the full plan verify (D2).
