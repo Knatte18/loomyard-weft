@@ -18,3 +18,9 @@ Options raised:
 - The driver itself becomes that on-call role, with read access to the plan: it already lives the whole run, but grows heavier than a step driver.
 
 Plain routing ("deliver to whoever works now") and judgment ("what does this mean for the run") may want different answers.
+
+Steps with no LLM at all: the Go producers (Preflight, Batchifier, the verify gates, Publish, Finalize, teardown) have no strand to deliver to.
+A message could wait in its queue for the next LLM producer if the alias is resolved at delivery rather than at send, but that agent may not be the right one (after Batchifier comes the Webster master, while the instruction may concern the plan).
+This suggests a split to discuss:
+- Content ("the settle comes from config") goes into the decision record, which is durable, read by every later LLM producer, and needs no live receiver.
+- Only an instruction that must act now needs a live receiver, and the most urgent one, stop, is a run pause (`lyx batten pause`), which works during a Go step too.
