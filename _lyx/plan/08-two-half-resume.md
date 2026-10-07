@@ -28,12 +28,12 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/shuttleengine#Runner.ProbeGated`
+- `internal/shuttleengine#Runner.ProbeGated`
 - `plan:internal/burlerengine#Handle`
 - `plan:internal/burlerengine#StrandRemover`
 - `plan:internal/burlerengine#ErrHalfNotStopped`
 - `plan:internal/burlerengine#Engine.join`
-- `plan:internal/shedadapters#BurlerDeps`
+- `internal/shedadapters#BurlerDeps`
 - `internal/shedadapters#BurlerProducer.probeLiveRound`
 - `internal/shedadapters#archiveStaleOutputs`
 

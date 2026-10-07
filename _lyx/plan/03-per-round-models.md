@@ -1,10 +1,10 @@
 # Card 3 — `review` and `fix` model lists, picked per round
 
 **Create:**
-- `plan:internal/burlerengine#ModelChoice` -> `type ModelChoice struct`
-- `plan:internal/burlerengine#RoundModels` -> `type RoundModels struct`
-- `plan:internal/burlerengine#RoundModels.Pick` -> `func (m RoundModels) Pick(round int) (review, fix ModelChoice)`
-- `plan:internal/shedadapters#BurlerDeps` -> `type BurlerDeps struct`
+- `internal/burlerengine#ModelChoice`
+- `internal/burlerengine#RoundModels`
+- `internal/burlerengine#RoundModels.Pick`
+- `internal/shedadapters#BurlerDeps`
 - `internal/burlerengine/models.go`
 - `internal/burlerengine/models_test.go`
 

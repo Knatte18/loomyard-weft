@@ -1,7 +1,7 @@
 # Card 2 — One function deriving the review-ready marker path
 
 **Create:**
-- `plan:internal/burlermarker#Path` -> `func Path(root, base, reviewPath string) (string, error)`
+- `internal/burlermarker#Path`
 - `internal/burlermarker/doc.go`
 - `internal/burlermarker/marker.go`
 - `internal/burlermarker/marker_test.go`

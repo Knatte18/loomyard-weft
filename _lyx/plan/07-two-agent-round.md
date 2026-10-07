@@ -46,12 +46,12 @@
 - `contracts/stencils/burler/burler-template-round-orchestrator.md`
 
 **Uses:**
-- `plan:internal/burlermarker#Path`
+- `internal/burlermarker#Path`
 - `plan:internal/burlerengine#StrandRemover`
 - `plan:internal/burlerengine#NewReedStrandRemover`
-- `plan:internal/burlerengine#ModelChoice`
-- `plan:internal/burlerengine#RoundModels`
-- `plan:internal/burlerengine#RoundModels.Pick`
+- `internal/burlerengine#ModelChoice`
+- `internal/burlerengine#RoundModels`
+- `internal/burlerengine#RoundModels.Pick`
 - `internal/shuttleengine#Runner.StartGated`
 - `internal/shuttleengine#ErrNotStarted`
 - `internal/websterengine#removeStrandIfLive`

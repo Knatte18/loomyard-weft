@@ -1,16 +1,16 @@
 {
   "runGuid": "3f70ff4f0dedeef254ef8e00f0a4fdad",
-  "planFingerprint": "4a048998472966b9a71b65731c3b353583b28de1cd1e242038c40346e4256346",
+  "planFingerprint": "4b630fab93db9c9e685bb084c2dea773f934544f4b795bbbd38632bba46b9ce4",
   "planFileHashes": {
     "00-overview.md": "aaf97681e76341a086e25270bad7d666b413259ccc2932c0bcee4c317311997c",
-    "01-shuttle-probe.md": "6dd08c4c793bf4ebb2ae391c0cd8b7e209594ba4586b3f941dfa427d12ea32ca",
-    "02-ready-marker-path.md": "3e62842f3d2b471d65c7dae200de9debb6853ae984c8a01c01450ad13aeebeb6",
-    "03-per-round-models.md": "313202a2aa0d14389b1b25ecc52533ea948996c1175589f849b750558f3e376e",
+    "01-shuttle-probe.md": "57be32869f30b1a086e316368a25b8625e915b91d4225b46bdcf0c3fc3969f47",
+    "02-ready-marker-path.md": "cf8403cd6a7ed0f66e737143eaa5f4b14e7f2dff29b89c89378ce87aad6587b5",
+    "03-per-round-models.md": "0ce8989cdac13e49abbff54b27efb15f908742eb57afee15353b4c94df426bf5",
     "04-await-review-verb.md": "e47d066776fa34a0c24964c26e1b58f129f8c4eabb4cd97e65b73f8d6f40f23e",
     "05-round-stencils.md": "2582a2eeb74dd2181725a3abc4a0f90572298cd6eb80a58d2ae538bce270b9c4",
     "06-strand-remover.md": "e7ba7552299e01686a395346f9c39170d68dff9cfd8ab79efb0893b6cc2ea6d8",
-    "07-two-agent-round.md": "cfd51269577de144e508c45d121efedb1a314c1c9b21a7d600d100b420ea31db",
-    "08-two-half-resume.md": "0d4dfbceaad1f32c3178e4ea1b37c4cb448c791221aa7daef261ee1bbaf79059"
+    "07-two-agent-round.md": "ce75b7d74ec8aabc49440a18a1faf4335eff2a680c1e730a85ede1533536b601",
+    "08-two-half-resume.md": "bf88f133efcdc67aa94ccc052565c48038eef8ef75c31791dc07e795064b46b5"
   },
   "partition": [
     {
@@ -350,7 +350,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "590235e54e047e09a509b232f6386ad8",
   "masterSessionId": "947162f0-91d4-4ee3-a7ab-5dde96fdaba3",
   "batches": {
@@ -363,17 +363,31 @@
         "04-await-review-verb"
       ],
       "cardHashes": {
-        "01-shuttle-probe": "6dd08c4c793bf4ebb2ae391c0cd8b7e209594ba4586b3f941dfa427d12ea32ca",
-        "02-ready-marker-path": "3e62842f3d2b471d65c7dae200de9debb6853ae984c8a01c01450ad13aeebeb6",
-        "03-per-round-models": "313202a2aa0d14389b1b25ecc52533ea948996c1175589f849b750558f3e376e",
+        "01-shuttle-probe": "57be32869f30b1a086e316368a25b8625e915b91d4225b46bdcf0c3fc3969f47",
+        "02-ready-marker-path": "cf8403cd6a7ed0f66e737143eaa5f4b14e7f2dff29b89c89378ce87aad6587b5",
+        "03-per-round-models": "0ce8989cdac13e49abbff54b27efb15f908742eb57afee15353b4c94df426bf5",
         "04-await-review-verb": "e47d066776fa34a0c24964c26e1b58f129f8c4eabb4cd97e65b73f8d6f40f23e"
       },
       "startSha": "35e36281eab76e18bcd1ffa8ad6fe9a18563f679",
       "kind": "fork",
       "spawnedAt": "2026-10-07T18:48:40Z",
       "sessionId": "947162f0-91d4-4ee3-a7ab-5dde96fdaba3",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-shuttle-probe",
+        "status": "done",
+        "head_sha": "63a6e8a4e6937cd1af02b641bbbb7052034f953c"
+      },
+      "cardShas": [
+        "63a6e8a4e6937cd1af02b641bbbb7052034f953c"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-cost/947162f0-91d4-4ee3-a7ab-5dde96fdaba3/subagents/agent-a6a55210cd3c146bd.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-cost/947162f0-91d4-4ee3-a7ab-5dde96fdaba3/subagents/agent-a6a55210cd3c146bd.jsonl"
+  ]
 }

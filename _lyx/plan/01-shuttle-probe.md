@@ -1,7 +1,7 @@
 # Card 1 — Non-waiting live-run probe on the shuttle attach seam
 
 **Create:**
-- `plan:internal/shuttleengine#Runner.ProbeGated` -> `func (r *Runner) ProbeGated(spec Spec, gate GateSpec) (*Run, bool, error)`
+- `internal/shuttleengine#Runner.ProbeGated`
 
 **Edit:**
 - `internal/shuttleengine/attach.go`
