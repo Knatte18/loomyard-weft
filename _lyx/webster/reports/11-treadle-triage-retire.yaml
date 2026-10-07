@@ -1,0 +1,8 @@
+status: OK
+head_sha: c3ec3da17d3d405f657ac9d56cc6606de96a318b
+deviations:
+  - internal/shuttleengine/completionsignal_enforcement_test.go
+  - internal/webstercli/verbs_test.go
+  - internal/shuttlecli/smoke_interrupt_test.go
+  - internal/shuttleengine/attach.go
+  - internal/shuttleengine/wait_test.go
