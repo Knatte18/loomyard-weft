@@ -44,3 +44,40 @@ A driver re-step after a `lyx` binary change (`last_step.binary_changed`) respaw
 - Consider a halt that repeats the identical audit finding to be surfaced as one escalation with the cause, rather than three master questions.
 
 Provenance: task `card-batching`; notes `webster-refusal-record-batch.md`, `webster-refusal-record-batch-2.md`, `webster-refusal-record-batch-3.md`, `webster-refusal-recover-batch.md`, `webster-refusal-recover-batch-2.md`, `webster-refusal-recover-batch-3.md`, `loom-halt.md`, `loom-halt-2.md`, `loom-halt-3.md`, `driver-binary-change-restep-20261007.md`.
+
+
+## From issue #432
+
+Imported from [issue #432](https://github.com/Knatte18/loomyard/issues/432).
+
+## What happened
+
+A webster batch (`13-tail-in-stencils-and-steer`) needed run-event data that lives under the weft checkout's `.lyx/shuttle/*/events.jsonl`.
+The implementer fork read those files with read-only shell commands (`head`, `jq`, `awk`, `cat`, `grep`).
+`lyx webster record-batch 13` failed the batch with a fabric-reference violation for each such command ("can rewrite run state — an implementer fork must never touch the fabric repo directly").
+The batch's card did not say which route to the data is allowed, so the fork had no way to know the reads would be flagged.
+
+The way forward then looped:
+
+1. `lyx webster recover-batch 13` refused: "batch 13 failed on findings recovery cannot check", with `needs_fresh: true` and the finding "names no path".
+   It was run twice with the identical refusal.
+2. The refusal pointed to `lyx webster accept-audit --batch 13` followed by `recover-batch`, valid only when the batch made no commit.
+3. `lyx webster accept-audit --batch=13` refused: "batch 13 made a commit or recorded no start commit, so its tree cannot be shown unchanged"; its way forward is `lyx webster reset --to start` and `lyx webster run --fresh`.
+
+The batch had committed work, so the only remaining route was discarding the batch.
+A recovery strand later read the same files read-only through the worktrees' own `.lyx` links (which name no weft path) and the audit passed, so the route was found by trial.
+
+## Why it is abnormal
+
+- The audit classifies commands that only read run files as ones that "can rewrite run state"; a read-only `head`/`jq`/`cat` of an events file is not a rewrite.
+- The finding carries no path, so `recover-batch` cannot verify it and demands a fresh run, and `accept-audit` is unusable once the batch has committed.
+  A finding that is a false positive on a committed batch has no accept route.
+- Nothing tells an implementer (card, prompt or audit message) which access route to run files is permitted.
+
+## What to do
+
+- Make the fabric-reference audit distinguish read-only commands from ones that write, or name the allowed read route in the implementer prompt/card.
+- Let `accept-audit` (or `recover-batch`) handle a finding on a batch that committed, for example by checking that the commit does not touch the fabric repo, instead of requiring an unchanged tree.
+- Give the finding a path (or the command's target) so recovery can check it.
+
+Provenance: task `shuttle-turns`; notes `webster-refusal-record-batch.md`, `webster-refusal-recover-batch.md`, `webster-refusal-recover-batch-2.md`, `webster-refusal-accept-audit.md`, `13-tail-in-stencils-and-steer-recovery.md`.
