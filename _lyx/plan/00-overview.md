@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -34,7 +34,7 @@ Reed stops stacking a bare claude over a dormant orch and stops reviving an unga
 
 ## Shared Decisions
 
-- Wait labels are one vocabulary across status and screen: `verify <site>` for a verify, `gate <entry name>` for a shuttle gate entry, `background shells` for the shell wait.
+- Wait labels are one vocabulary across status and screen: `verify` in the status note and `verify <producer>` on screen for a verify, `gate <entry name>` for a shuttle gate entry, `background shells` for the shell wait.
 - Every marker that `lyx loom status` reads carries a pid, and a dead pid reads as absent; the pane mark is display only and no Go decision reads it.
 - A failure to set or clear a mark, or to write or remove a marker, is logged and changes no verdict, error return or gate outcome.
 - Elapsed time is rendered by one formatter in `loomcli`, from an injectable clock; tmux computes the on-screen elapsed time itself.
@@ -46,6 +46,6 @@ Reed stops stacking a bare claude over a dormant orch and stops reviving an unga
 go build ./...
 go test ./...
 go test -tags integration ./...
-go test -tags tmux ./internal/reedengine/... ./internal/reedcli/...
+go test -tags tmux ./internal/reedengine/... ./internal/reedcli/... ./internal/loomcli/... ./internal/webstercli/...
 go vet -tags llm ./...
 ```

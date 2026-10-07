@@ -5,7 +5,9 @@
 - `internal/reedengine/strand_test.go`
 - `internal/reedcli/add.go`
 - `internal/reedcli/unlessname_integration_test.go`
+- `internal/reedengine/doc.go`
 - `internal/vscode/config.go`
+- `docs/overview.md`
 
 **Intent:**
 `AddStrandUnless` skips the add when a strand named `unlessName` exists in this worktree's reed state, live or dormant (D4, #408).
@@ -17,8 +19,9 @@ Bound: the skip only ever suppresses an add; it launches, revives and removes no
 
 The `--unless-name` flag's help and the `add` verb's Long text in `add.go` say the match is any strand of that name in this worktree's state, live or dormant.
 The comment on the vscode chain's add row in `config.go` says the same.
+`reedengine/doc.go`'s sentence on `AddStrandUnless` (a live match skips, a dead or hidden one does not count) and `docs/overview.md`'s sentence on the add row (an orch strand that is live) are rewritten to say any strand of that name in this worktree's state, live, dormant or hidden, skips the add (D8).
 
 `strand_test.go`'s table for the old helper becomes the name-match table, and `TestAddStrandUnless_NotLiveAdds` flips: a dormant orch strand in state now skips, and only a state with no orch strand adds.
 The tmux-tier `unlessname_integration_test.go` gains the dormant case (an orch strand whose pane was killed: `reed add --unless-name orch` adds nothing) and keeps the no-orch case adding.
 
-**ImpactSummary:** One caller (the vscode folder-open chain) now also skips over a dormant orch; every other add is unchanged.
+**ImpactSummary:** One caller (the vscode folder-open chain) now also skips over a dormant orch; every other add is unchanged, and the two doc sentences on the old live-only rule are rewritten.

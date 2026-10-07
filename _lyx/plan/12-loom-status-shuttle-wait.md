@@ -15,6 +15,8 @@ The first marker that is present with a live pid wins; a marker with a dead pid 
 A live marker renders through card 10's formatter as `<producer>: <kind> running <elapsed>`, with the kind (`gate <entry name>` or `background shells`) as the what and no detail clause, e.g. `Plan-Write: gate validate-plan running 2m`.
 A config load error is returned as the hook's error, as a verify-marker read error already is.
 
-`reviewstatus_test.go` pins, under a fixed clock and a temporary shuttle run root: a live shuttle marker is reported when no verify runs, a live verify marker is reported ahead of it, a dead shuttle marker falls through to the parent-review note, and no marker with no review is empty.
+`reviewstatus_test.go` pins, under a fixed clock and a temporary shuttle run root: a live shuttle marker is reported when no verify runs, a live verify marker is reported ahead of it, and a dead shuttle marker falls through to the parent-review note.
+The empty result with no marker and no review is already pinned by card 10's rows over the same hook, so it is not repeated here.
+The shuttle step is the second of the three waits the `waiting` section of `loom-status-spec.md` lists (card 10).
 
 **ImpactSummary:** One more read in loom status's waiting chain; the hook's signature and the other two reads are unchanged.
