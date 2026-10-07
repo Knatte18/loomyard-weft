@@ -11,7 +11,7 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Batcher v2: Merriam context at fork time, a fitted model, plans in card order** — [`batcher-v2`](design-batcher-v2.md) · bug, enhancement, webster · running · PR-Gate
+1. **Batcher v2: Merriam context at fork time, a fitted model, plans in card order** — [`batcher-v2`](design-batcher-v2.md) · bug, enhancement, webster · awaiting · PR-Gate
    - Size batches from Merriam measured context, fit the batchifier from logged runs, one tokencount weft flag, card order in the plan spec, and card commands that never reach the fabric repo
 1. **Burler: a parallel reviewer and fixer, a model per round** — [`burler-cost`](design-burler-cost.md) · feature, burler · running · Webster
    - Split a Burler round into a cheap reviewer and a stronger fixer that start together, and pick the model per round
