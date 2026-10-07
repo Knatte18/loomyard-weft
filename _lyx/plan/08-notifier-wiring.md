@@ -1,4 +1,4 @@
-# Card 7 — notifier-wiring
+# Card 8 — notifier-wiring
 
 **Create:**
 - `internal/orchcli/notify.go`

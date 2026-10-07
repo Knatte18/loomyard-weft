@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -19,36 +19,38 @@ Senders and stencils carry the fixed message tail, the redraw settle moves into 
 2 — waiting-trace — log a waiting turn end's outstanding tasks once
 3 — redraw-settle-config — submit_redraw_settle_ms in shuttle.yaml
 4 — message-tail — the MessageTail constant, appended by lyx shuttle send
-5 — hold-turn-end — Wait holds a turn end without output and notifies the parent; AwaitOperator retires
-6 — attach-held-runs — Attach waits on legacy asking runs with a live strand
-7 — notifier-wiring — loomcli, webstercli and burlercli runners notify the prime's orch
-8 — shed-asking-branches — shed producers drop their asking branches
-9 — webster-asking-and-shell-note — websterengine drops its asking error; the background-shell note reports the real outcome
-10 — treadle-triage-retire — treadle drops its asking triage
-11 — retire-outcome-asking — remove OutcomeAsking and update CLI help and docs
-12 — tail-in-stencils-and-steer — the orch, driver and AskUserQuestion texts carry the tail and the hold's rules
-13 — replay-corpus — the offline replay corpus and an exported clock seam
-14 — live-turn-scenarios — llm-tier live scenarios
+5 — hold-turn-end — Wait holds a turn end without output; AwaitOperator retires
+6 — hold-notice — a held turn end of an autonomous run notifies the parent once
+7 — attach-held-runs — Attach waits on legacy asking runs with a live strand
+8 — notifier-wiring — loomcli, webstercli and burlercli runners notify the prime's orch
+9 — shed-asking-branches — shed producers drop their asking branches
+10 — webster-asking-and-shell-note — websterengine drops its asking error; the background-shell note reports the real outcome
+11 — treadle-triage-retire — treadle drops its asking triage
+12 — retire-outcome-asking — remove OutcomeAsking and update CLI help, comments and docs
+13 — tail-in-stencils-and-steer — the orch, driver and AskUserQuestion texts carry the tail and the hold's rules
+14 — clock-seam — the exported Clock and Runner.SetClock
+15 — replay-corpus — the offline replay corpus
+16 — live-turn-scenarios — llm-tier live scenarios
 
 ## Shared Decisions
 
 ### Decision: removal-order
 
-- **Decision:** Wait stops returning asking in card 5 while the `OutcomeAsking` constant stays; cards 8–10 remove every caller branch, and card 11 deletes the constant.
+- **Decision:** Wait stops returning asking in card 5 while the `OutcomeAsking` constant stays; cards 9–11 remove every caller branch, and card 12 deletes the constant.
 - **Rationale:** each card must build on its own, and a constant with callers cannot be deleted before them.
-- **Applies to:** cards 5, 8, 9, 10, 11
+- **Applies to:** cards 5, 9, 10, 11, 12
 
 ### Decision: notice-shape
 
 - **Decision:** the hold notice uses `«` and `»` as its fixed delimiter pair, cuts each agent part to 200 runes, names at most five tasks, and quotes `MessageTail`; `hold.go` is its only builder.
-- **Rationale:** D5's bounds and the orch stencil (card 12) must describe one shape.
-- **Applies to:** cards 5, 12, 13, 14
+- **Rationale:** D5's bounds and the orch stencil (card 13) must describe one shape.
+- **Applies to:** cards 6, 13, 15
 
 ### Decision: legacy-asking-value
 
 - **Decision:** the string `asking` survives only as an unexported attach-side constant for records an older binary wrote; `RunState.AskingOffset` is read, never written.
 - **Rationale:** D6 attaches such records; nothing new writes them.
-- **Applies to:** cards 5, 6, 11
+- **Applies to:** cards 5, 7, 12
 
 ## verify:
 

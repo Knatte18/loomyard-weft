@@ -1,4 +1,4 @@
-# Card 8 — shed-asking-branches
+# Card 9 — shed-asking-branches
 
 **Edit:**
 - `internal/shedadapters/singlellm.go`
@@ -25,7 +25,7 @@ D7 for the shed producers: every branch that existed only to handle a shuttle as
   Rewrite the probe comment in `Call` that names `spec.AwaitOperator`.
 - `BurlerProducer` loses the asking case in its attempt loop and in `probeLiveRound`.
 - `WebsterProducer.Call` loses its `websterengine.ErrMasterAsking` branch, and `masterAskingReason` is deleted.
-  This removes the last reference to `ErrMasterAsking` and `MasterAskingError` outside `websterengine`, which card 9 deletes.
+  This removes the last reference to `ErrMasterAsking` and `MasterAskingError` outside `websterengine`, which card 10 deletes.
 - `shedadapters/doc.go` drops the asking rows of its outcome mapping;
   `loomshed/discussionwrite.go` and `loomshed/planwrite.go` drop the sentences that name the asking Stuck path;
   the `loom-recipe.yaml` header comment drops the asking path from Discussion-Write's reachable Stucks, keeping the gate-exhaustion one.
