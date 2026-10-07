@@ -489,7 +489,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 13,
   "masterStrand": "079119ce1835bb673c50f32129cce045",
   "masterSessionId": "c49f023a-9153-4106-ac1f-0444b0d813d8",
   "batches": {
@@ -566,6 +566,27 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-turns/c49f023a-9153-4106-ac1f-0444b0d813d8/subagents/agent-a9645bb2924804551.jsonl"
       ]
+    },
+    "13": {
+      "slug": "tail-in-stencils-and-steer",
+      "cards": [
+        "13-tail-in-stencils-and-steer",
+        "14-clock-seam",
+        "15-replay-corpus",
+        "16-live-turn-scenarios"
+      ],
+      "cardHashes": {
+        "13-tail-in-stencils-and-steer": "1fb9f5768c3cee7a53c35baf84d0435cca180200ce2be3d982f6b9a6250b4aea",
+        "14-clock-seam": "c8c0dfeb0f093f72c59ea358e35a3bfe780924b7aa04e2d3d3c8e5f6a82e19a3",
+        "15-replay-corpus": "c085cec4e68a904fa0f771d5e34d11ce473774bd3553bc0ec44e4f33d37bd541",
+        "16-live-turn-scenarios": "89c7c436e96dd1db0efa5f8d4f9485d01e643606c7d54ceec15f89e376b579fb"
+      },
+      "startSha": "c3ec3da17d3d405f657ac9d56cc6606de96a318b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T14:30:58Z",
+      "sessionId": "c49f023a-9153-4106-ac1f-0444b0d813d8",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "attach-held-runs",
