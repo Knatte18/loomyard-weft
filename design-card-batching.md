@@ -24,13 +24,18 @@ The batchifier is built once cards name the members they touch.
 - The per-batch validation and drift check (`begin-batch`, `record-batch`) then runs per group, not per card; the operator wants plan drift caught as it happens.
 - It should fit the parallel-execution direction in `manifest/designs/webster-parallel-execution.md`, where the same DAG decides which groups may run concurrently.
 
-Depends on `plan-glyph-precision`.
+Member-level grouping depends on `plan-glyph-precision`; the quick fix below does not.
+
 ## Quick fix for tokens (operator, 2026-10-07)
 
-The operator wants better batches now, as a quick fix for token use, not one batch per card.
-A token count over the five latest runs (`.scratch/tokens/count.py`, 2026-10-07) put Webster's implementer forks at about 54% of all weighted tokens, nearly all of it cache reads: each fork reads a large context afresh (574M cache-read tokens over 81 forks; the two test-suite prunes ran 26 and 18).
+The operator wants better batches now, as a quick fix for token use, not one batch per card, and chose it as the first token saving to build.
+A token count over the five latest runs (`tools/tokencount`, 2026-10-07) put Webster's implementer forks at about 54% of all weighted tokens, nearly all of it cache reads: each fork reads a large context afresh (574M cache-read tokens over 81 forks; the two test-suite prunes ran 26 and 18).
 For tokens, file-level grouping is enough: cards that edit the same files or package and follow each other in plan order share one fork, so their shared context is read once, with a cap on cards per batch to keep the context and failure localisation in bounds.
 So this quick fix does not wait on `plan-glyph-precision`; finer member-level grouping can follow once cards name members.
+
+A fork's size is not the master's cost: in the tests while Webster was built and hardened, a fork that succeeded added only about 1,000 tokens to the master (operator, 2026-10-07).
+The cost is in the forks themselves: a sample of five forks on `bugfix-webster` started at 56–89K context tokens and grew to 155–217K over 80–140 messages, each message reading the whole context again.
+Fewer forks with better batches means less repeated exploration and far fewer fork start-ups, so this is where the token saving starts.
 
 ## Design so far (operator, 2026-10-07)
 
