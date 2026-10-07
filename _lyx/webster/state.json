@@ -498,7 +498,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "727e268dfb679f3d5ac4184fcfabec1f",
   "masterSessionId": "39aea993-b483-4287-a488-e26c7cdbd727",
   "batches": {
@@ -584,6 +584,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tiers/39aea993-b483-4287-a488-e26c7cdbd727/subagents/agent-a48c6619b0ef9a5e7.jsonl"
       ]
+    },
+    "9": {
+      "slug": "mark-guards",
+      "cards": [
+        "09-mark-guards"
+      ],
+      "cardHashes": {
+        "09-mark-guards": "cec4c1ed88fdc946fdf39a630c3b4c7ce70db157042245056849a03942dbdde0"
+      },
+      "startSha": "685ffe648347aa5988dc1b9fefbc41b4912c7a41",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T14:31:24Z",
+      "sessionId": "39aea993-b483-4287-a488-e26c7cdbd727",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
