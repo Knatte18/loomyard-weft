@@ -1,0 +1,522 @@
+{
+  "runGuid": "5038ae2bebfc26ab905115a1024a8687",
+  "planFingerprint": "1ac7911b9c196ed56efed6279fcfe566cbc4d1190be16564312670572a36d52a",
+  "planFileHashes": {
+    "00-overview.md": "4ef4d3390263b1929de75e05c694fccc47cc8ca54e76d345289f608e0c526e18",
+    "01-payload-authority.md": "853d0770e7a4e95f7e25dfaae6ef3050f18e45b9022006ec81cdc5ff6a08ab8e",
+    "02-waiting-trace.md": "35bb9fefb734c4e3b93587f41d746c747f442458d17cab99d00da4960c08c92f",
+    "03-redraw-settle-config.md": "782b56132c2f7647d31332663523baad738364b2d35a8278f11dad574c4c34f7",
+    "04-message-tail.md": "77952b3e2ed7c2da981d6d1b7b93517c898ff3a9ee262712fcef12d5cf213b24",
+    "05-hold-turn-end.md": "a91208cbb4aefc5a5a149cb1252e7cb4fb4c902902aa90b4e6f1a22129e657ec",
+    "06-hold-notice.md": "6b91c60e7c29963d3ea19581b4aeff2fd89d878a1e67887d957b5d5fa0afb713",
+    "07-attach-held-runs.md": "d924c0e4b7e88e401ba6e350ce646350da8d019c2f00e25bd97cfeda2540254d",
+    "08-notifier-wiring.md": "4b325c718bd16ba514648486dc7c5d0230668610231533342e667f773e3f361d",
+    "09-shed-asking-branches.md": "6be108533aa04a0c92cf90d7dcd9f2684f910232119747599df07049e384cd2b",
+    "10-webster-asking-and-shell-note.md": "21a41022ea93385b7e8d8d3694196d55a8cf0d212b258e4ac2eef24a810ad398",
+    "11-treadle-triage-retire.md": "dab7fe4c3704bcd5cb1a79f1d40de63746fef6ba0753be9cc7e50d081c39088e",
+    "12-retire-outcome-asking.md": "867a9210aca1354a8fdc563041d3cc1ddb75cd062531444093f73a5f54b720ec",
+    "13-tail-in-stencils-and-steer.md": "b07a4933f1194978cebcb1726d92f795b92c181d1b4fe544059be15d20c4db85",
+    "14-clock-seam.md": "c8c0dfeb0f093f72c59ea358e35a3bfe780924b7aa04e2d3d3c8e5f6a82e19a3",
+    "15-replay-corpus.md": "3ce44abf5ad06fde085b9c60443a6cc68176e28671b06a1c70289b28ecf99ac1",
+    "16-live-turn-scenarios.md": "89c7c436e96dd1db0efa5f8d4f9485d01e643606c7d54ceec15f89e376b579fb"
+  },
+  "partition": [
+    {
+      "cards": [
+        "01-payload-authority",
+        "02-waiting-trace",
+        "03-redraw-settle-config",
+        "04-message-tail",
+        "05-hold-turn-end",
+        "06-hold-notice"
+      ],
+      "profile": "cautious",
+      "estimate": 333162,
+      "breakdown": {
+        "weights": {
+          "startup_context": 60000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "startup": 61200,
+        "read_union": 154848,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 480,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/background.go": 3060,
+              "file:internal/shuttleengine/claudeengine/background_test.go": 2340,
+              "file:internal/shuttleengine/claudeengine/doc.go": 780,
+              "file:internal/shuttleengine/engine.go": 3240,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 44,
+            "written": 13680
+          },
+          {
+            "card": 2,
+            "card_text": 192,
+            "reads": {
+              "file:internal/shuttleengine/wait.go": 13716,
+              "file:internal/shuttleengine/waiting_test.go": 3624,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 22.5,
+            "written": 6942
+          },
+          {
+            "card": 3,
+            "card_text": 288,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/claudeengine.go": 2040,
+              "file:internal/shuttleengine/claudeengine/session.go": 2532,
+              "file:internal/shuttleengine/claudeengine/startup_test.go": 4668,
+              "file:internal/shuttleengine/config.go": 732,
+              "file:internal/shuttleengine/config_test.go": 2856,
+              "file:internal/shuttleengine/template.yaml": 120,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 56,
+            "written": 17088
+          },
+          {
+            "card": 4,
+            "card_text": 264,
+            "reads": {
+              "file:internal/shuttlecli/send.go": 552,
+              "package:internal/shuttlecli": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 37.5,
+            "written": 11514
+          },
+          {
+            "card": 5,
+            "card_text": 720,
+            "reads": {
+              "file:internal/loomcli/driverspec.go": 876,
+              "file:internal/loomcli/driverspec_test.go": 1356,
+              "file:internal/loomcli/wiring_test.go": 7896,
+              "file:internal/loomengine/discussion.go": 1164,
+              "file:internal/loomengine/discussion_test.go": 3300,
+              "file:internal/orchcli/smoke_live_test.go": 7164,
+              "file:internal/orchcli/start.go": 3564,
+              "file:internal/orchcli/start_test.go": 5532,
+              "file:internal/shuttleengine/attach_asking_test.go": 1356,
+              "file:internal/shuttleengine/attach_test.go": 13464,
+              "file:internal/shuttleengine/completionsignal_enforcement_test.go": 4080,
+              "file:internal/shuttleengine/doc.go": 1740,
+              "file:internal/shuttleengine/run.go": 13368,
+              "file:internal/shuttleengine/rundir.go": 3444,
+              "file:internal/shuttleengine/spec.go": 2568,
+              "file:internal/shuttleengine/spec_test.go": 2772,
+              "file:internal/shuttleengine/wait.go": 13716,
+              "file:internal/shuttleengine/wait_test.go": 14280,
+              "file:internal/shuttleengine/waiting_test.go": 3624,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 167,
+            "written": 50820
+          },
+          {
+            "card": 6,
+            "card_text": 720,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 1740,
+              "file:internal/shuttleengine/run.go": 13368,
+              "file:internal/shuttleengine/rundir.go": 3444,
+              "file:internal/shuttleengine/wait.go": 13716,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 54.5,
+            "written": 17070
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-attach-held-runs",
+        "08-notifier-wiring",
+        "09-shed-asking-branches",
+        "10-webster-asking-and-shell-note"
+      ],
+      "profile": "cautious",
+      "estimate": 391118,
+      "breakdown": {
+        "weights": {
+          "startup_context": 60000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "startup": 61200,
+        "read_union": 232448,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 444,
+            "reads": {
+              "file:internal/shuttleengine/attach.go": 6864,
+              "file:internal/shuttleengine/attach_asking_test.go": 1356,
+              "file:internal/shuttleengine/attach_test.go": 13464,
+              "file:internal/shuttleengine/doc.go": 1740,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 36.5,
+            "written": 11394
+          },
+          {
+            "card": 8,
+            "card_text": 408,
+            "reads": {
+              "file:internal/battencli/wire.go": 7716,
+              "file:internal/burlercli/wiring.go": 2616,
+              "file:internal/loomcli/landingdeps.go": 2016,
+              "file:internal/loomcli/wiring.go": 9156,
+              "file:internal/orchcli/doc.go": 564,
+              "file:internal/orchengine/notice.go": 1956,
+              "file:internal/webstercli/wiring.go": 3972,
+              "package:internal/burlercli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/webstercli": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 91.5,
+            "written": 27858
+          },
+          {
+            "card": 9,
+            "card_text": 456,
+            "reads": {
+              "file:contracts/recipes/loom-recipe.yaml": 4740,
+              "file:internal/loomshed/discussionwrite.go": 960,
+              "file:internal/loomshed/discussionwrite_test.go": 2676,
+              "file:internal/loomshed/planwrite.go": 2568,
+              "file:internal/loomshed/planwrite_test.go": 5796,
+              "file:internal/shedadapters/bouncer_judge_test.go": 8712,
+              "file:internal/shedadapters/bouncer_seed_test.go": 5364,
+              "file:internal/shedadapters/burler.go": 6912,
+              "file:internal/shedadapters/burler_test.go": 13380,
+              "file:internal/shedadapters/doc.go": 2976,
+              "file:internal/shedadapters/singlellm.go": 3012,
+              "file:internal/shedadapters/singlellm_test.go": 8808,
+              "file:internal/shedadapters/webster.go": 1836,
+              "file:internal/shedadapters/webster_test.go": 4440,
+              "file:internal/shedrecipe/entries_discussionwrite_test.go": 3456,
+              "file:internal/shedrecipe/entries_planwrite_test.go": 2964,
+              "package:contracts/recipes": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 128,
+            "written": 38856
+          },
+          {
+            "card": 10,
+            "card_text": 312,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 2832,
+              "file:internal/websterengine/doc.go": 5988,
+              "file:internal/websterengine/runlevel.go": 16464,
+              "file:internal/websterengine/runlevel_test.go": 28572,
+              "file:internal/websterengine/triage.go": 1464,
+              "file:internal/websterengine/triage_test.go": 1488,
+              "package:contracts/specs": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 63.5,
+            "written": 19362
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "11-treadle-triage-retire",
+        "12-retire-outcome-asking"
+      ],
+      "profile": "cautious",
+      "estimate": 415234,
+      "breakdown": {
+        "weights": {
+          "startup_context": 60000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "startup": 61200,
+        "read_union": 249448,
+        "cards": [
+          {
+            "card": 11,
+            "card_text": 504,
+            "reads": {
+              "file:.gitattributes": 444,
+              "file:contracts/stencils/stencils.go": 4980,
+              "file:contracts/stencils/treadle/treadle-template-triage.md": 636,
+              "file:internal/treadleengine/doc.go": 2352,
+              "file:internal/treadleengine/engine.go": 960,
+              "file:internal/treadleengine/engine_test.go": 18204,
+              "file:internal/treadleengine/judge.go": 2928,
+              "file:internal/treadleengine/judge_test.go": 5544,
+              "file:internal/treadleengine/judgeverdict.go": 2076,
+              "file:internal/treadleengine/judgeverdict_test.go": 4044,
+              "file:internal/treadleengine/profile.go": 1248,
+              "file:internal/treadleengine/result.go": 660,
+              "file:internal/treadleengine/roundfiles.go": 624,
+              "file:internal/treadleengine/roundfiles_test.go": 996,
+              "file:internal/treadleengine/run.go": 7536,
+              "file:internal/treadleengine/runner.go": 756,
+              "file:internal/treadleengine/state.go": 3036,
+              "file:internal/treadleengine/state_test.go": 4380,
+              "file:internal/treadleengine/template_test.go": 2940,
+              "package:.": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/treadle": 2000,
+              "package:internal/treadleengine": 2000,
+              "tests:.": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/treadle": 2000,
+              "tests:internal/treadleengine": 2000
+            },
+            "messages": 124,
+            "written": 37704
+          },
+          {
+            "card": 12,
+            "card_text": 732,
+            "reads": {
+              "file:README.md": 2556,
+              "file:docs/overview.md": 7656,
+              "file:internal/burlerengine/doc.go": 3456,
+              "file:internal/burlerengine/engine.go": 3468,
+              "file:internal/burlerengine/engine_test.go": 10020,
+              "file:internal/burlerengine/smoke_cluster_test.go": 3792,
+              "file:internal/frictionengine/reflect.go": 3960,
+              "file:internal/frictionengine/reflect_test.go": 8316,
+              "file:internal/loomcli/smoke_attachprobe_test.go": 5628,
+              "file:internal/mergeresolve/mergeresolve.go": 2364,
+              "file:internal/mergeresolve/mergeresolve_test.go": 8004,
+              "file:internal/shuttlecli/cli.go": 1512,
+              "file:internal/shuttlecli/run.go": 2088,
+              "file:internal/shuttlecli/smoke_guardrail_test.go": 1992,
+              "file:internal/shuttlecli/smoke_interrupt_test.go": 4116,
+              "file:internal/shuttleengine/attach.go": 6864,
+              "file:internal/shuttleengine/attach_test.go": 13464,
+              "file:internal/shuttleengine/doc.go": 1740,
+              "file:internal/shuttleengine/engine.go": 3240,
+              "file:internal/shuttleengine/run_test.go": 12552,
+              "file:internal/shuttleengine/rundir.go": 3444,
+              "file:internal/shuttleengine/wait_test.go": 14280,
+              "file:internal/webstercli/ownership.go": 312,
+              "file:internal/webstercli/run.go": 1932,
+              "file:tools/sandbox/SANDBOX-SHUTTLE-SUITE.md": 3132,
+              "file:tools/sandbox/SANDBOX-WEBSTER-SUITE.md": 1980,
+              "package:.": 2000,
+              "package:docs": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/frictionengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/mergeresolve": 2000,
+              "package:internal/shuttlecli": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/webstercli": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:.": 2000,
+              "tests:docs": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/frictionengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/mergeresolve": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 220.5,
+            "written": 66882
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-tail-in-stencils-and-steer",
+        "14-clock-seam",
+        "15-replay-corpus",
+        "16-live-turn-scenarios"
+      ],
+      "profile": "cautious",
+      "estimate": 284056,
+      "breakdown": {
+        "weights": {
+          "startup_context": 60000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "startup": 61200,
+        "read_union": 143044,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 384,
+            "reads": {
+              "file:contracts/stencils/claims_test.go": 7164,
+              "file:contracts/stencils/orch/orch-template-role.md": 1404,
+              "file:contracts/stencils/shed/shed-template-driver.md": 2964,
+              "file:internal/shuttleengine/claudeengine/settings.go": 2388,
+              "file:internal/shuttleengine/claudeengine/settings_test.go": 6396,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "package:contracts/stencils/shed": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/orch": 2000,
+              "tests:contracts/stencils/shed": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 45,
+            "written": 13884
+          },
+          {
+            "card": 14,
+            "card_text": 312,
+            "reads": {
+              "file:internal/shuttleengine/fixture_test.go": 2028,
+              "file:internal/shuttleengine/run.go": 13368,
+              "file:internal/shuttleengine/startup_test.go": 12912,
+              "file:internal/shuttleengine/wait.go": 13716,
+              "file:internal/shuttleengine/wait_test.go": 14280,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 46.5,
+            "written": 14262
+          },
+          {
+            "card": 15,
+            "card_text": 780,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 780,
+              "file:internal/testkit/shuttlefake/shuttlefake.go": 3828,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/corpus/fork-killed-api-error": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/corpus/issue411-bugfix-sessions": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/corpus/issue411-prune-rest": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/corpus/master-fork-running": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/corpus/planwrite-ask-answered": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/corpus/session-continued-in": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/corpus/skill-load-turn-end": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/corpus/fork-killed-api-error": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/corpus/issue411-bugfix-sessions": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/corpus/issue411-prune-rest": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/corpus/master-fork-running": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/corpus/planwrite-ask-answered": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/corpus/session-continued-in": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/corpus/skill-load-turn-end": 2000
+            },
+            "messages": 153.5,
+            "written": 46830
+          },
+          {
+            "card": 16,
+            "card_text": 336,
+            "reads": {
+              "file:internal/shuttlecli/smoke_interrupt_test.go": 4116,
+              "file:internal/shuttlecli/smoke_run_test.go": 3564,
+              "file:internal/testkit/llmkit/llmkit.go": 324,
+              "package:internal/shuttlecli": 2000,
+              "tests:internal/shuttlecli": 2000
+            },
+            "messages": 15,
+            "written": 4836
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "079119ce1835bb673c50f32129cce045",
+  "masterSessionId": "c49f023a-9153-4106-ac1f-0444b0d813d8",
+  "batches": {
+    "1": {
+      "slug": "payload-authority",
+      "cards": [
+        "01-payload-authority",
+        "02-waiting-trace",
+        "03-redraw-settle-config",
+        "04-message-tail",
+        "05-hold-turn-end",
+        "06-hold-notice"
+      ],
+      "cardHashes": {
+        "01-payload-authority": "853d0770e7a4e95f7e25dfaae6ef3050f18e45b9022006ec81cdc5ff6a08ab8e",
+        "02-waiting-trace": "35bb9fefb734c4e3b93587f41d746c747f442458d17cab99d00da4960c08c92f",
+        "03-redraw-settle-config": "782b56132c2f7647d31332663523baad738364b2d35a8278f11dad574c4c34f7",
+        "04-message-tail": "77952b3e2ed7c2da981d6d1b7b93517c898ff3a9ee262712fcef12d5cf213b24",
+        "05-hold-turn-end": "a91208cbb4aefc5a5a149cb1252e7cb4fb4c902902aa90b4e6f1a22129e657ec",
+        "06-hold-notice": "6b91c60e7c29963d3ea19581b4aeff2fd89d878a1e67887d957b5d5fa0afb713"
+      },
+      "startSha": "d536a1a4edaa5f55d999282207b8bdfd75ca698e",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T14:08:02Z",
+      "sessionId": "c49f023a-9153-4106-ac1f-0444b0d813d8",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
