@@ -1,5 +1,8 @@
 # Card 6 — finalize-config-notice
 
+**Create:**
+- `internal/loomcli/landingdeps_integration_test.go`
+
 **Edit:**
 - `internal/landingshed#Deps`
 - `internal/landingshed#Finalize.Call`
@@ -8,7 +11,6 @@
 - `internal/loomcli#landingDeps`
 - `internal/landingshed/finalize_test.go`
 - `internal/landingshed/finalize_integration_test.go`
-- `internal/loomcli/landingdeps_integration_test.go`
 
 **Uses:**
 - `plan:internal/fabricengine#ReadConfigChanges`
@@ -46,8 +48,8 @@ Docs: `internal/landingshed/doc.go`'s Finalize paragraph says Finalize reads the
 
 Tests:
 - `internal/landingshed/finalize_test.go` (fakes, untagged), one table-driven test over the seams: a non-empty diff queues exactly one notice at Done naming the task branch, each file, both SHAs and the re-apply instruction; an empty diff queues none; a read error still reaches Done and queues one notice saying the diff could not be read, carrying the error text; a `Notify` error leaves the verdict Done; a failed parent-side merge (Stuck) queues none; an already-up-to-date merge queues the notice again; nil seams change nothing.
-- `internal/landingshed/finalize_integration_test.go`: the already-landed idempotent test wires `ConfigChanges` to `fabricengine.ReadConfigChanges` on the real pair after committing a `loom.yaml` change on the task side, and a capturing `Notify`; it asserts one notice naming the file, for the squash and the non-squash landing, and that the parent pair's config file is byte-identical afterwards.
-- `internal/loomcli/landingdeps_integration_test.go`: on a `hubforge` hub with a pair whose task side committed changes to anchored `loom.yaml` and `board.yaml` config files, `landingDeps(...).ConfigChanges` reports `loom.yaml` and not the HubWide `board.yaml`; with an orch strand recorded in the prime's orch state (`orchengine.SaveState`), `Notify` queues one notice file in the prime's notices directory; with none recorded, `Notify` returns nil and queues nothing.
+- `internal/landingshed/finalize_integration_test.go` (the prune folded the former `TestFinalize_AlreadyLandedParentIsIdempotent` into the `an already landed parent is idempotent` step of `TestFinalize_OverRealHub`, built through `newFinalizeAt`): `newFinalizeAt` takes the two seams and the squash setting, and that step wires `ConfigChanges` to `fabricengine.ReadConfigChanges` on the real pair after committing a `loom.yaml` change on the task side, and a capturing `Notify`; it asserts one notice naming the file on each Finalize, the second over the already-landed parent included, and that the parent pair's config file is byte-identical afterwards; a following step runs the same on a fresh task pair with squash off, before any step that depends on the parent's state.
+- `internal/loomcli/landingdeps_integration_test.go` (new, `integration` tag: the prune deleted the former file and moved its `MarkTaskDone` tests to the untagged, git-free `landingdeps_markdone_test.go`, which cannot host a diff over real branches): on a `hubforge` hub with a pair whose task side committed changes to anchored `loom.yaml` and `board.yaml` config files, `landingDeps(...).ConfigChanges` reports `loom.yaml` and not the HubWide `board.yaml`; with an orch strand recorded in the prime's orch state (`orchengine.SaveState`), `Notify` queues one notice file in the prime's notices directory; with none recorded, `Notify` returns nil and queues nothing.
 
 **ImpactSummary:** landingshed Deps and Finalize gain the config-change notice; loomcli's landingDeps wires it; landing verdicts and parent writes are unchanged.
 

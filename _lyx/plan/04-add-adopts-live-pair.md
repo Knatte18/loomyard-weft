@@ -13,7 +13,7 @@
 - `internal/fabricengine/add_remoteleftover_integration_test.go`
 - `internal/fabricengine/add_rollback_adopt_test.go`
 - `internal/fabricengine/origin_integration_test.go`
-- `internal/fabriccli/addleftover_integration_test.go`
+- `internal/fabriccli/hubmutation_integration_test.go`
 - `internal/fabriccli/adoptremote_integration_test.go`
 
 **Delete:**
@@ -68,7 +68,7 @@ Tests:
 - `internal/fabricengine/add_remoteleftover_integration_test.go`: `TestAdd_UnarchivedWeftLeftoverRefusedAtPreflight` becomes the origin-weft-only adopt row (weft adopted tracking origin, carries the pushed commit, warp forks from HEAD); `TestAdd_AdoptedWeftDivergedRefusedAtPreflight` becomes the local-behind-origin fast-forward row, plus a true-divergence row (a local commit origin lacks) that still refuses; add a row where a local weft branch and an archive-tagged origin weft coexist with a diverged origin warp, and the warp is adopted tracking origin; `TestAdd_WarpLeftoverRefusedAtPreflight` keeps covering archived weft plus diverged warp, refusal unchanged; `TestAdd_SkipPushSkipsLeftoverProbes` asserts both branches fork and origin is not consulted.
 - `internal/fabricengine/add_rollback_adopt_test.go` (an Edit target), which holds Add's existing rollback tests and their failure injection, a blocker file at the portal location: rows for a post-adopt failure after the resolver created the origin-tracked weft branch (the local branch is deleted and every origin branch is unchanged) and after a fast-forward of a pre-existing local weft branch (the branch stays at origin's tip, not rewound).
 - `internal/fabricengine/origin_integration_test.go`: adopting a live pair's weft that already carries an origin record keeps its recorded parent, adds no record commit and leaves `.weft/` in the new weft worktree (the one `add` path where card 1's adopt-path `ensureWeftLockDirAt` is the only thing creating it); update any local-adopt assertion that expected the record rewritten.
-- `internal/fabriccli/addleftover_integration_test.go`: the bare pre-flight error envelope is now reached through a still-refused case (archive-covered weft, no local weft, diverged origin warp), since an uncovered origin weft no longer refuses.
+- `internal/fabriccli/hubmutation_integration_test.go` (the prune moved the former `addleftover_integration_test.go` here as the `AddLeftoverWeftIsBarePreflightError` step of `TestRunCLI_HubMutationScenario`): that step reaches the bare pre-flight error envelope through a still-refused case (archive-covered weft, no local weft, diverged origin warp), since the uncovered origin weft a plain remove leaves no longer refuses; rename the step and its comment to match.
 - `internal/fabriccli/adoptremote_integration_test.go`, through `lyx fabric add`: origin holds a live pair's `<slug>` and `<slug>-weft` (pushed from scratch clones, with commits the hub's HEAD lacks and a run record under the weft's run-records root) and the hub has neither locally: the pair is built on both origin tips, both local branches track origin, the run record is present, `.weft/` exists, and origin's tips are unchanged after the add's push; origin holding only `<slug>-weft`: weft adopted tracking origin, warp forked from HEAD.
 
 **ImpactSummary:** Add's pre-flight probes, creation steps, origin-record step and rollback; ErrRemoteLeftover loses its unarchived-weft kind; fabriccli runAdd's envelope handling is unchanged.

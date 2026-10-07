@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: true
+approved: false
 language: go
 ---
 
@@ -11,6 +11,7 @@ Fixes the three bugs the board entry `bugfix-fabric` reports, each with a regres
 `fabric-add-adopt-remote`: one weft-branch resolver (local, then origin, then none) is shared by `checkout`, `reconcile` and `add`, and `add` adopts a live pair's warp branch from origin (D5–D7).
 `config-reaches-parent`: Finalize reads the task's per-worktree config changes since its fork point and queues one orch notice at Done, never carrying them (D4).
 No new verbs, flags, config keys or envelope keys.
+Cards 1, 4 and 6 point their tests at where the merged test prunes moved the coverage they extend.
 
 ## Card Index
 
@@ -28,6 +29,7 @@ No new verbs, flags, config keys or envelope keys.
 - A weft repo with no `origin` remote skips every origin step; an unreachable or failing origin is an error naming `origin`, never a silent fork.
 - `landingshed` names neither fabric side and derives no path; it receives the diff and the notice queue as told closures (`PATTERN-told-geometry`, `PATTERN-fabric-vocabulary`, `PATTERN-orch-pane-single-writer`).
 - `internal/fabriccli/adoptremote_integration_test.go` is created by card 2 and extended by cards 3 and 4; origin-only branches are pushed into `h.WarpBare`/`h.WeftBare` from scratch clones, and an unreachable origin is simulated by pointing the weft repo's `origin` URL at a missing path.
+- A test that extends a scenario test (one `...OverRealHub` or `...Scenario` hub, serial steps) adds steps on its own pair and keeps the scenario's documented step order.
 
 ## verify:
 
