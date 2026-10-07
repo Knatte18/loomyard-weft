@@ -1,9 +1,9 @@
 # Card 9 — gitrepo-leased-update
 
 **Create:**
-- `plan:internal/gitrepo#Repo.UpdateRemoteBranchLeased` -> `func (r *Repo) UpdateRemoteBranchLeased(remote, branch, sha, expectSHA string) error`
-- `plan:internal/gitrepo#Repo.CommitsNotIn` -> `func (r *Repo) CommitsNotIn(tip, base string) ([]string, error)`
-- `plan:internal/gitrepo#ErrLeaseRejected` -> `var ErrLeaseRejected error`
+- `internal/gitrepo#Repo.UpdateRemoteBranchLeased`
+- `internal/gitrepo#Repo.CommitsNotIn`
+- `internal/gitrepo#ErrLeaseRejected`
 
 **Edit:**
 - `internal/gitrepo/push.go`

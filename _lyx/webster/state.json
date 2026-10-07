@@ -1,6 +1,6 @@
 {
   "runGuid": "2d69baccca8f0ea77a25d94150e3c226",
-  "planFingerprint": "b0861be828651be84d18ad5fa35b6635d7e4dc45d1ca9e52e797def407084764",
+  "planFingerprint": "1d952e3311db86df36551cb8cf8e149442840b4ee26e0e1e2800302585b00541",
   "planFileHashes": {
     "00-overview.md": "354ced48f907765ace7e1bbea2db45c2e79a4db407545e177aebfdfa825d00e0",
     "01-uses-later-target.md": "2172ce8a98cdca267283ae942a29e2ec5b92934c5ff0b2af401d77e6286e029b",
@@ -11,12 +11,12 @@
     "06-rebaseline-terminal-batch.md": "6c54ca5741fc804214e25539faff4c8a5041b95ec52837a2f4df9d50c22e9bb9",
     "07-delete-blocked-by-later-card.md": "3b05579b65bf3918454346b85334f126348b6d2898467dd051a9249e0f925566",
     "08-background-shell-outcome.md": "0ee7a68dc30001c7be7b0f80959e723071f7ecae4dee12f0760f407148fa85ed",
-    "09-gitrepo-leased-update.md": "692095c1a57a6b723e6ba69c134569c2c5371013c0d83dafb8188f0d2b4202c1",
-    "10-fabric-remote-only-commits.md": "e39044c32464e431ea2e538ba74ba65b070255f5e7d1d011eb8037a2e8018226",
-    "11-reset-moves-remote-branch.md": "b2c49caa70294305ef5f96cf15415444294223ddad853db74302129543262462",
+    "09-gitrepo-leased-update.md": "d98fa7632aaabc013c3ef0775cc826df4fd500a9e0549546eb81c3c0d4a95260",
+    "10-fabric-remote-only-commits.md": "15888353b4fe7b47a0eea73f6148fe7313d4987193031b9a7c1fe7ef28ee176a",
+    "11-reset-moves-remote-branch.md": "4fb757c193bc1fb31d102a1065db72259547f5a9834f1f1459e3118279ad81a2",
     "12-publish-push-rejected.md": "5c23271ad97a663a45ebb6c6c93bd49023cf5ce080d632daec28a34f985efe65"
   },
-  "currentBatch": 9,
+  "currentBatch": 0,
   "masterStrand": "ae2b27694ca3f431bc5f75f29629fff7",
   "masterSessionId": "13fadd3a-7482-46e1-b69a-41bed6ceab03",
   "assertedModel": "sonnet",
@@ -242,14 +242,25 @@
         "09-gitrepo-leased-update"
       ],
       "cardHashes": {
-        "09-gitrepo-leased-update": "692095c1a57a6b723e6ba69c134569c2c5371013c0d83dafb8188f0d2b4202c1"
+        "09-gitrepo-leased-update": "d98fa7632aaabc013c3ef0775cc826df4fd500a9e0549546eb81c3c0d4a95260"
       },
       "startSha": "5821c3427c76362b907c6b7f2294e34a75a5fe24",
       "kind": "fork",
       "spawnedAt": "2026-10-07T05:53:55Z",
       "sessionId": "13fadd3a-7482-46e1-b69a-41bed6ceab03",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "09-gitrepo-leased-update",
+        "status": "done",
+        "head_sha": "9905e3b6ce28fef5969eab7ed8649c0914351446"
+      },
+      "cardShas": [
+        "9905e3b6ce28fef5969eab7ed8649c0914351446"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-webster/13fadd3a-7482-46e1-b69a-41bed6ceab03/subagents/agent-a4d75d587ec1f9f12.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
@@ -260,6 +271,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-webster/13fadd3a-7482-46e1-b69a-41bed6ceab03/subagents/agent-aa2867e071688828f.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-webster/13fadd3a-7482-46e1-b69a-41bed6ceab03/subagents/agent-a24925ba2821d1275.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-webster/13fadd3a-7482-46e1-b69a-41bed6ceab03/subagents/agent-a997a92762f962a20.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-webster/13fadd3a-7482-46e1-b69a-41bed6ceab03/subagents/agent-af8dd7a0e14282c4e.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-webster/13fadd3a-7482-46e1-b69a-41bed6ceab03/subagents/agent-af8dd7a0e14282c4e.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-webster/13fadd3a-7482-46e1-b69a-41bed6ceab03/subagents/agent-a4d75d587ec1f9f12.jsonl"
   ]
 }

@@ -14,8 +14,8 @@
 - `cmd/lyx/destructiveguard_test.go`
 
 **Uses:**
-- `plan:internal/gitrepo#Repo.UpdateRemoteBranchLeased`
-- `plan:internal/gitrepo#ErrLeaseRejected`
+- `internal/gitrepo#Repo.UpdateRemoteBranchLeased`
+- `internal/gitrepo#ErrLeaseRejected`
 - `plan:internal/fabricengine#Fabric.RemoteOnlyCommits`
 
 **Intent:**

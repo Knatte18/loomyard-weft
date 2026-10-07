@@ -9,7 +9,7 @@
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/gitrepo#Repo.CommitsNotIn`
+- `internal/gitrepo#Repo.CommitsNotIn`
 
 **Intent:**
 Add the one read of the remote task branch's divergence that both D7's reset and D8's Publish halt rely on, so the two report the same answer.
