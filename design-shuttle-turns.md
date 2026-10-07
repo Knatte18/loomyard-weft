@@ -1,6 +1,6 @@
 # Shuttle reads turns right: a Stop is always taken, a turn end without output holds
 
-`shuttle-turns` · Task · bug, enhancement, shuttle · running · Webster
+`shuttle-turns` · Task · bug, enhancement, shuttle · blocked · Webster
 
 ## Goal
 
