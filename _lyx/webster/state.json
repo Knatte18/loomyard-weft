@@ -10,7 +10,7 @@
     "05-read-config-changes.md": "cb813999e7670995d72876df32f6d03ccda8f4c2ef444dc638ee919bcc3ac6d8",
     "06-finalize-config-notice.md": "2b729bbcbb5b4ff5a6eed82f19ce7c17357c55a2cba7061a13a32885d39fcb8c"
   },
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "5231f47c9afd424b694420622223e089",
   "masterSessionId": "5058ed2e-8234-4a47-9890-ee7d0f7c7a47",
   "assertedModel": "sonnet",
@@ -92,6 +92,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-fabric/5058ed2e-8234-4a47-9890-ee7d0f7c7a47/subagents/agent-a063b396afff2a4cb.jsonl"
       ]
+    },
+    "4": {
+      "slug": "add-adopts-live-pair",
+      "cards": [
+        "04-add-adopts-live-pair"
+      ],
+      "cardHashes": {
+        "04-add-adopts-live-pair": "211fa34a1cce3bc0956ec1eb69cea154ecfc6b189b20dec0a0a8a936209a9f57"
+      },
+      "startSha": "c192ddc7e61eec3ac65ef74ead935bcb05e088d9",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T05:41:01Z",
+      "sessionId": "5058ed2e-8234-4a47-9890-ee7d0f7c7a47",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
