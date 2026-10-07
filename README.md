@@ -77,6 +77,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Follow-ups from test-tiers PR-Gate
 1. **Step-level watchdog and a Windows verify timeout that kills the process tree** — [`verify-watchdog`](design-verify-watchdog.md) · enhancement, shed
    - A lyx shed step that never returns is noticed, and the Windows verify timeout kills the whole process tree
+1. **Batchifier: compute Merriam fixed base context, fit only its orientation** — [`batchifier-computed-base`](design-batchifier-computed-base.md) · enhancement, webster
+   - Replace the fitted master_base with the computed fixed part plus a fitted orientation coefficient
 
 ### Features
 
