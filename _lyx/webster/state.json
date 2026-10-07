@@ -22,7 +22,7 @@
     "17-burler-review-parse-gate.md": "d52ec9e6c409be5dfb1af1881ecd5064303e9c00570ee30878d0a128e9a69db3",
     "18-burler-validate-review-verb.md": "213f099e161824ee483f764d6952f180eeacce22e7983d3d39cc4acb40aa6354"
   },
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "82b43112c805ff52fede8404a7366217",
   "masterSessionId": "48bc4037-b210-4022-bbb4-e30516d6c209",
   "assertedModel": "sonnet",
@@ -121,6 +121,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-ac68adffd8316cfdd.jsonl"
       ]
+    },
+    "4": {
+      "slug": "escalation-halt-skips-reflection",
+      "cards": [
+        "04-escalation-halt-skips-reflection"
+      ],
+      "cardHashes": {
+        "04-escalation-halt-skips-reflection": "0970a1476661ebb487b7916a8a17f660b0272a1bea603932720f1f8b5597836f"
+      },
+      "startSha": "97dfdcce664b2c70334d4a5b829c7fab3104fe6b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T05:35:56Z",
+      "sessionId": "48bc4037-b210-4022-bbb4-e30516d6c209",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
