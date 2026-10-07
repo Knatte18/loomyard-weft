@@ -12,7 +12,6 @@ This reverses `contracts/specs/loom-plan-spec.md`, which today calls the card li
 
 ## What changes
 
-- **Plan-Gate refuses a backward dependency.** A card whose `Uses:` names a target of a later card, a card that deletes a symbol still referenced from a member a later card edits, and any derived dependency cycle are blocking findings, so an invalid plan never reaches Webster.
 - **Webster drops its own ordering.** Batches run in card-number order; `SequenceBatches` and its cycle condensation go, or reduce to an assertion that the plan already satisfies every edge.
 - **The plan spec and the plan template** state the rule to the plan writer and the plan reviewer.
 
@@ -24,4 +23,6 @@ This reverses `contracts/specs/loom-plan-spec.md`, which today calls the card li
   The cycle surfaced only as an unread `Cycle` warning.
   `webster rebaseline` refused the fix because batch 4 had begun, so the run needed `webster reset --to start`, an archived `state.json` and a goto, redoing two finished batches.
 
-The Plan-Gate refusal is in task `bugfix-webster`; this note keeps Webster dropping its own sequencing and the plan-spec change.
+Plan-Gate refuses backward dependencies since `bugfix-webster` (d536a1a4e: `uses-later-target`, `delete-before-reference`).
+This note keeps Webster dropping `SequenceBatches`/`deriveEdges` and stating the rule in the plan spec and template.
+Until then Plan-Write can bounce on plans Webster used to reorder, since the template does not yet tell the writer.
