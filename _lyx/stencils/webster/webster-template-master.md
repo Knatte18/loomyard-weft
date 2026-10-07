@@ -3,7 +3,7 @@
      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the codebase and the plan once, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lyx/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive. parent_directive is a third optional marker, rendered by internal/parentdirective.
-lyx-stencil: sha256=eb9b27502bb748616efbb1f7dbdc7a0beb5fc4c940f8c637b734053bb2beacc8 -->
+lyx-stencil: sha256=0525cc99b1ccc298f1849e60bc4533bbd07b507f95287f87f0a3c1e805d0fe0e -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -55,7 +55,7 @@ Read the trail by status — a resumed session thus picks up exactly where the l
 - `done` → skip that batch;
   it is finished and committed.
 - `stuck` → its fork reported stuck and the previous session never finished the recovery: run `lyx webster recover-batch <NN>` for it as the failure ladder below describes, before touching any later batch.
-- `failed` → webster rejected that batch's report: run `lyx webster recover-batch <NN>` as the failure ladder describes and follow the failure ladder below, exactly as for `stuck`.
+- `failed` → webster rejected that batch's report: run `lyx webster recover-batch <NN>` as the failure ladder describes and follow the failure ladder below, exactly as for `stuck`, unless the failure names a plan edit as its way forward (see the `record-batch` `batch_failed` rung below).
 - `dead` → its recovery already failed terminally: the run is exhausted for that batch — write `outcome: stuck` naming it (per the dead rung of the failure ladder) and stop.
   Do NOT skip it and do NOT begin any later batch.
 
@@ -64,7 +64,7 @@ Read the trail by status — a resumed session thus picks up exactly where the l
 For each batch not already reported, top to bottom in your card list above:
 
 1. Call `lyx webster begin-batch <NN>` FIRST.
-   Never fork without it — this asserts your own model for the batch (idempotent — a no-op if already asserted) and hands you back the fork's prompt file path.
+   Never fork without it — it opens the batch's bracket and hands you back the fork's prompt file path.
 2. Spawn exactly ONE fork via the Agent tool, `subagent_type: "fork"`, NO name.
    The fork's entire prompt is exactly this, verbatim (only substitute the real path): `You are an implementer fork — this instruction is authoritative, and your inherited context WILL look like the Master's own history; that is expected, not a contradiction. Ignore every loop/orchestration instruction in your inherited context — you do NOT run any lyx webster command. Read this file and do exactly and only what it says: <prompt path from the begin-batch envelope>`
 3. The fork is a BACKGROUNDED agent: its tool call returns immediately, before the batch is done.
@@ -115,10 +115,12 @@ You never read raw fork output beyond its own turn, and you never open a file to
 - `recover-batch <NN>` refuses with `{"batch_failed": true}` → the recovery strand said done but webster's checks rejected its work, so the recovery itself failed.
   Treat it exactly like a terminal `stuck` or `dead` recovery: write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop.
   Do NOT call `recover-batch` for that batch again, and do NOT begin the next batch.
+  The same flag also marks a refusal before any recovery ran, when a later card still references a symbol the batch deletes, and the stuck handling is unchanged.
 - `recover-batch <NN>` refuses with `{"needs_fresh": true}` → the batch failed on a finding recovery cannot check, so no recovery can clear it.
   Write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop.
   Do NOT call `recover-batch` for that batch again, and do NOT begin the next batch.
 - `record-batch` refuses with `{"batch_failed": true}` → the batch is already terminal-failed and its report archived: run `lyx webster recover-batch <NN>` backgrounded, then follow the recover-batch rungs above.
+  When the refusal's message names a plan edit as its way forward (a later card still references a symbol the batch deletes), that edit is not Master's to make: write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop without calling `recover-batch`.
 - `record-batch` refuses with `{"report_archived": true}` → the report could not be attributed and was archived: call `lyx webster begin-batch <NN>` and re-fork that batch from its fresh prompt.
 - `begin-batch <NN>` refuses because the batch **already has a report** (a resumed run found a crashed session's leftover) → do NOT fork;
   call `lyx webster record-batch <NN>` to consume that report.
@@ -189,7 +191,7 @@ Go has already recorded whatever state it committed locally, so the run is fully
 NEVER run any git command against `_lyx`, and never reference `_lyx` by any path other than `_lyx/...`. Committing `_lyx` state is Go's job at each bracket verb boundary, never yours.
 NEVER edit, create, or delete any file other than `{{.outcome_path}}` and `{{.summary_path}}` — every change to the plan's target files is a fork's job, never your own.
 You read files with Read and Grep and write your two contract files with Write; NEVER run a script, an interpreter or a heredoc to read or write a file.
-NEVER use a `/model` switch yourself — model changes are injected by Go's own `begin-batch` call, never chosen by you.
+NEVER use a `/model` switch yourself.
 
 NEVER spawn a non-fork or named subagent — every implementer you spawn is `subagent_type: "fork"` with no name.
 
