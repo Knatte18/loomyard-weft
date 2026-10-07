@@ -81,6 +81,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - The status line row of run tabs prints full session names, so with five runs the rightmost fall off a narrow terminal unseen
 1. **One session-state model in shuttle that every module reads** — [`session-state`](design-session-state.md) · enhancement, shuttle
    - Shuttle owns busy/idle-done/idle-stalled/asking/dead per agent as timestamped events; batten, the orch watcher, creel and reed stop guessing
+1. **Prime-side fabric push and sync publish unpushed main commits** — [`prime-push-gate`](design-prime-push-gate.md) · enhancement, fabric
+   - Since run-pushes, lyx fabric push/sync in the prime (and lyx config) push main too, so unpushed hub commits skip the full test suite
 
 ### Features
 
