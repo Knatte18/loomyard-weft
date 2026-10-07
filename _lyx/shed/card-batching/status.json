@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Bouncer",
+  "current_producer": "Batchifier",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Bouncer",
-    "last": "Plan-Bouncer → awaiting",
+    "now": "Batchifier",
+    "last": "Plan-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -124,6 +124,12 @@
       "outcome": "awaiting",
       "output": "/home/knatte/Code/loomyard-LYXHUB/card-batching/_lyx/reviews/plan/round-3-bouncer-ledger.md",
       "at": "2026-10-07T10:48:16Z"
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/card-batching/_lyx/reviews/plan/round-3-bouncer-ledger.md",
+      "at": "2026-10-07T10:48:55Z"
     }
   ],
   "product": {
