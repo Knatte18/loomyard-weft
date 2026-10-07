@@ -8,6 +8,8 @@
 - `contracts/stencils/burler/burler-step-1-explore.md`
 - `contracts/stencils/burler/burler-step-2-review.md`
 - `contracts/stencils/burler/burler-step-3-fix.md`
+- `contracts/stencils/pattern/pattern-directive-review-fix.md`
+- `contracts/stencils/friction/friction-directive-review-fix.md`
 - `contracts/stencils/stencils.go`
 - `contracts/stencils/claims_test.go`
 - `.gitattributes`
@@ -16,7 +18,7 @@
 
 **Intent:**
 Write the two round stencils that replace the single-agent orchestrator (scope: "a reviewer orchestrator and a fixer orchestrator"), and the fixer's dispute rule (D8).
-The engine starts rendering them in card 6, which also deletes `burler-template-round-orchestrator.md`;
+The engine starts rendering them in card 7, which also deletes `burler-template-round-orchestrator.md`;
 this card leaves the old stencil and its registration in place so the tree builds and today's round still renders.
 
 `burler-template-review-orchestrator.md` — markers `parent_directive` (optional, rendered by `internal/parentdirective`), `instruction_1_path`, `instruction_2_path`, `review_path`, no conditionals.
@@ -39,15 +41,20 @@ The completion sentence names the fixer-report alone (the review is the reviewer
 Markers stay `fix_scope_rules`, `review_path`, `fixer_report_path`.
 
 `burler-step-1-explore.md` and `burler-step-2-review.md`: header comments name the orchestrator that directs each (explore read by both halves, review by the reviewer only); their bodies and markers are unchanged.
+`burler-step-3-fix.md`'s header comment likewise names the fixer orchestrator as the one that directs it, since the old orchestrator it names today is deleted in card 7.
+
+`pattern-directive-review-fix.md` and `friction-directive-review-fix.md`: the two directives are shared by both halves and by the fixer alone respectively, so their header comments stop calling the consumer a combined review-and-fix agent and name the two halves;
+the pattern directive's part A and part B bullets say part A binds the reviewer's findings and part B the fixer's fixes, and the friction directive speaks to the fixer's own phases (orienting, validating findings, fixing) instead of "the review phase or the fix phase".
+Their markers are unchanged.
 
 `contracts/stencils/stencils.go`: embed and register both new stencils;
-`roleOpeningStencils` gains `burler-review` and `burler-fix` mapped to them, beside the existing `burler` entry, which card 6 removes.
+`roleOpeningStencils` gains `burler-review` and `burler-fix` mapped to them, beside the existing `burler` entry, which card 7 removes.
 `.gitattributes` pins both new files to LF.
-`claims_test.go` pins: the reviewer stencil's "never edits a target file" and "never fixes" rules and its review-file-only write surface;
+`claims_test.go` gains rows in its existing claims table, so the package's test count is unchanged, pinning: the reviewer stencil's "never edits a target file" and "never fixes" rules and its review-file-only write surface;
 the fixer stencil's `lyx burler await-review` command, its edit-nothing-until-ready rule and its never-write-the-review rule;
 step 3's `Disputed` section, its evidence requirement and its factual-premise bound.
 The parent-directive test covers both new stencils through `roleOpeningStencils` (`PATTERN-parent-directive`).
 
 `PATTERN.md`'s `PATTERN-review-round` line and `pattern/PATTERN-review-round.md` change in this commit (D8): every finding is fixed, or disputed by the fixer with evidence that its premise is false, and a dispute never converges a segment on its own.
 
-**ImpactSummary:** stencil text and the stencil registry; step 3's new dispute rule reaches today's single-agent round at once, nothing else renders differently until card 6.
+**ImpactSummary:** stencil text, the stencil registry and the two pattern docs; step 3's new dispute rule and the reworded directive stencils reach today's single-agent round at once, nothing else renders differently until card 7.

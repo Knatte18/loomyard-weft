@@ -7,6 +7,7 @@
 - `internal/shuttleengine/attach.go`
 - `internal/shuttleengine/attach_test.go`
 - `internal/shuttleengine/doc.go`
+- `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
 - `internal/shuttleengine#Runner.AttachGated`
@@ -25,9 +26,10 @@ No other shuttle behaviour changes.
 What the new verb lets through, and its bound: it reconstructs a handle over a live agent and hands it to the caller without observing it, so a caller that never waits leaves the run's record reading running;
 that is bounded because it removes nothing beyond what `AttachGated` already removes, starts nothing, and a later `Wait` or attach over the same record classifies it exactly as today.
 
-Tests in `attach_test.go`, reusing `seedAttachRun`/`seedPresentReedState`: a live attachable candidate returns a non-nil handle with `found` true whose `StrandGUID()` and `RunDir()` name the candidate and whose `Wait` then classifies the run (done once its output file exists);
-the not-found answer returns `(nil, false, nil)` and removes a live superseded strand exactly as `AttachGated` does;
-an errored or doubly-attachable candidate set returns the same error `AttachGated` returns.
+Test in `attach_test.go`, reusing `seedAttachRun`/`seedPresentReedState`: a live attachable candidate returns a non-nil handle with `found` true whose `StrandGUID()` and `RunDir()` name the candidate, with no wait having run, and whose `Wait` then classifies the run (done once its output file exists);
+the not-found answer returns `(nil, false, nil)`.
+The superseded-strand removal and the errored or doubly-attachable refusals run in the shared `attach` body this card does not change, and `TestAttach_RemovesSupersededStrands` and `TestAttach_Multiplicity` already cover them, so no probe-specific rows repeat them.
 Update the attach section of `internal/shuttleengine/doc.go` to name the probe form.
+The probe test is one new top-level function, so `cmd/lyx/testdata/test-budget.yaml` raises the `internal/shuttleengine` row by one (`TestTestBudget_PackagesStayWithinBudget` fails on a package over its row).
 
-**ImpactSummary:** additive method on `Runner`; `Attach`/`AttachGated`/`AttachIfLive` keep their behaviour through a shared reconstruct step.
+**ImpactSummary:** additive method on `Runner`; `Attach`/`AttachGated`/`AttachIfLive` keep their behaviour through a shared reconstruct step, and the attach test, the shuttle doc and the budget row follow it.

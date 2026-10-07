@@ -8,6 +8,7 @@
 - `internal/burlercli/cli_test.go`
 - `tools/sandbox/SANDBOX-BURLER-SUITE.md`
 - `docs/overview.md`
+- `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
 - `internal/burlercli#burlerCLI.validateReviewCmd`
@@ -27,11 +28,14 @@ The cap is a `--cap` duration flag defaulting to 100s, below the agent's default
 What the verb lets through, and its bound: it reports ready for any existing path it is handed, so a caller could release itself by naming another file;
 it reads one caller-named path and writes nothing, and keeping the fixer to the marker Go writes is the fixer prompt's rule (card 5), a prompt-enforced risk the decision record names.
 
-Tests in `cli_test.go`, from a temp directory outside any git repository: a present marker returns `ready: true` at once;
+Tests in `cli_test.go`, one table-driven test run from a temp directory outside any git repository: a present marker returns `ready: true` at once;
 an absent marker returns `ready: false` after a short `--cap`;
 a marker created while the verb polls returns `ready: true`;
-the directory's entries are unchanged afterwards (the verb writes nothing).
+a missing argument is an `output.Err` with exit 1;
+a marker path whose parent is a regular file (a stat error other than not-exist) is an `output.Err` with exit 1;
+the directory's entries are unchanged afterwards in every row (the verb writes nothing).
 `SANDBOX-BURLER-SUITE.md` gains a scenario step that runs the verb against an absent and a present file, so the sandbox suite exercises it (`PATTERN-sandbox-coverage`).
 `docs/overview.md`'s burler entry lists the verb beside `validate-review`.
+The table-driven test is one new top-level function, so `cmd/lyx/testdata/test-budget.yaml` raises the `internal/burlercli` row by one (`TestTestBudget_PackagesStayWithinBudget` fails on a package over its row).
 
-**ImpactSummary:** one additive `lyx burler` subcommand and its pre-run wiring skip; no existing verb changes.
+**ImpactSummary:** one additive `lyx burler` subcommand, its pre-run wiring skip and one budget row; no existing verb changes.
