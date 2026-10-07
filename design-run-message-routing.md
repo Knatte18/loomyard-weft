@@ -24,3 +24,7 @@ A message could wait in its queue for the next LLM producer if the alias is reso
 This suggests a split to discuss:
 - Content ("the settle comes from config") goes into the decision record, which is durable, read by every later LLM producer, and needs no live receiver.
 - Only an instruction that must act now needs a live receiver, and the most urgent one, stop, is a run pause (`lyx batten pause`), which works during a Go step too.
+
+Operator leaning (2026-10-07): the driver takes the message.
+It runs a Sonnet agent on purpose, to have judgment; it is the one LLM alive for the whole run, Go steps included, it knows where the run stands, and it receives messages while its `shed step` runs in the background.
+With a message it could record content with `lyx loom decision add` (a lyx verb, not a source edit), forward it to the strand that owns the current step, or pause the run or ask for a goto.
