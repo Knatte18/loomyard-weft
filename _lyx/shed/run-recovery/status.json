@@ -1,12 +1,12 @@
 {
   "current_producer": "Worktree-Create",
-  "state": "blocked",
-  "error": "branch \"run-recovery\" already exists, left behind by an earlier pair for this slug (a torn-down pair keeps its task branch locally and on the remote, and a rolled-back create keeps the branch it made); delete it locally (\"git branch -D run-recovery\") and on the remote (\"git push origin --delete run-recovery\"), remove any leftover of the pair's sibling branch (\"lyx fabric cleanup --apply --remote\" removes an orphaned one), then resume this run -- never \"lyx fabric checkout\" from here, which would switch this worktree itself onto that branch",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Worktree-Create",
     "last": "Worktree-Create → stuck",
-    "wait": "branch \"run-recovery\" already exists, left behind by an earlier pair for this slug (a torn-down pair keeps its task branch locally and on the remote, and a rolled-back create keeps the branch it made); delete it locally (\"git branch -D run-recovery\") and on the remote (\"git push origin --delete run-recovery\"), remove any leftover of the pair's sibling branch (\"lyx fabric cleanup --apply --remote\" removes an orphaned one), then resume this run -- never \"lyx fabric checkout\" from here, which would switch this worktree itself onto that branch"
+    "wait": ""
   },
   "history": [
     {
