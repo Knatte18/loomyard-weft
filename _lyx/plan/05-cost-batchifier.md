@@ -3,8 +3,8 @@
 **Create:**
 - `internal/batcher/cost.go`
 - `internal/batcher/cost_test.go`
-- `plan:internal/batcher#CostParams` -> `type CostParams struct`
-- `plan:internal/batcher#NewCost` -> `func NewCost(name string, p CostParams) Batcher`
+- `internal/batcher#CostParams`
+- `internal/batcher#NewCost`
 
 **Edit:**
 - `internal/batcher/doc.go`

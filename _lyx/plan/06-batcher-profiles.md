@@ -24,8 +24,8 @@
 - `internal/batcher/registry_test.go`
 
 **Uses:**
-- `plan:internal/batcher#NewCost`
-- `plan:internal/batcher#CostParams`
+- `internal/batcher#NewCost`
+- `internal/batcher#CostParams`
 - `internal/batcher#Identity`
 
 **Intent:**
