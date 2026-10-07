@@ -19,7 +19,7 @@ Every message goes through creel instead, agent to agent and module to agent ali
 ### Verbs: one module, separate verbs per guarantee
 
 - `lyx creel post <receiver> "<text>"`: mail. Stored in the receiver's mailbox; the receiver is reminded until it reads it.
-- `lyx creel inject <receiver> "<text>"`: typed straight into the receiver's pane as its next input, once the receiver is idle. For commands (`/clear`, `/compact`), the orch watcher's cycle messages, and creel's own reminder lines. No read receipt. Only privileged senders may inject into another strand; injecting into one's own strand is free.
+- `lyx creel inject <receiver> "<text>"`: typed straight into the receiver's pane as its next input, once the receiver is idle. For commands (`/clear`, `/compact`, the reload) and creel's own reminder lines; anything the receiver must read and answer is `post`, not `inject`. No read receipt. Only privileged senders may inject into another strand; injecting into one's own strand is free.
 - `lyx creel inject --interrupt <receiver> "<text>"`: interrupt the receiver's running turn, wait until it is idle, then type the text: "stop, and do this instead".
 - `lyx creel interrupt <receiver>`: stop the receiver's running turn without killing its pane. It bypasses the queue, since it must act while the receiver is busy.
 - `lyx creel forward <message-id> <receiver>`: move an unread message, envelope and body, to another receiver's mailbox; nothing stays behind in the forwarder's. The id is creel's, shown by `inbox` and in the reminder line (such as `#41`). Its `from` stays the original sender and the envelope's `path` gains the forwarder, so the message records the whole way it has taken (sender, then each forwarder in order) and the new receiver replies to the sender, not to whoever forwarded it. The forwarder need not read the body: the reminder line carries each message's sender and a short subject (its first line), enough to route. Creel knows nothing of why a message is forwarded (see `run-message-routing`, where a run's driver routes instructions to the agent working in its run).
@@ -56,7 +56,19 @@ No other module offers a verb that types into an agent's pane: `lyx shuttle send
 ### Holding
 
 A sender may hold mail reminders to a receiver and release them later.
-The orch watcher holds `ly:orch`'s reminders during a context cycle, while its own injects (the note request, `/clear`, the reload) still pass.
+The orch watcher holds `ly:orch`'s reminders during a context cycle, while its own messages still pass: the note request (post) and `/clear`, `/compact` and the reload (inject).
+
+### The note request is mail (operator, 2026-10-07)
+
+The watcher posts the note request to `ly:orch` rather than injecting it, so the orch reads it when it is ready and is never interrupted mid-work.
+The orch replies by post: `written <path>` once the note is written, or `defer`.
+An injected request has no receipt: on 2026-10-07 the operator dismissed one at the prompt, the watcher counted it as delivered and waited silently until its timeout, and later `distill` requests queued behind it.
+With post the watcher's timeout tells two cases apart:
+
+- Unread: the orch has not seen the request; creel keeps reminding it at each idle.
+- Read but unanswered: the orch saw it and did not reply; the watcher gives up and shows the reason in `lyx orch status` and reed.
+
+A dismissed request is answered with `defer`, never left unanswered.
 
 ### Receivers
 
@@ -95,7 +107,7 @@ Creel is a new module that every delivery will depend on, so it is built and tes
 Each stage below becomes its own task when creel is promoted.
 
 1. Creel alone: the daemon, the queues, the journal, every verb above, and delivery through shuttle gated on the receiver being idle, tested against fake panes and in the tmux tier. No other module sends through it yet; the operator tries it from a terminal.
-2. System notices: the orch watcher's and batten's notices and the watcher's injects go through creel, and the watcher's notice queue and idle probe go. The watcher keeps only its cycle logic (tracking tokens, choosing `refresh`/`distill`/automatic cycles, waiting for the note, sequencing the reload, its state and lifecycle), and advances a cycle phase only once creel confirms its inject was typed.
+2. System notices: the orch watcher's and batten's notices and the watcher's injects go through creel, and the watcher's notice queue and idle probe go. The watcher keeps only its cycle logic (tracking tokens, choosing `refresh`/`distill`/automatic cycles, waiting for the note, sequencing the reload, its state and lifecycle), and advances a cycle phase only on the orch's reply to the note request, or once creel confirms a command inject was typed.
 3. Agents: the parent-review gate (`internal/parentreview/gate.go`, which today prompts Discussion-Write to `SendMessage` the parent) posts itself, drivers' stop reports post instead of duplicating batten's notices over `SendMessage`, and `lyx shuttle send`/`interrupt` move behind creel.
 
 Fixes that do not need creel, such as `shuttle-asking-holds`, go ahead of it.
