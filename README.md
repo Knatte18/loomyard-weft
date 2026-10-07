@@ -166,6 +166,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Open a named Claude session in a strand with no task, through shuttle, so it keeps its name; for extra strands in the prime
 1. **Who in a running task receives an instruction** — [`run-message-routing`](design-run-message-routing.md) · feature, loom
    - Driver forwarding, an alias for the active strand kept by loom, or an on-call LLM per run: open for a brainstorm
+1. **A pane listing every gate of a run as a checklist with timings** — [`gate-checklist-pane`](design-gate-checklist-pane.md) · feature, reed
+   - Every gate of the run with a tick box and its elapsed time, in a pane of its own; an idea, not a priority
 
 ## Done
 
