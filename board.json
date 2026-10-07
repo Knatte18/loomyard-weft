@@ -1158,6 +1158,21 @@
       "isolated": false,
       "brief": "Agents commit warp with git commit and only Webster and Publish push it; Go pushes warp wherever it pushes weft",
       "body": "A task branch should be on the remote at all times (operator, 2026-10-06), so that a crash, a lost machine or a look from another machine never meets work that exists only locally.\n\nSeen 2026-10-06 in `test-suite-prune-rest`: the warp branch was 19 commits ahead of `origin/test-suite-prune-rest` while its weft was in sync.\nThe last warp push was at 15:40 by Webster (`internal/websterengine/sequence.go` pushes after its batches); the eleven Webster-Burler fix commits from 19:11 on and a merge of main at 19:52 stayed local until Publish.\n\nCause: agents commit warp with their own `git commit`, and pushing is left to whichever loop owner happens to push.\nA Burler round commits each fix and never pushes (`internal/burlerengine/doc.go`, `FixScopeSource`, and its prompt in `internal/burlerengine/prompt.go`).\n`lyx fabric commit`, `push` and `sync` cover the weft only, so a weft push never carries the warp along.\n\nOperator direction: the remote is never behind, and that must not rest on agents.\nThe operator first wanted every agent to commit through a `lyx fabric` verb that pushes warp with weft, then judged that agents will keep running `git commit` whatever their prompt says.\nSo the push belongs to Go: wherever the weft is pushed after a step, the warp branch is pushed with it, whatever made the commits.\n"
+    },
+    {
+      "id": 154,
+      "slug": "batten-run-resumes-child",
+      "title": "batten run resumes a halted inner run itself",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "An explicit lyx batten run resumes a paused or blocked loom run instead of waiting for a separate lyx loom start",
+      "body": "`lyx batten run \u003cslug\u003e` on a run whose inner loom run is halted (paused, blocked or failed) starts batten, logs \"inner shed run halted; waiting for the operator to resume it\", and waits; the orch then has to run `lyx loom start --no-attach` in the task worktree as a second step.\nSeen 2026-10-07 restarting the three bugfix runs after their batten processes died: each needed both commands, and batten sent a \"child state paused\" notice for each in between.\n\nThe wait is deliberate while batten is already running: a halt may be someone's intent (a pause for a goto), and batten must not override it.\nBut `batten run` is itself an explicit instruction to go on, so the operator wants it to resume a halted inner run itself (operator, 2026-10-07).\nOnly a halt met while batten is already running waits for a resume.\n"
     }
   ],
   "legacy_done": [

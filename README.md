@@ -97,6 +97,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - The status line row of run tabs prints full session names, so with five runs the rightmost fall off a narrow terminal unseen
 1. **Shuttle crucible: harden turn reading against real Claude behaviour** — [`shuttle-crucible`](design-shuttle-crucible.md) · enhancement, shuttle
    - A replay corpus of real misreads plus scripted live Claude runs that test how shuttle reads turns
+1. **batten run resumes a halted inner run itself** — [`batten-run-resumes-child`](design-batten-run-resumes-child.md) · enhancement, batten
+   - An explicit lyx batten run resumes a paused or blocked loom run instead of waiting for a separate lyx loom start
 
 ### Features
 
