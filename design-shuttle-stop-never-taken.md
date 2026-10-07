@@ -32,3 +32,5 @@ The goroutine dump is the same as the first case: parked in `shuttleengine.(*Run
 Both cases are a Webster-Burler round 2 whose shuttle run started a fresh strand while the round-1 strand of the same role had been used before, which may be the condition to test first.
 Correction (operator, 2026-10-07): the machine was suspended during the second case, so the trigger is likely a suspend, not round 2.
 The wait still should have recovered on wake, since the Stop was already on disk; a sleep or deadline that does not survive a suspend in `shuttleengine.(*Run).Wait` is the first place to look, and whether the first case also spanned a suspend is open.
+Checked against the system journal (orch, 2026-10-07), the suspend is not the cause: the machine hibernated 08:39:12–09:56:11, so the second case had over four minutes awake after the 08:34:51 Stop without taking it, and three more after waking; the first case (19:29–19:45 on 2026-10-06) ran wholly awake, between a wake at 19:03:23 and a hibernate at 20:06:14.
+The hibernate only explains the length of the second stall.
