@@ -1,6 +1,6 @@
 # Orch and batten: compact reload, one event-driven notice channel, a window per batten
 
-`lifecycle-waits` · Task · bug, enhancement, orch, batten · awaiting · Discussion-Bouncer
+`lifecycle-waits` · Task · bug, enhancement, orch, batten · running · Discussion-Bouncer
 
 The orch and batten side of a run's lifecycle: the orch reloads as soon as its compaction lands, it hears each state change once and on time, and it can see which batten runs it has in flight.
 
