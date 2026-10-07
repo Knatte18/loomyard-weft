@@ -13,7 +13,7 @@ Waits on nothing open; can start now, in parallel.
 
 1. **Batcher v2: Merriam context at fork time, a fitted model, plans in card order** — [`batcher-v2`](design-batcher-v2.md) · bug, enhancement, webster · running · Plan-Burler
    - Size batches from Merriam measured context, fit the batchifier from logged runs, one tokencount weft flag, card order in the plan spec, and card commands that never reach the fabric repo
-1. **Burler: a parallel reviewer and fixer, a model per round** — [`burler-cost`](design-burler-cost.md) · feature, burler · running · Plan-Bouncer
+1. **Burler: a parallel reviewer and fixer, a model per round** — [`burler-cost`](design-burler-cost.md) · feature, burler · running · Plan-Burler
    - Split a Burler round into a cheap reviewer and a stronger fixer that start together, and pick the model per round
 1. **Orch and batten: compact reload, one event-driven notice channel, a window per batten** — [`lifecycle-waits`](design-lifecycle-waits.md) · bug, enhancement, orch, batten · running · Discussion-Burler
    - The orch reloads as soon as compaction lands, batten sends one timely notice per state change without ticks, and each batten gets its own tmux window
