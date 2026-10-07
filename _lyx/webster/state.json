@@ -1,6 +1,6 @@
 {
   "runGuid": "fb31a57481fa88eb6ceda6e8984323e0",
-  "planFingerprint": "d1220521690091c42d36e05e1f661689463f480356265479a98d3fc9aa63a1c4",
+  "planFingerprint": "71bed3a132b04cef03a3b1d1e9ae62608a86c1f5e4d958d7a5e38e9905a7e765",
   "planFileHashes": {
     "00-overview.md": "971cd6ab9ba9093125141127802c0a25cd4a61b6b4bf4e0236eabb1868f7c95b",
     "01-tokencount-fork-report.md": "fbadf803e876373f4762d214057813ff45bf23e450c8beacd9476a58b156a8a9",
@@ -10,7 +10,7 @@
     "05-cost-batchifier.md": "000049709e9da2f2970578c1e747d1f374b1d9bc6802a92fb3f8c9c615b90797",
     "06-batcher-profiles.md": "faaf1fcf213a1c72a6a332b18ca53fb5216f5e71fabe0ee623a96bc1570e6bcc",
     "07-rebaseline-tail.md": "443a8d4c6681a849dfc52c4c57084ba754787ff7bc20c8687227d6fb2d4c164d",
-    "08-calibrate-template.md": "ec8f3be48359a9417b4ed9b9124ef40bccad192d7c473e2452023be92f038034"
+    "08-calibrate-template.md": "e642a0ac78377220aeec2cb2efee4c3055410eaf836592a084266baef8176b7c"
   },
   "currentBatch": 0,
   "masterStrand": "591e2bfbcf75360f83bfa980d8ca5a80",
@@ -205,7 +205,7 @@
         "08-calibrate-template"
       ],
       "cardHashes": {
-        "08-calibrate-template": "ec8f3be48359a9417b4ed9b9124ef40bccad192d7c473e2452023be92f038034"
+        "08-calibrate-template": "e642a0ac78377220aeec2cb2efee4c3055410eaf836592a084266baef8176b7c"
       },
       "startSha": "9c7f6d2634b193d8719984b7067da01c49a57d10",
       "kind": "fork",
