@@ -79,6 +79,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Driver and batten both report every halt, and batten's 30 s poll makes its notices late and stale
 1. **Run tabs overflow a narrow terminal once several runs are open** — [`reed-tabs-narrow`](design-reed-tabs-narrow.md) · enhancement, reed
    - The status line row of run tabs prints full session names, so with five runs the rightmost fall off a narrow terminal unseen
+1. **One session-state model in shuttle that every module reads** — [`session-state`](design-session-state.md) · enhancement, shuttle
+   - Shuttle owns busy/idle-done/idle-stalled/asking/dead per agent as timestamped events; batten, the orch watcher, creel and reed stop guessing
 
 ### Features
 
