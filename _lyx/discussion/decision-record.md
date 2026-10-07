@@ -133,6 +133,12 @@ Decision: Both test prunes (test-suite-prune-core dd8f4ffcd, test-suite-prune-re
 
 Rationale: The plan was written against main before the prunes landed; Webster must not start on cards that name missing files or tests.
 
+### Added after Discussion (parent, 2026-10-07): Round 4 sweeps every changed comment
+
+Decision: The next Webster review round fixes PATTERN-comment-line-breaks by a sweep, not per site: every comment line added or changed in the task's range, test files included, is checked against both rules at once (no break inside a clause; one independent clause per line) and fixed in one pass. No other change.
+
+Rationale: Rounds 1-3 found no code defect; the two open keys recur only because each fix cleared the named sites and left or introduced others. The rule is gating in the repo, so the run continues rather than landing open findings.
+
 ## Constraints
 
 - `PATTERN-fabric-git`: all git on warp or weft, including the D4 diff and the D5 fetch, stays in `internal/fabricengine` through `gitexec.Run` (`PATTERN-gitexec-checked-call`); no new `//gitexec:raw` site unless it is a bool predicate, as `weftBranchExists` is.
