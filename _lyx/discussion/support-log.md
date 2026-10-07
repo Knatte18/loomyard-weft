@@ -11,7 +11,7 @@ Autonomous mode: no operator answered; every point below is a self-pick recorded
    With identity that is stable; a batchifier that reads file sizes would regroup cards mid-run as batches change files.
    Settled: record the partition in `state.json` once per run (Decision 10), with rebaseline re-batching only the unbegun tail (Decision 11).
 4. Found the plan spec's `Batchable?` column, which says Create and Edit cards never batch; no code enforces it.
-   Settled: retire it, since the operator's design groups exactly those cards (Decision 12).
+   Settled: retire it, since the operator's design groups exactly those cards (Decision 13).
 5. Checked the implementer stencil: it already handles several cards per fork, committing per card; no stencil change needed.
 6. Explored `tools/tokencount` and the weft history: plan artifacts commits exist per slug, several per run.
    Settled: tie forks to cards by card pointers in the fork prompt; pick the last plan commit before the first fork; read git through go-git local reads.
@@ -51,9 +51,23 @@ _No rounds yet._
 - Q3 States written before the partition field? — Resolved (auto-pick): recompute as today, so in-flight runs survive a deploy.
 - Q4 Which profile is active by default? — Resolved (auto-pick): identity, per the board.
 - Q5 How is a fork tied to its card? — Resolved (auto-pick): card file pointers in the fork's prompt; unattributed forks listed.
-- Q6 Which plan and tree does calibration use? — Resolved (auto-pick): the last plan-artifacts weft commit before the first fork; the warp tree just before the first card commit; skip a run otherwise.
+- Q6 Which plan and tree does calibration use? — Resolved (auto-pick): the rule in Decision 3; skip a run otherwise.
 - Q7 What is the measured cost? — Resolved (auto-pick): tokencount's existing weight figure.
 - Q8 What happens to the plan spec's `Batchable?` column? — Resolved (auto-pick): removed, pointing at `internal/batcher`'s doc.
 - Q9 Do the implementer or Master stencils need changes for multi-card batches? — Resolved: no, they already handle several cards per fork.
 - Q10 How do the batchifier and `SequenceBatches` fit? — Resolved (parent input from `ly:orch`): the batchifier's output order is authoritative; `SequenceBatches` becomes an assertion refusing a backward edge or cycle, no reordering.
 - Q11 Does the profile record its estimates per batch? — Resolved (auto-pick): yes, in `state.json`, so real-run tokens can be compared with estimates.
+- Q12 What does the DP do for a card over `budget` on its own? — Resolved (auto-pick): a one-card batch is always feasible; `budget` and `max_cards` bind only multi-card batches (Decision 6).
+- Q13 Which weights does the calibration report use, and who sets the template's? — Resolved (auto-pick): the report takes a named profile's coefficients; a late card sets the template weights by one scale factor from the report's median ratio.
+- Q14 What does a mid-run `batcher.yaml` error do to a recorded partition? — Resolved (auto-pick): nothing; the verb refuses before touching state, and only a successful first init or rebaseline replaces the partition (Decision 8).
+- Q15 Which batchifier does a state without a recorded partition use? — Resolved (auto-pick): identity, whatever profile is active (Decision 10).
+- Q16 Where does merging save cost in the model? — Resolved (auto-pick): a per-fork message count paid once per batch (Decision 5); without it every merged card costs at least what it costs alone. The operator should confirm this term matches the accepted model.
+- Q17 Which card owns the coefficients type and its parse, given the calibration report precedes the profiles? — Resolved (auto-pick): the estimator's card (Decision 1); Decision 8 keeps the registry, `active:` resolution and load errors.
+- Q18 In which unit are `alone_above` and `budget`, and who sets them after calibration? — Resolved (auto-pick): the unit of their profile's coefficients, context tokens initially; the calibration card scales the three context coefficients by the median ratio and multiplies both thresholds by the same factor, which puts all three in tokencount's weight unit (Decision 5, Auto-mode assumptions).
+- Q19 When is a fit poor? — Resolved (auto-pick): the 75th-over-25th percentile spread of per-card ratios above 3; the card then commits nothing.
+- Q20 What does a past card with several forks or none show in the calibration table? — Resolved (auto-pick): summed weight, or skipped (Decision 3).
+- Q21 What does a rebaseline do on a state without a recorded partition? — Resolved (auto-pick): keeps identity for the tail and records none (Decision 11).
+- Q22 What is an invalid profile parameter? — Resolved (auto-pick): a negative coefficient, a non-positive threshold, or `max_cards` below 2 (Decision 8).
+- Q23 What profile name and estimate do batches carry after a rebaseline under a different active profile? — Resolved (auto-pick): each batch records its own profile name and estimate; a begun batch keeps both and the re-batched tail gets the then-active profile's (Decisions 8, 10, 11).
+- Q24 Which card places the initial coefficients, and where does the tuning card sit? — Resolved (auto-pick): the estimator's card holds the coefficients type and its parse, the profiles card ships the template's initial coefficients after the calibration report, and the tuning card follows both (Decision 1).
+- Q25 What is a card's estimate in the calibration table? — Resolved (auto-pick): its one-card batch cost under Decision 5, from the one segment-cost function the live batchifier also calls.
