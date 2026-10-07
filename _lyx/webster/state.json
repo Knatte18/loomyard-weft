@@ -22,7 +22,7 @@
     "17-burler-review-parse-gate.md": "d52ec9e6c409be5dfb1af1881ecd5064303e9c00570ee30878d0a128e9a69db3",
     "18-burler-validate-review-verb.md": "213f099e161824ee483f764d6952f180eeacce22e7983d3d39cc4acb40aa6354"
   },
-  "currentBatch": 0,
+  "currentBatch": 14,
   "masterStrand": "82b43112c805ff52fede8404a7366217",
   "masterSessionId": "48bc4037-b210-4022-bbb4-e30516d6c209",
   "assertedModel": "sonnet",
@@ -171,6 +171,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-ab3dca94a59485744.jsonl"
       ]
+    },
+    "14": {
+      "slug": "loom-start-never-attaches",
+      "cards": [
+        "14-loom-start-never-attaches"
+      ],
+      "cardHashes": {
+        "14-loom-start-never-attaches": "06af76fcecf181137c8e0e6c4f08b338477b520e7146cf1ffa6610ef299f4538"
+      },
+      "startSha": "1f5c01680ab8abef45c4a098edabf03753d9834b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T05:53:09Z",
+      "sessionId": "48bc4037-b210-4022-bbb4-e30516d6c209",
+      "terminal": false,
+      "status": ""
     },
     "2": {
       "slug": "claude-input-box-reader",
