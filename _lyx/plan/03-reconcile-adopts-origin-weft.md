@@ -11,6 +11,7 @@
 - `internal/fabricengine#adoptWeftWorktree`
 - `internal/fabricengine#Topology.repairPairWiring`
 - `internal/fabricengine#ReconcileActionRawAdopted`
+- `internal/fabricengine#deleteBranch`
 
 **Intent:**
 D7's reconcile half: `reconcileMissingWeft` consults origin before its raw-warp and unmanaged branches.
@@ -24,6 +25,10 @@ After the weft-repo check, replace the `weftBranchExists` test with `resolveWeft
 Reconcile adopts an origin weft whether or not an `archive/<slug>/*` tag covers it.
 Bound (D7): the archive-guard bypass only creates a local branch from origin and pushes, replaces or deletes nothing, and only for a slug whose warp worktree already exists locally on that branch, so no removed pair is revived without a local warp worktree; `add`'s replace-archived rule applies only where `add` itself creates the pair, so the two never decide the same slug.
 For a raw warp worktree, which proves no live pair, the bound is weaker: a raw worktree on a branch reusing a removed pair's slug adopts that pair's archived weft and gets junctions wired into it; accepted because the content was already on origin, nothing is pushed or replaced, and the hub can remove the pair again.
+When `adoptWeftWorktree` fails after the resolver created the local branch from origin (`fromOrigin`), Reconcile deletes that branch again through `deleteBranch` in the weft repo root, with `ownedManagedBranch` and `dirtyCheckedOutBranch` as `rollbackSwitch` declares them, so the verb's `*Mutations` record carries the creation and the deletion and origin is untouched.
+A branch that existed locally before the resolver ran is never deleted.
+The rollback is what keeps a local weft branch an honest proof of a live pair: `add`'s live-pair rule reads a surviving local weft branch as one, which skips the archive-tag guard, so a failed adopt must not leave one behind for a slug whose raw warp worktree is later removed.
+A refused or failed deletion is a logged warning and never replaces the adopt error already on the pair.
 A hub whose weft repo has no `origin` remote behaves as today.
 
 Update `ReconcileActionWeftRecreated`'s comment (a branch that existed locally or on origin), the reconcile.go header, and `internal/fabricengine/doc.go`'s reconcile prose to say reconcile adopts an origin weft before forking a dormant one.
@@ -32,6 +37,7 @@ Tests, in `internal/fabriccli/adoptremote_integration_test.go` through `lyx fabr
 - a raw warp worktree checked out on `<slug>` (created with `git worktree add` from the prime) with only `origin/<slug>-weft` present: the pair's `action` is `weft_recreated`, the local weft branch tracks `origin/<slug>-weft`, `.weft/` exists, and the pair's junctions, portal and launchers are wired;
   the same with an `archive/<slug>/*` tag covering the origin tip still adopts;
   with the weft repo's `origin` URL pointed at a missing path, the pair reports an `error` and no `<slug>-weft` branch exists locally;
+  with a regular file planted at the weft worktree path, which makes the adopt fail after the resolver created the branch, the pair reports an `error`, no `<slug>-weft` branch exists locally afterwards, and origin's weft branch is unchanged;
 - a managed pair whose weft worktree and local weft branch were removed (origin keeps `<slug>-weft`): `action` is `weft_recreated`, the weft tracks origin, and the wiring is repaired;
 - with the weft repo's `origin` remote removed, a raw warp worktree still gets today's dormant `raw_adopted` fork, and the dormant weft worktree has `.weft/` (card 1's `createWeftWorktree` edit).
 

@@ -8,6 +8,7 @@
 **Edit:**
 - `internal/fabricengine#Topology.switchOrForkWeft`
 - `internal/fabricengine#Topology.Checkout`
+- `internal/fabricengine/doc.go`
 - `internal/fabricengine/checkout_rollback_test.go`
 
 **Uses:**
@@ -37,6 +38,8 @@ A resolver error returns from `switchOrForkWeft`, and `Checkout` rolls the warp 
 Checkout adopts an origin weft whether or not an archive tag covers it.
 Bound (D7): checkout creates no pair and only switches an existing weft worktree onto a local branch tracking content origin already holds; the operator named the branch, nothing on origin changes, and D4's notice reports config changes at landing.
 A hub whose weft repo has no `origin` remote forks as today.
+
+Docs: `internal/fabricengine/doc.go` gains a short paragraph on weft-branch resolution: `Checkout` takes the weft branch local first, then from origin, then forks, an unreachable origin stops the verb instead of forking, and a weft repo with no `origin` remote forks as before.
 
 Tests:
 - `internal/fabriccli/adoptremote_integration_test.go` (new, `integration` tag, package `fabriccli_test`, `hubforge` hub, every verb through `fabriccli.RunCLIIn`): this card adds the checkout rows: in a pair, a warp branch `<b>` exists locally and only `origin/<b>-weft` exists (pushed from a scratch clone of `h.WeftBare`, carrying a marker file) — `lyx fabric checkout <b>` switches the weft worktree to a local `<b>-weft` that tracks `origin/<b>-weft` and holds the marker, also when an `archive/<b>/*` tag covers that origin tip; with the weft repo's `origin` URL pointed at a missing path and no local `<b>-weft`, the verb exits non-zero naming `origin`, both worktrees stay on their original branches, and no `<b>-weft` exists locally; with the weft repo's `origin` remote removed, checkout forks as today.
