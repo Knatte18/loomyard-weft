@@ -50,3 +50,25 @@ Provenance: task `bugfix-sessions`; notes `loom-halt.md`, `webster-refusal-recor
 
 Correction to issue #413 (orch, 2026-10-07): the reflection read the drift as produced by the goto to Plan-Write; the drift came from the orch's hand edit of card 1 while batch 1 was recorded, and the goto had happened before this Webster run began.
 Its finding stands: `record-batch` offers `rebaseline` as the way forward for a begun card, where `rebaseline` always refuses, so the advice should name only paths that can succeed.
+
+
+## From issue #416
+
+Imported from [issue #416](https://github.com/Knatte18/loomyard/issues/416).
+
+## What happened
+
+`lyx webster begin-batch 1` refused with: `batch 01-paced-text-submit already has a report at _lyx/webster/reports/01-paced-text-submit.yaml — begin-batch never overwrites finished work; a report left behind by a crashed session is consumed by lyx webster record-batch 1 (or lyx webster recover-batch 1 for a recovery batch), and a stuck batch escalates via lyx webster recover-batch 1`.
+The loom history shows the run had gone back to Plan-Write via a `goto` and re-batchified before Webster started, so the report was left over from earlier work, not from a crashed webster session.
+
+## Why it is abnormal
+
+The refusal text offers only crash and stuck-batch remedies.
+After a `goto` back to planning and a fresh Batchifier pass, a stale report should be archived or invalidated by lyx, or the refusal should name that case, rather than leaving the Webster agent to guess between `record-batch` and `recover-batch`.
+
+## What to do
+
+Decide whether a `goto` to Plan-Write or a Batchifier re-run should archive existing `_lyx/webster/reports/` entries, or whether the refusal message should cover the stale-report case.
+The evidence here is one refusal note; the cause of the leftover report is inferred from the history.
+
+Provenance: task `bugfix-sessions`; note `webster-refusal-begin-batch.md`.
