@@ -36,6 +36,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - rebaseline refuses begun cards and reset needs a fresh run loom cannot start, so a mid-run decision never reaches the plan
 1. **Orch compact cycle always times out before reload** — [`orch-compact-timeout`](design-orch-compact-timeout.md) · bug, orch
    - tickCompacting reads a stale pre-compact turn end, so every compact cycle waits out the handoff timeout and reloads late
+1. **Plan checks let a card command reach the fabric repo** — [`plan-fabric-reference`](design-plan-fabric-reference.md) · bug, webster, loom
+   - card-batching card 08 told its fork to run tokencount on ../card-batching-weft; neither validate-plan nor Plan-Review caught it, and Webster audit then wedged the run
 
 ### Enhancements
 
