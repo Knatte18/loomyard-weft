@@ -35,6 +35,7 @@ Otherwise:
 - **Binary-building tests:** when a changed package is in `cmd/lyx`'s deps, every package whose test files import `internal/testkit/lyxbin` joins the set.
 - **Guard tests:** every top-level test marked `//lyx:guard`, found by a static parse of every `_test.go` file under every tag, joins by name in its package.
   A marker not directly above a top-level `func Test…` line, or in a file constrained to `tmux` or `llm`, is a returned error naming the file and line.
+  A `//testtiming:keep` line between the marker and the func line does not displace it, since a test carrying both stacks them as contiguous directive lines (card 9); any other line between them does.
 - **Command:** `go build ./...`, then `go vet` over the set under each of `-tags integration`, `-tags tmux` and `-tags llm`, then `go test` over the set, then `go test -tags integration` over the set, then, per package outside the set, `go test -tags integration -run '^(<guards>)$' <package>`, all joined by `&&` and listing the set package by package.
   An empty set runs only `go build ./...` and the guard tests.
 
@@ -42,7 +43,7 @@ Bound, since this narrows the round gate: the narrower command skips only packag
 
 Tests:
 `derive_test.go` (untagged) drives the pure core over a hand-built package graph and changed-path list: one changed package yields it and its reverse deps; a package reached only through a `tmux` or `llm` test import is in the set and is vetted; a `cmd/lyx` dep pulls in every `lyxbin`-importing package; a rename between package directories puts both in the set; a `.md`-only diff yields build plus guards; an unmappable path and an over-long command fall back; the command order is build, vet per tag, untagged, `integration`, guards.
-`guards_test.go` (untagged) parses fixture test files it writes under `t.TempDir()`: a marked top-level test is found, a misplaced marker and a marker in a `tmux` or `llm` file each fail with file and line.
+`guards_test.go` (untagged) parses fixture test files it writes under `t.TempDir()`: a marked top-level test is found, a marker stacked with a `//testtiming:keep` line above the same test is found, a misplaced marker and a marker in a `tmux` or `llm` file each fail with file and line.
 `derive_integration_test.go` drives `Derive` over a real repository holding a small Go module: no `go.mod`, an empty base, a base off HEAD's ancestry, and a `go.mod` change each fall back; a deleted file whose directory is no longer a package falls back; a one-package change derives that package's command.
 `testmain_test.go` runs the package through `tmuxkit.Main` under `gitkit.HermeticGitEnv()`.
 

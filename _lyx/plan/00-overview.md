@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 ---
 
 # Plan: test-tiers — cut the test load of a loom run
@@ -21,7 +21,7 @@ Webster's gate, Publish and Finalize keep the full plan verify, and Publish adds
 8 — impact-set-engine — `impactset` derives the round command, its fallbacks and the `//lyx:guard` tests
 9 — mark-guards — every repository-scanning test carries `//lyx:guard`
 10 — round-gate — the Webster-Burler gate runs the lint, then the impacted-set command
-11 — tmux-tier-green — `TestSmokeDotFillCrossClientControl` gets the window it needs, so the `tmux` tier passes
+11 — tmux-tier-green — the `tmux` tier is run on the clean tree; a failure whose cause sits in the `reedcli` smoke test files is fixed there, and any other stops the run before card 12
 12 — publish-verify — landing config's `publish_verify`, run by Publish after the plan verify; loomyard sets the `tmux` tier
 13 — plan-verify-guidance — plan spec, Plan-Write template and plan-review rubric drop the `tmux` tier from `## verify:`
 14 — test-budget-guard — per-package top-level test budget, pinned at the after-state

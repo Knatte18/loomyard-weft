@@ -9,6 +9,7 @@
 - `contracts/recipes/loom-recipe.yaml`
 - `pattern/PATTERN-verified-tree.md`
 - `pattern/PATTERN-test-speed.md`
+- `pattern/PATTERN-gate-self-check-parity.md`
 - `PATTERN.md`
 
 **Uses:**
@@ -30,11 +31,13 @@ At each arrival the gate:
 
 `StatusDirty` and `StatusFailed` map to findings as today, so a dirty tree is still refused.
 Bound, since the gate now runs less than the full verify: the narrowing is `impactset`'s, every fallback it lists runs the full verify, and the landing gates still run the full verify on the tree that lands.
+The round only compiles the `tmux` and `llm` tiers and never runs them: a failure only a `tmux` test shows is caught where `publish_verify` runs the tier, at Publish, and a failure only an `llm` test shows passes every gate and is left to the by-hand run.
 
 `seam_enforcement_test.go`'s allowlist admits `internal/impactset` and `internal/commentlint`.
 `entries_gate.go`'s doc for the "verify" gate and the recipe's comment on Webster-Burler's `gates:` say what the gate now runs.
 `pattern/PATTERN-verified-tree.md` states that the Webster-Burler gate runs the derived round command through `Verify`;
 `PATTERN.md`'s `PATTERN-verified-tree` line says "a verify command" rather than "a plan's verify command".
+`pattern/PATTERN-gate-self-check-parity.md`'s Pairs list adds the round gate to the lint pair card 7 enters, and its Webster-Burler `verify` gate line says the gate runs the lint and the derived command through `verifytree.Verify`.
 `pattern/PATTERN-test-speed.md`'s tier table's "runs under" column follows D1 (`tmux`: Publish's `publish_verify` and by hand; `llm`: compiled by every gate, run by hand), and the background gains D1's gate-per-tier table.
 
 Tests in `verifygate_integration_test.go`, over a hub fixture whose worktree holds a small Go module:

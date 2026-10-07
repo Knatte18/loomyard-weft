@@ -14,6 +14,7 @@
 - `internal/websterengine/beginbatch_test.go`
 - `internal/websterengine/doc.go`
 - `pattern/PATTERN-comment-line-breaks.md`
+- `pattern/PATTERN-gate-self-check-parity.md`
 - `PATTERN.md`
 
 **Uses:**
@@ -23,9 +24,11 @@
 Decision D7's standalone verb and card gate, and decision D6's reading of the line-break rule (issue #421).
 
 `lyx loom lint-comments [--base <commit>]` resolves its worktree through loom's existing wiring (`PATTERN-cliwire-sole-wiring`), calls `commentlint.Lint`, and reports one JSON envelope: success with no findings, or a failure whose `findings` key lists each finding's file, line and text.
-It takes no arguments; without `--base` it lints the working tree against HEAD, which is the card gate's form.
+It takes no positional arguments, and `--base` is its one flag; without it the verb lints the working tree against HEAD, which is the card gate's form.
 The round gate (card 10) calls `commentlint.Lint` directly, so the gate and the verb share one function (`PATTERN-gate-self-check-parity`).
 Bound: the verb only reads git and files, and a finding fails only the gate whose command runs it.
+`pattern/PATTERN-gate-self-check-parity.md`'s Pairs list gains the lint pair: the card gate's command and `lint-comments` share `commentlint.Lint`, and card 10 adds the round gate to the entry.
+`loom` stays covered at module level by the core sandbox suite's `**Covers:** loom` scenario, so the verb needs neither a suite row nor an entry on the sandbox-coverage exclusion list (`PATTERN-sandbox-coverage`).
 
 `cardGateCommand` appends ` && lyx loom lint-comments` to every card's command, after the tests.
 `cardgate_test.go` and `beginbatch_test.go`'s rendered-gate expectation gain the verb.
