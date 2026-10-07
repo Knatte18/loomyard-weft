@@ -1,6 +1,6 @@
 # A batchifier that groups small related cards into one Webster batch
 
-`card-batching` · Task · feature, webster · running · Discussion-Bouncer
+`card-batching` · Task · feature, webster · running · Plan-Write
 
 Depends on: [`bugfix-webster`](design-bugfix-webster.md)
 

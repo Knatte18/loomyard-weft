@@ -11,7 +11,7 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **A batchifier that groups small related cards into one Webster batch** — [`card-batching`](design-card-batching.md) · feature, webster · running · Discussion-Bouncer
+1. **A batchifier that groups small related cards into one Webster batch** — [`card-batching`](design-card-batching.md) · feature, webster · running · Plan-Write
    - A Go batchifier that sizes each card, runs large cards alone and groups small ones sharing files within a budget; several named profiles in batcher.yaml
 1. **Which gate runs which test tier, after-state and budget guard** — [`test-tiers`](design-test-tiers.md) · enhancement, loom, webster · running · Discussion-Burler
    - Stage 3: review rounds run the impacted set, full plan verify only at Webster gate and Publish/Finalize; after-state recorded; per-package test budget guard
