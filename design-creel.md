@@ -22,7 +22,7 @@ Every message goes through creel instead, agent to agent and module to agent ali
 - `lyx creel inject <receiver> "<text>"`: typed straight into the receiver's pane as its next input, once the receiver is idle. For commands (`/clear`, `/compact`), the orch watcher's cycle messages, and creel's own reminder lines. No read receipt. Only privileged senders may inject into another strand; injecting into one's own strand is free.
 - `lyx creel inject --interrupt <receiver> "<text>"`: interrupt the receiver's running turn, wait until it is idle, then type the text: "stop, and do this instead".
 - `lyx creel interrupt <receiver>`: stop the receiver's running turn without killing its pane. It bypasses the queue, since it must act while the receiver is busy.
-- `lyx creel forward <message> <receiver>`: move an unread message to another receiver's mailbox. Its `from` stays the original sender and the envelope gains `forwarded-by`, so the new receiver replies to the sender, not to whoever forwarded it. The forwarder need not read the body: the reminder line carries each message's sender and a short subject (its first line), enough to route. Creel knows nothing of why a message is forwarded (see `run-message-routing`, where a run's driver routes instructions to the agent working in its run).
+- `lyx creel forward <message-id> <receiver>`: move an unread message, envelope and body, to another receiver's mailbox; nothing stays behind in the forwarder's. The id is creel's, shown by `inbox` and in the reminder line (such as `#41`). Its `from` stays the original sender and the envelope gains `forwarded-by`, so the new receiver replies to the sender, not to whoever forwarded it. The forwarder need not read the body: the reminder line carries each message's sender and a short subject (its first line), enough to route. Creel knows nothing of why a message is forwarded (see `run-message-routing`, where a run's driver routes instructions to the agent working in its run).
 - `lyx creel read`, `lyx creel inbox`, `lyx creel log`: below.
 
 The operator deals with creel only.
@@ -62,6 +62,7 @@ The orch watcher holds `ly:orch`'s reminders during a context cycle, while its o
 
 - An unknown name is refused, listing the names that exist.
 - A known receiver that is dead or dormant keeps its queue, and delivery resumes when its strand is live again.
+- A receiver whose strand is removed (a producer's agent ending, for one) leaves no mail behind unread: each unread message goes back to whoever put it there, the `forwarded-by` strand for a forwarded message and the sender otherwise, marked with the receiver that ended without reading it, so it can be routed again. Creel learns only that the strand no longer exists, never why.
 - A terminal is never typed into: what is typed into a shell is a command. A terminal or program that wants an answer waits on creel's socket instead (`post --wait-reply`, `read --wait`) and prints it.
 
 ### Daemon and transport
