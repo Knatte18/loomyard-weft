@@ -489,7 +489,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "079119ce1835bb673c50f32129cce045",
   "masterSessionId": "c49f023a-9153-4106-ac1f-0444b0d813d8",
   "batches": {
@@ -531,6 +531,27 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-turns/c49f023a-9153-4106-ac1f-0444b0d813d8/subagents/agent-a61267fefad3a2cbb.jsonl"
       ]
+    },
+    "7": {
+      "slug": "attach-held-runs",
+      "cards": [
+        "07-attach-held-runs",
+        "08-notifier-wiring",
+        "09-shed-asking-branches",
+        "10-webster-asking-and-shell-note"
+      ],
+      "cardHashes": {
+        "07-attach-held-runs": "d924c0e4b7e88e401ba6e350ce646350da8d019c2f00e25bd97cfeda2540254d",
+        "08-notifier-wiring": "15dcf946aef37334951b47ef8038d3b64537f793f743f4ca5ec33da08f981689",
+        "09-shed-asking-branches": "6be108533aa04a0c92cf90d7dcd9f2684f910232119747599df07049e384cd2b",
+        "10-webster-asking-and-shell-note": "21a41022ea93385b7e8d8d3694196d55a8cf0d212b258e4ac2eef24a810ad398"
+      },
+      "startSha": "b78c5afc9ed2b2c88ba6ebf1166b786e8e3c9ecf",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T14:18:33Z",
+      "sessionId": "c49f023a-9153-4106-ac1f-0444b0d813d8",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
