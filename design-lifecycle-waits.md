@@ -1,6 +1,6 @@
 # Run lifecycle waits: orch compact reload, a step watchdog, a pair create that retries
 
-`lifecycle-waits` · Task · bug, enhancement, orch, shed, fabric · running · Loom-Preflight
+`lifecycle-waits` · Task · bug, enhancement, orch, shed, fabric · running · Discussion-Write
 
 Three places where a run or the orch waits far longer than it needs to, or hangs unnoticed.
 
