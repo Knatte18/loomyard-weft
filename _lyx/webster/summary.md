@@ -1,11 +1,24 @@
-# Webster run stopped at batch 13
+# Shuttle turns: payload authority, held runs, asking retirement, tail and steer
 
-This session resumed with batches 01 (payload-authority), 07 (attach-held-runs) and 11 (treadle-triage-retire) already recorded `done`, and batch 13 (tail-in-stencils-and-steer) recorded `failed`.
-No batch was begun or forked in this session.
+This session resumed with every batch already terminal.
+`lyx webster status` reported all four batches `done`, and the progress trail listed none still to run, so no fork was spawned and no digest was read in this session.
+This summary rests on the card list and the recorded batch statuses, not on fork reports.
 
-`lyx webster recover-batch 13` refused with `needs_fresh`.
-The batch failed on a `fabric-reference` audit finding: the implementer fork ran shell commands from the hub directory that read `.lyx/shuttle/*/events.jsonl` files of other worktrees' fabric state.
-Recovery cannot check that finding, so no recovery can clear it.
+- Batch 01 `payload-authority` (fork, done): `background_tasks` as the authoritative payload, the transcript fallback, the one-time log of a waiting turn end's outstanding tasks, `submit_redraw_settle_ms` in `shuttle.yaml`, the `MessageTail` constant appended by `lyx shuttle send`, `Wait` holding a turn end without output, `AwaitOperator` retired, and a one-time parent notice for a held autonomous turn end.
+- Batch 07 `attach-held-runs` (fork, done): `Attach` waiting on legacy asking runs with a live strand, the loom, webster and burler runners notifying the prime's orch, shed producers dropping their asking branches, webster's engine dropping its asking error, and the background-shell note reporting the real outcome.
+- Batch 11 `treadle-triage-retire` (fork, done): treadle's asking triage dropped, `OutcomeAsking` removed, and CLI help, comments and docs updated.
+- Batch 13 `tail-in-stencils-and-steer` (recovery, done): the orch, driver and AskUserQuestion texts carrying the tail and the hold's rules, the exported `Clock` and `Runner.SetClock`, the offline replay corpus, and the `llm`-tier live scenarios.
 
-Batch 13 and every batch after it in the card list are therefore not built by this run.
-The refusal names the way forward for the operator: when the batch made no commit and the worktree is clean, run `lyx webster accept-audit --batch 13` and then `lyx webster recover-batch 13`; otherwise run `lyx webster reset --to start` and then `lyx webster run --fresh`.
+Batch 13 completed through a recovery strand rather than its first fork.
+No deviations from the declared file-ops were read in this session.
+The plan-level verify gate runs after this turn ends.
+
+
+## Audit warnings
+
+These findings (fork-audit policy findings, and drift about a later card) were recorded as warnings and did not stop the run.
+
+- audit warning (fabric-reference): accepted by accept-audit --batch, HEAD was the batch's start commit and the tree clean: ran a fabric-referencing command ("cd /home/knatte/Code/loomyard-LYXHUB && for f in */.lyx/shuttle/*/events.jsonl; do echo \"$f $(wc -l <$f) lines; subagent-running: $(grep -c '\"type\":\"subagent\"' $f); bg-key: $(grep -c background_tasks $f)\"; done; head -c 1800 loomyard-weft/.lyx/shuttle/6c8e3b9253ddaa0334c35176af6225eb/events.jsonl") that can rewrite run state — an implementer fork must never touch the fabric repo directly
+- audit warning (fabric-reference): accepted by accept-audit --batch, HEAD was the batch's start commit and the tree clean: ran a fabric-referencing command ("cd /home/knatte/Code/loomyard-LYXHUB && for f in run-recovery-weft/.lyx/shuttle/cd08c99bc4ac3a466e02c2853e75ac6e/events.jsonl shuttle-turns-weft/.lyx/shuttle/f37cc9b4d97c59775990407377c81689/events.jsonl; do echo \"#### $f\"; jq -c '{ev:.hook_event_name, sid:.session_id[0:8], tp:(.transcript_path|split(\"/\")|last), msg:(.last_assistant_message|.[0:70]), bg:(.background_tasks)}' $f; done; echo; cat */.lyx/shuttle/*/events.jsonl | jq -r '.background_tasks[]? | .status' | sort | uniq -c") that can rewrite run state — an implementer fork must never touch the fabric repo directly
+- audit warning (fabric-reference): accepted by accept-audit --batch, HEAD was the batch's start commit and the tree clean: ran a fabric-referencing command ("cd /home/knatte/Code/loomyard-LYXHUB && jq -c '{sid:.session_id[0:8], ts:.hook_event_name, msg:(.last_assistant_message|.[0:90]), bg:[.background_tasks[]?|{id:.id[0:8],status,desc:.description}]}' test-tiers-weft/.lyx/shuttle/76332bc6fd4e8a6a66a988ba22955a34/events.jsonl; ls ~/.claude/projects/./-home-knatte-Code-loomyard-LYXHUB-test-tiers/e407b46f-5056-474d-a394-20e22c8cc32e/subagents 2>/dev/null | head; ls ~/.claude/projects/./-home-knatte-Code-loomyard-LYXHUB-test-tiers/ | head -20") that can rewrite run state — an implementer fork must never touch the fabric repo directly
+- audit warning (fabric-reference): accepted by accept-audit --batch, HEAD was the batch's start commit and the tree clean: ran a fabric-referencing command ("cd /home/knatte/Code/loomyard-LYXHUB && awk 'NF' test-tiers-weft/.lyx/shuttle/76332bc6fd4e8a6a66a988ba22955a34/events.jsonl | sed -n 2,4p 2>/dev/null | head -0; awk 'NF' test-tiers-weft/.lyx/shuttle/76332bc6fd4e8a6a66a988ba22955a34/events.jsonl | awk 'NR>=2 && NR<=4' | jq -c '{id:.background_tasks[0].id,desc:.background_tasks[0].description,tp:.transcript_path,cwd:.cwd,msg:.last_assistant_message,v:(.version//null)}'; cat test-tiers-weft/.lyx/shuttle/76332bc6fd4e8a6a66a988ba22955a34/run.json | jq -c '{createdAt,sessionId}'; grep -o '\"version\":\"[^\"]*\"' ~/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tiers/39aea993-b483-4287-a488-e26c7cdbd727.jsonl | head -1; grep -o '\"version\":\"[^\"]*\"' ~/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-prune-rest/bd330a6d-f411-48d9-a340-35f575841176.jsonl | head -1; grep -o '\"version\":\"[^\"]*\"' ~/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/3c2c87b2-91e2-498b-9337-16ff67e20974.jsonl | head -1;  grep -o '\"version\":\"[^\"]*\"' ~/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/88a2c2aa-bdc2-401b-bf76-73c3813b0c62.jsonl | head -1; grep -o '\"version\":\"[^\"]*\"' ~/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-loomyard/330d7c24-4dec-4289-8a23-e0aa3a7b0587.jsonl | head -1") that can rewrite run state — an implementer fork must never touch the fabric repo directly

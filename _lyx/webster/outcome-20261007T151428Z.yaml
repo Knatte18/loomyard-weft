@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "batch 13 (tail-in-stencils-and-steer): recover-batch refused with needs_fresh on findings recovery cannot check: fabric-reference, the fork ran commands against the fabric repo's run state (cd /home/knatte/Code/loomyard-LYXHUB && ... */.lyx/shuttle/*/events.jsonl); way forward: when the batch made no commit and the worktree is clean, 'lyx webster accept-audit --batch 13' then 'lyx webster recover-batch 13'; otherwise 'lyx webster reset --to start' then 'lyx webster run --fresh'"
+batches_done: 3
