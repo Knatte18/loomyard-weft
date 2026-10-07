@@ -6,6 +6,7 @@
 - `internal/fabricengine/commit.go`
 - `internal/fabricengine/coalesce.go`
 - `internal/fabriccli/weft_verbs.go`
+- `internal/fabriccli/spawn.go`
 - `internal/fabricengine/doc.go`
 - `internal/fabricengine/commit_integration_test.go`
 - `internal/fabricengine/pushanchored_integration_test.go`
@@ -37,7 +38,10 @@ Docs in this commit: the `push` and `sync` long help say the prime pushes the re
 The comments and strings that state a both-sides push change with it:
 - `weft_verbs.go`'s file header and the `push` and `sync` `Short` strings;
 - `commit.go`'s `Commit` doc, which says it fires an async both-sides push;
-- the `coalesce.go` sentence saying the detached push child always supplies both paths, since in the prime it supplies the records path alone.
+- the `coalesce.go` sentence saying the detached push child always supplies both paths, since in the prime it supplies the records path alone;
+- `internal/fabriccli/spawn.go`'s header and `spawnPush` doc, which say the detached child pushes the code side and the records side, and change to say it pushes whichever side is supplied, the code side being empty in the prime;
+- `pushanchored.go`'s header and `PushPairAnchored` doc, which say the code worktree is pushed with the records sibling, and change to state the prime's records-only push and the `code_push_skipped` report;
+- the `PushPairAnchored` sentence in `internal/fabricengine/doc.go` ("the second pushes the code side and then the records side"), beside the push and spawn text above.
 
 Coverage:
 - `hubmutation_integration_test.go`, two existing steps run `push` from the prime and both pin the old behaviour:
