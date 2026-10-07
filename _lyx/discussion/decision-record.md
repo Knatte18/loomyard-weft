@@ -152,6 +152,12 @@ Decision: Both test prunes (test-suite-prune-core dd8f4ffcd, test-suite-prune-re
 
 Rationale: The plan was written against main before the prunes landed; Webster must not start on cards that name missing files or tests.
 
+### Added after Discussion (operator, 2026-10-07): Submit settle comes from config
+
+Decision: The settle between typed text and its Enter is not a hard-coded constant: it is read from config, so it can be tuned to the lowest value that still works. This config key is an operator-approved exception to the task's no-new-config-keys rule.
+
+Rationale: Operator, 2026-10-07: 300 ms on every injected prompt adds up; with the confirmed submit retrying a swallowed Enter, a lower tuned value is safe.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: input-box reading (D1), pacing (D2) and `/reload-plugins` (D10) live under `internal/shuttleengine/claudeengine`; `shuttleengine` and `reedengine` stay provider-free.
