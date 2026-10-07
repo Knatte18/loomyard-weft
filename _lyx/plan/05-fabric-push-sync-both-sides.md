@@ -8,8 +8,8 @@
 - `internal/fabricengine/coalesce_integration_test.go`
 
 **Uses:**
-- `plan:internal/fabricengine#PushPairAnchored`
-- `plan:internal/fabricengine#LockWaitUnbounded`
+- `internal/fabricengine#PushPairAnchored`
+- `internal/fabricengine#LockWaitUnbounded`
 - `internal/fabriccli#addWeftVerbs`
 - `internal/fabriccli#spawnPush`
 - `internal/fabricengine#SpawnDetachedPush`

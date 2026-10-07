@@ -1,11 +1,11 @@
 # Card 3 — fabricengine pushes both sides under the absorbing lock, retrying once
 
 **Create:**
-- `plan:internal/fabricengine#PushPairAnchored` -> `func PushPairAnchored(l *lyxcwd.Location, opts SyncOptions, lockWait time.Duration) (res PushResult, err error)`
-- `plan:internal/fabricengine#IsPushRejected` -> `func IsPushRejected(err error) bool`
-- `plan:internal/fabricengine#ErrPushLockBusy` -> `var ErrPushLockBusy = errors.New("fabricengine: push lock busy")`
-- `plan:internal/fabricengine#StatusPushLockWait` -> `const StatusPushLockWait = 30 * time.Second`
-- `plan:internal/fabricengine#LockWaitUnbounded` -> `const LockWaitUnbounded time.Duration = 0`
+- `internal/fabricengine#PushPairAnchored`
+- `internal/fabricengine#IsPushRejected`
+- `internal/fabricengine#ErrPushLockBusy`
+- `internal/fabricengine#StatusPushLockWait`
+- `internal/fabricengine#LockWaitUnbounded`
 
 **Edit:**
 - `internal/fabricengine/pushanchored.go`

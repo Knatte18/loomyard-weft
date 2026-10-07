@@ -11,10 +11,10 @@
 - `PATTERN.md`
 
 **Uses:**
-- `plan:internal/fabricengine#PushPairAnchored`
-- `plan:internal/fabricengine#IsPushRejected`
-- `plan:internal/fabricengine#ErrPushLockBusy`
-- `plan:internal/fabricengine#StatusPushLockWait`
+- `internal/fabricengine#PushPairAnchored`
+- `internal/fabricengine#IsPushRejected`
+- `internal/fabricengine#ErrPushLockBusy`
+- `internal/fabricengine#StatusPushLockWait`
 - `internal/loomcli#loomCommitStatusDeps`
 - `internal/loomcli#commitRecordsVerb`
 - `internal/statuscommit#New`

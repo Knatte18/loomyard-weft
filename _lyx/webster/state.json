@@ -1,15 +1,15 @@
 {
   "runGuid": "2fcc4af0a5a3fcf62322ace0a89fc950",
-  "planFingerprint": "0e0074cba3719c273dc19705dafd54088558364967325f05dd112b744b712a3d",
+  "planFingerprint": "799ae1f9c9970954769b99aeac243411be5d5d43a753a44450d8e7892bae1d8b",
   "planFileHashes": {
     "00-overview.md": "6df5b6d9a7a272dc211a272deab9a26938d4afff0efb343441e5c1635a15f02e",
     "01-lock-bounded-wait.md": "68f20ddc147e6e891b3fb048e3faa1eb18cce5aa8afb051d3a904af974171799",
     "02-gitrepo-has-unpulled.md": "db8e816441ed85691e916445e02730d4571b9bc06a2d4b93353b7ce54997dfb2",
-    "03-fabric-pair-anchored-push.md": "799d5430432c421ff9fca87241bea5f37c0c2c1cddcf3858d6a86f493ad39f71",
-    "04-loom-pushes-both-sides.md": "a11f4304a1ff6dd12f4089795e84c0d005c3da51c312862742a69612118ceac0",
-    "05-fabric-push-sync-both-sides.md": "b9740ffcaa28aef324a5596b5f2f4af0509960500096099f7cb614327201c5be"
+    "03-fabric-pair-anchored-push.md": "e18f0da48474e59e667965470b1d9fccb808610219f9f276f2a6cd6c98c46a78",
+    "04-loom-pushes-both-sides.md": "faf91a2b23efa9936c87b367fae4ab14989b78444c831420af738bb93721d291",
+    "05-fabric-push-sync-both-sides.md": "41ceb62d4b3fa003fb42abccee53b04cb1e6c6562b122c1a5d85cc1119e18c4d"
   },
-  "currentBatch": 3,
+  "currentBatch": 0,
   "masterStrand": "e91559ab3050c327aae41f9db1724795",
   "masterSessionId": "44cbfd05-ec82-45ec-bf99-d385e8850965",
   "batches": {
@@ -71,18 +71,30 @@
         "03-fabric-pair-anchored-push"
       ],
       "cardHashes": {
-        "03-fabric-pair-anchored-push": "799d5430432c421ff9fca87241bea5f37c0c2c1cddcf3858d6a86f493ad39f71"
+        "03-fabric-pair-anchored-push": "e18f0da48474e59e667965470b1d9fccb808610219f9f276f2a6cd6c98c46a78"
       },
       "startSha": "7ae3f9711253a6d14d17e10a321ea170334eb282",
       "kind": "fork",
       "spawnedAt": "2026-10-07T10:30:33Z",
       "sessionId": "44cbfd05-ec82-45ec-bf99-d385e8850965",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "03-fabric-pair-anchored-push",
+        "status": "done",
+        "head_sha": "1df0ac6193756485fb444c6bf7ffbcac547bc780"
+      },
+      "cardShas": [
+        "1df0ac6193756485fb444c6bf7ffbcac547bc780"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-pushes/44cbfd05-ec82-45ec-bf99-d385e8850965/subagents/agent-a7a0645680bc401a4.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-pushes/44cbfd05-ec82-45ec-bf99-d385e8850965/subagents/agent-a26952c824816c7df.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-pushes/44cbfd05-ec82-45ec-bf99-d385e8850965/subagents/agent-a7c2953ed680c5ae8.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-pushes/44cbfd05-ec82-45ec-bf99-d385e8850965/subagents/agent-a7c2953ed680c5ae8.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-pushes/44cbfd05-ec82-45ec-bf99-d385e8850965/subagents/agent-a7a0645680bc401a4.jsonl"
   ]
 }
