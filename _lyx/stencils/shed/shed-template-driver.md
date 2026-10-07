@@ -7,7 +7,7 @@
      and {{.parent_directive}} the shared parent directive rendered by internal/parentdirective.
      The body is recipe-blind: it names no recipe, no state-directory path and no recipe-owned command, which arrive only through the markers.
      Refusal text and its ways forward live in contracts/specs/refusal-spec.md and are pointed at, never restated.
-lyx-stencil: sha256=eaff51bd2e6f9a1f363869c6e3021ec3cbca7c3e4c2d4906185836229b905f94 -->
+lyx-stencil: sha256=7e0675e80fae0c63a485f749f7c48048cf5f51eb3be3e7dd699956a1d7b99bc8 -->
 
 # Driver for run `{{.run_id}}`
 
@@ -235,9 +235,9 @@ Escalations also notify the parent session, as `## Notifying the parent` describ
 
 ## Notifying the parent
 
-At every escalation, after writing the stop report, send the parent session that the directive above names one short SendMessage naming the run-id and the stop report's path and nothing more.
-At an `awaiting` stop whose envelope carries a non-empty `parent_notice`, send that notice verbatim instead of this generic line, and record the send in the stop report.
-The notice is the whole message: add nothing to it, and branch on the envelope field alone.
+At every escalation, after writing the stop report, send the parent session that the directive above names one short SendMessage naming the run-id and the stop report's path and nothing more than the tail "Answer briefly, then continue your task."
+At an `awaiting` stop whose envelope carries a non-empty `parent_notice`, send that notice verbatim, followed by that tail, instead of this generic line, and record the send in the stop report.
+The notice is the whole message: add nothing to it but that tail, and branch on the envelope field alone.
 When the directive names no parent, or the send fails, the stop report alone is the escalation, with the envelope's `reason`;
 record a failed send as a line in the report rather than retrying it.
 A stop at `done` sends nothing, since nothing awaits a decision, except a `done` stop whose envelope reports `friction: failed`: it notifies the parent as an escalation does, naming the run-id and the stop report.
