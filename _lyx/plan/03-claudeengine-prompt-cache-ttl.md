@@ -10,6 +10,7 @@
 - `internal/shuttleengine/claudeengine/settings_test.go`
 - `internal/shuttleengine/claudeengine/envfile_integration_test.go`
 - `internal/webstercli/smoke_test.go`
+- `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
 - `internal/shuttleengine#Config`
@@ -52,6 +53,7 @@ Tests:
   a default of `1h` gives an unmapped role `1h`.
 - A new `TestPrepare_LogsResolvedPromptCacheTTL` captures logger output with `logcapture.CaptureVerbose`, prepares a `driver` run under the template config, and asserts the captured line carries the `role` key with `driver` and the `ttl` key with `1h`, in the form the logger's handler renders attributes.
   It does not call `t.Parallel`, and a comment names the process-global logger as the reason (`PATTERN-test-speed`).
+- `test-budget.yaml`: the `internal/shuttleengine/claudeengine` row rises from 89 to 90 for that one new test function, since `cmd/lyx/testbudget_test.go` fails a package over its row (`PATTERN-test-speed`).
 
 **ImpactSummary:** both pane-line builders change signature and every launch and resume line gains one env assignment; Prepare now refuses a Config whose TTL fields are empty or invalid, so every test fixture handing Prepare a Config, across claudeengine and webstercli's llm smoke test, sets them from the template.
 
