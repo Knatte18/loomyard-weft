@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster-Bouncer",
+  "current_producer": "Webster-Burler",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster-Bouncer",
-    "last": "Webster → done",
+    "now": "Webster-Burler",
+    "last": "Webster-Bouncer → bounced to Webster-Burler",
     "wait": ""
   },
   "history": [
@@ -160,6 +160,12 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/card-batching/_lyx/webster/summary.md",
       "at": "2026-10-07T13:08:30Z"
+    },
+    {
+      "producer": "Webster-Bouncer",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-07T13:09:03Z"
     }
   ],
   "product": {
