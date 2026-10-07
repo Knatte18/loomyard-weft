@@ -1,0 +1,484 @@
+{
+  "runGuid": "f59ea197da886118d27d7af5b7fdd402",
+  "planFingerprint": "aa9ed71a08037e695acd61f117fa3e57a732113613c7add8dcfd50c8e9eefdd2",
+  "planFileHashes": {
+    "00-overview.md": "a2789cd73bb66d9259d73c0866efa9366821236fd6b7c9a8288b5e6cb56b09ae",
+    "01-reed-wait-mark-op.md": "071c5ac86ba22cc5fd37b36a35340dd2b5e26a4c7787ae47dd8c3638b5edecb9",
+    "02-reed-status-line-wait-segment.md": "173d52c5cda5882a0d3a5fd210070899501b32bf4445cbc5936962adbe6bc5eb",
+    "03-reed-unless-name-dormant.md": "01d5c54fee14ee41e0e45bda7fffb20245e7d4f4240f06de7c3cdcd2db564fde",
+    "04-reed-directory-retiring.md": "2c569d1eae345583947252b7ca9950dd7cf073592ffdf8cbc7c2e2fde329649b",
+    "05-reed-resume-done-when.md": "2baadddc42a7157532608a442a25549a6266e09f918a6c382d6e7214be82f8fc",
+    "06-shuttle-done-when.md": "5419a4a366436287bf6931f051950de8a79468a04cd3b90b753473abf09de6c3",
+    "07-verifyrun-process-group.md": "ef558ebfc83cc07d0e7d82d8ef8dbb24c5a942cba30c3af86b02114e23ee4611",
+    "08-verifytree-timeout.md": "66fd9bc83f18c6398b5cffc2473321c9341e24bb57e25da4f9f77c1d05c30fb1",
+    "09-verify-timeout-findings.md": "3aaacf6357c4590d0cfd13fc4158078aa94adfcd44c6de9bef643497f067a485",
+    "10-verify-wait-note.md": "25ab42fae8c5998433658b65224825661977ccc0fea1e16aaa01ad1be81476c2",
+    "11-shuttle-wait-marker.md": "e66c54782a3e88ba1a081b95a26b3b1d945b261ee057933c75a0bc5ab230715a",
+    "12-loom-status-shuttle-wait.md": "8c279ff20f43e0ce6118e2bfd4ed11290fa9de10896171587927257c90a54f8e",
+    "13-landing-verify-wait-mark.md": "8c07d7816dc2b9b6622c3d06739c24cd5b87fedae653850b99171c52d51370be",
+    "14-loom-resume-verb.md": "a874f9cc7b3ae9737557785fd753b4a46b9995a78fd035312dde0c2318c4fe86",
+    "15-orch-stencil-resume.md": "cdf79f1620ea3a5ea444b7962e8a1af4a114607b4f0c0b0f8071e06795ff0194",
+    "16-batten-respawn-scoped.md": "da2b924eab7282c48cd6f0c1e389c19285ef7641650536ece45ec019252bca3c",
+    "17-batten-halted-revive.md": "cf6d43dd20caf5fafc5ca1a41b59825bbd94cb54d4bde4e3996e62f8110c05eb"
+  },
+  "partition": [
+    {
+      "cards": [
+        "01-reed-wait-mark-op",
+        "02-reed-status-line-wait-segment",
+        "03-reed-unless-name-dormant",
+        "04-reed-directory-retiring",
+        "05-reed-resume-done-when",
+        "06-shuttle-done-when"
+      ],
+      "profile": "cautious",
+      "estimate": 331340,
+      "breakdown": {
+        "weights": {
+          "startup_context": 60000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "startup": 61200,
+        "read_union": 155708,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 312,
+            "reads": {
+              "file:PATTERN.md": 1116,
+              "file:internal/reedengine/doc.go": 9264,
+              "file:internal/reedengine/io.go": 1908,
+              "file:internal/reedengine/io_test.go": 648,
+              "package:.": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:.": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 49.5,
+            "written": 15162
+          },
+          {
+            "card": 2,
+            "card_text": 420,
+            "reads": {
+              "file:internal/reedengine/doc.go": 9264,
+              "file:internal/reedengine/io.go": 1908,
+              "file:internal/reedengine/status-line.md": 72,
+              "file:internal/reedengine/windowsize.go": 4764,
+              "file:internal/reedengine/windowsize_test.go": 7920,
+              "file:internal/tokenvocab/doc.go": 324,
+              "file:internal/tokenvocab/tokenvocab.go": 468,
+              "file:internal/tokenvocab/tokenvocab_test.go": 1920,
+              "package:internal/reedengine": 2000,
+              "package:internal/tokenvocab": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/tokenvocab": 2000
+            },
+            "messages": 76.5,
+            "written": 23370
+          },
+          {
+            "card": 3,
+            "card_text": 324,
+            "reads": {
+              "file:docs/overview.md": 7656,
+              "file:internal/reedcli/add.go": 1680,
+              "file:internal/reedcli/unlessname_integration_test.go": 1776,
+              "file:internal/reedengine/doc.go": 9264,
+              "file:internal/reedengine/strand.go": 10164,
+              "file:internal/reedengine/strand_test.go": 12648,
+              "file:internal/vscode/config.go": 2316,
+              "package:docs": 2000,
+              "package:internal/reedcli": 2000,
+              "package:internal/reedengine": 2000,
+              "package:internal/vscode": 2000,
+              "tests:docs": 2000,
+              "tests:internal/reedcli": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/vscode": 2000
+            },
+            "messages": 82.5,
+            "written": 25074
+          },
+          {
+            "card": 4,
+            "card_text": 204,
+            "reads": {
+              "file:internal/reedengine/directory.go": 924,
+              "file:internal/reedengine/directory_test.go": 624,
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 37.5,
+            "written": 11454
+          },
+          {
+            "card": 5,
+            "card_text": 360,
+            "reads": {
+              "file:internal/reedcli/resume.go": 588,
+              "file:internal/reedcli/smoke_staterecovery_test.go": 6168,
+              "file:internal/reedengine/doc.go": 9264,
+              "file:internal/reedengine/lifecycle.go": 13392,
+              "file:internal/reedengine/lifecycle_test.go": 3828,
+              "file:internal/reedengine/state.go": 2340,
+              "file:internal/reedengine/strand.go": 10164,
+              "file:internal/reedengine/strandops_integration_test.go": 1416,
+              "package:internal/reedcli": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedcli": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 86.5,
+            "written": 26310
+          },
+          {
+            "card": 6,
+            "card_text": 312,
+            "reads": {
+              "file:PATTERN.md": 1116,
+              "file:internal/reedengine/strand.go": 10164,
+              "file:internal/shuttleengine/doc.go": 1740,
+              "file:internal/shuttleengine/run.go": 13368,
+              "file:internal/shuttleengine/run_test.go": 12552,
+              "file:pattern/PATTERN-completion-signal.md": 192,
+              "package:.": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 42.5,
+            "written": 13062
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-verifyrun-process-group",
+        "08-verifytree-timeout",
+        "09-verify-timeout-findings",
+        "10-verify-wait-note",
+        "11-shuttle-wait-marker"
+      ],
+      "profile": "cautious",
+      "estimate": 338220,
+      "breakdown": {
+        "weights": {
+          "startup_context": 60000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "startup": 61200,
+        "read_union": 151236,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 324,
+            "reads": {
+              "file:internal/verifyrun/run.go": 936,
+              "file:internal/verifyrun/run_integration_test.go": 1656,
+              "package:internal/verifyrun": 2000,
+              "tests:internal/verifyrun": 2000
+            },
+            "messages": 25,
+            "written": 7824
+          },
+          {
+            "card": 8,
+            "card_text": 420,
+            "reads": {
+              "file:internal/landingshed/verifygate.go": 1344,
+              "file:internal/loomshed/verifygate.go": 1044,
+              "file:internal/loomshed/verifygate_integration_test.go": 1236,
+              "file:internal/verifyrun/run.go": 936,
+              "file:internal/verifytree/doc.go": 108,
+              "file:internal/verifytree/verify.go": 2628,
+              "file:internal/verifytree/verify_integration_test.go": 2196,
+              "file:internal/webstercli/verify.go": 1116,
+              "file:internal/websterengine/verifygate.go": 4608,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/verifytree": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/verifytree": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 104,
+            "written": 31620
+          },
+          {
+            "card": 9,
+            "card_text": 456,
+            "reads": {
+              "file:contracts/specs/webster-spec.md": 864,
+              "file:docs/overview.md": 7656,
+              "file:internal/landingshed/doc.go": 852,
+              "file:internal/landingshed/verifygate.go": 1344,
+              "file:internal/landingshed/verifygate_test.go": 3828,
+              "file:internal/loomshed/verifygate.go": 1044,
+              "file:internal/websterengine/doc.go": 5988,
+              "file:internal/websterengine/verifygate.go": 4608,
+              "file:internal/websterengine/verifygate_test.go": 4200,
+              "file:internal/websterengine/verifygatereport.go": 1752,
+              "file:internal/websterengine/verifygatereport_test.go": 1932,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 118,
+            "written": 35856
+          },
+          {
+            "card": 10,
+            "card_text": 444,
+            "reads": {
+              "file:contracts/specs/loom-status-spec.md": 1716,
+              "file:docs/overview.md": 7656,
+              "file:internal/loomcli/reviewstatus.go": 624,
+              "file:internal/loomcli/reviewstatus_test.go": 2268,
+              "file:internal/shedverbs/spec.go": 2172,
+              "file:internal/shedverbs/status.go": 2808,
+              "file:internal/shedverbs/status_test.go": 8064,
+              "file:internal/verifytree/marker.go": 804,
+              "file:internal/verifytree/marker_test.go": 996,
+              "file:internal/verifytree/verify.go": 2628,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedverbs": 2000,
+              "package:internal/verifytree": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedverbs": 2000,
+              "tests:internal/verifytree": 2000
+            },
+            "messages": 98,
+            "written": 29844
+          },
+          {
+            "card": 11,
+            "card_text": 540,
+            "reads": {
+              "file:internal/reedengine/io.go": 1908,
+              "file:internal/shuttleengine/doc.go": 1740,
+              "file:internal/shuttleengine/fakes_test.go": 5916,
+              "file:internal/shuttleengine/gate_test.go": 6588,
+              "file:internal/shuttleengine/reed.go": 336,
+              "file:internal/shuttleengine/wait.go": 13716,
+              "file:internal/shuttleengine/waiting_test.go": 3624,
+              "file:internal/testkit/shuttlefake/shuttlefake.go": 3828,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/testkit/shuttlefake": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/testkit/shuttlefake": 2000
+            },
+            "messages": 67,
+            "written": 20640
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "12-loom-status-shuttle-wait",
+        "13-landing-verify-wait-mark",
+        "14-loom-resume-verb",
+        "15-orch-stencil-resume",
+        "16-batten-respawn-scoped",
+        "17-batten-halted-revive"
+      ],
+      "profile": "cautious",
+      "estimate": 320678,
+      "breakdown": {
+        "weights": {
+          "startup_context": 60000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "startup": 61200,
+        "read_union": 145112,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 264,
+            "reads": {
+              "file:internal/loomcli/reviewstatus.go": 624,
+              "file:internal/loomcli/reviewstatus_test.go": 2268,
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 44.5,
+            "written": 13614
+          },
+          {
+            "card": 13,
+            "card_text": 372,
+            "reads": {
+              "file:internal/landingshed/deps.go": 2088,
+              "file:internal/landingshed/doc.go": 852,
+              "file:internal/landingshed/verifygate.go": 1344,
+              "file:internal/landingshed/verifygate_test.go": 3828,
+              "file:internal/loomcli/arm.go": 6036,
+              "file:internal/loomcli/bootstrap.go": 3552,
+              "file:internal/loomcli/landingdeps.go": 2016,
+              "file:internal/loomcli/landingdeps_test.go": 756,
+              "file:internal/loomcli/sharedbootstrap.go": 3888,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 89.5,
+            "written": 27222
+          },
+          {
+            "card": 14,
+            "card_text": 684,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 2832,
+              "file:docs/overview.md": 7656,
+              "file:internal/loomcli/cli.go": 5472,
+              "file:internal/loomcli/driverlaunch.go": 1236,
+              "file:internal/loomcli/driverresume.go": 732,
+              "file:internal/loomcli/driverresume_test.go": 1572,
+              "file:internal/loomcli/start.go": 7164,
+              "file:internal/loomcli/wiring.go": 9156,
+              "file:internal/reedengine/directory.go": 924,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 93,
+            "written": 28584
+          },
+          {
+            "card": 15,
+            "card_text": 264,
+            "reads": {
+              "file:contracts/stencils/claims_test.go": 7164,
+              "file:contracts/stencils/orch/orch-template-role.md": 1404,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/orch": 2000
+            },
+            "messages": 17.5,
+            "written": 5514
+          },
+          {
+            "card": 16,
+            "card_text": 528,
+            "reads": {
+              "file:docs/overview.md": 7656,
+              "file:internal/battencli/wire.go": 7716,
+              "file:internal/battencli/wire_seams_test.go": 1752,
+              "file:internal/battencli/wire_test.go": 5904,
+              "file:internal/battenshed/deps.go": 2268,
+              "file:internal/battenshed/doc.go": 480,
+              "file:internal/battenshed/innerrun.go": 6204,
+              "file:internal/battenshed/innerrun_test.go": 5640,
+              "file:internal/reedengine/directory.go": 924,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 65,
+            "written": 20028
+          },
+          {
+            "card": 17,
+            "card_text": 504,
+            "reads": {
+              "file:docs/overview.md": 7656,
+              "file:internal/battencli/wire.go": 7716,
+              "file:internal/battencli/wire_seams_test.go": 1752,
+              "file:internal/battenshed/deps.go": 2268,
+              "file:internal/battenshed/doc.go": 480,
+              "file:internal/battenshed/innerrun.go": 6204,
+              "file:internal/battenshed/innerrun_awaiting_test.go": 6108,
+              "file:internal/battenshed/innerrun_halted_test.go": 1860,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 63,
+            "written": 19404
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "0491f02e5a5532b00da4c179c2b82323",
+  "masterSessionId": "1714ddcb-4a58-4227-87b8-bea1ffe360f4",
+  "batches": {
+    "1": {
+      "slug": "reed-wait-mark-op",
+      "cards": [
+        "01-reed-wait-mark-op",
+        "02-reed-status-line-wait-segment",
+        "03-reed-unless-name-dormant",
+        "04-reed-directory-retiring",
+        "05-reed-resume-done-when",
+        "06-shuttle-done-when"
+      ],
+      "cardHashes": {
+        "01-reed-wait-mark-op": "071c5ac86ba22cc5fd37b36a35340dd2b5e26a4c7787ae47dd8c3638b5edecb9",
+        "02-reed-status-line-wait-segment": "173d52c5cda5882a0d3a5fd210070899501b32bf4445cbc5936962adbe6bc5eb",
+        "03-reed-unless-name-dormant": "01d5c54fee14ee41e0e45bda7fffb20245e7d4f4240f06de7c3cdcd2db564fde",
+        "04-reed-directory-retiring": "2c569d1eae345583947252b7ca9950dd7cf073592ffdf8cbc7c2e2fde329649b",
+        "05-reed-resume-done-when": "2baadddc42a7157532608a442a25549a6266e09f918a6c382d6e7214be82f8fc",
+        "06-shuttle-done-when": "5419a4a366436287bf6931f051950de8a79468a04cd3b90b753473abf09de6c3"
+      },
+      "startSha": "d536a1a4edaa5f55d999282207b8bdfd75ca698e",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T14:09:58Z",
+      "sessionId": "1714ddcb-4a58-4227-87b8-bea1ffe360f4",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
