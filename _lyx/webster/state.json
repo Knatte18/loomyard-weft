@@ -1,0 +1,35 @@
+{
+  "runGuid": "fb31a57481fa88eb6ceda6e8984323e0",
+  "planFingerprint": "e2c9bb1b8ac7fe53ea11ef4e62f916934e846a0b7b9196ddd28afcd021eed229",
+  "planFileHashes": {
+    "00-overview.md": "971cd6ab9ba9093125141127802c0a25cd4a61b6b4bf4e0236eabb1868f7c95b",
+    "01-tokencount-fork-report.md": "fbadf803e876373f4762d214057813ff45bf23e450c8beacd9476a58b156a8a9",
+    "02-batcher-estimator.md": "da44b28bec7983c300795054b2a193eeb278d0e5a1eb675d1830fff12831f3e8",
+    "03-calibration-report.md": "e720bc9a9ab1620a2bce521a52c7cfc5d54e18debcaf1066f816983411130840",
+    "04-recorded-partition.md": "c2444f0724a3824070fee6264dfed371e1ab2660d3204f9fd6576e3659fc9417",
+    "05-cost-batchifier.md": "533b94c8fc8036c2345cadf61a6c5dafb9550efb62bbe608b526fab825f9d92a",
+    "06-batcher-profiles.md": "4d08fc509a5eb6d06613cd958d6c44e426dc4eda33404b6ab93ce4b67172e5ed",
+    "07-rebaseline-tail.md": "835faee58926b006fd8387f9d00fa216126db7bbd54287c8841ea4ede2ae8f12",
+    "08-calibrate-template.md": "ec8f3be48359a9417b4ed9b9124ef40bccad192d7c473e2452023be92f038034"
+  },
+  "currentBatch": 1,
+  "masterStrand": "026fdf1c0dc2367ffedeb3f977ced46f",
+  "masterSessionId": "74a42312-8d0f-4201-aafb-a1681a5404aa",
+  "batches": {
+    "1": {
+      "slug": "tokencount-fork-report",
+      "cards": [
+        "01-tokencount-fork-report"
+      ],
+      "cardHashes": {
+        "01-tokencount-fork-report": "fbadf803e876373f4762d214057813ff45bf23e450c8beacd9476a58b156a8a9"
+      },
+      "startSha": "d536a1a4edaa5f55d999282207b8bdfd75ca698e",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T10:49:39Z",
+      "sessionId": "74a42312-8d0f-4201-aafb-a1681a5404aa",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
