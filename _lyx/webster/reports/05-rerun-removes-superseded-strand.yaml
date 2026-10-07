@@ -1,0 +1,5 @@
+status: OK
+head_sha: 7acd24ba4e73adb16998d754d3d4d6f85266c0ef
+deviations:
+  - internal/loomcli/parentreview_integration_test.go
+  - internal/shuttleengine/completionsignal_enforcement_test.go
