@@ -22,7 +22,7 @@
     "17-burler-review-parse-gate.md": "d52ec9e6c409be5dfb1af1881ecd5064303e9c00570ee30878d0a128e9a69db3",
     "18-burler-validate-review-verb.md": "213f099e161824ee483f764d6952f180eeacce22e7983d3d39cc4acb40aa6354"
   },
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "82b43112c805ff52fede8404a7366217",
   "masterSessionId": "48bc4037-b210-4022-bbb4-e30516d6c209",
   "assertedModel": "sonnet",
@@ -229,6 +229,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-a645850293c0b2f81.jsonl"
       ]
+    },
+    "8": {
+      "slug": "step-error-keeps-handoff-voucher",
+      "cards": [
+        "08-step-error-keeps-handoff-voucher"
+      ],
+      "cardHashes": {
+        "08-step-error-keeps-handoff-voucher": "f5641098a0a97b3f7638151f6c4615418fe28ea85adb9e75a8c71cb2a29c2cf2"
+      },
+      "startSha": "7a5f473703704d1e0e5bdaf21e38b2ca9debb899",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T05:42:30Z",
+      "sessionId": "48bc4037-b210-4022-bbb4-e30516d6c209",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
