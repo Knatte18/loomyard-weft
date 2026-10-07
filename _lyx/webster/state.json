@@ -16,7 +16,7 @@
     "11-reset-moves-remote-branch.md": "b2c49caa70294305ef5f96cf15415444294223ddad853db74302129543262462",
     "12-publish-push-rejected.md": "5c23271ad97a663a45ebb6c6c93bd49023cf5ce080d632daec28a34f985efe65"
   },
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "ae2b27694ca3f431bc5f75f29629fff7",
   "masterSessionId": "13fadd3a-7482-46e1-b69a-41bed6ceab03",
   "assertedModel": "sonnet",
@@ -235,6 +235,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-webster/13fadd3a-7482-46e1-b69a-41bed6ceab03/subagents/agent-af8dd7a0e14282c4e.jsonl"
       ]
+    },
+    "9": {
+      "slug": "gitrepo-leased-update",
+      "cards": [
+        "09-gitrepo-leased-update"
+      ],
+      "cardHashes": {
+        "09-gitrepo-leased-update": "692095c1a57a6b723e6ba69c134569c2c5371013c0d83dafb8188f0d2b4202c1"
+      },
+      "startSha": "5821c3427c76362b907c6b7f2294e34a75a5fe24",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T05:53:55Z",
+      "sessionId": "13fadd3a-7482-46e1-b69a-41bed6ceab03",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
