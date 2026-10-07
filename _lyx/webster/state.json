@@ -22,7 +22,7 @@
     "17-burler-review-parse-gate.md": "9928dac540e7db2ced7dbf0133b97c271bb24c608f6e49792d369285541e884e",
     "18-burler-validate-review-verb.md": "5c8859cb76355f2c594d3cc838b40fde3a193151deac440fa3f86d0e0bad78a2"
   },
-  "currentBatch": 18,
+  "currentBatch": 0,
   "masterStrand": "82b43112c805ff52fede8404a7366217",
   "masterSessionId": "48bc4037-b210-4022-bbb4-e30516d6c209",
   "assertedModel": "sonnet",
@@ -295,8 +295,19 @@
       "kind": "fork",
       "spawnedAt": "2026-10-07T06:03:26Z",
       "sessionId": "48bc4037-b210-4022-bbb4-e30516d6c209",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "18-burler-validate-review-verb",
+        "status": "done",
+        "head_sha": "c93e0d20afaf23b18f077240743c9450085cfcf4"
+      },
+      "cardShas": [
+        "c93e0d20afaf23b18f077240743c9450085cfcf4"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-aefd03c1218a45fc8.jsonl"
+      ]
     },
     "2": {
       "slug": "claude-input-box-reader",
@@ -534,6 +545,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-aa55e0c7bd5023aef.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-a0204c5e96bb2a8a6.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-a2e0ba610048a4285.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-af42debfb23ab4f0f.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-af42debfb23ab4f0f.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-sessions/48bc4037-b210-4022-bbb4-e30516d6c209/subagents/agent-aefd03c1218a45fc8.jsonl"
   ]
 }
