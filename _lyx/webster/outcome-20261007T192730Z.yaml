@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "batch 01-orch-compact-boundary: record-batch refused, batcher.yaml did not load: profile \"cautious\" carries weights key startup_context, which no longer exists; set master_base and batch_growth under _lyx/config"
+batches_done: 0

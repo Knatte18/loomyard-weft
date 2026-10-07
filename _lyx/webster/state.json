@@ -27,6 +27,8 @@
       "estimate": 313658,
       "breakdown": {
         "weights": {
+          "master_base": 0,
+          "batch_growth": 0,
           "startup_context": 60000,
           "fork_messages": 4,
           "message_context": 300,
@@ -37,6 +39,7 @@
           "package_context": 2000,
           "write_per_card_line": 12
         },
+        "position": 0,
         "startup": 61200,
         "read_union": 170216,
         "cards": [
@@ -130,6 +133,8 @@
       "estimate": 297024,
       "breakdown": {
         "weights": {
+          "master_base": 0,
+          "batch_growth": 0,
           "startup_context": 60000,
           "fork_messages": 4,
           "message_context": 300,
@@ -140,6 +145,7 @@
           "package_context": 2000,
           "write_per_card_line": 12
         },
+        "position": 0,
         "startup": 61200,
         "read_union": 132864,
         "cards": [
@@ -260,6 +266,8 @@
       "estimate": 333666,
       "breakdown": {
         "weights": {
+          "master_base": 0,
+          "batch_growth": 0,
           "startup_context": 60000,
           "fork_messages": 4,
           "message_context": 300,
@@ -270,6 +278,7 @@
           "package_context": 2000,
           "write_per_card_line": 12
         },
+        "position": 0,
         "startup": 61200,
         "read_union": 174156,
         "cards": [
