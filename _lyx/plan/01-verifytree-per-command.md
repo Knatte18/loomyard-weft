@@ -7,7 +7,7 @@
 - `pattern/PATTERN-verified-tree.md`
 
 **Create:**
-- `plan:internal/verifytree#LatestPass` -> `func LatestPass(p Paths, command string) (Pass, bool)`
+- `internal/verifytree#LatestPass`
 
 **Intent:**
 Decision D3: the verified-tree record holds one entry per command instead of one entry overall.

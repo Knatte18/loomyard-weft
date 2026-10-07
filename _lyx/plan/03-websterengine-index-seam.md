@@ -16,8 +16,8 @@
 - `internal/loomcli/wiring.go`
 
 **Uses:**
-- `plan:internal/planindex#Index`
-- `plan:internal/planglyph#NewIndex`
+- `internal/planindex#Index`
+- `internal/planglyph#NewIndex`
 
 **Intent:**
 Decision D8's seam for `websterengine`: its production code stops importing `internal/planglyph` and `quarry/quarry`, so `configreg`, `hubgeom`, `standalonegeom`, `cliwire` and every CLI test binary that reaches `websterengine` through them stop linking tree-sitter.

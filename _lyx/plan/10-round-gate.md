@@ -13,7 +13,7 @@
 - `PATTERN.md`
 
 **Uses:**
-- `plan:internal/verifytree#LatestPass`
+- `internal/verifytree#LatestPass`
 - `plan:internal/commentlint#Lint`
 - `plan:internal/impactset#Derive`
 

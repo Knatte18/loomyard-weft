@@ -4,8 +4,8 @@
 - `internal/planindex/doc.go`
 - `internal/planindex/planindex.go`
 - `internal/planglyph/index.go`
-- `plan:internal/planindex#Index` -> `type Index interface`
-- `plan:internal/planglyph#NewIndex` -> `func NewIndex() planindex.Index`
+- `internal/planindex#Index`
+- `internal/planglyph#NewIndex`
 
 **Edit:**
 - `internal/planglyph/repo.go`

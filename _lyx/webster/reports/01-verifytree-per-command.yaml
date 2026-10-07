@@ -1,0 +1,8 @@
+status: OK
+head_sha: a802732b1a8b9d9977bd56f393e3ef6cca2d50df
+deviations:
+  - internal/websterengine/recoverbatch.go
+  - internal/websterengine/recordbatch_test.go
+  - internal/testkit/shedfake/shedfake.go
+  - internal/battencli/wire_seams_test.go
+  - internal/webstercli/verbs_test.go

@@ -16,8 +16,8 @@
 - `internal/loomcli/validate_test.go`
 
 **Uses:**
-- `plan:internal/planindex#Index`
-- `plan:internal/planglyph#NewIndex`
+- `internal/planindex#Index`
+- `internal/planglyph#NewIndex`
 
 **Intent:**
 Decision D8's seam for `loomshed`: its production code stops importing `internal/planglyph`, so `shedrecipe`, `shedbuild`, `loomrecipe`, `battenrecipe`, `battencli`, `envkit` and the other packages that reach `loomshed` stop linking tree-sitter.
