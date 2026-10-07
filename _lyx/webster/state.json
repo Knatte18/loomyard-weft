@@ -1,6 +1,6 @@
 {
   "runGuid": "5038ae2bebfc26ab905115a1024a8687",
-  "planFingerprint": "40ac7ed10a78baaf37f670973f3c2ed49068beba21bcc6b0a0cd28777dc856a0",
+  "planFingerprint": "fd459599faeaf2ad8066438ca449768ed80d252487234c06bf724bceccb652d8",
   "planFileHashes": {
     "00-overview.md": "4ef4d3390263b1929de75e05c694fccc47cc8ca54e76d345289f608e0c526e18",
     "01-payload-authority.md": "853d0770e7a4e95f7e25dfaae6ef3050f18e45b9022006ec81cdc5ff6a08ab8e",
@@ -16,8 +16,8 @@
     "11-treadle-triage-retire.md": "dab7fe4c3704bcd5cb1a79f1d40de63746fef6ba0753be9cc7e50d081c39088e",
     "12-retire-outcome-asking.md": "99463773270c6397c6b0e182da44c08ee4147a92a193aa360c70f3c72df0b704",
     "13-tail-in-stencils-and-steer.md": "1fb9f5768c3cee7a53c35baf84d0435cca180200ce2be3d982f6b9a6250b4aea",
-    "14-clock-seam.md": "c8c0dfeb0f093f72c59ea358e35a3bfe780924b7aa04e2d3d3c8e5f6a82e19a3",
-    "15-replay-corpus.md": "c085cec4e68a904fa0f771d5e34d11ce473774bd3553bc0ec44e4f33d37bd541",
+    "14-clock-seam.md": "da0346d5fa585f2b4972bb0b93632f4d63f4f741f1e9bdd7a607505608bd8080",
+    "15-replay-corpus.md": "6ed666815714b7fe40e287744ac13397f14f0e57265c357e2a0f86d3c3d9a79f",
     "16-live-turn-scenarios.md": "89c7c436e96dd1db0efa5f8d4f9485d01e643606c7d54ceec15f89e376b579fb"
   },
   "partition": [
@@ -489,7 +489,7 @@
       }
     }
   ],
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "378b3526773111e6d9324de128719052",
   "masterSessionId": "d0e3e256-a4c7-43c8-b3de-f2b51f50c16e",
   "batches": {
@@ -577,15 +577,28 @@
       ],
       "cardHashes": {
         "13-tail-in-stencils-and-steer": "1fb9f5768c3cee7a53c35baf84d0435cca180200ce2be3d982f6b9a6250b4aea",
-        "14-clock-seam": "c8c0dfeb0f093f72c59ea358e35a3bfe780924b7aa04e2d3d3c8e5f6a82e19a3",
-        "15-replay-corpus": "c085cec4e68a904fa0f771d5e34d11ce473774bd3553bc0ec44e4f33d37bd541",
+        "14-clock-seam": "da0346d5fa585f2b4972bb0b93632f4d63f4f741f1e9bdd7a607505608bd8080",
+        "15-replay-corpus": "6ed666815714b7fe40e287744ac13397f14f0e57265c357e2a0f86d3c3d9a79f",
         "16-live-turn-scenarios": "89c7c436e96dd1db0efa5f8d4f9485d01e643606c7d54ceec15f89e376b579fb"
       },
       "startSha": "c3ec3da17d3d405f657ac9d56cc6606de96a318b",
       "kind": "recovery",
       "spawnedAt": "2026-10-07T14:57:49Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-tail-in-stencils-and-steer",
+        "status": "done",
+        "head_sha": "7098f5d111893f61f1867b6a997a154f43f7cd7a",
+        "deviations": [
+          "internal/shuttleengine/attach_asking_test.go",
+          "internal/shuttleengine/hold_test.go",
+          "internal/shuttlecli/modelpin_test.go"
+        ]
+      },
+      "cardShas": [
+        "7098f5d111893f61f1867b6a997a154f43f7cd7a"
+      ],
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-turns/c49f023a-9153-4106-ac1f-0444b0d813d8/subagents/agent-ab8e6e0d0d2491b5d.jsonl"
       ],

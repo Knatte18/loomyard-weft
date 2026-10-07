@@ -30,7 +30,7 @@
 **Uses:**
 - `internal/testkit/shuttlefake/shuttlefake.go`
 - `internal/shuttleengine#Runner.SetNotifier`
-- `plan:internal/shuttleengine#Runner.SetClock`
+- `internal/shuttleengine#Runner.SetClock`
 
 **Intent:**
 D10, the offline half: a replay corpus of real misreads, tested by one untagged table test through public surfaces.

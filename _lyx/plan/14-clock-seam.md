@@ -1,7 +1,7 @@
 # Card 14 — clock-seam
 
 **Create:**
-- `plan:internal/shuttleengine#Runner.SetClock` -> `func (r *Runner) SetClock(c Clock)`
+- `internal/shuttleengine#Runner.SetClock`
 
 **Edit:**
 - `internal/shuttleengine/wait.go`
