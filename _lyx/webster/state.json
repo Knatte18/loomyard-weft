@@ -1,23 +1,23 @@
 {
   "runGuid": "5038ae2bebfc26ab905115a1024a8687",
-  "planFingerprint": "1ac7911b9c196ed56efed6279fcfe566cbc4d1190be16564312670572a36d52a",
+  "planFingerprint": "40ac7ed10a78baaf37f670973f3c2ed49068beba21bcc6b0a0cd28777dc856a0",
   "planFileHashes": {
     "00-overview.md": "4ef4d3390263b1929de75e05c694fccc47cc8ca54e76d345289f608e0c526e18",
     "01-payload-authority.md": "853d0770e7a4e95f7e25dfaae6ef3050f18e45b9022006ec81cdc5ff6a08ab8e",
     "02-waiting-trace.md": "35bb9fefb734c4e3b93587f41d746c747f442458d17cab99d00da4960c08c92f",
     "03-redraw-settle-config.md": "782b56132c2f7647d31332663523baad738364b2d35a8278f11dad574c4c34f7",
-    "04-message-tail.md": "77952b3e2ed7c2da981d6d1b7b93517c898ff3a9ee262712fcef12d5cf213b24",
+    "04-message-tail.md": "2c07313e60b726049ccfced3b20fd704cf65034373e61d0ad9cfb07eabfef57d",
     "05-hold-turn-end.md": "a91208cbb4aefc5a5a149cb1252e7cb4fb4c902902aa90b4e6f1a22129e657ec",
-    "06-hold-notice.md": "6b91c60e7c29963d3ea19581b4aeff2fd89d878a1e67887d957b5d5fa0afb713",
+    "06-hold-notice.md": "7feb2011c49b358ba655ffb5baf762afe69631d64e0e38438c45743830f895a5",
     "07-attach-held-runs.md": "d924c0e4b7e88e401ba6e350ce646350da8d019c2f00e25bd97cfeda2540254d",
-    "08-notifier-wiring.md": "4b325c718bd16ba514648486dc7c5d0230668610231533342e667f773e3f361d",
+    "08-notifier-wiring.md": "15dcf946aef37334951b47ef8038d3b64537f793f743f4ca5ec33da08f981689",
     "09-shed-asking-branches.md": "6be108533aa04a0c92cf90d7dcd9f2684f910232119747599df07049e384cd2b",
     "10-webster-asking-and-shell-note.md": "21a41022ea93385b7e8d8d3694196d55a8cf0d212b258e4ac2eef24a810ad398",
     "11-treadle-triage-retire.md": "dab7fe4c3704bcd5cb1a79f1d40de63746fef6ba0753be9cc7e50d081c39088e",
-    "12-retire-outcome-asking.md": "867a9210aca1354a8fdc563041d3cc1ddb75cd062531444093f73a5f54b720ec",
-    "13-tail-in-stencils-and-steer.md": "b07a4933f1194978cebcb1726d92f795b92c181d1b4fe544059be15d20c4db85",
+    "12-retire-outcome-asking.md": "99463773270c6397c6b0e182da44c08ee4147a92a193aa360c70f3c72df0b704",
+    "13-tail-in-stencils-and-steer.md": "1fb9f5768c3cee7a53c35baf84d0435cca180200ce2be3d982f6b9a6250b4aea",
     "14-clock-seam.md": "c8c0dfeb0f093f72c59ea358e35a3bfe780924b7aa04e2d3d3c8e5f6a82e19a3",
-    "15-replay-corpus.md": "3ce44abf5ad06fde085b9c60443a6cc68176e28671b06a1c70289b28ecf99ac1",
+    "15-replay-corpus.md": "c085cec4e68a904fa0f771d5e34d11ce473774bd3553bc0ec44e4f33d37bd541",
     "16-live-turn-scenarios.md": "89c7c436e96dd1db0efa5f8d4f9485d01e643606c7d54ceec15f89e376b579fb"
   },
   "partition": [
@@ -489,7 +489,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "079119ce1835bb673c50f32129cce045",
   "masterSessionId": "c49f023a-9153-4106-ac1f-0444b0d813d8",
   "batches": {
@@ -507,16 +507,33 @@
         "01-payload-authority": "853d0770e7a4e95f7e25dfaae6ef3050f18e45b9022006ec81cdc5ff6a08ab8e",
         "02-waiting-trace": "35bb9fefb734c4e3b93587f41d746c747f442458d17cab99d00da4960c08c92f",
         "03-redraw-settle-config": "782b56132c2f7647d31332663523baad738364b2d35a8278f11dad574c4c34f7",
-        "04-message-tail": "77952b3e2ed7c2da981d6d1b7b93517c898ff3a9ee262712fcef12d5cf213b24",
+        "04-message-tail": "2c07313e60b726049ccfced3b20fd704cf65034373e61d0ad9cfb07eabfef57d",
         "05-hold-turn-end": "a91208cbb4aefc5a5a149cb1252e7cb4fb4c902902aa90b4e6f1a22129e657ec",
-        "06-hold-notice": "6b91c60e7c29963d3ea19581b4aeff2fd89d878a1e67887d957b5d5fa0afb713"
+        "06-hold-notice": "7feb2011c49b358ba655ffb5baf762afe69631d64e0e38438c45743830f895a5"
       },
       "startSha": "d536a1a4edaa5f55d999282207b8bdfd75ca698e",
       "kind": "fork",
       "spawnedAt": "2026-10-07T14:08:02Z",
       "sessionId": "c49f023a-9153-4106-ac1f-0444b0d813d8",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-payload-authority",
+        "status": "done",
+        "head_sha": "b78c5afc9ed2b2c88ba6ebf1166b786e8e3c9ecf",
+        "deviations": [
+          "internal/shuttleengine/attach.go"
+        ]
+      },
+      "cardShas": [
+        "b78c5afc9ed2b2c88ba6ebf1166b786e8e3c9ecf"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-turns/c49f023a-9153-4106-ac1f-0444b0d813d8/subagents/agent-a61267fefad3a2cbb.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-turns/c49f023a-9153-4106-ac1f-0444b0d813d8/subagents/agent-a61267fefad3a2cbb.jsonl"
+  ]
 }

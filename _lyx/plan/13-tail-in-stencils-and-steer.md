@@ -8,7 +8,7 @@
 - `internal/shuttleengine/claudeengine/settings_test.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#MessageTail`
+- `internal/shuttleengine#MessageTail`
 
 **Intent:**
 D8, the prompt half: the agents that message working agents add the tail, the orch reads a hold notice's quotes as data, and an autonomous agent knows its question waits for an answer.

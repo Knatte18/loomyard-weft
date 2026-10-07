@@ -31,8 +31,8 @@
 - `tools/sandbox/SANDBOX-WEBSTER-SUITE.md`
 
 **Uses:**
-- `plan:internal/shuttleengine#MessageTail`
-- `plan:internal/shuttleengine#Runner.SetNotifier`
+- `internal/shuttleengine#MessageTail`
+- `internal/shuttleengine#Runner.SetNotifier`
 
 **Intent:**
 D4 and D7, the last step: `OutcomeAsking` retires as an outcome, now that no caller references it.

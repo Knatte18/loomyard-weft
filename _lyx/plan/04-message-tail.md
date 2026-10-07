@@ -1,7 +1,7 @@
 # Card 4 — message-tail
 
 **Create:**
-- `plan:internal/shuttleengine#MessageTail` -> `const MessageTail = "Answer briefly, then continue your task."`
+- `internal/shuttleengine#MessageTail`
 - `internal/shuttleengine/messagetail.go`
 - `internal/shuttleengine/messagetail_test.go`
 

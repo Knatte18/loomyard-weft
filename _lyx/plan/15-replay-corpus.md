@@ -29,7 +29,7 @@
 
 **Uses:**
 - `internal/testkit/shuttlefake/shuttlefake.go`
-- `plan:internal/shuttleengine#Runner.SetNotifier`
+- `internal/shuttleengine#Runner.SetNotifier`
 - `plan:internal/shuttleengine#Runner.SetClock`
 
 **Intent:**

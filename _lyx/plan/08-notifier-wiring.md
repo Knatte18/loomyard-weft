@@ -12,7 +12,7 @@
 - `internal/orchcli/doc.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#Runner.SetNotifier`
+- `internal/shuttleengine#Runner.SetNotifier`
 - `internal/orchengine/notice.go`
 - `internal/battencli/wire.go`
 

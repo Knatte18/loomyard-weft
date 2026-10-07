@@ -1,7 +1,7 @@
 # Card 6 — hold-notice
 
 **Create:**
-- `plan:internal/shuttleengine#Runner.SetNotifier` -> `func (r *Runner) SetNotifier(notify func(line string) error)`
+- `internal/shuttleengine#Runner.SetNotifier`
 - `internal/shuttleengine/hold.go`
 - `internal/shuttleengine/hold_test.go`
 
@@ -12,7 +12,7 @@
 - `internal/shuttleengine/doc.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#MessageTail`
+- `internal/shuttleengine#MessageTail`
 
 **Intent:**
 D5 (engine side): an autonomous run's held turn end notifies the parent once.
