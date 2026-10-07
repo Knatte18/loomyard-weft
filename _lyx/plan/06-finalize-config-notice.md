@@ -13,8 +13,8 @@
 - `internal/landingshed/finalize_integration_test.go`
 
 **Uses:**
-- `plan:internal/fabricengine#ReadConfigChanges`
-- `plan:internal/fabricengine#ConfigChanges`
+- `internal/fabricengine#ReadConfigChanges`
+- `internal/fabricengine#ConfigChanges`
 - `internal/orchengine#QueueNotice`
 - `internal/orchcli#PrimePaths`
 - `internal/configreg#Modules`

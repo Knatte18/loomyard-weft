@@ -1,8 +1,8 @@
 # Card 5 — read-config-changes
 
 **Create:**
-- `plan:internal/fabricengine#ConfigChanges` -> `type ConfigChanges struct`
-- `plan:internal/fabricengine#ReadConfigChanges` -> `func ReadConfigChanges(l *lyxcwd.Location, taskBranch, parentBranch string, configRels []string) (ConfigChanges, error)`
+- `internal/fabricengine#ConfigChanges`
+- `internal/fabricengine#ReadConfigChanges`
 - `internal/fabricengine/configchanges.go`
 - `internal/fabricengine/configchanges_integration_test.go`
 

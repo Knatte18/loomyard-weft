@@ -1,16 +1,16 @@
 {
   "runGuid": "92e1b63e2e324d1cc6fa7fe1b86fd43b",
-  "planFingerprint": "9faf62447e85293bd4b8bb9329be874434c2939a3b261b34a8f4d8c2106c8b53",
+  "planFingerprint": "02fb067f600c7935095048fbad7d3aabdd1a56cddf0915d961c3f998264e5464",
   "planFileHashes": {
     "00-overview.md": "9b25f5ed5742bd5dd0ea9e39791f229652007e559ee954bc2b13b72015f6967e",
     "01-weft-lock-dir.md": "5a027ce50949a058ed7202f483ac4c0f8163d48427981c64301b0caedc066c7b",
     "02-weft-branch-resolver-checkout.md": "fda6536fd8d7ad92bf465c6049bbd99534eb40e13c044233b0db2c9787482e28",
     "03-reconcile-adopts-origin-weft.md": "a36b2f2a087ec9395e817a2135dfef3be3fbb0d1a11fd44eed2d7e7f44a0e64d",
     "04-add-adopts-live-pair.md": "211fa34a1cce3bc0956ec1eb69cea154ecfc6b189b20dec0a0a8a936209a9f57",
-    "05-read-config-changes.md": "cb813999e7670995d72876df32f6d03ccda8f4c2ef444dc638ee919bcc3ac6d8",
-    "06-finalize-config-notice.md": "2b729bbcbb5b4ff5a6eed82f19ce7c17357c55a2cba7061a13a32885d39fcb8c"
+    "05-read-config-changes.md": "8db9ed82dc878666bbdb9948608e0737f4bc6f0ebce6c99dbcb168d9a7167b95",
+    "06-finalize-config-notice.md": "1d5133d6c18c122b1f2615cb5f54f7560ea3cf7f1981af5cbec3efc0254f77bb"
   },
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "5231f47c9afd424b694420622223e089",
   "masterSessionId": "5058ed2e-8234-4a47-9890-ee7d0f7c7a47",
   "assertedModel": "sonnet",
@@ -125,20 +125,32 @@
         "05-read-config-changes"
       ],
       "cardHashes": {
-        "05-read-config-changes": "cb813999e7670995d72876df32f6d03ccda8f4c2ef444dc638ee919bcc3ac6d8"
+        "05-read-config-changes": "8db9ed82dc878666bbdb9948608e0737f4bc6f0ebce6c99dbcb168d9a7167b95"
       },
       "startSha": "9786d87047dc99e359dc7c951689055ec40f1281",
       "kind": "fork",
       "spawnedAt": "2026-10-07T05:46:50Z",
       "sessionId": "5058ed2e-8234-4a47-9890-ee7d0f7c7a47",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-read-config-changes",
+        "status": "done",
+        "head_sha": "b02f5f32e3ce552d24aa047c12985dcb9b44a07d"
+      },
+      "cardShas": [
+        "b02f5f32e3ce552d24aa047c12985dcb9b44a07d"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-fabric/5058ed2e-8234-4a47-9890-ee7d0f7c7a47/subagents/agent-a1ef8defdd47b79ea.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-fabric/5058ed2e-8234-4a47-9890-ee7d0f7c7a47/subagents/agent-a523097777d4a6d8c.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-fabric/5058ed2e-8234-4a47-9890-ee7d0f7c7a47/subagents/agent-af0f29c9161fe35c2.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-fabric/5058ed2e-8234-4a47-9890-ee7d0f7c7a47/subagents/agent-a063b396afff2a4cb.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-fabric/5058ed2e-8234-4a47-9890-ee7d0f7c7a47/subagents/agent-ae44facc0cc3343db.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-fabric/5058ed2e-8234-4a47-9890-ee7d0f7c7a47/subagents/agent-ae44facc0cc3343db.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bugfix-fabric/5058ed2e-8234-4a47-9890-ee7d0f7c7a47/subagents/agent-a1ef8defdd47b79ea.jsonl"
   ]
 }
