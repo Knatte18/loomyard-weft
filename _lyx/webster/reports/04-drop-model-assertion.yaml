@@ -1,0 +1,5 @@
+status: OK
+head_sha: 90f1aa609e12ff047efa5dec2cf6f8570482b8de
+deviations:
+  - internal/webstercli/cli_test.go
+  - internal/websterengine/beginbatch_git_test.go
