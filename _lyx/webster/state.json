@@ -350,7 +350,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "590235e54e047e09a509b232f6386ad8",
   "masterSessionId": "947162f0-91d4-4ee3-a7ab-5dde96fdaba3",
   "batches": {
@@ -418,6 +418,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-cost/947162f0-91d4-4ee3-a7ab-5dde96fdaba3/subagents/agent-a3385f6ec815684e3.jsonl"
       ]
+    },
+    "8": {
+      "slug": "two-half-resume",
+      "cards": [
+        "08-two-half-resume"
+      ],
+      "cardHashes": {
+        "08-two-half-resume": "9761706a0b9df041d1a9778e65b56f21daf028e1b5818a2f566da0c618f3bf2d"
+      },
+      "startSha": "d2f5fddfeb1733b31b9d2da6ffc6b4cdb7b3571d",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T19:22:05Z",
+      "sessionId": "947162f0-91d4-4ee3-a7ab-5dde96fdaba3",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
