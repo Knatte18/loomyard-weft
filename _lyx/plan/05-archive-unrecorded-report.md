@@ -20,8 +20,11 @@ Bound, stated in the code comment: only when no record for that batch number exi
 Docs: update the refusal-spec row "report already present" to say it fires for a batch state.json records and that the message names the record's state; update `doc.go` where it describes begin-batch's report refusal; update the `begin-batch` `Long` text in `internal/webstercli/beginbatch.go` to say a report with no begin-batch record is archived.
 
 Tests:
-in `beginbatch_test.go`, extend `TestBeginBatch_PreExistingReportRefused` (or its table) with the no-record case: the report is renamed to an archive path under the reports dir, the call succeeds, `ArchivedReport` names it and the batch is recorded; and with a recorded non-terminal batch and a recorded terminal one the call refuses, names the state it saw, and moves nothing.
-`TestBeginBatch_WayForward_ReportExistsIsRecorded` seeds a report on a fixture with no batch record, which D5 now archives instead of refusing, so it is edited to seed a begun, non-terminal batch record beside the report, which keeps pinning the `record-batch` way forward and the report left in place.
+in `beginbatch_test.go`, `TestBeginBatch_Refusals` holds the report refusals as rows.
+Its row "a report with no record names record-batch and stays for it" seeds a report with no batch record, which D5 now archives instead of refusing, so it becomes a row seeding a begun, non-terminal batch record beside the report, which keeps pinning the `record-batch` way forward and the report left in place, and also asserts the message names "begun and not terminal".
+Its row "a report over a terminal record names recover-batch and leaves the record untouched" also asserts the message names the terminal status it saw.
+The no-record case is a success, so it joins `TestBeginBatch_Record`'s table: the report is renamed to an archive path under the reports dir, the call succeeds, `ArchivedReport` names it and the batch is recorded.
+Update `TestBeginBatch_Refusals`' doc comment to match.
 In `internal/webstercli/verbs_test.go`, drive `begin-batch` through the cobra command on the verbs fixture with a report on disk and no record: exit 0, the envelope carries `archived_report`; with a record present it exits 1 naming the record's state.
 
 **ImpactSummary:** One branch in BeginBatch's report check plus an archived-path field on its result and envelope; the recorded-batch refusal keeps its way forward with a richer message.

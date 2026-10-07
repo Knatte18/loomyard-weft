@@ -10,7 +10,8 @@
 - `internal/gitrepo/ancestry.go`
 - `internal/gitrepo/doc.go`
 - `internal/gitrepo/push_test.go`
-- `internal/gitrepo/ancestry_integration_test.go`
+- `internal/gitrepo/blobread_integration_test.go`
+- `internal/gitrepo/ancestry_test.go`
 - `cmd/lyx/gitrepoboundary_test.go`
 
 **Intent:**
@@ -31,6 +32,7 @@ Update `internal/gitrepo/doc.go`'s method list for both, adding each to its enum
 
 Tests:
 in `push_test.go`, over the bare-remote fixture: a leased update with the remote's current tip moves the remote branch (including backwards to an ancestor); a lease naming a stale SHA fails with `errors.Is(err, ErrLeaseRejected)` and leaves the remote branch where it was; a failure that is not a lease loss (a `pre-receive` hook on the bare remote that exits non-zero) returns an error for which `errors.Is(err, ErrLeaseRejected)` is false; an invalid SHA returns `ErrInvalidSHA` with no git spawn.
-In `ancestry_integration_test.go`: `CommitsNotIn` lists exactly the commits on a side branch past the merge base, newest first, returns none when `tip` is an ancestor of `base`, and errors on an unknown ref.
+`blobread_integration_test.go` holds the history reads over one real repository, `IsAncestor`'s reachability among them, as steps of one test; add steps there: `CommitsNotIn` lists exactly the commits reachable from `tip` past `base`, newest first (from a tip two commits past `base`, so the order is observable), returns none when `tip` is an ancestor of `base`, and errors on an unknown ref.
+In the untagged `ancestry_test.go`, beside `TestIsAncestor_RejectsInvalidArgs`, `CommitsNotIn` with an invalid SHA returns `ErrInvalidSHA` with no git spawn.
 
 **ImpactSummary:** Two new Repo methods and one sentinel, a leased force push and a rev-list read, both through gitexec; no existing method changes, and the boundary test's pinned list gains both names.

@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: true
+approved: false
 language: go
 ---
 
@@ -36,15 +36,15 @@ Each fix carries a regression test that drives the real `lyx` cobra command wher
 
 ### Decision: test-targets-after-prunes
 
-- **Decision:** test files are named as they stand on the current tree; once `test-suite-prune-core` and `test-suite-prune-rest` land and the pair is synced with main, the test targets are re-validated and re-planned only where a prune renamed or deleted them.
-- **Rationale:** recorded post-Discussion decisions (operator and parent, 2026-10-06).
+- **Decision:** test targets and named tests follow the tree after `test-suite-prune-core` (`dd8f4ffcd`) and `test-suite-prune-rest` (`959025744`) were merged into this branch; where a prune merged a named test into a table or scenario, the card extends that table's row or adds a row or step to it, and where a prune deleted or renamed a test file, the card targets the file that now holds the coverage, or creates one where no file does.
+- **Rationale:** the parent's 2026-10-07 decision to re-plan only the cards the prunes touched; cards 1, 2, 4, 5, 6, 7, 8, 9, 11 and 12 were revised for it, card 3 and card 10 are unchanged.
 - **Applies to:** every card's test targets
 
 ### Decision: cli-drive
 
 - **Decision:** each fix's regression drives the `lyx` cobra command (`lyx webster validate`, `begin-batch`, `record-batch`, `recover-batch`, `rebaseline`, `run`, `reset`) through `internal/webstercli`'s tests; Publish (card 12) is driven through its real producer over a hubforge hub with the real fabric closure.
 - **Rationale:** card 12 departs from the decision record's "driven through the `lyx` CLI command" for D8, whose acceptance item is the push-rejected stuck reason alone: no loomcli test steps the Publish row today, so driving it through `lyx loom step` needs a new loom-step harness, which is new test infrastructure outside this task.
-  The stuck reason is verified at `landingshed`'s integration tier over a hubforge hub with a real fabric push and remote-read closure, whose resumed half also reaches the GitHub step that only that tier fakes, and the production closure's real wiring is driven in loomcli's `landingdeps_integration_test.go`.
+  The stuck reason is verified at `landingshed`'s integration tier over a hubforge hub with a real fabric push and remote-read closure, whose resumed half also reaches the GitHub step that only that tier fakes, and the production closure's real wiring is driven in loomcli's new `landingdeps_integration_test.go`.
 - **Applies to:** cards 1–8, 11, and card 12 as the rationale states
 
 ### Decision: dispatch-scope

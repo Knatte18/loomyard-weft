@@ -18,7 +18,6 @@
 - `internal/websterengine/state_test.go`
 - `internal/webstercli/verbs_test.go`
 - `internal/webstercli/acceptaudit_test.go`
-- `internal/webstercli/restoreplan_test.go`
 - `internal/shuttleengine/claudeengine/modelswitch_test.go`
 
 **Intent:**
@@ -39,9 +38,10 @@ Grep the repository for `AssertedModel`, `assertedModel`, `Injector`, "model swi
 Bound: the removal lets nothing through in the shipped flow, since the comparison was between a recorded model and the model `Run` launched Master on and never read the live pane; a Master pane an operator moved with `/model` stays there for the rest of the run, as it did before.
 
 Tests:
-delete `TestBeginBatch_ModelAssertion`, `TestBeginBatch_WayForward_ModelSwitchFailureIsTransient`, `TestBeginBatch_UnknownRoleErrors` (it pins the RoleMaster lookup this card removes) and `TestRun_AssertedModelInitializedToMasterRoleModel`, and the `AssertedModel` fields in the remaining fixtures.
+delete `TestBeginBatch_ModelAssertion` and `TestBeginBatch_WayForward_ModelSwitchFailureIsTransient`, the row "a missing role resolution names the role" in `TestBeginBatch_Refusals` (it pins the RoleMaster lookup this card removes), the row "the asserted model is initialised to the launch model" in `TestRun_MasterSpawn`, and the `AssertedModel` fields in the remaining fixtures.
+`beginbatch_test.go`'s fixture drops its `beginFakeInjector` and `Injector` field, and `TestBeginBatch_Refusals`' doc comment stops saying each refusal fires "before the Injector is ever reached".
 In `state_test.go`, a state.json carrying `"assertedModel": "opus"` loads with every other field intact and saves back without the key.
-In `internal/webstercli/verbs_test.go`, `TestBeginBatchCmd_HappyPath` asserts the begin-batch envelope has no `model` key and that the fake runner recorded no inject call; `initState` loses its model parameter, and its other callers, `acceptaudit_test.go` and `restoreplan_test.go`, drop the argument.
+In `internal/webstercli/verbs_test.go`, `TestBeginBatchCmd_HappyPath` asserts the begin-batch envelope has no `model` key and that the fake runner recorded no inject call; `initState` loses its model parameter, and its other caller, `acceptaudit_test.go`, drops the argument; the file comment's "starter/injector seam" wording loses the injector.
 In `internal/shuttleengine/claudeengine/modelswitch_test.go`, reword the comment that cites "the W2b corruption mode" so it names no sandbox scenario.
 
 **ImpactSummary:** Removes begin-batch's dormant model injection, its state field and CLI seam across websterengine and webstercli; one refusal row and two sandbox assertions go with it, and the live fork-transcript flush check is kept.

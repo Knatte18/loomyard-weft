@@ -35,6 +35,6 @@ The row says the check is emitted by `internal/planglyph`'s resolve pass, not by
 
 Tests:
 `deleteorder_test.go` drives `LaterDeleteReferences` over a small fixture repository (the shape `resolve_test.go` builds), table-driven: a card N deleting a function that card N+1's Edit file still calls is refused naming both cards, the target and the file:line; the same plan with the deleting card numbered after the editing card (the `pair-lifecycle` order) passes; a same-package bare reference and a cross-package `pkg.Name` reference both match, an unqualified same name in another package does not; a method target matches `.Name`; a reference outside a later card's member-glyph span does not match; a file-path Delete target is not checked.
-In `internal/webstercli/cli_test.go`, add rows to card 1's table-driven `TestValidateCmd_PlanGateChecks`: a plan whose card 1 deletes a function card 2 still calls exits 1 with `delete-before-reference` under card 1's key; with the two cards swapped it exits 0.
+In `internal/webstercli/cli_test.go`, add rows to `TestValidateCmd_Envelopes`, beside card 1's: a plan whose card 1 deletes a function card 2 still calls exits 1 with `delete-before-reference` under card 1's key; with the two cards swapped it exits 0.
 
 **ImpactSummary:** Adds one resolve-backed pass to planglyph's shared resolvePass, so every plan gate and webster entry point gains one blocking check; no existing check changes.

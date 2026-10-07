@@ -43,9 +43,9 @@ The amendment adds that exception to the existing lines and keeps `contracts/ste
 That last rung gains a trailing sentence saying the same flag also marks a refusal before any recovery ran, with the stuck handling unchanged.
 
 Tests:
-`batchfail_test.go` (`TestBatchFailedError_TextAndSentinel`): the default way forward is unchanged and an alternative one replaces it.
-`recordbatch_test.go`: a batch whose Delete card leaves the target in place while an unbegun later card's Edit file still references it fails with reasons naming the later card and file:line and the plan-edit way forward; the same with an `Uncheckable` record names the `--fresh` steps; a `delete-not-done` with no later reference keeps `recover-batch`.
-`recoverbatch_test.go`: `RecoverSpawnOrAttach` over that failed batch refuses before starting a strand (the fake starter records no start) with the same way forward; once the later card no longer references the target it spawns.
+`batchfail_test.go`: `TestFailBatch`'s subtest "the error carries its way forward and wraps ErrBatchFailed" asserts the default way forward is unchanged and that an alternative one replaces it.
+`recordbatch_test.go`, beside `TestRecordBatch_DoneChecksBlockOnUnresolvedCreate`, which drives the done-checks the same way: a batch whose Delete card leaves the target in place while an unbegun later card's Edit file still references it fails with reasons naming the later card and file:line and the plan-edit way forward; the same with an `Uncheckable` record names the `--fresh` steps; a `delete-not-done` with no later reference keeps `recover-batch`.
+`recoverbatch_test.go`: rows in `TestRecoverSpawnOrAttach`, where `RecoverSpawnOrAttach` over that failed batch refuses before starting a strand (the fake starter records no start) with the same way forward; once the later card no longer references the target it spawns.
 `internal/webstercli/verbs_test.go`: drive `record-batch NN` through its cobra command into this failure and assert the envelope names the later card and the plan-edit way forward, then `recover-batch NN` through its command refuses with exit 1, the `batch_failed` flag and the same way forward.
 
 **ImpactSummary:** record-batch, recover-batch and recovery persistence gain a later-reference check on delete-not-done that swaps the batch-failed way forward and gates the recovery spawn; other failures are unchanged.

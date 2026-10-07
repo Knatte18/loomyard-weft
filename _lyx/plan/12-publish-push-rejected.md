@@ -1,5 +1,8 @@
 # Card 12 — publish-push-rejected
 
+**Create:**
+- `internal/loomcli/landingdeps_integration_test.go`
+
 **Edit:**
 - `internal/landingshed/deps.go`
 - `internal/landingshed/publish.go`
@@ -8,7 +11,6 @@
 - `contracts/specs/refusal-spec.md`
 - `internal/landingshed/publish_test.go`
 - `internal/landingshed/publish_integration_test.go`
-- `internal/loomcli/landingdeps_integration_test.go`
 
 **Uses:**
 - `plan:internal/fabricengine#Fabric.RemoteOnlyCommits`
@@ -27,8 +29,8 @@ Docs: a refusal-spec row "Publish: push rejected" in the loom section, its way f
 The regression drives Publish through its real producer over a hubforge hub with the real fabric closure, not through `lyx loom step`: the rejected half halts before any GitHub call, but the resumed half reaches the GitHub step, which only `landingshed`'s integration tier fakes (`publish_integration_test.go`'s httptest server), so one test drives both halves there; this is recorded in the plan's Shared Decisions.
 
 Tests:
-`publish_test.go`: extend `TestPublish_PushRejected_DistinctReason` so the rejected reason names the faked tip, the faked remote-only count, the merge-then-`lyx loom start` way forward, and that the merge-in ran; a failing closure still yields a rejected reason with the way forward; a generic push failure's reason is unchanged.
+`publish_test.go`: `TestPublish_StuckBeforePullRequest`'s row "push rejected has its own reason" is extended so the rejected reason names the faked tip, the faked remote-only count, the merge-then-`lyx loom start` way forward, and that the merge-in ran; a new row where the closure fails still yields a rejected reason with the way forward; the "push failure" row pins a generic push failure's reason unchanged.
 `publish_integration_test.go`: on the hubforge pair, push a commit to the remote task branch from a second clone so the task branch's push is rejected; Publish ends stuck with the real remote tip and a count of 1 in its reason, and after merging `origin/<task-branch>` in the task worktree a re-run of Publish pushes and reaches the GitHub step.
-`internal/loomcli/landingdeps_integration_test.go`: one case beside the `MarkTaskDone` ones, driving the real `landingDeps(...).RemoteOnlyCommits` closure over a hubforge pair whose remote task branch holds a commit the local branch lacks, and asserting it returns that tip and that one commit.
+`internal/loomcli/landingdeps_integration_test.go`, a new `integration`-tagged file because `test-suite-prune-core` moved the `MarkTaskDone` cases to the git-free `landingdeps_markdone_test.go`, which builds no hub: one test driving the real `landingDeps(...).RemoteOnlyCommits` closure over a hubforge pair whose remote task branch holds a commit the local branch lacks, and asserting it returns that tip and that one commit.
 
 **ImpactSummary:** Publish's push-rejected stuck reason gains the remote tip, the remote-only count and a resume way forward through one new told closure; other Publish paths are unchanged.
