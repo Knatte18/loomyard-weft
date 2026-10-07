@@ -12,7 +12,7 @@
     "07-rebaseline-tail.md": "443a8d4c6681a849dfc52c4c57084ba754787ff7bc20c8687227d6fb2d4c164d",
     "08-calibrate-template.md": "ec8f3be48359a9417b4ed9b9124ef40bccad192d7c473e2452023be92f038034"
   },
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "026fdf1c0dc2367ffedeb3f977ced46f",
   "masterSessionId": "74a42312-8d0f-4201-aafb-a1681a5404aa",
   "batches": {
@@ -198,6 +198,21 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/74a42312-8d0f-4201-aafb-a1681a5404aa/subagents/agent-a3a455f65551224dc.jsonl"
       ]
+    },
+    "8": {
+      "slug": "calibrate-template",
+      "cards": [
+        "08-calibrate-template"
+      ],
+      "cardHashes": {
+        "08-calibrate-template": "ec8f3be48359a9417b4ed9b9124ef40bccad192d7c473e2452023be92f038034"
+      },
+      "startSha": "9c7f6d2634b193d8719984b7067da01c49a57d10",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T12:41:12Z",
+      "sessionId": "74a42312-8d0f-4201-aafb-a1681a5404aa",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
