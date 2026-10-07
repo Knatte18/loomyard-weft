@@ -1237,6 +1237,21 @@
       "isolated": false,
       "brief": "Shuttle starts and waits on two agents in one step and lets them talk; the base discussion-advisor and burler-split both need",
       "body": "A producer that runs two live agents side by side in one step, each in a strand of its own (operator, 2026-10-07).\nToday every producer runs one agent through shuttle and waits on its one turn end; the Webster master's forks are sub-agents inside one session, not two strands.\n\nTwo notes need it:\n\n- `discussion-advisor`: beside Discussion-Write, a second agent explores the task and the code and answers its design questions as they arise.\n- `burler-split`: a review-only agent forking its lenses, and in parallel a stronger fixer that orients, then fixes and validates the findings.\n\nWhat the shared capability has to cover: shuttle starting both agents with their own model-specs, waiting on both and knowing when each is done (the hard part, see `shuttle-crucible`), ending the step when the producer's own rule says so, and the two agents talking to each other directly, which points at `creel`.\nBuilt once, it serves both notes.\n\nInside one producer, not two parallel shed producers (operator, 2026-10-07): shed is a linear machine, one current producer, one history, and pause, goto and routing each assume one step at a time.\nParallel producers would need fork and join in the recipe and rules for one branch halting while the other is done; inside one producer the two agents are invisible to shed, which sees one step with one outcome.\n"
+    },
+    {
+      "id": 159,
+      "slug": "submit-redraw-settle-config",
+      "title": "The post-Enter redraw wait comes from shuttle.yaml",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "submitRedrawSettle in claudeengine is a hardcoded 300 ms; move it to config beside submit_settle_ms",
+      "body": "`bugfix-sessions` (PR #417) moved the wait between pasted text and Enter into `shuttle.yaml` as `submit_settle_ms`, as the operator asked for that 300 ms constant.\nThe wait after Enter before the input box is read again, `submitRedrawSettle` in `internal/claudeengine/session.go`, is still a hardcoded 300 ms.\nIt should come from `shuttle.yaml` too, beside `submit_settle_ms`, read through `claudeengine.NewFromConfig`.\n\nFound by the hub's PR-Gate reviewer on 2026-10-07; outside that task's goal, so not a reject.\n"
     }
   ],
   "legacy_done": [

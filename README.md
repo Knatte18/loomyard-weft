@@ -101,6 +101,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - A replay corpus of real misreads plus scripted live Claude runs that test how shuttle reads turns
 1. **batten run brings its loom run back up as it was** — [`batten-run-resumes-child`](design-batten-run-resumes-child.md) · enhancement, batten
    - An explicit lyx batten run restarts the loom run and its driver where they stood; the loom halt itself stays until resumed
+1. **The post-Enter redraw wait comes from shuttle.yaml** — [`submit-redraw-settle-config`](design-submit-redraw-settle-config.md) · enhancement, shuttle
+   - submitRedrawSettle in claudeengine is a hardcoded 300 ms; move it to config beside submit_settle_ms
 
 ### Features
 
