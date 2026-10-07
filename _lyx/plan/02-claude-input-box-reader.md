@@ -1,7 +1,7 @@
 # Card 2 — claude-input-box-reader
 
 **Create:**
-- `plan:internal/shuttleengine#InputBoxReader` -> `type InputBoxReader interface`
+- `internal/shuttleengine#InputBoxReader`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine/session.go`

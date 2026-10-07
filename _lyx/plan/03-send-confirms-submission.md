@@ -6,7 +6,7 @@
 - `internal/shuttleengine/doc.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#InputBoxReader`
+- `internal/shuttleengine#InputBoxReader`
 
 **Intent:** D1, send half: shuttle's verified send confirms that a delivered text was submitted, not only that it appeared in the pane.
 Every typed delivery reaches the pane through `sendVerified` (`lyx shuttle send` through `Runner.Send`, skill loads, gate re-prompts, orch typing), so one fix here covers all of them.
