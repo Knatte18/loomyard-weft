@@ -284,7 +284,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "e9f42bbade7257f07aec8eded6a9aef0",
   "masterSessionId": "4854de3f-a57c-4be0-b959-ad7479c9f19d",
   "batches": {
@@ -326,6 +326,29 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batcher-v2/4854de3f-a57c-4be0-b959-ad7479c9f19d/subagents/agent-a495be5a236324ed7.jsonl"
       ]
+    },
+    "7": {
+      "slug": "card-order-rule",
+      "cards": [
+        "07-card-order-rule",
+        "08-location-free-ref-rules",
+        "09-plan-fabric-reference-check",
+        "10-gate-fabric-reference",
+        "11-accept-committed-readonly"
+      ],
+      "cardHashes": {
+        "07-card-order-rule": "a7032adadd9a37b712ce44a8a55db3cf5e86418cc9ba189969ac3021a0a2dc44",
+        "08-location-free-ref-rules": "089e3587939062e97092c37425402da2bd0004c71a8b253c45ac386fd66a4fe9",
+        "09-plan-fabric-reference-check": "20a7bc2a11b7b89f784fcc391f19cbe5a3d565dc351b9f7fa5792f7b9f1c8d42",
+        "10-gate-fabric-reference": "7c3a994e38b5422db311b4969b146a9df8204fc1b77a32f487e0c3cd13e5b383",
+        "11-accept-committed-readonly": "d9abf3486075d30b8809fadf9922c47d75307e332f3c4295cd59379dec6c60cf"
+      },
+      "startSha": "5479cfe91a85d3c44e300b9e1649be7d7b77a5f7",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T18:29:46Z",
+      "sessionId": "4854de3f-a57c-4be0-b959-ad7479c9f19d",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
