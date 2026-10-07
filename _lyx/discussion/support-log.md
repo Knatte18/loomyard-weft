@@ -8,7 +8,10 @@ Autonomous mode: no operator answered; every question below was settled by readi
    The board's run dirs were gone with their worktrees.
    The orch's own diagnosis fork (in the orch transcript `330d7c24`) found no cause.
    Reading `background.go` showed that a Stop becomes `EventWaiting` when the transcript holds a background launch with no later `<task-notification>` user message, and a gated run never takes a waiting turn end until a shell expires.
-   The burler transcripts of both runs hold a backgrounded `go test` whose notification was `absorbed_mid_turn`: it appears only as `queue-operation` lines and a `queued_command` attachment.
+   The burler transcripts of both runs hold a backgrounded `go test` whose notification was `absorbed_mid_turn`: it appears only as `queue-operation` lines and a `queued_command` attachment (`test-suite-prune-rest` session `97d818aa`, task `bn68egcp9`; `bugfix-sessions` session `3c2c87b2`, task `b5o9v6f2u`).
+   In the first run the operator sent SIGQUIT before the 10-minute shell wait had passed, and in the second the host hibernated within it.
+   The `continued-in` entry was a consequence of the long idle, not the cause.
+   #411 needed a goroutine dump to diagnose, which is why D3 adds a trace line.
    Root cause settled (D1).
 2. Which signal tells the truth about outstanding work?
    The hub's events files show `background_tasks` entries of type `shell` and `subagent`, so the payload is complete; it becomes authoritative, with the transcript as a fallback only (D2).
