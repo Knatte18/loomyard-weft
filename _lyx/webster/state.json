@@ -350,7 +350,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "590235e54e047e09a509b232f6386ad8",
   "masterSessionId": "947162f0-91d4-4ee3-a7ab-5dde96fdaba3",
   "batches": {
@@ -385,6 +385,25 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-cost/947162f0-91d4-4ee3-a7ab-5dde96fdaba3/subagents/agent-a6a55210cd3c146bd.jsonl"
       ]
+    },
+    "5": {
+      "slug": "round-stencils",
+      "cards": [
+        "05-round-stencils",
+        "06-strand-remover",
+        "07-two-agent-round"
+      ],
+      "cardHashes": {
+        "05-round-stencils": "2582a2eeb74dd2181725a3abc4a0f90572298cd6eb80a58d2ae538bce270b9c4",
+        "06-strand-remover": "e7ba7552299e01686a395346f9c39170d68dff9cfd8ab79efb0893b6cc2ea6d8",
+        "07-two-agent-round": "ce75b7d74ec8aabc49440a18a1faf4335eff2a680c1e730a85ede1533536b601"
+      },
+      "startSha": "63a6e8a4e6937cd1af02b641bbbb7052034f953c",
+      "kind": "fork",
+      "spawnedAt": "2026-10-07T18:56:54Z",
+      "sessionId": "947162f0-91d4-4ee3-a7ab-5dde96fdaba3",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
