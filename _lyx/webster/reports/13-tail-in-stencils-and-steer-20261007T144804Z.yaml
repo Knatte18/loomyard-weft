@@ -1,0 +1,6 @@
+status: OK
+head_sha: e018b0842d452641c427014277316bd9830a325f
+deviations:
+  - internal/shuttleengine/hold_test.go
+  - internal/shuttleengine/attach_asking_test.go
+  - internal/shuttlecli/modelpin_test.go
