@@ -1,7 +1,7 @@
 # Card 1 — Bounded write-lock acquisition
 
 **Create:**
-- `plan:internal/lock#AcquireWriteLockWithin` -> `func AcquireWriteLockWithin(lockPath string, wait time.Duration) (*FileLock, bool, error)`
+- `internal/lock#AcquireWriteLockWithin`
 
 **Edit:**
 - `internal/lock/lock.go`

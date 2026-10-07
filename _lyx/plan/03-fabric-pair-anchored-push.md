@@ -17,7 +17,7 @@
 - `internal/loomcli/wiring.go`
 
 **Uses:**
-- `plan:internal/lock#AcquireWriteLockWithin`
+- `internal/lock#AcquireWriteLockWithin`
 - `plan:internal/gitrepo#Repo.HasUnpulled`
 - `internal/lock#AcquireWriteLock`
 - `internal/gitrepo#Repo.PushRebaseFree`
