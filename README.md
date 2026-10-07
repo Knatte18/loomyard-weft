@@ -17,10 +17,24 @@ Waits on nothing open; can start now, in parallel.
    - Stage 3: review rounds run the impacted set, full plan verify only at Webster gate and Publish/Finalize; after-state recorded; per-package test budget guard
 1. **Shuttle reads turns right: a Stop is always taken, a turn end without output holds** — [`shuttle-turns`](design-shuttle-turns.md) · bug, enhancement, shuttle
    - Wait misses a valid Stop (#411/#415); an asking turn end ends the run (#407); a replay corpus and live runs test turn reading; the post-Enter redraw wait in shuttle.yaml
+   - **Before:** `run-recovery`
+
+### Layer B
+
+Starts when every entry it names under After is done.
+
 1. **A run shows what it waits on and comes back up as it was** — [`run-recovery`](design-run-recovery.md) · bug, enhancement, loom, reed, batten, orch
    - A running gate visible in status and on screen; no stray strands after a crash (#408/#409); batten run brings its child back; an orch resume verb that wakes the driver
+   - **After:** `shuttle-turns`
+   - **Before:** `run-pushes`
+
+### Layer C
+
+Starts when every entry it names under After is done.
+
 1. **A task branch is always on the remote** — [`run-pushes`](design-run-pushes.md) · bug, loom, fabric
    - Go pushes the warp branch wherever it pushes the weft; a loom status push survives a diverged remote (#418)
+   - **After:** `run-recovery`
 
 ## Notes
 
@@ -30,14 +44,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 1. **A valid plan runs in card order: Plan-Gate refuses backward dependencies, Webster never reorders** — [`webster-delete-ordering`](design-webster-delete-ordering.md) · bug, webster
    - Card N never depends on a later card; Plan-Gate enforces it and Webster drops its own sequencing
-1. **The orch resumes runs without commands that take over the operator's terminal** — [`orch-resume-without-attach`](design-orch-resume-without-attach.md) · bug, orch, loom, reed
-   - The orch needs a side-effect-free resume verb that wakes the run's driver
 1. **Spawned agents edit files with scripts; the no-script rule never reaches them** — [`agents-no-scripted-edits`](design-agents-no-scripted-edits.md) · bug, stencil
 1. **board: refuse scope edits to a running task** — [`board-lock-running`](design-board-lock-running.md) · bug, board
    - The board already marks running tasks; a write that changes the scope of a running task is refused
 1. **Recovery prompt gives no guidance on uncommitted changes left by the prior attempt** — [`webster-recovery-dirty-tree`](design-webster-recovery-dirty-tree.md) · bug, webster
-1. **The warp branch is pushed with the weft after every step** — [`pair-always-pushed`](design-pair-always-pushed.md) · bug, loom
-   - Agents commit warp with git commit and only Webster and Publish push it; Go pushes warp wherever it pushes weft
 1. **An operator decision can amend the card of a begun Webster batch** — [`webster-amend-begun-card`](design-webster-amend-begun-card.md) · bug, webster
    - rebaseline refuses begun cards and reset needs a fresh run loom cannot start, so a mid-run decision never reaches the plan
 
@@ -75,18 +85,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Three Webster recovery sites and standalone mode still instruct git reset --keep; widen the reset verb so every recovery instruction names a lyx verb
 1. **reed shows strands as zoom tabs and runs as session tabs** — [`reed-status-tabs`](design-reed-status-tabs.md) · enhancement, reed, ide
    - Stacked layout stays as VIEW; a strand button or Alt+arrows zooms one strand; runs as session tabs below; reed pins it at boot
-1. **Implementers hard-wrap comments and reviews re-find it every round** — [`prose-line-breaks-in-review`](design-prose-line-breaks-in-review.md) · enhancement, webster
-   - Bouncer re-finds hard-wrapped Go comments across rounds; catch it in the card gate or the implementer stencil
 1. **Discussion stage has no sanctioned path to land a repository edit ahead of Plan** — [`discussion-lands-invariant`](design-discussion-lands-invariant.md) · enhancement, loom
    - Discussion has no sanctioned path to commit a PATTERN edit ahead of Plan
 1. **One prompt notice channel to the orch: batten, event-driven, timestamped** — [`orch-notice-channel`](design-orch-notice-channel.md) · enhancement, batten, orch
    - Driver and batten both report every halt, and batten's 30 s poll makes its notices late and stale
 1. **Run tabs overflow a narrow terminal once several runs are open** — [`reed-tabs-narrow`](design-reed-tabs-narrow.md) · enhancement, reed
    - The status line row of run tabs prints full session names, so with five runs the rightmost fall off a narrow terminal unseen
-1. **Shuttle crucible: harden turn reading against real Claude behaviour** — [`shuttle-crucible`](design-shuttle-crucible.md) · enhancement, shuttle
-   - A replay corpus of real misreads plus scripted live Claude runs that test how shuttle reads turns
-1. **batten run brings its loom run back up as it was** — [`batten-run-resumes-child`](design-batten-run-resumes-child.md) · enhancement, batten
-   - An explicit lyx batten run restarts the loom run and its driver where they stood; the loom halt itself stays until resumed
 
 ### Features
 

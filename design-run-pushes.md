@@ -2,6 +2,8 @@
 
 `run-pushes` · Task · bug, loom, fabric
 
+Depends on: [`run-recovery`](design-run-recovery.md)
+
 ## Goal
 
 Every task's work is on the remote at all times, and loom's pushes mid-run survive a moved remote.

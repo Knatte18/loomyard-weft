@@ -835,21 +835,6 @@
       "status": "done"
     },
     {
-      "id": 131,
-      "slug": "prose-line-breaks-in-review",
-      "title": "Implementers hard-wrap comments and reviews re-find it every round",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "webster"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Bouncer re-finds hard-wrapped Go comments across rounds; catch it in the card gate or the implementer stencil",
-      "body": "Webster implementers keep writing prose against `scribe:prose`'s line-break rule, and the Webster-Bouncer re-finds it round after round.\nSeen in `board-labels-and-skills` (closed issues #372 and #373, filed by the removed Go anomaly reporter): `hard-wrapped-go-comments` stayed open in rounds 1, 2 and 4, and `independent-clauses-on-one-line` in rounds 2–4.\nEach round spends a Burler fix and a Bouncer judgment on formatting the tooling could catch.\n\nOptions to settle in Discussion:\n\n1. A guard test or `lyx` lint that flags fixed-column-wrapped comment blocks in changed Go files, run in the card gate, so the implementer fixes it before review.\n2. The implementer stencil loads `scribe:prose` (or inlines its line-break rule), if it does not already.\n\nCheck first whether the stencils from `lyx-skills-and-stencils` already fixed it for new runs.\n"
-    },
-    {
       "id": 132,
       "slug": "discussion-lands-invariant",
       "title": "Discussion stage has no sanctioned path to land a repository edit ahead of Plan",
@@ -865,23 +850,6 @@
       "isolated": false,
       "brief": "Discussion has no sanctioned path to commit a PATTERN edit ahead of Plan",
       "body": "Imported from [issue #385](https://github.com/Knatte18/loomyard/issues/385).\n\nDuring the Discussion stage of a loom task, the parent (`ly:orch`) relayed an operator request to edit `PATTERN.md` and `pattern/` directly in the task worktree, so the review rounds would read the revised rules.\n\nThe Discussion launch prompt allows only the two discussion files and no git.\nAn uncommitted repository edit would leave the tree dirty for the `PATTERN-verified-tree` check.\nIt took an extra round trip to get the operator's explicit instruction and a named committer (the driver) before the edit could be made.\n\nDiscussion has no sanctioned path for \"land this invariant now, ahead of Plan\".\nIf this should be supported, the Discussion launch prompt or the parent-review flow needs a carve-out that names who commits such an edit, instead of leaving it to an ad-hoc message exchange.\n\nProvenance: task `test-writing-rules`, note `Discussion-Write.md`.\n"
-    },
-    {
-      "id": 138,
-      "slug": "orch-resume-without-attach",
-      "title": "The orch resumes runs without commands that take over the operator's terminal",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "orch",
-        "loom",
-        "reed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The orch needs a side-effect-free resume verb that wakes the run's driver",
-      "body": "Seen 2026-10-06: the prime's reed window jumped to other sessions \"by itself\" while the operator watched the orch.\nThe cause was the orch's own `lyx loom start` calls in task worktrees: the orch runs inside reed's tmux, so `$TMUX` is set, and `lyx loom start` without `--no-attach` runs `tmux switch-client` onto the task's session (`internal/loomcli/start.go`), taking the operator's terminal with it.\n`lyx orch start` does the same without `--no-attach` (`internal/orchcli/handover.go`).\n\nThe orch role (`contracts/stencils/orch/orch-template-role.md`) tells the orch to resume a halted child with `lyx loom start`, an operator verb whose job includes handing over the terminal.\nIn practice the call also did not move the runs: a live driver resumed only once the orch messaged it.\n\n## Direction\n\n- The orch resumes a child through a verb with no interactive side effect: a resume verb that only records the decision and wakes the run's driver (or batten), never spawning or attaching anything.\n  The role stencil names that verb and never `lyx loom start`.\n\nStart verbs no longer attach for any caller; attaching is only `lyx reed attach` (operator decision 2026-10-06, landed in `bugfix-sessions`, 26f329be7).\nThis note keeps the orch resume verb.\n"
     },
     {
       "id": 139,
@@ -1064,51 +1032,6 @@
       "body": "The operator wants extra Claude strands beside the orch in the prime, such as one for exploring the repo, added by the orch on request (operator, 2026-10-06).\n\nTried 2026-10-06: `lyx reed add --name explore --cmd claude` runs a bare `claude`, so the pane title is `ly:explore` but the Claude session gets no `--name`, and reed records no session id, so the watchdog's session-name repair (`internal/reedengine/namerepair.go`) skips it.\n\nEvery agent in lyx runs through shuttle (operator), so this needs a shuttle engine extension: open a named LLM session in a strand with no turn and no prompt, started with the strand name and its session id recorded, so the watchdog keeps the name across a compact.\nThe verb that calls it sits above shuttle, which has no CLI of its own (see the `creel` note), and not in reed, which shuttle depends on.\n\nOpen: where such a strand goes in the reed layout relative to the orch, and how several share the space.\n"
     },
     {
-      "id": 152,
-      "slug": "shuttle-crucible",
-      "title": "Shuttle crucible: harden turn reading against real Claude behaviour",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "shuttle"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A replay corpus of real misreads plus scripted live Claude runs that test how shuttle reads turns",
-      "body": "Harden shuttle against how Claude Code behaves in practice, found by running it, rather than one fix per misread found in a live run (operator, 2026-10-06).\n\nSeen on 2026-10-06 alone: false \"asking\" stops at Plan-Write (twice, one spawning a second plan agent) and on a Webster master whose fork was still measuring (#407), a fork killed by an API error recorded as `dead_reason: asking`, and a burler turn end never taken at all (#411).\nEach came from behaviour shuttle had not been written for: forks and background shells outliving a turn, messages arriving mid-run, skill loads, a session `continued-in` another, API errors.\nShuttle reads undocumented Claude Code internals (transcript line shapes, `custom-title`), which change between Claude Code versions.\n\nTwo parts:\n\n- A replay corpus: every misread from a real run is saved as a fixture (the transcript and shuttle's events, with what happened), and shuttle's classification is tested against the whole corpus. Cheap and deterministic; today's cases are the first fixtures.\n- Live runs: real Claude sessions driven through scripted scenarios that provoke the hard cases (long background shells, forks, a message mid-turn, skill loads, a compact, an interrupt, a question), checking shuttle's reading against the known answer. Costs tokens; catches a Claude Code release that changes behaviour before a task run meets it.\n\nStarting point (operator, 2026-10-06): loomyard has no crucible of its own yet.\nThe repo's `crucible/` holds the hand-run review-and-fix loop that hardened reed, written for millhouse (`_mill/` paths, round-agent profiles copied into `.claude/agents/`), and the operator expects it can be rewritten for this more easily than starting over.\nIts README names the behaviour-based form, running a live-substrate module in a sandbox, a `hardener` board note, which is no longer on the board.\n\nWhat the crucible should settle is which signals tell the truth.\nShuttle already gets turn ends from Claude Code's official Stop hook, written into each run's `events.jsonl` with its `background_tasks`; the misreads come from treating \"the turn ended\" as \"the work is done\", and #411 is a Stop that arrived and was never taken.\nCandidates to combine: the Notification hook Claude Code sends when it waits for input, a non-empty `background_tasks` meaning not done whatever the turn says, and quiet over time.\nCodex, a planned second engine (`codex-engine`), has its own turn-complete hook with a different shape, so each engine needs its own hard cases behind shuttle's common outcomes.\n"
-    },
-    {
-      "id": 153,
-      "slug": "pair-always-pushed",
-      "title": "The warp branch is pushed with the weft after every step",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Agents commit warp with git commit and only Webster and Publish push it; Go pushes warp wherever it pushes weft",
-      "body": "A task branch should be on the remote at all times (operator, 2026-10-06), so that a crash, a lost machine or a look from another machine never meets work that exists only locally.\n\nSeen 2026-10-06 in `test-suite-prune-rest`: the warp branch was 19 commits ahead of `origin/test-suite-prune-rest` while its weft was in sync.\nThe last warp push was at 15:40 by Webster (`internal/websterengine/sequence.go` pushes after its batches); the eleven Webster-Burler fix commits from 19:11 on and a merge of main at 19:52 stayed local until Publish.\n\nCause: agents commit warp with their own `git commit`, and pushing is left to whichever loop owner happens to push.\nA Burler round commits each fix and never pushes (`internal/burlerengine/doc.go`, `FixScopeSource`, and its prompt in `internal/burlerengine/prompt.go`).\n`lyx fabric commit`, `push` and `sync` cover the weft only, so a weft push never carries the warp along.\n\nOperator direction: the remote is never behind, and that must not rest on agents.\nThe operator first wanted every agent to commit through a `lyx fabric` verb that pushes warp with weft, then judged that agents will keep running `git commit` whatever their prompt says.\nSo the push belongs to Go: wherever the weft is pushed after a step, the warp branch is pushed with it, whatever made the commits.\n"
-    },
-    {
-      "id": 154,
-      "slug": "batten-run-resumes-child",
-      "title": "batten run brings its loom run back up as it was",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "batten"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "An explicit lyx batten run restarts the loom run and its driver where they stood; the loom halt itself stays until resumed",
-      "body": "`lyx batten run \u003cslug\u003e` on a run whose batten process had died, with its inner loom run halted (paused, blocked or failed), started batten, which logged \"inner shed run halted; waiting for the operator to resume it\" and waited without bringing the loom run back up; the orch had to run `lyx loom start --no-attach` in the task worktree as a second step.\nSeen 2026-10-07 restarting the three bugfix runs after their batten processes died; the runs went on only once their drivers were also messaged.\n\nWanted (operator, 2026-10-07): `batten run` brings its current producer, the loom run, back up as it was, driver included.\nThe loom run itself stays where it halted, since that halt is its own; resuming it remains a separate step (a resume, or a message to its driver).\n"
-    },
-    {
       "id": 155,
       "slug": "webster-amend-begun-card",
       "title": "An operator decision can amend the card of a begun Webster batch",
@@ -1208,7 +1131,9 @@
         408,
         409
       ],
-      "depends_on": [],
+      "depends_on": [
+        "shuttle-turns"
+      ],
       "isolated": false,
       "brief": "A running gate visible in status and on screen; no stray strands after a crash (#408/#409); batten run brings its child back; an orch resume verb that wakes the driver",
       "body": "## Goal\n\nThe operator and the orch can see what a run waits on, and a run comes back up as it was after a crash or a halt.\nSplit from the run-errors bundle (operator, 2026-10-07).\n\n## A running verify gate is visible in status and on screen\n\nAfter an agent ends its turn, a Go gate (`verifyrun`: build, unit, integration, smoke vet) can run for many minutes while the agent's pane sits idle; the operator and the orch read it as a hang (`orch-cycle-hardening` and `board-config-per-worktree` 2026-10-05, `bugfix-fabric` and `bugfix-webster` 2026-10-07, where the orch SIGQUIT-ed a gate it took for part 1).\n\n- `lyx loom status` names the gate and how long it has run, such as `Webster-Burler: verify running 6m (go test -tags integration)`, for every producer.\n  On 2026-10-07 `bugfix-sessions` showed `verify Webster-Burler gate (attempt 1, since 10:15)` in `waiting` while `bugfix-webster`, in the same producer, showed nothing: find which gate path skips it.\n- On screen: shuttle owns the gate, so it sets a pane user option on the agent's strand when a gate starts (e.g. `@gate=verify`, `@gate_start=\u003ctime\u003e`) and clears it when the gate ends; reed's status format shows it with the elapsed time computed at each refresh, such as `webster ⏳verify 2m14s` (operator, 2026-10-07).\n- The same holds for every Go-side wait after an agent's turn: the Webster verify gate, the Burler round's verify, Publish's merge-in verify.\n\n## reed: stray strands after a crash (#408, #409)\n\n- **Bare claude above a dormant orch (#408).** The folder-open chain in `internal/vscode/config.go` runs `lyx reed add --if-absent --unless-name orch --name claude`; `--unless-name` skips only while the orch strand is live (`AddStrandUnless`, `internal/reedengine/strand.go`), so after a reboot a bare `claude` strand lands above the dormant orch.\n  Expected: an orch strand, live or dormant, blocks the bare add; let `--unless-name` match a persisted dormant strand, or run `lyx reed resume` before the add.\n- **Resume revives finished strands (#409).** After a crash, `lyx reed resume` in `test-suite-prune-core` recreated a burler whose round was done, beside the next producer's own strand.\n  A strand stays in reed's state after its work is done, since only the shuttle wait that would remove it died with the crash.\n  Expected: resume brings back only strands with work left, or a strand leaves reed's state as soon as its shuttle run reaches a final outcome.\n\n## batten run brings its child back up\n\n`lyx batten run \u003cslug\u003e` on a run whose batten process had died, with its inner loom run halted (paused, blocked or failed), started batten, which logged \"inner shed run halted; waiting for the operator to resume it\" and waited without bringing the loom run back up; the orch had to run `lyx loom start --no-attach` in the task worktree as a second step.\nSeen 2026-10-07 restarting the three bugfix runs after their batten processes died; the runs went on only once their drivers were also messaged.\n\nWanted (operator, 2026-10-07): `batten run` brings its current producer, the loom run, back up as it was, driver included.\nThe loom run itself stays where it halted, since that halt is its own; resuming it remains a separate step (a resume, or a message to its driver).\n\n## An orch resume verb\n\nSeen 2026-10-06: the prime's reed window jumped to other sessions \"by itself\" while the operator watched the orch.\nThe cause was the orch's own `lyx loom start` calls in task worktrees: the orch runs inside reed's tmux, so `$TMUX` is set, and `lyx loom start` without `--no-attach` runs `tmux switch-client` onto the task's session (`internal/loomcli/start.go`), taking the operator's terminal with it.\n`lyx orch start` does the same without `--no-attach` (`internal/orchcli/handover.go`).\n\nThe orch role (`contracts/stencils/orch/orch-template-role.md`) tells the orch to resume a halted child with `lyx loom start`, an operator verb whose job includes handing over the terminal.\nIn practice the call also did not move the runs: a live driver resumed only once the orch messaged it.\n\nDirection:\n\n- The orch resumes a child through a verb with no interactive side effect: a resume verb that only records the decision and wakes the run's driver (or batten), never spawning or attaching anything.\n  The role stencil names that verb and never `lyx loom start`.\n\nStart verbs no longer attach for any caller; attaching is only `lyx reed attach` (operator decision 2026-10-06, landed in `bugfix-sessions`, 26f329be7).\nThis note keeps the orch resume verb.\n"
@@ -1226,7 +1151,9 @@
       "issues": [
         418
       ],
-      "depends_on": [],
+      "depends_on": [
+        "run-recovery"
+      ],
       "isolated": false,
       "brief": "Go pushes the warp branch wherever it pushes the weft; a loom status push survives a diverged remote (#418)",
       "body": "## Goal\n\nEvery task's work is on the remote at all times, and loom's pushes mid-run survive a moved remote.\nSplit from the run-errors bundle (operator, 2026-10-07).\n\n## The warp branch is pushed with the weft\n\nA task branch should be on the remote at all times (operator, 2026-10-06), so that a crash, a lost machine or a look from another machine never meets work that exists only locally.\n\nSeen 2026-10-06 in `test-suite-prune-rest`: the warp branch was 19 commits ahead of `origin/test-suite-prune-rest` while its weft was in sync.\nThe last warp push was at 15:40 by Webster (`internal/websterengine/sequence.go` pushes after its batches); the eleven Webster-Burler fix commits from 19:11 on and a merge of main at 19:52 stayed local until Publish.\n\nCause: agents commit warp with their own `git commit`, and pushing is left to whichever loop owner happens to push.\nA Burler round commits each fix and never pushes (`internal/burlerengine/doc.go`, `FixScopeSource`, and its prompt in `internal/burlerengine/prompt.go`).\n`lyx fabric commit`, `push` and `sync` cover the weft only, so a weft push never carries the warp along.\n\nOperator direction: the remote is never behind, and that must not rest on agents.\nThe operator first wanted every agent to commit through a `lyx fabric` verb that pushes warp with weft, then judged that agents will keep running `git commit` whatever their prompt says.\nSo the push belongs to Go: wherever the weft is pushed after a step, the warp branch is pushed with it, whatever made the commits.\n\n## Loom status push can hit a diverged remote mid-run (#418)\n\nSeen once in `bugfix-sessions` (drive report 20261006-121941): during Discussion-Burler round 1, loomcli logged `status push failed ... remote diverged`; the next transition pushed fine.\nDistinct from #404 (Publish push).\nA status push recovers from a diverged remote by itself rather than logging a failure.\n\n"

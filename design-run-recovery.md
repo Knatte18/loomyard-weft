@@ -2,6 +2,8 @@
 
 `run-recovery` · Task · bug, enhancement, loom, reed, batten, orch
 
+Depends on: [`shuttle-turns`](design-shuttle-turns.md)
+
 ## Goal
 
 The operator and the orch can see what a run waits on, and a run comes back up as it was after a crash or a halt.
