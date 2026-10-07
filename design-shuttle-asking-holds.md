@@ -28,7 +28,7 @@ The cost: a stop no longer halts the run at once; the parent's notice and the ru
 
 ## Related
 
-`bugfix-sessions` card 5 removes a live agent of the same outputs before a fresh run, which ends the duplicate but not the lost answer.
+`bugfix-sessions` (landed, #400) removes a live agent of the same outputs before a fresh run, which ends the duplicate but not the lost answer.
 The `creel` note owns message delivery and would add the tail.
 
 
