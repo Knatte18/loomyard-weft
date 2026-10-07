@@ -1,0 +1,9 @@
+status: OK
+head_sha: 293d592b2710b2a0e42de3576eecb0dc2595297d
+deviations:
+  - internal/loomcli/landingdeps_integration_test.go
+  - internal/loomcli/landingdeps_markdone_test.go
+  - internal/loomcli/landingdeps_verify_test.go
+  - internal/loomcli/wiring_publish_integration_test.go
+  - internal/loomcli/wiring_seams_test.go
+  - internal/testkit/envkit/envkit.go

@@ -451,7 +451,7 @@
       }
     }
   ],
-  "currentBatch": 12,
+  "currentBatch": 0,
   "masterStrand": "0491f02e5a5532b00da4c179c2b82323",
   "masterSessionId": "1714ddcb-4a58-4227-87b8-bea1ffe360f4",
   "batches": {
@@ -518,8 +518,27 @@
       "kind": "fork",
       "spawnedAt": "2026-10-07T14:24:53Z",
       "sessionId": "1714ddcb-4a58-4227-87b8-bea1ffe360f4",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "12-loom-status-shuttle-wait",
+        "status": "done",
+        "head_sha": "293d592b2710b2a0e42de3576eecb0dc2595297d",
+        "deviations": [
+          "internal/loomcli/landingdeps_integration_test.go",
+          "internal/loomcli/landingdeps_markdone_test.go",
+          "internal/loomcli/landingdeps_verify_test.go",
+          "internal/loomcli/wiring_publish_integration_test.go",
+          "internal/loomcli/wiring_seams_test.go",
+          "internal/testkit/envkit/envkit.go"
+        ]
+      },
+      "cardShas": [
+        "293d592b2710b2a0e42de3576eecb0dc2595297d"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-recovery/1714ddcb-4a58-4227-87b8-bea1ffe360f4/subagents/agent-ad6ab6ef463b6fff4.jsonl"
+      ]
     },
     "7": {
       "slug": "verifyrun-process-group",
@@ -562,6 +581,7 @@
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-recovery/1714ddcb-4a58-4227-87b8-bea1ffe360f4/subagents/agent-a60b5c8295299e168.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-recovery/1714ddcb-4a58-4227-87b8-bea1ffe360f4/subagents/agent-a3ea967d56c5ba134.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-recovery/1714ddcb-4a58-4227-87b8-bea1ffe360f4/subagents/agent-a3ea967d56c5ba134.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-recovery/1714ddcb-4a58-4227-87b8-bea1ffe360f4/subagents/agent-ad6ab6ef463b6fff4.jsonl"
   ]
 }
