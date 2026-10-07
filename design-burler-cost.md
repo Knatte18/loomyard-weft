@@ -1,6 +1,6 @@
 # Burler: a parallel reviewer and fixer, a model per round
 
-`burler-cost` · Task · feature, burler · running · Publish
+`burler-cost` · Task · feature, burler · running · PR-Gate
 
 Both halves aim at the cost and time of a Burler round.
 
