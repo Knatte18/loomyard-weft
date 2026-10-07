@@ -27,6 +27,27 @@ Shuttle owns one session-state model per agent strand, and batten, the orch watc
 Each state change is an event with a timestamp, so a consumer reacts to the change and keeps a history of changes only, never ticks (see `orch-notice-channel`).
 `idle-stalled` gets a bounded resume: shuttle tells the session to continue, with a retry cap and backoff, then halts the run visibly with the cause.
 
+## Sources, never guesses
+
+Today's misreads all came from inference: scraping the pane (the idle probe, the paste race), scanning the transcript heuristically (missed `queued_command` lines, #411/#420), and judging from mtime or elapsed time (the 45 min quiet notice).
+The model rests on what Claude Code itself reports:
+
+- Hooks are the truth: `UserPromptSubmit` is a turn start, `Stop` a turn end (its payload carries `background_tasks`), `Notification` an agent asking or waiting on a permission. Shuttle already installs the Stop hook; the others are a few lines in the same hook config writing to the same event file. Hooks are only for agent sessions; lyx's own Go processes know their state already.
+- An API error is a marked transcript entry; whether Claude Code also has a hook for it is to be checked.
+- Liveness is the process: a dead pid is `dead`.
+- The pane is a cross-check only, never the basis.
+- Missing or contradicting signals give `unknown`, shown, never a silent guess.
+
+Tests replay the real transcripts and hook payloads that today's and yesterday's failures left behind as fixtures.
+
+## Built in small steps
+
+A big-bang rewrite of shuttle is the risk; nothing changes behavior until it is proven:
+
+1. `shuttle-turns` lands first.
+2. Shadow mode: shuttle computes and logs the state beside today's guesses, with no consumer reading it; disagreements are read against real runs.
+3. One consumer moves at a time, each its own small task: batten's quiet notice first (worst case a wrong notice), then the orch watcher, then creel.
+
 ## Relations
 
 `shuttle-turns` fixes turn reading and is a first piece of this; this note is the step after it lands.
