@@ -13,6 +13,10 @@ Waits on nothing open; can start now, in parallel.
 
 1. **Prompt-cache TTL per agent role** — [`cache-ttl-per-role`](design-cache-ttl-per-role.md) · enhancement, shuttle
    - Shuttle sets the prompt-cache TTL per role: 1 hour for the driver and Webster Master, 5 minutes for the rest
+1. **Batcher v2: Merriam context at fork time, a fitted model, plans in card order** — [`batcher-v2`](design-batcher-v2.md) · enhancement, webster
+   - Size batches from Merriam measured context, fit the batchifier from logged runs, one tokencount weft flag, card order in the plan spec
+1. **Burler: a parallel reviewer and fixer, a model per round** — [`burler-cost`](design-burler-cost.md) · feature, burler
+   - Split a Burler round into a cheap reviewer and a stronger fixer that start together, and pick the model per round
 
 ## Notes
 
@@ -20,8 +24,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ### Bugs
 
-1. **A valid plan runs in card order: Plan-Gate refuses backward dependencies, Webster never reorders** — [`webster-delete-ordering`](design-webster-delete-ordering.md) · bug, webster
-   - The plan spec and template state that card N never depends on a later card
 1. **Spawned agents edit files with scripts; the no-script rule never reaches them** — [`agents-no-scripted-edits`](design-agents-no-scripted-edits.md) · bug, stencil
 1. **board: refuse scope edits to a running task** — [`board-lock-running`](design-board-lock-running.md) · bug, board
    - The board already marks running tasks; a write that changes the scope of a running task is refused
@@ -77,12 +79,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Shuttle owns busy/idle-done/idle-stalled/asking/dead per agent as timestamped events; batten, the orch watcher, creel and reed stop guessing
 1. **Prime-side fabric push and sync publish unpushed main commits** — [`prime-push-gate`](design-prime-push-gate.md) · enhancement, fabric
    - Since run-pushes, lyx fabric push/sync in the prime (and lyx config) push main too, so unpushed hub commits skip the full test suite
-1. **tokencount: one flag for the weft repository** — [`batchifier-dry-run`](design-batchifier-dry-run.md) · enhancement, webster
-   - tools/tokencount has both -weft and -history naming the same repository
-1. **Fit the batchifier from logged runs: estimate vs actual peak context and cost** — [`batchifier-learning-loop`](design-batchifier-learning-loop.md) · enhancement, webster
-   - Start from a guessed model, log each batch's estimate inputs, and fit coefficients and limits from real runs: what is actually optimal
-1. **Batchifier: a fork starts with Merriam context at fork time, not a constant** — [`batchifier-master-context`](design-batchifier-master-context.md) · enhancement, webster
-   - Replace startup_context with the computable base context of Merriam plus a per-batch growth term
 1. **A shuttle hold shows as a wait mark and in the loom status waiting line** — [`hold-wait-mark`](design-hold-wait-mark.md) · enhancement, shuttle
    - The turn-end-without-output hold from shuttle-turns gets the wait mark run-recovery added for gate and shell waits
 1. **Step-level watchdog and a Windows verify timeout that kills the process tree** — [`verify-watchdog`](design-verify-watchdog.md) · enhancement, shed
@@ -118,16 +114,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Semantic search over docstrings and comments; doubtful today, since agents now navigate well with grep
 1. **Ship lyx as an installable Claude Code plugin** — [`plugin-packaging`](design-plugin-packaging.md) · feature
    - Package lyx and its skills as one installable plugin
-1. **Burler picks the model per review round** — [`burler-round-models`](design-burler-round-models.md) · feature, burler
-   - Round 1, round 2 and later rounds may each use a different base model, not only a different provider
 1. **Codex as a second agent engine** — [`codex-engine`](design-codex-engine.md) · feature, shuttle
    - If lyx gets a second engine, Codex is more relevant than Gemini
 1. **Fabric's ordinary-monorepo verb surface** — [`fabric-monorepo-verbs`](design-fabric-monorepo-verbs.md) · feature, fabric
    - Against plain git, fabric still lacks log, show, branch, tag, stash, revert, restore, rm/mv, rebase, cherry-pick and blame
 1. **Talk to the orch through Slack** — [`reed-slack-relay`](design-reed-slack-relay.md) · feature, reed
    - A Slack relay so the operator can reach the orch from a phone where Claude's own app is not allowed
-1. **Burler as two parallel agents: a review-only reviewer and a fixer that validates** — [`burler-split`](design-burler-split.md) · feature, burler
-   - B orients, forks its lenses and writes the report only; A, stronger, orients in parallel, then fixes and validates B findings with a grain of salt
 1. **raddle: codeguide's woven-in successor** — [`raddle`](design-raddle.md) · feature, loom
    - Docs regenerated once at merge time over the plan's diff, folded into Finalize's contract; the geometry and the parallel-regeneration design exist
 1. **webster: worktree-per-card parallel execution** — [`webster-parallel-execution`](design-webster-parallel-execution.md) · feature, webster

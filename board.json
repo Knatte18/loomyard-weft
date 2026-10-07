@@ -329,21 +329,6 @@
       "body": "From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03.\nIdea: ship `lyx` as an installable Claude Code plugin."
     },
     {
-      "id": 67,
-      "slug": "burler-round-models",
-      "title": "Burler picks the model per review round",
-      "kind": "note",
-      "labels": [
-        "feature",
-        "burler"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Round 1, round 2 and later rounds may each use a different base model, not only a different provider",
-      "body": "From `manifest/roadmap.md` Someday (shuttle per-round provider selector), reframed by the operator on 2026-10-03.\nThe roadmap item was a per-round provider selector, meaningless while Claude is the only engine.\nWhat matters (operator): Burler choosing a different base model for round 1, round 2 and later rounds, so a fresh model reviews after the first has converged.\nRelated: `convergence-plan`'s model trial (`fable[high]` for discussion and review)."
-    },
-    {
       "id": 68,
       "slug": "codex-engine",
       "title": "Codex as a second agent engine",
@@ -402,21 +387,6 @@
       "isolated": false,
       "brief": "A correct deny/allow setup for every lyx-spawned role, so no agent stops on a tool or command it needs",
       "body": "Operator 2026-10-03, while striking the roadmap's shuttle generic tools-restriction: restricting tools per agent is meaningless today, but lyx needs a correct setup of denied and allowed tools and commands, so nothing gets blocked.\nSeen the same day: the global deny list (`git reset --hard`, removed by the operator; `git push --force` still in) stopped `pair-lifecycle` twice at steps lyx itself prescribed.\nRelated: `no-denied-recovery`, `orch-live-hardening` (permission modes mean what they say).\n\nSeen 2026-10-04 in `board-model` (#361): Webster Master ran `python3 - …` with a misplaced heredoc, the shell hung on stdin and blocked the verify gate for 75 minutes.\nOperator: lyx agents never use Python. Nothing denies it today: agents run in bypass, and shuttle's PreToolUse hook (`internal/shuttleengine/claudeengine/settings.go`) guards only other cases. Want: the same hook denies `python`/`python3` in Bash for every lyx-spawned agent, with a reason pointing to Edit/Write and grep/awk.\n"
-    },
-    {
-      "id": 73,
-      "slug": "burler-split",
-      "title": "Burler as two parallel agents: a review-only reviewer and a fixer that validates",
-      "kind": "note",
-      "labels": [
-        "feature",
-        "burler"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "B orients, forks its lenses and writes the report only; A, stronger, orients in parallel, then fixes and validates B findings with a grain of salt",
-      "body": "Idea (operator, 2026-10-03), a large design change for later: split a Burler round into two agents spawned in parallel.\n\n- **A, handler and fixer**, the stronger model.\n- **B, reviewer**, writes the review only and never fixes.\n\nBoth start at once and orient themselves in the code independently.\nB then forks its lens fan as today, and when every fork is done, writes the combined report as Burler does now.\nThe report goes to A, which has already oriented itself, fixes, and acts as an extra validator that takes B's findings with a grain of salt.\n\nWhat it buys: A's orientation overlaps B's review instead of following it, and the reviewer never grades its own fixes.\nRelated: `burler-round-models` (model per round), `review-finding-class` (landed: the judge reads facts, not artifacts).\n\nModels (operator, 2026-10-07): the review half, one agent forking a lens each into a broad review, is good enough on `sonnet[medium]`; the fixer and validator is the one that must be stronger.\nToday one agent does both under the single `review` model-spec in `loom.yaml`, so they cannot be set apart; the split gives each half its own model-spec.\nSeen 2026-10-07 in `bugfix-fabric`: on `sonnet[medium]` the fix half cleared only the lines a review named, re-broke a line fixed the round before, and circled through rounds 3 and 4 on comment line breaks alone; `review` was raised to `opus[medium]` for both halves as a stopgap.\n"
     },
     {
       "id": 75,
@@ -622,21 +592,6 @@
       "isolated": false,
       "brief": "Copy Claude .jsonl transcripts across machines so --resume works elsewhere",
       "body": "From `manifest/roadmap.md` Someday.\nCopy Claude `.jsonl` transcripts across machines so `--resume` works elsewhere."
-    },
-    {
-      "id": 91,
-      "slug": "webster-delete-ordering",
-      "title": "A valid plan runs in card order: Plan-Gate refuses backward dependencies, Webster never reorders",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The plan spec and template state that card N never depends on a later card",
-      "body": "## Rule (operator, 2026-10-06)\n\nA valid plan is executable strictly in card-number order: implementing card 1, then 2, then 3 and so on always works.\nA card never depends on anything a later card does.\nWebster follows that order as written and never sorts cards.\n\nThis reverses `contracts/specs/loom-plan-spec.md`, which today calls the card list a DAG of intent \"not itself an execution order\" and lets the executor derive the order (`websterengine.SequenceBatches`, `deriveEdges` in `internal/websterengine/sequence.go`).\n\n## What changes\n\n- **The plan spec and the plan template** state the rule to the plan writer and the plan reviewer.\n\n## Sightings\n\n- 2026-10-03, `pair-lifecycle` (GitHub #350): card 12 deleted `fabricengine.Topology.RemovePairBranch`, `PairBranchResult` and `PairSiblingRemnant` and ran before card 11, which removed their only production caller in `internal/battencli/wire.go`; the batch failed and the run blocked at Webster.\n- 2026-10-06, `skills-in-one-turn`: card 2's `Uses:` named `internal/shuttleengine#Runner.skillLoader`, which card 4 edits, a backward dependency; cards 2 and 4 also shared test-file targets.\n  `SequenceBatches` condensed the cycle {2, 4} and ran 01, 02, 04, 03, so card 4 deleted `SkillLoader.SkillLoadSequence`, `SkillUnknown` and `Runner.LoadSkill` before card 3 moved `internal/orchengine` and `internal/orchcli` off them.\n  The cycle surfaced only as an unread `Cycle` warning.\n  `webster rebaseline` refused the fix because batch 4 had begun, so the run needed `webster reset --to start`, an archived `state.json` and a goto, redoing two finished batches.\n\nPlan-Gate refuses backward dependencies since `bugfix-webster` (d536a1a4e: `uses-later-target`, `delete-before-reference`).\nWebster dropping its own ordering moved to task `card-batching` (its Decision 12, 2026-10-07): the batchifier's contiguous segments in plan card order are the execution order, and `SequenceBatches` reduces to an assertion that refuses a backward edge or cycle.\nThis note keeps stating the rule in the plan spec and template.\nUntil then Plan-Write can bounce on plans Webster used to reorder, since the template does not yet tell the writer.\n"
     },
     {
       "id": 97,
@@ -1245,51 +1200,6 @@
       "body": "Seen 2026-10-07 in card-batching: the batten notice and loom status said `webster master is asking a question`, but the master had written `_lyx/webster/outcome.yaml` with `outcome: stuck` plus `summary.md` and ended its turn. The stop must be classified from the outcome file, not as a question; see `session-state` for the wider model.\n\n## From issue #429\n\nImported from [issue #429](https://github.com/Knatte18/loomyard/issues/429).\n\n**What happened**\n\nDuring the Webster row, Master delegated a batch to a fork that ran a long after-state measurement in a background shell.\nMaster's turn ended with only interim fork output, because it was holding `record-batch` until the fork's final completion notification.\nlyx's wait ran past `background_shell_wait_min` (10 minutes), stopped waiting and counted Master's turn end.\nIt did not stop the shell.\nThe run's outcome became `error: webster: master asked a question instead of finishing`, and the loom halted `blocked` with anomaly `escalation-to-human`.\n\nFriction notes reported \"Master's wait counted a turn end past a background shell\" twice, in two different Master sessions.\nThe driver re-stepped the Webster row after a binary change (`last_step.binary_changed`) and Master blocked the same way a second time, still waiting on the same fork's measurement.\nThe halt recurred, so one re-step does not clear it.\n\n**Why this is abnormal**\n\nAn interim \"still waiting on a background job\" turn end is not a question to a human, and halting the loom as `escalation-to-human` for it needs an operator for no reason.\nThe wait gives up on the shell after a fixed time, but the shell and the Master strand stay alive until the next `lyx webster run` reclaims them, so the work being waited on is killed or orphaned on the very re-step meant to recover.\nThe log line \"stopping a leftover live strand before respawning it; an in-flight batch run restarts from state.json rather than resuming\" shows the re-step discards the pending wait.\n\n**What to do**\n\n- Do not classify a Master turn end that is waiting on a live fork or background shell as a question or an `error`.\n- Either keep waiting while the fork's background job is live, or resume Master when the job completes, instead of halting.\n- If giving up after `background_shell_wait_min` stays, stop the shell and surface a distinct anomaly, not `escalation-to-human`.\n\nProvenance: task `test-tiers`; notes `webster-background-shell.md`, `webster-background-shell-2.md`, `loom-halt.md`, `loom-halt-2.md`, `driver-restep-20261007-webster-blocked.md`.\n"
     },
     {
-      "id": 168,
-      "slug": "batchifier-dry-run",
-      "title": "tokencount: one flag for the weft repository",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "webster"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "tools/tokencount has both -weft and -history naming the same repository",
-      "body": "Left over from card-batching's PR-Gate (2026-10-07); the dry run (`lyx webster validate --batches`) and the peak-context budget have since landed.\n\n`tools/tokencount` has both `-weft` (finished runs) and `-history` (calibration) naming the same weft repository; one flag with one default would do."
-    },
-    {
-      "id": 169,
-      "slug": "batchifier-learning-loop",
-      "title": "Fit the batchifier from logged runs: estimate vs actual peak context and cost",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "webster"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Start from a guessed model, log each batch's estimate inputs, and fit coefficients and limits from real runs: what is actually optimal",
-      "body": "Operator, 2026-10-07: the batchifier's model is a first guess; treat tuning as a learning loop rather than a design-time decision.\n\n- Log: each batch records its profile, coefficients and per-card estimate components in webster's `state.json` (being added with the peak-context budget change); the fork transcripts give the actual peak context (max input+cache tokens of any message) and the actual weight.\n- Analyse: extend `tools/tokencount -calibrate` to read those records from finished runs and fit the peak-context coefficients (estimate vs actual peak) and the cost side (weight per batch vs batch size).\n- Decide on data: the batch size and budget that minimise weight per card without a rise in failed batches, recoveries or Webster-Review findings; quality outcomes (batch failed, recover-batch, review findings per card) belong in the same table.\n- Re-fit as runs accumulate, and compare profiles across runs before changing the default."
-    },
-    {
-      "id": 170,
-      "slug": "batchifier-master-context",
-      "title": "Batchifier: a fork starts with Merriam context at fork time, not a constant",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "webster"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Replace startup_context with the computable base context of Merriam plus a per-batch growth term",
-      "body": "Operator, 2026-10-07: the cost batchifier's `startup_context` (60000 in the `cautious` profile) is a fitted constant standing in for something that is not constant.\n\nAn implementer fork is a fork of Merriam, so it starts with Merriam's whole context at the moment it is spawned, and that context grows with every finished batch.\nA constant is too high for early batches and too low for late batches of a long plan, which is where a large batch can overrun the budget.\n\n## Proposal\n\nThe start context of batch N is Merriam's base context plus a growth term for batches 1 to N−1.\n\n- Base: computable exactly before the run, since it is fixed by what Merriam loads: Claude Code's system prompt and tools, CLAUDE.md, the Webster stencil with the inlined PATTERN overview, and the plan files Merriam reads.\n- Growth: what comes back between forks, the batch reports and the output of Merriam's `lyx webster` verbs; estimated, for example as a per-card or per-report allowance.\n\nThe partition stays computed once per run, as `webster-spec.md` requires.\n\n## Measure first\n\nRead Merriam's actual context at each fork from its transcript in today's runs (`shuttle-turns`, `test-tiers`, `run-recovery`), to size the base and the growth term and to see how far the constant was off.\nThe fitting itself belongs to `batchifier-learning-loop`.\n"
-    },
-    {
       "id": 171,
       "slug": "hold-wait-mark",
       "title": "A shuttle hold shows as a wait mark and in the loom status waiting line",
@@ -1333,6 +1243,36 @@
       "isolated": false,
       "brief": "Follow-ups from test-tiers PR-Gate",
       "body": "From test-tiers PR-Gate (2026-10-07):\n\n- No gate runs the `llm` test tier.\n- A task can empty its own `publish_verify` in the pair`s `landing.yaml`, and the hub learns it only after landing, since per-worktree config never lands.\n- The comment lint lets every comma-plus-conjunction break through, so the clause-boundary rule is still judged by reviewers."
+    },
+    {
+      "id": 174,
+      "slug": "batcher-v2",
+      "title": "Batcher v2: Merriam context at fork time, a fitted model, plans in card order",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "webster"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Size batches from Merriam measured context, fit the batchifier from logged runs, one tokencount weft flag, card order in the plan spec",
+      "body": "Card batching (landed 2026-10-07) cut Webster's time and tokens visibly; this task makes its model measured instead of guessed.\n\n## Merriam's context at fork time\n\nOperator, 2026-10-07: the cost batchifier's `startup_context` (60000 in the `cautious` profile) is a fitted constant standing in for something that is not constant.\n\nAn implementer fork is a fork of Merriam, so it starts with Merriam's whole context at the moment it is spawned, and that context grows with every finished batch.\nA constant is too high for early batches and too low for late batches of a long plan, which is where a large batch can overrun the budget.\n\nThe start context of batch N is Merriam's base context plus a growth term for batches 1 to N−1.\n\n- Base: computable exactly before the run, since it is fixed by what Merriam loads: Claude Code's system prompt and tools, CLAUDE.md, the Webster stencil with the inlined PATTERN overview, and the plan files Merriam reads.\n- Growth: what comes back between forks, the batch reports and the output of Merriam's `lyx webster` verbs; estimated, for example as a per-card or per-report allowance.\n\nThe partition stays computed once per run, as `webster-spec.md` requires.\n\nMeasure first: read Merriam's actual context at each fork from its transcript in the runs that used the `cautious` profile (`shuttle-turns`, `test-tiers`, `run-recovery`), to size the base and the growth term and to see how far the constant was off.\nCompare weight per card in those runs against earlier identity-batchifier runs with `tools/tokencount`.\n\n## Learning loop\n\nOperator, 2026-10-07: the batchifier's model is a first guess; treat tuning as a learning loop rather than a design-time decision.\n\n- Log: each batch records its profile, coefficients and per-card estimate components in webster's `state.json`; the fork transcripts give the actual peak context (max input+cache tokens of any message) and the actual weight.\n- Analyse: extend `tools/tokencount -calibrate` to read those records from finished runs and fit the peak-context coefficients (estimate vs actual peak) and the cost side (weight per batch vs batch size).\n- Decide on data: the batch size and budget that minimise weight per card without a rise in failed batches, recoveries or Webster-Review findings; quality outcomes (batch failed, recover-batch, review findings per card) belong in the same table.\n- Re-fit as runs accumulate, and compare profiles across runs before changing the default.\n\n## One flag for the weft repository\n\n`tools/tokencount` has both `-weft` (finished runs) and `-history` (calibration) naming the same weft repository; one flag with one default would do.\n\n## Plans run in card order\n\nRule (operator, 2026-10-06): a valid plan is executable strictly in card-number order; a card never depends on anything a later card does, and Webster follows that order as written and never sorts cards.\n\nPlan-Gate refuses backward dependencies since `bugfix-webster` (`uses-later-target`, `delete-before-reference`), and card-batching made the batchifier's contiguous segments in card order the execution order.\nStill open: `contracts/specs/loom-plan-spec.md` calls the card list a DAG of intent \"not itself an execution order\", and the plan template does not tell the writer the rule.\nBoth state it, to the plan writer and the plan reviewer, so Plan-Write stops bouncing on plans Webster used to reorder.\n"
+    },
+    {
+      "id": 175,
+      "slug": "burler-cost",
+      "title": "Burler: a parallel reviewer and fixer, a model per round",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "burler"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Split a Burler round into a cheap reviewer and a stronger fixer that start together, and pick the model per round",
+      "body": "Both halves aim at the cost and time of a Burler round.\n\n## Split a round into reviewer and fixer\n\nIdea (operator, 2026-10-03): split a Burler round into two agents spawned in parallel.\n\n- **A, handler and fixer**, the stronger model.\n- **B, reviewer**, writes the review only and never fixes.\n\nBoth start at once and orient themselves in the code independently.\nB then forks its lens fan as today, and when every fork is done, writes the combined report as Burler does now.\nThe report goes to A, which has already oriented itself, fixes, and acts as an extra validator that takes B's findings with a grain of salt.\n\nWhat it buys: A's orientation overlaps B's review instead of following it, and the reviewer never grades its own fixes.\n\nModels (operator, 2026-10-07): the review half, one agent forking a lens each into a broad review, is good enough on `sonnet[medium]`; the fixer and validator is the one that must be stronger.\nToday one agent does both under the single `review` model-spec in `loom.yaml`, so they cannot be set apart; the split gives each half its own model-spec.\nSeen 2026-10-07 in `bugfix-fabric`: on `sonnet[medium]` the fix half cleared only the lines a review named, re-broke a line fixed the round before, and circled through rounds 3 and 4 on comment line breaks alone; `review` was raised to `opus[medium]` for both halves as a stopgap.\n\n## A model per round\n\nFrom `manifest/roadmap.md` Someday (shuttle per-round provider selector), reframed by the operator on 2026-10-03: Burler chooses a different base model for round 1, round 2 and later rounds, so a fresh model reviews after the first has converged.\nRelated: `convergence-plan`'s model trial (`fable[high]` for discussion and review).\n"
     }
   ],
   "legacy_done": [
