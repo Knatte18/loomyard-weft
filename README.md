@@ -38,6 +38,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - tickCompacting reads a stale pre-compact turn end, so every compact cycle waits out the handoff timeout and reloads late
 1. **Plan checks let a card command reach the fabric repo** — [`plan-fabric-reference`](design-plan-fabric-reference.md) · bug, webster, loom
    - card-batching card 08 told its fork to run tokencount on ../card-batching-weft; neither validate-plan nor Plan-Review caught it, and Webster audit then wedged the run
+1. **A Webster stuck outcome is reported as the master asking a question** — [`stuck-read-as-question`](design-stuck-read-as-question.md) · bug, loom, shuttle
+   - loom said webster master is asking a question when the master had written outcome: stuck and ended its turn
 
 ### Enhancements
 
