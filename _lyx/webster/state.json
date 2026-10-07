@@ -1,18 +1,18 @@
 {
   "runGuid": "fb31a57481fa88eb6ceda6e8984323e0",
-  "planFingerprint": "e2c9bb1b8ac7fe53ea11ef4e62f916934e846a0b7b9196ddd28afcd021eed229",
+  "planFingerprint": "e23b55f3f89d33689bd9a3ef0667b677db65ed6c0f17eafdb0e5ef23e8bde483",
   "planFileHashes": {
     "00-overview.md": "971cd6ab9ba9093125141127802c0a25cd4a61b6b4bf4e0236eabb1868f7c95b",
     "01-tokencount-fork-report.md": "fbadf803e876373f4762d214057813ff45bf23e450c8beacd9476a58b156a8a9",
-    "02-batcher-estimator.md": "da44b28bec7983c300795054b2a193eeb278d0e5a1eb675d1830fff12831f3e8",
-    "03-calibration-report.md": "e720bc9a9ab1620a2bce521a52c7cfc5d54e18debcaf1066f816983411130840",
-    "04-recorded-partition.md": "c2444f0724a3824070fee6264dfed371e1ab2660d3204f9fd6576e3659fc9417",
-    "05-cost-batchifier.md": "533b94c8fc8036c2345cadf61a6c5dafb9550efb62bbe608b526fab825f9d92a",
+    "02-batcher-estimator.md": "ba59e0a016f91ae3c0ee370641f3f689ab4e90f11f8bd3468d0952e7747e5143",
+    "03-calibration-report.md": "8356f0052b740706f1c1a88c632a2627a26e452c910646576a5b91d6e5e046fd",
+    "04-recorded-partition.md": "c07a9c06b5d7853fb6ad7770a6191f6961f06cf5ee0b7933e727d042916cdb68",
+    "05-cost-batchifier.md": "820ea5e4663fd1f08f25e2a3e6df55d94a2b1ea12a5cec027685e875e3abbaa9",
     "06-batcher-profiles.md": "4d08fc509a5eb6d06613cd958d6c44e426dc4eda33404b6ab93ce4b67172e5ed",
     "07-rebaseline-tail.md": "835faee58926b006fd8387f9d00fa216126db7bbd54287c8841ea4ede2ae8f12",
     "08-calibrate-template.md": "ec8f3be48359a9417b4ed9b9124ef40bccad192d7c473e2452023be92f038034"
   },
-  "currentBatch": 2,
+  "currentBatch": 0,
   "masterStrand": "026fdf1c0dc2367ffedeb3f977ced46f",
   "masterSessionId": "74a42312-8d0f-4201-aafb-a1681a5404aa",
   "batches": {
@@ -48,17 +48,29 @@
         "02-batcher-estimator"
       ],
       "cardHashes": {
-        "02-batcher-estimator": "da44b28bec7983c300795054b2a193eeb278d0e5a1eb675d1830fff12831f3e8"
+        "02-batcher-estimator": "ba59e0a016f91ae3c0ee370641f3f689ab4e90f11f8bd3468d0952e7747e5143"
       },
       "startSha": "f28990732f362f550cf449ca8911433c9dec78b8",
       "kind": "fork",
       "spawnedAt": "2026-10-07T10:51:44Z",
       "sessionId": "74a42312-8d0f-4201-aafb-a1681a5404aa",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "02-batcher-estimator",
+        "status": "done",
+        "head_sha": "5132cd2d756f662a24ef0de7f8a538c52e8001bf"
+      },
+      "cardShas": [
+        "5132cd2d756f662a24ef0de7f8a538c52e8001bf"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/74a42312-8d0f-4201-aafb-a1681a5404aa/subagents/agent-af387b5989fc70989.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/74a42312-8d0f-4201-aafb-a1681a5404aa/subagents/agent-a530e8fa4808269ca.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/74a42312-8d0f-4201-aafb-a1681a5404aa/subagents/agent-a530e8fa4808269ca.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-batching/74a42312-8d0f-4201-aafb-a1681a5404aa/subagents/agent-af387b5989fc70989.jsonl"
   ]
 }

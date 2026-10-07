@@ -39,8 +39,8 @@
 - `PATTERN.md`
 
 **Uses:**
-- `plan:internal/batcher#DiskSizes`
-- `plan:internal/batcher#SizeSource`
+- `internal/batcher#DiskSizes`
+- `internal/batcher#SizeSource`
 
 **Intent:**
 The `Batcher` interface takes the plan, the cards and a size source, and each batch carries the profile that formed it and its estimate (Decision 9).

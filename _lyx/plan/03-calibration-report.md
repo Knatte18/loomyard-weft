@@ -14,10 +14,10 @@
 - `tools/tokencount/testmain_test.go`
 
 **Uses:**
-- `plan:internal/batcher#SegmentCost`
-- `plan:internal/batcher#ProfileWeights`
-- `plan:internal/batcher#SizeSource`
-- `plan:internal/batcher#Weights`
+- `internal/batcher#SegmentCost`
+- `internal/batcher#ProfileWeights`
+- `internal/batcher#SizeSource`
+- `internal/batcher#Weights`
 
 **Intent:**
 The calibration report: the estimator run on past plans, against the tree each run started from, beside each card's measured fork weight (Decision 3).

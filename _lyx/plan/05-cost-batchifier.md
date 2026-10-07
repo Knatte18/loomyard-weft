@@ -11,9 +11,9 @@
 - `contracts/specs/loom-plan-spec.md`
 
 **Uses:**
-- `plan:internal/batcher#SegmentCost`
-- `plan:internal/batcher#Weights`
-- `plan:internal/batcher#SizeSource`
+- `internal/batcher#SegmentCost`
+- `internal/batcher#Weights`
+- `internal/batcher#SizeSource`
 
 **Intent:**
 The cost-model batchifier: hard limits and an exact dynamic program over contiguous segments (Decisions 6 and 7).

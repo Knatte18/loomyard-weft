@@ -3,11 +3,11 @@
 **Create:**
 - `internal/batcher/estimate.go`
 - `internal/batcher/estimate_test.go`
-- `plan:internal/batcher#SizeSource` -> `type SizeSource interface`
-- `plan:internal/batcher#Weights` -> `type Weights struct`
-- `plan:internal/batcher#SegmentCost` -> `func SegmentCost(plan *planparser.Plan, cards []planparser.Card, sizes SizeSource, w Weights) (float64, error)`
-- `plan:internal/batcher#DiskSizes` -> `func DiskSizes(root string) SizeSource`
-- `plan:internal/batcher#ProfileWeights` -> `func ProfileWeights(baseDir, profile string) (Weights, error)`
+- `internal/batcher#SizeSource`
+- `internal/batcher#Weights`
+- `internal/batcher#SegmentCost`
+- `internal/batcher#DiskSizes`
+- `internal/batcher#ProfileWeights`
 
 **Edit:**
 - `internal/batcher/config.go`
