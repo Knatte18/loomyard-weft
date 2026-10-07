@@ -13,7 +13,7 @@ Waits on nothing open; can start now, in parallel.
 
 1. **A batchifier that groups small related cards into one Webster batch** — [`card-batching`](design-card-batching.md) · feature, webster · running · Plan-Burler
    - A Go batchifier that sizes each card, runs large cards alone and groups small ones sharing files within a budget; several named profiles in batcher.yaml
-1. **Which gate runs which test tier, after-state and budget guard** — [`test-tiers`](design-test-tiers.md) · enhancement, loom, webster · paused · Plan-Bouncer
+1. **Which gate runs which test tier, after-state and budget guard** — [`test-tiers`](design-test-tiers.md) · enhancement, loom, webster · running · Plan-Bouncer
    - Stage 3: review rounds run the impacted set, full plan verify only at Webster gate and Publish/Finalize; after-state recorded; per-package test budget guard
 1. **Shuttle reads turns right: a Stop is always taken, a turn end without output holds** — [`shuttle-turns`](design-shuttle-turns.md) · bug, enhancement, shuttle · running · Plan-Burler
    - Wait misses a valid Stop (#411/#415); an asking turn end ends the run (#407); a replay corpus and live runs test turn reading; the post-Enter redraw wait in shuttle.yaml
