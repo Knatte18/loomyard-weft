@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "blocked",
-  "error": "Batch 08-calibrate-template: recover-batch refused with needs_fresh: 'batch 08 failed on findings recovery cannot check: fabric-reference: ran a fabric-referencing command (go run ./tools/tokencount ... -history ../card-batching-weft) that can rewrite run state'; way forward per the refusal: accept-audit --batch 8 then recover-batch 8 (no commit, clean worktree), else reset --to start and run --fresh.",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": "Batch 08-calibrate-template: recover-batch refused with needs_fresh: 'batch 08 failed on findings recovery cannot check: fabric-reference: ran a fabric-referencing command (go run ./tools/tokencount ... -history ../card-batching-weft) that can rewrite run state'; way forward per the refusal: accept-audit --batch 8 then recover-batch 8 (no commit, clean worktree), else reset --to start and run --fresh."
+    "wait": ""
   },
   "history": [
     {
