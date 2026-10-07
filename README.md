@@ -14,6 +14,8 @@ Waits on nothing open; can start now, in parallel.
 1. **Bugfix: Webster and plan validity** — [`bugfix-webster`](design-bugfix-webster.md) · bug, webster, loom, quarry · running · Describe
    - Bugfix only: Plan-Gate refuses backward dependencies, Delete of a gone target, background-shell wait, slow batch validation
    - **Before:** `card-batching`, `test-tiers`
+1. **Runs stop stalling, and a waiting run shows what it waits on** — [`bugfix-run-stalls`](design-bugfix-run-stalls.md) · bug, enhancement, shuttle, loom, reed
+   - Shuttle misses a valid Stop; an asking turn end ends the run; gates look like hangs; stray strands after a crash; status push on a diverged remote; redraw wait in config
 
 ### Layer B
 
@@ -37,19 +39,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **The orch resumes runs without commands that take over the operator's terminal** — [`orch-resume-without-attach`](design-orch-resume-without-attach.md) · bug, orch, loom, reed
    - The orch needs a side-effect-free resume verb that wakes the run's driver
 1. **Spawned agents edit files with scripts; the no-script rule never reaches them** — [`agents-no-scripted-edits`](design-agents-no-scripted-edits.md) · bug, stencil
-1. **Shuttle: a turn end without output holds the run instead of ending it** — [`shuttle-asking-holds`](design-shuttle-asking-holds.md) · bug, shuttle
-   - An asking stop ends the run while the agent lives on, so an answer is lost and a resume spawns a second agent; hold the run and wait on the same agent instead.
-1. **reed: stray strands after a crash** — [`reed-crash-strands`](design-reed-crash-strands.md) · bug, reed
-   - After a crash, folder-open adds a bare claude above a dormant orch, and reed resume revives strands whose work is done
 1. **board: refuse scope edits to a running task** — [`board-lock-running`](design-board-lock-running.md) · bug, board
    - The board already marks running tasks; a write that changes the scope of a running task is refused
 1. **Recovery prompt gives no guidance on uncommitted changes left by the prior attempt** — [`webster-recovery-dirty-tree`](design-webster-recovery-dirty-tree.md) · bug, webster
-1. **shuttle: Wait never takes a valid Stop; a burler round's shed step stalls** — [`shuttle-stop-never-taken`](design-shuttle-stop-never-taken.md) · bug, shuttle
 1. **The warp branch is pushed with the weft after every step** — [`pair-always-pushed`](design-pair-always-pushed.md) · bug, loom
    - Agents commit warp with git commit and only Webster and Publish push it; Go pushes warp wherever it pushes weft
 1. **An operator decision can amend the card of a begun Webster batch** — [`webster-amend-begun-card`](design-webster-amend-begun-card.md) · bug, webster
    - rebaseline refuses begun cards and reset needs a fresh run loom cannot start, so a mid-run decision never reaches the plan
-1. **loom: status push can hit a diverged remote mid-run** — [`status-push-diverged`](design-status-push-diverged.md) · bug, loom
 
 ### Enhancements
 
@@ -79,8 +75,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer
 1. **lyx seeds the prime VS Code setup: title, orch start task, keybindings** — [`ide-prime-setup`](design-ide-prime-setup.md) · enhancement, ide, orch
    - LY: prime/LY: <slug> titles, prime opens with reed up+attach only, orch start and open board as tasks with lyx keybindings, no launch.json
-1. **A running verify gate is visible in status and on screen** — [`gate-running-visible`](design-gate-running-visible.md) · enhancement, loom, reed
-   - After an agent ends its turn, a Go gate can run for minutes with nothing on screen; loom status and something on screen name the gate and its runtime
 1. **Each strand role gets its own color** — [`strand-colors`](design-strand-colors.md) · enhancement, reed, shuttle
    - Claude Code /color per strand role or loom segment, so the driver and its agents look different
 1. **lyx webster reset covers the report-head and last-batch-head targets** — [`webster-reset-targets`](design-webster-reset-targets.md) · enhancement, webster
@@ -99,8 +93,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - A replay corpus of real misreads plus scripted live Claude runs that test how shuttle reads turns
 1. **batten run brings its loom run back up as it was** — [`batten-run-resumes-child`](design-batten-run-resumes-child.md) · enhancement, batten
    - An explicit lyx batten run restarts the loom run and its driver where they stood; the loom halt itself stays until resumed
-1. **The post-Enter redraw wait comes from shuttle.yaml** — [`submit-redraw-settle-config`](design-submit-redraw-settle-config.md) · enhancement, shuttle
-   - submitRedrawSettle in claudeengine is a hardcoded 300 ms; move it to config beside submit_settle_ms
 
 ### Features
 

@@ -667,22 +667,6 @@
       "body": "Operator 2026-10-04: the prime's `.vscode/` was copied by hand from millhouse (title \"LYXHUB\", millhouse keys, a mill `launch.json`); lyx should seed it instead, and the setup should fit the orchestrator workflow.\nAssume no `.vscode/` exists beforehand, or that it may be deleted and re-seeded by lyx.\n\n- Window title: `\u003cSHORTNAME\u003e: \u003cname\u003e` from `.lyx-shortname`, upper-cased: `LY: prime` for the prime, `LY: \u003cslug\u003e` for pairs (today `internal/vscode/config.go` writes the bare slug).\n- Prime folderOpen chain: `reed up` then `reed attach` only; no `reed add claude` (it adds a plain Claude strand the orchestrator workflow does not use).\n- Prime tasks run on demand: \"lyx: orch start\" (`lyx orch start`: launches or attaches the orchestrator and takes the terminal) and \"lyx: open board\" (opens the board viewer, see `board-viewer`).\n- Keybindings: lyx writes a `// lyx:begin` … `// lyx:end` block into the user `keybindings.json`, the way mill writes its `// mill:begin` block (mill holds Alt+Shift+1–6), e.g. Alt+Shift+0 for orch start and Alt+Shift+9 for open board, binding `workbench.action.tasks.runTask` to the task labels.\n- No `launch.json`: mill used it to run Python scripts through the debugger; lyx is a binary, so tasks are the mechanism.\n- Pairs keep their current chains (driven: attach only).\n"
     },
     {
-      "id": 112,
-      "slug": "gate-running-visible",
-      "title": "A running verify gate is visible in status and on screen",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "loom",
-        "reed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "After an agent ends its turn, a Go gate can run for minutes with nothing on screen; loom status and something on screen name the gate and its runtime",
-      "body": "Seen 2026-10-05 in `orch-cycle-hardening`: after the Webster-Burler agent ended its turn, the producer ran the task's verify command (`verifyrun`: build, unit, integration, smoke vet) for many minutes.\nNothing on screen said so: the agent's pane sat idle, `lyx loom status` showed only `now=Webster-Burler`, and the operator read it as a hang, asked the agent what it was waiting on, and the agent could not tell either.\n\nIdea (operator): a visible marker whenever a Go gate runs.\n\n- `lyx loom status` (`activity.now`) names the gate and how long it has run, such as `Webster-Burler: verify running 6m (go test -tags integration)`.\n- Something on screen shows the same: under the LLM driver every run uses, `lyx loom start` removes the `loom-status` strand on purpose (`internal/loomcli/start.go`, \"the ly-drive strand is the driving surface\"), so the marker goes in the driver's pane or title, the agent's title, or a status pane that also exists in LLM mode.\n- The agent pane, or its strand's title, shows that the run moved on to a gate, so an idle agent does not look stuck.\n- The same applies to every Go-side wait a producer does after its agent's turn: the Webster verify gate, the Burler round's verify, Publish's merge-in verify.\n\nSeen again 2026-10-05 in `board-config-per-worktree`: Merriam sat idle while shuttle's verify gate (`internal/shuttleengine/gate.go`) ran, then got `Gate findings recorded at …` typed in; the operator could not tell a gate was running.\n\nWhere the marker can go once `reed-status-tabs` lands: shuttle sets a pane user option on the agent's strand (e.g. `@gate` = `verify`) when a gate starts and clears it when the gate ends, and reed's status format shows it on the strand's button and pane border (e.g. `webster ⏳verify`).\nThe gate is shuttle's, not the agent's, so shuttle is the one place that knows when it starts and ends.\n\nElapsed time on screen too (operator, 2026-10-07): the on-screen marker shows how long each running gate has run so far, such as `webster ⏳verify 2m14s`, not only that it runs.\nThe pane option can carry the gate's start time (e.g. `@gate_start`) so reed's status format computes the elapsed time at each refresh, with no writer ticking it.\nSeen 2026-10-07 in `bugfix-fabric`: the operator read the Webster-Burler round's 2.5-minute verify gate as a hang.\n"
-    },
-    {
       "id": 115,
       "slug": "strand-colors",
       "title": "Each strand role gets its own color",
@@ -1018,23 +1002,6 @@
       "body": "Seen 2026-10-06 in `test-suite-prune-core`, batch 10's recovery strand: the agent edited `internal/websterengine/beginbatch_test.go` with an inline `python3 - \u003c\u003c'EOF'` script, and the edit left an unused `strconv` import that vet caught.\n\nThe rule \"change files only with Edit or Write, never with a script that rewrites them (sed, awk, perl, python, node)\" lives in `scribe:conversation`, a chat skill.\nSpawned implementer, recovery and fixer roles load `scribe:prose`, `scribe:code-quality` and `scribe:testing`, so they never see it.\n\nFix direction: state the rule where every file-editing role reads it: the implementer and recovery stencils under `contracts/stencils/webster/`, the Burler fixer and Rework stencils, or one shared prefix they all compose.\n"
     },
     {
-      "id": 145,
-      "slug": "shuttle-asking-holds",
-      "title": "Shuttle: a turn end without output holds the run instead of ending it",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "shuttle"
-      ],
-      "issues": [
-        407
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "An asking stop ends the run while the agent lives on, so an answer is lost and a resume spawns a second agent; hold the run and wait on the same agent instead.",
-      "body": "## Problem\n\nA turn end without every output file present ends a shuttle run as `asking`, a terminal outcome, while the agent stays alive in its pane.\nNothing waits on that agent any more:\nan answer sent into its session makes it work on, unobserved,\nand resuming the producer starts a second agent on the same outputs.\n\nSeen 2026-10-06 in `bugfix-sessions` Plan-Write: the plan agent asked a question, ly:orch answered it in the session, the driver resumed the step, and shuttle spawned `plan-2` beside the still-working first agent; ly:orch removed the first one, losing the work done after the answer.\n\nThe same rule makes any message to a working agent dangerous: the agent replies, its turn ends without its outputs, and the run halts as `asking`.\n\n## Proposal\n\nA turn end without output never ends a run.\n\n- A turn end with every output file present is done, as today.\n- A dead agent and a timeout end the run, as today.\n- A turn end without the outputs holds the run with the agent alive: shuttle notifies the parent once that the agent is waiting, and keeps waiting on the same agent.\n- An answer to the agent, from the parent, a driver or the operator, is a new turn in the same session; shuttle keeps waiting.\n- Resuming the producer attaches to the held run instead of starting a new agent.\n- Every message sent to a working agent carries a fixed tail, \"Answer briefly, then continue your task\", so it replies and works on by itself; senders add it today, and `creel` adds it once it lands.\n\nThe cost: a stop no longer halts the run at once; the parent's notice and the run's timeout are the only signals.\n\n## Related\n\n`bugfix-sessions` (landed, #400) removes a live agent of the same outputs before a fresh run, which ends the duplicate but not the lost answer.\nThe `creel` note owns message delivery and would add the tail.\n\n\n## From issue #407\n\nImported from [issue #407](https://github.com/Knatte18/loomyard/issues/407).\n\nlyx wrote a note, \"Master's wait counted a turn end past a background shell\", stating that background shells ran past `background_shell_wait_min` (10 minutes) while Master's turn end was being judged, and may still be running in the session.\nThe shell was a multi-step measurement script launched by Master and still unfinished when the turn end was classified.\n\nThis is abnormal because the turn end was judged, and the wait counted, while work Master had started was unfinished.\nThe note itself says the shell may still be running, so lyx does not know whether the turn end was genuine or whether Master was merely waiting on its own background job.\nThat risks a premature stuck or escalation verdict (this run's Webster segment subsequently went stuck several times and halted with an escalation-to-human anomaly).\n\nSuggested fix: when a background shell exceeds `background_shell_wait_min`, have lyx either keep waiting on it or report its final state, rather than only noting that it may still be running.\n\nProvenance: task `test-suite-prune-core`; notes `webster-background-shell.md`, `loom-halt.md`.\n"
-    },
-    {
       "id": 146,
       "slug": "reed-tabs-narrow",
       "title": "Run tabs overflow a narrow terminal once several runs are open",
@@ -1048,24 +1015,6 @@
       "isolated": false,
       "brief": "The status line row of run tabs prints full session names, so with five runs the rightmost fall off a narrow terminal unseen",
       "body": "## Seen 2026-10-06\n\nWith five runs and the prime open, the session row of the status line (the run tabs from `reed-status-tabs`) is wider than a narrow terminal, and the rightmost runs fall off the edge with no sign that they exist.\nThe row prints every session's full name with padding, and run slugs such as `test-suite-prune-core` are long.\n\n## Options\n\n1. Current session full, others truncated, overflow scrolls (recommended): the session the client is in shows its full name, every other session is cut to about 12 characters (`#{=12:session_name}`), and the row uses tmux's list mode (`list=on`, `list=focus`, left and right markers), so a row that still overflows scrolls with `\u003c` and `\u003e` markers and keeps the current session visible.\n2. Index only for other sessions, the current one by full name: the most compact, but the operator has to remember which number is which run.\n3. List-mode scrolling alone, full names kept: the least change, with the fewest sessions visible at once.\n4. Wrap the session row onto further status lines: costs terminal height, and tmux has no automatic wrap, so reed would compute the split itself.\n\nThe run tabs' design is in the note `reed-status-tabs`.\n"
-    },
-    {
-      "id": 147,
-      "slug": "reed-crash-strands",
-      "title": "reed: stray strands after a crash",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "reed"
-      ],
-      "issues": [
-        408,
-        409
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "After a crash, folder-open adds a bare claude above a dormant orch, and reed resume revives strands whose work is done",
-      "body": "Two reed bugs seen on 2026-10-06 when the machine crashed and the runs were brought back.\n\n## Bare claude strand above a dormant orch (issue #408)\n\nAfter a machine crash, opening the hub prime in VS Code left an empty `ly:claude` strand in the prime's reed session, with the `ly:orch` strand stacked below it.\n\nCause: the folder-open task chain written by `internal/vscode/config.go` runs `lyx reed add --if-absent --unless-name orch --name claude`.\n`--unless-name` skips the add only while the orch strand is live (`AddStrandUnless`, `internal/reedengine/strand.go`).\nAfter a reboot the orch strand is persisted but dormant, so the check passes, a bare `claude` strand is added, and the orch is resumed into the same session afterwards.\n\nExpected: a prime whose reed state holds an orch strand, live or dormant, gets no bare `claude` strand on folder-open.\nPossible fixes: let `--unless-name` also match a persisted dormant strand, or have the folder-open chain run `lyx reed resume` before the add.\n\n## Resume revives strands whose work is done (issue #409)\n\nAfter a machine crash, `lyx reed resume` in the `test-suite-prune-core` pair recreated two strands: the driver and `ly:test-suite-prune-core:burler`.\nThe burler's round had finished before the crash (verdict written and committed), and the run had moved on.\nWhen the driver re-ran its shed step, the next producer spawned its own strand (`describe`), so the pair showed a dead-weight burler pane beside the live one.\n\nCause: a strand stays persisted in reed's state after the work it was spawned for is done, since only the shuttle wait that would tear it down died with the crash; `resume` replays every persisted, non-live strand without asking whether its work is still pending.\n\nExpected: after a crash, `reed resume` brings back only strands with work left, or a strand is removed from reed's state as soon as its shuttle run reaches a final outcome, independent of the waiting process.\n"
     },
     {
       "id": 148,
@@ -1113,24 +1062,6 @@
       "isolated": false,
       "brief": "Open a named Claude session in a strand with no task, through shuttle, so it keeps its name; for extra strands in the prime",
       "body": "The operator wants extra Claude strands beside the orch in the prime, such as one for exploring the repo, added by the orch on request (operator, 2026-10-06).\n\nTried 2026-10-06: `lyx reed add --name explore --cmd claude` runs a bare `claude`, so the pane title is `ly:explore` but the Claude session gets no `--name`, and reed records no session id, so the watchdog's session-name repair (`internal/reedengine/namerepair.go`) skips it.\n\nEvery agent in lyx runs through shuttle (operator), so this needs a shuttle engine extension: open a named LLM session in a strand with no turn and no prompt, started with the strand name and its session id recorded, so the watchdog keeps the name across a compact.\nThe verb that calls it sits above shuttle, which has no CLI of its own (see the `creel` note), and not in reed, which shuttle depends on.\n\nOpen: where such a strand goes in the reed layout relative to the orch, and how several share the space.\n"
-    },
-    {
-      "id": 151,
-      "slug": "shuttle-stop-never-taken",
-      "title": "shuttle: Wait never takes a valid Stop; a burler round's shed step stalls",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "shuttle"
-      ],
-      "issues": [
-        411,
-        415
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #411](https://github.com/Knatte18/loomyard/issues/411).\n\nSeen 2026-10-06 in `test-suite-prune-rest`, Webster-Burler round 2.\n\n- `lyx shed step` (trace a1d89adb0a964012) started the burler shuttle run at 19:29:12 (run dir `.lyx/shuttle/976daeeb219e18f87d1a6954c562b64e`, session 97d818aa-8fb0-4103-9b56-0ae4da2a75b7).\n- The burler ended its turn at 19:36:12: `events.jsonl` holds a valid Stop past `promptOffset`, with `background_tasks: []`, and both output files (round-2 review and fixer report) exist.\n- The step never returned. 15 minutes later it had no child processes, the verify gate had not run (`.lyx/verify/` unchanged since 19:28), and the binary already included c4d924316.\n- The burler's transcript ends at 19:41:38 with a `continued-in` entry pointing at session 8e5a1d83, cause unknown.\n\nA SIGQUIT goroutine dump shows the step parked in the poll loop:\n\n```\nshuttleengine.(*Run).Wait            internal/shuttleengine/wait.go:305 (realClock.Sleep)\nshuttleengine.(*Runner).RunGated     internal/shuttleengine/run.go:643\nburlerengine.(*Engine).Run           internal/burlerengine/engine.go:197\nshedadapters.(*BurlerProducer).Call  internal/shedadapters/burler.go:419\nshedengine.(*Shed).stepLocked        internal/shedengine/run.go:232\n```\n\nSo `pollEventsTick` (`wait.go:613`) kept not returning Done for a Stop that looks complete.\nWorth checking whether the `continued-in` session switch, or an output-file or offset check, keeps the Stop from being taken.\nThe `shuttle-asking-holds` note and #407 cover a turn end read too early; this is a turn end never read.\n\n## Second case (2026-10-07)\n\n`bugfix-sessions`, Webster-Burler round 2: the burler ended its turn at 08:34:51 (Stop in `.lyx/shuttle/d9a47c207a52c3c94532ffc39927988b/events.jsonl`, `background_tasks: []`, both output files written), and `lyx shed step` (pid 3956223) sat 94 minutes with no child process until the orch sent SIGQUIT.\nThe goroutine dump is the same as the first case: parked in `shuttleengine.(*Run).Wait` at `wait.go:305`, under `RunGated` (`run.go:643`) and `burlerengine.(*Engine).Run`.\nBoth cases are a Webster-Burler round 2 whose shuttle run started a fresh strand while the round-1 strand of the same role had been used before, which may be the condition to test first.\nCorrection (operator, 2026-10-07): the machine was suspended during the second case, so the trigger is likely a suspend, not round 2.\nThe wait still should have recovered on wake, since the Stop was already on disk; a sleep or deadline that does not survive a suspend in `shuttleengine.(*Run).Wait` is the first place to look, and whether the first case also spanned a suspend is open.\nChecked against the system journal (orch, 2026-10-07), the suspend is not the cause: the machine hibernated 08:39:12–09:56:11, so the second case had over four minutes awake after the 08:34:51 Stop without taking it, and three more after waking; the first case (19:29–19:45 on 2026-10-06) ran wholly awake, between a wake at 19:03:23 and a hibernate at 20:06:14.\nThe hibernate only explains the length of the second stall.\n\n\n## From issue #415\n\nImported from [issue #415](https://github.com/Knatte18/loomyard/issues/415).\n\n## What happened\n\nA `lyx shed step` run at producer `Webster-Burler` (round 2) stalled in shuttle's wait.\nThe orchestrator sent SIGQUIT to capture a stack dump, so the step exited with no envelope and no `shed: step done` trace line.\nStatus afterwards was unchanged (`current_producer` Webster-Burler, `interrupt_policy: reinvoke`), so the driver re-invoked `lyx shed step`.\nThat re-invocation printed a `loom resumed after a suspected driver crash` note (`loom-crash-resume`) and then handed round 2 back for judgment normally.\n\n## Why it is abnormal\n\nA step should not stall in shuttle's wait; the only way out was killing the process.\nThis is the already known bug #411; filed again because the friction notes show it recurring during a webster run, with the stall at a Burler round.\n\n## What to do\n\nFind why shuttle's wait does not return, and give the wait a bounded exit path so no SIGQUIT is needed.\nThe crash-resume path itself worked as designed.\n\nProvenance: task `bugfix-sessions`; notes `driver-repair-20261007-reinvoke-webster-burler.md`, `loom-crash-resume.md`.\n"
     },
     {
       "id": 152,
@@ -1242,35 +1173,28 @@
     },
     {
       "id": 159,
-      "slug": "submit-redraw-settle-config",
-      "title": "The post-Enter redraw wait comes from shuttle.yaml",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "shuttle"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "submitRedrawSettle in claudeengine is a hardcoded 300 ms; move it to config beside submit_settle_ms",
-      "body": "`bugfix-sessions` (PR #417) moved the wait between pasted text and Enter into `shuttle.yaml` as `submit_settle_ms`, as the operator asked for that 300 ms constant.\nThe wait after Enter before the input box is read again, `submitRedrawSettle` in `internal/claudeengine/session.go`, is still a hardcoded 300 ms.\nIt should come from `shuttle.yaml` too, beside `submit_settle_ms`, read through `claudeengine.NewFromConfig`.\n\nFound by the hub's PR-Gate reviewer on 2026-10-07; outside that task's goal, so not a reject.\n"
-    },
-    {
-      "id": 160,
-      "slug": "status-push-diverged",
-      "title": "loom: status push can hit a diverged remote mid-run",
-      "kind": "note",
+      "slug": "bugfix-run-stalls",
+      "title": "Runs stop stalling, and a waiting run shows what it waits on",
+      "kind": "task",
       "labels": [
         "bug",
-        "loom"
+        "enhancement",
+        "shuttle",
+        "loom",
+        "reed"
       ],
       "issues": [
-        418
+        411,
+        415,
+        407,
+        418,
+        408,
+        409
       ],
       "depends_on": [],
       "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #418](https://github.com/Knatte18/loomyard/issues/418).\n\nSeen in bugfix-sessions (drive report 20261006-121941): during Discussion-Burler round 1, loomcli logged `status push failed ... remote diverged`. The next transition pushed fine, so the run recovered, but the failure was logged and the status was briefly unpushed. Distinct from #404 (Publish push). Seen once."
+      "brief": "Shuttle misses a valid Stop; an asking turn end ends the run; gates look like hangs; stray strands after a crash; status push on a diverged remote; redraw wait in config",
+      "body": "## Goal\n\nRuns stop stalling, and a run that waits on purpose shows what it waits on.\nThe operator chose this bundle on 2026-10-07 as the run after `card-batching`: the \"run errors\" that cost the most runs and the most hub time.\n\n## 1. Shuttle's wait never takes a valid Stop (#411, #415)\n\nSeen 2026-10-06 in `test-suite-prune-rest` and 2026-10-07 in `bugfix-sessions`, both at a Webster-Burler round 2.\n\n- The burler ended its turn: `events.jsonl` held a valid Stop past `promptOffset`, with `background_tasks: []`, and both output files existed.\n- `lyx shed step` never returned and had no child process; the verify gate never ran.\n- A SIGQUIT goroutine dump showed the step parked in the poll loop both times:\n\n```\nshuttleengine.(*Run).Wait            internal/shuttleengine/wait.go:305 (realClock.Sleep)\nshuttleengine.(*Runner).RunGated     internal/shuttleengine/run.go:643\nburlerengine.(*Engine).Run           internal/burlerengine/engine.go:197\nshedadapters.(*BurlerProducer).Call  internal/shedadapters/burler.go:419\nshedengine.(*Shed).stepLocked        internal/shedengine/run.go:232\n```\n\nSo `pollEventsTick` (`wait.go:613`) kept not returning Done for a Stop that looks complete.\n\n- Leads: the first burler's transcript ends with a `continued-in` entry pointing at a new session, so a session switch may move the events the wait reads; an output-file or offset check is the other suspect.\n  In both cases the shuttle run started a fresh strand while a round-1 strand of the same role had been used before.\n- Not a suspend: the system journal shows the first case wholly awake, and the second had four minutes awake after its Stop before a hibernate (08:39:12–09:56:11), which only explains the stall's length.\n- Run dirs: `.lyx/shuttle/976daeeb219e18f87d1a6954c562b64e` (first), `.lyx/shuttle/d9a47c207a52c3c94532ffc39927988b` (second).\n- Wanted: find why the wait does not return, and give it a bounded exit so no SIGQUIT is needed.\n  The crash-resume path after a SIGQUIT worked as designed.\n- A look-alike that is not this bug: on 2026-10-07 in `bugfix-webster` an idle burler pane with a step that did not move on was a verify gate running for over ten minutes; the dump showed `evaluateGate` → `verifyrun.run` → `exec.Cmd.Wait`.\n  Part 3 makes the two tell apart without a dump.\n\n## 2. A turn end without output holds the run instead of ending it (#407)\n\nA turn end without every output file present ends a shuttle run as `asking`, a terminal outcome, while the agent stays alive in its pane.\nNothing waits on that agent any more: an answer sent into its session makes it work on unobserved, and resuming the producer starts a second agent on the same outputs.\nSeen 2026-10-06 in `bugfix-sessions` Plan-Write: the plan agent asked, ly:orch answered in the session, the driver resumed, and shuttle spawned `plan-2` beside the still-working first agent.\nThe same rule makes any message to a working agent dangerous: it replies, its turn ends without outputs, and the run halts as `asking`.\n\n- A turn end with every output file present is done, as today; a dead agent and a timeout end the run, as today.\n- A turn end without the outputs holds the run with the agent alive: shuttle notifies the parent once and keeps waiting on the same agent.\n- An answer to the agent is a new turn in the same session; shuttle keeps waiting.\n- Resuming the producer attaches to the held run instead of starting a new agent.\n- Every message to a working agent carries a fixed tail, \"Answer briefly, then continue your task\"; senders add it today, and `creel` adds it once it lands.\n\nThe cost: a stop no longer halts the run at once; the parent's notice and the run's timeout are the only signals.\n`bugfix-sessions` (#400) already removes a live agent of the same outputs before a fresh run, which ends the duplicate but not the lost answer.\n\nThe background-shell half of #407: a turn end judged while a shell Master started still ran past `background_shell_wait_min` risks a premature stuck verdict; lyx keeps waiting on the shell or reports its final state rather than noting it may still run.\n\n## 3. A running verify gate is visible in status and on screen\n\nAfter an agent ends its turn, a Go gate (`verifyrun`: build, unit, integration, smoke vet) can run for many minutes while the agent's pane sits idle; the operator and the orch read it as a hang (`orch-cycle-hardening` and `board-config-per-worktree` 2026-10-05, `bugfix-fabric` and `bugfix-webster` 2026-10-07, where the orch SIGQUIT-ed a gate it took for part 1).\n\n- `lyx loom status` names the gate and how long it has run, such as `Webster-Burler: verify running 6m (go test -tags integration)`, for every producer.\n  On 2026-10-07 `bugfix-sessions` showed `verify Webster-Burler gate (attempt 1, since 10:15)` in `waiting` while `bugfix-webster`, in the same producer, showed nothing: find which gate path skips it.\n- On screen: shuttle owns the gate, so it sets a pane user option on the agent's strand when a gate starts (e.g. `@gate=verify`, `@gate_start=\u003ctime\u003e`) and clears it when the gate ends; reed's status format shows it with the elapsed time computed at each refresh, such as `webster ⏳verify 2m14s` (operator, 2026-10-07).\n- The same holds for every Go-side wait after an agent's turn: the Webster verify gate, the Burler round's verify, Publish's merge-in verify.\n\n## 4. reed: stray strands after a crash (#408, #409)\n\n- **Bare claude above a dormant orch (#408).** The folder-open chain in `internal/vscode/config.go` runs `lyx reed add --if-absent --unless-name orch --name claude`; `--unless-name` skips only while the orch strand is live (`AddStrandUnless`, `internal/reedengine/strand.go`), so after a reboot a bare `claude` strand lands above the dormant orch.\n  Expected: an orch strand, live or dormant, blocks the bare add; let `--unless-name` match a persisted dormant strand, or run `lyx reed resume` before the add.\n- **Resume revives finished strands (#409).** After a crash, `lyx reed resume` in `test-suite-prune-core` recreated a burler whose round was done, beside the next producer's own strand.\n  A strand stays in reed's state after its work is done, since only the shuttle wait that would remove it died with the crash.\n  Expected: resume brings back only strands with work left, or a strand leaves reed's state as soon as its shuttle run reaches a final outcome.\n\n## 5. Loom status push can hit a diverged remote mid-run (#418)\n\nSeen once in `bugfix-sessions` (drive report 20261006-121941): during Discussion-Burler round 1, loomcli logged `status push failed ... remote diverged`; the next transition pushed fine.\nDistinct from #404 (Publish push).\nA status push recovers from a diverged remote by itself rather than logging a failure.\n\n## 6. The post-Enter redraw wait comes from `shuttle.yaml`\n\n`submitRedrawSettle` in `internal/claudeengine/session.go`, the wait after Enter before the input box is read again, is a hardcoded 300 ms.\nIt comes from `shuttle.yaml` beside `submit_settle_ms`, read through `claudeengine.NewFromConfig`.\n"
     }
   ],
   "legacy_done": [
