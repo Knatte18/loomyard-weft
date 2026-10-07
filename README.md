@@ -43,7 +43,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 ### Bugs
 
 1. **A valid plan runs in card order: Plan-Gate refuses backward dependencies, Webster never reorders** — [`webster-delete-ordering`](design-webster-delete-ordering.md) · bug, webster
-   - Card N never depends on a later card; Plan-Gate enforces it and Webster drops its own sequencing
+   - The plan spec and template state that card N never depends on a later card
 1. **Spawned agents edit files with scripts; the no-script rule never reaches them** — [`agents-no-scripted-edits`](design-agents-no-scripted-edits.md) · bug, stencil
 1. **board: refuse scope edits to a running task** — [`board-lock-running`](design-board-lock-running.md) · bug, board
    - The board already marks running tasks; a write that changes the scope of a running task is refused

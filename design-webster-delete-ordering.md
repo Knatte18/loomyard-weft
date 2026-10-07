@@ -12,7 +12,6 @@ This reverses `contracts/specs/loom-plan-spec.md`, which today calls the card li
 
 ## What changes
 
-- **Webster drops its own ordering.** Batches run in card-number order; `SequenceBatches` and its cycle condensation go, or reduce to an assertion that the plan already satisfies every edge.
 - **The plan spec and the plan template** state the rule to the plan writer and the plan reviewer.
 
 ## Sightings
@@ -24,5 +23,6 @@ This reverses `contracts/specs/loom-plan-spec.md`, which today calls the card li
   `webster rebaseline` refused the fix because batch 4 had begun, so the run needed `webster reset --to start`, an archived `state.json` and a goto, redoing two finished batches.
 
 Plan-Gate refuses backward dependencies since `bugfix-webster` (d536a1a4e: `uses-later-target`, `delete-before-reference`).
-This note keeps Webster dropping `SequenceBatches`/`deriveEdges` and stating the rule in the plan spec and template.
+Webster dropping its own ordering moved to task `card-batching` (its Decision 12, 2026-10-07): the batchifier's contiguous segments in plan card order are the execution order, and `SequenceBatches` reduces to an assertion that refuses a backward edge or cycle.
+This note keeps stating the rule in the plan spec and template.
 Until then Plan-Write can bounce on plans Webster used to reorder, since the template does not yet tell the writer.
