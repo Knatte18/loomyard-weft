@@ -38,6 +38,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Webster implementer forks ran go build and go test over the whole module every 20-60 s; a fork should test only its batch packages
 1. **Hub-wide limit on concurrent builds and test suites** — [`hub-build-test-limit`](design-hub-build-test-limit.md) · bug, loom, webster
    - Gates, forks and agents ran go build and go test with no hub-wide bound; with four runs this exhausted memory and froze the machine
+1. **fabric: Publish merge-in fails with 'gitrepo: worktree status: object not found' and leaves a half-staged merge** — [`merge-in-object-not-found`](design-merge-in-object-not-found.md) · bug
 
 ### Enhancements
 
