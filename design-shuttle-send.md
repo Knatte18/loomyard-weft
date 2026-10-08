@@ -82,3 +82,9 @@ Provenance: task `plan-glyph-precision`; notes: `loom-halt.md`, `driver-repair-2
 - Wait for the pane to be ready before typing and for the typed text to settle before Enter; retry Enter with backoff within a bounded time, re-reading the input box.
 - A submission that still does not land is a transient error, so the step retries; the error carries the pane's last lines.
 - `shuttle attach` tells a half that lyx itself just stopped from an unknown live run, so a re-step never halts on it.
+
+
+## No send into a running turn after a restart
+
+From `parent-review-hardening` (PR #336 review, 2026-10-02): `AttachGated` replays events from offset 0, so the first tick treats the writer as idle even mid-turn: a notify-carried prompt or a reject re-prompt can be typed into a running turn, and a consumed reject is let through while the writer is still fixing.
+A send waits until the session is idle in fact, not by a replayed reading.
