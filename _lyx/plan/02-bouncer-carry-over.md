@@ -4,7 +4,10 @@
 - `internal/shedadapters/bouncercarryover.go`
 
 **Edit:**
-- `internal/shedadapters/bouncer.go`
+- `internal/shedadapters#BouncerConfig`
+- `internal/shedadapters#NewBouncer`
+- `internal/shedadapters#Bouncer.settle`
+- `internal/shedadapters#Bouncer.settleUnconverged`
 - `internal/shedadapters/bouncer_commit_test.go`
 - `internal/shedadapters/bouncer_circling_test.go`
 - `internal/shedadapters/bouncer_skip_test.go`
@@ -34,7 +37,7 @@ A new `bouncercarryover.go` builds the entry for a round from on-disk state only
 - findings sorted by key;
 - the review path (`RunDir` joined with `ReportName(round)`) and the fixer-report path (`roundFixerReportPath`), each made relative to `AnchorPath` and slash-separated; a path that does not lie under the anchor is an error.
 
-Call sites in `bouncer.go`:
+Call sites in `bouncer.go`, none of them re-signed:
 
 - `settle`'s `CONVERGED` branch calls the seam with `CarryOverConverged` before `Approve`.
 - `settleUnconverged`'s pending-accept path calls it with `CarryOverAccepted` before `settleCirclingAccept`, so a failed write leaves the accept pending and its re-call retries the write.

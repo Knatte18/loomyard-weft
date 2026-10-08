@@ -5,7 +5,7 @@
 - `internal/discussionparser/carryover_test.go`
 
 **Edit:**
-- `internal/discussionparser/append.go`
+- `internal/discussionparser#AppendDecision`
 - `internal/discussionparser/doc.go`
 
 **Intent:**
@@ -41,7 +41,7 @@ Splice rules:
 - The new bytes go to a sibling temporary file renamed over the record, so a failed write or check leaves the record unchanged.
 - Every refusal and I/O error is prefixed with the record's path, so the caller's error names the file; a missing record wraps `os.ErrNotExist`.
 
-Update `append.go`'s file header and `AppendDecision`'s doc, which call it the only write path into the record, and the package doc in `doc.go`, to name both write paths.
+Update `AppendDecision`'s doc and the header of `append.go`, the file that declares it, which call it the only write path into the record, and the package doc in `doc.go`, to name both write paths; no signature changes.
 
 `carryover_test.go` covers, table-driven where the rows share a shape: append into an empty and a populated section, replace, remove, each asserting every line outside the entry equals the prior file's, a second segment's entry left byte-identical, a replay writing identical bytes, marker text inline in a sentence, in `## Decisions` and in a fence settling normally with that text unchanged, each malformed marker set refused with the path in the error and the file unchanged, no `## Open risks` heading refused with `ErrNoOpenRisksHeading` and the file unchanged, a key holding a line break, a backtick and a marker string rendered on one line without ending the entry early, and the written record passing `Validate`.
 

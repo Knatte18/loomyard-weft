@@ -1,9 +1,11 @@
 # Card 5 — lighter-convergence-rule
 
 **Edit:**
-- `internal/shedadapters/bouncerfacts.go`
+- `internal/shedadapters#roundFacts`
+- `internal/shedadapters#computeRoundFacts`
+- `internal/shedadapters#renderRoundFacts`
 - `internal/shedadapters/bouncerfacts_test.go`
-- `internal/shedadapters/bouncerprompt.go`
+- `internal/shedadapters#decisionRuleMarker`
 - `internal/shedadapters/bouncerprompt_test.go`
 - `internal/shedadapters/doc.go`
 - `contracts/stencils/bouncer/bouncer-template-judge.md`
@@ -19,7 +21,8 @@ Make a review segment converge from round 2 on once its latest round carries no 
 
 Round facts (`bouncerfacts.go`):
 
-- `roundFacts` gains an earlier-open list: every key whose status is `open` in at least one ledger before the latest round, with the ledger rounds it was open in, sorted by key.
+- `roundFacts` gains an earlier-open list, which `computeRoundFacts` fills: every key whose status is `open` in at least one ledger before the latest round, with the ledger rounds it was open in, sorted by key.
+  No signature changes: `computeRoundFacts` already takes the run directory and the round, and `decisionRuleMarker` already takes the round.
   At round 2 it lists a key open in round 1 only, which the recurring-key list never does.
 - Each earlier ledger (1..round-1) that is missing or fails `parseLedger` adds a parse-error line naming its round and the error, so a degraded read never empties the guard.
 - `renderRoundFacts` renders it as its own section after the recurring keys, under a heading naming it as the keys open in an earlier round, with a fixed line when the list is empty; output stays deterministic.

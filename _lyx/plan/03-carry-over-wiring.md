@@ -1,20 +1,21 @@
 # Card 3 — carry-over-wiring
 
 **Edit:**
-- `internal/shedrecipe/recipe.go`
-- `internal/shedrecipe/entries_bouncer.go`
+- `internal/shedrecipe#Env`
+- `internal/shedrecipe#bouncerEntry`
 - `internal/shedrecipe/entries_bouncer_test.go`
 - `internal/shedrecipe/seam_enforcement_test.go`
 - `contracts/recipes/loom-recipe.yaml`
 - `internal/loomrecipe/bouncerrows_test.go`
-- `internal/testkit/envkit/envkit.go`
-- `internal/loomengine/config.go`
+- `internal/testkit/envkit#FullEnv`
 - `internal/loomengine/discussionpath_test.go`
-- `internal/loomcli/wiring.go`
+- `internal/loomcli#loomCLI.wire`
 - `internal/battencli/wire_seams_test.go`
 - `contracts/specs/shed-recipe-spec.md`
 
 **Create:**
+- `plan:internal/loomengine#DiscussionDecisionRecordRel` -> `func DiscussionDecisionRecordRel() string`
+- `plan:internal/loomcli#writeCarryOver` -> `func writeCarryOver(location *lyxcwd.Location, entry discussionparser.CarryOver) error`
 - `internal/loomcli/wiring_carryover_integration_test.go`
 
 **Uses:**
@@ -30,9 +31,9 @@ Wire the carry-over seam for all three review segments, so the entry is committe
   The key joins `configRejectUnknown`'s list, and `seam_enforcement_test.go`'s import allowlist gains `internal/discussionparser`.
 - `loom-recipe.yaml` sets `carry_over: Discussion-Review`, `carry_over: Plan-Review` and `carry_over: Webster-Review` on the three Bouncer rows, with a comment saying the value is the row's own segment.
   `bouncerrows_test.go` pins that every Bouncer row of the shipped recipe carries `carry_over` equal to its `segment`.
-- `envkit` fills `CarryOver` with a no-op closure, so recipe tests over the real rows still build.
-- `loomengine` gains `DiscussionDecisionRecordRel()`, the anchor-relative form of `DiscussionDecisionRecord`, so the commit pathspec names no segment loomengine owns; `discussionpath_test.go` pins it.
-- `loomcli`'s `wire` fills `Env.CarryOver` with a closure over a new `writeCarryOver(location, entry)`: `discussionparser.WriteCarryOver` on the decision record, then `fabricengine.CommitAnchoredPaths` with the decision record alone as the pathspec and the message `loom: review carry-over for <slug>`.
+- `envkit`'s `FullEnv` fills `CarryOver` with a no-op closure, so recipe tests over the real rows still build.
+- `loomengine` gains `DiscussionDecisionRecordRel()` in `config.go`, beside `DiscussionDirRel`, the anchor-relative form of `DiscussionDecisionRecord`, so the commit pathspec names no segment loomengine owns; `discussionpath_test.go` pins it.
+- `loomcli`'s `wire` fills `Env.CarryOver` with a closure over a new `writeCarryOver(location, entry)` in `wiring.go`: `discussionparser.WriteCarryOver` on the decision record, then `fabricengine.CommitAnchoredPaths` with the decision record alone as the pathspec and the message `loom: review carry-over for <slug>`.
   No existing seam's pathspec widens; an unchanged record commits nothing, and a write or commit error is the seam's error.
   loomcli's `TestWire_EverySeamFilled` covers the fill without change.
 - batten's `wire` leaves `Env.CarryOver` nil, so `battencli`'s `wire_seams_test.go` lists `CarryOver` in `intentionallyNil` as a loom-only seam (batten runs no review segment); without it that package's `TestWire_EverySeamFilled` fails.

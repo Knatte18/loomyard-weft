@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -45,7 +45,8 @@ The template budget drops to three rounds, each review segment can set its own r
 ### Decision: halted-paths-keep-start
 
 - **Decision:** only ways forward over a run awaiting at a Bouncer row move to `lyx loom resume`; the Bouncer's Stuck-path refusals and the new carry-over refusal keep `lyx loom start`, as the shed rows of `refusal-spec.md` already do.
-- **Rationale:** D6 scopes the rewording to the awaiting Bouncer row; a halted run's start already wakes a parked driver or spawns one.
+  One way forward over an awaiting Bouncer row is a stated exception and keeps `lyx loom start`: `circlingWayMalformed` in `internal/loomcli/circling.go` (refusal-spec row `circling: escalation record malformed`), because its fix needs the round re-escalated, which `start` does, while `resume` with no pending decision refuses.
+- **Rationale:** D6 scopes the rewording to the awaiting Bouncer row; a halted run's start already wakes a parked driver or spawns one, and the malformed-escalation fix has no decision for `resume` to act on.
 - **Applies to:** cards 2, 9
 
 ### Decision: docs-without-doc-go

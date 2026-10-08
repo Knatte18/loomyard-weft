@@ -3,7 +3,7 @@
 **Edit:**
 - `internal/loomengine/template.yaml`
 - `internal/loomengine/config_test.go`
-- `internal/testkit/envkit/envkit.go`
+- `internal/testkit/envkit#FullEnv`
 
 **Intent:**
 Drop the template review budget from five rounds to three (D3); a spent budget still escalates to the parent exactly as today.
@@ -11,7 +11,7 @@ Drop the template review budget from five rounds to three (D3); a spent budget s
 - `template.yaml`: `review_max_bounces: 3`, and both its comment and the `review_circling_checkpoint` comment state that with both at 3 a run reaches the budget escalation at round 3 before a CIRCLING verdict could change the outcome, and that lowering the checkpoint gives an earlier circling escalation.
   `review_circling_checkpoint` stays 3.
 - `config_test.go`: the template-load expectation pins `ReviewMaxBounces` at 3.
-- `envkit.go`: the `ReviewMaxBounces` default that mirrors the template follows it to 3.
+- `envkit`'s `FullEnv`: the `ReviewMaxBounces` default that mirrors the template follows it to 3.
 
 `loomrecipe`'s `escalation_test.go` keeps its own small budget: it sets the budget itself and never reads the template, and its rows already pin that a CONTINUE at the budget's last round escalates with cause `budget`, so with `config_test.go` pinning the template at 3 the two together carry a CONTINUE at round 3 escalating with cause `budget`.
 

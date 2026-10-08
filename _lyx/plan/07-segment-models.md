@@ -1,16 +1,18 @@
 # Card 7 — segment-models
 
 **Edit:**
-- `internal/loomengine/config.go`
+- `internal/loomengine#Config`
+- `internal/loomengine#LoadConfig`
 - `internal/loomengine/template.yaml`
 - `internal/loomengine/config_test.go`
-- `internal/loomengine/review.go`
+- `internal/loomengine#ReviewSettings`
+- `internal/loomengine#ResolveReview`
 - `internal/loomengine/review_test.go`
-- `internal/shedrecipe/recipe.go`
-- `internal/shedrecipe/entries_burler.go`
+- `internal/shedrecipe#Env`
+- `internal/shedrecipe#burlerRoundEntry`
 - `internal/shedrecipe/entries_burler_test.go`
-- `internal/testkit/envkit/envkit.go`
-- `internal/loomcli/wiring.go`
+- `internal/testkit/envkit#nilLegal`
+- `internal/loomcli#loomCLI.wire`
 - `internal/loomcli/wiring_test.go`
 - `contracts/specs/refusal-spec.md`
 - `docs/overview.md`
@@ -21,7 +23,8 @@ Let each review segment set its own reviewer and fixer models (D4), falling back
 - `loomengine.Config` gains six `ModelSpecList` keys: `discussion_review`, `discussion_fix`, `plan_review`, `plan_fix`, `webster_review`, `webster_fix`.
   `template.yaml` carries each as `""`, with a comment saying empty takes the run-wide `review` or `fix` list and a set value (one model-spec, or a per-round list whose last entry serves every later round) replaces it for that segment.
 - `LoadConfig` treats an empty list and a list of one empty string as unset; every entry of a set list is validated through `modelspec.Parse` at load, refused naming the key and the entry index with the existing model-spec list way forward.
-  The `config.go` header lists the new keys among those it validates.
+  The header of `config.go`, the file that declares `Config`, lists the new keys among those it validates.
+  No member is re-signed: `LoadConfig` and `ResolveReview` keep their parameters and results, and only the `Config`, `ReviewSettings` and `Env` structs gain fields.
 - `ResolveReview` resolves the three segments' `burlerengine.RoundModels` into `ReviewSettings` (`Discussion`, `Plan`, `Webster`), each list falling back independently to the resolved run-wide `review` or `fix` list, every entry resolved through the registry at run start as today.
 - `shedrecipe.Env` gains `RowReviewModels map[string]burlerengine.RoundModels`, keyed by BurlerRound row name, a run-wide value like `SegmentBounces`; `burlerRoundEntry` passes the entry for its own row name to `BurlerDeps.Models` and falls back to `Env.ReviewModels` when the map has none.
 - `envkit`'s `nilLegal` gains `RowReviewModels` beside `SegmentBounces`, since a nil map is the documented fallback to `Env.ReviewModels`; `envkit.NilSeams` therefore skips it and `battencli`'s `TestWire_EverySeamFilled`, whose `wire` leaves it nil, keeps passing.
