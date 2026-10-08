@@ -29,7 +29,7 @@ Its doc comment says the caller sends the clear only into a box it has just read
 `Claude.PastePlaceholder` matches the box reading against `pastePlaceholderShape`, Claude Code's `[Pasted text #<n>]` / `[Pasted text #<n> +<m> lines]` shape, after trimming.
 `session.go`'s compile-time assertion block gains `_ shuttleengine.InputBoxClearer = (*Claude)(nil)`.
 
-Tests: `startup_test.go`'s `TestComposeSend` grows into a table that also pins `TypeSequence` (Escape with its settle, then the text without Submit, and no Enter step); `session_test.go` gains two new test functions, since no existing test covers either method: `TestClearInputSequence` pins the one `C-u` step in `TestClearSessionSequence`'s shape, and `TestPastePlaceholder` tables both placeholder forms, a draft quoting the placeholder text inside other words, and an empty reading.
+Tests: `startup_test.go`'s `TestComposeSend` grows into a table that also pins `TypeSequence` (Escape with its settle, then the text without Submit, and no Enter step); `session_test.go` pins `ClearInputSequence` beside `TestClearSessionSequence`'s shape, and tables `PastePlaceholder` over both placeholder forms, a draft quoting the placeholder text inside other words, and an empty reading.
 `run_test.go`'s `inputBoxEngine` fake gains `TypeSequence` (returning `ComposeSend` without its Enter step) so it keeps satisfying `InputBoxReader`.
 `claudeengine/doc.go` gains a short paragraph on the split send choreography and the clear.
 
