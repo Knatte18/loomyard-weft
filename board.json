@@ -1244,6 +1244,21 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #468](https://github.com/Knatte18/loomyard/issues/468).\n\n## Seen\n\nRun `binary-change-and-rules`, Publish, 2026-10-08T18:41Z (trace `trace-20261008T184138Z-82c70335c18c4f83-634197.log` in the task worktree).\nAfter `fabric: mutation kind=merge_staged` and a conflict agent finishing `done`, Publish failed with:\n\n`landingshed: Publish: merge-in against parent branch \"main\": mergeresolve: list untracked files (attempt 1): fabricengine: list untracked files: gitrepo: worktree status: object not found`\n\nThe worktree was left mid-merge with `internal/battencli/wire.go` unmerged (UU) and every merged path staged.\nThe driver's repair re-step then stopped `blocked` on \"the task worktree has uncommitted changes before the merge-in\", naming the staged merge itself.\n`git fsck --connectivity-only` on the pair was clean, so the object exists for git; the failure is in lyx's own worktree status read during a merge.\nThe machine had been hard-reset about 30 minutes earlier; that may or may not matter.\n\n## Workaround\n\nThe orch ran `lyx fabric merge --abort` in the task worktree and `lyx loom resume`, so Publish redoes the merge-in from a clean tree.\n\n## Expected\n\nThe untracked-file listing works mid-merge, or a failed merge-in aborts its own staged merge before refusing, so the run never halts on its own leftover merge, and the dirty-tree refusal names `lyx fabric merge --abort` when a merge is in progress.\n\n## Root cause (orch investigation, 2026-10-08)\n\nlyx's cached go-git handle read a stale pack index after an automatic `git gc` repacked the shared object store mid-step.\nThe new pack `pack-4160613d…` landed at 20:42:06 CEST while the conflict agent ran, and HEAD `64df647cf` and its tree then existed only in that pack, so the handle's index missed them and their loose copies were gone.\n`internal/gitrepo/doc.go` already documents this failure, and `lookupObjectRetrying` handles it with a pack fingerprint check, `storer.Reindex()` and one retry, but the go-git `Status()` calls in `internal/gitrepo/worktree.go` (`UntrackedFiles`, `WorktreeChangedFiles`) bypass that wrapper.\nThe hard reset was not the cause: the pack was written 30 minutes after it and `git fsck` is clean.\n\n## Fix\n\nApply the reindex-and-retry in one place that every object-resolving go-git call goes through, `Status()`, tree walks and diffs included, and add a regression test: build the index, commit with the CLI, `git repack -d` and `git prune-packed`, then call `UntrackedFiles`.\n"
+    },
+    {
+      "id": 236,
+      "slug": "shared-store-auto-gc",
+      "title": "Shared object store triggers auto-gc on nearly every git write",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "8,450 loose objects keep the hub store above gc.auto, so background repacks fire under live steps",
+      "body": "## Seen\n\nThe hub's shared object store (`loomyard/.git`, used by the prime and every pair) holds about 8,450 loose objects, above git's default `gc.auto` threshold of 6,700.\nThey survive each repack, most likely because they are unreferenced and kept until the two-week prune expiry, so nearly every commit, merge or fetch in any worktree starts a background auto-gc.\nOn 2026-10-08 new packs appeared at 16:40, 18:07, 19:34, 19:52, 20:00 and 20:42, and the 20:42 one broke a Publish merge-in (#468).\n\n## Idea\n\nlyx keeps the shared store below the auto-gc threshold, for example by pruning unreferenced loose objects at landing, or sets `gc.auto` for the hub's store so repacks run at known points rather than under a live step.\n"
     }
   ],
   "legacy_done": [

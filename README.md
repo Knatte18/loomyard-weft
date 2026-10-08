@@ -86,6 +86,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - A report over round usage records for the fan-on decision; a lost usage record shows in the facts
 1. **Configurable file log level in logger.yaml** — [`logger-file-level`](design-logger-file-level.md) · enhancement, config
    - Trace files carry only high-level messages and logger.yaml sets no level; add a file log level so most of lyx can be traced on demand
+1. **Shared object store triggers auto-gc on nearly every git write** — [`shared-store-auto-gc`](design-shared-store-auto-gc.md) · enhancement, fabric
+   - 8,450 loose objects keep the hub store above gc.auto, so background repacks fire under live steps
 
 ### Features
 
