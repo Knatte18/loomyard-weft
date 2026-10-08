@@ -70,6 +70,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - A lyx shed step that never returns is noticed, and the Windows verify timeout kills the whole process tree
 1. **Kick-start packs from tool locations through quarry Enclose** — [`enclose-kickstart`](design-enclose-kickstart.md) · enhancement, quarry
    - Turn file:line locations from verify failures, lint and audits into member glyphs with quarry enclose, then into a kick-start pack
+1. **Review judge accepts an APPROVED round with nothing blocking instead of circling to the budget** — [`judge-accept-approved`](design-judge-accept-approved.md) · enhancement, burler
+   - Three Discussions ran all five rounds on fresh edge-case keys after the reviewer approved; accept and hand MEDIUM findings on
 
 ### Features
 
