@@ -1,6 +1,6 @@
-# A producer runs N agents, one of them the master
+# A producer runs N agents as seats, one of them the master
 
-`two-agent-producer` · Note · feature, shuttle
+`multi-agent-producer` · Note · feature, shuttle
 
 A producer that runs two live agents side by side in one step, each in a strand of its own (operator, 2026-10-07).
 Today every producer runs one agent through shuttle and waits on its one turn end; the Webster master's forks are sub-agents inside one session, not two strands.
@@ -27,3 +27,15 @@ Burler's round already runs two agents ad hoc since 572ab84e8 (`roundHalves` in 
 In the general shape the fixer is the master and the reviewer a helper; `discussion-advisor` is Discussion-Write as master with the advisor as helper.
 
 Open for the task that builds it: what a helper's failure or hang does to the step, how the producer knows a helper is done (the session-state model `shuttle-state` builds), and how master and helpers talk (`creel`).
+
+## Seats: one table says what goes where (operator, 2026-10-08)
+
+Burler's round today wires six stencils (two orchestrator templates, three step files, a focus directive) plus per-segment rubrics and the Bouncer's judge stencils through Go code spread over several packages, the same wiring friction the single-agent producer had, multiplied.
+An N-agent producer declares its agents as seats, in one place (the recipe row or one Go table):
+
+- a name and a role: master or helper;
+- exactly one stencil per seat, the only prompt that agent gets; shared building blocks such as today's step files are included from it by name;
+- a model key in config;
+- inputs (files and markers the seat is given) and outputs (files it writes); a helper's output is a master's input, and that is the only coupling between seats, so no agent is told about another in any other way.
+
+A test pins that every seat's stencil markers are filled (`stencil.Fill` already refuses an empty marker) and that every helper output is some master's input.
