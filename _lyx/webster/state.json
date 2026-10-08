@@ -1,0 +1,312 @@
+{
+  "runGuid": "27d451ecff9f1492b560e5fa3f383b27",
+  "planFingerprint": "99b1b73dfdfdee500c44f12a1ab0d7ce60d6153dd12eff28fb8817d8e4feb054",
+  "planFileHashes": {
+    "00-overview.md": "7464bc9487299df82c98da9bace70bdb3598bcb08bd3c16549b2660c56d778bd",
+    "01-burler-fan-fallback.md": "a2c6bb1a8290a7183a037872abad3bb101ff5b0bd217792aa494303a7be57329",
+    "02-discussion-plan-fans.md": "3a1069259e51c51e91dc9ad74396bd506d9521984ae08a96e0a2af56e38c2057",
+    "03-burler-exclude-held.md": "975dbaede114ae542420798180b78f1d26fb0101addb6e4bb3a04933fec61a9a",
+    "04-shuttle-session-usage.md": "e7deef83660bd708425845ebcc56ac7296e9f65466c9a673924a00060f991816",
+    "05-claude-session-usage.md": "a7551e1554d806736fc7ce8088500465ef64fa28991a50d6b7dbc800bc9bfa52",
+    "06-burler-half-usage.md": "1589e3ee8a7db6ad4130d476f220cffd171acb54b2872c219c32799cacc69196",
+    "07-round-usage-record.md": "68da89e947b306fc63f15e8f88cde031e03549c65e1b21f504d5e377c906a9cd",
+    "08-accumulated-exclusions.md": "f5b313fd071c1190c31a1c4e6ad8ee6b9e42fb6e8f4876bb381a7f0115f5c514",
+    "09-lens-facts.md": "312e622de18626f021854a0f0f6b44afea8d6563f3f2a577cceab0827ada8eb5",
+    "10-judge-exclusion-prompt.md": "140cc8d129683b117e36a2e42cd34ea57bcf28571bd42bfe44586f385d70b80b",
+    "11-env-row-fans.md": "e328fc4ca0381b49c5f9e6e5a612f5542dddfc90710b173be2cee1e5c46d6c2d",
+    "12-loom-fan-config.md": "43eccb3d5a3fcfc2d1ea4f15fb2e316ed5898c5465f8d09135999d9c7f22804a",
+    "13-loom-wiring-fans.md": "d781f74bd215d3a9a51e1a878715533174d6d02f948626d629f90f6d86ffc3e8",
+    "14-gate-quiescence.md": "108c8aa93b3229a84baa9821e866fb771d3c4bc0c99009a1a189d960aa7796c4"
+  },
+  "partition": [
+    {
+      "cards": [
+        "01-burler-fan-fallback",
+        "02-discussion-plan-fans",
+        "03-burler-exclude-held",
+        "04-shuttle-session-usage",
+        "05-claude-session-usage",
+        "06-burler-half-usage"
+      ],
+      "profile": "cautious",
+      "estimate": 165610,
+      "breakdown": {
+        "weights": {
+          "master_base": 52000,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 53200,
+        "read_union": 42156,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 336,
+            "reads": {
+              "file:internal/burlerengine/config_test.go": 2568,
+              "file:internal/burlerengine/doc.go": 4080,
+              "file:internal/burlerengine/template.yaml": 1188,
+              "package:internal/burlerengine": 2000,
+              "tests:internal/burlerengine": 2000
+            },
+            "messages": 36.5,
+            "written": 11286
+          },
+          {
+            "card": 2,
+            "card_text": 180,
+            "reads": {
+              "file:internal/burlerengine/template.yaml": 1188,
+              "package:internal/burlerengine": 2000,
+              "tests:internal/burlerengine": 2000
+            },
+            "messages": 18.5,
+            "written": 5730
+          },
+          {
+            "card": 3,
+            "card_text": 288,
+            "reads": {
+              "file:internal/burlerengine/doc.go": 4080,
+              "package:internal/burlerengine": 2000,
+              "tests:internal/burlerengine": 2000
+            },
+            "messages": 36.5,
+            "written": 11238
+          },
+          {
+            "card": 4,
+            "card_text": 288,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 2796,
+              "file:internal/shuttleengine/wait_test.go": 13356,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 50,
+            "written": 15288
+          },
+          {
+            "card": 5,
+            "card_text": 336,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 1512,
+              "file:internal/shuttleengine/claudeengine/usage_test.go": 2952,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 38.5,
+            "written": 11886
+          },
+          {
+            "card": 6,
+            "card_text": 276,
+            "reads": {
+              "file:internal/burlerengine/doc.go": 4080,
+              "package:internal/burlerengine": 2000,
+              "tests:internal/burlerengine": 2000
+            },
+            "messages": 48.5,
+            "written": 14826
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-round-usage-record",
+        "08-accumulated-exclusions",
+        "09-lens-facts",
+        "10-judge-exclusion-prompt",
+        "11-env-row-fans"
+      ],
+      "profile": "cautious",
+      "estimate": 170152,
+      "breakdown": {
+        "weights": {
+          "master_base": 52000,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 60200,
+        "read_union": 29924,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 396,
+            "reads": {
+              "file:internal/shedadapters/burler_test.go": 13644,
+              "file:internal/shedadapters/doc.go": 3336,
+              "package:internal/shedadapters": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 67.5,
+            "written": 20646
+          },
+          {
+            "card": 8,
+            "card_text": 432,
+            "reads": {
+              "file:internal/shedadapters/burler_test.go": 13644,
+              "file:internal/shedadapters/doc.go": 3336,
+              "package:internal/shedadapters": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 39.5,
+            "written": 12282
+          },
+          {
+            "card": 9,
+            "card_text": 372,
+            "reads": {
+              "file:internal/shedadapters/bouncerfacts_test.go": 3216,
+              "file:internal/shedadapters/doc.go": 3336,
+              "package:internal/shedadapters": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 65.5,
+            "written": 20022
+          },
+          {
+            "card": 10,
+            "card_text": 240,
+            "reads": {
+              "file:internal/shedadapters/doc.go": 3336,
+              "package:internal/shedadapters": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 43.5,
+            "written": 13290
+          },
+          {
+            "card": 11,
+            "card_text": 288,
+            "reads": {
+              "package:internal/shedrecipe": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 45,
+            "written": 13788
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "12-loom-fan-config",
+        "13-loom-wiring-fans",
+        "14-gate-quiescence"
+      ],
+      "profile": "cautious",
+      "estimate": 156184,
+      "breakdown": {
+        "weights": {
+          "master_base": 52000,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 67200,
+        "read_union": 46132,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 396,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3108,
+              "file:internal/loomengine/template.yaml": 264,
+              "package:contracts/specs": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 69.5,
+            "written": 21246
+          },
+          {
+            "card": 13,
+            "card_text": 204,
+            "reads": {
+              "file:docs/overview.md": 7908,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 50,
+            "written": 15204
+          },
+          {
+            "card": 14,
+            "card_text": 252,
+            "reads": {
+              "file:contracts/recipes/loom-recipe.yaml": 4908,
+              "file:internal/loomrecipe/gatequiescence_test.go": 1092,
+              "package:contracts/recipes": 2000,
+              "package:internal/loomrecipe": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:internal/loomrecipe": 2000
+            },
+            "messages": 20.5,
+            "written": 6402
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "018f9b8b88e0e12501c5ce7665ec5aa2",
+  "masterSessionId": "723bedac-a02e-4cd9-bddf-e65dacb0f52d",
+  "batches": {
+    "1": {
+      "slug": "burler-fan-fallback",
+      "cards": [
+        "01-burler-fan-fallback",
+        "02-discussion-plan-fans",
+        "03-burler-exclude-held",
+        "04-shuttle-session-usage",
+        "05-claude-session-usage",
+        "06-burler-half-usage"
+      ],
+      "cardHashes": {
+        "01-burler-fan-fallback": "a2c6bb1a8290a7183a037872abad3bb101ff5b0bd217792aa494303a7be57329",
+        "02-discussion-plan-fans": "3a1069259e51c51e91dc9ad74396bd506d9521984ae08a96e0a2af56e38c2057",
+        "03-burler-exclude-held": "975dbaede114ae542420798180b78f1d26fb0101addb6e4bb3a04933fec61a9a",
+        "04-shuttle-session-usage": "e7deef83660bd708425845ebcc56ac7296e9f65466c9a673924a00060f991816",
+        "05-claude-session-usage": "a7551e1554d806736fc7ce8088500465ef64fa28991a50d6b7dbc800bc9bfa52",
+        "06-burler-half-usage": "1589e3ee8a7db6ad4130d476f220cffd171acb54b2872c219c32799cacc69196"
+      },
+      "startSha": "0ebdea27febcda19c135aef38ffdbe242b07dd73",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T15:29:12Z",
+      "sessionId": "723bedac-a02e-4cd9-bddf-e65dacb0f52d",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
