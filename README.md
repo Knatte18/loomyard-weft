@@ -15,7 +15,7 @@ Waits on nothing open; can start now, in parallel.
    - Send waits for a ready pane and a settled input before Enter, retries with backoff, and a lost submission is transient; attach no longer halts on a stopped Burler half
 1. **Webster: recovery never dead-ends, stale config fails at the start, a computed Merriam base** — [`webster-dead-ends`](design-webster-dead-ends.md) · bug, enhancement, webster · running · Webster
    - Reset targets as lyx verbs, a recovery prompt that names a dirty tree, decisions that reach a begun card, a retryable failed record-batch, batcher.yaml checked in preflight, and a computed batchifier base
-1. **Review loop: a lighter convergence rule, a three-round default budget, models per segment** — [`review-loop-convergence`](design-review-loop-convergence.md) · bug, enhancement, burler, loom · running · Plan-Burler
+1. **Review loop: a lighter convergence rule, a three-round default budget, models per segment** — [`review-loop-convergence`](design-review-loop-convergence.md) · bug, enhancement, burler, loom · running · Plan-Bouncer
    - Converge without circling to the budget on fresh edge-case keys, default the round budget to 3, set review and fix models per segment, an option to start the fixer after the review, and circling decisions that resume the run
    - **Before:** `review-lens-fan`
 
