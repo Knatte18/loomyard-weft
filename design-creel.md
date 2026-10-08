@@ -199,3 +199,32 @@ Transport and log are two different jobs, and the terminal is bad at the second 
 - the shipped `reed: born-as-strand` item — the receive-side prerequisite.
 - `internal/reedengine`'s package documentation — reed's watchdog daemon, which creel's daemon stays apart from.
 - `shuttle-asking-holds` — the false asking stop, fixed ahead of creel.
+
+## From issue #442
+
+Imported from [issue #442](https://github.com/Knatte18/loomyard/issues/442).
+
+## What happened
+
+A loom run halted `failed` (anomaly `producer-hard-failure`) at the `Discussion-Burler` row, round 2 attempt 2.
+The error chain:
+
+```
+shedadapters: Discussion-Burler (burler): round 2 attempt 2: run: burler: shuttle run: shuttle: load skills [scribe:prose scribe:code-quality scribe:testing]: shuttle: Send: the sent text is still pending in the input box after 2 extra Enter(s); the submission did not land
+```
+
+Earlier rows in the same run (`Discussion-Write`, and the first `Discussion-Burler` attempt) completed; this was the first submission failure.
+
+## Why it is abnormal
+
+The shuttle's skill-load `Send` types the text into the agent's tmux pane, presses Enter, and gives up after 2 extra Enters when the text is still in the input box.
+A transient pane state (agent busy, input not yet ready, paste not yet consumed) turns into a hard producer failure that halts the whole run.
+Nothing in the failure distinguishes "agent not ready to accept input" from "submission lost", and no retry or wait-for-idle precedes the give-up.
+
+## What to do
+
+- Before giving up in `Send`, wait for the pane to be ready for input, then retry the submission with backoff rather than a fixed 2 extra Enters.
+- Treat a failed skill-load submission as a retryable step (re-send once, or restart the shuttle attempt) instead of `producer-hard-failure`.
+- Record the pane's last lines in the halt note so the cause (busy agent, modal prompt, unconsumed paste) is visible.
+
+Provenance: task `plan-glyph-precision`, from `loom-halt.md`.
