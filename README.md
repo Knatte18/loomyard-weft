@@ -13,8 +13,6 @@ Waits on nothing open; can start now, in parallel.
 
 1. **Shuttle: a Send lands or retries, and attach knows a half it stopped** — [`shuttle-send`](design-shuttle-send.md) · bug, shuttle · running · Webster-Burler
    - Send waits for a ready pane and a settled input before Enter, retries with backoff, and a lost submission is transient; attach no longer halts on a stopped Burler half
-1. **A hub survives a lyx binary change; the no-script rule reaches spawned agents** — [`binary-change-and-rules`](design-binary-change-and-rules.md) · bug, enhancement, config, stencil · running · Finalize
-   - Config reconciles itself on the first lyx command after a binary change, stencil drift behind main stops warning source-ahead, and file-editing stencils state the no-script edit rule
 1. **Plan gate checks: precise callers, nested fixture modules, a reviewer that knows the gate** — [`plan-gate-checks`](design-plan-gate-checks.md) · bug, enhancement, loom, quarry · running · Plan-Burler
    - Resolve callers by import path and receiver type, let gates run against nested fixture modules, and give the plan reviewer the gate check list
 1. **Webster record-batch and rebaseline: no needless re-drive, a calibrated Merriam base** — [`webster-record-batch`](design-webster-record-batch.md) · bug, enhancement, webster · running · Webster
@@ -178,3 +176,5 @@ Finished, awaiting `lyx board prune`.
    - Converge without circling to the budget on fresh edge-case keys, default the round budget to 3, set review and fix models per segment, an option to start the fixer after the review, and circling decisions that resume the run
 1. **Review lens fans for Discussion and Plan, narrowed by the judge each round** — [`review-lens-fan`](design-review-lens-fan.md) · enhancement, burler, loom · done
    - Wire burler cluster review into Discussion and Plan with their own fans, let the judge drop settled lenses, after shuttle-state settles gate quiescence with forks
+1. **A hub survives a lyx binary change; the no-script rule reaches spawned agents** — [`binary-change-and-rules`](design-binary-change-and-rules.md) · bug, enhancement, config, stencil · done
+   - Config reconciles itself on the first lyx command after a binary change, stencil drift behind main stops warning source-ahead, and file-editing stencils state the no-script edit rule

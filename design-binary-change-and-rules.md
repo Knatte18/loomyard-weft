@@ -1,6 +1,6 @@
 # A hub survives a lyx binary change; the no-script rule reaches spawned agents
 
-`binary-change-and-rules` · Task · bug, enhancement, config, stencil · running · Finalize
+`binary-change-and-rules` · Task · bug, enhancement, config, stencil · done
 
 ## Goal
 
