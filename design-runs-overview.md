@@ -32,3 +32,9 @@ Phrase the condition by what happened, e.g. `board-config-per-worktree: awaiting
 
 From `reed-view` Discussion (D8, 2026-10-08): Alt+Left/Right switch runs (tmux sessions) through `lyx reed switch`, not windows; windows get their own buttons on status line 1 and the prefix `n`/`p` keys.
 This note's Alt+Left/Right between the orch and its overview window needs a new binding.
+
+## The overview replaces the batten windows (operator, 2026-10-08)
+
+The per-run `batten:<slug>` windows that `lyx batten run --window` opens in the prime session say nothing useful to the operator, and they crowd status line 1 with one button each.
+The batten runs go: each batten run still needs a process to live in, but it runs without a window of its own (its output to its log), and the one overview window is the only run window in the prime.
+The overview is compact: it need not take much space.

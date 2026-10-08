@@ -80,7 +80,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **creel: the one way to reach an agent** — [`creel`](design-creel.md) · feature, reed
    - Post (pulled mail with reminders), inject and interrupt to any agent by name, through one daemon per hub; built standalone first, then wired in two stages
 1. **Runs overview and event log in their own window in the prime session** — [`runs-overview`](design-runs-overview.md) · feature, reed, orch, batten
-   - An own tmux window beside the orch: one line per run on top, a log of batten notices with attach commands below; the orch notice drops its attach command
+   - One compact window in the prime listing every run in flight, with a notice log, replacing the per-run batten windows
 1. **Discussion advisor: a dedicated agent answers Discussion-Write's questions live** — [`discussion-advisor`](design-discussion-advisor.md) · feature, shuttle, loom
    - A second agent spawned beside Discussion-Write studies the task and code and answers its design questions as they arise, a real two-agent dialogue
 1. **Kick-start pack: pre-resolved glyph spans for implementer and Burler** — [`kick-start-pack`](design-kick-start-pack.md) · feature, webster, quarry
