@@ -6,7 +6,6 @@
 **Edit:**
 - `internal/shedadapters#BurlerProducer.Call`
 - `internal/shedadapters/burler_test.go`
-- `internal/shedadapters/focus_test.go`
 - `internal/shedadapters/doc.go`
 
 **Uses:**
@@ -28,8 +27,10 @@ A solo profile keeps today's warning and drop for any focus excludes.
 
 Bound: the judge can only shrink a fan by lenses the latest round ran under the same fan; an excluded lens returns only with a new generation.
 
-`burler_test.go`: `TestBurlerProducer_Call_ProfileCarriesDerivedFields` writes round 1's usage record so its exclusion stays eligible, and a new table test covers round 1 dropping a focus file's excludes with a warning, the union of rounds 2 to N, the held set reaching `ClusterExcludeHeld`, a record naming another fan or no fan dropping the newest focus file's excludes with a warning, and a lens the latest round did not run being dropped.
-`focus_test.go` covers `excludedLenses` directly over a run directory with several focus files and records, including a missing record.
+`burler_test.go`: `TestBurlerProducer_Call_ClusterExcludeDropWarning` grows into the one exclusion table at the producer surface, renamed `TestBurlerProducer_Call_ClusterExclusions`, each row stating its wanted `ClusterExclude`, `ClusterExcludeHeld` and drop warning.
+Beside its fan-less rows it gains rows for round 1 dropping a focus file's excludes, the union of rounds 2 to N with the held set reaching `ClusterExcludeHeld`, a record naming another fan or no fan dropping the newest focus file's excludes, a lens the latest round did not run being dropped, and a missing usage record making the previous round's entries ineligible.
+`TestBurlerProducer_Call_ProfileCarriesDerivedFields` loses its focus file and its `ClusterExclude` assertion, keeping the derived paths and the marker.
+That table is the one test of the union and eligibility rules; `excludedLenses` gets no direct test.
 The `shedadapters` package doc states the accumulation and eligibility rules.
 
 **ImpactSummary:** Only BurlerProducer.Call's exclusion assignment changes; a fan-less profile and every non-exclusion field behave as before.

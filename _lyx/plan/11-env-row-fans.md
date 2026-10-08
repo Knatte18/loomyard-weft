@@ -4,7 +4,8 @@
 - `internal/shedrecipe#Env`
 - `internal/shedrecipe#burlerRoundEntry`
 - `internal/shedrecipe#bouncerEntry`
-- `internal/shedrecipe/entries_burler_test.go`
+- `internal/shedrecipe#TestBurlerRoundEntry_EnvReviewFallback`
+- `internal/shedrecipe#TestBurlerRoundEntry_ConstructionFailures`
 - `internal/shedrecipe#TestBouncerEntry_ClusterExcludes`
 
 **Intent:**
@@ -16,7 +17,8 @@ A row that receives a non-empty fan from `RowClusterFans` while its recipe profi
 
 Bound: the map only turns a fan on for the rows the wiring names; the recipe stays the one place a row's engine and gates are set.
 
-`entries_burler_test.go` gains a test that an env fan reaches the profile, that a row absent from the map keeps the recipe's value, and that an env fan beside a literal `cluster-fan` fails naming both.
+`TestBurlerRoundEntry_EnvReviewFallback` gains a subtest that a row's `RowClusterFans` entry reaches its own profile's cluster fan and a row absent from the map keeps the recipe's value, the row-keyed rule its `RowReviewModels` subtests already pin;
+`TestBurlerRoundEntry_ConstructionFailures` gains a row for an env fan beside a literal `cluster-fan` failing naming both.
 `TestBouncerEntry_ClusterExcludes` gains rows for an env fan turning `ClusterExcludes` on and an empty entry leaving it off.
 
 **ImpactSummary:** Two entry constructors read one new optional Env map; with the map nil every row builds exactly as before.

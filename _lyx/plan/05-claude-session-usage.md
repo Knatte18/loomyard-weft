@@ -22,7 +22,7 @@ An unreadable parent transcript or fork transcript makes the whole reading unkno
 a missing `subagents/` directory is zero forks.
 A compile-time assertion pins that `*Claude` implements `shuttleengine.UsageReader`.
 
-`usage_test.go` gains tests over fixture transcripts under a temporary `HOME`: a parent with repeated message lines counted once, two forks summed and broken out, no `subagents/` directory, and an unreadable transcript reading unknown.
+`usage_test.go` gains one table-driven `SessionUsage` test over fixture transcripts under a temporary `HOME`, whose rows are a parent with repeated message lines counted once, two forks summed and broken out, no `subagents/` directory, and an unreadable transcript reading unknown.
 The `claudeengine` package doc describes the session-usage reading beside the context reading.
 
 **ImpactSummary:** Adds one method and one helper to claudeengine and their tests; no existing claudeengine member changes.

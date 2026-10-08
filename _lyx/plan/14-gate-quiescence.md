@@ -3,7 +3,6 @@
 **Edit:**
 - `internal/loomrecipe/gatequiescence_test.go`
 - `contracts/recipes/loom-recipe.yaml`
-- `internal/shuttleengine#TestPollEventsTick_ForkOutstandingKeepsWaitingPastBound`
 
 **Intent:**
 Decisions D7 and D9: the declined gate-quiescence decision is re-opened on the ground `shuttle-state` built, and its guard is rewritten to match.
@@ -17,6 +16,6 @@ The shared failure message names the new ground: a turn end whose Stop payload r
 
 The Webster-Burler comment ending "Single reviewer, matching both shipped segments" in `loom-recipe.yaml` states instead that Webster-Review stays solo because forks run no git and its subject exists only through git, while Discussion-Review and Plan-Review take their fan from `loom.yaml`.
 
-`TestPollEventsTick_ForkOutstandingKeepsWaitingPastBound` runs gated with its output file present, and asserts the turn end with an outstanding fork stays waiting past the shell bound with the gate never evaluated.
+No shuttle test changes: `TestPollEventsTick_ShellExpiry`'s row "a fork beside payload-reported shells keeps the gated run waiting" already pins D7's shuttle wait rule, a gated run with its output file present and a passing gate still waiting at the shell bound while a fork is outstanding.
 
 **ImpactSummary:** Test and recipe-comment changes only; the shipped recipe's rows, engines and gates are unchanged.

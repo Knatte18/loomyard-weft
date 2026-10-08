@@ -5,7 +5,8 @@
 - `internal/burlerengine#halfOf`
 - `internal/burlerengine#Result`
 - `internal/burlerengine#Engine.decideRound`
-- `internal/burlerengine/engine_test.go`
+- `internal/burlerengine#TestEngine_Run_ShuttleOutcomes`
+- `internal/burlerengine#TestEngine_Run_ForkSubagentsSpecWiring`
 - `internal/burlerengine/doc.go`
 
 **Intent:**
@@ -14,7 +15,9 @@ Carries card 4's per-run reading out of a burler round, for decision D8's usage 
 `Result` gains `Lenses []string`: the names of the lenses the round's reviewer ran, in fan order after exclusion, taken from the profile's resolved cluster lenses in `decideRound`, and nil for a solo round.
 No outcome, error or audit decision reads the new fields.
 
-`engine_test.go` gains a test that a done cluster round's `Result` carries both halves' usage and times as the fake shuttle reported them and the lenses that survived a `ClusterExclude`, and that a solo round's `Lenses` is nil.
+No new test: `TestEngine_Run_ShuttleOutcomes` already pins each half's passthrough from the terminal `shuttleengine.Result`, and gains assertions that each half's `StartedAt`, `EndedAt` and `Usage` match the fake shuttle's scripted `Result`;
+`TestEngine_Run_ForkSubagentsSpecWiring` already table-drives a done cluster round against a plain one, and gains a `wantLenses` column: the resolved lens names for the cluster row and nil for the plain row.
+Which lenses survive a `ClusterExclude` stays pinned by `TestProfileValidate_ClusterExclude`.
 The `burlerengine` package doc's `Result` description names the new fields.
 
 **ImpactSummary:** Half and Result gain fields filled in halfOf and decideRound; callers in shedadapters keep compiling and read them from card 7 on.
