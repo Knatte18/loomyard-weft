@@ -57,6 +57,7 @@ After the text is typed, shuttle reads the input box until two consecutive reads
 A collapsed paste placeholder counts as settled content.
 An engine without the capability keeps today's fixed choreography (`ComposeSend` with its fixed settle).
 Between typing and the settle reads, the existing appearance check (`sendVerified`'s poll for the text in the pane, `sendVerifyAttempts` polls `sendVerifyInterval` apart) still runs, and its replay still re-types a text that never appeared; both run inside the submit window of D3, so a replay is cut short when the window closes.
+A text that has not appeared when the window closes or the replays run out fails the send with `ErrSubmissionNotLanded`, since its cause, a swallowed input, is the same miss.
 The settle reads run inside that window too, which starts when typing begins; a box that has not settled when the window closes gets no Enter, and the send fails with `ErrSubmissionNotLanded`.
 
 Rationale: under machine load a long text is not consumed within the fixed 300 ms settle, and an Enter landing inside the typing burst is read as part of a paste and swallowed.
@@ -64,15 +65,18 @@ Rationale: under machine load a long text is not consumed within the fixed 300 m
 ### D3. Submission is confirmed within a time window with backoff
 
 Decision: the submit window, `submit_confirm_timeout_s` (new key, default 30), opens when typing begins and covers D2's settle and this confirmation.
-After Enter, the input box is re-read at a growing interval, starting at `submit_redraw_settle_ms` and doubling up to 5 s, until the submission is confirmed or the window has closed.
-Every Enter is followed by one confirm read, even when the window closes first, so a send never fails without reading the box after its last Enter; that read is the window's only overshoot, one `submit_redraw_settle_ms` sleep and one capture.
-Each read that shows the box still holding the sent text sends one more Enter; a read that shows an empty box, a running turn or a draft lacking the needle sends none, exactly as today's guard.
+After Enter, the input box is re-read at an interval that doubles from `submit_redraw_settle_ms` up to 5 s, until the submission is confirmed or the window has closed.
+An interval that would end past the window's close is cut to end at it, but the read after an Enter never comes sooner than `submit_redraw_settle_ms` after it.
+A read taken while the window is open that shows the box still holding the sent text sends one more Enter; a read that shows an empty box, a running turn or a draft lacking the needle sends none, exactly as today's guard.
+A read taken at or after the window's close sends no Enter and ends the loop.
+Every Enter is therefore followed by one confirm read, so a send never fails without reading the box after its last Enter; that read is the window's only overshoot, one `submit_redraw_settle_ms` sleep and one capture.
 A submission is confirmed when the box no longer holds the sent text, or, for an engine with session signals, when a `turn_start` signal appears past the events offset read before typing.
 `sendExtraEnters` is retired; the count of Enters is bounded by the window and the backoff.
 A submission not confirmed within the window fails with an error wrapping a new sentinel `ErrSubmissionNotLanded`, carrying the pane's last lines (D5).
 Before returning `ErrSubmissionNotLanded`, the send clears its own text out of the box, so the box D1 requires empty is empty again for the next send.
-The clear goes through a new engine-owned key choreography beside `ComposeSend`, sent only when a box reading taken just before shows it holding this send's text: the sent text, a prefix of it (an unsettled box) or a collapsed paste placeholder.
-D1's idle wait proved the box empty before typing, so such content is this send's own.
+The clear goes through a new engine-owned key choreography beside `ComposeSend`, sent only when a box reading taken just before shows it holding this send's text: copies of the sent text (a doubled replay), the last of which may be a prefix of at least the needle's length (an unsettled box), or a collapsed paste placeholder.
+Only an engine with both the idle reading and the clear choreography clears: D1's idle reading proved its box empty before typing, so such content is this send's own.
+An engine without the idle reading gets no clear, and the text stays in its box.
 A box holding anything else, or reading empty, gets no clear key.
 The choreography never uses a key that interrupts a running turn, so a turn that started between the reading and the clear is not cut short.
 The box is read once more after the clear; a box still not empty is named in the error, and the next send fails as busy against it as today.
@@ -110,11 +114,13 @@ Rationale: #442 asks for the cause to be visible in the halt note, and the error
 
 Decision: in the gated wait loop, the boundary is confirmed idle in fact (D1's signal condition, with its interrupt and 10 s idle-pane override) before the gate is evaluated for a send; a `turn_start` after the boundary's turn end clears the boundary and the loop keeps polling, with no send and no failure.
 A boundary cleared by a `turn_start` that has no later turn end is restored on the tick where D1's override releases it: `SessionProber.TurnStartInterrupt` reports the turn interrupted, or the pane has read idle on every poll for 10 s.
+While a boundary is cleared that way, the loop captures the pane every tick for D1's idle reading, which times the 10 s.
+The restoring tick evaluates the gate through `handleGatedBoundary` as a new turn end does, whether or not an entry is pending; the unsent-re-prompt mark is not restored, since that evaluation re-derives any re-prompt from the gate's recorded state.
 A re-prompt send that fails with `ErrSessionBusy` or `ErrSubmissionNotLanded` leaves the entry's failure count unchanged and marks the boundary as holding an unsent re-prompt; the loop's per-tick branch that today re-enters `handleGatedBoundary` for a pending entry at the boundary re-enters it for that mark too, so the gate is re-evaluated and the re-prompt re-sent on later ticks without a new writer event.
 A writer turn that starts meanwhile clears the boundary and the mark, and its next turn end is evaluated afresh.
 Any other re-prompt send error still ends the loop as today.
 Inside the wait loop, a send takes one budget, the time left until the run deadline at the send's start: the idle wait ends by the deadline, and the submit window, which holds the appearance check, its replay, the settle and the confirmation (D2, D3), closes by it too.
-A send therefore overshoots the deadline by at most its tail past the window: D3's post-Enter confirm read, the clear with its two box readings, and D5's final capture.
+A send therefore overshoots the deadline by at most its tails past it: the idle wait's last pane capture, D3's post-Enter confirm read, the clear with its key choreography and two box readings, and D5's final capture.
 
 Rationale: `AttachGated` replays events from the prompt offset, so its first tick reads the writer as idle even mid-turn and could type a notice or a reject re-prompt into a running turn.
 A re-prompt that did not land is an infrastructure miss, not a spent attempt.
@@ -134,9 +140,11 @@ Webster's reclaim and attach's removal hold no in-process `Wait` on the run, so 
 A record that is already terminal keeps its outcome.
 A record reading `running` whose output files all exist keeps `running` and only loses its strand: the stop verb consults `allOutputFilesExist` first, so attach's file-contract-first branch still harvests the run as finished.
 `stopped` therefore means "lyx ended this run before its output files existed".
-Stopped through a run handle, the verb also marks the handle, so that handle's later `Wait` finalize persists `stopped` for every outcome but `done`; a `done` reached through the file contract still wins.
-The mark is the one field of `Run` shared between the stopping goroutine and the `Wait` goroutine, so `Run` gains a mutex guarding it, which the stop verb holds while it sets the mark and writes the record, and finalize holds while it reads the mark and writes the record; nothing else takes it.
+Stopped through a run handle, the verb also marks the handle, so that handle's later `Wait` finalize persists `stopped` unless its outcome is `done` or every output file exists (the choosing function in Constraints); a `done` reached through the file contract still wins.
+The stop verb and the run's own `Wait` goroutine share `run.state` and its `run.json`: `Wait` saves `run.state` mid-run (the held-turn notice offset, `Started`) and in finalize.
+`Run` therefore gains a record mutex guarding the mark, `run.state.Outcome` and every save of `run.state`; the stop verb holds it while it sets the mark and `run.state.Outcome` and saves, and every `Wait` save holds it, so a later mid-run save carries `stopped` instead of restoring `running`.
 The mark is set before the strand is removed, so the `Wait` that sees the strand go already reads it.
+The guid form reads `run.json` from disk, sets the outcome and writes it back; it has no in-process `Wait` to race.
 A `Wait` in another process, holding no such mark, may overwrite `stopped` with its own terminal outcome, and either answer is terminal.
 A guid with no run record is stopped as today, by strand removal alone.
 
@@ -158,15 +166,23 @@ Decision: `send_ready_timeout_s` (default 60) and `submit_confirm_timeout_s` (de
 
 Rationale: the windows are machine-load dependent, so an operator on a slow host needs to widen them without a rebuild.
 
+### Added after Discussion (parent, 2026-10-08): D7 record write path
+
+Decision: For a run held in-process, the stop verb records stopped by mutating run.state under the new mutex, and every saveRunState call on run.state from the Run (finalize, hold.go's NotifiedOffset save, wait.go's Started save) takes the same mutex; the mutex is a record-write lock, not a lock on one field. The guid form (no Run in process) stays a disk read-modify-write of run.json and has no in-process Wait to race. Finalize takes the stored outcome from the one function the PATTERN-completion-signal constraint names, so runOutcomeStopped appears at one return and both writes go through it; done still takes precedence when allOutputFilesExist holds.
+
+Rationale: Round-3 F1 and F3: the stop verb's write shares run.state and run.json with Wait's own saves, and a second stopped write outside the named return would escape the tripwire.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: the idle reading, the input-box reading and the split choreography stay in `claudeengine`; `shuttleengine` reaches them only through capabilities.
 - `PATTERN-transient-stop`: no new class, no new marking site; the widened definition is stated at the declaration in `shedengine`.
 - `PATTERN-completion-signal`: writing `stopped` is a new negative "did this finish" answer, so the stop verb consults `allOutputFilesExist` first (D7).
-  The record value is a constant `runOutcomeStopped`, chosen in one function that returns the outcome the stop verb writes, so the value appears at a return statement.
+  The record value is a constant `runOutcomeStopped`, chosen in one function that returns the outcome a stop leaves: the outcome it is handed when that is `done` or every output file exists, else `runOutcomeStopped`.
+  The stop verb calls it on a `running` record, and a marked handle's finalize calls it on the outcome it classified, so the value has that one return site and that function's `allOutputFilesExist` call guards both writes.
   In `completionsignal_enforcement_test.go`, in the same commit: `runOutcomeStopped` joins `negativeVerdictMarkers`, the stop verb's file joins the scanned files, that function's return joins the audited return sites and its `allOutputFilesExist` call the audited call sites.
   `PATTERN-completion-signal`'s background file and `wait.go`'s file doc comment add `stopped` to their list of negative answers.
-  Attach's file-contract-first branch is unchanged and a `stopped` record never reaches it; `isTerminalOutcome` recognising `stopped` is attach's only change.
+  Attach's file-contract-first branch is unchanged and a `stopped` record never reaches it; `isTerminalOutcome` recognising `stopped` is the only change to attach's classification, and its doc comment widens from the values finalize wrote to every terminal value a record holds.
+  Attach's other change is its superseded-strand removal moving onto the stop verb (D7).
 - `PATTERN-wait-mark-display-only`: the send waits are not tied to `@lyx_wait` decisions; if a wait mark is set while a send waits, it is set through `SetWaitMark` and read by no Go decision.
 - `PATTERN-orch-pane-single-writer`: unchanged; the orch watcher keeps its own idle gate and simply inherits the safer send.
 - `PATTERN-spawn-observability`: the stop verb logs the strand removal at Warn, as the removers it replaces did.
@@ -189,22 +205,23 @@ Rationale: the windows are machine-load dependent, so an operator on a slow host
 - D1's signal condition depends on hook lines reaching the events file.
   A missing `UserPromptSubmit` line makes the condition vacuous and falls back to the pane reading alone.
   A missing `Stop` line leaves an unmatched `turn_start` that delays a send into an idle pane, or the restoring of a gate boundary (D6), by up to D1's 10 s override.
-- D3's clear removes whatever the box holds that matches this send's text; an operator who types into the pane while the send's window is open, with text matching it, loses that text.
+- D3's clear removes whatever the box holds that matches this send's text; an operator who types or pastes into the pane while the send's window is open loses that input when it starts like the send's text or shows as a collapsed paste placeholder.
 - D4 widens `TransientAgentStart` on an auto-pick; whether a session that never took its first input deserves its own class instead awaits the operator (support log Q8).
 
 ## Acceptance criteria
 
 - A send into a pane that shows a running turn or a non-empty draft does not type until the pane reads idle, and fails with `ErrSessionBusy` carrying the pane's last lines when the window passes.
-- With session signals, a `turn_start` after the newest turn end holds the send even when the pane reads idle, until `TurnStartInterrupt` reports it interrupted or the pane has read idle for 10 s; an `api_error_turn_end` counts as a turn end.
+- With session signals, a `turn_start` after the newest turn end holds the send even when the pane reads idle, until `TurnStartInterrupt` reports it interrupted or the pane has read idle on every poll for 10 s; an `api_error_turn_end` counts as a turn end.
 - `Runner.Send` into a busy pane waits for idle as every other verified send does.
 - Typed text whose box content still changes between reads gets no Enter until two reads agree, and a box that never settles within the submit window fails with `ErrSubmissionNotLanded` and gets no Enter.
-- A box that still holds the sent text after the first Enter gets further Enters at a growing interval, and the send succeeds once the box clears within the window; an Enter sent as the window closes is still followed by one confirm read.
+- A box that still holds the sent text after the first Enter gets further Enters at a growing interval, and the send succeeds once the box clears within the window; an Enter sent as the window closes is still followed by one confirm read, which sends no further Enter.
 - A `turn_start` signal past the pre-send offset confirms a submission even while the box reading is ambiguous.
 - No extra Enter is sent into an empty box, a running turn or a draft lacking the needle (existing guard, still pinned).
 - A submission still pending at the end of the window fails with `ErrSubmissionNotLanded` carrying the pane's last 15 non-blank lines; a failed final capture says so in their place.
 - A skill-load or prompt-delivery send that does not land during start returns an error matching both `ErrNotStarted` and the send's sentinel, with the run's record `died` and its strand removed.
 - A prompt-delivery send whose box reads empty at the reading before the clear succeeds, and one that fails with `ErrSubmissionNotLanded` but whose `turn_start` has appeared by the signal read before teardown starts the run instead.
-- A send that fails with `ErrSubmissionNotLanded` leaves the box empty when it held this send's text, a prefix of it or a paste placeholder, sends no clear key into a box holding anything else or nothing, and names a box the clear did not empty in its error.
+- A sent text that never appears in the pane fails with `ErrSubmissionNotLanded`.
+- A send that fails with `ErrSubmissionNotLanded` leaves the box empty when it held copies of this send's text, a needle-long or longer prefix of it or a paste placeholder, sends no clear key into a box holding anything else or nothing, or on an engine without the idle reading, and names a box the clear did not empty in its error.
 - A prompt-offset persist failure during start takes the same teardown: record `died`, strand removed, error wrapping `ErrNotStarted`.
 - A burler round whose second half's start does not land ends as that half's `NotStarted` died outcome, its first half stopped and recorded `stopped`, and the burler adapter's attempt-2 failure carries the agent-start transient class.
 - A burler half stopped during `join` because the other half ended first reads `stopped` after its own `Wait` returns.
