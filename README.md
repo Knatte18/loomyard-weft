@@ -19,6 +19,8 @@ Waits on nothing open; can start now, in parallel.
 1. **Git robustness: stale pack index, background gc, network timeouts, reused slugs** — [`git-robustness`](design-git-robustness.md) · bug, enhancement, fabric, batten, stencil · running · Plan-Burler
    - Reindex-and-retry for every go-git call, no auto-gc under a live step, timeouts on git network calls, batten refuses a done slug, bounded HeadContains
    - **Before:** `publish-recovery`
+1. **MultiLLMProducer: one producer runs a chair and its advisors as seats** — [`multi-llm-producer`](design-multi-llm-producer.md) · feature, shed, shuttle
+   - A producer beside SingleLLMProducer that runs N agents as seats, one chair that steers and decides the outcome plus advisor-1..n, with its own internal message channel; built standalone, used by nothing yet
 
 ### Layer B
 
@@ -151,8 +153,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Every gate of the run with a tick box and its elapsed time, in a pane of its own; an idea, not a priority
 1. **lyx cleanup: one command runs every module cleanup** — [`lyx-cleanup`](design-lyx-cleanup.md) · feature, batten, board
    - Drop finished batten statuses, prune the board, clear disposable .scratch and .lyx files, each through the owning module verb
-1. **A producer runs N agents as seats, one of them the master** — [`multi-agent-producer`](design-multi-agent-producer.md) · feature, shuttle
-   - Generalize the single-agent producer: N agents per step declared as seats in one table (role, stencil, model, inputs, outputs); the master decides the outcome; Burler and discussion-advisor are the first users
 1. **lyx pause: stop every run at once, safely and on purpose** — [`lyx-halt`](design-lyx-halt.md) · feature, batten
    - A hub-wide pause that interrupts every Claude session with Esc within seconds, unlike the step-boundary pauses, recorded as ordered so no failure or idle path fires
 1. **Spawn audit log: every process lyx starts is recorded and traceable** — [`spawn-audit-log`](design-spawn-audit-log.md) · feature, reed, shuttle
