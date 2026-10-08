@@ -1,14 +1,21 @@
 {
   "current_producer": "Preflight",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "preconditions not met: worktree-clean: uncommitted state changes under `_lyx`: M _lyx/config/batcher.yaml  D _lyx/config/board.yaml  M _lyx/config/loom.yaml  M _lyx/config/reed.yaml  M _lyx/config/shuttle.yaml; way forward: commit or stash the code changes with git, and commit the _lyx changes with `lyx fabric commit`, then re-step",
   "pause_requested": false,
   "activity": {
-    "now": "",
-    "last": "",
-    "wait": ""
+    "now": "Preflight",
+    "last": "Preflight → stuck",
+    "wait": "preconditions not met: worktree-clean: uncommitted state changes under `_lyx`: M _lyx/config/batcher.yaml  D _lyx/config/board.yaml  M _lyx/config/loom.yaml  M _lyx/config/reed.yaml  M _lyx/config/shuttle.yaml; way forward: commit or stash the code changes with git, and commit the _lyx changes with `lyx fabric commit`, then re-step"
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Preflight",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-08T16:14:28Z"
+    }
+  ],
   "product": {
     "slug": "binary-change-and-rules",
     "parent": "main",
