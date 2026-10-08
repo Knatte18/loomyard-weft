@@ -15,6 +15,8 @@ Waits on nothing open; can start now, in parallel.
    - Send waits for a ready pane and a settled input before Enter, retries with backoff, and a lost submission is transient; attach no longer halts on a stopped Burler half
 1. **Review lens fans for Discussion and Plan, narrowed by the judge each round** — [`review-lens-fan`](design-review-lens-fan.md) · enhancement, burler, loom · running · Publish
    - Wire burler cluster review into Discussion and Plan with their own fans, let the judge drop settled lenses, after shuttle-state settles gate quiescence with forks
+1. **A hub survives a lyx binary change; the no-script rule reaches spawned agents** — [`binary-change-and-rules`](design-binary-change-and-rules.md) · bug, enhancement, config, stencil
+   - Config reconciles itself on the first lyx command after a binary change, stencil drift behind main stops warning source-ahead, and file-editing stencils state the no-script edit rule
 
 ## Notes
 
@@ -22,10 +24,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ### Bugs
 
-1. **Spawned agents edit files with scripts; the no-script rule never reaches them** — [`agents-no-scripted-edits`](design-agents-no-scripted-edits.md) · bug, stencil
 1. **board: refuse scope edits to a running task** — [`board-lock-running`](design-board-lock-running.md) · bug, board
    - The board already marks running tasks; a write that changes the scope of a running task is refused
-1. **stencilstore: a pair branched before the last deploy warns source-ahead and asks for a deploy** — [`stencil-drift-behind-main`](design-stencil-drift-behind-main.md) · bug, stencil
 1. **batten run on a slug whose earlier run is done reports ok and does nothing** — [`batten-reused-slug`](design-batten-reused-slug.md) · bug, batten
 
 ### Enhancements
@@ -72,8 +72,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - WriteCarryOver checks the splice on the produced lines before the atomic rename; re-reading the file after the rename and checking what is on disk would also catch a concurrent writer
 1. **reed: strands state their size; parallel agents share the window evenly** — [`reed-layout-shares`](design-reed-layout-shares.md) · enhancement, reed
    - Replace the one collapse-all-but-the-newest rule with per-strand sizing: content-sized panes like the runs overview, and parallel agents that share space evenly
-1. **Config reconciles itself on the first lyx command after a binary change** — [`config-auto-reconcile`](design-config-auto-reconcile.md) · enhancement, config
-   - A hub stamp names the binary that last reconciled; the first command under a new binary reconciles the prime and every pair before it runs; Preflight checks the stamp
 
 ### Features
 
