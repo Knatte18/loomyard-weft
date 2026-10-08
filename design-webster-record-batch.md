@@ -1,6 +1,6 @@
 # Webster record-batch and rebaseline: no needless re-drive, a calibrated Merriam base
 
-`webster-record-batch` · Task · bug, enhancement, webster · running · Plan-Write
+`webster-record-batch` · Task · bug, enhancement, webster · running · Plan-Bouncer
 
 ## Goal
 
