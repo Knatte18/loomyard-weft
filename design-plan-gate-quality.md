@@ -1,6 +1,6 @@
 # Plan gate: no false caller findings, reviewer fixes the gate accepts, nested fixture modules, no plan-made parent decisions
 
-`plan-gate-quality` · Task · bug, loom, quarry · running · Loom-Preflight
+`plan-gate-quality` · Task · bug, loom, quarry · running · Discussion-Write
 
 ## Goal
 
