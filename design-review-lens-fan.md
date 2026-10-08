@@ -1,6 +1,6 @@
 # Review lens fans for Discussion and Plan, narrowed by the judge each round
 
-`review-lens-fan` · Task · enhancement, burler, loom
+`review-lens-fan` · Task · enhancement, burler, loom · running · Loom-Preflight
 
 Depends on: [`shuttle-state`](design-shuttle-state.md), [`review-loop-convergence`](design-review-loop-convergence.md)
 
