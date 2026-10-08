@@ -448,7 +448,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 13,
   "masterStrand": "c03fa4164c2f2975b3ec15720f134e8b",
   "masterSessionId": "7440a018-edc1-40c6-bc1c-418bd7f82495",
   "batches": {
@@ -487,6 +487,31 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-state/7440a018-edc1-40c6-bc1c-418bd7f82495/subagents/agent-aecfe0fab4f147f1f.jsonl"
       ]
+    },
+    "13": {
+      "slug": "wait-shadow-log",
+      "cards": [
+        "13-wait-shadow-log",
+        "14-orch-shadow-log",
+        "15-batten-shadow-log",
+        "16-corpus-states",
+        "17-llm-hook-capture",
+        "18-stuck-outcome-pin"
+      ],
+      "cardHashes": {
+        "13-wait-shadow-log": "97cabca47ba3d0e2aa06a7429133e3322981bcbb067b36e3a2f2df90e7f26185",
+        "14-orch-shadow-log": "e3de3237ee20829633f17efc7dd2b03744f74b09eb5c968b6c96143bc7267ab7",
+        "15-batten-shadow-log": "fded555c63c84cf45cbfe5695226c99211f8e86c66137fb6da358bcfd5136a7c",
+        "16-corpus-states": "96305279f84a3b5606a04479cf9dbde90fe1edecd420db189193b5ea7b692270",
+        "17-llm-hook-capture": "1924ac2f65ec0d486f05f49119d9fd6c592c8026ce7012292e947b4e6e297535",
+        "18-stuck-outcome-pin": "c3567452fd81db26e70d0574c6abc446fdb5df281d26b0cddaea776df5f827bb"
+      },
+      "startSha": "a799515882accb58a721b8a76ab53ce92e72cfe6",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T08:06:57Z",
+      "sessionId": "7440a018-edc1-40c6-bc1c-418bd7f82495",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "claude-prober",
