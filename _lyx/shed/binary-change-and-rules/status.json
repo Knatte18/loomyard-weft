@@ -1,12 +1,12 @@
 {
   "current_producer": "Run-Shed",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "battenshed: Run-Shed: spawn inner shed run (resuming this run retries the spawn): exit status 1: {\"error\":\"batcher.yaml profile \\\"cautious\\\" carries weights key master_base, which no longer exists (retired key); way forward: run \\\"lyx config reconcile --apply\\\"\",\"ok\":false}",
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
     "last": "Seed-Child → done",
-    "wait": ""
+    "wait": "battenshed: Run-Shed: spawn inner shed run (resuming this run retries the spawn): exit status 1: {\"error\":\"batcher.yaml profile \\\"cautious\\\" carries weights key master_base, which no longer exists (retired key); way forward: run \\\"lyx config reconcile --apply\\\"\",\"ok\":false}"
   },
   "history": [
     {
