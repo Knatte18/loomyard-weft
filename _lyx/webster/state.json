@@ -1,0 +1,481 @@
+{
+  "runGuid": "980d6a6ca6b83ef4c213af853baedb30",
+  "planFingerprint": "e3df0744cd45732f4fe2287a32f4fab534cde467128f7b46313b0711129f7254",
+  "planFileHashes": {
+    "00-overview.md": "9f74e243a05f008bb9d47482af418ed5da5031fcb861cfdd01327e6ed584fc05",
+    "01-deny-table.md": "ad35af402ffd8ee7b05ae0fcf125dc31d54b90b65d24ceab603ce1d45dc34cb9",
+    "02-python-deny.md": "60f50a292b951372ffe6f1478979c825c2e612820a3f7c7de3f581ca3b7ea2ac",
+    "03-session-signals.md": "bde4a805ba2d8b1ba2bdbc86a9e94b4544d09bc60cbbc0d79b9fb9f2ee11bf12",
+    "04-activity-from-stamps.md": "14c11201964051dbd6d7a13c8dcd3f0865e9d4a29cb54d0cfaf11fce1bdf8b04",
+    "05-hook-stamps.md": "4b3c3aa97dcf4868fedc90e2b630a4727610a0aa4280701bc49213f95d7470be",
+    "06-state-reducer.md": "fa9c37765738a66890c6eeed872ee019e8831dfc7419a7ba523a4a99518f6b8f",
+    "07-claude-prober.md": "388b02067f4d5dcea4002850d23e6ba169b9304abbcffa2e6c2dfcf32832646e",
+    "08-state-reader.md": "2ab2a7f2e0bcf6c4b2c5f2bbb9ea554121f6f13a6d60af8ce8fc3cbf446bac44",
+    "09-shuttle-state-cli.md": "e0a4ed4356d1606bd9565f88690e55b4aa335084f82a4f976bd5d32b854bddf4",
+    "10-held-wait-mark.md": "8dea528af533ad23e8268995c11ec757d5675c35ba909ab38aef1b85b879e144",
+    "11-payload-shell-wait.md": "6af5f119a00d57b3f0da7432a3244f29425085485fc89c406ae10f7ed1ceb7ea",
+    "12-webster-shell-wording.md": "3b3356446f636ce1ac2d61976cd845fc1f23414183965336c7d6a602d0c45484",
+    "13-wait-shadow-log.md": "a399f8ef87dcb6aa67452f219fe7517e30b182dab3b36f0172c7046aea9e4d1b",
+    "14-orch-shadow-log.md": "871abecd8fd8930cd66aec7a48c7d935bb7446d79b92b3a4b4084dc139c2859c",
+    "15-batten-shadow-log.md": "e7e4aa7ca686340d8c11c604b581972bb23f2b129dcc8cd3316ff07b7d90e9ae",
+    "16-corpus-states.md": "a11f1d7173ba851297fac946821308e00ec91e537c2f897c52006903dc4ea27a",
+    "17-llm-hook-capture.md": "fdc33f7276458fbb088ba37df9e6542881011e358816a5d319ccfe15d8e41eb5",
+    "18-stuck-outcome-pin.md": "c3567452fd81db26e70d0574c6abc446fdb5df281d26b0cddaea776df5f827bb"
+  },
+  "partition": [
+    {
+      "cards": [
+        "01-deny-table",
+        "02-python-deny",
+        "03-session-signals",
+        "04-activity-from-stamps",
+        "05-hook-stamps",
+        "06-state-reducer"
+      ],
+      "profile": "cautious",
+      "estimate": 237322,
+      "breakdown": {
+        "weights": {
+          "master_base": 52000,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 53200,
+        "read_union": 67356,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 228,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/settings.go": 2352,
+              "file:internal/shuttleengine/claudeengine/settings_test.go": 6468,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 22.5,
+            "written": 6978
+          },
+          {
+            "card": 2,
+            "card_text": 552,
+            "reads": {
+              "file:cmd/lyx/norecoverydeny_test.go": 2832,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:docs/overview.md": 7944,
+              "file:internal/shuttleengine/claudeengine/doc.go": 1092,
+              "file:internal/shuttleengine/claudeengine/prepare_test.go": 3648,
+              "file:internal/shuttleengine/claudeengine/settings.go": 2352,
+              "file:internal/shuttleengine/claudeengine/settings_test.go": 6468,
+              "file:internal/shuttleengine/config.go": 936,
+              "file:internal/shuttleengine/config_test.go": 3672,
+              "file:internal/shuttleengine/spec.go": 2388,
+              "file:internal/shuttleengine/template.go": 240,
+              "file:internal/shuttleengine/template.yaml": 180,
+              "file:pattern/PATTERN-no-denied-recovery.md": 204,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 127.5,
+            "written": 38802
+          },
+          {
+            "card": 3,
+            "card_text": 576,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:internal/shuttleengine/claudeengine/doc.go": 1092,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 83,
+            "written": 25476
+          },
+          {
+            "card": 4,
+            "card_text": 336,
+            "reads": {
+              "file:internal/shuttleengine/activity.go": 1680,
+              "file:internal/shuttleengine/activity_test.go": 2112,
+              "file:internal/shuttleengine/doc.go": 2340,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 34.5,
+            "written": 10686
+          },
+          {
+            "card": 5,
+            "card_text": 396,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:internal/shuttleengine/claudeengine/doc.go": 1092,
+              "file:internal/shuttleengine/claudeengine/events.go": 1164,
+              "file:internal/shuttleengine/claudeengine/settings.go": 2352,
+              "file:internal/shuttleengine/claudeengine/settings_test.go": 6468,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 48.5,
+            "written": 14946
+          },
+          {
+            "card": 6,
+            "card_text": 528,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 64.5,
+            "written": 19878
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-claude-prober",
+        "08-state-reader",
+        "09-shuttle-state-cli",
+        "10-held-wait-mark",
+        "11-payload-shell-wait",
+        "12-webster-shell-wording"
+      ],
+      "profile": "cautious",
+      "estimate": 371714,
+      "breakdown": {
+        "weights": {
+          "master_base": 52000,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 60200,
+        "read_union": 179424,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 456,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:internal/shuttleengine/claudeengine/doc.go": 1092,
+              "file:internal/shuttleengine/claudeengine/resume.go": 1116,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 71,
+            "written": 21756
+          },
+          {
+            "card": 8,
+            "card_text": 600,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:internal/shuttleengine/doc.go": 2340,
+              "file:internal/shuttleengine/session.go": 2400,
+              "file:internal/shuttleengine/session_test.go": 3468,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 82.5,
+            "written": 25350
+          },
+          {
+            "card": 9,
+            "card_text": 396,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:docs/overview.md": 7944,
+              "file:internal/shuttlecli/cli.go": 1512,
+              "file:internal/shuttlecli/cli_test.go": 4272,
+              "file:tools/sandbox/SANDBOX-SHUTTLE-SUITE.md": 3132,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/shuttlecli": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 46,
+            "written": 14196
+          },
+          {
+            "card": 10,
+            "card_text": 432,
+            "reads": {
+              "file:internal/battencli/wire.go": 10920,
+              "file:internal/battencli/wire_seams_test.go": 3288,
+              "file:internal/loomcli/reviewstatus_test.go": 3660,
+              "file:internal/shuttleengine/doc.go": 2340,
+              "file:internal/shuttleengine/wait.go": 13980,
+              "file:internal/shuttleengine/wait_test.go": 12864,
+              "file:internal/shuttleengine/waitmark.go": 2460,
+              "file:internal/shuttleengine/waitmark_test.go": 1140,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 101.5,
+            "written": 30882
+          },
+          {
+            "card": 11,
+            "card_text": 468,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:internal/shuttleengine/config.go": 936,
+              "file:internal/shuttleengine/doc.go": 2340,
+              "file:internal/shuttleengine/hold_test.go": 2424,
+              "file:internal/shuttleengine/run.go": 13704,
+              "file:internal/shuttleengine/template.yaml": 180,
+              "file:internal/shuttleengine/wait.go": 13980,
+              "file:internal/shuttleengine/waiting_test.go": 5340,
+              "file:internal/shuttleengine/waitmark.go": 2460,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 66.5,
+            "written": 20418
+          },
+          {
+            "card": 12,
+            "card_text": 288,
+            "reads": {
+              "file:internal/websterengine/doc.go": 6240,
+              "file:internal/websterengine/runlevel_test.go": 29232,
+              "file:internal/websterengine/summary.go": 1356,
+              "file:internal/websterengine/summary_test.go": 1332,
+              "file:internal/websterengine/triage.go": 1476,
+              "file:internal/websterengine/triage_test.go": 1488,
+              "package:internal/websterengine": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 64,
+            "written": 19488
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-wait-shadow-log",
+        "14-orch-shadow-log",
+        "15-batten-shadow-log",
+        "16-corpus-states",
+        "17-llm-hook-capture",
+        "18-stuck-outcome-pin"
+      ],
+      "profile": "cautious",
+      "estimate": 375868,
+      "breakdown": {
+        "weights": {
+          "master_base": 52000,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 67200,
+        "read_union": 218848,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 468,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:internal/shuttleengine/doc.go": 2340,
+              "file:internal/shuttleengine/fakes_test.go": 6096,
+              "file:internal/shuttleengine/run.go": 13704,
+              "file:internal/shuttleengine/wait.go": 13980,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 60.5,
+            "written": 18618
+          },
+          {
+            "card": 14,
+            "card_text": 336,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:internal/orchcli/session.go": 1044,
+              "file:internal/orchengine/doc.go": 3996,
+              "file:internal/orchengine/watcher.go": 11460,
+              "file:internal/orchengine/watcher_test.go": 23712,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 43.5,
+            "written": 13386
+          },
+          {
+            "card": 15,
+            "card_text": 348,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:internal/battencli/wire.go": 10920,
+              "file:internal/battencli/wire_seams_test.go": 3288,
+              "file:internal/battenshed/deps.go": 3156,
+              "file:internal/battenshed/notice.go": 5580,
+              "file:internal/battenshed/notice_test.go": 9456,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 53.5,
+            "written": 16398
+          },
+          {
+            "card": 16,
+            "card_text": 348,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/corpus_test.go": 3660,
+              "file:internal/shuttleengine/claudeengine/testdata/corpus/fork-killed-api-error/case.yaml": 360,
+              "file:internal/shuttleengine/claudeengine/testdata/corpus/fork-killed-api-error/events.jsonl": 24,
+              "file:internal/shuttleengine/claudeengine/testdata/corpus/issue411-bugfix-sessions/case.yaml": 240,
+              "file:internal/shuttleengine/claudeengine/testdata/corpus/issue411-prune-rest/case.yaml": 240,
+              "file:internal/shuttleengine/claudeengine/testdata/corpus/master-fork-running/case.yaml": 480,
+              "file:internal/shuttleengine/claudeengine/testdata/corpus/planwrite-ask-answered/case.yaml": 288,
+              "file:internal/shuttleengine/claudeengine/testdata/corpus/skill-load-turn-end/case.yaml": 240,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/corpus/fork-killed-api-error": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/corpus/issue411-bugfix-sessions": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/corpus/issue411-prune-rest": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/corpus/master-fork-running": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/corpus/planwrite-ask-answered": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/corpus/skill-load-turn-end": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/corpus/fork-killed-api-error": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/corpus/issue411-bugfix-sessions": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/corpus/issue411-prune-rest": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/corpus/master-fork-running": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/corpus/planwrite-ask-answered": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/corpus/skill-load-turn-end": 2000
+            },
+            "messages": 62.5,
+            "written": 19098
+          },
+          {
+            "card": 17,
+            "card_text": 264,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:internal/shuttlecli/smoke_turns_test.go": 3924,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttlecli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttlecli": 2000
+            },
+            "messages": 19.5,
+            "written": 6114
+          },
+          {
+            "card": 18,
+            "card_text": 156,
+            "reads": {
+              "file:internal/shedadapters/webster_test.go": 4020,
+              "file:internal/websterengine/runlevel_test.go": 29232,
+              "package:internal/shedadapters": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 53.5,
+            "written": 16206
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "c03fa4164c2f2975b3ec15720f134e8b",
+  "masterSessionId": "7440a018-edc1-40c6-bc1c-418bd7f82495",
+  "batches": {
+    "1": {
+      "slug": "deny-table",
+      "cards": [
+        "01-deny-table",
+        "02-python-deny",
+        "03-session-signals",
+        "04-activity-from-stamps",
+        "05-hook-stamps",
+        "06-state-reducer"
+      ],
+      "cardHashes": {
+        "01-deny-table": "ad35af402ffd8ee7b05ae0fcf125dc31d54b90b65d24ceab603ce1d45dc34cb9",
+        "02-python-deny": "60f50a292b951372ffe6f1478979c825c2e612820a3f7c7de3f581ca3b7ea2ac",
+        "03-session-signals": "bde4a805ba2d8b1ba2bdbc86a9e94b4544d09bc60cbbc0d79b9fb9f2ee11bf12",
+        "04-activity-from-stamps": "14c11201964051dbd6d7a13c8dcd3f0865e9d4a29cb54d0cfaf11fce1bdf8b04",
+        "05-hook-stamps": "4b3c3aa97dcf4868fedc90e2b630a4727610a0aa4280701bc49213f95d7470be",
+        "06-state-reducer": "fa9c37765738a66890c6eeed872ee019e8831dfc7419a7ba523a4a99518f6b8f"
+      },
+      "startSha": "fd5b0f58e695f987453988710e0927767cf7bbb4",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T07:37:21Z",
+      "sessionId": "7440a018-edc1-40c6-bc1c-418bd7f82495",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
