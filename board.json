@@ -749,22 +749,6 @@
       "status": "running · Webster"
     },
     {
-      "id": 184,
-      "slug": "plan-rubric-containment",
-      "title": "Plan-review rubric lets a reviewer recommend a card retyping that validate-plan rejects",
-      "kind": "note",
-      "labels": [
-        "bug"
-      ],
-      "issues": [
-        438
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #438](https://github.com/Knatte18/loomyard/issues/438).\n\nA plan-review round (Burler, plan segment) raised a finding asking for symbol renames in two cards to be typed `Rename` over member glyphs, reading only the spec's type table.\nThe author's fix attempt then failed `lyx loom validate-plan` with blocking `containment-file-overlap` findings: other cards target the files holding those symbols whole, so the recommended retyping cannot exist in that plan's file-level layout.\n\nWhy this is abnormal: the review rubric's `Do not flag` list covers checks the gate already runs, but not the interaction between a card type and the cross-card containment check.\nThe reviewer therefore issued a remedy the gate cannot accept, and the review round was spent on an unfixable finding.\n\nWhat to do: have the plan-review rubric tell the reviewer to run `lyx loom validate-plan` before recommending a card retyping, or add the type-vs-`containment-file-overlap` interaction to the `Do not flag` list.\n\nProvenance: task `fabric-pushes`, note `burler-plan-r1.md`.\n\n\nHub, 2026-10-08: `plan-glyph-precision` (running) drops the cross-card containment check in its D2, which removes the gate refusal this issue describes; check after it lands whether anything is left.\n"
-    },
-    {
       "id": 185,
       "slug": "shuttle-send",
       "title": "Shuttle: a Send lands or retries, and attach knows a half it stopped",

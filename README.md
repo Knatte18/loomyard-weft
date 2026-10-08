@@ -38,7 +38,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **Spawned agents edit files with scripts; the no-script rule never reaches them** — [`agents-no-scripted-edits`](design-agents-no-scripted-edits.md) · bug, stencil
 1. **board: refuse scope edits to a running task** — [`board-lock-running`](design-board-lock-running.md) · bug, board
    - The board already marks running tasks; a write that changes the scope of a running task is refused
-1. **Plan-review rubric lets a reviewer recommend a card retyping that validate-plan rejects** — [`plan-rubric-containment`](design-plan-rubric-containment.md) · bug
 1. **stencilstore: a pair branched before the last deploy warns source-ahead and asks for a deploy** — [`stencil-drift-behind-main`](design-stencil-drift-behind-main.md) · bug, stencil
 1. **batten run on a slug whose earlier run is done reports ok and does nothing** — [`batten-reused-slug`](design-batten-reused-slug.md) · bug, batten
 
