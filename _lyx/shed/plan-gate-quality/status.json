@@ -1,8 +1,8 @@
 {
   "current_producer": "Discussion-Write",
-  "state": "running",
+  "state": "paused",
   "error": "",
-  "pause_requested": true,
+  "pause_requested": false,
   "activity": {
     "now": "Discussion-Write",
     "last": "Loom-Preflight → done",
