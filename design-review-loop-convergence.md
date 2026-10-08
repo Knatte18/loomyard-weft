@@ -1,6 +1,6 @@
-# Review loop: lens fan for Discussion and Plan, judge-narrowed rounds, a lighter convergence rule
+# Review loop: lens fans for Discussion and Plan, judge-narrowed rounds, lighter convergence, models per segment
 
-`review-loop-convergence` · Note · enhancement, burler, loom
+`review-loop-convergence` · Task · bug, enhancement, burler, loom
 
 ## What happened
 
@@ -39,3 +39,24 @@ Since the reviewer/fixer split (572ab84e8) the recipe's `gates` reach only the f
 So a fan's extra lenses are cheap next to the explore phase, which is paid once per round.
 The forks run in parallel, so a round takes about the explore phase plus the slowest lens plus consolidation; the spike measured no wall-clock time.
 The task measures both against today's solo rounds, per round and per segment, before the fan becomes the default.
+
+## Models per segment
+
+`loom.yaml`'s `review` and `fix` keys take one model-spec or a per-round list, but one setting serves every review segment.
+Discussion, Plan and Webster review differ in subject and in whether they fan, so the task lets each segment set its own review and fix models (a solo reviewer wants `opus`, a lens fan `sonnet[medium]`), with today's keys as the default.
+
+## The fixer starts when the review is done
+
+The fixer starts beside the reviewer and polls `lyx burler await-review` so its orientation overlaps the review (572ab84e8).
+When a review runs longer than the prompt-cache TTL the fixer's cache expires while it waits, and each await poll is a paid turn.
+The task measures that against starting the fixer once the review file exists, and keeps the cheaper; once kick-start packs exist (`kick-start-pack`) the fixer's orientation is short either way.
+
+## Circling decisions resume the run (from issue #446)
+
+Imported from [issue #446](https://github.com/Knatte18/loomyard/issues/446).
+
+After `lyx loom circling accept plan-glyph-precision` (Discussion-Bouncer round 5, cause budget, under a watching batten run), the verb printed `"resume":"lyx loom start"`, and `lyx loom resume` in the task worktree then refused: "the run is awaiting a decision, which resume does not give; run \"lyx loom approve\" or \"lyx loom reject\"", although the decision was recorded and approve/reject are PR-Gate verbs.
+The run moved on only after the driver stepped it.
+
+Expected: after `circling accept` or `continue` under a watching batten run, both outputs name the same next step, and `loom resume` either resumes on the recorded circling decision or says the decision is recorded and the driver will step it.
+The hub's role tells it to run `lyx loom resume` after a circling decision.

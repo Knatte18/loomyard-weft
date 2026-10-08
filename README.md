@@ -20,6 +20,8 @@ Waits on nothing open; can start now, in parallel.
    - VIEW plus a zoom button per strand and Alt-key navigation, run tabs that never fall off a narrow terminal, and each strand role in its own color
 1. **Webster: recovery never dead-ends, stale config fails at the start, a computed Merriam base** — [`webster-dead-ends`](design-webster-dead-ends.md) · bug, enhancement, webster · running · Plan-Burler
    - Reset targets as lyx verbs, a recovery prompt that names a dirty tree, decisions that reach a begun card, a retryable failed record-batch, batcher.yaml checked in preflight, and a computed batchifier base
+1. **Review loop: lens fans for Discussion and Plan, judge-narrowed rounds, lighter convergence, models per segment** — [`review-loop-convergence`](design-review-loop-convergence.md) · bug, enhancement, burler, loom
+   - Wire burler cluster review into Discussion and Plan with their own fans, let the judge drop settled lenses, converge without circling to the budget, set models per segment, start the fixer after the review, and make circling decisions resume the run
 
 ### Layer B
 
@@ -40,7 +42,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - The board already marks running tasks; a write that changes the scope of a running task is refused
 1. **Plan-review rubric lets a reviewer recommend a card retyping that validate-plan rejects** — [`plan-rubric-containment`](design-plan-rubric-containment.md) · bug
 1. **stencilstore: a pair branched before the last deploy warns source-ahead and asks for a deploy** — [`stencil-drift-behind-main`](design-stencil-drift-behind-main.md) · bug, stencil
-1. **loom resume after circling accept names approve/reject, and circling accept says resume with loom start** — [`circling-resume-message`](design-circling-resume-message.md) · bug, loom
 1. **batten run on a slug whose earlier run is done reports ok and does nothing** — [`batten-reused-slug`](design-batten-reused-slug.md) · bug, batten
 
 ### Enhancements
@@ -73,8 +74,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Turn file:line locations from verify failures, lint and audits into member glyphs with quarry enclose, then into a kick-start pack
 1. **Audit how plans use glyphs in practice, then tune the plan stencil** — [`glyph-practice-audit`](design-glyph-practice-audit.md) · enhancement, loom, stencil
    - After plan-glyph-precision lands: measure glyph use, Plan rounds and handle binding from real runs; kick-start waits on it
-1. **Review loop: lens fan for Discussion and Plan, judge-narrowed rounds, a lighter convergence rule** — [`review-loop-convergence`](design-review-loop-convergence.md) · enhancement, burler, loom
-   - Wire burler cluster review into Discussion and Plan, let the judge drop settled lenses per bounce, and converge without circling to the budget on fresh edge-case keys
 
 ### Features
 
