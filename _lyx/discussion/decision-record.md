@@ -230,6 +230,12 @@ Decision: An incremental reader does not advance its offset past a stamp line wi
 
 Rationale: Keeps since the same for every reader, as D1 claims, without new shared state.
 
+### Added after Discussion (parent, 2026-10-08): Transcript-fallback turn ends are per reader
+
+Decision: Only a waiting turn end whose background tasks come from the Stop payload is signal-only. A waiting turn end whose tasks come from the transcript fallback is listed with the per-reader transcript markers, and the acceptance rows allow a late reader to read it without its tasks.
+
+Rationale: outstandingBackgroundTasks reads the transcript at parse time when the payload has no background_tasks, so the entry depends on when it is read.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: hook names, payload fields, the registry and the transcript markers live only in `claudeengine`; the states, the reducer and the signal types are provider-neutral in `shuttleengine`.
