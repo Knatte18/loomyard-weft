@@ -20,4 +20,4 @@ git's keep form moves HEAD and the index to `sha` and carries every uncommitted 
 `gitrepoPinnedRunBoundMethods` in `cmd/lyx/gitrepoboundary_test.go` gains `ResetKeep` beside `ResetHard`, so `TestGitrepoBoundary_PinnedRunCallSites` pins the new `runChecked` call site; `cmd/lyx/checkedcall_test.go` needs no edit, since `runChecked` is not a raw site.
 The gitrepo package doc lists `ResetKeep` among the CLI-bound methods beside `ResetHard`.
 
-**ImpactSummary:** Adds one method to gitrepo.Repo and its entry in the pinned run-bound method set; no existing caller changes, and its one consumer is card 14's standalone reset.
+**ImpactSummary:** Adds one method to gitrepo.Repo and its entry in the pinned run-bound method set; no existing caller changes, and its one consumer is card 15's standalone reset.

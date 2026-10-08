@@ -12,12 +12,12 @@
 - `internal/batcher#Active`
 - `internal/batcher#loadConfig`
 - `internal/batcher#Batcher.Batch`
-- `internal/batcher#costBatcher.Batch`
-- `internal/batcher#identityBatcher.Batch`
-- `internal/batcher#PeakContext`
-- `internal/batcher#breakdownOf`
-- `internal/batcher#startContext`
-- `internal/batcher#peakAccumulator.start`
+- `internal/batcher#costBatcher.Batch` -> `func (b costBatcher) Batch(plan *planparser.Plan, cards []planparser.Card, sizes SizeSource, before int, base StartBase) ([]Batch, error)`
+- `internal/batcher#identityBatcher.Batch` -> `func (identityBatcher) Batch(_ *planparser.Plan, cards []planparser.Card, _ SizeSource, _ int, _ StartBase) ([]Batch, error)`
+- `internal/batcher#PeakContext` -> `func PeakContext(plan *planparser.Plan, cards []planparser.Card, sizes SizeSource, w Weights, base StartBase, position int) (float64, error)`
+- `internal/batcher#breakdownOf` -> `func breakdownOf(cards []planparser.Card, loads []cardLoad, w Weights, base StartBase, position int) Breakdown`
+- `internal/batcher#startContext` -> `func startContext(w Weights, base StartBase, position int) float64`
+- `internal/batcher#peakAccumulator.start` -> `func (p *peakAccumulator) start(w Weights, base StartBase, position int)`
 - `internal/batcher/template.yaml`
 - `internal/batcher/doc.go`
 - `internal/batcher/config_test.go`

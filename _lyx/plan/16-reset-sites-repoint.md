@@ -1,8 +1,8 @@
-# Card 15 — reset-sites-repoint
+# Card 16 — reset-sites-repoint
 
 **Edit:**
 - `internal/websterengine#reconcileHead`
-- `internal/websterengine#reconcileReportHead`
+- `internal/websterengine#reconcileReportHead` -> `func reconcileReportHead(git Git, worktree, reportHead, subject string, parentBranch ParentBranchFunc, batch int) (warning string, err error)`
 - `internal/websterengine#headRefusal`
 - `internal/websterengine#reportHeadRefusal`
 - `internal/websterengine#parentMergeRefusal`

@@ -6,9 +6,9 @@
 - `internal/websterengine/merriambase_test.go`
 
 **Edit:**
-- `internal/websterengine#formBatches`
-- `internal/websterengine#batchCards`
-- `internal/websterengine#ExecutionBatches`
+- `internal/websterengine#formBatches` -> `func formBatches(plan *planparser.Plan, active batcher.Batcher, sizes batcher.SizeSource, before int, base batcher.StartBase) ([]batcher.Batch, error)`
+- `internal/websterengine#batchCards` -> `func batchCards(plan *planparser.Plan, cards []planparser.Card, active batcher.Batcher, sizes batcher.SizeSource, before int, base batcher.StartBase) ([]batcher.Batch, error)`
+- `internal/websterengine#ExecutionBatches` -> `func ExecutionBatches(plan *planparser.Plan, st *State, active batcher.Batcher, sizes batcher.SizeSource, base batcher.StartBase) ([]batcher.Batch, error)`
 - `internal/websterengine#Run`
 - `internal/websterengine#RebaselineDeps`
 - `internal/websterengine#rebaselineBatches`
@@ -29,7 +29,7 @@
 `merriambase.go` holds:
 - `MerriamBaseOf`, pure: the summed line count of the given texts (a text's lines counted as `batcher.DiskSizes` counts a file's) as `StartBase.Lines`, and the Go constant below as `StartBase.Fixed`.
 - An unexported constant for the system prompt and tools: 20600, the measured Merriam session start, minus the computed size (lines × the template's `context_per_line` of 12) of this worktree's `CLAUDE.md` and the Master stencil with its inlined PATTERN overview as they stand when this card runs, so the computed base reproduces the measured start over that tree; its comment names that derivation, the tree it was taken at and the line counts it subtracted.
-Cards 15 and 19 add Master ladder rungs after this card, so at landing the computed base sits those few stencil lines above the measured start; the constant is not re-derived for them, the decision record's auto-mode assumption leaving such drift to the `orientation` refit.
+Cards 16 and 20 add Master ladder rungs after this card, so at landing the computed base sits those few stencil lines above the measured start; the constant is not re-derived for them, the decision record's auto-mode assumption leaving such drift to the `orientation` refit.
 - `MerriamBase(geom Geometry) (batcher.StartBase, error)`: `MerriamBaseOf` over `CLAUDE.md` and, when present, `CLAUDE.local.md` at `geom.WorktreeRoot`, the Master template read with `MasterTemplate(geom.StencilsDir)` together with the orchestrator PATTERN directive `pattern.Directive(geom.RepoRoot, geom.StencilsDir, pattern.RoleOrchestrator)` renders (the stencil as rendered, minus the batch table and progress markers the partition has not formed yet), and `00-overview.md` at `geom.PlanDir`, the one plan file Merriam reads up front.
   An absent `CLAUDE.md`/`CLAUDE.local.md` adds nothing; any other read error is returned.
 `formBatches`, `batchCards` and `ExecutionBatches` take the `batcher.StartBase` and pass it to `Batch`.

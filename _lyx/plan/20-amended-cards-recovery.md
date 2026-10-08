@@ -1,4 +1,4 @@
-# Card 19 — amended-cards-recovery
+# Card 20 — amended-cards-recovery
 
 **Edit:**
 - `internal/websterengine#failBatch`
@@ -22,7 +22,7 @@
 **Uses:**
 - `plan:internal/websterengine#AmendedCard`
 
-**Intent:** An amendment recorded against the in-flight batch (card 18) forces exactly one re-run of that batch through the existing failed-batch recovery path (D6's recovery half).
+**Intent:** An amendment recorded against the in-flight batch (card 19) forces exactly one re-run of that batch through the existing failed-batch recovery path (D6's recovery half).
 - Forcing the failure: when record-batch records a fork's report, or `PersistRecoveryTerminal` records a recovery's terminal digest, and the batch holds an `AmendedCards` entry with `Rendered: false`, the batch first runs every normal check and is then recorded failed whatever the report's status, through `failBatch`.
   `failBatch` itself adds, for every unrendered entry, a `card_amended` reason naming the card ("card NN-slug was amended after this attempt began; recovery re-runs the batch on the amended card"), so a batch that another check already failed carries it too, and it never enters `Uncheckable`.
   `BatchFailedError` gains `CardAmended`, true when such a reason was added.

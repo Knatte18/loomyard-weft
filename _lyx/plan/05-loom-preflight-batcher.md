@@ -1,7 +1,7 @@
 # Card 5 — loom-preflight-batcher
 
 **Edit:**
-- `internal/loomshed#NewLoomPreflight`
+- `internal/loomshed#NewLoomPreflight` -> `func NewLoomPreflight(name, statusPath, statusLockPath, configBaseDir string) shedengine.ShedProducer`
 - `internal/loomshed#loomPreflightProducer`
 - `internal/loomshed#loomPreflightProducer.Call`
 - `internal/loomshed/doc.go`
