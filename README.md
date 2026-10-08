@@ -78,6 +78,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Turn file:line locations from verify failures, lint and audits into member glyphs with quarry enclose, then into a kick-start pack
 1. **Audit how plans use glyphs in practice, then tune the plan stencil** — [`glyph-practice-audit`](design-glyph-practice-audit.md) · enhancement, loom, stencil
    - After plan-glyph-precision lands: measure glyph use, Plan rounds and handle binding from real runs; kick-start waits on it
+1. **Daemons wait on events, not tight polls: near-zero CPU while idle** — [`daemon-idle-cost`](design-daemon-idle-cost.md) · enhancement, reed
+   - reed watchdog polls a signal file every 100 ms around the clock; a rule for every lyx daemon (creel and later ones): event-driven waits, second-scale backoff polls, pinned by a guard
 
 ### Features
 
