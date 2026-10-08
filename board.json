@@ -956,6 +956,21 @@
       "isolated": false,
       "brief": "Run the llm-tier hook-capture scenario once and turn the real StopFailure, Notification and SessionEnd payloads into corpus fixtures",
       "body": "`shuttle-state` added recording hooks for `UserPromptSubmit`, `StopFailure`, `Notification` and `SessionEnd`, with an `llm`-tier capture scenario that was compiled but never run.\nThe payload shapes those hooks parse are unverified against a real session (an Open risk in that task).\nRun the scenario once and commit the captured payloads as fixtures, so the parsers are tested against real shapes.\n"
+    },
+    {
+      "id": 200,
+      "slug": "caller-scan-import-path",
+      "title": "Caller coverage: resolve imports by path",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "quarry"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The caller-uncovered scan misses callers importing under an alias or a dot import, and callers in files an earlier card creates",
+      "body": "`plan-glyph-precision` added the `caller-uncovered` plan-gate check (D5).\nIts caller scan matches by package clause name, so it cannot see a caller that imports the package under an alias or a dot import, nor a caller in a file an earlier card creates.\nBoth are accepted bounds in that task's decision record.\nResolving imports by path would close the first gap; worth building only if planners hit it.\n"
     }
   ],
   "legacy_done": [

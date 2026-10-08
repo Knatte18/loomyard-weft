@@ -78,6 +78,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - reed watchdog polls a signal file every 100 ms around the clock; a rule for every lyx daemon (creel and later ones): event-driven waits, second-scale backoff polls, pinned by a guard
 1. **Capture real hook payloads into fixtures** — [`shuttle-hook-payload-corpus`](design-shuttle-hook-payload-corpus.md) · enhancement, shuttle
    - Run the llm-tier hook-capture scenario once and turn the real StopFailure, Notification and SessionEnd payloads into corpus fixtures
+1. **Caller coverage: resolve imports by path** — [`caller-scan-import-path`](design-caller-scan-import-path.md) · enhancement, quarry
+   - The caller-uncovered scan misses callers importing under an alias or a dot import, and callers in files an earlier card creates
 
 ### Features
 
