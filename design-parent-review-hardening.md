@@ -10,7 +10,7 @@ The parent-review gate holds its promises in the cases the first version left op
 
 - **Live smoke.** The smoke test uses a stub writer that records the typed line, so the SendMessage hop to a real hand-started parent has never run; run it once live.
 - **Wait bound off the boundary.** Expiry is checked only at a writer turn boundary (`internal/shuttleengine/wait.go`, `gateAtBoundary`), so a writer stuck mid-turn (for example on a permission prompt for `lyx loom review delivered` in interactive mode) holds the run until `discussion_timeout_min` instead of `parent_review_wait_min`; expiry needs no send, so evaluate it on every tick.
-- **Mid-turn sends after a restart.** `AttachGated` replays events from offset 0, so the first tick treats the writer as idle even mid-turn: a notify-carried prompt or a reject re-prompt can be typed into a running turn, and a consumed reject is let through while the writer is still fixing.
+- **Mid-turn sends after a restart** moved to task `shuttle-send` (2026-10-08).
 - **Turns the loop cannot see.** A turn started by the parent replying to the writer through SendMessage, or by the operator typing, leaves the loop at a boundary; tell the orch fork not to reply to the writer.
 - **Poll cost.** While pending at a boundary every 500 ms tick re-runs `discussionparser.Validate`, three locked JSON reads and a `MkdirAll`; throttle re-evaluation to a few seconds.
 - **Way-forward from the prime.** The no-open-request refusal names `lyx loom status <run>`, which cannot address the child from the prime; name `lyx batten status` there.
