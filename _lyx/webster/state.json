@@ -1,0 +1,121 @@
+{
+  "runGuid": "f22eeb12a6ff9de46e77e28c272c78e8",
+  "planFingerprint": "62b476e15028684ac6a58397eb4e0f49422d869f785ed27b8e89a06ed50059b2",
+  "planFileHashes": {
+    "00-overview.md": "711019b81799f304e552a8ceffdc97b13d073f3abf8577f442817ced570af221",
+    "01-run-lock.md": "258d990f331ce4600a43d6fa825c15f70a51d5bb72d5aa06af4f53955dd1daaa",
+    "02-shared-hub-board.md": "84f52b2503db867c2a560461409c1eadc254cc34e71cf0550b36e4f41984be25",
+    "03-batten-claim.md": "7f8a050f3ccefc92bf51d27c0aa12477312c48500e295d95fb079e15742e4780"
+  },
+  "planOverviewFrameHash": "18207555be97861c96438974fca75ce6405670dbba50643e91cfd0bca6e67d81",
+  "partition": [
+    {
+      "cards": [
+        "01-run-lock",
+        "02-shared-hub-board",
+        "03-batten-claim"
+      ],
+      "profile": "cautious",
+      "estimate": 200306,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 53908,
+        "read_union": 72292,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 696,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/boardcli/doc.go": 408,
+              "file:internal/boardcli/intake_test.go": 5148,
+              "file:internal/boardengine/doc.go": 1140,
+              "file:plugins/ly/skills/board/SKILL.md": 1440,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/boardcli": 2000,
+              "package:internal/boardengine": 2000,
+              "package:plugins/ly/skills/board": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/boardcli": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:plugins/ly/skills/board": 2000
+            },
+            "messages": 95,
+            "written": 29196
+          },
+          {
+            "card": 2,
+            "card_text": 480,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/boardengine/board_test.go": 7392,
+              "file:internal/loomcli/landingdeps_markdone_test.go": 1260,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/boardengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/testkit/boardkit": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/testkit/boardkit": 2000
+            },
+            "messages": 99,
+            "written": 30180
+          },
+          {
+            "card": 3,
+            "card_text": 480,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/battencli/cli.go": 4536,
+              "file:internal/battencli/lifecycle_integration_test.go": 16092,
+              "file:internal/battencli/wire_seams_test.go": 3696,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/battencli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/battencli": 2000
+            },
+            "messages": 47.5,
+            "written": 14730
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "d7428ac8ea567273118e64ff7cf33d14",
+  "masterSessionId": "ab90e68e-11af-4afe-a611-aabda36672d1",
+  "batches": {
+    "1": {
+      "slug": "run-lock",
+      "cards": [
+        "01-run-lock",
+        "02-shared-hub-board",
+        "03-batten-claim"
+      ],
+      "cardHashes": {
+        "01-run-lock": "258d990f331ce4600a43d6fa825c15f70a51d5bb72d5aa06af4f53955dd1daaa",
+        "02-shared-hub-board": "84f52b2503db867c2a560461409c1eadc254cc34e71cf0550b36e4f41984be25",
+        "03-batten-claim": "7f8a050f3ccefc92bf51d27c0aa12477312c48500e295d95fb079e15742e4780"
+      },
+      "startSha": "e12fb6afbbbe40bbe74a383a20a7f6eba847de2a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T20:14:56Z",
+      "sessionId": "ab90e68e-11af-4afe-a611-aabda36672d1",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
