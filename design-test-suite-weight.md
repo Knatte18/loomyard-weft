@@ -16,3 +16,4 @@ Tests in four packages link the `lyx` binary with cgo on their own, and `TestLoo
 - `lyx` is built once per test run and reused across packages.
 - Fixture repositories never auto-gc in the background, and every test waits for the git and lyx children it starts before its cleanup.
 - A scan keeps tier 1 and tier 2 free of tmux.
+- A static scan enforces `PATTERN-shuttle-stop`: `RemoveStrand` on a shuttle run's strand appears only in `shuttleengine` and the exceptions the entry names (`loomcli`'s removal of the loom driver's own strand, `orchcli`'s removal of the orch strand); the PR-Gate review of `shuttle-send` found the entry false against `orchcli` with nothing to catch it.

@@ -1315,22 +1315,6 @@
       "body": "## Seen\n\nThe PR-Gate review of `webster-record-batch` (PR #473) found that `recordedOverviewFrame` in `internal/websterengine` returns an empty frame without logging when the stored baseline copy has no parseable Card Index, so the reason a rebaseline refuses on an old record is invisible.\n\n## Idea\n\nLog the fallback at Info with the baseline path, and name it in the rebaseline refusal.\n"
     },
     {
-      "id": 244,
-      "slug": "shuttle-stop-scan",
-      "title": "Scan enforcing PATTERN-shuttle-stop",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "shuttle",
-        "reed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "No test enforces which packages may remove a shuttle run strand; add a static scan",
-      "body": "## Seen\n\nThe PR-Gate review of `shuttle-send` (PR #474) found `PATTERN-shuttle-stop` false against `orchcli`, and no Go test or scan names that entry, so nothing caught it.\n\n## Idea\n\nA static scan allows `RemoveStrand` calls on a shuttle run strand only in `shuttleengine` and the exceptions the entry names.\n"
-    },
-    {
       "id": 245,
       "slug": "gate-test-scope",
       "title": "Gate test scope: which gate runs which tier, bounded hub-wide",
@@ -1372,7 +1356,7 @@
       ],
       "isolated": false,
       "brief": "Measure each tier, non-login shells and shared servers in tier 3, lyx built once, no background gc in fixtures (#472), a no-tmux scan for tiers 1-2",
-      "body": "## Seen\n\nOn 2026-10-08 the integration tier dominated CPU during a Publish verify (`fabricengine.test` alone at 145%), and in the 53 hours before the crash tmux started 9,022 servers and 32,375 panes, nearly all from tier 3 tests, each pane a login shell that sources the operator's profile.\nTests in four packages link the `lyx` binary with cgo on their own, and `TestLoomResumeReconcilesTheHubConfigBeforeArming` flakes on `t.TempDir` cleanup because a git child, most likely a detached auto-gc, still writes into the fixture's object store (#472).\n\n## Goal\n\n- A measurement of every tier per package (time, CPU, peak memory, process count) with `cmd/testtiming`, on a quiet machine, before and after.\n- Tier 3 panes run a non-login shell, and tests share one tmux server per package where isolation allows.\n- `lyx` is built once per test run and reused across packages.\n- Fixture repositories never auto-gc in the background, and every test waits for the git and lyx children it starts before its cleanup.\n- A scan keeps tier 1 and tier 2 free of tmux.\n"
+      "body": "## Seen\n\nOn 2026-10-08 the integration tier dominated CPU during a Publish verify (`fabricengine.test` alone at 145%), and in the 53 hours before the crash tmux started 9,022 servers and 32,375 panes, nearly all from tier 3 tests, each pane a login shell that sources the operator's profile.\nTests in four packages link the `lyx` binary with cgo on their own, and `TestLoomResumeReconcilesTheHubConfigBeforeArming` flakes on `t.TempDir` cleanup because a git child, most likely a detached auto-gc, still writes into the fixture's object store (#472).\n\n## Goal\n\n- A measurement of every tier per package (time, CPU, peak memory, process count) with `cmd/testtiming`, on a quiet machine, before and after.\n- Tier 3 panes run a non-login shell, and tests share one tmux server per package where isolation allows.\n- `lyx` is built once per test run and reused across packages.\n- Fixture repositories never auto-gc in the background, and every test waits for the git and lyx children it starts before its cleanup.\n- A scan keeps tier 1 and tier 2 free of tmux.\n- A static scan enforces `PATTERN-shuttle-stop`: `RemoveStrand` on a shuttle run's strand appears only in `shuttleengine` and the exceptions the entry names (`loomcli`'s removal of the loom driver's own strand, `orchcli`'s removal of the orch strand); the PR-Gate review of `shuttle-send` found the entry false against `orchcli` with nothing to catch it.\n"
     },
     {
       "id": 247,
