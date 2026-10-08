@@ -25,6 +25,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **board: refuse scope edits to a running task** — [`board-lock-running`](design-board-lock-running.md) · bug, board
    - The board already marks running tasks; a write that changes the scope of a running task is refused
 1. **batten run on a slug whose earlier run is done reports ok and does nothing** — [`batten-reused-slug`](design-batten-reused-slug.md) · bug, batten
+1. **The plan gate fails done cards after a goto back to Plan-Review, and rebaseline refuses follow-up cards on an older webster record** — [`plan-gate-done-cards`](design-plan-gate-done-cards.md) · bug
 
 ### Enhancements
 
