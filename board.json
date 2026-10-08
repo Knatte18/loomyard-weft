@@ -626,22 +626,6 @@
       "body": "Idea, not a priority (operator, 2026-10-07): a full list of a run's gates, shown as a checklist with a tick box per gate and how long each ran or has run so far.\nIt holds too much for a status line or a pane border, so it likely needs a pane of its own in the run's reed session.\n"
     },
     {
-      "id": 173,
-      "slug": "test-tiers-hardening",
-      "title": "Test tiers: a stricter comment lint, a reviewer range that covers the merge of main",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "loom",
-        "burler"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The comment lint passes every comma-plus-conjunction; Burler reviewers never see defects that arrive through the merge of main",
-      "body": "From test-tiers PR-Gate (2026-10-07):\n\n- The comment lint lets every comma-plus-conjunction break through, so the clause-boundary rule is still judged by reviewers.\n\nFrom shuttle-send's Publish blocks (2026-10-08):\n\n- A Burler reviewer reads only `git diff $(git merge-base main HEAD)..HEAD`, so a defect that arrives through the merge of main is outside its range even when Publish failed on it; a goto from a failed Publish needs the failure handed to the round.\n"
-    },
-    {
       "id": 176,
       "slug": "lifecycle-waits",
       "title": "Orch and batten: compact reload, one event-driven notice channel, a window per batten",
@@ -1357,7 +1341,8 @@
         "webster",
         "loom",
         "stencil",
-        "config"
+        "config",
+        "burler"
       ],
       "issues": [],
       "depends_on": [
@@ -1365,7 +1350,7 @@
       ],
       "isolated": false,
       "brief": "Card gate tests only its own packages at tier 1, tier 2 per batch and at the plan verify, a hub-wide slot lock for gate test runs, guarded publish_verify",
-      "body": "## Seen\n\nBefore the 2026-10-08 crash, Webster implementer forks ran `go build ./... \u0026\u0026 go test ./...` plus `go test -tags integration` on their packages every 20 to 60 seconds.\nThat is the card gate command `cardGateCommand` derives (`internal/websterengine/cardgate.go`), run once per card.\nGates, forks, the orch and hub fix agents built and tested with no hub-wide bound, and with four runs in flight the user slice reached its 16 GiB `MemoryHigh` and the machine froze.\nFrom `test-tiers-hardening`: the Webster-Burler round gate compiles the `tmux` tier and never runs it, so a tier 3 defect surfaces only at Publish; a task can empty its own `publish_verify` in the pair's `landing.yaml`; no gate runs the `llm` tier.\n\n## Goal\n\n- The card gate runs tier 1 for the card's own packages only: no `go build ./... \u0026\u0026 go test ./...` over the module and no tier 2.\n- Tier 2 runs once per batch for the batch's packages, and in full at the plan verify, Publish and Finalize.\n- Tier 3 stays at Publish; Discussion decides, against its cost, whether the round gate runs an impacted-set tier 3 pass.\n- The `llm` tier stays by hand, and `pattern/PATTERN-test-speed.md` says so as a decision.\n- A hub-wide slot lock (an OS file lock per slot, slot count in config) bounds concurrent gate test runs, each run caps `-p`, and the wait is logged and shown in status.\n- The webster stencils tell each fork which packages it may test, and spawned agents are refused a raw full-module `go test` or `go build ./...`.\n- A pair's own config cannot empty `publish_verify`.\n- `pattern/PATTERN-test-speed.md`'s gate table and CLAUDE.md's push rule match the new gates in the same commit.\n"
+      "body": "## Seen\n\nBefore the 2026-10-08 crash, Webster implementer forks ran `go build ./... \u0026\u0026 go test ./...` plus `go test -tags integration` on their packages every 20 to 60 seconds.\nThat is the card gate command `cardGateCommand` derives (`internal/websterengine/cardgate.go`), run once per card.\nGates, forks, the orch and hub fix agents built and tested with no hub-wide bound, and with four runs in flight the user slice reached its 16 GiB `MemoryHigh` and the machine froze.\nFrom `test-tiers-hardening`: the Webster-Burler round gate compiles the `tmux` tier and never runs it, so a tier 3 defect surfaces only at Publish; a task can empty its own `publish_verify` in the pair's `landing.yaml`; no gate runs the `llm` tier.\n\n## Goal\n\n- The card gate runs tier 1 for the card's own packages only: no `go build ./... \u0026\u0026 go test ./...` over the module and no tier 2.\n- Tier 2 runs once per batch for the batch's packages, and in full at the plan verify, Publish and Finalize.\n- Tier 3 stays at Publish; Discussion decides, against its cost, whether the round gate runs an impacted-set tier 3 pass.\n- The `llm` tier stays by hand, and `pattern/PATTERN-test-speed.md` says so as a decision.\n- A hub-wide slot lock (an OS file lock per slot, slot count in config) bounds concurrent gate test runs, each run caps `-p`, and the wait is logged and shown in status.\n- The webster stencils tell each fork which packages it may test, and spawned agents are refused a raw full-module `go test` or `go build ./...`.\n- A pair's own config cannot empty `publish_verify`.\n- `pattern/PATTERN-test-speed.md`'s gate table and CLAUDE.md's push rule match the new gates in the same commit.\n- The comment lint (`lyx loom lint-comments`, `internal/loomcli/lintcomments.go`) breaks only at a comma before a coordinating conjunction whose clause has its own subject and verb, not at every comma-plus-conjunction, so reviewers stop judging the clause-boundary rule by hand.\n- A Burler reviewer's range covers what the gate failed on: when Publish failed on a defect that arrived through the merge of main, the round after a goto reads that merge and the failure, not only `git diff $(git merge-base main HEAD)..HEAD`.\n"
     },
     {
       "id": 246,

@@ -1,6 +1,6 @@
 # Gate test scope: which gate runs which tier, bounded hub-wide
 
-`gate-test-scope` · Task · bug, enhancement, webster, loom, stencil, config
+`gate-test-scope` · Task · bug, enhancement, webster, loom, stencil, config, burler
 
 Depends on: [`plan-gate-checks`](design-plan-gate-checks.md)
 
@@ -21,3 +21,5 @@ From `test-tiers-hardening`: the Webster-Burler round gate compiles the `tmux` t
 - The webster stencils tell each fork which packages it may test, and spawned agents are refused a raw full-module `go test` or `go build ./...`.
 - A pair's own config cannot empty `publish_verify`.
 - `pattern/PATTERN-test-speed.md`'s gate table and CLAUDE.md's push rule match the new gates in the same commit.
+- The comment lint (`lyx loom lint-comments`, `internal/loomcli/lintcomments.go`) breaks only at a comma before a coordinating conjunction whose clause has its own subject and verb, not at every comma-plus-conjunction, so reviewers stop judging the clause-boundary rule by hand.
+- A Burler reviewer's range covers what the gate failed on: when Publish failed on a defect that arrived through the merge of main, the round after a goto reads that merge and the failure, not only `git diff $(git merge-base main HEAD)..HEAD`.
