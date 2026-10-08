@@ -1,6 +1,6 @@
 # Plan cards name the members they change as glyphs, after lyx's use of glyphs is tested systematically
 
-`plan-glyph-precision` · Task · enhancement, loom, quarry · running · Plan-Bouncer
+`plan-glyph-precision` · Task · enhancement, loom, quarry · running · Batchifier
 
 ## Why
 
