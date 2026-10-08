@@ -15,6 +15,8 @@ Waits on nothing open; can start now, in parallel.
    - Send waits for a ready pane and a settled input before Enter, retries with backoff, and a lost submission is transient; attach no longer halts on a stopped Burler half
 1. **A hub survives a lyx binary change; the no-script rule reaches spawned agents** — [`binary-change-and-rules`](design-binary-change-and-rules.md) · bug, enhancement, config, stencil · running · Webster
    - Config reconciles itself on the first lyx command after a binary change, stencil drift behind main stops warning source-ahead, and file-editing stencils state the no-script edit rule
+1. **Plan gate checks: precise callers, nested fixture modules, a reviewer that knows the gate** — [`plan-gate-checks`](design-plan-gate-checks.md) · bug, enhancement, loom, quarry
+   - Resolve callers by import path and receiver type, let gates run against nested fixture modules, and give the plan reviewer the gate check list
 
 ## Notes
 
@@ -30,9 +32,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **webster record-batch: zero fork transcripts for a forked batch forces a full re-drive** — [`record-batch-no-transcripts`](design-record-batch-no-transcripts.md) · bug, webster
 1. **webster record-batch rejects abbreviated head_sha that is a prefix of HEAD** — [`record-batch-short-sha`](design-record-batch-short-sha.md) · bug, webster
 1. **Loom re-step refused with producer error while a stopped review strand's run dir is younger than 3m** — [`restep-young-run-dir`](design-restep-young-run-dir.md) · bug, loom, burler
-1. **caller-uncovered emits false-positive informational entries for type-name and method-name matches** — [`caller-uncovered-false-positives`](design-caller-uncovered-false-positives.md) · bug, loom, quarry
-1. **Plan reviewer suggests a file-plus-member card pairing that the redundant-file-target gate blocks** — [`plan-review-redundant-pairing`](design-plan-review-redundant-pairing.md) · bug, loom, stencil
-1. **Plan gates can name packages inside a nested fixture module, which cannot pass** — [`plan-gate-nested-module`](design-plan-gate-nested-module.md) · bug, loom
 1. **Plan agent can record a decision as --by parent** — [`plan-agent-parent-decision`](design-plan-agent-parent-decision.md) · bug, loom, stencil
 1. **Git push without a timeout hangs a batten run after laptop sleep** — [`git-network-timeout`](design-git-network-timeout.md) · bug, fabric, batten
 1. **Finalize warns of per-worktree config changes that came from main** — [`finalize-config-warn-from-main`](design-finalize-config-warn-from-main.md) · bug, loom, config
@@ -83,7 +82,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - A report over round usage records for the fan-on decision; a lost usage record shows in the facts
 1. **Re-measure the Merriam fixed context with tools/tokencount** — [`merriam-fixed-context-calibrate`](design-merriam-fixed-context-calibrate.md) · enhancement, webster
    - merriamFixedContext is one measurement and drifts as Claude Code changes; a calibrate step re-measures it
-1. **Caller coverage: precise caller resolution** — [`caller-scan-import-path`](design-caller-scan-import-path.md) · enhancement, quarry
 
 ### Features
 
