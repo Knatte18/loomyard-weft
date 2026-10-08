@@ -1,6 +1,6 @@
 # reed: strand and run tabs, narrow-terminal run row, a color per strand role
 
-`reed-view` · Task · enhancement, reed · running · Webster-Bouncer
+`reed-view` · Task · enhancement, reed · running · Webster-Burler
 
 The run view in reed: strands as zoomable tabs, runs as session tabs that fit a narrow terminal, and a color per strand role.
 
