@@ -1,13 +1,13 @@
 {
   "runGuid": "27d451ecff9f1492b560e5fa3f383b27",
-  "planFingerprint": "99b1b73dfdfdee500c44f12a1ab0d7ce60d6153dd12eff28fb8817d8e4feb054",
+  "planFingerprint": "673a39f6bfea8a061198517a4ba36b776ea32d50f7ddbda9fbd9bd859c952592",
   "planFileHashes": {
     "00-overview.md": "7464bc9487299df82c98da9bace70bdb3598bcb08bd3c16549b2660c56d778bd",
-    "01-burler-fan-fallback.md": "a2c6bb1a8290a7183a037872abad3bb101ff5b0bd217792aa494303a7be57329",
+    "01-burler-fan-fallback.md": "1b89b3266c9bc36500d48d45f2b8f72c8da5a745f35d3bda8528104cd7d515d9",
     "02-discussion-plan-fans.md": "3a1069259e51c51e91dc9ad74396bd506d9521984ae08a96e0a2af56e38c2057",
     "03-burler-exclude-held.md": "975dbaede114ae542420798180b78f1d26fb0101addb6e4bb3a04933fec61a9a",
-    "04-shuttle-session-usage.md": "e7deef83660bd708425845ebcc56ac7296e9f65466c9a673924a00060f991816",
-    "05-claude-session-usage.md": "a7551e1554d806736fc7ce8088500465ef64fa28991a50d6b7dbc800bc9bfa52",
+    "04-shuttle-session-usage.md": "10596a61e68c18ea2baa72026ba6beb48f521b9fb852cef62c141c0dc07eeabe",
+    "05-claude-session-usage.md": "5ae5b929fca53a561ab6e8eb33e902789c85e8ea0313de87466d1b4e9e90383d",
     "06-burler-half-usage.md": "1589e3ee8a7db6ad4130d476f220cffd171acb54b2872c219c32799cacc69196",
     "07-round-usage-record.md": "68da89e947b306fc63f15e8f88cde031e03549c65e1b21f504d5e377c906a9cd",
     "08-accumulated-exclusions.md": "f5b313fd071c1190c31a1c4e6ad8ee6b9e42fb6e8f4876bb381a7f0115f5c514",
@@ -279,7 +279,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "018f9b8b88e0e12501c5ce7665ec5aa2",
   "masterSessionId": "723bedac-a02e-4cd9-bddf-e65dacb0f52d",
   "batches": {
@@ -294,19 +294,33 @@
         "06-burler-half-usage"
       ],
       "cardHashes": {
-        "01-burler-fan-fallback": "a2c6bb1a8290a7183a037872abad3bb101ff5b0bd217792aa494303a7be57329",
+        "01-burler-fan-fallback": "1b89b3266c9bc36500d48d45f2b8f72c8da5a745f35d3bda8528104cd7d515d9",
         "02-discussion-plan-fans": "3a1069259e51c51e91dc9ad74396bd506d9521984ae08a96e0a2af56e38c2057",
         "03-burler-exclude-held": "975dbaede114ae542420798180b78f1d26fb0101addb6e4bb3a04933fec61a9a",
-        "04-shuttle-session-usage": "e7deef83660bd708425845ebcc56ac7296e9f65466c9a673924a00060f991816",
-        "05-claude-session-usage": "a7551e1554d806736fc7ce8088500465ef64fa28991a50d6b7dbc800bc9bfa52",
+        "04-shuttle-session-usage": "10596a61e68c18ea2baa72026ba6beb48f521b9fb852cef62c141c0dc07eeabe",
+        "05-claude-session-usage": "5ae5b929fca53a561ab6e8eb33e902789c85e8ea0313de87466d1b4e9e90383d",
         "06-burler-half-usage": "1589e3ee8a7db6ad4130d476f220cffd171acb54b2872c219c32799cacc69196"
       },
       "startSha": "0ebdea27febcda19c135aef38ffdbe242b07dd73",
       "kind": "fork",
       "spawnedAt": "2026-10-08T15:29:12Z",
       "sessionId": "723bedac-a02e-4cd9-bddf-e65dacb0f52d",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-burler-fan-fallback",
+        "status": "done",
+        "head_sha": "d6092e7c8d2016d8f0447b6a978ca33c3e1e2781"
+      },
+      "cardShas": [
+        "d6092e7c8d2016d8f0447b6a978ca33c3e1e2781"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-lens-fan/723bedac-a02e-4cd9-bddf-e65dacb0f52d/subagents/agent-aaf738593b87e426d.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-lens-fan/723bedac-a02e-4cd9-bddf-e65dacb0f52d/subagents/agent-aaf738593b87e426d.jsonl"
+  ]
 }

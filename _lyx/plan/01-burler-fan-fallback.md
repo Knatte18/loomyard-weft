@@ -7,7 +7,7 @@
 - `internal/burlerengine/doc.go`
 
 **Create:**
-- `plan:internal/burlerengine#templateConfig` -> `func templateConfig() (Config, error)`
+- `internal/burlerengine#templateConfig`
 
 **Intent:**
 Decision D4: fan and lens resolution reads the operator's `burler.yaml` first and falls back, per name, to the embedded template.

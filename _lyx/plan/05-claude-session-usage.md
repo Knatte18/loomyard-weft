@@ -1,8 +1,8 @@
 # Card 5 — claude-session-usage
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#Claude.SessionUsage` -> `func (c *Claude) SessionUsage(sessionID, workdir string) shuttleengine.SessionUsage`
-- `plan:internal/shuttleengine/claudeengine#transcriptTokens` -> `func transcriptTokens(path string) (fresh, cacheRead int, err error)`
+- `internal/shuttleengine/claudeengine#Claude.SessionUsage`
+- `internal/shuttleengine/claudeengine#transcriptTokens`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine/usage_test.go`

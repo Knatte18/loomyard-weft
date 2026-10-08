@@ -1,8 +1,8 @@
 # Card 4 — shuttle-session-usage
 
 **Create:**
-- `plan:internal/shuttleengine#SessionUsage` -> `type SessionUsage struct`
-- `plan:internal/shuttleengine#UsageReader` -> `type UsageReader interface`
+- `internal/shuttleengine#SessionUsage`
+- `internal/shuttleengine#UsageReader`
 
 **Edit:**
 - `internal/shuttleengine#Result`
