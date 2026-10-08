@@ -1,26 +1,40 @@
-# Runs overview and event log in their own window in the prime session
+# Runs overview pane under the orch; batten windows hidden
 
 `runs-overview` · Note · feature, reed, orch, batten
 
-One screen for the operator: every run in the hub, and a running log of what happened to them.
+One place for the operator to see every run in the hub and the state it is in.
 `lyx shed status [run-id]` is per run and `lyx orch status` covers only the orchestrator, so today the hub polls each run separately and the operator sees run events only through the orch's chat.
 
-## Where it shows
+## Layout of the prime's reed session (operator, 2026-10-08)
 
-Operator 2026-10-05: its own tmux window in the prime's reed session, beside the orch's window, so the orch pane keeps its full height.
-An own window also removes the 2026-10-02 problem of a status strand under the orch whose height would have to follow the number of runs.
-With `reed-status-tabs`, a session with more than one window shows window tabs, and Alt+Left/Right switches between the orch and the overview.
+This replaces the 2026-10-05 choice of an own window for the overview.
 
-## What it shows
+- The orch runs as today, one strand pane in the prime's strand window.
+- The runs overview is its own pane directly under the orch, in the same window.
+  It is as small as possible while still showing every run in flight and its shed state.
+- VIEW shows both panes; the `orch` strand button zooms the orch alone, so switching to an orch-only view is one key or click.
 
-- Top: one line per run with state, current producer and age.
-- Below: a running event log, one line per batten notice, each with the run's attach command (`cd <pair> && lyx reed attach`), so the operator can jump into a run from it.
-  Batten appends every notice to a hub log file under the prime's `.lyx`, and the window tails it.
+## Batten windows stay, hidden (operator, 2026-10-08)
+
+`lyx batten run --window` gives each batten run its own window in the prime session, which is where its process lives.
+That stays, but the windows are not visible: they carry a marker the status bar skips, so status line 1 shows no `batten:<slug>` buttons.
+Their output says nothing useful to the operator; the overview pane is where runs are watched.
+
+## What the overview shows
+
+- One line per run with state, current producer and age.
+- Open: whether the running notice log (one line per batten notice, each with the run's attach command) shows in the same pane, or the pane holds only the run lines to stay small.
+  Batten appends every notice to a hub log file under the prime's `.lyx` either way.
+
+## Open: the pane's height
+
+The overview's height follows the number of runs, which is what led to the own-window choice on 2026-10-02 and 2026-10-05.
+The layout has to size the pane to its lines (reed's told geometry), or fix it at a small height with a summary line when the runs do not fit.
 
 ## Notices to the orch get shorter
 
-The `[batten notice]` line typed into the orch drops the trailing `cd <pair> && lyx reed attach`: the orch knows where a run's pair is, and the attach command is for the operator, who now gets it in the log.
-`renderNotice` in `internal/battenshed/notice.go` builds that line; the orch's line and the log's line come from the same notice.
+The `[batten notice]` line typed into the orch drops the trailing `cd <pair> && lyx reed attach`: the orch knows where a run's pair is, and the attach command is for the operator, who gets it in the overview.
+`renderNotice` in `internal/battenshed/notice.go` builds that line.
 
 ## Notice wording: a wait is not an error (operator, 2026-10-05)
 
@@ -28,13 +42,3 @@ Shed keeps the reason for every halt in `Status.Error`, including an awaiting PR
 Seen: `child left running; child state awaiting, error: the pull request awaits review; …`.
 Label the text by state: `error:` only for failed and blocked, and `waiting:` (or the bare reason) for awaiting and paused.
 Phrase the condition by what happened, e.g. `board-config-per-worktree: awaiting at PR-Gate: the pull request awaits review`, not `child left running; child state awaiting`.
-
-
-From `reed-view` Discussion (D8, 2026-10-08): Alt+Left/Right switch runs (tmux sessions) through `lyx reed switch`, not windows; windows get their own buttons on status line 1 and the prefix `n`/`p` keys.
-This note's Alt+Left/Right between the orch and its overview window needs a new binding.
-
-## The overview replaces the batten windows (operator, 2026-10-08)
-
-The per-run `batten:<slug>` windows that `lyx batten run --window` opens in the prime session say nothing useful to the operator, and they crowd status line 1 with one button each.
-The batten windows go: each batten run still needs a process to live in, but it runs without a window of its own (its output to its log), and the one overview window is the only run window in the prime.
-The overview is compact: it need not take much space.
