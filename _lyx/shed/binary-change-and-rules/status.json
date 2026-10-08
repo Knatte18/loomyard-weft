@@ -1,12 +1,12 @@
 {
   "current_producer": "Publish",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "the task worktree has uncommitted changes before the merge-in: CLAUDE.md, cmd/lyx/testdata/test-budget.yaml, contracts/recipes/loom-recipe.yaml, contracts/specs/refusal-spec.md, contracts/stencils/orch/orch-template-role.md, docs/overview.md, internal/battencli/records_integration_test.go, internal/battencli/testmain_integration_test.go, internal/battencli/wire.go, internal/battencli/wire_test.go and 63 more; commit or remove them on the task branch, then resume",
   "pause_requested": false,
   "activity": {
     "now": "Publish",
-    "last": "Describe → done",
-    "wait": ""
+    "last": "Publish → stuck",
+    "wait": "the task worktree has uncommitted changes before the merge-in: CLAUDE.md, cmd/lyx/testdata/test-budget.yaml, contracts/recipes/loom-recipe.yaml, contracts/specs/refusal-spec.md, contracts/stencils/orch/orch-template-role.md, docs/overview.md, internal/battencli/records_integration_test.go, internal/battencli/testmain_integration_test.go, internal/battencli/wire.go, internal/battencli/wire_test.go and 63 more; commit or remove them on the task branch, then resume"
   },
   "history": [
     {
@@ -155,6 +155,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/binary-change-and-rules/_lyx/landing/summary.md",
       "at": "2026-10-08T18:41:32Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Publish",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-08T18:43:38Z"
     }
   ],
   "product": {
