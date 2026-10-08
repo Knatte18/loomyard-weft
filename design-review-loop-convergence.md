@@ -20,6 +20,7 @@ Two causes:
 
 - Turn on a cluster fan for the Discussion and Plan review rows (`cluster-fan` on the BurlerRound rows, `cluster_excludes: true` on their Bouncer rows, which `internal/loomrecipe/clusterexcludes_test.go` pins to agree).
   Webster review stays solo: its forks may run no git and cannot reach a diff-only subject (the recipe comment on that row).
+- Discussion and Plan get their own fans in `burler.yaml`, with lenses written for a design record and a plan rather than the code-oriented `standard` lenses (error-handling, test-gaps).
 - Round 1 runs the broad fan; the judge narrows it each bounce through `exclude_lenses`, dropping lenses whose area is settled, so later rounds cost less.
 - A lighter convergence rule: `CONVERGED` when the latest round carries no BLOCKING finding and no MEDIUM `design` finding on a key that was already open in an earlier round.
   New MEDIUM keys in the closing round are not dropped: they go to the next producer through the decision record, as the parent did by hand on 2026-10-08.
