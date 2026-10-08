@@ -921,7 +921,8 @@
       "title": "loom resume after circling accept names approve/reject, and circling accept says resume with loom start",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "loom"
       ],
       "issues": [
         446

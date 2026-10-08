@@ -1,6 +1,6 @@
 # loom resume after circling accept names approve/reject, and circling accept says resume with loom start
 
-`circling-resume-message` · Note · bug
+`circling-resume-message` · Note · bug, loom
 
 Imported from [issue #446](https://github.com/Knatte18/loomyard/issues/446).
 

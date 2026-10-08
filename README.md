@@ -44,7 +44,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **begin-batch refuses after a failed record-batch, leaving the batch begun and non-terminal** — [`begin-batch-after-failed-record`](design-begin-batch-after-failed-record.md) · bug, webster
    - A record-batch refusal unrelated to the report (a config-load error) leaves the batch begun with a report, and begin-batch then refuses
 1. **stencilstore: a pair branched before the last deploy warns source-ahead and asks for a deploy** — [`stencil-drift-behind-main`](design-stencil-drift-behind-main.md) · bug, stencil
-1. **loom resume after circling accept names approve/reject, and circling accept says resume with loom start** — [`circling-resume-message`](design-circling-resume-message.md) · bug
+1. **loom resume after circling accept names approve/reject, and circling accept says resume with loom start** — [`circling-resume-message`](design-circling-resume-message.md) · bug, loom
 
 ### Enhancements
 
