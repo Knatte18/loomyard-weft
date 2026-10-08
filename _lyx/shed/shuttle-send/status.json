@@ -1,12 +1,12 @@
 {
-  "current_producer": "Publish",
-  "state": "blocked",
-  "error": "publish_verify failed after merging parent branch \"main\" (exit code 1); output: /home/knatte/Code/loomyard-LYXHUB/shuttle-send/.lyx/verify/verify.log; fix forward on the task branch, then resume",
+  "current_producer": "Plan-Bouncer",
+  "state": "paused",
+  "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Publish",
-    "last": "Publish → stuck",
-    "wait": "publish_verify failed after merging parent branch \"main\" (exit code 1); output: /home/knatte/Code/loomyard-LYXHUB/shuttle-send/.lyx/verify/verify.log; fix forward on the task branch, then resume"
+    "now": "Plan-Bouncer",
+    "last": "Plan-Bouncer → goto",
+    "wait": ""
   },
   "history": [
     {
@@ -225,6 +225,12 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-08T15:52:44Z"
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "goto",
+      "output": "",
+      "at": "2026-10-08T15:53:57Z"
     }
   ],
   "product": {
