@@ -17,6 +17,8 @@ Waits on nothing open; can start now, in parallel.
    - Config reconciles itself on the first lyx command after a binary change, stencil drift behind main stops warning source-ahead, and file-editing stencils state the no-script edit rule
 1. **Plan gate checks: precise callers, nested fixture modules, a reviewer that knows the gate** — [`plan-gate-checks`](design-plan-gate-checks.md) · bug, enhancement, loom, quarry
    - Resolve callers by import path and receiver type, let gates run against nested fixture modules, and give the plan reviewer the gate check list
+1. **Webster record-batch and rebaseline: no needless re-drive, a calibrated Merriam base** — [`webster-record-batch`](design-webster-record-batch.md) · bug, enhancement, webster
+   - Accept a prefix head_sha, find forked batch transcripts, accept a Card-Index-only change on an older record, and re-measure the Merriam fixed context
 
 ## Notes
 
@@ -27,10 +29,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **board: refuse scope edits to a running task** — [`board-lock-running`](design-board-lock-running.md) · bug, board
    - The board already marks running tasks; a write that changes the scope of a running task is refused
 1. **batten run on a slug whose earlier run is done reports ok and does nothing** — [`batten-reused-slug`](design-batten-reused-slug.md) · bug, batten
-1. **The plan gate fails done cards after a goto back to Plan-Review, and rebaseline refuses follow-up cards on an older webster record** — [`plan-gate-done-cards`](design-plan-gate-done-cards.md) · bug, loom, webster
 1. **A blocked Publish has no route that hands a finding to a fixer** — [`publish-fix-route`](design-publish-fix-route.md) · bug, loom, burler
-1. **webster record-batch: zero fork transcripts for a forked batch forces a full re-drive** — [`record-batch-no-transcripts`](design-record-batch-no-transcripts.md) · bug, webster
-1. **webster record-batch rejects abbreviated head_sha that is a prefix of HEAD** — [`record-batch-short-sha`](design-record-batch-short-sha.md) · bug, webster
 1. **Loom re-step refused with producer error while a stopped review strand's run dir is younger than 3m** — [`restep-young-run-dir`](design-restep-young-run-dir.md) · bug, loom, burler
 1. **Plan agent can record a decision as --by parent** — [`plan-agent-parent-decision`](design-plan-agent-parent-decision.md) · bug, loom, stencil
 1. **Git push without a timeout hangs a batten run after laptop sleep** — [`git-network-timeout`](design-git-network-timeout.md) · bug, fabric, batten
@@ -80,8 +79,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Replace the one collapse-all-but-the-newest rule with per-strand sizing: content-sized panes like the runs overview, and parallel agents that share space evenly
 1. **Compare fanned and solo review rounds from their usage records** — [`fan-usage-report`](design-fan-usage-report.md) · enhancement, burler
    - A report over round usage records for the fan-on decision; a lost usage record shows in the facts
-1. **Re-measure the Merriam fixed context with tools/tokencount** — [`merriam-fixed-context-calibrate`](design-merriam-fixed-context-calibrate.md) · enhancement, webster
-   - merriamFixedContext is one measurement and drifts as Claude Code changes; a calibrate step re-measures it
 
 ### Features
 

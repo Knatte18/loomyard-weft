@@ -1032,24 +1032,6 @@
       "body": "From review-lens-fan PR-Gate (2026-10-08): the Discussion and Plan fans ship off by default until round usage records show what they cost and find.\n\n- A small report verb, or a batten run summary, compares the round usage records (`_lyx/reviews/*/round-N-usage`) of fanned and solo segments, so the operator gets the comparison without reading the records by hand.\n- `excludedLenses` drops a whole focus file when the previous round's usage record is missing or unreadable and only logs a Warn, so a lost record silently widens a round back to the full fan; the run's facts should show it.\n"
     },
     {
-      "id": 208,
-      "slug": "plan-gate-done-cards",
-      "title": "The plan gate fails done cards after a goto back to Plan-Review, and rebaseline refuses follow-up cards on an older webster record",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "loom",
-        "webster"
-      ],
-      "issues": [
-        463
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #463](https://github.com/Knatte18/loomyard/issues/463).\n\nSeen 2026-10-08 in `shuttle-send`, following #462: the hub moved a run blocked at Publish back with `lyx loom goto --to Plan-Bouncer`, so Plan-Review would raise an uncarried parent decision against the plan.\n\n- The plan gate validates every card against HEAD, so cards 1-10, which Webster had already run, all failed (`create-already-exists`, `glyph-not-found`, `path-missing`, `caller-uncovered`); the fixer could clear them only by retiring or rewriting done cards.\n- The fixer added follow-up cards 11 and 12 with Card Index lines, but `lyx webster rebaseline --card 11 --card 12` refused: \"00-overview.md changed and this run recorded no overview frame\", because the run's webster record predates overview-frame tracking. Its only way forward, `lyx webster reset --to start`, would re-run all ten done cards.\n- `goto` from Plan-Bouncer cannot reach Webster, so there is no route past the plan gate once the plan holds done cards.\n\nThe hub restored the recorded plan and will fix the defect forward on the task branch at Publish.\n\nExpected: a plan gate after Webster began judges only cards after the last begun batch (done cards are history, not targets), and a webster record without an overview frame accepts a Card-Index-only change, or records the frame lazily.\n"
-    },
-    {
       "id": 209,
       "slug": "publish-fix-route",
       "title": "A blocked Publish has no route that hands a finding to a fixer",
@@ -1068,40 +1050,6 @@
       "body": "Imported from [issue #462](https://github.com/Knatte18/loomyard/issues/462).\n\nSeen 2026-10-08 in `shuttle-send`: Publish blocked three times on the same `publish_verify` failure (three `//go:build tmux` loomcli tests), and the two fix routes the hub has from a blocked Publish never reached the defect.\n\nThe defect arrived through the merge of main (reed-view typed `/color` raw into the pane), so it is outside the task's diff.\n\n- `lyx loom decision add --by parent` plus `lyx loom goto --to Webster-Burler`: the Webster-Review rubric measures against the plan, not the decision record, and the reviewer reads only `git diff $(git merge-base main HEAD)..HEAD`, so both rounds approved with unrelated NITs and the decision was never acted on.\n- The Webster-Burler verify gate compiles the `tmux` tier and never runs it (`internal/loomshed/doc.go`), so the fixer never saw the failing tests either.\n- `lyx loom reject` works only at PR-Gate or PR-Rework, and `goto` refuses PR-Rework from Publish because it lies past the current row, so the hub cannot hand the failure to a fixer as a finding.\n\nThe hub fell back to `goto Plan-Bouncer`, so Plan-Review raises the uncarried decision against the plan, which re-runs Plan-Burler, Batchifier and Webster for one fix.\n\nExpected: a blocked Publish (or any blocked row after Webster) has a route that hands a named finding to a fixer round, e.g. `lyx loom reject` accepted at a blocked Publish, or a Webster-Burler round that takes the publish_verify failure and post-Discussion parent decisions as its focus.\n"
     },
     {
-      "id": 213,
-      "slug": "record-batch-no-transcripts",
-      "title": "webster record-batch: zero fork transcripts for a forked batch forces a full re-drive",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster"
-      ],
-      "issues": [
-        457
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #457](https://github.com/Knatte18/loomyard/issues/457).\n\n`lyx webster record-batch` refused to attribute a batch report with \"zero new fork transcripts since the previous batch boundary\", although the batch's fork had delivered a report.\n\nRefusal text (paths trimmed):\n\n```\nwebster: batch 01-carry-over-write's report could not be attributed: zero new fork transcripts since the previous batch boundary — the batch was never forked (or its transcript is not on this machine: fork transcripts are machine-local, so a crash window resumed on a different machine cannot re-attribute its report); report archived to _lyx/webster/reports/01-carry-over-write-\u003ctimestamp\u003e.yaml; way forward: lyx webster begin-batch 01 re-drives the batch\n```\n\nWhy this is abnormal: a report existed for the batch, so work was done, yet attribution found no fork transcript.\nPossible causes to check: the transcript boundary advanced past the fork's transcript (for example a repeated `record-batch` or `begin-batch` for the same batch), or the fork's transcript was not located.\nThe refusal archived the report and told the operator to re-drive the whole batch, which discards finished work; a second refusal on the same batch followed (see the head_sha issue filed alongside this one).\n\nWhat to do: find out why the transcript count was zero on a batch that was forked, and make `record-batch` idempotent or recoverable for an already-attributed batch instead of forcing a re-drive.\n\nProvenance: task `review-loop-convergence`; notes: webster-refusal-record-batch.md\n"
-    },
-    {
-      "id": 214,
-      "slug": "record-batch-short-sha",
-      "title": "webster record-batch rejects abbreviated head_sha that is a prefix of HEAD",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster"
-      ],
-      "issues": [
-        456
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #456](https://github.com/Knatte18/loomyard/issues/456).\n\n`lyx webster record-batch` refused a batch report because the report's `head_sha` was an abbreviated SHA (9 characters) while the worktree's HEAD is the full 40-character SHA.\n\nRefusal text (paths trimmed):\n\n```\nwebster: batch report _lyx/webster/reports/01-carry-over-write.yaml: head_sha \"ae24b9bb0\" does not match the worktree's actual HEAD \"ae24b9bb0eca5384fc9fd38764b9cb446aced655\"; only merge commits, such as a parent merge-in, may sit between a fork's reported head and HEAD; way forward: 1) run `git reset --keep ae24b9bb0` to move HEAD back to the report's head_sha; 2) re-run this verb\n```\n\nWhy this is abnormal: the abbreviated SHA is a prefix of HEAD, so the report names the right commit.\nThe comparison looks like an exact string match, so it reports a mismatch and then suggests `git reset --keep` to the commit HEAD already is, which is a no-op and does not resolve the refusal.\nA fork writing `git rev-parse --short HEAD` into the report is a natural thing to do.\n\nWhat to do: resolve the report's `head_sha` with `git rev-parse` (or compare by prefix) before comparing, and/or require and document the full SHA in the report schema and the fork prompt.\nThe \"way forward\" text should not suggest a reset when the reported SHA already resolves to HEAD.\n\nProvenance: task `review-loop-convergence`; notes: webster-refusal-record-batch-2.md\n"
-    },
-    {
       "id": 216,
       "slug": "restep-young-run-dir",
       "title": "Loom re-step refused with producer error while a stopped review strand's run dir is younger than 3m",
@@ -1118,21 +1066,6 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #452](https://github.com/Knatte18/loomyard/issues/452).\n\n## What happened\n\nAfter a driver repair, the re-step of the Discussion burler segment failed with a non-transient `producer` error.\nThe trace line: `shed: step refused kind=producer transient=\"\" error=\"... probe the burler-review half: shuttle: attach: 1 candidate run dir(s) ... cannot be confirmed dead or alive (untracked or with a cleared pane binding, younger than 3m0s) ...\"`.\nThe run dir had been left by the review strand that the previous step itself stopped.\n`lyx reed status` listed no such strand, while the burler-fix strand was still live, and no fabric mutation was half-finished.\nThe driver's only remedy was to wait until the run dir passed the 3m age and re-step, which cost a repair round (history_length 6).\n\n## Why it is abnormal\n\nThe strand was stopped by lyx moments earlier, so its run dir is known dead, yet the burler probe treats it as unclassifiable and refuses the step.\nA refusal that resolves itself with time should be a transient error, not a `producer` error that consumes a repair.\n\n## What to do\n\n- Have the stop path record or clear the stopped strand's pane binding, so the probe can classify its run dir as dead immediately.\n- Alternatively, report the young-run-dir refusal as transient so the loom retries instead of halting for repair.\n\nProvenance: task `plan-glyph-precision`; note `driver-repair-20261008-discussion-burler-2.md`.\n"
-    },
-    {
-      "id": 219,
-      "slug": "merriam-fixed-context-calibrate",
-      "title": "Re-measure the Merriam fixed context with tools/tokencount",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "webster"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "merriamFixedContext is one measurement and drifts as Claude Code changes; a calibrate step re-measures it",
-      "body": "From webster-dead-ends PR-Gate (2026-10-08), moved out of `binary-change-and-rules` at its Discussion.\n\n`merriamFixedContext` (`internal/websterengine/merriambase.go`) is a constant from one measurement of the system prompt and tools, so the computed Merriam base drifts silently as Claude Code changes.\nA calibrate step in `tools/tokencount` re-measures it.\n"
     },
     {
       "id": 226,
@@ -1208,6 +1141,26 @@
       "isolated": false,
       "brief": "Resolve callers by import path and receiver type, let gates run against nested fixture modules, and give the plan reviewer the gate check list",
       "body": "## Goal\n\nThe plan gate's checks in planparser and quarry give no false findings: callers resolve by import path and receiver type, gates can run against nested fixture modules, and the plan reviewer sees the gate's checks so it proposes no fix the gate blocks.\n\n## From `caller-uncovered-false-positives`\n\nImported from [issue #461](https://github.com/Knatte18/loomyard/issues/461).\n\n**What happened:** Adding re-sign arrows to a plan card made the `caller-uncovered` check emit 75 informational entries, all false positives.\nEvery file that names a type counted as a caller of a re-signed method on a different type that happens to share the name, and any `.start(` call anywhere counted as a caller of a re-signed `start` method on one specific type.\nThe real callers had to be separated out by grep.\n\n**Why it is abnormal:** The matching is by name only, not by receiver type, so the noise can hide a real uncovered caller.\n\n**What to do:** Resolve callers by receiver type (or at least qualify the match by package and receiver) in `caller-uncovered`, and rate-limit or collapse name-only matches.\n\nProvenance: task `webster-dead-ends`, note `burler-plan-r4.md`.\n\n\n## From `caller-scan-import-path`\n\n`plan-glyph-precision` added the `caller-uncovered` plan-gate check (D5).\nIts caller scan matches by package clause name, so it cannot see a caller that imports the package under an alias or a dot import, nor a caller in a file an earlier card creates.\nBoth are accepted bounds in that task's decision record.\nResolving imports by path would close the first gap; worth building only if planners hit it.\n\n### Seen in webster-dead-ends, 2026-10-08\n\nIts plan gate reported 75 informational `caller-uncovered` entries on one card, all false positives by the fixer's grep:\nevery file naming the `batcher.Batch` interface type was read as a caller of the re-signed concrete method `costBatcher.Batch`,\nand unrelated `.start(` calls as callers of `peakAccumulator.start`, matched by method name alone.\nFor a method the finding is informational, so it cost no round, but the noise hides a real uncovered caller.\nResolving a method call's receiver type would remove both classes.\n\n\n## From `plan-gate-nested-module`\n\nImported from [issue #451](https://github.com/Knatte18/loomyard/issues/451).\n\n### What happened\n\nTwo cards in one task had gates running `go test -tags integration` on package paths under a `testdata/` fixture directory.\nThe same card (or an earlier one) creates a `go.mod` in that directory, which makes the fixture its own module.\nThe main module then no longer contains those packages, so `go test` reports `main module does not contain package ... [setup failed]` and the gate's `\u0026\u0026` chain cannot pass as written.\nThe implementing agent worked around it by running `go vet` and `go test -tags integration ./...` from inside the fixture module, and wrote a friction note each time.\n\nA related symptom in the same batch: the test-budget guard (`cmd/lyx/testdata/test-budget.yaml`) needed a package row raised on several cards, and that file was on no card's target list.\n\n### Why it is abnormal\n\nThe plan was accepted through the plan gate although its gates were unsatisfiable by construction.\nPlan validation does not check that a gate's package paths stay inside the module that the plan's own cards create or change.\nCards also do not predict the test-budget row they will cross, so each agent edits an untargeted file.\n\n### What to do\n\n- At plan-write or plan-review time, flag a gate command whose package path lies under a directory that a card makes a nested module (a `go.mod` in a card target), and require the gate to run inside that module.\n- Consider listing `cmd/lyx/testdata/test-budget.yaml` as an implicit target, or surfacing the budget row in the card template, when a card adds tests.\n\nProvenance: task `plan-glyph-precision`; notes `01-glyphchain-plan-gate.md`, `07-redundant-package-target.md`.\n\n\n## From `plan-review-redundant-pairing`\n\nImported from [issue #460](https://github.com/Knatte18/loomyard/issues/460).\n\n**What happened:** A plan-review fix said to keep a file target beside a member target of that file on the same card, on the premise that a file and a member of it on the same card do not overlap.\nThe plan gate's `redundant-file-target` check blocks exactly that pairing, so applying the fix as written failed validation, and both cards had to drop the file target again.\n\n**Why it is abnormal:** The reviewer proposes a fix the gate rejects, which costs a wasted fix round.\nA reviewer with the gate's check list in view would not suggest it.\n\n**What to do:** Give the plan reviewer the gate's check list (at least `redundant-file-target`), or have its fixes validated against the gate before they are handed to the fixing agent.\n\nProvenance: task `webster-dead-ends`, note `burler-plan-r4.md`.\n\n"
+    },
+    {
+      "id": 230,
+      "slug": "webster-record-batch",
+      "title": "Webster record-batch and rebaseline: no needless re-drive, a calibrated Merriam base",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "enhancement",
+        "webster"
+      ],
+      "issues": [
+        456,
+        457,
+        463
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Accept a prefix head_sha, find forked batch transcripts, accept a Card-Index-only change on an older record, and re-measure the Merriam fixed context",
+      "body": "## Goal\n\nWebster's record-batch and rebaseline in websterengine never force a needless re-drive or dead end: an abbreviated head_sha that prefixes HEAD is accepted, a forked batch's transcripts are found, a Card-Index-only change is accepted on a record without an overview frame, and the Merriam fixed context can be re-measured. The first half of plan-gate-done-cards (the plan gate skips done cards) landed on main on 2026-10-08; only its rebaseline half is in scope.\n\n## From `record-batch-short-sha`\n\nImported from [issue #456](https://github.com/Knatte18/loomyard/issues/456).\n\n`lyx webster record-batch` refused a batch report because the report's `head_sha` was an abbreviated SHA (9 characters) while the worktree's HEAD is the full 40-character SHA.\n\nRefusal text (paths trimmed):\n\n```\nwebster: batch report _lyx/webster/reports/01-carry-over-write.yaml: head_sha \"ae24b9bb0\" does not match the worktree's actual HEAD \"ae24b9bb0eca5384fc9fd38764b9cb446aced655\"; only merge commits, such as a parent merge-in, may sit between a fork's reported head and HEAD; way forward: 1) run `git reset --keep ae24b9bb0` to move HEAD back to the report's head_sha; 2) re-run this verb\n```\n\nWhy this is abnormal: the abbreviated SHA is a prefix of HEAD, so the report names the right commit.\nThe comparison looks like an exact string match, so it reports a mismatch and then suggests `git reset --keep` to the commit HEAD already is, which is a no-op and does not resolve the refusal.\nA fork writing `git rev-parse --short HEAD` into the report is a natural thing to do.\n\nWhat to do: resolve the report's `head_sha` with `git rev-parse` (or compare by prefix) before comparing, and/or require and document the full SHA in the report schema and the fork prompt.\nThe \"way forward\" text should not suggest a reset when the reported SHA already resolves to HEAD.\n\nProvenance: task `review-loop-convergence`; notes: webster-refusal-record-batch-2.md\n\n## From `record-batch-no-transcripts`\n\nImported from [issue #457](https://github.com/Knatte18/loomyard/issues/457).\n\n`lyx webster record-batch` refused to attribute a batch report with \"zero new fork transcripts since the previous batch boundary\", although the batch's fork had delivered a report.\n\nRefusal text (paths trimmed):\n\n```\nwebster: batch 01-carry-over-write's report could not be attributed: zero new fork transcripts since the previous batch boundary — the batch was never forked (or its transcript is not on this machine: fork transcripts are machine-local, so a crash window resumed on a different machine cannot re-attribute its report); report archived to _lyx/webster/reports/01-carry-over-write-\u003ctimestamp\u003e.yaml; way forward: lyx webster begin-batch 01 re-drives the batch\n```\n\nWhy this is abnormal: a report existed for the batch, so work was done, yet attribution found no fork transcript.\nPossible causes to check: the transcript boundary advanced past the fork's transcript (for example a repeated `record-batch` or `begin-batch` for the same batch), or the fork's transcript was not located.\nThe refusal archived the report and told the operator to re-drive the whole batch, which discards finished work; a second refusal on the same batch followed (see the head_sha issue filed alongside this one).\n\nWhat to do: find out why the transcript count was zero on a batch that was forked, and make `record-batch` idempotent or recoverable for an already-attributed batch instead of forcing a re-drive.\n\nProvenance: task `review-loop-convergence`; notes: webster-refusal-record-batch.md\n\n## From `plan-gate-done-cards`\n\nImported from [issue #463](https://github.com/Knatte18/loomyard/issues/463).\n\nSeen 2026-10-08 in `shuttle-send`, following #462: the hub moved a run blocked at Publish back with `lyx loom goto --to Plan-Bouncer`, so Plan-Review would raise an uncarried parent decision against the plan.\n\n- The plan gate validates every card against HEAD, so cards 1-10, which Webster had already run, all failed (`create-already-exists`, `glyph-not-found`, `path-missing`, `caller-uncovered`); the fixer could clear them only by retiring or rewriting done cards.\n- The fixer added follow-up cards 11 and 12 with Card Index lines, but `lyx webster rebaseline --card 11 --card 12` refused: \"00-overview.md changed and this run recorded no overview frame\", because the run's webster record predates overview-frame tracking. Its only way forward, `lyx webster reset --to start`, would re-run all ten done cards.\n- `goto` from Plan-Bouncer cannot reach Webster, so there is no route past the plan gate once the plan holds done cards.\n\nThe hub restored the recorded plan and will fix the defect forward on the task branch at Publish.\n\nExpected: a plan gate after Webster began judges only cards after the last begun batch (done cards are history, not targets), and a webster record without an overview frame accepts a Card-Index-only change, or records the frame lazily.\n\n## From `merriam-fixed-context-calibrate`\n\nFrom webster-dead-ends PR-Gate (2026-10-08), moved out of `binary-change-and-rules` at its Discussion.\n\n`merriamFixedContext` (`internal/websterengine/merriambase.go`) is a constant from one measurement of the system prompt and tools, so the computed Merriam base drifts silently as Claude Code changes.\nA calibrate step in `tools/tokencount` re-measures it.\n"
     }
   ],
   "legacy_done": [
