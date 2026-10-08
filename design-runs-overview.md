@@ -28,3 +28,7 @@ Shed keeps the reason for every halt in `Status.Error`, including an awaiting PR
 Seen: `child left running; child state awaiting, error: the pull request awaits review; …`.
 Label the text by state: `error:` only for failed and blocked, and `waiting:` (or the bare reason) for awaiting and paused.
 Phrase the condition by what happened, e.g. `board-config-per-worktree: awaiting at PR-Gate: the pull request awaits review`, not `child left running; child state awaiting`.
+
+
+From `reed-view` Discussion (D8, 2026-10-08): Alt+Left/Right switch runs (tmux sessions) through `lyx reed switch`, not windows; windows get their own buttons on status line 1 and the prefix `n`/`p` keys.
+This note's Alt+Left/Right between the orch and its overview window needs a new binding.
