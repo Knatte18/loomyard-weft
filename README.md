@@ -40,6 +40,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **Loom resume at Publish refuses the dirty worktree left by its own staged merge-in, so the run cannot recover** — [`publish-resume-own-merge`](design-publish-resume-own-merge.md) · bug, loom, fabric
 1. **Loom goto back to Plan after Webster started leaves webster state stale; Webster hard-fails on plan fingerprint mismatch** — [`goto-plan-stale-webster`](design-goto-plan-stale-webster.md) · bug, loom, webster
 1. **Plan-review round is dispatched as a fix round after the plan is already implemented, and webster refuses the resulting plan edits** — [`plan-review-after-implemented`](design-plan-review-after-implemented.md) · bug, loom, burler, webster
+1. **loomcli: TestLoomResumeReconcilesTheHubConfigBeforeArming flakes on TempDir cleanup: weft-bare/objects not empty** — [`reconcile-test-tempdir-flake`](design-reconcile-test-tempdir-flake.md) · bug
 
 ### Enhancements
 

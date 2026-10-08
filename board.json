@@ -1330,6 +1330,22 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #465](https://github.com/Knatte18/loomyard/issues/465).\n\nA Plan-Review round ran over a plan that was already approved and implemented by webster.\nThe review gained findings, but the fixer's only write surface was the plan, and webster could not accept a new card on this run's record.\n`lyx webster rebaseline --card=[11,12]` was refused:\n\n```\nwebster: the edited plan changes the cards of a batch this run already begun: 00-overview.md changed and this run recorded no overview frame, so the change cannot be confined to its Card Index; it carries the plan's integration verify and is never rebaselined; way forward: restore 00-overview.md, or 1) lyx webster reset --to start; 2) lyx webster run\n```\n\nThe parent stopped all fixes mid-round, so every finding ended deferred.\nThe fixer also spent its orientation designing a new card that was then thrown away.\n\nWhy this is abnormal: the loom dispatches a review round whose fixes cannot land.\nA frozen plan (webster already begun) makes the fix round unwinnable, and the only advertised way forward (`lyx webster reset --to start`) discards the implemented work.\nThe run records no overview frame, so a legitimate edit to the overview's Card Index cannot be confined and is refused outright.\n\nWhat to do:\n- Skip the fix-round dispatch, or tell the round prompt up front that the plan is frozen, when the run's webster record has begun a batch.\n- Record an overview frame when webster begins a batch, so a Card Index change can be confined and rebaselined.\n\nProvenance: task `shuttle-send`; notes `burler-plan-r1.md`, `webster-refusal-rebaseline.md`.\n"
+    },
+    {
+      "id": 241,
+      "slug": "reconcile-test-tempdir-flake",
+      "title": "loomcli: TestLoomResumeReconcilesTheHubConfigBeforeArming flakes on TempDir cleanup: weft-bare/objects not empty",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        472
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #472](https://github.com/Knatte18/loomyard/issues/472).\n\n## Seen\n\n`webster-record-batch`'s Publish verify, 2026-10-08T19:14Z, after merging main at 5aa04c279 (which added this test with `binary-change-and-rules`):\n\n```\n--- FAIL: TestLoomResumeReconcilesTheHubConfigBeforeArming (4.22s)\n    testing.go:1464: TempDir RemoveAll cleanup: unlinkat /tmp/TestLoomResumeReconcilesTheHubConfigBeforeArming2267336794/001/weft-bare/objects: directory not empty\n```\n\nThe test body passed; only `t.TempDir` cleanup failed, so a process was still writing into the bare weft's object store after the test returned.\nThe likeliest writer is a detached `git gc --auto` (git daemonizes auto-gc by default) started by a push or commit in the hub reconcile, or the reconcile's hub-wide push, which is only logged on failure.\nMain passed the same test at Finalize, so it is timing-dependent.\nThe log is `.lyx/verify/verify.log` in the `webster-record-batch` pair.\n\n## Workaround\n\nThe orch resumed the run so Publish re-runs the verify.\n\n## Expected\n\nThe test's fixture repositories never run auto-gc in the background (`gc.autoDetach=false` or `gc.auto=0` in the fixture config, ideally in the shared testkit hub fixture), and the reconcile waits for every git child it starts before returning, so `t.TempDir` cleanup never races a live writer.\n"
     }
   ],
   "legacy_done": [
