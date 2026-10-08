@@ -1,13 +1,13 @@
 {
   "runGuid": "a94093a3bb90c1449c35fcccec5ce2ca",
-  "planFingerprint": "3697322d1b281b9c44468c51f7e541d2bd746b013a79db5e88fa70444bf3395b",
+  "planFingerprint": "f18d2a4b4390f3d2f465c3ef6a3029238e9028aeb5f9b93b0e0b1ae6098624ce",
   "planFileHashes": {
     "00-overview.md": "ea41f01afda5a9441288d2b6ea3934ef7aa693b000b04df435a5303986fa720d",
     "01-nested-modules.md": "54993cb122edb37e351a5cab4b8369312abc0932de976624b93af8591b168178",
     "02-card-gate-nested-modules.md": "7c8e36c0b9c99b186aa3c7ca2f63461f6776f1cf2981e6676107da243fec6d11",
     "03-verify-nested-module.md": "1c66675cf04228d57d522e1447ac764e46c84dccac0144258b2239ca2b1bf305",
-    "04-caller-scan-import-path.md": "792b65bc1f0cc08360b032a6655e3ab308b48bdf0b045a5a46b67b00278be678",
-    "05-caller-scan-types.md": "324f46d96b4267c338dd3d645335c26b4d242dc5c0a59618caaa654d82b90aa2",
+    "04-caller-scan-import-path.md": "d047f1392f7a287e02c86f98193c49b0ea626684779296c9b92086754a144056",
+    "05-caller-scan-types.md": "f5dd924671b1cc9ba5f776e2254fb6f420f8ff0f9046933f96738345affac3f0",
     "06-plan-review-fix-rule.md": "c80508f35ff885370b6b1d7d43ce3d24116c073340b1b27d8069676d6f2d3c95",
     "07-test-budget-rule.md": "dd4c72154f16c0936350e737021ae073e45f0f88f2fbd5a45f45f7ad5cb5ed1a"
   },
@@ -188,7 +188,7 @@
       }
     }
   ],
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "9afeae3bb56fdf0742b3492be9ae6386",
   "masterSessionId": "1524cb1f-1b81-47ee-b755-6b7b5d0bb4d8",
   "batches": {
@@ -231,8 +231,8 @@
         "07-test-budget-rule"
       ],
       "cardHashes": {
-        "04-caller-scan-import-path": "792b65bc1f0cc08360b032a6655e3ab308b48bdf0b045a5a46b67b00278be678",
-        "05-caller-scan-types": "324f46d96b4267c338dd3d645335c26b4d242dc5c0a59618caaa654d82b90aa2",
+        "04-caller-scan-import-path": "d047f1392f7a287e02c86f98193c49b0ea626684779296c9b92086754a144056",
+        "05-caller-scan-types": "f5dd924671b1cc9ba5f776e2254fb6f420f8ff0f9046933f96738345affac3f0",
         "06-plan-review-fix-rule": "c80508f35ff885370b6b1d7d43ce3d24116c073340b1b27d8069676d6f2d3c95",
         "07-test-budget-rule": "dd4c72154f16c0936350e737021ae073e45f0f88f2fbd5a45f45f7ad5cb5ed1a"
       },
@@ -240,11 +240,23 @@
       "kind": "fork",
       "spawnedAt": "2026-10-08T18:59:46Z",
       "sessionId": "1524cb1f-1b81-47ee-b755-6b7b5d0bb4d8",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-caller-scan-import-path",
+        "status": "done",
+        "head_sha": "4215dc0832aaf2cd6f6f86b42e237c3f443b4526"
+      },
+      "cardShas": [
+        "4215dc0832aaf2cd6f6f86b42e237c3f443b4526"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-gate-checks/1524cb1f-1b81-47ee-b755-6b7b5d0bb4d8/subagents/agent-a228cc0640b24c5a7.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-gate-checks/1524cb1f-1b81-47ee-b755-6b7b5d0bb4d8/subagents/agent-ab10cd04c1e5904e9.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-gate-checks/1524cb1f-1b81-47ee-b755-6b7b5d0bb4d8/subagents/agent-ab10cd04c1e5904e9.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-gate-checks/1524cb1f-1b81-47ee-b755-6b7b5d0bb4d8/subagents/agent-a228cc0640b24c5a7.jsonl"
   ]
 }

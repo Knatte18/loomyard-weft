@@ -1,13 +1,13 @@
 # Card 5 — caller-scan-types
 
 **Create:**
-- `plan:internal/planglyph#typesLoader` -> `type typesLoader interface`
-- `plan:internal/planglyph#goListLoader` -> `type goListLoader struct`
-- `plan:internal/planglyph#goListLoader.load` -> `func (l goListLoader) load(root string, dirs []string) ([]*packages.Package, error)`
-- `plan:internal/planglyph#defaultTypesLoader` -> `var defaultTypesLoader typesLoader`
-- `plan:internal/planglyph#candidateFiles` -> `func candidateFiles(root string, subjects []coverageSubject) ([]string, error)`
-- `plan:internal/planglyph#typedReferences` -> `func typedReferences(pkgs []*packages.Package, root string, subjects []coverageSubject) (checked map[string]bool, references []map[string][]int, unresolved []map[string][]int)`
-- `plan:internal/planglyph#isSubjectObject` -> `func isSubjectObject(subject coverageSubject, obj types.Object) bool`
+- `internal/planglyph#typesLoader`
+- `internal/planglyph#goListLoader`
+- `internal/planglyph#goListLoader.load`
+- `internal/planglyph#defaultTypesLoader`
+- `internal/planglyph#candidateFiles`
+- `internal/planglyph#typedReferences`
+- `internal/planglyph#isSubjectObject`
 - `internal/planglyph/typesload.go`
 
 **Edit:**

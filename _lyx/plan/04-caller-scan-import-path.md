@@ -1,10 +1,10 @@
 # Card 4 — caller-scan-import-path
 
 **Create:**
-- `plan:internal/planglyph#importPathOf` -> `func importPathOf(worktreeRoot string, modules []string, dir string) (string, error)`
-- `plan:internal/planglyph#referenceSite` -> `type referenceSite struct`
-- `plan:internal/planglyph#referencesSubject` -> `func referencesSubject(subject coverageSubject, site referenceSite) bool`
-- `plan:internal/planglyph#unresolvedMethodFinding` -> `func unresolvedMethodFinding(subject coverageSubject, references map[string][]int) Finding`
+- `internal/planglyph#importPathOf`
+- `internal/planglyph#referenceSite`
+- `internal/planglyph#referencesSubject`
+- `internal/planglyph#unresolvedMethodFinding`
 
 **Delete:**
 - `internal/planglyph#isReference`
