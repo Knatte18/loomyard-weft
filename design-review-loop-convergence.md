@@ -2,6 +2,8 @@
 
 `review-loop-convergence` · Task · bug, enhancement, burler, loom
 
+Depends on: [`shuttle-state`](design-shuttle-state.md)
+
 ## What happened
 
 On 2026-10-08 the Discussion review segments of `plan-glyph-precision`, `shuttle-state` and `reed-view` all ran their five rounds and escalated to the parent with cause `budget`.
