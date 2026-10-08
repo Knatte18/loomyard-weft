@@ -1,9 +1,9 @@
 # Card 3 — Reconcile failures name their file
 
 **Create:**
-- `plan:internal/configsync#FileError` -> `type FileError struct`
-- `plan:internal/configsync#FileError.Error` -> `func (e *FileError) Error() string`
-- `plan:internal/configsync#FileError.Unwrap` -> `func (e *FileError) Unwrap() error`
+- `internal/configsync#FileError`
+- `internal/configsync#FileError.Error`
+- `internal/configsync#FileError.Unwrap`
 
 **Edit:**
 - `internal/configsync#ReconcileAll`

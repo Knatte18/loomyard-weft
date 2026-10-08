@@ -35,14 +35,14 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/buildvcs#Running`
-- `plan:internal/configreg#Fingerprint`
-- `plan:internal/configsync#FileError`
-- `plan:internal/configengine#ScratchDir`
-- `plan:internal/fabricengine#CodeWorktrees`
-- `plan:internal/fabricengine#OpenCodeWorktree`
-- `plan:internal/fabricengine#Fabric.MergeBlocked`
-- `plan:internal/fabricengine#PairCompleteAt`
+- `internal/buildvcs#Running`
+- `internal/configreg#Fingerprint`
+- `internal/configsync#FileError`
+- `internal/configengine#ScratchDir`
+- `internal/fabricengine#CodeWorktrees`
+- `internal/fabricengine#OpenCodeWorktree`
+- `internal/fabricengine#Fabric.MergeBlocked`
+- `internal/fabricengine#PairCompleteAt`
 - `internal/configsync#ReconcileAll`
 - `internal/configsync#ReconcileHubWideAt`
 - `internal/fabricengine#Fabric.Commit`

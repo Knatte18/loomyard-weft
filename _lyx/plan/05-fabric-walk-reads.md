@@ -1,11 +1,11 @@
 # Card 5 — Fabric reads a told-geometry config walk needs
 
 **Create:**
-- `plan:internal/fabricengine#Fabric.MergeBlocked` -> `func (f *Fabric) MergeBlocked() (bool, error)`
-- `plan:internal/fabricengine#CodeWorktree` -> `type CodeWorktree struct`
-- `plan:internal/fabricengine#CodeWorktrees` -> `func CodeWorktrees(worktreePath string) ([]CodeWorktree, error)`
-- `plan:internal/fabricengine#OpenCodeWorktree` -> `func OpenCodeWorktree(path string) (*Fabric, error)`
-- `plan:internal/fabricengine#PairCompleteAt` -> `func PairCompleteAt(path string) (ok bool, reason string, err error)`
+- `internal/fabricengine#Fabric.MergeBlocked`
+- `internal/fabricengine#CodeWorktree`
+- `internal/fabricengine#CodeWorktrees`
+- `internal/fabricengine#OpenCodeWorktree`
+- `internal/fabricengine#PairCompleteAt`
 
 **Edit:**
 - `internal/fabricengine/midmerge_integration_test.go`

@@ -1,8 +1,8 @@
 # Card 2 — Config registry fingerprint
 
 **Create:**
-- `plan:internal/configreg#Fingerprint` -> `func Fingerprint() string`
-- `plan:internal/configreg#fingerprintOf` -> `func fingerprintOf(modules []Module) string`
+- `internal/configreg#Fingerprint`
+- `internal/configreg#fingerprintOf`
 
 **Edit:**
 - `internal/configreg/configreg_test.go`

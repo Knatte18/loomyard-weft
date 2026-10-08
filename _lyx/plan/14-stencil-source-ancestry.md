@@ -12,7 +12,7 @@
 
 **Uses:**
 - `plan:internal/fabricengine#HeadContains`
-- `plan:internal/buildvcs#Running`
+- `internal/buildvcs#Running`
 - `plan:internal/stencilstore#Source`
 - `plan:internal/stencilstore#BuildAncestry`
 

@@ -1,7 +1,7 @@
 # Card 6 — The never-tracked mirror of a config dir
 
 **Create:**
-- `plan:internal/configengine#ScratchDir` -> `func ScratchDir(baseDir string) string`
+- `internal/configengine#ScratchDir`
 
 **Edit:**
 - `internal/configengine#StagingFile`

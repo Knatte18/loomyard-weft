@@ -8,7 +8,7 @@
 - `internal/hubgeom/doc.go`
 
 **Uses:**
-- `plan:internal/preflight#BoardLyxPresent`
+- `internal/preflight#BoardLyxPresent`
 - `plan:internal/hubreconcile#Geometry`
 
 **Intent:**

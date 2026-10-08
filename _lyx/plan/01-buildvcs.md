@@ -1,9 +1,9 @@
 # Card 1 — Shared VCS build-identity reader
 
 **Create:**
-- `plan:internal/buildvcs#Identity` -> `type Identity struct`
-- `plan:internal/buildvcs#Running` -> `func Running() Identity`
-- `plan:internal/buildvcs#identityOf` -> `func identityOf(settings []debug.BuildSetting) Identity`
+- `internal/buildvcs#Identity`
+- `internal/buildvcs#Running`
+- `internal/buildvcs#identityOf`
 - `internal/buildvcs/doc.go`
 - `internal/buildvcs/buildvcs_test.go`
 

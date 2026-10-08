@@ -1,7 +1,7 @@
 # Card 4 — Export the board-presence predicate
 
 **Rename:**
-- `internal/preflight#boardLyxPresent` -> `plan:internal/preflight#BoardLyxPresent`
+- `internal/preflight#boardLyxPresent` -> `internal/preflight#BoardLyxPresent`
 
 **Intent:**
 Card 8's `hubgeom.ReconcileGeometry` must decide "is this a hub" with the same stat `preflight.HubPresent` and `preflight.ResolveMode` use, and the predicate's own doc comment says it exists so those callers never grow a second copy of the check.

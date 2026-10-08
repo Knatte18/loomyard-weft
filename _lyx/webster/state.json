@@ -1,22 +1,22 @@
 {
   "runGuid": "5c58df7f6d8e28f9796eee2f69ab1065",
-  "planFingerprint": "cc489a55c942cd2fd992f3c46c7f7e88b12cf9c39a668b61f0cfc18e33274905",
+  "planFingerprint": "c0b87d1eb5ab79c1bacbdeff30789247d2ad91c23836be68858e6b336c861d3e",
   "planFileHashes": {
     "00-overview.md": "7696a28929790a260da8d49fe1771137f4df8b27402022f58792e58b99a23ece",
-    "01-buildvcs.md": "526bfbaed9721eff07d8fbc7a2cc665570a094c2c7985eb37c4125b7c7b14bd5",
-    "02-config-fingerprint.md": "d6952668f6cf840d672a2098e77945a742bff46cfb33aa24c533e7b4c379f05a",
-    "03-configsync-file-error.md": "ac844a8198702901b11666304640e64f986b966df3fc6a1529b719cc06c2f19c",
-    "04-board-present-export.md": "f5ba47ed218d52fe95c5718f2cc401697dba9202723c733633fe5ebaa2e4b1ca",
-    "05-fabric-walk-reads.md": "ad2aa0fd167f182271c4554848d1e4f0cd2800c3a44f5f379e1c290765f1749e",
-    "06-config-scratch-dir.md": "548a51ed0a57b948c319eb4769153e2f48724354d38e592331ba4cbb8dd25ee6",
-    "07-hubreconcile.md": "d42bcd68a6bfabaa122000f0eaf0322008e79200fb2d2a7319755afef4814f0e",
-    "08-hubgeom-reconcile-geometry.md": "c2d40bbeef9a2ddedb805729fea53bd9e6ef2c905bf8f7517142c2f4ec0b6e98",
+    "01-buildvcs.md": "5548ad5ae206f30cfb349f9c79899418c7d0e7655c96cdd345d45154825967d9",
+    "02-config-fingerprint.md": "cd54f51abea1a2a3003363c71861a1971005bfc1437a6a02dd0f3c9cebd186cb",
+    "03-configsync-file-error.md": "ffa8f58f478badc68a602d5dc45a02e901a85e3728f6b685a8d879ee0f1d373c",
+    "04-board-present-export.md": "49ae947ffe1c41e27c9768848ac78a97c394ef315f2d9b515c4be11e74f643c9",
+    "05-fabric-walk-reads.md": "454f3b4bebf69a8ffc583ad0c79d8a5484b0ac4ce001ecae495033852ea7f164",
+    "06-config-scratch-dir.md": "7f6f80379450d071a6a003b579a32b5804770b4c2e5963ba258de7f55f4de74e",
+    "07-hubreconcile.md": "871ec699db7b338eceffb55b86511508de78e0f4dac03da6bac48d8128948857",
+    "08-hubgeom-reconcile-geometry.md": "a9ab4ce68c0e8e911b72e21de9266d1a74ede3f06e95722b5680a61441604987",
     "09-orch-loom-start-reconcile.md": "17a9f96d0f59022f6e190bf6eb70f77717aaa8b1803e6f595bb73daddbbc1065",
     "10-batten-run-reconcile.md": "607a1737fe65c1ca59b3a25b08a0f106bb75666bf803b6669725e0abb606055d",
     "11-preflight-safety-net.md": "1193e280c9728194f997a4167aab8fa326299f511705812e45ba3490f3e453d1",
     "12-head-contains.md": "a8947843af155fb30fbfe641cadadf1bd347e199481ffd3a12d753c359187382",
     "13-stencil-drift-behind.md": "9d2ec09006b797ce025706ed58d677db80781b3dda3f34801518a3eda741e3fb",
-    "14-stencil-source-ancestry.md": "bff6153c3f12df9d7049e030dc1f6938eaed166a9ee933e73a082106c93f1fc1",
+    "14-stencil-source-ancestry.md": "63bc73c5f5ce67af089241a23bf2e9c2c58c0d10251dd07a130f3d28a8627ac2",
     "15-edit-directive.md": "03b135b27798fb29853a0f29ce9d0cce8b1f3b8348ce13b6de0f35148a789ec2",
     "16-loom-roles-edit-directive.md": "82c9190ad60878ec124a8449fe1dbe43742ac8dee941ddfd2616750b0f8a8b42",
     "17-webster-edit-directive.md": "19a9c9232cf325b1c74347142c86196bcb3d338899c4124ea68201ac6bafa530",
@@ -503,7 +503,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "1578af759ae4b84ea53d41470d5d71f0",
   "masterSessionId": "e495df5d-7276-44c7-97aa-0e3437b51280",
   "batches": {
@@ -518,19 +518,36 @@
         "06-config-scratch-dir"
       ],
       "cardHashes": {
-        "01-buildvcs": "526bfbaed9721eff07d8fbc7a2cc665570a094c2c7985eb37c4125b7c7b14bd5",
-        "02-config-fingerprint": "d6952668f6cf840d672a2098e77945a742bff46cfb33aa24c533e7b4c379f05a",
-        "03-configsync-file-error": "ac844a8198702901b11666304640e64f986b966df3fc6a1529b719cc06c2f19c",
-        "04-board-present-export": "f5ba47ed218d52fe95c5718f2cc401697dba9202723c733633fe5ebaa2e4b1ca",
-        "05-fabric-walk-reads": "ad2aa0fd167f182271c4554848d1e4f0cd2800c3a44f5f379e1c290765f1749e",
-        "06-config-scratch-dir": "548a51ed0a57b948c319eb4769153e2f48724354d38e592331ba4cbb8dd25ee6"
+        "01-buildvcs": "5548ad5ae206f30cfb349f9c79899418c7d0e7655c96cdd345d45154825967d9",
+        "02-config-fingerprint": "cd54f51abea1a2a3003363c71861a1971005bfc1437a6a02dd0f3c9cebd186cb",
+        "03-configsync-file-error": "ffa8f58f478badc68a602d5dc45a02e901a85e3728f6b685a8d879ee0f1d373c",
+        "04-board-present-export": "49ae947ffe1c41e27c9768848ac78a97c394ef315f2d9b515c4be11e74f643c9",
+        "05-fabric-walk-reads": "454f3b4bebf69a8ffc583ad0c79d8a5484b0ac4ce001ecae495033852ea7f164",
+        "06-config-scratch-dir": "7f6f80379450d071a6a003b579a32b5804770b4c2e5963ba258de7f55f4de74e"
       },
       "startSha": "1a8a6d0e31f8634da153e0e1dbfb8f82b9656a23",
       "kind": "fork",
       "spawnedAt": "2026-10-08T17:33:24Z",
       "sessionId": "e495df5d-7276-44c7-97aa-0e3437b51280",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-buildvcs",
+        "status": "done",
+        "head_sha": "e242a5500ed93aca475a704e1e3efe882e4da014",
+        "deviations": [
+          "cmd/lyx/testdata/test-budget.yaml"
+        ]
+      },
+      "cardShas": [
+        "e242a5500ed93aca475a704e1e3efe882e4da014"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-binary-change-and-rules/e495df5d-7276-44c7-97aa-0e3437b51280/subagents/agent-a555678c495c686ca.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-binary-change-and-rules/e495df5d-7276-44c7-97aa-0e3437b51280/subagents/agent-a555678c495c686ca.jsonl"
+  ]
 }
