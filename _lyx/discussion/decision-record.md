@@ -208,6 +208,12 @@ Decision: The Webster-Burler reviewer raises as a BLOCKING finding that run.go's
 
 Rationale: publish_verify runs the tmux tier, which the Burler verify gate does not; the raw /color left text in the input box, so the stricter readiness never saw the provider ready and Publish blocked twice.
 
+### Added after Discussion (parent, 2026-10-08): Orch strand removal is a second PATTERN-shuttle-stop exception
+
+Decision: PATTERN-shuttle-stop names two exceptions: loomcli's removal of the loom driver's own strand and orchcli's removal of the orch strand. The Out list's premise that the orch strand has no shuttle run record is wrong: orchcli starts the orch session with runner.Start, so it has one; orch stays out of scope.
+
+Rationale: No attach probe or Wait reads the orch run record, the same reasoning as the driver exception; moving orchcli's removals onto the stop verb would widen the task, and leaving the entry unchanged would make the invariant false on landing.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: the idle reading, the input-box reading and the split choreography stay in `claudeengine`; `shuttleengine` reaches them only through capabilities.
