@@ -76,8 +76,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - reed watchdog polls a signal file every 100 ms around the clock; a rule for every lyx daemon (creel and later ones): event-driven waits, second-scale backoff polls, pinned by a guard
 1. **Capture real hook payloads into fixtures** — [`shuttle-hook-payload-corpus`](design-shuttle-hook-payload-corpus.md) · enhancement, shuttle
    - Run the llm-tier hook-capture scenario once and turn the real StopFailure, Notification and SessionEnd payloads into corpus fixtures
-1. **Shuttle: first turn on the launch line, /color through the verified send** — [`shuttle-color-verified-send`](design-shuttle-color-verified-send.md) · enhancement, shuttle
-   - The skill-load message rides the launch line like a skill-free prompt does; /color, which has no launch-time form, goes through the verified send
+1. **Shuttle: the launch line carries the first turn** — [`shuttle-color-verified-send`](design-shuttle-color-verified-send.md) · enhancement, shuttle
+   - /color already goes through the verified send; the skill-load message or the prompt should ride the launch line so only later turns are typed
 1. **reed: spawn order from a recorded start time** — `reed-spawn-order-start-time` · enhancement, reed
    - Revival orders sessions by the mtime of seed.json, which re-materialization can move; record an explicit start time in the run record and order by it
 1. **Carry-over check re-reads the written file** — `carryover-verify-on-disk` · enhancement, loom

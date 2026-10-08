@@ -1,4 +1,4 @@
-# Shuttle: first turn on the launch line, /color through the verified send
+# Shuttle: the launch line carries the first turn
 
 `shuttle-color-verified-send` · Note · enhancement, shuttle
 
@@ -21,3 +21,8 @@ Every typed send is a chance for a lost or half-landed message, and the operator
 ## Priority
 
 Operator, 2026-10-08: low; the typed skill load is robust, and the launch line saves only a little time.
+
+## Done on 2026-10-08
+
+`/color` goes through shuttle's verified send after the session is ready (main e12fb6afb, with the settle wait from 7b3d140cb).
+What remains is the first proposal bullet: the launch line carries the first turn.

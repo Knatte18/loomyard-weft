@@ -893,7 +893,7 @@
     {
       "id": 201,
       "slug": "shuttle-color-verified-send",
-      "title": "Shuttle: first turn on the launch line, /color through the verified send",
+      "title": "Shuttle: the launch line carries the first turn",
       "kind": "note",
       "labels": [
         "enhancement",
@@ -902,8 +902,8 @@
       "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "The skill-load message rides the launch line like a skill-free prompt does; /color, which has no launch-time form, goes through the verified send",
-      "body": "## Why\n\nShuttle types `/color \u003ccolor\u003e` into a fresh session's pane, and with skills it types the skill-load message and then the prompt as well.\nEvery typed send is a chance for a lost or half-landed message, and the operator finds the typing clumsy (2026-10-08).\n\n## Facts (Claude Code 2.1.294 CLI reference)\n\n- No CLI flag, settings key or environment variable sets the session color; `/color` in the session is the only way.\n- The positional `claude \"\u003ctext\u003e\"` submits its text as the first user turn of an interactive session, and a slash command or skill invocation works there.\n- Only one positional prompt exists, so the launch line carries one first turn.\n\n## Proposal\n\n- The launch line carries the first turn in every case: the skill-load message when skills are named, else the prompt, so only the turns after the first are typed.\n- `/color` stays typed, as there is no launch-time alternative, but goes through shuttle's verified send once `shuttle-send` lands, after the session is ready.\n\n## Priority\n\nOperator, 2026-10-08: low; the typed skill load is robust, and the launch line saves only a little time.\n"
+      "brief": "/color already goes through the verified send; the skill-load message or the prompt should ride the launch line so only later turns are typed",
+      "body": "## Why\n\nShuttle types `/color \u003ccolor\u003e` into a fresh session's pane, and with skills it types the skill-load message and then the prompt as well.\nEvery typed send is a chance for a lost or half-landed message, and the operator finds the typing clumsy (2026-10-08).\n\n## Facts (Claude Code 2.1.294 CLI reference)\n\n- No CLI flag, settings key or environment variable sets the session color; `/color` in the session is the only way.\n- The positional `claude \"\u003ctext\u003e\"` submits its text as the first user turn of an interactive session, and a slash command or skill invocation works there.\n- Only one positional prompt exists, so the launch line carries one first turn.\n\n## Proposal\n\n- The launch line carries the first turn in every case: the skill-load message when skills are named, else the prompt, so only the turns after the first are typed.\n- `/color` stays typed, as there is no launch-time alternative, but goes through shuttle's verified send once `shuttle-send` lands, after the session is ready.\n\n## Priority\n\nOperator, 2026-10-08: low; the typed skill load is robust, and the launch line saves only a little time.\n\n## Done on 2026-10-08\n\n`/color` goes through shuttle's verified send after the session is ready (main e12fb6afb, with the settle wait from 7b3d140cb).\nWhat remains is the first proposal bullet: the launch line carries the first turn.\n"
     },
     {
       "id": 202,
