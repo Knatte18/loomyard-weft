@@ -8,24 +8,24 @@
 # recompile is needed to adopt a brand-new model):
 # zephyr: {engine: claude, model: claude-zephyr-1}
 #
-# See docs/reference/model-spec.md for the full grammar, precedence rules, and
+# See contracts/specs/llm-model-spec.md for the full grammar, precedence rules, and
 # the built-in fallback set this file overrides/extends.
 
 sonnet:
-  engine: claude
-  model: sonnet
-  defaults:
-    effort: medium
+    engine: claude
+    model: sonnet
+    defaults:
+        effort: medium
 opus:
-  engine: claude
-  model: opus
-  defaults:
-    effort: high
+    engine: claude
+    model: opus
+    defaults:
+        effort: medium
 haiku:
-  engine: claude
-  model: haiku
+    engine: claude
+    model: haiku
 fable:
-  engine: claude
-  model: fable
-  defaults:
-    effort: high
+    engine: claude
+    model: fable
+    defaults:
+        effort: high
