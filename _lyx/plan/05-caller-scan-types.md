@@ -31,8 +31,8 @@
 - `contracts/specs/loom-plan-spec.md`
 
 **Uses:**
-- `plan:internal/planparser#NestedModules`
-- `plan:internal/planparser#ModuleOf`
+- `internal/planparser#NestedModules`
+- `internal/planparser#ModuleOf`
 
 **Intent:** Put type information in front of card 4's scan, so `caller-uncovered` tells receivers apart (D1) under a bounded, logged, offline load that degrades to the scan instead of erroring (D2); this closes both false-positive classes of issue #461.
 

@@ -1,8 +1,8 @@
 # Card 1 — nested-modules
 
 **Create:**
-- `plan:internal/planparser#NestedModules` -> `func NestedModules(plan *Plan, through int, worktreeRoot string) []string`
-- `plan:internal/planparser#ModuleOf` -> `func ModuleOf(modules []string, dir string) string`
+- `internal/planparser#NestedModules`
+- `internal/planparser#ModuleOf`
 - `internal/planparser/nestedmodules.go`
 - `internal/planparser/nestedmodules_test.go`
 

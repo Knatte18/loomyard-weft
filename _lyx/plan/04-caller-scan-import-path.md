@@ -25,8 +25,8 @@
 - `contracts/specs/loom-plan-spec.md`
 
 **Uses:**
-- `plan:internal/planparser#NestedModules`
-- `plan:internal/planparser#ModuleOf`
+- `internal/planparser#NestedModules`
+- `internal/planparser#ModuleOf`
 
 **Intent:** Rewrite `caller-uncovered`'s name scan into the import-path resolution of D3, with D4's severity split and D5's nested-module reach; this scan is the whole reference walk until card 5 puts type information in front of it, and stays its fallback afterwards.
 

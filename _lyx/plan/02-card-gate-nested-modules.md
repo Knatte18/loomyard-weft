@@ -9,8 +9,8 @@
 - `contracts/specs/loom-plan-spec.md`
 
 **Uses:**
-- `plan:internal/planparser#NestedModules`
-- `plan:internal/planparser#ModuleOf`
+- `internal/planparser#NestedModules`
+- `internal/planparser#ModuleOf`
 
 **Intent:** Make webster's Go-derived per-card gate satisfiable for a card that targets packages inside a nested module (D7, issue #451's first symptom).
 

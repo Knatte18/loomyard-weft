@@ -1,9 +1,9 @@
 # Card 3 — verify-nested-module
 
 **Create:**
-- `plan:internal/planparser#checkVerifyNestedModule` -> `func checkVerifyNestedModule(plan *Plan, worktreeRoot string) []ValidationError`
-- `plan:internal/planparser#crossModuleCommand` -> `type crossModuleCommand struct`
-- `plan:internal/planparser#crossModuleCommands` -> `func crossModuleCommands(chain string, modules []string) []crossModuleCommand`
+- `internal/planparser#checkVerifyNestedModule`
+- `internal/planparser#crossModuleCommand`
+- `internal/planparser#crossModuleCommands`
 - `internal/planparser/verifymodule.go`
 
 **Edit:**
@@ -16,8 +16,8 @@
 - `contracts/specs/loom-plan-spec.md`
 
 **Uses:**
-- `plan:internal/planparser#NestedModules`
-- `plan:internal/planparser#ModuleOf`
+- `internal/planparser#NestedModules`
+- `internal/planparser#ModuleOf`
 
 **Intent:** Add the blocking plan check `verify-nested-module` (D8), so a plan whose author-written gate commands cannot pass by construction is refused at the plan gate instead of at run time.
 
