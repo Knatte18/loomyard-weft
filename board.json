@@ -835,21 +835,6 @@
       "body": "Imported from [issue #446](https://github.com/Knatte18/loomyard/issues/446).\n\nSeen in plan-glyph-precision (batten run, Discussion-Bouncer round 5 escalated, cause budget):\n\n- `lyx loom circling accept plan-glyph-precision` printed `\"resume\":\"lyx loom start\"`.\n- `lyx loom resume` in the task worktree then refused: \"the run is awaiting a decision, which resume does not give; run \\\"lyx loom approve\\\" or \\\"lyx loom reject\\\" ...\", although the decision was already recorded and approve/reject are PR-Gate verbs, not the circling decision.\n- The run moved on to Plan-Write only after the driver stepped it.\n\nExpected: after `circling accept`/`continue` under a watching batten run, both outputs name the same next step (the driver's step, or `lyx loom resume`), and `loom resume` either resumes on the recorded circling decision or says that the decision is recorded and the driver will step it.\nRole.md tells the hub to run `lyx loom resume` after a circling decision, which this refusal contradicts.\n"
     },
     {
-      "id": 190,
-      "slug": "judge-accept-approved",
-      "title": "Review judge accepts an APPROVED round with nothing blocking instead of circling to the budget",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "burler"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Three Discussions ran all five rounds on fresh edge-case keys after the reviewer approved; accept and hand MEDIUM findings on",
-      "body": "## What happened\n\nOn 2026-10-08 the Discussion review segments of `plan-glyph-precision`, `shuttle-state` and `reed-view` all ran their five rounds and escalated to the parent with cause `budget`.\nIn each, the round-5 reviewer's verdict was APPROVED with no BLOCKING finding, every earlier key was resolved, and each round raised fresh keys on edge cases rather than repeating old ones.\nThe judge said CONTINUE only because one or more MEDIUM `design` findings were open.\nThe parent then recorded the remaining design calls as decisions and accepted, which another round would not have changed.\n\n## Proposal\n\nThe judge accepts a round whose reviewer verdict is APPROVED with no BLOCKING finding, handing open MEDIUM and LOW findings to the next producer through the record instead of starting another round.\nA MEDIUM `design` finding that needs a call the producer cannot make escalates to the parent at once, without spending the rest of the budget.\nThis saves one to several rounds per review segment and one parent escalation per run.\n\nThe rule's exact threshold (for example, whether an open MEDIUM `design` finding on a new key blocks acceptance) is a design call for the task that builds it.\n"
-    },
-    {
       "id": 191,
       "slug": "webster-dead-ends",
       "title": "Webster: recovery never dead-ends, stale config fails at the start, a computed Merriam base",
@@ -918,6 +903,22 @@
       "isolated": false,
       "brief": "After plan-glyph-precision lands: measure glyph use, Plan rounds and handle binding from real runs; kick-start waits on it",
       "body": "## Why\n\n`plan-glyph-precision` makes plan cards name the members they change as glyphs, gated by the plan validators, and its committed test proves the glyph chain over a fixture module.\nThat proves the machinery, not that plan writers use it well.\nThe operator (2026-10-08) doubts a writer can pick the right glyphs from its own reasoning, and expects the gate to cost Plan rounds and time.\nKick-start packs (`kick-start-pack`, `enclose-kickstart`) build on plans whose glyphs resolve, so they wait until practice shows that.\n\n## Proposal\n\nAudit the first runs after `plan-glyph-precision` lands from their logs and transcripts:\n\n- the share of `Edit:` targets that are member glyphs rather than file paths or self glyphs;\n- the Plan rounds and Plan wall time spent on glyph findings (unresolved glyphs, redundancy, caller coverage, the re-sign arrow), against the Plan time of earlier runs;\n- `plan:` handles declared, bound at record-batch, and failed;\n- members a card edited that its glyphs did not name, and glyphs that named the wrong member, read from the batch diffs.\n\nThe plan stencil already tells writers to copy glyphs from `lyx quarry` answers and never spell one; plans before this task still named mostly file paths, because a path was always a valid target.\nThe audit's main question is whether the share of plain paths falls once `plan-glyph-precision`'s member-glyph rules and rubric flag are in place.\nFrom what it shows, tune the plan stencil and rubric where writers still fall back to paths or take many gate rounds.\nKick-start work starts only once the audit shows plans name resolvable members in practice.\n"
+    },
+    {
+      "id": 195,
+      "slug": "review-loop-convergence",
+      "title": "Review loop: lens fan for Discussion and Plan, judge-narrowed rounds, a lighter convergence rule",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "burler",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Wire burler cluster review into Discussion and Plan, let the judge drop settled lenses per bounce, and converge without circling to the budget on fresh edge-case keys",
+      "body": "## What happened\n\nOn 2026-10-08 the Discussion review segments of `plan-glyph-precision`, `shuttle-state` and `reed-view` all ran their five rounds and escalated to the parent with cause `budget`.\nIn each, the round-5 reviewer's verdict was APPROVED with no BLOCKING finding, every earlier key was resolved, and each round raised fresh keys on edge cases rather than repeating old ones.\nThe parent then recorded the remaining design calls as decisions and accepted, which another round would not have changed.\n\nTwo causes:\n\n- The judge's decision rule (`decisionRuleMarker` in `internal/shedadapters/bouncerprompt.go`) says `CONTINUE` while the latest round carries any `design` finding at MEDIUM or worse, and the judge stencil counts no fix as convergence, because a fix is new text no fresh reviewer has seen.\n  Every round's fixes so yield a fresh full review and fresh MEDIUM keys until the budget runs out; the reviewer's own verdict carries no weight.\n- Discussion and Plan review run solo: one `sonnet[high]` reviewer per round, no lenses.\n  Burler's fork-based cluster review (`df1c6ba33`: the lens and fan library in `burler.yaml`, the judge's `exclude_lenses` channel) has never been wired into `loom-recipe.yaml`; no review row sets `cluster-fan`.\n  The cluster design is what lets a review run on a mid-strength model; a solo reviewer covers one slice of the subject per round, so fresh edge cases surface round after round.\n\n## Proposal\n\n- Turn on a cluster fan for the Discussion and Plan review rows (`cluster-fan` on the BurlerRound rows, `cluster_excludes: true` on their Bouncer rows, which `internal/loomrecipe/clusterexcludes_test.go` pins to agree).\n  Webster review stays solo: its forks may run no git and cannot reach a diff-only subject (the recipe comment on that row).\n- Round 1 runs the broad fan; the judge narrows it each bounce through `exclude_lenses`, dropping lenses whose area is settled, so later rounds cost less.\n- A lighter convergence rule: `CONVERGED` when the latest round carries no BLOCKING finding and no MEDIUM `design` finding on a key that was already open in an earlier round.\n  New MEDIUM keys in the closing round are not dropped: they go to the next producer through the decision record, as the parent did by hand on 2026-10-08.\n  BLOCKING always continues.\n- Pick the fan's review model against the measured cost: the cluster design assumes `sonnet[medium]` lenses; a solo reviewer on Discussion and Plan would need `opus`.\n\n## Cost and time\n\n`docs/research/session-fork-spike.md` measured Claude Code fork subagents with a full prefix cache hit: about 17K fresh compute per extra reviewer after one shared explore phase, against about 209K for a cold reviewer.\nSo a fan's extra lenses are cheap next to the explore phase, which is paid once per round.\nThe forks run in parallel, so a round takes about the explore phase plus the slowest lens plus consolidation; the spike measured no wall-clock time.\nThe task measures both against today's solo rounds, per round and per segment, before the fan becomes the default.\n"
     }
   ],
   "legacy_done": [
