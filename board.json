@@ -888,6 +888,20 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #447](https://github.com/Knatte18/loomyard/issues/447).\n\nSeen: `lyx batten run webster-recovery --window` returned `{\"existing\":false,\"ok\":true,...}` and opened a window, but no pair was created and no loom run started.\n`_lyx/shed/webster-recovery/status.json` held a batten run from 2026-10-02 for an earlier task of the same slug, in state `done` at Worktree-Teardown, so the new run read that status as finished.\nThe operator noticed only because no VS Code window opened.\n\nExpected (operator, 2026-10-08): a slug whose task is done and pruned from the board is free, and a new task with the same slug runs as a fresh run.\nA finished run's status must not stand in the way: it is archived or dropped once its task is done, so `batten run` for the new task starts at Worktree-Create.\n\n## Proposal\n\n- `batten run` on a slug whose status is terminal and done treats the slug as free: it archives or drops the old `_lyx/shed/\u003cslug\u003e/` and starts at Worktree-Create.\n  A halted or failed status stays, since it is meant to be resumed.\n- Removing finished runs' status directories is batten's own cleanup verb, which the repo-wide cleanup command in note `lyx-cleanup` calls.\n  The board never touches shed state: `lyx board prune` stays board-only.\n- A running batten run's directory is never removed, so the cleanup skips any slug whose status is not terminal.\n\nWorkaround: the task was renamed to `webster-dead-ends`.\n"
+    },
+    {
+      "id": 193,
+      "slug": "lyx-cleanup",
+      "title": "lyx cleanup: one command runs every module cleanup",
+      "kind": "note",
+      "labels": [
+        "feature"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Drop finished batten statuses, prune the board, clear disposable .scratch and .lyx files, each through the owning module verb",
+      "body": "## Wanted\n\nThe operator (2026-10-08): one command that tidies the repo, running every cleanup there is.\nToday finished batten runs leave `_lyx/shed/\u003cslug\u003e/` behind in the records repo for good (one directory per slug that ever ran), done board entries wait for `lyx board prune`, and `.scratch/` and `.lyx/` gather drafts and logs nobody reads again.\n\n## Proposal\n\n- A top-level verb, such as `lyx cleanup`, that only calls each module's own cleanup verb, so no module learns about another's state.\n- Batten's cleanup removes the status directory of every run whose status is terminal and done; it never touches a running, halted or failed run.\n- It runs `lyx board prune`.\n- It clears what `.scratch/` and `.lyx/` hold that can be discarded: old orch notes beyond the latest, logs past an age, stale drafts.\n  Which `.lyx/` paths are disposable is a design call for the task that builds it.\n- A dry run lists what would go before anything is removed.\n\nRelated: note `batten-reused-slug`, where a leftover done status blocked a new task with the same slug.\n"
     }
   ],
   "legacy_done": [

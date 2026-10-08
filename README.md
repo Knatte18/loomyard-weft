@@ -134,6 +134,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Every gate of the run with a tick box and its elapsed time, in a pane of its own; an idea, not a priority
 1. **A producer runs two live agents side by side** — [`two-agent-producer`](design-two-agent-producer.md) · feature, shuttle
    - Shuttle starts and waits on two agents in one step and lets them talk; the base discussion-advisor and burler-split both need
+1. **lyx cleanup: one command runs every module cleanup** — [`lyx-cleanup`](design-lyx-cleanup.md) · feature
+   - Drop finished batten statuses, prune the board, clear disposable .scratch and .lyx files, each through the owning module verb
 
 ## Done
 
