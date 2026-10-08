@@ -32,6 +32,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **Git push without a timeout hangs a batten run after laptop sleep** — [`git-network-timeout`](design-git-network-timeout.md) · bug
 1. **webster record-batch: zero fork transcripts for a forked batch forces a full re-drive** — [`record-batch-no-transcripts`](design-record-batch-no-transcripts.md) · bug
 1. **webster record-batch rejects abbreviated head_sha that is a prefix of HEAD** — [`record-batch-short-sha`](design-record-batch-short-sha.md) · bug
+1. **Plan agent can record a decision as --by parent** — [`plan-agent-parent-decision`](design-plan-agent-parent-decision.md) · bug
 
 ### Enhancements
 
