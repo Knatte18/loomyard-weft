@@ -1,6 +1,6 @@
 # Plan gate checks: precise callers, nested fixture modules, a reviewer that knows the gate
 
-`plan-gate-checks` · Task · bug, enhancement, loom, quarry · running · Discussion-Write
+`plan-gate-checks` · Task · bug, enhancement, loom, quarry · running · Discussion-Bouncer
 
 ## Goal
 
