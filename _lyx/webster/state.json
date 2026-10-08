@@ -675,7 +675,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 20,
   "masterStrand": "b98b3a0241f2428ccaf434b2697c1951",
   "masterSessionId": "97cf9074-5729-4d7d-8666-4aae19848abd",
   "batches": {
@@ -791,6 +791,29 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-dead-ends/97cf9074-5729-4d7d-8666-4aae19848abd/subagents/agent-a84bf4b980f0915bd.jsonl"
       ]
+    },
+    "20": {
+      "slug": "amended-cards-recovery",
+      "cards": [
+        "20-amended-cards-recovery",
+        "21-overview-without-card-index",
+        "22-rebaseline-card-index",
+        "23-plan-write-archives-webster",
+        "24-plan-commit-archived-webster"
+      ],
+      "cardHashes": {
+        "20-amended-cards-recovery": "d885c76ad16c6c3a7e0b582b5ed1ee358aaa93707cc0114019e823b661adca40",
+        "21-overview-without-card-index": "4b6bb58c6ad859441580fd81ab7e66a7a880732906d7393fffe2b9f5e49e74bd",
+        "22-rebaseline-card-index": "6d3b9763242ebff267d1dfed9f737bdbc0a59ea40cc3aa76f26e6ea26cdb1959",
+        "23-plan-write-archives-webster": "a24b0bcf5743ef5200f7b993578eb2d1f7b3c49bfcc64a28f0df136e5c4526b4",
+        "24-plan-commit-archived-webster": "680b5f7b40a67f530d58f9ed8c71ea96300a40b6c00b94a39687f7b95225950a"
+      },
+      "startSha": "c2160a2948deb095896019e14abb8879cae36488",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T12:03:46Z",
+      "sessionId": "97cf9074-5729-4d7d-8666-4aae19848abd",
+      "terminal": false,
+      "status": ""
     },
     "6": {
       "slug": "webster-config-invalid",
