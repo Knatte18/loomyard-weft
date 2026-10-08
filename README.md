@@ -41,6 +41,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - rebaseline refuses begun cards and reset needs a fresh run loom cannot start, so a mid-run decision never reaches the plan
 1. **Stale batcher.yaml key startup_context is only caught at record-batch, halting a run mid-Webster** — [`config-drift-preflight`](design-config-drift-preflight.md) · bug
 1. **Plan-review rubric lets a reviewer recommend a card retyping that validate-plan rejects** — [`plan-rubric-containment`](design-plan-rubric-containment.md) · bug
+1. **begin-batch refuses after a failed record-batch, leaving the batch begun and non-terminal** — [`begin-batch-after-failed-record`](design-begin-batch-after-failed-record.md) · bug, webster
+   - A record-batch refusal unrelated to the report (a config-load error) leaves the batch begun with a report, and begin-batch then refuses
 
 ### Enhancements
 
