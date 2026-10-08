@@ -39,3 +39,7 @@ An N-agent producer declares its agents as seats, in one place (the recipe row o
 - inputs (files and markers the seat is given) and outputs (files it writes); a helper's output is a master's input, and that is the only coupling between seats, so no agent is told about another in any other way.
 
 A test pins that every seat's stencil markers are filled (`stencil.Fill` already refuses an empty marker) and that every helper output is some master's input.
+
+## Layout
+
+The agents of one step share the window evenly; reed's collapse-all-but-the-newest rule does not fit them (note `reed-layout-shares`, operator 2026-10-08).
