@@ -17,7 +17,7 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/planparser#OverviewWithoutCardIndex`
+- `internal/planparser#OverviewWithoutCardIndex`
 
 **Intent:** A card added after the last begun batch, with its Card Index line, lands through rebaseline, and the refusals for a done batch's card or any other overview change name that follow-up-card landing (D7), with the decision sequence documented (D8).
 - The record: `State` gains `PlanOverviewFrameHash` (JSON `planOverviewFrameHash,omitempty`), the hex SHA-256 of `planparser.OverviewWithoutCardIndex` over `00-overview.md`; a helper in `fingerprint.go` computes it, and it is recorded wherever `PlanFileHashes` is: `restampBaseline` (in `fingerprint.go`), `Run`'s new-state branches, and `webstercli`'s `persistPlanFingerprintRebaseline`, which copies the restamped `PlanFileHashes` onto a reloaded state after a bracket verb rewrote the plan and now copies the frame hash beside it, so a failed bracket verb never drops it.

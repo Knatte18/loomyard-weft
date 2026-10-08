@@ -1,7 +1,7 @@
 # Card 23 — plan-write-archives-webster
 
 **Create:**
-- `plan:internal/loomshed#ArchivedPlanWebsterDirs` -> `func ArchivedPlanWebsterDirs(planDir string) []string`
+- `internal/loomshed#ArchivedPlanWebsterDirs`
 
 **Edit:**
 - `internal/loomshed#NewPlanDirRotator` -> `func NewPlanDirRotator(anchorPath, stencilsDir string, archiveWebster func(dest string) error, now func() time.Time) func() (string, error)`

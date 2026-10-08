@@ -1,7 +1,7 @@
 # Card 21 — overview-without-card-index
 
 **Create:**
-- `plan:internal/planparser#OverviewWithoutCardIndex` -> `func OverviewWithoutCardIndex(content []byte) ([]byte, error)`
+- `internal/planparser#OverviewWithoutCardIndex`
 
 **Edit:**
 - `internal/planparser#splitFraming`

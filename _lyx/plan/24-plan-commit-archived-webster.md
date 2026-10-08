@@ -6,7 +6,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/loomshed#ArchivedPlanWebsterDirs`
+- `internal/loomshed#ArchivedPlanWebsterDirs`
 - `internal/websterengine#DirRel`
 
 **Intent:** The Webster run record card 23's rotation moves lands in the plan commit, deletions and archive together (D9's commit half).
