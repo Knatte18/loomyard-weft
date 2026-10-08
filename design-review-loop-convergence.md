@@ -26,6 +26,12 @@ Two causes:
   BLOCKING always continues.
 - Pick the fan's review model against the measured cost: the cluster design assumes `sonnet[medium]` lenses; a solo reviewer on Discussion and Plan would need `opus`.
 
+## Blocker: gate quiescence with forks
+
+A hub quick fix adding the fan stopped at `TestNoGatedRowAuthorizesForkSubagents` (`internal/loomrecipe/gatequiescence_test.go`), which pins a deliberately declined decision: a gated run must not spawn forks, because a gate fires at turn end and turn-idle alone would no longer mean the agent is finished.
+Since the reviewer/fixer split (572ab84e8) the recipe's `gates` reach only the fixer, which never forks, but the reviewer, the half that forks under a fan, carries its own review-parse gate (`ReviewGateEntry`), so the question stands for any fan.
+`shuttle-state` makes a turn end with outstanding background work the Stop payload reports a wait rather than a finished turn (its D8); the task re-opens the declined decision on that ground, rewrites or narrows the test, and corrects Webster-Burler's "Single reviewer, matching both shipped segments" comment.
+
 ## Cost and time
 
 `docs/research/session-fork-spike.md` measured Claude Code fork subagents with a full prefix cache hit: about 17K fresh compute per extra reviewer after one shared explore phase, against about 209K for a cold reviewer.
