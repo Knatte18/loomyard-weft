@@ -17,7 +17,7 @@ Waits on nothing open; can start now, in parallel.
    - Config reconciles itself on the first lyx command after a binary change, stencil drift behind main stops warning source-ahead, and file-editing stencils state the no-script edit rule
 1. **Plan gate checks: precise callers, nested fixture modules, a reviewer that knows the gate** — [`plan-gate-checks`](design-plan-gate-checks.md) · bug, enhancement, loom, quarry · running · Discussion-Write
    - Resolve callers by import path and receiver type, let gates run against nested fixture modules, and give the plan reviewer the gate check list
-1. **Webster record-batch and rebaseline: no needless re-drive, a calibrated Merriam base** — [`webster-record-batch`](design-webster-record-batch.md) · bug, enhancement, webster · running · Loom-Preflight
+1. **Webster record-batch and rebaseline: no needless re-drive, a calibrated Merriam base** — [`webster-record-batch`](design-webster-record-batch.md) · bug, enhancement, webster · running · Discussion-Write
    - Accept a prefix head_sha, find forked batch transcripts, accept a Card-Index-only change on an older record, and re-measure the Merriam fixed context
 
 ## Notes
