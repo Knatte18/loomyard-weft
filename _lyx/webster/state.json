@@ -503,7 +503,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 13,
   "masterStrand": "1578af759ae4b84ea53d41470d5d71f0",
   "masterSessionId": "e495df5d-7276-44c7-97aa-0e3437b51280",
   "batches": {
@@ -545,6 +545,29 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-binary-change-and-rules/e495df5d-7276-44c7-97aa-0e3437b51280/subagents/agent-a555678c495c686ca.jsonl"
       ]
+    },
+    "13": {
+      "slug": "stencil-drift-behind",
+      "cards": [
+        "13-stencil-drift-behind",
+        "14-stencil-source-ancestry",
+        "15-edit-directive",
+        "16-loom-roles-edit-directive",
+        "17-webster-edit-directive"
+      ],
+      "cardHashes": {
+        "13-stencil-drift-behind": "9d2ec09006b797ce025706ed58d677db80781b3dda3f34801518a3eda741e3fb",
+        "14-stencil-source-ancestry": "b759b953e8e0be377d79ed4a8840de1e3c6ea33fa7131af137af4d79326c6f8a",
+        "15-edit-directive": "03b135b27798fb29853a0f29ce9d0cce8b1f3b8348ce13b6de0f35148a789ec2",
+        "16-loom-roles-edit-directive": "82c9190ad60878ec124a8449fe1dbe43742ac8dee941ddfd2616750b0f8a8b42",
+        "17-webster-edit-directive": "19a9c9232cf325b1c74347142c86196bcb3d338899c4124ea68201ac6bafa530"
+      },
+      "startSha": "285ef309e36437c7ddf65ccddffec7927f388fe5",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T17:53:34Z",
+      "sessionId": "e495df5d-7276-44c7-97aa-0e3437b51280",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "hubreconcile",
