@@ -1,6 +1,6 @@
 # Plan reviewer suggests a file-plus-member card pairing that the redundant-file-target gate blocks
 
-`plan-review-redundant-pairing` · Note · bug
+`plan-review-redundant-pairing` · Note · bug, loom, stencil
 
 Imported from [issue #460](https://github.com/Knatte18/loomyard/issues/460).
 

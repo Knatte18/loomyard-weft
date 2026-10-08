@@ -26,16 +26,16 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - The board already marks running tasks; a write that changes the scope of a running task is refused
 1. **batten run on a slug whose earlier run is done reports ok and does nothing** — [`batten-reused-slug`](design-batten-reused-slug.md) · bug, batten
 1. **The plan gate fails done cards after a goto back to Plan-Review, and rebaseline refuses follow-up cards on an older webster record** — [`plan-gate-done-cards`](design-plan-gate-done-cards.md) · bug, loom, webster
-1. **A blocked Publish has no route that hands a finding to a fixer** — [`publish-fix-route`](design-publish-fix-route.md) · bug
-1. **webster record-batch: zero fork transcripts for a forked batch forces a full re-drive** — [`record-batch-no-transcripts`](design-record-batch-no-transcripts.md) · bug
-1. **webster record-batch rejects abbreviated head_sha that is a prefix of HEAD** — [`record-batch-short-sha`](design-record-batch-short-sha.md) · bug
-1. **Loom re-step refused with producer error while a stopped review strand's run dir is younger than 3m** — [`restep-young-run-dir`](design-restep-young-run-dir.md) · bug
-1. **caller-uncovered emits false-positive informational entries for type-name and method-name matches** — [`caller-uncovered-false-positives`](design-caller-uncovered-false-positives.md) · bug
-1. **Plan reviewer suggests a file-plus-member card pairing that the redundant-file-target gate blocks** — [`plan-review-redundant-pairing`](design-plan-review-redundant-pairing.md) · bug
-1. **Plan gates can name packages inside a nested fixture module, which cannot pass** — [`plan-gate-nested-module`](design-plan-gate-nested-module.md) · bug
-1. **Plan agent can record a decision as --by parent** — [`plan-agent-parent-decision`](design-plan-agent-parent-decision.md) · bug
-1. **Git push without a timeout hangs a batten run after laptop sleep** — [`git-network-timeout`](design-git-network-timeout.md) · bug
-1. **Finalize warns of per-worktree config changes that came from main** — [`finalize-config-warn-from-main`](design-finalize-config-warn-from-main.md) · bug
+1. **A blocked Publish has no route that hands a finding to a fixer** — [`publish-fix-route`](design-publish-fix-route.md) · bug, loom, burler
+1. **webster record-batch: zero fork transcripts for a forked batch forces a full re-drive** — [`record-batch-no-transcripts`](design-record-batch-no-transcripts.md) · bug, webster
+1. **webster record-batch rejects abbreviated head_sha that is a prefix of HEAD** — [`record-batch-short-sha`](design-record-batch-short-sha.md) · bug, webster
+1. **Loom re-step refused with producer error while a stopped review strand's run dir is younger than 3m** — [`restep-young-run-dir`](design-restep-young-run-dir.md) · bug, loom, burler
+1. **caller-uncovered emits false-positive informational entries for type-name and method-name matches** — [`caller-uncovered-false-positives`](design-caller-uncovered-false-positives.md) · bug, loom, quarry
+1. **Plan reviewer suggests a file-plus-member card pairing that the redundant-file-target gate blocks** — [`plan-review-redundant-pairing`](design-plan-review-redundant-pairing.md) · bug, loom, stencil
+1. **Plan gates can name packages inside a nested fixture module, which cannot pass** — [`plan-gate-nested-module`](design-plan-gate-nested-module.md) · bug, loom
+1. **Plan agent can record a decision as --by parent** — [`plan-agent-parent-decision`](design-plan-agent-parent-decision.md) · bug, loom, stencil
+1. **Git push without a timeout hangs a batten run after laptop sleep** — [`git-network-timeout`](design-git-network-timeout.md) · bug, fabric, batten
+1. **Finalize warns of per-worktree config changes that came from main** — [`finalize-config-warn-from-main`](design-finalize-config-warn-from-main.md) · bug, loom, config
 
 ### Enhancements
 

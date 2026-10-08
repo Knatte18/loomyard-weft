@@ -1,6 +1,6 @@
 # Plan gates can name packages inside a nested fixture module, which cannot pass
 
-`plan-gate-nested-module` · Note · bug
+`plan-gate-nested-module` · Note · bug, loom
 
 Imported from [issue #451](https://github.com/Knatte18/loomyard/issues/451).
 

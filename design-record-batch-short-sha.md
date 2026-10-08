@@ -1,6 +1,6 @@
 # webster record-batch rejects abbreviated head_sha that is a prefix of HEAD
 
-`record-batch-short-sha` · Note · bug
+`record-batch-short-sha` · Note · bug, webster
 
 Imported from [issue #456](https://github.com/Knatte18/loomyard/issues/456).
 

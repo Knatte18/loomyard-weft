@@ -1,6 +1,6 @@
 # webster record-batch: zero fork transcripts for a forked batch forces a full re-drive
 
-`record-batch-no-transcripts` · Note · bug
+`record-batch-no-transcripts` · Note · bug, webster
 
 Imported from [issue #457](https://github.com/Knatte18/loomyard/issues/457).
 

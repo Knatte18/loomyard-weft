@@ -1,6 +1,6 @@
 # Git push without a timeout hangs a batten run after laptop sleep
 
-`git-network-timeout` · Note · bug
+`git-network-timeout` · Note · bug, fabric, batten
 
 Imported from [issue #458](https://github.com/Knatte18/loomyard/issues/458).
 

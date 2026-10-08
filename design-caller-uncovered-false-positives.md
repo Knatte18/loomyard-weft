@@ -1,6 +1,6 @@
 # caller-uncovered emits false-positive informational entries for type-name and method-name matches
 
-`caller-uncovered-false-positives` · Note · bug
+`caller-uncovered-false-positives` · Note · bug, loom, quarry
 
 Imported from [issue #461](https://github.com/Knatte18/loomyard/issues/461).
 

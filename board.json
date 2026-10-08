@@ -1044,7 +1044,9 @@
       "title": "A blocked Publish has no route that hands a finding to a fixer",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "loom",
+        "burler"
       ],
       "issues": [
         462
@@ -1060,7 +1062,8 @@
       "title": "webster record-batch: zero fork transcripts for a forked batch forces a full re-drive",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "webster"
       ],
       "issues": [
         457
@@ -1076,7 +1079,8 @@
       "title": "webster record-batch rejects abbreviated head_sha that is a prefix of HEAD",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "webster"
       ],
       "issues": [
         456
@@ -1092,7 +1096,9 @@
       "title": "Loom re-step refused with producer error while a stopped review strand's run dir is younger than 3m",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "loom",
+        "burler"
       ],
       "issues": [
         452
@@ -1138,7 +1144,9 @@
       "title": "caller-uncovered emits false-positive informational entries for type-name and method-name matches",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "loom",
+        "quarry"
       ],
       "issues": [
         461
@@ -1154,7 +1162,9 @@
       "title": "Plan reviewer suggests a file-plus-member card pairing that the redundant-file-target gate blocks",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "loom",
+        "stencil"
       ],
       "issues": [
         460
@@ -1170,7 +1180,8 @@
       "title": "Plan gates can name packages inside a nested fixture module, which cannot pass",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "loom"
       ],
       "issues": [
         451
@@ -1186,7 +1197,9 @@
       "title": "Plan agent can record a decision as --by parent",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "loom",
+        "stencil"
       ],
       "issues": [
         453
@@ -1202,7 +1215,9 @@
       "title": "Git push without a timeout hangs a batten run after laptop sleep",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "fabric",
+        "batten"
       ],
       "issues": [
         458
@@ -1218,7 +1233,9 @@
       "title": "Finalize warns of per-worktree config changes that came from main",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "loom",
+        "config"
       ],
       "issues": [
         450

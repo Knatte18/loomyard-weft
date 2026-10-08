@@ -1,6 +1,6 @@
 # Plan agent can record a decision as --by parent
 
-`plan-agent-parent-decision` · Note · bug
+`plan-agent-parent-decision` · Note · bug, loom, stencil
 
 Imported from [issue #453](https://github.com/Knatte18/loomyard/issues/453).
 

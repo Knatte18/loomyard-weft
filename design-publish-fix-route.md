@@ -1,6 +1,6 @@
 # A blocked Publish has no route that hands a finding to a fixer
 
-`publish-fix-route` · Note · bug
+`publish-fix-route` · Note · bug, loom, burler
 
 Imported from [issue #462](https://github.com/Knatte18/loomyard/issues/462).
 

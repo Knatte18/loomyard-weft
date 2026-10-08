@@ -1,6 +1,6 @@
 # Finalize warns of per-worktree config changes that came from main
 
-`finalize-config-warn-from-main` · Note · bug
+`finalize-config-warn-from-main` · Note · bug, loom, config
 
 Imported from [issue #450](https://github.com/Knatte18/loomyard/issues/450).
 

@@ -1,6 +1,6 @@
 # Loom re-step refused with producer error while a stopped review strand's run dir is younger than 3m
 
-`restep-young-run-dir` · Note · bug
+`restep-young-run-dir` · Note · bug, loom, burler
 
 Imported from [issue #452](https://github.com/Knatte18/loomyard/issues/452).
 
