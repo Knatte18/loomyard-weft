@@ -1,7 +1,7 @@
 # Card 8 — accumulated-exclusions
 
 **Create:**
-- `plan:internal/shedadapters#excludedLenses` -> `func excludedLenses(name, runDir string, through int, fan string) (excluded, dropped []string)`
+- `internal/shedadapters#excludedLenses`
 
 **Edit:**
 - `internal/shedadapters#BurlerProducer.Call`
@@ -9,7 +9,7 @@
 - `internal/shedadapters/doc.go`
 
 **Uses:**
-- `plan:internal/shedadapters#readRoundUsage`
+- `internal/shedadapters#readRoundUsage`
 
 **Intent:**
 The producer half of decision D5: exclusions accumulate across a segment generation's rounds, held in Go.

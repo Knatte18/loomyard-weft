@@ -1,6 +1,6 @@
 {
   "runGuid": "27d451ecff9f1492b560e5fa3f383b27",
-  "planFingerprint": "673a39f6bfea8a061198517a4ba36b776ea32d50f7ddbda9fbd9bd859c952592",
+  "planFingerprint": "9dc0a13f611d846b42dbb69ba2b1408b75ad7a5689ca3c00ce412233d49e2e10",
   "planFileHashes": {
     "00-overview.md": "7464bc9487299df82c98da9bace70bdb3598bcb08bd3c16549b2660c56d778bd",
     "01-burler-fan-fallback.md": "1b89b3266c9bc36500d48d45f2b8f72c8da5a745f35d3bda8528104cd7d515d9",
@@ -9,15 +9,16 @@
     "04-shuttle-session-usage.md": "10596a61e68c18ea2baa72026ba6beb48f521b9fb852cef62c141c0dc07eeabe",
     "05-claude-session-usage.md": "5ae5b929fca53a561ab6e8eb33e902789c85e8ea0313de87466d1b4e9e90383d",
     "06-burler-half-usage.md": "1589e3ee8a7db6ad4130d476f220cffd171acb54b2872c219c32799cacc69196",
-    "07-round-usage-record.md": "68da89e947b306fc63f15e8f88cde031e03549c65e1b21f504d5e377c906a9cd",
-    "08-accumulated-exclusions.md": "f5b313fd071c1190c31a1c4e6ad8ee6b9e42fb6e8f4876bb381a7f0115f5c514",
-    "09-lens-facts.md": "312e622de18626f021854a0f0f6b44afea8d6563f3f2a577cceab0827ada8eb5",
+    "07-round-usage-record.md": "bba8024adda051232aa20286747223750bcd363ad9cc12483cd24837bd3d18e4",
+    "08-accumulated-exclusions.md": "9e915c94e7a461cf376fcc4503bfb626285e2ada817bba2d4022f6bc98253852",
+    "09-lens-facts.md": "153dc944dc65fa1e20c8f81552c28814600c6b082720f65ff83b8a9795e01ffc",
     "10-judge-exclusion-prompt.md": "140cc8d129683b117e36a2e42cd34ea57bcf28571bd42bfe44586f385d70b80b",
     "11-env-row-fans.md": "e328fc4ca0381b49c5f9e6e5a612f5542dddfc90710b173be2cee1e5c46d6c2d",
     "12-loom-fan-config.md": "43eccb3d5a3fcfc2d1ea4f15fb2e316ed5898c5465f8d09135999d9c7f22804a",
     "13-loom-wiring-fans.md": "d781f74bd215d3a9a51e1a878715533174d6d02f948626d629f90f6d86ffc3e8",
     "14-gate-quiescence.md": "108c8aa93b3229a84baa9821e866fb771d3c4bc0c99009a1a189d960aa7796c4"
   },
+  "planOverviewFrameHash": "ea358e99239db00e1df83541871742ca06e81e2fa5c3aa2b2a2c77ace5b9d4c0",
   "partition": [
     {
       "cards": [
@@ -32,8 +33,9 @@
       "estimate": 165610,
       "breakdown": {
         "weights": {
-          "master_base": 52000,
+          "orientation": 0,
           "batch_growth": 7000,
+          "master_base": 52000,
           "fork_messages": 4,
           "message_context": 300,
           "target_messages": 6,
@@ -132,8 +134,9 @@
       "estimate": 170152,
       "breakdown": {
         "weights": {
-          "master_base": 52000,
+          "orientation": 0,
           "batch_growth": 7000,
+          "master_base": 52000,
           "fork_messages": 4,
           "message_context": 300,
           "target_messages": 6,
@@ -217,8 +220,9 @@
       "estimate": 156184,
       "breakdown": {
         "weights": {
-          "master_base": 52000,
+          "orientation": 0,
           "batch_growth": 7000,
+          "master_base": 52000,
           "fork_messages": 4,
           "message_context": 300,
           "target_messages": 6,
@@ -279,7 +283,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "018f9b8b88e0e12501c5ce7665ec5aa2",
   "masterSessionId": "723bedac-a02e-4cd9-bddf-e65dacb0f52d",
   "batches": {
@@ -329,9 +333,9 @@
         "11-env-row-fans"
       ],
       "cardHashes": {
-        "07-round-usage-record": "68da89e947b306fc63f15e8f88cde031e03549c65e1b21f504d5e377c906a9cd",
-        "08-accumulated-exclusions": "f5b313fd071c1190c31a1c4e6ad8ee6b9e42fb6e8f4876bb381a7f0115f5c514",
-        "09-lens-facts": "312e622de18626f021854a0f0f6b44afea8d6563f3f2a577cceab0827ada8eb5",
+        "07-round-usage-record": "bba8024adda051232aa20286747223750bcd363ad9cc12483cd24837bd3d18e4",
+        "08-accumulated-exclusions": "9e915c94e7a461cf376fcc4503bfb626285e2ada817bba2d4022f6bc98253852",
+        "09-lens-facts": "153dc944dc65fa1e20c8f81552c28814600c6b082720f65ff83b8a9795e01ffc",
         "10-judge-exclusion-prompt": "140cc8d129683b117e36a2e42cd34ea57bcf28571bd42bfe44586f385d70b80b",
         "11-env-row-fans": "e328fc4ca0381b49c5f9e6e5a612f5542dddfc90710b173be2cee1e5c46d6c2d"
       },
@@ -339,11 +343,35 @@
       "kind": "fork",
       "spawnedAt": "2026-10-08T15:36:24Z",
       "sessionId": "723bedac-a02e-4cd9-bddf-e65dacb0f52d",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-round-usage-record",
+        "status": "done",
+        "head_sha": "ed876d9896272b270d3dffa5f0837ec92a495547",
+        "deviations": [
+          "cmd/lyx/testdata/test-budget.yaml",
+          "internal/testkit/envkit/envkit.go",
+          "internal/shedadapters/bouncer.go",
+          "internal/shedadapters/bouncerprompt.go",
+          "internal/shedadapters/focus.go",
+          "internal/shedadapters/bouncerfacts.go",
+          "internal/shedadapters/bouncerprompt_test.go",
+          "internal/shedrecipe/recipe.go",
+          "internal/shedrecipe/entries_bouncer_test.go",
+          "internal/shedrecipe/entries_burler_test.go"
+        ]
+      },
+      "cardShas": [
+        "ed876d9896272b270d3dffa5f0837ec92a495547"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-lens-fan/723bedac-a02e-4cd9-bddf-e65dacb0f52d/subagents/agent-af1847453eabd1ee3.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-lens-fan/723bedac-a02e-4cd9-bddf-e65dacb0f52d/subagents/agent-aaf738593b87e426d.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-lens-fan/723bedac-a02e-4cd9-bddf-e65dacb0f52d/subagents/agent-aaf738593b87e426d.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-lens-fan/723bedac-a02e-4cd9-bddf-e65dacb0f52d/subagents/agent-af1847453eabd1ee3.jsonl"
   ]
 }

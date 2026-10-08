@@ -1,12 +1,12 @@
 # Card 7 — round-usage-record
 
 **Create:**
-- `plan:internal/shedadapters#roundUsage` -> `type roundUsage struct`
-- `plan:internal/shedadapters#halfUsage` -> `type halfUsage struct`
-- `plan:internal/shedadapters#roundUsagePath` -> `func roundUsagePath(runDir string, n int) string`
-- `plan:internal/shedadapters#newRoundUsage` -> `func newRoundUsage(fan string, review, fix burlerengine.ModelChoice, result burlerengine.Result) roundUsage`
-- `plan:internal/shedadapters#writeRoundUsage` -> `func writeRoundUsage(runDir string, round int, u roundUsage) error`
-- `plan:internal/shedadapters#readRoundUsage` -> `func readRoundUsage(runDir string, round int) (roundUsage, error)`
+- `internal/shedadapters#roundUsage`
+- `internal/shedadapters#halfUsage`
+- `internal/shedadapters#roundUsagePath`
+- `internal/shedadapters#newRoundUsage`
+- `internal/shedadapters#writeRoundUsage`
+- `internal/shedadapters#readRoundUsage`
 
 **Edit:**
 - `internal/shedadapters#BurlerProducer.doneExit`

@@ -1,8 +1,8 @@
 # Card 9 — lens-facts
 
 **Create:**
-- `plan:internal/shedadapters#lensFacts` -> `type lensFacts struct`
-- `plan:internal/shedadapters#computeLensFacts` -> `func computeLensFacts(name, runDir string, round int, reportName func(int) string) lensFacts`
+- `internal/shedadapters#lensFacts`
+- `internal/shedadapters#computeLensFacts`
 
 **Edit:**
 - `internal/shedadapters#roundFacts`
@@ -13,8 +13,8 @@
 - `internal/shedadapters/doc.go`
 
 **Uses:**
-- `plan:internal/shedadapters#excludedLenses`
-- `plan:internal/shedadapters#readRoundUsage`
+- `internal/shedadapters#excludedLenses`
+- `internal/shedadapters#readRoundUsage`
 
 **Intent:**
 Decision D6: the judge of a fanned segment sees each lens's findings.

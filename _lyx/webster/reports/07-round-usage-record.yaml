@@ -1,0 +1,13 @@
+status: OK
+head_sha: ed876d9896272b270d3dffa5f0837ec92a495547
+deviations:
+  - cmd/lyx/testdata/test-budget.yaml
+  - internal/testkit/envkit/envkit.go
+  - internal/shedadapters/bouncer.go
+  - internal/shedadapters/bouncerprompt.go
+  - internal/shedadapters/focus.go
+  - internal/shedadapters/bouncerfacts.go
+  - internal/shedadapters/bouncerprompt_test.go
+  - internal/shedrecipe/recipe.go
+  - internal/shedrecipe/entries_bouncer_test.go
+  - internal/shedrecipe/entries_burler_test.go
