@@ -1,6 +1,6 @@
 {
   "current_producer": "Plan-Bouncer",
-  "state": "paused",
+  "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
