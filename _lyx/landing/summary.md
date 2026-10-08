@@ -53,8 +53,8 @@ Closes #444
 
 - The root cause of #442 was not reproduced live; the next occurrence should show its cause in the pane lines in the error text.
 - `go test -tags tmux ./internal/loomcli/... ./internal/shuttleengine/...` must pass, in particular `TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver`, `TestSmokeDriverStrand_ReentrantAcrossThreeBootstraps` and `TestSmokeStart_NeverAttachesAndAddsNoOperatorStrand`; the merged raw `/color` typing broke them before the fix.
-- The segment color send in `internal/shuttleengine/run.go` (`Start`) and `session.go` (`Runner.TypeColor`) was carried over from a review finding: check that it goes through the send path after readiness and that a failed color send only logs.
-- `PATTERN-shuttle-stop` in `PATTERN.md` was carried over from a review finding: check that it lists both the loom driver and the orch strand exceptions and that no other call site removes a shuttle run's strand.
+- The segment color send could stall the prompt on the command line: check in `internal/shuttleengine/run.go` (`Start`) and `session.go` (`Runner.TypeColor`) that it goes through the send path after readiness and that a failed color send only logs.
+- The `PATTERN-shuttle-stop` entry in `PATTERN.md` could lack the orch exception: check that it lists both the loom driver and the orch strand exceptions and that no other call site removes a shuttle run's strand.
 - A session whose idle reading never passes (a greyed suggestion, a pane too short to draw its box) now fails a send as busy after `send_ready_timeout_s` instead of typing.
   `lyx shuttle send` into a busy agent waits up to that window before failing.
 - A missing `UserPromptSubmit` hook line makes the signal condition vacuous, and a missing `Stop` line delays a send or a gate-boundary restore by up to 10 s.
