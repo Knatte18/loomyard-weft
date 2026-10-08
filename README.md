@@ -11,13 +11,13 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now, in parallel.
 
+1. **board: refuse scope edits to a running task** — [`board-lock-running`](design-board-lock-running.md) · bug, board
+   - The board already marks running tasks; a write that changes the scope of a running task is refused
 1. **Gate test scope: which gate runs which tier, bounded hub-wide** — [`gate-test-scope`](design-gate-test-scope.md) · bug, enhancement, webster, loom, stencil, config, burler · running · Discussion-Write
    - Card gate tests only its own packages at tier 1, tier 2 per batch and at the plan verify, a hub-wide slot lock for gate test runs, guarded publish_verify
-   - **Before:** `test-suite-weight`
+   - **Before:** `test-suite-weight`, `publish-recovery`, `webster-replan-state`
 1. **Git robustness: stale pack index, background gc, network timeouts, reused slugs** — [`git-robustness`](design-git-robustness.md) · bug, enhancement, fabric, batten, stencil
    - Reindex-and-retry for every go-git call, no auto-gc under a live step, timeouts on git network calls, batten refuses a done slug, bounded HeadContains
-1. **Publish and loom recovery: a fix route from Publish, resume past its own merge, clean re-steps** — [`publish-recovery`](design-publish-recovery.md) · bug, loom, burler, fabric, config, stencil
-   - A blocked Publish hands its failure to a fixer, resume survives its own staged merge, no false config warning at Finalize, re-step and decision-author fixes
 
 ### Layer B
 
@@ -26,19 +26,16 @@ Starts when every entry it names under After is done.
 1. **Lighter test suite: measured tiers, cheap tmux fixtures, no lingering children** — [`test-suite-weight`](design-test-suite-weight.md) · bug, enhancement, shuttle, reed, fabric
    - Measure each tier, non-login shells and shared servers in tier 3, lyx built once, no background gc in fixtures (#472), a no-tmux scan for tiers 1-2
    - **After:** `gate-test-scope`
+1. **Publish and loom recovery: a fix route from Publish, resume past its own merge, clean re-steps** — [`publish-recovery`](design-publish-recovery.md) · bug, loom, burler, fabric, config, stencil
+   - A blocked Publish hands its failure to a fixer, resume survives its own staged merge, no false config warning at Finalize, re-step and decision-author fixes
+   - **After:** `gate-test-scope`
+1. **Webster state across replans: goto to Plan, late plan reviews, rebaseline clarity** — [`webster-replan-state`](design-webster-replan-state.md) · bug, enhancement, webster, loom, burler
+   - Webster stays consistent after a goto to Plan or a late Plan-Review round, rebaseline names its fallback, one-call head_sha check, verify-module splits at || and |
+   - **After:** `gate-test-scope`
 
 ## Notes
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-### Bugs
-
-1. **board: refuse scope edits to a running task** — [`board-lock-running`](design-board-lock-running.md) · bug, board
-   - The board already marks running tasks; a write that changes the scope of a running task is refused
-1. **Loom goto back to Plan after Webster started leaves webster state stale; Webster hard-fails on plan fingerprint mismatch** — [`goto-plan-stale-webster`](design-goto-plan-stale-webster.md) · bug, loom, webster
-1. **Plan-review round is dispatched as a fix round after the plan is already implemented, and webster refuses the resulting plan edits** — [`plan-review-after-implemented`](design-plan-review-after-implemented.md) · bug, loom, burler, webster
-1. **verify-nested-module misses commands after || and |** — [`verify-module-or-pipe`](design-verify-module-or-pipe.md) · bug, loom
-   - crossModuleCommands splits only at &&, ; and newlines
 
 ### Enhancements
 
@@ -84,10 +81,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - A report over round usage records for the fan-on decision; a lost usage record shows in the facts
 1. **Configurable file log level in logger.yaml** — [`logger-file-level`](design-logger-file-level.md) · enhancement, config
    - Trace files carry only high-level messages and logger.yaml sets no level; add a file log level so most of lyx can be traced on demand
-1. **Resolve head_sha prefix candidates in one git call** — [`head-sha-batch-check`](design-head-sha-batch-check.md) · enhancement, webster
-   - commitsNamedBy runs one git cat-file per candidate object; use cat-file --batch-check
-1. **Log the silent overview-frame fallback in rebaseline** — [`overview-frame-fallback-log`](design-overview-frame-fallback-log.md) · enhancement, webster
-   - recordedOverviewFrame returns empty without a log when the baseline has no Card Index
 
 ### Features
 

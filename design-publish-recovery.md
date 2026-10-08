@@ -2,6 +2,8 @@
 
 `publish-recovery` · Task · bug, loom, burler, fabric, config, stencil
 
+Depends on: [`gate-test-scope`](design-gate-test-scope.md)
+
 ## Goal
 
 - A blocked Publish has a route that hands its failure to a fixer as a finding (#462), so the hub never falls back to `goto Plan-Bouncer` for one fix.
