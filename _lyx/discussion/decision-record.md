@@ -179,6 +179,12 @@ Out:
   - walk-writes-config-into-incomplete-pair (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 2: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/webster/round-2-review.md; fixer report: _lyx/reviews/webster/round-2-fixer-report.md.
+  - snapshotconfig-unreadable-file-treated-absent (class design, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - A hub whose stamp names a different build key: each of `lyx orch start`, `lyx batten run`, `lyx loom start` and `lyx loom resume`, run first, reconciles the hub-wide modules, the prime and every pair before its own work, logs each migrated module, and writes the stamp; the next start verb does not reconcile again.
