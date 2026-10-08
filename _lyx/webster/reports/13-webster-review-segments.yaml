@@ -1,0 +1,5 @@
+status: OK
+head_sha: b033d840a1aba5b8e244b66a6d68393382a86de8
+deviations:
+  - internal/treadleengine/seam_enforcement_test.go
+  - internal/orchengine/watcher_compact_test.go
