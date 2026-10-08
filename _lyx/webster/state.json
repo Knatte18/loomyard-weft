@@ -584,7 +584,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "9b025fb6ac0e08a60b89e29968aefa93",
   "masterSessionId": "699356e3-3e47-441b-812e-6f5d22532ace",
   "batches": {
@@ -659,6 +659,27 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-view/699356e3-3e47-441b-812e-6f5d22532ace/subagents/agent-ac0b7e56b13259769.jsonl"
       ]
+    },
+    "9": {
+      "slug": "zoom-bracket",
+      "cards": [
+        "09-zoom-bracket",
+        "10-spawn-order-revival",
+        "11-shuttle-color-command",
+        "12-loom-landing-segments"
+      ],
+      "cardHashes": {
+        "09-zoom-bracket": "d65d472269f64ed51b8e0106fc08786c1e932c7b0cec2c1cc2e34c79b8f77f8c",
+        "10-spawn-order-revival": "e218fd9e4486d57a816ff18fb3aaee49594b6921ed8e81d337782784f4b4f2fb",
+        "11-shuttle-color-command": "524ec51e7eef8c1defd64af57344a7f8c25a96d027c25944046d1fe44a2e68d8",
+        "12-loom-landing-segments": "b3e08fb0c2780563da047842a25f2dedba517b77f10142932fc6240e17e5f318"
+      },
+      "startSha": "f950a4cd800f19d6d2a32d09c72c5042655110a9",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T08:46:57Z",
+      "sessionId": "699356e3-3e47-441b-812e-6f5d22532ace",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
