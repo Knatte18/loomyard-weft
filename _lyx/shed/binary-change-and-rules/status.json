@@ -1,11 +1,11 @@
 {
-  "current_producer": "Preflight",
+  "current_producer": "Loom-Preflight",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Preflight",
-    "last": "Preflight → stuck",
+    "now": "Loom-Preflight",
+    "last": "Preflight → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,12 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-08T16:14:28Z"
+    },
+    {
+      "producer": "Preflight",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-08T16:20:10Z"
     }
   ],
   "product": {
