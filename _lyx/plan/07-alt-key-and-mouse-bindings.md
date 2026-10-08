@@ -1,12 +1,11 @@
 # Card 7 — Alt-key and status-bar mouse bindings
 
 **Edit:**
+- `cmd/lyx/testdata/test-budget.yaml`
 - `internal/reedengine/panebin.go`
 - `internal/reedengine/panebin_test.go`
 - `internal/reedengine/windowsize.go`
 - `internal/reedengine/windowsize_test.go`
-- `internal/reedengine/paneoptions.go`
-- `internal/reedengine/paneoptions_test.go`
 - `internal/reedengine/probe.go`
 - `internal/reedengine/probe_test.go`
 - `internal/reedengine/doc.go`
@@ -33,9 +32,10 @@ The bindings, all in the root table (`bind-key -n`):
 - `M-Up` / `M-Down`: only when the current window carries `@lyx_strands`, `select-pane -Z` to the previous/next pane (`:.-` / `:.+`, which wrap), then, when the landed pane has no `@strand`, one more step the same way; Selvage is always the one pane without `@strand`, so one step over it suffices and no reed process runs.
 - `M-Left` / `M-Right`: `run-shell -b` of the switch command (below) with `--prev` / `--next`; `-b` because `run-shell` without it blocks the tmux server (`doc.go`'s run-shell bullet).
 - `MouseDown1Status`: dispatch on `#{mouse_status_range}`: `view` selects the strand window and unzooms it; a pane range selects that pane in its window and zooms it (zoom kept on, never toggled off); a window range selects that window; a session range switches the client to that session.
-  To address the strand window from a binding, `markStrandWindowLocked` (`paneoptions.go`) also records its window id in the session user option `@lyx_strand_window`, and the `view` branch targets it through a format-expanded command (`run-shell -C`).
+  The `view` branch finds the strand window through D3's `@lyx_strands` marker alone, with no new option: a `#{W:#{?@lyx_strands,#{window_id},}}` loop expanded at click time inside a `run-shell -C` command yields the marked window's id, which it selects and, when zoomed, unzooms.
 
 Bound: the bindings take these five keys and the left status click from every pane on the hub's reed server, so a program in a pane, Claude Code included, never receives Alt+z, Alt+Up/Down or Alt+Left/Right; no other key or mouse binding is changed, and tmux's right-click menus keep their defaults.
+The `view` branch's click-time expansion can carry only a tmux-issued window id (`@<n>`) of a window reed marked, never a config value or free text; when no window in the session carries the marker it expands to nothing and the branch does nothing.
 
 The switch command (D11) is composed in `panebin.go` beside `composeWindowCommand`, from the `executablePath` chokepoint, so the binding names the absolute path of the `lyx` that pinned it, never `PATH`'s.
 Its tokens go through `shell.ForGOOS()` (`PATTERN-shell-mechanics-seam`): `Invoke(lyx)`, then `reed switch --next|--prev --socket <Quote(socket path)> --client #{q:client_name} --tmux <Quote(tmux path)>`.
@@ -50,8 +50,9 @@ PATTERN: `PATTERN-pane-binary-resolution` widens its scope to reed's key binding
 Tests:
 `bindings_test.go` (untagged) pins the builder's argvs: the five keys and the mouse dispatch, `-n` on each, and no other key.
 `panebin_test.go` pins the switch command for a `lyx`, socket and tmux path each containing `#` and a single quote: quoted once, every `#` doubled, `#{q:client_name}` unquoted, and the unresolvable-executable degrade.
-`windowsize_test.go` asserts the pin path issues the bindings after the option pins; `paneoptions_test.go` asserts the marker also sets `@lyx_strand_window`; `probe_test.go` gains a row where an optional verb is missing and the probe passes with one warning.
-`bindings_integration_test.go` (`//go:build tmux && linux`, the pty attach harness) writes the terminal's own byte sequences into the client pty (`ESC z`, `ESC [1;3A`/`B`/`C`/`D`, SGR mouse clicks at the bar's cells) and asserts: Alt+z toggles a strand's zoom and does nothing on Selvage or in a second window; Alt+Up/Down step through strand panes only, wrapping and keeping the zoom; clicks on `VIEW`, a strand button, a window button and a run button each have their D9 effect; and, with `executablePath` pointed at a recorder script under a directory containing `#`, Alt+Right runs it with the socket and tmux paths unchanged.
+`windowsize_test.go` asserts the pin path issues the bindings after the option pins; `probe_test.go` gains a row where an optional verb is missing and the probe passes with one warning.
+`bindings_integration_test.go` (`//go:build tmux && linux`, the pty attach harness) writes the terminal's own byte sequences into the client pty (`ESC z`, `ESC [1;3A`/`B`/`C`/`D`, SGR mouse clicks at the bar's cells) and asserts: Alt+z toggles a strand's zoom and does nothing on Selvage or in a second window; Alt+Up/Down step through strand panes only, wrapping and keeping the zoom; clicks on `VIEW` (also from a second window), a strand button, a window button and a run button each have their D9 effect; and, with `executablePath` pointed at a recorder script under a directory containing `#`, Alt+Right runs it with the socket and tmux paths unchanged.
+`test-budget.yaml`'s `internal/reedengine` row is set to the package's top-level test count after this card.
 
 `doc.go` documents the bindings, their bound, and the optional verbs.
 

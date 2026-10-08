@@ -7,6 +7,7 @@
 - `internal/segmentcolor/leaf_enforcement_test.go`
 
 **Edit:**
+- `cmd/lyx/testdata/test-budget.yaml`
 - `PATTERN.md`
 - `pattern/PATTERN-leaf-packages.md`
 - `docs/overview.md`
@@ -28,6 +29,7 @@ The package carries no provider name and no provider command (`PATTERN-shuttle-p
 
 Tests: `segmentcolor_test.go` is one table over the palette pinning each `TmuxColor` answer plus an unknown color answering false, `ParseColor` rows for every palette name and for a non-palette value whose error names the value and the palette, and a row pinning `Segments()` and `Palette()` as closed sets (their size is the contract).
 `leaf_enforcement_test.go` calls `scankit.AssertImportAllowlist(t, "internal/segmentcolor")` with no allowed non-stdlib import, modelled on `internal/standalonestate/leaf_enforcement_test.go`.
+`test-budget.yaml` gains an `internal/segmentcolor` row at the package's top-level test count.
 
 `PATTERN.md`'s `PATTERN-leaf-packages` line gains `segmentcolor`, and `pattern/PATTERN-leaf-packages.md` gains an `internal/segmentcolor` section: imports only the standard library.
 `docs/overview.md` lists `internal/segmentcolor/` in the repository tree and in the shared-infrastructure leaf list beside the other leaves.

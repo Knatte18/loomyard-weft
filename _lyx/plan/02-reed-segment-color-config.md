@@ -1,6 +1,7 @@
 # Card 2 — Reed config: one color key per segment
 
 **Edit:**
+- `cmd/lyx/testdata/test-budget.yaml`
 - `internal/reedengine/config.go`
 - `internal/reedengine/template_posix.yaml`
 - `internal/reedengine/template_windows.yaml`
@@ -38,9 +39,11 @@ Both templates gain the block, one key per `segmentcolor.Segments()` value, with
 This is the only refusal; every other reader goes through `segmentColor`.
 
 Tests:
-`segmentcolor_test.go` (reedengine) is one table over `segmentColor`: a configured segment, an empty segment, a segment with no key and a non-palette value, asserting the color and ok; plus `validateSegmentColors` rows for an all-valid map and a bad value whose error names key, value and palette.
+`segmentcolor_test.go` (reedengine) is one table over `segmentColor`: a configured segment, an empty segment, a segment with no key and a non-palette value, asserting the color and ok.
+`validateSegmentColors` is tested only through `Up`, its one caller: the boot-validation row below covers the refusal, and every existing `Up` test booting with the template defaults covers the all-valid map.
 `config_test.go` gains rows: the embedded template decodes to D13's seven defaults, and a `reed.yaml` lacking `segment_colors` (and one lacking a single key) loads with the template defaults.
 `lifecycle_test.go`'s `TestUp_BootValidation` table gains a row with `segment_colors.review: crimson` that fails `Up` naming the key, the value and the palette, before any tmux call.
+`test-budget.yaml`'s `internal/reedengine` row is set to the package's top-level test count after this card.
 
 `doc.go` gains a short paragraph: segment colors are read from config, resolved only through `segmentColor`, refused only at boot.
 

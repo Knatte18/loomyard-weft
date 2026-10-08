@@ -1,11 +1,17 @@
 # Card 5 — Two-line status bar and pane-border titles
 
 **Edit:**
+- `cmd/lyx/testdata/test-budget.yaml`
 - `internal/reedengine/windowsize.go`
 - `internal/reedengine/windowsize_test.go`
 - `internal/reedengine/attach_test.go`
 - `internal/reedcli/smoke_selvage_keepalive_test.go`
+- `internal/reedengine/watchdog_integration_test.go`
+- `internal/reedengine/attachgeometry_integration_test.go`
+- `internal/reedengine/strandops_integration_test.go`
+- `internal/reedcli/smoke_lifecycle_test.go`
 - `internal/reedengine/doc.go`
+- `tools/sandbox/SANDBOX-REED-SUITE.md`
 
 **Create:**
 - `internal/reedengine/bar.go`
@@ -38,7 +44,11 @@ Tests:
 `bar_integration_test.go` (`//go:build tmux && linux`, the package's pty attach harness) boots a session with two strand panes, Selvage and a second window, attaches a client, and expands the formats with `display-message -c <client> -p '#{E:status-format[0]}'` (and `[1]`, and `#{E:pane-border-format}` per pane) to assert the acceptance rows: `VIEW` lit exactly when the strand window is current and unzoomed; a strand button lit exactly when its pane is the zoomed active pane; a window button lit when current, also seen from the second window with `VIEW` and the strand buttons still present; no button for Selvage and its border reading `selvage`; a marked pane showing `⏳<label> <n>m` and nothing once cleared; the current session's full name lit and another session cut to 12 characters, in session-id order.
 `waitmark_integration_test.go` is deleted: it pinned the retired status-line waits segment, and the wait rows above replace it.
 `smoke_selvage_keepalive_test.go`'s status-line subtest asserts `#{status}` reads `2` and `#{status-position}` `bottom` instead of the retired identity text, keeping its Windows self-correcting branch.
+The `tmux`-tier window-height assertions that assume one status row (`watchdog_integration_test.go`'s `newRows-1`, `finalRows-1` and 41-of-42 checks, `attachgeometry_integration_test.go`'s `rows-1` and `resizedRows-1` checks) expect the client's rows minus the two reserved status rows, and their comments say `status` is pinned to `2`.
+The `tmux`-tier assertions on the pane at window row 0 follow D7's title row, which this card is the first to pin: `strandops_integration_test.go`'s replacement-top-pane height check and `attachgeometry_integration_test.go`'s collapsed-parent height checks (`TestAttachGeometry_ExactLayoutAndRowBudgets` and `assertAttachGeometryRowBudgets`) expect the content-row value, `cfg.CollapsedRows` minus the title row, and `smoke_lifecycle_test.go`'s rebuilt-Selvage check expects `pane_top` `1` for the session's sole pane, its message saying the title row sits above it.
+`test-budget.yaml`'s `internal/reedengine` row is set to the package's top-level test count after this card.
 
 `doc.go`: the geometry-option-pins bullet and the `SetWaitMark` paragraph describe the new pins and that wait marks render on strand buttons.
+`SANDBOX-REED-SUITE.md`'s mission M19 replaces its `#{status-left}` identity-text check with the bar: `#{status}` reads `2`, and the attached client shows the `VIEW` button on line 1 and the worktree's session on line 2.
 
 **ImpactSummary:** the status-line pin set changes for every reed session at boot and attach; layout reserves two status rows through the existing readback.

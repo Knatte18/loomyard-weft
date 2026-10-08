@@ -1,13 +1,13 @@
 # Card 8 — Geometry under the title row: adjusted pins run at every apply
 
 **Edit:**
+- `cmd/lyx/testdata/test-budget.yaml`
 - `internal/reedengine/windowsize.go`
 - `internal/reedengine/apply.go`
 - `internal/reedengine/attach.go`
 - `internal/reedengine/windowsize_test.go`
 - `internal/reedengine/apply_test.go`
 - `internal/reedengine/attach_test.go`
-- `internal/reedengine/reapply_test.go`
 - `internal/reedengine/attachgeometry_integration_test.go`
 - `internal/reedengine/doc.go`
 
@@ -35,8 +35,11 @@ A Selvage-only window has no pin and changes nothing.
 
 Tests:
 `windowsize_test.go` is one table over `pinsForContent` (title row with a multi-row top cell, a one-row top cell floored, the row-0 pane absent from the pins, no title row) and asserts the hook array carries the adjusted heights; a fake-tmux row over the readback maps `top`, `bottom`, `off`, empty and an error.
-`apply_test.go` asserts both apply paths issue the pins after `select-layout` and that the `SkipFocus` path issues no `set-hook`; `reapply_test.go` asserts the watchdog re-apply runs the pins and never the signal entry; `attach_test.go` asserts the chain's argv order (`attach-session ; select-layout … ; resize-pane …`).
-`attachgeometry_integration_test.go` (`tmux && linux`) gains the D7 acceptance rows with the two-line status and `pane-border-status top`: the applied layout fills the window exactly with no rescale or overflow at boot and after a resize; after a resize with the hook installed every cell, the top one included, has its planned height, also with the strand panes in a physical order other than the intended one; with `pane-border-status` set to `off` and to `bottom`, every pin keeps its cell height and the cells keep their planned heights; a planned one-row top cell ends one row taller with one content row right after the apply, before any resize.
+`apply_test.go` asserts both apply paths issue the pins after `select-layout` and that the `SkipFocus` path, the one the watchdog re-apply takes, issues no `set-hook` and no signal entry; `attach_test.go` asserts the chain's argv order (`attach-session ; select-layout … ; resize-pane …`).
+`attachgeometry_integration_test.go` (`tmux && linux`): the existing chain-shape checks stop assuming the 10-element chained form and taking the layout string from `argv[len(argv)-1]`; they assert the chained form by the presence of its `select-layout` element and take the planned layout string from the argument after it, and the 5-element bare-form checks stay.
+Its collapsed-parent height checks keep expecting `cfg.CollapsedRows` minus the title row (card 5), which this card's adjusted row-0 pin now holds after a resize as well as at attach.
+The file gains the D7 acceptance rows with the two-line status and `pane-border-status top`: the applied layout fills the window exactly with no rescale or overflow at boot and after a resize; after a resize with the hook installed every cell, the top one included, has its planned height, also with the strand panes in a physical order other than the intended one; with `pane-border-status` set to `off` and to `bottom`, every pin keeps its cell height and the cells keep their planned heights; a planned one-row top cell ends one row taller with one content row right after the apply, before any resize.
+`test-budget.yaml`'s `internal/reedengine` row is set to the package's top-level test count after this card.
 
 `doc.go`: the resize round-robin bullet and the chained-attach bullet describe the title-row adjustment, the pins run at apply, and the chain's pin tail.
 

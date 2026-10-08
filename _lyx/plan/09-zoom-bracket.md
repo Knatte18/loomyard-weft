@@ -1,6 +1,7 @@
 # Card 9 — A zoomed strand survives reed's own steps
 
 **Edit:**
+- `cmd/lyx/testdata/test-budget.yaml`
 - `internal/reedengine/lifecycle.go`
 - `internal/reedengine/strand.go`
 - `internal/reedengine/replace.go`
@@ -10,6 +11,7 @@
 - `internal/reedengine/windowsize_test.go`
 - `internal/reedengine/attach_test.go`
 - `internal/reedengine/reapply_test.go`
+- `internal/reedengine/attachgeometry_integration_test.go`
 - `internal/reedengine/doc.go`
 
 **Create:**
@@ -39,7 +41,9 @@ Tests:
 `zoom_test.go` (fake tmux) is one table over `keepZoomLocked`: not zoomed (no `resize-pane -Z`), zoomed (unzoom, fn, re-zoom of that pane), zoomed with fn erroring (still re-zoomed), zoomed pane gone after fn (no re-zoom), no session (fn runs plain).
 `windowsize_test.go` asserts the hook array's entry order: record, pins, re-zoom, signal; and no bracket entries with zero pins.
 `attach_test.go` asserts the pre-flight's unzoom-list-re-zoom order and the chain's order; `reapply_test.go` asserts the watchdog re-apply is bracketed.
+`attachgeometry_integration_test.go`'s chain-shape checks, which card 8 keyed on the `select-layout` element, still find the planned layout string as the argument after it once the record entry leads the chain and the re-zoom entry ends it; any count of chain elements they still assert includes the two new entries.
 `zoom_integration_test.go` (`//go:build tmux && linux`, the pty attach harness) zooms a strand that is not the top pane and asserts it is still the zoomed pane after a window resize, a re-attach, an add and a resume; after the next unzoom every cell has its planned height; and a zoomed strand whose pane is removed leaves the window in the overview.
+`test-budget.yaml`'s `internal/reedengine` row is set to the package's top-level test count after this card.
 
 `doc.go` gains a zoom section: the bracket, its call sites, the run-time entries and the bound.
 

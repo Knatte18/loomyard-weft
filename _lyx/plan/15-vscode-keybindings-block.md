@@ -5,9 +5,13 @@
 - `internal/vscode/keybindings_test.go`
 
 **Edit:**
+- `cmd/lyx/testdata/test-budget.yaml`
 - `internal/vscode/config.go`
 - `internal/ideengine/spawn.go`
+- `internal/ideengine/menu.go`
 - `internal/ideengine/testmain_test.go`
+- `internal/ideengine/spawn_clean_integration_test.go`
+- `internal/ideengine/spawn_hub_integration_test.go`
 - `internal/idecli/cli.go`
 - `internal/idecli/cli_test.go`
 - `internal/idecli/testmain_test.go`
@@ -32,12 +36,15 @@ Bound: the verb writes only between its own markers, plus the inserted block's o
 
 `ideengine.Spawn` returns the keybindings result beside its error and seeds the block before launching; the path comes from a package-level seam `KeybindingsPath` (default `vscode.UserKeybindingsPath`), like `CodeLauncher`, and a failure to resolve it is a skip.
 A skip never fails the spawn: `lyx ide spawn` still launches and reports the outcome and reason in its JSON result (`keybindings: {outcome, reason}`).
+`Menu` (`menu.go`), the other caller of `Spawn`, takes the new return and logs a skip with its reason via `logger.Warn`, since it has no JSON result to carry it; `menu_test.go` reaches `Spawn` through `Menu` under the same `KeybindingsPath` seam and needs no change.
 Both `testmain_test.go` files point `KeybindingsPath` at a temporary directory for the whole package run (process-global state, named in a comment), so no test writes the operator's real file.
 
 Tests:
 `keybindings_test.go` is one table over `mergeKeybindings`: insert with and without a trailing comma on the last entry, with comments and brackets inside strings and comments, replace an existing block in place, CRLF file kept CRLF, every malformed marker shape and a file with no array skipped; plus filesystem rows over `SeedKeybindings` in a temp dir: missing file created, second run unchanged (idempotent), permission bits kept, a read-only file already holding the block reported unchanged, a read-only file needing a change skipped and untouched, an unwritable directory skipped with no temporary file left, a directory in the file's place skipped, a symlink written at its target; and a `UserKeybindingsPath` table over the three GOOS values.
+`test-budget.yaml`'s `internal/vscode` row is set to the package's top-level test count after this card.
+`spawn_clean_integration_test.go` and `spawn_hub_integration_test.go` take `Spawn`'s new two-value return at every call, so the `integration` tier still compiles.
 `idecli/cli_test.go`'s spawn dispatch row asserts the envelope carries the keybindings outcome and that the seeded file under the test path holds the block.
 
 `config.go`'s package doc names the keybindings block; `docs/overview.md`'s ide line states that `spawn` seeds the block.
 
-**ImpactSummary:** `ideengine.Spawn` gains a return value (one caller, `idecli`) and one user-file write bounded by its markers.
+**ImpactSummary:** `ideengine.Spawn` gains a return value, its production callers `idecli` and `ideengine.Menu` and the package's own integration tests updated; one user-file write bounded by its markers.

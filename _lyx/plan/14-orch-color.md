@@ -1,6 +1,7 @@
 # Card 14 — The orch watcher types the orch's color
 
 **Edit:**
+- `cmd/lyx/testdata/test-budget.yaml`
 - `internal/orchcli/start.go`
 - `internal/orchcli/start_test.go`
 - `internal/orchcli/session.go`
@@ -34,7 +35,8 @@ Nothing is typed unless the idle probe passed on the same tick, the rule every o
 
 Tests:
 `watcher_test.go` (fake session) gains rows: a fresh binding types the color on the first idle tick and not before, and only once; a reload types the color first, then the plugins reload on the next idle tick; a failing `TypeColor` still advances the reload; a restart mid-color-step re-types it once idle.
-`start_test.go` asserts the orch spec's `Segment` and `ColorByCaller` beside its existing role and focus checks.
+`start_test.go` asserts the orch spec's `Segment` and `ColorByCaller` beside its existing role and focus checks, adding no test function.
+`watcher_test.go` holds one top-level function per watcher behavior, so the new behaviors above are new functions: `test-budget.yaml`'s `internal/orchengine` row is set to the package's top-level test count after this card.
 
 `orchengine` `doc.go`: the reload sequence lists the color step first, and the start paragraph names the color typing.
 

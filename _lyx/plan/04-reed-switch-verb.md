@@ -1,6 +1,7 @@
 # Card 4 — `lyx reed switch --next|--prev`
 
 **Edit:**
+- `cmd/lyx/testdata/test-budget.yaml`
 - `internal/reedengine/overlay.go`
 - `internal/reedcli/cli.go`
 - `internal/reedcli/cli_test.go`
@@ -37,7 +38,8 @@ Tests:
 `switch_test.go` (untagged) is one table over `nextSessionID` (forward, backward, wrap at both ends, numeric order across `$9`/`$10`, single session, current missing) plus fake-`execHook` rows asserting the exact argv sequence and that one session issues no `switch-client`.
 `switch_integration_test.go` (`//go:build tmux && linux`, run through the package's existing `tmuxkit.Main`) boots three sessions on a private socket with an attached client harness (as `attachgeometry_integration_test.go` attaches one), switches next and previous across the wrap, and asserts the client's session after each; an unknown client and a socket path with nothing listening return errors.
 `internal/reedcli/cli_test.go` gains rows: neither flag, both flags and a missing `--client` each exit non-zero with a JSON error, and the verb is reachable with no git repository in the cwd.
+`test-budget.yaml`'s `internal/reedengine` and `internal/reedcli` rows are set to each package's top-level test count after this card.
 
-Docs: `reedengine` `doc.go` adds `switch-client` to the subcommand set as an optional verb used only by this function; `docs/overview.md`'s reed line lists `switch` among the verbs; `SANDBOX-REED-SUITE.md` gains a mission that, with two worktrees' sessions up and a client attached, runs `lyx reed switch --next`/`--prev` with the socket path from `tmux -L <socket> display -p '#{socket_path}'` and checks the client lands on the neighbouring session (`PATTERN-sandbox-coverage`).
+Docs: `reedengine` `doc.go` states that `SwitchClient` issues `switch-client`, the only reed code that does; `docs/overview.md`'s reed line lists `switch` among the verbs; `SANDBOX-REED-SUITE.md` gains a mission that, with two worktrees' sessions up and a client attached, runs `lyx reed switch --next`/`--prev` with the socket path from `tmux -L <socket> display -p '#{socket_path}'` and checks the client lands on the neighbouring session (`PATTERN-sandbox-coverage`).
 
 **ImpactSummary:** new verb and one engine-less function; `TmuxCmd` gains a socket-path mode, every existing caller unchanged.

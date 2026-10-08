@@ -1,6 +1,7 @@
 # Card 11 — Shuttle carries the segment and types the provider's color command
 
 **Edit:**
+- `cmd/lyx/testdata/test-budget.yaml`
 - `internal/shuttleengine/spec.go`
 - `internal/shuttleengine/engine.go`
 - `internal/shuttleengine/run.go`
@@ -42,6 +43,7 @@ Tests:
 `color_test.go` is one table over every palette color plus an unknown one, asserting the typed inputs.
 `run_test.go` gains rows: a spec with a segment passes it on the add spec; a colored strand gets the color inputs after startup and before the skill-load message; no color, `ColorByCaller`, and an engine answering no inputs each type nothing; a failing color play still starts the run.
 `session_test.go` gains a `TypeColor` row against a live strand and one against an unknown guid.
+`test-budget.yaml`'s `internal/shuttleengine/claudeengine` and `internal/shuttleengine` rows are set to each package's top-level test count after this card.
 
 Docs: `shuttleengine` `doc.go` and `claudeengine` `doc.go` describe the color step, the capability and where the mapping lives.
 

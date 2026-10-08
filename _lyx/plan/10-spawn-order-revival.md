@@ -1,6 +1,7 @@
 # Card 10 — Revive a restarted server's sessions in spawn order
 
 **Edit:**
+- `cmd/lyx/testdata/test-budget.yaml`
 - `internal/reedengine/geometry.go`
 - `internal/reedengine/lifecycle.go`
 - `internal/reedengine/strand.go`
@@ -36,6 +37,7 @@ Bound: the step runs only for a revival of the booter's own recorded session, ne
 It does not reorder a later-position session that is still live, since session ids cannot change without killing live sessions.
 
 Teller (`internal/hubgeom/spawnorder.go`): `ReedGeometry` sets `SpawnOrder` to a closure over the resolved location that lists the hub's worktrees with `fabricengine.List` (skipping prunable entries), resolves each with `lyxcwd.ResolveWorktree` (an unresolvable one is skipped with a warning), and orders them: the prime first, then each pair by its run's start time, read as the modification time of the pair's own run seed (`shedrun.SeedFile(loc, shedrun.SelfRunID)`, written once when the run is seeded), then pairs with no readable seed by worktree name.
+Bound: `seed.json` lives in the fabric-synced `_lyx` tree, so the order holds on the machine where each pair was seeded; a checkout, rebase or re-materialized worktree that rewrites the file resets its modification time and sorts that pair as if its run started then, which can misorder that pair's revived session and nothing else.
 Each entry's `Revive` builds an engine from that worktree's own `reed.yaml` (`reedengine.LoadConfig` at its anchor) and its own `ReedGeometry`, and calls `Revive`.
 A pure `sortSpawnOrder` carries the ordering rule.
 
@@ -44,6 +46,7 @@ Tests:
 `revive_test.go` (fake tmux) pins the trigger: first boot, live session, `SpawnOrder` nil and the skip set each create without reviving; a recorded, not-live session returns the sentinel before any spawn; `Revive` reports false without the predicate.
 `lifecycle_test.go` asserts the helper's sequence with a told list of fake revive functions: predecessors in order, the booter's own entry and later entries never called, a failing predecessor skipped, the step re-run once with the skip.
 `revive_integration_test.go` (`//go:build tmux`, `tmuxkit.Main`) boots three engines on one private socket with a told list of their real `Revive` functions, kills the server, and asserts: booting the last brings the sessions back with ids in list order, the booter's own at its position; a second booter starting after the first has brought the server up still fills the earlier gaps first; a predecessor whose `Revive` fails is skipped and the boot completes; with a later-position session still live, the booter's session is created after it and the live session is untouched; a first boot and a downed worktree trigger no revival.
+`test-budget.yaml`'s `internal/reedengine` and `internal/hubgeom` rows are set to each package's top-level test count after this card.
 
 Docs: `reedengine` `doc.go` gains the revival section (predicate, lock sequence, bound); `hubgeom` `doc.go` names the spawn-order teller and its start-time source.
 

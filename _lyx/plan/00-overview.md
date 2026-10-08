@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -33,6 +33,8 @@ The cards follow the decision record's D1–D16 and its post-Discussion addition
 - **Segment keys.** The segment constants' values (`coordinator`, `discussion`, `plan`, `webster`, `review`, `describe`, `landing`) are the reed config keys under `segment_colors`, so one vocabulary serves the launch spec, the strand record and the config.
 - **Optional probe verbs.** The constraint "the capability probe gains any verb the new pins need" conflicts with D6's non-fatal pins and the Windows degrade if read as required verbs, since a required verb psmux lacks would take every reed verb down. Card 7 resolves it the way `set-hook` and `resize-pane` already are: the probe gains an optional-verb list that warns and never fails.
 - **Run start time.** D12 orders pairs by "their run's start time read from the pair's own records"; no record carries a start timestamp, so card 10 reads the modification time of the pair's own run seed (`seed.json`), written once when the run is seeded.
+  `seed.json` sits in the fabric-synced `_lyx` tree, so the order holds on the machine where the pair was seeded, and a checkout or re-materialization that rewrites the file sorts that pair as if its run started then.
+- **Test budget.** Each card that changes a package's count of top-level test functions edits `cmd/lyx/testdata/test-budget.yaml`, setting that package's row to its count after the card, and a package new with tests gains a row (`PATTERN-test-speed`).
 - **Dead fields go with the pipeline.** Card 6 removes `Geometry.RepoName` with the status text, its only reader; `WorktreeName` and `HubPath` stay, since other code reads them.
 - **reedcli's module doc** is `internal/reedcli/cli.go`'s header comment; the package has no `doc.go`.
 - **tmux-tier tests** that need an attached client use `internal/reedengine`'s existing pty harness (`attachgeometry_integration_test.go`, `tmux && linux`), and every new reedengine integration file runs under the package's `tmuxkit.Main`.

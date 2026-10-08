@@ -1,6 +1,7 @@
 # Card 3 — Strand label, color and window marker as tmux user options
 
 **Edit:**
+- `cmd/lyx/testdata/test-budget.yaml`
 - `internal/reedengine/state.go`
 - `internal/reedengine/strand.go`
 - `internal/reedengine/spawn.go`
@@ -14,7 +15,6 @@
 
 **Create:**
 - `internal/reedengine/paneoptions.go`
-- `internal/reedengine/paneoptions_test.go`
 
 **Uses:**
 - `internal/reedengine/segmentcolor.go`
@@ -40,12 +40,13 @@ Selvage never gets either pane option; their absence is what keeps it off the ba
 Call sites:
 `launchStrandLocked` (`spawn.go`) calls `setStrandPaneOptionsLocked` right after it sets the pane title, so add, update and resume (every strand-realizing path) set both options.
 `upLocked` and `Resume` (`lifecycle.go`) call `markStrandWindowLocked` once Selvage exists and the strand window resolves, which is the boot.
-`AttachArgv`'s pre-flight calls `markStrandWindowLocked` right after it resolves the strand window and `reassertStrandPaneOptionsLocked` right after it lists the panes, both ahead of the chain guards, so a session or strand spawned by an older lyx gets them at the next attach even when the chain is suppressed.
+`AttachArgv`'s pre-flight, right after it resolves the strand window and before the `window-size` and `#{status}` readbacks, calls `markStrandWindowLocked`, lists the window's panes and calls `reassertStrandPaneOptionsLocked` with that listing, so a session or strand spawned by an older lyx gets them at the next attach whichever chain guard later suppresses the chain.
+A failed listing is logged and skips the re-assert only.
 
 Tests (fake tmux, untagged):
-`paneoptions_test.go` is one table over `strandLabel` (prime name, task name, numbered role `burler-review-2`, an unparseable name) and over `setStrandPaneOptionsLocked`'s argv for a colored strand, a strand with no segment and a strand whose segment has no config key (unset `@strand_color`).
-`spawn_test.go` asserts a launch issues both pane options after the title.
-`attach_test.go` asserts the pre-flight marks the window and re-asserts the options on a live bound pane, not on Selvage, also on a suppressed chain.
+`spawn_test.go`'s `TestLaunchStrandLocked_SplitWindowAndPaneTitleCalls` gains launch fixtures for a colored strand, a strand with no segment and a strand whose segment has no config key, asserting both pane options (or the `@strand_color` unset) after the title; across them the strand names cover the four label shapes (a prime name, a task name, the numbered role `burler-review-2` and an unparseable name), so the `@strand` value pins `strandLabel` through the real launch path and the helper gets no test of its own.
+`attach_test.go` asserts the pre-flight marks the window and re-asserts the options on a live bound pane, not on Selvage, also when the `window-size` or `#{status}` readback suppresses the chain.
+`test-budget.yaml`'s `internal/reedengine` row is set to the package's top-level test count after this card.
 `strand_test.go` asserts `Segment` persists and the returned strand carries `Color`; `lifecycle_test.go` asserts `Status` carries `Color` and that a recorded strand without a segment reports none.
 
 `doc.go` documents `@strand`, `@strand_color` and `@lyx_strands`: who sets them, when, and that no Go decision reads them back.

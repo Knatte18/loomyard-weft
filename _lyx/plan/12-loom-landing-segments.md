@@ -35,6 +35,8 @@ Segments, per D13's table:
 
 Each builder's doc comment gains one line naming the segment and why it is that one, in the style of its existing per-field reasons.
 
-Tests: each package's existing spec test asserts the built spec's `Segment` beside the role it already asserts; no new test function.
+Tests: each package's existing spec test asserts the built spec's `Segment`, adding no test function, so no package's test-budget row changes.
+The driver, discussion, plan, rework, describe and friction tests assert it beside the `Role` they already assert.
+`mergeresolve`'s spec test asserts no role today: `TestBuildConflictSpec_SkillsAndParentDirective` (`mergeresolve_test.go`) gains the `Segment` assertion beside its `Skills` check, in every row.
 
 **ImpactSummary:** seven spec builders gain one field each; their runs get a color, nothing else changes.
