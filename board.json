@@ -1026,7 +1026,9 @@
       "title": "The plan gate fails done cards after a goto back to Plan-Review, and rebaseline refuses follow-up cards on an older webster record",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "loom",
+        "webster"
       ],
       "issues": [
         463

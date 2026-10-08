@@ -1,6 +1,6 @@
 # The plan gate fails done cards after a goto back to Plan-Review, and rebaseline refuses follow-up cards on an older webster record
 
-`plan-gate-done-cards` · Note · bug
+`plan-gate-done-cards` · Note · bug, loom, webster
 
 Imported from [issue #463](https://github.com/Knatte18/loomyard/issues/463).
 
