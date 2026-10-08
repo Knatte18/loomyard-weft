@@ -1,6 +1,6 @@
 {
   "runGuid": "43f96b93160e5891c1f81e46a1390042",
-  "planFingerprint": "61e0788730f6726e8c5e937ec9c7f69e6db7b2b239df4d8ad29631d2435bebcf",
+  "planFingerprint": "ec5677d1a844fac123434852ad4359d0eac3c06285941fcfbde4bf7ff338728b",
   "planFileHashes": {
     "00-overview.md": "27289e2bb9617a8242f26a9bfe54a7aa486a604838b433d7bade6203cc3a1e0e",
     "01-configengine-invalid-mark.md": "a06f90fcb213dce27a8736f16f1d124b3cfa1cb152cc908b90c12967f565205d",
@@ -10,14 +10,14 @@
     "05-loom-preflight-batcher.md": "987da9d91173047fcf3901d51f293e583430f6d01a2efc68db8e9ead0d1058f8",
     "06-webster-config-invalid.md": "55638dc0cfd73185f92b5463b3a52e8e7bae6bb314fcd7a5f9b17d5bcd1e0a0c",
     "07-begin-batch-one-remedy.md": "9b9d20bc8bbe77d2e16ab6770dbb1371043db836adc45b29279a801dce81f637",
-    "08-computed-merriam-base.md": "08a9ada08b5dba82f86b62e18e91b7e0d2f0a7d2833c0150eeab532c24a0b223",
-    "09-calibrate-orientation-fit.md": "b70ddd64cbaf8c60bea5b5621c65abe777c9e66ba372908b2650d267f433883d",
-    "10-gitrepo-reset-keep.md": "29b6dcad0f29a8db075684e605fb15214fd34a3cd39c365cc031ef3b30a8e1d9",
+    "08-computed-merriam-base.md": "fb09a5133f2ecc9122af62b8be8d4d686c93f3b6b43801139d1302d4e571a959",
+    "09-calibrate-orientation-fit.md": "61dd47931937d3bd4051c1a19e80fcd999ad817f867b6e81da5199bc0260d885",
+    "10-gitrepo-reset-keep.md": "fefc69dad3ffc147e78973344ceda66befb44b6a3766f86491cf0a2baaf3bec5",
     "11-reset-targets.md": "5475cf76e33961029227541457f65a047bba4d3d623cad966eb941dae56dd024",
     "12-run-archive-after-reset.md": "ed18d74f92f738780ce6387facec1ffb62e5f15eccdaf2c136efe39260c8f8b1",
     "13-uncommitted-paths.md": "437046db97c06808101bb8f1bf949f39ea28ecb7d4a8e883aed9379e969af25c",
     "14-reset-start-archives.md": "700453e0a0b3a5f74f85a5b0414b91f50408b63dc698bbcdca98c7ed836f6a25",
-    "15-standalone-reset.md": "4522885f0ca913560765e09f8761eee934fd252eb43a2ad71e90dc4d091be794",
+    "15-standalone-reset.md": "eb763834cb9a7eabede9c011d1bb80b0a015200abc70d3ad1ebd4f55b9a3df09",
     "16-reset-sites-repoint.md": "13876b4b4da66a115f3bdb51f381bb3eea1da359c95d6e93138a5424c0422543",
     "17-retire-fresh-after-reset.md": "057c5f319a00f94dac7dd6dd0f74d777dc8a1b6be18fee731936553a17a8e480",
     "18-recovery-uncommitted-paths.md": "ff268d5a1c13e65b63d46e59a0f88fd27cc89e2f679863d7c7617463904aa59b",
@@ -675,7 +675,7 @@
       }
     }
   ],
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "b98b3a0241f2428ccaf434b2697c1951",
   "masterSessionId": "97cf9074-5729-4d7d-8666-4aae19848abd",
   "batches": {
@@ -729,19 +729,34 @@
       "cardHashes": {
         "06-webster-config-invalid": "55638dc0cfd73185f92b5463b3a52e8e7bae6bb314fcd7a5f9b17d5bcd1e0a0c",
         "07-begin-batch-one-remedy": "9b9d20bc8bbe77d2e16ab6770dbb1371043db836adc45b29279a801dce81f637",
-        "08-computed-merriam-base": "08a9ada08b5dba82f86b62e18e91b7e0d2f0a7d2833c0150eeab532c24a0b223",
-        "09-calibrate-orientation-fit": "b70ddd64cbaf8c60bea5b5621c65abe777c9e66ba372908b2650d267f433883d",
-        "10-gitrepo-reset-keep": "29b6dcad0f29a8db075684e605fb15214fd34a3cd39c365cc031ef3b30a8e1d9"
+        "08-computed-merriam-base": "fb09a5133f2ecc9122af62b8be8d4d686c93f3b6b43801139d1302d4e571a959",
+        "09-calibrate-orientation-fit": "61dd47931937d3bd4051c1a19e80fcd999ad817f867b6e81da5199bc0260d885",
+        "10-gitrepo-reset-keep": "fefc69dad3ffc147e78973344ceda66befb44b6a3766f86491cf0a2baaf3bec5"
       },
       "startSha": "16a4d219d3e96e95cd76230b5335ab94e5690ffb",
       "kind": "fork",
       "spawnedAt": "2026-10-08T11:10:40Z",
       "sessionId": "97cf9074-5729-4d7d-8666-4aae19848abd",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-webster-config-invalid",
+        "status": "done",
+        "head_sha": "f52353eb713c95b82f2f3fbdd66306ac5f018d73",
+        "deviations": [
+          "internal/webstercli/cli_test.go"
+        ]
+      },
+      "cardShas": [
+        "f52353eb713c95b82f2f3fbdd66306ac5f018d73"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-dead-ends/97cf9074-5729-4d7d-8666-4aae19848abd/subagents/agent-aa8fc8256e2e77353.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-dead-ends/97cf9074-5729-4d7d-8666-4aae19848abd/subagents/agent-adbeb3d4c4d5f3e88.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-dead-ends/97cf9074-5729-4d7d-8666-4aae19848abd/subagents/agent-adbeb3d4c4d5f3e88.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-dead-ends/97cf9074-5729-4d7d-8666-4aae19848abd/subagents/agent-aa8fc8256e2e77353.jsonl"
   ]
 }

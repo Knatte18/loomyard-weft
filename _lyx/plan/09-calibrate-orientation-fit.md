@@ -16,7 +16,7 @@
 - `tools/tokencount/calibrate_integration_test.go`
 
 **Uses:**
-- `plan:internal/websterengine#MerriamBaseOf`
+- `internal/websterengine#MerriamBaseOf`
 - `tools/tokencount#readRunPlan`
 - `tools/tokencount#BaseTrees`
 

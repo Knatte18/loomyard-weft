@@ -1,7 +1,7 @@
 # Card 8 — computed-merriam-base
 
 **Create:**
-- `plan:internal/websterengine#MerriamBaseOf` -> `func MerriamBaseOf(texts ...string) batcher.StartBase`
+- `internal/websterengine#MerriamBaseOf`
 - `internal/websterengine/merriambase.go`
 - `internal/websterengine/merriambase_test.go`
 

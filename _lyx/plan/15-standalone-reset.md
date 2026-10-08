@@ -14,7 +14,7 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/gitrepo#Repo.ResetKeep`
+- `internal/gitrepo#Repo.ResetKeep`
 - `plan:internal/websterengine#ArchiveRunAfterReset`
 - `plan:internal/websterengine#UncommittedPaths`
 - `internal/gitrepo#Repo.WorktreeChangedFiles`

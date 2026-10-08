@@ -1,7 +1,7 @@
 # Card 10 — gitrepo-reset-keep
 
 **Create:**
-- `plan:internal/gitrepo#Repo.ResetKeep` -> `func (r *Repo) ResetKeep(sha string) error`
+- `internal/gitrepo#Repo.ResetKeep`
 
 **Edit:**
 - `internal/gitrepo/reset.go`
