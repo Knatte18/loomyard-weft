@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "webster: on-disk plan fingerprint does not match this run's recorded state: on-disk plan fingerprint e5774b7e8d54a66910ecefc515635b1450a436038c57b07b1ba1ca63112f3a54 does not match this run's recorded fingerprint c14834a3541f68a39521495f721d0a4da5904e455cba5dfb2290af405509e129; the plan changed since state.json was created; way forward: 00-overview.md changed and is never rebaselined; restore it with \"lyx webster restore-plan\", or 1) lyx webster reset --to start; 2) re-step the Webster row",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Batchifier → done",
-    "wait": ""
+    "wait": "webster: on-disk plan fingerprint does not match this run's recorded state: on-disk plan fingerprint e5774b7e8d54a66910ecefc515635b1450a436038c57b07b1ba1ca63112f3a54 does not match this run's recorded fingerprint c14834a3541f68a39521495f721d0a4da5904e455cba5dfb2290af405509e129; the plan changed since state.json was created; way forward: 00-overview.md changed and is never rebaselined; restore it with \"lyx webster restore-plan\", or 1) lyx webster reset --to start; 2) re-step the Webster row"
   },
   "history": [
     {
