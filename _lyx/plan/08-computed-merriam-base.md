@@ -21,7 +21,7 @@
 - `internal/webstercli#websterCLI.rebaselineCmd`
 
 **Uses:**
-- `plan:internal/batcher#StartBase`
+- `internal/batcher#StartBase`
 - `internal/websterengine#MasterTemplate`
 - `internal/websterengine#Geometry`
 

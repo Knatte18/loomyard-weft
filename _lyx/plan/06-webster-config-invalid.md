@@ -12,9 +12,9 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/configengine#ErrInvalid`
-- `plan:internal/configengine#MarkInvalid`
-- `plan:internal/batcher#ErrRetiredKey`
+- `internal/configengine#ErrInvalid`
+- `internal/configengine#MarkInvalid`
+- `internal/batcher#ErrRetiredKey`
 
 **Intent:** A webster verb whose config content is broken refuses with a flag Master stops on, and an unreadable config file reads as transient (D10's config half, D12's webster wording).
 `LoadConfig` wraps its unmarshal, role-spec and numeric-knob validation failures with `configengine.MarkInvalid`, so together with card 1 every content failure of `webster.yaml` carries `configengine.ErrInvalid`.

@@ -1,7 +1,7 @@
 # Card 3 — batcher-migrate-config
 
 **Create:**
-- `plan:internal/batcher#MigrateConfig` -> `func MigrateConfig(existing []byte) ([]byte, []string, error)`
+- `internal/batcher#MigrateConfig`
 
 **Edit:**
 - `internal/batcher/config_test.go`
@@ -9,7 +9,7 @@
 - `internal/batcher/doc.go`
 
 **Uses:**
-- `plan:internal/configengine#MarkInvalid`
+- `internal/configengine#MarkInvalid`
 
 **Intent:** The batcher's half of D12, in `config.go`: a pure rewrite of a `batcher.yaml` document that removes the retired keys from every entry under `profiles`.
 For each profile it drops the profile-level `alone_above`, drops `weights.startup_context`, and drops `weights.master_base`; it adds `weights.orientation` at the template's own value (read from `ConfigTemplate()`'s `cautious` profile, so the number is declared once, in `template.yaml`) only when the profile carries `weights.master_base` or `weights.startup_context` and no `orientation` of its own; an operator's `orientation` is kept.

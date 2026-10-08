@@ -15,7 +15,7 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/batcher#ErrRetiredKey`
+- `internal/batcher#ErrRetiredKey`
 - `internal/loomshed#batchifierReasonPrefix`
 - `internal/loomshed#batchifierWayForward`
 

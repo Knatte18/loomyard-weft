@@ -1,16 +1,16 @@
 {
   "runGuid": "43f96b93160e5891c1f81e46a1390042",
-  "planFingerprint": "b0a3ad3021185b4b7a44b9b80935afb20f42b33d56a61761e4c6acd640601ea3",
+  "planFingerprint": "61e0788730f6726e8c5e937ec9c7f69e6db7b2b239df4d8ad29631d2435bebcf",
   "planFileHashes": {
     "00-overview.md": "27289e2bb9617a8242f26a9bfe54a7aa486a604838b433d7bade6203cc3a1e0e",
-    "01-configengine-invalid-mark.md": "d06e92105e542ecdffa7eff8f1b44f277c790b1d6afbeb25f11b95837e6dad1f",
-    "02-batcher-orientation.md": "a5096d37cb3cdc5fea3a84746935037c1fe3b8ef64d9789572081ce344a29ed9",
-    "03-batcher-migrate-config.md": "9269b480505f2a39387914f542dcdcdd698e2a122ab07d914c27e7bc591b54ac",
-    "04-reconcile-migration-hook.md": "b6c6ed008c0b1cbb4fb277bfad761d3d76a23ece4bd1b94f13c0fa644ba3b3c9",
-    "05-loom-preflight-batcher.md": "327192ec193a63490da4c296f488a68d15f9bf2d4924240240126180072691cf",
-    "06-webster-config-invalid.md": "d64e36e73e991267512113edfcf70b7b71998bd3afd19a7d8eb05f12235f9d5c",
+    "01-configengine-invalid-mark.md": "a06f90fcb213dce27a8736f16f1d124b3cfa1cb152cc908b90c12967f565205d",
+    "02-batcher-orientation.md": "99e90790690fb3c471be55e8ebb36c55d77d6a29321311006a7b59fa1f2263ef",
+    "03-batcher-migrate-config.md": "2f5f172f3216a076f56d2d1c53be9e770f0b3cd90d648fa9b1302c9884787cd2",
+    "04-reconcile-migration-hook.md": "e3ef24ab32b91f973d9c78804bc87fec1e9ce998c68ccb5173b894cedd1eb427",
+    "05-loom-preflight-batcher.md": "987da9d91173047fcf3901d51f293e583430f6d01a2efc68db8e9ead0d1058f8",
+    "06-webster-config-invalid.md": "55638dc0cfd73185f92b5463b3a52e8e7bae6bb314fcd7a5f9b17d5bcd1e0a0c",
     "07-begin-batch-one-remedy.md": "9b9d20bc8bbe77d2e16ab6770dbb1371043db836adc45b29279a801dce81f637",
-    "08-computed-merriam-base.md": "d0357d573233397dd81e50be522bd9b0cbd5396ae40f47e3ec404f74b5852ac6",
+    "08-computed-merriam-base.md": "08a9ada08b5dba82f86b62e18e91b7e0d2f0a7d2833c0150eeab532c24a0b223",
     "09-calibrate-orientation-fit.md": "b70ddd64cbaf8c60bea5b5621c65abe777c9e66ba372908b2650d267f433883d",
     "10-gitrepo-reset-keep.md": "29b6dcad0f29a8db075684e605fb15214fd34a3cd39c365cc031ef3b30a8e1d9",
     "11-reset-targets.md": "5475cf76e33961029227541457f65a047bba4d3d623cad966eb941dae56dd024",
@@ -675,7 +675,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "b98b3a0241f2428ccaf434b2697c1951",
   "masterSessionId": "97cf9074-5729-4d7d-8666-4aae19848abd",
   "batches": {
@@ -689,18 +689,36 @@
         "05-loom-preflight-batcher"
       ],
       "cardHashes": {
-        "01-configengine-invalid-mark": "d06e92105e542ecdffa7eff8f1b44f277c790b1d6afbeb25f11b95837e6dad1f",
-        "02-batcher-orientation": "a5096d37cb3cdc5fea3a84746935037c1fe3b8ef64d9789572081ce344a29ed9",
-        "03-batcher-migrate-config": "9269b480505f2a39387914f542dcdcdd698e2a122ab07d914c27e7bc591b54ac",
-        "04-reconcile-migration-hook": "b6c6ed008c0b1cbb4fb277bfad761d3d76a23ece4bd1b94f13c0fa644ba3b3c9",
-        "05-loom-preflight-batcher": "327192ec193a63490da4c296f488a68d15f9bf2d4924240240126180072691cf"
+        "01-configengine-invalid-mark": "a06f90fcb213dce27a8736f16f1d124b3cfa1cb152cc908b90c12967f565205d",
+        "02-batcher-orientation": "99e90790690fb3c471be55e8ebb36c55d77d6a29321311006a7b59fa1f2263ef",
+        "03-batcher-migrate-config": "2f5f172f3216a076f56d2d1c53be9e770f0b3cd90d648fa9b1302c9884787cd2",
+        "04-reconcile-migration-hook": "e3ef24ab32b91f973d9c78804bc87fec1e9ce998c68ccb5173b894cedd1eb427",
+        "05-loom-preflight-batcher": "987da9d91173047fcf3901d51f293e583430f6d01a2efc68db8e9ead0d1058f8"
       },
       "startSha": "c0bf19c541b1b78f5bab47c98981282265bc4e37",
       "kind": "fork",
       "spawnedAt": "2026-10-08T09:38:26Z",
       "sessionId": "97cf9074-5729-4d7d-8666-4aae19848abd",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-configengine-invalid-mark",
+        "status": "done",
+        "head_sha": "16a4d219d3e96e95cd76230b5335ab94e5690ffb",
+        "deviations": [
+          "tools/tokencount/main.go",
+          "internal/loomrecipe/resume_test.go"
+        ]
+      },
+      "cardShas": [
+        "16a4d219d3e96e95cd76230b5335ab94e5690ffb"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-dead-ends/97cf9074-5729-4d7d-8666-4aae19848abd/subagents/agent-adbeb3d4c4d5f3e88.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-dead-ends/97cf9074-5729-4d7d-8666-4aae19848abd/subagents/agent-adbeb3d4c4d5f3e88.jsonl"
+  ]
 }

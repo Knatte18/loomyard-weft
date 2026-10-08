@@ -12,7 +12,7 @@
 - `internal/configcli/reconcile_integration_test.go`
 
 **Uses:**
-- `plan:internal/batcher#MigrateConfig`
+- `internal/batcher#MigrateConfig`
 
 **Intent:** `lyx config reconcile` performs a module's declared migration before it reconciles the file against the template (D12), so a seeded `batcher.yaml` survives this task's retirement of `master_base`.
 `configreg.Module` gains `Migrate func(existing []byte) ([]byte, []string, error)`, nil for every module but batcher, whose entry in `Modules` sets `batcher.MigrateConfig`.

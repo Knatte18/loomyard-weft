@@ -1,8 +1,8 @@
 # Card 1 — configengine-invalid-mark
 
 **Create:**
-- `plan:internal/configengine#ErrInvalid` -> `var ErrInvalid error`
-- `plan:internal/configengine#MarkInvalid` -> `func MarkInvalid(err error) error`
+- `internal/configengine#ErrInvalid`
+- `internal/configengine#MarkInvalid`
 
 **Edit:**
 - `internal/configengine#load`

@@ -1,8 +1,8 @@
 # Card 2 — batcher-orientation
 
 **Create:**
-- `plan:internal/batcher#StartBase` -> `type StartBase struct`
-- `plan:internal/batcher#ErrRetiredKey` -> `var ErrRetiredKey error`
+- `internal/batcher#StartBase`
+- `internal/batcher#ErrRetiredKey`
 
 **Edit:**
 - `internal/batcher#Weights`
@@ -36,7 +36,7 @@
 - `tools/tokencount/calibrate_test.go`
 
 **Uses:**
-- `plan:internal/configengine#MarkInvalid`
+- `internal/configengine#MarkInvalid`
 
 **Intent:** Replace the fitted `master_base` with a computed base plus an `orientation` weight in the cost model (D13's batcher half), and retire the old keys loudly (D12's loader half).
 
