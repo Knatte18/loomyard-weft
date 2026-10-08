@@ -1,6 +1,6 @@
 # Shuttle: one session-state model, held turns as waits, stuck not a question, a deliberate permission setup
 
-`shuttle-state` · Task · bug, enhancement, shuttle · running · Discussion-Bouncer
+`shuttle-state` · Task · bug, enhancement, shuttle · running · Plan-Write
 
 Shuttle reads what an agent session is doing from what Claude Code reports, and the stops built on that reading stop misfiring.
 
