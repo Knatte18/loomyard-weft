@@ -1,4 +1,4 @@
-# Review loop: lens fans for Discussion and Plan, judge-narrowed rounds, lighter convergence, models per segment
+# Review loop: a lighter convergence rule, a lower budget with auto-accept, models per segment
 
 `review-loop-convergence` · Task · bug, enhancement, burler, loom
 
@@ -10,48 +10,27 @@ On 2026-10-08 the Discussion review segments of `plan-glyph-precision`, `shuttle
 In each, the round-5 reviewer's verdict was APPROVED with no BLOCKING finding, every earlier key was resolved, and each round raised fresh keys on edge cases rather than repeating old ones.
 The parent then recorded the remaining design calls as decisions and accepted, which another round would not have changed.
 
-Two causes:
+The judge's decision rule (`decisionRuleMarker` in `internal/shedadapters/bouncerprompt.go`) says `CONTINUE` while the latest round carries any `design` finding at MEDIUM or worse, and the judge stencil counts no fix as convergence, because a fix is new text no fresh reviewer has seen.
+Every round's fixes so yield a fresh full review and fresh MEDIUM keys until the budget runs out; the reviewer's own verdict carries no weight.
 
-- The judge's decision rule (`decisionRuleMarker` in `internal/shedadapters/bouncerprompt.go`) says `CONTINUE` while the latest round carries any `design` finding at MEDIUM or worse, and the judge stencil counts no fix as convergence, because a fix is new text no fresh reviewer has seen.
-  Every round's fixes so yield a fresh full review and fresh MEDIUM keys until the budget runs out; the reviewer's own verdict carries no weight.
-- Discussion and Plan review run solo: one `sonnet[high]` reviewer per round, no lenses.
-  Burler's fork-based cluster review (`df1c6ba33`: the lens and fan library in `burler.yaml`, the judge's `exclude_lenses` channel) has never been wired into `loom-recipe.yaml`; no review row sets `cluster-fan`.
-  The cluster design is what lets a review run on a mid-strength model; a solo reviewer covers one slice of the subject per round, so fresh edge cases surface round after round.
+Measured over the ten latest landed runs (2026-10-08), review loops take about 57% of a run's agent time (median about 24 min Discussion, 27 min Plan, 34 min Webster review, against 39 min of Webster execution), with median rounds 3.5, 2.5 and 2.5, and 5 of 10 Discussion reviews escalated on budget.
+Nearly all of a round is the reviewer pass; the judge takes under a minute.
 
 ## Proposal
 
-- Turn on a cluster fan for the Discussion and Plan review rows (`cluster-fan` on the BurlerRound rows, `cluster_excludes: true` on their Bouncer rows, which `internal/loomrecipe/clusterexcludes_test.go` pins to agree).
-  Webster review stays solo: its forks may run no git and cannot reach a diff-only subject (the recipe comment on that row).
-- Discussion and Plan get their own fans in `burler.yaml`, with lenses written for a design record and a plan rather than the code-oriented `standard` lenses (error-handling, test-gaps).
-- Round 1 runs the broad fan; the judge narrows it each bounce through `exclude_lenses`, dropping lenses whose area is settled, so later rounds cost less.
-- A lighter convergence rule: `CONVERGED` when the latest round carries no BLOCKING finding and no MEDIUM `design` finding on a key that was already open in an earlier round.
+- **A lighter convergence rule:** `CONVERGED` when the latest round carries no BLOCKING finding and no MEDIUM `design` finding on a key that was already open in an earlier round.
   New MEDIUM keys in the closing round are not dropped: they go to the next producer through the decision record, as the parent did by hand on 2026-10-08.
   BLOCKING always continues.
-- Pick the fan's review model against the measured cost: the cluster design assumes `sonnet[medium]` lenses; a solo reviewer on Discussion and Plan would need `opus`.
+- **A lower round budget with auto-accept at the cap (operator, 2026-10-08):** the default `review_max_bounces` drops from 5 to 2 or 3, and a spent budget accepts the segment as it stands, with its open findings written to the decision record for the next producer, instead of escalating to the parent.
+  `review_max_bounces` exists today; auto-accept at the cap does not (a spent budget always escalates, `settleUnconverged` in `internal/shedadapters/bouncer.go`), so the task adds it as a config choice, with escalation still available.
+  A BLOCKING finding at the cap still escalates.
+- **Models per segment:** `loom.yaml`'s `review` and `fix` keys take one model-spec or a per-round list, but one setting serves every review segment.
+  The task lets each segment (Discussion, Plan, Webster review) set its own review and fix models, with today's keys as the default.
+- **An option to start the fixer when the review is done:** the fixer starts beside the reviewer and polls `lyx burler await-review` so its orientation overlaps the review (572ab84e8).
+  When a review runs longer than the prompt-cache TTL the fixer's cache expires while it waits, and each await poll is a paid turn.
+  The task adds a config option to start the fixer only once the review file exists instead; today's parallel start stays the default (operator, 2026-10-08: only the option for now).
 
-## Blocker: gate quiescence with forks
-
-A hub quick fix adding the fan stopped at `TestNoGatedRowAuthorizesForkSubagents` (`internal/loomrecipe/gatequiescence_test.go`), which pins a deliberately declined decision: a gated run must not spawn forks, because a gate fires at turn end and turn-idle alone would no longer mean the agent is finished.
-Since the reviewer/fixer split (572ab84e8) the recipe's `gates` reach only the fixer, which never forks, but the reviewer, the half that forks under a fan, carries its own review-parse gate (`ReviewGateEntry`), so the question stands for any fan.
-`shuttle-state` makes a turn end with outstanding background work the Stop payload reports a wait rather than a finished turn (its D8); the task re-opens the declined decision on that ground, rewrites or narrows the test, and corrects Webster-Burler's "Single reviewer, matching both shipped segments" comment.
-
-## Cost and time
-
-`docs/research/session-fork-spike.md` measured Claude Code fork subagents with a full prefix cache hit: about 17K fresh compute per extra reviewer after one shared explore phase, against about 209K for a cold reviewer.
-So a fan's extra lenses are cheap next to the explore phase, which is paid once per round.
-The forks run in parallel, so a round takes about the explore phase plus the slowest lens plus consolidation; the spike measured no wall-clock time.
-The task measures both against today's solo rounds, per round and per segment, before the fan becomes the default.
-
-## Models per segment
-
-`loom.yaml`'s `review` and `fix` keys take one model-spec or a per-round list, but one setting serves every review segment.
-Discussion, Plan and Webster review differ in subject and in whether they fan, so the task lets each segment set its own review and fix models (a solo reviewer wants `opus`, a lens fan `sonnet[medium]`), with today's keys as the default.
-
-## An option to start the fixer when the review is done
-
-The fixer starts beside the reviewer and polls `lyx burler await-review` so its orientation overlaps the review (572ab84e8).
-When a review runs longer than the prompt-cache TTL the fixer's cache expires while it waits, and each await poll is a paid turn.
-The task adds a config option to start the fixer only once the review file exists instead; today's parallel start stays the default (operator, 2026-10-08: only the option for now, no decision on which is better).
+The lens fan for Discussion and Plan is task `review-lens-fan`, which waits on `shuttle-state`.
 
 ## Circling decisions resume the run (from issue #446)
 

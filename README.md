@@ -28,8 +28,8 @@ Starts when every entry it names under After is done.
 1. **Shuttle: a Send lands or retries, and attach knows a half it stopped** — [`shuttle-send`](design-shuttle-send.md) · bug, shuttle
    - Send waits for a ready pane and a settled input before Enter, retries with backoff, and a lost submission is transient; attach no longer halts on a stopped Burler half
    - **After:** `shuttle-state`
-1. **Review loop: lens fans for Discussion and Plan, judge-narrowed rounds, lighter convergence, models per segment** — [`review-loop-convergence`](design-review-loop-convergence.md) · bug, enhancement, burler, loom
-   - Wire burler cluster review into Discussion and Plan with their own fans, let the judge drop settled lenses, converge without circling to the budget, set models per segment, an option to start the fixer after the review, and make circling decisions resume the run
+1. **Review loop: a lighter convergence rule, a lower budget with auto-accept, models per segment** — [`review-loop-convergence`](design-review-loop-convergence.md) · bug, enhancement, burler, loom
+   - Converge without circling to the budget on fresh edge-case keys, cap rounds at 2-3 with auto-accept, set review and fix models per segment, an option to start the fixer after the review, and circling decisions that resume the run
    - **After:** `shuttle-state`
 
 ## Notes
