@@ -2,7 +2,7 @@
 
 **Edit:**
 - `internal/planglyph#CanonicalizeHandles`
-- `plan:internal/planglyph#planGatePass`
+- `internal/planglyph#planGatePass`
 - `internal/planglyph/doc.go`
 - `internal/planglyph/glyphchain_test.go`
 
@@ -10,7 +10,7 @@
 - `contracts/specs/loom-plan-spec.md`
 
 **Uses:**
-- `plan:internal/planparser#CardResign`
+- `internal/planparser#CardResign`
 - `internal/planparser#Card`
 - `internal/planglyph#answerSymbols`
 

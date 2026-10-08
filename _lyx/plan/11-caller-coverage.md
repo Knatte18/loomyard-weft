@@ -9,7 +9,7 @@
 - `internal/planglyph/testdata/glyphchain/other/holder.go`
 
 **Edit:**
-- `plan:internal/planglyph#planGatePass`
+- `internal/planglyph#planGatePass`
 - `internal/planglyph/deleteorder.go`
 - `internal/planglyph/doc.go`
 - `internal/planglyph/glyphchain_test.go`
@@ -18,7 +18,7 @@
 - `contracts/specs/loom-plan-spec.md`
 
 **Uses:**
-- `plan:internal/planparser#CardResign`
+- `internal/planparser#CardResign`
 
 **Intent:**
 Add D5's caller coverage, the check `caller-uncovered`, to `planGatePass`, so it runs at the plan gates and never in `ValidateDispatch`.

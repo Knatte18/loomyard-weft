@@ -2,7 +2,7 @@
 
 **Create:**
 - `internal/planglyph/plangate.go`
-- `plan:internal/planglyph#planGatePass` -> `func planGatePass(plan *planparser.Plan, worktreeRoot string) ([]Finding, error)`
+- `internal/planglyph#planGatePass`
 
 **Edit:**
 - `internal/planglyph#ValidateFormat`

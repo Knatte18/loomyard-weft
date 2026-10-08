@@ -1,7 +1,7 @@
 # Card 9 — resign-arrow-parse
 
 **Create:**
-- `plan:internal/planparser#CardResign` -> `type CardResign struct`
+- `internal/planparser#CardResign`
 
 **Edit:**
 - `internal/planparser#Card`
