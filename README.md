@@ -15,8 +15,6 @@ Waits on nothing open; can start now, in parallel.
    - Send waits for a ready pane and a settled input before Enter, retries with backoff, and a lost submission is transient; attach no longer halts on a stopped Burler half
 1. **Plan gate checks: precise callers, nested fixture modules, a reviewer that knows the gate** — [`plan-gate-checks`](design-plan-gate-checks.md) · bug, enhancement, loom, quarry · running · Webster-Burler
    - Resolve callers by import path and receiver type, let gates run against nested fixture modules, and give the plan reviewer the gate check list
-1. **Webster record-batch and rebaseline: no needless re-drive, a calibrated Merriam base** — [`webster-record-batch`](design-webster-record-batch.md) · bug, enhancement, webster · running · Finalize
-   - Accept a prefix head_sha, find forked batch transcripts, accept a Card-Index-only change on an older record, and re-measure the Merriam fixed context
 
 ## Notes
 
@@ -186,3 +184,5 @@ Finished, awaiting `lyx board prune`.
    - Wire burler cluster review into Discussion and Plan with their own fans, let the judge drop settled lenses, after shuttle-state settles gate quiescence with forks
 1. **A hub survives a lyx binary change; the no-script rule reaches spawned agents** — [`binary-change-and-rules`](design-binary-change-and-rules.md) · bug, enhancement, config, stencil · done
    - Config reconciles itself on the first lyx command after a binary change, stencil drift behind main stops warning source-ahead, and file-editing stencils state the no-script edit rule
+1. **Webster record-batch and rebaseline: no needless re-drive, a calibrated Merriam base** — [`webster-record-batch`](design-webster-record-batch.md) · bug, enhancement, webster · done
+   - Accept a prefix head_sha, find forked batch transcripts, accept a Card-Index-only change on an older record, and re-measure the Merriam fixed context
