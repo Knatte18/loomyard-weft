@@ -1,0 +1,7 @@
+status: OK
+head_sha: ea8266c4d679d0bd6fb192fbbfdf4563aa7b9970
+deviations:
+  - cmd/lyx/testdata/test-budget.yaml
+  - internal/reedengine/overlay_test.go
+  - internal/reedengine/spawn_test.go
+  - pattern/PATTERN-pane-binary-resolution.md
