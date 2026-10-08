@@ -644,7 +644,7 @@
       "depends_on": [],
       "isolated": false,
       "brief": "Follow-ups from test-tiers PR-Gate",
-      "body": "From test-tiers PR-Gate (2026-10-07):\n\n- No gate runs the `llm` test tier.\n- A task can empty its own `publish_verify` in the pair`s `landing.yaml`, and the hub learns it only after landing, since per-worktree config never lands.\n- The comment lint lets every comma-plus-conjunction break through, so the clause-boundary rule is still judged by reviewers."
+      "body": "From test-tiers PR-Gate (2026-10-07):\n\n- No gate runs the `llm` test tier.\n- A task can empty its own `publish_verify` in the pair`s `landing.yaml`, and the hub learns it only after landing, since per-worktree config never lands.\n- The comment lint lets every comma-plus-conjunction break through, so the clause-boundary rule is still judged by reviewers.\n\nFrom shuttle-send's Publish blocks (2026-10-08):\n\n- The Webster-Burler verify gate runs build, vet, `go test ./...` and the integration tier, never the `publish_verify` (tmux) tier, so a defect in that tier surfaces only at Publish, after the review loop has converged.\n- A Burler reviewer reads only `git diff $(git merge-base main HEAD)..HEAD`, so a defect that arrives through the merge of main is outside its range even when Publish failed on it; a goto from a failed Publish needs the failure handed to the round."
     },
     {
       "id": 176,
@@ -1031,6 +1031,21 @@
       "isolated": false,
       "brief": "Replace the one collapse-all-but-the-newest rule with per-strand sizing: content-sized panes like the runs overview, and parallel agents that share space evenly",
       "body": "## Why\n\nreed has one layout rule (`internal/reedengine/doc.go`, \"The layout rule\"): the strands stack in insertion order, every strand but the bottom-most takes `collapsed_rows` rows, and the bottom-most takes every remaining row.\nIt fits a run whose newest agent is the one that matters, and nothing else:\n\n- `runs-overview` wants a small pane under the orch, sized to its content, with the orch above keeping the space; today the orch would collapse to `collapsed_rows` and the overview would grow.\n- `multi-agent-producer` runs N agents in parallel, none more important than the others; each needs a large share of the window, and none may collapse.\n\n## Proposal (operator, 2026-10-08)\n\n- A strand states how it is sized instead of taking its size from its position.\n- At least two kinds: a fixed or content-sized strand (the overview: as few rows as show all its lines), and a sharing strand that splits the remaining space evenly with the other sharing strands.\n- The agents of one multi-agent step share the window evenly, side by side or stacked; which of the two is open.\n- The collapsed stack of finished agents may stay as one kind among these, for strands kept only for reference.\n\n## Columns (operator, 2026-10-08)\n\nThe layout rules need a broader revision: tmux under reed can show any arrangement, so stacking strands side by side in columns, rather than in rows, is tempting as the main rule.\n\n## Open\n\n- Side by side (columns) or stacked rows for parallel agents, or a rule by window width.\n- Who sets a strand's kind: the spawning producer through its seat table (`multi-agent-producer`), or reed by role.\n- How `runs-overview`'s content-sized pane learns its height as runs come and go, and whether reed re-applies the layout on each change.\n"
+    },
+    {
+      "id": 206,
+      "slug": "config-auto-reconcile",
+      "title": "Retired config keys migrate themselves",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "config"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Preflight or batten runs the config migration so a retired key needs no manual reconcile; re-measure the Merriam fixed context",
+      "body": "From webster-dead-ends PR-Gate (2026-10-08): that task retired the batcher keys `master_base` and `startup_context`, and Loom-Preflight now refuses a `batcher.yaml` that still carries them, pointing to `lyx config reconcile --apply`.\nEvery hub and every in-flight pair then needs a manual reconcile after the deploy.\n\n- Loom-Preflight could run the batcher migration itself, or batten could reconcile a seeded pair config, so a retired key never needs a manual reconcile.\n- `merriamFixedContext` is a constant from one measurement, so the system-prompt-and-tools figure drifts silently as Claude Code changes; a calibrate step in `tools/tokencount` could re-measure it.\n"
     }
   ],
   "legacy_done": [

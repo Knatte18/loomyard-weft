@@ -72,6 +72,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - WriteCarryOver checks the splice on the produced lines before the atomic rename; re-reading the file after the rename and checking what is on disk would also catch a concurrent writer
 1. **reed: strands state their size; parallel agents share the window evenly** — [`reed-layout-shares`](design-reed-layout-shares.md) · enhancement, reed
    - Replace the one collapse-all-but-the-newest rule with per-strand sizing: content-sized panes like the runs overview, and parallel agents that share space evenly
+1. **Retired config keys migrate themselves** — [`config-auto-reconcile`](design-config-auto-reconcile.md) · enhancement, config
+   - Preflight or batten runs the config migration so a retired key needs no manual reconcile; re-measure the Merriam fixed context
 
 ### Features
 
