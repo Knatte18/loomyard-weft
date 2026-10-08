@@ -1293,6 +1293,22 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #471](https://github.com/Knatte18/loomyard/issues/471).\n\n## What happened\n\nAfter a `Publish` step failed mid merge-in (merge staged, conflict resolved by the agent, then a producer refusal), the loom driver re-stepped once.\nThe run then halted as `blocked` at `Publish`, anomaly `escalation-to-human`, with this reason:\n\n`the task worktree has uncommitted changes before the merge-in: \u003ca long list of files, plus \"and 63 more\"\u003e; commit or remove them on the task branch, then resume`\n\nThe listed files are the changes the staged merge-in itself brought in, not the task's own uncommitted work.\n\n## Why it is abnormal\n\nThe merge-in precondition check treats the worktree state produced by the earlier, interrupted merge-in attempt as foreign uncommitted changes.\nA re-step or resume after a partial merge-in can therefore never pass the check, and the run escalates to a human although all earlier segments (Discussion, Plan, Webster, Describe) were `done`.\nThe advice in the message (\"commit or remove them\") would either commit an unfinished merge or discard the resolution.\n\n## What to do\n\n- Detect an in-progress merge (`MERGE_HEAD` present, or merge-staged state recorded in the trace/history) in the `Publish` precondition and resume it, instead of applying the clean-worktree check.\n- Alternatively provide a `lyx` repair verb that completes or aborts a staged merge-in, and name it in this refusal message.\n- Make the loom driver's repair step aware of this state, so it does not re-step into a guaranteed refusal.\n\nRelated: the transient `object not found` report, which is what first interrupted the merge-in.\n\nProvenance: task `binary-change-and-rules`, from `loom-halt.md` and `driver-repair-1.md`.\n"
+    },
+    {
+      "id": 239,
+      "slug": "goto-plan-stale-webster",
+      "title": "Loom goto back to Plan after Webster started leaves webster state stale; Webster hard-fails on plan fingerprint mismatch",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        466
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #466](https://github.com/Knatte18/loomyard/issues/466).\n\n## What happened\n\nA loom run completed the Plan, Batchifier and Webster rows, then the Publish row went stuck and the run routed back (`goto`) to `Plan-Bouncer` several times.\nThe Plan loop edited the plan, and `Batchifier` re-ran and finished (`done`).\nThe next `Webster` step then halted the run as `failed` with anomaly `producer-hard-failure`:\n\n```\nwebster: on-disk plan fingerprint does not match this run's recorded state: on-disk plan fingerprint e5774b7e... does not match this run's recorded fingerprint c14834a3...; the plan changed since state.json was created; way forward: 00-overview.md changed and is never rebaselined; restore it with \"lyx webster restore-plan\", or 1) lyx webster reset --to start; 2) re-step the Webster row\n```\n\nThe run had 49 history entries when it halted.\n\n## Why this is abnormal\n\nThe loom's own routing sent the run back through Plan after Webster had already created `state.json`, and then re-ran Webster against that stale state.\nThe recorded fingerprint can only match if the plan is untouched, so a legitimate Plan-loop edit made the next Webster step fail by construction.\nNeither the `goto` to Plan nor the re-run `Batchifier` row reset or rebaselined webster state, so the failure was foreseeable from the recipe's own wiring rather than an operator or task-code error.\nThe error text offers manual recovery (`lyx webster restore-plan`, or `lyx webster reset --to start` and re-step), which a driver could have applied itself.\n\n## What to do\n\nWhen the loom routes back to a row upstream of Webster after Webster state exists, reset webster state (equivalent to `lyx webster reset --to start`) as part of that route, or have the Webster row detect a changed plan produced by an upstream re-run and rebaseline instead of failing.\nAlternatively, make the recipe validate at the `goto` that a Plan re-entry invalidates downstream webster state.\n\nProvenance: task slug `shuttle-send`; notes: `loom-halt.md`.\n"
     }
   ],
   "legacy_done": [

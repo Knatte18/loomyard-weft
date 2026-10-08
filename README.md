@@ -38,6 +38,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Gates, forks and agents ran go build and go test with no hub-wide bound; with four runs this exhausted memory and froze the machine
 1. **fabric: Publish merge-in fails with 'gitrepo: worktree status: object not found' and leaves a half-staged merge** — [`merge-in-object-not-found`](design-merge-in-object-not-found.md) · bug, fabric, loom
 1. **Loom resume at Publish refuses the dirty worktree left by its own staged merge-in, so the run cannot recover** — [`publish-resume-own-merge`](design-publish-resume-own-merge.md) · bug, loom, fabric
+1. **Loom goto back to Plan after Webster started leaves webster state stale; Webster hard-fails on plan fingerprint mismatch** — [`goto-plan-stale-webster`](design-goto-plan-stale-webster.md) · bug
 
 ### Enhancements
 
