@@ -2,6 +2,8 @@
 
 `test-suite-weight` · Task · bug, enhancement, shuttle, reed, fabric
 
+Depends on: [`gate-test-scope`](design-gate-test-scope.md)
+
 ## Seen
 
 On 2026-10-08 the integration tier dominated CPU during a Publish verify (`fabricengine.test` alone at 145%), and in the 53 hours before the crash tmux started 9,022 servers and 32,375 panes, nearly all from tier 3 tests, each pane a login shell that sources the operator's profile.

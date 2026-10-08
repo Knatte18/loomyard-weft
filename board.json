@@ -1360,7 +1360,9 @@
         "config"
       ],
       "issues": [],
-      "depends_on": [],
+      "depends_on": [
+        "plan-gate-checks"
+      ],
       "isolated": false,
       "brief": "Card gate tests only its own packages at tier 1, tier 2 per batch and at the plan verify, a hub-wide slot lock for gate test runs, guarded publish_verify",
       "body": "## Seen\n\nBefore the 2026-10-08 crash, Webster implementer forks ran `go build ./... \u0026\u0026 go test ./...` plus `go test -tags integration` on their packages every 20 to 60 seconds.\nThat is the card gate command `cardGateCommand` derives (`internal/websterengine/cardgate.go`), run once per card.\nGates, forks, the orch and hub fix agents built and tested with no hub-wide bound, and with four runs in flight the user slice reached its 16 GiB `MemoryHigh` and the machine froze.\nFrom `test-tiers-hardening`: the Webster-Burler round gate compiles the `tmux` tier and never runs it, so a tier 3 defect surfaces only at Publish; a task can empty its own `publish_verify` in the pair's `landing.yaml`; no gate runs the `llm` tier.\n\n## Goal\n\n- The card gate runs tier 1 for the card's own packages only: no `go build ./... \u0026\u0026 go test ./...` over the module and no tier 2.\n- Tier 2 runs once per batch for the batch's packages, and in full at the plan verify, Publish and Finalize.\n- Tier 3 stays at Publish; Discussion decides, against its cost, whether the round gate runs an impacted-set tier 3 pass.\n- The `llm` tier stays by hand, and `pattern/PATTERN-test-speed.md` says so as a decision.\n- A hub-wide slot lock (an OS file lock per slot, slot count in config) bounds concurrent gate test runs, each run caps `-p`, and the wait is logged and shown in status.\n- The webster stencils tell each fork which packages it may test, and spawned agents are refused a raw full-module `go test` or `go build ./...`.\n- A pair's own config cannot empty `publish_verify`.\n- `pattern/PATTERN-test-speed.md`'s gate table and CLAUDE.md's push rule match the new gates in the same commit.\n"
@@ -1380,7 +1382,9 @@
       "issues": [
         472
       ],
-      "depends_on": [],
+      "depends_on": [
+        "gate-test-scope"
+      ],
       "isolated": false,
       "brief": "Measure each tier, non-login shells and shared servers in tier 3, lyx built once, no background gc in fixtures (#472), a no-tmux scan for tiers 1-2",
       "body": "## Seen\n\nOn 2026-10-08 the integration tier dominated CPU during a Publish verify (`fabricengine.test` alone at 145%), and in the 53 hours before the crash tmux started 9,022 servers and 32,375 panes, nearly all from tier 3 tests, each pane a login shell that sources the operator's profile.\nTests in four packages link the `lyx` binary with cgo on their own, and `TestLoomResumeReconcilesTheHubConfigBeforeArming` flakes on `t.TempDir` cleanup because a git child, most likely a detached auto-gc, still writes into the fixture's object store (#472).\n\n## Goal\n\n- A measurement of every tier per package (time, CPU, peak memory, process count) with `cmd/testtiming`, on a quiet machine, before and after.\n- Tier 3 panes run a non-login shell, and tests share one tmux server per package where isolation allows.\n- `lyx` is built once per test run and reused across packages.\n- Fixture repositories never auto-gc in the background, and every test waits for the git and lyx children it starts before its cleanup.\n- A scan keeps tier 1 and tier 2 free of tmux.\n"

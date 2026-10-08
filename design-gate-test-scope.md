@@ -2,6 +2,8 @@
 
 `gate-test-scope` · Task · bug, enhancement, webster, loom, stencil, config
 
+Depends on: [`plan-gate-checks`](design-plan-gate-checks.md)
+
 ## Seen
 
 Before the 2026-10-08 crash, Webster implementer forks ran `go build ./... && go test ./...` plus `go test -tags integration` on their packages every 20 to 60 seconds.
