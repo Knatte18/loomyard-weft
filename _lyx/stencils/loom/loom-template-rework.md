@@ -5,7 +5,7 @@
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker except pattern_directive and friction_directive non-empty, and there are no {{if}}/{{range}} conditionals anywhere in this file. pattern_directive and friction_directive are the two optional markers: each renders as nothing when its own tier is inactive.
      parent_directive is a third optional marker, rendered by internal/parentdirective.
-lyx-stencil: sha256=f8859be740218841e11283a1ff49929278be849fd36fac51bf3e4b89aca39113 -->
+lyx-stencil: sha256=47eecd79a6f61463967b50bef140bae5fc40ff2dd494d603e7a9255ab0caeb99 -->
 
 # Rework — turn a rejected pull request's findings into a new plan generation
 
@@ -30,8 +30,6 @@ Apply it exactly as written, except where this prompt says otherwise.
    They are read-only context.
    Never edit, move or delete anything under `{{.prior_plan_dir}}`.
 3. Read the decision record at `{{.decision_record_path}}`.
-   An entry between `<!-- lyx:carry-over … -->` marker lines in `## Open risks` lists review findings whose fix in the record no fresh reviewer has seen.
-   Check each one against the code, and never plan an entry as scope.
 4. Read the task's diff against its base with read-only git (`git log`, `git diff`, `git show`).
    Never commit, reset, checkout or otherwise change the repository with git.
 

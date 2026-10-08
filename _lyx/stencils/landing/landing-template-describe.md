@@ -4,7 +4,7 @@
      DescribeSpec via internal/stencil, then handed to shuttle as the describing agent's whole
      prompt. Every marker below is a top-level {{.X}} substitution; stencil.Fill requires every
      marker non-empty, parent_directive included (rendered by internal/parentdirective), and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=68cb0d71d14690246f543bd3b31bc885aaa44f9621c32a3d4877b626b3de7b0c -->
+lyx-stencil: sha256=0ea365e2305b31f34b742e67124029f93b0ef2c04ca8d44f962b0495cf2bf076 -->
 
 # Change description — write the one description this task lands under
 
@@ -18,9 +18,6 @@ It becomes the pull request's title and body and the landing commit's message, s
 Read only these sources, and use read-only git for the diff:
 
 - The decision record, `{{.decision_record_path}}`.
-  An entry between `<!-- lyx:carry-over … -->` marker lines in `## Open risks` lists the findings a review left open.
-  Each finding a Plan-Review or Webster-Review entry lists becomes one item to check by hand in your description, worded as the finding and where it is, never as a review round.
-  A Discussion-Review entry is not carried into the description.
 - The board entry, via `lyx board get {{.slug}}`.
 - The diff of the task branch `{{.task_branch}}` against its merge base with the parent branch `{{.parent_branch}}` — for example `git diff $(git merge-base {{.parent_branch}} {{.task_branch}}) {{.task_branch}}`.
 - The run records, one per plan generation with the oldest first and the live one last, only as a source of manual-check items:
