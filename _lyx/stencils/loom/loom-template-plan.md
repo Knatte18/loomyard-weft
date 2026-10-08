@@ -5,7 +5,7 @@
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires the three original ones non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
      parent_directive is a third optional marker, rendered by internal/parentdirective.
-lyx-stencil: sha256=19a2eb3eabfabacf8848a10bcc68fe9d08f27f6cca27fdbf449bdec78ce5612b -->
+lyx-stencil: sha256=a4015a40e72890af175be499a8e42565a1ca6d0ae30ce6f2d5e291255ac49dd2 -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -65,6 +65,12 @@ Each card is the smallest change that:
    only pure refactors/renames may rely on existing tests instead.
 4. **Greps for reworded messages** — a card that changes a user-visible message or error text greps the repository for the old text, and every test asserting it joins that card's targets.
    A stale exact-string assertion then fails on the card that reworded it, under that card's own gate, not at the plan-level gate.
+
+The plan runs strictly in card order, and the Card Index lists the cards in that order: a card never depends on anything a later card does.
+`{{.specs_dir}}/loom/loom-plan-spec.md`'s "Plan vs. schedule" section holds the rule.
+
+A card that needs a corpus or a fixture takes it from committed test data in the tree, created by an earlier card where it does not exist yet, never from the live files of other worktrees or the fabric repo.
+`card-fabric-reference` in `{{.specs_dir}}/loom/loom-plan-spec.md` names what the plan gate refuses.
 
 ### On-disk layout
 
