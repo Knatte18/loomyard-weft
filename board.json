@@ -1233,7 +1233,9 @@
       "title": "fabric: Publish merge-in fails with 'gitrepo: worktree status: object not found' and leaves a half-staged merge",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "fabric",
+        "loom"
       ],
       "issues": [
         468

@@ -1,6 +1,6 @@
 # fabric: Publish merge-in fails with 'gitrepo: worktree status: object not found' and leaves a half-staged merge
 
-`merge-in-object-not-found` · Note · bug
+`merge-in-object-not-found` · Note · bug, fabric, loom
 
 Imported from [issue #468](https://github.com/Knatte18/loomyard/issues/468).
 
