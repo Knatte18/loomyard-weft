@@ -1,11 +1,11 @@
 {
   "runGuid": "da2f9a90d02ce0a4a4186935695f1f0d",
-  "planFingerprint": "ec2ddbe350f5c80040e55fac42d417859c1daa74f6d1056e7e5b5b07982b8448",
+  "planFingerprint": "be1ef58431b25974f1e7e06e553d2e95faf2c1048b37f12bdf3e26441d57eb78",
   "planFileHashes": {
     "00-overview.md": "17df40a9e02dc809ac1a55ab6d2257c1ba1b0a6017e57017531ae578b2ca7324",
     "01-carry-over-write.md": "16d924212eda07ca75f7e66be2fc23318d26704739af4b32db846810101f7e38",
     "02-bouncer-carry-over.md": "d6a43b028df0fc9e8bc945ee29b46fc126845ca7bf2a384526c5d86fd1a14600",
-    "03-carry-over-wiring.md": "a795fa53ce9e8a485d89144a96ec0be8072d9a1fc6ca2b50a26196b74a22399f",
+    "03-carry-over-wiring.md": "2042ba49e049f4a3bc9b72b733b78755f8854d8b9883fbb3756e928bfb4049c3",
     "04-carry-over-consumers.md": "e18302df8e1700c1b04d89a1d1c8a35e91630d277dd5b13e17819c7ed2d6c39a",
     "05-lighter-convergence-rule.md": "93228028cb9dcca9051411624c010d465d96f8d6e10ab93a4d4b80a5e65c0939",
     "06-review-budget-three.md": "a8bf2e838f0b34a86f4f5dc3834d1d9ef2024a0d3647d471726bd4ce98b8bee8",
@@ -283,7 +283,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "863aa010c26054695c03142c84252682",
   "masterSessionId": "83342516-ad21-4204-a987-6260fba6fcd0",
   "batches": {
@@ -300,7 +300,7 @@
       "cardHashes": {
         "01-carry-over-write": "16d924212eda07ca75f7e66be2fc23318d26704739af4b32db846810101f7e38",
         "02-bouncer-carry-over": "d6a43b028df0fc9e8bc945ee29b46fc126845ca7bf2a384526c5d86fd1a14600",
-        "03-carry-over-wiring": "a795fa53ce9e8a485d89144a96ec0be8072d9a1fc6ca2b50a26196b74a22399f",
+        "03-carry-over-wiring": "2042ba49e049f4a3bc9b72b733b78755f8854d8b9883fbb3756e928bfb4049c3",
         "04-carry-over-consumers": "e18302df8e1700c1b04d89a1d1c8a35e91630d277dd5b13e17819c7ed2d6c39a",
         "05-lighter-convergence-rule": "93228028cb9dcca9051411624c010d465d96f8d6e10ab93a4d4b80a5e65c0939",
         "06-review-budget-three": "a8bf2e838f0b34a86f4f5dc3834d1d9ef2024a0d3647d471726bd4ce98b8bee8"
@@ -309,14 +309,28 @@
       "kind": "fork",
       "spawnedAt": "2026-10-08T11:16:45Z",
       "sessionId": "83342516-ad21-4204-a987-6260fba6fcd0",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-carry-over-write",
+        "status": "done",
+        "head_sha": "ae24b9bb0eca5384fc9fd38764b9cb446aced655",
+        "deviations": [
+          "cmd/lyx/testdata/test-budget.yaml",
+          "internal/loomengine/config.go"
+        ]
+      },
+      "cardShas": [
+        "ae24b9bb0eca5384fc9fd38764b9cb446aced655"
+      ],
       "forkTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-loop-convergence/83342516-ad21-4204-a987-6260fba6fcd0/subagents/agent-ae1ef6a26bb6f06c6.jsonl"
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-loop-convergence/83342516-ad21-4204-a987-6260fba6fcd0/subagents/agent-ae1ef6a26bb6f06c6.jsonl",
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-loop-convergence/83342516-ad21-4204-a987-6260fba6fcd0/subagents/agent-a2ed5d888219312b9.jsonl"
       ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-loop-convergence/83342516-ad21-4204-a987-6260fba6fcd0/subagents/agent-ae1ef6a26bb6f06c6.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-loop-convergence/83342516-ad21-4204-a987-6260fba6fcd0/subagents/agent-ae1ef6a26bb6f06c6.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-loop-convergence/83342516-ad21-4204-a987-6260fba6fcd0/subagents/agent-a2ed5d888219312b9.jsonl"
   ]
 }

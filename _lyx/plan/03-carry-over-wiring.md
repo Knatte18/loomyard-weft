@@ -14,8 +14,8 @@
 - `contracts/specs/shed-recipe-spec.md`
 
 **Create:**
-- `plan:internal/loomengine#DiscussionDecisionRecordRel` -> `func DiscussionDecisionRecordRel() string`
-- `plan:internal/loomcli#writeCarryOver` -> `func writeCarryOver(location *lyxcwd.Location, entry discussionparser.CarryOver) error`
+- `internal/loomengine#DiscussionDecisionRecordRel`
+- `internal/loomcli#writeCarryOver`
 - `internal/loomcli/wiring_carryover_integration_test.go`
 
 **Uses:**
