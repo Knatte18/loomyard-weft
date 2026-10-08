@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- it carries no top-level stencil markers of its own, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=83916223ac0ee04625cecefdec6c24621d940302305c8efefb2b210b56f3fd54 -->
+lyx-stencil: sha256=9fff3ccdd43815991d25f7ca7dfd78db2addb562a5a947eb6e09b9e0deb0dfe6 -->
 
 # Webster-Review rubric
 
@@ -64,6 +64,7 @@ Do not flag any of the following as a finding:
   Any new or changed doc comment follows the target repository's own conventions — its own constraints document if it has one, and the conventions the surrounding code already follows.
   A rule written in the target repository's constraints document outranks a convention inferred from the surrounding code.
   A line width is never inferred from the surrounding code.
+  A comment's line breaks and wrapping are never a finding; the gate's `lyx loom lint-comments` alone checks them.
   This rubric checks compliance with the target repository's own standard, not loomyard's.
 - **Per-card mechanical check.**
   Confirm every one of the card's own groups' type-specific mechanical checks actually ran and passed, each against that group's own targets, not just the first label's — the AST-script-plus-grep for a `Rename` group, `assert-no-callers` for a `Delete` group, per the per-type table in `{{.specs_dir}}/loom/loom-plan-spec.md` — not merely that the diff compiles and its tests pass.
