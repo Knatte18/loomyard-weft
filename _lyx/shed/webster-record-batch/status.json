@@ -1,11 +1,11 @@
 {
-  "current_producer": "Run-Shed",
+  "current_producer": "Worktree-Teardown",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Run-Shed",
-    "last": "Seed-Child → done",
+    "now": "Worktree-Teardown",
+    "last": "Run-Shed → done",
     "wait": ""
   },
   "history": [
@@ -20,6 +20,47 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-08T17:58:16Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → blocked at Publish",
+      "at": "2026-10-08T19:14:56Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child blocked → running at Publish",
+      "at": "2026-10-08T19:15:48Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at PR-Gate",
+      "at": "2026-10-08T19:18:52Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at PR-Gate",
+      "at": "2026-10-08T19:20:23Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → done at Friction-Reflect",
+      "at": "2026-10-08T19:21:18Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-08T19:21:48Z"
     }
   ]
 }
