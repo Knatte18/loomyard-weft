@@ -1,12 +1,12 @@
 {
   "current_producer": "Discussion-Burler",
-  "state": "failed",
-  "error": "shedadapters: Discussion-Burler (burler): round 2: probe the round's halves: burler: probe the burler-review half: shuttle: attach: 1 candidate run dir(s) under /home/knatte/Code/loomyard-LYXHUB/plan-glyph-precision/.lyx/shuttle cannot be confirmed dead or alive (untracked or with a cleared pane binding, younger than 3m0s): /home/knatte/Code/loomyard-LYXHUB/plan-glyph-precision/.lyx/shuttle/976793442de1fe3a22a34842438fe316 — check \"lyx reed status\" and either wait or clear the stale directory by hand",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Burler",
     "last": "Discussion-Bouncer → bounced to Discussion-Burler",
-    "wait": "shedadapters: Discussion-Burler (burler): round 2: probe the round's halves: burler: probe the burler-review half: shuttle: attach: 1 candidate run dir(s) under /home/knatte/Code/loomyard-LYXHUB/plan-glyph-precision/.lyx/shuttle cannot be confirmed dead or alive (untracked or with a cleared pane binding, younger than 3m0s): /home/knatte/Code/loomyard-LYXHUB/plan-glyph-precision/.lyx/shuttle/976793442de1fe3a22a34842438fe316 — check \"lyx reed status\" and either wait or clear the stale directory by hand"
+    "wait": ""
   },
   "history": [
     {
