@@ -2,7 +2,7 @@
   "current_producer": "Discussion-Write",
   "state": "running",
   "error": "",
-  "pause_requested": false,
+  "pause_requested": true,
   "activity": {
     "now": "Discussion-Write",
     "last": "Loom-Preflight → done",
