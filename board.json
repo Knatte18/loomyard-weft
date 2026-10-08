@@ -877,7 +877,8 @@
       "title": "batten run on a slug whose earlier run is done reports ok and does nothing",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "batten"
       ],
       "issues": [
         447

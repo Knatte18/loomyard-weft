@@ -1,6 +1,6 @@
 # batten run on a slug whose earlier run is done reports ok and does nothing
 
-`batten-reused-slug` · Note · bug
+`batten-reused-slug` · Note · bug, batten
 
 Imported from [issue #447](https://github.com/Knatte18/loomyard/issues/447).
 
