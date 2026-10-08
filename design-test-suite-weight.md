@@ -2,7 +2,7 @@
 
 `test-suite-weight` · Task · bug, enhancement, shuttle, reed, fabric
 
-Depends on: [`gate-test-scope`](design-gate-test-scope.md)
+Depends on: [`gate-test-scope`](design-gate-test-scope.md), [`shuttle-send`](design-shuttle-send.md)
 
 ## Seen
 

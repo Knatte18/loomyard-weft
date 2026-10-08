@@ -13,6 +13,7 @@ Waits on nothing open; can start now, in parallel.
 
 1. **Shuttle: a Send lands or retries, and attach knows a half it stopped** — [`shuttle-send`](design-shuttle-send.md) · bug, shuttle · running · Describe
    - Send waits for a ready pane and a settled input before Enter, retries with backoff, and a lost submission is transient; attach no longer halts on a stopped Burler half
+   - **Before:** `test-suite-weight`
 1. **Gate test scope: which gate runs which tier, bounded hub-wide** — [`gate-test-scope`](design-gate-test-scope.md) · bug, enhancement, webster, loom, stencil, config, burler
    - Card gate tests only its own packages at tier 1, tier 2 per batch and at the plan verify, a hub-wide slot lock for gate test runs, guarded publish_verify
    - **Before:** `test-suite-weight`
@@ -23,7 +24,7 @@ Starts when every entry it names under After is done.
 
 1. **Lighter test suite: measured tiers, cheap tmux fixtures, no lingering children** — [`test-suite-weight`](design-test-suite-weight.md) · bug, enhancement, shuttle, reed, fabric
    - Measure each tier, non-login shells and shared servers in tier 3, lyx built once, no background gc in fixtures (#472), a no-tmux scan for tiers 1-2
-   - **After:** `gate-test-scope`
+   - **After:** `gate-test-scope`, `shuttle-send`
 
 ## Notes
 

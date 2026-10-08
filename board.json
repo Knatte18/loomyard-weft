@@ -1352,7 +1352,8 @@
         472
       ],
       "depends_on": [
-        "gate-test-scope"
+        "gate-test-scope",
+        "shuttle-send"
       ],
       "isolated": false,
       "brief": "Measure each tier, non-login shells and shared servers in tier 3, lyx built once, no background gc in fixtures (#472), a no-tmux scan for tiers 1-2",
