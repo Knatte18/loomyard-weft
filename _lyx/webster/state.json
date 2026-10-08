@@ -286,7 +286,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "40e9d79a7330df7afafd50156280ace9",
   "masterSessionId": "99ece045-631d-4fc2-a200-e51ea974b9b8",
   "batches": {
@@ -329,6 +329,23 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-send/99ece045-631d-4fc2-a200-e51ea974b9b8/subagents/agent-a97d51ca5859eba5a.jsonl"
       ]
+    },
+    "7": {
+      "slug": "shuttle-stop-verb",
+      "cards": [
+        "07-shuttle-stop-verb",
+        "08-burler-stops-through-handle"
+      ],
+      "cardHashes": {
+        "07-shuttle-stop-verb": "c0cd196268d189828cc710f012d0653e25dea0fba3e74c59f7f98872ceb2935b",
+        "08-burler-stops-through-handle": "440a296bc1acc3382c3c94de59e62e9e74d1816847324b21499de0e371e76543"
+      },
+      "startSha": "8f5febbf75f4e4fe91449bcd7eb2a85e0c48eb7f",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T11:43:13Z",
+      "sessionId": "99ece045-631d-4fc2-a200-e51ea974b9b8",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
