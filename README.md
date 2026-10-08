@@ -88,6 +88,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Trace files carry only high-level messages and logger.yaml sets no level; add a file log level so most of lyx can be traced on demand
 1. **Shared object store triggers auto-gc on nearly every git write** — [`shared-store-auto-gc`](design-shared-store-auto-gc.md) · enhancement, fabric
    - 8,450 loose objects keep the hub store above gc.auto, so background repacks fire under live steps
+1. **HeadContains walks the whole history on every source-ahead seed pass** — [`headcontains-full-walk`](design-headcontains-full-walk.md) · enhancement, stencil, fabric
+   - Stencil drift classification walks HEAD history fully through go-git per command; use merge-base or a bounded walk
 
 ### Features
 

@@ -1259,6 +1259,22 @@
       "isolated": false,
       "brief": "8,450 loose objects keep the hub store above gc.auto, so background repacks fire under live steps",
       "body": "## Seen\n\nThe hub's shared object store (`loomyard/.git`, used by the prime and every pair) holds about 8,450 loose objects, above git's default `gc.auto` threshold of 6,700.\nThey survive each repack, most likely because they are unreferenced and kept until the two-week prune expiry, so nearly every commit, merge or fetch in any worktree starts a background auto-gc.\nOn 2026-10-08 new packs appeared at 16:40, 18:07, 19:34, 19:52, 20:00 and 20:42, and the 20:42 one broke a Publish merge-in (#468).\n\n## Idea\n\nlyx keeps the shared store below the auto-gc threshold, for example by pruning unreferenced loose objects at landing, or sets `gc.auto` for the hub's store so repacks run at known points rather than under a live step.\n"
+    },
+    {
+      "id": 237,
+      "slug": "headcontains-full-walk",
+      "title": "HeadContains walks the whole history on every source-ahead seed pass",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "stencil",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Stencil drift classification walks HEAD history fully through go-git per command; use merge-base or a bounded walk",
+      "body": "## Seen\n\nThe PR-Gate review of `binary-change-and-rules` (PR #469) found that `gitrepo.HeadContains` (`internal/gitrepo/blobread.go`) walks HEAD's whole history through go-git whenever a seed pass finds a source-ahead stencil.\nIn a long-history repository that cost lands on every command until the pair syncs with main.\n\n## Idea\n\nAnswer the ancestry question with a merge-base or a walk bounded by commit date or depth instead of a full history walk.\n"
     }
   ],
   "legacy_done": [
