@@ -184,6 +184,12 @@ Decision: The appearance check's failure (the sent text never appeared in the pa
 
 Rationale: Round-3 F4: the board's goal is that a send that does not land retries instead of halting; the TUI swallowing the input is the same class.
 
+### Added after Discussion (parent, 2026-10-08): Clear premise, D6 restore, attach wording
+
+Decision: D3's clear runs only for an engine that supplies both the idle reading and the clear choreography; any prefix of the sent text counts, and the Open risk names the paste-placeholder case. When D1's override releases a boundary cleared by an unmatched turn_start, the gate is evaluated on that tick even with nothing pending, the re-prompt is re-derived rather than a mark restored, and the wait loop reads the pane every tick while a boundary is cleared. The Constraint reads: isTerminalOutcome recognising stopped is the only change to attach's classification, and removeSupersededStrands moves to the stop verb. D1's acceptance criterion uses D1's own wording, idle on every poll for 10 s.
+
+Rationale: Round-3 F5-F8: small specification gaps with one obvious resolution each.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: the idle reading, the input-box reading and the split choreography stay in `claudeengine`; `shuttleengine` reaches them only through capabilities.
