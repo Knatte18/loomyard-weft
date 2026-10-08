@@ -11,7 +11,7 @@ Sources: board issues #461, #451 and #460, and the `caller-scan-import-path` not
 
 In:
 
-- `caller-uncovered` in `internal/planglyph`: type-resolved references, import-path resolution for package-level members, a collapsed name-only fallback, nested-module directories skipped by the scan.
+- `caller-uncovered` in `internal/planglyph`: type-resolved references, import-path resolution for package-level members, a collapsed name-only fallback, nested-module files scanned through that fallback.
 - Webster's Go-derived per-card gate command in `internal/websterengine`: package directories inside a nested module are tested inside that module.
 - A new plan check, `verify-nested-module`, in `internal/planparser`, over a card's `**Verify:**` value and the overview's `## verify:` section.
 - One nested-module derivation in `internal/planparser`, shared by the card gate and the new check.
@@ -38,7 +38,14 @@ In a file the load type-checked, an identifier is a reference to a subject when 
 a package-level member by declaring package path, name and package-scope parent;
 a method by declaring package path, receiver base type name (the generic origin for an instantiated receiver) and method name, so a promoted call through embedding counts and a call on another type, or through an interface, does not.
 A method value (`x.start` without a call) is a reference.
+A non-test file appears in both its package and the package's test variant, so references are deduplicated by file and line.
 The declaration-span exclusion and the coverage and admissibility rules stay as they are.
+
+Bound: a call through an interface whose method set holds the method is no longer reported, where today it is an informational name match.
+A re-signed method that stops satisfying an interface breaks compilation at the sites that assign its type to that interface.
+The card gate's `go build ./... && go test ./...` (D7) catches such a site in the root module's untagged code, and its `-tags integration` step only in the card's own directories.
+A site in a tagged file elsewhere, or in a file built only for another GOOS, passes the card gate; the plan-level `## verify:` gate catches the tagged ones later, and no gate builds the other-GOOS one.
+A nested module's assignment site is caught only by a gate command run inside that module.
 
 Rationale: both observed false-positive classes (`batcher.Batch` read as a call of `costBatcher.Batch`, any `.start(` read as `peakAccumulator.start`) are receiver-type questions, which only a type checker answers.
 `go/packages` is the Go team's loader for exactly this and handles test variants, cgo and export data; the repo already depends on other `golang.org/x` modules.
@@ -77,20 +84,29 @@ Name-only method matches from D3 are informational and collapse into one finding
 Rationale: the informational severity existed only because a name scan cannot tell receivers apart; a type-resolved method caller is as certain as a package-level one, and leaving it uncovered fails webster's build.
 Collapsing bounds the noise of the remaining name-only matches.
 
-### D5 — The caller scan skips nested modules
+### D5 — Nested modules are scanned through the fallback
 
-Decision: the reference walk skips any directory below the worktree root that holds its own `go.mod`, as the go tool does, besides the `testdata`, `vendor`, `.`- and `_`-prefixed directories it skips today.
+Decision: the reference walk keeps today's file set: it skips only the `testdata`, `vendor`, `.`- and `_`-prefixed directories, and scans a nested module's files.
+The D1 load runs from the root module and leaves a directory inside a nested module unloaded, so every file there, a subject's declaring file included, has no type information and goes through D3.
+A nested-module file that imports a root package by its import path references a root subject exactly as D3 states, and a subject declared in a nested module resolves through that module's `go.mod`.
 
-Rationale: a nested module's packages are not part of the root module, and `go/packages` loading from the root never sees them either; the two halves of the scan agree on one file set.
+Bound: inside a nested module a method caller is a name-only match and so informational (D4); a package-level caller stays blocking.
+
+Rationale: a nested module can import the root module (a `replace ../` directive) and so hold a caller of a root subject, and a subject declared in a nested module has its callers there; skipping the directories would drop both, with no other gate building a nested module unless a card targets it.
 
 ### D6 — One nested-module derivation in planparser
 
 Decision: `internal/planparser` exports one function answering, for a plan, a card number (or the whole plan) and the worktree root, the set of nested module directories: directories below the root holding a `go.mod` on disk or named by a `Create` target of a card numbered at or below the given one, minus those whose `go.mod` a `Delete` target of such a card removes.
+A Rename pair moving a `go.mod` counts as a `Create` of its new side and a `Delete` of its old side.
 The whole-plan form counts every card.
 A directory belongs to the innermost nested module at or above it, or to the root module when none.
 
+Bound: a `Move` card relocating a `go.mod` is not counted, because a `Move` states its destination in `Intent` prose rather than its target list.
+For a card at or after such a `Move`, the set read at the plan gate puts the module at its old directory and the set read at a later dispatch puts it at its new one, so D7's card gate and D8's verdict for that card can differ between the plan gate and dispatch.
+The plan model has the same `Move` blind spot for `path-missing`, accepted in the spec; the author closes it by moving a `go.mod` through a `Rename` pair instead.
+
 Rationale: the card gate (D7) and the new check (D8) must agree on what a nested module is, including a `go.mod` a card creates; one function in the package that owns plan parsing serves both.
-The union with created targets makes the verdict the same before and after the creating card runs.
+Counting created, deleted and renamed `go.mod` files makes the verdict for the changing card and every later card the same before and after that card runs; an earlier card's verdict can change after it, but it is done by then and its findings are dropped at dispatch.
 
 ### D7 — Webster's card gate tests a nested module's packages inside that module
 
@@ -102,24 +118,31 @@ Rationale: the integration-tagged run builds and runs the untagged tests too, so
 ### D8 — New blocking plan check `verify-nested-module`
 
 Decision: `internal/planparser` reports `verify-nested-module` for a `go` command in a card's `**Verify:**` value or a line of the overview's `## verify:` section whose relative package argument (`.`, `./…`, `../…`) resolves into a nested module (D6: through that card for a `Verify:`, the whole plan for the overview) other than the module the command runs in.
-The command runs in the root module, in the directory a preceding literal `cd <dir>` segment of the same `&&`/`;` chain set, or in `go -C <dir>`'s directory.
+The command runs in the root module, in the directory a preceding literal `cd <dir>` segment of the same `&&`/`;` chain set, or in `go -C <dir>`'s directory, which resolves against the directory a preceding `cd` set and against the root otherwise.
+A flag's value (`-o ./bin`, `-run .`) is never a package argument.
 The finding names the card or the overview, the command and the module, and its way forward is to run the command with `go -C <module>` and module-relative package paths.
 It is blocking and runs wherever planparser's format checks run (both plan gates, `lyx loom validate-plan`, dispatch), under any `language:`, since it reads `go` commands, not glyphs.
 
 Bound: the check only refuses; it misses a command built from a variable, inside `bash -c`, after a subshell, or with an import-path package argument, and webster's gates still catch those at run time.
+After a `Move` of a `go.mod` (D6's bound) its verdict on a later card can flip between the plan gate and dispatch.
 
 Rationale: issue #451's plan passed the gate with gates unsatisfiable by construction; with the card gate fixed (D7), the author-written commands are the remaining place such a command can appear.
-Its verdict reads plan text and file existence only, so it is stable across the run and belongs in planparser beside `path-missing`.
+Its verdict reads plan text and file existence only, so it is stable across the run except for D6's `Move` bound, and it belongs in planparser beside `path-missing`.
 
 ### D9 — The plan reviewer checks a proposed fix against the gate's checks
 
-Decision: the Plan-Review rubric gains a rule: a finding whose fix adds, drops, moves or pairs targets, or changes a verify command, must name a fix every check in `{{.specs_dir}}/loom/loom-plan-spec.md`'s validation-checks section admits, and a fix such a check blocks is not a legitimate finding.
+Decision: the Plan-Review rubric gains a rule that binds the proposed fix, never the finding: a finding whose fix adds, drops, moves or pairs targets, or changes a verify command, proposes only a fix every check in `{{.specs_dir}}/loom/loom-plan-spec.md`'s validation-checks section admits.
+When the reviewer sees no admissible fix, it still reports the defect and names the check that constrains the fix.
+The `**Fix:**` line is a proposal: the fixer may apply any other fix the checks admit, and when none exists it defers the finding in its fixer-report with the constraining check as the reason, under burler's existing fix rule.
 The rubric points at that section and copies no check list.
+
+Bound: the rule removes only a blocked fix shape from what a reviewer proposes; no defect becomes unreportable, so a defect the checks miss still reaches the fixer.
+A deferred finding with no admissible fix keeps the segment from converging on it, and the judge's escalation takes it to the parent session and the operator.
 Its verify-coverage rule counts a nested module's packages as covered by a command run inside that module (`go -C <module>`).
 
 Rationale: the reviewer already had a pointer to the check list, but only for what not to flag; the wasted round came from a proposed fix, so the rule must bind the fix.
 Pointing rather than copying follows `PATTERN-producer-pointer-rule`.
-The rubric is read by both the reviewer and the fixer, and a fixer handed a blocked fix already disputes it on the spec row as evidence of a false premise, under burler's existing fix rule.
+A blocked proposed fix does not make the defect's premise false, so the fixer cannot dispute it; deferring it names the decision the operator must make.
 
 ### D10 — The plan template states the nested-module form
 
@@ -162,9 +185,14 @@ An untargeted edit to it is already only an informational deviation, so a writte
 
 - A cold build cache makes the first load compile the dependency graph, tree-sitter's cgo grammars included; a timeout then degrades method findings to informational for that gate run.
 - A package that fails to type-check leaves identifiers without objects; D2's per-identifier fallback covers them, but a badly broken package yields mostly name-only matches.
-- `go/packages` reports each non-test file in both the package and its test variant; the reference set must deduplicate by file and line.
-- D8's command scan is heuristic over shell text; a flag whose value starts with `./` (such as `-o ./bin`) must not be read as a package argument.
 - A blocking method finding is new; plan writers may need a round to learn to list method callers, which the glyph-practice audit (`glyph-practice-audit`) will see in Plan rounds.
+
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - d6-move-of-gomod-uncounted (class design, severity MEDIUM, open in rounds 2)
+  - d9-dispute-route-forbidden-by-fix-rule (class design, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
@@ -174,11 +202,11 @@ An untargeted edit to it is already only an informational deviation, so a writte
 - A call through an interface whose method set holds `M` is not reported for `T.M`.
 - A reference in a file the load does not type-check (a file constrained to another GOOS) falls back: a package-level member resolves by import path and stays blocking; a method name match is one collapsed informational finding per subject that names the files and lines and says the receiver was unresolved; a selector on an imported package name is not a match.
 - When the load fails outright, the gate still answers with the fallback findings and returns no infrastructure error.
-- A directory below the root holding its own `go.mod`, outside `testdata`, is not scanned for callers.
-- The card gate for a card targeting a directory inside a nested module, existing or created by a `go.mod` `Create` target on that card or an earlier one, runs `go -C <module> test -tags integration` with module-relative paths, and leaves root-module directories as before.
-- `verify-nested-module` fires on a `Verify:` value and on a `## verify:` line that tests a nested module's package from the root, and stays silent for the `go -C <module>` form, for a preceding `cd <module>` segment, and for a card's `Verify:` when the creating card comes after it.
+- In a nested module outside `testdata`, a file importing a root package by its import path is scanned through the fallback: a package-level caller of a root subject there is reported blocking, and a method name match there is informational.
+- The card gate for a card targeting a directory inside a nested module, existing, created by a `go.mod` `Create` target on that card or an earlier one, or moved there by such a card's Rename pair, runs `go -C <module> test -tags integration` with module-relative paths, and leaves root-module directories as before.
+- `verify-nested-module` fires on a `Verify:` value and on a `## verify:` line that tests a nested module's package from the root, and stays silent for the `go -C <module>` form, for a preceding `cd <module>` segment, for a flag value such as `-o ./bin`, and for a card's `Verify:` when the creating card comes after it.
 - `lyx loom validate-plan` reports `verify-nested-module` exactly as the plan gates do.
-- The Plan-Review rubric binds a proposed fix to the spec's validation-checks section and counts `go -C` as covering a nested module's packages; the plan template states the `go -C` form; existing stencil-claim tests pass with the new wording.
+- The Plan-Review rubric binds a proposed fix to the spec's validation-checks section, keeps the finding legitimate when no admissible fix exists and has the reviewer name the constraining check, and counts `go -C` as covering a nested module's packages; the plan template states the `go -C` form; existing stencil-claim tests pass with the new wording.
 - The spec, `internal/planglyph/doc.go` and `internal/websterengine/doc.go` describe the new behavior, and the old bound about aliased and dot imports is gone from row 34.
 
 ## Notes for the plan writer
