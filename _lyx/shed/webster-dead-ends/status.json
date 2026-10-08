@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Webster-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Batchifier → done",
+    "now": "Webster-Bouncer",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -149,6 +149,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-08T09:37:47Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/webster-dead-ends/_lyx/webster/summary.md",
+      "at": "2026-10-08T14:43:28Z"
     }
   ],
   "product": {
