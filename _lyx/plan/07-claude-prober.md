@@ -3,6 +3,8 @@
 **Edit:**
 - `internal/shuttleengine/sessionsignal.go`
 - `internal/shuttleengine/claudeengine/resume.go`
+- `internal/shuttleengine/claudeengine/doc.go`
+- `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
 - `internal/shuttleengine/claudeengine/prober.go`
@@ -29,5 +31,8 @@ The registry scan in `resume.go` is factored so `checkResumable` and `ProcessLiv
 
 Tests, untagged, in `prober_test.go`: a table over a temp registry directory with injected liveness and start-time functions (alive and matching, dead pid, reused pid, unreadable start time, no entry, unreadable registry, an entry for another session), and a table over temp transcripts (interrupt marker newest, a later prompt after it, a later assistant entry, a sidechain marker, missing path, unreadable file).
 `resume_test.go`'s existing rows keep passing unchanged.
+`cmd/lyx/testdata/test-budget.yaml`: the `internal/shuttleengine/claudeengine` row rises by 2, for the two new top-level table functions in `prober_test.go`, one per method.
 
-**ImpactSummary:** Adds an optional SessionProber capability to shuttleengine and Claude's implementation; resume.go's registry scan is shared with it without changing CheckResume's answers.
+Docs: `claudeengine/doc.go`, beside its registry resume-check paragraph, describes process liveness from the session registry (alive, dead only for a registry entry whose pid is gone, unproven when no entry names the session, the start time is unreadable or the pid was reused) and the interrupt marker read from the newest turn start's transcript, and that both registry readers share one entry reader.
+
+**ImpactSummary:** Adds an optional SessionProber capability to shuttleengine and Claude's implementation; resume.go's registry scan is shared with it without changing CheckResume's answers; the package doc and the test budget row follow.

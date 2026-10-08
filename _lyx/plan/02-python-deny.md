@@ -3,6 +3,8 @@
 **Edit:**
 - `internal/shuttleengine/config.go`
 - `internal/shuttleengine/template.yaml`
+- `internal/shuttleengine/template.go`
+- `internal/shuttleengine/spec.go`
 - `internal/shuttleengine/config_test.go`
 - `internal/shuttleengine/claudeengine/settings.go`
 - `internal/shuttleengine/claudeengine/settings_test.go`
@@ -11,6 +13,7 @@
 - `cmd/lyx/norecoverydeny_test.go`
 - `pattern/PATTERN-no-denied-recovery.md`
 - `docs/overview.md`
+- `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
 - `internal/shuttleengine/claudeengine/hookcmd_integration_test.go`
@@ -30,12 +33,14 @@ Its notice announces it in the same wording, and is appended after today's sente
 What the deny lets through is bounded above; it adds no way to skip an existing deny, and `claude_deny_python: false` removes only this row.
 
 Tests:
-- `settings_test.go`: rows showing the python hook installed for interactive, autonomous and fork-mode sessions, absent under `claude_deny_python: false`, and the notice carrying the python sentence exactly when the hook is installed; every existing row's expected document and notice gains the python entry or sentence where its config enables it, and stays otherwise byte-identical.
+- `settings_test.go`, as rows and dimensions of existing tests: `TestBuildSettings_DenyToggleMatrix` gains a `claude_deny_python` column and rows showing the python hook installed for interactive, autonomous and fork-mode sessions and absent under `claude_deny_python: false`; `TestBuildDenyNotice_MatchesInstalledDenies` gains the python switch as a further loop dimension, so the notice carries the python sentence exactly when the hook is installed; every existing row's expected document and notice gains the python entry or sentence where its config enables it, and stays otherwise byte-identical.
 - `prepare_test.go`: `TestPrepare_AppendSystemPromptMatchesDenyNotice` gains the python switch as a further input dimension.
-- `config_test.go`: the shipped template reads `ClaudeDenyPython` true.
-- `hookcmd_integration_test.go` (`integration` tier, run through the package's existing `tmuxkit.Main`): runs the python hook command under `sh` against PreToolUse payloads built with `encoding/json`, and asserts the deny JSON for `python3 -c 'print(1)'`, `cd x && python script.py`, a second line starting `python3`, `/usr/bin/python3 - <<EOF`, `xargs python3`, and empty output with exit 0 for `grep python file`, `ls python-tools/`, `bash -c 'python3 x'` and `uv run x`.
+- `config_test.go`: `TestLoadConfig_TemplateDefaultsResolve` asserts the shipped template reads `ClaudeDenyPython` true.
+- `hookcmd_integration_test.go` (`integration` tier, run through the package's existing `tmuxkit.Main`): one table-driven function runs the python hook command under `sh` against PreToolUse payloads built with `encoding/json`, and asserts the deny JSON for `python3 -c 'print(1)'`, `cd x && python script.py`, a second line starting `python3`, `/usr/bin/python3 - <<EOF`, `xargs python3`, and empty output with exit 0 for `grep python file`, `ls python-tools/`, `bash -c 'python3 x'` and `uv run x`.
+- `cmd/lyx/testdata/test-budget.yaml`: the `internal/shuttleengine/claudeengine` row rises by 1, for the one new top-level function in `hookcmd_integration_test.go`.
 
 Docs: `cmd/lyx/norecoverydeny_test.go`'s `deniedRecoveryForms` gains `{"python"}` and `{"python3"}` with a self-test row offering `python3` as a way forward that fails; `pattern/PATTERN-no-denied-recovery.md` adds `python` and `python3` to the closed list and names `claudeengine`'s deny table in `settings.go` as the owner of lyx's own denies, replacing the `agent-permission-setup` pointer, and the same pointer in `norecoverydeny_test.go`'s comment.
+`template.go`'s `ConfigTemplate` comment lists `claude_deny_python` among the plain-literal keys, and `spec.go`'s `Spec.Interactive` comment says the python deny, like the Agent deny, is installed in both modes and names `claude_deny_python` beside the other deny keys.
 `claudeengine/doc.go` describes the deny table and the python row; `docs/overview.md`'s shuttle entry names the python deny and its `claude_deny_python` switch beside the Agent and AskUserQuestion denies.
 
 **ImpactSummary:** Every lyx-spawned Claude session gains a Bash PreToolUse python deny and a notice sentence by default; shuttle.yaml gains claude_deny_python; the denied-recovery scan list grows by python and python3.

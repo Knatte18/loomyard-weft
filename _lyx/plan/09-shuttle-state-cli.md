@@ -8,6 +8,7 @@
 - `internal/shuttlecli/cli_test.go`
 - `tools/sandbox/SANDBOX-SHUTTLE-SUITE.md`
 - `docs/overview.md`
+- `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
 - `plan:internal/shuttleengine#ReadSessionStates`
@@ -25,6 +26,7 @@ It has a `Short`, a `Long` naming the states and that the model is in shadow mod
 The `shuttle` group's `PersistentPreRunE` already resolves the layout and the shuttle config; `shuttleCLI` keeps the config, the anchor path and the engine it built, so `state` reads through them without re-resolving geometry (`PATTERN-cli-cobra`, `PATTERN-told-geometry`); it builds no reed engine use of its own.
 
 Tests: `cli_test.go` gains one test that runs `state` with `RunCLIIn` in a git worktree fixture whose run-directory root holds a running record with a stamped Stop line and its output file, and asserts the envelope's run, state, cause and history, then `--strand` with a non-matching name returning an empty list; the existing positional-argument test gains `state` with a stray argument.
+`cmd/lyx/testdata/test-budget.yaml`: the `internal/shuttlecli` row rises by 1, for the one new top-level function.
 
 Docs: `cli.go`'s module comment lists `state`; `docs/overview.md`'s shuttle entry and module list read `lyx shuttle run|interrupt|send|state` and say what `state` shows; `SANDBOX-SHUTTLE-SUITE.md` gains a scenario, covering `shuttle`, that starts an interactive run, reads `lyx shuttle state` while the agent works, after its held turn end and after `--strand` narrowing, and checks the printed states against what the pane shows.
 

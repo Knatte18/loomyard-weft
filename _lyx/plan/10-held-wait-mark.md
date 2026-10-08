@@ -4,10 +4,11 @@
 - `internal/shuttleengine/waitmark.go`
 - `internal/shuttleengine/wait.go`
 - `internal/shuttleengine/waitmark_test.go`
-- `internal/shuttleengine/waiting_test.go`
+- `internal/shuttleengine/wait_test.go`
 - `internal/battencli/wire.go`
 - `internal/battencli/wire_seams_test.go`
 - `internal/loomcli/reviewstatus_test.go`
+- `internal/shuttleengine/doc.go`
 
 **Intent:**
 Show a held turn end as a wait (D7), and keep it from suppressing batten's quiet notice.
@@ -24,9 +25,12 @@ Batten must not count a held wait (D7's narrowing):
 This narrows the one reader that branches on a wait marker and widens nothing.
 
 Tests:
-- `waiting_test.go`: a held turn end sets the `held` mark with the hold's time and writes `wait.yaml` with kind `held`; the next event clears both; a Wait that returns while held leaves neither (a row beside `TestShellWaitMark`'s).
-- `waitmark_test.go`: `ReadWaitMarkers` returns every live marker and skips dead and torn ones; `Held` is true only for the `held` label.
-- `wire_seams_test.go`: a live `held` marker reports no wait, and a `held` marker beside a live `background shells` marker in another run directory reports a wait.
+- `wait_test.go`: `TestRun_Wait_HeldTurnEnd`, which already drives `Wait` over held turn ends with a `fakeReed` recording `WaitMarkCalls`, gains assertions on its rows: a held turn end sets the `held` mark with the hold's time and writes `wait.yaml` with kind `held`; the later stop or ask that follows clears both; a row that returns while held (the dead pane, the timeout) leaves neither.
+  No new top-level function is added.
+- `waitmark_test.go`: `TestReadWaitMarker`'s table gains rows asserting that `ReadWaitMarkers` returns every live marker and skips dead and torn ones, and that `Held` is true only for the `held` label.
+- `wire_seams_test.go`: `TestReadAgentActivity_ReadsLiveRunsAndTheWaitMarker` gains rows: a live `held` marker reports no wait, and a `held` marker beside a live `background shells` marker in another run directory reports a wait.
 - `reviewstatus_test.go`: `TestShuttleWaiting` gains a row whose marker kind is `held` and whose note names it.
 
-**ImpactSummary:** Held turn ends now write wait.yaml and a pane mark labelled held; batten's waitLive ignores held marks; loom status shows the label; no shuttle decision reads the mark.
+Docs: `waitmark.go`'s file comment and the `WaitMarker` comment, which today name the two labels `gate <entry name>` and `background shells`, name the third label `held` and that batten's wait reading ignores it; `shuttleengine/doc.go`'s paragraph on Wait's "two Go-side waits" becomes three, adds the held wait and its clearing, and says `ReadWaitMarkers` and `Held` let batten skip a held wait.
+
+**ImpactSummary:** Held turn ends now write wait.yaml and a pane mark labelled held; batten's waitLive ignores held marks; loom status shows the label; no shuttle decision reads the mark; the package doc and waitmark.go comments follow.

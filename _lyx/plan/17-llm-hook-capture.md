@@ -2,6 +2,7 @@
 
 **Edit:**
 - `internal/shuttlecli/smoke_turns_test.go`
+- `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
 - `plan:internal/shuttleengine#ReadSessionStates`
@@ -16,5 +17,6 @@ It asserts that the events file holds a stamped `UserPromptSubmit`, a stamped St
 The fold is read directly rather than through `ReadSessionStates`, because the run's record stops reading `running` once its pane is gone.
 Like its siblings, a failing scenario keeps its events file and transcript in a logged temp directory for promotion to a corpus case.
 The scenario's own payloads are its fixture; it reads no other worktree's files.
+The scenario is one new top-level function, and the budget counts it under every build tag, so `cmd/lyx/testdata/test-budget.yaml`'s `internal/shuttlecli` row rises by 1.
 
-**ImpactSummary:** Adds one llm-tier scenario to the shuttle turn smoke suite; no production code changes.
+**ImpactSummary:** Adds one llm-tier scenario to the shuttle turn smoke suite and its test budget row; no production code changes.

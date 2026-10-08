@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -41,6 +41,7 @@ The corpus, an `llm`-tier capture of the new payloads and a stuck-outcome regres
   The provider-specific facts (process liveness, the interrupt marker) come through a second optional capability (`SessionProber`), and the transcript API-error marker through the existing `ActivityReader`, so `shuttleengine` imports no provider (`PATTERN-shuttle-provider-seam`).
 - The wait loop reads signals on its own cursor, which stops before a trailing unpaired stamp; `run.offset` and what `ParseEvents` reads stay today's.
 - Every state-reading site only logs; a failed state read changes no decision, notice or return.
+- Every package these cards add tests to sits at its `cmd/lyx/testdata/test-budget.yaml` row, so a card that adds a top-level test function raises that row by the count it adds, in the same card; every other planned test is a row or an assertion in the existing test it names.
 - A background shell whose recorded signal is not `SignalPayload` keeps today's `background_shell_wait_min` expiry, so existing tests built without a signal keep their meaning.
 
 ## verify:

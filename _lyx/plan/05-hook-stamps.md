@@ -6,6 +6,7 @@
 - `internal/shuttleengine/claudeengine/hookcmd_integration_test.go`
 - `internal/shuttleengine/claudeengine/events.go`
 - `internal/shuttleengine/claudeengine/doc.go`
+- `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
 - `internal/shuttleengine/claudeengine/signals.go`
@@ -23,8 +24,9 @@ The stamp's hook name literals and line shape come from the constants card 3 dec
 The deny hooks (card 1's table) are untouched.
 
 Tests:
-- `settings_test.go`: the document carries the four new hook entries with the exact commands, Stop's and the ask record's commands are the stamp printf, `;`, then today's command byte-identical, and existing rows gain the new entries.
-- `hookcmd_integration_test.go` (`integration`): run under `sh` with a payload on standard input, the Stop and the ask record commands append a stamp line naming their hook and then a 20000-byte payload byte-identical to the input, and `ParseEvents` yields the same events from the file as from the payload alone, `Raw` included; `ParseSessionSignals` pairs the payload with the stamp's time; with `date` made to fail (a `PATH` whose `date` exits 1 beside the real `cat`), the payload is still appended and its signal has a zero `At`; each new hook exits 0 and Stop exits 1 when the events file's directory is missing; no recording hook writes to standard output.
+- `settings_test.go`, as rows of existing tests (`TestBuildSettings_StopHook` and the document rows of `TestBuildSettings_AgentAndBashHooks`): the document carries the four new hook entries with the exact commands, Stop's and the ask record's commands are the stamp printf, `;`, then today's command byte-identical, and existing rows gain the new entries.
+- `hookcmd_integration_test.go` (`integration`), one new top-level function beside card 2's python-deny one, since the recording-hook round trip is a behavior that test does not cover: run under `sh` with a payload on standard input, the Stop and the ask record commands append a stamp line naming their hook and then a 20000-byte payload byte-identical to the input, and `ParseEvents` yields the same events from the file as from the payload alone, `Raw` included; `ParseSessionSignals` pairs the payload with the stamp's time; with `date` made to fail (a `PATH` whose `date` exits 1 beside the real `cat`), the payload is still appended and its signal has a zero `At`; each new hook exits 0, and Stop and the ask record each exit 1, when the events file's directory is missing; no recording hook writes to standard output.
+- `cmd/lyx/testdata/test-budget.yaml`: the `internal/shuttleengine/claudeengine` row rises by 1, for that new function.
 
 Docs: `settings.go`'s and `events.go`'s file comments name the new hooks and the stamp lines `ParseEvents` skips; `claudeengine/doc.go` describes the events file's line format, the stamp pairing and the accepted append races D1 lists.
 

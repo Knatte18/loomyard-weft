@@ -11,6 +11,7 @@
 - `internal/shuttleengine/session.go`
 - `internal/shuttleengine/session_test.go`
 - `internal/shuttleengine/doc.go`
+- `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
 - `plan:internal/shuttleengine#SessionState`
@@ -39,9 +40,11 @@ For one run, in `sessionread.go`, one helper reads the facts and folds a zero `S
 The fact-reading helper is shaped so card 13's wait loop reuses its liveness and transcript reads over its own incremental signals.
 The reader writes nothing.
 
-Tests, untagged, in `sessionread_test.go`, over run directories the test writes and an engine double answering parser, prober and activity calls: a running record with a stamped turn end and outputs present reads `idle-done` stamped with the turn end's time; one whose waiting process pid is dead still reads; a non-running record, a non-run directory and an undecodable record are skipped; signals before the prompt offset are not folded; the liveness lookup uses the newest signal's session id over the record's; a missing parser reads `unknown` `unsupported`; an absent root returns nothing and no error.
-`session_test.go` gains a row for `Runner.SessionState` over a found and an unknown guid.
+Tests, untagged, in one table-driven top-level function in `sessionread_test.go`, over run directories the test writes and an engine double answering parser, prober and activity calls: a running record with a stamped turn end and outputs present reads `idle-done` stamped with the turn end's time; one whose waiting process pid is dead still reads; a non-running record, a non-run directory and an undecodable record are skipped; signals before the prompt offset are not folded; the liveness lookup uses the newest signal's session id over the record's; a missing parser reads `unknown` `unsupported`; an absent root returns nothing and no error.
+`session_test.go` gains one top-level function for `Runner.SessionState` over a found and an unknown guid, since no existing `Runner` test covers a state read.
+`cmd/lyx/testdata/test-budget.yaml`: the `internal/shuttleengine` row rises by 2, for those two functions.
 
 Docs: `shuttleengine/doc.go` gains a section on the session-state model in shadow mode: the signals, the states and their precedence, the facts and their sources, and that no consumer acts on it.
+The section states the handover of the added decision "Output files first covers output-derived states only": `dead` and `unknown` outrank `idle-done`, so a finished run can read `dead`, and the first consumer that acts on `dead` applies `PATTERN-completion-signal`'s output check before acting.
 
 **ImpactSummary:** Adds read-only session-state readers to shuttleengine and a Runner method; no existing caller changes.

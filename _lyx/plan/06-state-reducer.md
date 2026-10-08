@@ -9,6 +9,9 @@
 - `plan:internal/shuttleengine#SessionFold.Fold` -> `func (f *SessionFold) Fold(signals []SessionSignal, facts SessionFacts)`
 - `plan:internal/shuttleengine#Liveness` -> `type Liveness int`
 
+**Edit:**
+- `cmd/lyx/testdata/test-budget.yaml`
+
 **Uses:**
 - `plan:internal/shuttleengine#SessionSignal`
 - `plan:internal/shuttleengine#SessionSignalKind`
@@ -33,4 +36,9 @@ Rules, exactly as D3 states them:
   `Since` is the causing signal's `At` for a turn start, a waiting turn end, an API-error turn end, an ask, a session end and the contradiction's idle notice; the turn end's `At` for `idle-done`, `no-output`, interactive `asking` and a transcript-marked `api-error`; the transcript entry's time for `interrupt`; `ReadAt` for `dead` `process-gone`, `unknown` `liveness-unproven`, `unknown` with no signal or an unreadable file, and for `idle-done` reached by re-judging at a later fold with no new signal.
 - Signals are ordered by file order only; `At` is read for `Since` alone, never compared.
 
-Tests, untagged and table-driven in `sessionstate_test.go`, over hand-built `SessionSignal` slices and facts with a fixed `ReadAt`, one row per acceptance reading of the reducer: every state and cause listed under the acceptance criteria's reducer row, D3's precedence rows, the history row (one entry per change, none for a repeated signal, each `Since` source), a two-fold row where outputs appear at the second fold with no new signal (`idle-done` stamped `ReadAt`) against a one-fold row over the same signals (`idle-done` stamped with the turn end's `At`), the transcript-marker rows (only the newest turn end or turn start of a fold is marked), and the interrupt row where a turn start's later or missing `At` changes nothing.
+`SessionFold`'s doc comment carries the handover the added decision "Output files first covers output-derived states only" requires: the output files are consulted before the output-derived states (`no-output`, interactive `asking`), while `dead` and `unknown` outrank `idle-done`, so a finished run can read `dead`, and the first consumer that acts on `dead` applies `PATTERN-completion-signal`'s output check before acting.
+
+Tests, untagged, in one table-driven top-level function in `sessionstate_test.go`, over hand-built `SessionSignal` slices and facts with a fixed `ReadAt`, one row per acceptance reading of the reducer: every state and cause listed under the acceptance criteria's reducer row, D3's precedence rows, the history row (one entry per change, none for a repeated signal, each `Since` source), a two-fold row where outputs appear at the second fold with no new signal (`idle-done` stamped `ReadAt`) against a one-fold row over the same signals (`idle-done` stamped with the turn end's `At`), the transcript-marker rows (only the newest turn end or turn start of a fold is marked), and the interrupt row where a turn start's later or missing `At` changes nothing.
+`cmd/lyx/testdata/test-budget.yaml`: the `internal/shuttleengine` row rises by 1, for that function.
+
+**ImpactSummary:** Adds a pure reducer no code calls yet; the only existing file touched is the test budget row.

@@ -5,6 +5,7 @@
 - `internal/orchengine/watcher_test.go`
 - `internal/orchengine/doc.go`
 - `internal/orchcli/session.go`
+- `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
 - `plan:internal/shuttleengine#Runner.SessionState`
@@ -20,6 +21,7 @@ A probe that reports `TooShort` is not compared, since its not-idle answer says 
 A failure to read the state is logged at Debug and changes nothing: `probeIdle` returns the probe and error it returns today, and no cycle, delivery or `State` write depends on the state (`PATTERN-orch-pane-single-writer`: nothing is typed).
 
 Tests: `watcher_test.go`'s `fakeSession` answers `SessionState` from a scripted value or error; one table-driven test, with log capture, runs a tick whose idle probe disagrees with the scripted state and asserts one Warn across two ticks, no Warn when they agree or the pane is too short, and that the tick's saved `State` and the session calls it makes are identical with the state read failing.
+`cmd/lyx/testdata/test-budget.yaml`: the `internal/orchengine` row rises by 1, for that test.
 
 Docs: `orchengine/doc.go`'s list of `Session` methods gains `SessionState` and says the watcher only logs it.
 

@@ -12,6 +12,8 @@ The interactive AskUserQuestion record hook is a recording hook, not a deny, and
 The `init` forbidden-character check iterates the table's steers and notices instead of its hand-kept lists, so a new row is checked without a second edit.
 Every hook command and notice sentence, and the order of the `PreToolUse` entries, stays byte-identical to today's.
 
-Test: `settings_test.go`'s existing rows pin the documents and notices byte for byte; add one table-driven row set asserting that, for every input combination the existing rows cover, the notice announces exactly the rows whose hooks the document installs, so the drift guard is read off the table.
+Test: `settings_test.go`'s existing rows pin the documents and notices byte for byte, and no new test is added.
+`TestBuildDenyNotice_MatchesInstalledDenies` already asserts, over every deny combination, that the notice announces exactly the denies `buildSettings` installs; its hand-kept `wantAgent`/`wantAsk` switch is generalized to read each installed `PreToolUse` entry back to its table row and expect that row's notice sentence, so the drift guard is read off the table.
+`TestBuildSettings_NoForbiddenCharsInSteerText` keeps covering the forbidden-character check, now over the table's steers and notices.
 
 **ImpactSummary:** Pure restructuring of claudeengine's settings composition; settings.json and the deny notice stay byte-identical for every input.

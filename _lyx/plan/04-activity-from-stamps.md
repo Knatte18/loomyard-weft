@@ -3,6 +3,7 @@
 **Edit:**
 - `internal/shuttleengine/activity.go`
 - `internal/shuttleengine/activity_test.go`
+- `internal/shuttleengine/doc.go`
 
 **Uses:**
 - `plan:internal/shuttleengine#SessionSignalParser`
@@ -22,4 +23,6 @@ This deliberately follows the added decision over the acceptance row that expect
 Tests, in `activity_test.go`'s existing table: a run whose events file holds a stamped Stop followed by a stamped `Notification` `idle_prompt` reads `LastActivity` at the Stop's stamp time, not the file's mtime; a run with an unstamped Stop reads the file's mtime as today; existing rows keep their expectations.
 The table's engine double gains the parser through the real Claude parser's line shapes written by the test, or a double answering fixed signals, whichever the existing fake supports without importing `claudeengine` (`PATTERN-shuttle-provider-seam`).
 
-**ImpactSummary:** ReadAgentActivity's events-file time comes from the newest Stop or ask line's stamp instead of the file's mtime, falling back to the mtime only for unstamped lines; batten is its only caller.
+Docs: `activity.go`'s file comment ("when each last wrote anything") and the `AgentActivity.LastActivity` field comment, which today says the last activity is the newer of the transcript's and the events file's last write, are reworded to the newest Stop or ask line's stamp, with the mtime fallback for an unstamped line or an engine without the parser; `shuttleengine/doc.go`'s activity paragraph says the same.
+
+**ImpactSummary:** ReadAgentActivity's events-file time comes from the newest Stop or ask line's stamp instead of the file's mtime, falling back to the mtime only for unstamped lines; batten is its only caller, and the package doc and activity.go comments follow.

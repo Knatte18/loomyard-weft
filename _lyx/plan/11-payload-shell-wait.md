@@ -4,9 +4,12 @@
 - `internal/shuttleengine/wait.go`
 - `internal/shuttleengine/waitmark.go`
 - `internal/shuttleengine/waiting_test.go`
+- `internal/shuttleengine/hold_test.go`
+- `internal/shuttleengine/run.go`
 - `internal/shuttleengine/config.go`
 - `internal/shuttleengine/template.yaml`
 - `internal/shuttleengine/doc.go`
+- `cmd/lyx/testdata/test-budget.yaml`
 
 **Intent:**
 Make a turn end waiting on live, payload-reported background work a wait, never a held stop (D8, #429).
@@ -24,12 +27,13 @@ What this lets through: a payload-reported shell that never ends now holds the r
 That bound is stated in the `pollEventsTick` and `expiredTurnEnd` doc comments.
 
 Tests, in `waiting_test.go` beside the existing shell-expiry tests (whose `oneShell` carries no signal and so keeps today's expiry):
-- An autonomous run whose turn end lists a payload-reported shell keeps waiting past the bound with no held turn end and no notice, logs `shuttle: background shell past wait min` once across several later ticks, and finishes at the agent's next turn end; with no next turn end the run ends `OutcomeTimeout` at its deadline.
-- A transcript-reported shell expires at the bound as today.
-- A gated run with outputs present and only payload-reported unawaited shells finishes Done on that tick, with the shells' labels in `ExpiredShells`; with a fork or an awaited-prefix shell beside them it keeps waiting.
-- An ungated run with outputs present and a payload-reported shell finishes Done as today.
+- `TestPollEventsTick_ShellExpiry`'s table gains a task-list column and rows: a transcript-reported shell expires at the bound as today; a payload-reported shell is still waiting, not held, past the bound; a gated run with outputs present and only payload-reported unawaited shells finishes Done on the first tick, with the shells' labels in `ExpiredShells`, while the same with a fork or an awaited-prefix shell beside them keeps waiting; an ungated run with outputs present and a payload-reported shell finishes Done as today.
+- `hold_test.go`: `TestWait_HeldTurnEndNotice`, whose `shellJump` rows already drive `Wait` past the shell bound to the deadline, gains a row whose outstanding shell carries `Signal: SignalPayload`: the run keeps waiting past the bound with no held turn end and no notice, and ends `OutcomeTimeout` at its deadline.
+- One new top-level `Wait`-level function in `waiting_test.go`, since no existing test both jumps the clock past the bound and scripts a later turn end (`TestWait_HeldTurnEndNotice` takes either `shellJump` or `script`), and none captures logs: an autonomous run whose turn end lists a payload-reported shell logs `shuttle: background shell past wait min` once across several ticks past the bound, and finishes at the agent's next turn end.
 - `TestShellWaitMark` gains a payload-reported row whose mark stays on past the bound.
+- `cmd/lyx/testdata/test-budget.yaml`: the `internal/shuttleengine` row rises by 1, for the one new function.
 
 Docs: `background_shell_wait_min`'s comment in `template.yaml` and `config.go` says it bounds transcript-reported shells only; `wait.go`'s file comment and `shuttleengine/doc.go` describe the payload-shell wait, the done-at-once rule and the Timeout bound.
+`run.go`'s `Result.ExpiredShells` field comment, which today says each listed shell outlasted `background_shell_wait_min`, says the labels are the shells the wait stopped waiting on: transcript-reported shells it waited out past the bound, and payload-reported shells a gated run's turn end left behind at once.
 
 **ImpactSummary:** Payload-reported background shells no longer expire into held stops; gated runs with outputs and only leftover unawaited payload shells finish at once; transcript-reported shells and ungated runs behave as before.

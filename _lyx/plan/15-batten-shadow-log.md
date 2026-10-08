@@ -6,6 +6,7 @@
 - `internal/battenshed/notice_test.go`
 - `internal/battencli/wire.go`
 - `internal/battencli/wire_seams_test.go`
+- `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
 - `plan:internal/shuttleengine#ReadSessionStates`
@@ -21,7 +22,8 @@ A failed state read is logged at Warn once per read and leaves the state fields 
 Bound: no notice, stamp, finding or return depends on the state fields.
 
 Tests:
-- `notice_test.go`: with log capture, a quiet finding and an API-error finding each log the state of every run, and a row with the state fields set yields the same findings and notifier calls as the same row with them empty.
-- `wire_seams_test.go`: the live run's reading carries the state of its stamped turn end, and its `LastActivity`, `APIError` and `waitLive` are the values the existing row expects.
+- `notice_test.go`: one new table-driven top-level function, since no existing notice test captures logs: with log capture, a quiet finding and an API-error finding each log the state of every run, and a row with the state fields set yields the same findings and notifier calls as the same row with them empty.
+- `wire_seams_test.go`: `TestReadAgentActivity_ReadsLiveRunsAndTheWaitMarker` asserts that the live run's reading carries the state of its stamped turn end, and its `LastActivity`, `APIError` and `waitLive` are the values the existing row expects.
+- `cmd/lyx/testdata/test-budget.yaml`: the `internal/battenshed` row rises by 1, for the new `notice_test.go` function.
 
 **ImpactSummary:** Batten's agent-activity reading carries and logs each run's session state; its notice decisions are unchanged.
