@@ -14,3 +14,8 @@ Run the driver and the judge on Haiku 5.5 where it holds (operator, 2026-10-08: 
 
 - Set `driver` and `judge` in `loom.yaml` to a Haiku model-spec on one trial run, and compare against a Sonnet run from the usage records: interventions by the hub, judge verdicts later overturned, and token cost.
 - Keep the change only for a role whose trial shows no more interventions or overturned verdicts.
+
+## Driver switched (operator, 2026-10-08)
+
+`driver` is `haiku[medium]` in `loom.yaml` from 2026-10-08, for runs started after that; the judge stays on Sonnet until the driver trial is read.
+Compare the driver row of the token report per role, and the hub interventions, against the Sonnet runs before it.
