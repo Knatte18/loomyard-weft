@@ -11,8 +11,6 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Plan cards name the members they change as glyphs, after lyx's use of glyphs is tested systematically** — [`plan-glyph-precision`](design-plan-glyph-precision.md) · enhancement, loom, quarry · running · Finalize
-   - Plan-Write lists file paths instead of member glyphs because its stencil shows and allows it, and handle-unreferenced forces invented glyphs; test lyx's use of quarry glyphs systematically first
 1. **reed: strand and run tabs, narrow-terminal run row, a color per strand role** — [`reed-view`](design-reed-view.md) · enhancement, reed · running · Webster
    - VIEW plus a zoom button per strand and Alt-key navigation, run tabs that never fall off a narrow terminal, and each strand role in its own color
 1. **Shuttle: a Send lands or retries, and attach knows a half it stopped** — [`shuttle-send`](design-shuttle-send.md) · bug, shuttle · running · Discussion-Burler
@@ -148,6 +146,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Finished, awaiting `lyx board prune`.
 
+1. **Plan cards name the members they change as glyphs, after lyx's use of glyphs is tested systematically** — [`plan-glyph-precision`](design-plan-glyph-precision.md) · enhancement, loom, quarry · done
+   - Plan-Write lists file paths instead of member glyphs because its stencil shows and allows it, and handle-unreferenced forces invented glyphs; test lyx's use of quarry glyphs systematically first
 1. **Orch and batten: compact reload, one event-driven notice channel, a window per batten** — [`lifecycle-waits`](design-lifecycle-waits.md) · bug, enhancement, orch, batten · done
    - The orch reloads as soon as compaction lands, batten sends one timely notice per state change without ticks, and each batten gets its own tmux window
 1. **Fabric: pair create survives a refused push, no untested main from the prime, neutral export names** — [`fabric-pushes`](design-fabric-pushes.md) · bug, enhancement, fabric · done
