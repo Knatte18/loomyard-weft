@@ -448,7 +448,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "c03fa4164c2f2975b3ec15720f134e8b",
   "masterSessionId": "7440a018-edc1-40c6-bc1c-418bd7f82495",
   "batches": {
@@ -487,6 +487,31 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-state/7440a018-edc1-40c6-bc1c-418bd7f82495/subagents/agent-aecfe0fab4f147f1f.jsonl"
       ]
+    },
+    "7": {
+      "slug": "claude-prober",
+      "cards": [
+        "07-claude-prober",
+        "08-state-reader",
+        "09-shuttle-state-cli",
+        "10-held-wait-mark",
+        "11-payload-shell-wait",
+        "12-webster-shell-wording"
+      ],
+      "cardHashes": {
+        "07-claude-prober": "b47bac875e8a1f8b941f84c030c3a677b76485f66adad95fa6cb6c710a2bd006",
+        "08-state-reader": "4567d73e490da5c931512b32a443f3564fbd8a8457aa163d8044df3c360e29df",
+        "09-shuttle-state-cli": "e0a4ed4356d1606bd9565f88690e55b4aa335084f82a4f976bd5d32b854bddf4",
+        "10-held-wait-mark": "8dea528af533ad23e8268995c11ec757d5675c35ba909ab38aef1b85b879e144",
+        "11-payload-shell-wait": "6af5f119a00d57b3f0da7432a3244f29425085485fc89c406ae10f7ed1ceb7ea",
+        "12-webster-shell-wording": "3b3356446f636ce1ac2d61976cd845fc1f23414183965336c7d6a602d0c45484"
+      },
+      "startSha": "64761f249ab9bd6dee8f11b3ff507601f00a43a5",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T07:52:25Z",
+      "sessionId": "7440a018-edc1-40c6-bc1c-418bd7f82495",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
