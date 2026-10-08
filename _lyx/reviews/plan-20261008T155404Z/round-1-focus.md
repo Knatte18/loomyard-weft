@@ -1,0 +1,16 @@
+---
+round: 1
+focus:
+  - "Card 8 (burler stops through handle): it bundles burlerengine, burlercli, shedadapters, shedrecipe, envkit, loomcli and battencli test files behind one re-signed `New`. Settle whether this is one reviewable unit or whether the shedadapters/shedrecipe remover-seam removal is a separable card; and whether every caller of the dropped `remover` (including the one in `burlerengine/handoff.go` where `stopHalf` removes a guid) is reached by a listed target."
+  - "Attack-surface bounds for cards 8 and 9: each routes an existing strand removal onto a verb that now writes `stopped` into a record. Settle whether each card's `**Intent:**` states what the change can now let through (a `stopped` record over a live strand on crash, `Runner.StopStrand` on a guid with no record) and what bounds it, or only points at card 7."
+  - "Card 2 -> cards 4 and 7 InputBoxReader implementers: card 2 adds `TypeSequence` to `InputBoxReader` and names `Claude` and `run_test.go`'s `inputBoxEngine` as the only implementers. Settle whether every other fake that satisfies `InputBoxReader` (any in `fakes_test.go`, `startup_test.go`, `gate_test.go`, loomcli or shedadapters tests) is listed, and whether card 4's scripted-fake rewrite lands on the fake card 2 edits."
+  - "Fidelity to the decision record, Constraints: settle that each Constraint has a carrying card (`PATTERN-wait-mark-display-only`, `PATTERN-orch-pane-single-writer`, `PATTERN-spawn-observability`, `PATTERN-comment-line-breaks`, `PATTERN-test-economy`), and that no card adds scope the record does not license (card 10's grep-and-reword step, card 7's `saveState` refactor of `notifyHeld` and `checkLivenessTick`)."
+  - "Fidelity to the decision record, D8: the record says a scan test is added 'only if the plan finds one cheap to write'. Settle whether card 9's stated reason for adding none is consistent with the record and whether `PATTERN-shuttle-stop` lands in the card whose code makes it true (card 9) rather than before burler/attach/webster are all moved."
+  - "Card order and `Uses` accuracy across cards 3 -> 6: card 6 uses `unmatchedTurnStart`, `turnStartHold` and both sentinels from cards 3 and 4, and card 5 uses `eventsSize` and `turnStartedSince` from card 4. Settle that no card depends on a symbol a later card creates, including card 3's description of `sendContext.deadline` as set by card 6, and card 7's `abandonStartup`/`finalize` interplay with card 5."
+  - "Card 4 test economy and member glyphs: the card rewrites `TestRun_Send_ConfirmsSubmission` and extends `TestRun_Send_DeliveryVerification`; settle that no new test function duplicates behavior those tests or card 3's idle-wait table already cover, and that card 7's new `stop_test.go` cases are not already pinned by `attach_test.go` rows or `completionsignal_enforcement_test.go`."
+  - "Verify section: settle that every package any card targets (shuttleengine, claudeengine, burlerengine, burlercli, shedadapters, shedrecipe, shedengine, websterengine, webstercli, loomcli, battencli, envkit, shedfake) has its tests run by the plan's `go test ./...` and `go test -tags integration ./...`, and that the section follows the plan template's order."
+---
+
+Seed focus for round 1.
+Entries name where to look and which question to settle; none is a verdict.
+`support-log.md` was not read.
