@@ -36,5 +36,5 @@ This note's Alt+Left/Right between the orch and its overview window needs a new 
 ## The overview replaces the batten windows (operator, 2026-10-08)
 
 The per-run `batten:<slug>` windows that `lyx batten run --window` opens in the prime session say nothing useful to the operator, and they crowd status line 1 with one button each.
-The batten runs go: each batten run still needs a process to live in, but it runs without a window of its own (its output to its log), and the one overview window is the only run window in the prime.
+The batten windows go: each batten run still needs a process to live in, but it runs without a window of its own (its output to its log), and the one overview window is the only run window in the prime.
 The overview is compact: it need not take much space.
