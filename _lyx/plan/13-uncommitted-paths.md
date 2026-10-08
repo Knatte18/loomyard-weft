@@ -1,7 +1,7 @@
 # Card 13 — uncommitted-paths
 
 **Create:**
-- `plan:internal/websterengine#UncommittedPaths` -> `func UncommittedPaths(geom Geometry) ([]string, error)`
+- `internal/websterengine#UncommittedPaths`
 
 **Edit:**
 - `internal/websterengine#AcceptBatchFabricReference`

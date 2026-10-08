@@ -15,8 +15,8 @@
 
 **Uses:**
 - `internal/gitrepo#Repo.ResetKeep`
-- `plan:internal/websterengine#ArchiveRunAfterReset`
-- `plan:internal/websterengine#UncommittedPaths`
+- `internal/websterengine#ArchiveRunAfterReset`
+- `internal/websterengine#UncommittedPaths`
 - `internal/gitrepo#Repo.WorktreeChangedFiles`
 - `internal/gitrepo#Repo.ChangedFilesSince`
 

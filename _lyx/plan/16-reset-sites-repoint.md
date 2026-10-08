@@ -27,9 +27,9 @@
 - `internal/websterengine#resetKeepStep`
 
 **Uses:**
-- `plan:internal/websterengine#ResetToReportHead`
-- `plan:internal/websterengine#ResetToLastBatchHead`
-- `plan:internal/websterengine#ResetToBatchStart`
+- `internal/websterengine#ResetToReportHead`
+- `internal/websterengine#ResetToLastBatchHead`
+- `internal/websterengine#ResetToBatchStart`
 
 **Intent:** Every webster way forward that names `git reset --keep` names a `lyx webster reset` target instead (D2), so no agent or operator needs a raw git reset.
 - `reconcileHead`'s refusals (a non-merge commit past the report head, and an unqualified merge) take their reset step from the `headRefusal` wording: for record-batch and recover-batch it is `lyx webster reset --to report-head --batch NN`, then the re-run, then the parent merge-in redo where it applies; `reportHeadRefusal` becomes a function of the batch number, and `reconcileReportHead` takes the number from its two callers (`RecordBatch`, `awaitTerminal`).

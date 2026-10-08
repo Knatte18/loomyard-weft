@@ -11,8 +11,8 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/websterengine#ArchiveRunAfterReset`
-- `plan:internal/websterengine#UncommittedPaths`
+- `internal/websterengine#ArchiveRunAfterReset`
+- `internal/websterengine#UncommittedPaths`
 - `internal/websterengine#RemoveRecoveryStrands`
 
 **Intent:** `reset --to start` becomes the one start-over verb: it ends by archiving the run record, and archives without moving when the start cannot be moved to (D3), listing what it left uncommitted (D4's envelope half).

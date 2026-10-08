@@ -1,6 +1,6 @@
 {
   "runGuid": "43f96b93160e5891c1f81e46a1390042",
-  "planFingerprint": "ec5677d1a844fac123434852ad4359d0eac3c06285941fcfbde4bf7ff338728b",
+  "planFingerprint": "2e7b3f7ed3161d0771df6bde8a529d7312e582515682e082bc33ac35b30a6b9d",
   "planFileHashes": {
     "00-overview.md": "27289e2bb9617a8242f26a9bfe54a7aa486a604838b433d7bade6203cc3a1e0e",
     "01-configengine-invalid-mark.md": "a06f90fcb213dce27a8736f16f1d124b3cfa1cb152cc908b90c12967f565205d",
@@ -13,14 +13,14 @@
     "08-computed-merriam-base.md": "fb09a5133f2ecc9122af62b8be8d4d686c93f3b6b43801139d1302d4e571a959",
     "09-calibrate-orientation-fit.md": "61dd47931937d3bd4051c1a19e80fcd999ad817f867b6e81da5199bc0260d885",
     "10-gitrepo-reset-keep.md": "fefc69dad3ffc147e78973344ceda66befb44b6a3766f86491cf0a2baaf3bec5",
-    "11-reset-targets.md": "5475cf76e33961029227541457f65a047bba4d3d623cad966eb941dae56dd024",
-    "12-run-archive-after-reset.md": "ed18d74f92f738780ce6387facec1ffb62e5f15eccdaf2c136efe39260c8f8b1",
-    "13-uncommitted-paths.md": "437046db97c06808101bb8f1bf949f39ea28ecb7d4a8e883aed9379e969af25c",
-    "14-reset-start-archives.md": "700453e0a0b3a5f74f85a5b0414b91f50408b63dc698bbcdca98c7ed836f6a25",
-    "15-standalone-reset.md": "eb763834cb9a7eabede9c011d1bb80b0a015200abc70d3ad1ebd4f55b9a3df09",
-    "16-reset-sites-repoint.md": "13876b4b4da66a115f3bdb51f381bb3eea1da359c95d6e93138a5424c0422543",
+    "11-reset-targets.md": "810a2ee4363ae50ad043fb583ef2ad087d10a03f13125c6d247226bcae55cfca",
+    "12-run-archive-after-reset.md": "c77422eeea45f696ffa4ee4c010beeb4010c26889061eda2a0e809b27d7755e1",
+    "13-uncommitted-paths.md": "af830fdaaa9447897a09dd176d556fade6dd03f36848d76921f10a2b1ed7d7fe",
+    "14-reset-start-archives.md": "9d15832b24390914396284bba9ec0c8d62c8e4bb92a4ed3b2a4f2380f1245270",
+    "15-standalone-reset.md": "b5d6dd41d7c7eec824796ac6eefaa56b7439b671a1848940e04d28d72b82b6c4",
+    "16-reset-sites-repoint.md": "c2eaf5c0bb5b9dfaa9721b294ac5113c9151f2841dc4fe40e27ba0fb1eb50099",
     "17-retire-fresh-after-reset.md": "057c5f319a00f94dac7dd6dd0f74d777dc8a1b6be18fee731936553a17a8e480",
-    "18-recovery-uncommitted-paths.md": "ff268d5a1c13e65b63d46e59a0f88fd27cc89e2f679863d7c7617463904aa59b",
+    "18-recovery-uncommitted-paths.md": "09f0aec17d7553aaf2bfec2798c085a04d1d6397a9e0f4765b6b804ab7bdd084",
     "19-amended-cards-rebaseline.md": "fe8231ccf5fa839077754dc8ee6d02b05f924125a1e8d55a376e61bc2c678bbe",
     "20-amended-cards-recovery.md": "975ae6c87d6fdd42b4a0199299747aca306f0d448650c728f6c6054e0e2636b0",
     "21-overview-without-card-index.md": "4b6bb58c6ad859441580fd81ab7e66a7a880732906d7393fffe2b9f5e49e74bd",
@@ -675,7 +675,7 @@
       }
     }
   ],
-  "currentBatch": 11,
+  "currentBatch": 0,
   "masterStrand": "b98b3a0241f2428ccaf434b2697c1951",
   "masterSessionId": "97cf9074-5729-4d7d-8666-4aae19848abd",
   "batches": {
@@ -728,19 +728,35 @@
         "16-reset-sites-repoint"
       ],
       "cardHashes": {
-        "11-reset-targets": "5475cf76e33961029227541457f65a047bba4d3d623cad966eb941dae56dd024",
-        "12-run-archive-after-reset": "ed18d74f92f738780ce6387facec1ffb62e5f15eccdaf2c136efe39260c8f8b1",
-        "13-uncommitted-paths": "437046db97c06808101bb8f1bf949f39ea28ecb7d4a8e883aed9379e969af25c",
-        "14-reset-start-archives": "700453e0a0b3a5f74f85a5b0414b91f50408b63dc698bbcdca98c7ed836f6a25",
-        "15-standalone-reset": "eb763834cb9a7eabede9c011d1bb80b0a015200abc70d3ad1ebd4f55b9a3df09",
-        "16-reset-sites-repoint": "13876b4b4da66a115f3bdb51f381bb3eea1da359c95d6e93138a5424c0422543"
+        "11-reset-targets": "810a2ee4363ae50ad043fb583ef2ad087d10a03f13125c6d247226bcae55cfca",
+        "12-run-archive-after-reset": "c77422eeea45f696ffa4ee4c010beeb4010c26889061eda2a0e809b27d7755e1",
+        "13-uncommitted-paths": "af830fdaaa9447897a09dd176d556fade6dd03f36848d76921f10a2b1ed7d7fe",
+        "14-reset-start-archives": "9d15832b24390914396284bba9ec0c8d62c8e4bb92a4ed3b2a4f2380f1245270",
+        "15-standalone-reset": "b5d6dd41d7c7eec824796ac6eefaa56b7439b671a1848940e04d28d72b82b6c4",
+        "16-reset-sites-repoint": "c2eaf5c0bb5b9dfaa9721b294ac5113c9151f2841dc4fe40e27ba0fb1eb50099"
       },
       "startSha": "f52353eb713c95b82f2f3fbdd66306ac5f018d73",
       "kind": "fork",
       "spawnedAt": "2026-10-08T11:28:30Z",
       "sessionId": "97cf9074-5729-4d7d-8666-4aae19848abd",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "11-reset-targets",
+        "status": "done",
+        "head_sha": "98a42f9cc6d46ee82d7dd38b1e4a8465c2770d2b",
+        "deviations": [
+          "internal/websterengine/archivereset_test.go",
+          "internal/websterengine/runlevel_test.go",
+          "internal/websterengine/findingtext_test.go"
+        ]
+      },
+      "cardShas": [
+        "98a42f9cc6d46ee82d7dd38b1e4a8465c2770d2b"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-dead-ends/97cf9074-5729-4d7d-8666-4aae19848abd/subagents/agent-a3fe2de8632476702.jsonl"
+      ]
     },
     "6": {
       "slug": "webster-config-invalid",
@@ -782,6 +798,7 @@
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-dead-ends/97cf9074-5729-4d7d-8666-4aae19848abd/subagents/agent-adbeb3d4c4d5f3e88.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-dead-ends/97cf9074-5729-4d7d-8666-4aae19848abd/subagents/agent-aa8fc8256e2e77353.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-dead-ends/97cf9074-5729-4d7d-8666-4aae19848abd/subagents/agent-aa8fc8256e2e77353.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-dead-ends/97cf9074-5729-4d7d-8666-4aae19848abd/subagents/agent-a3fe2de8632476702.jsonl"
   ]
 }

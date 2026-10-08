@@ -1,7 +1,7 @@
 # Card 12 — run-archive-after-reset
 
 **Create:**
-- `plan:internal/websterengine#ArchiveRunAfterReset` -> `func ArchiveRunAfterReset(engine shuttleengine.Engine, geom Geometry, st *State) ([]string, error)`
+- `internal/websterengine#ArchiveRunAfterReset`
 
 **Edit:**
 - `internal/websterengine#Run`

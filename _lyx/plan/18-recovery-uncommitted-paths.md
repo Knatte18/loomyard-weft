@@ -14,7 +14,7 @@
 
 **Uses:**
 - `internal/websterengine#loadRunWrites`
-- `plan:internal/websterengine#UncommittedPaths`
+- `internal/websterengine#UncommittedPaths`
 
 **Intent:** A recovery strand is told what uncommitted work it starts from and what to do with each path, instead of judging a dirty tree on its own (D5).
 When `recoverSpawn` spawns a strand it lists the worktree's uncommitted paths, tracked changes and untracked files alike (`UncommittedPaths(deps.Geom)`, card 13, the list the reset reports), and classes each by the run's write evidence: a path some session of this run wrote successfully, by the transcripts `loadRunWrites` reads (a new helper in `runwrites.go` returns those writes as worktree-relative slash paths, untracked files included, unlike `ownTrackedPaths`), or a path no session of this run wrote.

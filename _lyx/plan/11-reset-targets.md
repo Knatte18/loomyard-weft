@@ -1,9 +1,9 @@
 # Card 11 — reset-targets
 
 **Create:**
-- `plan:internal/websterengine#ResetToReportHead` -> `const ResetToReportHead ResetTarget = "report-head"`
-- `plan:internal/websterengine#ResetToLastBatchHead` -> `const ResetToLastBatchHead ResetTarget = "last-batch-head"`
-- `plan:internal/websterengine#ResetToBatchStart` -> `const ResetToBatchStart ResetTarget = "batch-start"`
+- `internal/websterengine#ResetToReportHead`
+- `internal/websterengine#ResetToLastBatchHead`
+- `internal/websterengine#ResetToBatchStart`
 
 **Edit:**
 - `internal/websterengine#ResetDeps`
