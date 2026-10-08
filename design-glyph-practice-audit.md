@@ -18,5 +18,7 @@ Audit the first runs after `plan-glyph-precision` lands from their logs and tran
 - `plan:` handles declared, bound at record-batch, and failed;
 - members a card edited that its glyphs did not name, and glyphs that named the wrong member, read from the batch diffs.
 
-From what the audit shows, tune the plan stencil: where writers guess, show them how to resolve a glyph with quarry before they write it, so the gate rejects less.
+The plan stencil already tells writers to copy glyphs from `lyx quarry` answers and never spell one; plans before this task still named mostly file paths, because a path was always a valid target.
+The audit's main question is whether the share of plain paths falls once `plan-glyph-precision`'s member-glyph rules and rubric flag are in place.
+From what it shows, tune the plan stencil and rubric where writers still fall back to paths or take many gate rounds.
 Kick-start work starts only once the audit shows plans name resolvable members in practice.
