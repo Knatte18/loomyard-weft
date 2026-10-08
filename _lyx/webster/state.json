@@ -280,7 +280,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "71100a768184102b72d92234f4f4324c",
   "masterSessionId": "a43a914a-ebed-4748-a0a5-ff84991042f6",
   "batches": {
@@ -306,8 +306,25 @@
       "kind": "fork",
       "spawnedAt": "2026-10-08T07:46:57Z",
       "sessionId": "a43a914a-ebed-4748-a0a5-ff84991042f6",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-glyphchain-plan-gate",
+        "status": "done",
+        "head_sha": "cb415e736b0decba0df6e812c1265e7d19c77049",
+        "deviations": [
+          "cmd/lyx/testdata/test-budget.yaml"
+        ]
+      },
+      "cardShas": [
+        "cb415e736b0decba0df6e812c1265e7d19c77049"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-glyph-precision/a43a914a-ebed-4748-a0a5-ff84991042f6/subagents/agent-a73b4b74774ea8e4c.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-glyph-precision/a43a914a-ebed-4748-a0a5-ff84991042f6/subagents/agent-a73b4b74774ea8e4c.jsonl"
+  ]
 }
