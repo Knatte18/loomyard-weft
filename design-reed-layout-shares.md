@@ -17,6 +17,10 @@ It fits a run whose newest agent is the one that matters, and nothing else:
 - The agents of one multi-agent step share the window evenly, side by side or stacked; which of the two is open.
 - The collapsed stack of finished agents may stay as one kind among these, for strands kept only for reference.
 
+## Columns (operator, 2026-10-08)
+
+The layout rules need a broader revision: tmux under reed can show any arrangement, so stacking strands side by side in columns, rather than in rows, is tempting as the main rule.
+
 ## Open
 
 - Side by side (columns) or stacked rows for parallel agents, or a rule by window width.
