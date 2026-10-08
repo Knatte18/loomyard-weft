@@ -13,3 +13,6 @@ The reviewer therefore issued a remedy the gate cannot accept, and the review ro
 What to do: have the plan-review rubric tell the reviewer to run `lyx loom validate-plan` before recommending a card retyping, or add the type-vs-`containment-file-overlap` interaction to the `Do not flag` list.
 
 Provenance: task `fabric-pushes`, note `burler-plan-r1.md`.
+
+
+Hub, 2026-10-08: `plan-glyph-precision` (running) drops the cross-card containment check in its D2, which removes the gate refusal this issue describes; check after it lands whether anything is left.
