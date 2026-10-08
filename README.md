@@ -16,6 +16,8 @@ Waits on nothing open; can start now, in parallel.
    - **Before:** `test-suite-weight`
 1. **Git robustness: stale pack index, background gc, network timeouts, reused slugs** — [`git-robustness`](design-git-robustness.md) · bug, enhancement, fabric, batten, stencil
    - Reindex-and-retry for every go-git call, no auto-gc under a live step, timeouts on git network calls, batten refuses a done slug, bounded HeadContains
+1. **Publish and loom recovery: a fix route from Publish, resume past its own merge, clean re-steps** — [`publish-recovery`](design-publish-recovery.md) · bug, loom, burler, fabric, config, stencil
+   - A blocked Publish hands its failure to a fixer, resume survives its own staged merge, no false config warning at Finalize, re-step and decision-author fixes
 
 ### Layer B
 
@@ -33,11 +35,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 1. **board: refuse scope edits to a running task** — [`board-lock-running`](design-board-lock-running.md) · bug, board
    - The board already marks running tasks; a write that changes the scope of a running task is refused
-1. **A blocked Publish has no route that hands a finding to a fixer** — [`publish-fix-route`](design-publish-fix-route.md) · bug, loom, burler
-1. **Loom re-step refused with producer error while a stopped review strand's run dir is younger than 3m** — [`restep-young-run-dir`](design-restep-young-run-dir.md) · bug, loom, burler
-1. **Plan agent can record a decision as --by parent** — [`plan-agent-parent-decision`](design-plan-agent-parent-decision.md) · bug, loom, stencil
-1. **Finalize warns of per-worktree config changes that came from main** — [`finalize-config-warn-from-main`](design-finalize-config-warn-from-main.md) · bug, loom, config
-1. **Loom resume at Publish refuses the dirty worktree left by its own staged merge-in, so the run cannot recover** — [`publish-resume-own-merge`](design-publish-resume-own-merge.md) · bug, loom, fabric
 1. **Loom goto back to Plan after Webster started leaves webster state stale; Webster hard-fails on plan fingerprint mismatch** — [`goto-plan-stale-webster`](design-goto-plan-stale-webster.md) · bug, loom, webster
 1. **Plan-review round is dispatched as a fix round after the plan is already implemented, and webster refuses the resulting plan edits** — [`plan-review-after-implemented`](design-plan-review-after-implemented.md) · bug, loom, burler, webster
 1. **verify-nested-module misses commands after || and |** — [`verify-module-or-pipe`](design-verify-module-or-pipe.md) · bug, loom
