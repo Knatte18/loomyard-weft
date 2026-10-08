@@ -1,26 +1,26 @@
 # Card 7 — The hub config walk after a binary change
 
 **Create:**
-- `plan:internal/hubreconcile#Geometry` -> `type Geometry struct`
-- `plan:internal/hubreconcile#Geometry.StampPath` -> `func (g Geometry) StampPath() string`
-- `plan:internal/hubreconcile#Geometry.LockPath` -> `func (g Geometry) LockPath() string`
-- `plan:internal/hubreconcile#Options` -> `type Options struct`
-- `plan:internal/hubreconcile#DefaultLockWait` -> `const DefaultLockWait = 2 * time.Minute`
-- `plan:internal/hubreconcile#Ensure` -> `func Ensure(geom Geometry, opts Options) error`
-- `plan:internal/hubreconcile#LockTimeoutError` -> `type LockTimeoutError struct`
-- `plan:internal/hubreconcile#LockTimeoutError.Error` -> `func (e *LockTimeoutError) Error() string`
-- `plan:internal/hubreconcile#WorktreeError` -> `type WorktreeError struct`
-- `plan:internal/hubreconcile#WorktreeError.Error` -> `func (e *WorktreeError) Error() string`
-- `plan:internal/hubreconcile#WorktreeError.Unwrap` -> `func (e *WorktreeError) Unwrap() error`
-- `plan:internal/hubreconcile#BuildKey` -> `func BuildKey(id buildvcs.Identity, fingerprint string) string`
-- `plan:internal/hubreconcile#stamp` -> `type stamp struct`
-- `plan:internal/hubreconcile#readStamp` -> `func readStamp(path string) (stamp, bool, error)`
-- `plan:internal/hubreconcile#writeStamp` -> `func writeStamp(path string, s stamp) error`
-- `plan:internal/hubreconcile#walkHooks` -> `type walkHooks struct`
-- `plan:internal/hubreconcile#ensure` -> `func ensure(geom Geometry, opts Options, hooks walkHooks) error`
-- `plan:internal/hubreconcile#reconcileHubWide` -> `func reconcileHubWide(boardDir, primeAnchor, revision string) error`
-- `plan:internal/hubreconcile#reconcileWorktree` -> `func reconcileWorktree(boardDir string, w fabricengine.CodeWorktree, revision string, hooks walkHooks) (skipped bool, err error)`
-- `plan:internal/hubreconcile#restoreConfig` -> `func restoreConfig(prior map[string][]byte) error`
+- `internal/hubreconcile#Geometry`
+- `internal/hubreconcile#Geometry.StampPath`
+- `internal/hubreconcile#Geometry.LockPath`
+- `internal/hubreconcile#Options`
+- `internal/hubreconcile#DefaultLockWait`
+- `internal/hubreconcile#Ensure`
+- `internal/hubreconcile#LockTimeoutError`
+- `internal/hubreconcile#LockTimeoutError.Error`
+- `internal/hubreconcile#WorktreeError`
+- `internal/hubreconcile#WorktreeError.Error`
+- `internal/hubreconcile#WorktreeError.Unwrap`
+- `internal/hubreconcile#BuildKey`
+- `internal/hubreconcile#stamp`
+- `internal/hubreconcile#readStamp`
+- `internal/hubreconcile#writeStamp`
+- `internal/hubreconcile#walkHooks`
+- `internal/hubreconcile#ensure`
+- `internal/hubreconcile#reconcileHubWide`
+- `internal/hubreconcile#reconcileWorktree`
+- `internal/hubreconcile#restoreConfig`
 - `internal/hubreconcile/doc.go`
 - `internal/hubreconcile/export_test.go`
 - `internal/hubreconcile/stamp_test.go`

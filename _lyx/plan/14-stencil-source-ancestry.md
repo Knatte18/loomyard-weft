@@ -11,7 +11,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/fabricengine#HeadContains`
+- `internal/fabricengine#HeadContains`
 - `internal/buildvcs#Running`
 - `plan:internal/stencilstore#Source`
 - `plan:internal/stencilstore#BuildAncestry`

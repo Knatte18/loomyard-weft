@@ -1,7 +1,7 @@
 # Card 8 — Hub geometry for the config walk
 
 **Create:**
-- `plan:internal/hubgeom#ReconcileGeometry` -> `func ReconcileGeometry(l *lyxcwd.Location) (hubreconcile.Geometry, bool)`
+- `internal/hubgeom#ReconcileGeometry`
 
 **Edit:**
 - `internal/hubgeom/hubgeom_test.go`
@@ -9,7 +9,7 @@
 
 **Uses:**
 - `internal/preflight#BoardLyxPresent`
-- `plan:internal/hubreconcile#Geometry`
+- `internal/hubreconcile#Geometry`
 
 **Intent:**
 `internal/hubgeom` is the hub-mode constructor of every engine's `Geometry` struct (`PATTERN-told-geometry`), so it builds the one the start verbs (card 9, card 10) and the `Preflight` row (card 11) hand to `hubreconcile.Ensure`; the four call sites then share one construction instead of each joining paths.

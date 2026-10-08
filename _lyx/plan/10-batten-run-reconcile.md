@@ -6,9 +6,9 @@
 - `internal/battencli/lifecycle_integration_test.go`
 
 **Uses:**
-- `plan:internal/hubgeom#ReconcileGeometry`
-- `plan:internal/hubreconcile#Ensure`
-- `plan:internal/hubreconcile#Options`
+- `internal/hubgeom#ReconcileGeometry`
+- `internal/hubreconcile#Ensure`
+- `internal/hubreconcile#Options`
 - `internal/fabricengine#WorktreePath`
 
 **Intent:**

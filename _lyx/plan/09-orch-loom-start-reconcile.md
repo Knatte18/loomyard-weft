@@ -9,9 +9,9 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/hubgeom#ReconcileGeometry`
-- `plan:internal/hubreconcile#Ensure`
-- `plan:internal/hubreconcile#Options`
+- `internal/hubgeom#ReconcileGeometry`
+- `internal/hubreconcile#Ensure`
+- `internal/hubreconcile#Options`
 - `internal/loomcli#StartAliasCommand`
 
 **Intent:**

@@ -1,6 +1,6 @@
 {
   "runGuid": "5c58df7f6d8e28f9796eee2f69ab1065",
-  "planFingerprint": "c0b87d1eb5ab79c1bacbdeff30789247d2ad91c23836be68858e6b336c861d3e",
+  "planFingerprint": "275e8e303716d84c534ac524e39245a5a796b59e67c7b48f58ca704110f27595",
   "planFileHashes": {
     "00-overview.md": "7696a28929790a260da8d49fe1771137f4df8b27402022f58792e58b99a23ece",
     "01-buildvcs.md": "5548ad5ae206f30cfb349f9c79899418c7d0e7655c96cdd345d45154825967d9",
@@ -9,14 +9,14 @@
     "04-board-present-export.md": "49ae947ffe1c41e27c9768848ac78a97c394ef315f2d9b515c4be11e74f643c9",
     "05-fabric-walk-reads.md": "454f3b4bebf69a8ffc583ad0c79d8a5484b0ac4ce001ecae495033852ea7f164",
     "06-config-scratch-dir.md": "7f6f80379450d071a6a003b579a32b5804770b4c2e5963ba258de7f55f4de74e",
-    "07-hubreconcile.md": "871ec699db7b338eceffb55b86511508de78e0f4dac03da6bac48d8128948857",
-    "08-hubgeom-reconcile-geometry.md": "a9ab4ce68c0e8e911b72e21de9266d1a74ede3f06e95722b5680a61441604987",
-    "09-orch-loom-start-reconcile.md": "17a9f96d0f59022f6e190bf6eb70f77717aaa8b1803e6f595bb73daddbbc1065",
-    "10-batten-run-reconcile.md": "607a1737fe65c1ca59b3a25b08a0f106bb75666bf803b6669725e0abb606055d",
-    "11-preflight-safety-net.md": "1193e280c9728194f997a4167aab8fa326299f511705812e45ba3490f3e453d1",
-    "12-head-contains.md": "a8947843af155fb30fbfe641cadadf1bd347e199481ffd3a12d753c359187382",
+    "07-hubreconcile.md": "dec23c9b3640ce5d54c0b03368a92179bb796517eb9a97589f4edffae6510c0d",
+    "08-hubgeom-reconcile-geometry.md": "23b2eb2d9a04a9a1c600884ffe70fa6667c81285927b31e7fafbe73428471a50",
+    "09-orch-loom-start-reconcile.md": "21d85353bc534542a366fa25a776055c940d4f934ab5c466567dfc14effc893f",
+    "10-batten-run-reconcile.md": "7dabc25a4a156cb959114a826771c681eff9182fde4d548e8675e8bed2b982fd",
+    "11-preflight-safety-net.md": "b6b55890aa06d12b86aebb6186dab7a6f477bcaf51eb710d6311330ec1fc2cdf",
+    "12-head-contains.md": "ba4c78f7096de3e62d9372817b13720a81d469b228ceea7db575180a47e0186d",
     "13-stencil-drift-behind.md": "9d2ec09006b797ce025706ed58d677db80781b3dda3f34801518a3eda741e3fb",
-    "14-stencil-source-ancestry.md": "63bc73c5f5ce67af089241a23bf2e9c2c58c0d10251dd07a130f3d28a8627ac2",
+    "14-stencil-source-ancestry.md": "b759b953e8e0be377d79ed4a8840de1e3c6ea33fa7131af137af4d79326c6f8a",
     "15-edit-directive.md": "03b135b27798fb29853a0f29ce9d0cce8b1f3b8348ce13b6de0f35148a789ec2",
     "16-loom-roles-edit-directive.md": "82c9190ad60878ec124a8449fe1dbe43742ac8dee941ddfd2616750b0f8a8b42",
     "17-webster-edit-directive.md": "19a9c9232cf325b1c74347142c86196bcb3d338899c4124ea68201ac6bafa530",
@@ -503,7 +503,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "1578af759ae4b84ea53d41470d5d71f0",
   "masterSessionId": "e495df5d-7276-44c7-97aa-0e3437b51280",
   "batches": {
@@ -557,22 +557,37 @@
         "12-head-contains"
       ],
       "cardHashes": {
-        "07-hubreconcile": "871ec699db7b338eceffb55b86511508de78e0f4dac03da6bac48d8128948857",
-        "08-hubgeom-reconcile-geometry": "a9ab4ce68c0e8e911b72e21de9266d1a74ede3f06e95722b5680a61441604987",
-        "09-orch-loom-start-reconcile": "17a9f96d0f59022f6e190bf6eb70f77717aaa8b1803e6f595bb73daddbbc1065",
-        "10-batten-run-reconcile": "607a1737fe65c1ca59b3a25b08a0f106bb75666bf803b6669725e0abb606055d",
-        "11-preflight-safety-net": "1193e280c9728194f997a4167aab8fa326299f511705812e45ba3490f3e453d1",
-        "12-head-contains": "a8947843af155fb30fbfe641cadadf1bd347e199481ffd3a12d753c359187382"
+        "07-hubreconcile": "dec23c9b3640ce5d54c0b03368a92179bb796517eb9a97589f4edffae6510c0d",
+        "08-hubgeom-reconcile-geometry": "23b2eb2d9a04a9a1c600884ffe70fa6667c81285927b31e7fafbe73428471a50",
+        "09-orch-loom-start-reconcile": "21d85353bc534542a366fa25a776055c940d4f934ab5c466567dfc14effc893f",
+        "10-batten-run-reconcile": "7dabc25a4a156cb959114a826771c681eff9182fde4d548e8675e8bed2b982fd",
+        "11-preflight-safety-net": "b6b55890aa06d12b86aebb6186dab7a6f477bcaf51eb710d6311330ec1fc2cdf",
+        "12-head-contains": "ba4c78f7096de3e62d9372817b13720a81d469b228ceea7db575180a47e0186d"
       },
       "startSha": "e242a5500ed93aca475a704e1e3efe882e4da014",
       "kind": "fork",
       "spawnedAt": "2026-10-08T17:38:53Z",
       "sessionId": "e495df5d-7276-44c7-97aa-0e3437b51280",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-hubreconcile",
+        "status": "done",
+        "head_sha": "285ef309e36437c7ddf65ccddffec7927f388fe5",
+        "deviations": [
+          "cmd/lyx/testdata/test-budget.yaml"
+        ]
+      },
+      "cardShas": [
+        "285ef309e36437c7ddf65ccddffec7927f388fe5"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-binary-change-and-rules/e495df5d-7276-44c7-97aa-0e3437b51280/subagents/agent-ac471ba4b33fad670.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-binary-change-and-rules/e495df5d-7276-44c7-97aa-0e3437b51280/subagents/agent-a555678c495c686ca.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-binary-change-and-rules/e495df5d-7276-44c7-97aa-0e3437b51280/subagents/agent-a555678c495c686ca.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-binary-change-and-rules/e495df5d-7276-44c7-97aa-0e3437b51280/subagents/agent-ac471ba4b33fad670.jsonl"
   ]
 }

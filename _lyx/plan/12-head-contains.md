@@ -1,8 +1,8 @@
 # Card 12 — In-process "does HEAD hold this commit" read
 
 **Create:**
-- `plan:internal/gitrepo#Repo.HeadContains` -> `func (r *Repo) HeadContains(sha string) (bool, error)`
-- `plan:internal/fabricengine#HeadContains` -> `func HeadContains(worktreePath, sha string) (bool, error)`
+- `internal/gitrepo#Repo.HeadContains`
+- `internal/fabricengine#HeadContains`
 
 **Edit:**
 - `internal/gitrepo/blobread_integration_test.go`

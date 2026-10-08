@@ -1,8 +1,8 @@
 # Card 11 — The `Preflight` row reconciles a stale hub before its clean check
 
 **Create:**
-- `plan:internal/preflightshed#newPreflightWith` -> `func newPreflightWith(name, cwd string, opts hubreconcile.Options) shedengine.ShedProducer`
-- `plan:internal/preflightshed#reconcileRefusal` -> `func reconcileRefusal(err error) string`
+- `internal/preflightshed#newPreflightWith`
+- `internal/preflightshed#reconcileRefusal`
 
 **Edit:**
 - `internal/preflightshed#preflightProducer`
@@ -13,10 +13,10 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/hubgeom#ReconcileGeometry`
-- `plan:internal/hubreconcile#Ensure`
-- `plan:internal/hubreconcile#WorktreeError`
-- `plan:internal/hubreconcile#LockTimeoutError`
+- `internal/hubgeom#ReconcileGeometry`
+- `internal/hubreconcile#Ensure`
+- `internal/hubreconcile#WorktreeError`
+- `internal/hubreconcile#LockTimeoutError`
 - `internal/preflight#HubPresent`
 - `internal/preflight#Check`
 
