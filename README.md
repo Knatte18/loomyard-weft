@@ -39,7 +39,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ### Enhancements
 
-1. **Convergence: measure hub and driver interventions, fix at the source, hardening freezes** — [`convergence-plan`](design-convergence-plan.md) · enhancement
+1. **Convergence: measure hub and driver interventions, fix at the source, hardening freezes** — [`convergence-plan`](design-convergence-plan.md) · enhancement, orch, shed
    - Plan for lyx to converge rather than accumulate bugs: per-run intervention log, real-wiring tests, feature freezes
 1. **Parent-review gate: wait bound off the boundary, no mid-turn sends, live smoke** — [`parent-review-hardening`](design-parent-review-hardening.md) · enhancement, orch
    - Close the cases the first parent-review gate left open: expiry while the writer is mid-turn, sends into a running turn after restart, poll cost, and one live smoke run
