@@ -19,6 +19,10 @@ Autonomous mode: no operator answered in the pane; `ly:orch` sent one scope chan
 - Auto-accept at the cap with `review_on_budget: accept|escalate`: designed, then dropped by the operator's scope change.
 - The judge writing the carry-over as a fourth output file: changes the judge's three-file output contract and adds an LLM-written artifact where Go can derive the same list from the ledger.
 - Appending carry-over to `## Decisions` through `AppendDecision`: the entries are unverified findings, not decisions.
+- The Plan-Review and Webster-Review rubrics checking carry-over entries: both hold the record as the answer key, never the subject, so judging a record fix there would invert their measuring stick.
+- `discussionparser.Validate` as the carry-over write's bound: it checks heading presence only, which an entry inside `## Open risks` cannot change.
+- Comparing the bytes before and after the entry with the prior file as the write's bound: the write cuts those bytes from the prior file itself, so the comparison holds by construction; a re-read of the result (heading sequence, marker pairs, other entries) is the check that can fail.
+- The Plan-Review rubric left unchanged: its answer key is the whole record and licenses card scope from it, so a carry-over entry would read as licence without one sentence excluding it.
 - A separate carry-over sink per segment (plan overview, PR body): Describe and rework already read the decision record; a second sink duplicates it.
 - Batten reading circling decisions as a third `ChildDecision` kind: batten already leaves escalated children to the driver's relay, and a second actor would race `loom resume`.
 - A nested `segments:` map in `loom.yaml` for per-segment models: flat keys match the file's shape and its strict every-key-present loader.
