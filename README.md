@@ -94,6 +94,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - commitsNamedBy runs one git cat-file per candidate object; use cat-file --batch-check
 1. **Log the silent overview-frame fallback in rebaseline** — [`overview-frame-fallback-log`](design-overview-frame-fallback-log.md) · enhancement, webster
    - recordedOverviewFrame returns empty without a log when the baseline has no Card Index
+1. **Scan enforcing PATTERN-shuttle-stop** — [`shuttle-stop-scan`](design-shuttle-stop-scan.md) · enhancement, shuttle, reed
+   - No test enforces which packages may remove a shuttle run strand; add a static scan
 
 ### Features
 

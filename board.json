@@ -1378,6 +1378,22 @@
       "isolated": false,
       "brief": "recordedOverviewFrame returns empty without a log when the baseline has no Card Index",
       "body": "## Seen\n\nThe PR-Gate review of `webster-record-batch` (PR #473) found that `recordedOverviewFrame` in `internal/websterengine` returns an empty frame without logging when the stored baseline copy has no parseable Card Index, so the reason a rebaseline refuses on an old record is invisible.\n\n## Idea\n\nLog the fallback at Info with the baseline path, and name it in the rebaseline refusal.\n"
+    },
+    {
+      "id": 244,
+      "slug": "shuttle-stop-scan",
+      "title": "Scan enforcing PATTERN-shuttle-stop",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shuttle",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "No test enforces which packages may remove a shuttle run strand; add a static scan",
+      "body": "## Seen\n\nThe PR-Gate review of `shuttle-send` (PR #474) found `PATTERN-shuttle-stop` false against `orchcli`, and no Go test or scan names that entry, so nothing caught it.\n\n## Idea\n\nA static scan allows `RemoveStrand` calls on a shuttle run strand only in `shuttleengine` and the exceptions the entry names.\n"
     }
   ],
   "legacy_done": [
