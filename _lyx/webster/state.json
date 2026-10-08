@@ -1,0 +1,316 @@
+{
+  "runGuid": "da2f9a90d02ce0a4a4186935695f1f0d",
+  "planFingerprint": "ec2ddbe350f5c80040e55fac42d417859c1daa74f6d1056e7e5b5b07982b8448",
+  "planFileHashes": {
+    "00-overview.md": "17df40a9e02dc809ac1a55ab6d2257c1ba1b0a6017e57017531ae578b2ca7324",
+    "01-carry-over-write.md": "16d924212eda07ca75f7e66be2fc23318d26704739af4b32db846810101f7e38",
+    "02-bouncer-carry-over.md": "d6a43b028df0fc9e8bc945ee29b46fc126845ca7bf2a384526c5d86fd1a14600",
+    "03-carry-over-wiring.md": "a795fa53ce9e8a485d89144a96ec0be8072d9a1fc6ca2b50a26196b74a22399f",
+    "04-carry-over-consumers.md": "e18302df8e1700c1b04d89a1d1c8a35e91630d277dd5b13e17819c7ed2d6c39a",
+    "05-lighter-convergence-rule.md": "93228028cb9dcca9051411624c010d465d96f8d6e10ab93a4d4b80a5e65c0939",
+    "06-review-budget-three.md": "a8bf2e838f0b34a86f4f5dc3834d1d9ef2024a0d3647d471726bd4ce98b8bee8",
+    "07-segment-models.md": "c0818cd7b31a48dc8dfff9fec7220aed4a8b1508e0694b8ab52f13780e7d5805",
+    "08-fix-start.md": "07cc80d42f21f6d946a50667fe441b0b76684ef632eaf619f18d4ea3dacbf859",
+    "09-resume-circling.md": "d9cd8bbd49988509c9bb1b0bf6fe0e1acbe1706f7042b6b5783a32b04fdee833"
+  },
+  "partition": [
+    {
+      "cards": [
+        "01-carry-over-write",
+        "02-bouncer-carry-over",
+        "03-carry-over-wiring",
+        "04-carry-over-consumers",
+        "05-lighter-convergence-rule",
+        "06-review-budget-three"
+      ],
+      "profile": "cautious",
+      "estimate": 320732,
+      "breakdown": {
+        "weights": {
+          "master_base": 52000,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 53200,
+        "read_union": 139876,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 576,
+            "reads": {
+              "file:internal/discussionparser/doc.go": 132,
+              "package:internal/discussionparser": 2000,
+              "tests:internal/discussionparser": 2000
+            },
+            "messages": 25.5,
+            "written": 8226
+          },
+          {
+            "card": 2,
+            "card_text": 756,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3036,
+              "file:internal/shedadapters/bouncer_circling_test.go": 3756,
+              "file:internal/shedadapters/bouncer_commit_test.go": 2616,
+              "file:internal/shedadapters/bouncer_config_test.go": 1764,
+              "file:internal/shedadapters/bouncer_fixture_test.go": 2964,
+              "file:internal/shedadapters/bouncer_skip_test.go": 1452,
+              "file:internal/shedadapters/bouncerfiles.go": 5064,
+              "file:internal/shedadapters/doc.go": 3156,
+              "package:contracts/specs": 2000,
+              "package:internal/shedadapters": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 90,
+            "written": 27756
+          },
+          {
+            "card": 3,
+            "card_text": 564,
+            "reads": {
+              "file:contracts/recipes/loom-recipe.yaml": 4800,
+              "file:contracts/specs/shed-recipe-spec.md": 1224,
+              "file:internal/battencli/wire_seams_test.go": 3288,
+              "file:internal/loomengine/discussionpath_test.go": 720,
+              "file:internal/loomrecipe/bouncerrows_test.go": 336,
+              "file:internal/shedrecipe/entries_bouncer_test.go": 11448,
+              "file:internal/shedrecipe/seam_enforcement_test.go": 840,
+              "package:contracts/recipes": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 155,
+            "written": 47064
+          },
+          {
+            "card": 4,
+            "card_text": 288,
+            "reads": {
+              "file:contracts/stencils/claims_test.go": 7680,
+              "file:contracts/stencils/landing/landing-template-describe.md": 576,
+              "file:contracts/stencils/loom/loom-rubric-plan-review.md": 1056,
+              "file:contracts/stencils/loom/loom-template-plan.md": 2820,
+              "file:contracts/stencils/loom/loom-template-rework.md": 960,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/landing": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/landing": 2000,
+              "tests:contracts/stencils/loom": 2000
+            },
+            "messages": 33.5,
+            "written": 10338
+          },
+          {
+            "card": 5,
+            "card_text": 732,
+            "reads": {
+              "file:PATTERN.md": 1140,
+              "file:contracts/stencils/bouncer/bouncer-template-judge.md": 1896,
+              "file:contracts/stencils/claims_test.go": 7680,
+              "file:internal/shedadapters/bouncerfacts_test.go": 2844,
+              "file:internal/shedadapters/bouncerprompt_test.go": 1932,
+              "file:internal/shedadapters/doc.go": 3156,
+              "file:pattern/PATTERN-review-round.md": 96,
+              "package:.": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/bouncer": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/bouncer": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 85,
+            "written": 26232
+          },
+          {
+            "card": 6,
+            "card_text": 240,
+            "reads": {
+              "file:internal/loomengine/config_test.go": 4944,
+              "file:internal/loomengine/template.yaml": 180,
+              "package:internal/loomengine": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 26,
+            "written": 8040
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-segment-models",
+        "08-fix-start",
+        "09-resume-circling"
+      ],
+      "profile": "cautious",
+      "estimate": 354148,
+      "breakdown": {
+        "weights": {
+          "master_base": 52000,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 60200,
+        "read_union": 135668,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 504,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3036,
+              "file:docs/overview.md": 7944,
+              "file:internal/loomcli/wiring_test.go": 7860,
+              "file:internal/loomengine/config_test.go": 4944,
+              "file:internal/loomengine/review_test.go": 2256,
+              "file:internal/loomengine/template.yaml": 180,
+              "file:internal/shedrecipe/entries_burler_test.go": 7392,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 139,
+            "written": 42204
+          },
+          {
+            "card": 8,
+            "card_text": 636,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3036,
+              "file:docs/overview.md": 7944,
+              "file:internal/burlerengine/doc.go": 3960,
+              "file:internal/burlerengine/engine_test.go": 18552,
+              "file:internal/loomcli/wiring_test.go": 7860,
+              "file:internal/loomengine/config_test.go": 4944,
+              "file:internal/loomengine/template.yaml": 180,
+              "file:internal/shedrecipe/entries_burler_test.go": 7392,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 187,
+            "written": 56736
+          },
+          {
+            "card": 9,
+            "card_text": 840,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3036,
+              "file:contracts/stencils/bouncer/bouncer-template-escalation.md": 468,
+              "file:contracts/stencils/claims_test.go": 7680,
+              "file:docs/overview.md": 7944,
+              "file:internal/battenshed/innerrun_awaiting_test.go": 7272,
+              "file:internal/loomcli/circling_test.go": 1512,
+              "file:internal/loomcli/resume_test.go": 3552,
+              "file:internal/loomrecipe/bouncerrows.go": 444,
+              "file:internal/shedadapters/bouncer_circling_test.go": 3756,
+              "file:internal/shedadapters/bouncer_escalation_test.go": 3168,
+              "file:internal/shedadapters/circling_test.go": 2556,
+              "file:internal/shedadapters/doc.go": 3156,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/bouncer": 2000,
+              "package:docs": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedadapters": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/bouncer": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 195,
+            "written": 59340
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "863aa010c26054695c03142c84252682",
+  "masterSessionId": "83342516-ad21-4204-a987-6260fba6fcd0",
+  "batches": {
+    "1": {
+      "slug": "carry-over-write",
+      "cards": [
+        "01-carry-over-write",
+        "02-bouncer-carry-over",
+        "03-carry-over-wiring",
+        "04-carry-over-consumers",
+        "05-lighter-convergence-rule",
+        "06-review-budget-three"
+      ],
+      "cardHashes": {
+        "01-carry-over-write": "16d924212eda07ca75f7e66be2fc23318d26704739af4b32db846810101f7e38",
+        "02-bouncer-carry-over": "d6a43b028df0fc9e8bc945ee29b46fc126845ca7bf2a384526c5d86fd1a14600",
+        "03-carry-over-wiring": "a795fa53ce9e8a485d89144a96ec0be8072d9a1fc6ca2b50a26196b74a22399f",
+        "04-carry-over-consumers": "e18302df8e1700c1b04d89a1d1c8a35e91630d277dd5b13e17819c7ed2d6c39a",
+        "05-lighter-convergence-rule": "93228028cb9dcca9051411624c010d465d96f8d6e10ab93a4d4b80a5e65c0939",
+        "06-review-budget-three": "a8bf2e838f0b34a86f4f5dc3834d1d9ef2024a0d3647d471726bd4ce98b8bee8"
+      },
+      "startSha": "c0bf19c541b1b78f5bab47c98981282265bc4e37",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T09:38:09Z",
+      "sessionId": "83342516-ad21-4204-a987-6260fba6fcd0",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
