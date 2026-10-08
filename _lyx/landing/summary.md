@@ -1,84 +1,62 @@
-# shuttle: sends that land, and stops that are recorded
+# Shuttle sends land or retry; lyx-stopped runs are recorded stopped
 
-A text shuttle sends into an agent pane now lands, and when it cannot, the run retries instead of halting.
-A shuttle run that lyx itself stopped is recorded as stopped, so a later attach probe no longer halts on it.
+A text sent into an agent pane now waits for an idle session, settles before Enter, and confirms the submission within a time window.
+A send that cannot land fails with a typed error, and a start-time failure of that kind is a not-started run the shed retries instead of halting.
+A run whose strand lyx itself stopped is recorded as `stopped`, so a later attach probe no longer refuses on it.
 
 Closes #442
 Closes #443
 Closes #444
 
-## What changes
+## Send (`internal/shuttleengine`, `claudeengine`)
 
-- **Send waits for an idle session.**
-  Every verified send first waits, up to the new `send_ready_timeout_s` (default 60), until the pane reads idle and no `turn_start` signal follows the newest turn end in the events file.
-  An unmatched `turn_start` holds a send for at most 10 s against an idle pane, or until `TurnStartInterrupt` reports the turn interrupted.
-  A session that stays busy fails with the new `ErrSessionBusy` before any key is typed.
-  `Runner.Send` into a busy pane therefore waits instead of failing at once.
-- **Typed text settles before Enter.**
-  For an engine that reads its input box, shuttle types, reads the box until two reads one `submit_settle_ms` apart agree, then sends Enter.
-  An engine without that capability keeps the fixed choreography.
-- **Submission is confirmed in a time window.**
-  The new `submit_confirm_timeout_s` (default 30) bounds the window, which opens when typing begins.
-  After Enter the box is re-read at an interval doubling from `submit_redraw_settle_ms` up to 5 s, and an extra Enter goes out only into a box still holding the sent text.
-  `sendExtraEnters` is gone.
-  A `turn_start` past the pre-send offset confirms a submission early.
-  A submission still pending at the window's close, or a text that never appeared, fails with the new `ErrSubmissionNotLanded`.
-- **A failed send clears its own text.**
-  Before returning `ErrSubmissionNotLanded`, a send whose box holds copies of its text, a prefix of at least the needle's length, or a paste placeholder sends `C-u` (`ClearInputSequence`, `claudeengine`).
-  Only an engine with both the idle reading and the clear choreography clears.
-- **Send errors show the pane.**
-  `ErrSessionBusy` and `ErrSubmissionNotLanded` end with the last 15 non-blank lines of the final pane capture, so the shed status file and the loom halt note show the cause.
-- **A start-time send that does not land is a not-started run.**
-  A failed skill-load send or prompt delivery, and any other start failure past `AddStrand`, now goes through `abandonStartup`: record `died`, strand removed, error wrapping `ErrNotStarted` beside the send's sentinel.
-  Burler's attempt-2 retry and the agent-start transient mark apply unchanged; `shedengine.TransientAgentStart`'s doc comment widens to a session that never took its first input.
-  After `ErrSubmissionNotLanded`, start reads the session signals once more, and a `turn_start` past the pre-send offset makes the start succeed.
-- **Gate sends retry instead of ending the wait loop.**
-  The boundary is confirmed idle in fact before the gate sends, so a replayed `AttachGated` no longer types into a running turn.
-  A re-prompt that does not land spends no attempt and is re-sent on later ticks.
-  Inside the wait loop a send's idle wait and submit window both end by the run deadline.
-- **Shuttle owns stopping a run's strand.**
-  A new stop verb, reachable from a run handle and by strand guid, writes the record to the new record-only outcome `stopped` and then removes the strand.
-  Burler's half stop, webster's leftover-strand reclaim and attach's superseded-strand removal call it; burler's and webster's own strand removers are deleted.
-  Attach's only classification change is that `isTerminalOutcome` recognises `stopped`, so a stopped run reads respawn-eligible at any directory age.
-- **New `PATTERN-shuttle-stop`** pins that path.
-  The `PATTERN-completion-signal` background file and its enforcement test cover `stopped`.
-- `doc.go` for `shuttleengine`, `claudeengine`, `burlerengine` and `websterengine` follows, and the shuttle template carries the two new keys.
+- Every verified send first waits until the session is idle in fact: the pane shows the provider idle, and no `turn_start` hook signal follows the newest turn end in the run's events file.
+  The wait is bounded by the new key `send_ready_timeout_s` (default 60) and fails with `ErrSessionBusy` before any key is typed.
+  An unmatched `turn_start` (an interrupted turn, a missing `Stop` line) holds a send against an idle pane for at most 10 s, or less when the engine reports the turn interrupted.
+- For an engine that reads its input box, the typed text must read the same on two consecutive reads, one `submit_settle_ms` apart, before Enter is sent.
+- After Enter, the box is re-read with a doubling interval up to 5 s inside a window of `submit_confirm_timeout_s` (new key, default 30).
+  A further Enter goes out only into a box still holding the sent text.
+  `sendExtraEnters` is retired.
+  A submission not confirmed in the window fails with `ErrSubmissionNotLanded`, after the send clears its own text out of the box.
+- Both errors end with the last 15 non-blank lines of the final pane capture, so the halt note shows the cause.
+- Start: a skill-load or prompt send that fails with either sentinel tears the run down through `abandonStartup` and wraps `ErrNotStarted`, which already maps to the agent-start transient class.
+  Every other start failure past `AddStrand` takes the same teardown.
+  The `shedengine.TransientAgentStart` doc comment is widened to a session that never took its first input; no class or marking site is added.
+- Wait loop: the gate boundary is confirmed idle in fact before a send, a `turn_start` after it clears the boundary, and a re-prompt that fails with either sentinel is retried on later ticks without spending the gate's attempt budget.
+  A send inside the loop shares the time left to the run deadline.
+- The segment `/color` command that arrived with the merge of main now goes through the same send path after readiness, in `Start` and `Runner.TypeColor`.
+  A failed color send is logged and never fails the launch.
 
-## Design decisions
+## Stop (`stop.go`, burler, webster, attach)
 
-- `stopped` is a record-only outcome, never a `Result.Outcome`.
-  The stop verb keeps an already-terminal record's outcome and leaves `running` on a record whose output files all exist, so attach's file-contract-first branch still harvests a finished run (`PATTERN-completion-signal`).
-  One function, `stopOutcome` in `stop.go`, chooses `runOutcomeStopped`; the stop verb and a marked handle's finalize both go through it.
-- The record is written before the strand is removed.
-  A crash between the two leaves a terminal record over a live strand, which attach already treats as respawn-eligible; the reverse order would recreate #444.
-- `Run` gains a record mutex that guards the stop mark, `run.state.Outcome` and every save of `run.state`, so a mid-run `Wait` save cannot restore `running` over `stopped`.
-  The guid form reads and rewrites `run.json` from disk and has no in-process `Wait` to race.
-  A `Wait` in another process may still overwrite `stopped` with its own terminal outcome; either answer is terminal.
-- The idle wait reads only the raw `turn_start` signal, never the session-state fold.
-  It can delay a send or fail it as busy, and never ends, classifies or finalizes a run.
-- The 10 s override for an unmatched `turn_start`, `stopped` instead of reusing `died`, and widening `TransientAgentStart` instead of adding a class are auto-picks.
-  Whether a session that never took its first input deserves its own transient class is left to the operator.
-- Webster's reclaim moves onto the stop verb although it never hit the attach refusal, so one stop path exists.
-- Out of scope and unchanged: the unknown-run refusal in attach (a young `running` record with an untracked strand still refuses), `lyx reed remove` run by the operator, and `Runner.Inject`.
+- Shuttle gains one stop verb for a run's strand, by run handle and by strand guid.
+  It writes the record-only outcome `stopped` first, then removes the strand, so a crash between the two leaves a terminal record over a live strand, which attach already treats as respawn-eligible.
+- A record that is already terminal keeps its outcome, and a `running` record whose output files all exist keeps `running` so attach still harvests it as finished.
+- `Run` gains a record mutex that every save of `run.state` takes, so a later mid-run save cannot restore `running` over `stopped`.
+  Finalize takes its outcome from the one function `PATTERN-completion-signal` names, and `done` still wins when the output files exist.
+- Burler's half stop, webster's leftover-strand reclaim and attach's superseded-strand removal call the verb; burler's and webster's own strand removers are gone.
+- `isTerminalOutcome` recognising `stopped` is the only change to attach's classification.
+  The unknown-run refusal in attach is unchanged.
+- `PATTERN.md` gains `PATTERN-shuttle-stop`: no package outside `internal/shuttleengine` removes a shuttle run's strand except through the verb.
+  It names two exceptions: loomcli's removal of the loom driver's strand and orchcli's removal of the orch strand, neither of which any attach probe or `Wait` reads.
 
-## To check by hand
+## Design decisions to know
 
-- **Segment color is still typed raw.**
-  The decision record calls for `/color` (`playInputs(ColorSequence)` in `run.go` after `awaitStartup`, and `Runner.TypeColor` in `session.go`) to go through the new send path after readiness, with a failed color send logged and never failing the launch.
-  Both call sites still use `playInputs` in this diff.
-  After the merge with main (reed-view), three `loomcli` tmux-tier tests failed because the raw `/color` left text in the input box: `TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver`, `TestSmokeDriverStrand_ReentrantAcrossThreeBootstraps` and `TestSmokeStart_NeverAttachesAndAddsNoOperatorStrand`.
-  Run `go test -tags tmux ./internal/loomcli/... ./internal/shuttleengine/...` and confirm those pass; I did not run it.
-- **Color send can stall a prompt on the command line.**
-  A plan review left open that a color send sharing the send path could leave the following prompt typed into a box still holding the `/color` command; check the color path once it goes through the send.
-- **`PATTERN-shuttle-stop` omits the orch exception.**
-  The entry names only `loomcli`'s removal of the loom driver's strand as an exception.
-  `orchcli` also removes the orch strand raw, and the orch session does have a shuttle run record (`runner.Start`).
-  The decision is to name that second exception and leave orch out of scope; check the `PATTERN.md` line says so.
-- **#442's root cause is not reproduced live.**
-  The design covers the three candidates (unconsumed paste, session still starting, readiness probe passing too early); check that the pane tail in the next occurrence's error text identifies the cause.
-- **Idle reading on odd panes.**
-  A session whose idle reading never passes (a greyed suggestion, a pane too short to draw its box) now fails a send as busy after `send_ready_timeout_s` instead of typing.
-- **Hook lines.**
-  The signal condition depends on hook lines reaching the events file; a missing `Stop` line delays a send into an idle pane, or a gate boundary's restore, by up to the 10 s override.
-- **The clear can eat operator input.**
-  A failed send's `C-u` removes whatever the box holds that matches the send's text or shows as a paste placeholder, including text an operator types into the pane while the window is open.
+- Idle-in-fact reads only the raw `turn_start` and turn-end signals the hooks already write, never the session-state fold.
+  It can delay a send or fail it as busy; it never ends or classifies a run.
+- `ErrSubmissionNotLanded` also covers a text that never appeared in the pane, since its cause, a swallowed input, is the same miss.
+- The clear after a failed submission runs only for an engine with both the idle reading and the clear choreography, only when a box reading just before shows this send's text, and never with a key that interrupts a running turn.
+- `submit_settle_ms` and `submit_redraw_settle_ms` keep their keys, now the settle-read interval and the first backoff step; `send_ready_timeout_s` and `submit_confirm_timeout_s` reject 0 or negative.
+- `doc.go` of `shuttleengine`, `claudeengine`, `burlerengine` and `websterengine` describes the new behavior.
+
+## To check or run by hand
+
+- The root cause of #442 was not reproduced live; the next occurrence should show its cause in the pane lines in the error text.
+- `go test -tags tmux ./internal/loomcli/... ./internal/shuttleengine/...` must pass, in particular `TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver`, `TestSmokeDriverStrand_ReentrantAcrossThreeBootstraps` and `TestSmokeStart_NeverAttachesAndAddsNoOperatorStrand`; the merged raw `/color` typing broke them before the fix.
+- The segment color send in `internal/shuttleengine/run.go` (`Start`) and `session.go` (`Runner.TypeColor`) was carried over from a review finding: check that it goes through the send path after readiness and that a failed color send only logs.
+- `PATTERN-shuttle-stop` in `PATTERN.md` was carried over from a review finding: check that it lists both the loom driver and the orch strand exceptions and that no other call site removes a shuttle run's strand.
+- A session whose idle reading never passes (a greyed suggestion, a pane too short to draw its box) now fails a send as busy after `send_ready_timeout_s` instead of typing.
+  `lyx shuttle send` into a busy agent waits up to that window before failing.
+- A missing `UserPromptSubmit` hook line makes the signal condition vacuous, and a missing `Stop` line delays a send or a gate-boundary restore by up to 10 s.
+- The clear removes whatever the box holds that starts like the send's text or shows as a collapsed paste placeholder, including an operator's input typed while the window is open.
+- Whether a session that never took its first input deserves its own transient class instead of widening `TransientAgentStart` is left to the operator.
