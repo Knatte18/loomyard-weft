@@ -228,3 +228,25 @@ Nothing in the failure distinguishes "agent not ready to accept input" from "sub
 - Record the pane's last lines in the halt note so the cause (busy agent, modal prompt, unconsumed paste) is visible.
 
 Provenance: task `plan-glyph-precision`, from `loom-halt.md`.
+
+
+## From issue #443
+
+Imported from [issue #443](https://github.com/Knatte18/loomyard/issues/443).
+
+**What happened**
+During a loom run, the Discussion-Burler step (burler round 2, attempt 2) failed with a non-transient `producer` error from `shuttle: Send`:
+`the sent text is still pending in the input box after 2 extra Enter(s); the submission did not land`.
+The step was refused (`shed: step refused kind=producer`), so the skill load into the freshly started half never happened.
+The trace had just logged `burler: stopping a live half of a round` before the refusal.
+The only `fabric: mutation` records were a records commit and its push, so no half-finished add/remove was left behind.
+
+**Why it is abnormal**
+A Send into a live agent pane should either submit or fail with a retryable condition.
+Giving up after 2 extra Enters turns a timing/pane-readiness problem into a hard, non-transient producer failure that halts the run as `failed`.
+
+**What to do**
+Make `shuttle: Send` verify pane readiness before sending (or retry with backoff and re-check the input box) and classify the pending-input outcome as transient so the shed retries the step instead of halting.
+The driver recovered by re-stepping (`interrupt_policy: reinvoke`).
+
+Provenance: task `plan-glyph-precision`; notes: `driver-repair-20261008-discussion-burler-1.md`.
