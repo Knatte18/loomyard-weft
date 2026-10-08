@@ -20,7 +20,7 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/websterengine#AmendedCard`
+- `internal/websterengine#AmendedCard`
 
 **Intent:** An amendment recorded against the in-flight batch (card 19) forces exactly one re-run of that batch through the existing failed-batch recovery path (D6's recovery half).
 - Forcing the failure: when record-batch records a fork's report, or `PersistRecoveryTerminal` records a recovery's terminal digest, and the batch holds an `AmendedCards` entry with `Rendered: false`, the batch first runs every normal check and is then recorded failed whatever the report's status, through `failBatch`.

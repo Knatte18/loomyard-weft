@@ -1,7 +1,7 @@
 # Card 19 — amended-cards-rebaseline
 
 **Create:**
-- `plan:internal/websterengine#AmendedCard` -> `type AmendedCard struct`
+- `internal/websterengine#AmendedCard`
 
 **Edit:**
 - `internal/websterengine#BatchState`
