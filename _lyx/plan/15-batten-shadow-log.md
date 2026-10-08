@@ -9,7 +9,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/shuttleengine#ReadSessionStates`
+- `internal/shuttleengine#ReadSessionStates`
 
 **Intent:**
 Log each live run's session state where batten's activity reading decides a quiet or API-error notice (D5, third bullet), in shadow mode.

@@ -11,8 +11,8 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/shuttleengine#ReadSessionStates`
-- `plan:internal/shuttleengine#RunSessionState`
+- `internal/shuttleengine#ReadSessionStates`
+- `internal/shuttleengine#RunSessionState`
 
 **Intent:**
 Add the read-only verb `lyx shuttle state` (D6) under the existing `shuttle` cobra subtree.

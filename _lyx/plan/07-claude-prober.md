@@ -9,7 +9,7 @@
 **Create:**
 - `internal/shuttleengine/claudeengine/prober.go`
 - `internal/shuttleengine/claudeengine/prober_test.go`
-- `plan:internal/shuttleengine#SessionProber` -> `type SessionProber interface`
+- `internal/shuttleengine#SessionProber`
 
 **Uses:**
 - `internal/shuttleengine#Liveness`

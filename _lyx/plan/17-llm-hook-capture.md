@@ -5,7 +5,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/shuttleengine#ReadSessionStates`
+- `internal/shuttleengine#ReadSessionStates`
 - `internal/shuttleengine#SessionFold`
 
 **Intent:**

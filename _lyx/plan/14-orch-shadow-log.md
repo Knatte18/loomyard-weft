@@ -8,8 +8,8 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/shuttleengine#Runner.SessionState`
-- `plan:internal/shuttleengine#RunSessionState`
+- `internal/shuttleengine#Runner.SessionState`
+- `internal/shuttleengine#RunSessionState`
 
 **Intent:**
 Log the orch session's state beside the orch watcher's idle probe (D5, second bullet), in shadow mode.

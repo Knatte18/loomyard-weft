@@ -3,9 +3,9 @@
 **Create:**
 - `internal/shuttleengine/sessionread.go`
 - `internal/shuttleengine/sessionread_test.go`
-- `plan:internal/shuttleengine#ReadSessionStates` -> `func ReadSessionStates(cfg Config, anchorPath string, engine Engine, now time.Time) ([]RunSessionState, error)`
-- `plan:internal/shuttleengine#RunSessionState` -> `type RunSessionState struct`
-- `plan:internal/shuttleengine#Runner.SessionState` -> `func (r *Runner) SessionState(guid string) (RunSessionState, error)`
+- `internal/shuttleengine#ReadSessionStates`
+- `internal/shuttleengine#RunSessionState`
+- `internal/shuttleengine#Runner.SessionState`
 
 **Edit:**
 - `internal/shuttleengine/session.go`
@@ -17,7 +17,7 @@
 - `internal/shuttleengine#SessionState`
 - `internal/shuttleengine#SessionFacts`
 - `internal/shuttleengine#SessionSignalParser`
-- `plan:internal/shuttleengine#SessionProber`
+- `internal/shuttleengine#SessionProber`
 - `internal/shuttleengine#ReadAgentActivity`
 - `internal/shuttleengine#runDirRoot`
 - `internal/shuttleengine#loadRunState`
