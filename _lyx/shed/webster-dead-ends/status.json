@@ -1,12 +1,13 @@
 {
   "current_producer": "Plan-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Plan-Bouncer: round 4 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYXHUB/webster-dead-ends/_lyx/reviews/plan/round-4-escalation.md; decide with `lyx loom circling accept webster-dead-ends` or `lyx loom circling continue webster-dead-ends`, then run `lyx loom start` in the task worktree to resume",
+  "parent_notice": "Review segment of task `webster-dead-ends` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/webster-dead-ends/_lyx/reviews/plan/round-4-escalation.md` with a one-shot fork.",
   "pause_requested": false,
   "activity": {
     "now": "Plan-Bouncer",
-    "last": "Plan-Burler → bounced to Plan-Bouncer",
-    "wait": ""
+    "last": "Plan-Bouncer → awaiting",
+    "wait": "bouncer Plan-Bouncer: round 4 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYXHUB/webster-dead-ends/_lyx/reviews/plan/round-4-escalation.md; decide with `lyx loom circling accept webster-dead-ends` or `lyx loom circling continue webster-dead-ends`, then run `lyx loom start` in the task worktree to resume"
   },
   "history": [
     {
@@ -131,6 +132,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/webster-dead-ends/_lyx/reviews/plan/round-4-review.md",
       "at": "2026-10-08T09:35:14Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/webster-dead-ends/_lyx/reviews/plan/round-4-bouncer-ledger.md",
+      "at": "2026-10-08T09:36:10Z"
     }
   ],
   "product": {
