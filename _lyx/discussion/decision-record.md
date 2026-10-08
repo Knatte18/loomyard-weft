@@ -126,6 +126,12 @@ Decision: Caller coverage checks Delete member glyphs only. A Delete by file pat
 
 Rationale: Keeps the new check to member targets, the shape this task introduces; whole-file and package deletes stay with the existing checks and the build.
 
+### Added after Discussion (parent, 2026-10-08): No re-sign arrow for interface methods and fields
+
+Decision: The re-sign arrow is written only for members quarry.Name accepts as one Go declaration (funcs, methods, types, vars, consts). Interface methods and struct fields take no arrow, and D6's missing-arrow rubric finding exempts them.
+
+Rationale: quarry.Name cannot parse a bare field or interface method, so requiring the arrow there is unsatisfiable.
+
 ## Constraints
 
 - `PATTERN-glyph-conversion-chokepoint`: every glyph-to-path step uses `Glyph.UnitPath` or the resolved `Symbol.File`; no trimming or regex over a glyph string.
