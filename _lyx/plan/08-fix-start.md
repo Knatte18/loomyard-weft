@@ -1,10 +1,10 @@
 # Card 8 — fix-start
 
 **Create:**
-- `plan:internal/burlerengine#FixStart` -> `type FixStart string`
-- `plan:internal/burlerengine#FixStartParallel` -> `const FixStartParallel FixStart = "parallel"`
-- `plan:internal/burlerengine#FixStartAfterReview` -> `const FixStartAfterReview FixStart = "after-review"`
-- `plan:internal/burlerengine#Engine.decideRound` -> `func (e *Engine) decideRound(p *Profile, opts RunOpts, review, fix Handle, reviewEnd reviewerEnd, fixEnd fixerEnd, fixerDecided, skippedHandoff bool, stopErr error) (Result, error)`
+- `internal/burlerengine#FixStart`
+- `internal/burlerengine#FixStartParallel`
+- `internal/burlerengine#FixStartAfterReview`
+- `internal/burlerengine#Engine.decideRound`
 
 **Edit:**
 - `internal/burlerengine#RunOpts`

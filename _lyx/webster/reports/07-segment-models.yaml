@@ -1,0 +1,5 @@
+status: OK
+head_sha: 6569256ae48789143ac3227745033cea365f99d3
+deviations:
+  - cmd/lyx/testdata/test-budget.yaml
+  - internal/configreg/configreg_test.go

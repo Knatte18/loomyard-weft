@@ -1,7 +1,7 @@
 # Card 9 — resume-circling
 
 **Create:**
-- `plan:internal/shedadapters#PendingCirclingDecision` -> `func PendingCirclingDecision(runDir string) (bool, error)`
+- `internal/shedadapters#PendingCirclingDecision`
 
 **Edit:**
 - `internal/shedadapters/circling_test.go`
