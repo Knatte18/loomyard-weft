@@ -6,7 +6,7 @@
      stencil.FillOptional requires the three original ones non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
      parent_directive is a third optional marker, rendered by internal/parentdirective.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=82a5a3ce72ce2ac138656b71dfc036a12344c5fa3c5b65921a38d0c996f5d9bb -->
+lyx-stencil: sha256=0341350d1bdc3d73b6b2347246faee152ee03c42a9485380ebc49bceccedef84 -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -170,6 +170,7 @@ Every `Verify:`/`verify:` value — a card's optional `**Verify:**` and the plan
 the plan-level `## verify:` is the single integration check run once at the end of the whole plan.
 A per-card `**Verify:**` is exceptional rather than routine, written only for what a package-scoped automatic test run cannot catch on its own — the plan-level `## verify:` section is the single integration check for the whole plan.
 The plan-level `## verify:` section must cover every package any card targets, running each package's tests including its hermetic build-tagged tests (for example `-tags integration`), either by naming each package or by a pattern that covers them (`./...`).
+A nested module's packages are tested with `go -C <module>` and module-relative package paths; `verify-nested-module` in `{{.specs_dir}}/loom/loom-plan-spec.md` names the form the gate refuses.
 The `llm` tag, which gates tests that spawn a real LLM, is compiled rather than run (for example `go vet -tags llm <packages>`).
 A plan's `## verify:` runs, in this order, `go build ./...`, `go vet` under each of `-tags integration`, `-tags tmux` and `-tags llm`, the untagged tier (`go test`), then the `integration` tier (`go test -tags integration`).
 The `tmux` tier is compiled by `go vet -tags tmux` and never run by the plan, since Publish runs it through landing config's `publish_verify`.
