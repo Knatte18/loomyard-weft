@@ -1,6 +1,6 @@
 # Webster: recovery never dead-ends, stale config fails at the start, a computed Merriam base
 
-`webster-recovery` · Task · bug, enhancement, webster
+`webster-dead-ends` · Task · bug, enhancement, webster
 
 ## Goal
 
