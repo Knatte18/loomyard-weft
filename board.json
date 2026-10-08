@@ -1282,7 +1282,9 @@
       "title": "Loom resume at Publish refuses the dirty worktree left by its own staged merge-in, so the run cannot recover",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "loom",
+        "fabric"
       ],
       "issues": [
         471

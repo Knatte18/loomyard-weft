@@ -1,6 +1,6 @@
 # Loom resume at Publish refuses the dirty worktree left by its own staged merge-in, so the run cannot recover
 
-`publish-resume-own-merge` · Note · bug
+`publish-resume-own-merge` · Note · bug, loom, fabric
 
 Imported from [issue #471](https://github.com/Knatte18/loomyard/issues/471).
 
