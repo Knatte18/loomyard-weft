@@ -897,6 +897,22 @@
       "isolated": false,
       "brief": "A record-batch refusal unrelated to the report (a config-load error) leaves the batch begun with a report, and begin-batch then refuses",
       "body": "Imported from [issue #441](https://github.com/Knatte18/loomyard/issues/441).\n\n**What happened**\nAfter `lyx webster record-batch` failed on a config-load error (see the batcher.yaml stale-key issue), `lyx webster begin-batch 1` was refused with: `batch ... already has a report at _lyx/webster/reports/\u003cbatch\u003e.yaml and state.json records the batch as begun and not terminal — begin-batch never overwrites finished work; a report left behind by a crashed session is consumed by lyx webster record-batch 1 (or lyx webster recover-batch 1 for a recovery batch), and a stuck batch escalates via lyx webster recover-batch 1 (which archives the report)`.\n\n**Why it is abnormal**\nA record-batch refusal that is not about the report itself (here a config-load failure) leaves the batch begun with a report on disk, so the natural retry path through begin-batch is blocked.\nThe refusal message lists several remedies without saying which applies after a record-batch config failure, and the Webster session ended up in a dead end that needed the operator side to intervene.\n\n**What to do**\n- Make record-batch fail before touching batch state when its config does not load, or make the state recoverable by re-running record-batch once the config is fixed.\n- Have the begin-batch refusal say which remedy applies given the recorded state (for example, \"re-run record-batch after fixing config\" versus \"recover-batch\").\n\nProvenance: task slug `lifecycle-waits`; notes `webster-refusal-begin-batch.md`, `loom-halt.md`.\n"
+    },
+    {
+      "id": 187,
+      "slug": "stencil-drift-behind-main",
+      "title": "stencilstore: a pair branched before the last deploy warns source-ahead and asks for a deploy",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        445
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #445](https://github.com/Knatte18/loomyard/issues/445).\n\nSeen: `lyx loom status` in each of three task pairs (plan-glyph-precision, shuttle-state, reed-view) logs\n`stencilstore: board copy has drifted from worktree source; the board copy is untouched and a binary older than the source deployed it -- run a production deploy (update-plugins.sh)` with `stencil=webster-template-master class=source-ahead`.\n\nThe pairs branched from main at fd5b0f58e; main and prod then moved to c0bf19c54, which changed `contracts/stencils/webster/webster-template-master.md`.\nThe installed binary is c0bf19c54 and the board copy matches c0bf19c54, so the pair's source is behind the board copy, not ahead, and a deploy fixes nothing.\nThe prime logs no warning.\n\nExpected: a worktree whose source is older than the board copy (a pair that branched before the last deploy) is not classified source-ahead and does not ask for a production deploy; at most it notes that the pair is behind main.\n\nWorkaround: none needed; the warning is ignored until the pairs sync with main at Finalize.\n"
     }
   ],
   "legacy_done": [
