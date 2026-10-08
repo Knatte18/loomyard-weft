@@ -250,6 +250,13 @@ Rationale: No attach probe or Wait reads the orch run record, the same reasoning
 - D3's clear removes whatever the box holds that matches this send's text; an operator who types or pastes into the pane while the send's window is open loses that input when it starts like the send's text or shows as a collapsed paste placeholder.
 - D4 widens `TransientAgentStart` on an auto-pick; whether a session that never took its first input deserves its own class instead awaits the operator (support log Q8).
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - color-send-stalls-prompt-on-command-line (class design, severity MEDIUM, open in rounds 2)
+  - shuttle-stop-entry-lacks-orch-exception (class decision, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A send into a pane that shows a running turn or a non-empty draft does not type until the pane reads idle, and fails with `ErrSessionBusy` carrying the pane's last lines when the window passes.
