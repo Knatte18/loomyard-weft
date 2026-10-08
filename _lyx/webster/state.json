@@ -1,0 +1,313 @@
+{
+  "runGuid": "5d2786d21330d8b5ed70e7e3f8f7b618",
+  "planFingerprint": "301372a45a300ca775d0a8f930286c3d60e6032503dbed28ea58dd8c2c098f1a",
+  "planFileHashes": {
+    "00-overview.md": "148f7880c1cec5c51dc2a3f83f0745c2bd8b1ad1b8303b1bca905d7ee2645d93",
+    "01-glyphchain-plan-gate.md": "087784a5890527335117595c0e6a646ec28a14d8faf4ee1b720bdb3298891eb3",
+    "02-glyphchain-delta-legs.md": "abb2b1306272931f97dd132946fa66e7e3e39dad2a108c3ffba5062e85fb5fdd",
+    "03-rename-interface-method.md": "9711104cd7b027c1f785e4ceef8ccfad50fbbc1e1aa2a308d80ceb92fa878a90",
+    "04-rename-multi-name-spec.md": "90465ad9a9055b4dcc95f72d80f6f23a07a0925d4d63e390b6aa436324b3cd68",
+    "05-retire-cross-card-containment.md": "cccaf849bb87d145015f385c48201144651401ac7cdad3d5bac127d00fc4c643",
+    "06-retire-handle-unreferenced.md": "1965b8190cd734130c605cd8485a52482efcce55be3689d5d383e8c4d70dd3a4",
+    "07-redundant-package-target.md": "4b9b39c2673abc92105a63cf29c187e86113e9ee63b97bf7e2b760ed87bdb7a7",
+    "08-redundant-file-target.md": "501c4b5ea38aea0508a67fe67e5e80630c17a4d775f33a5da79b2d3d868b27ec",
+    "09-resign-arrow-parse.md": "a9d4fb3e5742af7caf28e95708d1545d87d7995131e1604b796031d5001ff87c",
+    "10-resign-head-match.md": "f5043295db326275bff44837d409522c95da7c5b9388e9682b674ece4ea86994",
+    "11-caller-coverage.md": "446a998ce30a6a4809c8aff04ed2dce4f58b64dccb3cdd30e96916fccdbcafec",
+    "12-plan-stencil-and-rubric.md": "bff180d27f88386575a9040b94cf6a92241c10d21bf327b63b2eac7913834a6a"
+  },
+  "partition": [
+    {
+      "cards": [
+        "01-glyphchain-plan-gate",
+        "02-glyphchain-delta-legs",
+        "03-rename-interface-method",
+        "04-rename-multi-name-spec",
+        "05-retire-cross-card-containment",
+        "06-retire-handle-unreferenced"
+      ],
+      "profile": "cautious",
+      "estimate": 263052,
+      "breakdown": {
+        "weights": {
+          "master_base": 52000,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 53200,
+        "read_union": 99824,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 636,
+            "reads": {
+              "package:internal/planglyph": 2000,
+              "package:internal/planglyph/testdata/glyphchain": 2000,
+              "package:internal/planglyph/testdata/glyphchain/cmd/tool": 2000,
+              "package:internal/planglyph/testdata/glyphchain/dirname": 2000,
+              "package:internal/planglyph/testdata/glyphchain/shapes": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/planglyph/testdata/glyphchain": 2000,
+              "tests:internal/planglyph/testdata/glyphchain/cmd/tool": 2000,
+              "tests:internal/planglyph/testdata/glyphchain/dirname": 2000,
+              "tests:internal/planglyph/testdata/glyphchain/shapes": 2000
+            },
+            "messages": 60,
+            "written": 18636
+          },
+          {
+            "card": 2,
+            "card_text": 348,
+            "reads": {
+              "package:internal/planglyph": 2000,
+              "tests:internal/planglyph": 2000
+            },
+            "messages": 28,
+            "written": 8748
+          },
+          {
+            "card": 3,
+            "card_text": 216,
+            "reads": {
+              "package:internal/planglyph": 2000,
+              "tests:internal/planglyph": 2000
+            },
+            "messages": 26,
+            "written": 8016
+          },
+          {
+            "card": 4,
+            "card_text": 216,
+            "reads": {
+              "package:internal/planglyph": 2000,
+              "tests:internal/planglyph": 2000
+            },
+            "messages": 26,
+            "written": 8016
+          },
+          {
+            "card": 5,
+            "card_text": 528,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 7044,
+              "file:internal/planglyph/containment.go": 2172,
+              "file:internal/planglyph/containment_test.go": 2568,
+              "file:internal/planglyph/doc.go": 864,
+              "file:internal/planglyph/status_enforcement_test.go": 3348,
+              "file:internal/planparser/containment.go": 1368,
+              "file:internal/planparser/containment_test.go": 1488,
+              "file:internal/planparser/shape.go": 3084,
+              "file:internal/planparser/validate.go": 14760,
+              "package:contracts/specs": 2000,
+              "package:internal/planglyph": 2000,
+              "package:internal/planparser": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/planparser": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 147.5,
+            "written": 44778
+          },
+          {
+            "card": 6,
+            "card_text": 384,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 7044,
+              "file:internal/planparser/handle.go": 2568,
+              "file:internal/planparser/handle_test.go": 3876,
+              "file:internal/planparser/validate.go": 14760,
+              "file:internal/planparser/validate_test.go": 22356,
+              "package:contracts/specs": 2000,
+              "package:internal/planglyph": 2000,
+              "package:internal/planparser": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 71.5,
+            "written": 21834
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-redundant-package-target",
+        "08-redundant-file-target",
+        "09-resign-arrow-parse",
+        "10-resign-head-match",
+        "11-caller-coverage",
+        "12-plan-stencil-and-rubric"
+      ],
+      "profile": "cautious",
+      "estimate": 296444,
+      "breakdown": {
+        "weights": {
+          "master_base": 52000,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 60200,
+        "read_union": 125316,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 480,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 7044,
+              "file:internal/planparser/shape.go": 3084,
+              "file:internal/planparser/validate.go": 14760,
+              "file:internal/planparser/validate_test.go": 22356,
+              "package:contracts/specs": 2000,
+              "package:internal/planglyph": 2000,
+              "package:internal/planparser": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 55.5,
+            "written": 17130
+          },
+          {
+            "card": 8,
+            "card_text": 588,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 7044,
+              "file:internal/planglyph/doc.go": 864,
+              "file:internal/planparser/parse_test.go": 12300,
+              "file:internal/planparser/testdata/goodplan/02-json-flag.md": 180,
+              "file:internal/planparser/validate_test.go": 22356,
+              "package:contracts/specs": 2000,
+              "package:internal/planglyph": 2000,
+              "package:internal/planparser": 2000,
+              "package:internal/planparser/testdata/goodplan": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/planparser": 2000,
+              "tests:internal/planparser/testdata/goodplan": 2000
+            },
+            "messages": 91.5,
+            "written": 28038
+          },
+          {
+            "card": 9,
+            "card_text": 408,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 7044,
+              "file:internal/planparser/doc.go": 1392,
+              "file:internal/planparser/parse.go": 8772,
+              "file:internal/planparser/parse_test.go": 12300,
+              "file:internal/planparser/shape.go": 3084,
+              "file:internal/planparser/validate.go": 14760,
+              "file:internal/planparser/validate_test.go": 22356,
+              "package:contracts/specs": 2000,
+              "package:internal/planparser": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 69.5,
+            "written": 21258
+          },
+          {
+            "card": 10,
+            "card_text": 528,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 7044,
+              "file:internal/planglyph/doc.go": 864,
+              "package:contracts/specs": 2000,
+              "package:internal/planglyph": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/planglyph": 2000
+            },
+            "messages": 44.5,
+            "written": 13878
+          },
+          {
+            "card": 11,
+            "card_text": 888,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 7044,
+              "file:internal/planglyph/deleteorder.go": 3780,
+              "file:internal/planglyph/doc.go": 864,
+              "package:contracts/specs": 2000,
+              "package:internal/planglyph": 2000,
+              "package:internal/planglyph/testdata/glyphchain/callees": 2000,
+              "package:internal/planglyph/testdata/glyphchain/callers": 2000,
+              "package:internal/planglyph/testdata/glyphchain/other": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/planglyph/testdata/glyphchain/callees": 2000,
+              "tests:internal/planglyph/testdata/glyphchain/callers": 2000,
+              "tests:internal/planglyph/testdata/glyphchain/other": 2000
+            },
+            "messages": 76.5,
+            "written": 23838
+          },
+          {
+            "card": 12,
+            "card_text": 336,
+            "reads": {
+              "file:contracts/stencils/claims_test.go": 7680,
+              "file:contracts/stencils/loom/loom-rubric-plan-review.md": 1056,
+              "file:contracts/stencils/loom/loom-template-plan.md": 2820,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000
+            },
+            "messages": 21.5,
+            "written": 6786
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "71100a768184102b72d92234f4f4324c",
+  "masterSessionId": "a43a914a-ebed-4748-a0a5-ff84991042f6",
+  "batches": {
+    "1": {
+      "slug": "glyphchain-plan-gate",
+      "cards": [
+        "01-glyphchain-plan-gate",
+        "02-glyphchain-delta-legs",
+        "03-rename-interface-method",
+        "04-rename-multi-name-spec",
+        "05-retire-cross-card-containment",
+        "06-retire-handle-unreferenced"
+      ],
+      "cardHashes": {
+        "01-glyphchain-plan-gate": "087784a5890527335117595c0e6a646ec28a14d8faf4ee1b720bdb3298891eb3",
+        "02-glyphchain-delta-legs": "abb2b1306272931f97dd132946fa66e7e3e39dad2a108c3ffba5062e85fb5fdd",
+        "03-rename-interface-method": "9711104cd7b027c1f785e4ceef8ccfad50fbbc1e1aa2a308d80ceb92fa878a90",
+        "04-rename-multi-name-spec": "90465ad9a9055b4dcc95f72d80f6f23a07a0925d4d63e390b6aa436324b3cd68",
+        "05-retire-cross-card-containment": "cccaf849bb87d145015f385c48201144651401ac7cdad3d5bac127d00fc4c643",
+        "06-retire-handle-unreferenced": "1965b8190cd734130c605cd8485a52482efcce55be3689d5d383e8c4d70dd3a4"
+      },
+      "startSha": "fd5b0f58e695f987453988710e0927767cf7bbb4",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T07:46:57Z",
+      "sessionId": "a43a914a-ebed-4748-a0a5-ff84991042f6",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
