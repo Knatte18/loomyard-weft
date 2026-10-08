@@ -675,7 +675,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 17,
   "masterStrand": "b98b3a0241f2428ccaf434b2697c1951",
   "masterSessionId": "97cf9074-5729-4d7d-8666-4aae19848abd",
   "batches": {
@@ -757,6 +757,25 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-dead-ends/97cf9074-5729-4d7d-8666-4aae19848abd/subagents/agent-a3fe2de8632476702.jsonl"
       ]
+    },
+    "17": {
+      "slug": "retire-fresh-after-reset",
+      "cards": [
+        "17-retire-fresh-after-reset",
+        "18-recovery-uncommitted-paths",
+        "19-amended-cards-rebaseline"
+      ],
+      "cardHashes": {
+        "17-retire-fresh-after-reset": "057c5f319a00f94dac7dd6dd0f74d777dc8a1b6be18fee731936553a17a8e480",
+        "18-recovery-uncommitted-paths": "09f0aec17d7553aaf2bfec2798c085a04d1d6397a9e0f4765b6b804ab7bdd084",
+        "19-amended-cards-rebaseline": "fe8231ccf5fa839077754dc8ee6d02b05f924125a1e8d55a376e61bc2c678bbe"
+      },
+      "startSha": "98a42f9cc6d46ee82d7dd38b1e4a8465c2770d2b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T11:51:47Z",
+      "sessionId": "97cf9074-5729-4d7d-8666-4aae19848abd",
+      "terminal": false,
+      "status": ""
     },
     "6": {
       "slug": "webster-config-invalid",
