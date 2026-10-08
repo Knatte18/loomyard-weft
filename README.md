@@ -83,6 +83,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Replace the one collapse-all-but-the-newest rule with per-strand sizing: content-sized panes like the runs overview, and parallel agents that share space evenly
 1. **Compare fanned and solo review rounds from their usage records** — [`fan-usage-report`](design-fan-usage-report.md) · enhancement, burler
    - A report over round usage records for the fan-on decision; a lost usage record shows in the facts
+1. **Configurable file log level in logger.yaml** — [`logger-file-level`](design-logger-file-level.md) · enhancement, config
+   - Trace files carry only high-level messages and logger.yaml sets no level; add a file log level so most of lyx can be traced on demand
 
 ### Features
 

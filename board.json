@@ -1211,6 +1211,21 @@
       "isolated": false,
       "brief": "Gates, forks and agents ran go build and go test with no hub-wide bound; with four runs this exhausted memory and froze the machine",
       "body": "## Seen\n\nOn 2026-10-08, from 19:34 to 20:07 CEST, Go builds and test suites ran with no break, from several sources at once.\nThe sources were webster implementer forks, lyx's own gates (verify, lint-comments, Preflight), the orch and a hub fix agent, and newly seeded pairs.\nNothing bounds how many run at once across the hub.\nWith four runs in flight, the user slice reached its 16 GiB `MemoryHigh` with swap full, reclaim thrashed, and the machine froze until a hard reset.\n\n## Idea\n\nA hub-wide limit on concurrent `go build` and `go test` runs: lyx's gates take a slot from a hub lock before they build or test, wait their turn instead of piling up, and log the wait.\nAgents' own test commands reach the same limit through a lyx wrapper verb the stencils name.\n"
+    },
+    {
+      "id": 234,
+      "slug": "logger-file-level",
+      "title": "Configurable file log level in logger.yaml",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "config"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Trace files carry only high-level messages and logger.yaml sets no level; add a file log level so most of lyx can be traced on demand",
+      "body": "## Seen\n\nThe trace files written for each lyx invocation hold only high-level messages, and `_lyx/config/logger.yaml` sets only retention (`trace_retention_count`, `trace_retention_days`).\nThe file log has no configurable level, so after the 2026-10-08 crash the traces could not show what lyx's subcommands did.\nActivity-ranked pruning also left the per-minute invocation counts incomplete.\n\n## Idea\n\n`logger.yaml` gains a `level` key (error, warn, info, debug) for the file trace, independent of the `-v` console verbosity, with info as the default.\nEvery engine logs its decisions and external calls at info or debug, so raising the level makes most of what lyx does traceable without a rebuild.\nThe spawn audit stays always on, whatever the level, because it cannot be turned on after a crash.\n"
     }
   ],
   "legacy_done": [
