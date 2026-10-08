@@ -280,7 +280,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "71100a768184102b72d92234f4f4324c",
   "masterSessionId": "a43a914a-ebed-4748-a0a5-ff84991042f6",
   "batches": {
@@ -322,6 +322,31 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-glyph-precision/a43a914a-ebed-4748-a0a5-ff84991042f6/subagents/agent-a73b4b74774ea8e4c.jsonl"
       ]
+    },
+    "7": {
+      "slug": "redundant-package-target",
+      "cards": [
+        "07-redundant-package-target",
+        "08-redundant-file-target",
+        "09-resign-arrow-parse",
+        "10-resign-head-match",
+        "11-caller-coverage",
+        "12-plan-stencil-and-rubric"
+      ],
+      "cardHashes": {
+        "07-redundant-package-target": "4b9b39c2673abc92105a63cf29c187e86113e9ee63b97bf7e2b760ed87bdb7a7",
+        "08-redundant-file-target": "501c4b5ea38aea0508a67fe67e5e80630c17a4d775f33a5da79b2d3d868b27ec",
+        "09-resign-arrow-parse": "a9d4fb3e5742af7caf28e95708d1545d87d7995131e1604b796031d5001ff87c",
+        "10-resign-head-match": "f5043295db326275bff44837d409522c95da7c5b9388e9682b674ece4ea86994",
+        "11-caller-coverage": "446a998ce30a6a4809c8aff04ed2dce4f58b64dccb3cdd30e96916fccdbcafec",
+        "12-plan-stencil-and-rubric": "bff180d27f88386575a9040b94cf6a92241c10d21bf327b63b2eac7913834a6a"
+      },
+      "startSha": "cb415e736b0decba0df6e812c1265e7d19c77049",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T07:57:55Z",
+      "sessionId": "a43a914a-ebed-4748-a0a5-ff84991042f6",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
