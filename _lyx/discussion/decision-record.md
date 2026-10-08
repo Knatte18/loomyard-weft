@@ -229,6 +229,12 @@ Decision: Every reed step reads the strand window's pane list and its physical o
 
 Rationale: A zoomed pane reports pane_top 0, so a pane_top sort maps planned heights to the wrong panes.
 
+### Added after Discussion (parent, 2026-10-08): Re-zoom trigger covers every pane-changing step
+
+Decision: The zoom bracket wraps every reed step that changes the strand window's panes, layout or active pane, reading window_zoomed_flag at step start; split-window, kill-pane, select-pane without -Z, select-layout and resize-pane -y are listed as the reason.
+
+Rationale: tmux unzooms on more commands than the two D1 names, and a step that splits or kills then returns early would otherwise drop the zoom.
+
 ## Constraints
 
 - `PATTERN-told-geometry`: `reedengine` derives no path and imports no `lyxcwd`; D12's sorted list of worktree names and revive functions is told by the hub-mode teller.
