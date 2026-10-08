@@ -913,6 +913,22 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #445](https://github.com/Knatte18/loomyard/issues/445).\n\nSeen: `lyx loom status` in each of three task pairs (plan-glyph-precision, shuttle-state, reed-view) logs\n`stencilstore: board copy has drifted from worktree source; the board copy is untouched and a binary older than the source deployed it -- run a production deploy (update-plugins.sh)` with `stencil=webster-template-master class=source-ahead`.\n\nThe pairs branched from main at fd5b0f58e; main and prod then moved to c0bf19c54, which changed `contracts/stencils/webster/webster-template-master.md`.\nThe installed binary is c0bf19c54 and the board copy matches c0bf19c54, so the pair's source is behind the board copy, not ahead, and a deploy fixes nothing.\nThe prime logs no warning.\n\nExpected: a worktree whose source is older than the board copy (a pair that branched before the last deploy) is not classified source-ahead and does not ask for a production deploy; at most it notes that the pair is behind main.\n\nWorkaround: none needed; the warning is ignored until the pairs sync with main at Finalize.\n"
+    },
+    {
+      "id": 188,
+      "slug": "circling-resume-message",
+      "title": "loom resume after circling accept names approve/reject, and circling accept says resume with loom start",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        446
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #446](https://github.com/Knatte18/loomyard/issues/446).\n\nSeen in plan-glyph-precision (batten run, Discussion-Bouncer round 5 escalated, cause budget):\n\n- `lyx loom circling accept plan-glyph-precision` printed `\"resume\":\"lyx loom start\"`.\n- `lyx loom resume` in the task worktree then refused: \"the run is awaiting a decision, which resume does not give; run \\\"lyx loom approve\\\" or \\\"lyx loom reject\\\" ...\", although the decision was already recorded and approve/reject are PR-Gate verbs, not the circling decision.\n- The run moved on to Plan-Write only after the driver stepped it.\n\nExpected: after `circling accept`/`continue` under a watching batten run, both outputs name the same next step (the driver's step, or `lyx loom resume`), and `loom resume` either resumes on the recorded circling decision or says that the decision is recorded and the driver will step it.\nRole.md tells the hub to run `lyx loom resume` after a circling decision, which this refusal contradicts.\n"
     }
   ],
   "legacy_done": [
