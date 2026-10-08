@@ -1,0 +1,10 @@
+status: OK
+head_sha: 7fdef36fcf3a3eef905222a340d9e1a248e14cde
+deviations:
+  - internal/reedengine/lock.go
+  - internal/hubgeom/hubgeom_test.go
+  - internal/shuttleengine/startup_test.go
+  - internal/testkit/shuttlefake/shuttlefake_test.go
+  - internal/frictionengine/seam_enforcement_test.go
+  - internal/mergeresolve/seam_enforcement_test.go
+  - internal/landingshed/seam_enforcement_test.go
