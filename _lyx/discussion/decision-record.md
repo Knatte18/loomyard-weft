@@ -163,6 +163,12 @@ Rationale: the old comment's premise (both other segments solo) is false once D1
   - exclusion-eligibility-unran-lens (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - card14-gated-fork-wait-already-pinned (class consistency, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - With `discussion_fan` and `plan_fan` set, Discussion-Burler and Plan-Burler rounds run with that fan and their Bouncers' judge calls ask for `exclude_lenses` while their seed calls do not; with them empty, the rounds run solo and the Bouncers' prompts name no `exclude_lenses`.
