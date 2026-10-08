@@ -12,7 +12,7 @@
 - `plan:internal/shuttleengine#SessionProber` -> `type SessionProber interface`
 
 **Uses:**
-- `plan:internal/shuttleengine#Liveness`
+- `internal/shuttleengine#Liveness`
 - `internal/shuttleengine/claudeengine#claudeHomeDir`
 - `internal/shuttleengine/claudeengine#Claude.TurnEndActivity`
 

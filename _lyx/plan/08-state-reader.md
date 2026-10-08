@@ -14,9 +14,9 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/shuttleengine#SessionState`
-- `plan:internal/shuttleengine#SessionFacts`
-- `plan:internal/shuttleengine#SessionSignalParser`
+- `internal/shuttleengine#SessionState`
+- `internal/shuttleengine#SessionFacts`
+- `internal/shuttleengine#SessionSignalParser`
 - `plan:internal/shuttleengine#SessionProber`
 - `internal/shuttleengine#ReadAgentActivity`
 - `internal/shuttleengine#runDirRoot`

@@ -6,8 +6,8 @@
 - `internal/shuttleengine/doc.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#SessionSignalParser`
-- `plan:internal/shuttleengine#SessionSignal`
+- `internal/shuttleengine#SessionSignalParser`
+- `internal/shuttleengine#SessionSignal`
 
 **Intent:**
 Make `ReadAgentActivity` ignore every events-file line `ParseEvents` skips, before card 5 adds the new hooks and stamp lines (the added decision "Batten activity ignores lines ParseEvents skips"), so shadow mode changes no batten notice.

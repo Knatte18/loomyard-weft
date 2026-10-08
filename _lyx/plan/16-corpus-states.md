@@ -11,8 +11,8 @@
 - `internal/shuttleengine/claudeengine/testdata/corpus/skill-load-turn-end/case.yaml`
 
 **Uses:**
-- `plan:internal/shuttleengine/claudeengine#Claude.ParseSessionSignals`
-- `plan:internal/shuttleengine#SessionFold.Fold`
+- `internal/shuttleengine/claudeengine#Claude.ParseSessionSignals`
+- `internal/shuttleengine#SessionFold.Fold`
 
 **Intent:**
 Extend the replay corpus so every case also states the session state its events reach, with every existing reading unchanged.

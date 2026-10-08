@@ -4,10 +4,10 @@
 - `internal/shuttleengine/sessionsignal.go`
 - `internal/shuttleengine/claudeengine/signals.go`
 - `internal/shuttleengine/claudeengine/signals_test.go`
-- `plan:internal/shuttleengine#SessionSignal` -> `type SessionSignal struct`
-- `plan:internal/shuttleengine#SessionSignalKind` -> `type SessionSignalKind string`
-- `plan:internal/shuttleengine#SessionSignalParser` -> `type SessionSignalParser interface`
-- `plan:internal/shuttleengine/claudeengine#Claude.ParseSessionSignals` -> `func (c *Claude) ParseSessionSignals(data []byte) ([]shuttleengine.SessionSignal, int)`
+- `internal/shuttleengine#SessionSignal`
+- `internal/shuttleengine#SessionSignalKind`
+- `internal/shuttleengine#SessionSignalParser`
+- `internal/shuttleengine/claudeengine#Claude.ParseSessionSignals`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine/doc.go`

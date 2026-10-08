@@ -12,8 +12,8 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/shuttleengine#SessionFold`
-- `plan:internal/shuttleengine#SessionFold.Fold`
+- `internal/shuttleengine#SessionFold`
+- `internal/shuttleengine#SessionFold.Fold`
 - `internal/shuttleengine/sessionread.go`
 
 **Intent:**

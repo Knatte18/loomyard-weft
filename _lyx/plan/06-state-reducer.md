@@ -3,18 +3,18 @@
 **Create:**
 - `internal/shuttleengine/sessionstate.go`
 - `internal/shuttleengine/sessionstate_test.go`
-- `plan:internal/shuttleengine#SessionState` -> `type SessionState struct`
-- `plan:internal/shuttleengine#SessionFacts` -> `type SessionFacts struct`
-- `plan:internal/shuttleengine#SessionFold` -> `type SessionFold struct`
-- `plan:internal/shuttleengine#SessionFold.Fold` -> `func (f *SessionFold) Fold(signals []SessionSignal, facts SessionFacts)`
-- `plan:internal/shuttleengine#Liveness` -> `type Liveness int`
+- `internal/shuttleengine#SessionState`
+- `internal/shuttleengine#SessionFacts`
+- `internal/shuttleengine#SessionFold`
+- `internal/shuttleengine#SessionFold.Fold`
+- `internal/shuttleengine#Liveness`
 
 **Edit:**
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/shuttleengine#SessionSignal`
-- `plan:internal/shuttleengine#SessionSignalKind`
+- `internal/shuttleengine#SessionSignal`
+- `internal/shuttleengine#SessionSignalKind`
 
 **Intent:**
 Add the provider-neutral session-state reducer (D3) as a pure fold in `sessionstate.go`; nothing calls it yet.

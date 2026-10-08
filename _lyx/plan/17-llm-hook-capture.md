@@ -6,7 +6,7 @@
 
 **Uses:**
 - `plan:internal/shuttleengine#ReadSessionStates`
-- `plan:internal/shuttleengine#SessionFold`
+- `internal/shuttleengine#SessionFold`
 
 **Intent:**
 Add an `llm`-tier scenario to the turn smoke suite that captures real `UserPromptSubmit`, `Notification` and `SessionEnd` payloads, pinning card 3's parse of them against what Claude Code writes.
