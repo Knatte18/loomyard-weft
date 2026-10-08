@@ -1,4 +1,4 @@
-# Card 15 — recovery-uncommitted-paths
+# Card 17 — recovery-uncommitted-paths
 
 **Edit:**
 - `internal/websterengine#RenderRecoveryPrompt`
@@ -10,6 +10,7 @@
 - `internal/websterengine/recoverbatch_git_test.go`
 - `contracts/stencils/webster/webster-prefix-recovery.md`
 - `contracts/stencils/claims_test.go`
+- `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
 - `internal/websterengine#loadRunWrites`
@@ -22,7 +23,7 @@ When `recoverSpawn` spawns a strand it lists the worktree's uncommitted paths, t
 - under "not written by this run": leave it untouched, and never stage or commit it.
 The stencil gains a `## What the worktree holds` section carrying the marker and those two instructions, its comment lists the new optional marker, and the "You continue from the committed tree" sentence is rewritten to say the strand continues from the committed tree plus the uncommitted work listed there, so it no longer contradicts a dirty tree.
 Bound: the classing reads the same transcript evidence the reset's own-path exemption reads; a path the evidence cannot attribute is "not written by this run", the side that touches nothing.
-`template_test.go` adds the marker to the recovery prefix's optional set and a render row asserting both classes and `none`; `runwrites_test.go` pins the helper; `recoverbatch_git_test.go` spawns over a real dirty worktree with one run-written and one foreign path and asserts the rendered prompt; `claims_test.go` pins the rewritten sentence and the leave-untouched instruction.
+`template_test.go` adds the marker to the recovery prefix's optional set and a render row to the existing recovery render test asserting both classes and `none`; `TestLoadRunWrites` in `runwrites_test.go` gains a step pinning the helper; `recoverbatch_git_test.go` gains `TestRecoverBatch_UncommittedPathsPrompt`, which spawns over a real dirty worktree with one run-written and one foreign path and asserts the rendered prompt, and `test-budget.yaml` raises `internal/websterengine` by one for it; `claims_test.go` pins the rewritten sentence and the leave-untouched instruction.
 The package doc's recovery section names the block.
 
 **ImpactSummary:** Adds one parameter to RenderRecoveryPrompt, whose one production caller is recoverSpawn, and one optional marker to the recovery prefix stencil.

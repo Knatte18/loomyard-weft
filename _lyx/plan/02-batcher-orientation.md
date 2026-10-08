@@ -15,7 +15,6 @@
 - `internal/batcher#costBatcher.Batch`
 - `internal/batcher#identityBatcher.Batch`
 - `internal/batcher#PeakContext`
-- `internal/batcher#Breakdown`
 - `internal/batcher#breakdownOf`
 - `internal/batcher#startContext`
 - `internal/batcher#peakAccumulator.start`
@@ -33,6 +32,7 @@
 - `internal/webstercli/cli_test.go`
 - `tools/tokencount#startEstimate`
 - `tools/tokencount#Calibration.addRun`
+- `tools/tokencount#StartFit.write`
 - `tools/tokencount/calibrate_test.go`
 
 **Uses:**
@@ -48,7 +48,7 @@ The start model:
 - `startContext` takes the base: `base context + Orientation + (position − 1) × BatchGrowth`.
 - `Batcher.Batch` gains a `base StartBase` parameter after `before`; `costBatcher.Batch` prices every segment with it and the identity batchifier ignores it, as it ignores `before`.
   `PeakContext` gains the same parameter before `position`.
-- `Breakdown` records the base's context as a new `Base` field (JSON `base`), so a recorded run can be fitted against starts minus its base.
+- `breakdownOf` passes the base to `startContext`, so `Breakdown.Startup` includes it; `Breakdown` gains no field, since the calibrate fit (card 9) recomputes each run's base from its plan and base commit and a recorded base would have no reader.
 
 The retired keys: `profileWeights` refuses `weights.master_base` and `weights.startup_context`, and `newCostFromProfile` refuses the profile-level `alone_above`.
 Each refusal wraps `ErrRetiredKey`, names `batcher.yaml`, the profile and the key, and ends `way forward: run "lyx config reconcile --apply"`, which card 4 makes perform the migration.
@@ -57,7 +57,7 @@ Every validation failure of `Active`, `loadConfig`, `newCostFromProfile` and `pr
 `template.yaml` replaces `master_base: 52000` with `orientation: 31400`, the measured 52000 first-fork start minus the measured 20.6K Merriam session start, and rewords the `batch_growth` comment to the new start formula.
 The package doc states the new start model, where the base comes from (webster computes it, card 8), the 31400 derivation and the retired keys with their reconcile way forward.
 
-Callers stay compiling with no behavior of their own yet: `batchCards` passes `batcher.StartBase{}` until card 8 computes the real base, and `startEstimate` and `Calibration.addRun` in `tools/tokencount` read `Orientation` and pass `batcher.StartBase{}` until card 9 refits.
+Callers stay compiling with no behavior of their own yet: `batchCards` passes `batcher.StartBase{}` until card 8 computes the real base, and `startEstimate` and `Calibration.addRun` in `tools/tokencount` read `Orientation` and pass `batcher.StartBase{}` until card 9 refits, and `StartFit.write` prints the profile's `Orientation` where it printed `profile.MasterBase`, its label unchanged until card 9 rewords it.
 Grep the tree for `master_base`, `MasterBase` and the old `startup_context` refusal text; every test asserting them joins this card: the batcher tests (their `Batch`/`PeakContext` calls and the weights fixtures), the webster test fakes implementing `Batch` and the `Weights` literals in `rebaseline_test.go` and `cli_test.go`, and the `calibrate_test.go` seeded profile.
 `config_test.go` gains rows for a profile carrying `master_base` and one carrying `alone_above`, each asserting `errors.Is(err, ErrRetiredKey)`, `errors.Is(err, configengine.ErrInvalid)` and the reconcile way forward, and the template row asserts `orientation` 31400.
 `estimate_test.go` pins that a non-zero `StartBase` raises `PeakContext` by exactly its context.

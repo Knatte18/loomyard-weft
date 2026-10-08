@@ -4,6 +4,7 @@
 - `tools/tokencount#StartRow`
 - `tools/tokencount#StartFit`
 - `tools/tokencount#StartFit.Unusable`
+- `tools/tokencount#StartFit.write`
 - `tools/tokencount#Calibrate`
 - `tools/tokencount#startEstimate`
 - `tools/tokencount#fitStart`
@@ -23,7 +24,7 @@
 For a run whose plan and base commit are readable, its computed base is `websterengine.MerriamBaseOf` over `CLAUDE.md`, `PATTERN.md` and the repository's copy of the Master template at the run's base commit (read through `BaseTrees`), plus the run's `00-overview.md` from its plan commit, priced at the profile's `context_per_line`.
 `StartRow` gains that base and whether the run has one; its estimate is `base + orientation + (position − 1) × batch_growth`.
 `fitStart` fits `Orientation` and `BatchGrowth` by least squares of `measured − base` over `position − 1`, over the rows that carry a base; rows of a run without one stay listed with that reason and outside the fit, and fewer than two distinct positions among the fitted rows keeps today's "not fitted" answer.
-`StartFit` reports `Orientation` beside `BatchGrowth`, `Unusable` checks both, and the markdown names `orientation` (profile value beside it) instead of `master_base`; `main.go`'s doc block is reworded to match.
+`StartFit` reports `Orientation` beside `BatchGrowth`, `Unusable` checks both, and the markdown `StartFit.write` prints names `orientation` (profile value beside it) instead of `master_base`; `main.go`'s doc block is reworded to match.
 `addRun` prices its peak estimates with the run's computed base, so the peak table and the start table agree.
 `template.yaml`'s `orientation` stays 31400: no measured runs are read in this task, since a card never reads live files of other worktrees or the fabric repository; the report is how an operator later refits it.
 `calibrate_test.go` updates the seeded profile and its fixtures so the fitted orientation is the seeded start minus a known computed base, and adds a row for a run without a readable base; the integration fixture gains the base files its tree needs.

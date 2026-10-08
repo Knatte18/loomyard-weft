@@ -1,9 +1,7 @@
 # Card 6 — webster-config-invalid
 
 **Edit:**
-- `internal/webstercli#batcherLoadError`
-- `internal/webstercli#websterCLI.wireHub`
-- `internal/webstercli#websterCLI.wireStandalone`
+- `internal/webstercli/wiring.go`
 - `internal/webstercli#websterCLI.resolvePersistentPreRun`
 - `internal/webstercli/verbs_test.go`
 - `internal/websterengine#LoadConfig`
@@ -23,12 +21,14 @@
 The wiring's two config loads that a verb depends on, `batcher.Active` and `websterengine.LoadConfig`, route their errors through one refusal builder (`batcherLoadError` generalized to name the module's file):
 - content failure (`errors.Is(err, configengine.ErrInvalid)`): the message names the file and ends `way forward: fix <file> under _lyx/config, then re-run the verb`, or, when the error wraps `batcher.ErrRetiredKey`, `way forward: run "lyx config reconcile --apply", then re-run the verb`;
 - any other error (the file exists but cannot be read): the message names the file and ends `way forward: transient, re-run the verb`.
-`resolvePersistentPreRun` prints a content failure with `output.ErrFields` carrying `config_invalid: true`, and an unreadable file with no `config_invalid`; both abort before the verb's body, so no state, report or plan changes, and a re-run after the fix proceeds as normal (record-batch then records the batch).
+The builder returns a `configLoadRefusal`, a new webstercli error type in `wiring.go` carrying the message and whether the cause was a content failure, and it is the only code that constructs one.
+`resolvePersistentPreRun` decides the flag by `errors.As` on that type, never by `errors.Is(err, configengine.ErrInvalid)` on whatever `wire` returns: card 1 marks every module's content failures, so a broken `shuttle.yaml`, `reed.yaml` or `loom.yaml`, whose loads keep their plain refusals and never pass through the builder, carries `ErrInvalid` but no `configLoadRefusal`, and gets no flag.
+It prints a builder content failure with `output.ErrFields` carrying `config_invalid: true`, and a builder unreadable-file refusal with no `config_invalid`; both abort before the verb's body, so no state, report or plan changes, and a re-run after the fix proceeds as normal (record-batch then records the batch).
 The pre-run writes the refusal's friction note through `noteEnvelope`, the path every verb refusal takes, since a pre-run refusal never reaches the `noteRefusals` tee.
 Master's template gains a ladder rung: a refusal carrying `{"config_invalid": true}` from any verb ends the run with `outcome: stuck` and a `stuck_reason` quoting the refusal, without calling another verb.
 Bound: the flag is set only for the parse-or-validation case, so an unreadable file or any non-config refusal never stops a run through that rung; the other modules' config loads in the wiring keep their plain refusals.
-Grep for `batcher.yaml did not load` and `fix batcher.yaml under _lyx/config`; `TestPersistentPreRunE_BatcherSelection` in `verbs_test.go` gains steps asserting `"config_invalid":true` for a malformed profile and for a profile carrying `master_base` (with the reconcile way forward), its absence for an unreadable `batcher.yaml`, and `state.json` byte-identical after each.
+Grep for `batcher.yaml did not load` and `fix batcher.yaml under _lyx/config`; `TestPersistentPreRunE_BatcherSelection` in `verbs_test.go` gains steps asserting `"config_invalid":true` for a malformed profile and for a profile carrying `master_base` (with the reconcile way forward), its absence for an unreadable `batcher.yaml`, the same two cases for `webster.yaml` (a malformed file carrying `config_invalid: true`, an unreadable one carrying none), a malformed `shuttle.yaml` carrying no `config_invalid`, and `state.json` byte-identical after each.
 `config_test.go` asserts `configengine.ErrInvalid` on a bad role spec and a bad numeric knob.
-`claims_test.go` pins the new rung; `refusal-spec.md`'s webster section gains the config-invalid and config-unreadable rows; the package doc's Master-ladder text names the rung.
+`claims_test.go` pins the new rung; in `refusal-spec.md`'s webster section the existing `batcher.yaml did not load` row is rewritten into the config-invalid row (either config file, `config_invalid: true`, the fix or reconcile way forward) and the config-unreadable row is added beside it, so one refusal keeps one row; the package doc's Master-ladder text names the rung.
 
 **ImpactSummary:** Changes the envelope and wording of webster's pre-run config refusals and adds one Master ladder rung; no verb body changes.

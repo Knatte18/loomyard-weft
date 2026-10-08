@@ -17,7 +17,7 @@ The refusal keeps naming the report and the record it saw, and its way forward i
 - terminal `done`: the batch is finished, so begin the next batch.
 The branch that archives a report with no begin record is unchanged.
 Master's template rewrites the `begin-batch` already-has-a-report rung to follow the one remedy the refusal names, dropping its own record-batch-then-recover-batch fallback text.
-`beginbatch_test.go` gains one table test over the five recorded states asserting each way forward exactly and that no other verb is named; `TestBeginBatchCmd_ReportOnDisk` in `verbs_test.go` is updated for the reworded message.
+`TestBeginBatch_Refusals` in `beginbatch_test.go`, the existing table of begin-batch's entry refusals, carries the five recorded states as rows: its terminal and begun non-terminal report rows are reworded, and rows are added for the recovery-kind begun record, terminal `stuck`/`failed`, terminal `dead` and terminal `done`, each asserting its remedy exactly and that no other verb is named; `TestBeginBatchCmd_ReportOnDisk` in `verbs_test.go` is updated for the reworded message.
 `claims_test.go` pins the rewritten rung, and `refusal-spec.md`'s "report already present" row lists the five remedies.
 
 **ImpactSummary:** Rewords one begin-batch refusal and its Master rung; the begin-batch decision itself is unchanged.

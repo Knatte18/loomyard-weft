@@ -10,6 +10,8 @@
 - `internal/loomshed/cancellation_test.go`
 - `internal/loomshed/gatefindings_test.go`
 - `internal/loomrecipe/shape_test.go`
+- `internal/shedrecipe/entries_simple_test.go`
+- `cmd/lyx/testdata/test-budget.yaml`
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
@@ -23,7 +25,7 @@
 When the error wraps `batcher.ErrRetiredKey` the way forward is `run "lyx config reconcile --apply", then re-step`; otherwise it is the Batchifier row's own `batchifierWayForward`.
 A seed failure is reported first and unchanged, so the batcher check never masks it.
 Bound: this validates `batcher.yaml` only, never another module's config; it reads and never writes.
-`loompreflight_test.go` gains a table test over a valid config (Done), a profile carrying `master_base` (Stuck with the reconcile way forward) and a malformed profile (Stuck with the fix-and-re-step way forward); the other call sites gain the new argument.
+`loompreflight_test.go`, whose existing tests each pin one seed outcome, gains `TestLoomPreflight_Call_BatcherConfig` (`test-budget.yaml` raises `internal/loomshed` by one), a table over a valid config (Done), a profile carrying `master_base` (Stuck with the reconcile way forward) and a malformed profile (Stuck with the fix-and-re-step way forward); the other call sites gain the new argument, and `simpleEntryCases` in `entries_simple_test.go` adds `AnchorPath` to the `LoomPreflight` row's `validatedFields`.
 `refusal-spec.md`'s loom section gains the Loom-Preflight batcher row with both ways forward, and the loomshed package doc names the check.
 
 **ImpactSummary:** Adds a constructor parameter to NewLoomPreflight, threaded from its one registry entry; every test constructing it gains the argument.

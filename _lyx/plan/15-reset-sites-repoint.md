@@ -1,4 +1,4 @@
-# Card 13 — reset-sites-repoint
+# Card 15 — reset-sites-repoint
 
 **Edit:**
 - `internal/websterengine#reconcileHead`

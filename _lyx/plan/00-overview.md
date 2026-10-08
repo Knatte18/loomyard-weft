@@ -26,23 +26,25 @@ The batchifier prices Merriam's start from what Merriam loads plus a fitted `ori
 9 — calibrate-orientation-fit — fit orientation against measured starts minus the computed base
 10 — gitrepo-reset-keep — add the keep-reset to gitrepo
 11 — reset-targets — add report-head, last-batch-head and batch-start reset targets
-12 — reset-start-archives — make reset to start archive the run and standalone reset act
-13 — reset-sites-repoint — repoint every git reset --keep way forward at a reset target
-14 — retire-fresh-after-reset — end every reset route in a plain run and pin the absence
-15 — recovery-uncommitted-paths — tell a recovery strand its uncommitted paths and what to do with each
-16 — amended-cards-rebaseline — accept a rebaseline of an in-flight batch's card as an amendment
-17 — amended-cards-recovery — re-run an amended batch through recovery
-18 — overview-without-card-index — expose the overview minus its Card Index from planparser
-19 — rebaseline-card-index — accept an index-only overview change and name the follow-up-card landing
-20 — plan-write-archives-webster — archive the Webster run record with Plan-Write's rotation
+12 — run-archive-after-reset — factor run --fresh's archive and its pending-findings guard into the reset's entry
+13 — reset-start-archives — make reset to start archive the run record, archiving without moving when it cannot move
+14 — standalone-reset — perform the standalone reset with the keep form instead of naming a git command
+15 — reset-sites-repoint — repoint every git reset --keep way forward at a reset target
+16 — retire-fresh-after-reset — end every reset route in a plain run and pin the absence
+17 — recovery-uncommitted-paths — tell a recovery strand its uncommitted paths and what to do with each
+18 — amended-cards-rebaseline — accept a rebaseline of an in-flight batch's card as an amendment
+19 — amended-cards-recovery — re-run an amended batch through recovery
+20 — overview-without-card-index — expose the overview minus its Card Index from planparser
+21 — rebaseline-card-index — accept an index-only overview change and name the follow-up-card landing
+22 — plan-write-archives-webster — archive the Webster run record with Plan-Write's rotation
 
 ## Shared Decisions
 
 ### Decision: reset-archive-is-the-fresh-archive
 
-- **Decision:** `reset --to start` archives the run record with the in-place archive `run --fresh` performs (state.json and the reports dir renamed with a stamp, rendered prompts cleared), factored into one function both call (card 12).
+- **Decision:** `reset --to start` archives the run record with the in-place archive `run --fresh` performs (state.json and the reports dir renamed with a stamp, rendered prompts cleared), factored into one function both reach (card 12), which the reset calls (cards 13, 14).
 - **Rationale:** D3 asks for "the same archive `lyx webster run --fresh` uses" and names `ArchiveRunRecord` in parentheses, but `run --fresh` does not use `ArchiveRunRecord`: that function needs a told destination outside the webster dir, which the reset has none of. The in-place archive is the one `run --fresh` uses and keeps the archive inside the fabric-synced webster dir.
-- **Applies to:** cards 12, 14
+- **Applies to:** cards 12, 13, 14, 16
 
 ### Decision: config-invalid-is-a-sentinel
 
@@ -54,7 +56,7 @@ The batchifier prices Merriam's start from what Merriam loads plus a fitted `ori
 
 - **Decision:** after `lyx webster reset --to start` a way forward names `lyx webster run`; the texts `Run` itself returns use its `ReentryStep` (the Webster row's re-step under loom), and bracket, accept-audit, rebaseline and standalone verbs name the plain run.
 - **Rationale:** D3: the producer never runs fresh, and a refusal surfaced through the Webster producer keeps ending in the row's re-entry step.
-- **Applies to:** cards 12, 13, 14, 19
+- **Applies to:** cards 13, 15, 16, 21
 
 ### Decision: orientation-stays-measured
 
@@ -66,7 +68,7 @@ The batchifier prices Merriam's start from what Merriam loads plus a fitted `ori
 
 - **Decision:** the one reset Master runs itself is `lyx webster reset --to report-head --batch <NN>`, once per batch, when record-batch or recover-batch names it; any other reset or a merge-in redo ends the run stuck.
 - **Rationale:** D1 makes `report-head` the target Master calls inside its run; every other target is the operator's.
-- **Applies to:** cards 11, 13
+- **Applies to:** cards 11, 15
 
 ## verify:
 
