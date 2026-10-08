@@ -12,6 +12,7 @@
 **Edit:**
 - `internal/planglyph#coverageSubject`
 - `internal/planglyph#coverageSubjects`
+- `internal/planglyph#scanReferences`
 - `internal/planglyph#scanFileReferences`
 - `internal/planglyph#callerCoverageFindings`
 - `internal/planglyph#uncoveredFinding`
@@ -41,13 +42,16 @@ For every identifier named like a subject it builds a `referenceSite` (the file'
   with an empty `importPath` it keeps today's package-clause rule;
 - a method subject is referenced by `.` and its identifier, except when the identifier left of the `.` is a name the file imports, which drops the `batcher.Batch` class of issue #461 even without types.
 The declaration-span exclusion stays as it is.
+
+Bound, stated in the spec row: the import-name exclusion also drops a method call on a local variable or parameter that shadows an imported package's name (`errors.M()` after `errors := …`), which is then not matched even informationally.
+It is bounded to the scan: until card 5 lands that is every file, and afterwards only a file or identifier the load left without type information, since a type-checked call resolves through its receiver's type.
 The walk keeps today's file set (D5): it skips only `testdata`, `vendor`, `.`- and `_`-prefixed directories, so a nested module's files are scanned, and a file there that imports a root package by its import path references a root subject by the same rule; a subject declared in a nested module gets its `importPath` from that module's `go.mod`.
 
 `callerCoverageFindings` keeps coverage and admissibility as they are, then reports by resolution (D4): a package-level subject's uncovered references stay one blocking `uncoveredFinding` per subject and file, and `uncoveredFinding` is now always blocking, since every reference it reports is resolved.
 A method subject's uncovered name matches collapse into one informational `unresolvedMethodFinding` per subject, naming every file with its lines and stating that the receiver could not be resolved; its way forward is the same as `uncoveredFinding`'s.
 Card 5 makes a type-resolved method reference blocking; until then every method match is name-only.
 
-Docs in the same commit: the `caller-uncovered` row of the spec's validation-checks section is rewritten for the import-path rule, the severity split and the collapse, and its old bound about aliased and dot imports is dropped, keeping the bound for a caller in a file an earlier card creates; `internal/planglyph/doc.go`'s `caller-uncovered` bullet and `callercoverage.go`'s file comment say the same.
+Docs in the same commit: the `caller-uncovered` row of the spec's validation-checks section is rewritten for the import-path rule, the severity split, the collapse and the shadowed-import bound above, and its old bound about aliased and dot imports is dropped, keeping the bound for a caller in a file an earlier card creates; `internal/planglyph/doc.go`'s `caller-uncovered` bullet and `callercoverage.go`'s file comment say the same, and `scanReferences`' doc comment replaces its package-clause and method rules with the import-path rule and the import-name exclusion above.
 
 Tests: `TestGlyphChain_CallerCoverage` stays untagged and gains rows through its `files` map, each extra file named in `coverageFiles` so the detail parsing finds it:
 an aliased importer calling `c.Target()` and a dot importer calling `Target()`, each blocking;
