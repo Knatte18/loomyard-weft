@@ -31,6 +31,10 @@ Autonomous mode: no operator answered; every decision below is a self-pick recor
 - **Run the check in the root pre-run of every command, with an opt-out annotation** (round 0's Decision 3/4): replaced by the operator's start-verbs-only call; it made every command stop while a reconcile failed.
 - **Leave per-worktree config uncommitted for each worktree's own records commit** (round 0's Decision 7): replaced by the operator's committed-config call; it stopped `Preflight` and a Finalize merge on 2026-10-08 and let a new pair fork stale config.
 - **Stop the start verb when a pair is mid-merge**: one pair's transient Finalize would block every run start in the hub.
+- **Stop `lyx batten run` when the prime is skipped as mid-merge**: a prime's landing conflict would block every new run in the hub; a second call after pair creation keeps the new pair clean without that stop.
+- **Gate `lyx batten run`'s second call on a stale stamp**: another holder's walk can stamp fresh while the new pair forks the prime's stale config, so the gated call does nothing (round 2 F1).
+- **Serialize pair add with the walk through a lock on the prime**: changes `fabricengine`'s pair add for a window the re-enumeration and Loom-Preflight's backstop already bound.
+- **Stop the start verb when a commit refuses as mid-merge after the write**: a merge starting mid-walk would block every run start; restoring the written files keeps the worktree clean.
 - **Best-effort reconcile that warns and continues on failure**: the operator asked that a failed reconcile stop the start verb rather than run on a stale config.
 - **Use the Part 1 stamp to silence Part 2's warning**: the stamp tells that the binary changed, not whether a worktree caught up; a pair stays behind until it syncs.
 - **Per-file history check for Part 2** (is the source blob a past version of the file on the binary's history): a history walk per drifted stencil on every command, for no better advice than the ancestry check gives.
@@ -48,6 +52,12 @@ Autonomous mode: no operator answered; every decision below is a self-pick recor
 - F2 (BLOCKING, reconciled config ends committed): fixed. Decision 7 commits each worktree's written config on its records side through `Fabric.Commit` with a config-only file list; the race with a running driver is closed by the pair's combined write lock both take; a mid-merge pair is skipped and retried; criteria added for no uncommitted `_lyx/config`, `Preflight`'s clean check and a Finalize merge; the uncommitted-prime open risk removed.
 - F3 (BLOCKING, seeded pair inherits no retired key): fixed. Decision 4 orders `lyx batten run`'s check before pair creation, and states that pair add forks from the prime's local records branch, so the committed reconcile is inherited regardless of push timing; a pair made by `lyx fabric add` before any start verb is covered by the next walk; criteria added for both.
 
+### Discussion review — round 2
+
+- F1 (MEDIUM, a pair forked during another holder's walk escapes reconcile): fixed. Decision 4's second call now always reconciles and commits the new pair, whatever the stamp says; Decision 5 commits the prime before enumerating pairs and re-enumerates before stamping; Decision 4 names the `lyx fabric add` case that still escapes and Loom-Preflight's retired-key refusal as its backstop; criteria updated.
+- F2 (MEDIUM, mid-merge skip triggered after the write): fixed. Decision 7 checks merge state before reconciling a worktree, and restores the written files when the commit still refuses because a merge started in between; criterion added.
+- F3 (LOW, cost risk understated): fixed. The cost risk now names the repeated walk while a skipped worktree keeps the stamp stale.
+
 ## Question ledger
 
 - Q1 (resolved, auto-pick): What identifies "the binary" in the stamp? — Revision + modified + config-registry fingerprint (Decision 1).
@@ -57,9 +67,9 @@ Autonomous mode: no operator answered; every decision below is a self-pick recor
 - Q5 (resolved, operator call via parent review round 1): Commit per-worktree config writes? — Yes, through `Fabric.Commit` under the pair's records lock; hub-wide files in `_board` (Decision 7). Supersedes the round-0 auto-pick of leaving them uncommitted.
 - Q6 (resolved, operator call via parent review round 1): Which commands run the check? — Only the four start verbs and `Preflight` (Decision 3). Supersedes the round-0 every-command pre-run with an opt-out annotation.
 - Q12 (resolved, auto-pick): A pair mid-merge during the walk? — Skipped unwritten, stamp left stale, start verb continues (Decision 7).
-- Q13 (resolved, operator call via parent review round 1): Can a new pair inherit retired keys? — No; `lyx batten run` reconciles and commits the prime before creating the pair, which forks the local records branch (Decision 4).
+- Q13 (resolved, operator call via parent review round 1): Can a new pair inherit retired keys? — No; `lyx batten run` reconciles and commits the prime before creating the pair, which forks the local records branch, then reconciles and commits the new pair itself (Decision 4).
 - Q7 (resolved, auto-pick): Where does the shared reconcile live? — A new non-CLI package told its geometry (Decision 6), with a PATTERN entry.
-- Q8 (resolved, auto-pick): Which roles get the edit directive? — Every spawned role that edits files, document writers included (Decision 14).
+- Q8 (resolved, auto-pick): Which roles get the edit directive? — Every spawned role other than the orch, through its opening stencil, the set `PATTERN-parent-directive` already pins (Decision 14); a narrower "file-editing" set had no settled membership, since reviewers and judges write their own artifacts too.
 - Q9 (resolved, auto-pick): Is the `merriamFixedContext` calibrate step in scope? — No; the orch should file it as a note.
 - Q10 (open, for the plan): How does a binary revision absent from the worktree's object store classify in Part 2? — Bar: never advise a deploy (Decision 12).
 - Q11 (open, for the plan): The hub-lock wait bound (Decision 5).
