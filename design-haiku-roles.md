@@ -4,7 +4,7 @@
 
 ## Seen
 
-The operator benchmarked Haiku 5.5 on 2026-10-08 (`.scratch/haikubench` in the prime, not in git).
+The operator benchmarked Haiku 5.5 on 2026-10-08 (`docs/benchmarks/haiku-5-5.md`): on one fully specified coding task it scored as well as Sonnet and Opus at medium, at a fraction of the cost, but took about twice as long and grew its context to 74–132k.
 Today `_lyx/config/loom.yaml` runs the loom driver and every Bouncer row's seed and judge passes on `sonnet[medium]`.
 The driver steps one run through `lyx shed step` and answers its waits, and the judge rules on a fixed question per round; neither writes code or long prose.
 
