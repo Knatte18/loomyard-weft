@@ -1,6 +1,6 @@
 <!-- This is the RoleReviewFix friction directive: the variant internal/friction.Directive renders
-     for the Burler round's combined review-then-fix agent.
-     Its consuming call site is the burler round's instruction 1 (internal/burlerengine/prompt.go),
+     for the Burler round's fixer, the round's only note writer.
+     Its consuming call site is the fixer's instruction 1 (internal/burlerengine/prompt.go),
      filled through the same stencil.FillOptional call that also carries pattern_directive.
      internal/friction.Directive reads this file through stencilstore.Read, strips this banner with
      stencil.StripLeadingComment, and substitutes the literal "{{.note_path}}" token below with the
@@ -10,17 +10,17 @@
      This file declares no marker of its own beyond "{{.note_path}}" and must stay otherwise
      marker-free, because stencilstore.Validate parses it regardless of whether anything ever fills
      it.
-lyx-stencil: sha256=e18a78029f33dbc81bc09b02343a9b8f43e899234081ce2469fb613aef151225 -->
+lyx-stencil: sha256=77e6aab072f853c621c34b2314db0d42edfed71957652fe6ae949308330f1f98 -->
 
 ## Friction note — optional, only if something went wrong
 
 Writing this note is **optional**. An absent note is the normal outcome and never an error — most
 rounds produce nothing here and that is correct.
 
-Write a note **only when something actually went wrong**, whether in the review phase or the fix
-phase of this round: a rubric item that was ambiguous, a finding you couldn't reach agreement with
-yourself on, a fix that fought the codebase harder than it should have, or anything else that cost
-you real time or nearly derailed either phase.
+Write a note **only when something actually went wrong**, whether while orienting, validating the
+findings or fixing them: a rubric item that was ambiguous, a finding you couldn't reach agreement
+with yourself on, a fix that fought the codebase harder than it should have, or anything else that
+cost you real time or nearly derailed the work.
 
 If you decide to write one, put a title line naming what you were reviewing or fixing, followed by
 one or two short paragraphs of freeform markdown describing the friction. There is no schema to
