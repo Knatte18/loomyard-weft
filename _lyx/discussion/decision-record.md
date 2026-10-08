@@ -51,22 +51,26 @@ Claude Code forks always run on the parent session's model, so the forks' model 
 
 ### D3. The `discussion` and `plan` fans and their lenses
 
-Decision: the embedded `burler.yaml` template gains these lenses and fans; every lens text is phrased as emphasis, ending with the library's "Report anything else you notice too — emphasis, never exclusion." line, and none restates or overrides the segment rubric, which stays the authority.
+Decision: the embedded `burler.yaml` template gains these lenses and fans; every lens text is phrased as emphasis, ending with the library's "Report anything else you notice too — emphasis, never exclusion." line.
+A lens that emphasizes a rubric item or a writer-stencil rule names it and never paraphrases its rule, so the segment rubric stays the authority and a change to an item's rule needs no lens edit.
+A renamed or removed rubric item needs an edit to the template lens naming it; a seeded hub picks that edit up only when its `burler.yaml` does not define the lens's name (D4).
 
-- `discussion: [generic, goal-scope, pattern-fit, edge-cases, acceptance]`
+- `discussion: [generic, goal-scope, pattern-fit, scenarios, leanness]`
 - `plan: [generic, decision-coverage, card-structure, verify-tests, pattern-fit]`
 
 Lens emphases:
 
 - `goal-scope`: the record against its board entry: goal met, scope boundaries explicit, nothing the entry asks for missing, nothing unlicensed added, no deferral or MVP phase, and whether the thing is the right one to build.
 - `pattern-fit`: every decision or card against the `PATTERN.md` entries and the `pattern/` backgrounds it touches; a departure that does not name the entry it changes.
-- `edge-cases`: failure, restart and resume, concurrency, empty state and invalid input; every new verb, flag, edge or weakened guard states its bound.
-- `acceptance`: every decision has an acceptance criterion that would catch its regression, each criterion is observable, and must-cover scenarios name behaviors in the lowest test tier their substrate needs.
-- `decision-coverage`: every Decision, Constraint and Acceptance criterion carried by some card, and no card scope the decision record does not license.
-- `card-structure`: granularity, card order, member glyphs and the re-sign arrow, `ImpactSummary` conclusions, and `Custom` only as a last resort.
-- `verify-tests`: the `## verify:` section runs every targeted package's tests in the tiers the rubric names, and planned tests follow `PATTERN-test-economy`.
+- `scenarios`: failure, restart and resume, concurrency, empty state and invalid input, the Discussion-Review rubric's attack-surface item, and the discussion stencil's must-cover-scenarios rule.
+- `leanness`: the Discussion-Review rubric's relocation-and-exclusion item and its completeness-before-leanness test.
+- `decision-coverage`: the Plan-Review rubric's fidelity-to-the-answer-key item.
+- `card-structure`: the Plan-Review rubric's granularity, card-order, member-glyph, re-sign-arrow, `ImpactSummary` and `Custom` items.
+- `verify-tests`: the Plan-Review rubric's verify-coverage and test-economy items.
 
-Rationale: the shipped `standard` lenses (error-handling, test-gaps) are written for code, and the rubrics' own "Also flag" lists name what a design record and a plan most often get wrong.
+Rationale: the shipped `standard` lenses (error-handling, test-gaps) are written for code.
+The plan lenses and `leanness` come from the rubrics' "Also flag" lists, `scenarios` combines the attack-surface item with the discussion writer's interview categories, and `goal-scope` and `pattern-fit` come from those interview categories alone.
+`leanness` gives the discussion fan a lens that seeks content to move or cut, so the fan does not multiply the additive bias the rubric's relocation item counters.
 
 ### D4. `burler.yaml` resolves per name over the embedded template
 
@@ -79,14 +83,16 @@ Bound: the fallback only supplies names absent from the operator's file; a stand
 
 ### D5. Judge narrowing accumulates across a generation's rounds
 
-Decision: round 1 runs the configured fan whole and ignores any `exclude_lenses` the seed call writes.
-From round 2 on, the lenses excluded from round N are the union of `exclude_lenses` across the segment generation's focus files for rounds 2 to N.
-When that union would leave no lens, round N runs round N-1's lens set and the new exclusions are dropped with a warning naming them.
+Decision: round 1 runs the configured fan whole.
+The seed call gets the focus-only schema and is asked for no `exclude_lenses`, since no round has run for it to judge settled; a round-1 focus file that still carries them has them dropped with a warning naming them.
+From round 2 on, the lenses excluded from round N are the union of `exclude_lenses` across the segment generation's focus files for rounds 2 to N, restricted to the lenses of round N's resolved fan; a name that fan lacks is ignored, so a fan switched mid-generation (D1) keeps only the exclusions that apply to it.
+A lens is eligible for exclusion only if the latest round ran it: Go drops, with a warning naming them, the `exclude_lenses` entries for lenses the latest round did not run, so the first round under a newly switched-in fan runs it whole.
+When that union would leave no lens, round N runs the current fan minus the union for rounds 2 to N-1, the whole current fan if that is empty too, and the new exclusions are dropped with a warning naming them.
 An archived or fresh generation starts from the whole fan again.
-The judge stencil's fanned variant (`focusSchemaMarkers`) tells the judge that an exclusion is permanent for the generation, to exclude a lens only when its area is settled (the latest round's findings from it carry nothing at MEDIUM or worse and its area is not in the next round's `focus`), and never to restate earlier exclusions.
+The judge stencil's fanned variant (`focusSchemaMarkers`) tells the judge that an exclusion is permanent for the generation, to exclude a lens only when the latest round ran it and its area is settled (the latest round's findings from it carry nothing at MEDIUM or worse and its area is not in the next round's `focus`), and never to restate earlier exclusions.
 
 Rationale: the board asks the judge to narrow the fan each bounce; a union held in Go makes narrowing monotonic without relying on the judge to restate every earlier exclusion, and the handler's holistic pass still covers an excluded lens's area every round.
-Bound: the judge can drop any lens, but never the last one and never in round 1; an excluded lens returns only with a new generation.
+Bound: the judge can drop any lens the latest round ran, but never the last one, never in round 1 and never one that has not yet run under the current fan; an excluded lens returns only with a new generation.
 
 ### D6. The judge sees each lens's findings
 
@@ -110,8 +116,7 @@ Bound: forks are allowed on BurlerRound reviewers only, bounded by the round's `
 Decision: after each round, Go writes `round-<N>-usage.yaml` beside the round's review and fixer report in the segment's run directory, for every review segment, solo and fanned.
 Per half it records the model, start, end and wall time, fresh tokens (input plus cache creation plus output) and cache-read tokens; the reviewer's totals include its forks, with the fork count, the lenses run and the forks' share broken out.
 The round's record also names the fan (empty when solo).
-Reading usage is a provider capability in `claudeengine`, beside the fork audit's transcript knowledge; an unreadable transcript records that half's tokens as unknown and never fails or delays the round.
-The record is durable: it lives in the run directory the status seam commits.
+An unreadable transcript records that half's tokens as unknown and never fails or delays the round.
 
 Rationale: the board requires tokens and wall time per round and per segment against solo rounds before the fan becomes the default; per-round records from both arms make that a reading, and a segment's figures are the sum of its rounds.
 
@@ -124,7 +129,7 @@ Rationale: the old comment's premise (both other segments solo) is false once D1
 
 ## Constraints
 
-- `PATTERN-review-round`: a fanned round keeps review-before-fix; consolidation is part of the review, and the fixer starts only after Go accepts the consolidated review.
+- `PATTERN-review-round`: a fanned round keeps review-before-fix; consolidation is part of the review, and in either `fix_start` mode the fixer acts only after the ready marker, which Go writes once it has accepted the consolidated review.
 - `PATTERN-shuttle-provider-seam`: transcript and fork-transcript usage reading lives in `internal/shuttleengine/claudeengine`; `shuttleengine` and `burlerengine` see a provider-neutral reading.
 - `PATTERN-config-strictness`: `loomengine` loads strictly; the new keys get template defaults and validation at load.
   `burler.yaml` keeps its direct-read loader; the per-name template fallback is resolution, not a degrade of a missing file to `LoadOrTemplate`.
@@ -151,19 +156,26 @@ Rationale: the old comment's premise (both other segments solo) is false once D1
 - A Claude Code release whose Stop payload omits a live fork would let a gate run early; the fork audit's exact count catches the shortfall only after the run is done.
 - Fork transcript layout is a Claude Code internal; a layout change degrades usage to unknown, and the fork audit with it.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - discussion-fan-additive-bias (class design, severity MEDIUM, open in rounds 2)
+  - exclusion-eligibility-unran-lens (class design, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
-- With `discussion_fan` and `plan_fan` set, Discussion-Burler and Plan-Burler rounds run with that fan and their Bouncers ask for `exclude_lenses`; with them empty, the rounds run solo and the Bouncers' prompts name no `exclude_lenses`.
+- With `discussion_fan` and `plan_fan` set, Discussion-Burler and Plan-Burler rounds run with that fan and their Bouncers' judge calls ask for `exclude_lenses` while their seed calls do not; with them empty, the rounds run solo and the Bouncers' prompts name no `exclude_lenses`.
 - Webster-Burler never receives a fan, from the recipe or from the wiring.
 - A recipe row carrying a literal `cluster-fan` that also receives an env fan fails to build, naming both.
 - Loom config load refuses an unknown fan name in `discussion_fan` or `plan_fan`, naming the key and the existing fans, and refuses an invalid `fan_review` entry.
 - A fanned round's reviewer runs on the `fan_review` entry for its round and its fixer on the segment's fix model; a solo round's reviewer runs on the segment's review model.
 - Fan resolution: an operator file without `discussion` resolves it from the template; an operator-defined `discussion` wins; an absent file resolves from the template; an undefined name in both is an error naming the fan.
 - The template's `discussion` and `plan` fans resolve, and every lens they name exists.
-- Exclusion: round 1 runs the whole fan despite seed excludes; round N excludes the union of rounds 2..N; a union that would empty the fan keeps round N-1's set and logs the dropped names; a new generation runs the whole fan.
+- Exclusion: round 1 runs the whole fan and drops a round-1 focus file's excludes with a warning; round N excludes the union of rounds 2..N; a union that would empty the fan runs the fan minus the union for rounds 2..N-1 and logs the dropped names; after a mid-generation switch to another fan, the union excludes only that fan's lenses; an exclusion naming a lens the latest round did not run, including every lens after a switch from solo or from another fan, is dropped with a warning, so the first round under the new fan runs it whole; a new generation runs the whole fan.
 - A fanned segment's facts file lists the lenses run, per-origin finding counts by severity and class, and the excluded lenses; a solo segment's facts file is unchanged.
 - The rewritten quiescence test fails for a gated writer row that forks and passes for a gated BurlerRound row with a fan; shuttle's wait keeps a gated run waiting at a turn end that reports an outstanding fork.
-- Every completed review round, solo and fanned, leaves `round-<N>-usage.yaml` with per-half model, wall time, fresh and cache-read tokens, and for a fanned reviewer the fork count, lenses and fork share; an unreadable transcript records unknown tokens and the round's outcome is unchanged.
+- Every completed review round, solo and fanned, leaves `round-<N>-usage.yaml` with the fan name (empty when solo), per-half model, wall time, fresh and cache-read tokens, and for a fanned reviewer the fork count, lenses and fork share; an unreadable transcript records unknown tokens and the round's outcome is unchanged.
 - `go test ./...` passes.
 
 ## Notes for the plan writer
