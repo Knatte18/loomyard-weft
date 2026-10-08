@@ -224,6 +224,12 @@ Decision: Batten's activity reading must not count the new hook and stamp lines:
 
 Rationale: Shadow mode must change no behavior; an idle_prompt append restarting batten's quiet clock for a stalled session is a behavior change.
 
+### Added after Discussion (parent, 2026-10-08): Incremental reader holds a trailing stamp
+
+Decision: An incremental reader does not advance its offset past a stamp line with no payload line after it; the stamp is re-read with its payload on the next poll. An acceptance row splits a batch between a stamp and its payload and expects the same since as a whole-file read.
+
+Rationale: Keeps since the same for every reader, as D1 claims, without new shared state.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: hook names, payload fields, the registry and the transcript markers live only in `claudeengine`; the states, the reducer and the signal types are provider-neutral in `shuttleengine`.
