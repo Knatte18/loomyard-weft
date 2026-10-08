@@ -23,3 +23,14 @@ The orch ran `lyx fabric merge --abort` in the task worktree and `lyx loom resum
 ## Expected
 
 The untracked-file listing works mid-merge, or a failed merge-in aborts its own staged merge before refusing, so the run never halts on its own leftover merge, and the dirty-tree refusal names `lyx fabric merge --abort` when a merge is in progress.
+
+## Root cause (orch investigation, 2026-10-08)
+
+lyx's cached go-git handle read a stale pack index after an automatic `git gc` repacked the shared object store mid-step.
+The new pack `pack-4160613d…` landed at 20:42:06 CEST while the conflict agent ran, and HEAD `64df647cf` and its tree then existed only in that pack, so the handle's index missed them and their loose copies were gone.
+`internal/gitrepo/doc.go` already documents this failure, and `lookupObjectRetrying` handles it with a pack fingerprint check, `storer.Reindex()` and one retry, but the go-git `Status()` calls in `internal/gitrepo/worktree.go` (`UntrackedFiles`, `WorktreeChangedFiles`) bypass that wrapper.
+The hard reset was not the cause: the pack was written 30 minutes after it and `git fsck` is clean.
+
+## Fix
+
+Apply the reindex-and-retry in one place that every object-resolving go-git call goes through, `Status()`, tree walks and diffs included, and add a regression test: build the index, commit with the CLI, `git repack -d` and `git prune-packed`, then call `UntrackedFiles`.
