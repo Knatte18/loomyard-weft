@@ -15,10 +15,6 @@ Waits on nothing open; can start now, in parallel.
    - Send waits for a ready pane and a settled input before Enter, retries with backoff, and a lost submission is transient; attach no longer halts on a stopped Burler half
 1. **A hub survives a lyx binary change; the no-script rule reaches spawned agents** — [`binary-change-and-rules`](design-binary-change-and-rules.md) · bug, enhancement, config, stencil · running · Discussion-Burler
    - Config reconciles itself on the first lyx command after a binary change, stencil drift behind main stops warning source-ahead, and file-editing stencils state the no-script edit rule
-1. **Plan gate: no false caller findings, reviewer fixes the gate accepts, nested fixture modules, no plan-made parent decisions** — [`plan-gate-quality`](design-plan-gate-quality.md) · bug, loom, quarry · paused · Discussion-Write
-   - Resolve callers by import path and receiver type, show the reviewer the gate checks, let gates run in nested fixture modules, and refuse decision add --by parent from a plan agent
-1. **Git network calls time out; Finalize warns only for config the task changed** — [`fabric-net-and-config-warn`](design-fabric-net-and-config-warn.md) · bug, fabric · paused · Loom-Preflight
-   - Push and fetch run under a timeout so a dead connection after sleep fails fast; the per-worktree config warning compares against the parent copy
 
 ## Notes
 
@@ -34,6 +30,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **webster record-batch: zero fork transcripts for a forked batch forces a full re-drive** — [`record-batch-no-transcripts`](design-record-batch-no-transcripts.md) · bug
 1. **webster record-batch rejects abbreviated head_sha that is a prefix of HEAD** — [`record-batch-short-sha`](design-record-batch-short-sha.md) · bug
 1. **Loom re-step refused with producer error while a stopped review strand's run dir is younger than 3m** — [`restep-young-run-dir`](design-restep-young-run-dir.md) · bug
+1. **caller-uncovered emits false-positive informational entries for type-name and method-name matches** — [`caller-uncovered-false-positives`](design-caller-uncovered-false-positives.md) · bug
+1. **Plan reviewer suggests a file-plus-member card pairing that the redundant-file-target gate blocks** — [`plan-review-redundant-pairing`](design-plan-review-redundant-pairing.md) · bug
+1. **Plan gates can name packages inside a nested fixture module, which cannot pass** — [`plan-gate-nested-module`](design-plan-gate-nested-module.md) · bug
+1. **Plan agent can record a decision as --by parent** — [`plan-agent-parent-decision`](design-plan-agent-parent-decision.md) · bug
+1. **Git push without a timeout hangs a batten run after laptop sleep** — [`git-network-timeout`](design-git-network-timeout.md) · bug
+1. **Finalize warns of per-worktree config changes that came from main** — [`finalize-config-warn-from-main`](design-finalize-config-warn-from-main.md) · bug
 
 ### Enhancements
 
