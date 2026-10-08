@@ -61,8 +61,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - LY: prime/LY: <slug> titles, prime opens with reed up+attach only, orch start and open board as tasks with lyx keybindings, no launch.json
 1. **Discussion stage has no sanctioned path to land a repository edit ahead of Plan** — [`discussion-lands-invariant`](design-discussion-lands-invariant.md) · enhancement, loom
    - Discussion has no sanctioned path to commit a PATTERN edit ahead of Plan
-1. **Test tiers: an llm-tier gate, a guarded publish_verify, a stricter comment lint** — [`test-tiers-hardening`](design-test-tiers-hardening.md) · enhancement, loom
-   - Follow-ups from test-tiers PR-Gate
+1. **Test tiers: a stricter comment lint, a reviewer range that covers the merge of main** — [`test-tiers-hardening`](design-test-tiers-hardening.md) · enhancement, loom, burler
+   - The comment lint passes every comma-plus-conjunction; Burler reviewers never see defects that arrive through the merge of main
 1. **Step-level watchdog and a Windows verify timeout that kills the process tree** — [`verify-watchdog`](design-verify-watchdog.md) · enhancement, shed
    - A lyx shed step that never returns is noticed, and the Windows verify timeout kills the whole process tree
 1. **Kick-start packs from tool locations through quarry Enclose** — [`enclose-kickstart`](design-enclose-kickstart.md) · enhancement, quarry
