@@ -1066,6 +1066,22 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #462](https://github.com/Knatte18/loomyard/issues/462).\n\nSeen 2026-10-08 in `shuttle-send`: Publish blocked three times on the same `publish_verify` failure (three `//go:build tmux` loomcli tests), and the two fix routes the hub has from a blocked Publish never reached the defect.\n\nThe defect arrived through the merge of main (reed-view typed `/color` raw into the pane), so it is outside the task's diff.\n\n- `lyx loom decision add --by parent` plus `lyx loom goto --to Webster-Burler`: the Webster-Review rubric measures against the plan, not the decision record, and the reviewer reads only `git diff $(git merge-base main HEAD)..HEAD`, so both rounds approved with unrelated NITs and the decision was never acted on.\n- The Webster-Burler verify gate compiles the `tmux` tier and never runs it (`internal/loomshed/doc.go`), so the fixer never saw the failing tests either.\n- `lyx loom reject` works only at PR-Gate or PR-Rework, and `goto` refuses PR-Rework from Publish because it lies past the current row, so the hub cannot hand the failure to a fixer as a finding.\n\nThe hub fell back to `goto Plan-Bouncer`, so Plan-Review raises the uncarried decision against the plan, which re-runs Plan-Burler, Batchifier and Webster for one fix.\n\nExpected: a blocked Publish (or any blocked row after Webster) has a route that hands a named finding to a fixer round, e.g. `lyx loom reject` accepted at a blocked Publish, or a Webster-Burler round that takes the publish_verify failure and post-Discussion parent decisions as its focus.\n"
+    },
+    {
+      "id": 210,
+      "slug": "caller-uncovered-false-positives",
+      "title": "caller-uncovered emits false-positive informational entries for type-name and method-name matches",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        461
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #461](https://github.com/Knatte18/loomyard/issues/461).\n\n**What happened:** Adding re-sign arrows to a plan card made the `caller-uncovered` check emit 75 informational entries, all false positives.\nEvery file that names a type counted as a caller of a re-signed method on a different type that happens to share the name, and any `.start(` call anywhere counted as a caller of a re-signed `start` method on one specific type.\nThe real callers had to be separated out by grep.\n\n**Why it is abnormal:** The matching is by name only, not by receiver type, so the noise can hide a real uncovered caller.\n\n**What to do:** Resolve callers by receiver type (or at least qualify the match by package and receiver) in `caller-uncovered`, and rate-limit or collapse name-only matches.\n\nProvenance: task `webster-dead-ends`, note `burler-plan-r4.md`.\n"
     }
   ],
   "legacy_done": [
