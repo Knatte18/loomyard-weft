@@ -235,6 +235,12 @@ Decision: The zoom bracket wraps every reed step that changes the strand window'
 
 Rationale: tmux unzooms on more commands than the two D1 names, and a step that splits or kills then returns early would otherwise drop the zoom.
 
+### Added after Discussion (parent, 2026-10-08): Chain and hook carry the bracket at run time
+
+Decision: The attach chain and every window-resized hook entry carry the unzoom, the resize and the re-zoom as run-time conditional tmux commands testing #{window_zoomed_flag}; the attach chain appends the pin run after its select-layout.
+
+Rationale: Neither runs inside a reed Go step, so a zoom read at build time may be stale and a lone hook entry cannot know what was zoomed.
+
 ## Constraints
 
 - `PATTERN-told-geometry`: `reedengine` derives no path and imports no `lyxcwd`; D12's sorted list of worktree names and revive functions is told by the hub-mode teller.
