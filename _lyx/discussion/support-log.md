@@ -27,6 +27,9 @@ Each turn below is a question the board entry and the code left open, with the a
 - Failing the gate with `ErrQuarryUnavailable` when the load fails: blocks plans over a toolchain hiccup on a check that before this task was informational for methods.
 - Keeping type-resolved method findings informational: leaves a certain uncovered caller to webster's build failure.
 - A rate limit (first N matches) on name-only findings: drops matches silently; collapsing keeps them all in one finding.
+- Skipping nested-module directories in the caller scan: drops callers of a root subject in a module that imports the root, and every caller of a nested subject, with no other gate building that module.
+- Counting a `Move` of a `go.mod` in D6 as a `Delete` of its source: the destination is in `Intent` prose, so the module would vanish from the set rather than move, which is wrong in the other direction.
+- Dropping a finding whose obvious fix a check blocks: leaves a defect the checks miss unreported; binding only the proposed fix keeps it.
 - Running a nested module's tests through `cd <module> && …` in the card gate: `go -C` does the same with no shell state.
 - Validating a reviewer's proposed fixes mechanically before the fixer sees them: a proposed fix is prose, with no form a validator can run.
 - Copying the gate's check list (or `redundant-file-target` alone) into the rubric: violates `PATTERN-producer-pointer-rule` and goes stale.
@@ -44,10 +47,11 @@ _No rounds yet._
 - Q3 (resolved, auto-pick): load failure behavior — degrade per file and identifier to the import-path and name scan, no infrastructure error; never worse than the pre-task behavior.
 - Q4 (resolved, auto-pick): load bounds — `GOPROXY=off`, `GOFLAGS=-mod=readonly`, a 3-minute timeout, logged spawn; a plan gate must not reach the network or hang.
 - Q5 (resolved, auto-pick): severity — type- or import-resolved references blocking for methods too; name-only method matches informational, one collapsed finding per subject.
-- Q6 (resolved, auto-pick): nested modules in the caller scan — skipped, matching the go tool and the root-module load.
+- Q6 (resolved, auto-pick, revised in review round 1): nested modules in the caller scan — scanned through the D3 fallback, since a nested module can hold a caller of a root subject and a nested subject's callers live there.
 - Q7 (resolved, auto-pick): card gate for nested modules — `go -C <module> test -tags integration` with module-relative paths, one command per module.
 - Q8 (resolved, auto-pick): plan-time check for author-written verify commands — new blocking planparser check `verify-nested-module`, recognizing `go -C` and a literal preceding `cd`.
-- Q9 (resolved, auto-pick): nested-module set — one planparser derivation, on-disk plus `Create`-named `go.mod` through the card, minus `Delete`-named ones.
-- Q10 (resolved, auto-pick): reviewer and the gate — a rubric rule binding proposed fixes to the spec's validation-checks section by pointer; the template states the `go -C` form.
+- Q9 (resolved, auto-pick): nested-module set — one planparser derivation, on-disk plus `Create`-named `go.mod` through the card, minus `Delete`-named ones, a Rename pair counting as both; a `Move` of a `go.mod` is not counted, since its destination is prose, and is a stated bound (revised in review round 2).
+- Q10 (resolved, auto-pick): reviewer and the gate — a rubric rule binding proposed fixes, never findings, to the spec's validation-checks section by pointer; the template states the `go -C` form.
+  A finding with no admissible fix is deferred by the fixer with the constraining check as its reason and reaches the operator through the judge's escalation (revised in review round 2).
 - Q11 (resolved, auto-pick): test-budget symptom — one `CLAUDE.md` line; no lyx mechanism.
 - Q12 (resolved, auto-pick): `verify-nested-module` under `language: none` — runs anyway, since it reads `go` commands, not glyphs.
