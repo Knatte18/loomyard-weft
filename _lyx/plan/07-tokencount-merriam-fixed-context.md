@@ -28,7 +28,7 @@ D4's report: the calibration gains a Merriam fixed-context section, so the opera
 `merriamTexts` reconstructs, at the run's base commit, exactly the texts `websterengine.MerriamBase` counts but `00-overview.md`:
 - `CLAUDE.md`, adding nothing when absent at the base commit;
 - the Master template (`masterTemplatePath`), its absence a reason;
-- the orchestrator PATTERN directive, rendered by `pattern.FillDirective` from the base commit's `directiveStencilPath` and `PATTERN.md`, never the raw `PATTERN.md`: an absent `PATTERN.md` adds nothing, as `pattern.Directive` renders nothing for it, and a `PATTERN.md` with the stencil absent is a reason.
+- the orchestrator PATTERN directive, rendered by `pattern.FillDirective` from the base commit's `directiveStencilPath` and `PATTERN.md`, with `directiveStencilPath` as the stencil name, never the raw `PATTERN.md`: an absent `PATTERN.md` adds nothing, as `pattern.Directive` renders nothing for it, and a `PATTERN.md` with the stencil absent is a reason.
 A run with no base, or a base commit not in the repository, has a reason; a failed read is an error.
 `CLAUDE.local.md`, which `MerriamBase` also counts, is untracked and cannot be reconstructed: the derivation assumes the run's worktree had none, as a lyx-created worktree has none, and `merriamTexts`' comment says so.
 

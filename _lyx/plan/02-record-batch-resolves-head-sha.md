@@ -23,15 +23,15 @@ The git probe:
 - `commitsNamedBy` in `gitwrap.go` implements it through the checked `gitexec.Run` (`PATTERN-gitexec-checked-call`): `git rev-parse --disambiguate=<prefix>` lists every object the prefix names, and each listed object is kept only when `git cat-file -t <sha>` answers `commit`.
   Only object names are matched, never ref names, so `HEAD`, a branch or a hex-named ref never resolves.
   It never goes through `gitrepo.Repo.ResolveSHA`, which returns the first match of an ambiguous prefix and also resolves ref names.
-  An empty `--disambiguate` answer is no match, not an error; confirm git's exit status for a prefix naming nothing while writing the test.
+  For a prefix naming nothing, git prints nothing and exits 0, so an empty `--disambiguate` answer is no match, not an error.
   The `gitwrap.go` file comment lists the new probe among the read-only helpers it wraps.
 - `realGit.CommitsNamedBy` delegates to it.
 
 The resolver, `resolveReportHead`, beside `reconcileReportHead` in `gitwrap.go`:
-- a value of exactly 40 lowercase hex digits returns unchanged with no git call;
-- a lowercase hex value of 4 to 39 digits is passed to `git.CommitsNamedBy`, and exactly one commit returns that commit's full SHA;
+- a value of exactly 40 hex digits returns unchanged with no git call;
+- a hex value of 4 to 39 digits, of either case, is lowercased and passed to `git.CommitsNamedBy`, and exactly one commit returns that commit's full lowercase SHA as `CommitsNamedBy` answers it;
 - no commit, or more than one, returns an error wrapping `ErrHeadSHAUnresolved` that names the report path and the value and says whether it named no commit or how many, with the way forward `have the fork rewrite head_sha in <reportPath> as the output of `git rev-parse HEAD`, then re-run this verb`;
-- any other value (not hex, or longer than 40) returns unchanged, so it meets the refusal at its consume site;
+- any other value (one holding a non-hex character, or longer than 40) returns unchanged, so it meets the refusal at its consume site;
 - a git failure is returned as an error that does not wrap `ErrHeadSHAUnresolved`.
 The 4-digit floor is git's minimum abbreviation.
 The way forward names only `git rev-parse HEAD`, read-only, for the fork to run (`PATTERN-no-denied-recovery`).
@@ -45,7 +45,7 @@ Tests:
 - `gitfake_test.go`: `fakeGit.CommitsNamedBy` answers every registered SHA (the `parents` keys) that starts with the prefix, sorted.
   `fakeGit.mint` mints SHAs whose leading digits differ between commits (the hex SHA-1 of the counter, say), so a 9-digit prefix of one commit names that commit alone; a test needing an ambiguous prefix registers a second commit sharing the prefix.
 - `gitwrap_test.go` (integration, real git): a subtest in `TestRepositoryProbes` pins `commitsNamedBy`: a 9-digit prefix of HEAD answers HEAD's full SHA alone, the prefix of a committed blob's id answers no commit, and a prefix naming no object answers empty with no error.
-- `recordbatch_test.go`, extending the tests that cover each path: a 9-digit abbreviation of HEAD records the batch with the digest's `HeadSHA` and `CardSHAs` holding the full 40-digit SHA;
+- `recordbatch_test.go`, extending the tests that cover each path: a 9-digit abbreviation of HEAD, in lowercase and in uppercase, records the batch with the digest's `HeadSHA` and `CardSHAs` holding the full 40-digit lowercase SHA;
   in `TestRecordBatch_ParentMovedHead`, an abbreviation a clean parent merge sits above is accepted with the moved-HEAD warning naming the full SHA;
   an abbreviation naming no commit and one naming two commits are each refused with `ErrHeadSHAUnresolved` and the `git rev-parse HEAD` way forward, no reset named, the batch non-terminal and the report in place;
   a batch with a correctness finding fails with the full SHA in the failed digest when `head_sha` abbreviates HEAD, and with an empty digest head and no `ErrHeadSHAUnresolved` when it names no commit;

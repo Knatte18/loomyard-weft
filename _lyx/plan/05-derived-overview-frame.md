@@ -53,6 +53,6 @@ Tests:
 Docs: `doc.go`'s overview paragraph states that a state without `PlanOverviewFrameHash` takes the recorded frame from the stored baseline copy of the overview until the first restamp.
 `refusal-spec.md`'s `rebaseline overview changed` row is reworded: `00-overview.md` changed outside its Card Index, judged against the recorded frame or the frame derived from the stored baseline copy, or changed at all in a run where neither yields a frame.
 
-**ImpactSummary:** five unexported or exported plan-edit helpers take the webster dir; every caller in `websterengine` and `webstercli`'s validate verb passes its told `WebsterDir`; behavior changes only for a state without a frame hash.
+**ImpactSummary:** three plan-edit helpers (`fingerprintMismatchWayForward`, `PlanEditError`, `batchCardEditError`) gain the webster dir and two (`overviewIndexOnly`, `overviewRefusal`) take the recorded frame in place of the state; every caller in `websterengine` and `webstercli`'s validate verb passes its told `WebsterDir`; behavior changes only for a state without a frame hash.
 
 **Commit:** 5: webster rebaseline: derive the recorded overview frame from the plan baseline copy (#463)
