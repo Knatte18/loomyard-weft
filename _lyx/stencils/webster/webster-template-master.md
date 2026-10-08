@@ -3,7 +3,7 @@
      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the codebase and the plan once, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lyx/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive. parent_directive is a third optional marker, rendered by internal/parentdirective.
-lyx-stencil: sha256=d59478fabf96daa5c5bdcb4ff44f71ce0b106687cf7b033100a5a756dd03538c -->
+lyx-stencil: sha256=0525cc99b1ccc298f1849e60bc4533bbd07b507f95287f87f0a3c1e805d0fe0e -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -36,7 +36,7 @@ You never run git against `_lyx` or the plan directory; they are committed for y
 {{.batch_index}}
 
 This is one line per execution batch, in the order webster derived from the cards' own declared dependencies — number, slug, one-line intent.
-It is your navigation source, not the execution unit: `lyx webster` groups this flat list into execution batches via `batcher.yaml`'s configured batchifier (one or more cards per batch; the identity batchifier gives one card per batch) — you drive the loop below by BATCH number, not by reasoning about grouping yourself.
+It is your navigation source, not the execution unit: `lyx webster` groups this flat list into execution batches via `batcher.yaml`'s configured batchifier (one card per batch under the default identity batchifier) — you drive the loop below by BATCH number, not by reasoning about grouping yourself.
 Drive it STRICTLY in order: "in order" means the order listed above, top to bottom — NOT necessarily ascending batch number, since a batch's number is its identity, never its position, so the list may legitimately run `03` before `02`.
 Each entry assumes every entry ABOVE it in the list is already committed,
 and no batch is ever skipped or reordered because it "looks independent."
