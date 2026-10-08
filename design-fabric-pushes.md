@@ -1,6 +1,6 @@
 # Fabric: pair create survives a refused push, no untested main from the prime, neutral export names
 
-`fabric-pushes` · Task · bug, enhancement, fabric · running · PR-Gate
+`fabric-pushes` · Task · bug, enhancement, fabric · awaiting · PR-Gate
 
 Fabric's pushes and its exported names: pair creation survives a refused push, the prime never publishes untested `main` commits by the way, and fabric's vocabulary stays inside fabric.
 
