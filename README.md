@@ -35,6 +35,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **Plan agent can record a decision as --by parent** — [`plan-agent-parent-decision`](design-plan-agent-parent-decision.md) · bug
 1. **Loom re-step refused with producer error while a stopped review strand's run dir is younger than 3m** — [`restep-young-run-dir`](design-restep-young-run-dir.md) · bug
 1. **Plan gates can name packages inside a nested fixture module, which cannot pass** — [`plan-gate-nested-module`](design-plan-gate-nested-module.md) · bug
+1. **Finalize warns of per-worktree config changes that came from main** — [`finalize-config-warn-from-main`](design-finalize-config-warn-from-main.md) · bug
 
 ### Enhancements
 

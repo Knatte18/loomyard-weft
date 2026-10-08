@@ -1194,6 +1194,22 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #451](https://github.com/Knatte18/loomyard/issues/451).\n\n## What happened\n\nTwo cards in one task had gates running `go test -tags integration` on package paths under a `testdata/` fixture directory.\nThe same card (or an earlier one) creates a `go.mod` in that directory, which makes the fixture its own module.\nThe main module then no longer contains those packages, so `go test` reports `main module does not contain package ... [setup failed]` and the gate's `\u0026\u0026` chain cannot pass as written.\nThe implementing agent worked around it by running `go vet` and `go test -tags integration ./...` from inside the fixture module, and wrote a friction note each time.\n\nA related symptom in the same batch: the test-budget guard (`cmd/lyx/testdata/test-budget.yaml`) needed a package row raised on several cards, and that file was on no card's target list.\n\n## Why it is abnormal\n\nThe plan was accepted through the plan gate although its gates were unsatisfiable by construction.\nPlan validation does not check that a gate's package paths stay inside the module that the plan's own cards create or change.\nCards also do not predict the test-budget row they will cross, so each agent edits an untargeted file.\n\n## What to do\n\n- At plan-write or plan-review time, flag a gate command whose package path lies under a directory that a card makes a nested module (a `go.mod` in a card target), and require the gate to run inside that module.\n- Consider listing `cmd/lyx/testdata/test-budget.yaml` as an implicit target, or surfacing the budget row in the card template, when a card adds tests.\n\nProvenance: task `plan-glyph-precision`; notes `01-glyphchain-plan-gate.md`, `07-redundant-package-target.md`.\n"
+    },
+    {
+      "id": 218,
+      "slug": "finalize-config-warn-from-main",
+      "title": "Finalize warns of per-worktree config changes that came from main",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        450
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #450](https://github.com/Knatte18/loomyard/issues/450).\n\nAt Finalize, loom warns: `task branch \"\u003cslug\u003e\" changed per-worktree config files since it forked from \"main\": _lyx/config/batcher.yaml (base \u003csha\u003e, tip \u003csha\u003e); landing does not carry them to the parent branch, so re-apply each change meant for the parent on the parent's copy`.\n\nSeen for `shuttle-state` and `plan-glyph-precision` on 2026-10-08.\nIn both, the pair's `batcher.yaml` was byte-identical to the prime's: the change was main's own commit (`batcher: cautious is the template default`, c0bf19c54) arriving in the pair through the weft sync, not an edit the task made.\n\nExpected: the check compares the tip against the parent's current copy (or excludes changes the weft sync brought in), and warns only when the task's copy differs from the parent's.\nAs it is, the warning fires on every run that forked before a config change on main, and the hub must diff each time to rule it out.\n"
     }
   ],
   "legacy_done": [
