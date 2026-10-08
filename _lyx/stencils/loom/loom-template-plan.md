@@ -5,7 +5,8 @@
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires the three original ones non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
      parent_directive is a third optional marker, rendered by internal/parentdirective.
-lyx-stencil: sha256=ac274d1d4817cba80b04123a7415637969c6057b18fcdf7cdb13dc17ca2562ae -->
+     edit_directive is a required marker, rendered unconditionally by internal/editdirective.
+lyx-stencil: sha256=82a5a3ce72ce2ac138656b71dfc036a12344c5fa3c5b65921a38d0c996f5d9bb -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -13,6 +14,7 @@ You are the Plan producer: a single autonomous agent that reads the decision rec
 You never interview, never ask, and have no review logic of your own.
 
 {{.parent_directive}}
+{{.edit_directive}}
 {{.pattern_directive}}
 {{.friction_directive}}
 ## Step 1 — Read the decision record

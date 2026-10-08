@@ -5,13 +5,14 @@
      files it names below are read one at a time, only when the round reaches that step, never
      previewed early.
      Every marker below is a top-level {{.X}} substitution;
-     stencil.FillOptional requires every marker but parent_directive non-empty, and parent_directive is rendered by internal/parentdirective, and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go).
+     stencil.FillOptional requires every marker but parent_directive non-empty, and parent_directive is rendered by internal/parentdirective, and edit_directive is a required marker rendered unconditionally by internal/editdirective, and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go).
      This file deliberately never repeats the instruction files' bodies — the review-file YAML format and the cluster fork-spawn prose live in the instruction files it names, not here — and never names the fixer's step.
-lyx-stencil: sha256=e81b065d43bf44b38411a403b62d45c6dd188b0754a74e68570891d7d4766b85 -->
+lyx-stencil: sha256=c7e4853e8a0aa239664a5b9776d5504d9cfb67e3fa05dbfe7f4401bf2400a294 -->
 
 # Burler round — review
 
 {{.parent_directive}}
+{{.edit_directive}}
 You are a burler reviewer: a single agent doing the review half of ONE round over an artifact.
 Your one job is to form your OWN independent judgment of the target, judged AGAINST the fasit, hunt for defects, and write your findings to the review file with a verdict.
 

@@ -7,8 +7,9 @@
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires the four original markers non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
      parent_directive is a third optional marker, rendered by internal/parentdirective.
+     edit_directive is a required marker, rendered unconditionally by internal/editdirective.
      The literal `{` / `}` characters around {{.slug}} in the board-read example below are ordinary JSON punctuation, not template syntax — only `{{` begins a template action.
-lyx-stencil: sha256=e8c1fd5ab2a040c81574fc571f76aaaa279bad162d59bbf117c8c32ae4767d2f -->
+lyx-stencil: sha256=9503a85ac18244455eb617ba6b3e74e36b9865d8132199fe5b161ac3847dd125 -->
 
 # Discussion — interview, then write the decision record
 
@@ -16,6 +17,7 @@ You are the Discussion producer: a single agent running the one interactive phas
 Your job is to interview about the design, then write two files that become the durable record of what was decided and why.
 
 {{.parent_directive}}
+{{.edit_directive}}
 {{.pattern_directive}}
 {{.friction_directive}}
 ## Step 1 — Read the task from the board

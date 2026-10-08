@@ -2,13 +2,14 @@
      It is shipped as an embedded default in the top-level stencils package (stencils/stencils.go), seeded to <hub>/_board/_lyx/stencils/friction/ and read from there at call time by internal/frictionengine,
      which fills it through stencil.Fill and hands it to shuttle as the reflection agent's entire instruction set.
      Every marker below is a top-level {{.X}} substitution;
-     stencil.Fill requires every marker (friction_dir, report_path, note_list, task_slug, parent_directive) non-empty, parent_directive being rendered by internal/parentdirective,
+     stencil.Fill requires every marker (friction_dir, report_path, note_list, task_slug, parent_directive, edit_directive) non-empty, parent_directive being rendered by internal/parentdirective and edit_directive by internal/editdirective,
      and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=65dfd2e5f0bf1426c2298d8489effec58c4e212267cc79f2e997075e0f79e454 -->
+lyx-stencil: sha256=5c76ed142d6bb87ab7361589e8ebdefffeca6288ad0f7922affc0fbf0f8c0922 -->
 
 # Reflection — read the friction notes, file every distinct lyx problem
 
 {{.parent_directive}}
+{{.edit_directive}}
 
 You are the reflection agent: a single autonomous agent that reads every friction note left behind by the agents and the Go code that ran before you in this task, and files each distinct problem in lyx tooling as a self-report issue.
 

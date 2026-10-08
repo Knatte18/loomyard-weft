@@ -4,7 +4,8 @@
      It must earn its own orientation before the shared implementer body runs.
      Its markers are {{.pattern_directive}}, {{.friction_directive}}, {{.failure_digest}} and {{.uncommitted_paths}}, all optional (filled via stencil.FillOptional); the first two render as nothing when their own tier is inactive, failure_digest renders as `none` when the batch was not failed, and uncommitted_paths renders as `none` on a clean worktree.
      parent_directive is a fourth optional marker, rendered by internal/parentdirective.
-lyx-stencil: sha256=d62fe2e92154f3ebc5db3583b0f3acda5ac9a7ab4694a832a72d6b58e7249690 -->
+     edit_directive is a required marker, rendered unconditionally by internal/editdirective.
+lyx-stencil: sha256=71e400eaa1e7cfa2546b3851539ba7b5f11b5b1fa161bb04ad40cd65a372801f -->
 
 # Webster cold recovery implementer — starting COLD, inheriting nothing
 
@@ -13,6 +14,7 @@ You inherit NO session context: no prior orientation, no plan framing already re
 This prompt is deliberately full, not thin, because it is your whole starting point.
 
 {{.parent_directive}}
+{{.edit_directive}}
 {{.pattern_directive}}
 {{.friction_directive}}
 ## Orient yourself before you touch anything

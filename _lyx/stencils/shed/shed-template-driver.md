@@ -5,14 +5,16 @@
      {{.park_command}} the command a parking driver runs after its stop report,
      {{.teardown_command}} the end-of-session command run at done and at busy,
      {{.parent_directive}} the shared parent directive rendered by internal/parentdirective,
+     {{.edit_directive}} the shared edit directive rendered by internal/editdirective,
      and {{.parent_notify}} the parent-notification rule, whichever of the shed-template-driver-notify stencils fits the run.
      The body is recipe-blind: it names no recipe, no state-directory path and no recipe-owned command, which arrive only through the markers.
      Refusal text and its ways forward live in contracts/specs/refusal-spec.md and are pointed at, never restated.
-lyx-stencil: sha256=daa453a40854f982ed5d2dc1992139cfd839063e291e741a0c532c695079b79a -->
+lyx-stencil: sha256=6cfed48b313095fefbe68db1c637982caac9215ab1c3c4294801357fc1586660 -->
 
 # Driver for run `{{.run_id}}`
 
 {{.parent_directive}}
+{{.edit_directive}}
 
 ## What it does
 

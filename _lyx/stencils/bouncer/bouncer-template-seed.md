@@ -4,11 +4,12 @@
      set -- the call runs as a single clean-room agent told only "read this file and do exactly
      what it says".
      Every marker below is a top-level {{.X}} substitution;
+     {{.edit_directive}} is a required marker, rendered unconditionally by internal/editdirective;
      stencil.Fill requires every marker this file names non-empty,
      and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty -- see internal/stencil/stencil.go).
      The focus-schema markers ({{.focus_example_lists}}, {{.focus_list_rules}}) have two variants, rendered by focusSchemaMarkers in internal/shedadapters/bouncerprompt.go:
      Go holds the variant so this stencil stays conditional-free.
-lyx-stencil: sha256=84f4466855ba6dc905c9765a185de49a02594f191520a5ed84e99c4cf20b354e -->
+lyx-stencil: sha256=ee80952150130753f5fafbbe0f668f17a4029d2e72e46ba424a4547031b8fc2f -->
 
 # Bouncer — seed pass
 
@@ -16,6 +17,7 @@ You are a review-gate seeder: you set the initial focus for a review that has no
 reviewer of the target artifact yourself.
 
 {{.parent_directive}}
+{{.edit_directive}}
 
 ## Rubric
 

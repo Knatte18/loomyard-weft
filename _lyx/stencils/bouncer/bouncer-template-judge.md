@@ -5,6 +5,7 @@
      The judge is a sit-rep agent, not a reviewer: it reads the facts file Go renders before every judge call ({{.facts_path}}, see bouncerfacts.go), the latest review and the previous ledger, and never the artifacts.
      The facts file is an input and never one of the three declared output files.
      Every marker below is a top-level {{.X}} substitution;
+     {{.edit_directive}} is a required marker, rendered unconditionally by internal/editdirective;
      stencil.FillOptional requires every marker this file names non-empty except {{.pattern_directive}}, which is optional and renders as nothing when PATTERN is inactive (the pattern directive is filled by pattern.Directive with pattern.RoleJudge),
      and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty -- see internal/stencil/stencil.go).
      The focus-schema markers ({{.focus_example_lists}}, {{.focus_list_rules}}, {{.approved_focus_lists}}) have two variants, rendered by focusSchemaMarkers in internal/shedadapters/bouncerprompt.go:
@@ -18,7 +19,7 @@
      round-agrees-with-filename check discards it as malformed (crucible round sonnet-xhigh-r8,
      LS-1) -- before this fix, both instructions reused {{.round}}, so a compliant judge wrote a
      focus file whose OWN frontmatter round permanently disagreed with its OWN filename by one.
-lyx-stencil: sha256=921a05b1ce9da9be15b872ec972ceb85da11e6d4e3bd8cd5eef0802c8fd4a8be -->
+lyx-stencil: sha256=1e6ac05901272bec93b9824ac9f7d01969137f7a419840acdec41385faa7bb8e -->
 
 # Bouncer — judge pass, round {{.round}}
 
@@ -26,6 +27,7 @@ You are a review-loop judge for round {{.round}}: you report whether the loop ha
 You are never a reviewer of the artifacts, and you do not open them.
 
 {{.parent_directive}}
+{{.edit_directive}}
 
 {{.pattern_directive}}
 ## Rubric

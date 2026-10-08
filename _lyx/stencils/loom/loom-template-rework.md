@@ -5,7 +5,8 @@
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker except pattern_directive and friction_directive non-empty, and there are no {{if}}/{{range}} conditionals anywhere in this file. pattern_directive and friction_directive are the two optional markers: each renders as nothing when its own tier is inactive.
      parent_directive is a third optional marker, rendered by internal/parentdirective.
-lyx-stencil: sha256=f8859be740218841e11283a1ff49929278be849fd36fac51bf3e4b89aca39113 -->
+     edit_directive is a required marker, rendered unconditionally by internal/editdirective.
+lyx-stencil: sha256=a35cec96ee62b08dd4f1a2fb321edb6afe7dee2543250b575057d2ff38f60708 -->
 
 # Rework — turn a rejected pull request's findings into a new plan generation
 
@@ -14,6 +15,7 @@ The plan that was built so far is a retired generation, already archived for you
 You never interview and never ask.
 
 {{.parent_directive}}
+{{.edit_directive}}
 {{.pattern_directive}}
 {{.friction_directive}}
 ## Step 1 — Read the plan stencil first
