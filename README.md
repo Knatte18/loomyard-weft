@@ -29,7 +29,7 @@ Starts when every entry it names under After is done.
    - Send waits for a ready pane and a settled input before Enter, retries with backoff, and a lost submission is transient; attach no longer halts on a stopped Burler half
    - **After:** `shuttle-state`
 1. **Review loop: lens fans for Discussion and Plan, judge-narrowed rounds, lighter convergence, models per segment** — [`review-loop-convergence`](design-review-loop-convergence.md) · bug, enhancement, burler, loom
-   - Wire burler cluster review into Discussion and Plan with their own fans, let the judge drop settled lenses, converge without circling to the budget, set models per segment, start the fixer after the review, and make circling decisions resume the run
+   - Wire burler cluster review into Discussion and Plan with their own fans, let the judge drop settled lenses, converge without circling to the budget, set models per segment, an option to start the fixer after the review, and make circling decisions resume the run
    - **After:** `shuttle-state`
 
 ## Notes

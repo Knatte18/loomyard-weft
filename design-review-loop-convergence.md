@@ -47,11 +47,11 @@ The task measures both against today's solo rounds, per round and per segment, b
 `loom.yaml`'s `review` and `fix` keys take one model-spec or a per-round list, but one setting serves every review segment.
 Discussion, Plan and Webster review differ in subject and in whether they fan, so the task lets each segment set its own review and fix models (a solo reviewer wants `opus`, a lens fan `sonnet[medium]`), with today's keys as the default.
 
-## The fixer starts when the review is done
+## An option to start the fixer when the review is done
 
 The fixer starts beside the reviewer and polls `lyx burler await-review` so its orientation overlaps the review (572ab84e8).
 When a review runs longer than the prompt-cache TTL the fixer's cache expires while it waits, and each await poll is a paid turn.
-The task measures that against starting the fixer once the review file exists, and keeps the cheaper; once kick-start packs exist (`kick-start-pack`) the fixer's orientation is short either way.
+The task adds a config option to start the fixer only once the review file exists instead; today's parallel start stays the default (operator, 2026-10-08: only the option for now, no decision on which is better).
 
 ## Circling decisions resume the run (from issue #446)
 
