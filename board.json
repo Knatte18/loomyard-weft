@@ -1114,6 +1114,22 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #458](https://github.com/Knatte18/loomyard/issues/458).\n\n## What happened\n\nA `lyx batten run review-lens-fan` began a best-effort status push to the weft remote at 14:11:21; the laptop hibernated four seconds later.\nAfter resume the push hung on a dead HTTPS connection (`git send-pack` in `futex_do_wait`) for 2.5 hours, and the batten run sat at Run-Shed without starting the child loom, with no notice to the parent.\nKilling the `git push` let batten log `status push failed, next transition will catch up` and go on.\n\n## Expected\n\nGit network calls from lyx (push and fetch, best-effort or not) run under a timeout, or with `http.lowSpeedLimit`/`http.lowSpeedTime` set, so a dead connection fails within minutes and the best-effort path takes over.\n"
+    },
+    {
+      "id": 213,
+      "slug": "record-batch-no-transcripts",
+      "title": "webster record-batch: zero fork transcripts for a forked batch forces a full re-drive",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        457
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #457](https://github.com/Knatte18/loomyard/issues/457).\n\n`lyx webster record-batch` refused to attribute a batch report with \"zero new fork transcripts since the previous batch boundary\", although the batch's fork had delivered a report.\n\nRefusal text (paths trimmed):\n\n```\nwebster: batch 01-carry-over-write's report could not be attributed: zero new fork transcripts since the previous batch boundary — the batch was never forked (or its transcript is not on this machine: fork transcripts are machine-local, so a crash window resumed on a different machine cannot re-attribute its report); report archived to _lyx/webster/reports/01-carry-over-write-\u003ctimestamp\u003e.yaml; way forward: lyx webster begin-batch 01 re-drives the batch\n```\n\nWhy this is abnormal: a report existed for the batch, so work was done, yet attribution found no fork transcript.\nPossible causes to check: the transcript boundary advanced past the fork's transcript (for example a repeated `record-batch` or `begin-batch` for the same batch), or the fork's transcript was not located.\nThe refusal archived the report and told the operator to re-drive the whole batch, which discards finished work; a second refusal on the same batch followed (see the head_sha issue filed alongside this one).\n\nWhat to do: find out why the transcript count was zero on a batch that was forked, and make `record-batch` idempotent or recoverable for an already-attributed batch instead of forcing a re-drive.\n\nProvenance: task `review-loop-convergence`; notes: webster-refusal-record-batch.md\n"
     }
   ],
   "legacy_done": [

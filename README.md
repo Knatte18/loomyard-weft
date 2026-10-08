@@ -30,6 +30,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **caller-uncovered emits false-positive informational entries for type-name and method-name matches** — [`caller-uncovered-false-positives`](design-caller-uncovered-false-positives.md) · bug
 1. **Plan reviewer suggests a file-plus-member card pairing that the redundant-file-target gate blocks** — [`plan-review-redundant-pairing`](design-plan-review-redundant-pairing.md) · bug
 1. **Git push without a timeout hangs a batten run after laptop sleep** — [`git-network-timeout`](design-git-network-timeout.md) · bug
+1. **webster record-batch: zero fork transcripts for a forked batch forces a full re-drive** — [`record-batch-no-transcripts`](design-record-batch-no-transcripts.md) · bug
 
 ### Enhancements
 
