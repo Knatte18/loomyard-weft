@@ -239,9 +239,9 @@ Rationale: reed-view landed a raw typed color while this task made sends and rea
 - D4 widens `TransientAgentStart` on an auto-pick; whether a session that never took its first input deserves its own class instead awaits the operator (support log Q8).
 
 <!-- lyx:carry-over Webster-Review -->
-- Webster-Review, round 2: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
-  Review: _lyx/reviews/webster/round-2-review.md; fixer report: _lyx/reviews/webster/round-2-fixer-report.md.
-  - webster-stop-leftover-overbroad (class design, severity MEDIUM, open in rounds 2)
+- Webster-Review, round 3: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/webster/round-3-review.md; fixer report: _lyx/reviews/webster/round-3-fixer-report.md.
+  - stop-guid-refusals-untested (class scope, severity MEDIUM, open in rounds 3)
 <!-- /lyx:carry-over Webster-Review -->
 
 ## Acceptance criteria
