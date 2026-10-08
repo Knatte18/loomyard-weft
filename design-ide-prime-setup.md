@@ -11,3 +11,7 @@ Assume no `.vscode/` exists beforehand, or that it may be deleted and re-seeded 
 - Keybindings: lyx writes a `// lyx:begin` … `// lyx:end` block into the user `keybindings.json`, the way mill writes its `// mill:begin` block (mill holds Alt+Shift+1–6), e.g. Alt+Shift+0 for orch start and Alt+Shift+9 for open board, binding `workbench.action.tasks.runTask` to the task labels.
 - No `launch.json`: mill used it to run Python scripts through the debugger; lyx is a binary, so tasks are the mechanism.
 - Pairs keep their current chains (driven: attach only).
+
+
+From `reed-view` Discussion (D15, 2026-10-08): `lyx ide spawn` rewrites the whole `// lyx:begin` … `// lyx:end` block in the user `keybindings.json` on every run, for the reed Alt keys.
+This note's keys must be added through the same writer, or each spawn wipes them.
