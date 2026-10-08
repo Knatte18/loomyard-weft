@@ -188,7 +188,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "9afeae3bb56fdf0742b3492be9ae6386",
   "masterSessionId": "1524cb1f-1b81-47ee-b755-6b7b5d0bb4d8",
   "batches": {
@@ -221,6 +221,27 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-gate-checks/1524cb1f-1b81-47ee-b755-6b7b5d0bb4d8/subagents/agent-ab10cd04c1e5904e9.jsonl"
       ]
+    },
+    "4": {
+      "slug": "caller-scan-import-path",
+      "cards": [
+        "04-caller-scan-import-path",
+        "05-caller-scan-types",
+        "06-plan-review-fix-rule",
+        "07-test-budget-rule"
+      ],
+      "cardHashes": {
+        "04-caller-scan-import-path": "792b65bc1f0cc08360b032a6655e3ab308b48bdf0b045a5a46b67b00278be678",
+        "05-caller-scan-types": "324f46d96b4267c338dd3d645335c26b4d242dc5c0a59618caaa654d82b90aa2",
+        "06-plan-review-fix-rule": "c80508f35ff885370b6b1d7d43ce3d24116c073340b1b27d8069676d6f2d3c95",
+        "07-test-budget-rule": "dd4c72154f16c0936350e737021ae073e45f0f88f2fbd5a45f45f7ad5cb5ed1a"
+      },
+      "startSha": "4aae462da00d1b5a8c74cd41332483f973adf30b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T18:59:46Z",
+      "sessionId": "1524cb1f-1b81-47ee-b755-6b7b5d0bb4d8",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
