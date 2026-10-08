@@ -1,0 +1,319 @@
+{
+  "runGuid": "cb4d38a001d5a0187fed8ae71e94acfe",
+  "planFingerprint": "0805e7487a4b5fe7f2b52e90722c1b183c507a6ec6e5311a8b45541b0563e5c1",
+  "planFileHashes": {
+    "00-overview.md": "c6cb71d1b2dc08bd6f9d727f7f751511c1a261c26f959de310037f9345c988c4",
+    "01-shuttle-send-config.md": "8ef192cd9896f869c4419dec58bfe4e85d2eeea3e09e47e3f9e2c564b51a6a03",
+    "02-claude-type-and-clear.md": "9e6556b52fe691e589a62fb7601dcf41e5e4fbeeb0e5d7660cb45aa675b6d884",
+    "03-send-waits-for-idle.md": "5277352674b2b023bf401a9b09edd8b18f3ba49249baacdd6a08e1c197d4b84b",
+    "04-send-settles-and-confirms.md": "eae4a5e1686c282ab097e15d38924064b364dba1120106e7edd759388d436b59",
+    "05-start-send-teardown.md": "c538d9ddc74c1d8f4b06fcfc7c3d09f4552e9e6131e528eec4e7b33f1b7b60d6",
+    "06-gate-boundary-idle.md": "f8bdb793b98cb35d8c27540ed833d4c3a6f09901689070390069f9710d3a36ad",
+    "07-shuttle-stop-verb.md": "c0cd196268d189828cc710f012d0653e25dea0fba3e74c59f7f98872ceb2935b",
+    "08-burler-stops-through-handle.md": "440a296bc1acc3382c3c94de59e62e9e74d1816847324b21499de0e371e76543",
+    "09-webster-stops-through-shuttle.md": "7f242a478ed4ff62d0baa2f1dda6a31da11c1f41efaddb4da3d387faf3597333",
+    "10-delete-strand-removers.md": "ec8d9a314ba0cbf2fac195b28da76eaef355f6b791d573dfd44b07643894d767"
+  },
+  "partition": [
+    {
+      "cards": [
+        "01-shuttle-send-config",
+        "02-claude-type-and-clear",
+        "03-send-waits-for-idle",
+        "04-send-settles-and-confirms",
+        "05-start-send-teardown",
+        "06-gate-boundary-idle"
+      ],
+      "profile": "cautious",
+      "estimate": 306842,
+      "breakdown": {
+        "weights": {
+          "master_base": 52000,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 53200,
+        "read_union": 82144,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 252,
+            "reads": {
+              "file:internal/shuttleengine/config_test.go": 3708,
+              "file:internal/shuttleengine/template.yaml": 192,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 38,
+            "written": 11652
+          },
+          {
+            "card": 2,
+            "card_text": 456,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 1464,
+              "file:internal/shuttleengine/claudeengine/session_test.go": 1980,
+              "file:internal/shuttleengine/claudeengine/startup_test.go": 4752,
+              "file:internal/shuttleengine/run_test.go": 12852,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 86,
+            "written": 26256
+          },
+          {
+            "card": 3,
+            "card_text": 888,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 2712,
+              "file:internal/shuttleengine/fakes_test.go": 6756,
+              "file:internal/shuttleengine/run_test.go": 12852,
+              "package:internal/loomcli": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 191.5,
+            "written": 58338
+          },
+          {
+            "card": 4,
+            "card_text": 828,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 2712,
+              "file:internal/shuttleengine/run_test.go": 12852,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 96,
+            "written": 29628
+          },
+          {
+            "card": 5,
+            "card_text": 612,
+            "reads": {
+              "file:internal/shuttleengine/completionsignal_enforcement_test.go": 4068,
+              "file:internal/shuttleengine/startup_test.go": 12924,
+              "package:internal/shedengine": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shedengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 80,
+            "written": 24612
+          },
+          {
+            "card": 6,
+            "card_text": 612,
+            "reads": {
+              "file:internal/shuttleengine/gate_pending_test.go": 3720,
+              "file:internal/shuttleengine/gate_test.go": 7368,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 68,
+            "written": 21012
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-shuttle-stop-verb",
+        "08-burler-stops-through-handle"
+      ],
+      "profile": "cautious",
+      "estimate": 323870,
+      "breakdown": {
+        "weights": {
+          "master_base": 52000,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 60200,
+        "read_union": 151044,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 756,
+            "reads": {
+              "file:internal/shuttleengine/attach_test.go": 14160,
+              "file:internal/shuttleengine/completionsignal_enforcement_test.go": 4068,
+              "file:internal/shuttleengine/doc.go": 2712,
+              "file:pattern/PATTERN-completion-signal.md": 312,
+              "package:internal/shuttleengine": 2000,
+              "package:pattern": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 128,
+            "written": 39156
+          },
+          {
+            "card": 8,
+            "card_text": 720,
+            "reads": {
+              "file:internal/battencli/wire_seams_test.go": 3696,
+              "file:internal/burlercli/wiring_test.go": 9780,
+              "file:internal/burlerengine/doc.go": 3960,
+              "file:internal/burlerengine/engine_test.go": 18552,
+              "file:internal/burlerengine/smoke_cluster_test.go": 3816,
+              "file:internal/burlerengine/smoke_round_test.go": 4284,
+              "file:internal/loomcli/smoke_attachprobe_test.go": 6000,
+              "file:internal/loomcli/wiring_test.go": 7860,
+              "file:internal/shedadapters/attachprobe_test.go": 5760,
+              "file:internal/shedadapters/bouncer_fixture_test.go": 2964,
+              "file:internal/shedadapters/burler_test.go": 13644,
+              "file:internal/shedadapters/doc.go": 3156,
+              "file:internal/shedrecipe/entries_burler_test.go": 7392,
+              "file:internal/shedrecipe/fixture_test.go": 1452,
+              "package:internal/battencli": 2000,
+              "package:internal/burlercli": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 242.5,
+            "written": 73470
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-webster-stops-through-shuttle",
+        "10-delete-strand-removers"
+      ],
+      "profile": "cautious",
+      "estimate": 311312,
+      "breakdown": {
+        "weights": {
+          "master_base": 52000,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 67200,
+        "read_union": 137924,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 888,
+            "reads": {
+              "file:PATTERN.md": 1140,
+              "file:internal/battencli/wire_seams_test.go": 3696,
+              "file:internal/loomcli/wiring_test.go": 7860,
+              "file:internal/shedrecipe/entries_simple_test.go": 4536,
+              "file:internal/testkit/shedfake/shedfake_test.go": 2928,
+              "file:internal/webstercli/reset_test.go": 6336,
+              "file:internal/webstercli/verbs_test.go": 14436,
+              "file:internal/websterengine/beginbatch_test.go": 9852,
+              "file:internal/websterengine/doc.go": 6240,
+              "file:internal/websterengine/recoverbatch_test.go": 14460,
+              "file:internal/websterengine/runlevel_test.go": 29604,
+              "file:internal/websterengine/strand_test.go": 2556,
+              "package:.": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/shedfake": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:.": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/shedfake": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 273,
+            "written": 82788
+          },
+          {
+            "card": 10,
+            "card_text": 300,
+            "reads": {
+              "file:internal/burlerengine/remover.go": 624,
+              "file:internal/burlerengine/remover_test.go": 468,
+              "file:internal/testkit/shedfake/shedfake_test.go": 2928,
+              "file:internal/websterengine/strand_test.go": 2556,
+              "package:internal/burlerengine": 2000,
+              "package:internal/testkit/shedfake": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/testkit/shedfake": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 77,
+            "written": 23400
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "40e9d79a7330df7afafd50156280ace9",
+  "masterSessionId": "99ece045-631d-4fc2-a200-e51ea974b9b8",
+  "batches": {
+    "1": {
+      "slug": "shuttle-send-config",
+      "cards": [
+        "01-shuttle-send-config",
+        "02-claude-type-and-clear",
+        "03-send-waits-for-idle",
+        "04-send-settles-and-confirms",
+        "05-start-send-teardown",
+        "06-gate-boundary-idle"
+      ],
+      "cardHashes": {
+        "01-shuttle-send-config": "8ef192cd9896f869c4419dec58bfe4e85d2eeea3e09e47e3f9e2c564b51a6a03",
+        "02-claude-type-and-clear": "9e6556b52fe691e589a62fb7601dcf41e5e4fbeeb0e5d7660cb45aa675b6d884",
+        "03-send-waits-for-idle": "5277352674b2b023bf401a9b09edd8b18f3ba49249baacdd6a08e1c197d4b84b",
+        "04-send-settles-and-confirms": "eae4a5e1686c282ab097e15d38924064b364dba1120106e7edd759388d436b59",
+        "05-start-send-teardown": "c538d9ddc74c1d8f4b06fcfc7c3d09f4552e9e6131e528eec4e7b33f1b7b60d6",
+        "06-gate-boundary-idle": "f8bdb793b98cb35d8c27540ed833d4c3a6f09901689070390069f9710d3a36ad"
+      },
+      "startSha": "6d9372c8f7b609f1d35f247a95b63998d57072c3",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T11:16:46Z",
+      "sessionId": "99ece045-631d-4fc2-a200-e51ea974b9b8",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
