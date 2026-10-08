@@ -1,7 +1,7 @@
 # Card 1 — pattern: fill a directive from stencil text
 
 **Create:**
-- `plan:internal/pattern#FillDirective` -> `func FillDirective(stencilName, stencilText, overview string) (string, error)`
+- `internal/pattern#FillDirective`
 
 **Edit:**
 - `internal/pattern#Directive`

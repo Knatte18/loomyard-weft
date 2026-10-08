@@ -1,15 +1,15 @@
 {
   "runGuid": "7125da5ade78b18b64e887be3f373e3e",
-  "planFingerprint": "c4248cf29980398a2e9018ddffc7fcb1f777b13550b72e46863c1c65d39a12ae",
+  "planFingerprint": "760acbebb7c13c91e3d749c1775112cf3db91fc5db50b23a663fb829aab01fe3",
   "planFileHashes": {
     "00-overview.md": "dac55e89d18c590e26548070ce5c28f01f80ce34f37086289cb6902ba89c1ea9",
-    "01-pattern-fill-directive.md": "69281138b131831d3a0738a56cb6c63facc0a3ba9965ff7847115102786e85b1",
-    "02-record-batch-resolves-head-sha.md": "680ce2bffa7fadaf786620e3d8cd0b81f4dbec36521e5199bcf7d11c4f05099e",
-    "03-recover-and-reset-resolve-head-sha.md": "76003f9faef8fe78e77e6d83a2c01f16812f0c1caca8b6256a91477279edea84",
-    "04-bracket-transcripts-count.md": "9a9dc54c5863da1ebe631aba4432218812a0255b6c3a89e0a2c63e0c9ac017ab",
+    "01-pattern-fill-directive.md": "8e6bbf1984f88dd7384e12afb29fe76b0f8734fdbbfae52b184dd209022ca5bc",
+    "02-record-batch-resolves-head-sha.md": "ae43dfefab404e6939b4cdce5d229a133c91bb90ed0f018ac03c7784049a4aea",
+    "03-recover-and-reset-resolve-head-sha.md": "52751f5fe97e7f5deaa2648fd095b30efdb42cc5aa6682a058d0c4d2c72c3bae",
+    "04-bracket-transcripts-count.md": "fa2920861fd34744a3f35fc7125aae95ec9a7c23d460ca97bb4d0b607d564344",
     "05-derived-overview-frame.md": "6a104fc177b9cfa511921458dbdae983da3980bb28d7cc5132666ed956113c00",
     "06-tokencount-merriam-start.md": "16de814120b4b7b179013619db09ebbf973035f09a476642e008812fe85560fe",
-    "07-tokencount-merriam-fixed-context.md": "6279ccce6b21ca8998ae3617c5f889c825855a6abef9b16e24a373a26fd2cfdc"
+    "07-tokencount-merriam-fixed-context.md": "2baec55186276a1d1ff0a1a9b80522685864b5de9cd6b14e46408888ea8e3e3e"
   },
   "planOverviewFrameHash": "6fde5d2062da0a534664fb95e32cfb9ce7ab631d3920fe998c347c16563220b1",
   "partition": [
@@ -177,7 +177,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "5a50ad463cce8d86e712397132e12511",
   "masterSessionId": "abe74d69-4817-4ad6-96e9-0f5d8ac2a00f",
   "batches": {
@@ -190,17 +190,34 @@
         "04-bracket-transcripts-count"
       ],
       "cardHashes": {
-        "01-pattern-fill-directive": "69281138b131831d3a0738a56cb6c63facc0a3ba9965ff7847115102786e85b1",
-        "02-record-batch-resolves-head-sha": "680ce2bffa7fadaf786620e3d8cd0b81f4dbec36521e5199bcf7d11c4f05099e",
-        "03-recover-and-reset-resolve-head-sha": "76003f9faef8fe78e77e6d83a2c01f16812f0c1caca8b6256a91477279edea84",
-        "04-bracket-transcripts-count": "9a9dc54c5863da1ebe631aba4432218812a0255b6c3a89e0a2c63e0c9ac017ab"
+        "01-pattern-fill-directive": "8e6bbf1984f88dd7384e12afb29fe76b0f8734fdbbfae52b184dd209022ca5bc",
+        "02-record-batch-resolves-head-sha": "ae43dfefab404e6939b4cdce5d229a133c91bb90ed0f018ac03c7784049a4aea",
+        "03-recover-and-reset-resolve-head-sha": "52751f5fe97e7f5deaa2648fd095b30efdb42cc5aa6682a058d0c4d2c72c3bae",
+        "04-bracket-transcripts-count": "fa2920861fd34744a3f35fc7125aae95ec9a7c23d460ca97bb4d0b607d564344"
       },
       "startSha": "7b3d140cb3f386f3c3c61e10e2b0eba7d3530d72",
       "kind": "fork",
       "spawnedAt": "2026-10-08T18:49:05Z",
       "sessionId": "abe74d69-4817-4ad6-96e9-0f5d8ac2a00f",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-pattern-fill-directive",
+        "status": "done",
+        "head_sha": "2ce070f1acf6d035d011a04fa5c901afb285a132",
+        "deviations": [
+          "cmd/lyx/testdata/test-budget.yaml"
+        ]
+      },
+      "cardShas": [
+        "2ce070f1acf6d035d011a04fa5c901afb285a132"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-record-batch/abe74d69-4817-4ad6-96e9-0f5d8ac2a00f/subagents/agent-a326c585374aa689b.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-record-batch/abe74d69-4817-4ad6-96e9-0f5d8ac2a00f/subagents/agent-a326c585374aa689b.jsonl"
+  ]
 }

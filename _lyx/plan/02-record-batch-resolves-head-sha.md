@@ -1,10 +1,10 @@
 # Card 2 — record-batch resolves an abbreviated head_sha
 
 **Create:**
-- `plan:internal/websterengine#ErrHeadSHAUnresolved` -> `var ErrHeadSHAUnresolved error`
-- `plan:internal/websterengine#commitsNamedBy` -> `func commitsNamedBy(worktree, prefix string) ([]string, error)`
-- `plan:internal/websterengine#realGit.CommitsNamedBy` -> `func (realGit) CommitsNamedBy(worktree, prefix string) ([]string, error)`
-- `plan:internal/websterengine#resolveReportHead` -> `func resolveReportHead(git Git, worktree, reportPath, headSHA string) (string, error)`
+- `internal/websterengine#ErrHeadSHAUnresolved`
+- `internal/websterengine#commitsNamedBy`
+- `internal/websterengine#realGit.CommitsNamedBy`
+- `internal/websterengine#resolveReportHead`
 
 **Edit:**
 - `internal/websterengine#Git`

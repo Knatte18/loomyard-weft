@@ -1,7 +1,7 @@
 # Card 4 — a batch's own bracket transcripts count toward attribution and are re-audited
 
 **Create:**
-- `plan:internal/websterengine#isOwnReportWrite` -> `func isOwnReportWrite(workdir, write, ownReport string) bool`
+- `internal/websterengine#isOwnReportWrite`
 
 **Edit:**
 - `internal/websterengine#BatchState`

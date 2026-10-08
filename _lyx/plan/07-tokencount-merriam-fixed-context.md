@@ -19,7 +19,7 @@
 - `tools/tokencount/calibrate_integration_test.go`
 
 **Uses:**
-- `plan:internal/pattern#FillDirective`
+- `internal/pattern#FillDirective`
 - `plan:tools/tokencount#MerriamStart`
 
 **Intent:**

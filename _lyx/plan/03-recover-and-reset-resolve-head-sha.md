@@ -10,8 +10,8 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/websterengine#resolveReportHead`
-- `plan:internal/websterengine#ErrHeadSHAUnresolved`
+- `internal/websterengine#resolveReportHead`
+- `internal/websterengine#ErrHeadSHAUnresolved`
 
 **Intent:**
 D1's other two consume sites take card 2's `resolveReportHead`, so recover-batch and `reset --to report-head` accept an abbreviated `head_sha` the way record-batch does.
