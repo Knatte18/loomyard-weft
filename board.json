@@ -902,6 +902,22 @@
       "isolated": false,
       "brief": "Drop finished batten statuses, prune the board, clear disposable .scratch and .lyx files, each through the owning module verb",
       "body": "## Wanted\n\nThe operator (2026-10-08): one command that tidies the repo, running every cleanup there is.\nToday finished batten runs leave `_lyx/shed/\u003cslug\u003e/` behind in the records repo for good (one directory per slug that ever ran), done board entries wait for `lyx board prune`, and `.scratch/` and `.lyx/` gather drafts and logs nobody reads again.\n\n## Proposal\n\n- A top-level verb, such as `lyx cleanup`, that only calls each module's own cleanup verb, so no module learns about another's state.\n- Batten's cleanup removes the status directory of every run whose status is terminal and done; it never touches a running, halted or failed run.\n- It runs `lyx board prune`.\n- It clears what `.scratch/` and `.lyx/` hold that can be discarded: old orch notes beyond the latest, logs past an age, stale drafts.\n  Which `.lyx/` paths are disposable is a design call for the task that builds it.\n- A dry run lists what would go before anything is removed.\n\nRelated: note `batten-reused-slug`, where a leftover done status blocked a new task with the same slug.\n"
+    },
+    {
+      "id": 194,
+      "slug": "glyph-practice-audit",
+      "title": "Audit how plans use glyphs in practice, then tune the plan stencil",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "After plan-glyph-precision lands: measure glyph use, Plan rounds and handle binding from real runs; kick-start waits on it",
+      "body": "## Why\n\n`plan-glyph-precision` makes plan cards name the members they change as glyphs, gated by the plan validators, and its committed test proves the glyph chain over a fixture module.\nThat proves the machinery, not that plan writers use it well.\nThe operator (2026-10-08) doubts a writer can pick the right glyphs from its own reasoning, and expects the gate to cost Plan rounds and time.\nKick-start packs (`kick-start-pack`, `enclose-kickstart`) build on plans whose glyphs resolve, so they wait until practice shows that.\n\n## Proposal\n\nAudit the first runs after `plan-glyph-precision` lands from their logs and transcripts:\n\n- the share of `Edit:` targets that are member glyphs rather than file paths or self glyphs;\n- the Plan rounds and Plan wall time spent on glyph findings (unresolved glyphs, redundancy, caller coverage, the re-sign arrow), against the Plan time of earlier runs;\n- `plan:` handles declared, bound at record-batch, and failed;\n- members a card edited that its glyphs did not name, and glyphs that named the wrong member, read from the batch diffs.\n\nFrom what the audit shows, tune the plan stencil: where writers guess, show them how to resolve a glyph with quarry before they write it, so the gate rejects less.\nKick-start work starts only once the audit shows plans name resolvable members in practice.\n"
     }
   ],
   "legacy_done": [
