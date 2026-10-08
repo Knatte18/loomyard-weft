@@ -286,7 +286,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "40e9d79a7330df7afafd50156280ace9",
   "masterSessionId": "99ece045-631d-4fc2-a200-e51ea974b9b8",
   "batches": {
@@ -361,6 +361,23 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-send/99ece045-631d-4fc2-a200-e51ea974b9b8/subagents/agent-a9e99f3cd45771155.jsonl"
       ]
+    },
+    "9": {
+      "slug": "webster-stops-through-shuttle",
+      "cards": [
+        "09-webster-stops-through-shuttle",
+        "10-delete-strand-removers"
+      ],
+      "cardHashes": {
+        "09-webster-stops-through-shuttle": "f9f33160c17eb9b77f39c76a83aeef25b71eaaa1313e0a1ea363e003395a46e4",
+        "10-delete-strand-removers": "ec8d9a314ba0cbf2fac195b28da76eaef355f6b791d573dfd44b07643894d767"
+      },
+      "startSha": "d92c66e6c0f76ba749c2f32734b2ca3fc4301f05",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T11:52:18Z",
+      "sessionId": "99ece045-631d-4fc2-a200-e51ea974b9b8",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
