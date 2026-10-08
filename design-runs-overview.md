@@ -30,6 +30,7 @@ Their output says nothing useful to the operator; the overview pane is where run
 
 The overview's height follows the number of runs, which is what led to the own-window choice on 2026-10-02 and 2026-10-05.
 The layout has to size the pane to its lines (reed's told geometry), or fix it at a small height with a summary line when the runs do not fit.
+reed's one layout rule today would collapse the orch above and grow the overview, the opposite of what is wanted; note `reed-layout-shares` covers the sizing this pane needs.
 
 ## Notices to the orch get shorter
 
