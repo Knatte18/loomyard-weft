@@ -15,11 +15,14 @@ Waits on nothing open; can start now, in parallel.
    - Plan-Write lists file paths instead of member glyphs because its stencil shows and allows it, and handle-unreferenced forces invented glyphs; test lyx's use of quarry glyphs systematically first
 1. **Shuttle: one session-state model, held turns as waits, stuck not a question, a deliberate permission setup** — [`shuttle-state`](design-shuttle-state.md) · bug, enhancement, shuttle · running · Webster
    - Shuttle computes busy/idle-done/idle-stalled/asking/dead from hooks in shadow mode, holds show as waits, a stuck outcome is classified from its file, and the hook denies python
-   - **Before:** `shuttle-send`, `review-loop-convergence`
+   - **Before:** `shuttle-send`, `review-lens-fan`
 1. **reed: strand and run tabs, narrow-terminal run row, a color per strand role** — [`reed-view`](design-reed-view.md) · enhancement, reed · running · Webster
    - VIEW plus a zoom button per strand and Alt-key navigation, run tabs that never fall off a narrow terminal, and each strand role in its own color
 1. **Webster: recovery never dead-ends, stale config fails at the start, a computed Merriam base** — [`webster-dead-ends`](design-webster-dead-ends.md) · bug, enhancement, webster · running · Plan-Burler
    - Reset targets as lyx verbs, a recovery prompt that names a dirty tree, decisions that reach a begun card, a retryable failed record-batch, batcher.yaml checked in preflight, and a computed batchifier base
+1. **Review loop: a lighter convergence rule, a lower budget with auto-accept, models per segment** — [`review-loop-convergence`](design-review-loop-convergence.md) · bug, enhancement, burler, loom
+   - Converge without circling to the budget on fresh edge-case keys, cap rounds at 2-3 with auto-accept, set review and fix models per segment, an option to start the fixer after the review, and circling decisions that resume the run
+   - **Before:** `review-lens-fan`
 
 ### Layer B
 
@@ -28,9 +31,9 @@ Starts when every entry it names under After is done.
 1. **Shuttle: a Send lands or retries, and attach knows a half it stopped** — [`shuttle-send`](design-shuttle-send.md) · bug, shuttle
    - Send waits for a ready pane and a settled input before Enter, retries with backoff, and a lost submission is transient; attach no longer halts on a stopped Burler half
    - **After:** `shuttle-state`
-1. **Review loop: a lighter convergence rule, a lower budget with auto-accept, models per segment** — [`review-loop-convergence`](design-review-loop-convergence.md) · bug, enhancement, burler, loom
-   - Converge without circling to the budget on fresh edge-case keys, cap rounds at 2-3 with auto-accept, set review and fix models per segment, an option to start the fixer after the review, and circling decisions that resume the run
-   - **After:** `shuttle-state`
+1. **Review lens fans for Discussion and Plan, narrowed by the judge each round** — [`review-lens-fan`](design-review-lens-fan.md) · enhancement, burler, loom
+   - Wire burler cluster review into Discussion and Plan with their own fans, let the judge drop settled lenses, after shuttle-state settles gate quiescence with forks
+   - **After:** `shuttle-state`, `review-loop-convergence`
 
 ## Notes
 
