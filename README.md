@@ -13,7 +13,7 @@ Waits on nothing open; can start now, in parallel.
 
 1. **Shuttle: a Send lands or retries, and attach knows a half it stopped** — [`shuttle-send`](design-shuttle-send.md) · bug, shuttle · running · Webster-Burler
    - Send waits for a ready pane and a settled input before Enter, retries with backoff, and a lost submission is transient; attach no longer halts on a stopped Burler half
-1. **A hub survives a lyx binary change; the no-script rule reaches spawned agents** — [`binary-change-and-rules`](design-binary-change-and-rules.md) · bug, enhancement, config, stencil · running · Describe
+1. **A hub survives a lyx binary change; the no-script rule reaches spawned agents** — [`binary-change-and-rules`](design-binary-change-and-rules.md) · bug, enhancement, config, stencil · running · Publish
    - Config reconciles itself on the first lyx command after a binary change, stencil drift behind main stops warning source-ahead, and file-editing stencils state the no-script edit rule
 1. **Plan gate checks: precise callers, nested fixture modules, a reviewer that knows the gate** — [`plan-gate-checks`](design-plan-gate-checks.md) · bug, enhancement, loom, quarry · running · Plan-Burler
    - Resolve callers by import path and receiver type, let gates run against nested fixture modules, and give the plan reviewer the gate check list
