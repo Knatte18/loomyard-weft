@@ -77,6 +77,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Run the llm-tier hook-capture scenario once and turn the real StopFailure, Notification and SessionEnd payloads into corpus fixtures
 1. **Caller coverage: precise caller resolution** — [`caller-scan-import-path`](design-caller-scan-import-path.md) · enhancement, quarry
    - caller-uncovered misses aliased and dot imports, and reports interface-type uses and same-named method calls as callers
+1. **Shuttle sends /color through the verified send** — `shuttle-color-verified-send` · enhancement, shuttle
+   - The startup /color command goes through the idle-wait and landing-confirmed send that shuttle-send builds, not a raw type before skill load
+1. **reed: spawn order from a recorded start time** — `reed-spawn-order-start-time` · enhancement, reed
+   - Revival orders sessions by the mtime of seed.json, which re-materialization can move; record an explicit start time in the run record and order by it
 
 ### Features
 
