@@ -15,7 +15,7 @@ Waits on nothing open; can start now, in parallel.
    - Plan-Write lists file paths instead of member glyphs because its stencil shows and allows it, and handle-unreferenced forces invented glyphs; test lyx's use of quarry glyphs systematically first
 1. **Shuttle: one session-state model, held turns as waits, stuck not a question, a deliberate permission setup** — [`shuttle-state`](design-shuttle-state.md) · bug, enhancement, shuttle · running · Discussion-Bouncer
    - Shuttle computes busy/idle-done/idle-stalled/asking/dead from hooks in shadow mode, holds show as waits, a stuck outcome is classified from its file, and the hook denies python
-1. **reed: strand and run tabs, narrow-terminal run row, a color per strand role** — [`reed-view`](design-reed-view.md) · enhancement, reed · running · Discussion-Burler
+1. **reed: strand and run tabs, narrow-terminal run row, a color per strand role** — [`reed-view`](design-reed-view.md) · enhancement, reed · running · Discussion-Bouncer
    - VIEW plus a zoom button per strand and Alt-key navigation, run tabs that never fall off a narrow terminal, and each strand role in its own color
 
 ## Notes
