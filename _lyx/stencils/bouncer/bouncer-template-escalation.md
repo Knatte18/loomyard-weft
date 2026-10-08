@@ -2,7 +2,7 @@
      Go renders it into the Bouncer run directory (round-<N>-escalation.md) and the parent notice points at it.
      Every marker below is a top-level {{.X}} substitution, and there are no {{if}}/{{range}} conditionals anywhere in this file.
      Go interpolates only paths, round, cause, segment and slug; the wording lives here and nowhere else.
-lyx-stencil: sha256=3169cdfdae9240ea1389e7f92eb706c45f80926869871183543dd6d60012f88a -->
+lyx-stencil: sha256=8b4f3c9fbc8e1ae01ab89f8a791093820524e708587df6da8a5b3039b8d830ac -->
 
 # Escalation — review segment `{{.segment}}`, round {{.round}}
 
@@ -34,7 +34,7 @@ When you can:
    - `lyx loom circling accept {{.slug}}` ends the segment unconverged on this round.
      The segment passes with its open findings, recorded as unconverged.
    - `lyx loom circling continue {{.slug}}` runs one more round.
-3. Resume the run with `lyx loom start` in `{{.worktree}}`.
+3. Resume the run with `lyx loom resume` in `{{.worktree}}`.
 
 When you cannot settle the question, record nothing and report back to your parent session, which asks the operator.
 The run stays `awaiting`.
