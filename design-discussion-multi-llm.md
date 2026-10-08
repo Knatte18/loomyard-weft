@@ -22,3 +22,8 @@ Design and build a Discussion-Write that runs on `MultiLLMProducer`: the writer 
 - When the chair ends the step, and what an advisor's output in the decision record looks like, if any.
 - Model per seat, and the config keys for them.
 - Whether the operator's interview turns still go to the chair alone.
+
+## Models (operator, 2026-10-08)
+
+Discussion runs on `fable[high]` as a single agent from 2026-10-08.
+Once this lands, the operator expects to step down to `opus[high]` for the chair with a `sonnet[high]` advisor.
