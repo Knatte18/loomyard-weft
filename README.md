@@ -26,6 +26,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - The board already marks running tasks; a write that changes the scope of a running task is refused
 1. **batten run on a slug whose earlier run is done reports ok and does nothing** — [`batten-reused-slug`](design-batten-reused-slug.md) · bug, batten
 1. **The plan gate fails done cards after a goto back to Plan-Review, and rebaseline refuses follow-up cards on an older webster record** — [`plan-gate-done-cards`](design-plan-gate-done-cards.md) · bug
+1. **A blocked Publish has no route that hands a finding to a fixer** — [`publish-fix-route`](design-publish-fix-route.md) · bug
 
 ### Enhancements
 
