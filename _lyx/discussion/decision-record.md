@@ -196,6 +196,12 @@ Decision: The PATTERN-shuttle-stop entry names one exception beside shuttle's ow
 
 Rationale: Plan-Write found that the loom driver is a shuttle run whose strand loomcli removes raw. No attach probe or Wait reads the driver's record, so the bug class of #444 does not reach it, and moving it is outside the decided scope; without the named exception the entry would be false the day it lands.
 
+### Added after Discussion (parent, 2026-10-08): The segment color goes through the send path after readiness
+
+Decision: After the merge with main (reed-view, f25395e49), three loomcli tmux-tier tests fail in publish_verify: TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver (the provider never became ready; the pane shows '/color blue' left in the input box), TestSmokeDriverStrand_ReentrantAcrossThreeBootstraps and TestSmokeStart_NeverAttachesAndAddsNoOperatorStrand (loom start timed out after 30s; 'could not resume the parked driver ... the strand's pane shows no input-ready provider'). This task owns the fix: every path that types reed-view's '/color' into a session (Start's playInputs of ColorSequence and Runner.TypeColor for a caller that colors itself, such as the loom driver) plays only after the provider is ready and goes through this task's send discipline (idle wait, settle, landing confirmed), so a color command never sits unsent in the input box and readiness never reads a box the color typing occupies. The color stays display-only: a color send that fails is logged and never fails the launch. Verify with the full go test ./... including the tmux-tier tests.
+
+Rationale: reed-view landed a raw typed color while this task made sends and readiness strict; the two meet only on the merged branch, and the fix sits inside this task's own goal (a Send lands or retries).
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: the idle reading, the input-box reading and the split choreography stay in `claudeengine`; `shuttleengine` reaches them only through capabilities.
