@@ -886,6 +886,21 @@
       "isolated": false,
       "brief": "Replace the fitted master_base with the computed fixed part plus a fitted orientation coefficient",
       "body": "Left from `batcher-v2`'s PR-Gate (2026-10-07).\n`batcher-v2` sizes a batch's start context as `master_base + (k−1) × batch_growth`, with `master_base: 52000` a fitted constant in `internal/batcher/template.yaml`.\nThe operator wanted the base computed, since it is fixed by what Merriam loads.\n\nMeasured in `batcher-v2`'s Discussion over the three `cautious` runs: Merriam starts at about 20.6K and orients itself up to 50–54K before the first fork.\n52K fits those three, but they are lyx tasks of similar plan size; a larger plan or another repo can land far from it.\n\n## Proposal\n\n- A function in `websterengine` computes Merriam's fixed part at partition time: CLAUDE.md, the Webster stencil with the inlined PATTERN overview, and the plan files Merriam reads; the system prompt and tools enter as a measured constant.\n- `Batch` takes that value, beside `before`, and `startContext` becomes `computedBase + orientation + (k−1) × batch_growth`.\n- `master_base` gives way to an `orientation` coefficient in `Weights`, `template.yaml` and the calibrate fit in `tools/tokencount`.\n"
+    },
+    {
+      "id": 180,
+      "slug": "enclose-kickstart",
+      "title": "Kick-start packs from tool locations through quarry Enclose",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "quarry"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Turn file:line locations from verify failures, lint and audits into member glyphs with quarry enclose, then into a kick-start pack",
+      "body": "Operator, 2026-10-08: quarry gains `Enclose`, written as quarry's task `enclose-locations` (in the quarry repo; the operator spawns it).\nIt maps `file:line` ranges from tool output to the innermost enclosing member glyphs, with the same Symbol data `Resolve` returns, also at a git revision (`quarry enclose [--rev R]`).\nMarkdown is out of its scope: a `.md` location is a per-item rejection.\n\nUse in Loomyard once it lands, building on the kick-start pack:\n\n- Verify failures (`go test` failure lines, `go vet`, compile errors) give the recovery agent or fixer a pack of the failing members.\n- Comment-lint findings and Webster audit findings carry glyphs instead of lines.\n- A review finding that cites `path:line` despite the glyph rule is mapped at the reviewed revision, then resolved in the working tree, so the fixer's own edits never shift it.\n\nGlyph↔path conversion stays in quarry; Loomyard never intersects lines with symbol spans itself.\n"
     }
   ],
   "legacy_done": [

@@ -73,6 +73,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - A lyx shed step that never returns is noticed, and the Windows verify timeout kills the whole process tree
 1. **Batchifier: compute Merriam fixed base context, fit only its orientation** — [`batchifier-computed-base`](design-batchifier-computed-base.md) · enhancement, webster
    - Replace the fitted master_base with the computed fixed part plus a fitted orientation coefficient
+1. **Kick-start packs from tool locations through quarry Enclose** — [`enclose-kickstart`](design-enclose-kickstart.md) · enhancement, quarry
+   - Turn file:line locations from verify failures, lint and audits into member glyphs with quarry enclose, then into a kick-start pack
 
 ### Features
 
