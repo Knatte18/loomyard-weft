@@ -236,6 +236,12 @@ Decision: Only a waiting turn end whose background tasks come from the Stop payl
 
 Rationale: outstandingBackgroundTasks reads the transcript at parse time when the payload has no background_tasks, so the entry depends on when it is read.
 
+### Added after Discussion (parent, 2026-10-08): Output files first covers output-derived states only
+
+Decision: The output-files-first statement covers the output-derived states (no-output, interactive asking). dead and unknown are process facts ranked above them in shadow mode because no consumer acts on them; the first consumer that acts on dead must apply PATTERN-completion-signal first. The Constraint and the D3 sentence are narrowed to say so; precedence rules 2 and 3 stand.
+
+Rationale: Resolves the contradiction without changing the precedence the acceptance rows already pin; PATTERN-completion-signal governs shuttle outcomes, not this shadow reducer.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: hook names, payload fields, the registry and the transcript markers live only in `claudeengine`; the states, the reducer and the signal types are provider-neutral in `shuttleengine`.
