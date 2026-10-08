@@ -14,6 +14,7 @@
     "09-webster-stops-through-shuttle.md": "b084b9adce21d99b4d44b7ec0fdbd5c748c30d4a6422aedcf4ed5065692af1db",
     "10-delete-strand-removers.md": "ec8d9a314ba0cbf2fac195b28da76eaef355f6b791d573dfd44b07643894d767"
   },
+  "planOverviewFrameHash": "febef32d09287c23aa24ccdb3f1d46770feeb5940ed172f2db6a0a08e190f269",
   "partition": [
     {
       "cards": [
@@ -28,8 +29,9 @@
       "estimate": 306842,
       "breakdown": {
         "weights": {
-          "master_base": 52000,
+          "orientation": 0,
           "batch_growth": 7000,
+          "master_base": 52000,
           "fork_messages": 4,
           "message_context": 300,
           "target_messages": 6,
@@ -136,8 +138,9 @@
       "estimate": 323870,
       "breakdown": {
         "weights": {
-          "master_base": 52000,
+          "orientation": 0,
           "batch_growth": 7000,
+          "master_base": 52000,
           "fork_messages": 4,
           "message_context": 300,
           "target_messages": 6,
@@ -215,8 +218,9 @@
       "estimate": 311312,
       "breakdown": {
         "weights": {
-          "master_base": 52000,
+          "orientation": 0,
           "batch_growth": 7000,
+          "master_base": 52000,
           "fork_messages": 4,
           "message_context": 300,
           "target_messages": 6,
@@ -287,8 +291,8 @@
     }
   ],
   "currentBatch": 0,
-  "masterStrand": "40e9d79a7330df7afafd50156280ace9",
-  "masterSessionId": "99ece045-631d-4fc2-a200-e51ea974b9b8",
+  "masterStrand": "436a7d5be4178aef2093f895425fc21e",
+  "masterSessionId": "0172be5f-882a-4df1-9fa5-8e66b3a2a052",
   "batches": {
     "1": {
       "slug": "shuttle-send-config",
