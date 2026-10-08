@@ -10,7 +10,7 @@ In:
 
 - Part 1: a hub-level binary stamp; the first start verb (`lyx orch start`, `lyx batten run`, `lyx loom start`, `lyx loom resume`) under a changed binary reconciles the hub's config (hub-wide modules, the prime, every pair) once, under a hub lock, before its own work, and commits what it wrote; the recipe's `Preflight` row checks the same stamp as a safety net.
 - Part 2 (issue #445): the stencil port-back drift warning stops classifying a worktree that lacks the binary's build commit as `source-ahead`.
-- Part 3: one shared edit directive stating the no-script edit rule, rendered into every spawned role stencil whose agent edits files.
+- Part 3: one shared edit directive stating the no-script edit rule, rendered into every spawned role's opening stencil other than the orch's.
 - Consolidating the duplicated build-identity readers that Part 1 would otherwise copy a third time.
 - `PATTERN.md` entries for the two new invariants (Decisions 6 and 14), the refusal-spec row for the `Preflight` safety net, package docs.
 
@@ -45,15 +45,25 @@ Out:
 
 4. **`lyx batten run` runs the check before it creates or adopts the run's pair.**
    Rationale: `fabricengine`'s pair add forks the new pair's records branch from the prime's local records branch, so once Decision 7 has committed the prime's reconciled config, the new pair inherits it with no retired key; the async push of that commit does not matter, since the fork reads the local branch.
+   Right after creating or adopting the pair and before its driver starts, `lyx batten run` always calls the entry point a second time, naming its own pair, and that call reconciles and commits that pair under the hub lock whatever the stamp says.
+   Rationale: the new pair is the one worktree `lyx batten run` knows may have forked stale config, either from a prime Decision 7 skipped as mid-merge, or from a prime another holder's walk had not yet committed when the fork read it; a stamp-gated second call would see that holder's fresh stamp and do nothing.
+   The call costs one pair's config read and, when nothing changed, no commit.
+   A failure of the second call stops `lyx batten run` as Decision 9 states, and its hub-lock timeout as Decision 5 states.
    A pair created another way (a direct `lyx fabric add`) before any start verb ran under the new binary is still covered: the next start verb's walk reconciles and commits it like any other pair.
+   One case escapes by design: a `lyx fabric add` whose fork read the prime before a walk committed it, and whose pair becomes enumerable only after that walk's last enumeration (Decision 5); the walk stamps fresh without it.
+   Loom-Preflight's retired-key refusal is the backstop for that pair, with its existing `lyx config reconcile --apply` way forward.
    The stencil-seed skip annotation stays as it is.
 
 5. **A stale stamp takes the hub lock with a bounded wait, re-reads the stamp, and reconciles only if it is still stale (double-checked).**
-   Order: hub-wide modules at the board dir (`configsync.ReconcileHubWideAt`, seeded from the prime as `lyx fabric reconcile` does), then the fabric config is loaded and the pairs enumerated, then `configsync.ReconcileAll` and Decision 7's commit at the prime's anchor and at every pair's anchor.
+   Order: hub-wide modules at the board dir (`configsync.ReconcileHubWideAt`, seeded from the prime as `lyx fabric reconcile` does), then `configsync.ReconcileAll` and Decision 7's commit at the prime's anchor, then the fabric config is loaded and the pairs enumerated, then the same reconcile and commit at every pair's anchor.
+   Before writing the stamp, the holder enumerates the pairs again and walks any pair it has not seen; it repeats until an enumeration finds no new pair.
+   Rationale: with the prime committed before the first enumeration, a pair forked after an enumeration inherits reconciled config, and a pair forked from the stale prime but registered after the first enumeration is caught by a later one; Decision 4 bounds what still escapes.
    The stamp is written only after every worktree reconciled and committed, then the lock is released.
    Rationale: two commands starting together after a binary change produce exactly one reconcile; the second waits, sees the fresh stamp and proceeds.
    The lock is an OS file lock (`internal/lock`), so a crashed holder never leaves it stale.
-   A lock still held when the wait runs out stops the start verb with a way forward to re-run it; the plan picks a wait comfortably above a hub-wide reconcile's duration.
+   A lock still held when the wait runs out stops the start verb with a way forward to re-run it, and leaves the stamp untouched.
+   The holder's own waits are not bounded: each per-worktree commit waits on that worktree's combined write lock as `Fabric.Commit` does today, so a pair whose lock is held by a long fabric verb (a merge's sync) stretches the walk, and the hub-lock wait is the only bound a waiter has.
+   The plan picks that wait above a walk with no contended pair lock; a waiter that still times out behind a healthy holder stops and is re-run, which then finds the fresh stamp.
 
 6. **The hub-wide reconcile lives in one new non-CLI package that both callers use; it is told the hub's geometry and derives no path.**
    Rationale: the start verbs and the `Preflight` row must run the same function (the same reason as `PATTERN-gate-self-check-parity`), `internal/configsync` cannot host it because `internal/fabricengine` imports `configsync` and pair enumeration needs `fabricengine`, and a shed producer must not import a `*cli` package.
@@ -65,7 +75,10 @@ Out:
    Rationale (operator, 2026-10-08): a manual reconcile's uncommitted `_lyx/config` changes stopped `Preflight`'s worktree-clean check and a Finalize merge, and let a new pair fork the prime's stale committed config.
    Race with a running pair's driver: `Fabric.Commit` takes the pair's combined write lock, the same lock the driver's own records commits take, so the two serialize; the scoped file list never sweeps the driver's in-flight files, and a driver commit that lands between the write and this commit takes the config change with it, after which this commit is a no-op.
    `Fabric.Commit`'s async push follows its existing rule: records only in the prime, both sides in a pair (`PATTERN-push-both-sides`).
-   A worktree whose records side refuses the commit because a merge is in progress (`ErrMergeInProgress`, foreign merge state) is not written at all: it is skipped, logged, and the stamp stays stale so the next start verb retries it; the start verb continues, since a merge is transient.
+   Before reconciling a worktree, the walk asks `fabricengine` whether it is mid-merge, by fabric's merge record or by foreign git merge state, the two conditions `Fabric.Commit` refuses on (`ErrMergeInProgress`, `ErrForeignMergeState`); the plan exports one query for both, since the foreign check is unexported today.
+   A mid-merge worktree is not written at all: it is skipped, logged, and the stamp stays stale so the next start verb retries it; the start verb continues, since a merge is transient.
+   When the commit still refuses after the write, because a merge started in between, the walk restores the files reconcile wrote or removed to their prior bytes and skips the worktree the same way, so no uncommitted config is left to ride into the merge.
+   This holds for the prime as for a pair; Decision 4 states how `lyx batten run` keeps a new pair clean when the skipped worktree is the prime.
 
 8. **Every applied change is logged through `internal/logger`: one line per changed module per worktree (worktree, module, added, removed, migrated), and one summary line naming the previous and new revision.**
    Nothing goes to stdout, which carries the command's own JSON envelope.
@@ -74,10 +87,13 @@ Out:
    The message names the worktree and file that failed, the error, and the way forward: fix the named file (or run `lyx config <module>` on it), then re-run the start verb.
    Worktrees that reconciled and committed cleanly before the failure keep their commits, since each per-worktree reconcile is idempotent; the next start verb retries the whole walk.
    A pair that vanishes mid-walk (torn down concurrently) is skipped, not a failure; a pair mid-merge is skipped as Decision 7 states.
-   Bound: while the stamp stays stale and failing, only the start verbs stop; every other command, `lyx config` and the orch's own calls included, runs as today.
+   Bound: while the stamp stays stale and failing, the start verbs stop and every run's `Preflight` row goes `Stuck` (Decision 10), a fresh run or a `goto` re-entry alike, even when the failing file sits in an unrelated pair; no run can start or resume in the hub until the named file is fixed.
+   Every other command, `lyx config` and the orch's own calls included, runs as today.
 
 10. **The loom recipe's `Preflight` row (`internal/preflightshed`) checks the same stamp and calls the same entry point when it is stale.**
-    A failure is `Stuck` with Decision 9's way forward, and gets a row in the shed section of `contracts/specs/refusal-spec.md` in the same commit, with a test that reaches it (`PATTERN-refusal-way-forward`).
+    A failure is `Stuck`, with the way forward to fix the named file (or run `lyx config <module>` on it) and then run `lyx loom resume` in the task worktree.
+    A hub lock still held when the wait runs out is `Stuck` too, with the way forward to run `lyx loom resume` once the other reconcile ends.
+    Both refusals get a row in the shed section of `contracts/specs/refusal-spec.md` in the same commit, each with a test that reaches it (`PATTERN-refusal-way-forward`).
     Rationale: the operator asked for it as a safety net for a run whose start verb predates the binary change, or that reaches `Preflight` without a start verb (a `goto` re-entry, a driver started before the binary changed).
     The stamp check runs before the row's worktree-clean check, so the committed reconcile leaves the tree clean for it.
     Loom-Preflight's retired-key refusal and its `lyx config reconcile --apply` way forward stay unchanged.
@@ -102,13 +118,14 @@ Out:
 
 ### Part 3 — the no-script edit rule reaches spawned agents
 
-14. **One shared edit-directive stencil states the rule, filled into a new marker in every spawned role stencil whose agent edits files, by one Go renderer.**
+14. **One shared edit-directive stencil states the rule, filled into a new marker in every spawned role's opening stencil, by one Go renderer.**
     The rule: change files only with Edit or Write, never with a script that rewrites them (not `sed`, `awk`, `perl`, or an inline `python`/`node` heredoc), bulk changes included (one Edit per site, or `replace_all` for an identical string); never use `sed` at all, even to read; search and read with `grep`, `awk` or `cat`.
     The wording stays consistent with the shuttle python deny's steer.
     The directive renders unconditionally, unlike the PATTERN directive, which renders nothing in a repo without `PATTERN.md`.
-    Roles that get it: every spawned role that edits files, its own artifacts included — webster's implementer fork, recovery strand and verify-gate fixer, Webster's Master (it writes state files), the Burler fixer, Rework, the landing conflict resolver, Plan-Write and Discussion-Write; review-only and judge roles do not.
-    New `PATTERN.md` entry, in the same commit, enforced by a stencil test like the parent-directive one: a file-editing role's opening stencil carries the edit-directive marker, and no other stencil restates the rule (`PATTERN-producer-pointer-rule`).
-    Rationale: the rule lives in `scribe:conversation`, a chat skill spawned roles never load; adding the rule to the PATTERN directive would miss consumer repos without `PATTERN.md` and the landing conflict resolver, which has no PATTERN directive; typing `scribe:conversation` into spawned roles would also load chat rules ("only answer, do not edit code") that contradict an implementer's task.
+    Roles that get it: every spawned role other than the orch, through its opening stencil — the same per-role set `PATTERN-parent-directive` pins (`roleOpeningStencils` in `contracts/stencils`); a fork inherits it through its parent's opening stencil.
+    Reviewers, judges, the describer and the reflection role are included: each writes at least its own artifact, and the rule constrains the tool, not the write surface, so it never widens a role's write limits.
+    New `PATTERN.md` entry, in the same commit, enforced by a stencil test like the parent-directive one: every spawned role's opening stencil carries the edit-directive marker, and no other stencil restates the rule (`PATTERN-producer-pointer-rule`).
+    Rationale: the rule lives in `scribe:conversation`, a chat skill spawned roles never load.
 
 ## Constraints
 
@@ -119,7 +136,7 @@ Out:
 - `PATTERN-fabric-git`, `PATTERN-gitrepo-client-boundary`, `PATTERN-gitexec-checked-call`: the hub-wide commit and push go through `fabricengine` (`Bolt`), each worktree's records commit through `Fabric.Commit`; the Part 2 ancestry check is a `fabricengine` local read.
 - `PATTERN-push-both-sides`, `PATTERN-mutation-record`: per-worktree commits use `Fabric.Commit` unchanged, inheriting its push rule and mutation record; no new push path.
 - `PATTERN-never-force-add`: the commit's file list holds tracked `_lyx/config` paths only.
-- `PATTERN-refusal-way-forward`, `PATTERN-no-denied-recovery`: the `Preflight` stuck row names its way forward, gets its spec row and a reaching test; no way forward names a denied command.
+- `PATTERN-refusal-way-forward`, `PATTERN-no-denied-recovery`: each `Preflight` stuck refusal names its way forward, gets its spec row and a reaching test; no way forward names a denied command.
 - `PATTERN-cli-cobra`: a start verb's reconcile failure is a JSON error envelope.
 - `PATTERN-spawn-observability`: no new OS process is started; the ancestry check is in-process.
 - `PATTERN-stencil-ownership`, `PATTERN-producer-pointer-rule`, `PATTERN-parent-directive`: the edit directive is read through `internal/stencilstore` from the told stencils dir and is the rule's only statement.
@@ -137,7 +154,7 @@ Out:
 - Auto-pick: a worktree mid-merge is skipped and retried at the next start verb rather than stopping it (Decision 7).
 - Auto-pick: Part 2 does not use the Part 1 stamp (Decision 13), which settles the board's open question.
 - Auto-pick: the `merriamFixedContext` calibrate step is out of scope (Scope).
-- Auto-pick: the edit directive reaches document writers (Plan-Write, Discussion-Write) as well as code editors (Decision 14).
+- Auto-pick: the edit directive reaches every spawned role other than the orch, reviewers and document writers as well as code editors (Decision 14).
 - Assumption: deployed `lyx` binaries carry a VCS stamp, since `tools/deploy` runs `go build` inside the repo; an unstamped binary contributes an empty revision and relies on the fingerprint alone.
 
 ## Open risks
@@ -146,9 +163,15 @@ Out:
   This follows from "the config matches the binary that runs"; the operator's real hub normally sees only the prod binary.
   The same applies to a long-lived process of an older build reaching the `Preflight` safety net after a newer build stamped the hub.
 - The first start verb after a binary change is slower, by one read (and possibly a write and records commit) of every worktree's config plus one `_board` commit and push.
-- While a reconcile keeps failing, no run can start or resume in the hub (Decision 9); the operator repairs the named file with `lyx config` or an editor.
+  While a skipped mid-merge worktree keeps the stamp stale (Decision 7), every start verb and every run's `Preflight` row repeats that walk under the hub lock until the merge ends.
 - A records commit into a running pair lands between its driver's own transition commits; it carries only config files, but it shows up in that pair's records history as a lyx-authored commit.
-- A pair that stays mid-merge keeps the stamp stale, so every start verb repeats the hub walk until that merge ends.
+
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - decision-7-mid-merge-skip-triggers-after-write (class consistency, severity MEDIUM, open in rounds 2)
+  - pair-forked-during-walk-escapes-reconcile (class design, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
@@ -156,19 +179,21 @@ Out:
 - Any other `lyx` command under a changed binary performs no reconcile and leaves the stamp untouched.
 - A retired key (as `master_base` was) in a pair's `batcher.yaml` is removed by that first start verb without any manual `lyx config reconcile --apply`, and Loom-Preflight then passes.
 - After the reconcile no worktree (prime or pair) has uncommitted `_lyx/config` changes: `Preflight`'s worktree-clean check and a Finalize merge both pass.
-- A pair created by `lyx batten run` after a binary change carries no retired key in any `_lyx/config` file, and its Loom-Preflight passes without a manual reconcile.
+- A pair created by `lyx batten run` after a binary change carries no retired key in any `_lyx/config` file, and its Loom-Preflight passes without a manual reconcile; this holds too when the prime was mid-merge and skipped, and when another start verb's walk stamped fresh while the pair forked, through the unconditional second call on the new pair.
+- A pair that becomes enumerable while a walk runs is reconciled and committed by that walk's re-enumeration before it stamps.
 - A pair created by `lyx fabric add` before any start verb ran under the new binary is reconciled and committed by the next start verb's walk.
 - A reconcile commit into a pair whose driver commits concurrently serializes on the pair's records lock and loses neither side's change.
 - A pair mid-merge is skipped without being written, the start verb proceeds, and the stamp stays stale until a later start verb reconciles that pair.
+- A worktree whose commit refuses as mid-merge after reconcile wrote its files ends with those files at their prior bytes and no uncommitted `_lyx/config` change.
 - An absent stamp is treated as stale.
 - Two start verbs run together under a new binary produce exactly one reconcile; the second waits on the lock and proceeds on the fresh stamp.
 - A pair's unparseable config file stops the start verb with a JSON error naming that file and the way forward; the stamp stays stale; ordinary commands, `lyx config` included, still run; after the file is fixed, the next start verb completes the reconcile and stamps.
 - A pair removed while the walk runs is skipped without failing the reconcile.
 - Hub-wide config changes are committed in `_board`; a push failure is logged and does not stop the start verb.
-- The `Preflight` row on a stale stamp runs the same reconcile before its worktree-clean check; on a reconcile failure it is `Stuck` with the way forward, and that refusal has its spec row.
+- The `Preflight` row on a stale stamp runs the same reconcile before its worktree-clean check; on a reconcile failure, including one in an unrelated pair, and on a hub-lock timeout it is `Stuck` with the way forward naming `lyx loom resume`, and each refusal has its spec row.
 - A dirty dev rebuild with a changed config template triggers the reconcile; a rebuild with no config change and the same revision does not.
 - Stencil drift: a worktree whose HEAD lacks the binary's revision and whose source differs from the embedded bytes logs class `behind` at info level with no deploy advice; a worktree whose HEAD contains the revision and whose source differs logs `source-ahead` with deploy advice as today; a binary with no revision keeps today's classification; a worktree with no drift runs no git.
-- Every file-editing role's rendered prompt contains the edit directive's rule, including in a repo with no `PATTERN.md`; a stencil scan fails when a file-editing role's opening stencil lacks the marker or another stencil restates the rule.
+- Every spawned role's rendered prompt other than the orch's contains the edit directive's rule, including in a repo with no `PATTERN.md`; a stencil scan fails when a spawned role's opening stencil lacks the marker or another stencil restates the rule.
 - `shedverbs` step records still carry the same `vcs_revision`/`vcs_modified` fields after the build-identity reader moves.
 
 ## Notes for the plan writer
