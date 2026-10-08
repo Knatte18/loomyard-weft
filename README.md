@@ -30,9 +30,15 @@ Starts when every entry it names under After is done.
 1. **Publish and loom recovery: a fix route from Publish, resume past its own merge, clean re-steps** — [`publish-recovery`](design-publish-recovery.md) · bug, loom, burler, fabric, config, stencil
    - A blocked Publish hands its failure to a fixer, resume survives its own staged merge, no false config warning at Finalize, re-step and decision-author fixes
    - **After:** `gate-test-scope`, `git-robustness`
+   - **Before:** `webster-replan-state`
+
+### Layer C
+
+Starts when every entry it names under After is done.
+
 1. **Webster state across replans: goto to Plan, late plan reviews, rebaseline clarity** — [`webster-replan-state`](design-webster-replan-state.md) · bug, enhancement, webster, loom, burler
    - Webster stays consistent after a goto to Plan or a late Plan-Review round, rebaseline names its fallback, one-call head_sha check, verify-module splits at || and |
-   - **After:** `gate-test-scope`
+   - **After:** `gate-test-scope`, `publish-recovery`
 
 ## Notes
 

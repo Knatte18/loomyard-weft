@@ -2,7 +2,7 @@
 
 `webster-replan-state` · Task · bug, enhancement, webster, loom, burler
 
-Depends on: [`gate-test-scope`](design-gate-test-scope.md)
+Depends on: [`gate-test-scope`](design-gate-test-scope.md), [`publish-recovery`](design-publish-recovery.md)
 
 ## Goal
 

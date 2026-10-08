@@ -1186,7 +1186,8 @@
         465
       ],
       "depends_on": [
-        "gate-test-scope"
+        "gate-test-scope",
+        "publish-recovery"
       ],
       "isolated": false,
       "brief": "Webster stays consistent after a goto to Plan or a late Plan-Review round, rebaseline names its fallback, one-call head_sha check, verify-module splits at || and |",
