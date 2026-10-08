@@ -28,6 +28,12 @@ The session ran autonomously: no operator answered, and every open point was set
   Rejected: names are worktree names and do not follow spawn order; creation time cannot be set, and the operator wants spawn order.
 - **Recreate sessions in order from inside the booting worktree's op lock.**
   Rejected: two worktrees booting at once would each hold their own lock and wait on the other's.
+- **Run the ordered revival only when no server answers.**
+  Rejected in burler round 1: a second booter arriving after the first has started the server would skip it and create its session out of order.
+- **Leave a zoomed window alone in the resize hook and layout applies, running them at the next unzoom instead.**
+  Rejected in burler round 4: a strand added while another is zoomed would get no layout until the unzoom, and every unzoom path, `VIEW`, Alt+z and a click, would have to carry the pins.
+- **Insert the keybindings block before the closing `]`.**
+  Rejected in burler round 1: it needs a comma after the previous last entry, a byte outside the markers.
 - **Leave restart order to whatever order battens revive pairs.**
   Rejected: the operator asked for spawn order to survive a restart.
 - **Keep the single-line status text, shown on line 2's right side.**
@@ -59,7 +65,42 @@ The session ran autonomously: no operator answered, and every open point was set
 
 ## Review rounds
 
-_No rounds yet._
+- Parent change, 2026-10-08: the operator, through the parent, asked that the segment colors be settable in config.
+  Added as an appended decision, then folded into D13 and D14 by burler round 1 (Q18).
+- Round 1 (burler): nine findings, all fixed.
+  F1: D7 now keeps the layout summing to the window height, the border title costing the top pane one content row (checked on tmux 3.6).
+  F2, F3: D12 orders every session in one list that includes the booter, runs on a revival of the booter's recorded session rather than only on a dead server, and tells nested ups to skip the step.
+  F4: D15 inserts after the opening `[`, scans JSONC with comments and strings skipped, skips unterminated or duplicated blocks, and writes atomically.
+  F5, F6, F7: the config colors fold into D13 and D14; reed alone reads them, validates them against lyx's closed palette at load, and `claudeengine` alone maps the palette to `/color` names.
+  F8: pre-change panes get `@strand` only, recorded as a risk.
+  F9: this entry, Q18 and the auto-mode line.
+- Round 2 (burler): seven findings, all fixed.
+  F1: D7's pin on the pane at window row 0 is its cell height minus the title row (checked on tmux 3.6: `resize-pane -y` sizes content, which only the top pane's title row sets apart from its cell); the acceptance criterion checks per-cell heights.
+  F2: an out-of-palette color moves from refusal at load to refusal in the boot validation block, every other reader failing safe to no color, so a typo never blocks `down`, `status`, teardown or an attach to a live session.
+  F3, F4: D12's Bound names where the order does not hold, and D12 states the lock sequence and the per-entry up function the teller supplies.
+  F5, F6: D15 skips a read-only file, keeps the target's permission bits, accepts only one begin then one end inside the array, and keeps the file's line ending.
+  F7: an unknown segment is no color; the orch watcher reads the resolved color from `StrandStatus`.
+- Round 3 (burler): seven findings, all fixed.
+  F1, F2, F3: D7's row 0 is the first cell of the layout string actually applied, in physical pane order; the adjustment keys on the read-back `pane-border-status`; a one-row top cell's pin is floored at one content row.
+  F4: D12's revive function checks its own worktree's state under its own op lock; the booter's `reedengine` only sequences.
+  F5: Open risks and the D12 criterion name the live later-position case.
+  F6: D8 emits the pinned paths through `internal/shell` and the client name as `#{q:client_name}`.
+  F7: D15 orders the unchanged check before the read-only check, reports a failed write as a skip and bounds the temporary file.
+- Round 4 (burler): eight findings, all fixed.
+  F1: D1 keeps a zoom across reed's resize hook and layout applies by re-zooming the pane that was zoomed (checked on tmux 3.6: `resize-pane -y` and `select-layout` both unzoom).
+  F2: D7's pins also run right after every layout apply, without the watchdog entry, so the one-row floor holds before any resize.
+  F3: D8 doubles `#` in every pinned token and stands `#{q:client_name}` as its own unquoted word (checked on tmux 3.6: `run-shell` format-expands its whole command); D11 follows.
+  F4: D7 subtracts the title row only on a readback of exactly `top`.
+  F5, F6: D15 skips an unreadable file and names its temporary file uniquely per run.
+  F7: D12's entries drop the spawn-order key, the teller sorts and names the booter, and the revival predicate is stated once.
+  F8: the round 3 entry above.
+- Round 5 (burler): eight findings, all fixed.
+  F1: D1 reads every planned pane list on the unzoomed window, a zoomed pane reporting `pane_top` 0; the attach pre-flight unzooms and re-zooms under its lock, and the zoom criterion zooms a strand that is not the top pane.
+  F2: D1's trigger is every step that changes the strand window's panes, layout or active pane, the unzooming commands its reason.
+  F3: D1 and D7 state that the hook and the attach chain carry the zoom bracket as run-time tmux commands, and the chain appends the pins.
+  F4, F7, F8: the Constraints bullet, the Scope line and D12's Bound match D12.
+  F5: the booter's re-run carries the revive functions' skip.
+  F6: D15 creates the temporary file exclusively and removes only a file this run created.
 
 ## Question ledger
 
@@ -80,3 +121,5 @@ _No rounds yet._
 - Q15 — Board open question: do the tmux border and the strand tabs carry the same color? Auto-pick: yes, both from `@strand_color` (D2, D4, D6). Resolved.
 - Q16 — Which `lyx ide` verb seeds the keybindings, and where is the file? Auto-pick: `lyx ide spawn`, per-OS user directory; WSL recorded as a risk (D15). Resolved.
 - Q17 — Does the orch get a color? Auto-pick: yes, the coordinator color, typed by the orch watcher (D14). Resolved.
+- Q18 — Are the segment colors fixed in code or settable? Operator, through the parent, 2026-10-08: settable in config. Settled as one reed config key per segment, validated against lyx's closed palette, reed the one reader (D13, D14). Resolved.
+- Q19 — What does a resize or a reed layout apply do to a zoomed strand? Auto-pick (burler round 4): it keeps the zoom, re-zooming the pane that was zoomed after the step runs on the unzoomed window (D1). Resolved.
