@@ -1178,6 +1178,22 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #452](https://github.com/Knatte18/loomyard/issues/452).\n\n## What happened\n\nAfter a driver repair, the re-step of the Discussion burler segment failed with a non-transient `producer` error.\nThe trace line: `shed: step refused kind=producer transient=\"\" error=\"... probe the burler-review half: shuttle: attach: 1 candidate run dir(s) ... cannot be confirmed dead or alive (untracked or with a cleared pane binding, younger than 3m0s) ...\"`.\nThe run dir had been left by the review strand that the previous step itself stopped.\n`lyx reed status` listed no such strand, while the burler-fix strand was still live, and no fabric mutation was half-finished.\nThe driver's only remedy was to wait until the run dir passed the 3m age and re-step, which cost a repair round (history_length 6).\n\n## Why it is abnormal\n\nThe strand was stopped by lyx moments earlier, so its run dir is known dead, yet the burler probe treats it as unclassifiable and refuses the step.\nA refusal that resolves itself with time should be a transient error, not a `producer` error that consumes a repair.\n\n## What to do\n\n- Have the stop path record or clear the stopped strand's pane binding, so the probe can classify its run dir as dead immediately.\n- Alternatively, report the young-run-dir refusal as transient so the loom retries instead of halting for repair.\n\nProvenance: task `plan-glyph-precision`; note `driver-repair-20261008-discussion-burler-2.md`.\n"
+    },
+    {
+      "id": 217,
+      "slug": "plan-gate-nested-module",
+      "title": "Plan gates can name packages inside a nested fixture module, which cannot pass",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        451
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #451](https://github.com/Knatte18/loomyard/issues/451).\n\n## What happened\n\nTwo cards in one task had gates running `go test -tags integration` on package paths under a `testdata/` fixture directory.\nThe same card (or an earlier one) creates a `go.mod` in that directory, which makes the fixture its own module.\nThe main module then no longer contains those packages, so `go test` reports `main module does not contain package ... [setup failed]` and the gate's `\u0026\u0026` chain cannot pass as written.\nThe implementing agent worked around it by running `go vet` and `go test -tags integration ./...` from inside the fixture module, and wrote a friction note each time.\n\nA related symptom in the same batch: the test-budget guard (`cmd/lyx/testdata/test-budget.yaml`) needed a package row raised on several cards, and that file was on no card's target list.\n\n## Why it is abnormal\n\nThe plan was accepted through the plan gate although its gates were unsatisfiable by construction.\nPlan validation does not check that a gate's package paths stay inside the module that the plan's own cards create or change.\nCards also do not predict the test-budget row they will cross, so each agent edits an untargeted file.\n\n## What to do\n\n- At plan-write or plan-review time, flag a gate command whose package path lies under a directory that a card makes a nested module (a `go.mod` in a card target), and require the gate to run inside that module.\n- Consider listing `cmd/lyx/testdata/test-budget.yaml` as an implicit target, or surfacing the budget row in the card template, when a card adds tests.\n\nProvenance: task `plan-glyph-precision`; notes `01-glyphchain-plan-gate.md`, `07-redundant-package-target.md`.\n"
     }
   ],
   "legacy_done": [
