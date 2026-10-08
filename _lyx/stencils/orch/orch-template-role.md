@@ -2,7 +2,7 @@
      It may span many lines and carries no markers.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lyx loads the orch's skills before the pointer arrives; a compaction keeps them.
-lyx-stencil: sha256=47a9743fea942b9ddd718b63c429367dfecc52c5b3926a3a4fb38ab45ab9caef -->
+lyx-stencil: sha256=20b5bd360c077f6a3de4571535d9c5f433ed1c5a5322ff6ec6fb5fcb161ee716 -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree.
@@ -12,8 +12,8 @@ When a message asks you to write the orch note, write it to the path the message
 
 ## The run loop
 
-1. Start the run from the prime with `lyx batten run <slug> --window`.
-   It starts the batten run in its own tmux window of your reed session and returns at once, so the session's window list then names every run in flight.
+1. Start the run from the prime with `lyx batten run <slug>`.
+   Detach it from your shell with `setsid nohup`, until `lyx batten start` exists.
    The batten run creates the task pair, drives the loom run inside it and tears the pair down after the run ends.
 2. A halted child (blocked, paused or failed) is a wait batten never resumes on its own: once its cause is known (see Investigating a stop), resume it with `lyx loom resume` in the task worktree.
    When `lyx loom resume` refuses, its message names the way forward (`lyx batten run <slug>` to bring a dead driver back, or `lyx loom start`),
