@@ -184,6 +184,12 @@ An already-materialized `reed.yaml` that still carries `status_line` keeps loadi
 Wait marks render on the strand buttons instead (D4).
 Rationale: the operator's bar shows no identity text; the session's run tab already names the worktree, and the hub is one per server; keeping a config key and verb whose output is never displayed would be dead surface.
 
+### Added after Discussion (parent, 2026-10-08): Segment colors come from config
+
+Decision: The color of each loom segment (coordinator, Discussion, Plan, Webster, Review, Describe, Landing) is read from reed's config, one key per segment, with D13's palette as the template default; nothing hard-codes a color in Go or a stencil.
+
+Rationale: Operator, 2026-10-08: the colors must be settable in a config.
+
 ## Constraints
 
 - `PATTERN-told-geometry`: `reedengine` derives no path and imports no `lyxcwd`; D12's ordered worktree list and its start times are told by the hub-mode teller.
