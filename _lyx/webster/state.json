@@ -283,7 +283,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 12,
   "masterStrand": "018f9b8b88e0e12501c5ce7665ec5aa2",
   "masterSessionId": "723bedac-a02e-4cd9-bddf-e65dacb0f52d",
   "batches": {
@@ -322,6 +322,25 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-lens-fan/723bedac-a02e-4cd9-bddf-e65dacb0f52d/subagents/agent-aaf738593b87e426d.jsonl"
       ]
+    },
+    "12": {
+      "slug": "loom-fan-config",
+      "cards": [
+        "12-loom-fan-config",
+        "13-loom-wiring-fans",
+        "14-gate-quiescence"
+      ],
+      "cardHashes": {
+        "12-loom-fan-config": "43eccb3d5a3fcfc2d1ea4f15fb2e316ed5898c5465f8d09135999d9c7f22804a",
+        "13-loom-wiring-fans": "d781f74bd215d3a9a51e1a878715533174d6d02f948626d629f90f6d86ffc3e8",
+        "14-gate-quiescence": "108c8aa93b3229a84baa9821e866fb771d3c4bc0c99009a1a189d960aa7796c4"
+      },
+      "startSha": "ed876d9896272b270d3dffa5f0837ec92a495547",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T15:44:15Z",
+      "sessionId": "723bedac-a02e-4cd9-bddf-e65dacb0f52d",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "round-usage-record",
