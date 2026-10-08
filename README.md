@@ -11,7 +11,7 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Orch and batten: compact reload, one event-driven notice channel, a window per batten** — [`lifecycle-waits`](design-lifecycle-waits.md) · bug, enhancement, orch, batten · awaiting · PR-Gate
+1. **Orch and batten: compact reload, one event-driven notice channel, a window per batten** — [`lifecycle-waits`](design-lifecycle-waits.md) · bug, enhancement, orch, batten · running · PR-Gate
    - The orch reloads as soon as compaction lands, batten sends one timely notice per state change without ticks, and each batten gets its own tmux window
 
 ## Notes
