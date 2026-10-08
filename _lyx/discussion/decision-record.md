@@ -237,6 +237,12 @@ The identity batchifier ignores the base, as it ignores `before`.
 
 Rationale: the base is fixed by what Merriam loads, so a bigger plan or another repo lands far from a fitted 52K; computing the loaded part leaves only the orientation work to fit.
 
+### Added after Discussion (parent, 2026-10-08): Archive-only reset guard judges against HEAD
+
+Decision: The round-4 fixer's shared decision reset-guard-judges-against-head stands: on reset's archive-only path the pending-findings guard judges every pending path against the worktree's HEAD and reads no recorded commit, refuses only with steps that clear the state (rm, restore-plan or rebaseline --card, git checkout <HEAD> -- <path>) followed by the reset again, and drops every other finding with a warning; freshPendingDrop keeps its own HEAD refusals for run --fresh. TestArchiveRunAfterReset's rewritten-branch row pins that the state reaches a successful archive.
+
+Rationale: Round-4 F1: the guard sent the archive-only reset back to accept-audit, which cannot succeed off HEAD's history; this is D3's bound that a rewritten branch starts over.
+
 ## Constraints
 
 - `PATTERN-refusal-way-forward`: every new or reworded refusal (reset targets, rebaseline's done-card and overview-framing refusals, begin-batch's remedy, `config_invalid`, `card_amended`, Loom-Preflight's batcher check) names its way forward, has its row in `contracts/specs/refusal-spec.md` in the same commit, and is reached by a test.
