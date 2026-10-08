@@ -57,8 +57,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - A snap refresh left the prime window wrong; lyx ide spawn needs the slug and fails from the hub root
 1. **Fabric's Windows path behaviour verified on a Windows host** — [`fabric-windows`](design-fabric-windows.md) · enhancement, fabric
    - Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant
-1. **VS Code only on request; other ways to watch a run** — [`ide-opt-in`](design-ide-opt-in.md) · enhancement, ide, reed, batten
-   - Default to CLI/tmux and start VS Code only on request; alternatives: pop-up terminals or tmux windows
+1. **Batten opens a terminal window per run instead of VS Code** — [`ide-opt-in`](design-ide-opt-in.md) · enhancement, ide, reed, batten
+   - VS Code per run is gone (c0d604f12); batten itself still opens no reed attach window, the orch does it by hand
 1. **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history** — [`warp-visibility`](design-warp-visibility.md) · enhancement, ide, fabric
    - Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date
 1. **finalize: the discrepancy-document conflict shape** — [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) · enhancement, fabric, loom
