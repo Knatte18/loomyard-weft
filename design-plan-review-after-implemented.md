@@ -1,6 +1,6 @@
 # Plan-review round is dispatched as a fix round after the plan is already implemented, and webster refuses the resulting plan edits
 
-`plan-review-after-implemented` · Note · bug
+`plan-review-after-implemented` · Note · bug, loom, burler, webster
 
 Imported from [issue #465](https://github.com/Knatte18/loomyard/issues/465).
 

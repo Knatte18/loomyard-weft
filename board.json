@@ -1318,7 +1318,10 @@
       "title": "Plan-review round is dispatched as a fix round after the plan is already implemented, and webster refuses the resulting plan edits",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "loom",
+        "burler",
+        "webster"
       ],
       "issues": [
         465
