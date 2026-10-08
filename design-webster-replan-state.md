@@ -98,3 +98,28 @@ The PR-Gate review of `plan-gate-checks` (PR #475) found that `crossModuleComman
 ## Idea
 
 Split at `||` and `|` too.
+
+
+## From issue #476
+
+Imported from [issue #476](https://github.com/Knatte18/loomyard/issues/476).
+
+## What happened
+
+A plan card required one exact sentence to be added to the `PATTERN-shuttle-stop` line in `PATTERN.md`, with nothing else changed.
+With that sentence the line is 409 characters, but `internal/pattern`'s `MaxEntryLineChars` caps an entry line at 320, and `TestOverview_RealFilePassesCheck` enforces the cap.
+The plan was approved anyway, so the card could not be satisfied as written.
+
+## Why this is abnormal
+
+The implementer had to reword the whole line.
+The reviewer, checking against the card's text, raised the reword as a finding (F1) and proposed a fix that fails the plan's own verify.
+That produced extra Webster-Burler rounds on a defect that was fixed in the plan, not in the code.
+The plan gate (Plan-Write, Plan-Bouncer) has no check that exercises a card's verbatim PATTERN text against the entry cap.
+
+## What to do
+
+Add a plan-gate check: when a card prescribes verbatim text for a `PATTERN.md` entry line, compute the resulting line length and reject the card if it exceeds `MaxEntryLineChars`.
+Alternatively, tell Plan-Write in its instructions to check verbatim PATTERN text against the cap before approving the card.
+
+Provenance: task `shuttle-send`; notes `burler-webster-r1.md`, `loom-halt.md`.
