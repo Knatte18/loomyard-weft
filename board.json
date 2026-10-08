@@ -985,6 +985,21 @@
       "isolated": false,
       "brief": "Revival orders sessions by the mtime of seed.json, which re-materialization can move; record an explicit start time in the run record and order by it",
       "body": ""
+    },
+    {
+      "id": 203,
+      "slug": "carryover-verify-on-disk",
+      "title": "Carry-over check re-reads the written file",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "WriteCarryOver checks the splice on the produced lines before the atomic rename; re-reading the file after the rename and checking what is on disk would also catch a concurrent writer",
+      "body": ""
     }
   ],
   "legacy_done": [

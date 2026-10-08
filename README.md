@@ -79,6 +79,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - The startup /color command goes through the idle-wait and landing-confirmed send that shuttle-send builds, not a raw type before skill load
 1. **reed: spawn order from a recorded start time** — `reed-spawn-order-start-time` · enhancement, reed
    - Revival orders sessions by the mtime of seed.json, which re-materialization can move; record an explicit start time in the run record and order by it
+1. **Carry-over check re-reads the written file** — `carryover-verify-on-disk` · enhancement, loom
+   - WriteCarryOver checks the splice on the produced lines before the atomic rename; re-reading the file after the rename and checking what is on disk would also catch a concurrent writer
 
 ### Features
 
