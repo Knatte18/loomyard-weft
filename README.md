@@ -72,6 +72,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Revival orders sessions by the mtime of seed.json, which re-materialization can move; record an explicit start time in the run record and order by it
 1. **Carry-over check re-reads the written file** — `carryover-verify-on-disk` · enhancement, loom
    - WriteCarryOver checks the splice on the produced lines before the atomic rename; re-reading the file after the rename and checking what is on disk would also catch a concurrent writer
+1. **reed: strands state their size; parallel agents share the window evenly** — [`reed-layout-shares`](design-reed-layout-shares.md) · enhancement, reed
+   - Replace the one collapse-all-but-the-newest rule with per-strand sizing: content-sized panes like the runs overview, and parallel agents that share space evenly
 
 ### Features
 
