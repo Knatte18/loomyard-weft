@@ -31,10 +31,15 @@ The session ran autonomously, so no operator answered; each turn below is a ques
 - **Gate sends on the session-state fold's derived state.** `shuttle-state` sequences fold consumers as separate tasks; the raw `turn_start` fact is enough here and carries no derivation risk.
 - **Wait for a `SessionStart` hook before the first send.** Not recorded today, and nothing shows it implies input readiness; the idle reading covers the case.
 - **Leave webster's reclaim on its own remover.** It never hit the attach refusal, but two stop paths writing different records is the shape that produced #444.
+- **Stop writes `done` over a run whose output files exist.** A `done` written outside finalize skips the gate's final evaluation and the run's cleanup; keeping `running` lets attach's existing file-contract-first branch harvest it through a real `Wait`.
+- **Let a missing turn end hold a send for the whole idle window.** A crashed hook or an interrupted turn would then fail every send as busy against an idle pane; the interrupt reading and a 10 s idle-pane override bound it.
+- **D1 accepts a box holding the previous failed text and the next send replaces it.** It needs a record of the failed text across sends and processes, and a `lyx shuttle send` from another process has none; clearing at the failure keeps D1's empty-box reading the one rule.
+- **Retry an unsent re-prompt only on the writer's next turn end.** The writer never received the re-prompt and stays idle, so no turn end arrives and the run idles to its deadline.
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1 (BLOCKING, ten findings, all fixed): D6's re-prompt retry gained a per-tick trigger and a deadline cap on in-loop sends; D7's stop verb consults the file contract first, marks the handle so its own `Wait` keeps `stopped`, and aborts on a failed record write; D1 bounds an unmatched `turn_start`; D4 re-reads before teardown and names its residual; D2's settle runs inside D3's window, which now opens at typing; acceptance criteria gained the missing behaviours; Open risks names Q8; the defaults bullet and incident chain were dropped as restatements.
+- Round 2 (BLOCKING, eight findings, all fixed): D3's failed send clears its own text so D6's retry finds an empty box, and D4's late-landing check moved onto the pre-clear reading and the signals; D6 restores a cleared boundary under D1's override and takes one deadline budget per send, with the appearance check inside D3's window and a guaranteed post-Enter read; burler stops a half through the handle form and `Run` gains a mutex for the mark; the completion-signal tripwire gains `runOutcomeStopped` as a marker; D1 names `SessionProber` and the turn-end kinds; D8 is scoped to code outside shuttle.
 
 ## Question ledger
 
@@ -46,4 +51,7 @@ _No rounds yet._
 - Q6 (resolved, auto-pick): `Runner.Send` (the `lyx shuttle send` CLI) also waits for idle — yes; typing into a running turn is the behaviour this task removes.
 - Q7 (resolved, auto-pick): a scan test for `PATTERN-shuttle-stop` — only if cheap; review-enforced otherwise.
 - Q8 (open, for the operator at review): whether the widened `TransientAgentStart` definition is acceptable, or a session that never took its first input deserves its own class.
+- Q9 (resolved, auto-pick, review round 1): the idle-pane stretch that overrides an unmatched `turn_start` — a fixed 10 s, no config key; a running turn shows its hint on every poll, so 10 s of idle pane is strong evidence.
+- Q10 (resolved, auto-pick, review round 1): stopping a run whose output files all exist — keep the record `running` and remove only the strand, so attach harvests it.
+- Q11 (resolved, auto-pick, review round 2): what a not-landed send does with its text — clears it through an engine-owned choreography, only when the box holds this send's text, a prefix of it or a paste placeholder, never with a key that interrupts a running turn.
 - No tool failures were observed during this session.
