@@ -1,4 +1,4 @@
-# Review loop: a lighter convergence rule, a lower budget with auto-accept, models per segment
+# Review loop: a lighter convergence rule, a three-round default budget, models per segment
 
 `review-loop-convergence` · Task · bug, enhancement, burler, loom · running · Discussion-Write
 
@@ -19,9 +19,8 @@ Nearly all of a round is the reviewer pass; the judge takes under a minute.
 - **A lighter convergence rule:** `CONVERGED` when the latest round carries no BLOCKING finding and no MEDIUM `design` finding on a key that was already open in an earlier round.
   New MEDIUM keys in the closing round are not dropped: they go to the next producer through the decision record, as the parent did by hand on 2026-10-08.
   BLOCKING always continues.
-- **A lower round budget with auto-accept at the cap (operator, 2026-10-08):** the default `review_max_bounces` drops from 5 to 2 or 3, and a spent budget accepts the segment as it stands, with its open findings written to the decision record for the next producer, instead of escalating to the parent.
-  `review_max_bounces` exists today; auto-accept at the cap does not (a spent budget always escalates, `settleUnconverged` in `internal/shedadapters/bouncer.go`), so the task adds it as a config choice, with escalation still available.
-  A BLOCKING finding at the cap still escalates.
+- **A default budget of three rounds (operator, 2026-10-08):** the template default of `review_max_bounces` (`internal/loomengine/template.yaml`) drops from 5 to 3; a spent budget still escalates to the parent, who decides what to do ("it is mostly fine after three rounds").
+  The prime's own `loom.yaml` already carries 3.
 - **Models per segment:** `loom.yaml`'s `review` and `fix` keys take one model-spec or a per-round list, but one setting serves every review segment.
   The task lets each segment (Discussion, Plan, Webster review) set its own review and fix models, with today's keys as the default.
 - **An option to start the fixer when the review is done:** the fixer starts beside the reviewer and polls `lyx burler await-review` so its orientation overlaps the review (572ab84e8).
