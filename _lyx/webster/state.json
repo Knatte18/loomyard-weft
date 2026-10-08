@@ -1,0 +1,206 @@
+{
+  "runGuid": "7125da5ade78b18b64e887be3f373e3e",
+  "planFingerprint": "c4248cf29980398a2e9018ddffc7fcb1f777b13550b72e46863c1c65d39a12ae",
+  "planFileHashes": {
+    "00-overview.md": "dac55e89d18c590e26548070ce5c28f01f80ce34f37086289cb6902ba89c1ea9",
+    "01-pattern-fill-directive.md": "69281138b131831d3a0738a56cb6c63facc0a3ba9965ff7847115102786e85b1",
+    "02-record-batch-resolves-head-sha.md": "680ce2bffa7fadaf786620e3d8cd0b81f4dbec36521e5199bcf7d11c4f05099e",
+    "03-recover-and-reset-resolve-head-sha.md": "76003f9faef8fe78e77e6d83a2c01f16812f0c1caca8b6256a91477279edea84",
+    "04-bracket-transcripts-count.md": "9a9dc54c5863da1ebe631aba4432218812a0255b6c3a89e0a2c63e0c9ac017ab",
+    "05-derived-overview-frame.md": "6a104fc177b9cfa511921458dbdae983da3980bb28d7cc5132666ed956113c00",
+    "06-tokencount-merriam-start.md": "16de814120b4b7b179013619db09ebbf973035f09a476642e008812fe85560fe",
+    "07-tokencount-merriam-fixed-context.md": "6279ccce6b21ca8998ae3617c5f889c825855a6abef9b16e24a373a26fd2cfdc"
+  },
+  "planOverviewFrameHash": "6fde5d2062da0a534664fb95e32cfb9ce7ab631d3920fe998c347c16563220b1",
+  "partition": [
+    {
+      "cards": [
+        "01-pattern-fill-directive",
+        "02-record-batch-resolves-head-sha",
+        "03-recover-and-reset-resolve-head-sha",
+        "04-bracket-transcripts-count"
+      ],
+      "profile": "cautious",
+      "estimate": 227698,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 53908,
+        "read_union": 87432,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 288,
+            "reads": {
+              "file:internal/pattern/doc.go": 924,
+              "package:internal/pattern": 2000,
+              "tests:internal/pattern": 2000
+            },
+            "messages": 20,
+            "written": 6288
+          },
+          {
+            "card": 2,
+            "card_text": 708,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3336,
+              "file:internal/websterengine/doc.go": 7116,
+              "file:internal/websterengine/gitfake_test.go": 2976,
+              "file:internal/websterengine/gitwrap_test.go": 5472,
+              "file:internal/websterengine/recordbatch_test.go": 21120,
+              "package:contracts/specs": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 95.5,
+            "written": 29358
+          },
+          {
+            "card": 3,
+            "card_text": 444,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3336,
+              "file:internal/websterengine/doc.go": 7116,
+              "file:internal/websterengine/recoverbatch_test.go": 15804,
+              "file:internal/websterengine/reset_integration_test.go": 3120,
+              "file:internal/websterengine/reset_test.go": 2640,
+              "package:contracts/specs": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 75.5,
+            "written": 23094
+          },
+          {
+            "card": 4,
+            "card_text": 768,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3336,
+              "file:internal/websterengine/beginbatch_test.go": 10716,
+              "file:internal/websterengine/doc.go": 7116,
+              "file:internal/websterengine/recordbatch_test.go": 21120,
+              "package:contracts/specs": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 89.5,
+            "written": 27618
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-derived-overview-frame",
+        "06-tokencount-merriam-start",
+        "07-tokencount-merriam-fixed-context"
+      ],
+      "profile": "cautious",
+      "estimate": 225960,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 60908,
+        "read_union": 74164,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 696,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3336,
+              "file:internal/webstercli/cli_test.go": 17580,
+              "file:internal/websterengine/doc.go": 7116,
+              "file:internal/websterengine/fingerprint_test.go": 4356,
+              "file:internal/websterengine/rebaseline_test.go": 10068,
+              "package:contracts/specs": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 138,
+            "written": 42096
+          },
+          {
+            "card": 6,
+            "card_text": 420,
+            "reads": {
+              "file:tools/tokencount/count_test.go": 2952,
+              "package:tools/tokencount": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 39,
+            "written": 12120
+          },
+          {
+            "card": 7,
+            "card_text": 672,
+            "reads": {
+              "file:tools/tokencount/calibrate_integration_test.go": 2016,
+              "file:tools/tokencount/calibrate_test.go": 6420,
+              "file:tools/tokencount/main.go": 2532,
+              "package:internal/websterengine": 2000,
+              "package:tools/tokencount": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 120,
+            "written": 36672
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "5a50ad463cce8d86e712397132e12511",
+  "masterSessionId": "abe74d69-4817-4ad6-96e9-0f5d8ac2a00f",
+  "batches": {
+    "1": {
+      "slug": "pattern-fill-directive",
+      "cards": [
+        "01-pattern-fill-directive",
+        "02-record-batch-resolves-head-sha",
+        "03-recover-and-reset-resolve-head-sha",
+        "04-bracket-transcripts-count"
+      ],
+      "cardHashes": {
+        "01-pattern-fill-directive": "69281138b131831d3a0738a56cb6c63facc0a3ba9965ff7847115102786e85b1",
+        "02-record-batch-resolves-head-sha": "680ce2bffa7fadaf786620e3d8cd0b81f4dbec36521e5199bcf7d11c4f05099e",
+        "03-recover-and-reset-resolve-head-sha": "76003f9faef8fe78e77e6d83a2c01f16812f0c1caca8b6256a91477279edea84",
+        "04-bracket-transcripts-count": "9a9dc54c5863da1ebe631aba4432218812a0255b6c3a89e0a2c63e0c9ac017ab"
+      },
+      "startSha": "7b3d140cb3f386f3c3c61e10e2b0eba7d3530d72",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T18:49:05Z",
+      "sessionId": "abe74d69-4817-4ad6-96e9-0f5d8ac2a00f",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
