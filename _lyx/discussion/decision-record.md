@@ -244,12 +244,6 @@ Rationale: publish_verify runs the tmux tier, which the Burler verify gate does 
 - D3's clear removes whatever the box holds that matches this send's text; an operator who types or pastes into the pane while the send's window is open loses that input when it starts like the send's text or shows as a collapsed paste placeholder.
 - D4 widens `TransientAgentStart` on an auto-pick; whether a session that never took its first input deserves its own class instead awaits the operator (support log Q8).
 
-<!-- lyx:carry-over Webster-Review -->
-- Webster-Review, round 3: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
-  Review: _lyx/reviews/webster/round-3-review.md; fixer report: _lyx/reviews/webster/round-3-fixer-report.md.
-  - stop-guid-refusals-untested (class scope, severity MEDIUM, open in rounds 3)
-<!-- /lyx:carry-over Webster-Review -->
-
 ## Acceptance criteria
 
 - A send into a pane that shows a running turn or a non-empty draft does not type until the pane reads idle, and fails with `ErrSessionBusy` carrying the pane's last lines when the window passes.
