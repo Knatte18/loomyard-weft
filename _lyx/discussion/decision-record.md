@@ -133,6 +133,13 @@ Rationale: Batten verbs refuse outside the prime, and no batten status output re
 - An orch or skill flow that today edits a running entry's body mid-run (for example, recording a finding on the task itself) now fails; the board skill text and the refusal redirect it to a note.
 - The `git-robustness` task plans "batten refuses a done slug", which touches the same Worktree-Create row; the two changes must compose (the claim write skips a done entry, so they do not conflict in behavior).
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - prune-collides-with-locked-field-rule (class consistency, severity MEDIUM, open in rounds 1, 2)
+  - unlock-of-live-run-unbounded (class design, severity MEDIUM, open in rounds 1, 2)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - On an entry whose status is `running · Webster` (and likewise `blocked · …`, `paused · …`, `failed · …`, `awaiting · …`), each of these is refused, mutates nothing, and its message names the slug, the status, both ways forward, `lyx batten status <slug>` run from the prime worktree, and the outcomes that mean no run holds the entry (Decision 5): upsert changing body, brief, labels, issues, title, kind, recipe, depends_on; `set-deps`; `promote` of a note; `remove`; `merge` removing it; `merge` upserting into it with a change; `merge` upserting into it with a change while its `set_status` clears it; `upsert-batch` with one entry changing it (no entry of the batch lands); `upsert-batch` listing it twice, first clearing its status and then changing its body; `intake import` with `into` it (no GitHub comment or close happens).
