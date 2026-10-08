@@ -32,7 +32,7 @@ The session ran in autonomous mode: no operator answered, and every turn below i
    The gap is begin-batch's multi-remedy message and Master's lack of a config rung.
 10. Issue #440: Preflight or Loom-Preflight?
     The general Preflight is orchestrator-agnostic; batcher is loom's concern, so Loom-Preflight.
-    The Batchifier row already gates `batcher.Active`, so the #440 run's config most likely changed under it, which is why the reconcile migration and the `config_invalid` stop are also needed.
+    The Batchifier row already gates `batcher.Active`, so the #440 run's config most likely changed under it (a deploy between rows), which is why the reconcile migration and the `config_invalid` stop are also needed: Loom-Preflight catches only a config stale at run start.
 11. Why migration rather than a clearer refusal only?
     `profiles` is an open map that reconcile carries whole, so a retired key inside it survives every reconcile, and this task retires `master_base` itself.
 12. Computed base: which files and which unit?
@@ -57,10 +57,20 @@ The session ran in autonomous mode: no operator answered, and every turn below i
 - Validating every config module at Loom-Preflight: the failure seen is batcher's; no other module has drifted.
 - `batcher.Active` tolerating retired keys with a warning: `PATTERN-config-strictness` and the existing refusal keep a stale profile from being silently misread.
 - Sizing the computed base in tokens through a tokenizer: a second size model beside the batcher's line model.
+- Clearing `AmendedCards` when the recovery strand is spawned: a recovery that then fails or is stuck loses the amendment instruction, since the next digest is built from that recovery's own failure.
+- Clearing `AmendedCards` only at the recovery's terminal record, with no rendered flag: the recovery that carries the amendment would itself be forced failed, a loop.
+- A way forward for a done card that needs no Card Index edit: no such landing exists, because `planparser` builds the plan's cards from the index; the index-only overview change is the smallest machinery that makes the follow-up card reachable.
+- Overwriting an operator's `orientation` with the template value on migration: discards a value the operator chose.
+- Taking the system-prompt constant as the whole 20.6K start: the measured start already holds `CLAUDE.md` and the Master stencil, which the computed part counts again.
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1 (fixer): every finding fixed.
+  D7's follow-up card needed a Card Index line rebaseline refused, so rebaseline now accepts an index-only overview change checked by a framing hash.
+  D6's mark gained a `rendered` flag and Master a `card_amended: true` rung; D1 gained mechanical checks for the held-lock case; D3 and D4 state their guards and the tree each mode leaves; D10 bounds `config_invalid` and gives `dead` its own remedy; D12 places each retired key and keeps an operator's `orientation`; D13 derives the constant and `orientation` from the board entry's measurements; Scope and Acceptance gained the D7 and D8 lines.
+- Round 2 (fixer): every finding fixed.
+  D7's second hash covers the whole overview minus its Card Index, since the integration verify sits in `## verify:` after the index, not in the framing; a begun card's intent line is stated as unpinned.
+  D4 gained the archive-only row; D6 resets `rendered` on a re-edit.
 
 ## Question ledger
 
@@ -77,4 +87,7 @@ _No rounds yet._
 - Q11 Where to validate `batcher.yaml`? — resolved, auto-pick: Loom-Preflight (D11).
 - Q12 Migrate or report retired keys? — resolved, auto-pick: both, reconcile migration hook plus naming it in refusals (D12).
 - Q13 Computed base inputs and unit? — resolved, auto-pick: `CLAUDE.md`, rendered Master stencil, `00-overview.md`, line model, Go constant for system prompt and tools (D13).
-- Q14 Source of the `orientation` template value? — open for Plan: the calibrate fit over existing measured runs, else derived from 52000 minus their computed base.
+- Q14 Source of the `orientation` template value? — resolved, auto-pick: 31400, the measured 52000 minus the measured 20.6K start, replaced by the calibrate fit only when the measured runs are still on disk (D13).
+- Q15 How does a decision against a done card land, given a new card needs a Card Index line? — resolved, auto-pick: rebaseline accepts an index-only overview change, checked by a hash over the overview minus its Card Index (D7).
+- Q16 Is a begun card's Card Index intent pinned? — resolved, auto-pick: no; only its number and slug, through the existing id-based card-set rule, since the card file stays hash-pinned (D7).
+- Q17 What does a re-edit of a card whose amendment was already rendered do? — resolved, auto-pick: resets the entry's `rendered` to false, so the live recovery is forced failed and re-run on the newer text (D6).
