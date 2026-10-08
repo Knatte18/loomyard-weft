@@ -3,6 +3,8 @@
 **Create:**
 - `internal/shuttleengine#ErrSessionBusy`
 - `internal/shuttleengine#sendContext`
+- `internal/shuttleengine#Run.newSendContext`
+- `internal/shuttleengine#Runner.newSendContext`
 - `internal/shuttleengine#sendReadyTimeout`
 - `internal/shuttleengine#awaitIdleSession`
 - `internal/shuttleengine#unmatchedTurnStart`
@@ -38,7 +40,7 @@ Implement D1 and D5's tail for the busy failure: a verified send types nothing u
 The new helpers live in a new file `internal/shuttleengine/send.go`.
 
 `sendContext` carries what every verified send needs: reed, engine, strand guid, the run's events path, the shuttle `Config`, the `Clock` the send's waits sleep and read time through, and a deadline (zero for none; card 6 sets it inside the wait loop).
-`sendVerified` takes it in place of its loose arguments and first calls `awaitIdleSession`; its callers build one: `Run.Send`, `Run.loadSkillTurn` and `Run.loadSkillsThenPrompt` from the run (`run.state.EventsPath`, `run.clock`), `Runner.Send` and `Runner.LoadSkills` from the `RunState` their `FindRun` already returns and `r.clock`.
+`sendVerified` takes it in place of its loose arguments and first calls `awaitIdleSession`; its callers build one through two builders: `Run.newSendContext()` builds it from the run (`run.state.EventsPath`, `run.clock`) for `Run.Send`, `Run.loadSkillTurn` and `Run.loadSkillsThenPrompt`, and `Runner.newSendContext(state RunState)` from the `RunState` that `FindRun` already returns and `r.clock` for `Runner.Send` and `Runner.LoadSkills`; both leave the deadline zero.
 `Run.Send` and `Runner.Send` drop their own `requireReadyAgentPane` call, since the idle wait now owns the readiness guard; `Runner.LoadSkills` loses its "no idle precondition" sentence.
 `Runner.Inject` and `Run.Interrupt` are untouched.
 

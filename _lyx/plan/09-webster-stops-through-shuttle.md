@@ -3,6 +3,7 @@
 **Create:**
 - `internal/websterengine#StrandStopper`
 - `internal/testkit/shedfake#strandStopper`
+- `internal/websterengine/stopper_test.go`
 
 **Delete:**
 - `internal/testkit/shedfake#reedOps`
@@ -24,7 +25,6 @@
 - `internal/loomcli#loomCLI.wire`
 - `internal/shedrecipe#websterEntry`
 - `internal/testkit/shedfake#WebsterSeams`
-- `internal/websterengine/strand_test.go`
 - `internal/websterengine/runlevel_test.go`
 - `internal/websterengine/beginbatch_test.go`
 - `internal/websterengine/recoverbatch_test.go`
@@ -41,7 +41,7 @@
 - `internal/shuttleengine#Runner.StopStrand`
 
 **Intent:**
-Move webster's leftover-strand reclaim onto shuttle's stop verb by guid (D7), so one stop path exists, and add D8's `PATTERN-shuttle-stop` entry now that no other package removes a shuttle run's strand.
+Move webster's leftover-strand reclaim onto shuttle's stop verb by guid (D7), so one stop path exists, and add D8's `PATTERN-shuttle-stop` entry now that no other package removes a shuttle run's strand but the two the entry names as exceptions.
 
 `StrandStopper` is a one-method seam, `StopStrand(guid string) error`, which `*shuttleengine.Runner` satisfies structurally; it sits in `strand.go` beside the other spawn seams.
 `RunDeps`, `BeginDeps` and `RecoverDeps` each gain a `Stopper StrandStopper` field, documented as the seam the reclaim stops a leftover strand through.
@@ -62,12 +62,22 @@ A guid with no run record is removed as today, and a record already terminal or 
 
 `removeStrandIfLive` in `websterengine` is left without callers and deleted by card 10.
 
-`PATTERN.md` gains, under "Agents and prompts", per D8 and the decision added after Discussion naming the driver exception: "`PATTERN-shuttle-stop` — Stopping the strand of a shuttle run from Go outside `internal/shuttleengine`: only through shuttle's stop verb, which settles the run's record before the strand is removed; no other package removes a shuttle run's strand, except `loomcli`'s removal of the loom driver's own strand."
+`PATTERN.md` gains, under "Agents and prompts", per D8, the decision added after Discussion naming the driver exception, and the parent's round-2 decision naming the orch exception: "`PATTERN-shuttle-stop` — Stopping the strand of a shuttle run from Go outside `internal/shuttleengine`: only through shuttle's stop verb, which settles the run's record before the strand is removed; no other package removes a shuttle run's strand, except `loomcli`'s removal of the loom driver's own strand and `orchcli`'s removal of the orch strand."
+The orch exception follows the driver's reasoning.
+The orch session is a shuttle run: `orchcli` starts it through `Runner.Start`, so it has a run record.
+`orchcli`'s `stop` and relaunch remove its strand raw, and moving them onto the stop verb is outside this task's scope.
+No attach probe or `Wait` reads the orch record, since `orchcli` keeps only the strand guid from `Start`, so the bug class of #444 does not reach it.
+Without the named exception the entry would be false the day it lands.
 It is review-enforced; no scan test is added, since the remaining raw `RemoveStrand` callers (reed's own verbs, orch, the loom driver) would make one a list of exceptions rather than a check.
 `websterengine/doc.go` says the reclaim stops leftover strands through shuttle.
 
-Tests: each websterengine test that reaches a reclaim with a recorded strand gets an in-package recording stopper fake in place of the reed liveness script, asserting the stopped guids (Master's strand and non-terminal recovery strands at entry, the prior recovery strand at begin-batch and recover-batch) and that a stopper error fails the reclaim as a failed removal did; `strand_test.go`'s `RemoveRecoveryStrands` coverage moves to the stopper.
-`webstercli`'s reset and verb tests give their CLI fixture a stopper where they reach a reclaim.
+Tests, one existing test per reclaim site, each given the recording stopper in place of the reed liveness script:
+
+- a new `stopper_test.go` holds the recording `StrandStopper` double the reclaim tests share and a new `TestRemoveRecoveryStrands`, since no test pinned that function: it tables which recorded strands are stopped, in batch-number order, and that the first stop failure is returned with its guid.
+- `runlevel_test.go`: `TestRun_EntryHousekeeping`'s rows assert Master's strand and the non-terminal recovery strands stopped at entry, and none on a fresh run.
+- `beginbatch_test.go`: `TestBeginBatch_ReclaimsPriorRecoveryStrandBeforeOverwrite` asserts the prior recovery strand stopped before the record overwrite.
+- `recoverbatch_test.go`: `TestRecoverBatch_FirstCallSpawnsArchivesStaleReportAndStopsLiveStrand` asserts the live strand stopped, and `TestRecoverSpawnOrAttach` gains one row where a stopper error fails the reclaim with no replacement spawned.
+- `webstercli`'s `reset_test.go` and `verbs_test.go` give their CLI fixture a stopper where they reach a reclaim, with no new test or row.
 
 **ImpactSummary:** Two `websterengine` functions re-signed with their callers (`Run`, `webstercli` reset) on this card; three deps structs gain a field filled by `webstercli` and `loomcli` wiring and checked by the Webster row, two lose their `Reed` field, and webster's reclaim now records `stopped` on the run it ends.
 

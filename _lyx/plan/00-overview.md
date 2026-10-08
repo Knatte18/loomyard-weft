@@ -9,6 +9,7 @@ language: go
 A text shuttle sends into an agent pane must land, and when it cannot, the run retries instead of halting (#442, #443, and the "no send into a running turn after a restart" case).
 Every verified send first waits for an idle session, settles its typed text before Enter, confirms submission within a window and clears its own text when it did not land; a start-time send that does not land tears the run down as not started, and a gate re-prompt that does not land is re-sent on a later tick.
 A shuttle run lyx itself stopped is recorded `stopped` through one shuttle stop verb, which burler, webster and attach use in place of their own strand removals, so a later attach probe never halts on it (#444).
+The segment color command goes through the same verified send after readiness, so it never sits unsent in the input box.
 
 ## Card Index
 
@@ -22,6 +23,8 @@ A shuttle run lyx itself stopped is recorded `stopped` through one shuttle stop 
 8 — burler-stops-through-handle — burler stops a half through its run handle's `Stop`
 9 — webster-stops-through-shuttle — webster's reclaim stops through `Runner.StopStrand`; `PATTERN-shuttle-stop` lands
 10 — delete-strand-removers — delete burler's, shedfake's and webster's removers
+11 — color-through-send — the segment color goes through the verified send after readiness, at start and in `Runner.TypeColor`
+12 — delete-color-sequence — delete the raw color sequence the verified send replaced
 
 ## Shared Decisions
 

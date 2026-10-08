@@ -14,7 +14,7 @@ Add the two send windows of D9 to shuttle's config.
 `template.yaml` gains `send_ready_timeout_s: 60` and `submit_confirm_timeout_s: 30`, with comments in the neighbours' style that say what each window bounds and that 0 or negative is a config error.
 The comments of `submit_settle_ms` and `submit_redraw_settle_ms` are rewritten to their new meaning: the interval between the two input-box reads that must agree before Enter (D2), and the first step of the doubling confirm interval after an Enter (D3); both keys keep their names, defaults and validation.
 
-`config_test.go` extends `TestLoadConfig_TemplateDefaultsResolve` with the two template defaults and extends the table of `TestLoadConfig_SubmitSettleKeys` (or the test that already tables per-key refusals) with rows for 0 and a negative value of each new key alone, asserting the error names that key.
+`config_test.go` extends `TestLoadConfig_TemplateDefaultsResolve` with the two template defaults and extends the table of `TestLoadConfig_SubmitSettleKeys` with rows for 0 and a negative value of each new key alone, asserting the error names that key.
 
 **ImpactSummary:** Two new fields and two new refusals on shuttle's config; every existing key keeps its value, and no reader of the new fields exists yet.
 

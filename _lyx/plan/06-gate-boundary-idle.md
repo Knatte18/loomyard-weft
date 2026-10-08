@@ -41,9 +41,10 @@ A send that starts with less time left than its windows overshoots the deadline 
 `wait.go`'s file doc comment and `handleGatedBoundary`'s doc comment describe the idle boundary, the retry and the budget.
 `handleGatedBoundary`'s return statements keep their markers, so the completion-signal tripwire's audited set is unchanged.
 
-Tests on a `fakeClock` with card 3's fake engine carrying both the idle reading and session signals: `gate_test.go` gains a table test where an `AttachGated`-style replay over a writer mid-turn types no gate send until a turn end follows the writer's newest `turn_start`, with rows for the release by `TurnStartInterrupt` and by 10 s of idle pane restoring the boundary and evaluating the gate.
-`TestGate_SendFailsMidLoop_EndsLoopWithAttemptsSoFar` keeps its row for an error that is neither sentinel and gains rows where a busy or unlanded re-prompt spends no attempt and is re-sent on a later tick into the box its failed send cleared, and where a writer turn starting meanwhile clears the pending re-send.
-A row pins a re-prompt starting with less time left than its windows ending its idle wait and submit window by the run deadline.
+Tests on a `fakeClock` with card 3's fake engine carrying both the idle reading and session signals: `gate_test.go` gains two new table tests, each for a behavior no existing test covers.
+`TestGate_WaitsForIdleWriter` pins an `AttachGated`-style replay over a writer mid-turn typing no gate send until a turn end follows the writer's newest `turn_start`, with rows for that turn end, the release by `TurnStartInterrupt`, and 10 s of idle pane restoring the boundary and evaluating the gate.
+`TestGate_UnsentRepromptRetries` pins the retry, with rows where a busy re-prompt and an unlanded re-prompt each spend no attempt and are re-sent on a later tick, the unlanded one into the box its failed send cleared; where a writer turn starting meanwhile cancels the pending re-send; and where a re-prompt starting with less time left than its windows ends its idle wait, and in a second row its submit window, by the run deadline.
+`TestGate_SendFailsMidLoop_EndsLoopWithAttemptsSoFar`, whose send fails with an error that is neither sentinel, keeps pinning that such an error ends the loop and is left unchanged.
 `gate_pending_test.go`'s pending-send rows are adjusted only where the boundary check now reads the pane.
 
 **ImpactSummary:** Confined to the gated branch of `Run.Wait` and `handleGatedBoundary`; an ungated run and an engine without both the idle reading and session signals loop exactly as before.
