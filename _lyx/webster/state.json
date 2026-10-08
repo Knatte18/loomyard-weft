@@ -1,0 +1,68 @@
+{
+  "runGuid": "427a23dcde83913387acafa96d8d77c0",
+  "planFingerprint": "28b3c48474033ca54d1dbcf5f29fff702a89831a544bb697ba3101f7df3e0dd7",
+  "planFileHashes": {
+    "00-overview.md": "3289a92b4c125ee3f3ff727eda1561041e172e52c0df616e7e6b7fc81950a1d2",
+    "11-shuttle-stop-orch-exception.md": "33d23996f3f9985e26793ffb6910a6d1e0668e37fa64035eec902606ce5c891f"
+  },
+  "planOverviewFrameHash": "f62048d05ec8beb25242dd540e5df7c265e6c9d5f2814ed0480dba7fc303ab23",
+  "partition": [
+    {
+      "cards": [
+        "11-shuttle-stop-orch-exception"
+      ],
+      "profile": "cautious",
+      "estimate": 61292,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 53872,
+        "read_union": 5404,
+        "cards": [
+          {
+            "card": 11,
+            "card_text": 216,
+            "reads": {
+              "file:PATTERN.md": 1188,
+              "package:.": 2000,
+              "tests:.": 2000
+            },
+            "messages": 6,
+            "written": 2016
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 11,
+  "masterStrand": "068951835a281dacf0932dc2aa0ec82a",
+  "masterSessionId": "c2a1f3b4-ecf6-4cb5-9a4c-6445329e3037",
+  "batches": {
+    "11": {
+      "slug": "shuttle-stop-orch-exception",
+      "cards": [
+        "11-shuttle-stop-orch-exception"
+      ],
+      "cardHashes": {
+        "11-shuttle-stop-orch-exception": "33d23996f3f9985e26793ffb6910a6d1e0668e37fa64035eec902606ce5c891f"
+      },
+      "startSha": "00b9be707ed4b1796d6f1503b52fa91d80b26039",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T19:25:13Z",
+      "sessionId": "c2a1f3b4-ecf6-4cb5-9a4c-6445329e3037",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
