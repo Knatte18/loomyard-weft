@@ -1098,6 +1098,22 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #460](https://github.com/Knatte18/loomyard/issues/460).\n\n**What happened:** A plan-review fix said to keep a file target beside a member target of that file on the same card, on the premise that a file and a member of it on the same card do not overlap.\nThe plan gate's `redundant-file-target` check blocks exactly that pairing, so applying the fix as written failed validation, and both cards had to drop the file target again.\n\n**Why it is abnormal:** The reviewer proposes a fix the gate rejects, which costs a wasted fix round.\nA reviewer with the gate's check list in view would not suggest it.\n\n**What to do:** Give the plan reviewer the gate's check list (at least `redundant-file-target`), or have its fixes validated against the gate before they are handed to the fixing agent.\n\nProvenance: task `webster-dead-ends`, note `burler-plan-r4.md`.\n"
+    },
+    {
+      "id": 212,
+      "slug": "git-network-timeout",
+      "title": "Git push without a timeout hangs a batten run after laptop sleep",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        458
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #458](https://github.com/Knatte18/loomyard/issues/458).\n\n## What happened\n\nA `lyx batten run review-lens-fan` began a best-effort status push to the weft remote at 14:11:21; the laptop hibernated four seconds later.\nAfter resume the push hung on a dead HTTPS connection (`git send-pack` in `futex_do_wait`) for 2.5 hours, and the batten run sat at Run-Shed without starting the child loom, with no notice to the parent.\nKilling the `git push` let batten log `status push failed, next transition will catch up` and go on.\n\n## Expected\n\nGit network calls from lyx (push and fetch, best-effort or not) run under a timeout, or with `http.lowSpeedLimit`/`http.lowSpeedTime` set, so a dead connection fails within minutes and the best-effort path takes over.\n"
     }
   ],
   "legacy_done": [
