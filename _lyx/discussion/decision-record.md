@@ -247,6 +247,12 @@ Decision: The booter's re-run of its session-ensuring step carries the same skip
 
 Rationale: The booter's state is unchanged until its session exists, so a re-run without the skip meets the trigger again.
 
+### Added after Discussion (parent, 2026-10-08): Temporary file created exclusively
+
+Decision: D15's temporary file is created exclusively; a name collision fails the write, reported as a skip, and cleanup removes only a file this run created. The Bound drops 'never outlives the run' for a killed process.
+
+Rationale: A file left by a killed run must never be overwritten or removed by a later run.
+
 ## Constraints
 
 - `PATTERN-told-geometry`: `reedengine` derives no path and imports no `lyxcwd`; D12's sorted list of worktree names and revive functions is told by the hub-mode teller.
