@@ -1,6 +1,6 @@
 # stencilstore: a pair branched before the last deploy warns source-ahead and asks for a deploy
 
-`stencil-drift-behind-main` · Note · bug
+`stencil-drift-behind-main` · Note · bug, stencil
 
 Imported from [issue #445](https://github.com/Knatte18/loomyard/issues/445).
 

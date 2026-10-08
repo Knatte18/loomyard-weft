@@ -904,7 +904,8 @@
       "title": "stencilstore: a pair branched before the last deploy warns source-ahead and asks for a deploy",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "stencil"
       ],
       "issues": [
         445
