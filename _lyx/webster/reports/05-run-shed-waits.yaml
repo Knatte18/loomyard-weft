@@ -1,0 +1,11 @@
+status: OK
+head_sha: e0ce9db6288cbeb473825822721c8be02ea10a01
+deviations:
+  - cmd/lyx/testdata/test-budget.yaml
+  - internal/testkit/envkit/envkit.go
+  - internal/loomcli/wiring_seams_test.go
+  - internal/battencli/wire_test.go
+  - internal/battencli/records_integration_test.go
+  - internal/battenshed/innerrun_wait_test.go
+  - internal/battenshed/seamchild.go
+  - internal/battenshed/seamchild_test.go
