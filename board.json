@@ -1016,21 +1016,6 @@
       "isolated": false,
       "brief": "A hub-wide pause that interrupts every Claude session with Esc within seconds, unlike the step-boundary pauses, recorded as ordered so no failure or idle path fires",
       "body": "## Why\n\nThe operator suspends the laptop while runs are in flight.\nA sleep can cut a network call or an agent turn midway (a weft push hung a batten run for 2.5 hours after a hibernate, #458), and after resume idle notices fire for time that was only sleep.\n\nThe existing `lyx batten pause` and `lyx loom pause` only set a request the machine consumes at its next producer boundary: they kill nothing, so an agent turn, a Webster batch or a review round runs on until it ends, which can be an hour.\nThat is not enough to make the hub safe to suspend.\n\n## Proposal (operator, 2026-10-08)\n\n- One hub-wide verb, named `lyx pause` (the operator's choice of name), that safely stops every lyx process within a short time.\n- It gives running work a few seconds to finish cleanly, such as a bash command completing.\n- It interrupts every running Claude Code instance by sending Esc.\n- A pause is ordered and intentional: it must not trigger the paths for an unexpected stop, such as batten notices, the agents-idle or driver-dead conditions, review-round failures or crash recovery.\n- The step-boundary pause is not good enough and goes: it is how Millhouse had to pause, and lyx now has the means to interrupt agents directly (shuttle's session state from hooks, the reed panes, shuttle's stop verb).\n\n## Open design points\n\n- Resuming: whether a matching verb resumes every paused run where it stood, and how each role takes up its interrupted turn (loom's `interrupt_policy` already distinguishes `reinvoke` from `handback`).\n- Scope: whether the orch session is paused too, or only runs.\n- Per-run use: whether `lyx pause \u003cslug\u003e` pauses one run the same way, now that the boundary pause goes.\n- Relation to shuttle's stop verb from `shuttle-send`, which settles a run's record before removing its strand.\n"
-    },
-    {
-      "id": 205,
-      "slug": "reed-single-strand-bar",
-      "title": "reed: a window with one strand shows no VIEW button and no zoom",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "reed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "In the prime the strand window holds only the orch, so VIEW (unzoomed) and the orch button (zoomed) show the same pane; with one strand the bar shows just its name and nothing toggles",
-      "body": ""
     }
   ],
   "legacy_done": [
