@@ -17,6 +17,8 @@ Waits on nothing open; can start now, in parallel.
 1. **Gate test scope: which gate runs which tier, bounded hub-wide** — [`gate-test-scope`](design-gate-test-scope.md) · bug, enhancement, webster, loom, stencil, config, burler · running · Discussion-Write
    - Card gate tests only its own packages at tier 1, tier 2 per batch and at the plan verify, a hub-wide slot lock for gate test runs, guarded publish_verify
    - **Before:** `test-suite-weight`
+1. **Git robustness: stale pack index, background gc, network timeouts, reused slugs** — [`git-robustness`](design-git-robustness.md) · bug, enhancement, fabric, batten, stencil
+   - Reindex-and-retry for every go-git call, no auto-gc under a live step, timeouts on git network calls, batten refuses a done slug, bounded HeadContains
 
 ### Layer B
 
@@ -34,13 +36,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 1. **board: refuse scope edits to a running task** — [`board-lock-running`](design-board-lock-running.md) · bug, board
    - The board already marks running tasks; a write that changes the scope of a running task is refused
-1. **batten run on a slug whose earlier run is done reports ok and does nothing** — [`batten-reused-slug`](design-batten-reused-slug.md) · bug, batten
 1. **A blocked Publish has no route that hands a finding to a fixer** — [`publish-fix-route`](design-publish-fix-route.md) · bug, loom, burler
 1. **Loom re-step refused with producer error while a stopped review strand's run dir is younger than 3m** — [`restep-young-run-dir`](design-restep-young-run-dir.md) · bug, loom, burler
 1. **Plan agent can record a decision as --by parent** — [`plan-agent-parent-decision`](design-plan-agent-parent-decision.md) · bug, loom, stencil
-1. **Git push without a timeout hangs a batten run after laptop sleep** — [`git-network-timeout`](design-git-network-timeout.md) · bug, fabric, batten
 1. **Finalize warns of per-worktree config changes that came from main** — [`finalize-config-warn-from-main`](design-finalize-config-warn-from-main.md) · bug, loom, config
-1. **fabric: Publish merge-in fails with 'gitrepo: worktree status: object not found' and leaves a half-staged merge** — [`merge-in-object-not-found`](design-merge-in-object-not-found.md) · bug, fabric, loom
 1. **Loom resume at Publish refuses the dirty worktree left by its own staged merge-in, so the run cannot recover** — [`publish-resume-own-merge`](design-publish-resume-own-merge.md) · bug, loom, fabric
 1. **Loom goto back to Plan after Webster started leaves webster state stale; Webster hard-fails on plan fingerprint mismatch** — [`goto-plan-stale-webster`](design-goto-plan-stale-webster.md) · bug, loom, webster
 1. **Plan-review round is dispatched as a fix round after the plan is already implemented, and webster refuses the resulting plan edits** — [`plan-review-after-implemented`](design-plan-review-after-implemented.md) · bug, loom, burler, webster
@@ -91,10 +90,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - A report over round usage records for the fan-on decision; a lost usage record shows in the facts
 1. **Configurable file log level in logger.yaml** — [`logger-file-level`](design-logger-file-level.md) · enhancement, config
    - Trace files carry only high-level messages and logger.yaml sets no level; add a file log level so most of lyx can be traced on demand
-1. **Shared object store triggers auto-gc on nearly every git write** — [`shared-store-auto-gc`](design-shared-store-auto-gc.md) · enhancement, fabric
-   - 8,450 loose objects keep the hub store above gc.auto, so background repacks fire under live steps
-1. **HeadContains walks the whole history on every source-ahead seed pass** — [`headcontains-full-walk`](design-headcontains-full-walk.md) · enhancement, stencil, fabric
-   - Stencil drift classification walks HEAD history fully through go-git per command; use merge-base or a bounded walk
 1. **Resolve head_sha prefix candidates in one git call** — [`head-sha-batch-check`](design-head-sha-batch-check.md) · enhancement, webster
    - commitsNamedBy runs one git cat-file per candidate object; use cat-file --batch-check
 1. **Log the silent overview-frame fallback in rebaseline** — [`overview-frame-fallback-log`](design-overview-frame-fallback-log.md) · enhancement, webster
