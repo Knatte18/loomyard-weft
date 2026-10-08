@@ -1,11 +1,11 @@
 {
   "current_producer": "Run-Shed",
-  "state": "running",
+  "state": "paused",
   "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
-    "last": "Seed-Child → done",
+    "last": "Run-Shed → bounced to Run-Shed",
     "wait": ""
   },
   "history": [
@@ -20,6 +20,13 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-08T16:41:07Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "pause requested at 2026-10-08T18:41:35+02:00",
+      "at": "2026-10-08T16:41:35Z",
+      "budget_exempt": true
     }
   ]
 }
