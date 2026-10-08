@@ -1,6 +1,6 @@
 # Git robustness: stale pack index, background gc, network timeouts, reused slugs
 
-`git-robustness` · Task · bug, enhancement, fabric, batten, stencil
+`git-robustness` · Task · bug, enhancement, fabric, batten, stencil · running · Loom-Preflight
 
 ## Goal
 
