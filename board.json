@@ -1275,6 +1275,22 @@
       "isolated": false,
       "brief": "Stencil drift classification walks HEAD history fully through go-git per command; use merge-base or a bounded walk",
       "body": "## Seen\n\nThe PR-Gate review of `binary-change-and-rules` (PR #469) found that `gitrepo.HeadContains` (`internal/gitrepo/blobread.go`) walks HEAD's whole history through go-git whenever a seed pass finds a source-ahead stencil.\nIn a long-history repository that cost lands on every command until the pair syncs with main.\n\n## Idea\n\nAnswer the ancestry question with a merge-base or a walk bounded by commit date or depth instead of a full history walk.\n"
+    },
+    {
+      "id": 238,
+      "slug": "publish-resume-own-merge",
+      "title": "Loom resume at Publish refuses the dirty worktree left by its own staged merge-in, so the run cannot recover",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        471
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #471](https://github.com/Knatte18/loomyard/issues/471).\n\n## What happened\n\nAfter a `Publish` step failed mid merge-in (merge staged, conflict resolved by the agent, then a producer refusal), the loom driver re-stepped once.\nThe run then halted as `blocked` at `Publish`, anomaly `escalation-to-human`, with this reason:\n\n`the task worktree has uncommitted changes before the merge-in: \u003ca long list of files, plus \"and 63 more\"\u003e; commit or remove them on the task branch, then resume`\n\nThe listed files are the changes the staged merge-in itself brought in, not the task's own uncommitted work.\n\n## Why it is abnormal\n\nThe merge-in precondition check treats the worktree state produced by the earlier, interrupted merge-in attempt as foreign uncommitted changes.\nA re-step or resume after a partial merge-in can therefore never pass the check, and the run escalates to a human although all earlier segments (Discussion, Plan, Webster, Describe) were `done`.\nThe advice in the message (\"commit or remove them\") would either commit an unfinished merge or discard the resolution.\n\n## What to do\n\n- Detect an in-progress merge (`MERGE_HEAD` present, or merge-staged state recorded in the trace/history) in the `Publish` precondition and resume it, instead of applying the clean-worktree check.\n- Alternatively provide a `lyx` repair verb that completes or aborts a staged merge-in, and name it in this refusal message.\n- Make the loom driver's repair step aware of this state, so it does not re-step into a guaranteed refusal.\n\nRelated: the transient `object not found` report, which is what first interrupted the merge-in.\n\nProvenance: task `binary-change-and-rules`, from `loom-halt.md` and `driver-repair-1.md`.\n"
     }
   ],
   "legacy_done": [
