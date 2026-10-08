@@ -2,6 +2,8 @@
 
 `shuttle-send` · Task · bug, shuttle
 
+Depends on: [`shuttle-state`](design-shuttle-state.md)
+
 A text shuttle sends into an agent pane lands, and when it cannot, the run retries instead of halting.
 
 Seen 2026-10-08 in `plan-glyph-precision`, under high machine load: the skill-load `Send` into a freshly started Burler half left the text pending in Claude Code's input box after 2 extra Enters, the step failed as `producer-hard-failure`, and the driver had to re-step by hand; the re-step then halted on a run dir it could not classify.
