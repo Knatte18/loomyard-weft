@@ -1,0 +1,71 @@
+{
+  "runGuid": "3e4dce5bafa7a8dc98fcd04df2af6398",
+  "planFingerprint": "2958fc4e619aa6ecb9599c4536c1bb19a51b59531e8928526253e1c2c47c5b35",
+  "planFileHashes": {
+    "00-overview.md": "4ce334609e18c482be8ae1533ebdfe88db8c66384d2e2292d69e4f343c44842f",
+    "10-template-review-models.md": "5b530cd754718216be79020b7ac56fb938681123d7422e620abfe53dc1a46ff0"
+  },
+  "partition": [
+    {
+      "cards": [
+        "10-template-review-models"
+      ],
+      "profile": "cautious",
+      "estimate": 93186,
+      "breakdown": {
+        "weights": {
+          "master_base": 52000,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 53200,
+        "read_union": 22448,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 288,
+            "reads": {
+              "file:internal/loomcli/wiring_test.go": 8544,
+              "file:internal/loomengine/config_test.go": 5352,
+              "file:internal/loomengine/template.yaml": 264,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 57.5,
+            "written": 17538
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 10,
+  "masterStrand": "1227a99200de6bb793c638d7a7da211b",
+  "masterSessionId": "06141156-8870-4f5d-9d52-40c082b1c004",
+  "batches": {
+    "10": {
+      "slug": "template-review-models",
+      "cards": [
+        "10-template-review-models"
+      ],
+      "cardHashes": {
+        "10-template-review-models": "5b530cd754718216be79020b7ac56fb938681123d7422e620abfe53dc1a46ff0"
+      },
+      "startSha": "2ecad537260d7fe93dae38c6146f2e1184cc68fc",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T11:59:43Z",
+      "sessionId": "06141156-8870-4f5d-9d52-40c082b1c004",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
