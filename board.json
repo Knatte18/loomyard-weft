@@ -911,21 +911,6 @@
       "body": "`shuttle-state` added recording hooks for `UserPromptSubmit`, `StopFailure`, `Notification` and `SessionEnd`, with an `llm`-tier capture scenario that was compiled but never run.\nThe payload shapes those hooks parse are unverified against a real session (an Open risk in that task).\nRun the scenario once and commit the captured payloads as fixtures, so the parsers are tested against real shapes.\n"
     },
     {
-      "id": 200,
-      "slug": "caller-scan-import-path",
-      "title": "Caller coverage: precise caller resolution",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "quarry"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "caller-uncovered misses aliased and dot imports, and reports interface-type uses and same-named method calls as callers",
-      "body": "`plan-glyph-precision` added the `caller-uncovered` plan-gate check (D5).\nIts caller scan matches by package clause name, so it cannot see a caller that imports the package under an alias or a dot import, nor a caller in a file an earlier card creates.\nBoth are accepted bounds in that task's decision record.\nResolving imports by path would close the first gap; worth building only if planners hit it.\n\n## Seen in webster-dead-ends, 2026-10-08\n\nIts plan gate reported 75 informational `caller-uncovered` entries on one card, all false positives by the fixer's grep:\nevery file naming the `batcher.Batch` interface type was read as a caller of the re-signed concrete method `costBatcher.Batch`,\nand unrelated `.start(` calls as callers of `peakAccumulator.start`, matched by method name alone.\nFor a method the finding is informational, so it cost no round, but the noise hides a real uncovered caller.\nResolving a method call's receiver type would remove both classes.\n"
-    },
-    {
       "id": 201,
       "slug": "shuttle-color-verified-send",
       "title": "Shuttle: first turn on the launch line, /color through the verified send",
@@ -1068,38 +1053,6 @@
       "body": "Imported from [issue #462](https://github.com/Knatte18/loomyard/issues/462).\n\nSeen 2026-10-08 in `shuttle-send`: Publish blocked three times on the same `publish_verify` failure (three `//go:build tmux` loomcli tests), and the two fix routes the hub has from a blocked Publish never reached the defect.\n\nThe defect arrived through the merge of main (reed-view typed `/color` raw into the pane), so it is outside the task's diff.\n\n- `lyx loom decision add --by parent` plus `lyx loom goto --to Webster-Burler`: the Webster-Review rubric measures against the plan, not the decision record, and the reviewer reads only `git diff $(git merge-base main HEAD)..HEAD`, so both rounds approved with unrelated NITs and the decision was never acted on.\n- The Webster-Burler verify gate compiles the `tmux` tier and never runs it (`internal/loomshed/doc.go`), so the fixer never saw the failing tests either.\n- `lyx loom reject` works only at PR-Gate or PR-Rework, and `goto` refuses PR-Rework from Publish because it lies past the current row, so the hub cannot hand the failure to a fixer as a finding.\n\nThe hub fell back to `goto Plan-Bouncer`, so Plan-Review raises the uncarried decision against the plan, which re-runs Plan-Burler, Batchifier and Webster for one fix.\n\nExpected: a blocked Publish (or any blocked row after Webster) has a route that hands a named finding to a fixer round, e.g. `lyx loom reject` accepted at a blocked Publish, or a Webster-Burler round that takes the publish_verify failure and post-Discussion parent decisions as its focus.\n"
     },
     {
-      "id": 210,
-      "slug": "caller-uncovered-false-positives",
-      "title": "caller-uncovered emits false-positive informational entries for type-name and method-name matches",
-      "kind": "note",
-      "labels": [
-        "bug"
-      ],
-      "issues": [
-        461
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #461](https://github.com/Knatte18/loomyard/issues/461).\n\n**What happened:** Adding re-sign arrows to a plan card made the `caller-uncovered` check emit 75 informational entries, all false positives.\nEvery file that names a type counted as a caller of a re-signed method on a different type that happens to share the name, and any `.start(` call anywhere counted as a caller of a re-signed `start` method on one specific type.\nThe real callers had to be separated out by grep.\n\n**Why it is abnormal:** The matching is by name only, not by receiver type, so the noise can hide a real uncovered caller.\n\n**What to do:** Resolve callers by receiver type (or at least qualify the match by package and receiver) in `caller-uncovered`, and rate-limit or collapse name-only matches.\n\nProvenance: task `webster-dead-ends`, note `burler-plan-r4.md`.\n"
-    },
-    {
-      "id": 211,
-      "slug": "plan-review-redundant-pairing",
-      "title": "Plan reviewer suggests a file-plus-member card pairing that the redundant-file-target gate blocks",
-      "kind": "note",
-      "labels": [
-        "bug"
-      ],
-      "issues": [
-        460
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #460](https://github.com/Knatte18/loomyard/issues/460).\n\n**What happened:** A plan-review fix said to keep a file target beside a member target of that file on the same card, on the premise that a file and a member of it on the same card do not overlap.\nThe plan gate's `redundant-file-target` check blocks exactly that pairing, so applying the fix as written failed validation, and both cards had to drop the file target again.\n\n**Why it is abnormal:** The reviewer proposes a fix the gate rejects, which costs a wasted fix round.\nA reviewer with the gate's check list in view would not suggest it.\n\n**What to do:** Give the plan reviewer the gate's check list (at least `redundant-file-target`), or have its fixes validated against the gate before they are handed to the fixing agent.\n\nProvenance: task `webster-dead-ends`, note `burler-plan-r4.md`.\n"
-    },
-    {
       "id": 212,
       "slug": "git-network-timeout",
       "title": "Git push without a timeout hangs a batten run after laptop sleep",
@@ -1148,22 +1101,6 @@
       "body": "Imported from [issue #456](https://github.com/Knatte18/loomyard/issues/456).\n\n`lyx webster record-batch` refused a batch report because the report's `head_sha` was an abbreviated SHA (9 characters) while the worktree's HEAD is the full 40-character SHA.\n\nRefusal text (paths trimmed):\n\n```\nwebster: batch report _lyx/webster/reports/01-carry-over-write.yaml: head_sha \"ae24b9bb0\" does not match the worktree's actual HEAD \"ae24b9bb0eca5384fc9fd38764b9cb446aced655\"; only merge commits, such as a parent merge-in, may sit between a fork's reported head and HEAD; way forward: 1) run `git reset --keep ae24b9bb0` to move HEAD back to the report's head_sha; 2) re-run this verb\n```\n\nWhy this is abnormal: the abbreviated SHA is a prefix of HEAD, so the report names the right commit.\nThe comparison looks like an exact string match, so it reports a mismatch and then suggests `git reset --keep` to the commit HEAD already is, which is a no-op and does not resolve the refusal.\nA fork writing `git rev-parse --short HEAD` into the report is a natural thing to do.\n\nWhat to do: resolve the report's `head_sha` with `git rev-parse` (or compare by prefix) before comparing, and/or require and document the full SHA in the report schema and the fork prompt.\nThe \"way forward\" text should not suggest a reset when the reported SHA already resolves to HEAD.\n\nProvenance: task `review-loop-convergence`; notes: webster-refusal-record-batch-2.md\n"
     },
     {
-      "id": 215,
-      "slug": "plan-agent-parent-decision",
-      "title": "Plan agent can record a decision as --by parent",
-      "kind": "note",
-      "labels": [
-        "bug"
-      ],
-      "issues": [
-        453
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #453](https://github.com/Knatte18/loomyard/issues/453).\n\n## What happened\n\nIn the `shuttle-send` run, the Plan-Write agent recorded a decision as the parent:\n\n```\nlyx loom decision add --by parent --title \"PATTERN-shuttle-stop names the loom driver exception\" ...\n```\n\nThe Plan role writes its own output files only; a design call outside the decided scope goes to the parent.\n`lyx loom decision add` accepted `--by parent` from inside the plan agent's session, so the record reads as the hub's decision though the hub never made it.\n\n## Expected\n\n`decision add --by parent` refuses when it runs inside a lyx-spawned agent session other than the parent's, or the Plan stencil's deny hooks block it, so a plan agent's scope call reaches the parent as an escalation or an open question in the plan.\n\n## Context\n\nThe decision itself was narrow and the hub would have taken it (it names loomcli's raw removal of the loom driver's strand as an exception in the new PATTERN entry).\nThe defect is the forged authorship, not the content.\n"
-    },
-    {
       "id": 216,
       "slug": "restep-young-run-dir",
       "title": "Loom re-step refused with producer error while a stopped review strand's run dir is younger than 3m",
@@ -1178,22 +1115,6 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #452](https://github.com/Knatte18/loomyard/issues/452).\n\n## What happened\n\nAfter a driver repair, the re-step of the Discussion burler segment failed with a non-transient `producer` error.\nThe trace line: `shed: step refused kind=producer transient=\"\" error=\"... probe the burler-review half: shuttle: attach: 1 candidate run dir(s) ... cannot be confirmed dead or alive (untracked or with a cleared pane binding, younger than 3m0s) ...\"`.\nThe run dir had been left by the review strand that the previous step itself stopped.\n`lyx reed status` listed no such strand, while the burler-fix strand was still live, and no fabric mutation was half-finished.\nThe driver's only remedy was to wait until the run dir passed the 3m age and re-step, which cost a repair round (history_length 6).\n\n## Why it is abnormal\n\nThe strand was stopped by lyx moments earlier, so its run dir is known dead, yet the burler probe treats it as unclassifiable and refuses the step.\nA refusal that resolves itself with time should be a transient error, not a `producer` error that consumes a repair.\n\n## What to do\n\n- Have the stop path record or clear the stopped strand's pane binding, so the probe can classify its run dir as dead immediately.\n- Alternatively, report the young-run-dir refusal as transient so the loom retries instead of halting for repair.\n\nProvenance: task `plan-glyph-precision`; note `driver-repair-20261008-discussion-burler-2.md`.\n"
-    },
-    {
-      "id": 217,
-      "slug": "plan-gate-nested-module",
-      "title": "Plan gates can name packages inside a nested fixture module, which cannot pass",
-      "kind": "note",
-      "labels": [
-        "bug"
-      ],
-      "issues": [
-        451
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #451](https://github.com/Knatte18/loomyard/issues/451).\n\n## What happened\n\nTwo cards in one task had gates running `go test -tags integration` on package paths under a `testdata/` fixture directory.\nThe same card (or an earlier one) creates a `go.mod` in that directory, which makes the fixture its own module.\nThe main module then no longer contains those packages, so `go test` reports `main module does not contain package ... [setup failed]` and the gate's `\u0026\u0026` chain cannot pass as written.\nThe implementing agent worked around it by running `go vet` and `go test -tags integration ./...` from inside the fixture module, and wrote a friction note each time.\n\nA related symptom in the same batch: the test-budget guard (`cmd/lyx/testdata/test-budget.yaml`) needed a package row raised on several cards, and that file was on no card's target list.\n\n## Why it is abnormal\n\nThe plan was accepted through the plan gate although its gates were unsatisfiable by construction.\nPlan validation does not check that a gate's package paths stay inside the module that the plan's own cards create or change.\nCards also do not predict the test-budget row they will cross, so each agent edits an untargeted file.\n\n## What to do\n\n- At plan-write or plan-review time, flag a gate command whose package path lies under a directory that a card makes a nested module (a `go.mod` in a card target), and require the gate to run inside that module.\n- Consider listing `cmd/lyx/testdata/test-budget.yaml` as an implicit target, or surfacing the budget row in the card template, when a card adds tests.\n\nProvenance: task `plan-glyph-precision`; notes `01-glyphchain-plan-gate.md`, `07-redundant-package-target.md`.\n"
     },
     {
       "id": 218,
@@ -1225,6 +1146,27 @@
       "isolated": false,
       "brief": "merriamFixedContext is one measurement and drifts as Claude Code changes; a calibrate step re-measures it",
       "body": "From webster-dead-ends PR-Gate (2026-10-08), moved out of `binary-change-and-rules` at its Discussion.\n\n`merriamFixedContext` (`internal/websterengine/merriambase.go`) is a constant from one measurement of the system prompt and tools, so the computed Merriam base drifts silently as Claude Code changes.\nA calibrate step in `tools/tokencount` re-measures it.\n"
+    },
+    {
+      "id": 220,
+      "slug": "plan-gate-quality",
+      "title": "Plan gate: no false caller findings, reviewer fixes the gate accepts, nested fixture modules, no plan-made parent decisions",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "loom",
+        "quarry"
+      ],
+      "issues": [
+        461,
+        460,
+        451,
+        453
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Resolve callers by import path and receiver type, show the reviewer the gate checks, let gates run in nested fixture modules, and refuse decision add --by parent from a plan agent",
+      "body": "## Goal\n\nThe plan gate and the plan roles agree: its checks raise no false positives, the reviewer proposes no fix the gate blocks, gates can run against nested fixture modules, and a plan agent cannot record a decision as the parent.\n\n## From `caller-uncovered-false-positives`\n\nImported from [issue #461](https://github.com/Knatte18/loomyard/issues/461).\n\n**What happened:** Adding re-sign arrows to a plan card made the `caller-uncovered` check emit 75 informational entries, all false positives.\nEvery file that names a type counted as a caller of a re-signed method on a different type that happens to share the name, and any `.start(` call anywhere counted as a caller of a re-signed `start` method on one specific type.\nThe real callers had to be separated out by grep.\n\n**Why it is abnormal:** The matching is by name only, not by receiver type, so the noise can hide a real uncovered caller.\n\n**What to do:** Resolve callers by receiver type (or at least qualify the match by package and receiver) in `caller-uncovered`, and rate-limit or collapse name-only matches.\n\nProvenance: task `webster-dead-ends`, note `burler-plan-r4.md`.\n\n## From `caller-scan-import-path`\n\n`plan-glyph-precision` added the `caller-uncovered` plan-gate check (D5).\nIts caller scan matches by package clause name, so it cannot see a caller that imports the package under an alias or a dot import, nor a caller in a file an earlier card creates.\nBoth are accepted bounds in that task's decision record.\nResolving imports by path would close the first gap; worth building only if planners hit it.\n\n### Seen in webster-dead-ends, 2026-10-08\n\nIts plan gate reported 75 informational `caller-uncovered` entries on one card, all false positives by the fixer's grep:\nevery file naming the `batcher.Batch` interface type was read as a caller of the re-signed concrete method `costBatcher.Batch`,\nand unrelated `.start(` calls as callers of `peakAccumulator.start`, matched by method name alone.\nFor a method the finding is informational, so it cost no round, but the noise hides a real uncovered caller.\nResolving a method call's receiver type would remove both classes.\n\n## From `plan-review-redundant-pairing`\n\nImported from [issue #460](https://github.com/Knatte18/loomyard/issues/460).\n\n**What happened:** A plan-review fix said to keep a file target beside a member target of that file on the same card, on the premise that a file and a member of it on the same card do not overlap.\nThe plan gate's `redundant-file-target` check blocks exactly that pairing, so applying the fix as written failed validation, and both cards had to drop the file target again.\n\n**Why it is abnormal:** The reviewer proposes a fix the gate rejects, which costs a wasted fix round.\nA reviewer with the gate's check list in view would not suggest it.\n\n**What to do:** Give the plan reviewer the gate's check list (at least `redundant-file-target`), or have its fixes validated against the gate before they are handed to the fixing agent.\n\nProvenance: task `webster-dead-ends`, note `burler-plan-r4.md`.\n\n## From `plan-gate-nested-module`\n\nImported from [issue #451](https://github.com/Knatte18/loomyard/issues/451).\n\n### What happened\n\nTwo cards in one task had gates running `go test -tags integration` on package paths under a `testdata/` fixture directory.\nThe same card (or an earlier one) creates a `go.mod` in that directory, which makes the fixture its own module.\nThe main module then no longer contains those packages, so `go test` reports `main module does not contain package ... [setup failed]` and the gate's `\u0026\u0026` chain cannot pass as written.\nThe implementing agent worked around it by running `go vet` and `go test -tags integration ./...` from inside the fixture module, and wrote a friction note each time.\n\nA related symptom in the same batch: the test-budget guard (`cmd/lyx/testdata/test-budget.yaml`) needed a package row raised on several cards, and that file was on no card's target list.\n\n### Why it is abnormal\n\nThe plan was accepted through the plan gate although its gates were unsatisfiable by construction.\nPlan validation does not check that a gate's package paths stay inside the module that the plan's own cards create or change.\nCards also do not predict the test-budget row they will cross, so each agent edits an untargeted file.\n\n### What to do\n\n- At plan-write or plan-review time, flag a gate command whose package path lies under a directory that a card makes a nested module (a `go.mod` in a card target), and require the gate to run inside that module.\n- Consider listing `cmd/lyx/testdata/test-budget.yaml` as an implicit target, or surfacing the budget row in the card template, when a card adds tests.\n\nProvenance: task `plan-glyph-precision`; notes `01-glyphchain-plan-gate.md`, `07-redundant-package-target.md`.\n\n## From `plan-agent-parent-decision`\n\nImported from [issue #453](https://github.com/Knatte18/loomyard/issues/453).\n\n### What happened\n\nIn the `shuttle-send` run, the Plan-Write agent recorded a decision as the parent:\n\n```\nlyx loom decision add --by parent --title \"PATTERN-shuttle-stop names the loom driver exception\" ...\n```\n\nThe Plan role writes its own output files only; a design call outside the decided scope goes to the parent.\n`lyx loom decision add` accepted `--by parent` from inside the plan agent's session, so the record reads as the hub's decision though the hub never made it.\n\n### Expected\n\n`decision add --by parent` refuses when it runs inside a lyx-spawned agent session other than the parent's, or the Plan stencil's deny hooks block it, so a plan agent's scope call reaches the parent as an escalation or an open question in the plan.\n\n### Context\n\nThe decision itself was narrow and the hub would have taken it (it names loomcli's raw removal of the loom driver's strand as an exception in the new PATTERN entry).\nThe defect is the forged authorship, not the content.\n"
     }
   ],
   "legacy_done": [

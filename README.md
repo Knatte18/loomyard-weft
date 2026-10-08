@@ -15,6 +15,8 @@ Waits on nothing open; can start now, in parallel.
    - Send waits for a ready pane and a settled input before Enter, retries with backoff, and a lost submission is transient; attach no longer halts on a stopped Burler half
 1. **A hub survives a lyx binary change; the no-script rule reaches spawned agents** — [`binary-change-and-rules`](design-binary-change-and-rules.md) · bug, enhancement, config, stencil · running · Discussion-Burler
    - Config reconciles itself on the first lyx command after a binary change, stencil drift behind main stops warning source-ahead, and file-editing stencils state the no-script edit rule
+1. **Plan gate: no false caller findings, reviewer fixes the gate accepts, nested fixture modules, no plan-made parent decisions** — [`plan-gate-quality`](design-plan-gate-quality.md) · bug, loom, quarry
+   - Resolve callers by import path and receiver type, show the reviewer the gate checks, let gates run in nested fixture modules, and refuse decision add --by parent from a plan agent
 
 ## Notes
 
@@ -27,14 +29,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **batten run on a slug whose earlier run is done reports ok and does nothing** — [`batten-reused-slug`](design-batten-reused-slug.md) · bug, batten
 1. **The plan gate fails done cards after a goto back to Plan-Review, and rebaseline refuses follow-up cards on an older webster record** — [`plan-gate-done-cards`](design-plan-gate-done-cards.md) · bug
 1. **A blocked Publish has no route that hands a finding to a fixer** — [`publish-fix-route`](design-publish-fix-route.md) · bug
-1. **caller-uncovered emits false-positive informational entries for type-name and method-name matches** — [`caller-uncovered-false-positives`](design-caller-uncovered-false-positives.md) · bug
-1. **Plan reviewer suggests a file-plus-member card pairing that the redundant-file-target gate blocks** — [`plan-review-redundant-pairing`](design-plan-review-redundant-pairing.md) · bug
 1. **Git push without a timeout hangs a batten run after laptop sleep** — [`git-network-timeout`](design-git-network-timeout.md) · bug
 1. **webster record-batch: zero fork transcripts for a forked batch forces a full re-drive** — [`record-batch-no-transcripts`](design-record-batch-no-transcripts.md) · bug
 1. **webster record-batch rejects abbreviated head_sha that is a prefix of HEAD** — [`record-batch-short-sha`](design-record-batch-short-sha.md) · bug
-1. **Plan agent can record a decision as --by parent** — [`plan-agent-parent-decision`](design-plan-agent-parent-decision.md) · bug
 1. **Loom re-step refused with producer error while a stopped review strand's run dir is younger than 3m** — [`restep-young-run-dir`](design-restep-young-run-dir.md) · bug
-1. **Plan gates can name packages inside a nested fixture module, which cannot pass** — [`plan-gate-nested-module`](design-plan-gate-nested-module.md) · bug
 1. **Finalize warns of per-worktree config changes that came from main** — [`finalize-config-warn-from-main`](design-finalize-config-warn-from-main.md) · bug
 
 ### Enhancements
@@ -71,8 +69,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - reed watchdog polls a signal file every 100 ms around the clock; a rule for every lyx daemon (creel and later ones): event-driven waits, second-scale backoff polls, pinned by a guard
 1. **Capture real hook payloads into fixtures** — [`shuttle-hook-payload-corpus`](design-shuttle-hook-payload-corpus.md) · enhancement, shuttle
    - Run the llm-tier hook-capture scenario once and turn the real StopFailure, Notification and SessionEnd payloads into corpus fixtures
-1. **Caller coverage: precise caller resolution** — [`caller-scan-import-path`](design-caller-scan-import-path.md) · enhancement, quarry
-   - caller-uncovered misses aliased and dot imports, and reports interface-type uses and same-named method calls as callers
 1. **Shuttle: first turn on the launch line, /color through the verified send** — [`shuttle-color-verified-send`](design-shuttle-color-verified-send.md) · enhancement, shuttle
    - The skill-load message rides the launch line like a skill-free prompt does; /color, which has no launch-time form, goes through the verified send
 1. **reed: spawn order from a recorded start time** — `reed-spawn-order-start-time` · enhancement, reed
