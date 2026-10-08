@@ -1,6 +1,6 @@
 # Shuttle: a Send lands or retries, and attach knows a half it stopped
 
-`shuttle-send` · Task · bug, shuttle · running · Describe
+`shuttle-send` · Task · bug, shuttle · running · Publish
 
 Depends on: [`shuttle-state`](design-shuttle-state.md)
 
