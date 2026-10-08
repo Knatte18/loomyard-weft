@@ -34,6 +34,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **Plan agent can record a decision as --by parent** — [`plan-agent-parent-decision`](design-plan-agent-parent-decision.md) · bug, loom, stencil
 1. **Git push without a timeout hangs a batten run after laptop sleep** — [`git-network-timeout`](design-git-network-timeout.md) · bug, fabric, batten
 1. **Finalize warns of per-worktree config changes that came from main** — [`finalize-config-warn-from-main`](design-finalize-config-warn-from-main.md) · bug, loom, config
+1. **Implementer forks run the full test suite on every edit** — [`implementer-full-suite-loop`](design-implementer-full-suite-loop.md) · bug, webster, stencil
+   - Webster implementer forks ran go build and go test over the whole module every 20-60 s; a fork should test only its batch packages
 
 ### Enhancements
 

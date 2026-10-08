@@ -1179,6 +1179,22 @@
       "isolated": false,
       "brief": "One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash",
       "body": "## Seen\n\nOn 2026-10-08 the operator's machine froze and needed a hard reset at about 20:12 CEST while four runs were in flight.\n`sar` shows about 800 process starts per second between 19:50 and 20:00, about 500 more live processes by 20:10,\nand the user slice at its 16 GiB `MemoryHigh` with swap full, so reclaim thrashed (8366 major faults/s, 768 MB/s reads).\nOnly about 15 claude sessions and 9 subagents started in that window, and nothing in lyx's logs says what else started the processes or which run, strand or command owned them.\nThe operator has seen an earlier storm of 100+ claude panes in reed, and could not trace that one either.\n\n## Idea\n\nEvery process lyx starts goes through one recorded launch path that appends an audit line to a hub-wide spawn log:\ntime, pid, parent pid, the lyx command and trace id that started it, hub, run slug, strand name, executable and argv,\nand on exit the duration, exit status, peak RSS and bytes read and written (from `rusage` and `/proc/\u003cpid\u003e/io`).\nThis covers tmux servers, sessions and panes, claude launches, git, and `go build`/`go test` in verify gates.\nA sampler, such as the reed watchdog, also records per-strand process-tree counts and memory every few seconds,\nso the state just before a freeze survives a reboot.\n`lyx` gains a read verb that summarises the log by minute, run, strand and executable, so a storm can be traced to its source after the fact.\n"
+    },
+    {
+      "id": 232,
+      "slug": "implementer-full-suite-loop",
+      "title": "Implementer forks run the full test suite on every edit",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Webster implementer forks ran go build and go test over the whole module every 20-60 s; a fork should test only its batch packages",
+      "body": "## Seen\n\nBefore the 2026-10-08 crash, the `binary-change-and-rules` webster implementer forks ran `go build ./... \u0026\u0026 go test ./...` every 20 to 60 seconds, about 15 times between 19:58 and 20:06 CEST.\nThey also ran `go test -tags integration` and `go vet -tags integration ./...` across the whole module.\nEach run starts up to `GOMAXPROCS` test binaries that link cgo and tree-sitter, and the integration tests start their own tmux servers, git and lyx children.\nThat ran alongside the other runs' gates, and the user slice ran out of memory.\n\n## Idea\n\nAn implementer fork verifies only the packages its batch touches, and only once per change, never the full module on each edit.\nThe full suite belongs to the plan-level verify gate.\nThe webster stencil and the batch report state which packages a fork may test.\n"
     }
   ],
   "legacy_done": [
