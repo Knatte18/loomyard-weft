@@ -194,6 +194,12 @@ An untargeted edit to it is already only an informational deviation, so a writte
   - d9-dispute-route-forbidden-by-fix-rule (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - card3-nested-module-test-row-contradicts-rule (class consistency, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A re-signed package-level member referenced through an aliased import, and through a dot import, is reported blocking.
