@@ -38,7 +38,7 @@
 - `PATTERN.md`
 
 **Uses:**
-- `plan:internal/shuttleengine#Runner.StopStrand`
+- `internal/shuttleengine#Runner.StopStrand`
 
 **Intent:**
 Move webster's leftover-strand reclaim onto shuttle's stop verb by guid (D7), so one stop path exists, and add D8's `PATTERN-shuttle-stop` entry now that no other package removes a shuttle run's strand.

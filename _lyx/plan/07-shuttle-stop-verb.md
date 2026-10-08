@@ -1,13 +1,13 @@
 # Card 7 — Shuttle's stop verb records the stop before removing the strand
 
 **Create:**
-- `plan:internal/shuttleengine#runOutcomeStopped` -> `const runOutcomeStopped = "stopped"`
-- `plan:internal/shuttleengine#stopOutcome` -> `func stopOutcome(outcome string, outputFiles []string) string`
-- `plan:internal/shuttleengine#Run.Stop` -> `func (run *Run) Stop() error`
-- `plan:internal/shuttleengine#Runner.StopStrand` -> `func (r *Runner) StopStrand(guid string) error`
-- `plan:internal/shuttleengine#Runner.stopRecorded` -> `func (r *Runner) stopRecorded(runDir, guid string) error`
-- `plan:internal/shuttleengine#removeStrandIfLive` -> `func removeStrandIfLive(reed ReedOps, guid string) error`
-- `plan:internal/shuttleengine#Run.saveState` -> `func (run *Run) saveState() error`
+- `internal/shuttleengine#runOutcomeStopped`
+- `internal/shuttleengine#stopOutcome`
+- `internal/shuttleengine#Run.Stop`
+- `internal/shuttleengine#Runner.StopStrand`
+- `internal/shuttleengine#Runner.stopRecorded`
+- `internal/shuttleengine#removeStrandIfLive`
+- `internal/shuttleengine#Run.saveState`
 - `internal/shuttleengine/stop_test.go`
 
 **Edit:**

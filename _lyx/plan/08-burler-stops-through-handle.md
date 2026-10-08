@@ -31,7 +31,7 @@
 - `internal/shedadapters/doc.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#Run.Stop`
+- `internal/shuttleengine#Run.Stop`
 
 **Intent:**
 Move burler's half stop onto shuttle's stop verb (D7), so a half lyx ends reads `stopped` and the next attach probe never halts on it (#444).
