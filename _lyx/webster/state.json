@@ -1,6 +1,6 @@
 {
   "runGuid": "cb4d38a001d5a0187fed8ae71e94acfe",
-  "planFingerprint": "6350bf763712366c1eac5f504702a74eccab27c7a92f1df8282d94dae9a85356",
+  "planFingerprint": "c14834a3541f68a39521495f721d0a4da5904e455cba5dfb2290af405509e129",
   "planFileHashes": {
     "00-overview.md": "c6cb71d1b2dc08bd6f9d727f7f751511c1a261c26f959de310037f9345c988c4",
     "01-shuttle-send-config.md": "8ef192cd9896f869c4419dec58bfe4e85d2eeea3e09e47e3f9e2c564b51a6a03",
@@ -11,7 +11,7 @@
     "06-gate-boundary-idle.md": "e9fc89e5a652c6b1e7d2ac018553ebdb1968628f1c955c66429295a38cd822d1",
     "07-shuttle-stop-verb.md": "30b656799f93193ade14b7dcca786300c30d86a298d6b144508a9b95060e913f",
     "08-burler-stops-through-handle.md": "72a28cb29f6a5672ab1c62cb4e005ea63008cf249445b737497f604b58985952",
-    "09-webster-stops-through-shuttle.md": "f9f33160c17eb9b77f39c76a83aeef25b71eaaa1313e0a1ea363e003395a46e4",
+    "09-webster-stops-through-shuttle.md": "b084b9adce21d99b4d44b7ec0fdbd5c748c30d4a6422aedcf4ed5065692af1db",
     "10-delete-strand-removers.md": "ec8d9a314ba0cbf2fac195b28da76eaef355f6b791d573dfd44b07643894d767"
   },
   "partition": [
@@ -286,7 +286,7 @@
       }
     }
   ],
-  "currentBatch": 9,
+  "currentBatch": 0,
   "masterStrand": "40e9d79a7330df7afafd50156280ace9",
   "masterSessionId": "99ece045-631d-4fc2-a200-e51ea974b9b8",
   "batches": {
@@ -369,19 +369,36 @@
         "10-delete-strand-removers"
       ],
       "cardHashes": {
-        "09-webster-stops-through-shuttle": "f9f33160c17eb9b77f39c76a83aeef25b71eaaa1313e0a1ea363e003395a46e4",
+        "09-webster-stops-through-shuttle": "b084b9adce21d99b4d44b7ec0fdbd5c748c30d4a6422aedcf4ed5065692af1db",
         "10-delete-strand-removers": "ec8d9a314ba0cbf2fac195b28da76eaef355f6b791d573dfd44b07643894d767"
       },
       "startSha": "d92c66e6c0f76ba749c2f32734b2ca3fc4301f05",
       "kind": "fork",
       "spawnedAt": "2026-10-08T11:52:18Z",
       "sessionId": "99ece045-631d-4fc2-a200-e51ea974b9b8",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "09-webster-stops-through-shuttle",
+        "status": "done",
+        "head_sha": "c91f203d722181c9ae711d41dcbef41092058a4d",
+        "deviations": [
+          "cmd/lyx/testdata/test-budget.yaml",
+          "internal/websterengine/stopper_test.go",
+          "internal/websterengine/recoverbatch_test.go"
+        ]
+      },
+      "cardShas": [
+        "c91f203d722181c9ae711d41dcbef41092058a4d"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-send/99ece045-631d-4fc2-a200-e51ea974b9b8/subagents/agent-ae7ee70076503816d.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-send/99ece045-631d-4fc2-a200-e51ea974b9b8/subagents/agent-a97d51ca5859eba5a.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-send/99ece045-631d-4fc2-a200-e51ea974b9b8/subagents/agent-a9e99f3cd45771155.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-send/99ece045-631d-4fc2-a200-e51ea974b9b8/subagents/agent-a9e99f3cd45771155.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-send/99ece045-631d-4fc2-a200-e51ea974b9b8/subagents/agent-ae7ee70076503816d.jsonl"
   ]
 }

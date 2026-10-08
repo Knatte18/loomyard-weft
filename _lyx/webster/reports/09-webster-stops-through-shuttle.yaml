@@ -1,0 +1,6 @@
+status: OK
+head_sha: c91f203d722181c9ae711d41dcbef41092058a4d
+deviations:
+  - cmd/lyx/testdata/test-budget.yaml
+  - internal/websterengine/stopper_test.go
+  - internal/websterengine/recoverbatch_test.go

@@ -1,8 +1,8 @@
 # Card 9 — Webster's leftover-strand reclaim stops through shuttle
 
 **Create:**
-- `plan:internal/websterengine#StrandStopper` -> `type StrandStopper interface`
-- `plan:internal/testkit/shedfake#strandStopper` -> `type strandStopper struct`
+- `internal/websterengine#StrandStopper`
+- `internal/testkit/shedfake#strandStopper`
 
 **Delete:**
 - `internal/testkit/shedfake#reedOps`
