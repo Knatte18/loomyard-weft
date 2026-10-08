@@ -1,6 +1,6 @@
 # Shuttle: a Send lands or retries, and attach knows a half it stopped
 
-`shuttle-send` · Task · bug, shuttle
+`shuttle-send` · Task · bug, shuttle · running · Loom-Preflight
 
 Depends on: [`shuttle-state`](design-shuttle-state.md)
 
