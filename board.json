@@ -940,6 +940,21 @@
       "isolated": false,
       "brief": "reed watchdog polls a signal file every 100 ms around the clock; a rule for every lyx daemon (creel and later ones): event-driven waits, second-scale backoff polls, pinned by a guard",
       "body": "## What happened\n\nOn 2026-10-08 the machine ran slow with five runs in flight, and `lyx reed watchdog` showed up at 14% CPU in a snapshot.\nOver 43 hours it used 36 minutes of CPU, about 1.4% of one core on average, for a daemon that mostly waits.\nIts loop polls for the resize signal file every 100 ms (`watchdogSignalTick` in `internal/reedengine/watchdog.go`) around the clock, and runs a tmux `list-sessions` round trip every discovery cycle.\n\n## Proposal\n\nA lyx daemon costs close to nothing while nothing happens.\nMore daemons are coming (`creel` and others, operator 2026-10-08), so this is a rule for all of them, not a fix for one:\n\n- A daemon waits on events, not on a timer: file-system notification (inotify on Linux, its equivalents on Windows and macOS through one shared package) for signal files, and tmux hooks or a control-mode client for tmux state, where those exist.\n- Where it has to poll, its interval is in seconds, not tenths of a second, and backs off while idle.\n- A guard test or a PATTERN invariant pins the rule, so a new daemon cannot ship with a sub-second poll unannounced.\n\n`lyx reed watchdog` is the first daemon brought under the rule; measure its idle CPU before and after.\n"
+    },
+    {
+      "id": 199,
+      "slug": "shuttle-hook-payload-corpus",
+      "title": "Capture real hook payloads into fixtures",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Run the llm-tier hook-capture scenario once and turn the real StopFailure, Notification and SessionEnd payloads into corpus fixtures",
+      "body": "`shuttle-state` added recording hooks for `UserPromptSubmit`, `StopFailure`, `Notification` and `SessionEnd`, with an `llm`-tier capture scenario that was compiled but never run.\nThe payload shapes those hooks parse are unverified against a real session (an Open risk in that task).\nRun the scenario once and commit the captured payloads as fixtures, so the parsers are tested against real shapes.\n"
     }
   ],
   "legacy_done": [
