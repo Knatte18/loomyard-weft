@@ -133,6 +133,12 @@ Decision: The Goal names the consumers per segment: a Discussion-Review entry re
 
 Rationale: Round-3 F3: Webster reads no decision record, and the Plan-Review rubric reads the whole record as licence.
 
+### Added after Discussion (parent, 2026-10-08): Template review models per segment
+
+Decision: The loom.yaml template sets review to opus[medium] (Discussion-Review and Plan-Review run one solo reviewer) and webster_review to sonnet[high] (code review, where sonnet suffices); every other per-segment key stays empty and inherits. Operator policy 2026-10-08: a solo reviewer runs on opus, a fanned review's forks on sonnet, and code review on sonnet in either case.
+
+Rationale: Operator decision on review cost: Burler holds about half the weekly token use.
+
 ## Constraints
 
 - `PATTERN-review-round`: amended by D7; every other clause (review on disk before any target is touched, every finding fixed or disputed with evidence, reviewer and fixer separate sessions, the fixer touching nothing before the ready marker) holds, including under `fix_start: after-review`.
