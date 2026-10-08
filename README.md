@@ -15,6 +15,8 @@ Waits on nothing open; can start now, in parallel.
    - Send waits for a ready pane and a settled input before Enter, retries with backoff, and a lost submission is transient; attach no longer halts on a stopped Burler half
 1. **Plan gate checks: precise callers, nested fixture modules, a reviewer that knows the gate** — [`plan-gate-checks`](design-plan-gate-checks.md) · bug, enhancement, loom, quarry · awaiting · PR-Gate
    - Resolve callers by import path and receiver type, let gates run against nested fixture modules, and give the plan reviewer the gate check list
+1. **Gate test scope: which gate runs which tier, bounded hub-wide** — [`gate-test-scope`](design-gate-test-scope.md) · bug, enhancement, webster, loom, stencil, config
+   - Card gate tests only its own packages at tier 1, tier 2 per batch and at the plan verify, a hub-wide slot lock for gate test runs, guarded publish_verify
 
 ## Notes
 
@@ -30,10 +32,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **Plan agent can record a decision as --by parent** — [`plan-agent-parent-decision`](design-plan-agent-parent-decision.md) · bug, loom, stencil
 1. **Git push without a timeout hangs a batten run after laptop sleep** — [`git-network-timeout`](design-git-network-timeout.md) · bug, fabric, batten
 1. **Finalize warns of per-worktree config changes that came from main** — [`finalize-config-warn-from-main`](design-finalize-config-warn-from-main.md) · bug, loom, config
-1. **Implementer forks run the full test suite on every edit** — [`implementer-full-suite-loop`](design-implementer-full-suite-loop.md) · bug, webster, stencil
-   - Webster implementer forks ran go build and go test over the whole module every 20-60 s; a fork should test only its batch packages
-1. **Hub-wide limit on concurrent builds and test suites** — [`hub-build-test-limit`](design-hub-build-test-limit.md) · bug, loom, webster
-   - Gates, forks and agents ran go build and go test with no hub-wide bound; with four runs this exhausted memory and froze the machine
 1. **fabric: Publish merge-in fails with 'gitrepo: worktree status: object not found' and leaves a half-staged merge** — [`merge-in-object-not-found`](design-merge-in-object-not-found.md) · bug, fabric, loom
 1. **Loom resume at Publish refuses the dirty worktree left by its own staged merge-in, so the run cannot recover** — [`publish-resume-own-merge`](design-publish-resume-own-merge.md) · bug, loom, fabric
 1. **Loom goto back to Plan after Webster started leaves webster state stale; Webster hard-fails on plan fingerprint mismatch** — [`goto-plan-stale-webster`](design-goto-plan-stale-webster.md) · bug, loom, webster

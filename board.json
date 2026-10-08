@@ -1181,38 +1181,6 @@
       "body": "## Seen\n\nOn 2026-10-08 the operator's machine froze and needed a hard reset at about 20:12 CEST while four runs were in flight.\n`sar` shows about 800 process starts per second between 19:50 and 20:00, about 500 more live processes by 20:10,\nand the user slice at its 16 GiB `MemoryHigh` with swap full, so reclaim thrashed (8366 major faults/s, 768 MB/s reads).\nOnly about 15 claude sessions and 9 subagents started in that window, and nothing in lyx's logs says what else started the processes or which run, strand or command owned them.\nThe operator has seen an earlier storm of 100+ claude panes in reed, and could not trace that one either.\n\n## Idea\n\nEvery process lyx starts goes through one recorded launch path that appends an audit line to a hub-wide spawn log:\ntime, pid, parent pid, the lyx command and trace id that started it, hub, run slug, strand name, executable and argv,\nand on exit the duration, exit status, peak RSS and bytes read and written (from `rusage` and `/proc/\u003cpid\u003e/io`).\nThis covers tmux servers, sessions and panes, claude launches, git, and `go build`/`go test` in verify gates.\nA sampler, such as the reed watchdog, also records per-strand process-tree counts and memory every few seconds,\nso the state just before a freeze survives a reboot.\n`lyx` gains a read verb that summarises the log by minute, run, strand and executable, so a storm can be traced to its source after the fact.\n"
     },
     {
-      "id": 232,
-      "slug": "implementer-full-suite-loop",
-      "title": "Implementer forks run the full test suite on every edit",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster",
-        "stencil"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Webster implementer forks ran go build and go test over the whole module every 20-60 s; a fork should test only its batch packages",
-      "body": "## Seen\n\nBefore the 2026-10-08 crash, the `binary-change-and-rules` webster implementer forks ran `go build ./... \u0026\u0026 go test ./...` every 20 to 60 seconds, about 15 times between 19:58 and 20:06 CEST.\nThey also ran `go test -tags integration` and `go vet -tags integration ./...` across the whole module.\nEach run starts up to `GOMAXPROCS` test binaries that link cgo and tree-sitter, and the integration tests start their own tmux servers, git and lyx children.\nThat ran alongside the other runs' gates, and the user slice ran out of memory.\n\n## Idea\n\nAn implementer fork verifies only the packages its batch touches, and only once per change, never the full module on each edit.\nThe full suite belongs to the plan-level verify gate.\nThe webster stencil and the batch report state which packages a fork may test.\n"
-    },
-    {
-      "id": 233,
-      "slug": "hub-build-test-limit",
-      "title": "Hub-wide limit on concurrent builds and test suites",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "loom",
-        "webster"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Gates, forks and agents ran go build and go test with no hub-wide bound; with four runs this exhausted memory and froze the machine",
-      "body": "## Seen\n\nOn 2026-10-08, from 19:34 to 20:07 CEST, Go builds and test suites ran with no break, from several sources at once.\nThe sources were webster implementer forks, lyx's own gates (verify, lint-comments, Preflight), the orch and a hub fix agent, and newly seeded pairs.\nNothing bounds how many run at once across the hub.\nWith four runs in flight, the user slice reached its 16 GiB `MemoryHigh` with swap full, reclaim thrashed, and the machine froze until a hard reset.\n\n## Idea\n\nA hub-wide limit on concurrent `go build` and `go test` runs: lyx's gates take a slot from a hub lock before they build or test, wait their turn instead of piling up, and log the wait.\nAgents' own test commands reach the same limit through a lyx wrapper verb the stencils name.\n"
-    },
-    {
       "id": 234,
       "slug": "logger-file-level",
       "title": "Configurable file log level in logger.yaml",
@@ -1394,6 +1362,25 @@
       "isolated": false,
       "brief": "No test enforces which packages may remove a shuttle run strand; add a static scan",
       "body": "## Seen\n\nThe PR-Gate review of `shuttle-send` (PR #474) found `PATTERN-shuttle-stop` false against `orchcli`, and no Go test or scan names that entry, so nothing caught it.\n\n## Idea\n\nA static scan allows `RemoveStrand` calls on a shuttle run strand only in `shuttleengine` and the exceptions the entry names.\n"
+    },
+    {
+      "id": 245,
+      "slug": "gate-test-scope",
+      "title": "Gate test scope: which gate runs which tier, bounded hub-wide",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "enhancement",
+        "webster",
+        "loom",
+        "stencil",
+        "config"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Card gate tests only its own packages at tier 1, tier 2 per batch and at the plan verify, a hub-wide slot lock for gate test runs, guarded publish_verify",
+      "body": "## Seen\n\nBefore the 2026-10-08 crash, Webster implementer forks ran `go build ./... \u0026\u0026 go test ./...` plus `go test -tags integration` on their packages every 20 to 60 seconds.\nThat is the card gate command `cardGateCommand` derives (`internal/websterengine/cardgate.go`), run once per card.\nGates, forks, the orch and hub fix agents built and tested with no hub-wide bound, and with four runs in flight the user slice reached its 16 GiB `MemoryHigh` and the machine froze.\nFrom `test-tiers-hardening`: the Webster-Burler round gate compiles the `tmux` tier and never runs it, so a tier 3 defect surfaces only at Publish; a task can empty its own `publish_verify` in the pair's `landing.yaml`; no gate runs the `llm` tier.\n\n## Goal\n\n- The card gate runs tier 1 for the card's own packages only: no `go build ./... \u0026\u0026 go test ./...` over the module and no tier 2.\n- Tier 2 runs once per batch for the batch's packages, and in full at the plan verify, Publish and Finalize.\n- Tier 3 stays at Publish; Discussion decides, against its cost, whether the round gate runs an impacted-set tier 3 pass.\n- The `llm` tier stays by hand, and `pattern/PATTERN-test-speed.md` says so as a decision.\n- A hub-wide slot lock (an OS file lock per slot, slot count in config) bounds concurrent gate test runs, each run caps `-p`, and the wait is logged and shown in status.\n- The webster stencils tell each fork which packages it may test, and spawned agents are refused a raw full-module `go test` or `go build ./...`.\n- A pair's own config cannot empty `publish_verify`.\n- `pattern/PATTERN-test-speed.md`'s gate table and CLAUDE.md's push rule match the new gates in the same commit.\n"
     }
   ],
   "legacy_done": [
