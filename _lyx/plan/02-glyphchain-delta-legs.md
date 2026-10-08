@@ -15,7 +15,7 @@
 **Intent:**
 Add the integration half of the D1 test: each shape row's Create, Rename and Delete legs carried past the plan gate through a real commit's delta, handle binding, the on-disk rewrite and the done-checks, plus the `rework-generations` scenario row.
 
-`glyphchain_test.go`'s `shapeRows` gains each leg's code change: the text a Create leg appends or inserts (the interface method into `Iface`'s body, the multi-name and block members into their blocks), the replacements a Rename leg applies (receivers included, so a renamed generic type keeps its method compiling), and the text a Delete leg removes.
+`glyphchain_test.go`'s `shapeRows` gains each leg's code change: the text a Create leg appends or inserts (the interface method into `Iface`'s body, the multi-name and block members into their blocks), the replacements a Rename leg applies (receivers included, so a renamed generic type keeps its method compiling), and the text a Delete leg removes (for the `shapes#Generic` row, the type and its method together).
 
 `glyphchain_integration_test.go` (`//go:build integration`; it spawns git through `Delta`) runs, per row and leg, in its own repository from `newDeltaFixtureRepo` with the fixture copied in and committed as the base:
 - Create: validate the leg's plan as card 1 does, apply the code change and commit, take `Delta(base, head)`, and call `BindHandles` for the creating card.

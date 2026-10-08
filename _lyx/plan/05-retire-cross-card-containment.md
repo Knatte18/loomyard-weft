@@ -27,7 +27,7 @@
 Retire both cross-card containment refusals (D2): `containment-unit-overlap` (`planparser`'s syntactic tier) and `containment-file-overlap` (`planglyph`'s resolve tier).
 
 - Delete both `containment.go` files and their tests.
-  `validate` in `validate.go` stops calling `syntacticContainment`, and the file's header list drops the ID.
+  `validate` in `validate.go` stops calling `syntacticContainment`, the file's header list drops the ID, and `checkGlyphMalformed`'s doc comment stops listing `containment-unit-overlap` among the checks that skip a malformed glyph.
   `shape.go` drops `gateSyntacticContainment` and its ledger entry, and the ledger's doc stops counting its policies.
 - `resolvePass` stops calling `resolveContainment`, and its doc, `ValidateDispatch`'s doc ("never paired against a pending card for containment"), `resolveTargets`' consumer list and `cardOwnHandles`' "both containment tiers" stop naming it.
 - `doc.go` drops the `containment-file-overlap` bullet and names the passes that raise `glyph-rejected` without counting them.

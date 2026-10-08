@@ -45,6 +45,8 @@ It is blocking for a package-level member and informational for a method, since 
 A file that cannot be read is an `ErrQuarryUnavailable`-wrapped error, as `deleteorder.go`'s reads are.
 
 What this lets through, bounded:
+- Dispatch never refuses on `caller-uncovered`, so an uncovered caller that first appears after the plan gate passes there; the check stays out of `ValidateDispatch` because the reference set shrinks as earlier cards land, which would change a verdict mid-run.
+  Webster's per-card build and test gate fails the card that breaks such a caller.
 - A cross-package caller importing the package under an alias or with a dot import, and a caller in a file an earlier card creates, are not seen.
   Webster's per-card build and test gate fails the card that breaks such a caller, and a planner who knows of one covers it like any other caller.
 - A method's callers are reported only informationally; the same gate bounds them.
@@ -63,6 +65,7 @@ Rows in `glyphchain_test.go`:
 - Re-signing `callees#Target` with the covers only on an earlier card: blocking; with the covers on its own card: clean.
 - Deleting `callees#Helper`: blocking for `callees/callees.go`; with `callees#UsesHelper` on the same card: clean.
 - Deleting `callees#Thing.Method`: informational for `callers/callers.go`.
+- The shape rows' `shapes#Generic` Delete and arrow legs stay clean unchanged: `GenericMethod`'s receiver is a reference to `Generic`, covered by the `shapes#Generic.GenericMethod` glyph cards 1 and 10 list beside it.
 - Renaming `callees#Target`, deleting `callees/callees.go`, and deleting `callees#`: no `caller-uncovered`.
 - Deleting `callees#Target` with a later card editing `callers/callers.go`: `delete-before-reference` for that file and no `caller-uncovered` for it; re-signing it instead: `caller-uncovered` for that file.
 

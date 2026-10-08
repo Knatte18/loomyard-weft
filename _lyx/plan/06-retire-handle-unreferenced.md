@@ -19,7 +19,7 @@ Retire `handle-unreferenced` (D4), so a card declares every new member it create
 - `checkHandleConsistency` in `validate.go` drops its third half and the doc sentence on why that half read Create declarations alone; the file's header list drops the ID.
 - `handle.go` deletes `declaredHandles`, its only reader gone, and its header stops naming a "declared" predicate.
 - `TestValidate_HandleConsistency` drops the `handle-unreferenced` subtest and the ID from its clean-case loop; `TestHandleIndexes` keeps only its `referencedHandles` assertions.
-- The two `TestBindHandles_*` tests drop the ID from the findings they tolerate after the rewrite.
+- The two `TestBindHandles_*` tests drop the ID from the findings they tolerate after the rewrite, and `TestBindHandles_RenameNewSideHandleBinds`' doc comment and inline comment stop naming "both containment tiers", which card 5 retired.
 - The spec drops the `handle-unreferenced` row, renumbers the list and fixes every `row N` cross-reference, and rewrites the Plan: handles section's paragraphs on the handle checks so they name `handle-dangling`, `handle-collision` and `handle-malformed` with no count and no `handle-unreferenced`.
   The stencil sentence requiring a later reference is card 12's.
 

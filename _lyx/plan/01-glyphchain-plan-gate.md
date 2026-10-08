@@ -18,7 +18,7 @@
 Build the committed glyph-chain fixture and the untagged half of the D1 test: every member shape class real plans name, driven through parse, the resolve status policy, the Create inversion, handle canonicalization and the on-disk rewrite, asserting the chain as it stands today.
 
 The fixture is a Go module under `internal/planglyph/testdata/glyphchain` (`go.mod`: `module example.com/glyphchain`).
-No fixture member references another, so no later caller-coverage card changes a shape row's outcome.
+The one fixture member that references another is `GenericMethod`, whose receiver names `Generic` outside the type's resolved span; every leg that deletes or re-signs `shapes#Generic` therefore also lists `shapes#Generic.GenericMethod` on the same card, so card 11's caller coverage, which counts that receiver as a reference, changes no shape row's outcome.
 - `shapes/shapes.go`, `package shapes`: `func Func() int`, `type Plain struct{}`, `type Struct struct { Field int }` with `func (s Struct) ValueMethod() int` and `func (s *Struct) PointerMethod()`, `type Iface interface { IfaceMethod() int }`, `type Generic[E any] struct{ value E }` with `func (g *Generic[E]) GenericMethod() E`, `var Var = 1`, `const Const = 2`, a var block holding `BlockVar = 3` and the multi-name spec `PairA, PairB = 4, 5`, and a const block holding `BlockConst = iota` and the implicit `NextConst`.
 - `shapes/shapes_test.go`, `package shapes`: `func testHelper() int`.
 - `shapes/external_test.go`, `package shapes_test`: `func TestExternal(t *testing.T)`.
@@ -44,6 +44,7 @@ Legs:
 - Rename: one card renames the member to a draft handle spelled in the wrong unit (`plan:dirname#FuncRenamed`, and `plan:shapes#DirDiffersRenamed` for the `dirname` row); it validates clean and the card file carries the handle in the Old glyph's unit.
   The interface-method and multi-name rows carry no Rename leg yet: their renames fail today, and cards 3 and 4 add those legs with their fixes.
 - Delete: one card deleting the member validates clean.
+  The `shapes#Generic` row's card deletes `shapes#Generic` and `shapes#Generic.GenericMethod` together, since the method cannot outlive its receiver type.
 
 Cross-card rows in the same file, asserting today's refusals that card 5 flips:
 - a member on one card and its file on another: blocking `containment-file-overlap`;

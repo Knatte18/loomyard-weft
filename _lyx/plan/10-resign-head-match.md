@@ -28,6 +28,8 @@ The check reads only plan text, so its verdict cannot change mid-run, and it run
 `planGatePass` adds the blocking `resign-interface-method`: an arrow whose member glyph resolves, through `answerSymbols`, to a method whose signature does not open with `func`, quarry's answer for an interface method, whose own spec is no declaration.
 Its way forward is to drop the arrow and state the signature change in the card's Intent.
 It reads the tree, so it stays out of `ValidateDispatch`.
+What dispatch lets through: an arrow on an interface method that first appears after the plan gate passes, since its head can name the interface method's own glyph and so clear `resign-head-mismatch`.
+What bounds it: the arrow's only mechanical effect is marking the member for caller coverage, which dispatch does not run either, and webster's per-card build and test gate fails the card that breaks a caller.
 A struct field already fails as `glyph-not-found`, and every head written for it fails to parse or names another member.
 
 What this lets through: a head that names the right member but misstates its signature passes, since nothing downstream compares it with the built declaration.
@@ -36,7 +38,7 @@ What bounds it: it misleads only the implementer reading the card, and the card'
 `doc.go` gains both bullets.
 The spec gains both rows (`resign-interface-method` emitted at `ValidateFormat`, `Validate` and `ValidateRework` only), renumbered with every `row N` cross-reference fixed.
 
-`glyphchain_test.go` gains an arrow leg per shape row: a head re-signing the member validates clean for every shape a Go declaration names (the value-method row through a pointer-receiver head), the interface-method row reports `resign-interface-method` from `ValidateFormat` and not from `ValidateDispatch`, and the struct-field row reports `glyph-not-found` beside `resign-head-mismatch`.
+`glyphchain_test.go` gains an arrow leg per shape row: a head re-signing the member validates clean for every shape a Go declaration names (the value-method row through a pointer-receiver head, and the `shapes#Generic` row with `shapes#Generic.GenericMethod` beside it on the same card, the member whose receiver card 11 counts as a caller), the interface-method row reports `resign-interface-method` from `ValidateFormat` and not from `ValidateDispatch`, and the struct-field row reports `glyph-not-found` beside `resign-head-mismatch`.
 Scenario rows: a head naming another member, a head that fails to parse, and a changed receiver type each report `resign-head-mismatch` from both `ValidateFormat` and `ValidateDispatch`; the same member re-signed on two cards validates clean with no `handle-canonical-collision`, and both card files stay byte-identical across `ValidateFormat`.
 
 **ImpactSummary:** Adds two blocking checks on the new arrow only; plans without an arrow get the same batched Name call and the same findings as before.
