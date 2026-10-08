@@ -4,7 +4,6 @@
 - `internal/loomengine/template.yaml`
 - `internal/loomengine/config_test.go`
 - `internal/testkit/envkit/envkit.go`
-- `internal/loomrecipe/escalation_test.go`
 
 **Intent:**
 Drop the template review budget from five rounds to three (D3); a spent budget still escalates to the parent exactly as today.
@@ -13,7 +12,8 @@ Drop the template review budget from five rounds to three (D3); a spent budget s
   `review_circling_checkpoint` stays 3.
 - `config_test.go`: the template-load expectation pins `ReviewMaxBounces` at 3.
 - `envkit.go`: the `ReviewMaxBounces` default that mirrors the template follows it to 3.
-- `escalation_test.go`: the budget the escalation tests run with becomes 3, so a CONTINUE at round 3 escalates with cause `budget`, pinning the template's budget end to end.
+
+`loomrecipe`'s `escalation_test.go` keeps its own small budget: it sets the budget itself and never reads the template, and its rows already pin that a CONTINUE at the budget's last round escalates with cause `budget`, so with `config_test.go` pinning the template at 3 the two together carry a CONTINUE at round 3 escalating with cause `budget`.
 
 Grep the tree for any other test pinning the template's old value of 5 and move it with this card.
 

@@ -9,6 +9,7 @@
 - `internal/shedrecipe/recipe.go`
 - `internal/shedrecipe/entries_burler.go`
 - `internal/shedrecipe/entries_burler_test.go`
+- `internal/testkit/envkit/envkit.go`
 - `internal/loomcli/wiring.go`
 - `internal/loomcli/wiring_test.go`
 - `contracts/specs/refusal-spec.md`
@@ -23,6 +24,7 @@ Let each review segment set its own reviewer and fixer models (D4), falling back
   The `config.go` header lists the new keys among those it validates.
 - `ResolveReview` resolves the three segments' `burlerengine.RoundModels` into `ReviewSettings` (`Discussion`, `Plan`, `Webster`), each list falling back independently to the resolved run-wide `review` or `fix` list, every entry resolved through the registry at run start as today.
 - `shedrecipe.Env` gains `RowReviewModels map[string]burlerengine.RoundModels`, keyed by BurlerRound row name, a run-wide value like `SegmentBounces`; `burlerRoundEntry` passes the entry for its own row name to `BurlerDeps.Models` and falls back to `Env.ReviewModels` when the map has none.
+- `envkit`'s `nilLegal` gains `RowReviewModels` beside `SegmentBounces`, since a nil map is the documented fallback to `Env.ReviewModels`; `envkit.NilSeams` therefore skips it and `battencli`'s `TestWire_EverySeamFilled`, whose `wire` leaves it nil, keeps passing.
 - `loomcli`'s `wire` fills the map for `loomshed.NameDiscussionBurler`, `loomshed.NamePlanBurler` and `loomshed.NameWebsterBurler` from `ReviewSettings`.
 - The judge model stays the run-wide `judge` key, and no budget or fixer start becomes per segment.
 - `refusal-spec.md`'s model-spec-list config row names the six keys; `docs/overview.md`'s loom config line lists them.
