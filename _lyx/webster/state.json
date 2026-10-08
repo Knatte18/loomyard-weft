@@ -1,0 +1,706 @@
+{
+  "runGuid": "43f96b93160e5891c1f81e46a1390042",
+  "planFingerprint": "b0a3ad3021185b4b7a44b9b80935afb20f42b33d56a61761e4c6acd640601ea3",
+  "planFileHashes": {
+    "00-overview.md": "27289e2bb9617a8242f26a9bfe54a7aa486a604838b433d7bade6203cc3a1e0e",
+    "01-configengine-invalid-mark.md": "d06e92105e542ecdffa7eff8f1b44f277c790b1d6afbeb25f11b95837e6dad1f",
+    "02-batcher-orientation.md": "a5096d37cb3cdc5fea3a84746935037c1fe3b8ef64d9789572081ce344a29ed9",
+    "03-batcher-migrate-config.md": "9269b480505f2a39387914f542dcdcdd698e2a122ab07d914c27e7bc591b54ac",
+    "04-reconcile-migration-hook.md": "b6c6ed008c0b1cbb4fb277bfad761d3d76a23ece4bd1b94f13c0fa644ba3b3c9",
+    "05-loom-preflight-batcher.md": "327192ec193a63490da4c296f488a68d15f9bf2d4924240240126180072691cf",
+    "06-webster-config-invalid.md": "d64e36e73e991267512113edfcf70b7b71998bd3afd19a7d8eb05f12235f9d5c",
+    "07-begin-batch-one-remedy.md": "9b9d20bc8bbe77d2e16ab6770dbb1371043db836adc45b29279a801dce81f637",
+    "08-computed-merriam-base.md": "d0357d573233397dd81e50be522bd9b0cbd5396ae40f47e3ec404f74b5852ac6",
+    "09-calibrate-orientation-fit.md": "b70ddd64cbaf8c60bea5b5621c65abe777c9e66ba372908b2650d267f433883d",
+    "10-gitrepo-reset-keep.md": "29b6dcad0f29a8db075684e605fb15214fd34a3cd39c365cc031ef3b30a8e1d9",
+    "11-reset-targets.md": "5475cf76e33961029227541457f65a047bba4d3d623cad966eb941dae56dd024",
+    "12-run-archive-after-reset.md": "ed18d74f92f738780ce6387facec1ffb62e5f15eccdaf2c136efe39260c8f8b1",
+    "13-uncommitted-paths.md": "437046db97c06808101bb8f1bf949f39ea28ecb7d4a8e883aed9379e969af25c",
+    "14-reset-start-archives.md": "700453e0a0b3a5f74f85a5b0414b91f50408b63dc698bbcdca98c7ed836f6a25",
+    "15-standalone-reset.md": "4522885f0ca913560765e09f8761eee934fd252eb43a2ad71e90dc4d091be794",
+    "16-reset-sites-repoint.md": "13876b4b4da66a115f3bdb51f381bb3eea1da359c95d6e93138a5424c0422543",
+    "17-retire-fresh-after-reset.md": "057c5f319a00f94dac7dd6dd0f74d777dc8a1b6be18fee731936553a17a8e480",
+    "18-recovery-uncommitted-paths.md": "ff268d5a1c13e65b63d46e59a0f88fd27cc89e2f679863d7c7617463904aa59b",
+    "19-amended-cards-rebaseline.md": "fe8231ccf5fa839077754dc8ee6d02b05f924125a1e8d55a376e61bc2c678bbe",
+    "20-amended-cards-recovery.md": "975ae6c87d6fdd42b4a0199299747aca306f0d448650c728f6c6054e0e2636b0",
+    "21-overview-without-card-index.md": "4b6bb58c6ad859441580fd81ab7e66a7a880732906d7393fffe2b9f5e49e74bd",
+    "22-rebaseline-card-index.md": "6d3b9763242ebff267d1dfed9f737bdbc0a59ea40cc3aa76f26e6ea26cdb1959",
+    "23-plan-write-archives-webster.md": "a24b0bcf5743ef5200f7b993578eb2d1f7b3c49bfcc64a28f0df136e5c4526b4",
+    "24-plan-commit-archived-webster.md": "680b5f7b40a67f530d58f9ed8c71ea96300a40b6c00b94a39687f7b95225950a"
+  },
+  "partition": [
+    {
+      "cards": [
+        "01-configengine-invalid-mark",
+        "02-batcher-orientation",
+        "03-batcher-migrate-config",
+        "04-reconcile-migration-hook",
+        "05-loom-preflight-batcher"
+      ],
+      "profile": "cautious",
+      "estimate": 356678,
+      "breakdown": {
+        "weights": {
+          "master_base": 52000,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 53200,
+        "read_union": 165364,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 252,
+            "reads": {
+              "file:internal/configengine/config_test.go": 6780,
+              "file:internal/configengine/doc.go": 252,
+              "package:internal/configengine": 2000,
+              "tests:internal/configengine": 2000
+            },
+            "messages": 32,
+            "written": 9852
+          },
+          {
+            "card": 2,
+            "card_text": 792,
+            "reads": {
+              "file:internal/batcher/config_test.go": 3372,
+              "file:internal/batcher/cost_test.go": 3492,
+              "file:internal/batcher/doc.go": 720,
+              "file:internal/batcher/estimate_test.go": 2880,
+              "file:internal/batcher/identity_test.go": 744,
+              "file:internal/batcher/template.yaml": 228,
+              "file:internal/webstercli/cli_test.go": 17364,
+              "file:internal/websterengine/partition_test.go": 2436,
+              "file:internal/websterengine/rebaseline_test.go": 7872,
+              "file:internal/websterengine/runlevel_test.go": 29232,
+              "file:internal/websterengine/state_test.go": 3288,
+              "file:tools/tokencount/calibrate_test.go": 5244,
+              "package:internal/batcher": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "package:tools/tokencount": 2000,
+              "tests:internal/batcher": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 227.5,
+            "written": 69042
+          },
+          {
+            "card": 3,
+            "card_text": 288,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:internal/batcher/config_test.go": 3372,
+              "file:internal/batcher/doc.go": 720,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/batcher": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/batcher": 2000
+            },
+            "messages": 28,
+            "written": 8688
+          },
+          {
+            "card": 4,
+            "card_text": 360,
+            "reads": {
+              "file:internal/configcli/doc.go": 348,
+              "file:internal/configcli/reconcile_integration_test.go": 1848,
+              "file:internal/configsync/configsync_test.go": 6900,
+              "package:internal/configcli": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/configsync": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/configsync": 2000
+            },
+            "messages": 60,
+            "written": 18360
+          },
+          {
+            "card": 5,
+            "card_text": 372,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:contracts/specs/refusal-spec.md": 3036,
+              "file:internal/loomrecipe/shape_test.go": 2856,
+              "file:internal/loomshed/cancellation_test.go": 1080,
+              "file:internal/loomshed/doc.go": 300,
+              "file:internal/loomshed/gatefindings_test.go": 2196,
+              "file:internal/loomshed/loompreflight_test.go": 2808,
+              "file:internal/shedrecipe/entries_simple_test.go": 4536,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 106,
+            "written": 32172
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-webster-config-invalid",
+        "07-begin-batch-one-remedy",
+        "08-computed-merriam-base",
+        "09-calibrate-orientation-fit",
+        "10-gitrepo-reset-keep"
+      ],
+      "profile": "cautious",
+      "estimate": 348380,
+      "breakdown": {
+        "weights": {
+          "master_base": 52000,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 60200,
+        "read_union": 147132,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 408,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3036,
+              "file:contracts/stencils/claims_test.go": 7680,
+              "file:contracts/stencils/webster/webster-template-master.md": 2700,
+              "file:internal/webstercli/verbs_test.go": 14436,
+              "file:internal/webstercli/wiring.go": 4104,
+              "file:internal/websterengine/config_test.go": 2304,
+              "file:internal/websterengine/doc.go": 6228,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 98.5,
+            "written": 29958
+          },
+          {
+            "card": 7,
+            "card_text": 276,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3036,
+              "file:contracts/stencils/claims_test.go": 7680,
+              "file:contracts/stencils/webster/webster-template-master.md": 2700,
+              "file:internal/webstercli/verbs_test.go": 14436,
+              "file:internal/websterengine/beginbatch_test.go": 9852,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 74.5,
+            "written": 22626
+          },
+          {
+            "card": 8,
+            "card_text": 492,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:internal/websterengine/doc.go": 6228,
+              "file:internal/websterengine/partition_test.go": 2436,
+              "file:internal/websterengine/rebaseline_test.go": 7872,
+              "file:internal/websterengine/runlevel_test.go": 29232,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 136.5,
+            "written": 41442
+          },
+          {
+            "card": 9,
+            "card_text": 396,
+            "reads": {
+              "file:tools/tokencount/calibrate_integration_test.go": 1860,
+              "file:tools/tokencount/calibrate_test.go": 5244,
+              "file:tools/tokencount/main.go": 2508,
+              "package:tools/tokencount": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 87,
+            "written": 26496
+          },
+          {
+            "card": 10,
+            "card_text": 276,
+            "reads": {
+              "file:cmd/lyx/gitrepoboundary_test.go": 3276,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:internal/gitrepo/doc.go": 3684,
+              "file:internal/gitrepo/reset.go": 276,
+              "file:internal/gitrepo/reset_test.go": 1068,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/gitrepo": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/gitrepo": 2000
+            },
+            "messages": 67.5,
+            "written": 20526
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "11-reset-targets",
+        "12-run-archive-after-reset",
+        "13-uncommitted-paths",
+        "14-reset-start-archives",
+        "15-standalone-reset",
+        "16-reset-sites-repoint"
+      ],
+      "profile": "cautious",
+      "estimate": 374640,
+      "breakdown": {
+        "weights": {
+          "master_base": 52000,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 67200,
+        "read_union": 113448,
+        "cards": [
+          {
+            "card": 11,
+            "card_text": 624,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:contracts/specs/refusal-spec.md": 3036,
+              "file:internal/webstercli/reset_test.go": 6336,
+              "file:internal/websterengine/doc.go": 6228,
+              "file:internal/websterengine/reset_integration_test.go": 2292,
+              "file:internal/websterengine/reset_test.go": 804,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 129,
+            "written": 39324
+          },
+          {
+            "card": 12,
+            "card_text": 576,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:contracts/specs/refusal-spec.md": 3036,
+              "file:internal/websterengine/archive.go": 1752,
+              "file:internal/websterengine/archive_test.go": 3540,
+              "file:internal/websterengine/doc.go": 6228,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 92.5,
+            "written": 28326
+          },
+          {
+            "card": 13,
+            "card_text": 252,
+            "reads": {
+              "file:internal/websterengine/doc.go": 6228,
+              "package:internal/websterengine": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 50,
+            "written": 15252
+          },
+          {
+            "card": 14,
+            "card_text": 588,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3036,
+              "file:internal/webstercli/reset_test.go": 6336,
+              "file:internal/websterengine/doc.go": 6228,
+              "file:internal/websterengine/reset_integration_test.go": 2292,
+              "file:internal/websterengine/reset_test.go": 804,
+              "package:contracts/specs": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 89,
+            "written": 27288
+          },
+          {
+            "card": 15,
+            "card_text": 588,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3036,
+              "file:internal/webstercli/reset_test.go": 6336,
+              "file:internal/websterengine/doc.go": 6228,
+              "file:internal/websterengine/reset_test.go": 804,
+              "package:contracts/specs": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 99,
+            "written": 30288
+          },
+          {
+            "card": 16,
+            "card_text": 564,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3036,
+              "file:contracts/stencils/claims_test.go": 7680,
+              "file:contracts/stencils/webster/webster-template-master.md": 2700,
+              "file:internal/webstercli/acceptaudit_test.go": 3072,
+              "file:internal/websterengine/acceptbatch_test.go": 2304,
+              "file:internal/websterengine/doc.go": 6228,
+              "file:internal/websterengine/gitwrap_test.go": 5472,
+              "file:internal/websterengine/recordbatch_test.go": 20856,
+              "file:internal/websterengine/recoverbatch_test.go": 14460,
+              "file:internal/websterengine/suspect_test.go": 4236,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 176.5,
+            "written": 53514
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "17-retire-fresh-after-reset",
+        "18-recovery-uncommitted-paths",
+        "19-amended-cards-rebaseline"
+      ],
+      "profile": "cautious",
+      "estimate": 417272,
+      "breakdown": {
+        "weights": {
+          "master_base": 52000,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 74200,
+        "read_union": 198016,
+        "cards": [
+          {
+            "card": 17,
+            "card_text": 984,
+            "reads": {
+              "file:cmd/lyx/norecoverydeny_test.go": 2832,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:contracts/specs/refusal-spec.md": 3036,
+              "file:internal/webstercli/cli_test.go": 17364,
+              "file:internal/webstercli/verbs_test.go": 14436,
+              "file:internal/websterengine/auditledger_test.go": 1044,
+              "file:internal/websterengine/beginbatch_test.go": 9852,
+              "file:internal/websterengine/doc.go": 6228,
+              "file:internal/websterengine/findingtext_test.go": 1980,
+              "file:internal/websterengine/fingerprint.go": 2892,
+              "file:internal/websterengine/planbaseline_test.go": 2376,
+              "file:internal/websterengine/rebaseline_test.go": 7872,
+              "file:internal/websterengine/recordbatch_test.go": 20856,
+              "file:internal/websterengine/recoverbatch_test.go": 14460,
+              "file:internal/websterengine/runlevel_test.go": 29232,
+              "file:internal/websterengine/suspect_test.go": 4236,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 287.5,
+            "written": 87234
+          },
+          {
+            "card": 18,
+            "card_text": 348,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:contracts/stencils/claims_test.go": 7680,
+              "file:contracts/stencils/webster/webster-prefix-recovery.md": 456,
+              "file:internal/websterengine/doc.go": 6228,
+              "file:internal/websterengine/recoverbatch_git_test.go": 3108,
+              "file:internal/websterengine/runwrites.go": 756,
+              "file:internal/websterengine/runwrites_test.go": 1236,
+              "file:internal/websterengine/template_test.go": 11652,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 95.5,
+            "written": 28998
+          },
+          {
+            "card": 19,
+            "card_text": 324,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3036,
+              "file:internal/webstercli/verbs_test.go": 14436,
+              "file:internal/websterengine/doc.go": 6228,
+              "file:internal/websterengine/rebaseline_test.go": 7872,
+              "file:internal/websterengine/state_test.go": 3288,
+              "package:contracts/specs": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 95,
+            "written": 28824
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "20-amended-cards-recovery",
+        "21-overview-without-card-index",
+        "22-rebaseline-card-index",
+        "23-plan-write-archives-webster",
+        "24-plan-commit-archived-webster"
+      ],
+      "profile": "cautious",
+      "estimate": 436034,
+      "breakdown": {
+        "weights": {
+          "master_base": 52000,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 81200,
+        "read_union": 221820,
+        "cards": [
+          {
+            "card": 20,
+            "card_text": 468,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:contracts/specs/refusal-spec.md": 3036,
+              "file:contracts/stencils/claims_test.go": 7680,
+              "file:contracts/stencils/webster/webster-template-master.md": 2700,
+              "file:internal/webstercli/verbs_test.go": 14436,
+              "file:internal/websterengine/batchfail_test.go": 1728,
+              "file:internal/websterengine/doc.go": 6228,
+              "file:internal/websterengine/recordbatch_test.go": 20856,
+              "file:internal/websterengine/recoverbatch_test.go": 14460,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 142.5,
+            "written": 43218
+          },
+          {
+            "card": 21,
+            "card_text": 228,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:internal/planparser/doc.go": 1392,
+              "file:internal/planparser/parse_test.go": 12300,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/planparser": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 39,
+            "written": 11928
+          },
+          {
+            "card": 22,
+            "card_text": 408,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3036,
+              "file:internal/webstercli/cli_test.go": 17364,
+              "file:internal/websterengine/beginbatch_test.go": 9852,
+              "file:internal/websterengine/doc.go": 6228,
+              "file:internal/websterengine/fingerprint.go": 2892,
+              "file:internal/websterengine/fingerprint_test.go": 3960,
+              "file:internal/websterengine/rebaseline_test.go": 7872,
+              "file:internal/websterengine/runlevel_test.go": 29232,
+              "package:contracts/specs": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 121,
+            "written": 36708
+          },
+          {
+            "card": 23,
+            "card_text": 444,
+            "reads": {
+              "file:PATTERN.md": 1140,
+              "file:contracts/specs/refusal-spec.md": 3036,
+              "file:internal/loomshed/doc.go": 300,
+              "file:internal/loomshed/planwrite_test.go": 5784,
+              "file:internal/shedrecipe/entries_planwrite_test.go": 2640,
+              "file:internal/shedrecipe/fixture_test.go": 1452,
+              "file:pattern/PATTERN-plan-generation.md": 108,
+              "package:.": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 81.5,
+            "written": 24894
+          },
+          {
+            "card": 24,
+            "card_text": 216,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:internal/loomcli/wiring_commitstatus_test.go": 3156,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 53.5,
+            "written": 16266
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "b98b3a0241f2428ccaf434b2697c1951",
+  "masterSessionId": "97cf9074-5729-4d7d-8666-4aae19848abd",
+  "batches": {
+    "1": {
+      "slug": "configengine-invalid-mark",
+      "cards": [
+        "01-configengine-invalid-mark",
+        "02-batcher-orientation",
+        "03-batcher-migrate-config",
+        "04-reconcile-migration-hook",
+        "05-loom-preflight-batcher"
+      ],
+      "cardHashes": {
+        "01-configengine-invalid-mark": "d06e92105e542ecdffa7eff8f1b44f277c790b1d6afbeb25f11b95837e6dad1f",
+        "02-batcher-orientation": "a5096d37cb3cdc5fea3a84746935037c1fe3b8ef64d9789572081ce344a29ed9",
+        "03-batcher-migrate-config": "9269b480505f2a39387914f542dcdcdd698e2a122ab07d914c27e7bc591b54ac",
+        "04-reconcile-migration-hook": "b6c6ed008c0b1cbb4fb277bfad761d3d76a23ece4bd1b94f13c0fa644ba3b3c9",
+        "05-loom-preflight-batcher": "327192ec193a63490da4c296f488a68d15f9bf2d4924240240126180072691cf"
+      },
+      "startSha": "c0bf19c541b1b78f5bab47c98981282265bc4e37",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T09:38:26Z",
+      "sessionId": "97cf9074-5729-4d7d-8666-4aae19848abd",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
