@@ -1,0 +1,5 @@
+status: OK
+head_sha: 8f5febbf75f4e4fe91449bcd7eb2a85e0c48eb7f
+deviations:
+  - cmd/lyx/testdata/test-budget.yaml
+  - internal/shuttlecli/cli_test.go

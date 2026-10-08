@@ -1,11 +1,11 @@
 # Card 2 — Typing and clearing choreographies on the provider seam
 
 **Create:**
-- `plan:internal/shuttleengine#InputBoxClearer` -> `type InputBoxClearer interface`
-- `plan:internal/shuttleengine/claudeengine#Claude.TypeSequence` -> `func (c *Claude) TypeSequence(text string) []shuttleengine.PaneInput`
-- `plan:internal/shuttleengine/claudeengine#Claude.ClearInputSequence` -> `func (c *Claude) ClearInputSequence() []shuttleengine.PaneInput`
-- `plan:internal/shuttleengine/claudeengine#Claude.PastePlaceholder` -> `func (c *Claude) PastePlaceholder(boxText string) bool`
-- `plan:internal/shuttleengine/claudeengine#pastePlaceholderShape` -> `var pastePlaceholderShape *regexp.Regexp`
+- `internal/shuttleengine#InputBoxClearer`
+- `internal/shuttleengine/claudeengine#Claude.TypeSequence`
+- `internal/shuttleengine/claudeengine#Claude.ClearInputSequence`
+- `internal/shuttleengine/claudeengine#Claude.PastePlaceholder`
+- `internal/shuttleengine/claudeengine#pastePlaceholderShape`
 
 **Edit:**
 - `internal/shuttleengine#InputBoxReader`

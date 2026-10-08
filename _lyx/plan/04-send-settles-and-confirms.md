@@ -1,13 +1,13 @@
 # Card 4 — Typed text settles, submission is confirmed in a window, an unlanded send clears its text
 
 **Create:**
-- `plan:internal/shuttleengine#ErrSubmissionNotLanded` -> `var ErrSubmissionNotLanded error`
-- `plan:internal/shuttleengine#submitConfirmTimeout` -> `func submitConfirmTimeout(cfg Config) time.Duration`
-- `plan:internal/shuttleengine#confirmBackoffCap` -> `const confirmBackoffCap = 5 * time.Second`
-- `plan:internal/shuttleengine#awaitSettledBox` -> `func awaitSettledBox(sc sendContext, reader InputBoxReader, closeAt time.Time) error`
-- `plan:internal/shuttleengine#clearUnlandedText` -> `func clearUnlandedText(sc sendContext, reader InputBoxReader, normalized, needle string) (landed bool, note string)`
-- `plan:internal/shuttleengine#eventsSize` -> `func eventsSize(path string) int64`
-- `plan:internal/shuttleengine#turnStartedSince` -> `func turnStartedSince(engine Engine, eventsPath string, offset int64) bool`
+- `internal/shuttleengine#ErrSubmissionNotLanded`
+- `internal/shuttleengine#submitConfirmTimeout`
+- `internal/shuttleengine#confirmBackoffCap`
+- `internal/shuttleengine#awaitSettledBox`
+- `internal/shuttleengine#clearUnlandedText`
+- `internal/shuttleengine#eventsSize`
+- `internal/shuttleengine#turnStartedSince`
 
 **Edit:**
 - `internal/shuttleengine#sendVerified`
@@ -20,10 +20,10 @@
 
 **Uses:**
 - `internal/shuttleengine#InputBoxReader`
-- `plan:internal/shuttleengine#InputBoxClearer`
+- `internal/shuttleengine#InputBoxClearer`
 - `internal/shuttleengine#SessionCycler`
 - `internal/shuttleengine#inputBoxHoldsSentText`
-- `plan:internal/shuttleengine#paneTail`
+- `internal/shuttleengine#paneTail`
 
 **Intent:**
 Implement D2, D3, D5's tail for the landing failure, and the "text never appeared" decision: a send that does not land fails with `ErrSubmissionNotLanded` and leaves the box as empty as D1 found it.

@@ -1,16 +1,16 @@
 # Card 3 — Every verified send waits for an idle session
 
 **Create:**
-- `plan:internal/shuttleengine#ErrSessionBusy` -> `var ErrSessionBusy error`
-- `plan:internal/shuttleengine#sendContext` -> `type sendContext struct`
-- `plan:internal/shuttleengine#sendReadyTimeout` -> `func sendReadyTimeout(cfg Config) time.Duration`
-- `plan:internal/shuttleengine#awaitIdleSession` -> `func awaitIdleSession(sc sendContext) error`
-- `plan:internal/shuttleengine#unmatchedTurnStart` -> `func unmatchedTurnStart(engine Engine, eventsPath string) (SessionSignal, bool)`
-- `plan:internal/shuttleengine#turnStartHold` -> `type turnStartHold struct`
-- `plan:internal/shuttleengine#turnStartHold.holds` -> `func (h *turnStartHold) holds(engine Engine, turnStart SessionSignal, paneIdle bool, now time.Time) bool`
-- `plan:internal/shuttleengine#turnStartIdleOverride` -> `const turnStartIdleOverride = 10 * time.Second`
-- `plan:internal/shuttleengine#paneTail` -> `func paneTail(reed ReedOps, guid string) string`
-- `plan:internal/shuttleengine#paneTailLines` -> `const paneTailLines = 15`
+- `internal/shuttleengine#ErrSessionBusy`
+- `internal/shuttleengine#sendContext`
+- `internal/shuttleengine#sendReadyTimeout`
+- `internal/shuttleengine#awaitIdleSession`
+- `internal/shuttleengine#unmatchedTurnStart`
+- `internal/shuttleengine#turnStartHold`
+- `internal/shuttleengine#turnStartHold.holds`
+- `internal/shuttleengine#turnStartIdleOverride`
+- `internal/shuttleengine#paneTail`
+- `internal/shuttleengine#paneTailLines`
 
 **Edit:**
 - `internal/shuttleengine#sendVerified` -> `func sendVerified(sc sendContext, text string) error`

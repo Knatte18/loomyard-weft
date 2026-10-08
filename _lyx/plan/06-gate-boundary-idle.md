@@ -1,8 +1,8 @@
 # Card 6 — Gate sends wait for an idle writer and retry instead of ending the gate
 
 **Create:**
-- `plan:internal/shuttleengine#Run.sendWithin` -> `func (run *Run) sendWithin(text string) error`
-- `plan:internal/shuttleengine#Run.boundaryIdle` -> `func (run *Run) boundaryIdle() bool`
+- `internal/shuttleengine#Run.sendWithin`
+- `internal/shuttleengine#Run.boundaryIdle`
 
 **Edit:**
 - `internal/shuttleengine#Run`
@@ -13,10 +13,10 @@
 
 **Uses:**
 - `internal/shuttleengine#sendVerified`
-- `plan:internal/shuttleengine#unmatchedTurnStart`
-- `plan:internal/shuttleengine#turnStartHold`
-- `plan:internal/shuttleengine#ErrSessionBusy`
-- `plan:internal/shuttleengine#ErrSubmissionNotLanded`
+- `internal/shuttleengine#unmatchedTurnStart`
+- `internal/shuttleengine#turnStartHold`
+- `internal/shuttleengine#ErrSessionBusy`
+- `internal/shuttleengine#ErrSubmissionNotLanded`
 - `internal/shuttleengine#SessionCycler`
 
 **Intent:**

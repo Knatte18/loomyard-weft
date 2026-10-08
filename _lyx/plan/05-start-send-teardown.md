@@ -11,10 +11,10 @@
 - `internal/shuttleengine/completionsignal_enforcement_test.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#ErrSessionBusy`
-- `plan:internal/shuttleengine#ErrSubmissionNotLanded`
-- `plan:internal/shuttleengine#eventsSize`
-- `plan:internal/shuttleengine#turnStartedSince`
+- `internal/shuttleengine#ErrSessionBusy`
+- `internal/shuttleengine#ErrSubmissionNotLanded`
+- `internal/shuttleengine#eventsSize`
+- `internal/shuttleengine#turnStartedSince`
 
 **Intent:**
 Implement D4: no start error past `AddStrand` leaves a live strand behind a record reading `running`.
