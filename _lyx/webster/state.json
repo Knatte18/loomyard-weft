@@ -1,0 +1,215 @@
+{
+  "runGuid": "a94093a3bb90c1449c35fcccec5ce2ca",
+  "planFingerprint": "e800b7279723889e2e9072dbf33678c7f96d04e5b13ee91aac409f62164536d6",
+  "planFileHashes": {
+    "00-overview.md": "ea41f01afda5a9441288d2b6ea3934ef7aa693b000b04df435a5303986fa720d",
+    "01-nested-modules.md": "c866d56f556a0e4f5be9efdf1e92c9e1e2f38714cc084662f488caecb4d9c3bc",
+    "02-card-gate-nested-modules.md": "418b759c9417fd6094c1bff2016bafcf01a2df37add5b0e6fb45b1343d7d4f83",
+    "03-verify-nested-module.md": "564c5e7aaa24733644ab8ac6edca27a9bdd276778f635eed4ad24cb8ed92d13c",
+    "04-caller-scan-import-path.md": "9d5d97464f12bbb415dd9330a7c36f2f6702e173583a27f03321b3a6518617c1",
+    "05-caller-scan-types.md": "227e3e6a31aaa2c888aa24f432c398163bd4ec6b2c37ca7be56b3c4caee3f9bf",
+    "06-plan-review-fix-rule.md": "c80508f35ff885370b6b1d7d43ce3d24116c073340b1b27d8069676d6f2d3c95",
+    "07-test-budget-rule.md": "dd4c72154f16c0936350e737021ae073e45f0f88f2fbd5a45f45f7ad5cb5ed1a"
+  },
+  "planOverviewFrameHash": "9b0377f0f2529695efaad09806c1d1277964bafdfa37975e489d7f0bfa5e6de8",
+  "partition": [
+    {
+      "cards": [
+        "01-nested-modules",
+        "02-card-gate-nested-modules",
+        "03-verify-nested-module"
+      ],
+      "profile": "cautious",
+      "estimate": 183732,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54028,
+        "read_union": 69824,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 408,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/planparser": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 38.5,
+            "written": 11958
+          },
+          {
+            "card": 2,
+            "card_text": 360,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 7404,
+              "file:internal/websterengine/cardgate_test.go": 1116,
+              "file:internal/websterengine/doc.go": 7116,
+              "package:contracts/specs": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 57.5,
+            "written": 17610
+          },
+          {
+            "card": 3,
+            "card_text": 612,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:contracts/specs/loom-plan-spec.md": 7404,
+              "file:internal/loomcli/parity_test.go": 7548,
+              "file:internal/planparser/validate_test.go": 23772,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/planparser": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 99,
+            "written": 30312
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-caller-scan-import-path",
+        "05-caller-scan-types",
+        "06-plan-review-fix-rule",
+        "07-test-budget-rule"
+      ],
+      "profile": "cautious",
+      "estimate": 216194,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61028,
+        "read_union": 64872,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 804,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 7404,
+              "file:go.mod": 516,
+              "file:go.sum": 1812,
+              "file:internal/planglyph/doc.go": 948,
+              "file:internal/planglyph/glyphchain_test.go": 9900,
+              "package:.": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/planglyph": 2000,
+              "tests:.": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/planglyph": 2000
+            },
+            "messages": 109,
+            "written": 33504
+          },
+          {
+            "card": 5,
+            "card_text": 1020,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1488,
+              "file:contracts/specs/loom-plan-spec.md": 7404,
+              "file:go.mod": 516,
+              "file:go.sum": 1812,
+              "file:internal/planglyph/doc.go": 948,
+              "file:internal/planglyph/glyphchain_integration_test.go": 3180,
+              "file:internal/planglyph/glyphchain_test.go": 9900,
+              "file:internal/planglyph/testmain_test.go": 264,
+              "package:.": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/planglyph": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/planglyph": 2000
+            },
+            "messages": 157,
+            "written": 48120
+          },
+          {
+            "card": 6,
+            "card_text": 312,
+            "reads": {
+              "file:contracts/stencils/claims_test.go": 8172,
+              "file:contracts/stencils/loom/loom-rubric-plan-review.md": 1128,
+              "file:contracts/stencils/loom/loom-template-plan.md": 3000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000
+            },
+            "messages": 21.5,
+            "written": 6762
+          },
+          {
+            "card": 7,
+            "card_text": 108,
+            "reads": {
+              "file:CLAUDE.md": 816,
+              "package:.": 2000,
+              "tests:.": 2000
+            },
+            "messages": 6,
+            "written": 1908
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "9afeae3bb56fdf0742b3492be9ae6386",
+  "masterSessionId": "1524cb1f-1b81-47ee-b755-6b7b5d0bb4d8",
+  "batches": {
+    "1": {
+      "slug": "nested-modules",
+      "cards": [
+        "01-nested-modules",
+        "02-card-gate-nested-modules",
+        "03-verify-nested-module"
+      ],
+      "cardHashes": {
+        "01-nested-modules": "c866d56f556a0e4f5be9efdf1e92c9e1e2f38714cc084662f488caecb4d9c3bc",
+        "02-card-gate-nested-modules": "418b759c9417fd6094c1bff2016bafcf01a2df37add5b0e6fb45b1343d7d4f83",
+        "03-verify-nested-module": "564c5e7aaa24733644ab8ac6edca27a9bdd276778f635eed4ad24cb8ed92d13c"
+      },
+      "startSha": "7b3d140cb3f386f3c3c61e10e2b0eba7d3530d72",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T18:55:03Z",
+      "sessionId": "1524cb1f-1b81-47ee-b755-6b7b5d0bb4d8",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
