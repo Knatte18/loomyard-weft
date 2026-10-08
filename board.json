@@ -1337,7 +1337,9 @@
       "title": "loomcli: TestLoomResumeReconcilesTheHubConfigBeforeArming flakes on TempDir cleanup: weft-bare/objects not empty",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "loom",
+        "config"
       ],
       "issues": [
         472

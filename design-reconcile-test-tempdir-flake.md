@@ -1,6 +1,6 @@
 # loomcli: TestLoomResumeReconcilesTheHubConfigBeforeArming flakes on TempDir cleanup: weft-bare/objects not empty
 
-`reconcile-test-tempdir-flake` · Note · bug
+`reconcile-test-tempdir-flake` · Note · bug, loom, config
 
 Imported from [issue #472](https://github.com/Knatte18/loomyard/issues/472).
 
