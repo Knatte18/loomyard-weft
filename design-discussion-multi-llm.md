@@ -2,6 +2,8 @@
 
 `discussion-multi-llm` · Task · feature, loom, stencil, shed
 
+Depends on: [`multi-llm-producer`](design-multi-llm-producer.md), [`gate-test-scope`](design-gate-test-scope.md)
+
 ## Goal
 
 Design and build a Discussion-Write that runs on `MultiLLMProducer`: the writer is the `chair`, with one or two advisors, so the Discussion is designed by agents working together (operator, 2026-10-08: a good Discussion protocol is worth the tokens).

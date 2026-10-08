@@ -15,15 +15,13 @@ Waits on nothing open; can start now, in parallel.
    - The board already marks running tasks; a write that changes the scope of a running task is refused
 1. **Gate test scope: which gate runs which tier, bounded hub-wide** — [`gate-test-scope`](design-gate-test-scope.md) · bug, enhancement, webster, loom, stencil, config, burler · running · Discussion-Bouncer
    - Card gate tests only its own packages at tier 1, tier 2 per batch and at the plan verify, a hub-wide slot lock for gate test runs, guarded publish_verify
-   - **Before:** `test-suite-weight`, `publish-recovery`, `burler-multi-llm`, `webster-replan-state`
+   - **Before:** `test-suite-weight`, `publish-recovery`, `burler-multi-llm`, `discussion-multi-llm`, `webster-replan-state`
 1. **Git robustness: stale pack index, background gc, network timeouts, reused slugs** — [`git-robustness`](design-git-robustness.md) · bug, enhancement, fabric, batten, stencil · running · Plan-Burler
    - Reindex-and-retry for every go-git call, no auto-gc under a live step, timeouts on git network calls, batten refuses a done slug, bounded HeadContains
    - **Before:** `publish-recovery`
 1. **MultiLLMProducer: one producer runs a chair and its advisors as seats** — [`multi-llm-producer`](design-multi-llm-producer.md) · feature, shed, shuttle
    - A producer beside SingleLLMProducer that runs N agents as seats, one chair that steers and decides the outcome plus advisor-1..n, with its own internal message channel; built standalone, used by nothing yet
-   - **Before:** `burler-multi-llm`
-1. **Discussion-Write on MultiLLMProducer: a chair writes, advisors answer** — [`discussion-multi-llm`](design-discussion-multi-llm.md) · feature, loom, stencil, shed
-   - Design and build a Discussion-Write whose writer is the chair, with advisors that study the code and answer its design questions live
+   - **Before:** `burler-multi-llm`, `discussion-multi-llm`
 
 ### Layer B
 
@@ -38,6 +36,9 @@ Starts when every entry it names under After is done.
    - **Before:** `webster-replan-state`
 1. **Burler runs its round on MultiLLMProducer** — [`burler-multi-llm`](design-burler-multi-llm.md) · enhancement, burler, shed, stencil
    - The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review
+   - **After:** `multi-llm-producer`, `gate-test-scope`
+1. **Discussion-Write on MultiLLMProducer: a chair writes, advisors answer** — [`discussion-multi-llm`](design-discussion-multi-llm.md) · feature, loom, stencil, shed
+   - Design and build a Discussion-Write whose writer is the chair, with advisors that study the code and answer its design questions live
    - **After:** `multi-llm-producer`, `gate-test-scope`
 
 ### Layer C
