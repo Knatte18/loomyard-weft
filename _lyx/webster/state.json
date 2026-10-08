@@ -364,7 +364,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "692034ca1020e7c71d6e4acffa4cb0fe",
   "masterSessionId": "4c79fcb8-4645-4a33-8765-66a595274bdf",
   "batches": {
@@ -445,6 +445,25 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lifecycle-waits/4c79fcb8-4645-4a33-8765-66a595274bdf/subagents/agent-a666d4198227ada85.jsonl",
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lifecycle-waits/4c79fcb8-4645-4a33-8765-66a595274bdf/subagents/agent-ae61b6db4593ef8e3.jsonl"
       ]
+    },
+    "9": {
+      "slug": "reed-strand-window",
+      "cards": [
+        "09-reed-strand-window",
+        "10-reed-window-op",
+        "11-batten-run-window"
+      ],
+      "cardHashes": {
+        "09-reed-strand-window": "57ae56a9be9e3b711a039afaf9b267be783337dbb13a6613590f7d9cffabfcff",
+        "10-reed-window-op": "53209d6b1a53a5952e9c81a3ef974b2a784c2b6912c0f77d679cd78f938ed514",
+        "11-batten-run-window": "c44ad9a9fa2e0152781c4667d81cd78c40e4359a19ee9d4405535047fde6721d"
+      },
+      "startSha": "e0ce9db6288cbeb473825822721c8be02ea10a01",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T05:16:36Z",
+      "sessionId": "4c79fcb8-4645-4a33-8765-66a595274bdf",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
