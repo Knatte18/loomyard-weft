@@ -11,17 +11,23 @@ Autonomous run: no operator answered; every question below was settled by the ag
 5. Where is the state computed? A pure reducer over the events file the hooks already write, so any process reads the same answer, with logging at the three sites that guess today.
 6. How to tell `asking` from `idle-stalled` without reading the message text: by explicit ask signals, and by run mode for a missing-output turn end.
 7. #429 after `shuttle-turns`: the halt is gone, but a waited-out shell still turns into a held turn end and a parent notice after 10 minutes; decided payload-reported shells wait to the run Timeout.
-8. Stuck-as-question: traced to the removed `shedadapters` branch; the card-batching run predates `shuttle-turns`, so the task pins the behavior.
+8. Stuck-as-question: traced to the removed `shedadapters` branch; the card-batching run predates `shuttle-turns` (its batchifier commit landed at 15:44 on 2026-10-07, `shuttle-turns` at 18:23), so the task pins the behavior.
 9. Permission setup: found `PATTERN-no-denied-recovery` naming `agent-permission-setup` as the owner of the denied list; this task's deny table takes that role.
 10. Python deny in a Python target repo: a default-on config switch.
+    The operator's rule followed the `board-model` 75-minute stdin hang and the `agents-no-scripted-edits` script edit.
 
 ## Rejected alternatives
 
 - **A new `EventKind` per hook in `ParseEvents`.** The wait loop classifies a batch by its last event, so a turn-start line arriving after a Stop would change verdicts; shadow mode must change none.
 - **Stamping events with the observer's poll time only.** The orch session has no wait loop, and a crashed wait process would stamp late; a hook-side `lyx_at` is the source.
+- **`lyx_at` inserted as the payload's first field, the whole line written by one `printf`.** Measured under `strace`: `cat` appends a 20000-byte payload in one `write`, while bash's `printf` flushes it in 4096-byte chunks, so the Stop line the wait loop reads would gain interleave points; a separate stamp line keeps the payload's write as today.
+- **The orch read with no run record (interactive, no output contract, offset zero).** The orch is a shuttle run with its own `run.json`, which `Runner.ReadEvents` already finds through `FindRun`; its one output file is a never-written sentinel, so its turn ends read `asking`, not `idle-done`.
+- **A `SessionEnd` of any reason as `dead`.** Claude Code 2.1.294's reasons include `clear` and `resume`, which end a session inside a running process; the orch's own clear cycle would read `dead` while alive.
 - **A Go hook (`lyx shuttle record-event`) instead of shell.** Ties every hook to resolving the `lyx` binary inside Claude Code's hook shell and adds a process per hook; the POSIX one-liner already works under git-bash.
 - **A separate hooks file beside `events.jsonl`.** The board asks for the same event file; one ordered file is what lets the reducer fold turn starts and ends in order.
-- **The Wait loop as the sole writer of a persisted `state.yaml`/history file.** The orch session has no Wait; deriving from the timestamped events file gives every reader the same history with no new writer.
+- **The Wait loop as the sole writer of a persisted `state.yaml`/history file.** The orch session has no Wait; for the signal-derived states, deriving from the timestamped events file gives every reader the same history with no new writer.
+  It does not hold for the states from call-time facts (`dead` `process-gone`, liveness `unknown`) for those judged by an output-file stat (`idle-done`, `no-output`, interactive `asking`), or for those read from the transcript (`interrupt`, a transcript-marked `api-error`, a transcript-fallback waiting turn end): a files-only reader restamps the first on every call, judges the second with its own stat, and reads the third from the transcript as it stands at its own fold.
+  That is accepted in shadow mode, because each site compares its own reading with its own guess at that moment, and the newest history entry before a call-time state that is not itself one bounds how long that state has held; a durable `since` for them belongs with the first consumer that acts on it.
 - **Classifying a no-output turn end as `asking` in every mode.** It conflates a stalled autonomous agent with a question; without text-guessing the run mode is the only real signal.
 - **Pane liveness in the reducer.** The board makes the pane a cross-check only; the registry pid is the process.
 - **Building the bounded resume now, gated off.** It is a consumer, and the board defers consumers to their own tasks.
@@ -41,7 +47,7 @@ _No rounds yet._
 ## Question ledger
 
 - Q1 (auto-pick, resolved): Bounded resume of `idle-stalled` in scope? No; the board's step plan defers every consumer, and resume acts on the state.
-- Q2 (auto-pick, resolved): Hook line format? Same events file, one write per line, hook-side `lyx_at` inserted as the first field; lines without it read at first-seen time.
+- Q2 (auto-pick, resolved): Hook line format? Same events file; each hook appends a stamp line naming its hook and carrying `lyx_at`, then its payload by today's `cat` command, unchanged; a payload line without a stamp of its hook carrying a well-formed `lyx_at` has an empty `since`, the same for every reader.
 - Q3 (auto-pick, resolved): New signals through `ParseEvents`? No; a separate optional parse capability, so the wait loop sees no change.
 - Q4 (auto-pick, resolved): `asking` vs `idle-stalled` for a no-output turn end? Run mode decides: interactive `asking`, autonomous `idle-stalled` `no-output`; explicit ask signals are `asking` in both.
 - Q5 (auto-pick, resolved): Liveness source? Claude's session registry pid with `procStart`; no entry is `unknown`.
@@ -53,5 +59,5 @@ _No rounds yet._
 - Q11 (auto-pick, resolved): Stuck-as-question fix? Already removed by `shuttle-turns`; pin with a test.
 - Q12 (auto-pick, resolved): Python deny scope? Command-position `python`/`python3`/`python3.N`, every lyx-spawned session, default on, `claude_deny_python: false` per repo.
 - Q13 (auto-pick, resolved): Owner of `PATTERN-no-denied-recovery`'s list? This task's deny table; the background file is updated to say so and the list gains `python`, `python3`.
-- Q14 (open, risk): Real `StopFailure` and `Notification` payloads are not yet captured; the `llm`-tier scenario captures `Notification`, and `StopFailure` stays schema-derived until a real API error leaves one.
+- Q14 (open, risk): Real `StopFailure` and `Notification` payloads are not yet captured; the `llm`-tier scenario captures `UserPromptSubmit`, `Notification` and `SessionEnd`, the `Notification` only as `idle_prompt` since a bypass-mode session never reaches a permission prompt, and `StopFailure` stays schema-derived until a real API error leaves one.
 - Q15 (open, risk): Whether `UserPromptSubmit` fires for a self-started turn (background completion wake); recorded under Open risks.
