@@ -1210,6 +1210,21 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #450](https://github.com/Knatte18/loomyard/issues/450).\n\nAt Finalize, loom warns: `task branch \"\u003cslug\u003e\" changed per-worktree config files since it forked from \"main\": _lyx/config/batcher.yaml (base \u003csha\u003e, tip \u003csha\u003e); landing does not carry them to the parent branch, so re-apply each change meant for the parent on the parent's copy`.\n\nSeen for `shuttle-state` and `plan-glyph-precision` on 2026-10-08.\nIn both, the pair's `batcher.yaml` was byte-identical to the prime's: the change was main's own commit (`batcher: cautious is the template default`, c0bf19c54) arriving in the pair through the weft sync, not an edit the task made.\n\nExpected: the check compares the tip against the parent's current copy (or excludes changes the weft sync brought in), and warns only when the task's copy differs from the parent's.\nAs it is, the warning fires on every run that forked before a config change on main, and the hub must diff each time to rule it out.\n"
+    },
+    {
+      "id": 219,
+      "slug": "merriam-fixed-context-calibrate",
+      "title": "Re-measure the Merriam fixed context with tools/tokencount",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "webster"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "merriamFixedContext is one measurement and drifts as Claude Code changes; a calibrate step re-measures it",
+      "body": "From webster-dead-ends PR-Gate (2026-10-08), moved out of `binary-change-and-rules` at its Discussion.\n\n`merriamFixedContext` (`internal/websterengine/merriambase.go`) is a constant from one measurement of the system prompt and tools, so the computed Merriam base drifts silently as Claude Code changes.\nA calibrate step in `tools/tokencount` re-measures it.\n"
     }
   ],
   "legacy_done": [

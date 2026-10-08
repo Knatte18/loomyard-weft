@@ -83,6 +83,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Replace the one collapse-all-but-the-newest rule with per-strand sizing: content-sized panes like the runs overview, and parallel agents that share space evenly
 1. **Compare fanned and solo review rounds from their usage records** — [`fan-usage-report`](design-fan-usage-report.md) · enhancement, burler
    - A report over round usage records for the fan-on decision; a lost usage record shows in the facts
+1. **Re-measure the Merriam fixed context with tools/tokencount** — [`merriam-fixed-context-calibrate`](design-merriam-fixed-context-calibrate.md) · enhancement, webster
+   - merriamFixedContext is one measurement and drifts as Claude Code changes; a calibrate step re-measures it
 
 ### Features
 
