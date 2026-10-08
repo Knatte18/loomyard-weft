@@ -24,6 +24,8 @@ opus:
 haiku:
     engine: claude
     model: haiku
+    defaults:
+        effort: medium
 fable:
     engine: claude
     model: fable
