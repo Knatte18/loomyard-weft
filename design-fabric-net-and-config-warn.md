@@ -1,6 +1,6 @@
 # Git network calls time out; Finalize warns only for config the task changed
 
-`fabric-net-and-config-warn` · Task · bug, fabric · running · Loom-Preflight
+`fabric-net-and-config-warn` · Task · bug, fabric · paused · Loom-Preflight
 
 ## Goal
 
