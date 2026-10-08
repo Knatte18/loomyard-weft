@@ -97,6 +97,12 @@ Decision: Decision 4's rule has one exception: removing a slug from a locked ent
 
 Rationale: Decision 4 as written refuses the prune that Decision 2 and the Acceptance criteria require.
 
+### Added after Discussion (parent, 2026-10-08): Where and how a refused reader checks for a live run
+
+Decision: The refusal says to run lyx batten status <slug> from the hub's prime worktree. No run holds the entry when the slug has no batten seed, when its batten status is done, or when the run is halted and the operator has decided to abandon it. Any other state counts as live. The Acceptance criterion on the refusal's message uses this wording.
+
+Rationale: Batten verbs refuse outside the prime, and no batten status output reads as no run in progress.
+
 ## Constraints
 
 - `PATTERN-hub-containment`: the claim write reaches `_board` from the hub path, never through a worktree link.
