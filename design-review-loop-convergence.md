@@ -1,6 +1,6 @@
 # Review loop: a lighter convergence rule, a lower budget with auto-accept, models per segment
 
-`review-loop-convergence` · Task · bug, enhancement, burler, loom · running · Loom-Preflight
+`review-loop-convergence` · Task · bug, enhancement, burler, loom · running · Discussion-Write
 
 ## What happened
 
