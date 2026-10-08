@@ -87,7 +87,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ### Features
 
-1. **An MCP server over lyx exposing the verbs agents need** — [`lyx-mcp`](design-lyx-mcp.md) · feature
+1. **An MCP server over lyx exposing the verbs agents need** — [`lyx-mcp`](design-lyx-mcp.md) · feature, shuttle, stencil
    - A few coarse MCP tools over lyx, chosen by measured agent use and exposed per role, so agents see typed schemas instead of guessing CLI shapes
 1. **creel: the one way to reach an agent** — [`creel`](design-creel.md) · feature, reed
    - Post (pulled mail with reminders), inject and interrupt to any agent by name, through one daemon per hub; built standalone first, then wired in two stages
@@ -99,7 +99,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Someday (roadmap): #227, #228 — measured win, committed, not yet scheduled
 1. **Orch owns the run loop: detached batten start, a lyx watch, one land command, --continue, a committed role prompt** — [`orch-owns-the-loop`](design-orch-owns-the-loop.md) · feature, batten, orch
    - Replace the hub scratch scripts and remembered procedure with lyx itself, so an orch session runs the loop from its committed role prompt alone and resumes after a reboot
-1. **Hardener: an autonomous behavior-review campaign that replaces crucible** — [`hardener`](design-hardener.md) · feature
+1. **Hardener: an autonomous behavior-review campaign that replaces crucible** — [`hardener`](design-hardener.md) · feature, burler
    - Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges
 1. **Orch and batten run from the operator's own long-lived worktree, not only the prime** — [`orch-any-worktree`](design-orch-any-worktree.md) · feature, fabric, batten, orch
    - Every orch and batten verb refuses outside the prime; let a long-lived personal worktree be an orch's home, with pairs branching from and landing into its branch
@@ -107,9 +107,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - spawn configures and launches at once and overwrites a driven pair's attach chain; add a write-nothing open verb
 1. **Pairs as folders in the prime's hub workspace** — [`ide-workspace-pairs`](design-ide-workspace-pairs.md) · feature, ide, fabric
    - Idea, undecided: fabric adds and removes pairs in the prime workspace's folders; _portals stays
-1. **semantic-index: find code by concept, not by literal keyword** — [`semantic-index`](design-semantic-index.md) · feature
+1. **semantic-index: find code by concept, not by literal keyword** — [`semantic-index`](design-semantic-index.md) · feature, quarry
    - Semantic search over docstrings and comments; doubtful today, since agents now navigate well with grep
-1. **Ship lyx as an installable Claude Code plugin** — [`plugin-packaging`](design-plugin-packaging.md) · feature
+1. **Ship lyx as an installable Claude Code plugin** — [`plugin-packaging`](design-plugin-packaging.md) · feature, stencil
    - Package lyx and its skills as one installable plugin
 1. **Codex as a second agent engine** — [`codex-engine`](design-codex-engine.md) · feature, shuttle
    - If lyx gets a second engine, Codex is more relevant than Gemini
@@ -129,7 +129,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - A repo-wide default layer read from _board with each worktree's own file as an override, the way millhouse's config.local.yaml works
 1. **fabric: two-sided reset-to-SHA verb** — [`fabric-reset-to-sha`](design-fabric-reset-to-sha.md) · feature, fabric
    - The post-conclude undo the merge surface does not ship: reset to a warp SHA, resolve the paired weft SHA through the correspondence index, gate both sides
-1. **doctor: a lyx diagnostics command** — [`doctor`](design-doctor.md) · feature
+1. **doctor: a lyx diagnostics command** — [`doctor`](design-doctor.md) · feature, config, board
    - lyx doctor checks the _lyx layout, config parse, board reachability and stale locks
 1. **session sync: Claude transcripts across machines** — [`session-sync`](design-session-sync.md) · feature, shuttle
    - Copy Claude .jsonl transcripts across machines so --resume works elsewhere
@@ -143,7 +143,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Driver forwarding, an alias for the active strand kept by loom, or an on-call LLM per run: open for a brainstorm
 1. **A pane listing every gate of a run as a checklist with timings** — [`gate-checklist-pane`](design-gate-checklist-pane.md) · feature, reed
    - Every gate of the run with a tick box and its elapsed time, in a pane of its own; an idea, not a priority
-1. **lyx cleanup: one command runs every module cleanup** — [`lyx-cleanup`](design-lyx-cleanup.md) · feature
+1. **lyx cleanup: one command runs every module cleanup** — [`lyx-cleanup`](design-lyx-cleanup.md) · feature, batten, board
    - Drop finished batten statuses, prune the board, clear disposable .scratch and .lyx files, each through the owning module verb
 1. **A producer runs N agents as seats, one of them the master** — [`multi-agent-producer`](design-multi-agent-producer.md) · feature, shuttle
    - Generalize the single-agent producer: N agents per step declared as seats in one table (role, stencil, model, inputs, outputs); the master decides the outcome; Burler and discussion-advisor are the first users

@@ -1,6 +1,6 @@
 # Hardener: an autonomous behavior-review campaign that replaces crucible
 
-`hardener` · Note · feature
+`hardener` · Note · feature, burler
 
 ## Goal
 

@@ -1,6 +1,6 @@
 # lyx cleanup: one command runs every module cleanup
 
-`lyx-cleanup` · Note · feature
+`lyx-cleanup` · Note · feature, batten, board
 
 ## Wanted
 

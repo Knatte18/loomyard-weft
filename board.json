@@ -39,7 +39,9 @@
       "title": "An MCP server over lyx exposing the verbs agents need",
       "kind": "note",
       "labels": [
-        "feature"
+        "feature",
+        "shuttle",
+        "stencil"
       ],
       "issues": [],
       "depends_on": [],
@@ -149,7 +151,8 @@
       "title": "Hardener: an autonomous behavior-review campaign that replaces crucible",
       "kind": "note",
       "labels": [
-        "feature"
+        "feature",
+        "burler"
       ],
       "issues": [],
       "depends_on": [],
@@ -242,7 +245,8 @@
       "title": "semantic-index: find code by concept, not by literal keyword",
       "kind": "note",
       "labels": [
-        "feature"
+        "feature",
+        "quarry"
       ],
       "issues": [],
       "depends_on": [],
@@ -273,7 +277,8 @@
       "title": "Ship lyx as an installable Claude Code plugin",
       "kind": "note",
       "labels": [
-        "feature"
+        "feature",
+        "stencil"
       ],
       "issues": [],
       "depends_on": [],
@@ -470,7 +475,9 @@
       "title": "doctor: a lyx diagnostics command",
       "kind": "note",
       "labels": [
-        "feature"
+        "feature",
+        "config",
+        "board"
       ],
       "issues": [],
       "depends_on": [],
@@ -803,7 +810,9 @@
       "title": "lyx cleanup: one command runs every module cleanup",
       "kind": "note",
       "labels": [
-        "feature"
+        "feature",
+        "batten",
+        "board"
       ],
       "issues": [],
       "depends_on": [],
