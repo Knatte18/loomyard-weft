@@ -135,6 +135,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Drop finished batten statuses, prune the board, clear disposable .scratch and .lyx files, each through the owning module verb
 1. **A producer runs N agents as seats, one of them the master** — [`multi-agent-producer`](design-multi-agent-producer.md) · feature, shuttle
    - Generalize the single-agent producer: N agents per step declared as seats in one table (role, stencil, model, inputs, outputs); the master decides the outcome; Burler and discussion-advisor are the first users
+1. **lyx halt: stop every run safely and on purpose** — [`lyx-halt`](design-lyx-halt.md) · feature, batten
+   - One verb that stops all runs within seconds, interrupting every Claude session with Esc, recorded as an ordered halt so no failure or idle path fires
 
 ## Done
 
