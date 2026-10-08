@@ -127,6 +127,12 @@ Decision: The write's bound is checked on the bytes it produced: re-read the new
 
 Rationale: Round-3 F2: comparing slices with the file they were cut from cannot fail.
 
+### Added after Discussion (parent, 2026-10-08): Carry-over consumers per segment
+
+Decision: The Goal names the consumers per segment: a Discussion-Review entry reaches Plan-Write (and rework in a later generation); a Plan-Review or Webster-Review entry is first checked at Describe, after Webster has built the code, and that is the accepted bound, stated in Open risks. A carry-over entry under ## Open risks is not part of the review answer key and licenses no scope: the Plan-Review rubric gains one sentence saying so.
+
+Rationale: Round-3 F3: Webster reads no decision record, and the Plan-Review rubric reads the whole record as licence.
+
 ## Constraints
 
 - `PATTERN-review-round`: amended by D7; every other clause (review on disk before any target is touched, every finding fixed or disputed with evidence, reviewer and fixer separate sessions, the fixer touching nothing before the ready marker) holds, including under `fix_start: after-review`.
