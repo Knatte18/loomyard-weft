@@ -81,6 +81,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - A report over round usage records for the fan-on decision; a lost usage record shows in the facts
 1. **Re-measure the Merriam fixed context with tools/tokencount** — [`merriam-fixed-context-calibrate`](design-merriam-fixed-context-calibrate.md) · enhancement, webster
    - merriamFixedContext is one measurement and drifts as Claude Code changes; a calibrate step re-measures it
+1. **Caller coverage: precise caller resolution** — [`caller-scan-import-path`](design-caller-scan-import-path.md) · enhancement, quarry
 
 ### Features
 

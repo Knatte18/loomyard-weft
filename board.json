@@ -1155,6 +1155,21 @@
       "brief": "Push and fetch run under a timeout so a dead connection after sleep fails fast; the per-worktree config warning compares against the parent copy",
       "body": "## Goal\n\nGit network calls cannot hang a run, and Finalize warns about per-worktree config only when the task's copy differs from the parent's.\n\n## From `git-network-timeout`\n\nImported from [issue #458](https://github.com/Knatte18/loomyard/issues/458).\n\n### What happened\n\nA `lyx batten run review-lens-fan` began a best-effort status push to the weft remote at 14:11:21; the laptop hibernated four seconds later.\nAfter resume the push hung on a dead HTTPS connection (`git send-pack` in `futex_do_wait`) for 2.5 hours, and the batten run sat at Run-Shed without starting the child loom, with no notice to the parent.\nKilling the `git push` let batten log `status push failed, next transition will catch up` and go on.\n\n### Expected\n\nGit network calls from lyx (push and fetch, best-effort or not) run under a timeout, or with `http.lowSpeedLimit`/`http.lowSpeedTime` set, so a dead connection fails within minutes and the best-effort path takes over.\n\n## From `finalize-config-warn-from-main`\n\nImported from [issue #450](https://github.com/Knatte18/loomyard/issues/450).\n\nAt Finalize, loom warns: `task branch \"\u003cslug\u003e\" changed per-worktree config files since it forked from \"main\": _lyx/config/batcher.yaml (base \u003csha\u003e, tip \u003csha\u003e); landing does not carry them to the parent branch, so re-apply each change meant for the parent on the parent's copy`.\n\nSeen for `shuttle-state` and `plan-glyph-precision` on 2026-10-08.\nIn both, the pair's `batcher.yaml` was byte-identical to the prime's: the change was main's own commit (`batcher: cautious is the template default`, c0bf19c54) arriving in the pair through the weft sync, not an edit the task made.\n\nExpected: the check compares the tip against the parent's current copy (or excludes changes the weft sync brought in), and warns only when the task's copy differs from the parent's.\nAs it is, the warning fires on every run that forked before a config change on main, and the hub must diff each time to rule it out.\n",
       "status": "paused · Loom-Preflight"
+    },
+    {
+      "id": 222,
+      "slug": "caller-scan-import-path",
+      "title": "Caller coverage: precise caller resolution",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "quarry"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "`plan-glyph-precision` added the `caller-uncovered` plan-gate check (D5).\nIts caller scan matches by package clause name, so it cannot see a caller that imports the package under an alias or a dot import, nor a caller in a file an earlier card creates.\nBoth are accepted bounds in that task's decision record.\nResolving imports by path would close the first gap; worth building only if planners hit it.\n\n## Seen in webster-dead-ends, 2026-10-08\n\nIts plan gate reported 75 informational `caller-uncovered` entries on one card, all false positives by the fixer's grep:\nevery file naming the `batcher.Batch` interface type was read as a caller of the re-signed concrete method `costBatcher.Batch`,\nand unrelated `.start(` calls as callers of `peakAccumulator.start`, matched by method name alone.\nFor a method the finding is informational, so it cost no round, but the noise hides a real uncovered caller.\nResolving a method call's receiver type would remove both classes.\n\n"
     }
   ],
   "legacy_done": [
