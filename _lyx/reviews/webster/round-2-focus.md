@@ -1,0 +1,10 @@
+---
+round: 2
+focus:
+  - "internal/battencli/wire.go: the seams wired as ReadDecision, StopReport and AttachDir, and their callers awaitingStep in internal/battenshed/innerrun.go and noticeStep and stateChangeReady in internal/battenshed/notice.go. Settle whether any of them starts a process (for example a git rev-parse through lyxcwd.ResolveWorktree) on each poll_interval_s check, given the plan's rule that only file stats and small file reads run per check and anything costing a process runs at most once per notice_probe_s, and whether a test counts those resolutions over a long wait. Also check that internal/battenshed/doc.go describes which work runs per check and which per probe accurately."
+  - "internal/reedengine/lifecycle.go Engine.Down, sessionReapRootsLocked and paneProcessTreePIDsLocked, and internal/reedengine/windowtarget.go storedStrandWindowTarget. Settle whether Down still reaps every pane process tree of the session when reed.json is corrupt or unreadable, whether a batten window's panes are covered, whether the Down doc comment states what state it reads, and whether a test reaches Down over a corrupt state."
+  - "internal/battenshed/innerrun.go running arm (the reportStuck reason text) and contracts/stencils/shed/shed-template-driver-notify-watched.md with its claims in claims_test.go. Settle whether the reason text matches what a row that now waits inside its call actually does, and whether the watched stencil states only the driver's own rule without describing who else announces a stop, as the plan's card 3 requires."
+  - "Comments touched in internal/reedengine/panebin.go, internal/reedengine/doc.go and pattern/PATTERN-pane-binary-resolution.md. Settle whether each touched comment sentence sits on its own line per PATTERN-comment-line-breaks, and whether the text naming the composition's call sites covers both launchStrandLocked and the composeWindowCommand call in window.go."
+---
+
+Focus entries name where to look; none caps severity or pre-states a verdict.
