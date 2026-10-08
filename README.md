@@ -11,8 +11,6 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **reed: strand and run tabs, narrow-terminal run row, a color per strand role** — [`reed-view`](design-reed-view.md) · enhancement, reed · running · Finalize
-   - VIEW plus a zoom button per strand and Alt-key navigation, run tabs that never fall off a narrow terminal, and each strand role in its own color
 1. **Shuttle: a Send lands or retries, and attach knows a half it stopped** — [`shuttle-send`](design-shuttle-send.md) · bug, shuttle · running · Webster
    - Send waits for a ready pane and a settled input before Enter, retries with backoff, and a lost submission is transient; attach no longer halts on a stopped Burler half
 1. **Webster: recovery never dead-ends, stale config fails at the start, a computed Merriam base** — [`webster-dead-ends`](design-webster-dead-ends.md) · bug, enhancement, webster · running · Webster
@@ -157,3 +155,5 @@ Finished, awaiting `lyx board prune`.
    - Retry a refused weft push and roll back the own branch, gate the prime-side push of main, rename fabric exports that carry warp/weft
 1. **Shuttle: one session-state model, held turns as waits, stuck not a question, a deliberate permission setup** — [`shuttle-state`](design-shuttle-state.md) · bug, enhancement, shuttle · done
    - Shuttle computes busy/idle-done/idle-stalled/asking/dead from hooks in shadow mode, holds show as waits, a stuck outcome is classified from its file, and the hook denies python
+1. **reed: strand and run tabs, narrow-terminal run row, a color per strand role** — [`reed-view`](design-reed-view.md) · enhancement, reed · done
+   - VIEW plus a zoom button per strand and Alt-key navigation, run tabs that never fall off a narrow terminal, and each strand role in its own color
