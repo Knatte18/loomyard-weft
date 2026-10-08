@@ -1,4 +1,4 @@
-# A producer runs two live agents side by side
+# A producer runs N agents, one of them the master
 
 `two-agent-producer` · Note · feature, shuttle
 
@@ -16,3 +16,14 @@ Built once, it serves both notes.
 Inside one producer, not two parallel shed producers (operator, 2026-10-07): shed is a linear machine, one current producer, one history, and pause, goto and routing each assume one step at a time.
 Parallel producers would need fork and join in the recipe and rules for one branch halting while the other is done; inside one producer the two agents are invisible to shed, which sees one step with one outcome.
 
+
+## Generalized: N agents, one master (operator, 2026-10-08)
+
+The single-agent producer and the two-agent producer become one shape: a producer runs N agents, N ≥ 1, of which exactly one is the master.
+The master's turn end, outputs and gates decide the step's outcome, as a single agent's do today; the others are helpers whose start, model-spec, wait and teardown the producer manages, and whose results reach the master.
+A single-agent producer is the case N = 1.
+
+Burler's round already runs two agents ad hoc since 572ab84e8 (`roundHalves` in `internal/burlerengine/engine.go`): the reviewer, and the fixer, which waits on the review through `lyx burler await-review`.
+In the general shape the fixer is the master and the reviewer a helper; `discussion-advisor` is Discussion-Write as master with the advisor as helper.
+
+Open for the task that builds it: what a helper's failure or hang does to the step, how the producer knows a helper is done (the session-state model `shuttle-state` builds), and how master and helpers talk (`creel`).
