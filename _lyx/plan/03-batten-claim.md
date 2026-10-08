@@ -4,12 +4,14 @@
 - `internal/battencli#battenCLI.wire`
 - `internal/battencli/cli.go`
 - `internal/battencli/wire_seams_test.go`
+- `internal/battencli/lifecycle_integration_test.go`
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
 - `plan:internal/boardengine#OpenHub`
 - `plan:internal/boardengine#Board.SetRunStatus`
 - `plan:internal/boardengine#RunStatus`
+- `plan:internal/testkit/boardkit#HubWithBoardConfig`
 
 **Intent:**
 `lyx batten run <slug>` claims the board entry before the pair exists, so the run lock starts at the claim instead of at loom's first transition.
@@ -23,10 +25,12 @@ The claim lives in `battencli`'s wiring closure, never in `battenshed` or `shede
 
 What this lets through, bounded: a failed claim write leaves the lock window open until loom's first transition, as today.
 
-Test: one `TestWire_CreateWorktreeClaimsTheBoardEntry` in `wire_seams_test.go`, table-driven over a wired prime whose temp hub holds only the board config (written as `landingdeps_markdone_test.go` does), so `CreateWorktree` claims and then fails on the absent fabric config before any pair is created.
-Rows: an entry with no status reads `running · Worktree-Create` after the call; a `done` entry stays `done`; an absent slug creates no entry; a hub with no board config returns the same fabric-config error and writes nothing.
-Each row asserts the closure's error is non-nil, which shows the claim precedes pair creation and survives the row's failure.
-The test sets `BOARD_SKIP_GIT` and `BOARD_SKIP_PUSH`, process-global, so it does not call `t.Parallel` and says so in a comment.
+Test: one `TestWire_CreateWorktreeClaimsTheBoardEntry` in `wire_seams_test.go`, table-driven over a wired prime whose hub comes from `boardkit.HubWithBoardConfig`, so `CreateWorktree` claims and then fails on the absent fabric config before any pair is created.
+Rows: an entry with no status reads `running · Worktree-Create` after the call, and the closure's error is non-nil, which shows the claim precedes pair creation and survives the row's failure;
+a `t.TempDir()` hub whose board directory holds only an empty `configengine.ConfigDir`, so `OpenHub` fails on the absent board config, returns an error naming `configengine.ConfigFile(fabricengine.BoardDir(hub), "fabric")` rather than the board's config file, which shows the run went past the failed claim, and a `logcapture.Capture` buffer holds a `logger.Warn` naming the slug.
+The absent and `done` skips are `SetRunStatus`'s, pinned by Card 2's `TestSetRunStatus`, so they get no rows here.
+The claim surviving a refused `Topology.Add` extends `stepCreateRow_LeftoverBranchIsRewordedForPrime` in `lifecycle_integration_test.go`, which already drives `c.env.CreateWorktree` to an `Add` refusal over a real hub: the step seeds the slug's entry with `seedBoardTask` before the call and asserts it reads `running · Worktree-Create` after the refusal, adding no top-level test.
+`TestWire_CreateWorktreeClaimsTheBoardEntry` sets `BOARD_SKIP_GIT` and `BOARD_SKIP_PUSH` and redirects the logger's output, all process-global, so it does not call `t.Parallel` and says so in a comment.
 Raise `internal/battencli`'s row in `test-budget.yaml` by one.
 
 Docs: the `battencli` package comment in `cli.go` gains a paragraph on the claim write: when it is written, what it skips, that a failure warns, and that it stays on a failed Worktree-Create row.
