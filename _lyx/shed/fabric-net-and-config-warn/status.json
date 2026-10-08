@@ -1,8 +1,8 @@
 {
   "current_producer": "Loom-Preflight",
-  "state": "running",
+  "state": "paused",
   "error": "",
-  "pause_requested": true,
+  "pause_requested": false,
   "activity": {
     "now": "Loom-Preflight",
     "last": "Preflight → done",
