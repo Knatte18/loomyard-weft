@@ -1,12 +1,12 @@
 {
   "current_producer": "Publish",
-  "state": "failed",
-  "error": "landingshed: Publish: merge-in against parent branch \"main\": mergeresolve: list untracked files (attempt 1): fabricengine: list untracked files: gitrepo: worktree status: object not found",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Publish",
     "last": "Describe → done",
-    "wait": "landingshed: Publish: merge-in against parent branch \"main\": mergeresolve: list untracked files (attempt 1): fabricengine: list untracked files: gitrepo: worktree status: object not found"
+    "wait": ""
   },
   "history": [
     {
