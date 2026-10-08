@@ -1162,7 +1162,8 @@
         453
       ],
       "depends_on": [
-        "gate-test-scope"
+        "gate-test-scope",
+        "git-robustness"
       ],
       "isolated": false,
       "brief": "A blocked Publish hands its failure to a fixer, resume survives its own staged merge, no false config warning at Finalize, re-step and decision-author fixes",

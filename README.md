@@ -18,6 +18,7 @@ Waits on nothing open; can start now, in parallel.
    - **Before:** `test-suite-weight`, `publish-recovery`, `webster-replan-state`
 1. **Git robustness: stale pack index, background gc, network timeouts, reused slugs** — [`git-robustness`](design-git-robustness.md) · bug, enhancement, fabric, batten, stencil
    - Reindex-and-retry for every go-git call, no auto-gc under a live step, timeouts on git network calls, batten refuses a done slug, bounded HeadContains
+   - **Before:** `publish-recovery`
 
 ### Layer B
 
@@ -28,7 +29,7 @@ Starts when every entry it names under After is done.
    - **After:** `gate-test-scope`
 1. **Publish and loom recovery: a fix route from Publish, resume past its own merge, clean re-steps** — [`publish-recovery`](design-publish-recovery.md) · bug, loom, burler, fabric, config, stencil
    - A blocked Publish hands its failure to a fixer, resume survives its own staged merge, no false config warning at Finalize, re-step and decision-author fixes
-   - **After:** `gate-test-scope`
+   - **After:** `gate-test-scope`, `git-robustness`
 1. **Webster state across replans: goto to Plan, late plan reviews, rebaseline clarity** — [`webster-replan-state`](design-webster-replan-state.md) · bug, enhancement, webster, loom, burler
    - Webster stays consistent after a goto to Plan or a late Plan-Review round, rebaseline names its fallback, one-call head_sha check, verify-module splits at || and |
    - **After:** `gate-test-scope`

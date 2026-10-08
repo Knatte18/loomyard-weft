@@ -2,7 +2,7 @@
 
 `publish-recovery` · Task · bug, loom, burler, fabric, config, stencil
 
-Depends on: [`gate-test-scope`](design-gate-test-scope.md)
+Depends on: [`gate-test-scope`](design-gate-test-scope.md), [`git-robustness`](design-git-robustness.md)
 
 ## Goal
 
