@@ -13,8 +13,6 @@ Waits on nothing open; can start now, in parallel.
 
 1. **Orch and batten: compact reload, one event-driven notice channel, a window per batten** — [`lifecycle-waits`](design-lifecycle-waits.md) · bug, enhancement, orch, batten · running · Webster-Burler
    - The orch reloads as soon as compaction lands, batten sends one timely notice per state change without ticks, and each batten gets its own tmux window
-1. **Fabric: pair create survives a refused push, no untested main from the prime, neutral export names** — [`fabric-pushes`](design-fabric-pushes.md) · bug, enhancement, fabric · running · Finalize
-   - Retry a refused weft push and roll back the own branch, gate the prime-side push of main, rename fabric exports that carry warp/weft
 
 ## Notes
 
@@ -136,3 +134,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Every gate of the run with a tick box and its elapsed time, in a pane of its own; an idea, not a priority
 1. **A producer runs two live agents side by side** — [`two-agent-producer`](design-two-agent-producer.md) · feature, shuttle
    - Shuttle starts and waits on two agents in one step and lets them talk; the base discussion-advisor and burler-split both need
+
+## Done
+
+Finished, awaiting `lyx board prune`.
+
+1. **Fabric: pair create survives a refused push, no untested main from the prime, neutral export names** — [`fabric-pushes`](design-fabric-pushes.md) · bug, enhancement, fabric · done
+   - Retry a refused weft push and roll back the own branch, gate the prime-side push of main, rename fabric exports that carry warp/weft
