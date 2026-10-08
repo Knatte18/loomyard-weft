@@ -310,7 +310,13 @@
       "spawnedAt": "2026-10-08T09:38:09Z",
       "sessionId": "83342516-ad21-4204-a987-6260fba6fcd0",
       "terminal": false,
-      "status": ""
+      "status": "",
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-loop-convergence/83342516-ad21-4204-a987-6260fba6fcd0/subagents/agent-ae1ef6a26bb6f06c6.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-review-loop-convergence/83342516-ad21-4204-a987-6260fba6fcd0/subagents/agent-ae1ef6a26bb6f06c6.jsonl"
+  ]
 }
