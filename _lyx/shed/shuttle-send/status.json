@@ -1,12 +1,12 @@
 {
   "current_producer": "Plan-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "bounce budget exhausted for Plan-Bouncer; way forward: \"lyx shed goto shuttle-send --to Plan-Bouncer\" gives segment \"Plan-Review\" a fresh budget",
   "pause_requested": false,
   "activity": {
     "now": "Plan-Bouncer",
-    "last": "Plan-Burler → bounced to Plan-Bouncer",
-    "wait": ""
+    "last": "Plan-Bouncer → stuck",
+    "wait": "bounce budget exhausted for Plan-Bouncer; way forward: \"lyx shed goto shuttle-send --to Plan-Bouncer\" gives segment \"Plan-Review\" a fresh budget"
   },
   "history": [
     {
@@ -270,6 +270,12 @@
       "output": "",
       "at": "2026-10-08T16:24:07Z",
       "gate_attempts": 3
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-08T17:58:04Z"
     }
   ],
   "product": {
