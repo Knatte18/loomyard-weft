@@ -178,6 +178,12 @@ Decision: A box read taken after the submit window has closed sends no Enter and
 
 Rationale: Round-3 F2: the loop had no stop rule after the window, and the stated overshoot bound did not hold.
 
+### Added after Discussion (parent, 2026-10-08): Text never appeared is a landing failure
+
+Decision: The appearance check's failure (the sent text never appeared in the pane, including when the window closes during it) wraps ErrSubmissionNotLanded, so D4 and D6 retry it like the other landing failures. D3's clear also matches a box holding the sent text repeated, the case a replay that typed twice leaves.
+
+Rationale: Round-3 F4: the board's goal is that a send that does not land retries instead of halting; the TUI swallowing the input is the same class.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: the idle reading, the input-box reading and the split choreography stay in `claudeengine`; `shuttleengine` reaches them only through capabilities.
