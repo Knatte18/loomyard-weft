@@ -4,10 +4,11 @@
      {{.run_id}} is the run the session drives, {{.report_path}} the file every stop report is written to,
      {{.park_command}} the command a parking driver runs after its stop report,
      {{.teardown_command}} the end-of-session command run at done and at busy,
-     and {{.parent_directive}} the shared parent directive rendered by internal/parentdirective.
+     {{.parent_directive}} the shared parent directive rendered by internal/parentdirective,
+     and {{.parent_notify}} the parent-notification rule, whichever of the shed-template-driver-notify stencils fits the run.
      The body is recipe-blind: it names no recipe, no state-directory path and no recipe-owned command, which arrive only through the markers.
      Refusal text and its ways forward live in contracts/specs/refusal-spec.md and are pointed at, never restated.
-lyx-stencil: sha256=7fd86cdb7db3a0b3887548cdaa895d43957fa8ce9fea6e6b0784b317b2b8791c -->
+lyx-stencil: sha256=cb70b78fb285068b084e3976555668e0c6d3f1d1505bed5fafe19819d0cb2f9d -->
 
 # Driver for run `{{.run_id}}`
 
@@ -182,7 +183,7 @@ Code branches only; a stranded records branch goes through `lyx fabric cleanup`.
   Run `git -C <repo> branch -D <branch>`.
 - Remote delete: a `branch_created` entry and a `branch_pushed` entry for exactly that branch, and no later `remote_branch_deleted` entry for it.
   Run `git -C <repo> push <remote> --delete <branch>`.
-- `<repo>` and `<remote>` come from the entry's `detail` (`side=code repo=<abs> [remote=<name>]`).
+- `<repo>` and `<remote>` come from the entry's `detail` (`side=warp repo=<abs> [remote=<name>]`).
   A missing `detail`, any other `side`, a missing `remote=` for a remote delete, or a repository path that no longer exists fails the rule, and you escalate.
 - A `branch_pushed` entry alone never qualifies: it is recorded whenever an existing branch is pushed forward.
 - Never delete a branch carrying commits the trace does not attribute to the failed step.
@@ -231,16 +232,11 @@ Each automatic re-step writes a record, into the same place as a repair record, 
 After a self-initiated re-step, the next stop rewrites the same report file to cover the whole attempt, listing every automatic re-step since the attempt began.
 The park command and the end-of-session command commit the stop report and the friction notes through the run's own records-commit verb, so you make no commits yourself.
 Run the matching command as the last act, after writing the stop report, as `## Parking` describes.
-Escalations also notify the parent session, as `## Notifying the parent` describes.
+Which stops notify the parent session is the rule `## Notifying the parent` gives.
 
 ## Notifying the parent
 
-At every escalation, after writing the stop report, send the parent session that the directive above names one short SendMessage naming the run-id and the stop report's path and nothing more than the tail "Answer briefly, then continue your task."
-At an `awaiting` stop whose envelope carries a non-empty `parent_notice`, send that notice verbatim, followed by that tail, instead of this generic line, and record the send in the stop report.
-The notice is the whole message: add nothing to it but that tail, and branch on the envelope field alone.
-When the directive names no parent, or the send fails, the stop report alone is the escalation, with the envelope's `reason`;
-record a failed send as a line in the report rather than retrying it.
-A stop at `done` sends nothing, since nothing awaits a decision, except a `done` stop whose envelope reports `friction: failed`: it notifies the parent as an escalation does, naming the run-id and the stop report.
+{{.parent_notify}}
 
 ## Filing
 
