@@ -21,6 +21,10 @@ Waits on nothing open; can start now, in parallel.
    - **Before:** `publish-recovery`
 1. **MultiLLMProducer: one producer runs a chair and its advisors as seats** — [`multi-llm-producer`](design-multi-llm-producer.md) · feature, shed, shuttle
    - A producer beside SingleLLMProducer that runs N agents as seats, one chair that steers and decides the outcome plus advisor-1..n, with its own internal message channel; built standalone, used by nothing yet
+1. **Burler runs its round on MultiLLMProducer** — [`burler-multi-llm`](design-burler-multi-llm.md) · enhancement, burler, shed, stencil
+   - The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review
+1. **Discussion-Write on MultiLLMProducer: a chair writes, advisors answer** — [`discussion-multi-llm`](design-discussion-multi-llm.md) · feature, loom, stencil, shed
+   - Design and build a Discussion-Write whose writer is the chair, with advisors that study the code and answer its design questions live
 
 ### Layer B
 
@@ -101,8 +105,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Post (pulled mail with reminders), inject and interrupt to any agent by name, through one daemon per hub; built standalone first, then wired in two stages
 1. **Runs overview pane under the orch; batten windows hidden** — [`runs-overview`](design-runs-overview.md) · feature, reed, orch, batten
    - A minimal pane under the orch listing every run in flight and its shed state; the per-run batten windows stay but the status bar hides them
-1. **Discussion advisor: a dedicated agent answers Discussion-Write's questions live** — [`discussion-advisor`](design-discussion-advisor.md) · feature, shuttle, loom
-   - A second agent spawned beside Discussion-Write studies the task and code and answers its design questions as they arise, a real two-agent dialogue
 1. **Kick-start pack: pre-resolved glyph spans for implementer and Burler** — [`kick-start-pack`](design-kick-start-pack.md) · feature, webster, quarry
    - Someday (roadmap): #227, #228 — measured win, committed, not yet scheduled
 1. **Orch owns the run loop: detached batten start, a lyx watch, one land command, --continue, a committed role prompt** — [`orch-owns-the-loop`](design-orch-owns-the-loop.md) · feature, batten, orch

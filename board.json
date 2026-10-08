@@ -82,22 +82,6 @@
       "body": "One place for the operator to see every run in the hub and the state it is in.\n`lyx shed status [run-id]` is per run and `lyx orch status` covers only the orchestrator, so today the hub polls each run separately and the operator sees run events only through the orch's chat.\n\n## Layout of the prime's reed session (operator, 2026-10-08)\n\nThis replaces the 2026-10-05 choice of an own window for the overview.\n\n- The orch runs as today, one strand pane in the prime's strand window.\n- The runs overview is its own pane directly under the orch, in the same window.\n  It is as small as possible while still showing every run in flight and its shed state.\n- VIEW shows both panes; the `orch` strand button zooms the orch alone, so switching to an orch-only view is one key or click.\n\n## Batten windows stay, hidden (operator, 2026-10-08)\n\n`lyx batten run --window` gives each batten run its own window in the prime session, which is where its process lives.\nThat stays, but the windows are not visible: they carry a marker the status bar skips, so status line 1 shows no `batten:\u003cslug\u003e` buttons.\nTheir output says nothing useful to the operator; the overview pane is where runs are watched.\n\n## What the overview shows\n\n- One line per run with state, current producer and age.\n- Open: whether the running notice log (one line per batten notice, each with the run's attach command) shows in the same pane, or the pane holds only the run lines to stay small.\n  Batten appends every notice to a hub log file under the prime's `.lyx` either way.\n\n## Open: the pane's height\n\nThe overview's height follows the number of runs, which is what led to the own-window choice on 2026-10-02 and 2026-10-05.\nThe layout has to size the pane to its lines (reed's told geometry), or fix it at a small height with a summary line when the runs do not fit.\nreed's one layout rule today would collapse the orch above and grow the overview, the opposite of what is wanted; note `reed-layout-shares` covers the sizing this pane needs.\n\n## Notices to the orch get shorter\n\nThe `[batten notice]` line typed into the orch drops the trailing `cd \u003cpair\u003e \u0026\u0026 lyx reed attach`: the orch knows where a run's pair is, and the attach command is for the operator, who gets it in the overview.\n`renderNotice` in `internal/battenshed/notice.go` builds that line.\n\n## Notice wording: a wait is not an error (operator, 2026-10-05)\n\nShed keeps the reason for every halt in `Status.Error`, including an awaiting PR-Gate, and `renderNotice` labels it `error:` whatever the state.\nSeen: `child left running; child state awaiting, error: the pull request awaits review; …`.\nLabel the text by state: `error:` only for failed and blocked, and `waiting:` (or the bare reason) for awaiting and paused.\nPhrase the condition by what happened, e.g. `board-config-per-worktree: awaiting at PR-Gate: the pull request awaits review`, not `child left running; child state awaiting`.\n"
     },
     {
-      "id": 41,
-      "slug": "discussion-advisor",
-      "title": "Discussion advisor: a dedicated agent answers Discussion-Write's questions live",
-      "kind": "note",
-      "labels": [
-        "feature",
-        "shuttle",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A second agent spawned beside Discussion-Write studies the task and code and answers its design questions as they arise, a real two-agent dialogue",
-      "body": "- **ask mode**: Discussion-Write asks its design questions as they arise, and an answerer replies; answers to design questions, not a review.\n- **The answerer is a dedicated agent**, spawned in parallel with Discussion-Write with its own prompt: it studies the task, bolt and the code while the writer drafts, so it is ready when the questions come.\n  It is an address, not hard-wired to `$LYX_PARENT`; the parent is the fallback.\n- Two live sessions both keep their context, so this is a real dialogue, and none of it lands in the parent's context.\n  Two agents designing together beat one agent asking and answering itself.\n- `ask` and `review` are independent switches: an advisor answering interview questions and the parent reviewing the draft can both run on one task.\n- New machinery: one producer running two interactive sessions side by side (e.g. `ly:\u003cslug\u003e:discussion` and `ly:\u003cslug\u003e:advisor`), each waiting on the other through files; shuttle keeps an asking session non-terminal today (`internal/shuttleengine/wait.go`), which is the starting point.\n"
-    },
-    {
       "id": 42,
       "slug": "plan-glyph-precision",
       "title": "Plan cards name the members they change as glyphs, after lyx's use of glyphs is tested systematically",
@@ -1213,6 +1197,40 @@
       "isolated": false,
       "brief": "A producer beside SingleLLMProducer that runs N agents as seats, one chair that steers and decides the outcome plus advisor-1..n, with its own internal message channel; built standalone, used by nothing yet",
       "body": "## Goal\n\n`MultiLLMProducer` in `internal/shedadapters`, beside `SingleLLMProducer`: one producer runs N agents in one step, each in a strand of its own.\nIt is built standalone and proven by its own tests and a test recipe: no recipe row, Burler or Discussion uses it in this task (operator, 2026-10-08).\n\n## Terms (operator, 2026-10-08)\n\n- A **seat** is one agent in a `MultiLLMProducer`.\n- Exactly one seat is the **`chair`**: its turn end, outputs and gates decide the step's outcome, as a single agent's do today, and a message sent to the producer goes to the chair.\n- Every other seat is an **advisor**, named `advisor-1`, `advisor-2` and so on, in every `MultiLLMProducer`.\n- Strands are named after the seat, such as `ly:\u003cslug\u003e:discussion-chair` and `ly:\u003cslug\u003e:discussion-advisor-1`.\n- Not \"master\": that is Webster's `Master`.\n\n## Seats: one table says what goes where\n\nBurler's round today wires six stencils (two orchestrator templates, three step files, a focus directive) plus per-segment rubrics and the Bouncer's judge stencils through Go code spread over several packages.\nA `MultiLLMProducer` declares its seats in one place (the recipe row or one Go table):\n\n- the seat's name (`chair` or `advisor-\u003cn\u003e`);\n- exactly one stencil per seat, the only prompt that agent gets; shared building blocks are included from it by name;\n- a model key in config;\n- inputs (files and markers the seat is given) and outputs (files it writes); an advisor's output is the chair's input.\n\nA test pins that every seat's stencil markers are filled (`stencil.Fill` already refuses an empty marker) and that every advisor output is the chair's input.\n\n## Messaging\n\nThis first version carries its own internal message channel between seats; `creel` is not used and comes later on its own (operator, 2026-10-08).\nThe chair always steers: a message to the producer goes to the chair, and advisors reach the chair through the channel.\nWhether advisors may message each other is decided in Discussion.\n\n## Shape\n\nInside one producer, not parallel shed producers (operator, 2026-10-07): shed sees one step with one outcome, and the seats are invisible to it.\nA single-agent producer is the case N = 1; whether `SingleLLMProducer` itself becomes that case is decided in Discussion, without changing any recipe row.\n\n## Open for Discussion\n\n- What an advisor's failure or hang does to the step.\n- How the producer knows an advisor is done (the session-state model from `shuttle-state`).\n- How the seats' strands are laid out until `reed-layout-shares` lands.\n\n## Out\n\n- Burler on `MultiLLMProducer` and Discussion-Write on it are their own tasks.\n- `creel`, and the even layout (`reed-layout-shares`).\n"
+    },
+    {
+      "id": 253,
+      "slug": "burler-multi-llm",
+      "title": "Burler runs its round on MultiLLMProducer",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "burler",
+        "shed",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review",
+      "body": "## Goal\n\nBurler's review round runs on `MultiLLMProducer` instead of its own two-agent wiring (operator, 2026-10-08).\n\n## Today\n\nBurler's round has run two agents ad hoc since 572ab84e8: `roundHalves` in `internal/burlerengine/engine.go` starts the reviewer and the fixer, and the fixer waits on the review through `lyx burler await-review`.\nThe round wires six stencils (two orchestrator templates, three step files, a focus directive) plus per-segment rubrics through Go code spread over several packages.\n\n## Wanted\n\n- The fixer is the `chair` and the reviewer `advisor-1`, declared in one seat table.\n- The ad hoc wiring (`roundHalves`, `await-review`) goes; the round's outcome, review files and Bouncer contract stay as they are.\n- Fanned rounds (`discussion_fan`, `plan_fan`) keep working; whether a fan's lenses become advisor seats or stay forks of the reviewer is decided in Discussion.\n"
+    },
+    {
+      "id": 254,
+      "slug": "discussion-multi-llm",
+      "title": "Discussion-Write on MultiLLMProducer: a chair writes, advisors answer",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "loom",
+        "stencil",
+        "shed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Design and build a Discussion-Write whose writer is the chair, with advisors that study the code and answer its design questions live",
+      "body": "## Goal\n\nDesign and build a Discussion-Write that runs on `MultiLLMProducer`: the writer is the `chair`, with one or two advisors, so the Discussion is designed by agents working together (operator, 2026-10-08: a good Discussion protocol is worth the tokens).\n\n## From `discussion-advisor`\n\n- **Ask mode**: the chair asks its design questions as they arise, and an advisor replies; answers to design questions, not a review.\n- An advisor is spawned in parallel with the chair with its own stencil: it studies the task, the board and the code while the chair drafts, so it is ready when the questions come.\n- The seats are live sessions that keep their context, so this is a real dialogue, and none of it lands in the parent's context.\n  Agents designing together beat one agent asking and answering itself.\n- `ask` and the parent review are independent switches: advisors answering the chair and the parent reviewing the draft can both run on one task.\n\n## Open for Discussion\n\n- How many advisors, and what each one is for: the same brief twice, or distinct roles such as one that reads the code and one that challenges the design.\n- When the chair ends the step, and what an advisor's output in the decision record looks like, if any.\n- Model per seat, and the config keys for them.\n- Whether the operator's interview turns still go to the chair alone.\n"
     }
   ],
   "legacy_done": [
