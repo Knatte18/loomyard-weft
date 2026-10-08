@@ -1,12 +1,12 @@
 {
   "current_producer": "Discussion-Burler",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "shedadapters: Discussion-Burler (burler): round 2 attempt 2: run: burler: shuttle run: shuttle: load skills [scribe:prose scribe:code-quality scribe:testing]: shuttle: Send: the sent text is still pending in the input box after 2 extra Enter(s); the submission did not land",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Burler",
     "last": "Discussion-Bouncer → bounced to Discussion-Burler",
-    "wait": ""
+    "wait": "shedadapters: Discussion-Burler (burler): round 2 attempt 2: run: burler: shuttle run: shuttle: load skills [scribe:prose scribe:code-quality scribe:testing]: shuttle: Send: the sent text is still pending in the input box after 2 extra Enter(s); the submission did not land"
   },
   "history": [
     {
