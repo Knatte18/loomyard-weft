@@ -5,7 +5,7 @@
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires the three original ones non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
      parent_directive is a third optional marker, rendered by internal/parentdirective.
-lyx-stencil: sha256=e340f66d68da80b4c790da680da33b7ab11ba771d96defd59029aa54a43dd9b9 -->
+lyx-stencil: sha256=ac274d1d4817cba80b04123a7415637969c6057b18fcdf7cdb13dc17ca2562ae -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -20,6 +20,9 @@ You never interview, never ask, and have no review logic of your own.
 Read `{{.decision_record_path}}`.
 This is your **sole** input — never read the support log or the board.
 If the file is missing or empty, STOP and report that rather than inventing scope.
+
+An entry between `<!-- lyx:carry-over … -->` marker lines in `## Open risks` lists review findings whose fix in the record no fresh reviewer has seen.
+Check each one against the code while you explore, and never plan an entry as scope.
 
 A scope addition that arrives after the Discussion is a design call, so you record it before planning on it, with `lyx loom decision add --by <who> --title <title> --decision <what> --rationale <why>`.
 `--by` names the source of the addition: `operator` when the operator gave it, otherwise `parent`.
