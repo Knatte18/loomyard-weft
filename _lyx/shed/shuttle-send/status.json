@@ -1,12 +1,12 @@
 {
   "current_producer": "Publish",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "publish_verify failed after merging parent branch \"main\" (exit code 1); output: /home/knatte/Code/loomyard-LYXHUB/shuttle-send/.lyx/verify/verify.log; fix forward on the task branch, then resume",
   "pause_requested": false,
   "activity": {
     "now": "Publish",
-    "last": "Describe → done",
-    "wait": ""
+    "last": "Publish → stuck",
+    "wait": "publish_verify failed after merging parent branch \"main\" (exit code 1); output: /home/knatte/Code/loomyard-LYXHUB/shuttle-send/.lyx/verify/verify.log; fix forward on the task branch, then resume"
   },
   "history": [
     {
@@ -365,6 +365,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/shuttle-send/_lyx/landing/summary.md",
       "at": "2026-10-08T18:53:19Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Publish",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-08T19:02:08Z"
     }
   ],
   "product": {
