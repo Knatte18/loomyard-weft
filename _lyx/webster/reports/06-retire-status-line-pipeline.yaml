@@ -1,0 +1,5 @@
+status: OK
+head_sha: f950a4cd800f19d6d2a32d09c72c5042655110a9
+deviations:
+  - internal/reedcli/smoke_switchseed_test.go
+  - internal/reedengine/strandops_integration_test.go
