@@ -241,6 +241,12 @@ Decision: The attach chain and every window-resized hook entry carry the unzoom,
 
 Rationale: Neither runs inside a reed Go step, so a zoom read at build time may be stale and a lone hook entry cannot know what was zoomed.
 
+### Added after Discussion (parent, 2026-10-08): Booter re-run carries the skip
+
+Decision: The booter's re-run of its session-ensuring step carries the same skip a revive function's up carries, so the revival trigger is not evaluated a second time for the booter's own session.
+
+Rationale: The booter's state is unchanged until its session exists, so a re-run without the skip meets the trigger again.
+
 ## Constraints
 
 - `PATTERN-told-geometry`: `reedengine` derives no path and imports no `lyxcwd`; D12's sorted list of worktree names and revive functions is told by the hub-mode teller.
