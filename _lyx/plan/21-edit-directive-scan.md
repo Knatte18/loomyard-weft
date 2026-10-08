@@ -1,10 +1,10 @@
 # Card 21 — Pin the edit directive on every opening stencil
 
 **Create:**
-- `plan:contracts/stencils#editRulePhrases` -> `var editRulePhrases []string`
-- `plan:contracts/stencils#editRuleSentences` -> `func editRuleSentences(body string) []string`
-- `plan:contracts/stencils#TestStencils_OpeningStencilsRenderEditDirective` -> `func TestStencils_OpeningStencilsRenderEditDirective(t *testing.T)`
-- `plan:contracts/stencils#TestStencils_NoEditRuleRestatement` -> `func TestStencils_NoEditRuleRestatement(t *testing.T)`
+- `contracts/stencils#editRulePhrases`
+- `contracts/stencils#editRuleSentences`
+- `contracts/stencils#TestStencils_OpeningStencilsRenderEditDirective`
+- `contracts/stencils#TestStencils_NoEditRuleRestatement`
 
 **Edit:**
 - `contracts/stencils#openingStencilViolations` -> `func openingStencilViolations(opening map[string][]string, bodies map[string]string, marker string) []string`
