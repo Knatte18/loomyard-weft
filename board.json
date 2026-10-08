@@ -1348,6 +1348,36 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #472](https://github.com/Knatte18/loomyard/issues/472).\n\n## Seen\n\n`webster-record-batch`'s Publish verify, 2026-10-08T19:14Z, after merging main at 5aa04c279 (which added this test with `binary-change-and-rules`):\n\n```\n--- FAIL: TestLoomResumeReconcilesTheHubConfigBeforeArming (4.22s)\n    testing.go:1464: TempDir RemoveAll cleanup: unlinkat /tmp/TestLoomResumeReconcilesTheHubConfigBeforeArming2267336794/001/weft-bare/objects: directory not empty\n```\n\nThe test body passed; only `t.TempDir` cleanup failed, so a process was still writing into the bare weft's object store after the test returned.\nThe likeliest writer is a detached `git gc --auto` (git daemonizes auto-gc by default) started by a push or commit in the hub reconcile, or the reconcile's hub-wide push, which is only logged on failure.\nMain passed the same test at Finalize, so it is timing-dependent.\nThe log is `.lyx/verify/verify.log` in the `webster-record-batch` pair.\n\n## Workaround\n\nThe orch resumed the run so Publish re-runs the verify.\n\n## Expected\n\nThe test's fixture repositories never run auto-gc in the background (`gc.autoDetach=false` or `gc.auto=0` in the fixture config, ideally in the shared testkit hub fixture), and the reconcile waits for every git child it starts before returning, so `t.TempDir` cleanup never races a live writer.\n"
+    },
+    {
+      "id": 242,
+      "slug": "head-sha-batch-check",
+      "title": "Resolve head_sha prefix candidates in one git call",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "webster"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "commitsNamedBy runs one git cat-file per candidate object; use cat-file --batch-check",
+      "body": "## Seen\n\nThe PR-Gate review of `webster-record-batch` (PR #473) found that `commitsNamedBy` in `internal/websterengine/gitwrap.go` runs one `git cat-file -t` per object a short `head_sha` prefix names, and a 4-character prefix in a large repository can name many.\n\n## Idea\n\nClassify every candidate in one `git cat-file --batch-check` call.\n"
+    },
+    {
+      "id": 243,
+      "slug": "overview-frame-fallback-log",
+      "title": "Log the silent overview-frame fallback in rebaseline",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "webster"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "recordedOverviewFrame returns empty without a log when the baseline has no Card Index",
+      "body": "## Seen\n\nThe PR-Gate review of `webster-record-batch` (PR #473) found that `recordedOverviewFrame` in `internal/websterengine` returns an empty frame without logging when the stored baseline copy has no parseable Card Index, so the reason a rebaseline refuses on an old record is invisible.\n\n## Idea\n\nLog the fallback at Info with the baseline path, and name it in the rebaseline refusal.\n"
     }
   ],
   "legacy_done": [

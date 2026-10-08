@@ -92,6 +92,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - 8,450 loose objects keep the hub store above gc.auto, so background repacks fire under live steps
 1. **HeadContains walks the whole history on every source-ahead seed pass** — [`headcontains-full-walk`](design-headcontains-full-walk.md) · enhancement, stencil, fabric
    - Stencil drift classification walks HEAD history fully through go-git per command; use merge-base or a bounded walk
+1. **Resolve head_sha prefix candidates in one git call** — [`head-sha-batch-check`](design-head-sha-batch-check.md) · enhancement, webster
+   - commitsNamedBy runs one git cat-file per candidate object; use cat-file --batch-check
+1. **Log the silent overview-frame fallback in rebaseline** — [`overview-frame-fallback-log`](design-overview-frame-fallback-log.md) · enhancement, webster
+   - recordedOverviewFrame returns empty without a log when the baseline has no Card Index
 
 ### Features
 
