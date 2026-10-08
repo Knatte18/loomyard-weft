@@ -524,21 +524,6 @@
       "body": "Operator 2026-10-04: the prime's `.vscode/` was copied by hand from millhouse (title \"LYXHUB\", millhouse keys, a mill `launch.json`); lyx should seed it instead, and the setup should fit the orchestrator workflow.\nAssume no `.vscode/` exists beforehand, or that it may be deleted and re-seeded by lyx.\n\n- Window title: `\u003cSHORTNAME\u003e: \u003cname\u003e` from `.lyx-shortname`, upper-cased: `LY: prime` for the prime, `LY: \u003cslug\u003e` for pairs (today `internal/vscode/config.go` writes the bare slug).\n- Prime folderOpen chain: `reed up` then `reed attach` only; no `reed add claude` (it adds a plain Claude strand the orchestrator workflow does not use).\n- Prime tasks run on demand: \"lyx: orch start\" (`lyx orch start`: launches or attaches the orchestrator and takes the terminal) and \"lyx: open board\" (opens the board viewer, see `board-viewer`).\n- Keybindings: lyx writes a `// lyx:begin` … `// lyx:end` block into the user `keybindings.json`, the way mill writes its `// mill:begin` block (mill holds Alt+Shift+1–6), e.g. Alt+Shift+0 for orch start and Alt+Shift+9 for open board, binding `workbench.action.tasks.runTask` to the task labels.\n- No `launch.json`: mill used it to run Python scripts through the debugger; lyx is a binary, so tasks are the mechanism.\n- Pairs keep their current chains (driven: attach only).\n\n\nFrom `reed-view` Discussion (D15, 2026-10-08): `lyx ide spawn` rewrites the whole `// lyx:begin` … `// lyx:end` block in the user `keybindings.json` on every run, for the reed Alt keys.\nThis note's keys must be added through the same writer, or each spawn wipes them.\n"
     },
     {
-      "id": 116,
-      "slug": "webster-reset-targets",
-      "title": "lyx webster reset covers the report-head and last-batch-head targets",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "webster"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Three Webster recovery sites and standalone mode still instruct git reset --keep; widen the reset verb so every recovery instruction names a lyx verb",
-      "body": "## Background\n\n`webster-audit-recovery` (PR #381) added `lyx webster reset --to start|pre-fix` so recovery never needs a denied `git reset --hard`.\nIts plan recorded one deviation not covered by the decision record (D7): three sites still tell the agent to run `git reset --keep \u003csha\u003e` rather than a lyx verb.\nThey move back to the report head or the last-batch head in record-batch, recover-batch and accept-audit (`internal/websterengine/gitwrap.go`), plus standalone mode.\nThe verb was not widened because its targets are only `start` and `pre-fix`.\n`--keep` is not denied and refuses rather than discards, so it was accepted at PR-Gate.\n\n## Proposal\n\nWiden `lyx webster reset` with the report-head and last-batch-head targets, and point the three sites and standalone mode at it, so every Webster recovery instruction names a lyx verb.\n"
-    },
-    {
       "id": 132,
       "slug": "discussion-lands-invariant",
       "title": "Discussion stage has no sanctioned path to land a repository edit ahead of Plan",
@@ -602,23 +587,6 @@
       "body": "A task whose run has started can still be edited on the board.\nOn 2026-10-06 the orch folded two new issues into `bugfix-sessions` with `lyx board intake import --into` while that run sat planned and parked before Webster, so the board entry no longer matched the plan its run was executing.\n\nThe status already exists and is stored on the entry: the loom run writes `status` on every transition (`SetBoardStatus` in `internal/loomcli/wiring.go`, through `boardStatus`), such as `running · Webster`, and landing sets `done`; `lyx board list --text` shows it.\nNothing refuses a write to an entry whose status is set.\nThe operator wants the lock to start when a task is claimed (operator, 2026-10-06): the status is set at once when its run starts, before Discussion, so no edit slips in between the start and the first transition.\n\nWanted (operator, 2026-10-06): a write that changes a running task's scope (body, brief, issues, labels, a merge or an intake `into`) is refused with the reason, naming the run.\nNew findings go to a note of their own instead.\n"
     },
     {
-      "id": 149,
-      "slug": "webster-recovery-dirty-tree",
-      "title": "Recovery prompt gives no guidance on uncommitted changes left by the prior attempt",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster"
-      ],
-      "issues": [
-        406
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #406](https://github.com/Knatte18/loomyard/issues/406).\n\nA recovery run for a Webster task segment was started with the reason `none` and an instruction to continue from the committed tree.\nThe worktree nevertheless held a large uncommitted body of work from the earlier attempt (dozens of files, thousands of changed lines).\nThe recovery prompt did not mention these changes or say whether to trust and keep them or to discard them, so the agent had to judge on its own whether the earlier work was sound.\n\nThis is abnormal because the recovery prompt contradicts the worktree state: \"continue from the committed tree\" is not true when the tree is dirty.\nThe agent kept the work only after verifying it independently (build, both test tiers, a fresh rerun of the segment's check).\n\nSuggested fix: when lyx starts a recovery, have it detect uncommitted changes in the worktree and name them in the recovery prompt, together with an explicit keep-or-discard instruction.\n\nProvenance: task `test-suite-prune-core`; note `10-websterengine-prune-recovery.md`.\n\n"
-    },
-    {
       "id": 150,
       "slug": "extra-agent-strand",
       "title": "Open an extra named agent strand through shuttle",
@@ -632,24 +600,6 @@
       "isolated": false,
       "brief": "Open a named Claude session in a strand with no task, through shuttle, so it keeps its name; for extra strands in the prime",
       "body": "The operator wants extra Claude strands beside the orch in the prime, such as one for exploring the repo, added by the orch on request (operator, 2026-10-06).\n\nTried 2026-10-06: `lyx reed add --name explore --cmd claude` runs a bare `claude`, so the pane title is `ly:explore` but the Claude session gets no `--name`, and reed records no session id, so the watchdog's session-name repair (`internal/reedengine/namerepair.go`) skips it.\n\nEvery agent in lyx runs through shuttle (operator), so this needs a shuttle engine extension: open a named LLM session in a strand with no turn and no prompt, started with the strand name and its session id recorded, so the watchdog keeps the name across a compact.\nThe verb that calls it sits above shuttle, which has no CLI of its own (see the `creel` note), and not in reed, which shuttle depends on.\n\nOpen: where such a strand goes in the reed layout relative to the orch, and how several share the space.\n"
-    },
-    {
-      "id": 155,
-      "slug": "webster-amend-begun-card",
-      "title": "An operator decision can amend the card of a begun Webster batch",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster"
-      ],
-      "issues": [
-        413,
-        416
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "rebaseline refuses begun cards and reset needs a fresh run loom cannot start, so a mid-run decision never reaches the plan",
-      "body": "An operator decision made while Webster runs cannot reach the plan card of a batch that has begun.\nSeen 2026-10-07 in `bugfix-sessions`: the operator decided that the submit settle of card 1 comes from config, while batch 1 was running.\nThe decision went into the decision record, but `lyx webster rebaseline --card 01` refused (\"the edited plan changes the cards of a batch this run already begun\"), and its way forward, `lyx webster reset --to start` then `lyx webster run --fresh`, has no path through loom: the Webster producer always runs with `Fresh: false` (`internal/shedadapters/webster.go`).\nAn edit left on disk while the master recorded the batch blocked the run with `plan_drifted` until the plan was restored.\nSo the card still says \"hard-coded constant\" while the code reads config, and the Webster review sees a deviation the operator approved.\n\nWanted (operator, 2026-10-07): an operator decision taken mid-Webster lands in the plan and the decision record together, without extra review or PR-Gate steps, whether or not the card's batch has begun.\n\nSince `bugfix-webster` (d536a1a4e) the drift advice offers rebaseline only for an edit that keeps begun batches' cards, and rebaseline accepts an edit to a failed, dead or stuck batch.\nStill open: a decision against a begun, non-terminal batch, and the Webster producer's `Fresh: false`.\n\n\n## From issue #413\n\nImported from [issue #413](https://github.com/Knatte18/loomyard/issues/413).\n\n## What happened\n\nA loom run was sent back to `Plan-Write` by a `goto` after the `Batchifier` had already handed batch 1 to `Webster` and the batch's card had been begun.\n`Plan-Write`, `Plan-Bouncer`, `Plan-Burler` and `Batchifier` then completed again with an edited plan, and the run reached `Webster` again.\n`lyx webster record-batch 1` refused with `plan_drifted`:\n\n```\nwebster: on-disk plan fingerprint does not match this run's recorded state: ...; the plan changed since state.json was created; way forward: run `lyx webster rebaseline --card 01` to accept the edit, or restore the plan the run recorded with \"lyx webster restore-plan\", otherwise 1) lyx webster reset --to start; 2) lyx webster run --fresh\n```\n\n`lyx webster rebaseline --card=1` then refused as well:\n\n```\nwebster: the edited plan changes the cards of a batch this run already begun: batch 1 card 01-paced-text-submit changed since it was begun; way forward: restore those cards in the plan, or 1) lyx webster reset --to start; 2) lyx webster run --fresh\n```\n\nThe loom halted `blocked` at `Webster` with anomaly `escalation-to-human`.\n\n## Why this is abnormal\n\n- The loom recipe itself re-ran the plan stages after Webster state existed, so the drift was produced by lyx's own flow, not by a stray manual edit.\n- The first refusal names `rebaseline` as the way forward, but for a plan that edits an already-begun card `rebaseline` can never succeed.\n  The first refusal's advice leads straight into the second refusal.\n- The only exits left are `lyx webster reset --to start` and `lyx webster run --fresh`, which discard the run's Webster progress.\n  Nothing in the first refusal says that the rebaseline path is closed for this case.\n\n## What to do\n\n- Make the loom `goto` back to `Plan-Write` reset or rebaseline Webster state as part of the loop-back when batches were already begun, or refuse the `goto` with a clear reason.\n- Have `lyx webster record-batch` check whether `rebaseline` would be accepted and only offer it as a way forward when it would; otherwise name the reset path first.\n\nProvenance: task `bugfix-sessions`; notes `loom-halt.md`, `webster-refusal-record-batch.md`, `webster-refusal-rebaseline.md`.\n\nCorrection to issue #413 (orch, 2026-10-07): the reflection read the drift as produced by the goto to Plan-Write; the drift came from the orch's hand edit of card 1 while batch 1 was recorded, and the goto had happened before this Webster run began.\nIts finding stands: `record-batch` offers `rebaseline` as the way forward for a begun card, where `rebaseline` always refuses, so the advice should name only paths that can succeed.\n\n\n#416 (a stale report after a Plan-Write goto) is fixed in `bugfix-webster` (d536a1a4e): begin-batch archives a report with no batch record.\n"
     },
     {
       "id": 156,
@@ -764,21 +714,6 @@
       "status": "done"
     },
     {
-      "id": 179,
-      "slug": "batchifier-computed-base",
-      "title": "Batchifier: compute Merriam fixed base context, fit only its orientation",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "webster"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Replace the fitted master_base with the computed fixed part plus a fitted orientation coefficient",
-      "body": "Left from `batcher-v2`'s PR-Gate (2026-10-07).\n`batcher-v2` sizes a batch's start context as `master_base + (k−1) × batch_growth`, with `master_base: 52000` a fitted constant in `internal/batcher/template.yaml`.\nThe operator wanted the base computed, since it is fixed by what Merriam loads.\n\nMeasured in `batcher-v2`'s Discussion over the three `cautious` runs: Merriam starts at about 20.6K and orients itself up to 50–54K before the first fork.\n52K fits those three, but they are lyx tasks of similar plan size; a larger plan or another repo can land far from it.\n\n## Proposal\n\n- A function in `websterengine` computes Merriam's fixed part at partition time: CLAUDE.md, the Webster stencil with the inlined PATTERN overview, and the plan files Merriam reads; the system prompt and tools enter as a measured constant.\n- `Batch` takes that value, beside `before`, and `startContext` becomes `computedBase + orientation + (k−1) × batch_growth`.\n- `master_base` gives way to an `orientation` coefficient in `Weights`, `template.yaml` and the calibrate fit in `tools/tokencount`.\n"
-    },
-    {
       "id": 180,
       "slug": "enclose-kickstart",
       "title": "Kick-start packs from tool locations through quarry Enclose",
@@ -829,22 +764,6 @@
       "status": "running · Plan-Write"
     },
     {
-      "id": 183,
-      "slug": "config-drift-preflight",
-      "title": "Stale batcher.yaml key startup_context is only caught at record-batch, halting a run mid-Webster",
-      "kind": "note",
-      "labels": [
-        "bug"
-      ],
-      "issues": [
-        440
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #440](https://github.com/Knatte18/loomyard/issues/440).\n\n**What happened**\nA loom run reached the Webster producer and halted `blocked` (anomaly `escalation-to-human`) when `lyx webster record-batch` refused with: `batcher.yaml did not load: profile \"cautious\" carries weights key startup_context, which no longer exists; set master_base and batch_growth under _lyx/config`.\nThe pair's `_lyx/config/batcher.yaml` still carried a key that the current binary no longer accepts.\nThe run had already passed Preflight, Loom-Preflight, Discussion, Plan and Batchifier, so the schema drift surfaced only after the Webster batch had done its work and a report was written.\nThe operator-side orchestrator had to hand-edit the pair's config and re-step the run once (`lyx shed step`), because the stop was a binary-changed stop.\n\n**Why it is abnormal**\nA config file that cannot load is deterministic and detectable up front.\nNothing in Preflight or Loom-Preflight validated `batcher.yaml`, so the run burned its whole Discussion/Plan phase before the failure.\nThe error also lands as a human escalation rather than a clear config-validation failure.\n\n**What to do**\n- Load and validate `batcher.yaml` (and the other per-pair config) in Preflight/Loom-Preflight so schema drift fails at the start.\n- Consider migrating or ignoring removed keys such as `startup_context` when the pair config is seeded from an older template, or have the seeding step regenerate the file.\n\nProvenance: task slug `lifecycle-waits`; notes `loom-halt.md`, `driver-restep-webster-20261007.md`.\n"
-    },
-    {
       "id": 184,
       "slug": "plan-rubric-containment",
       "title": "Plan-review rubric lets a reviewer recommend a card retyping that validate-plan rejects",
@@ -882,23 +801,6 @@
       "body": "A text shuttle sends into an agent pane lands, and when it cannot, the run retries instead of halting.\n\nSeen 2026-10-08 in `plan-glyph-precision`, under high machine load: the skill-load `Send` into a freshly started Burler half left the text pending in Claude Code's input box after 2 extra Enters, the step failed as `producer-hard-failure`, and the driver had to re-step by hand; the re-step then halted on a run dir it could not classify.\n\n## From issue #442\n\n## What happened\n\nA loom run halted `failed` (anomaly `producer-hard-failure`) at the `Discussion-Burler` row, round 2 attempt 2.\nThe error chain:\n\n```\nshedadapters: Discussion-Burler (burler): round 2 attempt 2: run: burler: shuttle run: shuttle: load skills [scribe:prose scribe:code-quality scribe:testing]: shuttle: Send: the sent text is still pending in the input box after 2 extra Enter(s); the submission did not land\n```\n\nEarlier rows in the same run (`Discussion-Write`, and the first `Discussion-Burler` attempt) completed; this was the first submission failure.\n\n## Why it is abnormal\n\nThe shuttle's skill-load `Send` types the text into the agent's tmux pane, presses Enter, and gives up after 2 extra Enters when the text is still in the input box.\nA transient pane state (agent busy, input not yet ready, paste not yet consumed) turns into a hard producer failure that halts the whole run.\nNothing in the failure distinguishes \"agent not ready to accept input\" from \"submission lost\", and no retry or wait-for-idle precedes the give-up.\n\n## What to do\n\n- Before giving up in `Send`, wait for the pane to be ready for input, then retry the submission with backoff rather than a fixed 2 extra Enters.\n- Treat a failed skill-load submission as a retryable step (re-send once, or restart the shuttle attempt) instead of `producer-hard-failure`.\n- Record the pane's last lines in the halt note so the cause (busy agent, modal prompt, unconsumed paste) is visible.\n\nProvenance: task `plan-glyph-precision`, from `loom-halt.md`.\n\n\n\n## From issue #443\n\n**What happened**\nDuring a loom run, the Discussion-Burler step (burler round 2, attempt 2) failed with a non-transient `producer` error from `shuttle: Send`:\n`the sent text is still pending in the input box after 2 extra Enter(s); the submission did not land`.\nThe step was refused (`shed: step refused kind=producer`), so the skill load into the freshly started half never happened.\nThe trace had just logged `burler: stopping a live half of a round` before the refusal.\nThe only `fabric: mutation` records were a records commit and its push, so no half-finished add/remove was left behind.\n\n**Why it is abnormal**\nA Send into a live agent pane should either submit or fail with a retryable condition.\nGiving up after 2 extra Enters turns a timing/pane-readiness problem into a hard, non-transient producer failure that halts the run as `failed`.\n\n**What to do**\nMake `shuttle: Send` verify pane readiness before sending (or retry with backoff and re-check the input box) and classify the pending-input outcome as transient so the shed retries the step instead of halting.\nThe driver recovered by re-stepping (`interrupt_policy: reinvoke`).\n\nProvenance: task `plan-glyph-precision`; notes: `driver-repair-20261008-discussion-burler-1.md`.\n\n\n\n## From issue #444\n\n**What happened**\nRe-stepping Discussion-Burler after the Send failure (see the companion issue on `shuttle: Send` leaving text pending) halted the run as `failed` with anomaly `producer-hard-failure`:\n`round 2: probe the round's halves: burler: probe the burler-review half: shuttle: attach: 1 candidate run dir(s) under .lyx/shuttle cannot be confirmed dead or alive (untracked or with a cleared pane binding, younger than 3m0s): .lyx/shuttle/\u003crun-id\u003e — check \"lyx reed status\" and either wait or clear the stale directory by hand`.\nThe run history at the halt had 6 entries (Discussion-Bouncer/Burler alternating `stuck`).\n\n**Why it is abnormal**\nThe candidate run dir is almost certainly the half that `burler: stopping a live half of a round` had just stopped in the previous attempt.\nlyx created that state itself, yet the next probe cannot classify it and treats it as a hard failure instead of waiting out the 3m window.\nAn automated run should not need a manual \"wait or clear by hand\".\n\n**What to do**\nHave the stop path mark the run dir dead (or clear its pane binding explicitly) so the probe sees it as dead.\nAlternatively make the probe's \"cannot be confirmed\" outcome transient, so the shed retries after the grace window rather than halting.\n\nProvenance: task `plan-glyph-precision`; notes: `loom-halt.md`, `driver-repair-20261008-discussion-burler-1.md`.\n\n\n\n## Direction\n\n- Find the root cause in `Send` first: when it types, how it detects pending input, and when it presses Enter (paste not yet consumed, a session still starting, a readiness probe passing too early).\n- Wait for the pane to be ready before typing and for the typed text to settle before Enter; retry Enter with backoff within a bounded time, re-reading the input box.\n- A submission that still does not land is a transient error, so the step retries; the error carries the pane's last lines.\n- `shuttle attach` tells a half that lyx itself just stopped from an unknown live run, so a re-step never halts on it.\n\n\n## No send into a running turn after a restart\n\nFrom `parent-review-hardening` (PR #336 review, 2026-10-02): `AttachGated` replays events from offset 0, so the first tick treats the writer as idle even mid-turn: a notify-carried prompt or a reject re-prompt can be typed into a running turn, and a consumed reject is let through while the writer is still fixing.\nA send waits until the session is idle in fact, not by a replayed reading.\n"
     },
     {
-      "id": 186,
-      "slug": "begin-batch-after-failed-record",
-      "title": "begin-batch refuses after a failed record-batch, leaving the batch begun and non-terminal",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster"
-      ],
-      "issues": [
-        441
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A record-batch refusal unrelated to the report (a config-load error) leaves the batch begun with a report, and begin-batch then refuses",
-      "body": "Imported from [issue #441](https://github.com/Knatte18/loomyard/issues/441).\n\n**What happened**\nAfter `lyx webster record-batch` failed on a config-load error (see the batcher.yaml stale-key issue), `lyx webster begin-batch 1` was refused with: `batch ... already has a report at _lyx/webster/reports/\u003cbatch\u003e.yaml and state.json records the batch as begun and not terminal — begin-batch never overwrites finished work; a report left behind by a crashed session is consumed by lyx webster record-batch 1 (or lyx webster recover-batch 1 for a recovery batch), and a stuck batch escalates via lyx webster recover-batch 1 (which archives the report)`.\n\n**Why it is abnormal**\nA record-batch refusal that is not about the report itself (here a config-load failure) leaves the batch begun with a report on disk, so the natural retry path through begin-batch is blocked.\nThe refusal message lists several remedies without saying which applies after a record-batch config failure, and the Webster session ended up in a dead end that needed the operator side to intervene.\n\n**What to do**\n- Make record-batch fail before touching batch state when its config does not load, or make the state recoverable by re-running record-batch once the config is fixed.\n- Have the begin-batch refusal say which remedy applies given the recorded state (for example, \"re-run record-batch after fixing config\" versus \"recover-batch\").\n\nProvenance: task slug `lifecycle-waits`; notes `webster-refusal-begin-batch.md`, `loom-halt.md`.\n"
-    },
-    {
       "id": 187,
       "slug": "stencil-drift-behind-main",
       "title": "stencilstore: a pair branched before the last deploy warns source-ahead and asks for a deploy",
@@ -931,6 +833,28 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #446](https://github.com/Knatte18/loomyard/issues/446).\n\nSeen in plan-glyph-precision (batten run, Discussion-Bouncer round 5 escalated, cause budget):\n\n- `lyx loom circling accept plan-glyph-precision` printed `\"resume\":\"lyx loom start\"`.\n- `lyx loom resume` in the task worktree then refused: \"the run is awaiting a decision, which resume does not give; run \\\"lyx loom approve\\\" or \\\"lyx loom reject\\\" ...\", although the decision was already recorded and approve/reject are PR-Gate verbs, not the circling decision.\n- The run moved on to Plan-Write only after the driver stepped it.\n\nExpected: after `circling accept`/`continue` under a watching batten run, both outputs name the same next step (the driver's step, or `lyx loom resume`), and `loom resume` either resumes on the recorded circling decision or says that the decision is recorded and the driver will step it.\nRole.md tells the hub to run `lyx loom resume` after a circling decision, which this refusal contradicts.\n"
+    },
+    {
+      "id": 189,
+      "slug": "webster-recovery",
+      "title": "Webster: recovery never dead-ends, stale config fails at the start, a computed Merriam base",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "enhancement",
+        "webster"
+      ],
+      "issues": [
+        406,
+        413,
+        416,
+        441,
+        440
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Reset targets as lyx verbs, a recovery prompt that names a dirty tree, decisions that reach a begun card, a retryable failed record-batch, batcher.yaml checked in preflight, and a computed batchifier base",
+      "body": "## Goal\n\nWebster's recovery paths never dead-end: every recovery instruction names a lyx verb, a recovery prompt states the worktree it starts from, an operator decision reaches a begun card, a failed record-batch leaves a retryable batch, and a stale batcher config fails at the start of a run instead of mid-Webster.\nThe batchifier's Merriam base is computed instead of fitted.\n\n## Reset targets\n\n`webster-audit-recovery` (PR #381) added `lyx webster reset --to start|pre-fix` so recovery never needs a denied `git reset --hard`.\nThree sites still tell the agent to run `git reset --keep \u003csha\u003e` rather than a lyx verb.\nThey move back to the report head or the last-batch head in record-batch, recover-batch and accept-audit (`internal/websterengine/gitwrap.go`), plus standalone mode.\n\nWiden `lyx webster reset` with the report-head and last-batch-head targets, and point the three sites and standalone mode at it, so every Webster recovery instruction names a lyx verb.\n\n## Recovery prompt on a dirty tree (from issue #406)\n\nA recovery run for a Webster segment was started with the reason `none` and an instruction to continue from the committed tree, while the worktree held a large uncommitted body of work from the earlier attempt.\nThe recovery prompt did not mention these changes or say whether to keep or discard them, so the agent had to judge on its own.\n\nWhen lyx starts a recovery, it detects uncommitted changes in the worktree and names them in the recovery prompt, with an explicit keep-or-discard instruction.\n\nProvenance: task `test-suite-prune-core`.\n\n## An operator decision amends a begun card (from issue #413)\n\nAn operator decision made while Webster runs cannot reach the plan card of a batch that has begun.\nSeen 2026-10-07 in `bugfix-sessions`: the decision went into the decision record, but `lyx webster rebaseline --card 01` refused (\"the edited plan changes the cards of a batch this run already begun\"), and its way forward, `lyx webster reset --to start` then `lyx webster run --fresh`, has no path through loom: the Webster producer always runs with `Fresh: false` (`internal/shedadapters/webster.go`).\nAn edit left on disk while the master recorded the batch blocked the run with `plan_drifted` until the plan was restored.\n\nIssue #413 shows the same dead end from loom's own flow: a `goto` back to `Plan-Write` after batch 1 had begun re-ran Plan and Batchifier with an edited plan, `record-batch 1` refused with `plan_drifted` and named `rebaseline`, and `rebaseline` refused because the card had begun.\nThe first refusal's advice leads straight into the second, and the only exits discard the run's Webster progress.\n\nWanted (operator, 2026-10-07): an operator decision taken mid-Webster lands in the plan and the decision record together, without extra review or PR-Gate steps, whether or not the card's batch has begun.\n\nSince `bugfix-webster` (d536a1a4e) the drift advice offers rebaseline only for an edit that keeps begun batches' cards, and rebaseline accepts an edit to a failed, dead or stuck batch.\nStill open: a decision against a begun, non-terminal batch, a plan re-run by loom after a batch began, and the Webster producer's `Fresh: false`.\n\n## begin-batch after a failed record-batch (from issue #441)\n\nAfter `lyx webster record-batch` failed on a config-load error, `lyx webster begin-batch 1` refused: the batch already has a report and state.json records it as begun and not terminal.\nA record-batch refusal that is not about the report itself leaves the batch begun with a report on disk, so the retry path through begin-batch is blocked, and the refusal lists several remedies without saying which applies.\n\n- record-batch fails before touching batch state when its config does not load, or a re-run of record-batch after the config is fixed recovers the state.\n- The begin-batch refusal names the remedy that applies to the recorded state.\n\nProvenance: task `lifecycle-waits`.\n\n## Stale batcher config caught at the start (from issue #440)\n\nA run halted `blocked` at Webster when `record-batch` refused because the pair's `batcher.yaml` still carried `startup_context`, which the binary no longer accepts.\nThe run had passed Preflight, Loom-Preflight, Discussion, Plan and Batchifier before the drift surfaced, and it landed as a human escalation rather than a config failure.\n\n- Preflight or Loom-Preflight loads and validates `batcher.yaml`, so schema drift fails at the start of a run.\n- A removed key such as `startup_context` is migrated or reported clearly when a pair config was seeded from an older template.\n\nProvenance: task `lifecycle-waits`.\n\n## Computed Merriam base\n\nLeft from `batcher-v2`'s PR-Gate (2026-10-07).\n`batcher-v2` sizes a batch's start context as `master_base + (k−1) × batch_growth`, with `master_base: 52000` a fitted constant in `internal/batcher/template.yaml`.\nThe operator wanted the base computed, since it is fixed by what Merriam loads.\nMeasured over three `cautious` runs, Merriam starts at about 20.6K and orients itself up to 50–54K before the first fork; a larger plan or another repo can land far from 52K.\n\n- A function in `websterengine` computes Merriam's fixed part at partition time: CLAUDE.md, the Webster stencil with the inlined PATTERN overview, and the plan files Merriam reads; the system prompt and tools enter as a measured constant.\n- `Batch` takes that value, beside `before`, and `startContext` becomes `computedBase + orientation + (k−1) × batch_growth`.\n- `master_base` gives way to an `orientation` coefficient in `Weights`, `template.yaml` and the calibrate fit in `tools/tokencount`.\n"
     }
   ],
   "legacy_done": [

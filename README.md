@@ -18,6 +18,8 @@ Waits on nothing open; can start now, in parallel.
    - **Before:** `shuttle-send`
 1. **reed: strand and run tabs, narrow-terminal run row, a color per strand role** — [`reed-view`](design-reed-view.md) · enhancement, reed · running · Plan-Write
    - VIEW plus a zoom button per strand and Alt-key navigation, run tabs that never fall off a narrow terminal, and each strand role in its own color
+1. **Webster: recovery never dead-ends, stale config fails at the start, a computed Merriam base** — [`webster-recovery`](design-webster-recovery.md) · bug, enhancement, webster
+   - Reset targets as lyx verbs, a recovery prompt that names a dirty tree, decisions that reach a begun card, a retryable failed record-batch, batcher.yaml checked in preflight, and a computed batchifier base
 
 ### Layer B
 
@@ -36,13 +38,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **Spawned agents edit files with scripts; the no-script rule never reaches them** — [`agents-no-scripted-edits`](design-agents-no-scripted-edits.md) · bug, stencil
 1. **board: refuse scope edits to a running task** — [`board-lock-running`](design-board-lock-running.md) · bug, board
    - The board already marks running tasks; a write that changes the scope of a running task is refused
-1. **Recovery prompt gives no guidance on uncommitted changes left by the prior attempt** — [`webster-recovery-dirty-tree`](design-webster-recovery-dirty-tree.md) · bug, webster
-1. **An operator decision can amend the card of a begun Webster batch** — [`webster-amend-begun-card`](design-webster-amend-begun-card.md) · bug, webster
-   - rebaseline refuses begun cards and reset needs a fresh run loom cannot start, so a mid-run decision never reaches the plan
-1. **Stale batcher.yaml key startup_context is only caught at record-batch, halting a run mid-Webster** — [`config-drift-preflight`](design-config-drift-preflight.md) · bug
 1. **Plan-review rubric lets a reviewer recommend a card retyping that validate-plan rejects** — [`plan-rubric-containment`](design-plan-rubric-containment.md) · bug
-1. **begin-batch refuses after a failed record-batch, leaving the batch begun and non-terminal** — [`begin-batch-after-failed-record`](design-begin-batch-after-failed-record.md) · bug, webster
-   - A record-batch refusal unrelated to the report (a config-load error) leaves the batch begun with a report, and begin-batch then refuses
 1. **stencilstore: a pair branched before the last deploy warns source-ahead and asks for a deploy** — [`stencil-drift-behind-main`](design-stencil-drift-behind-main.md) · bug, stencil
 1. **loom resume after circling accept names approve/reject, and circling accept says resume with loom start** — [`circling-resume-message`](design-circling-resume-message.md) · bug, loom
 
@@ -66,16 +62,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer
 1. **lyx seeds the prime VS Code setup: title, orch start task, keybindings** — [`ide-prime-setup`](design-ide-prime-setup.md) · enhancement, ide, orch
    - LY: prime/LY: <slug> titles, prime opens with reed up+attach only, orch start and open board as tasks with lyx keybindings, no launch.json
-1. **lyx webster reset covers the report-head and last-batch-head targets** — [`webster-reset-targets`](design-webster-reset-targets.md) · enhancement, webster
-   - Three Webster recovery sites and standalone mode still instruct git reset --keep; widen the reset verb so every recovery instruction names a lyx verb
 1. **Discussion stage has no sanctioned path to land a repository edit ahead of Plan** — [`discussion-lands-invariant`](design-discussion-lands-invariant.md) · enhancement, loom
    - Discussion has no sanctioned path to commit a PATTERN edit ahead of Plan
 1. **Test tiers: an llm-tier gate, a guarded publish_verify, a stricter comment lint** — [`test-tiers-hardening`](design-test-tiers-hardening.md) · enhancement, loom
    - Follow-ups from test-tiers PR-Gate
 1. **Step-level watchdog and a Windows verify timeout that kills the process tree** — [`verify-watchdog`](design-verify-watchdog.md) · enhancement, shed
    - A lyx shed step that never returns is noticed, and the Windows verify timeout kills the whole process tree
-1. **Batchifier: compute Merriam fixed base context, fit only its orientation** — [`batchifier-computed-base`](design-batchifier-computed-base.md) · enhancement, webster
-   - Replace the fitted master_base with the computed fixed part plus a fitted orientation coefficient
 1. **Kick-start packs from tool locations through quarry Enclose** — [`enclose-kickstart`](design-enclose-kickstart.md) · enhancement, quarry
    - Turn file:line locations from verify failures, lint and audits into member glyphs with quarry enclose, then into a kick-start pack
 
