@@ -202,6 +202,12 @@ Decision: After the merge with main (reed-view, f25395e49), three loomcli tmux-t
 
 Rationale: reed-view landed a raw typed color while this task made sends and readiness strict; the two meet only on the merged branch, and the fix sits inside this task's own goal (a Send lands or retries).
 
+### Added after Discussion (parent, 2026-10-08): Burler: the merged raw /color typing is a blocking finding
+
+Decision: The Webster-Burler reviewer raises as a BLOCKING finding that run.go's playInputs(ColorSequence) after awaitStartup and Runner.TypeColor (session.go) still type /color raw, even though that code arrived through the merge of main and lies outside the task's diff range. The fix sends the segment color through shuttle-send's send path after readiness (idle wait, settled box, confirmed landing); a failed color send is logged and never fails the launch. The fixer runs go test -tags tmux ./internal/loomcli/... ./internal/shuttleengine/... and gets it green before finishing; it must pass TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver, TestSmokeDriverStrand_ReentrantAcrossThreeBootstraps and TestSmokeStart_NeverAttachesAndAddsNoOperatorStrand.
+
+Rationale: publish_verify runs the tmux tier, which the Burler verify gate does not; the raw /color left text in the input box, so the stricter readiness never saw the provider ready and Publish blocked twice.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: the idle reading, the input-box reading and the split choreography stay in `claudeengine`; `shuttleengine` reaches them only through capabilities.
