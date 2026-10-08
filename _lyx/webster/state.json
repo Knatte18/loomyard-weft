@@ -675,7 +675,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "b98b3a0241f2428ccaf434b2697c1951",
   "masterSessionId": "97cf9074-5729-4d7d-8666-4aae19848abd",
   "batches": {
@@ -716,6 +716,29 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-dead-ends/97cf9074-5729-4d7d-8666-4aae19848abd/subagents/agent-adbeb3d4c4d5f3e88.jsonl"
       ]
+    },
+    "6": {
+      "slug": "webster-config-invalid",
+      "cards": [
+        "06-webster-config-invalid",
+        "07-begin-batch-one-remedy",
+        "08-computed-merriam-base",
+        "09-calibrate-orientation-fit",
+        "10-gitrepo-reset-keep"
+      ],
+      "cardHashes": {
+        "06-webster-config-invalid": "55638dc0cfd73185f92b5463b3a52e8e7bae6bb314fcd7a5f9b17d5bcd1e0a0c",
+        "07-begin-batch-one-remedy": "9b9d20bc8bbe77d2e16ab6770dbb1371043db836adc45b29279a801dce81f637",
+        "08-computed-merriam-base": "08a9ada08b5dba82f86b62e18e91b7e0d2f0a7d2833c0150eeab532c24a0b223",
+        "09-calibrate-orientation-fit": "b70ddd64cbaf8c60bea5b5621c65abe777c9e66ba372908b2650d267f433883d",
+        "10-gitrepo-reset-keep": "29b6dcad0f29a8db075684e605fb15214fd34a3cd39c365cc031ef3b30a8e1d9"
+      },
+      "startSha": "16a4d219d3e96e95cd76230b5335ab94e5690ffb",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T11:10:40Z",
+      "sessionId": "97cf9074-5729-4d7d-8666-4aae19848abd",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
