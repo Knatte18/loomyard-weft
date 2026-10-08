@@ -11,7 +11,7 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **Shuttle: a Send lands or retries, and attach knows a half it stopped** — [`shuttle-send`](design-shuttle-send.md) · bug, shuttle · running · Describe
+1. **Shuttle: a Send lands or retries, and attach knows a half it stopped** — [`shuttle-send`](design-shuttle-send.md) · bug, shuttle · running · Publish
    - Send waits for a ready pane and a settled input before Enter, retries with backoff, and a lost submission is transient; attach no longer halts on a stopped Burler half
    - **Before:** `test-suite-weight`
 1. **Gate test scope: which gate runs which tier, bounded hub-wide** — [`gate-test-scope`](design-gate-test-scope.md) · bug, enhancement, webster, loom, stencil, config, burler · running · Loom-Preflight
