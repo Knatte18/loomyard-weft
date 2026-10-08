@@ -190,6 +190,12 @@ Decision: D3's clear runs only for an engine that supplies both the idle reading
 
 Rationale: Round-3 F5-F8: small specification gaps with one obvious resolution each.
 
+### Added after Discussion (parent, 2026-10-08): PATTERN-shuttle-stop names the loom driver exception
+
+Decision: The PATTERN-shuttle-stop entry names one exception beside shuttle's own teardowns: loomcli's removal of the loom driver's strand (driverPaneProbe.RemoveDriverStrand, reached from lyx loom start) stays a raw strand removal and is out of this task's scope. The entry reads: Stopping the strand of a shuttle run from Go outside internal/shuttleengine: only through shuttle's stop verb, which settles the run's record before the strand is removed; no other package removes a shuttle run's strand, except loomcli's removal of the loom driver's own strand.
+
+Rationale: Plan-Write found that the loom driver is a shuttle run whose strand loomcli removes raw. No attach probe or Wait reads the driver's record, so the bug class of #444 does not reach it, and moving it is outside the decided scope; without the named exception the entry would be false the day it lands.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: the idle reading, the input-box reading and the split choreography stay in `claudeengine`; `shuttleengine` reaches them only through capabilities.
