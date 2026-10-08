@@ -1,14 +1,12 @@
-# Card 8 — `lyx orch start`, `lyx loom start` and `lyx loom resume` reconcile first
+# Card 9 — `lyx orch start`, `lyx loom start` and `lyx loom resume` reconcile first
 
 **Edit:**
 - `internal/orchcli#Command`
 - `internal/loomcli#loomCLI.arm`
 - `internal/orchcli/doc.go`
 - `internal/orchcli/refusal_integration_test.go`
+- `internal/loomcli/smoke_prebootstrap_integration_test.go`
 - `contracts/specs/refusal-spec.md`
-
-**Create:**
-- `internal/loomcli/startreconcile_integration_test.go`
 
 **Uses:**
 - `plan:internal/hubgeom#ReconcileGeometry`
@@ -42,10 +40,11 @@ Tests:
   `start` from the prime then exits 1 with an envelope naming that file and `lyx config loom`, launches nothing (no `.lyx/orch` under the prime), and leaves no stamp.
   `status` on the same hub writes no stamp.
   The step runs last and restores the file.
-- `startreconcile_integration_test.go` drives `loomCLI.arm` on a hubforge pair whose committed `batcher.yaml` carries the retired `master_base` key and whose stamp is absent.
-  `status` leaves the key and writes no stamp; `start` removes the key, leaves the pair's records worktree clean and writes the stamp.
-  A second hub with an unparseable pair `loom.yaml` gets the `*hubreconcile.WorktreeError` message back from `arm` for `resume`.
+- `smoke_prebootstrap_integration_test.go`, which already drives the built binary's loom verbs on a hubforge pair before bootstrap, gains one test on a `newWiredPairFixture` pair whose committed records-side `batcher.yaml` carries the retired `master_base` key and whose hub has no stamp.
+  `loom status` leaves the key and writes no stamp; `loom resume` then removes the key, leaves the pair's records worktree clean and writes the stamp, whatever its own exit, since the gate runs before `armAt`.
+- `TestLoomFailedReedUpRefuses`'s `requireStartRefusal` also asserts the hub's stamp exists after `loom start` refused, which pins the `start` gate on the same fixtures: the reconcile runs before reed comes up.
+- The failing-walk envelope is pinned by the `refusal_integration_test.go` step above and the error's text by card 7's `ensure_integration_test.go`, so no loom test repeats it.
 
 **ImpactSummary:** Two pre-runs gain one gated call each: `lyx orch start`, `lyx loom start`, `lyx loom resume` and `lyx start` may now walk the hub's config once per binary change; every other verb is unchanged.
 
-**Commit:** 8: orch, loom: the start verbs reconcile the hub's config after a binary change
+**Commit:** 9: orch, loom: the start verbs reconcile the hub's config after a binary change

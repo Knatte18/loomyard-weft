@@ -1,4 +1,4 @@
-# Card 15 — Discussion, Plan and Rework prompts carry the edit directive
+# Card 16 — Discussion, Plan and Rework prompts carry the edit directive
 
 **Edit:**
 - `internal/loomengine#composePrompt`
@@ -28,4 +28,4 @@ The discussion and rework composition tests render the seeded stencils through t
 
 **ImpactSummary:** Three loom composers each read one more stencil and fill one more required marker; their prompts gain the edit section.
 
-**Commit:** 15: loom: Discussion, Plan and Rework prompts carry the edit directive
+**Commit:** 16: loom: Discussion, Plan and Rework prompts carry the edit directive

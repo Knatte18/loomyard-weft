@@ -1,4 +1,4 @@
-# Card 18 — Treadle prompts carry the edit directive
+# Card 19 — Treadle prompts carry the edit directive
 
 **Edit:**
 - `internal/treadleengine#runTargeting`
@@ -31,4 +31,4 @@ Tests:
 
 **ImpactSummary:** Three treadle renderers fill one more required marker; the package's import allowlist gains one entry.
 
-**Commit:** 18: treadle: targeting and judge prompts carry the edit directive
+**Commit:** 19: treadle: targeting and judge prompts carry the edit directive

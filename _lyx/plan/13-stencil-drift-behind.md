@@ -1,4 +1,4 @@
-# Card 12 — A drift class for a worktree behind the build
+# Card 13 — A drift class for a worktree behind the build
 
 **Create:**
 - `plan:internal/stencilstore#Source` -> `type Source struct`
@@ -53,7 +53,7 @@ Callers pass what they passed before, wrapped:
 - `seedStencilsAt` builds `stencilstore.Source{Dir: sourceDir}` for the stencils pass and `stencilstore.Source{}` for the specs pass.
 - `stencilcli`'s sync verb passes `stencilstore.Source{Dir: sourceDir}` and `stencilstore.Source{}`.
 - `cliwire`'s two calls, `stencilkit.SeedInto` and the three tests' direct calls pass `stencilstore.Source{}`.
-No behavior changes outside `stencilstore` in this card; card 13 supplies the ancestry.
+No behavior changes outside `stencilstore` in this card; card 14 supplies the ancestry.
 
 Tests:
 - `drift_test.go`'s `TestClassifyPortBackDrift` table gains a `build` column, counting its calls.
@@ -66,4 +66,4 @@ Tests:
 
 **ImpactSummary:** Re-signs stencilstore's two seed entry points and its two drift helpers; their six production callers and five test files pass a wrapped `Source` with today's directory, so only stencilstore's own classification changes.
 
-**Commit:** 12: stencilstore: classify a worktree behind the build as behind, with no deploy advice
+**Commit:** 13: stencilstore: classify a worktree behind the build as behind, with no deploy advice

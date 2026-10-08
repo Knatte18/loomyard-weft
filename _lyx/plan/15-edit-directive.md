@@ -1,4 +1,4 @@
-# Card 14 — The shared edit directive and its renderer
+# Card 15 — The shared edit directive and its renderer
 
 **Create:**
 - `plan:internal/editdirective#MarkerName` -> `const MarkerName = "edit_directive"`
@@ -16,7 +16,7 @@
 - `internal/stencilstore#Read`
 
 **Intent:**
-Decision 14: one shared stencil states the no-script edit rule, and one Go renderer reads it; cards 15 to 19 fill it into every spawned role's opening stencil, and card 20 pins that.
+Decision 14: one shared stencil states the no-script edit rule, and one Go renderer reads it; cards 16 to 20 fill it into every spawned role's opening stencil, and card 21 pins that.
 
 `contracts/stencils/edit/edit-directive.md` is a marker-free stencil (registry name `edit-directive`).
 Its leading comment says `internal/editdirective.Directive` renders it unconditionally into the `edit_directive` marker of every spawned role's opening stencil, and that it is the rule's only statement.
@@ -41,4 +41,4 @@ Tests in `editdirective_test.go` (untagged, over `stencilkit.Seed`):
 
 **ImpactSummary:** One stencil registration added to `entries`; no stencil carries the marker yet and no renderer calls `Directive` yet.
 
-**Commit:** 14: editdirective: one shared statement of the no-script edit rule and its renderer
+**Commit:** 15: editdirective: one shared statement of the no-script edit rule and its renderer

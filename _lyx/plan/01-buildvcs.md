@@ -28,7 +28,7 @@
 - `internal/shedverbs#runningBuildIdentity`
 
 **Intent:**
-Decision 11: move the running binary's VCS reader out of `internal/shedverbs` into one shared leaf, `internal/buildvcs`, which `shedverbs` and card 6's `internal/hubreconcile` both import; `internal/buildinfo` stays import-free and is not touched.
+Decision 11: move the running binary's VCS reader out of `internal/shedverbs` into one shared leaf, `internal/buildvcs`, which `shedverbs` and card 7's `internal/hubreconcile` both import; `internal/buildinfo` stays import-free and is not touched.
 
 `internal/buildvcs` (members in a new `buildvcs.go`, package doc in `doc.go`) imports only `runtime/debug`.
 `Identity` is the VCS stamp of a lyx build, carrying exactly today's two fields and JSON tags: `Revision string` (`json:"vcs_revision"`) and `Modified bool` (`json:"vcs_modified"`); its doc says an empty `Revision` means the binary carries no VCS stamp.

@@ -9,7 +9,7 @@
 - `internal/configsync#ReconcileAll`
 - `internal/configsync#ReconcileHubWideAt`
 - `internal/configsync#retireHubWideCopy`
-- `internal/configsync#decodeLeafValues`
+- `internal/configsync#decodeLeafValues` -> `func decodeLeafValues(data []byte) (map[string]any, error)`
 - `internal/configsync/configsync_test.go`
 
 **Intent:**
@@ -19,7 +19,7 @@ Decision 9 needs a failed reconcile to name the file that failed; today `Reconci
 `Error()` renders `<Path>: <Err>`, so the existing message (`reconcile batcher: …`, `read config for fabric: …`) survives as the suffix; `Unwrap` returns `Err`.
 Every failure `ReconcileAll` and `ReconcileHubWideAt` return for one module is wrapped in a `*FileError` naming that module and the file the failure is about: the module's config file for a read, migrate, reconcile or write failure, a removed legacy file's path for its removal failure.
 `retireHubWideCopy` wraps its failures the same way, naming the per-worktree copy or the hub file, whichever failed to read or parse, and the copy for a failed removal.
-`decodeLeafValues` stops prefixing its parse error with the path (`parse: %w`), since the `FileError` around it now names the file.
+`decodeLeafValues` drops its `path` parameter and stops prefixing its parse error with the path (`parse: %w`), since the `FileError` around it now names the file; its two calls in `retireHubWideCopy` drop the argument.
 The `configsync.go` file header gains one sentence saying failures are `*FileError` values naming the file.
 
 No test asserts the old texts (grep `read config for`, `reconcile %s`, `write config for`, `migrate %s`, `parse %s` finds only `configsync.go`), and `lyx config reconcile`'s and `lyx fabric reconcile`'s error envelopes gain the path prefix.

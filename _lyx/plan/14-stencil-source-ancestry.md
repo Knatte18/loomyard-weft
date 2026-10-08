@@ -1,4 +1,4 @@
-# Card 13 — The stencil-seed caller supplies the build ancestry
+# Card 14 — The stencil-seed caller supplies the build ancestry
 
 **Create:**
 - `plan:internal/fabricengine#StencilSource` -> `func StencilSource(worktreePath, sourceDir, revision string) stencilstore.Source`
@@ -17,7 +17,7 @@
 - `plan:internal/stencilstore#BuildAncestry`
 
 **Intent:**
-Decision 13: the ancestry check runs in `internal/fabricengine`, only when a drift comparison needs it, and reaches `stencilstore` as card 12's `Source.Build` input.
+Decision 13: the ancestry check runs in `internal/fabricengine`, only when a drift comparison needs it, and reaches `stencilstore` as card 13's `Source.Build` input.
 The Part 1 stamp is not used.
 
 `StencilSource` (in `warpforward.go`, beside `HeadContains`):
@@ -44,4 +44,4 @@ Tests in `warpforward_integration_test.go`, one table test of `StencilSource` on
 
 **ImpactSummary:** The stencil seed pass and `lyx stencil sync` now pass a lazily-read ancestry into the drift warning; a pass with no drifting stencil is unchanged.
 
-**Commit:** 13: stencil seed: tell the drift warning whether the worktree holds the build commit
+**Commit:** 14: stencil seed: tell the drift warning whether the worktree holds the build commit

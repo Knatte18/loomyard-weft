@@ -1,4 +1,4 @@
-# Card 17 — Burler and Bouncer prompts carry the edit directive
+# Card 18 — Burler and Bouncer prompts carry the edit directive
 
 **Edit:**
 - `internal/burlerengine#composePrompt`
@@ -12,6 +12,7 @@
 - `internal/burlerengine/prompt_test.go`
 - `internal/shedadapters/bouncer_judge_test.go`
 - `internal/shedadapters/bouncer_seed_test.go`
+- `internal/shedrecipe/entries_bouncer_test.go`
 
 **Uses:**
 - `plan:internal/editdirective#Directive`
@@ -30,8 +31,10 @@ The marker is never optional.
 Tests:
 - `burlerengine/template_test.go`'s hand-built values maps gain an `edit_directive` value.
 - `prompt_test.go` asserts both rendered orchestrator prompts contain the directive's `Edit or Write` sentence.
-- `bouncer_judge_test.go` and `bouncer_seed_test.go` assert the same of the judge and seed prompts they already render.
+- `bouncer_judge_test.go` and `bouncer_seed_test.go` assert the same of the judge and seed prompts they already render over `stencilkit.Seed`.
+- `bouncer_seed_test.go`'s `TestBouncer_MarkerCompleteness_BothTemplates` fills the real seed and judge templates from hand-built values maps; both maps gain an `editdirective.MarkerName` value beside their `parentdirective.MarkerName` one, or `stencil.Fill` refuses the new marker as unfilled.
+- `shedrecipe/entries_bouncer_test.go` builds its stencils dir by hand: `minimalBouncerConfig` writes an `edit-directive` stencil beside its `parent-directive-none` one, so every Bouncer entry test that reaches the seed spawn or the judge call, `TestBouncerEntry_ParentNamePassesToJudgePrompt` included, finds the stencil the renderer now reads.
 
 **ImpactSummary:** Burler's prompt composer and two Bouncer spawn paths fill one more required marker; four review-segment prompts gain the edit section.
 
-**Commit:** 17: burler, bouncer: review and judge prompts carry the edit directive
+**Commit:** 18: burler, bouncer: review and judge prompts carry the edit directive

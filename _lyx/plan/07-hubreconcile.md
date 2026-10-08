@@ -1,4 +1,4 @@
-# Card 6 — The hub config walk after a binary change
+# Card 7 — The hub config walk after a binary change
 
 **Create:**
 - `plan:internal/hubreconcile#Geometry` -> `type Geometry struct`
@@ -21,7 +21,6 @@
 - `plan:internal/hubreconcile#reconcileHubWide` -> `func reconcileHubWide(boardDir, primeAnchor, revision string) error`
 - `plan:internal/hubreconcile#reconcileWorktree` -> `func reconcileWorktree(boardDir string, w fabricengine.CodeWorktree, revision string, hooks walkHooks) (skipped bool, err error)`
 - `plan:internal/hubreconcile#restoreConfig` -> `func restoreConfig(prior map[string][]byte) error`
-- `plan:internal/configengine#ScratchDir` -> `func ScratchDir(baseDir string) string`
 - `internal/hubreconcile/doc.go`
 - `internal/hubreconcile/export_test.go`
 - `internal/hubreconcile/stamp_test.go`
@@ -39,9 +38,11 @@
 - `plan:internal/buildvcs#Running`
 - `plan:internal/configreg#Fingerprint`
 - `plan:internal/configsync#FileError`
+- `plan:internal/configengine#ScratchDir`
 - `plan:internal/fabricengine#CodeWorktrees`
 - `plan:internal/fabricengine#OpenCodeWorktree`
 - `plan:internal/fabricengine#Fabric.MergeBlocked`
+- `plan:internal/fabricengine#PairCompleteAt`
 - `internal/configsync#ReconcileAll`
 - `internal/configsync#ReconcileHubWideAt`
 - `internal/fabricengine#Fabric.Commit`
@@ -54,11 +55,9 @@ Decisions 1, 2, 5, 6, 7, 8 and 9: one new non-CLI package, `internal/hubreconcil
 It is told the hub's geometry and derives none (`PATTERN-told-geometry`): it imports `internal/buildvcs`, `configengine`, `configreg`, `configsync`, `fabricengine`, `fsx`, `lock` and `logger`, never `lyxcwd`.
 Members go in `hubreconcile.go` (geometry, options, errors, `Ensure`), `stamp.go` (build key and stamp) and `walk.go` (the walk).
 
-`configengine.ScratchDir(baseDir)` returns `<baseDir>/.lyx/config`, the never-tracked mirror of `ConfigDir`, joined from `lyxdirs.DotLyxDirName` and the package's `configDirName` (`PATTERN-lyxdirs-single-declarer`, `PATTERN-durable-vs-ephemeral-state`).
-
 Geometry and stamp (Decision 2):
 - `Geometry` carries `BoardDir` (the hub's board dir, where the hub-wide config lives at `_lyx/config/`) and `WorktreePath` (the caller's code worktree, from which the walk lists the hub's code worktrees).
-- `StampPath` is `ScratchDir(BoardDir)/build-stamp.json` and `LockPath` is `ScratchDir(BoardDir)/reconcile.lock`, so stamp and lock sit side by side under `<BoardDir>/.lyx/config/`.
+- `StampPath` is `configengine.ScratchDir(BoardDir)/build-stamp.json` and `LockPath` is `configengine.ScratchDir(BoardDir)/reconcile.lock`, so stamp and lock sit side by side under `<BoardDir>/.lyx/config/`.
 - `BuildKey` returns the hex SHA-256 of the revision, the modified flag and the registry fingerprint, each length-prefixed (Decision 1).
 - `stamp` is the file's JSON: `build_key`, plus `vcs_revision` and `vcs_modified` in readable form for the log.
 - `readStamp` reports an absent file as not found with no error; `writeStamp` creates the dir and writes atomically through `fsx`.
@@ -87,23 +86,27 @@ The holder's own per-worktree commits wait on each pair's combined write lock as
 - A reconcile failure, or a commit failure, returns a `*WorktreeError` for the board dir.
 
 `reconcileWorktree` handles one code worktree:
-1. Open it with `OpenCodeWorktree`; an `*ErrMissingPath` skips it as removed (not a failure, and it does not keep the stamp stale).
-2. A worktree `MergeBlocked` reports mid-merge is not written at all: it is logged and reported `skipped`.
-3. Snapshot the prior bytes, or absence, of every registry module's `ConfigFile(w.Anchor, name)`.
-4. Run `configsync.ReconcileAll(w.Anchor, boardDir, true)`.
+1. For a pair (not `Main`), ask `PairCompleteAt(w.Path)`; a pair that is not complete is skipped and logged with the reason, before anything is opened or written, and is not reported `skipped`.
+   This keeps the walk out of a pair `Add` is still creating, where writing a template would leave a real `_lyx` dir where `Add` wires its junction and make `Add` refuse, and out of one a killed `Add` left partway.
+   The skip is stamp-neutral, unlike the mid-merge skip: a pair `lyx batten run` is creating gets card 10's pair call once `Add` completes, and a `lyx fabric add` pair is Decision 4's bounded escape; a crashed partial pair never keeps every later start verb walking.
+   An `*ErrMissingPath` skips it as removed; any other error returns a `*WorktreeError` for the worktree with no file.
+2. Open it with `OpenCodeWorktree`; an `*ErrMissingPath` skips it as removed (not a failure, and it does not keep the stamp stale).
+3. A worktree `MergeBlocked` reports mid-merge is not written at all: it is logged and reported `skipped`.
+4. Snapshot the prior bytes, or absence, of every registry module's `ConfigFile(w.Anchor, name)`.
+5. Run `configsync.ReconcileAll(w.Anchor, boardDir, true)`.
    A failure returns a `*WorktreeError` naming the worktree and the `*configsync.FileError`'s module and path, unless the worktree root has vanished meanwhile, which skips it as removed.
-5. Log one `logger.Info` line per changed module (worktree, module, added, removed, migrated) (Decision 8).
-6. Commit the worktree-relative paths of every applied result through `Fabric.Commit(files, "lyx: reconcile config for build <revision>", nil, SyncOptions{})`.
+6. Log one `logger.Info` line per changed module (worktree, module, added, removed, migrated) (Decision 8).
+7. Commit the worktree-relative paths of every applied result through `Fabric.Commit(files, "lyx: reconcile config for build <revision>", nil, SyncOptions{})`.
    The list holds only files reconcile wrote or removed, so a retired copy's deletion is staged too, and a driver's in-flight files are never swept.
    `Fabric.Commit` keeps its async push rule (`PATTERN-push-both-sides`).
-7. `hooks.beforeCommit` runs between the write and the commit.
+8. `hooks.beforeCommit` runs between the write and the commit.
    A commit that refuses with `*ErrMergeInProgress` or `*ErrForeignMergeState` calls `restoreConfig` on the snapshot, so the files return to their prior bytes, and reports `skipped`.
    Any other commit failure returns a `*WorktreeError` for the worktree with no file.
 
 `ensure` logs one summary line naming the stamp's previous revision and the running one.
 Nothing is written to stdout.
 
-The pair call: when `opts.Pair` is set, `ensure` skips both stamp reads and the stamp write, takes the hub lock the same way, finds the `CodeWorktree` whose `Path` is `opts.Pair` in a fresh listing, and runs `reconcileWorktree` on it alone, whatever the stamp says (Decision 4).
+The pair call: when `opts.Pair` is set, `ensure` skips both stamp reads and the stamp write, takes the hub lock the same way, finds the `CodeWorktree` whose `Path` equals `filepath.Clean(opts.Pair)` in a fresh listing (card 5 lists each `Path` in that cleaned OS-separator form), and runs `reconcileWorktree` on it alone, whatever the stamp says (Decision 4).
 A pair not in the listing is an error naming the path.
 Bound: this call reconciles and commits only that one pair's `_lyx/config` files, under the same lock and with the same mid-merge refusal as the walk.
 
@@ -119,6 +122,7 @@ Errors (Decision 9):
 - the package's purpose and its one entry point;
 - the stamp, lock and key;
 - the walk order;
+- the incomplete-pair skip, which leaves the stamp alone;
 - the mid-merge skip and restore;
 - the pair call;
 - the error shapes;
@@ -132,7 +136,7 @@ Errors (Decision 9):
 Tests:
 - `seam_enforcement_test.go` pins the import allowlist above through `scankit.AssertImportAllowlistNoStale`, so a direct `lyxcwd` import fails.
 - `testmain_test.go` and `testmain_integration_test.go` follow `PATTERN-test-isolation`, like `internal/preflightshed`'s pair.
-- `export_test.go` exposes `ensure` with hooks to the external test package (`hubreconcile_test`), which `ensure_integration_test.go` needs because `internal/hubforge` imports `internal/hubgeom`, which imports this package from card 7 on.
+- `export_test.go` exposes `ensure` with hooks to the external test package (`hubreconcile_test`), which `ensure_integration_test.go` needs because `internal/hubforge` imports `internal/hubgeom`, which imports this package from card 8 on.
 
 `stamp_test.go` (untagged):
 - `BuildKey` differs on a changed revision, a flipped modified flag and a changed fingerprint, and is equal for equal inputs.
@@ -153,9 +157,10 @@ Tests:
 - Two concurrent `Ensure` calls on a stale hub land exactly one reconcile commit on each records branch.
 - An `afterEnumerate` hook that adds a pair after the first pair listing gets that pair reconciled and committed before the stamp is written.
 - A pair whose directory is deleted before `Ensure` is skipped and the stamp is written.
+- A pair whose warp `_lyx` junction has been removed, as `Add` leaves a pair before wiring it, is listed but left unwritten: no `_lyx` path exists at the junction's place after `Ensure`, so `Add`'s wiring would not refuse, no commit lands on that pair's records branch, and the stamp is written.
 - A board remote pointed at a missing path still returns nil with the hub-wide change committed in `_board`.
-- `Options{Pair: path}` with a fresh stamp still removes that pair's retired key and commits it.
+- `Options{Pair: path}` with a fresh stamp, `path` joined from the hub dir and the pair's slug the way `lyx batten run` builds it, still removes that pair's retired key and commits it.
 
-**ImpactSummary:** A new package with no caller yet, one additive path accessor in configengine, and the `PATTERN.md`, PATTERN background and overview entries that land with it.
+**ImpactSummary:** A new package with no caller yet, and the `PATTERN.md`, PATTERN background and overview entries that land with it.
 
-**Commit:** 6: hubreconcile: reconcile and commit a hub's config once after a binary change
+**Commit:** 7: hubreconcile: reconcile and commit a hub's config once after a binary change

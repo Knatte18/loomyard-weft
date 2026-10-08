@@ -1,4 +1,4 @@
-# Card 10 — The `Preflight` row reconciles a stale hub before its clean check
+# Card 11 — The `Preflight` row reconciles a stale hub before its clean check
 
 **Create:**
 - `plan:internal/preflightshed#newPreflightWith` -> `func newPreflightWith(name, cwd string, opts hubreconcile.Options) shedengine.ShedProducer`
@@ -54,4 +54,4 @@ Tests in `preflight_integration_test.go` (its fixture hub plus a pair), built th
 
 **ImpactSummary:** The `Preflight` producer gains one gated reconcile ahead of its unchanged check; a hub with a fresh stamp pays one file read.
 
-**Commit:** 10: preflight row: reconcile a stale hub's config before the clean check
+**Commit:** 11: preflight row: reconcile a stale hub's config before the clean check

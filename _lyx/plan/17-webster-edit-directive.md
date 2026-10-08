@@ -1,4 +1,4 @@
-# Card 16 — Merriam and recovery prompts carry the edit directive
+# Card 17 — Merriam and recovery prompts carry the edit directive
 
 **Edit:**
 - `internal/websterengine#RenderMasterPrompt`
@@ -20,7 +20,7 @@ Their header comments name it as required.
 `RenderMasterPrompt` and `RenderRecoveryPrompt` each call `editdirective.Directive(stencilsDir)`, return its error, and fill `editdirective.MarkerName` outside the optional-names slice.
 
 The Master stencil's "What you never do" line "You read files with Read and Grep and write your two contract files with Write; NEVER run a script, an interpreter or a heredoc to read or write a file." keeps only its role-specific half, "You read files with Read and Grep and write your two contract files with Write.".
-The script ban it restated is now the edit directive's, and card 20's scan refuses a second statement (`PATTERN-producer-pointer-rule`).
+The script ban it restated is now the edit directive's, and card 21's scan refuses a second statement (`PATTERN-producer-pointer-rule`).
 `claims_test.go`'s pin of that line is updated to the shortened text.
 
 Tests: `template_test.go`'s hand-built values maps for the Master and recovery templates gain an `edit_directive` value, so the templates still fill.
@@ -28,4 +28,4 @@ Its existing parent-directive rendering test (the one asserting "No parent is re
 
 **ImpactSummary:** Two webster renderers fill one more required marker, and one Master sentence loses its restated script ban.
 
-**Commit:** 16: webster: Merriam and recovery prompts carry the edit directive
+**Commit:** 17: webster: Merriam and recovery prompts carry the edit directive

@@ -1,4 +1,4 @@
-# Card 19 — Conflict, Describe, reflection and driver prompts carry the edit directive
+# Card 20 — Conflict, Describe, reflection and driver prompts carry the edit directive
 
 **Edit:**
 - `internal/mergeresolve#buildConflictSpec`
@@ -13,6 +13,7 @@
 - `internal/landingshed/describe_test.go`
 - `internal/frictionengine/reflect_test.go`
 - `internal/loomcli/driverprompt_test.go`
+- `internal/landingshed/finalize_integration_test.go`
 - `internal/mergeresolve/seam_enforcement_test.go`
 - `internal/landingshed/seam_enforcement_test.go`
 - `internal/frictionengine/seam_enforcement_test.go`
@@ -30,8 +31,12 @@ Each of the four stencils gains a `{{.edit_directive}}` line directly below `{{.
 Each fills `editdirective.MarkerName` beside `parentdirective.MarkerName` and returns a read failure as it does the parent directive's.
 The three seam-enforcement allowlists of `mergeresolve`, `landingshed` and `frictionengine` gain `internal/editdirective`.
 
-Tests: `mergeresolve_test.go`, `describe_test.go`, `reflect_test.go` and `driverprompt_test.go` each already render their prompt against seeded stencils; each asserts the rendered prompt contains the directive's `Edit or Write` sentence.
+Tests:
+- `mergeresolve_test.go`, `describe_test.go` and `reflect_test.go` seed the stencils through `stencilkit.SeedInto`, so `edit-directive` is present, and then overwrite the role's own stencil with a hand-written fixture (`conflictStencilFixture`, `describeStencilFixture`, `reflectionStencilFixture`).
+  Each fixture gains a `{{.edit_directive}}` line below its `{{.parent_directive}}` line, since `stencil.Fill` drops a value whose marker the template lacks, and each test asserts the rendered prompt contains the directive's `Edit or Write` sentence.
+- `landingshed/finalize_integration_test.go`'s `finalizeConflictStencilFixture`, which its comment says mirrors mergeresolve's fixture, gains the same line.
+- `driverprompt_test.go` renders the seeded driver stencil unchanged and asserts the same sentence.
 
 **ImpactSummary:** Four renderers in four packages fill one more required marker; three import allowlists gain one entry.
 
-**Commit:** 19: landing, friction, driver: their prompts carry the edit directive
+**Commit:** 20: landing, friction, driver: their prompts carry the edit directive

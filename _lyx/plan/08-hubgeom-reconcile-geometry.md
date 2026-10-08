@@ -1,4 +1,4 @@
-# Card 7 — Hub geometry for the config walk
+# Card 8 — Hub geometry for the config walk
 
 **Create:**
 - `plan:internal/hubgeom#ReconcileGeometry` -> `func ReconcileGeometry(l *lyxcwd.Location) (hubreconcile.Geometry, bool)`
@@ -12,7 +12,7 @@
 - `plan:internal/hubreconcile#Geometry`
 
 **Intent:**
-`internal/hubgeom` is the hub-mode constructor of every engine's `Geometry` struct (`PATTERN-told-geometry`), so it builds the one the start verbs (card 8, card 9) and the `Preflight` row (card 10) hand to `hubreconcile.Ensure`; the four call sites then share one construction instead of each joining paths.
+`internal/hubgeom` is the hub-mode constructor of every engine's `Geometry` struct (`PATTERN-told-geometry`), so it builds the one the start verbs (card 9, card 10) and the `Preflight` row (card 11) hand to `hubreconcile.Ensure`; the four call sites then share one construction instead of each joining paths.
 
 `ReconcileGeometry` returns `hubreconcile.Geometry{BoardDir: fabricengine.BoardDir(l.HubPath), WorktreePath: l.WorktreePath()}` and true when `preflight.BoardLyxPresent(l)` reports the hub's board-level `_lyx` dir, and the zero `Geometry` and false otherwise, so a standalone repository (Decision 3) never reconciles.
 `doc.go`'s constructor list names it.
@@ -21,4 +21,4 @@ Tests: `hubgeom_test.go` gains a table test over a `t.TempDir()` hub layout with
 
 **ImpactSummary:** One additive constructor in hubgeom, which now imports hubreconcile; no existing constructor changes.
 
-**Commit:** 7: hubgeom: build the hub config walk's geometry
+**Commit:** 8: hubgeom: build the hub config walk's geometry

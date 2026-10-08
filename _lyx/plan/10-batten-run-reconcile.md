@@ -1,4 +1,4 @@
-# Card 9 — `lyx batten run` reconciles before and after creating its pair
+# Card 10 — `lyx batten run` reconciles before and after creating its pair
 
 **Edit:**
 - `internal/battencli#battenCLI.arm`
@@ -29,8 +29,9 @@ Tests in `lifecycle_integration_test.go`, one new test on a hubforge hub:
 - Remove the stamp and write a fresh stamp carrying the running key, so the first call is a no-op.
 - Commit a retired `master_base` key into the prime's records-side `batcher.yaml`, which the fork inherits.
 - After the `Worktree-Create` row has run (driven the way the file's existing create rows drive it), the new pair's `batcher.yaml` lacks the key and its records worktree is clean, which only the unconditional pair call can have done.
-- A second row runs `arm` for `run` against an absent stamp and asserts the stamp is written before any seed exists.
+- A second row runs `arm` for `run` from one of the hub's pairs against an absent stamp.
+  `armAt`'s non-prime refusal (`RefuseUnlessPrime`) stops it before the auto-seed, so the returned refusal, a written stamp and no seed for the run id in either worktree pin that the reconcile runs ahead of `armAt` and its seed.
 
 **ImpactSummary:** `lyx batten run`'s pre-run gains one gated call and its `Worktree-Create` closure one pair-scoped call; every other batten verb is unchanged.
 
-**Commit:** 9: batten: reconcile the hub before creating a pair, and the new pair after
+**Commit:** 10: batten: reconcile the hub before creating a pair, and the new pair after

@@ -1,4 +1,4 @@
-# Card 11 — In-process "does HEAD hold this commit" read
+# Card 12 — In-process "does HEAD hold this commit" read
 
 **Create:**
 - `plan:internal/gitrepo#Repo.HeadContains` -> `func (r *Repo) HeadContains(sha string) (bool, error)`
@@ -6,7 +6,6 @@
 
 **Edit:**
 - `internal/gitrepo/blobread_integration_test.go`
-- `internal/fabricengine/warpforward_integration_test.go`
 
 **Uses:**
 - `internal/gitrepo#Repo.IsAncestor`
@@ -28,10 +27,9 @@ The absent-object answer settles Decision 12's open point: a revision the worktr
 `fabricengine.HeadContains(worktreePath, sha)` (in `warpforward.go`, beside `Fabric.IsAncestor`) is a thin delegation to `gitrepo.New(worktreePath).HeadContains(sha)`.
 It takes a path rather than a `*Fabric`, because the stencil-seed pass runs from any worktree of the hub, a paired one or not.
 
-Tests:
-- `blobread_integration_test.go` gains a table test over a scratch repo: HEAD's own commit and an earlier commit are true; a commit only on an unmerged side branch is false; a well-formed sha present in no object store is false with no error; a malformed sha is `ErrInvalidSHA`; an unborn repository is false.
-- `warpforward_integration_test.go` gains one test of `fabricengine.HeadContains` on a hubforge prime: its HEAD sha is true, and an absent sha is false.
+Tests: `blobread_integration_test.go` gains a table test over a scratch repo: HEAD's own commit and an earlier commit are true; a commit only on an unmerged side branch is false; a well-formed sha present in no object store is false with no error; a malformed sha is `ErrInvalidSHA`; an unborn repository is false.
+`fabricengine.HeadContains` gets no test of its own: card 14's `StencilSource` table, its only caller, drives it with the prime's HEAD sha and an absent sha.
 
 **ImpactSummary:** Additive: one go-git read on gitrepo and one delegating function in fabricengine, with no caller yet.
 
-**Commit:** 11: gitrepo, fabric: an in-process read of whether HEAD holds a commit
+**Commit:** 12: gitrepo, fabric: an in-process read of whether HEAD holds a commit
