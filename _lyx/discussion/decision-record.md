@@ -132,6 +132,12 @@ Decision: The re-sign arrow is written only for members quarry.Name accepts as o
 
 Rationale: quarry.Name cannot parse a bare field or interface method, so requiring the arrow there is unsatisfiable.
 
+### Added after Discussion (parent, 2026-10-08): Own package means same package clause
+
+Decision: A member's own package is the files in its declaring directory whose package clause equals the declaring file's. An external _test package in that directory falls under the qualified pkg.Name rule.
+
+Rationale: External test packages reach the member qualified; the bare-identifier rule would miss them.
+
 ## Constraints
 
 - `PATTERN-glyph-conversion-chokepoint`: every glyph-to-path step uses `Glyph.UnitPath` or the resolved `Symbol.File`; no trimming or regex over a glyph string.
