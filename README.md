@@ -13,11 +13,10 @@ Waits on nothing open; can start now, in parallel.
 
 1. **Plan cards name the members they change as glyphs, after lyx's use of glyphs is tested systematically** — [`plan-glyph-precision`](design-plan-glyph-precision.md) · enhancement, loom, quarry · running · Webster-Burler
    - Plan-Write lists file paths instead of member glyphs because its stencil shows and allows it, and handle-unreferenced forces invented glyphs; test lyx's use of quarry glyphs systematically first
-1. **Shuttle: one session-state model, held turns as waits, stuck not a question, a deliberate permission setup** — [`shuttle-state`](design-shuttle-state.md) · bug, enhancement, shuttle · running · Finalize
-   - Shuttle computes busy/idle-done/idle-stalled/asking/dead from hooks in shadow mode, holds show as waits, a stuck outcome is classified from its file, and the hook denies python
-   - **Before:** `shuttle-send`, `review-lens-fan`
 1. **reed: strand and run tabs, narrow-terminal run row, a color per strand role** — [`reed-view`](design-reed-view.md) · enhancement, reed · running · Webster
    - VIEW plus a zoom button per strand and Alt-key navigation, run tabs that never fall off a narrow terminal, and each strand role in its own color
+1. **Shuttle: a Send lands or retries, and attach knows a half it stopped** — [`shuttle-send`](design-shuttle-send.md) · bug, shuttle
+   - Send waits for a ready pane and a settled input before Enter, retries with backoff, and a lost submission is transient; attach no longer halts on a stopped Burler half
 1. **Webster: recovery never dead-ends, stale config fails at the start, a computed Merriam base** — [`webster-dead-ends`](design-webster-dead-ends.md) · bug, enhancement, webster · running · Plan-Burler
    - Reset targets as lyx verbs, a recovery prompt that names a dirty tree, decisions that reach a begun card, a retryable failed record-batch, batcher.yaml checked in preflight, and a computed batchifier base
 1. **Review loop: a lighter convergence rule, a three-round default budget, models per segment** — [`review-loop-convergence`](design-review-loop-convergence.md) · bug, enhancement, burler, loom · running · Plan-Write
@@ -28,12 +27,9 @@ Waits on nothing open; can start now, in parallel.
 
 Starts when every entry it names under After is done.
 
-1. **Shuttle: a Send lands or retries, and attach knows a half it stopped** — [`shuttle-send`](design-shuttle-send.md) · bug, shuttle
-   - Send waits for a ready pane and a settled input before Enter, retries with backoff, and a lost submission is transient; attach no longer halts on a stopped Burler half
-   - **After:** `shuttle-state`
 1. **Review lens fans for Discussion and Plan, narrowed by the judge each round** — [`review-lens-fan`](design-review-lens-fan.md) · enhancement, burler, loom
    - Wire burler cluster review into Discussion and Plan with their own fans, let the judge drop settled lenses, after shuttle-state settles gate quiescence with forks
-   - **After:** `shuttle-state`, `review-loop-convergence`
+   - **After:** `review-loop-convergence`
 
 ## Notes
 
@@ -154,3 +150,5 @@ Finished, awaiting `lyx board prune`.
    - The orch reloads as soon as compaction lands, batten sends one timely notice per state change without ticks, and each batten gets its own tmux window
 1. **Fabric: pair create survives a refused push, no untested main from the prime, neutral export names** — [`fabric-pushes`](design-fabric-pushes.md) · bug, enhancement, fabric · done
    - Retry a refused weft push and roll back the own branch, gate the prime-side push of main, rename fabric exports that carry warp/weft
+1. **Shuttle: one session-state model, held turns as waits, stuck not a question, a deliberate permission setup** — [`shuttle-state`](design-shuttle-state.md) · bug, enhancement, shuttle · done
+   - Shuttle computes busy/idle-done/idle-stalled/asking/dead from hooks in shadow mode, holds show as waits, a stuck outcome is classified from its file, and the hook denies python
