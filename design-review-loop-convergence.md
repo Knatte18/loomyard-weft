@@ -1,6 +1,6 @@
 # Review loop: a lighter convergence rule, a three-round default budget, models per segment
 
-`review-loop-convergence` · Task · bug, enhancement, burler, loom · running · Webster-Burler
+`review-loop-convergence` · Task · bug, enhancement, burler, loom · running · Webster-Bouncer
 
 ## What happened
 
