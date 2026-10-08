@@ -120,6 +120,12 @@ Decision: Caller coverage does not apply to a Rename Old side: the Rename mechan
 
 Rationale: The spec's Rename rewrites callers itself, so requiring caller files as same-card targets is a burden with no failure it prevents.
 
+### Added after Discussion (parent, 2026-10-08): File and package Delete outside caller coverage
+
+Decision: Caller coverage checks Delete member glyphs only. A Delete by file path or package self glyph, and a file Rename Old side, are out of scope; D5's under-reporting Bound names this bypass, bounded by the existing delete-before-reference check for packages and by verify's build.
+
+Rationale: Keeps the new check to member targets, the shape this task introduces; whole-file and package deletes stay with the existing checks and the build.
+
 ## Constraints
 
 - `PATTERN-glyph-conversion-chokepoint`: every glyph-to-path step uses `Glyph.UnitPath` or the resolved `Symbol.File`; no trimming or regex over a glyph string.
