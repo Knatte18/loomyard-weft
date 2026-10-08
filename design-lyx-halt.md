@@ -16,10 +16,11 @@ That is not enough to make the hub safe to suspend.
 - It gives running work a few seconds to finish cleanly, such as a bash command completing.
 - It interrupts every running Claude Code instance by sending Esc.
 - A pause is ordered and intentional: it must not trigger the paths for an unexpected stop, such as batten notices, the agents-idle or driver-dead conditions, review-round failures or crash recovery.
+- The step-boundary pause is not good enough and goes: it is how Millhouse had to pause, and lyx now has the means to interrupt agents directly (shuttle's session state from hooks, the reed panes, shuttle's stop verb).
 
 ## Open design points
 
 - Resuming: whether a matching verb resumes every paused run where it stood, and how each role takes up its interrupted turn (loom's `interrupt_policy` already distinguishes `reinvoke` from `handback`).
 - Scope: whether the orch session is paused too, or only runs.
-- The existing boundary pauses: whether they stay as they are beside the new verb, are renamed, or become a mode of it.
+- Per-run use: whether `lyx pause <slug>` pauses one run the same way, now that the boundary pause goes.
 - Relation to shuttle's stop verb from `shuttle-send`, which settles a run's record before removing its strand.
