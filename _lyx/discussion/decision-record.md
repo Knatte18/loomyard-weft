@@ -172,6 +172,12 @@ Decision: For a run held in-process, the stop verb records stopped by mutating r
 
 Rationale: Round-3 F1 and F3: the stop verb's write shares run.state and run.json with Wait's own saves, and a second stopped write outside the named return would escape the tripwire.
 
+### Added after Discussion (parent, 2026-10-08): D3 confirm loop end and overshoot
+
+Decision: A box read taken after the submit window has closed sends no Enter and ends the loop. The sleep before the read an Enter triggers is submit_redraw_settle_ms; the doubling interval (from submit_redraw_settle_ms up to 5 s) spaces the Enters. D6 states the overshoot past the window as the union of the tails: the last confirm read, the clear and its readings, D5's capture, and the last poll of D1's idle wait.
+
+Rationale: Round-3 F2: the loop had no stop rule after the window, and the stated overshoot bound did not hold.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: the idle reading, the input-box reading and the split choreography stay in `claudeengine`; `shuttleengine` reaches them only through capabilities.
