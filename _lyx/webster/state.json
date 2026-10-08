@@ -1,0 +1,536 @@
+{
+  "runGuid": "5c58df7f6d8e28f9796eee2f69ab1065",
+  "planFingerprint": "cc489a55c942cd2fd992f3c46c7f7e88b12cf9c39a668b61f0cfc18e33274905",
+  "planFileHashes": {
+    "00-overview.md": "7696a28929790a260da8d49fe1771137f4df8b27402022f58792e58b99a23ece",
+    "01-buildvcs.md": "526bfbaed9721eff07d8fbc7a2cc665570a094c2c7985eb37c4125b7c7b14bd5",
+    "02-config-fingerprint.md": "d6952668f6cf840d672a2098e77945a742bff46cfb33aa24c533e7b4c379f05a",
+    "03-configsync-file-error.md": "ac844a8198702901b11666304640e64f986b966df3fc6a1529b719cc06c2f19c",
+    "04-board-present-export.md": "f5ba47ed218d52fe95c5718f2cc401697dba9202723c733633fe5ebaa2e4b1ca",
+    "05-fabric-walk-reads.md": "ad2aa0fd167f182271c4554848d1e4f0cd2800c3a44f5f379e1c290765f1749e",
+    "06-config-scratch-dir.md": "548a51ed0a57b948c319eb4769153e2f48724354d38e592331ba4cbb8dd25ee6",
+    "07-hubreconcile.md": "d42bcd68a6bfabaa122000f0eaf0322008e79200fb2d2a7319755afef4814f0e",
+    "08-hubgeom-reconcile-geometry.md": "c2d40bbeef9a2ddedb805729fea53bd9e6ef2c905bf8f7517142c2f4ec0b6e98",
+    "09-orch-loom-start-reconcile.md": "17a9f96d0f59022f6e190bf6eb70f77717aaa8b1803e6f595bb73daddbbc1065",
+    "10-batten-run-reconcile.md": "607a1737fe65c1ca59b3a25b08a0f106bb75666bf803b6669725e0abb606055d",
+    "11-preflight-safety-net.md": "1193e280c9728194f997a4167aab8fa326299f511705812e45ba3490f3e453d1",
+    "12-head-contains.md": "a8947843af155fb30fbfe641cadadf1bd347e199481ffd3a12d753c359187382",
+    "13-stencil-drift-behind.md": "9d2ec09006b797ce025706ed58d677db80781b3dda3f34801518a3eda741e3fb",
+    "14-stencil-source-ancestry.md": "bff6153c3f12df9d7049e030dc1f6938eaed166a9ee933e73a082106c93f1fc1",
+    "15-edit-directive.md": "03b135b27798fb29853a0f29ce9d0cce8b1f3b8348ce13b6de0f35148a789ec2",
+    "16-loom-roles-edit-directive.md": "82c9190ad60878ec124a8449fe1dbe43742ac8dee941ddfd2616750b0f8a8b42",
+    "17-webster-edit-directive.md": "19a9c9232cf325b1c74347142c86196bcb3d338899c4124ea68201ac6bafa530",
+    "18-review-roles-edit-directive.md": "025c5f2daa04ed931b0478eba58c73f31acd4bf0ed127b131f53b92a0d22739e",
+    "19-treadle-edit-directive.md": "2058a0c449d0e393dba83d5770039a0d8f1b92a7cfa63d304ac9bb0c9e4d7b1a",
+    "20-landing-friction-driver-edit-directive.md": "4057770326e00fab5453eafb7e70b08b1df381912d69d3c427b22c22bb548e27",
+    "21-edit-directive-scan.md": "5ebc3d5d766ea52a65d3b3dd9db88c78a22d85ecf27bf56feb20933e1c30e502"
+  },
+  "planOverviewFrameHash": "505c4e2c4e6ddcdb030f87a1d663e7319cd3c6afd393e7b77ea97e4278500b5e",
+  "partition": [
+    {
+      "cards": [
+        "01-buildvcs",
+        "02-config-fingerprint",
+        "03-configsync-file-error",
+        "04-board-present-export",
+        "05-fabric-walk-reads",
+        "06-config-scratch-dir"
+      ],
+      "profile": "cautious",
+      "estimate": 246964,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54496,
+        "read_union": 80832,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 612,
+            "reads": {
+              "file:docs/overview.md": 7908,
+              "file:docs/shared-libs/README.md": 504,
+              "file:internal/shedverbs/buildidentity_test.go": 336,
+              "file:internal/shedverbs/seam_enforcement_test.go": 1356,
+              "file:internal/shedverbs/status_test.go": 8124,
+              "file:internal/shedverbs/steprecord_test.go": 4584,
+              "package:docs": 2000,
+              "package:docs/shared-libs": 2000,
+              "package:internal/buildvcs": 2000,
+              "package:internal/shedverbs": 2000,
+              "tests:docs": 2000,
+              "tests:docs/shared-libs": 2000,
+              "tests:internal/buildvcs": 2000,
+              "tests:internal/shedverbs": 2000
+            },
+            "messages": 131,
+            "written": 39912
+          },
+          {
+            "card": 2,
+            "card_text": 264,
+            "reads": {
+              "file:internal/configreg/configreg_test.go": 1344,
+              "package:internal/configreg": 2000,
+              "tests:internal/configreg": 2000
+            },
+            "messages": 19.5,
+            "written": 6114
+          },
+          {
+            "card": 3,
+            "card_text": 372,
+            "reads": {
+              "file:internal/configsync/configsync_test.go": 7440,
+              "package:internal/configsync": 2000,
+              "tests:internal/configsync": 2000
+            },
+            "messages": 48.5,
+            "written": 14922
+          },
+          {
+            "card": 4,
+            "card_text": 144,
+            "reads": {
+              "package:internal/preflight": 2000,
+              "tests:internal/preflight": 2000
+            },
+            "messages": 7.5,
+            "written": 2394
+          },
+          {
+            "card": 5,
+            "card_text": 492,
+            "reads": {
+              "file:internal/fabricengine/midmerge_integration_test.go": 1632,
+              "file:internal/fabricengine/openparent_integration_test.go": 2016,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 138.5,
+            "written": 42042
+          },
+          {
+            "card": 6,
+            "card_text": 252,
+            "reads": {
+              "file:internal/configengine/config_test.go": 7452,
+              "package:internal/configengine": 2000,
+              "tests:internal/configengine": 2000
+            },
+            "messages": 20,
+            "written": 6252
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-hubreconcile",
+        "08-hubgeom-reconcile-geometry",
+        "09-orch-loom-start-reconcile",
+        "10-batten-run-reconcile",
+        "11-preflight-safety-net",
+        "12-head-contains"
+      ],
+      "profile": "cautious",
+      "estimate": 316742,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61496,
+        "read_union": 91968,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 1992,
+            "reads": {
+              "file:PATTERN.md": 1152,
+              "file:docs/overview.md": 7908,
+              "file:pattern/PATTERN-told-geometry.md": 276,
+              "package:.": 2000,
+              "package:docs": 2000,
+              "package:internal/hubreconcile": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:docs": 2000,
+              "tests:internal/hubreconcile": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 208,
+            "written": 64392
+          },
+          {
+            "card": 8,
+            "card_text": 288,
+            "reads": {
+              "file:internal/hubgeom/doc.go": 372,
+              "file:internal/hubgeom/hubgeom_test.go": 2508,
+              "package:internal/hubgeom": 2000,
+              "tests:internal/hubgeom": 2000
+            },
+            "messages": 25.5,
+            "written": 7938
+          },
+          {
+            "card": 9,
+            "card_text": 600,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3312,
+              "file:internal/loomcli/smoke_prebootstrap_integration_test.go": 2856,
+              "file:internal/orchcli/doc.go": 576,
+              "file:internal/orchcli/refusal_integration_test.go": 1080,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/orchcli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/orchcli": 2000
+            },
+            "messages": 81.5,
+            "written": 25050
+          },
+          {
+            "card": 10,
+            "card_text": 444,
+            "reads": {
+              "file:internal/battencli/lifecycle_integration_test.go": 15336,
+              "package:internal/battencli": 2000,
+              "tests:internal/battencli": 2000
+            },
+            "messages": 35.5,
+            "written": 11094
+          },
+          {
+            "card": 11,
+            "card_text": 684,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3312,
+              "file:internal/preflightshed/doc.go": 252,
+              "file:internal/preflightshed/preflight_integration_test.go": 1512,
+              "package:contracts/specs": 2000,
+              "package:internal/preflightshed": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/preflightshed": 2000
+            },
+            "messages": 63.5,
+            "written": 19734
+          },
+          {
+            "card": 12,
+            "card_text": 420,
+            "reads": {
+              "file:internal/gitrepo/blobread_integration_test.go": 2400,
+              "package:internal/fabricengine": 2000,
+              "package:internal/gitrepo": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/gitrepo": 2000
+            },
+            "messages": 115.5,
+            "written": 35070
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-stencil-drift-behind",
+        "14-stencil-source-ancestry",
+        "15-edit-directive",
+        "16-loom-roles-edit-directive",
+        "17-webster-edit-directive"
+      ],
+      "profile": "cautious",
+      "estimate": 348616,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68496,
+        "read_union": 128956,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 828,
+            "reads": {
+              "file:internal/burlerengine/smoke_round_test.go": 4284,
+              "file:internal/stencilcli/cli_integration_test.go": 5868,
+              "file:internal/stencilstore/drift_test.go": 1584,
+              "file:internal/stencilstore/reconcile_test.go": 4608,
+              "file:internal/treadleengine/smoke_judge_test.go": 3972,
+              "package:cmd/lyx": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/cliwire": 2000,
+              "package:internal/stencilcli": 2000,
+              "package:internal/stencilstore": 2000,
+              "package:internal/testkit/stencilkit": 2000,
+              "package:internal/treadleengine": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/cliwire": 2000,
+              "tests:internal/stencilcli": 2000,
+              "tests:internal/stencilstore": 2000,
+              "tests:internal/testkit/stencilkit": 2000,
+              "tests:internal/treadleengine": 2000
+            },
+            "messages": 166.5,
+            "written": 50778
+          },
+          {
+            "card": 14,
+            "card_text": 564,
+            "reads": {
+              "file:docs/overview.md": 7908,
+              "file:internal/fabricengine/warpforward_integration_test.go": 1740,
+              "file:internal/stencilstore/doc.go": 96,
+              "package:cmd/lyx": 2000,
+              "package:docs": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/stencilcli": 2000,
+              "package:internal/stencilstore": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:docs": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/stencilcli": 2000,
+              "tests:internal/stencilstore": 2000
+            },
+            "messages": 153,
+            "written": 46464
+          },
+          {
+            "card": 15,
+            "card_text": 528,
+            "reads": {
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/edit": 2000,
+              "package:internal/editdirective": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/edit": 2000,
+              "tests:internal/editdirective": 2000
+            },
+            "messages": 49.5,
+            "written": 15378
+          },
+          {
+            "card": 16,
+            "card_text": 372,
+            "reads": {
+              "file:contracts/stencils/loom/loom-template-discussion.md": 2196,
+              "file:contracts/stencils/loom/loom-template-plan.md": 3000,
+              "file:contracts/stencils/loom/loom-template-rework.md": 984,
+              "file:internal/loomengine/plan_test.go": 2652,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 53.5,
+            "written": 16422
+          },
+          {
+            "card": 17,
+            "card_text": 372,
+            "reads": {
+              "file:contracts/stencils/claims_test.go": 8172,
+              "file:contracts/stencils/webster/webster-prefix-recovery.md": 576,
+              "file:contracts/stencils/webster/webster-template-master.md": 2808,
+              "file:internal/websterengine/template_test.go": 11844,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 72.5,
+            "written": 22122
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "18-review-roles-edit-directive",
+        "19-treadle-edit-directive",
+        "20-landing-friction-driver-edit-directive",
+        "21-edit-directive-scan"
+      ],
+      "profile": "cautious",
+      "estimate": 342422,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75496,
+        "read_union": 150244,
+        "cards": [
+          {
+            "card": 18,
+            "card_text": 480,
+            "reads": {
+              "file:contracts/stencils/bouncer/bouncer-template-judge.md": 1908,
+              "file:contracts/stencils/bouncer/bouncer-template-seed.md": 720,
+              "file:contracts/stencils/burler/burler-template-fix-orchestrator.md": 444,
+              "file:contracts/stencils/burler/burler-template-review-orchestrator.md": 360,
+              "file:internal/burlerengine/prompt_test.go": 6744,
+              "file:internal/burlerengine/template_test.go": 2976,
+              "file:internal/shedadapters/bouncer_judge_test.go": 8760,
+              "file:internal/shedadapters/bouncer_seed_test.go": 5412,
+              "file:internal/shedrecipe/entries_bouncer_test.go": 12180,
+              "package:contracts/stencils/bouncer": 2000,
+              "package:contracts/stencils/burler": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:contracts/stencils/bouncer": 2000,
+              "tests:contracts/stencils/burler": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 105,
+            "written": 31980
+          },
+          {
+            "card": 19,
+            "card_text": 408,
+            "reads": {
+              "file:contracts/stencils/treadle/treadle-template-judge-circling.md": 1224,
+              "file:contracts/stencils/treadle/treadle-template-judge-milestone.md": 1128,
+              "file:contracts/stencils/treadle/treadle-template-targeting.md": 468,
+              "file:internal/treadleengine/doc.go": 2328,
+              "file:internal/treadleengine/judge_test.go": 4536,
+              "file:internal/treadleengine/seam_enforcement_test.go": 432,
+              "file:internal/treadleengine/template_test.go": 2208,
+              "package:contracts/stencils/treadle": 2000,
+              "package:internal/treadleengine": 2000,
+              "tests:contracts/stencils/treadle": 2000,
+              "tests:internal/treadleengine": 2000
+            },
+            "messages": 70.5,
+            "written": 21558
+          },
+          {
+            "card": 20,
+            "card_text": 504,
+            "reads": {
+              "file:contracts/stencils/friction/friction-template-reflection.md": 876,
+              "file:contracts/stencils/landing/landing-template-conflict.md": 648,
+              "file:contracts/stencils/landing/landing-template-describe.md": 612,
+              "file:contracts/stencils/shed/shed-template-driver.md": 2916,
+              "file:internal/frictionengine/reflect_test.go": 8352,
+              "file:internal/frictionengine/seam_enforcement_test.go": 444,
+              "file:internal/landingshed/describe_test.go": 2400,
+              "file:internal/landingshed/finalize_integration_test.go": 3804,
+              "file:internal/landingshed/seam_enforcement_test.go": 552,
+              "file:internal/loomcli/driverprompt_test.go": 2208,
+              "file:internal/mergeresolve/mergeresolve_test.go": 8040,
+              "file:internal/mergeresolve/seam_enforcement_test.go": 480,
+              "package:contracts/stencils/friction": 2000,
+              "package:contracts/stencils/landing": 2000,
+              "package:contracts/stencils/shed": 2000,
+              "package:internal/frictionengine": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/mergeresolve": 2000,
+              "tests:contracts/stencils/friction": 2000,
+              "tests:contracts/stencils/landing": 2000,
+              "tests:contracts/stencils/shed": 2000,
+              "tests:internal/frictionengine": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/mergeresolve": 2000
+            },
+            "messages": 143.5,
+            "written": 43554
+          },
+          {
+            "card": 21,
+            "card_text": 540,
+            "reads": {
+              "file:PATTERN.md": 1152,
+              "package:.": 2000,
+              "package:contracts/stencils": 2000,
+              "tests:.": 2000,
+              "tests:contracts/stencils": 2000
+            },
+            "messages": 63.5,
+            "written": 19590
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "1578af759ae4b84ea53d41470d5d71f0",
+  "masterSessionId": "e495df5d-7276-44c7-97aa-0e3437b51280",
+  "batches": {
+    "1": {
+      "slug": "buildvcs",
+      "cards": [
+        "01-buildvcs",
+        "02-config-fingerprint",
+        "03-configsync-file-error",
+        "04-board-present-export",
+        "05-fabric-walk-reads",
+        "06-config-scratch-dir"
+      ],
+      "cardHashes": {
+        "01-buildvcs": "526bfbaed9721eff07d8fbc7a2cc665570a094c2c7985eb37c4125b7c7b14bd5",
+        "02-config-fingerprint": "d6952668f6cf840d672a2098e77945a742bff46cfb33aa24c533e7b4c379f05a",
+        "03-configsync-file-error": "ac844a8198702901b11666304640e64f986b966df3fc6a1529b719cc06c2f19c",
+        "04-board-present-export": "f5ba47ed218d52fe95c5718f2cc401697dba9202723c733633fe5ebaa2e4b1ca",
+        "05-fabric-walk-reads": "ad2aa0fd167f182271c4554848d1e4f0cd2800c3a44f5f379e1c290765f1749e",
+        "06-config-scratch-dir": "548a51ed0a57b948c319eb4769153e2f48724354d38e592331ba4cbb8dd25ee6"
+      },
+      "startSha": "1a8a6d0e31f8634da153e0e1dbfb8f82b9656a23",
+      "kind": "fork",
+      "spawnedAt": "2026-10-08T17:33:24Z",
+      "sessionId": "e495df5d-7276-44c7-97aa-0e3437b51280",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
