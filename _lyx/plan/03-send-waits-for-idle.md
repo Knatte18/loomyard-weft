@@ -21,6 +21,8 @@
 - `internal/shuttleengine#Run.loadSkillTurn`
 - `internal/loomcli#driverSender.SendDriver`
 - `internal/loomcli#loomCLI.resumeParkedDriver`
+- `internal/loomcli#driverResumeSendAttempts`
+- `internal/loomcli#driverResumeSendInterval`
 - `internal/shuttleengine/run_test.go`
 - `internal/shuttleengine/fakes_test.go`
 - `internal/shuttleengine/doc.go`
@@ -59,12 +61,14 @@ Bound (this card adds a wait and a new refusal): the wait can only delay a send 
 It is capped by `send_ready_timeout_s` and, inside the wait loop, by the run deadline; an unmatched `turn_start` holds a send against an idle pane for at most `turnStartIdleOverride`.
 
 `loomcli`'s `driverSender.SendDriver` and `resumeParkedDriver` doc comments are updated: against Claude a busy or not-ready pane now waits inside the send and fails with `ErrSessionBusy`, which the resume loop does not retry; `ErrPaneNotReady` remains the refusal of an engine without the idle reading, which the loop still retries.
+The comment on `driverResumeSendAttempts` and `driverResumeSendInterval` is updated the same way: they bound the wait for an input-ready pane only for an engine without the idle reading, while against Claude the send's own `send_ready_timeout_s` window does.
 `doc.go`'s send paragraph describes the idle wait.
 
-Tests in `run_test.go`, through a fake engine in `fakes_test.go` with the idle reading, session signals and `TurnStartInterrupt` scripted, and a `fakeClock` on the run: a new table test of the idle wait, with rows for a running-turn pane that turns idle (typed only after), a draft that never clears (`ErrSessionBusy`, no key typed, error carries the pane's last lines and a failed final capture says so), an unmatched `turn_start` over an idle pane (held, then released at 10 s with one Warn), the same released by `TurnStartInterrupt`, an `api_error_turn_end` counting as a turn end, and an engine without the idle reading keeping today's refusal.
+Tests in `run_test.go`, through a fake engine in `fakes_test.go` with the idle reading, session signals and `TurnStartInterrupt` scripted, and a `fakeClock` on the run: a new table test of the idle wait, with rows for a running-turn pane that turns idle (typed only after), a draft that never clears (`ErrSessionBusy`, no key typed, error carries the pane's last lines and a failed final capture says so), an unmatched `turn_start` over an idle pane (held, then released at 10 s with one Warn), the same released by `TurnStartInterrupt`, and an `api_error_turn_end` counting as a turn end.
+An engine without the idle reading keeping today's refusal gets no row: `TestRun_InterruptAndSend_RefuseAgentlessShellPane` already pins `Run.Send` on such an engine refusing with `ErrPaneNotReady` and keeps passing unchanged.
 `Runner.Send` gets one row of the same table showing it waits for idle as `Run.Send` does.
 Existing send tests keep their rows; their fakes have no idle reading, so they take the unchanged guard.
 
-**ImpactSummary:** `sendVerified` is re-signed and its five callers in `run.go` and `session.go` build a `sendContext`; every verified send (`Run.Send`, `Runner.Send`, `Runner.LoadSkills`, the skill-load and prompt sends in start) now waits for idle, and two `loomcli` doc comments follow.
+**ImpactSummary:** `sendVerified` is re-signed and its five callers in `run.go` and `session.go` build a `sendContext`; every verified send (`Run.Send`, `Runner.Send`, `Runner.LoadSkills`, the skill-load and prompt sends in start) now waits for idle, and three `loomcli` doc comments follow.
 
 **Commit:** 3: shuttle: a verified send waits for an idle session, fails busy with the pane's last lines

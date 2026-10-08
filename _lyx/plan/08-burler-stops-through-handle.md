@@ -38,7 +38,7 @@ Move burler's half stop onto shuttle's stop verb (D7), so a half lyx ends reads 
 
 `burlerengine.Handle` gains `Stop() error`, which `*shuttleengine.Run` implements; its doc comment says the engine stops a half through it.
 `Engine.stopHalf` calls `handle.Stop()` in place of the guid remover, keeping its `ErrHalfNotStopped` wrapping and way-forward text, so a half stopped during `join` while its own `Wait` runs is marked and reads `stopped` after that `Wait` returns.
-`Engine` drops its remover field and `New` drops its `remover` parameter; every caller drops the argument: `burlercli`'s two wirings, `loomcli`'s `wire` (whose `burlerRemover` local goes), and the three test files that build an engine.
+`Engine` drops its remover field and `New` drops its `remover` parameter; every caller drops the argument: `burlercli`'s two wirings, `loomcli`'s `wire` (whose `burlerRemover` local goes), and the test files that build an engine (`engine_test.go`, `smoke_round_test.go`, `smoke_cluster_test.go`, `burlercli/wiring_test.go`).
 
 `shedadapters`: `BurlerDeps.Remover`, the producer's remover field and `NewBurlerProducer`'s nil-remover refusal go; `stopLiveHalf` stops the live half with `half.Stop()`, keeping its error and way forward.
 `shedrecipe`: `Env.BurlerRemover`, `burlerRoundEntry`'s `requireSeam` check on it and its `Remover:` argument go; `envkit.FullEnv` and `loomcli.wire` stop filling the field.
@@ -48,8 +48,13 @@ Assertions on removed guids become assertions on stopped handles; the nil-remove
 `engine_test.go`'s round table asserts that a round whose second half's start fails `ErrNotStarted` ends as that half's `NotStarted` died outcome with the first half stopped; `burler_test.go` keeps (or gains, if no row pins it) the row where the adapter's attempt-2 failure carries the agent-start transient class.
 `burlerengine/doc.go` and `shedadapters/doc.go` say a half is stopped through its handle's `Stop`, which records the stop.
 
+Bound (this card routes burler's half stops onto a verb that writes a record before it removes a strand): `Stop` can now let two things through that the raw removal could not.
+A record-write failure removes nothing, so the half's strand stays live behind a record reading `running`; `stopHalf` and `stopLiveHalf` return that error wrapping `ErrHalfNotStopped` with their existing way forward (`lyx reed remove <guid>`, then re-step), exactly as a failed removal does today, so the round ends and no respawn runs beside the live half.
+A removal failure after the write leaves a `stopped` record over a live strand, which the same error reports and which the next attach probe reads as respawn-eligible and stops as superseded (card 7).
+`Stop` on a half whose record is already terminal or whose output files all exist keeps that record, so it never turns a finished half into `stopped`.
+
 `burlerengine.StrandRemover`, `NewReedStrandRemover` and `shedfake.StrandRemover` are left unused here and deleted by card 10.
 
-**ImpactSummary:** `burlerengine.New` is re-signed with all six callers (three production wirings, three test files) on this card; the remover seam leaves `shedadapters`, `shedrecipe.Env`, `envkit` and `loomcli`'s wiring, and burler's stop behaviour changes only by recording the stop.
+**ImpactSummary:** `burlerengine.New` is re-signed with all seven callers (three production wirings, four test files) on this card; the remover seam leaves `shedadapters`, `shedrecipe.Env`, `envkit` and `loomcli`'s wiring, and burler's stop behaviour changes only by recording the stop.
 
 **Commit:** 8: burler: stop a round's half through its run handle, recording the stop

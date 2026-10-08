@@ -17,17 +17,18 @@
 - `plan:internal/shuttleengine#turnStartHold`
 - `plan:internal/shuttleengine#ErrSessionBusy`
 - `plan:internal/shuttleengine#ErrSubmissionNotLanded`
+- `internal/shuttleengine#SessionCycler`
 
 **Intent:**
 Implement D6 in the gated wait loop.
 
 `Run` gains three fields: a `turnStartHold` for a boundary that a `turn_start` cleared, a flag that a boundary is cleared that way, and the unsent-re-prompt mark.
 
-`boundaryIdle` confirms the boundary idle in fact before the gate is evaluated for a send: for an engine with session signals, an `unmatchedTurnStart` past the boundary's turn end clears `gateAtBoundary` and the mark and records the cleared state, and the loop keeps polling with no send and no failure.
+`boundaryIdle` confirms the boundary idle in fact before the gate is evaluated for a send, keyed on the same capability pair as card 3's `awaitIdleSession`: for an engine with both the idle reading (`SessionCycler`) and session signals, an `unmatchedTurnStart` past the boundary's turn end clears `gateAtBoundary` and the mark and records the cleared state, and the loop keeps polling with no send and no failure.
 While a boundary is cleared that way, `Wait` captures the pane every tick for D1's idle reading, which times the hold.
 On the tick where the hold releases (`TurnStartInterrupt` reports the turn interrupted, or the pane has read idle on every poll for `turnStartIdleOverride`), the boundary is restored and `handleGatedBoundary` runs as on a new turn end, whether or not an entry is pending; the unsent-re-prompt mark is not restored, since that evaluation re-derives any re-prompt from the gate's recorded state.
 A new turn end clears the cleared state as today's arrival does.
-An engine without session signals answers idle at once, so its loop is unchanged.
+An engine lacking either answers idle at once, so its loop is unchanged: without the idle reading nothing could time the 10 s release, so it reads no session signals here, as the Shared Decision `idle-reading-capability` states.
 
 `sendWithin` is the wait loop's send: `Run.Send`'s validation and `sendVerified` with `sendContext.deadline` set to `run.deadline`, so the idle wait and the submit window both end by the run deadline.
 `handleGatedBoundary`'s pending send and re-prompt send go through it.
@@ -40,11 +41,11 @@ A send that starts with less time left than its windows overshoots the deadline 
 `wait.go`'s file doc comment and `handleGatedBoundary`'s doc comment describe the idle boundary, the retry and the budget.
 `handleGatedBoundary`'s return statements keep their markers, so the completion-signal tripwire's audited set is unchanged.
 
-Tests on a `fakeClock` with a session-signal fake engine: `gate_test.go` gains a table test where an `AttachGated`-style replay over a writer mid-turn types no gate send until a turn end follows the writer's newest `turn_start`, with rows for the release by `TurnStartInterrupt` and by 10 s of idle pane restoring the boundary and evaluating the gate.
+Tests on a `fakeClock` with card 3's fake engine carrying both the idle reading and session signals: `gate_test.go` gains a table test where an `AttachGated`-style replay over a writer mid-turn types no gate send until a turn end follows the writer's newest `turn_start`, with rows for the release by `TurnStartInterrupt` and by 10 s of idle pane restoring the boundary and evaluating the gate.
 `TestGate_SendFailsMidLoop_EndsLoopWithAttemptsSoFar` keeps its row for an error that is neither sentinel and gains rows where a busy or unlanded re-prompt spends no attempt and is re-sent on a later tick into the box its failed send cleared, and where a writer turn starting meanwhile clears the pending re-send.
 A row pins a re-prompt starting with less time left than its windows ending its idle wait and submit window by the run deadline.
 `gate_pending_test.go`'s pending-send rows are adjusted only where the boundary check now reads the pane.
 
-**ImpactSummary:** Confined to the gated branch of `Run.Wait` and `handleGatedBoundary`; an ungated run and an engine without session signals loop exactly as before.
+**ImpactSummary:** Confined to the gated branch of `Run.Wait` and `handleGatedBoundary`; an ungated run and an engine without both the idle reading and session signals loop exactly as before.
 
 **Commit:** 6: shuttle: gate sends wait for an idle writer and retry an unlanded re-prompt
