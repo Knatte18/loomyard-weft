@@ -1,4 +1,4 @@
-active: "cautious" # name of the active profile under profiles: (internal/batcher.Active); empty (the default) resolves to the identity batchifier (one card, one batch)
+active: "cautious" # name of the active profile under profiles: (internal/batcher.Active); the template default is the cautious profile, and an empty value resolves to the identity batchifier (one card, one batch)
 profiles: # named batchifier settings, each chosen by active:; the operator may add profiles of their own
     identity: # one card, one batch
         batchifier: identity
@@ -7,7 +7,7 @@ profiles: # named batchifier settings, each chosen by active:; the operator may 
         max_cards: 6 # most cards one batch holds, at least 2
         budget: 450000 # a batch of two or more cards never exceeds this peak context, in tokens; a card over it runs alone
         weights: # the estimator's coefficients, in context tokens or messages
-            master_base: 52000 # context Merriam holds when it spawns its first fork
+            orientation: 31400
             batch_growth: 7000 # context Merriam gains per finished batch, so a fork at position k starts at master_base + (k-1) * batch_growth
             fork_messages: 4 # messages a fork spends before its first card
             message_context: 300 # context one message adds: its tool call and output
