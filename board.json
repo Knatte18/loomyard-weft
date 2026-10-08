@@ -1195,6 +1195,22 @@
       "isolated": false,
       "brief": "Webster implementer forks ran go build and go test over the whole module every 20-60 s; a fork should test only its batch packages",
       "body": "## Seen\n\nBefore the 2026-10-08 crash, the `binary-change-and-rules` webster implementer forks ran `go build ./... \u0026\u0026 go test ./...` every 20 to 60 seconds, about 15 times between 19:58 and 20:06 CEST.\nThey also ran `go test -tags integration` and `go vet -tags integration ./...` across the whole module.\nEach run starts up to `GOMAXPROCS` test binaries that link cgo and tree-sitter, and the integration tests start their own tmux servers, git and lyx children.\nThat ran alongside the other runs' gates, and the user slice ran out of memory.\n\n## Idea\n\nAn implementer fork verifies only the packages its batch touches, and only once per change, never the full module on each edit.\nThe full suite belongs to the plan-level verify gate.\nThe webster stencil and the batch report state which packages a fork may test.\n"
+    },
+    {
+      "id": 233,
+      "slug": "hub-build-test-limit",
+      "title": "Hub-wide limit on concurrent builds and test suites",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom",
+        "webster"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Gates, forks and agents ran go build and go test with no hub-wide bound; with four runs this exhausted memory and froze the machine",
+      "body": "## Seen\n\nOn 2026-10-08, from 19:34 to 20:07 CEST, Go builds and test suites ran with no break, from several sources at once.\nThe sources were webster implementer forks, lyx's own gates (verify, lint-comments, Preflight), the orch and a hub fix agent, and newly seeded pairs.\nNothing bounds how many run at once across the hub.\nWith four runs in flight, the user slice reached its 16 GiB `MemoryHigh` with swap full, reclaim thrashed, and the machine froze until a hard reset.\n\n## Idea\n\nA hub-wide limit on concurrent `go build` and `go test` runs: lyx's gates take a slot from a hub lock before they build or test, wait their turn instead of piling up, and log the wait.\nAgents' own test commands reach the same limit through a lyx wrapper verb the stencils name.\n"
     }
   ],
   "legacy_done": [

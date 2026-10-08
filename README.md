@@ -36,6 +36,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **Finalize warns of per-worktree config changes that came from main** — [`finalize-config-warn-from-main`](design-finalize-config-warn-from-main.md) · bug, loom, config
 1. **Implementer forks run the full test suite on every edit** — [`implementer-full-suite-loop`](design-implementer-full-suite-loop.md) · bug, webster, stencil
    - Webster implementer forks ran go build and go test over the whole module every 20-60 s; a fork should test only its batch packages
+1. **Hub-wide limit on concurrent builds and test suites** — [`hub-build-test-limit`](design-hub-build-test-limit.md) · bug, loom, webster
+   - Gates, forks and agents ran go build and go test with no hub-wide bound; with four runs this exhausted memory and froze the machine
 
 ### Enhancements
 
