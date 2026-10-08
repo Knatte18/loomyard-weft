@@ -1,6 +1,6 @@
 # Loom goto back to Plan after Webster started leaves webster state stale; Webster hard-fails on plan fingerprint mismatch
 
-`goto-plan-stale-webster` · Note · bug
+`goto-plan-stale-webster` · Note · bug, loom, webster
 
 Imported from [issue #466](https://github.com/Knatte18/loomyard/issues/466).
 
