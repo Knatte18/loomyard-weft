@@ -16,7 +16,7 @@ Autonomous run: no operator answered; every question below was settled by an aut
 4. Model question: how does a fan get its own model when forks cannot have one?
    A `fan_review` key sets the fanned reviewer session's model (D2).
 5. Lens design: which lenses suit a design record and a plan?
-   Drawn from each rubric's "Also flag" list and the discussion writer's interview categories (D3).
+   The plan lenses and the discussion fan's `leanness` come from the rubrics' "Also flag" lists, the other discussion lenses from the discussion writer's interview categories (D3).
 6. Seeded hubs: how do existing `burler.yaml` files get the new fans?
    Per-name fallback to the embedded template (D4).
 7. Narrowing: per round or cumulative, and how does the judge know what to drop?
@@ -51,7 +51,7 @@ _No rounds yet._
 - Q1 (resolved, auto-pick): Where does the fan choice live? `loom.yaml` per segment (`discussion_fan`, `plan_fan`), threaded by row name to both rows. Rationale: measurement needs a runtime switch, and one value per segment keeps the Bouncer and its round in agreement.
 - Q2 (resolved, auto-pick): Default fanned or solo? Solo until measured. Rationale: the board entry says the measurement comes before the fan becomes the default.
 - Q3 (resolved, auto-pick): How is the fork model set? Run-wide `fan_review`, default `sonnet[high]`, applied to the fanned reviewer session. Rationale: forks inherit the session's model; operator note of 2026-10-08.
-- Q4 (resolved, auto-pick): Lens set per fan? Five lenses each, listed in D3. Rationale: derived from each rubric's "Also flag" list; matches the `standard` fan's size.
+- Q4 (resolved, auto-pick): Lens set per fan? Five lenses each, listed in D3. Rationale: derived from the rubrics' "Also flag" lists and the discussion writer's interview categories, with a `leanness` lens countering the discussion fan's additive bias; matches the `standard` fan's size.
 - Q5 (resolved, auto-pick): How do seeded hubs get the fans? Per-name fallback to the embedded template. Rationale: seed-only reconcile never adds them.
 - Q6 (resolved, auto-pick): Exclusion semantics? Cumulative union from round 2 within a generation, never emptying the fan. Rationale: monotonic narrowing without relying on the judge's memory.
 - Q7 (resolved, auto-pick): What does the judge see? A lens section in the Go-rendered facts file. Rationale: the judge never reads the fan or the artifacts.
