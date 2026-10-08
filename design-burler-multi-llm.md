@@ -2,6 +2,8 @@
 
 `burler-multi-llm` · Task · enhancement, burler, shed, stencil
 
+Depends on: [`multi-llm-producer`](design-multi-llm-producer.md), [`gate-test-scope`](design-gate-test-scope.md)
+
 ## Goal
 
 Burler's review round runs on `MultiLLMProducer` instead of its own two-agent wiring (operator, 2026-10-08).
