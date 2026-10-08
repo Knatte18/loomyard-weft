@@ -13,8 +13,8 @@
 - `internal/treadleengine/doc.go`
 
 **Uses:**
-- `plan:internal/editdirective#Directive`
-- `plan:internal/editdirective#MarkerName`
+- `internal/editdirective#Directive`
+- `internal/editdirective#MarkerName`
 
 **Intent:**
 Decision 14 for `treadle-targeting` and both `treadle-judge` stencils.

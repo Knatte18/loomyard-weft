@@ -1,12 +1,12 @@
 # Card 13 — A drift class for a worktree behind the build
 
 **Create:**
-- `plan:internal/stencilstore#Source` -> `type Source struct`
-- `plan:internal/stencilstore#BuildAncestry` -> `type BuildAncestry int`
-- `plan:internal/stencilstore#BuildAncestryUnknown` -> `const BuildAncestryUnknown BuildAncestry = iota`
-- `plan:internal/stencilstore#BuildInHead` -> `const BuildInHead BuildAncestry = 1`
-- `plan:internal/stencilstore#BuildNotInHead` -> `const BuildNotInHead BuildAncestry = 2`
-- `plan:internal/stencilstore#driftBehind` -> `const driftBehind driftClass = 4`
+- `internal/stencilstore#Source`
+- `internal/stencilstore#BuildAncestry`
+- `internal/stencilstore#BuildAncestryUnknown`
+- `internal/stencilstore#BuildInHead`
+- `internal/stencilstore#BuildNotInHead`
+- `internal/stencilstore#driftBehind`
 
 **Edit:**
 - `internal/stencilstore#Reconcile` -> `func Reconcile(baseDir string, registry Registry, mode Mode, source Source) ([]string, error)`

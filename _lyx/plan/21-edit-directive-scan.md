@@ -14,7 +14,7 @@
 - `PATTERN.md`
 
 **Uses:**
-- `plan:internal/editdirective#MarkerName`
+- `internal/editdirective#MarkerName`
 - `contracts/stencils#registeredBodies`
 - `contracts/stencils#askOperatorPhrases`
 

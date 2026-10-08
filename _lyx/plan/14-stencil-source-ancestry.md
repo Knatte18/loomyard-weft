@@ -1,7 +1,7 @@
 # Card 14 — The stencil-seed caller supplies the build ancestry
 
 **Create:**
-- `plan:internal/fabricengine#StencilSource` -> `func StencilSource(worktreePath, sourceDir, revision string) stencilstore.Source`
+- `internal/fabricengine#StencilSource`
 
 **Edit:**
 - `cmd/lyx#seedStencilsAt`
@@ -13,8 +13,8 @@
 **Uses:**
 - `internal/fabricengine#HeadContains`
 - `internal/buildvcs#Running`
-- `plan:internal/stencilstore#Source`
-- `plan:internal/stencilstore#BuildAncestry`
+- `internal/stencilstore#Source`
+- `internal/stencilstore#BuildAncestry`
 
 **Intent:**
 Decision 13: the ancestry check runs in `internal/fabricengine`, only when a drift comparison needs it, and reaches `stencilstore` as card 13's `Source.Build` input.

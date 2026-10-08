@@ -1,9 +1,9 @@
 # Card 15 — The shared edit directive and its renderer
 
 **Create:**
-- `plan:internal/editdirective#MarkerName` -> `const MarkerName = "edit_directive"`
-- `plan:internal/editdirective#Directive` -> `func Directive(stencilsDir string) (string, error)`
-- `plan:contracts/stencils#EditDirective` -> `var EditDirective []byte`
+- `internal/editdirective#MarkerName`
+- `internal/editdirective#Directive`
+- `contracts/stencils#EditDirective`
 - `internal/editdirective/doc.go`
 - `internal/editdirective/editdirective_test.go`
 - `contracts/stencils/edit/edit-directive.md`

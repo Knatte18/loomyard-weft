@@ -10,8 +10,8 @@
 - `internal/loomengine/plan_test.go`
 
 **Uses:**
-- `plan:internal/editdirective#Directive`
-- `plan:internal/editdirective#MarkerName`
+- `internal/editdirective#Directive`
+- `internal/editdirective#MarkerName`
 
 **Intent:**
 Decision 14 for the three loom writer roles (`discussion`, `plan`, `rework` in `roleOpeningStencils`).

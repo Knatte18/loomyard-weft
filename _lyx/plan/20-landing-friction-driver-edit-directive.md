@@ -19,8 +19,8 @@
 - `internal/frictionengine/seam_enforcement_test.go`
 
 **Uses:**
-- `plan:internal/editdirective#Directive`
-- `plan:internal/editdirective#MarkerName`
+- `internal/editdirective#Directive`
+- `internal/editdirective#MarkerName`
 
 **Intent:**
 Decision 14 for the remaining spawned roles: `conflict`, `describe`, `friction` (the reflection role) and `driver`.

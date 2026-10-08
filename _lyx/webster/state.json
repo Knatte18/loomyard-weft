@@ -1,6 +1,6 @@
 {
   "runGuid": "5c58df7f6d8e28f9796eee2f69ab1065",
-  "planFingerprint": "275e8e303716d84c534ac524e39245a5a796b59e67c7b48f58ca704110f27595",
+  "planFingerprint": "c49d23b9298dc43e9bc1140d8dacfcdafae6d89cc1dc4c76de56bedc70ff4514",
   "planFileHashes": {
     "00-overview.md": "7696a28929790a260da8d49fe1771137f4df8b27402022f58792e58b99a23ece",
     "01-buildvcs.md": "5548ad5ae206f30cfb349f9c79899418c7d0e7655c96cdd345d45154825967d9",
@@ -15,15 +15,15 @@
     "10-batten-run-reconcile.md": "7dabc25a4a156cb959114a826771c681eff9182fde4d548e8675e8bed2b982fd",
     "11-preflight-safety-net.md": "b6b55890aa06d12b86aebb6186dab7a6f477bcaf51eb710d6311330ec1fc2cdf",
     "12-head-contains.md": "ba4c78f7096de3e62d9372817b13720a81d469b228ceea7db575180a47e0186d",
-    "13-stencil-drift-behind.md": "9d2ec09006b797ce025706ed58d677db80781b3dda3f34801518a3eda741e3fb",
-    "14-stencil-source-ancestry.md": "b759b953e8e0be377d79ed4a8840de1e3c6ea33fa7131af137af4d79326c6f8a",
-    "15-edit-directive.md": "03b135b27798fb29853a0f29ce9d0cce8b1f3b8348ce13b6de0f35148a789ec2",
-    "16-loom-roles-edit-directive.md": "82c9190ad60878ec124a8449fe1dbe43742ac8dee941ddfd2616750b0f8a8b42",
-    "17-webster-edit-directive.md": "19a9c9232cf325b1c74347142c86196bcb3d338899c4124ea68201ac6bafa530",
-    "18-review-roles-edit-directive.md": "025c5f2daa04ed931b0478eba58c73f31acd4bf0ed127b131f53b92a0d22739e",
-    "19-treadle-edit-directive.md": "2058a0c449d0e393dba83d5770039a0d8f1b92a7cfa63d304ac9bb0c9e4d7b1a",
-    "20-landing-friction-driver-edit-directive.md": "4057770326e00fab5453eafb7e70b08b1df381912d69d3c427b22c22bb548e27",
-    "21-edit-directive-scan.md": "5ebc3d5d766ea52a65d3b3dd9db88c78a22d85ecf27bf56feb20933e1c30e502"
+    "13-stencil-drift-behind.md": "ed5e4846b77c83caef603d292e1037708c88a0af40d4c7a4a7ee508dc15131f4",
+    "14-stencil-source-ancestry.md": "33718de41e1aeb14ba24288e5c73290b1e0369ad60363a0b293cde791a73d2da",
+    "15-edit-directive.md": "b69ff23a3dabf72565f1ce806f7ea66dc5f6effd17f7e612911a3cfb62b74d5c",
+    "16-loom-roles-edit-directive.md": "3bf673631572def7faffe4d0d696c71a90c73edc74ed2ecc3dfebe3c3a9a8ece",
+    "17-webster-edit-directive.md": "2cc52420405b9ad037af2a0a0fec897d216a6b0de72bc30640476dde0aff3b00",
+    "18-review-roles-edit-directive.md": "2172b8407f21f69ad5e7de10f48702372f6cb605d118f7261902b678393bba87",
+    "19-treadle-edit-directive.md": "d4359802e65c089e0d698f41efd1b124bbd8f8ac98417bc51a82f71584f33037",
+    "20-landing-friction-driver-edit-directive.md": "0a55ca0691df28f219d0e4d62dc2b08b13a6b42a2f0f8c3c3c64c012dc29a8d0",
+    "21-edit-directive-scan.md": "90dbcaf81f9ac4b250ea23d99f528f9256bf8bbbf203c7d9a0351b4c6899cc1e"
   },
   "planOverviewFrameHash": "505c4e2c4e6ddcdb030f87a1d663e7319cd3c6afd393e7b77ea97e4278500b5e",
   "partition": [
@@ -503,7 +503,7 @@
       }
     }
   ],
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "1578af759ae4b84ea53d41470d5d71f0",
   "masterSessionId": "e495df5d-7276-44c7-97aa-0e3437b51280",
   "batches": {
@@ -556,18 +556,33 @@
         "17-webster-edit-directive"
       ],
       "cardHashes": {
-        "13-stencil-drift-behind": "9d2ec09006b797ce025706ed58d677db80781b3dda3f34801518a3eda741e3fb",
-        "14-stencil-source-ancestry": "b759b953e8e0be377d79ed4a8840de1e3c6ea33fa7131af137af4d79326c6f8a",
-        "15-edit-directive": "03b135b27798fb29853a0f29ce9d0cce8b1f3b8348ce13b6de0f35148a789ec2",
-        "16-loom-roles-edit-directive": "82c9190ad60878ec124a8449fe1dbe43742ac8dee941ddfd2616750b0f8a8b42",
-        "17-webster-edit-directive": "19a9c9232cf325b1c74347142c86196bcb3d338899c4124ea68201ac6bafa530"
+        "13-stencil-drift-behind": "ed5e4846b77c83caef603d292e1037708c88a0af40d4c7a4a7ee508dc15131f4",
+        "14-stencil-source-ancestry": "33718de41e1aeb14ba24288e5c73290b1e0369ad60363a0b293cde791a73d2da",
+        "15-edit-directive": "b69ff23a3dabf72565f1ce806f7ea66dc5f6effd17f7e612911a3cfb62b74d5c",
+        "16-loom-roles-edit-directive": "3bf673631572def7faffe4d0d696c71a90c73edc74ed2ecc3dfebe3c3a9a8ece",
+        "17-webster-edit-directive": "2cc52420405b9ad037af2a0a0fec897d216a6b0de72bc30640476dde0aff3b00"
       },
       "startSha": "285ef309e36437c7ddf65ccddffec7927f388fe5",
       "kind": "fork",
       "spawnedAt": "2026-10-08T17:53:34Z",
       "sessionId": "e495df5d-7276-44c7-97aa-0e3437b51280",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-stencil-drift-behind",
+        "status": "done",
+        "head_sha": "bb1d6524ce7dd55fc78fccef176d9f10185bacca",
+        "deviations": [
+          "cmd/lyx/testdata/test-budget.yaml",
+          "internal/editdirective/editdirective.go"
+        ]
+      },
+      "cardShas": [
+        "bb1d6524ce7dd55fc78fccef176d9f10185bacca"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-binary-change-and-rules/e495df5d-7276-44c7-97aa-0e3437b51280/subagents/agent-a30e33494ec0c3611.jsonl"
+      ]
     },
     "7": {
       "slug": "hubreconcile",
@@ -611,6 +626,7 @@
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-binary-change-and-rules/e495df5d-7276-44c7-97aa-0e3437b51280/subagents/agent-a555678c495c686ca.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-binary-change-and-rules/e495df5d-7276-44c7-97aa-0e3437b51280/subagents/agent-ac471ba4b33fad670.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-binary-change-and-rules/e495df5d-7276-44c7-97aa-0e3437b51280/subagents/agent-ac471ba4b33fad670.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-binary-change-and-rules/e495df5d-7276-44c7-97aa-0e3437b51280/subagents/agent-a30e33494ec0c3611.jsonl"
   ]
 }

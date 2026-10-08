@@ -9,8 +9,8 @@
 - `contracts/stencils/claims_test.go`
 
 **Uses:**
-- `plan:internal/editdirective#Directive`
-- `plan:internal/editdirective#MarkerName`
+- `internal/editdirective#Directive`
+- `internal/editdirective#MarkerName`
 
 **Intent:**
 Decision 14 for `webster-master` and `webster-recovery`; forks inherit it through Merriam's opening stencil.

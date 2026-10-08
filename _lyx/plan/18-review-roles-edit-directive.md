@@ -15,8 +15,8 @@
 - `internal/shedrecipe/entries_bouncer_test.go`
 
 **Uses:**
-- `plan:internal/editdirective#Directive`
-- `plan:internal/editdirective#MarkerName`
+- `internal/editdirective#Directive`
+- `internal/editdirective#MarkerName`
 
 **Intent:**
 Decision 14 for `burler-review`, `burler-fix`, `bouncer-judge` and `bouncer-seed`.
