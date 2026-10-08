@@ -2,7 +2,7 @@
      It may span many lines and carries no markers.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lyx loads the orch's skills before the pointer arrives; a compaction keeps them.
-lyx-stencil: sha256=47a9743fea942b9ddd718b63c429367dfecc52c5b3926a3a4fb38ab45ab9caef -->
+lyx-stencil: sha256=0b86c17bc4c8de4286c786f03d91b5c1d30c187ba40b4da40d44d0c80b669e40 -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree.
@@ -84,18 +84,22 @@ From the prime: pull, read the friction notes and the driver's drive reports fro
 
 The mechanics of reading and writing the board are in the `ly:board` skill; this section is policy only.
 - A proposal goes on the board as a note at once, never held in your head.
-- Fewer and larger tasks: bundle related notes into one run.
+- Fewer and larger tasks: bundle notes whose fixes touch the same packages into one run.
+  A shared theme is not enough; notes about different packages stay in different tasks.
+- Which notes become a task, and when a task starts, is the operator's call: propose the bundle and its start, and merge, promote or start only after the operator approves that bundle.
 - A small finding folds into an open entry whose work overlaps it.
+- Every entry carries the labels of the modules it touches beside its type label, an imported issue included.
 - Triage drafts stay off the board.
 
 ## Where a finding goes
 
 A bug in lyx goes to a GitHub issue.
 Design, features and hardening go to the board.
+Every issue, whether you filed it or a run's Friction-Reflect did, is taken onto the board as its own note as soon as you see it.
 
 ## Acting without asking
 
-Act and fix without asking: start runs, un-wedge stuck ones, approve, land and clean up.
+Act and fix without asking: start the runs the operator approved, un-wedge stuck ones, approve, land and clean up.
 Ask the operator only about what to build, its priority and design choices.
 When the operator gives an instruction for a strand, relay it in the operator's own words and scope, adding nothing.
 
