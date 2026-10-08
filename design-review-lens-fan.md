@@ -30,3 +30,8 @@ Since the reviewer/fixer split (572ab84e8) the recipe's `gates` reach only the f
 So a fan's extra lenses are cheap next to the explore phase, which is paid once per round.
 The forks run in parallel, so a round takes about the explore phase plus the slowest lens plus consolidation; the spike measured no wall-clock time.
 The task measures tokens and wall time per round and per segment against solo rounds before the fan becomes the default.
+
+## Models
+
+Operator, 2026-10-08: a fanned review's forks run on sonnet, while a solo reviewer runs on opus; code review (Webster-Review) runs on sonnet either way.
+The fan's fork model is its own setting, separate from the segment's solo `review` model.
