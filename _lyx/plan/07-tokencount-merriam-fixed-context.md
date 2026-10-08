@@ -1,12 +1,12 @@
 # Card 7 — tokencount reports a measured Merriam fixed context
 
 **Create:**
-- `plan:tools/tokencount#directiveStencilPath` -> `const directiveStencilPath = "contracts/stencils/pattern/pattern-directive-orchestrator.md"`
-- `plan:tools/tokencount#merriamTexts` -> `func merriamTexts(run RunTally, trees BaseTrees) ([]string, string, error)`
-- `plan:tools/tokencount#FixedRow` -> `type FixedRow struct`
-- `plan:tools/tokencount#FixedContext` -> `type FixedContext struct`
-- `plan:tools/tokencount#Calibration.addFixed` -> `func (c *Calibration) addFixed(run RunTally, trees BaseTrees) error`
-- `plan:tools/tokencount#FixedContext.write` -> `func (f FixedContext) write(w io.Writer)`
+- `tools/tokencount#directiveStencilPath`
+- `tools/tokencount#merriamTexts`
+- `tools/tokencount#FixedRow`
+- `tools/tokencount#FixedContext`
+- `tools/tokencount#Calibration.addFixed`
+- `tools/tokencount#FixedContext.write`
 
 **Edit:**
 - `tools/tokencount#readRunStartBase`
@@ -20,7 +20,7 @@
 
 **Uses:**
 - `internal/pattern#FillDirective`
-- `plan:tools/tokencount#MerriamStart`
+- `tools/tokencount#MerriamStart`
 
 **Intent:**
 D4's report: the calibration gains a Merriam fixed-context section, so the operator can re-measure `merriamFixedContext` from real runs, and the start fit's reconstructed base becomes the texts `MerriamBase` counts.

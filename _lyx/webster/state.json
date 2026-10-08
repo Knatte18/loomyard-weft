@@ -1,15 +1,15 @@
 {
   "runGuid": "7125da5ade78b18b64e887be3f373e3e",
-  "planFingerprint": "760acbebb7c13c91e3d749c1775112cf3db91fc5db50b23a663fb829aab01fe3",
+  "planFingerprint": "e7fa9999a9ec22ee709ea3069df183e3c3bfd559bf402ecbb617b1b87f9c0907",
   "planFileHashes": {
     "00-overview.md": "dac55e89d18c590e26548070ce5c28f01f80ce34f37086289cb6902ba89c1ea9",
     "01-pattern-fill-directive.md": "8e6bbf1984f88dd7384e12afb29fe76b0f8734fdbbfae52b184dd209022ca5bc",
     "02-record-batch-resolves-head-sha.md": "ae43dfefab404e6939b4cdce5d229a133c91bb90ed0f018ac03c7784049a4aea",
     "03-recover-and-reset-resolve-head-sha.md": "52751f5fe97e7f5deaa2648fd095b30efdb42cc5aa6682a058d0c4d2c72c3bae",
     "04-bracket-transcripts-count.md": "fa2920861fd34744a3f35fc7125aae95ec9a7c23d460ca97bb4d0b607d564344",
-    "05-derived-overview-frame.md": "6a104fc177b9cfa511921458dbdae983da3980bb28d7cc5132666ed956113c00",
-    "06-tokencount-merriam-start.md": "16de814120b4b7b179013619db09ebbf973035f09a476642e008812fe85560fe",
-    "07-tokencount-merriam-fixed-context.md": "2baec55186276a1d1ff0a1a9b80522685864b5de9cd6b14e46408888ea8e3e3e"
+    "05-derived-overview-frame.md": "2b2156d5549c40700c44627eded46c3abc735482f73ae54310f0180004eaf8bc",
+    "06-tokencount-merriam-start.md": "d455550b6b2c5a394432de74cf1518667aaa9758a49735f807e33487eef5b05a",
+    "07-tokencount-merriam-fixed-context.md": "135847d6926dbc256d405c5271e57daba0b72dd154917af016013936419b7a23"
   },
   "planOverviewFrameHash": "6fde5d2062da0a534664fb95e32cfb9ce7ab631d3920fe998c347c16563220b1",
   "partition": [
@@ -177,7 +177,7 @@
       }
     }
   ],
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "5a50ad463cce8d86e712397132e12511",
   "masterSessionId": "abe74d69-4817-4ad6-96e9-0f5d8ac2a00f",
   "batches": {
@@ -224,19 +224,34 @@
         "07-tokencount-merriam-fixed-context"
       ],
       "cardHashes": {
-        "05-derived-overview-frame": "6a104fc177b9cfa511921458dbdae983da3980bb28d7cc5132666ed956113c00",
-        "06-tokencount-merriam-start": "16de814120b4b7b179013619db09ebbf973035f09a476642e008812fe85560fe",
-        "07-tokencount-merriam-fixed-context": "2baec55186276a1d1ff0a1a9b80522685864b5de9cd6b14e46408888ea8e3e3e"
+        "05-derived-overview-frame": "2b2156d5549c40700c44627eded46c3abc735482f73ae54310f0180004eaf8bc",
+        "06-tokencount-merriam-start": "d455550b6b2c5a394432de74cf1518667aaa9758a49735f807e33487eef5b05a",
+        "07-tokencount-merriam-fixed-context": "135847d6926dbc256d405c5271e57daba0b72dd154917af016013936419b7a23"
       },
       "startSha": "2ce070f1acf6d035d011a04fa5c901afb285a132",
       "kind": "fork",
       "spawnedAt": "2026-10-08T18:56:36Z",
       "sessionId": "abe74d69-4817-4ad6-96e9-0f5d8ac2a00f",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-derived-overview-frame",
+        "status": "done",
+        "head_sha": "d4b4903fa9ce4ad27ed2eff6e09848fb21436a7b",
+        "deviations": [
+          "internal/websterengine/merriambase.go"
+        ]
+      },
+      "cardShas": [
+        "d4b4903fa9ce4ad27ed2eff6e09848fb21436a7b"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-record-batch/abe74d69-4817-4ad6-96e9-0f5d8ac2a00f/subagents/agent-ad3cca577da873191.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-record-batch/abe74d69-4817-4ad6-96e9-0f5d8ac2a00f/subagents/agent-a326c585374aa689b.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-record-batch/abe74d69-4817-4ad6-96e9-0f5d8ac2a00f/subagents/agent-a326c585374aa689b.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-record-batch/abe74d69-4817-4ad6-96e9-0f5d8ac2a00f/subagents/agent-ad3cca577da873191.jsonl"
   ]
 }

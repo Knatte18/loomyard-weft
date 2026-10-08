@@ -1,7 +1,7 @@
 # Card 5 — a state without an overview frame hash derives it from the plan baseline
 
 **Create:**
-- `plan:internal/websterengine#recordedOverviewFrame` -> `func recordedOverviewFrame(st *State, websterDir string) (string, error)`
+- `internal/websterengine#recordedOverviewFrame`
 
 **Edit:**
 - `internal/websterengine#overviewIndexOnly` -> `func overviewIndexOnly(recorded, planDir string) (bool, error)`

@@ -1,9 +1,9 @@
 # Card 6 — tokencount measures each Merriam session's start
 
 **Create:**
-- `plan:tools/tokencount#MerriamStart` -> `type MerriamStart struct`
-- `plan:tools/tokencount#readMerriamStart` -> `func readMerriamStart(path string) (MerriamStart, error)`
-- `plan:tools/tokencount#launchPointerLine` -> `var launchPointerLine *regexp.Regexp`
+- `tools/tokencount#MerriamStart`
+- `tools/tokencount#readMerriamStart`
+- `tools/tokencount#launchPointerLine`
 
 **Edit:**
 - `tools/tokencount#RunTally`
