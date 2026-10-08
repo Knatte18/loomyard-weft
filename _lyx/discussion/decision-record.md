@@ -121,6 +121,12 @@ Decision: A carry-over marker is a line equal to the marker text after right-tri
 
 Rationale: Round-3 F1: unspecified recognition made the refusal rule undecidable and would refuse the record that documents the feature.
 
+### Added after Discussion (parent, 2026-10-08): D2 bound verified on the result
+
+Decision: The write's bound is checked on the bytes it produced: re-read the new file and require that its sequence of H2 headings equals the prior file's, that each segment has at most one well-formed marker pair, and that every line outside the replaced span equals the prior file's. The prefix/suffix byte comparison against the slices the write cut is not named as the bound.
+
+Rationale: Round-3 F2: comparing slices with the file they were cut from cannot fail.
+
 ## Constraints
 
 - `PATTERN-review-round`: amended by D7; every other clause (review on disk before any target is touched, every finding fixed or disputed with evidence, reviewer and fixer separate sessions, the fixer touching nothing before the ready marker) holds, including under `fix_start: after-review`.
