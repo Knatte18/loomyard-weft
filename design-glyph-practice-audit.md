@@ -18,6 +18,7 @@ Audit the first runs after `plan-glyph-precision` lands from their logs and tran
 - `plan:` handles declared, bound at record-batch, and failed;
 - members a card edited that its glyphs did not name, and glyphs that named the wrong member, read from the batch diffs;
 - how the plan writer arrives at each glyph, read from the Plan-Write transcript: the `lyx quarry` calls it made, the greps and file reads around them, and how many tries a glyph took before it resolved (operator, 2026-10-08: the search may be mostly trial and error, and its cost belongs in the audit);
+- test-file paths under `Edit:`: the plan template (`loom-template-plan.md`) allows a plain path for "a test file the card adds tests to", and the rubric flags only non-test Go paths, so every test file goes in as a path (operator, 2026-10-08); count from the batch diffs how many of those paths changed existing members (a test, a fake such as `fakes_test.go`, a helper) that a glyph could have named, and whether new tests could be declared as `plan:` handles like new production members;
 - whether implementer and Burler forks use the card's glyphs at execution time (a `lyx quarry` lookup) or fall back to grep and whole-file reads.
 
 ## First data points (2026-10-08)
