@@ -66,8 +66,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Run the llm-tier hook-capture scenario once and turn the real StopFailure, Notification and SessionEnd payloads into corpus fixtures
 1. **Caller coverage: precise caller resolution** — [`caller-scan-import-path`](design-caller-scan-import-path.md) · enhancement, quarry
    - caller-uncovered misses aliased and dot imports, and reports interface-type uses and same-named method calls as callers
-1. **Shuttle sends /color through the verified send** — `shuttle-color-verified-send` · enhancement, shuttle
-   - The startup /color command goes through the idle-wait and landing-confirmed send that shuttle-send builds, not a raw type before skill load
+1. **Shuttle: first turn on the launch line, /color through the verified send** — [`shuttle-color-verified-send`](design-shuttle-color-verified-send.md) · enhancement, shuttle
+   - The skill-load message rides the launch line like a skill-free prompt does; /color, which has no launch-time form, goes through the verified send
 1. **reed: spawn order from a recorded start time** — `reed-spawn-order-start-time` · enhancement, reed
    - Revival orders sessions by the mtime of seed.json, which re-materialization can move; record an explicit start time in the run record and order by it
 1. **Carry-over check re-reads the written file** — `carryover-verify-on-disk` · enhancement, loom
