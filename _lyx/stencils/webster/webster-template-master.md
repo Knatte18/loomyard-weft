@@ -3,7 +3,7 @@
      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the codebase and the plan once, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lyx/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive. parent_directive is a third optional marker, rendered by internal/parentdirective.
-lyx-stencil: sha256=d59478fabf96daa5c5bdcb4ff44f71ce0b106687cf7b033100a5a756dd03538c -->
+lyx-stencil: sha256=f82b5054fb15b5ccb5fc430a4ed93ecb1b87d95b1422d515681024f595470868 -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -112,7 +112,9 @@ You never read raw fork output beyond its own turn, and you never open a file to
 - `recover-batch <NN>` completes with a terminal `status: stuck` OR `status: dead` (any `dead_reason`) → the recovery itself failed.
   You have exhausted this batch's recovery: stop the run here — write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` naming the batch and the failure, and stop.
   Do NOT re-fork it, do NOT begin the next batch (batch N+1 assumes N is committed).
-- `recover-batch <NN>` refuses with `{"batch_failed": true}` → the recovery strand said done but webster's checks rejected its work, so the recovery itself failed.
+- `recover-batch <NN>` refuses with `{"batch_failed": true, "card_amended": true}` → a card of the batch was amended after the attempt began, so webster failed the attempt to re-run the batch on the amended card.
+  Run `lyx webster recover-batch <NN>` again, backgrounded, even though the failed attempt was a recovery; each amendment forces at most one such re-run.
+- `recover-batch <NN>` refuses with `{"batch_failed": true}` → the recovery strand said done but webster's checks rejected its work, so the recovery itself failed (the `card_amended` rung above takes precedence).
   Treat it exactly like a terminal `stuck` or `dead` recovery: write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop.
   Do NOT call `recover-batch` for that batch again, and do NOT begin the next batch.
   The same flag also marks a refusal before any recovery ran, when a later card still references a symbol the batch deletes, and the stuck handling is unchanged.
@@ -121,11 +123,18 @@ You never read raw fork output beyond its own turn, and you never open a file to
   Do NOT call `recover-batch` for that batch again, and do NOT begin the next batch.
 - `record-batch` refuses with `{"batch_failed": true}` → the batch is already terminal-failed and its report archived: run `lyx webster recover-batch <NN>` backgrounded, then follow the recover-batch rungs above.
   When the refusal's message names a plan edit as its way forward (a later card still references a symbol the batch deletes), that edit is not Master's to make: write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop without calling `recover-batch`.
+- `record-batch <NN>` or `recover-batch <NN>` refuses with a head mismatch whose way forward names `lyx webster reset --to report-head --batch <NN>` → run that reset, then re-run the refused verb once.
+  A refusal of the reset, a second head mismatch, or a way forward that also needs a parent merge-in redone ends the run: write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop, since a merge-in is not Master's to redo.
+  Run `reset --to report-head` for a batch at most once, and no other reset.
 - `record-batch` refuses with `{"report_archived": true}` → the report could not be attributed and was archived: call `lyx webster begin-batch <NN>` and re-fork that batch from its fresh prompt.
 - `begin-batch <NN>` refuses because the batch **already has a report** (a resumed run found a crashed session's leftover) → do NOT fork;
-  call `lyx webster record-batch <NN>` to consume that report.
-  If record-batch refuses because the batch is a recovery batch, run `lyx webster recover-batch <NN>` backgrounded instead.
+  the refusal names the batch's recorded state and the one remedy that state calls for, and you follow exactly that remedy:
+  `record-batch` or `recover-batch` for the batch (the latter backgrounded, per the rung above), or, for a finished batch, beginning the next one.
+  A batch whose recovery is exhausted ends the run: write `outcome: stuck` naming the batch, as the dead rung above does.
   Then continue the loop from the next batch.
+- Any verb refuses with `{"config_invalid": true}` → a config file under `_lyx/config` has broken content, and the operator's fix is not Master's to make.
+  Write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop without calling another verb.
+  A refusal that says a config file could not be read carries no `config_invalid` and is transient: re-run the verb.
 
 ## After every batch: the verify gate
 
