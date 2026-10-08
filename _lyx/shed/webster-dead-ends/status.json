@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Bouncer",
+  "current_producer": "Plan-Burler",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Bouncer",
-    "last": "Plan-Burler → bounced to Plan-Bouncer",
+    "now": "Plan-Burler",
+    "last": "Plan-Bouncer → bounced to Plan-Burler",
     "wait": ""
   },
   "history": [
@@ -105,6 +105,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/webster-dead-ends/_lyx/reviews/plan/round-2-review.md",
       "at": "2026-10-08T08:51:53Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/webster-dead-ends/_lyx/reviews/plan/round-2-bouncer-ledger.md",
+      "at": "2026-10-08T08:52:50Z"
     }
   ],
   "product": {
