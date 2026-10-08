@@ -31,6 +31,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **An operator decision can amend the card of a begun Webster batch** — [`webster-amend-begun-card`](design-webster-amend-begun-card.md) · bug, webster
    - rebaseline refuses begun cards and reset needs a fresh run loom cannot start, so a mid-run decision never reaches the plan
 1. **Stale batcher.yaml key startup_context is only caught at record-batch, halting a run mid-Webster** — [`config-drift-preflight`](design-config-drift-preflight.md) · bug
+1. **Plan-review rubric lets a reviewer recommend a card retyping that validate-plan rejects** — [`plan-rubric-containment`](design-plan-rubric-containment.md) · bug
 
 ### Enhancements
 

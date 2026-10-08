@@ -849,6 +849,22 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #440](https://github.com/Knatte18/loomyard/issues/440).\n\n**What happened**\nA loom run reached the Webster producer and halted `blocked` (anomaly `escalation-to-human`) when `lyx webster record-batch` refused with: `batcher.yaml did not load: profile \"cautious\" carries weights key startup_context, which no longer exists; set master_base and batch_growth under _lyx/config`.\nThe pair's `_lyx/config/batcher.yaml` still carried a key that the current binary no longer accepts.\nThe run had already passed Preflight, Loom-Preflight, Discussion, Plan and Batchifier, so the schema drift surfaced only after the Webster batch had done its work and a report was written.\nThe operator-side orchestrator had to hand-edit the pair's config and re-step the run once (`lyx shed step`), because the stop was a binary-changed stop.\n\n**Why it is abnormal**\nA config file that cannot load is deterministic and detectable up front.\nNothing in Preflight or Loom-Preflight validated `batcher.yaml`, so the run burned its whole Discussion/Plan phase before the failure.\nThe error also lands as a human escalation rather than a clear config-validation failure.\n\n**What to do**\n- Load and validate `batcher.yaml` (and the other per-pair config) in Preflight/Loom-Preflight so schema drift fails at the start.\n- Consider migrating or ignoring removed keys such as `startup_context` when the pair config is seeded from an older template, or have the seeding step regenerate the file.\n\nProvenance: task slug `lifecycle-waits`; notes `loom-halt.md`, `driver-restep-webster-20261007.md`.\n"
+    },
+    {
+      "id": 184,
+      "slug": "plan-rubric-containment",
+      "title": "Plan-review rubric lets a reviewer recommend a card retyping that validate-plan rejects",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        438
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #438](https://github.com/Knatte18/loomyard/issues/438).\n\nA plan-review round (Burler, plan segment) raised a finding asking for symbol renames in two cards to be typed `Rename` over member glyphs, reading only the spec's type table.\nThe author's fix attempt then failed `lyx loom validate-plan` with blocking `containment-file-overlap` findings: other cards target the files holding those symbols whole, so the recommended retyping cannot exist in that plan's file-level layout.\n\nWhy this is abnormal: the review rubric's `Do not flag` list covers checks the gate already runs, but not the interaction between a card type and the cross-card containment check.\nThe reviewer therefore issued a remedy the gate cannot accept, and the review round was spent on an unfixable finding.\n\nWhat to do: have the plan-review rubric tell the reviewer to run `lyx loom validate-plan` before recommending a card retyping, or add the type-vs-`containment-file-overlap` interaction to the `Do not flag` list.\n\nProvenance: task `fabric-pushes`, note `burler-plan-r1.md`.\n"
     }
   ],
   "legacy_done": [
