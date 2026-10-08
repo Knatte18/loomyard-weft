@@ -17,6 +17,8 @@ Waits on nothing open; can start now, in parallel.
    - Config reconciles itself on the first lyx command after a binary change, stencil drift behind main stops warning source-ahead, and file-editing stencils state the no-script edit rule
 1. **Plan gate: no false caller findings, reviewer fixes the gate accepts, nested fixture modules, no plan-made parent decisions** — [`plan-gate-quality`](design-plan-gate-quality.md) · bug, loom, quarry
    - Resolve callers by import path and receiver type, show the reviewer the gate checks, let gates run in nested fixture modules, and refuse decision add --by parent from a plan agent
+1. **Git network calls time out; Finalize warns only for config the task changed** — [`fabric-net-and-config-warn`](design-fabric-net-and-config-warn.md) · bug, fabric
+   - Push and fetch run under a timeout so a dead connection after sleep fails fast; the per-worktree config warning compares against the parent copy
 
 ## Notes
 
@@ -29,11 +31,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **batten run on a slug whose earlier run is done reports ok and does nothing** — [`batten-reused-slug`](design-batten-reused-slug.md) · bug, batten
 1. **The plan gate fails done cards after a goto back to Plan-Review, and rebaseline refuses follow-up cards on an older webster record** — [`plan-gate-done-cards`](design-plan-gate-done-cards.md) · bug
 1. **A blocked Publish has no route that hands a finding to a fixer** — [`publish-fix-route`](design-publish-fix-route.md) · bug
-1. **Git push without a timeout hangs a batten run after laptop sleep** — [`git-network-timeout`](design-git-network-timeout.md) · bug
 1. **webster record-batch: zero fork transcripts for a forked batch forces a full re-drive** — [`record-batch-no-transcripts`](design-record-batch-no-transcripts.md) · bug
 1. **webster record-batch rejects abbreviated head_sha that is a prefix of HEAD** — [`record-batch-short-sha`](design-record-batch-short-sha.md) · bug
 1. **Loom re-step refused with producer error while a stopped review strand's run dir is younger than 3m** — [`restep-young-run-dir`](design-restep-young-run-dir.md) · bug
-1. **Finalize warns of per-worktree config changes that came from main** — [`finalize-config-warn-from-main`](design-finalize-config-warn-from-main.md) · bug
 
 ### Enhancements
 
