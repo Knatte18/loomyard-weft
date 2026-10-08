@@ -1373,6 +1373,21 @@
       "isolated": false,
       "brief": "Measure each tier, non-login shells and shared servers in tier 3, lyx built once, no background gc in fixtures (#472), a no-tmux scan for tiers 1-2",
       "body": "## Seen\n\nOn 2026-10-08 the integration tier dominated CPU during a Publish verify (`fabricengine.test` alone at 145%), and in the 53 hours before the crash tmux started 9,022 servers and 32,375 panes, nearly all from tier 3 tests, each pane a login shell that sources the operator's profile.\nTests in four packages link the `lyx` binary with cgo on their own, and `TestLoomResumeReconcilesTheHubConfigBeforeArming` flakes on `t.TempDir` cleanup because a git child, most likely a detached auto-gc, still writes into the fixture's object store (#472).\n\n## Goal\n\n- A measurement of every tier per package (time, CPU, peak memory, process count) with `cmd/testtiming`, on a quiet machine, before and after.\n- Tier 3 panes run a non-login shell, and tests share one tmux server per package where isolation allows.\n- `lyx` is built once per test run and reused across packages.\n- Fixture repositories never auto-gc in the background, and every test waits for the git and lyx children it starts before its cleanup.\n- A scan keeps tier 1 and tier 2 free of tmux.\n"
+    },
+    {
+      "id": 247,
+      "slug": "verify-module-or-pipe",
+      "title": "verify-nested-module misses commands after || and |",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "crossModuleCommands splits only at \u0026\u0026, ; and newlines",
+      "body": "## Seen\n\nThe PR-Gate review of `plan-gate-checks` (PR #475) found that `crossModuleCommands` in `internal/planparser/verifymodule.go` splits a verify chain only at `\u0026\u0026`, `;` and newlines, so a `go` command after `||` or a pipe is read as part of the previous segment and its module is never checked.\n\n## Idea\n\nSplit at `||` and `|` too.\n"
     }
   ],
   "legacy_done": [
