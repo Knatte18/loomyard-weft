@@ -1300,24 +1300,6 @@
       "body": "Imported from [issue #465](https://github.com/Knatte18/loomyard/issues/465).\n\nA Plan-Review round ran over a plan that was already approved and implemented by webster.\nThe review gained findings, but the fixer's only write surface was the plan, and webster could not accept a new card on this run's record.\n`lyx webster rebaseline --card=[11,12]` was refused:\n\n```\nwebster: the edited plan changes the cards of a batch this run already begun: 00-overview.md changed and this run recorded no overview frame, so the change cannot be confined to its Card Index; it carries the plan's integration verify and is never rebaselined; way forward: restore 00-overview.md, or 1) lyx webster reset --to start; 2) lyx webster run\n```\n\nThe parent stopped all fixes mid-round, so every finding ended deferred.\nThe fixer also spent its orientation designing a new card that was then thrown away.\n\nWhy this is abnormal: the loom dispatches a review round whose fixes cannot land.\nA frozen plan (webster already begun) makes the fix round unwinnable, and the only advertised way forward (`lyx webster reset --to start`) discards the implemented work.\nThe run records no overview frame, so a legitimate edit to the overview's Card Index cannot be confined and is refused outright.\n\nWhat to do:\n- Skip the fix-round dispatch, or tell the round prompt up front that the plan is frozen, when the run's webster record has begun a batch.\n- Record an overview frame when webster begins a batch, so a Card Index change can be confined and rebaselined.\n\nProvenance: task `shuttle-send`; notes `burler-plan-r1.md`, `webster-refusal-rebaseline.md`.\n"
     },
     {
-      "id": 241,
-      "slug": "reconcile-test-tempdir-flake",
-      "title": "loomcli: TestLoomResumeReconcilesTheHubConfigBeforeArming flakes on TempDir cleanup: weft-bare/objects not empty",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "loom",
-        "config"
-      ],
-      "issues": [
-        472
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #472](https://github.com/Knatte18/loomyard/issues/472).\n\n## Seen\n\n`webster-record-batch`'s Publish verify, 2026-10-08T19:14Z, after merging main at 5aa04c279 (which added this test with `binary-change-and-rules`):\n\n```\n--- FAIL: TestLoomResumeReconcilesTheHubConfigBeforeArming (4.22s)\n    testing.go:1464: TempDir RemoveAll cleanup: unlinkat /tmp/TestLoomResumeReconcilesTheHubConfigBeforeArming2267336794/001/weft-bare/objects: directory not empty\n```\n\nThe test body passed; only `t.TempDir` cleanup failed, so a process was still writing into the bare weft's object store after the test returned.\nThe likeliest writer is a detached `git gc --auto` (git daemonizes auto-gc by default) started by a push or commit in the hub reconcile, or the reconcile's hub-wide push, which is only logged on failure.\nMain passed the same test at Finalize, so it is timing-dependent.\nThe log is `.lyx/verify/verify.log` in the `webster-record-batch` pair.\n\n## Workaround\n\nThe orch resumed the run so Publish re-runs the verify.\n\n## Expected\n\nThe test's fixture repositories never run auto-gc in the background (`gc.autoDetach=false` or `gc.auto=0` in the fixture config, ideally in the shared testkit hub fixture), and the reconcile waits for every git child it starts before returning, so `t.TempDir` cleanup never races a live writer.\n"
-    },
-    {
       "id": 242,
       "slug": "head-sha-batch-check",
       "title": "Resolve head_sha prefix candidates in one git call",
@@ -1381,6 +1363,26 @@
       "isolated": false,
       "brief": "Card gate tests only its own packages at tier 1, tier 2 per batch and at the plan verify, a hub-wide slot lock for gate test runs, guarded publish_verify",
       "body": "## Seen\n\nBefore the 2026-10-08 crash, Webster implementer forks ran `go build ./... \u0026\u0026 go test ./...` plus `go test -tags integration` on their packages every 20 to 60 seconds.\nThat is the card gate command `cardGateCommand` derives (`internal/websterengine/cardgate.go`), run once per card.\nGates, forks, the orch and hub fix agents built and tested with no hub-wide bound, and with four runs in flight the user slice reached its 16 GiB `MemoryHigh` and the machine froze.\nFrom `test-tiers-hardening`: the Webster-Burler round gate compiles the `tmux` tier and never runs it, so a tier 3 defect surfaces only at Publish; a task can empty its own `publish_verify` in the pair's `landing.yaml`; no gate runs the `llm` tier.\n\n## Goal\n\n- The card gate runs tier 1 for the card's own packages only: no `go build ./... \u0026\u0026 go test ./...` over the module and no tier 2.\n- Tier 2 runs once per batch for the batch's packages, and in full at the plan verify, Publish and Finalize.\n- Tier 3 stays at Publish; Discussion decides, against its cost, whether the round gate runs an impacted-set tier 3 pass.\n- The `llm` tier stays by hand, and `pattern/PATTERN-test-speed.md` says so as a decision.\n- A hub-wide slot lock (an OS file lock per slot, slot count in config) bounds concurrent gate test runs, each run caps `-p`, and the wait is logged and shown in status.\n- The webster stencils tell each fork which packages it may test, and spawned agents are refused a raw full-module `go test` or `go build ./...`.\n- A pair's own config cannot empty `publish_verify`.\n- `pattern/PATTERN-test-speed.md`'s gate table and CLAUDE.md's push rule match the new gates in the same commit.\n"
+    },
+    {
+      "id": 246,
+      "slug": "test-suite-weight",
+      "title": "Lighter test suite: measured tiers, cheap tmux fixtures, no lingering children",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "enhancement",
+        "shuttle",
+        "reed",
+        "fabric"
+      ],
+      "issues": [
+        472
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Measure each tier, non-login shells and shared servers in tier 3, lyx built once, no background gc in fixtures (#472), a no-tmux scan for tiers 1-2",
+      "body": "## Seen\n\nOn 2026-10-08 the integration tier dominated CPU during a Publish verify (`fabricengine.test` alone at 145%), and in the 53 hours before the crash tmux started 9,022 servers and 32,375 panes, nearly all from tier 3 tests, each pane a login shell that sources the operator's profile.\nTests in four packages link the `lyx` binary with cgo on their own, and `TestLoomResumeReconcilesTheHubConfigBeforeArming` flakes on `t.TempDir` cleanup because a git child, most likely a detached auto-gc, still writes into the fixture's object store (#472).\n\n## Goal\n\n- A measurement of every tier per package (time, CPU, peak memory, process count) with `cmd/testtiming`, on a quiet machine, before and after.\n- Tier 3 panes run a non-login shell, and tests share one tmux server per package where isolation allows.\n- `lyx` is built once per test run and reused across packages.\n- Fixture repositories never auto-gc in the background, and every test waits for the git and lyx children it starts before its cleanup.\n- A scan keeps tier 1 and tier 2 free of tmux.\n"
     }
   ],
   "legacy_done": [

@@ -17,6 +17,8 @@ Waits on nothing open; can start now, in parallel.
    - Resolve callers by import path and receiver type, let gates run against nested fixture modules, and give the plan reviewer the gate check list
 1. **Gate test scope: which gate runs which tier, bounded hub-wide** — [`gate-test-scope`](design-gate-test-scope.md) · bug, enhancement, webster, loom, stencil, config
    - Card gate tests only its own packages at tier 1, tier 2 per batch and at the plan verify, a hub-wide slot lock for gate test runs, guarded publish_verify
+1. **Lighter test suite: measured tiers, cheap tmux fixtures, no lingering children** — [`test-suite-weight`](design-test-suite-weight.md) · bug, enhancement, shuttle, reed, fabric
+   - Measure each tier, non-login shells and shared servers in tier 3, lyx built once, no background gc in fixtures (#472), a no-tmux scan for tiers 1-2
 
 ## Notes
 
@@ -36,7 +38,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **Loom resume at Publish refuses the dirty worktree left by its own staged merge-in, so the run cannot recover** — [`publish-resume-own-merge`](design-publish-resume-own-merge.md) · bug, loom, fabric
 1. **Loom goto back to Plan after Webster started leaves webster state stale; Webster hard-fails on plan fingerprint mismatch** — [`goto-plan-stale-webster`](design-goto-plan-stale-webster.md) · bug, loom, webster
 1. **Plan-review round is dispatched as a fix round after the plan is already implemented, and webster refuses the resulting plan edits** — [`plan-review-after-implemented`](design-plan-review-after-implemented.md) · bug, loom, burler, webster
-1. **loomcli: TestLoomResumeReconcilesTheHubConfigBeforeArming flakes on TempDir cleanup: weft-bare/objects not empty** — [`reconcile-test-tempdir-flake`](design-reconcile-test-tempdir-flake.md) · bug, loom, config
 
 ### Enhancements
 
