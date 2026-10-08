@@ -1,0 +1,1 @@
+Review segment of task `plan-glyph-precision` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/plan-glyph-precision/_lyx/reviews/discussion/round-5-escalation.md` with a one-shot fork.
