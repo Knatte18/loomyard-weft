@@ -86,13 +86,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 24 | **Fold loomcli and orchcli tmux probe copies onto tmuxkit** | [`tmuxkit-probe-copies`](design-tmuxkit-probe-copies.md) | loom, orch, reed |
 | 25 | **Reconcile keeps an old default below the new floor** | [`reconcile-stale-default`](design-reconcile-stale-default.md) | config |
 | 26 | **Friction-Reflect reads the parent weft when a halt names a dirty worktree**<br>• Reflect misread a parent-weft dirty halt as noise because the task worktree was clean | [`reflect-reads-parent-weft`](design-reflect-reads-parent-weft.md) | loom, fabric |
+| 27 | **Config switch: every advisor gets every question, or each advisor owns an area**<br>• A loom.yaml key that picks between all-advisors-all-questions (default) and per-advisor areas for the chair-and-advisors Discussion | [`discussion-advisor-mode`](design-discussion-advisor-mode.md) | loom, stencil, config |
 
 #### Low priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 27 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
-| 28 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
+| 28 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
+| 29 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
 
 ### Features
 
