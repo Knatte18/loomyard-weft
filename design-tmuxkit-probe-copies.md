@@ -5,4 +5,4 @@
 From `test-suite-weight` Discussion review (2026-10-10, round 3 F2): its D8 moves `reedcli`'s watchdog recognizer and `/proc` probes into `tmuxkit`, but `loomcli` (`smoke_helpers_test.go`) and `orchcli` (`smoke_live_test.go`) keep their own copies.
 A parent decision kept those two copies out of that run's scope.
 
-Idea: fold the `loomcli` and `orchcli` copies onto `tmuxkit` once `test-suite-weight` lands, per `PATTERN-testkit`.
+Idea: fold the `loomcli` and `orchcli` copies onto `tmuxkit`, per `PATTERN-testkit`; `test-suite-weight` landed (b7d4fd0ba), so the shared probes are in `tmuxkit` now.
