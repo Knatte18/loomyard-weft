@@ -1,6 +1,6 @@
 # Master's wait stops waiting on a still-running background shell at a turn end
 
-`background-gate-shell-discarded` · Note · bug
+`background-gate-shell-discarded` · Note · bug, webster, shuttle
 
 Imported from [issue #505](https://github.com/Knatte18/loomyard/issues/505).
 
@@ -23,3 +23,8 @@ Decide whether a still-running background shell should hold the turn end past `b
 At minimum, make lyx stop the shell explicitly and record in the run that its result was discarded, so the outcome is not read as "tests passed".
 
 Task: discussion-multi-llm. Notes: webster-background-shell.md
+
+## Overlap
+
+The shell-wait fault itself (#496) is in the scope of the running task `webster-replan-state`; this note adds the gate-run case, where a cut-off gate tier leaves the run reading as `done`.
+Close it when that run lands if its fix covers a running gate shell.
