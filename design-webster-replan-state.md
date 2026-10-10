@@ -1,6 +1,6 @@
 # Webster and round-gate bug sweep: replans, batch checks, fork sandbox, shell wait, test re-runs
 
-`webster-replan-state` · Task · bug, enhancement, webster, loom, burler, fabric · blocked · Publish
+`webster-replan-state` · Task · bug, enhancement, webster, loom, burler, fabric · running · Webster-Burler
 
 ## Goal
 
