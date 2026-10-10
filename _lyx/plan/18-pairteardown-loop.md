@@ -1,11 +1,11 @@
 # Card 18 — pairteardown-loop
 
 **Create:**
-- `plan:internal/pairteardown#killLoop` -> `func killLoop(pidPath, lockPath, jobName string) (bool, error)`
-- `plan:internal/pairteardown#awaitRunLockFree` -> `func awaitRunLockFree(ctx context.Context, lockPath string, attempts int, sleep func(context.Context, time.Duration) error) error`
-- `plan:internal/pairteardown#runLockWait` -> `const runLockWait = 2 * time.Minute`
-- `plan:internal/pairteardown#seizeLoopLock` -> `func seizeLoopLock(ctx context.Context, kill func() (bool, error), lockPath string, attempts int, sleep func(context.Context, time.Duration) error) (func() error, error)`
-- `plan:internal/shedverbs#RunningStepPID` -> `func RunningStepPID(stepsDir string) (int, bool)`
+- `internal/pairteardown#killLoop`
+- `internal/pairteardown#awaitRunLockFree`
+- `internal/pairteardown#runLockWait`
+- `internal/pairteardown#seizeLoopLock`
+- `internal/shedverbs#RunningStepPID`
 
 **Edit:**
 - `internal/pairteardown#Teardown`

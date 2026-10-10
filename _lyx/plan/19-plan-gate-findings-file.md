@@ -1,7 +1,7 @@
 # Card 19 — plan-gate-findings-file
 
 **Create:**
-- `plan:internal/loomshed#writeInformationalFindings` -> `func writeInformationalFindings(dir, gateName string, findings []planindex.Finding) (string, error)`
+- `internal/loomshed#writeInformationalFindings`
 
 **Edit:**
 - `internal/loomshed#NewPlanGate` -> `func NewPlanGate(anchorPath, worktreeRoot, scratchDir string, index planindex.Index) shuttleengine.Gate`

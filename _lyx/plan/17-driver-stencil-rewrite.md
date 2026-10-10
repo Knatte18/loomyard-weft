@@ -2,9 +2,9 @@
 
 **Create:**
 - `contracts/stencils/shed/shed-template-driver-guide.md`
-- `plan:contracts/stencils#ShedTemplateDriverGuide` -> `var ShedTemplateDriverGuide []byte`
-- `plan:internal/loomcli#driverGuideStencilName` -> `const driverGuideStencilName = "shed-template-driver-guide"`
-- `plan:internal/loomcli#driverGuideMarker` -> `const driverGuideMarker = "guide_path"`
+- `contracts/stencils#ShedTemplateDriverGuide`
+- `internal/loomcli#driverGuideStencilName`
+- `internal/loomcli#driverGuideMarker`
 
 **Edit:**
 - `contracts/stencils/shed/shed-template-driver.md`

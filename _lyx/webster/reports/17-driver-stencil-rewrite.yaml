@@ -1,0 +1,13 @@
+status: OK
+head_sha: 0e9431f49a27ae425f1183aa2ce0c0cc163e66e7
+deviations:
+  - cmd/lyx/driverstencil_test.go
+  - internal/shedverbs/steprecord.go
+  - internal/shedverbs/loop_integration_test.go
+  - internal/shedverbs/loop_arming_integration_test.go
+  - internal/shedverbs/export_integration_test.go
+  - internal/shedverbs/testmain_integration_test.go
+  - internal/pairteardown/loop.go
+  - internal/pairteardown/loop_linux.go
+  - internal/pairteardown/loop_windows.go
+  - internal/stencilstore/drift_test.go

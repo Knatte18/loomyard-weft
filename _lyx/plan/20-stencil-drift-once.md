@@ -1,7 +1,7 @@
 # Card 20 — stencil-drift-once
 
 **Create:**
-- `plan:internal/stencilstore#refreshNotice` -> `type refreshNotice struct`
+- `internal/stencilstore#refreshNotice`
 
 **Edit:**
 - `internal/stencilstore#decision`
@@ -13,7 +13,7 @@
 - `internal/stencilstore/doc.go`
 
 **Rename:**
-- `internal/stencilstore#TestWarnPortBackDrift_EmitsClassAndRemedyPerDifferingStencil` -> `plan:internal/stencilstore#TestWarnPortBackDrift_EmitsOneLineListingTheDriftedStencils`
+- `internal/stencilstore#TestWarnPortBackDrift_EmitsClassAndRemedyPerDifferingStencil` -> `internal/stencilstore#TestWarnPortBackDrift_EmitsOneLineListingTheDriftedStencils`
 
 **Uses:**
 - `internal/stencilstore#pendingWrites`
