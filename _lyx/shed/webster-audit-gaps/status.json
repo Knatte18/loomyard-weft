@@ -55,6 +55,20 @@
       "output": "child paused → running at Webster-Burler",
       "at": "2026-10-10T16:40:16Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at PR-Gate",
+      "at": "2026-10-10T17:02:33Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at PR-Gate",
+      "at": "2026-10-10T17:03:54Z",
+      "budget_exempt": true
     }
   ]
 }
