@@ -28,6 +28,7 @@
         "shed"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "Plan for lyx to converge rather than accumulate bugs: per-run intervention log, real-wiring tests, feature freezes",
@@ -1275,6 +1276,7 @@
         "board"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "Batten teardown clears the run status of a run that ends without landing, so the entry is editable again",
