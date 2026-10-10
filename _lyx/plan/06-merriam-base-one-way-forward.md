@@ -32,4 +32,4 @@ Tests:
 `TestRebaselineCmd_Refusals` gains a row planting a directory in place of `CLAUDE.md` in the worktree, expecting "way forward: transient, re-run the verb" once.
 `TestValidateCmd_BatchesFlag` gains an assertion for the no-state partition through `executionBatches`: with a directory planted in place of `CLAUDE.md`, the `--batches` call refuses naming `CLAUDE.md` and "way forward: transient, re-run the verb".
 
-**ImpactSummary:** the shared error loses its way forward and four call sites gain their own; no signature changes, no other caller of `MerriamBase` exists.
+**ImpactSummary:** the shared error loses its way forward, three of `MerriamBase`'s four callers gain their own, and `autoRebaseline`'s existing transient wrapper already supplies the fourth's; no signature changes.
