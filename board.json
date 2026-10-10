@@ -914,26 +914,6 @@
       "body": "Seen (2026-10-10): after `daemon-wakeups` raised `poll_interval_ms` in the shuttle template to 1000 with a floor of 1000, `lyx config reconcile` kept the prime's and every pair's old default `500`, so every `lyx` command in them logs \"shuttle config: poll_interval_ms is below the floor and is raised to it\".\nThe orch set the prime to 1000 by hand with `lyx config shuttle --set`; pairs created earlier keep warning until they are torn down.\n\nIdea: reconcile updates a value that still equals the old template default, or at least one that the new floor would raise, and says so in its report.\n"
     },
     {
-      "id": 284,
-      "slug": "quarry-build-tag-ambiguous",
-      "title": "Build-tagged member declared once per tag set resolves ambiguous, so its plan Create can never pass record-batch",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster",
-        "loom",
-        "quarry"
-      ],
-      "issues": [
-        500,
-        507
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #500](https://github.com/Knatte18/loomyard/issues/500).\n\nSeen (test-suite-weight, 2026-10-10): plan card 10 declares `plan:internal/testkit/tmuxkit#tmuxAllowed` as a Create, implemented the idiomatic Go way: `const tmuxAllowed = true` in `allow_tmux.go` (`//go:build tmux || llm`) and `const tmuxAllowed = false` in `allow_none.go` (`//go:build !tmux \u0026\u0026 !llm`).\n`lyx quarry resolve internal/testkit/tmuxkit#tmuxAllowed` returns `status: ambiguous` with both files as candidates, because quarry ignores build constraints, and record-batch's DoneChecks accept only `found` or `multipart`, so the batch fails `create-not-done` however it is implemented.\nThe recovery strand stopped to ask, and nobody in the run may edit `_lyx/plan` to drop the glyph.\n\nWorkaround: a parent ruling to restructure the code into one `var` plus an `init()` in the tagged file, listed as deviations.\n\nExpected: a member declared once per mutually exclusive build-constraint set resolves (quarry honours build constraints, or DoneChecks accept an ambiguous answer whose candidates all sit in files with disjoint build tags); and the plan validator flags such a glyph at Plan time rather than at record-batch.\n\n\n## From issue #507\n\nImported from [issue #507](https://github.com/Knatte18/loomyard/issues/507).\n\nA Go symbol with one body per GOOS (for example `StartTime` in `internal/proc`, or `runChild` and `terminatingSignals` in `internal/gatecli`) is answered `ambiguous` by `lyx quarry resolve`.\nA plan can therefore neither `Edit` nor `Delete` such a symbol by glyph.\nThe only spelling the gate accepts is the file path, so retiring the symbol means deleting whole files.\n\nThe gate then refused `create-already-exists` for a `plan:` handle whose name matched a symbol those deleted files declared, because the resolve pass reads the tree before any card runs.\nThe plan had to rename the replacement symbols and edit their callers, a rename the design never asked for.\n\nThis is abnormal: the same card both deletes every declaration of the name and creates it again, and the plan is coherent.\n\nWhat to do, either of:\n- let a `Create` handle reuse a name whose every declaration the same card deletes;\n- make `lyx quarry resolve` treat per-GOOS bodies of one symbol as a single declaration, so glyph `Edit` and `Delete` work.\n\nProvenance: task `driver-context`; note `Plan-Write.md`.\n"
-    },
-    {
       "id": 287,
       "slug": "bounce-budget-after-approved",
       "title": "Bounce budget blocks a review segment after its round was approved, before the Bouncer verdict",
@@ -986,42 +966,6 @@
       "body": "## Seen\n\nThe chair-and-advisors Discussion (`discussion-multi-llm`) sends every question batch to every advisor, by the operator's PR-Gate ruling on PR #504 (2026-10-10).\nThe first draft instead gave each advisor its own area of the design, which narrows each advisor's view but spreads the study.\n\n## Idea\n\nSupport both, selected per hub in `loom.yaml` (for example `discussion_advisor_mode: all | areas`, default `all`), with the value passed to the chair stencil as a marker.\nDecide after `discussion-multi-llm-bench`, which can compare the two modes on the same tasks.\n\n## Operator-named areas\n\nThe operator also wants to choose which area each advisor studies (2026-10-10), rather than leaving the split to the chair.\nOne shape: each `discussion_advisors` entry carries a model-spec plus an optional area, for example `{model: sonnet[high], area: error-handling}`, and the area names a lens text the advisor stencil includes, the way Burler's review fans name lenses (`correctness`, `error-handling`, `test-gaps`).\nAn entry without an area answers every question; an entry with one still sees every batch but answers from its lens.\nThis could replace the `all | areas` switch: the per-entry area is the selection.\n"
     },
     {
-      "id": 293,
-      "slug": "background-gate-shell-discarded",
-      "title": "Master's wait stops waiting on a still-running background shell at a turn end",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster",
-        "shuttle"
-      ],
-      "issues": [
-        505,
-        509,
-        517
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A gate run still in a background shell is cut off at a turn end and the run still reports done",
-      "body": "Imported from [issue #505](https://github.com/Knatte18/loomyard/issues/505).\n\n## What happened\n\nMaster's wait counted a turn end while a background shell was still running: an integration `lyx gate test --tags integration` run over several packages, piped through `grep` and `tail`.\nThe shell was reported only by the transcript, so the wait stopped waiting on it after `background_shell_wait_min` (10 minutes).\nThat turn end finished the run because Master's output files existed, and lyx did not stop the shell.\nShuttle then removed Master's strand, which ended the session and the shell with it.\nThe run's final outcome was `done`.\n\n## Why it is abnormal\n\nThe integration test run was still in progress when the run finished, so its result was never seen by Master or the loom.\nA run can report `done` with a gate tier unfinished, and the shell is killed silently rather than waited for or stopped explicitly.\n\n## What to do\n\nDecide whether a still-running background shell should hold the turn end past `background_shell_wait_min` when it is a gate run.\nAt minimum, make lyx stop the shell explicitly and record in the run that its result was discarded, so the outcome is not read as \"tests passed\".\n\nTask: discussion-multi-llm. Notes: webster-background-shell.md\n\n## Overlap\n\nThe shell-wait fault itself (#496) is in the scope of the running task `webster-replan-state`; this note adds the gate-run case, where a cut-off gate tier leaves the run reading as `done`.\nClose it when that run lands if its fix covers a running gate shell.\n\n\n## From issue #509\n\nImported from [issue #509](https://github.com/Knatte18/loomyard/issues/509).\n\nWebster's wait stopped waiting on a background shell at Master's turn end.\nThe shells were `lyx gate test --tags integration` runs, still running when the wait counted the turn end.\nThe wait counts the turn end after `background_shell_wait_min` (10 minutes) for a shell only the transcript reports, and at once for one the Stop payload reports when Master's output files exist.\nlyx did not stop the shell; shuttle removed Master's strand on finishing, which killed the session and the shell with it.\nThe same note was written for two separate shells in one run, and the run ended `stuck`.\nIn a later run the outcome was `done`, so the integration gate result Master was waiting for was never observed either way.\n\nThis is abnormal: the run can finish, or be held for the parent, while a verification Master started is still in flight and is then killed unobserved.\n\nWhat to do: when a shell is still running at a turn end, either keep waiting until it exits or a hard limit, or stop it explicitly and record that its result was discarded, so the outcome does not depend on whether the output files already exist.\n\nProvenance: task `driver-context`; notes `webster-background-shell.md`, `webster-background-shell-2.md`.\n\n\n## From issue #517\n\nImported from [issue #517](https://github.com/Knatte18/loomyard/issues/517).\n\nThe `lyx webster` Master wait counted a Master turn end while several of Master's background shells were still running.\nPer the note, the wait stops waiting on a shell at a turn end: after `background_shell_wait_min` (10 minutes) for a shell only the transcript reports, and at once for a shell the Stop payload reports when Master's output files exist.\nThe run then finished with outcome `done`, and lyx did not stop the shells; shuttle removing Master's strand ended the session and the shells with it.\nThe shells in question were `lyx gate test --tags integration ...` runs, so the run was declared done while integration test runs were unfinished and their results were never read.\nThree such shells were recorded in one run.\n\nThis is abnormal because a run can finish as `done` with verification work in flight, and the result of that work is silently discarded.\n\nWhat to do: when a turn end finds live background shells, either hold the run for the parent instead of finishing it, or stop the shells explicitly and record that their results were not consumed; at minimum surface this as a halt or warning rather than a friction note after the fact.\n\nProvenance: task `webster-replan-state`, from note `webster-background-shell.md`.\n\n## After `webster-replan-state` (5a8be0274)\n\n5a8be0274 applies one shell-wait rule to both signals, keyed on the output files; it records every shell a run ends over in `Result.EndedShells`, lists them in webster's summary, and lets a stale shell hold the run until its own timeout instead of ten minutes.\n#517 came from that run's own Master, which ran the old binary.\nWhat remains: when the output files exist, a turn end still finishes the run as `done` over a live gate shell whose result nobody read; decide whether a live `lyx gate test` shell holds the run or turns its outcome into a warning.\n"
-    },
-    {
-      "id": 294,
-      "slug": "master-self-fix",
-      "title": "Webster Master fixes a verify failure itself instead of spawning the fixer fork",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster",
-        "stencil"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Master edited and committed a test fix itself; the run-exit audit blocked it as a parent-write",
-      "body": "## Seen\n\nIn `driver-context` (2026-10-10), Webster's Publish verify failed twice and passed on attempt 3.\nOn that attempt Master, running `sonnet[medium]`, fixed the failing assertion itself (`Edit` on `internal/stencilcli/cli_integration_test.go`, then `git add` and `git commit`, 99d75755c), although its stencil sends verify failures to one fixer fork.\nThe fix was correct, but the run-exit audit flagged it as a parent-write and blocked the run, which then had to revert the file, `accept-audit` and redo the fix through a fork.\n\n## Idea\n\nMake the rule harder to skip: state it at the point Master reads a verify failure, not only in its rules list, or give Master a verb that spawns the verify fixer so the path of least resistance is the right one.\nCheck whether `sonnet[medium]` as Master skips such rules more often than a stronger model.\n"
-    },
-    {
       "id": 295,
       "slug": "fan-master-preread",
       "title": "Lens fan: master pre-reads the cited code before forking, forks get a read budget",
@@ -1069,24 +1013,6 @@
       "isolated": false,
       "brief": "The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison",
       "body": ""
-    },
-    {
-      "id": 299,
-      "slug": "create-check-unexported",
-      "title": "webster: create-not-done check fails on unexported plan targets, killing batches",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster",
-        "quarry"
-      ],
-      "issues": [
-        511
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #511](https://github.com/Knatte18/loomyard/issues/511).\n\n## What happened\n\nTwo batches in one loom run were refused by `lyx webster record-batch` with `create-not-done`, and the run halted `blocked` at `Webster` with anomaly `escalation-to-human`.\n\n- Batch `01-fixture-git-marker`: `create-not-done/2-testtiming-resources[blocking]: Create target \"plan:cmd/testtiming#rusageStats\" still does not resolve`. `lyx webster recover-batch` then ended with status `dead`, `dead_reason` `asking`.\n- Batch `08-reedcli-probes-onto-tmuxkit`: `create-not-done/10-tmuxkit-socket-check[blocking]: Create target \"plan:internal/testkit/tmuxkit#tmuxAllowed\" still does not resolve`. `lyx webster recover-batch 08` refused with the same `batch_failed` message.\n\nBoth unresolved targets are unexported (lowercase) identifiers.\nThat is the common factor visible in the notes; whether the target was genuinely never created could not be established from them.\n\n## Why it is abnormal\n\n- The failure repeats after recovery for the same target, so recovery does not change the outcome and the batch ends up dead.\n- If the check cannot resolve unexported identifiers (or identifiers declared in test files), a correct implementation is still reported as not done, and the loom escalates to a human for no real defect.\n- The refusal text does not say how the target was looked up, so the operator cannot tell a missing symbol from a resolver limitation.\n- After `lyx loom goto` back into `Webster`, the loop halted again at once with \"Batch 01-fixture-git-marker is dead: its recovery already failed terminally, so no later batch can begin\", so a dead batch also blocks the way forward the halt tells the operator to take. The wording of that halt changed between runs (\"was begun\" vs \"can begin\").\n\n## What to do\n\n1. Check how `plan:\u003cpkg\u003e#\u003cname\u003e` Create targets are resolved and confirm unexported identifiers resolve.\n2. Make the `create-not-done` message say which lookup was done and in which files.\n3. Decide whether `goto` into `Webster` should be able to revive a dead batch, or whether the halt should say the operator must replace it.\n\nTrace files are under `.lyx/logs/`; archived webster reports are under `_lyx/webster/reports/`.\n\nProvenance: task `test-suite-weight`; notes `loom-halt.md`, `loom-halt-2.md`, `loom-halt-3.md`, `loom-halt-4.md`, `webster-refusal-record-batch.md`, `webster-refusal-record-batch-2.md`, `webster-refusal-recover-batch.md`, `binary-change-restep-20261010-121015.md`.\n"
     },
     {
       "id": 302,
@@ -1244,23 +1170,6 @@
       "body": ""
     },
     {
-      "id": 314,
-      "slug": "recovery-attribution",
-      "title": "webster: a second recovery's prompt marks the first recovery's uncommitted files as not written by this run",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster"
-      ],
-      "issues": [
-        522
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #522](https://github.com/Knatte18/loomyard/issues/522).\n\nSeen in run quick-recipe (2026-10-10): batch 01's first recovery strand (shuttle run 0316a099) edited 19 files for card 1 and was stopped uncommitted when Webster restarted. The second recovery's prompt listed all 19 under \"Not written by this run: leave it untouched, never stage or commit it\", so the strand blocked on card 1.\n\nWorkaround: orch told the recovery strand to treat the 19 files as batch 01's own work and commit them under card 1.\n\nExpected: files an earlier recovery attempt of the same batch wrote count as the batch's own work (attribution by batch, not by shuttle run id), or the second recovery starts from a clean tree with the first attempt's diff offered as reference. Related: recover-batch 1 exited 0 while the batch ended failed and terminal."
-    },
-    {
       "id": 315,
       "slug": "pack-is-the-read-set",
       "title": "Reviewer treats the kick-start pack as its read set, with a budget beyond it",
@@ -1296,20 +1205,30 @@
     },
     {
       "id": 317,
-      "slug": "recovery-gate-clarity",
-      "title": "Recovery prompt does not say the card gates are always allowed",
-      "kind": "note",
+      "slug": "webster-stability",
+      "title": "Webster stability: gate shells, Master self-fix, recovery, Create checks",
+      "kind": "task",
       "labels": [
-        "enhancement",
+        "bug",
         "webster",
-        "stencil"
+        "shuttle",
+        "stencil",
+        "quarry"
       ],
-      "issues": [],
-      "priority": "low",
+      "issues": [
+        505,
+        509,
+        517,
+        522,
+        511,
+        500,
+        507
+      ],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
-      "brief": "In run quick-recipe the second recovery fork was unsure whether `lyx gate test` and `lyx loom lint-comments` fell under the ban on fabric commands, and could not run the tmux tier for tmux-tagged card steps (only compile-checked; verify later ran them). Idea: the recovery prompt names the card and batch gates as always allowed, and says tmux-tagged steps are left to verify.",
-      "body": ""
+      "brief": "Fix the Webster faults outside the audit that stop or mislead runs",
+      "body": "## Goal\n\nClose the Webster faults that stop or mislead runs outside the audit: background gate shells, Master fixing verify failures itself, recovery attribution and gates, and Create checks that cannot pass for unexported or build-tagged members.\n\n## 1. A background gate shell is cut off at a turn end (#505, #509, #517)\n\nMaster's wait counted a turn end while a background `lyx gate test --tags integration` shell was still running; after `background_shell_wait_min` the wait stopped, the run finished `done` because Master's output files existed, and shuttle removing the strand killed the shell.\nA run can report `done` with a gate tier unfinished.\nExpected: a running gate shell holds the turn end, or lyx stops it explicitly and records in the run that its result was discarded, so the outcome never reads as \"tests passed\".\n\n## 2. Master fixes a verify failure itself\n\nIn `driver-context` (2026-10-10) Master (`sonnet[medium]`) edited and committed a failing assertion itself on Publish verify attempt 3, although its stencil sends verify failures to one fixer fork; the run-exit audit blocked it as a parent-write and the fix had to be reverted, `accept-audit`ed and redone through a fork.\nExpected: the rule is stated where Master reads a verify failure, not only in its rules list, or Master has a verb that spawns the verify fixer, so the right path is the easy one.\n\n## 3. A second recovery treats the first recovery's files as foreign (#522)\n\nIn `quick-recipe` (2026-10-10) batch 01's first recovery edited 19 files for card 1 and was stopped uncommitted when Webster restarted; the second recovery's prompt listed them under \"Not written by this run: leave it untouched\", and the strand blocked.\nExpected: files an earlier recovery of the same batch wrote count as the batch's own work (attribution by batch, not by shuttle run id), or the second recovery starts from a clean tree with the first attempt's diff offered as reference.\nAlso: `recover-batch 1` exited 0 while the batch ended failed and terminal; it should exit non-zero.\n\n## 4. The recovery prompt does not name its allowed gates\n\nThe same recovery was unsure whether `lyx gate test` and `lyx loom lint-comments` fell under the ban on fabric commands, and could only compile-check tmux-tagged card steps.\nExpected: the recovery prompt names the card and batch gates as always allowed, and says tmux-tagged steps are left to verify.\n\n## 5. Create check fails on unexported targets (#511)\n\n`record-batch` refused two batches with `create-not-done` for unexported targets (`plan:cmd/testtiming#rusageStats`, `plan:internal/testkit/tmuxkit#tmuxAllowed`); recovery failed the same way and the batches died.\nExpected: find whether the check resolves unexported identifiers and identifiers in test files; fix it if not, and make the refusal say how the target was looked up, so a missing symbol is told apart from a resolver limit.\n\n## 6. Build-tagged and per-GOOS members resolve ambiguous (#500, #507)\n\nA member declared once per mutually exclusive build-constraint set (`tmuxAllowed` in `allow_tmux.go` and `allow_none.go`), or once per GOOS (`StartTime` in `internal/proc`, `runChild` in `internal/gatecli`), resolves `ambiguous` in quarry, and DoneChecks accept only `found` or `multipart`, so its Create or Edit can never pass.\nExpected: DoneChecks accept an ambiguous answer whose candidates all sit in files with disjoint build constraints (or quarry honours build constraints), and the plan validator flags such a glyph at Plan time rather than at record-batch.\n"
     }
   ]
 }

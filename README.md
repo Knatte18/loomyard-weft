@@ -27,7 +27,11 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+#### High priority
+
+| # | Task | Slug | After | Labels |
+| --- | --- | --- | --- | --- |
+| 1 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`webster-stability`](design-webster-stability.md) |  | webster, shuttle, stencil, quarry |
 
 ## Notes
 
@@ -41,20 +45,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- |
 | 1 | **Batten idle notices count machine sleep as idle time**<br>• After a hibernate every run raises an idle notice for the whole sleep; the idle clock should skip time the machine was asleep | [`idle-notice-after-sleep`](design-idle-notice-after-sleep.md) | batten |
 | 2 | **shuttle raises a hold notice at the skill-load turn end, before the start prompt is sent** | [`hold-on-skill-load`](design-hold-on-skill-load.md) | shuttle |
-| 3 | **Build-tagged member declared once per tag set resolves ambiguous, so its plan Create can never pass record-batch** | [`quarry-build-tag-ambiguous`](design-quarry-build-tag-ambiguous.md) | webster, loom, quarry |
-| 4 | **Bounce budget blocks a review segment after its round was approved, before the Bouncer verdict** | [`bounce-budget-after-approved`](design-bounce-budget-after-approved.md) | burler, loom |
-| 5 | **Master's wait stops waiting on a still-running background shell at a turn end**<br>• A gate run still in a background shell is cut off at a turn end and the run still reports done | [`background-gate-shell-discarded`](design-background-gate-shell-discarded.md) | webster, shuttle |
-| 6 | **Webster Master fixes a verify failure itself instead of spawning the fixer fork**<br>• Master edited and committed a test fix itself; the run-exit audit blocked it as a parent-write | [`master-self-fix`](design-master-self-fix.md) | webster, stencil |
-| 7 | **webster: create-not-done check fails on unexported plan targets, killing batches** | [`create-check-unexported`](design-create-check-unexported.md) | webster, quarry |
-| 8 | **webster: fabric-reference audit fails a piped lyx help call inside a compound command** | [`audit-piped-help-call`](design-audit-piped-help-call.md) | webster, fabric |
-| 9 | **webster: a second recovery's prompt marks the first recovery's uncommitted files as not written by this run** | [`recovery-attribution`](design-recovery-attribution.md) | webster |
-| 10 | **loom-recipe.yaml comment misstates PR-Gate's rejection budget; max_bounces never trips** | [`pr-gate-budget-comment`](design-pr-gate-budget-comment.md) | loom, shed |
+| 3 | **Bounce budget blocks a review segment after its round was approved, before the Bouncer verdict** | [`bounce-budget-after-approved`](design-bounce-budget-after-approved.md) | burler, loom |
+| 4 | **webster: fabric-reference audit fails a piped lyx help call inside a compound command** | [`audit-piped-help-call`](design-audit-piped-help-call.md) | webster, fabric |
+| 5 | **loom-recipe.yaml comment misstates PR-Gate's rejection budget; max_bounces never trips** | [`pr-gate-budget-comment`](design-pr-gate-budget-comment.md) | loom, shed |
 
 #### Low priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 11 | **Shuttle logs held loop and busy state disagreeing**<br>• In run cli-surface the Webster step trace logged `shuttle: session state disagrees (loop=held, state=busy)` before idle-done; no stop followed. Idea: find whether held and busy can disagree for long, and log which side wins. | `shuttle-state-disagrees` | shuttle |
+| 6 | **Shuttle logs held loop and busy state disagreeing**<br>• In run cli-surface the Webster step trace logged `shuttle: session state disagrees (loop=held, state=busy)` before idle-done; no stop followed. Idea: find whether held and busy can disagree for long, and log which side wins. | `shuttle-state-disagrees` | shuttle |
 
 ### Enhancements
 
@@ -108,7 +107,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- |
 | 35 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
 | 36 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
-| 37 | **Recovery prompt does not say the card gates are always allowed**<br>• In run quick-recipe the second recovery fork was unsure whether `lyx gate test` and `lyx loom lint-comments` fell under the ban on fabric commands, and could not run the tmux tier for tmux-tagged card steps (only compile-checked; verify later ran them). Idea: the recovery prompt names the card and batch gates as always allowed, and says tmux-tagged steps are left to verify. | `recovery-gate-clarity` | webster, stencil |
 
 ### Features
 
