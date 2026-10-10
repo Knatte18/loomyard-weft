@@ -1,21 +1,21 @@
 {
   "runGuid": "9dec93383e814edddda7e7e8613f6ff8",
-  "planFingerprint": "8bdd2485392c992775a1bc2efbee3f88099977651d59bd4e37a05676a9ba469b",
+  "planFingerprint": "bd768cebdb4671d07af85b42bfc21dd64f4b1eba5400a34d9c7952a15356211f",
   "planFileHashes": {
     "00-overview.md": "f83f9a55c80e33abeb85c6f8d36aeed17cb40f75535818bf26dce86ea82600f0",
-    "01-buildvcs-commit-time.md": "b0fc7a69610f8b9da9dbc7f3f261e4537c6bffeb001fef1a8bdf1d7152df1fcd",
-    "02-buildinfo-production-channel.md": "e7e001784621d3b593c258c6459ae85db1a0994d7a5d0243815fdfaa787eee23",
-    "03-stencilstore-forward-refresh.md": "b3b6513918d477b35d795d56b6770d285c62648aa988279469e522d823dd2198",
-    "04-stencil-source-ordering.md": "6d6d2775ef9de0b04584e868c5b869f20311c820ca10cd783cbfb9989566cdad",
-    "05-gitrepo-bolt-primitives.md": "ff9f12af9efafec8472e125b26e63854e05c023f54da7141dcebe4e77afec4aa",
-    "06-seed-commit-signature.md": "20d7f4de6fb94c127b9d9f2e1f9e40ee8ee0d999e7819b31625ecfb5e08d0637",
-    "07-bolt-pull-first-seed-drop.md": "e448d430c09eb296aeeaa0322e8dd62dc1b98d3a882fe36673b5cf30c4462e2b",
-    "08-prerun-seed-pull-first.md": "ec383c1043cadf0dc904a8c7fa9b0cf3e4fddda8e7ce614476ea0375a2ece4df",
+    "01-buildvcs-commit-time.md": "f94e9ff164b71020bbeb156e991c2dbdbf344fd22ed7bdd57b56e31f1a1c2b27",
+    "02-buildinfo-production-channel.md": "345ce5e8c62c8dba4d702160741d29ba958ec928633a9f8efe70172fef628d81",
+    "03-stencilstore-forward-refresh.md": "7cdd263b193ca57d34e7ddfc24284b2e9412f251a099289d1c82c184610e0abf",
+    "04-stencil-source-ordering.md": "c4af229128cc0818431dcb4af9d28540e77856fae8dfa595e626882765f98491",
+    "05-gitrepo-bolt-primitives.md": "006ee5edd881023888862377d1d9a64b24c7102da51e5555b3af7ce1ccb0d1a1",
+    "06-seed-commit-signature.md": "06f33e127e9e35e9ebaf283dd75de826acdf0a6321e68781f44308a177dc2c77",
+    "07-bolt-pull-first-seed-drop.md": "8a52ba5a889f4d5aff6a145956286cab7327af17040116c7b1354509c2a1809f",
+    "08-prerun-seed-pull-first.md": "e6ccbd4cb8fdcb34e08d7d046f2f5b25ef67412a39125841e7c02ddb03a25da7",
     "09-stencil-sync-message.md": "cfa54fe5dd2224e7bad6af089e96065abc10395a85d021882b16777296bf542e",
-    "10-hubreconcile-pull-first.md": "d2f8d64ec28d7f86a404bb5d8cada312d2179e714e17f06dd9e183043d2f8907",
+    "10-hubreconcile-pull-first.md": "7ff4a836f0a6040954dac884d87a90391af7db2262395da729e92900e82d47b9",
     "11-fabric-reconcile-push-failure.md": "86633254feb2840a7b8f91bb4da7c1f966eb23eb4f3147de27f91ff69610c082",
     "12-housekeeping-inflight-prune.md": "8ae819ebe0814598c24f9ab38dad26df3da705846bcb9d819ec78d3b4edb2f51",
-    "13-bolt-push-seed-drop-retry.md": "577991a02b8f9f3f22ac1ee91e60ccd07107a855bff0b57ddfdf1d9dca9836c0"
+    "13-bolt-push-seed-drop-retry.md": "88164d62ec627d51875524e789da3a18d9c48a17208da57809a4abc83c26ea9b"
   },
   "planOverviewFrameHash": "c1675c9c9f4eb6f49a04b421ac9b69930452d571ad9a4f169b7a9818eb614975",
   "partition": [
@@ -323,7 +323,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "3c07589a8941246d08bcc7ed372dadef",
   "masterSessionId": "de618b9e-ea16-4992-b98e-5fa4a3031f27",
   "batches": {
@@ -337,18 +337,39 @@
         "05-gitrepo-bolt-primitives"
       ],
       "cardHashes": {
-        "01-buildvcs-commit-time": "b0fc7a69610f8b9da9dbc7f3f261e4537c6bffeb001fef1a8bdf1d7152df1fcd",
-        "02-buildinfo-production-channel": "e7e001784621d3b593c258c6459ae85db1a0994d7a5d0243815fdfaa787eee23",
-        "03-stencilstore-forward-refresh": "b3b6513918d477b35d795d56b6770d285c62648aa988279469e522d823dd2198",
-        "04-stencil-source-ordering": "6d6d2775ef9de0b04584e868c5b869f20311c820ca10cd783cbfb9989566cdad",
-        "05-gitrepo-bolt-primitives": "ff9f12af9efafec8472e125b26e63854e05c023f54da7141dcebe4e77afec4aa"
+        "01-buildvcs-commit-time": "f94e9ff164b71020bbeb156e991c2dbdbf344fd22ed7bdd57b56e31f1a1c2b27",
+        "02-buildinfo-production-channel": "345ce5e8c62c8dba4d702160741d29ba958ec928633a9f8efe70172fef628d81",
+        "03-stencilstore-forward-refresh": "7cdd263b193ca57d34e7ddfc24284b2e9412f251a099289d1c82c184610e0abf",
+        "04-stencil-source-ordering": "c4af229128cc0818431dcb4af9d28540e77856fae8dfa595e626882765f98491",
+        "05-gitrepo-bolt-primitives": "006ee5edd881023888862377d1d9a64b24c7102da51e5555b3af7ce1ccb0d1a1"
       },
       "startSha": "6741f715772c3ba749781b7073abe9a1bb01da53",
       "kind": "fork",
       "spawnedAt": "2026-10-10T06:25:37Z",
       "sessionId": "de618b9e-ea16-4992-b98e-5fa4a3031f27",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-buildvcs-commit-time",
+        "status": "done",
+        "head_sha": "7adab031b276a3aa1080641380405111b586fb5b",
+        "deviations": [
+          "internal/cliwire/doc.go",
+          "internal/cliwire/seam_enforcement_test.go"
+        ]
+      },
+      "cardShas": [
+        "7adab031b276a3aa1080641380405111b586fb5b"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-and-store/de618b9e-ea16-4992-b98e-5fa4a3031f27/subagents/agent-a5facbd7222837fa6.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-and-store/de618b9e-ea16-4992-b98e-5fa4a3031f27/subagents/agent-a5facbd7222837fa6.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-and-store/de618b9e-ea16-4992-b98e-5fa4a3031f27/subagents/agent-a5facbd7222837fa6.jsonl"
+  ]
 }

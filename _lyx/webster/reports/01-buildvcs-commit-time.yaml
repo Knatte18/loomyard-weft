@@ -1,0 +1,5 @@
+status: OK
+head_sha: 7adab031b276a3aa1080641380405111b586fb5b
+deviations:
+  - internal/cliwire/doc.go
+  - internal/cliwire/seam_enforcement_test.go

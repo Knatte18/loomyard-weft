@@ -9,8 +9,8 @@
 **Uses:**
 - `internal/gitrepo#Repo.SHAExists`
 - `internal/gitrepo#Repo.IsAncestor`
-- `plan:internal/stencilstore#Writer`
-- `plan:internal/stencilstore#Ordering`
+- `internal/stencilstore#Writer`
+- `internal/stencilstore#Ordering`
 
 **Intent:** D1's ordering read, told to the store through its `Source`.
 `StencilSource` takes the running binary's whole identity: `Writer` is its revision and commit time whenever the revision is non-empty, and `Older` answers for a recorded writer by ancestry when the worktree at `worktreePath` holds both commits (`SHAExists` on each, then `IsAncestor(recorded, running)`, `RecordedOlder` only when the recorded revision is a strict ancestor), by commit time when it lacks either (`RecordedOlder` when the recorded time is strictly before the running time, both non-zero), and `OrderingUnknown` otherwise or on a read error, which is logged once.

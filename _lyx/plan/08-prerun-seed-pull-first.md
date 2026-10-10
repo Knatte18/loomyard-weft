@@ -10,7 +10,7 @@
 - `//docs/overview.md`
 
 **Uses:**
-- `plan:internal/stencilstore#WritesDue`
+- `internal/stencilstore#WritesDue`
 - `internal/stencilstore#ModeFor`
 - `plan:internal/fabricengine#Bolt.PullThenCommitWritten`
 - `plan:internal/fabricengine#BoltWrite`

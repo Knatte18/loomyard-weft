@@ -9,9 +9,9 @@
 - `tools/deploy/main_test.go`
 
 **Create:**
-- `plan:internal/buildinfo#ChannelProduction` -> `const ChannelProduction = "production"`
-- `plan:internal/buildinfo#ChannelDev` -> `const ChannelDev = "dev"`
-- `plan:internal/buildinfo#IsProduction` -> `func IsProduction() bool`
+- `internal/buildinfo#ChannelProduction`
+- `internal/buildinfo#ChannelDev`
+- `internal/buildinfo#IsProduction`
 
 **Prosa:**
 - `//pattern/PATTERN-leaf-packages.md`

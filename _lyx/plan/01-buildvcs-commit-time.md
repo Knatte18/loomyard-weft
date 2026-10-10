@@ -8,9 +8,9 @@
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/buildvcs#Identity.Clean` -> `func (id Identity) Clean() bool`
-- `plan:internal/buildvcs#Identity.Label` -> `func (id Identity) Label() string`
-- `plan:internal/buildvcs#shortRevisionLength` -> `const shortRevisionLength = 12`
+- `internal/buildvcs#Identity.Clean`
+- `internal/buildvcs#Identity.Label`
+- `internal/buildvcs#shortRevisionLength`
 
 **Intent:** `Identity` gains a `Time time.Time` field, JSON key `vcs_time`, and `identityOf` fills it from the `vcs.time` build setting (RFC 3339), leaving it zero when the key is absent or unparseable (D1: the commit time stands beside the revision).
 `Clean` reports a stamped, unmodified build: a non-empty `Revision` with `Modified` false; it is the one predicate D2's mode choice and D1's forced-refresh stamping both read.

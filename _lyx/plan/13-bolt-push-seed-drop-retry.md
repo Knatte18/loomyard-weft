@@ -13,12 +13,12 @@
 - `plan:internal/fabricengine#Bolt.PushRecorded` -> `func (b *Bolt) PushRecorded(opts SyncOptions, rec *Mutations) error`
 
 **Uses:**
-- `plan:internal/gitrepo#ErrPullRebaseFailed`
+- `internal/gitrepo#ErrPullRebaseFailed`
 - `plan:internal/fabricengine#seedCommitsAhead`
 - `plan:internal/fabricengine#boardDropRequest`
 - `plan:internal/fabricengine#dropSeedCommits`
 - `plan:internal/fabricengine#KindCommitsDropped`
-- `plan:internal/gitrepo#Repo.UpstreamSHA`
+- `internal/gitrepo#Repo.UpstreamSHA`
 - `internal/gitrepo#PushLockFileName`
 - `internal/gitrepo#Repo.CommitsNotIn`
 - `internal/fabricengine#NewMutations`

@@ -29,11 +29,11 @@
 - `internal/fabricengine/boltpullfirst_integration_test.go`
 
 **Uses:**
-- `plan:internal/gitrepo#Repo.UpstreamSHA`
-- `plan:internal/gitrepo#Repo.CommitDetail`
-- `plan:internal/gitrepo#Repo.CherryPick`
-- `plan:internal/gitrepo#Repo.CherryPickAbort`
-- `plan:internal/gitrepo#ErrNoUpstream`
+- `internal/gitrepo#Repo.UpstreamSHA`
+- `internal/gitrepo#Repo.CommitDetail`
+- `internal/gitrepo#Repo.CherryPick`
+- `internal/gitrepo#Repo.CherryPickAbort`
+- `internal/gitrepo#ErrNoUpstream`
 - `internal/gitrepo#PushLockFileName`
 - `internal/gitrepo#Repo.CommitsNotIn`
 - `internal/gitrepo#Repo.Fetch`

@@ -20,19 +20,19 @@
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/stencilstore#ModeUnstamped` -> `const ModeUnstamped Mode = 0`
-- `plan:internal/stencilstore#Writer` -> `type Writer struct`
-- `plan:internal/stencilstore#Ordering` -> `type Ordering int`
-- `plan:internal/stencilstore#OrderingUnknown` -> `const OrderingUnknown Ordering = 0`
-- `plan:internal/stencilstore#RecordedOlder` -> `const RecordedOlder Ordering = 1`
-- `plan:internal/stencilstore#RecordedNotOlder` -> `const RecordedNotOlder Ordering = 2`
-- `plan:internal/stencilstore#ApplyWriter` -> `func ApplyWriter(content []byte, writer Writer) []byte`
-- `plan:internal/stencilstore#ParseWriter` -> `func ParseWriter(content []byte) Writer`
-- `plan:internal/stencilstore#WritesDue` -> `func WritesDue(baseDir string, registry Registry, mode Mode, source Source) (bool, error)`
+- `internal/stencilstore#ModeUnstamped`
+- `internal/stencilstore#Writer`
+- `internal/stencilstore#Ordering`
+- `internal/stencilstore#OrderingUnknown`
+- `internal/stencilstore#RecordedOlder`
+- `internal/stencilstore#RecordedNotOlder`
+- `internal/stencilstore#ApplyWriter`
+- `internal/stencilstore#ParseWriter`
+- `internal/stencilstore#WritesDue`
 
 **Uses:**
-- `plan:internal/buildinfo#IsProduction`
-- `plan:internal/buildvcs#Identity.Clean`
+- `internal/buildinfo#IsProduction`
+- `internal/buildvcs#Identity.Clean`
 
 **Intent:** D1 and D2 inside the store, which still runs no git (`PATTERN-stencil-ownership`).
 `Mode`'s zero value becomes `ModeUnstamped`, with `ModeDev` and `ModeProduction` after it, so an unset mode never refreshes; `ModeFor` is the single three-way mapping: `ModeProduction` only when `production` and `cleanStamp` both hold, else `ModeDev` when `dev`, else `ModeUnstamped`.

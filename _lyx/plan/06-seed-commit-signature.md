@@ -12,8 +12,8 @@
 - `internal/fabricengine/seedsignature_test.go`
 
 **Uses:**
-- `plan:internal/buildvcs#Identity.Label`
-- `plan:internal/buildinfo#ChannelProduction`
+- `internal/buildvcs#Identity.Label`
+- `internal/buildinfo#ChannelProduction`
 - `internal/fabricengine#StencilsSubtreeRel`
 - `internal/fabricengine#SpecsSubtreeRel`
 

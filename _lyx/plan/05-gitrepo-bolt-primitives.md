@@ -8,13 +8,13 @@
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/gitrepo#ErrNoUpstream` -> `var ErrNoUpstream = errors.New("gitrepo: no upstream configured")`
-- `plan:internal/gitrepo#Repo.UpstreamSHA` -> `func (r *Repo) UpstreamSHA() (string, error)`
-- `plan:internal/gitrepo#CommitDetail` -> `type CommitDetail struct`
-- `plan:internal/gitrepo#Repo.CommitDetail` -> `func (r *Repo) CommitDetail(sha string) (CommitDetail, error)`
-- `plan:internal/gitrepo#Repo.CherryPick` -> `func (r *Repo) CherryPick(sha string) error`
-- `plan:internal/gitrepo#Repo.CherryPickAbort` -> `func (r *Repo) CherryPickAbort() error`
-- `plan:internal/gitrepo#ErrPullRebaseFailed` -> `var ErrPullRebaseFailed = errors.New("gitrepo: pull --rebase failed")`
+- `internal/gitrepo#ErrNoUpstream`
+- `internal/gitrepo#Repo.UpstreamSHA`
+- `internal/gitrepo#CommitDetail`
+- `internal/gitrepo#Repo.CommitDetail`
+- `internal/gitrepo#Repo.CherryPick`
+- `internal/gitrepo#Repo.CherryPickAbort`
+- `internal/gitrepo#ErrPullRebaseFailed`
 - `internal/gitrepo/replay_integration_test.go`
 
 **Intent:** The git primitives D4 and D5 need, split by `PATTERN-gitrepo-client-boundary`.

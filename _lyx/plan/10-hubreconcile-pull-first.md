@@ -13,7 +13,7 @@
 - `internal/hubreconcile#shortRevisionLength`
 
 **Uses:**
-- `plan:internal/buildvcs#Identity.Label`
+- `internal/buildvcs#Identity.Label`
 - `plan:internal/fabricengine#BinaryLabel`
 - `plan:internal/fabricengine#Bolt.PullThenCommitWritten`
 - `plan:internal/fabricengine#BoltWrite`
