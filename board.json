@@ -1019,28 +1019,6 @@
       "status": "awaiting · PR-Gate"
     },
     {
-      "id": 309,
-      "slug": "webster-audit-gaps",
-      "title": "Webster audit and recovery: pathless findings, read-only classifier, rebaseline Stuck",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "enhancement",
-        "webster",
-        "fabric"
-      ],
-      "issues": [
-        513,
-        514
-      ],
-      "priority": "high",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Goal\n\nClose the webster audit and recovery gaps that `cli-surface` batch 06 hit and that `webster-replan-state` (5a8be0274) left open, in `internal/websterengine` and `internal/fabricengine/refscanner.go`.\n\n## 1. recover-batch fails on a pathless finding (#513)\n\nIn run `cli-surface` (2026-10-10), batch 06 failed `record-batch` on a fabric-reference audit finding whose only `uncheckable` entry is a shell command (`for v in ...; do lyx fabric $v --help --json ...; done`).\n`lyx webster recover-batch 06` then errored with \"websterengine: resolve links in .../fabric-reference: lstat ...: file name too long\".\n`RecoverSpawnOrAttach` passes `prior.Uncheckable` to `contractWritesFor` (`contractevidence.go`), whose `contractCanon` calls `canonicalPath` (`audit.go`), which runs `filepath.EvalSymlinks` on the finding text; ENAMETOOLONG is not `ErrNotExist`, so it is returned.\n5a8be0274 added an early exit when every pathless finding is read-only (`recoverbatch.go`), but a pathless finding that is not read-only still reaches `contractWritesFor` → `contractCanon`.\n\nExpected: `contractWritesFor` and `splitContractPaths` skip pathless entries, so recover-batch returns its documented refusal naming `accept-audit --batch NN`.\n\n## 2. The fabric-reference audit fails help-only lyx calls (#514)\n\nBatch 06's implementer fork read help with `lyx fabric $v --help --json`; the audit (`ClassifyViolation`) classed it as a correctness violation, and `fabricengine.IsReadOnlyCommand` rejected it, so `accept-audit` could not keep the batch's six committed cards (workaround: `reset --to batch-start`, `accept-audit`, redo the batch).\n5a8be0274's `readOnlyLyxSegment` admits a lyx help call only when `--help` or `-h` is its last word.\n\nExpected:\n\n- a trailing `--json` (`lyx ... --json`, `lyx ... --help --json`) is read-only too, since 57243019b no command runs under the global `--json`;\n- a quoted or globbed argument to an admitted reader (`git log --format='%h %s'`) does not on its own make a command non-read-only;\n- a loop or a `$v` expansion stays non-read-only on purpose.\n\n## 3. Reader flags that write (Webster-Review finding `d8-reader-write-flags-unbounded`, BLOCKING at landing)\n\nThe reader allow-list in `refscanner.go` admits git reader commands without bounding their flags, so a reader given a writing flag could pass as read-only.\nExpected: check each admitted git reader's flags and reject any flag that writes (for example an output-file or config-writing flag).\n\n## 4. Auto-rebaseline merge-base failure (finding `card4-merriambase-failure-escapes-stuck`)\n\nAn error computing the merge base during auto-rebaseline may surface as a hard failure instead of Stuck.\nExpected: map it to Stuck with a way forward, and test it.\n\n## 5. begin-batch's terminal-dead refusal text (finding `d12-begin-batch-dead-refusal-stale`)\n\nThe refusal predates the second recovery.\nExpected: it names the second-recovery route and the `recovery_exhausted` state that 5a8be0274 added.\n\n## 6. Thin test rows (findings `card14-classifier-rows-miss-glob-and-tilde`, `thin-test-rows-cards-13-11-17-21`)\n\nThe classifier tables lack glob and tilde cases, and the rebaseline and shell-wait tables are thin.\nExpected: add those rows alongside items 2-4.\n",
-      "status": "done"
-    },
-    {
       "id": 311,
       "slug": "index-note-audience",
       "title": "Board group index note prints under every audience",
@@ -1109,9 +1087,7 @@
         507
       ],
       "priority": "high",
-      "depends_on": [
-        "webster-audit-gaps"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Fix the Webster faults outside the audit that stop or mislead runs",
       "body": "## Goal\n\nClose the Webster faults that stop or mislead runs outside the audit: background gate shells, Master fixing verify failures itself, recovery attribution and gates, and Create checks that cannot pass for unexported or build-tagged members.\n\n## 1. A background gate shell is cut off at a turn end (#505, #509, #517)\n\nMaster's wait counted a turn end while a background `lyx gate test --tags integration` shell was still running; after `background_shell_wait_min` the wait stopped, the run finished `done` because Master's output files existed, and shuttle removing the strand killed the shell.\nA run can report `done` with a gate tier unfinished.\nExpected: a running gate shell holds the turn end, or lyx stops it explicitly and records in the run that its result was discarded, so the outcome never reads as \"tests passed\".\n\n## 2. Master fixes a verify failure itself\n\nIn `driver-context` (2026-10-10) Master (`sonnet[medium]`) edited and committed a failing assertion itself on Publish verify attempt 3, although its stencil sends verify failures to one fixer fork; the run-exit audit blocked it as a parent-write and the fix had to be reverted, `accept-audit`ed and redone through a fork.\nExpected: the rule is stated where Master reads a verify failure, not only in its rules list, or Master has a verb that spawns the verify fixer, so the right path is the easy one.\n\n## 3. A second recovery treats the first recovery's files as foreign (#522)\n\nIn `quick-recipe` (2026-10-10) batch 01's first recovery edited 19 files for card 1 and was stopped uncommitted when Webster restarted; the second recovery's prompt listed them under \"Not written by this run: leave it untouched\", and the strand blocked.\nExpected: files an earlier recovery of the same batch wrote count as the batch's own work (attribution by batch, not by shuttle run id), or the second recovery starts from a clean tree with the first attempt's diff offered as reference.\nAlso: `recover-batch 1` exited 0 while the batch ended failed and terminal; it should exit non-zero.\n\n## 4. The recovery prompt does not name its allowed gates\n\nThe same recovery was unsure whether `lyx gate test` and `lyx loom lint-comments` fell under the ban on fabric commands, and could only compile-check tmux-tagged card steps.\nExpected: the recovery prompt names the card and batch gates as always allowed, and says tmux-tagged steps are left to verify.\n\n## 5. Create check fails on unexported targets (#511)\n\n`record-batch` refused two batches with `create-not-done` for unexported targets (`plan:cmd/testtiming#rusageStats`, `plan:internal/testkit/tmuxkit#tmuxAllowed`); recovery failed the same way and the batches died.\nExpected: find whether the check resolves unexported identifiers and identifiers in test files; fix it if not, and make the refusal say how the target was looked up, so a missing symbol is told apart from a resolver limit.\n\n## 6. Build-tagged and per-GOOS members resolve ambiguous (#500, #507)\n\nA member declared once per mutually exclusive build-constraint set (`tmuxAllowed` in `allow_tmux.go` and `allow_none.go`), or once per GOOS (`StartTime` in `internal/proc`, `runChild` in `internal/gatecli`), resolves `ambiguous` in quarry, and DoneChecks accept only `found` or `multipart`, so its Create or Edit can never pass.\nExpected: DoneChecks accept an ambiguous answer whose candidates all sit in files with disjoint build constraints (or quarry honours build constraints), and the plan validator flags such a glyph at Plan time rather than at record-batch.\n",
