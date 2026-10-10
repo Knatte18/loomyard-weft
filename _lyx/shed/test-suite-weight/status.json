@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "Batch 08-reedcli-probes-onto-tmuxkit: recover-batch refused with batch_failed: create-not-done/10-tmuxkit-socket-check[blocking]: Create target \"plan:internal/testkit/tmuxkit#tmuxAllowed\" still does not resolve",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": ""
+    "wait": "Batch 08-reedcli-probes-onto-tmuxkit: recover-batch refused with batch_failed: create-not-done/10-tmuxkit-socket-check[blocking]: Create target \"plan:internal/testkit/tmuxkit#tmuxAllowed\" still does not resolve"
   },
   "history": [
     {
@@ -166,6 +166,12 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-10T09:36:10Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-10T10:10:00Z"
     }
   ],
   "product": {
