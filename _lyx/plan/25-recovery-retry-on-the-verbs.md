@@ -11,8 +11,8 @@
 - `//contracts/stencils/claims_test.go`
 
 **Uses:**
-- `plan:internal/websterengine#RecoveryRetry`
-- `plan:internal/websterengine#ErrRecoveryExhausted`
+- `internal/websterengine#RecoveryRetry`
+- `internal/websterengine#ErrRecoveryExhausted`
 
 **Intent:** Put the recovery count and the retry verdict on the verbs Master reads, and have Master run the second recovery (D12).
 `recoverBatchCmd` carries `recoveries` and `recovery_retry` on its terminal envelope, both from `RecoveryRetry`, and `recovery_exhausted: true` on the refusal wrapping `ErrRecoveryExhausted`; the refusal note webstercli writes for every refusal envelope covers it (PATTERN-friction-capture).

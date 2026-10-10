@@ -1,10 +1,10 @@
 # Card 24 — recovery-count-and-retry
 
 **Create:**
-- `plan:internal/websterengine#ErrRecoveryExhausted` -> `var ErrRecoveryExhausted error`
-- `plan:internal/websterengine#RecoveryRetry` -> `func RecoveryRetry(geom Geometry, st *State, n int) (retry bool, recoveries int)`
-- `plan:internal/websterengine#nonMergeCommitsBetween` -> `func nonMergeCommitsBetween(worktree, base, head string) (bool, error)`
-- `plan:internal/websterengine#realGit.NonMergeCommitsBetween` -> `func (realGit) NonMergeCommitsBetween(worktree, base, head string) (bool, error)`
+- `internal/websterengine#ErrRecoveryExhausted`
+- `internal/websterengine#RecoveryRetry`
+- `internal/websterengine#nonMergeCommitsBetween`
+- `internal/websterengine#realGit.NonMergeCommitsBetween`
 
 **Edit:**
 - `internal/websterengine#BatchState`

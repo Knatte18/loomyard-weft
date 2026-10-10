@@ -1,6 +1,6 @@
 {
   "runGuid": "c48c7b8f7196b73e2be1202542e3612a",
-  "planFingerprint": "efe213602afab5809fb4dda21e9c402d690b583caf42271a1c6a573a889f6692",
+  "planFingerprint": "ca4b8fd53f20bcb872234714fc25224ad19c995b7b616b870ebc5bc5cd310210",
   "planFileHashes": {
     "00-overview.md": "ab37d312e67763991dfe85135a44bae20272c8576f60e6a44f4dd6c5ade90ef6",
     "01-gitexec-run-stdin.md": "7a8dcf27ebcc16d8bb8a140811c1a7366dd415fc499b14b573df5f217bc7b696",
@@ -24,10 +24,10 @@
     "19-implementer-sandbox-rule.md": "0a4d94400f9a1ffb4f972d63c72c7d9f6d3fc4174e0d31eb8d56d96757f06c0a",
     "20-fabric-way-forward-names-the-orch.md": "c33806395472f147f23ef8a7ced8bf8821ab971050e3952774bf3e0b785dddc2",
     "21-turn-end-counts-with-nothing-outstanding.md": "b7522372eb569b16b7fed1d25d2f457f31e4bc51b86505a26bf8241cc2111823",
-    "22-one-shell-wait-rule-and-ended-shells.md": "868956b10d1852663cadd2120f40dc25becbbda6f17aa8c039ad659d4b76f8d1",
+    "22-one-shell-wait-rule-and-ended-shells.md": "ad3887283da7448383f543cbbbc35b7671412fea12236082aaefad576fe2b87f",
     "23-round-gate-reruns-the-top-level-test.md": "8c026fa10f5d6faca957ebb1ab1a79a8b2e7f6189171b8314f8cb38da2bf8936",
-    "24-recovery-count-and-retry.md": "2a12a7de3f88440b1cfdadcd5734b2f0aa708af1e546acbbe16708e8e0aee679",
-    "25-recovery-retry-on-the-verbs.md": "121840b07ab228f9c03cf26ea4e0453456471dd9c5f760cc35d3cfb2ff3c687d",
+    "24-recovery-count-and-retry.md": "ac013751f7c0cefd235ed17b3a3e9bf66ca2787236f3637a0919870ebb007e70",
+    "25-recovery-retry-on-the-verbs.md": "0c3a364359d8ed413cda697a4b596c6c6907a7568bdf0b7cd71891ef5873d54b",
     "26-resume-reconcile-determinism.md": "0b6e02fe8c7eb6770b326196013a825889faf1a4633f4c79576d9a28a3f5fe84"
   },
   "planOverviewFrameHash": "f4cdc80507fadd5ba781b969641dd3cf7358d5ff60637a043c82e5ad5becacb8",
@@ -682,7 +682,7 @@
       }
     }
   ],
-  "currentBatch": 21,
+  "currentBatch": 0,
   "masterStrand": "024106e45ef378afbaedeac64b0dfd00",
   "masterSessionId": "4b72a718-bcaa-4396-ac52-cd53831c7acf",
   "batches": {
@@ -821,16 +821,37 @@
       ],
       "cardHashes": {
         "21-turn-end-counts-with-nothing-outstanding": "b7522372eb569b16b7fed1d25d2f457f31e4bc51b86505a26bf8241cc2111823",
-        "22-one-shell-wait-rule-and-ended-shells": "868956b10d1852663cadd2120f40dc25becbbda6f17aa8c039ad659d4b76f8d1",
+        "22-one-shell-wait-rule-and-ended-shells": "ad3887283da7448383f543cbbbc35b7671412fea12236082aaefad576fe2b87f",
         "23-round-gate-reruns-the-top-level-test": "8c026fa10f5d6faca957ebb1ab1a79a8b2e7f6189171b8314f8cb38da2bf8936",
-        "24-recovery-count-and-retry": "2a12a7de3f88440b1cfdadcd5734b2f0aa708af1e546acbbe16708e8e0aee679"
+        "24-recovery-count-and-retry": "ac013751f7c0cefd235ed17b3a3e9bf66ca2787236f3637a0919870ebb007e70"
       },
       "startSha": "d30e142d268338754c1f6b9b187a20bddb28d23d",
       "kind": "fork",
       "spawnedAt": "2026-10-10T13:31:05Z",
       "sessionId": "4b72a718-bcaa-4396-ac52-cd53831c7acf",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "21-turn-end-counts-with-nothing-outstanding",
+        "status": "done",
+        "head_sha": "64a9658ecb8a26aef5eb9bccce867d0b157554ff",
+        "deviations": [
+          "internal/shuttleengine/run_resume_test.go",
+          "internal/shuttleengine/config.go",
+          "internal/shuttleengine/spec.go",
+          "internal/shuttleengine/waitmark.go",
+          "internal/loomshed/doc.go"
+        ]
+      },
+      "cardShas": [
+        "64a9658ecb8a26aef5eb9bccce867d0b157554ff"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-a8b6e45b7b1cfb79c.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-a8b6e45b7b1cfb79c.jsonl"
+      ]
     },
     "7": {
       "slug": "plan-gate-done-card-edited",
@@ -881,6 +902,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-af606b7cd26f1ebf4.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-aff659375de37e0a6.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-a1cae0ab2eb5791c4.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-a058bd474c5453d9d.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-a058bd474c5453d9d.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-a8b6e45b7b1cfb79c.jsonl"
   ]
 }

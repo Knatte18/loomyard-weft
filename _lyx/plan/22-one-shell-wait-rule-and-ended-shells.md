@@ -1,7 +1,7 @@
 # Card 22 — one-shell-wait-rule-and-ended-shells
 
 **Create:**
-- `plan:internal/shuttleengine#EndedShell` -> `type EndedShell struct`
+- `internal/shuttleengine#EndedShell`
 
 **Edit:**
 - `internal/shuttleengine#Run`

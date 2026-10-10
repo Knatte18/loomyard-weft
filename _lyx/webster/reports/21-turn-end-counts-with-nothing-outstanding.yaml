@@ -1,0 +1,8 @@
+status: OK
+head_sha: 64a9658ecb8a26aef5eb9bccce867d0b157554ff
+deviations:
+  - internal/shuttleengine/run_resume_test.go
+  - internal/shuttleengine/config.go
+  - internal/shuttleengine/spec.go
+  - internal/shuttleengine/waitmark.go
+  - internal/loomshed/doc.go
