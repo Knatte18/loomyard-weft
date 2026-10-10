@@ -175,6 +175,12 @@ Bound: a plural noun read as a verb (`, and the gate tests`) passes; a clause wh
 Decision: `pattern/PATTERN-test-speed.md` records as a decision that no gate runs the `llm` tier: every gate compiles it through `go vet -tags llm`, and running it is the operator's call.
 Rationale: an `llm` run is billed, nondeterministic and needs a live session, so a gate on it would cost money per round and fail on the model rather than the code.
 
+### Added after Discussion (parent, 2026-10-10): lyx gate child lifetime stays in internal/gatecli
+
+Decision: The process-group, Pdeathsig and job-object code for lyx gate test lives in new internal/gatecli files only; no card touches internal/proc, ConfigureGroupKill, ErrNoProcessGroup or internal/verifyrun's procgroup files.
+
+Rationale: The parallel run git-robustness creates those internal/proc identifiers and deletes verifyrun's procgroup files; keeping D7's child code apart lets the two branches merge without conflict, and moving it into internal/proc is a later board note.
+
 ## Constraints
 
 - `PATTERN-told-geometry`: the slot engine is told its directory, count and cap; only a CLI layer resolves the board dir, `lyx gate`'s through its own pre-run (D7).
