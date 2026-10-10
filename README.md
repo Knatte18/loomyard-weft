@@ -49,6 +49,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 7 | **webster: create-not-done check fails on unexported plan targets, killing batches** | [`create-check-unexported`](design-create-check-unexported.md) | webster, quarry |
 | 8 | **webster: fabric-reference audit fails a piped lyx help call inside a compound command** | [`audit-piped-help-call`](design-audit-piped-help-call.md) | webster, fabric |
 
+#### Low priority
+
+| # | Note | Slug | Labels |
+| --- | --- | --- | --- |
+| 9 | **Shuttle logs held loop and busy state disagreeing**<br>• In run cli-surface the Webster step trace logged `shuttle: session state disagrees (loop=held, state=busy)` before idle-done; no stop followed. Idea: find whether held and busy can disagree for long, and log which side wins. | `shuttle-state-disagrees` | shuttle |
+
 ### Enhancements
 
 #### High priority

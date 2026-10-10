@@ -1235,6 +1235,22 @@
       "isolated": false,
       "brief": "Webster-Review in cli-surface (PR #519) found the board group's help-index note also prints under the internal audience; the run disputed it as planned. Idea: scope a group's index note by audience like its commands.",
       "body": ""
+    },
+    {
+      "id": 312,
+      "slug": "shuttle-state-disagrees",
+      "title": "Shuttle logs held loop and busy state disagreeing",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle"
+      ],
+      "issues": [],
+      "priority": "low",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "In run cli-surface the Webster step trace logged `shuttle: session state disagrees (loop=held, state=busy)` before idle-done; no stop followed. Idea: find whether held and busy can disagree for long, and log which side wins.",
+      "body": ""
     }
   ]
 }
