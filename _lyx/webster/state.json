@@ -1,0 +1,226 @@
+{
+  "runGuid": "cf7165290295f2a73a1809220a2eafbe",
+  "planFingerprint": "b626a8c2eb991f09d96751d803a14fef247fb1a3033eddd5af1d53f7be204946",
+  "planFileHashes": {
+    "00-overview.md": "2d394494875448c6e0caff0da69d244fbcac3a057d23b4c1d24cff17ada1a88c",
+    "01-pathless-entries-never-resolve.md": "ad600e6fbfe46930736215e8acdafa1dd483b6b167fb192b9e5ff2b863d62534",
+    "02-classifier-shell-words.md": "eda7dcc445af55742b441e08d1b3d7bba82e827d7ea046ea369fd54e3ae3725d",
+    "03-classifier-json-help-form.md": "027f864f4bcf61ab86f3192154941e53c935461e2e86c324da7c836cd1b6abce",
+    "04-own-json-flag-pin.md": "3f7f282cfd64c0fa82a74c31520a984280b0056f6a3533af46017e71851355af",
+    "05-git-reader-flag-rows.md": "fab3a35739b6178bde06e07f07c02bda2a5d7068ffa0f961bcb9134a81326077",
+    "06-merriam-base-one-way-forward.md": "c1c6d7c798e2fe4c2bb1ee677e830477bf78bc1cc664fe9ddd9ad3f917540cce",
+    "07-begin-batch-exhausted-remedy.md": "8b032543b12c8cbcb7c6bd7ea1324e6d1e7b577a876ab9a62ce6accf13f9453c",
+    "08-thin-table-rows.md": "9ac39a27c890a6daa81e5312b6a2dbae5fad2b6f057b65f4ebb9895d51fa0e17"
+  },
+  "planOverviewFrameHash": "ee37fb573943d69928addb63925692f1629821a12542a040f9be5b591d6d0051",
+  "partition": [
+    {
+      "cards": [
+        "01-pathless-entries-never-resolve",
+        "02-classifier-shell-words",
+        "03-classifier-json-help-form",
+        "04-own-json-flag-pin"
+      ],
+      "profile": "cautious",
+      "estimate": 275190,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54220,
+        "read_union": 61388,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 564,
+            "reads": {
+              "file:internal/websterengine/doc.go": 7560,
+              "file:internal/websterengine/findingtext_test.go": 2544,
+              "file:internal/websterengine/recoverbatch_test.go": 20940,
+              "package:internal/websterengine": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 97.5,
+            "written": 29814
+          },
+          {
+            "card": 2,
+            "card_text": 792,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3948,
+              "file:internal/fabricengine/refscanner_test.go": 2880,
+              "file:internal/websterengine/doc.go": 7560,
+              "package:contracts/specs": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 242,
+            "written": 73392
+          },
+          {
+            "card": 3,
+            "card_text": 312,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3948,
+              "file:internal/fabricengine/refscanner_test.go": 2880,
+              "file:internal/websterengine/doc.go": 7560,
+              "package:contracts/specs": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 148,
+            "written": 44712
+          },
+          {
+            "card": 4,
+            "card_text": 264,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1584,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000
+            },
+            "messages": 38,
+            "written": 11664
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-git-reader-flag-rows",
+        "06-merriam-base-one-way-forward",
+        "07-begin-batch-exhausted-remedy",
+        "08-thin-table-rows"
+      ],
+      "profile": "cautious",
+      "estimate": 301544,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61220,
+        "read_union": 132804,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 276,
+            "reads": {
+              "file:internal/fabricengine/refscanner_test.go": 2880,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 102,
+            "written": 30876
+          },
+          {
+            "card": 6,
+            "card_text": 420,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3948,
+              "file:internal/webstercli/cli_test.go": 18360,
+              "file:internal/websterengine/merriambase_test.go": 1320,
+              "file:internal/websterengine/runlevel_test.go": 34716,
+              "package:contracts/specs": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 90.5,
+            "written": 27570
+          },
+          {
+            "card": 7,
+            "card_text": 600,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3948,
+              "file:contracts/stencils/webster/webster-template-master.md": 2976,
+              "file:internal/webstercli/verbs_test.go": 17436,
+              "file:internal/websterengine/beginbatch_test.go": 11184,
+              "file:internal/websterengine/doc.go": 7560,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 98.5,
+            "written": 30150
+          },
+          {
+            "card": 8,
+            "card_text": 324,
+            "reads": {
+              "file:internal/shuttleengine/waiting_test.go": 6804,
+              "file:internal/websterengine/runlevel_test.go": 34716,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 62,
+            "written": 18924
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "34a9f1520d27f80267545abe0c3f49b2",
+  "masterSessionId": "660a4ba0-ba4a-4b41-b405-b97a02f1c926",
+  "batches": {
+    "1": {
+      "slug": "pathless-entries-never-resolve",
+      "cards": [
+        "01-pathless-entries-never-resolve",
+        "02-classifier-shell-words",
+        "03-classifier-json-help-form",
+        "04-own-json-flag-pin"
+      ],
+      "cardHashes": {
+        "01-pathless-entries-never-resolve": "ad600e6fbfe46930736215e8acdafa1dd483b6b167fb192b9e5ff2b863d62534",
+        "02-classifier-shell-words": "eda7dcc445af55742b441e08d1b3d7bba82e827d7ea046ea369fd54e3ae3725d",
+        "03-classifier-json-help-form": "027f864f4bcf61ab86f3192154941e53c935461e2e86c324da7c836cd1b6abce",
+        "04-own-json-flag-pin": "3f7f282cfd64c0fa82a74c31520a984280b0056f6a3533af46017e71851355af"
+      },
+      "startSha": "5a8be027428082c91c0d3af16eeacb02fed29eea",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T16:12:48Z",
+      "sessionId": "660a4ba0-ba4a-4b41-b405-b97a02f1c926",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
