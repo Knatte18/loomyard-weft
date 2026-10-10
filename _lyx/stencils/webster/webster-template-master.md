@@ -3,7 +3,7 @@
      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the codebase and the plan once, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lyx/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive. parent_directive is a third optional marker, rendered by internal/parentdirective. edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=a7b17042fd1901a85065a99ea220578bd410d95e7759a665c0368692079678c3 build=800a0e8923007107f6bbfea36bc86939a0b60905 time=2026-10-10T17:05:50Z -->
+lyx-stencil: sha256=216adbe1c520ff7a0449e766a0c0ee4eb74337040ae1241923ebd5be6a733b61 build=1e79825ff968848322198e80471cf827fcd53cea time=2026-10-10T18:51:22Z -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -108,7 +108,8 @@ You never read raw fork output beyond its own turn, and you never open a file to
 - Fork finished but wrote **no report** (`record-batch` classifies this `no_report`) → re-fork the same batch once, with the SAME prompt file and no new `begin-batch` call (the bracket is still open), end your turn again, and call `record-batch` again on its completion notification;
   still no report → run `lyx webster recover-batch <NN>` (below).
 - Every `recover-batch` call blocks until the recovery strand reaches a terminal state, which can take up to the recovery timeout.
-  Run `lyx webster recover-batch <NN>` as a **backgrounded** Bash command, end your turn, and act on the command's completion notification: its output is the terminal digest or a refusal.
+  Run `lyx webster recover-batch <NN>` as a **backgrounded** Bash command, end your turn, and act on the command's completion notification: its output is the terminal digest, exiting non-zero when its `status` is not `done`, or a refusal.
+  You read the digest fields, never the exit code, so the rungs below are unchanged.
   Never run it in the foreground, never poll it and never `sleep`.
   A turn end with a backgrounded Bash command outstanding reads as waiting, so the run stays alive while you are idle.
 - `recover-batch <NN>` completes with a terminal `status: done` → move on to the next batch.

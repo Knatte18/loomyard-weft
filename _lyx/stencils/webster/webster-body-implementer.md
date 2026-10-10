@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=a99cb592f014e84aaafc0e546513595f72a4b92312506b0aa0e718f362c000f5 build=5a8be027428082c91c0d3af16eeacb02fed29eea time=2026-10-10T14:47:02Z -->
+<!-- lyx-stencil: sha256=50d3bf9b88b9707c7b447099da4001d13515ba5da8f03329a96999659f62a82a build=1e79825ff968848322198e80471cf827fcd53cea time=2026-10-10T18:51:22Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -55,6 +55,9 @@ A scratch hub is a Go test fixture over local bare repositories (`hubforge`).
 `lyx fabric` refuses its mutating verbs from your strand; the refusal is the rule's owner.
 When the work itself needs a refused verb, stop and report `status: FAILED`, so the orch runs the verb.
 
+The card gate steps, the batch gate steps, `lyx loom lint-comments` and `lyx quarry resolve` are always allowed from any strand, and none of them is a fabric reference.
+The sandbox ban covers mutating `lyx fabric` verbs only.
+
 ## The batch gate — once, after the last card
 
 {{.batch_gate}}
@@ -69,6 +72,9 @@ It costs no self-fix attempt, never makes the report `FAILED`, and you re-run th
 
 You may run raw `go test` on the batch's listed packages only.
 A module-wide run or a `tmux`-tier run goes through `lyx gate test`, never a raw `go` command.
+A `lyx gate test` step runs as written, whatever its `--tags`.
+A test under the `tmux` or `llm` tag that no gate step names is compiled, never run, through `lyx gate test --tags <tag> <packages> -- -run '^$'`;
+running those tiers is left to the gates after webster.
 
 ## Bounded self-fix, then stop
 
