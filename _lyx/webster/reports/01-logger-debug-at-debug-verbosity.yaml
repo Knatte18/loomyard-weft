@@ -1,0 +1,4 @@
+status: OK
+head_sha: 594297e9d759e8b3cd6164f472ba477826ebb46e
+deviations:
+  - pattern/PATTERN-daemon-wakeups.md

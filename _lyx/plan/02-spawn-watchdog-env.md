@@ -1,7 +1,7 @@
 # Card 2 — spawn-watchdog-env
 
 **Create:**
-- `plan:internal/reedengine#spawnWatchdogEnv` -> `func spawnWatchdogEnv(environ []string) []string`
+- `internal/reedengine#spawnWatchdogEnv`
 
 **Edit:**
 - `internal/reedengine#SpawnWatchdog`

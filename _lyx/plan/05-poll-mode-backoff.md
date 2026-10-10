@@ -1,8 +1,8 @@
 # Card 5 — poll-mode-backoff
 
 **Create:**
-- `plan:internal/reedengine#watchdogPollCeiling` -> `const watchdogPollCeiling = 60 * time.Second`
-- `plan:internal/reedengine#pollWakeChanged` -> `func pollWakeChanged(res ReapplyResult, err error, lastApplied render.Box) bool`
+- `internal/reedengine#watchdogPollCeiling`
+- `internal/reedengine#pollWakeChanged`
 
 **Edit:**
 - `internal/reedengine#watchdogPollCycle`

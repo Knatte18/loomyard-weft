@@ -1,13 +1,13 @@
 {
   "runGuid": "bf42c2b6170726942b8b9049bb54130b",
-  "planFingerprint": "176f27a44ccf655b7f74441e355336cb38f667a7cc59f0e4f1859857ccb6d246",
+  "planFingerprint": "287b83a24fbb2907ab543b03a72b48dc8bc60f97ff7f60cfaafc8bd0c6c696c8",
   "planFileHashes": {
     "00-overview.md": "87dcfcade8c26037bbd7d23defff5d00a76f5dec1baa8a78e41dbd7adab5eec8",
-    "01-logger-debug-at-debug-verbosity.md": "d02f7c140a26ec99f427770856b43fdb15d1147ef960b19bc8414234e6c19ac4",
-    "02-spawn-watchdog-env.md": "3df0bf918ef65c9a9bf4b1260d442bca1f3581a1f51ea3dfa02f516b22c9486b",
+    "01-logger-debug-at-debug-verbosity.md": "6b80ce81593a1ce3cc72f17cd65648c7549322313960c56dcfbba2f8322a4b51",
+    "02-spawn-watchdog-env.md": "d41cd58b742ea902ab82df9f892e203c8afc3893e933da39b00b57356fab6279",
     "03-watchdog-verb-keeps-stderr.md": "a995889686bad63196abdd5a0a8609088a00a76bc91cfd2d9f7a94e4fa953254",
     "04-daemon-engines-use-told-tmux.md": "71b0feec9f4c759afc8be291e970c92a5d621022f23320ed80f82bee841afbac",
-    "05-poll-mode-backoff.md": "7006e5da655c317c50fa9a555bc1fd4a280af3faddc75d4f70772f3501a9cc2a",
+    "05-poll-mode-backoff.md": "38a38bfaf3b5517ca0e074e137ef7469055ecc47669c730ca53a767c238d9dd5",
     "06-drop-ticker-period.md": "31e610211e7b521c7e3e30a251cebb16ca69af2a21a1ad519904bef90fea38f6",
     "07-socket-path-refused-at-boot.md": "958f59c01983def16d728a3f7d828370b850cb5f897ea794fba5f1574ee6a90e",
     "08-kit-config-text.md": "aadb7f41a6740c06d9f9f6b63648dce45e1ca56a6c02cac5d0167687e18899e1",
@@ -231,7 +231,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "8fb083fccc333657659e0de9c4933673",
   "masterSessionId": "d71dfee7-7253-43bf-9929-8b9f8ea97558",
   "batches": {
@@ -246,19 +246,39 @@
         "06-drop-ticker-period"
       ],
       "cardHashes": {
-        "01-logger-debug-at-debug-verbosity": "d02f7c140a26ec99f427770856b43fdb15d1147ef960b19bc8414234e6c19ac4",
-        "02-spawn-watchdog-env": "3df0bf918ef65c9a9bf4b1260d442bca1f3581a1f51ea3dfa02f516b22c9486b",
+        "01-logger-debug-at-debug-verbosity": "6b80ce81593a1ce3cc72f17cd65648c7549322313960c56dcfbba2f8322a4b51",
+        "02-spawn-watchdog-env": "d41cd58b742ea902ab82df9f892e203c8afc3893e933da39b00b57356fab6279",
         "03-watchdog-verb-keeps-stderr": "a995889686bad63196abdd5a0a8609088a00a76bc91cfd2d9f7a94e4fa953254",
         "04-daemon-engines-use-told-tmux": "71b0feec9f4c759afc8be291e970c92a5d621022f23320ed80f82bee841afbac",
-        "05-poll-mode-backoff": "7006e5da655c317c50fa9a555bc1fd4a280af3faddc75d4f70772f3501a9cc2a",
+        "05-poll-mode-backoff": "38a38bfaf3b5517ca0e074e137ef7469055ecc47669c730ca53a767c238d9dd5",
         "06-drop-ticker-period": "31e610211e7b521c7e3e30a251cebb16ca69af2a21a1ad519904bef90fea38f6"
       },
       "startSha": "5a8be027428082c91c0d3af16eeacb02fed29eea",
       "kind": "fork",
       "spawnedAt": "2026-10-10T16:07:07Z",
       "sessionId": "d71dfee7-7253-43bf-9929-8b9f8ea97558",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-logger-debug-at-debug-verbosity",
+        "status": "done",
+        "head_sha": "594297e9d759e8b3cd6164f472ba477826ebb46e",
+        "deviations": [
+          "pattern/PATTERN-daemon-wakeups.md"
+        ]
+      },
+      "cardShas": [
+        "594297e9d759e8b3cd6164f472ba477826ebb46e"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-hygiene/d71dfee7-7253-43bf-9929-8b9f8ea97558/subagents/agent-aa48d1836cca79074.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-hygiene/d71dfee7-7253-43bf-9929-8b9f8ea97558/subagents/agent-aa48d1836cca79074.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-hygiene/d71dfee7-7253-43bf-9929-8b9f8ea97558/subagents/agent-aa48d1836cca79074.jsonl"
+  ]
 }

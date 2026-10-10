@@ -1,8 +1,8 @@
 # Card 1 — logger-debug-at-debug-verbosity
 
 **Create:**
-- `plan:internal/logger#durableLevel` -> `type durableLevel struct`
-- `plan:internal/logger#durableLevel.Level` -> `func (durableLevel) Level() slog.Level`
+- `internal/logger#durableLevel`
+- `internal/logger#durableLevel.Level`
 
 **Edit:**
 - `internal/logger/logger.go`
