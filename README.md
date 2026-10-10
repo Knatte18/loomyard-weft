@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | At | Labels |
 | --- | --- | --- | --- | --- |
 | 2 | **Webster and round-gate bug sweep: replans, batch checks, fork sandbox, shell wait, test re-runs**<br>• Webster stays consistent across replans, its batch and fabric checks judge only what they should, implementer forks stay sandboxed, the shell wait leaves nothing running, and the round gate re-runs whole tests | [`webster-replan-state`](design-webster-replan-state.md) | Webster-Burler | webster, loom, burler, fabric |
-| 3 | **CLI surface: a command index for the orch, one help form, intake keeps comments**<br>• lyx help index injected into the orch, a test-enforced form for Use/Short/Long including board payload keys, and intake that carries issue comments | [`cli-surface`](design-cli-surface.md) | Batchifier | orch, board, selfreport |
+| 3 | **CLI surface: a command index for the orch, one help form, intake keeps comments**<br>• lyx help index injected into the orch, a test-enforced form for Use/Short/Long including board payload keys, and intake that carries issue comments | [`cli-surface`](design-cli-surface.md) | Webster | orch, board, selfreport |
 
 ### Ready
 
