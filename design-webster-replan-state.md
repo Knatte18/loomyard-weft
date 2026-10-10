@@ -17,7 +17,7 @@ Depends on: [`gate-test-scope`](design-gate-test-scope.md), [`publish-recovery`]
 - When Master's wait stops waiting on a background shell, lyx stops or records the shell, and the shell-wait rule is the same for transcript-reported and Stop-payload-reported shells (#496).
 - The round gate's failing-test re-run (`publishFailureCommand` in `internal/loomshed/publishfailure.go`) runs the failing test's top-level test, never a subtest alone, since subtests may share state (#497).
 - `TestLoomResumeReconcilesTheHubConfigBeforeArming` in `internal/loomcli` is deterministic (#492).
-- A recovery strand that ends its turn while its own gate runs is not classified dead, and a dead batch whose recovery left commits gets a second recovery without the orchestrator (#498).
+- A dead batch whose recovery left commits gets a second recovery without the orchestrator (#498; the turn-end classification half landed in 7462c1dc5).
 
 The merged notes keep their own Seen sections below.
 
