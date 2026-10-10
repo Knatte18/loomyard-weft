@@ -19,10 +19,10 @@
 - `//contracts/stencils/rubric_test.go`
 
 **Create:**
-- `plan:internal/shedadapters#Bouncer.websterRecordNote` -> `func (b *Bouncer) websterRecordNote() string`
+- `internal/shedadapters#Bouncer.websterRecordNote`
 
 **Uses:**
-- `plan:internal/loomshed#WebsterRecordNote`
+- `internal/loomshed#WebsterRecordNote`
 
 **Intent:** Carry webster's run record into the Plan-Review rubric through an optional `webster_record` marker, filled by Go the way `publish_failure` is (D2).
 `ReadRubric` takes the note and fills the marker, `none` for a blank note, and a rubric without the marker ignores it.

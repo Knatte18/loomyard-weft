@@ -1,6 +1,6 @@
 {
   "runGuid": "c48c7b8f7196b73e2be1202542e3612a",
-  "planFingerprint": "82bc14cd98b3275de1d8eeb6f7b9749246dd435c820746e961a8011cd7979faf",
+  "planFingerprint": "ff5849612f113b499c0f93a3fbc4ce7dc2e160b96aabd2b79c0a3c3512f6d81f",
   "planFileHashes": {
     "00-overview.md": "ab37d312e67763991dfe85135a44bae20272c8576f60e6a44f4dd6c5ade90ef6",
     "01-gitexec-run-stdin.md": "7a8dcf27ebcc16d8bb8a140811c1a7366dd415fc499b14b573df5f217bc7b696",
@@ -10,10 +10,10 @@
     "05-webster-row-auto-rebaseline-stuck.md": "90710f487ab1bef29bbe72ce2bb38804a3eb0e37810d7aac58aa558b152d106b",
     "06-edited-done-cards.md": "5e23d5545698c16d7a6d4dac558811989d4676f5b09dcc39c6e00ec559df99c5",
     "07-plan-gate-done-card-edited.md": "e256c64c971e83ceeb75b5f04b0a65bfe52a866052f0d6ca503417793fcc8110",
-    "08-webster-record-note.md": "bf7e379086af52ac43013253833c7330b40c7a3c37acbfcfbbc72256e9e1e60c",
-    "09-plan-review-webster-record-marker.md": "772ee92d0b1a69952fa07d5b01eb03096f9ed7a7f3f00532cfc27cda024c38f1",
-    "10-verify-chain-splitter.md": "7569c6aca9dbdbf3d2298608543e43aa527364c4af1fc40fd4fc250a092cc9f0",
-    "11-pattern-entry-line-cap.md": "1a1dc8ff24141967a5aaf3453f17ba74a1d757a1c8da4479ad222465a579ce07",
+    "08-webster-record-note.md": "fe4ef81ad938ebbe0d2592e5df0a8050b00e2e49bbb873d91ba1fb7b9d6709e1",
+    "09-plan-review-webster-record-marker.md": "9c877ec6e309b297182297a05e1f251eb81cd6ca352a06f1f901353bb35669e9",
+    "10-verify-chain-splitter.md": "3376ae35f5c995a3b7a208341b31fb650dd78d9f3e547b73fd9778a128546c19",
+    "11-pattern-entry-line-cap.md": "efd0452ccdd179bc04bdcd2f891d1bdab1392923b8c96d0a9e045856164b38dd",
     "12-done-checks-name-the-batch.md": "3cec784be50ff37943e35d545c1a02a4f6ed896a008c26a0af8737f46c7ee195",
     "13-fabric-reader-verbs.md": "617e89a5b06c62308451419a3d2ed239a01dd0473cf1f3ee14f3014c256b3059",
     "14-read-only-classifier-allow-list.md": "ed6a29583d1923a95f9beaa16f1e76764fb74e48e268f9de01a1bc690d674fc9",
@@ -682,7 +682,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "024106e45ef378afbaedeac64b0dfd00",
   "masterSessionId": "4b72a718-bcaa-4396-ac52-cd53831c7acf",
   "batches": {
@@ -741,21 +741,41 @@
       ],
       "cardHashes": {
         "07-plan-gate-done-card-edited": "e256c64c971e83ceeb75b5f04b0a65bfe52a866052f0d6ca503417793fcc8110",
-        "08-webster-record-note": "bf7e379086af52ac43013253833c7330b40c7a3c37acbfcfbbc72256e9e1e60c",
-        "09-plan-review-webster-record-marker": "772ee92d0b1a69952fa07d5b01eb03096f9ed7a7f3f00532cfc27cda024c38f1",
-        "10-verify-chain-splitter": "7569c6aca9dbdbf3d2298608543e43aa527364c4af1fc40fd4fc250a092cc9f0",
-        "11-pattern-entry-line-cap": "1a1dc8ff24141967a5aaf3453f17ba74a1d757a1c8da4479ad222465a579ce07",
+        "08-webster-record-note": "fe4ef81ad938ebbe0d2592e5df0a8050b00e2e49bbb873d91ba1fb7b9d6709e1",
+        "09-plan-review-webster-record-marker": "9c877ec6e309b297182297a05e1f251eb81cd6ca352a06f1f901353bb35669e9",
+        "10-verify-chain-splitter": "3376ae35f5c995a3b7a208341b31fb650dd78d9f3e547b73fd9778a128546c19",
+        "11-pattern-entry-line-cap": "efd0452ccdd179bc04bdcd2f891d1bdab1392923b8c96d0a9e045856164b38dd",
         "12-done-checks-name-the-batch": "3cec784be50ff37943e35d545c1a02a4f6ed896a008c26a0af8737f46c7ee195"
       },
       "startSha": "1be1a33ca44aa3f8d5382a8999a323a746eb003b",
       "kind": "fork",
       "spawnedAt": "2026-10-10T13:05:22Z",
       "sessionId": "4b72a718-bcaa-4396-ac52-cd53831c7acf",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-plan-gate-done-card-edited",
+        "status": "done",
+        "head_sha": "548c81ff883caa84c19374dac2488fcb79b02177",
+        "deviations": [
+          "internal/testkit/envkit/envkit.go",
+          "internal/loomshed/publishfailure.go",
+          "internal/planparser/patternentry.go"
+        ]
+      },
+      "cardShas": [
+        "548c81ff883caa84c19374dac2488fcb79b02177"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-aff659375de37e0a6.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-aff659375de37e0a6.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-af606b7cd26f1ebf4.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-af606b7cd26f1ebf4.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-aff659375de37e0a6.jsonl"
   ]
 }

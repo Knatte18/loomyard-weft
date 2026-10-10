@@ -1,0 +1,6 @@
+status: OK
+head_sha: 548c81ff883caa84c19374dac2488fcb79b02177
+deviations:
+  - internal/testkit/envkit/envkit.go
+  - internal/loomshed/publishfailure.go
+  - internal/planparser/patternentry.go

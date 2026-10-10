@@ -1,7 +1,7 @@
 # Card 8 — webster-record-note
 
 **Create:**
-- `plan:internal/loomshed#WebsterRecordNote` -> `func WebsterRecordNote(anchorPath string) string`
+- `internal/loomshed#WebsterRecordNote`
 
 **Edit:**
 - `internal/loomshed/publishfailure_test.go`

@@ -1,8 +1,8 @@
 # Card 10 — verify-chain-splitter
 
 **Create:**
-- `plan:internal/planparser#chainSegment` -> `type chainSegment struct`
-- `plan:internal/planparser#splitChain` -> `func splitChain(chain string) []chainSegment`
+- `internal/planparser#chainSegment`
+- `internal/planparser#splitChain`
 
 **Edit:**
 - `internal/planparser#crossModuleCommands`

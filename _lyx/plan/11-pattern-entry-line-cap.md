@@ -1,7 +1,7 @@
 # Card 11 — pattern-entry-line-cap
 
 **Create:**
-- `plan:internal/planparser#checkPatternEntryLineCap` -> `func checkPatternEntryLineCap(plan *Plan) []ValidationError`
+- `internal/planparser#checkPatternEntryLineCap`
 
 **Edit:**
 - `internal/planparser#validate`
