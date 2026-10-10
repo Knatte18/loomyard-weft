@@ -1,0 +1,1105 @@
+{
+  "runGuid": "fff73e1104de3f235db98a26ed5f5a7a",
+  "planFingerprint": "3aada492aca0e7cc066e342e92526e1c4fa215b45245baacdb8bfda3c9854703",
+  "planFileHashes": {
+    "00-overview.md": "0ad33d2e71cd0bd2b348dfeb400a6eaa60d570779badff67c14470d91eac61e4",
+    "01-fixture-git-marker.md": "f27305a18b1579eefb9142b909cffe659b0a1b17185ed89ff540bd1a9410524b",
+    "02-testtiming-resources.md": "23b7006b7d41cc572466e4381bcd8f8b995d8e56afc28e9f3c4f131f2a42059e",
+    "03-testtiming-git-census.md": "56ab41657633eebe4ddf600e8cde34ef052bc3b6fbbcdd49626c3619b9efebca",
+    "04-weight-report-before.md": "e6f8e34325a8642013436b88622c15dafcd8312b4c66674699fe52ce3eb667fb",
+    "05-tmuxkit-hermetic-server.md": "30a20752e102626604c51dfd2c260151a99d87733983bb173dc554bdd6bbd1db",
+    "06-tmuxkit-package-server.md": "9b18aa3195b92d33ffc393033f2d3d6f55af2bb8482bf7e51a97fe6cde99cd90",
+    "07-tmuxkit-private-tmpdir-leftovers.md": "88f1bf609644aa88ebe006663e5f7cc3dc36f4f4ceb28c6a34c8ae2df9ac7e82",
+    "08-reedcli-probes-onto-tmuxkit.md": "2a81fcb94ba6c4dcdc98024ae769790b516d0b1258ef4410ec2a87fe31d33165",
+    "09-loomcli-resume-split.md": "0225da4f10c9659c1fbdf89773ad56e794d903acfdfce1f40e005857acba4bbc",
+    "10-tmuxkit-socket-check.md": "4f12a1307d86876f103566f3390b799a7f905e3e4cc16f4383c11df7d143e5b1",
+    "11-lyxbin-prebuilt.md": "888a4a4618837ca4c5a870171bc80e915c8834d602e2ca994d267670610e3897",
+    "12-lyxbin-run.md": "b3a91837d2792e5b55732ef3b15e48c5cc27fe11f34f34d412630ef95e181780",
+    "13-gatecli-prebuild.md": "02ec31e062dfcd149885a3883c4d0dee85ca0a56ffc82ecd0401d865b2a3129c",
+    "14-claudeengine-prebuilt-deny.md": "8c67e5d865c5be9fb1856a856c19ea841373c16a634589616d51018aa5bb3e09",
+    "15-gitkit-no-detached-gc.md": "aaf35f9cb36d813ea6af12e711c244caf20c4c0b3c3f0666bc03c39463007a07",
+    "16-hubforge-templates.md": "a18f50efd3d0f303f41db126fc29238bd087a3e3310ada5b105a2e2b1f28384b",
+    "17-reclassify-fabricengine-add-to-dot.md": "3c0ba9793f0f43a3aa3d7abb5d2578192105149cb3b976c01cdc9f1c4371867c",
+    "18-reclassify-fabricengine-head-to-push.md": "b7f5783d7445f866bb09fb6ca2aa7200515f1062b417ea93d0a7cdfd3f1cfb18",
+    "19-reclassify-fabricengine-reconcile-to-worktree.md": "83d2bb0c73ede7c8eebac7d1d4381a32ae5824500ca88e09da2e99991ac2c5bd",
+    "20-reclassify-fabriccli-and-geometry.md": "aeca923cc00c74741bc6ea028857ac10c8d38ebeb2c8f50eaf31ae3beee3f3ce",
+    "21-reclassify-loom-webster-shed.md": "cdf636fb5d8ceeb995b7f997311ddabc2c96d582b4c9ccc632197b96e655d395",
+    "22-reclassify-reed-orch-shuttle.md": "3d00aef920f5a57ac28c049ff97e2b2ffe2f20da7082364c69cd04cf0934cce9",
+    "23-dotgit-leaf.md": "0124c68527ac28925d7eaf2e274b1d6e59b0bc3cdb8e3fbde306d122d35535e3",
+    "24-lyxcwd-walkup.md": "71e1cf3dd66a4f894d54482f2413174d6a84f52d508639cfc0093dd1852714af",
+    "25-gitrepo-geometry.md": "27704eda489ee970de0b08bc7bbd8a1195235d5ed80d622f68b0ae3d1c3ef265",
+    "26-gitrepo-ref-reads.md": "8aadb1e4aa5ebe5a6670b623a666313479a5570c667da6326349bb7abfe6b72b",
+    "27-gitexec-drop-gitdir-env.md": "00598ab1b36a40bc3671310dc5036ccffbe6e98db930913ed6cb99bb825e01f7",
+    "28-fabricengine-geometry-reads.md": "735d4d53249bd295ad2a73e2be5aa584b319c959dc25e1170a8caf815b631a00",
+    "29-fabricengine-branch-and-ref-reads.md": "4543e04369911b29c77109634e23067d3919d81456069d726d9df33b4def4cbe",
+    "30-fabricengine-head-upstream-tree-reads.md": "0cbea5b10cdc269564667dfd95ba60ac3297d6c5f9ed0ff18ce12c4cecc8c191",
+    "31-tierpurity-tmux-constraint.md": "e0be9a1afca4dacfaeecc8bf87b08ee33d6d4e042291bd3c40d15d840a9d4e9a",
+    "32-removestrand-scan.md": "2078bed08182a006f399c12437cf508766cf08e38fb434e101bc56b4ef37dbfb",
+    "33-weight-report-after.md": "1cae5d859b2d543fcfc0d687f3ff05c40c0eafe55d1fdaa66c4da3b27787fef1"
+  },
+  "planOverviewFrameHash": "30e1f22cc411706e1b0d6fd94f35d51544685481b49271764911b6ecb3e37032",
+  "partition": [
+    {
+      "cards": [
+        "01-fixture-git-marker",
+        "02-testtiming-resources",
+        "03-testtiming-git-census",
+        "04-weight-report-before",
+        "05-tmuxkit-hermetic-server"
+      ],
+      "profile": "cautious",
+      "estimate": 232950,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54652,
+        "read_union": 52424,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 456,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1560,
+              "file:internal/gitkit/doc.go": 480,
+              "file:internal/gitkit/gitkit_test.go": 3396,
+              "file:internal/hubforge/doc.go": 456,
+              "file:internal/hubforge/hub_test.go": 5964,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/gitkit": 2000,
+              "package:internal/hubforge": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/gitkit": 2000,
+              "tests:internal/hubforge": 2000
+            },
+            "messages": 118.5,
+            "written": 36006
+          },
+          {
+            "card": 2,
+            "card_text": 504,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1560,
+              "file:cmd/testtiming/main_test.go": 1440,
+              "package:cmd/lyx/testdata": 2000,
+              "package:cmd/testtiming": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:cmd/testtiming": 2000
+            },
+            "messages": 106.5,
+            "written": 32454
+          },
+          {
+            "card": 3,
+            "card_text": 360,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1560,
+              "package:cmd/lyx/testdata": 2000,
+              "package:cmd/testtiming": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:cmd/testtiming": 2000
+            },
+            "messages": 64.5,
+            "written": 19710
+          },
+          {
+            "card": 4,
+            "card_text": 192,
+            "reads": {
+              "file:docs/benchmarks/running-tests.md": 1704,
+              "package:docs/benchmarks": 2000,
+              "tests:docs/benchmarks": 2000
+            },
+            "messages": 12,
+            "written": 3792
+          },
+          {
+            "card": 5,
+            "card_text": 612,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1560,
+              "file:internal/reedengine/ensuresession_integration_test.go": 1404,
+              "file:internal/testkit/tmuxkit/tmuxkit_integration_test.go": 1584,
+              "file:pattern/PATTERN-test-isolation.md": 312,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/reedengine": 2000,
+              "package:internal/testkit/tmuxkit": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/testkit/tmuxkit": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 111,
+            "written": 33912
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-tmuxkit-package-server",
+        "07-tmuxkit-private-tmpdir-leftovers"
+      ],
+      "profile": "cautious",
+      "estimate": 419064,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61652,
+        "read_union": 211660,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 972,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1560,
+              "file:internal/burlerengine/smoke_cluster_test.go": 3816,
+              "file:internal/burlerengine/smoke_round_test.go": 4284,
+              "file:internal/loomcli/integration_driverbootstrap_test.go": 2184,
+              "file:internal/loomcli/smoke_attachprobe_test.go": 5988,
+              "file:internal/loomcli/smoke_bootstrapwiring_test.go": 1584,
+              "file:internal/loomcli/smoke_driverstrand_test.go": 3168,
+              "file:internal/loomcli/smoke_drivingsurface_test.go": 1572,
+              "file:internal/loomcli/smoke_gate_test.go": 2580,
+              "file:internal/loomcli/smoke_parentreview_test.go": 2268,
+              "file:internal/loomcli/smoke_starttail_test.go": 1416,
+              "file:internal/loomcli/smoke_test.go": 8112,
+              "file:internal/orchcli/smoke_adopt_large_test.go": 1308,
+              "file:internal/orchcli/smoke_cycle_test.go": 3780,
+              "file:internal/orchcli/smoke_live_test.go": 7152,
+              "file:internal/pairteardown/teardown_integration_test.go": 3072,
+              "file:internal/reedcli/smoke_coldstart_test.go": 2640,
+              "file:internal/reedcli/smoke_debuglog_test.go": 2148,
+              "file:internal/reedcli/smoke_dotfill_test.go": 6240,
+              "file:internal/reedcli/smoke_lifecycle_test.go": 8028,
+              "file:internal/reedcli/smoke_resume_test.go": 3792,
+              "file:internal/reedcli/smoke_selvage_keepalive_test.go": 4260,
+              "file:internal/reedcli/smoke_staterecovery_test.go": 6204,
+              "file:internal/reedcli/smoke_switchseed_test.go": 1140,
+              "file:internal/reedcli/smoke_teardown_test.go": 3576,
+              "file:internal/reedcli/smoke_test.go": 10572,
+              "file:internal/reedcli/smoke_warmpath_test.go": 2856,
+              "file:internal/reedcli/watchdog_integration_test.go": 5796,
+              "file:internal/reedcli/watchdogreap_integration_test.go": 5160,
+              "file:internal/reedengine/contract_integration_test.go": 12540,
+              "file:internal/seatengine/smoke_seats_test.go": 1704,
+              "file:internal/shuttlecli/smoke_guardrail_test.go": 2352,
+              "file:internal/shuttlecli/smoke_interrupt_test.go": 3972,
+              "file:internal/shuttlecli/smoke_run_test.go": 3564,
+              "file:internal/shuttlecli/smoke_turns_test.go": 5664,
+              "file:internal/testkit/tmuxkit/tmuxkit.go": 2088,
+              "file:internal/testkit/tmuxkit/tmuxkit_integration_test.go": 1584,
+              "file:internal/treadleengine/smoke_judge_test.go": 3972,
+              "file:internal/webstercli/cli_tmux_test.go": 888,
+              "file:pattern/PATTERN-test-isolation.md": 312,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/pairteardown": 2000,
+              "package:internal/reedcli": 2000,
+              "package:internal/reedengine": 2000,
+              "package:internal/seatengine": 2000,
+              "package:internal/shuttlecli": 2000,
+              "package:internal/testkit/tmuxkit": 2000,
+              "package:internal/treadleengine": 2000,
+              "package:internal/webstercli": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/pairteardown": 2000,
+              "tests:internal/reedcli": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/seatengine": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:internal/testkit/tmuxkit": 2000,
+              "tests:internal/treadleengine": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 377.5,
+            "written": 114222
+          },
+          {
+            "card": 7,
+            "card_text": 480,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1560,
+              "file:internal/testkit/tmuxkit/tmuxkit_integration_test.go": 1584,
+              "file:internal/testkit/tmuxkit/tmuxkit_test.go": 1860,
+              "file:pattern/PATTERN-test-isolation.md": 312,
+              "file:pattern/PATTERN-test-speed.md": 1164,
+              "file:pattern/PATTERN-testkit.md": 288,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/testkit/tmuxkit": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/testkit/tmuxkit": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 103.5,
+            "written": 31530
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-reedcli-probes-onto-tmuxkit",
+        "09-loomcli-resume-split",
+        "10-tmuxkit-socket-check",
+        "11-lyxbin-prebuilt",
+        "12-lyxbin-run",
+        "13-gatecli-prebuild"
+      ],
+      "profile": "cautious",
+      "estimate": 414146,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68652,
+        "read_union": 166448,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 252,
+            "reads": {
+              "file:internal/reedcli/smoke_proctree_test.go": 2724,
+              "file:internal/reedcli/smoke_test.go": 10572,
+              "package:internal/reedcli": 2000,
+              "tests:internal/reedcli": 2000
+            },
+            "messages": 32.5,
+            "written": 10002
+          },
+          {
+            "card": 9,
+            "card_text": 240,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1560,
+              "file:internal/loomcli/smoke_prebootstrap_integration_test.go": 3720,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 50,
+            "written": 15240
+          },
+          {
+            "card": 10,
+            "card_text": 432,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1560,
+              "file:internal/testkit/tmuxkit/tmuxkit_test.go": 1860,
+              "file:pattern/PATTERN-test-isolation.md": 312,
+              "file:pattern/PATTERN-test-speed.md": 1164,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/testkit/tmuxkit": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/testkit/tmuxkit": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 57.5,
+            "written": 17682
+          },
+          {
+            "card": 11,
+            "card_text": 372,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1560,
+              "file:internal/testkit/lyxbin/lyxbin_integration_test.go": 624,
+              "file:pattern/PATTERN-test-speed.md": 1164,
+              "file:pattern/PATTERN-testkit.md": 288,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/gateslot": 2000,
+              "package:internal/testkit/lyxbin": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/testkit/lyxbin": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 87,
+            "written": 26472
+          },
+          {
+            "card": 12,
+            "card_text": 588,
+            "reads": {
+              "file:cmd/lyx/main_integration_test.go": 3888,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1560,
+              "file:internal/loomcli/smoke_bootstrapwiring_test.go": 1584,
+              "file:internal/loomcli/smoke_driverstrand_test.go": 3168,
+              "file:internal/loomcli/smoke_drivingsurface_test.go": 1572,
+              "file:internal/loomcli/smoke_helpers_test.go": 4644,
+              "file:internal/loomcli/smoke_prebootstrap_integration_test.go": 3720,
+              "file:internal/loomcli/smoke_starttail_test.go": 1416,
+              "file:internal/loomcli/smoke_test.go": 8112,
+              "file:internal/orchcli/smoke_adopt_large_test.go": 1308,
+              "file:internal/orchcli/smoke_cycle_test.go": 3780,
+              "file:internal/orchcli/smoke_live_test.go": 7152,
+              "file:internal/reedcli/smoke_coldstart_test.go": 2640,
+              "file:internal/reedcli/smoke_debuglog_test.go": 2148,
+              "file:internal/reedcli/smoke_lifecycle_test.go": 8028,
+              "file:internal/reedcli/smoke_selvage_keepalive_test.go": 4260,
+              "file:internal/reedcli/smoke_staterecovery_test.go": 6204,
+              "file:internal/reedcli/smoke_warmpath_test.go": 2856,
+              "file:internal/testkit/lyxbin/lyxbin.go": 708,
+              "file:internal/testkit/lyxbin/lyxbin_integration_test.go": 624,
+              "file:pattern/PATTERN-testkit.md": 288,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/reedcli": 2000,
+              "package:internal/testkit/lyxbin": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/reedcli": 2000,
+              "tests:internal/testkit/lyxbin": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 219.5,
+            "written": 66438
+          },
+          {
+            "card": 13,
+            "card_text": 612,
+            "reads": {
+              "file:docs/benchmarks/running-tests.md": 1704,
+              "file:internal/gatecli/doc.go": 576,
+              "file:internal/gatecli/test_integration_test.go": 5748,
+              "file:internal/verifytree/doc.go": 324,
+              "file:internal/verifytree/verify_integration_test.go": 4896,
+              "file:internal/websterengine/cardverify_test.go": 1272,
+              "file:internal/websterengine/doc.go": 7140,
+              "package:cmd/testtiming": 2000,
+              "package:docs/benchmarks": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/gateslot": 2000,
+              "package:internal/verifytree": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:cmd/testtiming": 2000,
+              "tests:docs/benchmarks": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/verifytree": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 142,
+            "written": 43212
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "14-claudeengine-prebuilt-deny",
+        "15-gitkit-no-detached-gc",
+        "16-hubforge-templates",
+        "17-reclassify-fabricengine-add-to-dot"
+      ],
+      "profile": "cautious",
+      "estimate": 333800,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75652,
+        "read_union": 124396,
+        "cards": [
+          {
+            "card": 14,
+            "card_text": 240,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/settings_test.go": 7032,
+              "file:pattern/PATTERN-no-denied-recovery.md": 228,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:pattern": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 38.5,
+            "written": 11790
+          },
+          {
+            "card": 15,
+            "card_text": 180,
+            "reads": {
+              "file:internal/gitkit/doc.go": 480,
+              "file:internal/gitkit/gitkit_test.go": 3396,
+              "package:internal/gitkit": 2000,
+              "tests:internal/gitkit": 2000
+            },
+            "messages": 21,
+            "written": 6480
+          },
+          {
+            "card": 16,
+            "card_text": 576,
+            "reads": {
+              "file:cmd/lyx/hermeticenv_test.go": 2028,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1560,
+              "file:cmd/lyx/tierpurity_test.go": 2400,
+              "file:internal/fslink/fslink.go": 1080,
+              "file:internal/hubforge/doc.go": 456,
+              "file:internal/hubforge/hub_test.go": 5964,
+              "file:pattern/PATTERN-hubforge-fixtures.md": 96,
+              "file:pattern/PATTERN-test-speed.md": 1164,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/hubforge": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/hubforge": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 152.5,
+            "written": 46326
+          },
+          {
+            "card": 17,
+            "card_text": 456,
+            "reads": {
+              "file:internal/fabricengine/add_branch_exists_test.go": 888,
+              "file:internal/fabricengine/add_pushretry_integration_test.go": 540,
+              "file:internal/fabricengine/add_remoteleftover_integration_test.go": 5088,
+              "file:internal/fabricengine/add_rollback_adopt_test.go": 5424,
+              "file:internal/fabricengine/add_rollback_branch_integration_test.go": 1968,
+              "file:internal/fabricengine/add_runrecords_integration_test.go": 2832,
+              "file:internal/fabricengine/archive_integration_test.go": 2484,
+              "file:internal/fabricengine/checkout_index_refresh_test.go": 1080,
+              "file:internal/fabricengine/checkout_rollback_test.go": 2964,
+              "file:internal/fabricengine/cleanreason_integration_test.go": 1092,
+              "file:internal/fabricengine/cleanup_primary_integration_test.go": 960,
+              "file:internal/fabricengine/cleanupremote_integration_test.go": 4236,
+              "file:internal/fabricengine/cleanupremotewarp_integration_test.go": 2316,
+              "file:internal/fabricengine/coalesce_integration_test.go": 2184,
+              "file:internal/fabricengine/commit_integration_test.go": 11520,
+              "file:internal/fabricengine/committedfile_integration_test.go": 744,
+              "file:internal/fabricengine/config_driven_junctions_integration_test.go": 1584,
+              "file:internal/fabricengine/configchanges_integration_test.go": 1932,
+              "file:internal/fabricengine/destroy_containment_toctou_integration_test.go": 828,
+              "file:internal/fabricengine/destroyremote_integration_test.go": 2376,
+              "file:internal/fabricengine/destructivegaps_integration_test.go": 8148,
+              "file:internal/fabricengine/diff_integration_test.go": 2784,
+              "file:internal/fabricengine/dotlyxjunction_integration_test.go": 5088,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 229,
+            "written": 69156
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "18-reclassify-fabricengine-head-to-push",
+        "19-reclassify-fabricengine-reconcile-to-worktree"
+      ],
+      "profile": "cautious",
+      "estimate": 417144,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82652,
+        "read_union": 178660,
+        "cards": [
+          {
+            "card": 18,
+            "card_text": 528,
+            "reads": {
+              "file:internal/fabricengine/headsha_integration_test.go": 564,
+              "file:internal/fabricengine/healthreason_integration_test.go": 2592,
+              "file:internal/fabricengine/hook_test.go": 4464,
+              "file:internal/fabricengine/housekeeping_integration_test.go": 2028,
+              "file:internal/fabricengine/hubcontainment_integration_test.go": 1608,
+              "file:internal/fabricengine/index_integration_test.go": 1356,
+              "file:internal/fabricengine/junction_pattern_integration_test.go": 9480,
+              "file:internal/fabricengine/junction_repoint_test.go": 1524,
+              "file:internal/fabricengine/launchers_containment_integration_test.go": 1176,
+              "file:internal/fabricengine/livestate_manifest_selftest_test.go": 3480,
+              "file:internal/fabricengine/livestate_matrix_test.go": 4296,
+              "file:internal/fabricengine/livestate_refusal_selftest_test.go": 3852,
+              "file:internal/fabricengine/livestate_states_selftest_test.go": 4224,
+              "file:internal/fabricengine/livestate_verbs_selftest_test.go": 1752,
+              "file:internal/fabricengine/mergecrucible_integration_test.go": 10068,
+              "file:internal/fabricengine/mergein_integration_test.go": 5340,
+              "file:internal/fabricengine/mergesiblings_integration_test.go": 3468,
+              "file:internal/fabricengine/mergestate_integration_test.go": 4236,
+              "file:internal/fabricengine/mergestateactive_integration_test.go": 1224,
+              "file:internal/fabricengine/mutation_record_integration_test.go": 1272,
+              "file:internal/fabricengine/openparent_integration_test.go": 2988,
+              "file:internal/fabricengine/origin_integration_test.go": 5904,
+              "file:internal/fabricengine/pairbranch_archive_integration_test.go": 1356,
+              "file:internal/fabricengine/pathspec_tolerance_coupling_integration_test.go": 840,
+              "file:internal/fabricengine/portals_containment_integration_test.go": 720,
+              "file:internal/fabricengine/prune_dirty_integration_test.go": 1092,
+              "file:internal/fabricengine/prune_unowned_integration_test.go": 2004,
+              "file:internal/fabricengine/pull_integration_test.go": 7644,
+              "file:internal/fabricengine/pushanchored_integration_test.go": 6600,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 265,
+            "written": 80028
+          },
+          {
+            "card": 19,
+            "card_text": 504,
+            "reads": {
+              "file:internal/fabricengine/reconcile_empty_anchor_integration_test.go": 1152,
+              "file:internal/fabricengine/reconcile_stale_registration_test.go": 8508,
+              "file:internal/fabricengine/reconcile_stale_removal_test.go": 7212,
+              "file:internal/fabricengine/remoteonly_integration_test.go": 1080,
+              "file:internal/fabricengine/remove_archive_integration_test.go": 3300,
+              "file:internal/fabricengine/remove_finish_integration_test.go": 3252,
+              "file:internal/fabricengine/remove_guard_integration_test.go": 984,
+              "file:internal/fabricengine/remove_junctions_integration_test.go": 2304,
+              "file:internal/fabricengine/remove_records_integration_test.go": 2940,
+              "file:internal/fabricengine/remove_refusal_remedy_integration_test.go": 2016,
+              "file:internal/fabricengine/remove_remotetask_integration_test.go": 1788,
+              "file:internal/fabricengine/remove_reserved_integration_test.go": 744,
+              "file:internal/fabricengine/remove_siblingdirty_integration_test.go": 924,
+              "file:internal/fabricengine/remove_warpbranch_integration_test.go": 2064,
+              "file:internal/fabricengine/removeremote_integration_test.go": 1800,
+              "file:internal/fabricengine/resetpairwarp_integration_test.go": 5940,
+              "file:internal/fabricengine/snapshot_integration_test.go": 5796,
+              "file:internal/fabricengine/status_pollution_integration_test.go": 1092,
+              "file:internal/fabricengine/stencilcommit_integration_test.go": 2544,
+              "file:internal/fabricengine/stencilhistory_integration_test.go": 1452,
+              "file:internal/fabricengine/syncweft_integration_test.go": 2316,
+              "file:internal/fabricengine/unwire_test.go": 4068,
+              "file:internal/fabricengine/warpforward_integration_test.go": 2340,
+              "file:internal/fabricengine/weftgit_exclude_test.go": 3336,
+              "file:internal/fabricengine/weftgit_pathspec_integration_test.go": 3900,
+              "file:internal/fabricengine/weftgit_unborn_warp_test.go": 1296,
+              "file:internal/fabricengine/worktreelist_test.go": 2328,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 251,
+            "written": 75804
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "20-reclassify-fabriccli-and-geometry",
+        "21-reclassify-loom-webster-shed"
+      ],
+      "profile": "cautious",
+      "estimate": 424026,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89652,
+        "read_union": 231732,
+        "cards": [
+          {
+            "card": 20,
+            "card_text": 420,
+            "reads": {
+              "file:cmd/lyx/stencilseed_integration_test.go": 2892,
+              "file:internal/boardengine/boardtest/sync_test.go": 3168,
+              "file:internal/configcli/configcli_integration_test.go": 3036,
+              "file:internal/fabriccli/adoptremote_integration_test.go": 4812,
+              "file:internal/fabriccli/cleanhub_integration_test.go": 6600,
+              "file:internal/fabriccli/cleanupremove_integration_test.go": 5664,
+              "file:internal/fabriccli/hubmutation_integration_test.go": 5088,
+              "file:internal/fabriccli/mergescenario_integration_test.go": 6672,
+              "file:internal/fabriccli/weftskippush_integration_test.go": 1536,
+              "file:internal/gatecli/test_integration_test.go": 5748,
+              "file:internal/hubgeom/geometry_integration_test.go": 2760,
+              "file:internal/hubreconcile/ensure_integration_test.go": 6900,
+              "file:internal/idecli/cli_test.go": 1200,
+              "file:internal/ideengine/spawn_scenario_integration_test.go": 1224,
+              "file:internal/pairteardown/teardown_integration_test.go": 3072,
+              "file:internal/preflight/preflight_integration_test.go": 7512,
+              "file:internal/preflightshed/preflight_integration_test.go": 2592,
+              "file:internal/stencilcli/cli_integration_test.go": 5868,
+              "package:cmd/lyx": 2000,
+              "package:internal/boardengine/boardtest": 2000,
+              "package:internal/configcli": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/hubgeom": 2000,
+              "package:internal/hubreconcile": 2000,
+              "package:internal/idecli": 2000,
+              "package:internal/ideengine": 2000,
+              "package:internal/pairteardown": 2000,
+              "package:internal/preflight": 2000,
+              "package:internal/preflightshed": 2000,
+              "package:internal/stencilcli": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/boardengine/boardtest": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/hubreconcile": 2000,
+              "tests:internal/idecli": 2000,
+              "tests:internal/ideengine": 2000,
+              "tests:internal/pairteardown": 2000,
+              "tests:internal/preflight": 2000,
+              "tests:internal/preflightshed": 2000,
+              "tests:internal/stencilcli": 2000
+            },
+            "messages": 167,
+            "written": 50520
+          },
+          {
+            "card": 21,
+            "card_text": 372,
+            "reads": {
+              "file:internal/battencli/lifecycle_integration_test.go": 16212,
+              "file:internal/landingshed/finalize_integration_test.go": 3804,
+              "file:internal/landingshed/publish_integration_test.go": 2280,
+              "file:internal/loomcli/circling_integration_test.go": 684,
+              "file:internal/loomcli/integration_driverbootstrap_test.go": 2184,
+              "file:internal/loomcli/landingdeps_integration_test.go": 1068,
+              "file:internal/loomcli/parentreview_integration_test.go": 3216,
+              "file:internal/loomcli/smoke_driverstrand_test.go": 3168,
+              "file:internal/loomcli/smoke_helpers_test.go": 4644,
+              "file:internal/loomcli/smoke_starttail_test.go": 1416,
+              "file:internal/loomcli/wiring_carryover_integration_test.go": 1044,
+              "file:internal/loomcli/wiring_commitstatus_integration_test.go": 6576,
+              "file:internal/loomcli/wiring_publish_integration_test.go": 1152,
+              "file:internal/loomcli/wiring_rework_integration_test.go": 3060,
+              "file:internal/shedcli/parity_test.go": 4824,
+              "file:internal/webstercli/cli_integration_test.go": 2052,
+              "file:internal/webstercli/reset_test.go": 8784,
+              "file:internal/webstercli/verbs_test.go": 16428,
+              "package:internal/battencli": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedcli": 2000,
+              "package:internal/webstercli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedcli": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 172.5,
+            "written": 52122
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "22-reclassify-reed-orch-shuttle",
+        "23-dotgit-leaf",
+        "24-lyxcwd-walkup"
+      ],
+      "profile": "cautious",
+      "estimate": 411730,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 96652,
+        "read_union": 180624,
+        "cards": [
+          {
+            "card": 22,
+            "card_text": 528,
+            "reads": {
+              "file:internal/burlerengine/smoke_cluster_test.go": 3816,
+              "file:internal/burlerengine/smoke_round_test.go": 4284,
+              "file:internal/orchcli/notify_integration_test.go": 912,
+              "file:internal/orchcli/refusal_integration_test.go": 1620,
+              "file:internal/orchcli/smoke_cycle_test.go": 3780,
+              "file:internal/orchcli/smoke_live_test.go": 7152,
+              "file:internal/reedcli/cli_integration_test.go": 2796,
+              "file:internal/reedcli/naming_integration_test.go": 2748,
+              "file:internal/reedcli/smoke_coldstart_test.go": 2640,
+              "file:internal/reedcli/smoke_debuglog_test.go": 2148,
+              "file:internal/reedcli/smoke_dotfill_test.go": 6240,
+              "file:internal/reedcli/smoke_lifecycle_test.go": 8028,
+              "file:internal/reedcli/smoke_resume_test.go": 3792,
+              "file:internal/reedcli/smoke_selvage_keepalive_test.go": 4260,
+              "file:internal/reedcli/smoke_staterecovery_test.go": 6204,
+              "file:internal/reedcli/smoke_switchseed_test.go": 1140,
+              "file:internal/reedcli/smoke_teardown_test.go": 3576,
+              "file:internal/reedcli/smoke_warmpath_test.go": 2856,
+              "file:internal/reedcli/unlessname_integration_test.go": 1860,
+              "file:internal/reedcli/watchdog_integration_test.go": 5796,
+              "file:internal/reedcli/watchdogreap_integration_test.go": 5160,
+              "file:internal/seatengine/smoke_seats_test.go": 1704,
+              "file:internal/shuttlecli/smoke_guardrail_test.go": 2352,
+              "file:internal/shuttlecli/smoke_interrupt_test.go": 3972,
+              "file:internal/shuttlecli/smoke_run_test.go": 3564,
+              "file:internal/shuttlecli/smoke_turns_test.go": 5664,
+              "file:internal/treadleengine/smoke_judge_test.go": 3972,
+              "package:internal/burlerengine": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/reedcli": 2000,
+              "package:internal/seatengine": 2000,
+              "package:internal/shuttlecli": 2000,
+              "package:internal/treadleengine": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/reedcli": 2000,
+              "tests:internal/seatengine": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:internal/treadleengine": 2000
+            },
+            "messages": 203,
+            "written": 61428
+          },
+          {
+            "card": 23,
+            "card_text": 480,
+            "reads": {
+              "file:PATTERN.md": 1224,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1560,
+              "file:docs/overview.md": 7980,
+              "file:docs/shared-libs/README.md": 516,
+              "file:pattern/PATTERN-leaf-packages.md": 456,
+              "package:.": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:docs/shared-libs": 2000,
+              "package:internal/dotgit": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:docs/shared-libs": 2000,
+              "tests:internal/dotgit": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 90,
+            "written": 27480
+          },
+          {
+            "card": 24,
+            "card_text": 396,
+            "reads": {
+              "file:docs/shared-libs/lyxcwd.md": 1476,
+              "file:internal/fabricengine/warplayout_test.go": 708,
+              "file:internal/gitexec/doc.go": 312,
+              "file:internal/lyxcwd/leaf_enforcement_test.go": 204,
+              "file:internal/lyxcwd/lyxcwd_test.go": 2628,
+              "file:pattern/PATTERN-cwd-resolution.md": 120,
+              "package:docs/shared-libs": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/gitexec": 2000,
+              "package:internal/lyxcwd": 2000,
+              "package:pattern": 2000,
+              "tests:docs/shared-libs": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/gitexec": 2000,
+              "tests:internal/lyxcwd": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 150.5,
+            "written": 45546
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "25-gitrepo-geometry",
+        "26-gitrepo-ref-reads",
+        "27-gitexec-drop-gitdir-env",
+        "28-fabricengine-geometry-reads",
+        "29-fabricengine-branch-and-ref-reads",
+        "30-fabricengine-head-upstream-tree-reads"
+      ],
+      "profile": "cautious",
+      "estimate": 388908,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 8,
+        "startup": 103652,
+        "read_union": 67168,
+        "cards": [
+          {
+            "card": 25,
+            "card_text": 444,
+            "reads": {
+              "file:PATTERN.md": 1224,
+              "file:cmd/lyx/gitrepoboundary_test.go": 3288,
+              "file:internal/gitrepo/doc.go": 3864,
+              "file:internal/gitrepo/parity_test.go": 6048,
+              "file:pattern/PATTERN-gitrepo-client-boundary.md": 60,
+              "package:.": 2000,
+              "package:cmd/lyx": 2000,
+              "package:internal/gitrepo": 2000,
+              "package:internal/gitrepo/internal/gitoracle": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/gitrepo": 2000,
+              "tests:internal/gitrepo/internal/gitoracle": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 119.5,
+            "written": 36294
+          },
+          {
+            "card": 26,
+            "card_text": 384,
+            "reads": {
+              "file:internal/gitrepo/doc.go": 3864,
+              "file:internal/gitrepo/parity_test.go": 6048,
+              "package:internal/gitrepo": 2000,
+              "package:internal/gitrepo/internal/gitoracle": 2000,
+              "tests:internal/gitrepo": 2000,
+              "tests:internal/gitrepo/internal/gitoracle": 2000
+            },
+            "messages": 90.5,
+            "written": 27534
+          },
+          {
+            "card": 27,
+            "card_text": 216,
+            "reads": {
+              "file:internal/gitexec/doc.go": 312,
+              "file:internal/gitexec/gitexec_test.go": 3324,
+              "package:internal/gitexec": 2000,
+              "tests:internal/gitexec": 2000
+            },
+            "messages": 27,
+            "written": 8316
+          },
+          {
+            "card": 28,
+            "card_text": 252,
+            "reads": {
+              "file:cmd/lyx/checkedcall_test.go": 2544,
+              "package:cmd/lyx": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 134,
+            "written": 40452
+          },
+          {
+            "card": 29,
+            "card_text": 408,
+            "reads": {
+              "file:cmd/lyx/checkedcall_test.go": 2544,
+              "package:cmd/lyx": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 192,
+            "written": 58008
+          },
+          {
+            "card": 30,
+            "card_text": 384,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 16416,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 157,
+            "written": 47484
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "31-tierpurity-tmux-constraint",
+        "32-removestrand-scan",
+        "33-weight-report-after"
+      ],
+      "profile": "cautious",
+      "estimate": 163376,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 9,
+        "startup": 110652,
+        "read_union": 26936,
+        "cards": [
+          {
+            "card": 31,
+            "card_text": 216,
+            "reads": {
+              "file:cmd/lyx/tierpurity_test.go": 2400,
+              "file:pattern/PATTERN-test-speed.md": 1164,
+              "package:cmd/lyx": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 33,
+            "written": 10116
+          },
+          {
+            "card": 32,
+            "card_text": 264,
+            "reads": {
+              "file:PATTERN.md": 1224,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1560,
+              "package:.": 2000,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 45,
+            "written": 13764
+          },
+          {
+            "card": 33,
+            "card_text": 108,
+            "reads": {
+              "package:docs/benchmarks": 2000,
+              "tests:docs/benchmarks": 2000
+            },
+            "messages": 6,
+            "written": 1908
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "2853878c0424d54e8d4b663ad5834169",
+  "masterSessionId": "c9fab9d0-151f-424c-8602-7d36fe836e3e",
+  "batches": {
+    "1": {
+      "slug": "fixture-git-marker",
+      "cards": [
+        "01-fixture-git-marker",
+        "02-testtiming-resources",
+        "03-testtiming-git-census",
+        "04-weight-report-before",
+        "05-tmuxkit-hermetic-server"
+      ],
+      "cardHashes": {
+        "01-fixture-git-marker": "f27305a18b1579eefb9142b909cffe659b0a1b17185ed89ff540bd1a9410524b",
+        "02-testtiming-resources": "23b7006b7d41cc572466e4381bcd8f8b995d8e56afc28e9f3c4f131f2a42059e",
+        "03-testtiming-git-census": "56ab41657633eebe4ddf600e8cde34ef052bc3b6fbbcdd49626c3619b9efebca",
+        "04-weight-report-before": "e6f8e34325a8642013436b88622c15dafcd8312b4c66674699fe52ce3eb667fb",
+        "05-tmuxkit-hermetic-server": "30a20752e102626604c51dfd2c260151a99d87733983bb173dc554bdd6bbd1db"
+      },
+      "startSha": "7648e8b273d85b161a8156fe5e843978fa694ca2",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T09:10:54Z",
+      "sessionId": "c9fab9d0-151f-424c-8602-7d36fe836e3e",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
