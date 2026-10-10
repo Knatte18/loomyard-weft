@@ -21,3 +21,8 @@ Glyph↔path conversion stays in quarry; Loomyard never intersects lines with sy
 - Rejections carry a closed reason set (`EncloseReasons`), including `unaddressable` for a `.go` file in the repo root or a path containing `#`; Loomyard cites `path:line` for any rejected item.
 - A `found` glyph may not Resolve afterwards (an explicitly named gitignored file, a file without a package clause, a path through a symlinked directory; `quarry/enclose.go`). Loomyard treats a Resolve miss after Enclose as "no current span", never as an error, the same as a member the fixer deleted or renamed.
 - Loomyard pins quarry v0.2.1; this task bumps `go.mod` to v0.3.0, which has no other breaking change.
+
+## Review kick-start (operator, 2026-10-10)
+
+The operator reports that earlier research measured about 17% average speedup from such a kick-start pack.
+The fan-lab research (`fan-master-preread`) found solo `opus[medium]` the only medium-effort reviewer to find the BLOCKING finding, at 225 s per Discussion round; a pack of the code the target cites (22 of 25 files the forks needed) is the candidate to cut that time, and fan-lab tests it next.
