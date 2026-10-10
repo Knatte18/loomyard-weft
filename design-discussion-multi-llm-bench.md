@@ -19,5 +19,5 @@ Then the operator watches it in action on at least one live run before it is swi
 
 ## Retiring the single producer (operator, 2026-10-10)
 
-The seats producer with an empty `discussion_advisors` list runs as the single writer does (same prompt in effect, outputs, gates and timeouts).
+The seats producer with an empty `discussion_advisors` list covers the single writer's job: one chair prompt for every advisor count says "use your advisors if you have any; with none, decide each question yourself as you judge best", with no conditional rendering.
 Once that is tested, the single producer is parked, since seats with N=0 covers it; the bench should include an N=0 run against solo to show they match.
