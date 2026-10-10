@@ -55,6 +55,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 1 | **Batten idle notices count machine sleep as idle time**<br>• After a hibernate every run raises an idle notice for the whole sleep; the idle clock should skip time the machine was asleep | [`idle-notice-after-sleep`](design-idle-notice-after-sleep.md) | batten |
 | 2 | **webster record-batch 01 fails on create-not-done for a card named 3-proc-group-kill** | [`record-batch-card-scope`](design-record-batch-card-scope.md) | webster |
 | 3 | **shuttle raises a hold notice at the skill-load turn end, before the start prompt is sent** | [`hold-on-skill-load`](design-hold-on-skill-load.md) | shuttle |
+| 4 | **Implementer forks can push to the real hub remotes**<br>• A batch fork ran lyx fabric add against the real hub and pushed stray branches to GitHub | [`fork-real-remotes`](design-fork-real-remotes.md) | webster, fabric |
 
 ### Enhancements
 
