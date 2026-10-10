@@ -29,3 +29,4 @@ Compare the driver row of the token report per role, and the hub interventions, 
   The Haiku drivers of `multi-llm-producer` and `daemon-wakeups`, on the same prompt, started stepping at once; a message from the orch got it going.
 
   The driver stencil (`contracts/stencils/shed/shed-template-driver.md`) never says "start now"; a line that reading the prompt is the go-ahead and the first turn launches the first step would close it.
+  Fixed in 189fd59c8: the driver stencil now says the prompt is the go-ahead and a turn never ends on a question.
