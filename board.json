@@ -1514,6 +1514,22 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #501](https://github.com/Knatte18/loomyard/issues/501).\n\nSeen (publish-recovery, 2026-10-10): after `lyx loom approve`, Finalize stopped blocked with \"fabricengine: merge preconditions failed: worktree dirty\".\nThe task pair and its weft were clean; the dirty tree was the prime's weft (`loomyard-weft`, `main-weft`), holding two uncommitted batten records: `_lyx/shed/publish-recovery/status.json` and `_lyx/shed/test-suite-weight/status.json`.\nBatten writes these from the prime while runs are in flight and commits them later through weft sync, so any Finalize that runs between a write and its sync commit hits the precondition.\n\nWorkaround: the orchestrator ran `lyx fabric commit` in the prime, then `lyx loom resume` in the pair.\n\nExpected: Finalize's merge precondition ignores, or commits first, the parent weft's own batten records (`_lyx/shed/*/status.json` written by batten runs), so a sibling run's status write never blocks a landing.\n"
+    },
+    {
+      "id": 286,
+      "slug": "verify-log-overwritten",
+      "title": "Publish verify log is overwritten by a later run, so the failure is lost",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        502
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #502](https://github.com/Knatte18/loomyard/issues/502).\n\nSeen (publish-recovery, 2026-10-10): the Publish verify failed once (exit 1, the #497 subtest re-run), and a later verify run overwrote `.lyx/verify/verify.log`, so Friction-Reflect could not read the original failure and reflected on the later, passing log.\n\nWorkaround: none; the failure was reconstructed from the drive report and the orch's own investigation.\n\nExpected: the verify log is kept per attempt (for example `verify-\u003cattempt\u003e.log`, or appended with an attempt header), so a later run never erases the evidence of an earlier failure.\n"
     }
   ],
   "legacy_done": [
