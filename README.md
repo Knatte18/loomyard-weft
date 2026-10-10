@@ -24,7 +24,11 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+#### High priority
+
+| # | Task | Slug | After | Labels |
+| --- | --- | --- | --- | --- |
+| 1 | **Lens fan: master pre-reads and reviews before forking, forks get a read budget**<br>• Make the lens fan work as designed: the master reads cited code and reviews before forking, each fork has a tool-call budget, and Discussion and Plan use their own fans | [`fan-master-preread`](design-fan-master-preread.md) |  | burler, stencil |
 
 ### Layer A
 
