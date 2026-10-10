@@ -285,13 +285,6 @@ Rationale: Replacing git rev-parse must keep its symlink behaviour, since the ro
   - socket-dir-rule-fails-client-probe-packages (class design, severity BLOCKING, open in rounds 3)
 <!-- /lyx:carry-over Plan-Review -->
 
-<!-- lyx:carry-over Webster-Review -->
-- Webster-Review, round 2: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
-  Review: _lyx/reviews/webster/round-2-review.md; fixer report: _lyx/reviews/webster/round-2-fixer-report.md.
-  - harness-prebuildlyx-untested (class scope, severity MEDIUM, open in rounds 1, 2)
-  - prebuild-go-build-uncapped (class decision, severity MEDIUM, open in rounds 1, 2)
-<!-- /lyx:carry-over Webster-Review -->
-
 ## Acceptance criteria
 
 - `go run ./cmd/testtiming -resources` prints, for every package of the tier, the columns of D1, and the report file holds a before and an after table per tier with the load average.
