@@ -1,9 +1,9 @@
 # Card 5 — shedengine-failed-stop
 
 **Create:**
-- `plan:internal/shedengine#FailedStopRequest` -> `type FailedStopRequest struct`
-- `plan:internal/shedengine#FailedStopResult` -> `type FailedStopResult struct`
-- `plan:internal/shedengine#WriteFailedStop` -> `func WriteFailedStop(req FailedStopRequest) (FailedStopResult, error)`
+- `internal/shedengine#FailedStopRequest`
+- `internal/shedengine#FailedStopResult`
+- `internal/shedengine#WriteFailedStop`
 - `internal/shedengine/failedstop_test.go`
 
 **Edit:**

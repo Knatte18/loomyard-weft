@@ -21,14 +21,14 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/shedrun#LoopLock`
-- `plan:internal/shedrun#LoopPIDFile`
-- `plan:internal/shedrun#LoopJobName`
+- `internal/shedrun#LoopLock`
+- `internal/shedrun#LoopPIDFile`
+- `internal/shedrun#LoopJobName`
 - `plan:internal/shedverbs#ReadLoopPIDRecord`
 - `plan:internal/shedverbs#WriteLoopPIDRecord`
 - `plan:internal/shedverbs#TeardownLoopID`
-- `plan:internal/proc#KillTree`
-- `plan:internal/proc#TerminateNamedJob`
+- `internal/proc#KillTree`
+- `internal/proc#TerminateNamedJob`
 - `internal/pairteardown#runLockFree`
 - `internal/lock#TryAcquireWriteLock`
 - `internal/shedrun#StepsDir`

@@ -38,19 +38,19 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/proc#StartTied`
-- `plan:internal/proc#KillTree`
-- `plan:internal/proc#SelfRecord`
-- `plan:internal/proc#HoldNamedJob`
-- `plan:internal/proc#IsBreakawayRefused`
+- `internal/proc#StartTied`
+- `internal/proc#KillTree`
+- `internal/proc#SelfRecord`
+- `internal/proc#HoldNamedJob`
+- `internal/proc#IsBreakawayRefused`
 - `plan:internal/shedverbs#interruptedError`
 - `plan:internal/logger#NewTraceID`
 - `internal/fswatch#Watch`
 - `internal/lock#TryAcquireWriteLock`
 - `internal/lock#AcquireWriteLockWithin`
-- `plan:internal/shedengine#WriteFailedStop`
-- `plan:internal/shedrun#LoopPIDFile`
-- `plan:internal/shedrun#LoopEnvelope`
+- `internal/shedengine#WriteFailedStop`
+- `internal/shedrun#LoopPIDFile`
+- `internal/shedrun#LoopEnvelope`
 
 **Intent:** D2: the loop runs detached and the driver's command is a waiter on it, with the loop lock as the liveness record, the pid file for the kill, the Windows named job as the loop's identity, and the child tie from `internal/proc`; and D5's invariant, `PATTERN-failure-stop-visible`, lands here, where its waiter and its dead-loop stop are built.
 `stepCmd`'s `--until-stop` now calls `runUntilStop`; a hidden string flag, `LoopDetachedFlag`, exported for the two pre-runs, marks the detached loop process itself, which runs `runLoop`, and carries its loop id, which the spawning waiter mints with `logger.NewTraceID`; like card 11's branch, the detached branch returns before `rec.begin()`.

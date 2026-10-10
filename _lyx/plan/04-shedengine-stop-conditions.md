@@ -14,7 +14,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/shedengine#conditionReason` -> `func conditionReason(when, target string) string`
+- `internal/shedengine#conditionReason`
 
 **Intent:** The engine honours the two stop conditions of D3 wherever it honours `pause_requested`, so the Go driver `lyx loom run` and the loop (card 11) both stop at them through one site.
 `Status` gains `PauseBefore` and `PauseAfter` (`pause_before`, `pause_after`, `omitempty`), their own ownership class: an outside actor sets and removes them through `pause` (card 6), and Shed writes them cleared only in the persist that records `paused` for a fired condition and in `Goto`'s persist.

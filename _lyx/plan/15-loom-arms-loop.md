@@ -13,14 +13,14 @@
 
 **Uses:**
 - `plan:internal/shedverbs#LoopSpec`
-- `plan:internal/shedrun#LoopLock`
-- `plan:internal/shedrun#LoopPIDFile`
-- `plan:internal/shedrun#LoopLog`
-- `plan:internal/shedrun#LoopEnvelope`
-- `plan:internal/shedrun#LoopDelivered`
-- `plan:internal/shedrun#LoopJobName`
-- `plan:internal/shedrun#StepTraceCopy`
-- `plan:internal/shedrun#StepStderr`
+- `internal/shedrun#LoopLock`
+- `internal/shedrun#LoopPIDFile`
+- `internal/shedrun#LoopLog`
+- `internal/shedrun#LoopEnvelope`
+- `internal/shedrun#LoopDelivered`
+- `internal/shedrun#LoopJobName`
+- `internal/shedrun#StepTraceCopy`
+- `internal/shedrun#StepStderr`
 - `plan:internal/logger#TraceFilesFor`
 - `internal/logger#TraceDir`
 - `internal/shuttleengine#ReadAgentActivity`

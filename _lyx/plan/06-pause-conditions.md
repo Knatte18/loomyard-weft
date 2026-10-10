@@ -10,8 +10,8 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/shedverbs#pauseFlags` -> `type pauseFlags struct`
-- `plan:internal/shedverbs#applyPauseConditions` -> `func applyPauseConditions(cur shedengine.Status, flags pauseFlags, producers []shedengine.ProducerDef) (shedengine.Status, map[string]any, error)`
+- `internal/shedverbs#pauseFlags`
+- `internal/shedverbs#applyPauseConditions`
 
 **Uses:**
 - `internal/shedengine#Status`

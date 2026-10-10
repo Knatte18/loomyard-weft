@@ -1,18 +1,18 @@
 # Card 1 — proc-tied-child
 
 **Create:**
-- `plan:internal/proc#Tied` -> `type Tied struct`
-- `plan:internal/proc#StartTied` -> `func StartTied(cmd *exec.Cmd) (*Tied, error)`
-- `plan:internal/proc#Tied.Record` -> `func (t *Tied) Record() TreeRecord`
-- `plan:internal/proc#Tied.Wait` -> `func (t *Tied) Wait() error`
-- `plan:internal/proc#Tied.Quit` -> `func (t *Tied) Quit() error`
-- `plan:internal/proc#Tied.Kill` -> `func (t *Tied) Kill() error`
-- `plan:internal/proc#TreeRecord` -> `type TreeRecord struct`
-- `plan:internal/proc#KillTree` -> `func KillTree(rec TreeRecord) (bool, error)`
-- `plan:internal/proc#SelfRecord` -> `func SelfRecord() TreeRecord`
-- `plan:internal/proc#HoldNamedJob` -> `func HoldNamedJob(name string) (func() error, error)`
-- `plan:internal/proc#TerminateNamedJob` -> `func TerminateNamedJob(name string) (bool, error)`
-- `plan:internal/proc#IsBreakawayRefused` -> `func IsBreakawayRefused(err error) bool`
+- `internal/proc#Tied`
+- `internal/proc#StartTied`
+- `internal/proc#Tied.Record`
+- `internal/proc#Tied.Wait`
+- `internal/proc#Tied.Quit`
+- `internal/proc#Tied.Kill`
+- `internal/proc#TreeRecord`
+- `internal/proc#KillTree`
+- `internal/proc#SelfRecord`
+- `internal/proc#HoldNamedJob`
+- `internal/proc#TerminateNamedJob`
+- `internal/proc#IsBreakawayRefused`
 - `internal/proc/tied_test.go`
 - `internal/proc/tied_linux_test.go`
 

@@ -6,8 +6,8 @@
 - `internal/gatecli/child_windows.go`
 
 **Create:**
-- `plan:internal/gatecli#runTiedChild` -> `func runTiedChild(cmd *exec.Cmd) error`
-- `plan:internal/gatecli#terminatingSignalSet` -> `var terminatingSignalSet []os.Signal`
+- `internal/gatecli#runTiedChild`
+- `internal/gatecli#terminatingSignalSet`
 
 **Edit:**
 - `internal/gatecli#runTest`
@@ -15,7 +15,7 @@
 - `internal/gatecli/doc.go`
 
 **Uses:**
-- `plan:internal/proc#StartTied`
+- `internal/proc#StartTied`
 
 **Intent:** `lyx gate test` uses the tie from `internal/proc` instead of its own copy, as D2 states.
 The three platform files go, and with them the platform-split `runChild` and `terminatingSignals`; one `child.go` holds their replacements under names the gate resolves uniquely.

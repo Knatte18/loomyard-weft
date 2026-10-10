@@ -1,14 +1,14 @@
 # Card 3 — shedrun-loop-files
 
 **Create:**
-- `plan:internal/shedrun#LoopLock` -> `func LoopLock(l *lyxcwd.Location, runID string) string`
-- `plan:internal/shedrun#LoopPIDFile` -> `func LoopPIDFile(l *lyxcwd.Location, runID string) string`
-- `plan:internal/shedrun#LoopLog` -> `func LoopLog(l *lyxcwd.Location, runID string) string`
-- `plan:internal/shedrun#LoopEnvelope` -> `func LoopEnvelope(l *lyxcwd.Location, runID string) string`
-- `plan:internal/shedrun#LoopDelivered` -> `func LoopDelivered(l *lyxcwd.Location, runID, loopID string) string`
-- `plan:internal/shedrun#LoopJobName` -> `func LoopJobName(l *lyxcwd.Location, runID string) string`
-- `plan:internal/shedrun#StepTraceCopy` -> `func StepTraceCopy(l *lyxcwd.Location, runID, traceID string) string`
-- `plan:internal/shedrun#StepStderr` -> `func StepStderr(l *lyxcwd.Location, runID, traceID string) string`
+- `internal/shedrun#LoopLock`
+- `internal/shedrun#LoopPIDFile`
+- `internal/shedrun#LoopLog`
+- `internal/shedrun#LoopEnvelope`
+- `internal/shedrun#LoopDelivered`
+- `internal/shedrun#LoopJobName`
+- `internal/shedrun#StepTraceCopy`
+- `internal/shedrun#StepStderr`
 
 **Edit:**
 - `internal/shedrun/paths_test.go`

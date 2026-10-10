@@ -1,26 +1,26 @@
 {
   "runGuid": "09c435768177848e47cc3084c4ecf68e",
-  "planFingerprint": "1b1aea239e943981c7e5c1230df66e8adaec5576f7c410f46ec31b3c60e249f8",
+  "planFingerprint": "71d4a9eb95cb20aec20d2f9cd2c362e9ec3fe2916f4fb7638fe04153f9357370",
   "planFileHashes": {
     "00-overview.md": "d13980dbb92488956906b8dd8dc5046595be313b7ce493fb31e58b23a8777395",
-    "01-proc-tied-child.md": "c8e8b273a0582dd07495d0adb302c40ccb0df98fd53c33f22b8d49f8f5f737b3",
-    "02-gatecli-tied-child.md": "571c974a6d1538ef7751b217fe930358efae57dd0a382661729b68b3b92ab75c",
-    "03-shedrun-loop-files.md": "80ea60960173bd26183ab469088cb58ffab5a6f00b386c2cdb3db10c18cb30f1",
-    "04-shedengine-stop-conditions.md": "7f1c85070141ea8cda0235565382d8582810724d8c8317fe7d1a0b392b0ab55f",
-    "05-shedengine-failed-stop.md": "b69ca40f4890ded56323440eab984680bd15d7270f55178c5d768c90030452ce",
-    "06-pause-conditions.md": "e51a5aa7bedffd34282ce27e97994cd5759cb7736484410407dbdd697bc46bf7",
+    "01-proc-tied-child.md": "9b00dcf8019f5427a6ce0c2c94cdd0d877ccab54ad18194240bc1a699fd5da17",
+    "02-gatecli-tied-child.md": "6e4dfc117d2ef101e4b6a3612af03b2faf6efa68d13c54228ba3ad9c7955a9f1",
+    "03-shedrun-loop-files.md": "086271bce11f3b0dfa526b6ec749c218fc7ad3c94391317f162116b5c69f1ddc",
+    "04-shedengine-stop-conditions.md": "9479b85a33490adbdb78ba312b4fc12777196b0e65646623fbabf0391f597e9d",
+    "05-shedengine-failed-stop.md": "1bd6c4c8ad3d7ebb452de1f0470f3c7ba95a2f4f304501b9ccf225c9a5bb605e",
+    "06-pause-conditions.md": "8c02ca2a07784f87f8cac0d06bf0215d5d9e69e720912926ef7db7558ef4e0a8",
     "07-step-progress-compact.md": "5eec74ebf34706140f72ce7ea7a53e498faaf4870922ed2444c3334a74eec5dd",
     "08-pattern-overview-room.md": "0665db4767525d20bc3ddab4ad685c2de0d9eac7b5de09808f7cb6c91efc67cd",
     "09-interrupted-kind-and-arming-refusal.md": "e2f2e22cbe3fae1c33512a6910957d452606d08c9c4676fba0263b4d44d16778",
     "10-logger-child-traces.md": "ac0a87d6de16934798c476d4439292ef31e022ec4404b68eafbebdfd08b0f800",
-    "11-loop-body.md": "8ebf1f543de7cb4dc914fcbe184ab4badfe99993627e031654b9459cd28e33d0",
-    "12-loop-detach-wait.md": "1427041fdffbbd787139b0c6309435cae6dcf5887727956cd76a44ecb57d53ff",
+    "11-loop-body.md": "2635f652897bca9c0630019f33235ee125ca16052e5af28970a785a433ece2f3",
+    "12-loop-detach-wait.md": "3af226cd6bd7a3198f94dbe585bd0d87771faad8169c89484e5a48c673a395bd",
     "13-loop-watchdog.md": "f14d6b5f28115d4fb1dfc2cf49629b689f7e4655ddd0274bef77c776d2af1acb",
     "14-loom-idle-timeout-key.md": "1d29b871a729929f781de045fd95a8cd98a7fb53bc52cf11ec3c07bf677fef27",
-    "15-loom-arms-loop.md": "1da051f8684721b824f33743bea141d2e9e8326f53f874d20b4e56179f93f2b4",
+    "15-loom-arms-loop.md": "41456084d956797a5620dd26ff352b1b928471483809bd647cde310506e5ffb4",
     "16-start-keeps-status-strand.md": "acaea145e3870623f58074543a25ded0c27f326765a5f7850a257703957d52c9",
     "17-driver-stencil-rewrite.md": "f288e5f8d8f86e1abfbfd72f74717d91cedc85e7ed08da52ccdfe00bbc7d23ad",
-    "18-pairteardown-loop.md": "5e22e80e6af1a7355693a54eec7bde13f9baa634dbfd71f53ff219a430498568",
+    "18-pairteardown-loop.md": "ad86b7e7c94ff77872d739f8dd43d0ddfbb285c7cc5c4f9d044556b0484c2d0b",
     "19-plan-gate-findings-file.md": "cb99b907d333bed3834394c563e139f2fce9ed1b11a4927c7072b1fe23f7daa3",
     "20-stencil-drift-once.md": "368d51287a3cd267fa57f3a511d8afd973e568bbb4ba8863e8ba67c8da254c6b"
   },
@@ -496,7 +496,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "aa143fce7f38b5b92946363e7ea2e322",
   "masterSessionId": "9c21f887-456d-406f-be85-d2457070e9fe",
   "batches": {
@@ -511,19 +511,39 @@
         "06-pause-conditions"
       ],
       "cardHashes": {
-        "01-proc-tied-child": "c8e8b273a0582dd07495d0adb302c40ccb0df98fd53c33f22b8d49f8f5f737b3",
-        "02-gatecli-tied-child": "571c974a6d1538ef7751b217fe930358efae57dd0a382661729b68b3b92ab75c",
-        "03-shedrun-loop-files": "80ea60960173bd26183ab469088cb58ffab5a6f00b386c2cdb3db10c18cb30f1",
-        "04-shedengine-stop-conditions": "7f1c85070141ea8cda0235565382d8582810724d8c8317fe7d1a0b392b0ab55f",
-        "05-shedengine-failed-stop": "b69ca40f4890ded56323440eab984680bd15d7270f55178c5d768c90030452ce",
-        "06-pause-conditions": "e51a5aa7bedffd34282ce27e97994cd5759cb7736484410407dbdd697bc46bf7"
+        "01-proc-tied-child": "9b00dcf8019f5427a6ce0c2c94cdd0d877ccab54ad18194240bc1a699fd5da17",
+        "02-gatecli-tied-child": "6e4dfc117d2ef101e4b6a3612af03b2faf6efa68d13c54228ba3ad9c7955a9f1",
+        "03-shedrun-loop-files": "086271bce11f3b0dfa526b6ec749c218fc7ad3c94391317f162116b5c69f1ddc",
+        "04-shedengine-stop-conditions": "9479b85a33490adbdb78ba312b4fc12777196b0e65646623fbabf0391f597e9d",
+        "05-shedengine-failed-stop": "1bd6c4c8ad3d7ebb452de1f0470f3c7ba95a2f4f304501b9ccf225c9a5bb605e",
+        "06-pause-conditions": "8c02ca2a07784f87f8cac0d06bf0215d5d9e69e720912926ef7db7558ef4e0a8"
       },
       "startSha": "184648f0d15a09c3d6d0ea6dca464fae950691e5",
       "kind": "fork",
       "spawnedAt": "2026-10-10T10:48:06Z",
       "sessionId": "9c21f887-456d-406f-be85-d2457070e9fe",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-proc-tied-child",
+        "status": "done",
+        "head_sha": "f239fd9a1d93e6712d869b1f2e0e25b7a2fb5ddf",
+        "deviations": [
+          "internal/proc/proc_linux.go"
+        ]
+      },
+      "cardShas": [
+        "f239fd9a1d93e6712d869b1f2e0e25b7a2fb5ddf"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-driver-context/9c21f887-456d-406f-be85-d2457070e9fe/subagents/agent-ae5b8b2f5d0936ab3.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-driver-context/9c21f887-456d-406f-be85-d2457070e9fe/subagents/agent-ae5b8b2f5d0936ab3.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-driver-context/9c21f887-456d-406f-be85-d2457070e9fe/subagents/agent-ae5b8b2f5d0936ab3.jsonl"
+  ]
 }

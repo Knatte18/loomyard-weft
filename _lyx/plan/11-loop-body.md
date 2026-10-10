@@ -43,14 +43,14 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/shedengine#WriteFailedStop`
+- `internal/shedengine#WriteFailedStop`
 - `plan:internal/shedverbs#ReportArmError`
-- `plan:internal/shedrun#LoopLock`
+- `internal/shedrun#LoopLock`
 - `internal/shedrun#StatusFile`
 - `internal/shedrun#RunLock`
 - `internal/shedrun#StatusLock`
 - `plan:internal/logger#NewTraceID`
-- `plan:internal/proc#TreeRecord`
+- `internal/proc#TreeRecord`
 - `plan:internal/shedverbs#KindInterrupted`
 - `internal/shedverbs#shortStepEnvelope`
 - `internal/shedverbs#shortStepErrFields`
