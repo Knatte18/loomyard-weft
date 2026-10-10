@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster-Bouncer",
+  "current_producer": "Describe",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster-Bouncer",
-    "last": "Webster-Burler → bounced to Webster-Bouncer",
+    "now": "Describe",
+    "last": "Webster-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -238,6 +238,12 @@
       "outcome": "stuck",
       "output": "/home/knatte/Code/loomyard-LYXHUB/publish-recovery/_lyx/reviews/webster/round-3-review.md",
       "at": "2026-10-10T10:02:39Z"
+    },
+    {
+      "producer": "Webster-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/publish-recovery/_lyx/reviews/webster/round-3-bouncer-ledger.md",
+      "at": "2026-10-10T10:03:19Z"
     }
   ],
   "product": {
