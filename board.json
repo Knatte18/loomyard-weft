@@ -819,21 +819,6 @@
       "body": "## Seen\n\nPlan gate rejects and Plan-Review rounds come mostly from facts the planner got wrong or missed: an uncovered caller, a verify line in the wrong module, a nested fixture module, a card over its test budget.\nPlan is one document that must hang together, so two agents writing it at once would conflict.\n\n## Idea\n\nPlan-Write runs on `MultiLLMProducer` (task `multi-llm-producer`), the planner as the `chair`, with advisors doing work the chair would otherwise do itself:\n\n1. A code-reading advisor maps, for each package the plan touches, its callers, tests, nested modules and verify commands, and answers the chair's questions from that map.\n2. A card-checking advisor reads each card as the chair finishes it and checks its scope, `Edit:` list, verify lines and test budget, so the chair fixes it while its context is fresh rather than in a later review round.\n\nA third shape, advisors writing the cards of their own batch from the chair's overview, is faster on large tasks but makes the cards hard to keep consistent; left out unless the first two fall short.\n\n## When\n\nOperator, 2026-10-08: later, after `discussion-multi-llm`.\nPlan runs on `fable[high]` as a single agent from 2026-10-08; this is the next step if that does not reduce plan gate rejects and Plan-Review rounds.\n"
     },
     {
-      "id": 256,
-      "slug": "idle-notice-after-sleep",
-      "title": "Batten idle notices count machine sleep as idle time",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "batten"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "After a hibernate every run raises an idle notice for the whole sleep; the idle clock should skip time the machine was asleep",
-      "body": "## Seen\n\nThe machine hibernated from 2026-10-08 22:17 to 2026-10-10 06:01 CEST with three runs in flight.\nMinutes after waking, batten raised an idle notice for each run (\"agents idle for 31h46m\"), although every agent had resumed its turn and was working.\nThe orch has to check the system log for a sleep window before reading any idle notice (orch role, Investigating a stop).\n\n## Idea\n\nThe idle clock measures time the machine was awake: it uses a clock that stops during suspend (`CLOCK_MONOTONIC` on Linux rather than wall time), or drops a gap that matches a sleep window.\nAfter a wake, a run is idle only once its agents have stayed quiet for the idle threshold of awake time.\n"
-    },
-    {
       "id": 264,
       "slug": "proc-child-lifetime",
       "title": "One owner for child-process lifetime in internal/proc",
@@ -847,23 +832,6 @@
       "brief": "Fold lyx gate test's process-group, Pdeathsig and job-object setup into internal/proc beside ConfigureGroupKill",
       "body": "Two process-lifetime implementations exist once `gate-test-scope` and `git-robustness` both land: `internal/proc` `ConfigureGroupKill` (process group, group SIGKILL on cancel, shared by `verifyrun` and `gitexec`) and `lyx gate test`'s own child lifetime (process group, group kill on a caught signal, Linux `Pdeathsig`, Windows kill-on-close job object).\nThe orch kept them apart on 2026-10-10 so the two parallel branches would merge without conflict.\n\nIdea: move the `lyx gate` child-lifetime setup into `internal/proc` beside `ConfigureGroupKill`, so one package owns child-process lifetime, and consider whether `verifyrun` and `gitexec` should gain the parent-death signal and job object as well.\n\nThe package also lacks a `doc.go`; its file headers carry the description (PR-Gate review of PR #483).\n",
       "status": ""
-    },
-    {
-      "id": 272,
-      "slug": "hold-on-skill-load",
-      "title": "shuttle raises a hold notice at the skill-load turn end, before the start prompt is sent",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "shuttle"
-      ],
-      "issues": [
-        485
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #485](https://github.com/Knatte18/loomyard/issues/485).\n\nOn 2026-10-10 at about 07:07 the orch got a hold notice for `ly:bolt-and-store:discussion`: \"ended a turn without its output files and is held … Its last message: «ok scribe:prose, scribe:conversation»\".\nThat last message is the reply to shuttle's own skill-load prompt.\nThe pane shows the start prompt (\"Read …/prompt.md in full first …\") typed right after it, and the agent working on its task within seconds.\nSo the hold check judged the skill-load turn end as a task turn end that lacked its outputs, and the orch was woken for nothing.\n\n## Expected\n\n- The turn end that answers the skill-load prompt (and any other turn shuttle itself injected before the start prompt) never counts as a task turn end for the hold check.\n- A hold notice is raised only after the start prompt was sent and a later turn ends without the outputs.\n"
     },
     {
       "id": 275,
@@ -912,24 +880,6 @@
       "isolated": false,
       "brief": "",
       "body": "Seen (2026-10-10): after `daemon-wakeups` raised `poll_interval_ms` in the shuttle template to 1000 with a floor of 1000, `lyx config reconcile` kept the prime's and every pair's old default `500`, so every `lyx` command in them logs \"shuttle config: poll_interval_ms is below the floor and is raised to it\".\nThe orch set the prime to 1000 by hand with `lyx config shuttle --set`; pairs created earlier keep warning until they are torn down.\n\nIdea: reconcile updates a value that still equals the old template default, or at least one that the new floor would raise, and says so in its report.\n"
-    },
-    {
-      "id": 287,
-      "slug": "bounce-budget-after-approved",
-      "title": "Bounce budget blocks a review segment after its round was approved, before the Bouncer verdict",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "burler",
-        "loom"
-      ],
-      "issues": [
-        503
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #503](https://github.com/Knatte18/loomyard/issues/503).\n\nSeen (publish-recovery, 2026-10-10): Webster-Review's round 3 review was APPROVED (one LOW finding) and its fixer finished with a green verify gate, but the run blocked with \"bounce budget exhausted for Webster-Burler\" before the Bouncer wrote `round-3-bouncer-verdict.md`.\n`lyx loom circling accept` refused, since the run was blocked rather than awaiting, so the orchestrator needed an investigation fork, then `lyx shed goto publish-recovery --to Webster-Burler` and `lyx loom resume`, which spent another review round on approved work.\n\nWorkaround: goto Webster-Burler plus resume.\n\nExpected: the bounce budget is checked before a round starts, not after an approved round ends, so a round whose review approved always reaches its Bouncer verdict and the run moves on.\n"
     },
     {
       "id": 291,
@@ -1138,22 +1088,6 @@
       "body": ""
     },
     {
-      "id": 312,
-      "slug": "shuttle-state-disagrees",
-      "title": "Shuttle logs held loop and busy state disagreeing",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "shuttle"
-      ],
-      "issues": [],
-      "priority": "low",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "In run cli-surface the Webster step trace logged `shuttle: session state disagrees (loop=held, state=busy)` before idle-done; no stop followed. Idea: find whether held and busy can disagree for long, and log which side wins.",
-      "body": ""
-    },
-    {
       "id": 313,
       "slug": "fixer-critical-of-findings",
       "title": "Burler fixer weighs each finding critically before fixing",
@@ -1186,24 +1120,6 @@
       "body": ""
     },
     {
-      "id": 316,
-      "slug": "pr-gate-budget-comment",
-      "title": "loom-recipe.yaml comment misstates PR-Gate's rejection budget; max_bounces never trips",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "loom",
-        "shed"
-      ],
-      "issues": [
-        526
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #526](https://github.com/Knatte18/loomyard/issues/526).\n\nWhat happened: a comment in `contracts/recipes/loom-recipe.yaml` says PR-Gate's \"episode Stuck count never resets between rounds, so the budget is five rejection rounds per task\".\n`episodeStuckCount` in `internal/shedengine/run.go` disagrees: a Done by any row in the same segment ends the episode, and `PR-Rework` shares `PR-Review` with `PR-Gate`, so the count resets after every rework and `max_bounces: 5` never trips.\nAn agent trusted the comment and wrote a five-rejection bound into a design, which the review then had to overturn as blocking.\n\nWhy it is abnormal: the documented budget and the engine behaviour contradict each other, and any recipe whose rework row shares the gate's segment inherits the false bound.\n\nWhat to do: fix the comment, or change the engine if a per-task budget was intended.\n\nProvenance: task `quick-recipe`; note burler-discussion-r1.md.\n"
-    },
-    {
       "id": 317,
       "slug": "webster-stability",
       "title": "Webster stability: gate shells, Master self-fix, recovery, Create checks",
@@ -1231,6 +1147,30 @@
       "isolated": false,
       "brief": "Fix the Webster faults outside the audit that stop or mislead runs",
       "body": "## Goal\n\nClose the Webster faults that stop or mislead runs outside the audit: background gate shells, Master fixing verify failures itself, recovery attribution and gates, and Create checks that cannot pass for unexported or build-tagged members.\n\n## 1. A background gate shell is cut off at a turn end (#505, #509, #517)\n\nMaster's wait counted a turn end while a background `lyx gate test --tags integration` shell was still running; after `background_shell_wait_min` the wait stopped, the run finished `done` because Master's output files existed, and shuttle removing the strand killed the shell.\nA run can report `done` with a gate tier unfinished.\nExpected: a running gate shell holds the turn end, or lyx stops it explicitly and records in the run that its result was discarded, so the outcome never reads as \"tests passed\".\n\n## 2. Master fixes a verify failure itself\n\nIn `driver-context` (2026-10-10) Master (`sonnet[medium]`) edited and committed a failing assertion itself on Publish verify attempt 3, although its stencil sends verify failures to one fixer fork; the run-exit audit blocked it as a parent-write and the fix had to be reverted, `accept-audit`ed and redone through a fork.\nExpected: the rule is stated where Master reads a verify failure, not only in its rules list, or Master has a verb that spawns the verify fixer, so the right path is the easy one.\n\n## 3. A second recovery treats the first recovery's files as foreign (#522)\n\nIn `quick-recipe` (2026-10-10) batch 01's first recovery edited 19 files for card 1 and was stopped uncommitted when Webster restarted; the second recovery's prompt listed them under \"Not written by this run: leave it untouched\", and the strand blocked.\nExpected: files an earlier recovery of the same batch wrote count as the batch's own work (attribution by batch, not by shuttle run id), or the second recovery starts from a clean tree with the first attempt's diff offered as reference.\nAlso: `recover-batch 1` exited 0 while the batch ended failed and terminal; it should exit non-zero.\n\n## 4. The recovery prompt does not name its allowed gates\n\nThe same recovery was unsure whether `lyx gate test` and `lyx loom lint-comments` fell under the ban on fabric commands, and could only compile-check tmux-tagged card steps.\nExpected: the recovery prompt names the card and batch gates as always allowed, and says tmux-tagged steps are left to verify.\n\n## 5. Create check fails on unexported targets (#511)\n\n`record-batch` refused two batches with `create-not-done` for unexported targets (`plan:cmd/testtiming#rusageStats`, `plan:internal/testkit/tmuxkit#tmuxAllowed`); recovery failed the same way and the batches died.\nExpected: find whether the check resolves unexported identifiers and identifiers in test files; fix it if not, and make the refusal say how the target was looked up, so a missing symbol is told apart from a resolver limit.\n\n## 6. Build-tagged and per-GOOS members resolve ambiguous (#500, #507)\n\nA member declared once per mutually exclusive build-constraint set (`tmuxAllowed` in `allow_tmux.go` and `allow_none.go`), or once per GOOS (`StartTime` in `internal/proc`, `runChild` in `internal/gatecli`), resolves `ambiguous` in quarry, and DoneChecks accept only `found` or `multipart`, so its Create or Edit can never pass.\nExpected: DoneChecks accept an ambiguous answer whose candidates all sit in files with disjoint build constraints (or quarry honours build constraints), and the plan validator flags such a glyph at Plan time rather than at record-batch.\n"
+    },
+    {
+      "id": 318,
+      "slug": "loom-small-bugs",
+      "title": "Loop machinery small bugs: bounce budget, PR-Gate comment, sleep-aware idle, skill-load hold",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "loom",
+        "burler",
+        "shed",
+        "batten",
+        "shuttle"
+      ],
+      "issues": [
+        503,
+        526,
+        485
+      ],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Five small faults in burler/loom, shed, batten and shuttle",
+      "body": "## Goal\n\nFive small faults in the loop machinery: the bounce budget, the PR-Gate budget comment, idle notices after sleep, hold notices at skill load, and a shuttle state disagreement.\n\n## 1. Bounce budget blocks an approved round (#503)\n\nIn `publish-recovery` (2026-10-10) Webster-Review's round 3 was APPROVED and its fixer finished with a green verify gate, but the run blocked with \"bounce budget exhausted for Webster-Burler\" before the Bouncer wrote `round-3-bouncer-verdict.md`; `lyx loom circling accept` refused because the run was blocked, not awaiting, and the workaround (goto Webster-Burler plus resume) spent another review round on approved work.\nExpected: the budget is checked before a round starts, not after an approved round ends, so an approved round always reaches its Bouncer verdict and the run moves on.\n\n## 2. PR-Gate budget comment (#526)\n\nA comment in `contracts/recipes/loom-recipe.yaml` says PR-Gate's \"episode Stuck count never resets between rounds, so the budget is five rejection rounds per task\", but `episodeStuckCount` in `internal/shedengine/run.go` ends the episode on a Done by any row in the segment, and `PR-Rework` shares the segment with `PR-Gate`, so the count resets after every rework and `max_bounces: 5` never trips.\nAn agent trusted the comment and wrote a five-rejection bound into a design.\nExpected: the comment states the engine's real behaviour, in every recipe that carries it; a per-task PR-Gate budget is out of scope.\n\n## 3. Idle notices count machine sleep\n\nAfter a hibernate (2026-10-08 22:17 to 2026-10-10 06:01) batten raised an idle notice for every run (\"agents idle for 31h46m\") although every agent had resumed and was working.\nExpected: the idle clock measures awake time (a clock that stops during suspend, `CLOCK_MONOTONIC` on Linux, rather than wall time, or a gap matching a sleep window is dropped), so after a wake a run is idle only once its agents stay quiet for the threshold of awake time.\n\n## 4. Hold notice at the skill-load turn end (#485)\n\nThe orch got a hold notice for `ly:bolt-and-store:discussion` whose last message was «ok scribe:prose, scribe:conversation», the reply to shuttle's own skill-load prompt; the start prompt was typed right after and the agent worked within seconds.\nExpected: a turn end answering the skill-load prompt, or any turn shuttle injected before the start prompt, never counts as a task turn end for the hold check; a hold notice is raised only after the start prompt was sent.\n\n## 5. Shuttle logs held and busy disagreeing\n\nIn `cli-surface` the Webster step trace logged `shuttle: session state disagrees (loop=held, state=busy)` before idle-done; no stop followed.\nExpected: find whether held and busy can disagree for long; the log line names which side wins, and a lasting disagreement resolves to one state.\n"
     }
   ]
 }

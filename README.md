@@ -27,7 +27,11 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | After | Labels |
+| --- | --- | --- | --- | --- |
+| 1 | **Loop machinery small bugs: bounce budget, PR-Gate comment, sleep-aware idle, skill-load hold**<br>• Five small faults in burler/loom, shed, batten and shuttle | [`loom-small-bugs`](design-loom-small-bugs.md) |  | loom, burler, shed, batten, shuttle |
 
 ### Layer A
 
@@ -49,17 +53,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 1 | **Batten idle notices count machine sleep as idle time**<br>• After a hibernate every run raises an idle notice for the whole sleep; the idle clock should skip time the machine was asleep | [`idle-notice-after-sleep`](design-idle-notice-after-sleep.md) | batten |
-| 2 | **shuttle raises a hold notice at the skill-load turn end, before the start prompt is sent** | [`hold-on-skill-load`](design-hold-on-skill-load.md) | shuttle |
-| 3 | **Bounce budget blocks a review segment after its round was approved, before the Bouncer verdict** | [`bounce-budget-after-approved`](design-bounce-budget-after-approved.md) | burler, loom |
-| 4 | **webster: fabric-reference audit fails a piped lyx help call inside a compound command** | [`audit-piped-help-call`](design-audit-piped-help-call.md) | webster, fabric |
-| 5 | **loom-recipe.yaml comment misstates PR-Gate's rejection budget; max_bounces never trips** | [`pr-gate-budget-comment`](design-pr-gate-budget-comment.md) | loom, shed |
-
-#### Low priority
-
-| # | Note | Slug | Labels |
-| --- | --- | --- | --- |
-| 6 | **Shuttle logs held loop and busy state disagreeing**<br>• In run cli-surface the Webster step trace logged `shuttle: session state disagrees (loop=held, state=busy)` before idle-done; no stop followed. Idea: find whether held and busy can disagree for long, and log which side wins. | `shuttle-state-disagrees` | shuttle |
+| 1 | **webster: fabric-reference audit fails a piped lyx help call inside a compound command** | [`audit-piped-help-call`](design-audit-piped-help-call.md) | webster, fabric |
 
 ### Enhancements
 
