@@ -1566,6 +1566,21 @@
       "isolated": false,
       "brief": "Reflect misread a parent-weft dirty halt as noise because the task worktree was clean",
       "body": "Seen (publish-recovery, 2026-10-10): Finalize blocked on \"worktree dirty\" from the prime weft's batten records (#501), and Friction-Reflect dismissed it as a process signal because the task worktree was clean.\n\nIdea: Friction-Reflect also reads the parent weft's status (`lyx fabric status` in the parent) when a halt names a dirty worktree, so it attributes the halt to the right tree.\n"
+    },
+    {
+      "id": 289,
+      "slug": "board-priority-headings",
+      "title": "Board README shows priority as its own sub-table per group",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "One sub-table per priority under #### High / Normal / Low priority headings in every README group, replacing the italic title suffix",
+      "body": "## Seen\n\nThe board README marks priority only with an italic `_(high priority)_` or `_(low priority)_` suffix after the title, which is easy to miss in a long table.\n\n## Idea\n\nEach README group (Ready, each layer, Bugs, Enhancements, Features) splits into one sub-table per priority, in the order high, normal, low, each under a fourth-level heading: `#### High priority`, `#### Normal priority`, `#### Low priority`.\nA priority with no entries in the group gets no heading, and the title suffix goes away.\n\nThe operator chose plain headings (2026-10-10) over GitHub alert boxes, which VS Code's preview does not render, and over coloured emoji markers.\n"
     }
   ],
   "legacy_done": [
