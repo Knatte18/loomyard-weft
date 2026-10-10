@@ -16,6 +16,7 @@ A second task recipe for quick tasks, run through batten and shed like a loom ru
 - the usual Publish: verify gate, PR, the orch's PR-Gate with a reviewer fork, then Finalize.
 
 No Discussion, no Plan, no Webster, no Burler rounds.
-A board task picks the recipe through its `recipe` field.
+## Operator decisions (2026-10-10)
 
-Open design questions: what makes a task eligible (operator's call per task, or a size guard), and whether a failed verify sends the run back to the same producer once before it escalates.
+- The operator picks the recipe when the task is created, through the board entry's existing `recipe` field; no size guard.
+- A failed verify sends the run back to the same producer to fix it, up to a configured budget of attempts; past the budget the run escalates to the parent.
