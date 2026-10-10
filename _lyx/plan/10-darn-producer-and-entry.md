@@ -1,20 +1,20 @@
 # Card 10 — darn-producer-and-entry
 
 **Create:**
-- `plan:internal/loomshed#NameDarn` -> `const NameDarn = "Darn"`
-- `plan:internal/loomshed#darnResumeWayForward` -> `const darnResumeWayForward = "way forward: run \"lyx loom resume\" in the task worktree, which re-spawns Darn with a fresh verify budget"`
-- `plan:internal/loomshed#DarnTold` -> `type DarnTold struct`
-- `plan:internal/loomshed#DarnOutcome` -> `type DarnOutcome struct`
-- `plan:internal/loomshed#DarnDeps` -> `type DarnDeps struct`
-- `plan:internal/loomshed#darnWrite` -> `type darnWrite struct`
-- `plan:internal/loomshed#NewDarnWrite` -> `func NewDarnWrite(name string, session func(DarnTold) shedengine.ShedProducer, deps DarnDeps) shedengine.ShedProducer`
-- `plan:internal/loomshed#darnWrite.Call` -> `func (p *darnWrite) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/loomshed#renderPriorWork` -> `func renderPriorWork(latest DarnOutcome, found bool, failureRecord string) string`
+- `internal/loomshed#NameDarn`
+- `internal/loomshed#darnResumeWayForward`
+- `internal/loomshed#DarnTold`
+- `internal/loomshed#DarnOutcome`
+- `internal/loomshed#DarnDeps`
+- `internal/loomshed#darnWrite`
+- `internal/loomshed#NewDarnWrite`
+- `internal/loomshed#darnWrite.Call`
+- `internal/loomshed#renderPriorWork`
 - `internal/loomshed/darnwrite_test.go`
-- `plan:internal/shedrecipe#darnWriteEntry` -> `func darnWriteEntry(name string, cfg Config, env Env) (shedengine.ShedProducer, error)`
+- `internal/shedrecipe#darnWriteEntry`
 - `internal/shedrecipe/entries_darnwrite_test.go`
 - `contracts/recipes/darn-recipe.yaml`
-- `plan:contracts/recipes#DarnRecipe` -> `var DarnRecipe []byte`
+- `contracts/recipes#DarnRecipe`
 
 **Edit:**
 - `internal/loomshed/doc.go`

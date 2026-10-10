@@ -1,0 +1,18 @@
+status: OK
+head_sha: 2abe1c8111df98fd9ecd6ac06a7e21f2b4af04e0
+deviations:
+  - internal/loomshed/darnwrite.go
+  - internal/loomshed/loomshed.go
+  - internal/shedrecipe/conformance_test.go
+  - internal/shedrecipe/entries_gate_test.go
+  - internal/loomrecipe/names.go
+  - internal/loomrecipe/darnrecipe.go
+  - internal/loomshed/interruptpolicy.go
+  - internal/loomcli/darnwiring.go
+  - internal/loomcli/wiring_darn_test.go
+  - internal/loomcli/cli.go
+  - internal/loomcli/wiring.go
+  - internal/battencli/wire_seams_test.go
+  - internal/battenshed/deps.go
+  - contracts/stencils/claims_test.go
+  - cmd/lyx/testdata/test-budget.yaml

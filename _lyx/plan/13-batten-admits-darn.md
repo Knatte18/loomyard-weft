@@ -1,8 +1,8 @@
 # Card 13 — batten-admits-darn
 
 **Create:**
-- `plan:internal/battencli#childRecipeSupported` -> `func childRecipeSupported(recipe string) bool`
-- `plan:internal/battencli#unsupportedChildRecipeRefusal` -> `func unsupportedChildRecipeRefusal(recipe string) error`
+- `internal/battencli#childRecipeSupported`
+- `internal/battencli#unsupportedChildRecipeRefusal`
 
 **Edit:**
 - `internal/battencli#childSeedParams`

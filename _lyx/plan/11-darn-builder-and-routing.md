@@ -1,10 +1,10 @@
 # Card 11 — darn-builder-and-routing
 
 **Create:**
-- `plan:internal/loomrecipe#checkVerifyAttempts` -> `func checkVerifyAttempts(attempts int) error`
-- `plan:internal/loomrecipe#applyVerifyAttempts` -> `func applyVerifyAttempts(recipe *shedbuild.Recipe, row string, attempts int) error`
-- `plan:internal/loomrecipe#NewDarn` -> `func NewDarn(env shedrecipe.Env, paths shedbuild.ShedPaths) (*shedengine.Shed, error)`
-- `plan:internal/loomrecipe#DarnRouting` -> `func DarnRouting() (shedengine.Routing, error)`
+- `internal/loomrecipe#checkVerifyAttempts`
+- `internal/loomrecipe#applyVerifyAttempts`
+- `internal/loomrecipe#NewDarn`
+- `internal/loomrecipe#DarnRouting`
 - `internal/loomrecipe/darnrecipe_test.go`
 
 **Edit:**

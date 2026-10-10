@@ -1,15 +1,15 @@
 # Card 12 — loom-arms-darn
 
 **Create:**
-- `plan:internal/loomcli#resolveSeedRecipe` -> `func resolveSeedRecipe(existing shedrun.Seed, found bool) string`
-- `plan:internal/loomcli#loomCLI.resolveRecipe` -> `func (c *loomCLI) resolveRecipe(location *lyxcwd.Location) error`
-- `plan:internal/loomcli#loomCLI.newShed` -> `func (c *loomCLI) newShed() (*shedengine.Shed, error)`
-- `plan:internal/loomcli#loomCLI.recipeRouting` -> `func (c *loomCLI) recipeRouting() (shedengine.Routing, error)`
-- `plan:internal/loomcli#reworkRowFor` -> `func reworkRowFor(recipe string) string`
-- `plan:internal/loomcli#darnVerifySource` -> `func darnVerifySource(l *lyxcwd.Location) verifySource`
-- `plan:internal/loomcli#darnMergeBase` -> `func darnMergeBase(l *lyxcwd.Location) func() (string, error)`
-- `plan:internal/loomcli#latestDarnOutcome` -> `func latestDarnOutcome(statusPath, statusLockPath string) (loomshed.DarnOutcome, bool, error)`
-- `plan:internal/loomcli#darnDeps` -> `func darnDeps(l *lyxcwd.Location, verifyDir string) loomshed.DarnDeps`
+- `internal/loomcli#resolveSeedRecipe`
+- `internal/loomcli#loomCLI.resolveRecipe`
+- `internal/loomcli#loomCLI.newShed`
+- `internal/loomcli#loomCLI.recipeRouting`
+- `internal/loomcli#reworkRowFor`
+- `internal/loomcli#darnVerifySource`
+- `internal/loomcli#darnMergeBase`
+- `internal/loomcli#latestDarnOutcome`
+- `internal/loomcli#darnDeps`
 - `internal/loomcli/wiring_darn_test.go`
 
 **Edit:**
