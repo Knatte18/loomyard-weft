@@ -33,7 +33,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | After | Labels |
 | --- | --- | --- | --- | --- |
-| 1 | **Webster state across replans: goto to Plan, late plan reviews, rebaseline clarity**<br>• Webster stays consistent after a goto to Plan or a late Plan-Review round, rebaseline names its fallback, one-call head_sha check, verify-module splits at \|\| and \| | [`webster-replan-state`](design-webster-replan-state.md) | `publish-recovery` | webster, loom, burler |
+| 1 | **Webster and round-gate bug sweep: replans, batch checks, fork sandbox, shell wait, test re-runs**<br>• Webster stays consistent across replans, its batch and fabric checks judge only what they should, implementer forks stay sandboxed, the shell wait leaves nothing running, and the round gate re-runs whole tests | [`webster-replan-state`](design-webster-replan-state.md) | `publish-recovery` | webster, loom, burler, fabric |
 
 ## Notes
 
@@ -44,14 +44,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 1 | **Batten idle notices count machine sleep as idle time**<br>• After a hibernate every run raises an idle notice for the whole sleep; the idle clock should skip time the machine was asleep | [`idle-notice-after-sleep`](design-idle-notice-after-sleep.md) | batten |
-| 2 | **webster record-batch 01 fails on create-not-done for a card named 3-proc-group-kill** | [`record-batch-card-scope`](design-record-batch-card-scope.md) | webster |
-| 3 | **shuttle raises a hold notice at the skill-load turn end, before the start prompt is sent** | [`hold-on-skill-load`](design-hold-on-skill-load.md) | shuttle |
-| 4 | **Implementer forks can push to the real hub remotes**<br>• A batch fork ran lyx fabric add against the real hub and pushed stray branches to GitHub | [`fork-real-remotes`](design-fork-real-remotes.md) | webster, fabric |
-| 5 | **Flaky integration test: loomcli TestLoomResumeReconcilesTheHubConfigBeforeArming** | [`flaky-resume-reconcile-test`](design-flaky-resume-reconcile-test.md) | loom |
-| 6 | **webster: fabric-reference check flags read-only commands and blocks recovery** | [`webster-fabric-ref-check`](design-webster-fabric-ref-check.md) | webster |
-| 7 | **webster: wait stops on a background shell at turn end and leaves it running** | [`webster-background-shell-wait`](design-webster-background-shell-wait.md) | webster |
-| 8 | **daemon idle Debug spawn lines reach no log sink; tmux socket path can exceed 108 bytes** | [`daemon-log-and-socket-path`](design-daemon-log-and-socket-path.md) | reed |
-| 9 | **Round gate re-runs a failing subtest alone and breaks subtests that share state** | [`subtest-rerun-shared-state`](design-subtest-rerun-shared-state.md) | loom, burler |
+| 2 | **shuttle raises a hold notice at the skill-load turn end, before the start prompt is sent** | [`hold-on-skill-load`](design-hold-on-skill-load.md) | shuttle |
+| 3 | **daemon idle Debug spawn lines reach no log sink; tmux socket path can exceed 108 bytes** | [`daemon-log-and-socket-path`](design-daemon-log-and-socket-path.md) | reed |
 
 ### Enhancements
 
