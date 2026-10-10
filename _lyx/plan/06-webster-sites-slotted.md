@@ -9,9 +9,9 @@
 
 **Uses:**
 - `internal/websterengine#Geometry`
-- `plan:internal/gateslot#Pool.Acquire`
-- `plan:internal/gateslot#Lease.Env`
-- `plan:internal/gateslot#WriteWait`
+- `internal/gateslot#Pool.Acquire`
+- `internal/gateslot#Lease.Env`
+- `internal/gateslot#WriteWait`
 
 **Intent:**
 Slot webster's own gate runs (D4).

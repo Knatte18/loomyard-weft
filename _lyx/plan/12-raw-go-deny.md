@@ -18,7 +18,7 @@
 - `internal/shuttleengine/claudeengine#pythonCommandPattern`
 - `internal/shuttleengine/claudeengine#buildDenyNotice`
 - `internal/agentname#StrandNameEnv`
-- `plan:internal/gateslot#InheritEnv`
+- `internal/gateslot#InheritEnv`
 
 **Intent:**
 Add one standing PreToolUse(Bash) deny to `standingDenies`, installed for every spawned session, the orch included, and matched by a `grep -E` over the payload like the python deny (D7, `PATTERN-shuttle-provider-seam`).

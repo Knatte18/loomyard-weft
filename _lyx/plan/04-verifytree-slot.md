@@ -14,9 +14,9 @@
 - `pattern/PATTERN-verified-tree.md`
 
 **Uses:**
-- `plan:internal/gateslot#Pool.Acquire`
-- `plan:internal/gateslot#Lease.Env`
-- `plan:internal/gateslot#Lease.Release`
+- `internal/gateslot#Pool.Acquire`
+- `internal/gateslot#Lease.Env`
+- `internal/gateslot#Lease.Release`
 - `internal/verifyrun#Run`
 
 **Intent:**

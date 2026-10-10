@@ -1,0 +1,5 @@
+status: OK
+head_sha: 8422ab71e2af97776321bd15a337ddee5756e347
+deviations:
+  - internal/testkit/envkit/envkit.go
+  - cmd/lyx/testdata/test-budget.yaml

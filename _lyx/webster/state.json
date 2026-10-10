@@ -1,20 +1,20 @@
 {
   "runGuid": "7d850019e493feafc9e84417a15220b3",
-  "planFingerprint": "7b8c7f1d877578f348239d039777401694aa4e33006fba42314469542af9a51d",
+  "planFingerprint": "622ff3c4545a9857a8ab5bbc259e23ad1c6a95035afd41ef4f3a7f6402000493",
   "planFileHashes": {
     "00-overview.md": "5426db669614f340cb89c879a58db5211131a50988ef69eafb027c90970439e3",
-    "01-gateslot-pool.md": "00e9c1fdf90fa0f92bc2b5058a47be45db08ee103ce8c1f7336277fed424e6c8",
-    "02-gate-config.md": "768e1bba8711a78d0f35ea4049995508d0bfd3566d866cd55e21b6e3d50fd63a",
+    "01-gateslot-pool.md": "bb6a001b1868745d3dab588992e54d1916ca23db85705dd28fe31ee432a4687a",
+    "02-gate-config.md": "5b47831b500f7f9011d4164906e5ecaae8b069a85b4b582c0d0bc435f7c69855",
     "03-verifyrun-env.md": "1d9174130f6e7bac2de2fe5db9a0fdae7e353bbc8ba78543c75252ec6b751343",
-    "04-verifytree-slot.md": "0af0652dc7f4fe84bf6b11238e2b6cf2828af7ff227cce9f2870a88ef30989b9",
-    "05-hubgeom-gate-slots.md": "5cf0c9d1a2c539dbde66568ddbff97cb24952393b57592f626a4c0e7b768e198",
-    "06-webster-sites-slotted.md": "6ca45fe4dcca0666b9bff181692a0993063476c05160d9abe898059ff8f384c4",
-    "07-landing-slotted.md": "00875821b02751b887ca01106c0116e5c1f184dea2d47cc8f70d44147ecfaf4d",
-    "08-round-gate-slotted.md": "3d0b25599968e311a9cf0b1933d3ee8b3b7e5b790fe4777f7c5410f1f7f767fb",
-    "09-plan-gate-slotted.md": "943d84a6488e16bdfc7c4f04b597bd7ef61b4903946a543e979803353265dded",
-    "10-gate-cli.md": "2dda1c5ce9078ae6f43031bbda13d8887cc73d286c28562b3cfca396a2582e7b",
-    "11-status-gate-waits.md": "a0568e94cb0a1330df4c7228c0973cf0075006088e3abbf8b8a9102f2eaecc56",
-    "12-raw-go-deny.md": "99d565995f040742e879575bb94c7e3d8e936f6060e00fb9e03a1affa75e528f",
+    "04-verifytree-slot.md": "48d09c89d3898eba3281c4eab814d6d51142ca9c6b01f1c4492233edc47f72a2",
+    "05-hubgeom-gate-slots.md": "a85f10fff9c2034ec56b80f5e6ede4240f94486a0b12d8386662f4d688a7c620",
+    "06-webster-sites-slotted.md": "1c1522f3e9c55bc5578d1464b5047147e20a29c4b29f310097c71b4b08f6d421",
+    "07-landing-slotted.md": "b015b21ec3f2e08e095aec7a39f8bd8856695a0a869a8ade53960cdbd9b83854",
+    "08-round-gate-slotted.md": "0b3e93e88cd448e4a83b5b04c12c220e1bd42a536a106ee65fb32253ec1570c1",
+    "09-plan-gate-slotted.md": "ec7aab9aceca84c5ae9fb5e1d570248247504d71428402ba432407f8f576e8f7",
+    "10-gate-cli.md": "896124ae37ee74a13e928c1a8c651427c096758de36a2d16c9c050c76cf77be3",
+    "11-status-gate-waits.md": "01419b7c74dcfa2400507537d0a8bc13467b41b70a83f94220020ded6b016e54",
+    "12-raw-go-deny.md": "527c2de28f518e3740db5ac6b002eb0242fbd158a1e223e977b78abf9026077d",
     "13-verify-module-wide-check.md": "ed29b354e80b7902fb54b4352b7615e9e8d6194304f45b046b62c8d2cb56f3e5",
     "14-card-gate-tier1.md": "4c8e958297186d58dda778c08a9166a08f3fc5edfcb5ac83f92dc80e02d9c8f7",
     "15-batch-gate.md": "5b681a8aedb919909a2de867cf600aa5e271ec72cda12e1e9cafdc2984911b5e",
@@ -601,7 +601,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "726ba574be9e0d6f1b5201a5aa0e1920",
   "masterSessionId": "1ea802b3-916a-4f78-a539-37ca5a7f4b14",
   "batches": {
@@ -616,19 +616,40 @@
         "06-webster-sites-slotted"
       ],
       "cardHashes": {
-        "01-gateslot-pool": "00e9c1fdf90fa0f92bc2b5058a47be45db08ee103ce8c1f7336277fed424e6c8",
-        "02-gate-config": "768e1bba8711a78d0f35ea4049995508d0bfd3566d866cd55e21b6e3d50fd63a",
+        "01-gateslot-pool": "bb6a001b1868745d3dab588992e54d1916ca23db85705dd28fe31ee432a4687a",
+        "02-gate-config": "5b47831b500f7f9011d4164906e5ecaae8b069a85b4b582c0d0bc435f7c69855",
         "03-verifyrun-env": "1d9174130f6e7bac2de2fe5db9a0fdae7e353bbc8ba78543c75252ec6b751343",
-        "04-verifytree-slot": "0af0652dc7f4fe84bf6b11238e2b6cf2828af7ff227cce9f2870a88ef30989b9",
-        "05-hubgeom-gate-slots": "5cf0c9d1a2c539dbde66568ddbff97cb24952393b57592f626a4c0e7b768e198",
-        "06-webster-sites-slotted": "6ca45fe4dcca0666b9bff181692a0993063476c05160d9abe898059ff8f384c4"
+        "04-verifytree-slot": "48d09c89d3898eba3281c4eab814d6d51142ca9c6b01f1c4492233edc47f72a2",
+        "05-hubgeom-gate-slots": "a85f10fff9c2034ec56b80f5e6ede4240f94486a0b12d8386662f4d688a7c620",
+        "06-webster-sites-slotted": "1c1522f3e9c55bc5578d1464b5047147e20a29c4b29f310097c71b4b08f6d421"
       },
       "startSha": "e446ec7b053e79529d83afd2327e94743527feda",
       "kind": "fork",
       "spawnedAt": "2026-10-10T04:47:14Z",
       "sessionId": "1ea802b3-916a-4f78-a539-37ca5a7f4b14",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-gateslot-pool",
+        "status": "done",
+        "head_sha": "8422ab71e2af97776321bd15a337ddee5756e347",
+        "deviations": [
+          "internal/testkit/envkit/envkit.go",
+          "cmd/lyx/testdata/test-budget.yaml"
+        ]
+      },
+      "cardShas": [
+        "8422ab71e2af97776321bd15a337ddee5756e347"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-test-scope/1ea802b3-916a-4f78-a539-37ca5a7f4b14/subagents/agent-a3600e9b373605132.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-test-scope/1ea802b3-916a-4f78-a539-37ca5a7f4b14/subagents/agent-a3600e9b373605132.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-test-scope/1ea802b3-916a-4f78-a539-37ca5a7f4b14/subagents/agent-a3600e9b373605132.jsonl"
+  ]
 }

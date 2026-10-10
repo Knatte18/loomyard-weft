@@ -10,10 +10,10 @@
 - `contracts/specs/loom-status-spec.md`
 
 **Uses:**
-- `plan:internal/hubgeom#GateSlots`
-- `plan:internal/gateslot#Pool.Holders`
-- `plan:internal/gateslot#ReadWaits`
-- `plan:internal/gateslot#WaitDir`
+- `internal/hubgeom#GateSlots`
+- `internal/gateslot#Pool.Holders`
+- `internal/gateslot#ReadWaits`
+- `internal/gateslot#WaitDir`
 - `internal/verifytree#ReadMarker`
 
 **Intent:**

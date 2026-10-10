@@ -10,7 +10,7 @@
 - `internal/loomcli/wiring_test.go`
 
 **Uses:**
-- `plan:internal/hubgeom#GateSlots`
+- `internal/hubgeom#GateSlots`
 
 **Intent:**
 Slot the Webster-Burler round gate (D4).

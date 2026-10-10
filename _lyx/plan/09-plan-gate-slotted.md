@@ -23,10 +23,10 @@
 - `internal/planglyph/doc.go`
 
 **Uses:**
-- `plan:internal/hubgeom#GateSlots`
+- `internal/hubgeom#GateSlots`
 - `internal/websterengine#Geometry`
-- `plan:internal/gateslot#WaitDir`
-- `plan:internal/gateslot#WriteWait`
+- `internal/gateslot#WaitDir`
+- `internal/gateslot#WriteWait`
 
 **Intent:**
 Slot the plan gate's `caller-uncovered` type load, the one plan-gate step that runs `go list` with export data (D4), at both its gate site and `lyx loom validate-plan`, which both reach it through the index loom wires.

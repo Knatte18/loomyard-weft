@@ -21,12 +21,12 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/hubgeom#GateSlots`
-- `plan:internal/gateslot#TemplateConfig`
-- `plan:internal/gateslot#WaitDir`
-- `plan:internal/gateslot#WriteWait`
-- `plan:internal/gateslot#Pool.Inherited`
-- `plan:internal/gateslot#Pool.Holders`
+- `internal/hubgeom#GateSlots`
+- `internal/gateslot#TemplateConfig`
+- `internal/gateslot#WaitDir`
+- `internal/gateslot#WriteWait`
+- `internal/gateslot#Pool.Inherited`
+- `internal/gateslot#Pool.Holders`
 - `internal/lyxcwd#ResolveWorktree`
 - `internal/preflight#BoardLyxPresent`
 

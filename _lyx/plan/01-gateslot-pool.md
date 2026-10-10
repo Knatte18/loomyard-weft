@@ -1,22 +1,22 @@
 # Card 1 — gateslot-pool
 
 **Create:**
-- `plan:internal/gateslot#Pool` -> `type Pool struct`
-- `plan:internal/gateslot#Limits` -> `type Limits struct`
-- `plan:internal/gateslot#Holder` -> `type Holder struct`
-- `plan:internal/gateslot#Lease` -> `type Lease struct`
-- `plan:internal/gateslot#Pool.Acquire` -> `func (p *Pool) Acquire(ctx context.Context, h Holder) (*Lease, error)`
-- `plan:internal/gateslot#Pool.Holders` -> `func (p *Pool) Holders() ([]Holder, error)`
-- `plan:internal/gateslot#Pool.Inherited` -> `func (p *Pool) Inherited(slot string) bool`
-- `plan:internal/gateslot#Lease.Release` -> `func (l *Lease) Release() error`
-- `plan:internal/gateslot#Lease.Env` -> `func (l *Lease) Env(base []string) []string`
-- `plan:internal/gateslot#InheritEnv` -> `const InheritEnv = "LYX_GATE_SLOT"`
-- `plan:internal/gateslot#GoFlags` -> `func GoFlags(existing string, goParallel int) string`
-- `plan:internal/gateslot#Dir` -> `func Dir(boardDir string) string`
-- `plan:internal/gateslot#Wait` -> `type Wait struct`
-- `plan:internal/gateslot#WaitDir` -> `func WaitDir(anchorRoot string) string`
-- `plan:internal/gateslot#WriteWait` -> `func WriteWait(dir string, w Wait) (string, error)`
-- `plan:internal/gateslot#ReadWaits` -> `func ReadWaits(dir string) ([]Wait, error)`
+- `internal/gateslot#Pool`
+- `internal/gateslot#Limits`
+- `internal/gateslot#Holder`
+- `internal/gateslot#Lease`
+- `internal/gateslot#Pool.Acquire`
+- `internal/gateslot#Pool.Holders`
+- `internal/gateslot#Pool.Inherited`
+- `internal/gateslot#Lease.Release`
+- `internal/gateslot#Lease.Env`
+- `internal/gateslot#InheritEnv`
+- `internal/gateslot#GoFlags`
+- `internal/gateslot#Dir`
+- `internal/gateslot#Wait`
+- `internal/gateslot#WaitDir`
+- `internal/gateslot#WriteWait`
+- `internal/gateslot#ReadWaits`
 - `internal/gateslot/doc.go`
 - `internal/gateslot/pool_test.go`
 - `internal/gateslot/pool_integration_test.go`

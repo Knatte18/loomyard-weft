@@ -1,11 +1,11 @@
 # Card 2 — gate-config
 
 **Create:**
-- `plan:internal/gateslot#ConfigTemplate` -> `func ConfigTemplate() string`
-- `plan:internal/gateslot#Config` -> `type Config struct`
-- `plan:internal/gateslot#LoadConfig` -> `func LoadConfig(baseDir string) (Config, error)`
-- `plan:internal/gateslot#TemplateConfig` -> `func TemplateConfig() (Config, error)`
-- `plan:internal/gateslot#Config.Limits` -> `func (c Config) Limits() Limits`
+- `internal/gateslot#ConfigTemplate`
+- `internal/gateslot#Config`
+- `internal/gateslot#LoadConfig`
+- `internal/gateslot#TemplateConfig`
+- `internal/gateslot#Config.Limits`
 - `internal/gateslot/template.yaml`
 - `internal/gateslot/config_test.go`
 

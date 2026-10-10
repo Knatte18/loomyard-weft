@@ -1,7 +1,7 @@
 # Card 5 — hubgeom-gate-slots
 
 **Create:**
-- `plan:internal/hubgeom#GateSlots` -> `func GateSlots(l *lyxcwd.Location) *gateslot.Pool`
+- `internal/hubgeom#GateSlots`
 
 **Edit:**
 - `internal/websterengine#Geometry`
@@ -11,10 +11,10 @@
 - `internal/websterengine/doc.go`
 
 **Uses:**
-- `plan:internal/gateslot#Dir`
-- `plan:internal/gateslot#WaitDir`
-- `plan:internal/gateslot#LoadConfig`
-- `plan:internal/gateslot#Config.Limits`
+- `internal/gateslot#Dir`
+- `internal/gateslot#WaitDir`
+- `internal/gateslot#LoadConfig`
+- `internal/gateslot#Config.Limits`
 - `internal/fabricengine#BoardDir`
 
 **Intent:**

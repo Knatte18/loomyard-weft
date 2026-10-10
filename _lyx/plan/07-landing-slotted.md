@@ -7,7 +7,7 @@
 - `internal/loomcli/landingdeps_verify_test.go`
 
 **Uses:**
-- `plan:internal/hubgeom#GateSlots`
+- `internal/hubgeom#GateSlots`
 
 **Intent:**
 Slot Publish's plan verify and `publish_verify` and Finalize's plan verify (D4).
