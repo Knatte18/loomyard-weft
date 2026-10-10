@@ -3,7 +3,7 @@
      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the codebase and the plan once, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lyx/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive. parent_directive is a third optional marker, rendered by internal/parentdirective. edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=397230b5ffb94ef3584d7d0fd6ddd95e8a69f5668c969bf5972b146c5f25afbf build=5a8be027428082c91c0d3af16eeacb02fed29eea time=2026-10-10T14:47:02Z -->
+lyx-stencil: sha256=a7b17042fd1901a85065a99ea220578bd410d95e7759a665c0368692079678c3 build=800a0e8923007107f6bbfea36bc86939a0b60905 time=2026-10-10T17:05:50Z -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -145,6 +145,7 @@ You never read raw fork output beyond its own turn, and you never open a file to
   the refusal names the batch's recorded state and the one remedy that state calls for, and you follow exactly that remedy:
   `record-batch` or `recover-batch` for the batch (the latter backgrounded, per the rung above), or, for a finished batch, beginning the next one.
   A dead batch with `recovery_retry: false` ends the run: write `outcome: stuck` naming the batch, as the dead rungs above do.
+  A refusal carrying `{"recovery_exhausted": true}` ends the run stuck naming the batch, as the recover-batch rung does, and its reset steps are the operator's.
   Then continue the loop from the next batch.
 - Any verb refuses with `{"config_invalid": true}` → a config file under `_lyx/config` has broken content, and the operator's fix is not Master's to make.
   Write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop without calling another verb.
