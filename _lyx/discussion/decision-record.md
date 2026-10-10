@@ -200,6 +200,12 @@ Decision: Main's PATTERN.md overview is at 16380 of its 16384-byte cap, and daem
 
 Rationale: Three runs have hit TestOverview_RealFilePassesCheck at Publish after merging main (gate-test-scope, daemon-wakeups, bolt-and-store); fixing it in the cards avoids a fourth Publish block and a goto.
 
+### Added after Discussion (parent, 2026-10-10): D4: reed's stale-holder probe skips the hermetic test server
+
+Decision: D4's 'Reed is unchanged' means reed's pane start mode. reedengine's stale-holder probe (sessionlessSocketHolderPersists) gains one early return: a holder whose global user option @lyx_test_server answers on, which only tmuxkit's config sets, is never stale. Bound: an operator config that sets that option disables the reap for its own servers; reed's own boots never set it. This reedengine change is in scope for this run.
+
+Rationale: Plan-Review round 1 F3/F5: without it reed reaps D4's session-less pre-started server after staleSocketGrace and replaces it with a config-less login-shell server, so D4's goal fails; keying on exit-empty off would also skip the reap for an operator whose tmux.conf sets it, and a placeholder session breaks D4's own wait for reed's new-session and Down's teardown.
+
 ## Constraints
 
 - `PATTERN-test-speed`: tier 2 has no tmux server; the tier table, gate table and "untagged tests spawn nothing" section record D6, D7 and D8.
