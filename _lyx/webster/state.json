@@ -1,0 +1,148 @@
+{
+  "runGuid": "b51887245314d7e4536ee4b117b8927a",
+  "planFingerprint": "e1cdb7e259c9ad77d4c6defe507ed599df77531a95a35afdd838d586a2a90f07",
+  "planFileHashes": {
+    "00-overview.md": "0a1c37c5bd53222a4031d85c3526d740d68bdf3b70b9a0916a360d96e60d9aa1",
+    "01-review-budget-on-bouncer-row.md": "042e73b121d247396c8c62d8a5a9fd15a0a438f50cfedf9c9735ac667430f23c",
+    "02-pr-gate-budget-prose.md": "61565f2a2126204d68ff66a01eec7103f018aa3fd36d7657f3705b39590e2fc2",
+    "03-batten-awake-idle-clock.md": "b98656f10e2983f0d71c4223bee5d6b98b8be0894dff1efa5bb72f6abdc16a69",
+    "04-prompt-offset-before-send.md": "1641c4da55eedb868b528683772452a26c6daf48a35d10637ee4edfb870bdd2a",
+    "05-hold-after-prompt-turn-start.md": "fc863ac0929af9001c4c3659df308fa1fbdae7818975849b56b16fc3ab0452e1",
+    "06-held-wait-ends-at-turn-start.md": "bb910ea7b132f84faf71cec5aeb44ed383f0ea0aecc78a350060cd7ba22bb366"
+  },
+  "planOverviewFrameHash": "99996074d8d4210661a9ba50ffe5ac4ba363335c689ebb1489f8724e58d03929",
+  "partition": [
+    {
+      "cards": [
+        "01-review-budget-on-bouncer-row",
+        "02-pr-gate-budget-prose",
+        "03-batten-awake-idle-clock",
+        "04-prompt-offset-before-send",
+        "05-hold-after-prompt-turn-start",
+        "06-held-wait-ends-at-turn-start"
+      ],
+      "profile": "cautious",
+      "estimate": 237922,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54268,
+        "read_union": 48924,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 684,
+            "reads": {
+              "file:internal/shedadapters/doc.go": 3684,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedengine": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedengine": 2000
+            },
+            "messages": 114.5,
+            "written": 35034
+          },
+          {
+            "card": 2,
+            "card_text": 216,
+            "reads": {
+              "file:contracts/recipes/darn-recipe.yaml": 780,
+              "file:contracts/recipes/loom-recipe.yaml": 4908,
+              "file:docs/overview.md": 8244,
+              "package:contracts/recipes": 2000,
+              "package:docs": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:docs": 2000
+            },
+            "messages": 18,
+            "written": 5616
+          },
+          {
+            "card": 3,
+            "card_text": 648,
+            "reads": {
+              "file:internal/battenshed/doc.go": 1116,
+              "package:internal/battenshed": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 103.5,
+            "written": 31698
+          },
+          {
+            "card": 4,
+            "card_text": 252,
+            "reads": {
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 44.5,
+            "written": 13602
+          },
+          {
+            "card": 5,
+            "card_text": 600,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 3312,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 84.5,
+            "written": 25950
+          },
+          {
+            "card": 6,
+            "card_text": 480,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 3312,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 74.5,
+            "written": 22830
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "5433aa8964567333fe8878ec488d2263",
+  "masterSessionId": "4ae8e885-ea63-4b73-9975-ea23994c4da4",
+  "batches": {
+    "1": {
+      "slug": "review-budget-on-bouncer-row",
+      "cards": [
+        "01-review-budget-on-bouncer-row",
+        "02-pr-gate-budget-prose",
+        "03-batten-awake-idle-clock",
+        "04-prompt-offset-before-send",
+        "05-hold-after-prompt-turn-start",
+        "06-held-wait-ends-at-turn-start"
+      ],
+      "cardHashes": {
+        "01-review-budget-on-bouncer-row": "042e73b121d247396c8c62d8a5a9fd15a0a438f50cfedf9c9735ac667430f23c",
+        "02-pr-gate-budget-prose": "61565f2a2126204d68ff66a01eec7103f018aa3fd36d7657f3705b39590e2fc2",
+        "03-batten-awake-idle-clock": "b98656f10e2983f0d71c4223bee5d6b98b8be0894dff1efa5bb72f6abdc16a69",
+        "04-prompt-offset-before-send": "1641c4da55eedb868b528683772452a26c6daf48a35d10637ee4edfb870bdd2a",
+        "05-hold-after-prompt-turn-start": "fc863ac0929af9001c4c3659df308fa1fbdae7818975849b56b16fc3ab0452e1",
+        "06-held-wait-ends-at-turn-start": "bb910ea7b132f84faf71cec5aeb44ed383f0ea0aecc78a350060cd7ba22bb366"
+      },
+      "startSha": "292bec755c00195ca56441ce060038a32ce570ce",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T18:16:15Z",
+      "sessionId": "4ae8e885-ea63-4b73-9975-ea23994c4da4",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
