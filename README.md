@@ -109,6 +109,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Fold lyx gate test's process-group, Pdeathsig and job-object setup into internal/proc beside ConfigureGroupKill
 1. **An abandoned run leaves its board entry locked** — [`abandoned-run-claim`](design-abandoned-run-claim.md) · enhancement, batten, board
    - Batten teardown clears the run status of a run that ends without landing, so the entry is editable again
+1. **Hub store gc runs while other runs use the store** — [`store-gc-while-busy`](design-store-gc-while-busy.md) · enhancement, fabric
+   - Remove's foreground gc --auto repacks the shared store under other runs; skip it while runs are in flight
 
 ### Features
 
