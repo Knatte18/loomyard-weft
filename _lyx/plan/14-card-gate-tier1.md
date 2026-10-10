@@ -10,6 +10,7 @@
 - `internal/websterengine#renderCardGates`
 - `internal/websterengine/cardgate_test.go`
 - `internal/websterengine/beginbatch_test.go`
+- `internal/websterengine/doc.go`
 - `contracts/specs/loom-plan-spec.md`
 
 **Uses:**
@@ -28,6 +29,7 @@ Drop the card gate to tier 1 of the card's own packages (D1).
 No `go build ./...`, no module-wide `go test ./...` and no `-tags integration` remain: the batch gate (next card) and the plan verify run the wider checks.
 `renderCardGates` renders each card as its pointer bullet with one indented sub-bullet per step, each step its own backticked command, never chained with `&&`, so a fork runs each as its own Bash call.
 `cardgate_test.go` keeps its table shape over the step lists: root-only, root plus nested module, a Delete-only directory, a stencil-only card running the lint alone; `beginbatch_test.go`'s rendered-gate assertion follows the new shape.
+`internal/websterengine/doc.go`'s card-gate paragraph, which says a card's gate builds and tests everything and runs the integration-tagged tests of its directories, is rewritten to this gate: `lyx gate test` over the card's own packages per module, one step per line, then the comment lint.
 `loom-plan-spec.md`'s verify model states tier 1 as the card gate over the card's own packages through `lyx gate test`, and the `caller-uncovered` row's sentences that name the card gate's root build name the batch gate and the plan verify instead.
 Bound: a card that breaks a package outside its targets passes its card gate; the batch gate catches it when that package is in the batch, and Webster's gate (the full plan verify) otherwise, before Webster-Review.
 

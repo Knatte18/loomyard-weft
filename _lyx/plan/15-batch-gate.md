@@ -10,6 +10,8 @@
 - `internal/websterengine#recoverSpawn`
 - `internal/websterengine/template_test.go`
 - `internal/websterengine/cardgate_test.go`
+- `internal/websterengine/doc.go`
+- `cmd/lyx/testdata/test-budget.yaml`
 - `contracts/stencils/webster/webster-body-implementer.md`
 - `contracts/stencils/claims_test.go`
 - `contracts/specs/loom-plan-spec.md`
@@ -32,7 +34,9 @@ The implementer body states, in its card loop and a new step after the last card
 
 Go never runs the batch gate, as with the card gate; Webster's plan-level verify gate catches a fork that skips it.
 `template_test.go`'s fork and recovery cases list `batch_gate` as required and its render calls pass a placeholder batch gate.
-`cardgate_test.go` gains rows for `renderBatchGate`: a two-card batch's union across the root and a nested module, and a batch with no Go package.
+`cardgate_test.go` gains a table-driven `renderBatchGate` test: a two-card batch's union across the root and a nested module, and a batch with no Go package; the `internal/websterengine` budget row rises by one for it.
+`internal/websterengine/doc.go`'s sentence that there is no batch-wide verify distinct from the cards' own gates is rewritten to the batch gate: run once by the fork after the last card, over the batch's packages with `-tags integration`, never by Go.
+Its fork-return sentence that a fork returns FAILED only on a non-zero build/unit gate or per-card `verify:` is restated: a fork returns FAILED on a failed card gate, card `**Verify:**` or batch gate, never on deviation alone and never on a slot-busy exit.
 `claims_test.go`'s implementer claims follow the reworded card-gate step and pin the background-call, batch-gate and slot-busy sentences.
 `loom-plan-spec.md`'s tier 2 states the batch gate.
 

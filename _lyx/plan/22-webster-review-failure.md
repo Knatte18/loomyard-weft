@@ -18,6 +18,7 @@
 - `contracts/stencils/claims_test.go`
 - `contracts/stencils/loom/loom-rubric-webster-review.md`
 - `internal/loomshed/publishfailure_test.go`
+- `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
 - `plan:internal/loomshed#checkedPublishFailure`
@@ -31,7 +32,8 @@ Make the Webster-Review round after a goto from a failed Publish review the fail
 `BouncerConfig` gains a `PublishFailure func() string` that `bouncerEntry` fills from the env, and the seed and judge calls pass its result to `ReadRubric` at call time; a nil function renders `none`.
 `loom-rubric-webster-review.md` gains a Publish-failure section holding the marker: when it names a failure, the reviewer raises each failing test as a BLOCKING finding, reading the merge's diff and the log for its cause, in addition to the branch's own range; its range section, the single definition of the range, states that a rendered merge-in commit widens the range by that merge's diff and that nothing else does.
 Discussion- and Plan-Review rubrics carry no such marker.
-`contracts/stencils/rubric_test.go`'s marker allowlist gains `publish_failure` and its render rows pass a note; `internal/shedadapters/rubric_test.go` gains a row rendering a note and one rendering `none`; `claims_test.go` pins the rubric's BLOCKING sentence; `publishfailure_test.go` gains the note's rows, including a record whose dropped fields do not render.
+`contracts/stencils/rubric_test.go`'s marker allowlist gains `publish_failure` and its render rows pass a note; `internal/shedadapters/rubric_test.go` gains a row rendering a note and one rendering `none`; `claims_test.go` pins the rubric's BLOCKING sentence; `publishfailure_test.go` gains a table-driven `PublishFailureNote` test, including a record whose dropped fields do not render, and the `internal/loomshed` budget row rises by one for it.
 Bound: the rendered record is the only widening; with no record the range rules stay as they are.
+The record sits in the pair's own `.lyx/`, so deleting it skips the widening, and editing it can, after `checkedPublishFailure`'s shape checks, only add a well-formed test name that never failed, which forces a BLOCKING finding for it, point the reviewer at another real merge commit's diff, or point the reviewer at another file in the verify directory as the log, whose content a pair session can rewrite, as it can the log copy itself; no shell text or free prose reaches the prompt, the reviewer already reads pair-authored content in the branch range, and Publish reruns both verifies in full regardless (D11's Bound).
 
 **ImpactSummary:** The rubric reader gains one parameter with three production callers and two test files; only the Webster-Review rubric carries the marker, so other reviews render unchanged.
