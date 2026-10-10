@@ -28,6 +28,11 @@ A message to the driver still reaches it promptly while the loop runs, and the d
 
 The Go loop also watches its own steps: a step that never returns is noticed and stops the loop as a failure that wakes the driver, so the hub never has to read panes to find a hung `lyx shed step` (from `verify-watchdog`, #420).
 
+A failed step never parks silently (from `driver-silent-park`, #488).
+In `bolt-and-store` (2026-10-10) a Webster-Bouncer step returned `ok:false` with no `kind` and no trace, because a hub config file (`_board/_lyx/config/landing.yaml`) a later deploy added was missing; the driver wrote a drive report, parked with `commit-records --park` and told the parent nothing, while the run stayed `running`.
+The hub heard of it only through batten's quiet notice, and `lyx loom resume` answered "the run is already running".
+So a step failure without a `kind` is a stop that reaches the parent, as a halted run or a driver escalation, and the missing-config refusal gets its row in the refusal spec.
+
 ## Seen
 
 A study of 19 driver sessions (2026-10-10) found that every finished run's driver passed 100k tokens of context, peaking at 112k to 190k.
