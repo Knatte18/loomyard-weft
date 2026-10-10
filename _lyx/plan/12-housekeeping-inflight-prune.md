@@ -11,12 +11,12 @@
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/fabricengine#InFlightProbe` -> `type InFlightProbe func(slug string) ([]string, error)`
-- `plan:internal/fabricengine#Topology.SetInFlightProbe` -> `func (t *Topology) SetInFlightProbe(probe InFlightProbe)`
-- `plan:internal/fabricengine#gcPruneExpire` -> `const gcPruneExpire = "1.day.ago"`
-- `plan:internal/pairteardown#Teardown.otherPairSessions` -> `func (t *Teardown) otherPairSessions(slug string) ([]string, error)`
-- `plan:internal/pairteardown#sessionsOfOtherPairs` -> `func sessionsOfOtherPairs(live, pairSessions []string) []string`
-- `plan:internal/reedengine#IsNoServer` -> `func IsNoServer(err error) bool`
+- `internal/fabricengine#InFlightProbe`
+- `internal/fabricengine#Topology.SetInFlightProbe`
+- `internal/fabricengine#gcPruneExpire`
+- `internal/pairteardown#Teardown.otherPairSessions`
+- `internal/pairteardown#sessionsOfOtherPairs`
+- `internal/reedengine#IsNoServer`
 - `internal/pairteardown/inflight_test.go`
 
 **Prosa:**

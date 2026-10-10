@@ -10,7 +10,7 @@
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/fabricengine#Bolt.PushRecorded` -> `func (b *Bolt) PushRecorded(opts SyncOptions, rec *Mutations) error`
+- `internal/fabricengine#Bolt.PushRecorded`
 
 **Uses:**
 - `internal/gitrepo#ErrPullRebaseFailed`

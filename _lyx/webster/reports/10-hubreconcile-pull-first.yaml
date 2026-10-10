@@ -1,0 +1,4 @@
+status: OK
+head_sha: a9bf0d9824a6b434618aa9b6c551d35ce9654df3
+deviations:
+  - internal/fabriccli/adoptremote_integration_test.go

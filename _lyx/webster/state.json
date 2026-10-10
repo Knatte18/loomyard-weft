@@ -1,6 +1,6 @@
 {
   "runGuid": "9dec93383e814edddda7e7e8613f6ff8",
-  "planFingerprint": "e0253b8ebc22a2d527d45c3893a81b2b1beedf173c78aaeed4ef9ec2aa201da3",
+  "planFingerprint": "79a6198fd12c487b55e7d0f121973076d2970d817c32de18f003b708c9028613",
   "planFileHashes": {
     "00-overview.md": "f83f9a55c80e33abeb85c6f8d36aeed17cb40f75535818bf26dce86ea82600f0",
     "01-buildvcs-commit-time.md": "f94e9ff164b71020bbeb156e991c2dbdbf344fd22ed7bdd57b56e31f1a1c2b27",
@@ -14,8 +14,8 @@
     "09-stencil-sync-message.md": "b18c6c9c37f897a2f2e9d80b502dc6af8ef24aafe2cd518a8d40bb8405ef0fcf",
     "10-hubreconcile-pull-first.md": "b441bb2a093c96722d14516a46162c2145ffae95a2116bc3d6db604cd17fd72a",
     "11-fabric-reconcile-push-failure.md": "ee0fa0a2949f1775e49bc53febcbaa1d755d12888b754b09eef752b9e6e61ece",
-    "12-housekeeping-inflight-prune.md": "8ae819ebe0814598c24f9ab38dad26df3da705846bcb9d819ec78d3b4edb2f51",
-    "13-bolt-push-seed-drop-retry.md": "0eaccb1522de5f1cd565a2f4c4616af09db43d8f3ada5c660871e15c5398c49f"
+    "12-housekeeping-inflight-prune.md": "91ba68a93655746cb1da456f34fddc39d8fd910eff4db603858ce9aa2a20f155",
+    "13-bolt-push-seed-drop-retry.md": "b79dc443b2cca7c5f6a18ea3aa6e6bc664ec574235eed3014535370b3e13b0c4"
   },
   "planOverviewFrameHash": "c1675c9c9f4eb6f49a04b421ac9b69930452d571ad9a4f169b7a9818eb614975",
   "partition": [
@@ -323,7 +323,7 @@
       }
     }
   ],
-  "currentBatch": 10,
+  "currentBatch": 0,
   "masterStrand": "3c07589a8941246d08bcc7ed372dadef",
   "masterSessionId": "de618b9e-ea16-4992-b98e-5fa4a3031f27",
   "batches": {
@@ -379,15 +379,32 @@
       "cardHashes": {
         "10-hubreconcile-pull-first": "b441bb2a093c96722d14516a46162c2145ffae95a2116bc3d6db604cd17fd72a",
         "11-fabric-reconcile-push-failure": "ee0fa0a2949f1775e49bc53febcbaa1d755d12888b754b09eef752b9e6e61ece",
-        "12-housekeeping-inflight-prune": "8ae819ebe0814598c24f9ab38dad26df3da705846bcb9d819ec78d3b4edb2f51",
-        "13-bolt-push-seed-drop-retry": "0eaccb1522de5f1cd565a2f4c4616af09db43d8f3ada5c660871e15c5398c49f"
+        "12-housekeeping-inflight-prune": "91ba68a93655746cb1da456f34fddc39d8fd910eff4db603858ce9aa2a20f155",
+        "13-bolt-push-seed-drop-retry": "b79dc443b2cca7c5f6a18ea3aa6e6bc664ec574235eed3014535370b3e13b0c4"
       },
       "startSha": "ddee050b67d7b55e66401191f8650312908754fd",
       "kind": "fork",
       "spawnedAt": "2026-10-10T06:46:55Z",
       "sessionId": "de618b9e-ea16-4992-b98e-5fa4a3031f27",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "10-hubreconcile-pull-first",
+        "status": "done",
+        "head_sha": "a9bf0d9824a6b434618aa9b6c551d35ce9654df3",
+        "deviations": [
+          "internal/fabriccli/adoptremote_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "a9bf0d9824a6b434618aa9b6c551d35ce9654df3"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-and-store/de618b9e-ea16-4992-b98e-5fa4a3031f27/subagents/agent-a4e6fa90d1f0ef2a5.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-and-store/de618b9e-ea16-4992-b98e-5fa4a3031f27/subagents/agent-a4e6fa90d1f0ef2a5.jsonl"
+      ]
     },
     "6": {
       "slug": "seed-commit-signature",
@@ -433,6 +450,7 @@
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-and-store/de618b9e-ea16-4992-b98e-5fa4a3031f27/subagents/agent-a5facbd7222837fa6.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-and-store/de618b9e-ea16-4992-b98e-5fa4a3031f27/subagents/agent-a62da4848a9807b5a.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-and-store/de618b9e-ea16-4992-b98e-5fa4a3031f27/subagents/agent-a62da4848a9807b5a.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-and-store/de618b9e-ea16-4992-b98e-5fa4a3031f27/subagents/agent-a4e6fa90d1f0ef2a5.jsonl"
   ]
 }
