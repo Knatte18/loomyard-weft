@@ -40,6 +40,8 @@ Waits on nothing that is not running; next to start.
 1. **CLI surface: a command index for the orch, one help form, intake keeps comments** — [`cli-surface`](design-cli-surface.md) · bug, enhancement, orch, board, selfreport
    - lyx help index injected into the orch, a test-enforced form for Use/Short/Long including board payload keys, and intake that carries issue comments
    - **After:** `gate-test-scope`
+1. **Bolt and hub store: seeding without ping-pong, reconcile on a fresh Bolt, gc that stays out of the way** — [`bolt-and-store`](design-bolt-and-store.md) · bug, enhancement, stencil, fabric, config
+   - Seed stencils forward only and from a pulled Bolt, report failed reconcile pushes, and keep the hub store gc off busy runs and repeat repacks
 
 ### Layer B
 
@@ -57,8 +59,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 1. **Batten idle notices count machine sleep as idle time** — [`idle-notice-after-sleep`](design-idle-notice-after-sleep.md) · bug, batten
    - After a hibernate every run raises an idle notice for the whole sleep; the idle clock should skip time the machine was asleep
-1. **Stencil seeding ping-pongs on Bolt: prod-mode binaries overwrite each other's stencils** — [`stencil-seed-ping-pong`](design-stencil-seed-ping-pong.md) · bug, stencil
-1. **fabric reconcile on a stale Bolt: seed commits conflict on push, yet ok:true** — [`reconcile-stale-bolt`](design-reconcile-stale-bolt.md) · bug, fabric, config
 1. **webster record-batch 01 fails on create-not-done for a card named 3-proc-group-kill** — [`record-batch-card-scope`](design-record-batch-card-scope.md) · bug, webster
 
 ### Enhancements
@@ -107,10 +107,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Fold lyx gate test's process-group, Pdeathsig and job-object setup into internal/proc beside ConfigureGroupKill
 1. **An abandoned run leaves its board entry locked** — [`abandoned-run-claim`](design-abandoned-run-claim.md) · enhancement, batten, board
    - Batten teardown clears the run status of a run that ends without landing, so the entry is editable again
-1. **Hub store gc runs while other runs use the store** — [`store-gc-while-busy`](design-store-gc-while-busy.md) · enhancement, fabric
-   - Remove's foreground gc --auto repacks the shared store under other runs; skip it while runs are in flight
-1. **Hub store gc may repack at every teardown** — [`store-gc-loose-objects`](design-store-gc-loose-objects.md) · enhancement, fabric
-   - Loose objects younger than the prune expiry keep gc --auto over threshold; prune them at landing
 
 ### Features
 
