@@ -194,6 +194,12 @@ Decision: D12's repository test is: HEAD present, and objects and refs present i
 
 Rationale: Round 3 F3: git refuses a missing commondir target (rev-parse --show-toplevel exits 128), and D12 promises the walk-up behaves as --show-toplevel does; this is the pruned-worktree case.
 
+### Added after Discussion (parent, 2026-10-10): PATTERN overview stays under its cap
+
+Decision: Main's PATTERN.md overview is at 16380 of its 16384-byte cap, and daemon-wakeups and bolt-and-store each trim it to at most 16200 bytes before landing. Every card that edits a PATTERN.md overview line (cards 23, 25 and 32) keeps the overview at most 16200 bytes on the task branch: an added name is offset by shortening wording in the same or another overview line, with detail moved into the pattern/ background file, and no invariant is dropped. PATTERN-leaf-packages also gains fswatch from daemon-wakeups; a merge keeps both fswatch and dotgit.
+
+Rationale: Three runs have hit TestOverview_RealFilePassesCheck at Publish after merging main (gate-test-scope, daemon-wakeups, bolt-and-store); fixing it in the cards avoids a fourth Publish block and a goto.
+
 ## Constraints
 
 - `PATTERN-test-speed`: tier 2 has no tmux server; the tier table, gate table and "untagged tests spawn nothing" section record D6, D7 and D8.
