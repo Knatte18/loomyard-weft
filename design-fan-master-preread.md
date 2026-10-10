@@ -110,6 +110,7 @@ Two hand-built packs were then tried on solo `opus[medium]`, one run each:
 - A body dump (the bodies of the 35 symbols the target cites, about 20k tokens, in a file read first): 312 s, $1.93 review side, missed the BLOCKING finding.
 - A kick-start pack in quarry's `RenderKickstartPack` format (a glyph→span line and a signature line per glyph, 35 glyphs, 5.3 KB), injected into the first prompt with "read all listed spans in parallel, in one turn, before doing anything else": 316 s, $1.94 review side, found the BLOCKING finding (1 BLOCKING / 4 MEDIUM).
 
+The operator doubts the second run applied the kick-start as designed either, and will look at it later.
 Plain solo stays faster and cheaper for review on this fixture; the kick-start pack's measured case remains the implementer and the Burler fixer (`kick-start-pack`).
 
 Open if the fan comes back:
