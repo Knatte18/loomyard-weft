@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "Publish",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Webster-Bouncer → done",
+    "now": "Publish",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -234,6 +234,13 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/bolt-and-store/_lyx/reviews/webster/round-5-bouncer-ledger.md",
       "at": "2026-10-10T08:32:34Z"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/bolt-and-store/_lyx/landing/summary.md",
+      "at": "2026-10-10T08:33:21Z",
+      "gate_attempts": 0
     }
   ],
   "product": {
