@@ -1,24 +1,24 @@
 {
   "runGuid": "7801ee2258a7ed0d45e261f54cf45059",
-  "planFingerprint": "63d0b5b6efdba2a2cfa31aeb1dbb56a614d76bf4aea9765173f60b68bb995b1f",
+  "planFingerprint": "9f082198b0116fc7f091e7969d4573095a99e1dc0f638335c4e03a988a7be98c",
   "planFileHashes": {
     "00-overview.md": "bff97c582e1b9360c9fbcf582e3c26ad014c60ea17609ba704bac9141b60cce7",
-    "01-audience-and-index-renderer.md": "889e5bb1a897417b7573a00a614e46a9b53f8787bbd80309c6a4d94701ff9853",
-    "02-help-module.md": "6048d26ba3e90a0af517a461f9f72347d987e4f21e83629629ff56047c927035",
-    "03-shed-verbs-audience.md": "7dd46c90200d85ec138591d0261a3600391cd56347b537cbfd632d566811c0e2",
-    "04-small-modules-form.md": "d3f0c941149a60f5aa94550310d39c0f31aaefba448c93ec864f3fda94781b10",
-    "05-reed-orch-form.md": "4e72a1bfcec2e8111f7522d356c5ffa2732e4ba75b6280bd6bd59116360cdee7",
-    "06-fabric-form.md": "7e8b7079a0b0912001a79953deff2d761c22b2fa5e0d01cc046dd79da6dc6cdf",
-    "07-loom-form.md": "a0a1a1d754ab651993044a98a1bf40a248a83aba97ab4b373c68f4d764f4c70e",
-    "08-webster-form.md": "ec3e746b9844045f14f72be7fbba1b1778b9d8ce2101bdf109c47affafa603de",
-    "09-board-payload-use.md": "977b82d039328c45add5601191af2e6511ee1ca2bdc66d91dc6f23f9a9e4f0cb",
+    "01-audience-and-index-renderer.md": "db4e09648391ba821dc7ff2911a9883a04944df8b9da40fc09067b3418f6a162",
+    "02-help-module.md": "46416ab2a68a334f36bb2d3728ae8c8dbfa7667572d47a0431e4bf23a70fd435",
+    "03-shed-verbs-audience.md": "f1555cfa6cde4521c73e56f720a97547b7a04d1641aaeaf4eb4040581e956d14",
+    "04-small-modules-form.md": "b48b3db50026c8c624ed7517a0627e02a688909d76dae0035667ea5dd5e41e16",
+    "05-reed-orch-form.md": "dfc47fdd7377a4825299c4da554441b7eba303e7b3cbcc814da877d8f7585935",
+    "06-fabric-form.md": "a6911a88930ec7622adbf195a7cf394199d7b906569f92bf5d92dbae667f0400",
+    "07-loom-form.md": "c2b948fa6a9e18190a21ac6ab5ac1c266386ca4fcbf661c944dd8b9abaf96fe7",
+    "08-webster-form.md": "1e72abfe9dd057ae4a2ed02575ca873671742e44aa6dd3e964f6d52080eef219",
+    "09-board-payload-use.md": "b5a6a2557b0be3c460b70d822b98820522cdbadc85d6fc5871f735ce214011a6",
     "10-issue-comments-fetch.md": "ad9584acafe4d458f697cb003bf43a99e140d70550fcfed2bf4ba49bca9ec982",
     "11-intake-comments-body.md": "23443578ff79bab8107afd08a180eb8ee35b27b73d4af46c7d124aa0b70f1e2f",
     "12-intake-carries-comments.md": "788e50598360f5aa2a49214503b54b7865513d0b4fdc89f87f3003e0f8714f85",
     "13-strand-lyx-bin.md": "3388e9e466fe15be764113e44b56561eb48d04d2f9d5e8c6e2d7cd02c9aae2d8",
-    "14-role-file-command-index.md": "9cf0c3e1ecf1d9a99217db2de2c338fc5b56d73313f7e9421a5aaa4ccf47e43b",
+    "14-role-file-command-index.md": "0ff35cb3187931a6135f25872b62ee4ca00a8ed8137a56f147a8bac7b51fc178",
     "15-operator-cli-skill.md": "9a3663800119f3a7d301940d57b579446be728859b3411a2e0d8a21b9f2d66c5",
-    "16-cli-form-guard.md": "0e3fce1bf90d88f83222872c3ae3760afd00d396fc1a692f9353a7f30df7cc4a"
+    "16-cli-form-guard.md": "e105987981a13ec675100e4659e86a236cfa687925d52a01bd58cc3c22142b8a"
   },
   "planOverviewFrameHash": "bd2cdde11bb114c5f7d025ef9cfc3ea3acc7d386e3839cf08c8e5a19f7ba6d9c",
   "partition": [
@@ -369,7 +369,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "4b1aa1d856e051f187c9536a0790934c",
   "masterSessionId": "3b48aefb-b68c-4aae-941c-ea8eb2256f6e",
   "batches": {
@@ -383,18 +383,35 @@
         "05-reed-orch-form"
       ],
       "cardHashes": {
-        "01-audience-and-index-renderer": "889e5bb1a897417b7573a00a614e46a9b53f8787bbd80309c6a4d94701ff9853",
-        "02-help-module": "6048d26ba3e90a0af517a461f9f72347d987e4f21e83629629ff56047c927035",
-        "03-shed-verbs-audience": "7dd46c90200d85ec138591d0261a3600391cd56347b537cbfd632d566811c0e2",
-        "04-small-modules-form": "d3f0c941149a60f5aa94550310d39c0f31aaefba448c93ec864f3fda94781b10",
-        "05-reed-orch-form": "4e72a1bfcec2e8111f7522d356c5ffa2732e4ba75b6280bd6bd59116360cdee7"
+        "01-audience-and-index-renderer": "db4e09648391ba821dc7ff2911a9883a04944df8b9da40fc09067b3418f6a162",
+        "02-help-module": "46416ab2a68a334f36bb2d3728ae8c8dbfa7667572d47a0431e4bf23a70fd435",
+        "03-shed-verbs-audience": "f1555cfa6cde4521c73e56f720a97547b7a04d1641aaeaf4eb4040581e956d14",
+        "04-small-modules-form": "b48b3db50026c8c624ed7517a0627e02a688909d76dae0035667ea5dd5e41e16",
+        "05-reed-orch-form": "dfc47fdd7377a4825299c4da554441b7eba303e7b3cbcc814da877d8f7585935"
       },
       "startSha": "abe2aa50eb0b9ca8fcce7eacfcb6948d41060a33",
       "kind": "fork",
       "spawnedAt": "2026-10-10T14:18:53Z",
       "sessionId": "3b48aefb-b68c-4aae-941c-ea8eb2256f6e",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-audience-and-index-renderer",
+        "status": "done",
+        "head_sha": "1666f9302cc84301d142cfbc1340a96dd99a1911"
+      },
+      "cardShas": [
+        "1666f9302cc84301d142cfbc1340a96dd99a1911"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cli-surface/3b48aefb-b68c-4aae-941c-ea8eb2256f6e/subagents/agent-a46df6e2fad4cd7b2.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cli-surface/3b48aefb-b68c-4aae-941c-ea8eb2256f6e/subagents/agent-a46df6e2fad4cd7b2.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cli-surface/3b48aefb-b68c-4aae-941c-ea8eb2256f6e/subagents/agent-a46df6e2fad4cd7b2.jsonl"
+  ]
 }

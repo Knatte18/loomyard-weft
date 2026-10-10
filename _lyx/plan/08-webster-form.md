@@ -20,10 +20,10 @@
 - `internal/webstercli#websterCLI.verifyCmd`
 
 **Uses:**
-- `plan:internal/clihelp#AudienceAnnotation`
-- `plan:internal/clihelp#AudienceOperator`
-- `plan:internal/clihelp#AudienceRole`
-- `plan:internal/clihelp#AudienceInternal`
+- `internal/clihelp#AudienceAnnotation`
+- `internal/clihelp#AudienceOperator`
+- `internal/clihelp#AudienceRole`
+- `internal/clihelp#AudienceInternal`
 
 **Intent:** Bring `webster` to the D3, D6, D8 and D9 form.
 `reset --to start|pre-fix|... [--batch NN]` becomes `reset`, with `--to` and `--batch` in `Flags:` and the five targets listed in `Long`; the verb's own refusal keeps naming the targets, so no flag is newly marked required.

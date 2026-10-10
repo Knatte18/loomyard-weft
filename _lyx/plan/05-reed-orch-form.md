@@ -22,10 +22,10 @@
 - `internal/orchcli#orchCLI.resumeContextCmd`
 
 **Uses:**
-- `plan:internal/clihelp#AudienceAnnotation`
-- `plan:internal/clihelp#AudienceOperator`
-- `plan:internal/clihelp#AudienceRole`
-- `plan:internal/clihelp#AudienceInternal`
+- `internal/clihelp#AudienceAnnotation`
+- `internal/clihelp#AudienceOperator`
+- `internal/clihelp#AudienceRole`
+- `internal/clihelp#AudienceInternal`
 
 **Intent:** Bring `reed` and `orch` to the D3, D6 and D8 form.
 `reed remove <guid> | --name <name>` becomes `remove [<guid>]`, with `--name` documented in `Flags:` and `Long` as the other way to address a strand; every other reed `Use` already fits.

@@ -21,10 +21,10 @@
 - `internal/loomcli/approve_awaiting_test.go`
 
 **Uses:**
-- `plan:internal/clihelp#AudienceAnnotation`
-- `plan:internal/clihelp#AudienceOperator`
-- `plan:internal/clihelp#AudienceRole`
-- `plan:internal/clihelp#AudienceInternal`
+- `internal/clihelp#AudienceAnnotation`
+- `internal/clihelp#AudienceOperator`
+- `internal/clihelp#AudienceRole`
+- `internal/clihelp#AudienceInternal`
 - `internal/loomcli#StartAliasCommand`
 
 **Intent:** Bring `loom` to the D3, D6, D8 and D9 form.

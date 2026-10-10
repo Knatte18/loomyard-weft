@@ -11,11 +11,11 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/clihelp#Invocable`
-- `plan:internal/clihelp#Audiences`
-- `plan:internal/clihelp#AudienceAnnotation`
-- `plan:internal/clihelp#AudienceInternal`
-- `plan:internal/clihelp#IndexNoteAnnotation`
+- `internal/clihelp#Invocable`
+- `internal/clihelp#Audiences`
+- `internal/clihelp#AudienceAnnotation`
+- `internal/clihelp#AudienceInternal`
+- `internal/clihelp#IndexNoteAnnotation`
 
 **Intent:** Pin the form every earlier card produced with one tree-walking test, and record the three obligations in PATTERN (D3, D6, D8, D9, D10).
 `clitree_test.go` gains `TestCLIForm_EveryCommand`, which walks `newRoot()` with the shared walker, runs no invocation and `t.Parallel`s, and reports every problem per command path from four pure checks, each also run as subtests over small synthetic cobra trees so the negative cases are proven: the audience check fails on an invocable command (per `clihelp.Invocable`) without the annotation, a value outside `clihelp.Audiences`, a non-invocable group carrying one, and a hidden invocable command not `internal`, with a passing row for a `GroupRunE` group whose only flags are its own persistent ones, which is not invocable and carries none; the `Use` check splits on whitespace except that a brace-balanced `{…}` span is one token, requires the first token to equal the command's name, every further token to match `<arg>`, `[<arg>]`, `<arg>...`, `[<arg>...]` or `--flag <value>` with the arg name lower-case letters, digits and hyphens, a `--flag` token to name a flag cobra marks required (the `cobra.BashCompOneRequiredFlag` annotation), and a `{…}` token only to balance its braces; the `Short` check requires a lower-case first letter, one line and no final period; the `Long` check caps the byte length at one test constant, `maxLongBytes = 2000`, with the root exempt from nothing but the D9 subcommand-list rule, which is review discipline.

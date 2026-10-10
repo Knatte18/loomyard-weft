@@ -3,10 +3,10 @@
 **Create:**
 - `internal/helpcli/doc.go`
 - `internal/helpcli/cli_test.go`
-- `plan:internal/helpcli#Command` -> `func Command() *cobra.Command`
-- `plan:internal/helpcli#RunCLI` -> `func RunCLI(out io.Writer, args []string) int`
-- `plan:internal/helpcli#RunCLIIn` -> `func RunCLIIn(cwd string, out io.Writer, args []string) int`
-- `plan:internal/helpcli#indexCmd` -> `func indexCmd() *cobra.Command`
+- `internal/helpcli#Command`
+- `internal/helpcli#RunCLI`
+- `internal/helpcli#RunCLIIn`
+- `internal/helpcli#indexCmd`
 
 **Edit:**
 - `cmd/lyx#newRoot`
@@ -26,10 +26,10 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/clihelp#RenderIndex`
-- `plan:internal/clihelp#Audiences`
-- `plan:internal/clihelp#AudienceOperator`
-- `plan:internal/clihelp#AudienceAnnotation`
+- `internal/clihelp#RenderIndex`
+- `internal/clihelp#Audiences`
+- `internal/clihelp#AudienceOperator`
+- `internal/clihelp#AudienceAnnotation`
 - `internal/clihelp#SkipStencilSeedAnnotation`
 - `internal/clihelp#AnnotationEnabled`
 

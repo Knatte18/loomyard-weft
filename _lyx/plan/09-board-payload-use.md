@@ -25,10 +25,10 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/clihelp#AudienceAnnotation`
-- `plan:internal/clihelp#AudienceOperator`
-- `plan:internal/clihelp#AudienceInternal`
-- `plan:internal/clihelp#IndexNoteAnnotation`
+- `internal/clihelp#AudienceAnnotation`
+- `internal/clihelp#AudienceOperator`
+- `internal/clihelp#AudienceInternal`
+- `internal/clihelp#IndexNoteAnnotation`
 - `internal/boardengine#Store.SetStatus`
 - `internal/boardengine#Store.GetTask`
 

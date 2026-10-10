@@ -1,14 +1,14 @@
 # Card 1 — audience-and-index-renderer
 
 **Create:**
-- `plan:internal/clihelp#AudienceAnnotation` -> `const AudienceAnnotation = "lyx.audience"`
-- `plan:internal/clihelp#AudienceOperator` -> `const AudienceOperator = "operator"`
-- `plan:internal/clihelp#AudienceRole` -> `const AudienceRole = "role"`
-- `plan:internal/clihelp#AudienceInternal` -> `const AudienceInternal = "internal"`
-- `plan:internal/clihelp#Audiences` -> `var Audiences []string`
-- `plan:internal/clihelp#IndexNoteAnnotation` -> `const IndexNoteAnnotation = "lyx.index-note"`
-- `plan:internal/clihelp#Invocable` -> `func Invocable(cmd *cobra.Command) bool`
-- `plan:internal/clihelp#RenderIndex` -> `func RenderIndex(root *cobra.Command, audience string) string`
+- `internal/clihelp#AudienceAnnotation`
+- `internal/clihelp#AudienceOperator`
+- `internal/clihelp#AudienceRole`
+- `internal/clihelp#AudienceInternal`
+- `internal/clihelp#Audiences`
+- `internal/clihelp#IndexNoteAnnotation`
+- `internal/clihelp#Invocable`
+- `internal/clihelp#RenderIndex`
 - `internal/clihelp/index_test.go`
 
 **Edit:**

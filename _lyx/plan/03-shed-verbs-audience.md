@@ -15,10 +15,10 @@
 - `internal/shedcli#newSeedCommand`
 
 **Uses:**
-- `plan:internal/clihelp#AudienceAnnotation`
-- `plan:internal/clihelp#AudienceOperator`
-- `plan:internal/clihelp#AudienceRole`
-- `plan:internal/clihelp#AudienceInternal`
+- `internal/clihelp#AudienceAnnotation`
+- `internal/clihelp#AudienceOperator`
+- `internal/clihelp#AudienceRole`
+- `internal/clihelp#AudienceInternal`
 
 **Intent:** Give the shared shed verb bodies their audience per mount (D3) and bring the `batten` and `shed` mounts to the D6 form.
 `VerbText` gains an `Audience` field, and each of the five builders sets `Annotations[clihelp.AudienceAnnotation]` to its text's value, so a body mounted under `loom`, `shed` and `batten` takes a different audience at each mount with no second registry; `goto_test.go` adds one assertion that a built verb carries the audience its text names.

@@ -9,10 +9,10 @@
 - `internal/fabriccli#addWeftVerbs`
 
 **Uses:**
-- `plan:internal/clihelp#AudienceAnnotation`
-- `plan:internal/clihelp#AudienceOperator`
-- `plan:internal/clihelp#AudienceRole`
-- `plan:internal/clihelp#AudienceInternal`
+- `internal/clihelp#AudienceAnnotation`
+- `internal/clihelp#AudienceOperator`
+- `internal/clihelp#AudienceRole`
+- `internal/clihelp#AudienceInternal`
 
 **Intent:** Bring `fabric` to the D3, D6, D8 and D9 form.
 `Use` rewrites, flags leaving for `Flags:`: `clone <weft-url> [<warp-url>]`, `remove <slug>`, `prune`, `cleanup`, `merge [<branch>]` (with `--continue` and `--abort` explained in `Long` as the two flag-only forms); `checkout [branch]` becomes `checkout [<branch>]`; `merge-stage <path>...`, `merge-in <branch>`, `diff <since-warp-sha>`, `add <slug>` and `shortname [<shortname>]` already fit.

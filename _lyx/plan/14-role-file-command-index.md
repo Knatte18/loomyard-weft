@@ -36,8 +36,8 @@
 - `internal/orchcli/doc.go`
 
 **Uses:**
-- `plan:internal/clihelp#RenderIndex`
-- `plan:internal/clihelp#AudienceOperator`
+- `internal/clihelp#RenderIndex`
+- `internal/clihelp#AudienceOperator`
 - `internal/stencil#TopLevelMarkers`
 - `internal/reedengine#StrandStatus`
 - `internal/orchcli#orchStrands`
