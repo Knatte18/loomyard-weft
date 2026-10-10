@@ -1,0 +1,30 @@
+round: 1
+fan: standard
+lenses:
+    - generic
+    - generic
+    - correctness
+    - error-handling
+    - test-gaps
+review:
+    model: sonnet
+    effort: high
+    start: 2026-10-10T11:45:19Z
+    end: 2026-10-10T13:56:04.983434734+02:00
+    wall_seconds: 645.983434734
+    tokens_known: true
+    fresh_tokens: 901365
+    cache_read_tokens: 29841591
+    forks: 5
+    fork_fresh_tokens: 697153
+    fork_cache_read_tokens: 27082028
+    fork_fresh_share: 0.7734413916670827
+fix:
+    model: opus
+    effort: medium
+    start: 2026-10-10T11:45:36Z
+    end: 2026-10-10T14:06:04.068523167+02:00
+    wall_seconds: 1228.068523167
+    tokens_known: true
+    fresh_tokens: 282537
+    cache_read_tokens: 13250408
