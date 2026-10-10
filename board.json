@@ -1431,6 +1431,7 @@
         "loom"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "",
