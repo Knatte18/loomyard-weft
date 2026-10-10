@@ -213,6 +213,12 @@ PATTERN-test-economy: behaviour at the public surface, extending the existing `S
 **Decision.** `internal/seatengine/doc.go` states the seat model and every rule above; `internal/shedadapters/doc.go` adds the fifth adapter and its outcome mapping; `internal/shedrecipe/doc.go` and `contracts/specs/shed-recipe-spec.md` describe the `MultiLLM` row and its seam; `docs/overview.md` adds `seatengine` to the module table and the execution stack and corrects the adapter count.
 No PATTERN entry changes.
 
+### Added after Discussion (operator, 2026-10-10): Seats message through SendMessage until creel
+
+Decision: Seats exchange messages through Claude Code's SendMessage addressed by strand name, as D6 says; when creel is up it replaces SendMessage as the seats' channel. lyx shuttle send exists but is not meant to be used for this.
+
+Rationale: Creel, the mailbox, is not up yet, so SendMessage is the channel to use today.
+
 ## Constraints
 
 - PATTERN-told-geometry and PATTERN-cwd-resolution: `seatengine` is handed absolute roots and derives none.
