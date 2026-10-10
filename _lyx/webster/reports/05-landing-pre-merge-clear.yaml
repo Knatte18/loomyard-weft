@@ -1,0 +1,4 @@
+status: OK
+head_sha: a0dfc866f20d09b25ba1605b96a2d27611b80d28
+deviations:
+  - internal/testkit/envkit/envkit.go

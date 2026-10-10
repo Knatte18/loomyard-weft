@@ -1,8 +1,8 @@
 # Card 6 — resume-start-own-leftover
 
 **Create:**
-- `plan:internal/loomcli#ownMergeInLeftover` -> `func ownMergeInLeftover(st fabricengine.MidMergeState, producer, parentBranch string) bool`
-- `plan:internal/loomcli#loomCLI.currentProducer` -> `func (c *loomCLI) currentProducer() (string, error)`
+- `internal/loomcli#ownMergeInLeftover`
+- `internal/loomcli#loomCLI.currentProducer`
 
 **Edit:**
 - `internal/loomcli#loomCLI`

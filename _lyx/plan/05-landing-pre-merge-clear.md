@@ -1,11 +1,11 @@
 # Card 5 — landing-pre-merge-clear
 
 **Create:**
-- `plan:internal/landingshed#preMerge` -> `type preMerge struct`
-- `plan:internal/landingshed#newPreMerge` -> `func newPreMerge(deps Deps) preMerge`
-- `plan:internal/landingshed#preMerge.clear` -> `func (m preMerge) clear(producer, parentBranch string) (string, error)`
+- `internal/landingshed#preMerge`
+- `internal/landingshed#newPreMerge`
+- `internal/landingshed#preMerge.clear`
 - `internal/landingshed/premerge_test.go`
-- `plan:internal/loomcli#conflictSessionStopper` -> `func conflictSessionStopper(status func() (reedengine.StatusResult, error), stop func(guid string) error) func() (string, error)`
+- `internal/loomcli#conflictSessionStopper`
 
 **Edit:**
 - `internal/landingshed#Deps`
