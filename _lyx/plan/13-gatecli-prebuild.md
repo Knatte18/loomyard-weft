@@ -10,7 +10,7 @@
 - `internal/gatecli#runTest`
 - `cmd/testtiming#run`
 - `cmd/testtiming#runRedundancy`
-- `plan:cmd/testtiming#runResources`
+- `cmd/testtiming#runResources`
 - `internal/gatecli/test_integration_test.go`
 - `internal/verifytree#Verify`
 - `internal/verifytree/verify_integration_test.go`

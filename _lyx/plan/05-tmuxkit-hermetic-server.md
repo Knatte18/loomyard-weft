@@ -1,11 +1,11 @@
 # Card 5 — tmuxkit-hermetic-server
 
 **Create:**
-- `plan:internal/testkit/tmuxkit#serverConfig` -> `func serverConfig() (string, error)`
-- `plan:internal/testkit/tmuxkit#startServer` -> `func startServer(tmux, key string) error`
-- `plan:internal/testkit/tmuxkit#registerKey` -> `func registerKey(key string)`
-- `plan:internal/testkit/tmuxkit#registeredKeys` -> `var registeredKeys map[string]bool`
-- `plan:internal/testkit/tmuxkit#registryMu` -> `var registryMu sync.Mutex`
+- `internal/testkit/tmuxkit#serverConfig`
+- `internal/testkit/tmuxkit#startServer`
+- `internal/testkit/tmuxkit#registerKey`
+- `internal/testkit/tmuxkit#registeredKeys`
+- `internal/testkit/tmuxkit#registryMu`
 
 **Edit:**
 - `internal/testkit/tmuxkit#Socket`

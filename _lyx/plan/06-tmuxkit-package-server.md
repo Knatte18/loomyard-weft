@@ -47,8 +47,8 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/testkit/tmuxkit#startServer`
-- `plan:internal/testkit/tmuxkit#registerKey`
+- `internal/testkit/tmuxkit#startServer`
+- `internal/testkit/tmuxkit#registerKey`
 - `internal/testkit/tmuxkit#KillOnCleanup`
 - `internal/reedengine#ServerName`
 

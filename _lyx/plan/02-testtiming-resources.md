@@ -1,18 +1,18 @@
 # Card 2 — testtiming-resources
 
 **Create:**
-- `plan:cmd/testtiming#runResources` -> `func runResources(tags, pkgFlag string) error`
-- `plan:cmd/testtiming#resourceRow` -> `type resourceRow struct`
-- `plan:cmd/testtiming#measurePackageResources` -> `func measurePackageResources(tags, importPath, tmpDir string, env []string, parallel int) (resourceRow, error)`
-- `plan:cmd/testtiming#readForkCount` -> `func readForkCount() (int64, bool)`
-- `plan:cmd/testtiming#readLoadAverage` -> `func readLoadAverage() string`
-- `plan:cmd/testtiming#parseForkCount` -> `func parseForkCount(stat string) (int64, bool)`
-- `plan:cmd/testtiming#scopeStats` -> `func scopeStats(cgroupDir string) (cpu time.Duration, peakBytes int64, err error)`
-- `plan:cmd/testtiming#parseCPUStat` -> `func parseCPUStat(stat string) (time.Duration, error)`
-- `plan:cmd/testtiming#rusageStats` -> `func rusageStats(state *os.ProcessState) (cpu time.Duration, maxRSS int64)`
-- `plan:cmd/testtiming#leftoverProcesses` -> `func leftoverProcesses(dir string) []string`
-- `plan:cmd/testtiming#takeGateSlot` -> `func takeGateSlot(ctx context.Context, cwd string) (env []string, parallel int, release func(), err error)`
-- `plan:cmd/testtiming#renderResources` -> `func renderResources(tier string, rows []resourceRow, loadBefore, loadAfter string, cgroups bool) string`
+- `cmd/testtiming#runResources`
+- `cmd/testtiming#resourceRow`
+- `cmd/testtiming#measurePackageResources`
+- `cmd/testtiming#readForkCount`
+- `cmd/testtiming#readLoadAverage`
+- `cmd/testtiming#parseForkCount`
+- `cmd/testtiming#scopeStats`
+- `cmd/testtiming#parseCPUStat`
+- `cmd/testtiming#rusageStats`
+- `cmd/testtiming#leftoverProcesses`
+- `cmd/testtiming#takeGateSlot`
+- `cmd/testtiming#renderResources`
 - `cmd/testtiming/resources_test.go`
 
 **Edit:**

@@ -23,7 +23,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/hubforge#markFixtureBuild`
+- `internal/hubforge#markFixtureBuild`
 - `internal/fslink/fslink.go`
 
 **Prosa:**

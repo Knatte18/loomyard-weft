@@ -1,21 +1,21 @@
 # Card 3 — testtiming-git-census
 
 **Create:**
-- `plan:cmd/testtiming#gitCensus` -> `type gitCensus struct`
-- `plan:cmd/testtiming#traceEnv` -> `func traceEnv(dir string) []string`
-- `plan:cmd/testtiming#readCensus` -> `func readCensus(dir string) (gitCensus, error)`
-- `plan:cmd/testtiming#parseTraceEvents` -> `func parseTraceEvents(events []byte) (subcommand string, fixture bool, ok bool)`
-- `plan:cmd/testtiming#renderCensus` -> `func renderCensus(rows []resourceRow) string`
+- `cmd/testtiming#gitCensus`
+- `cmd/testtiming#traceEnv`
+- `cmd/testtiming#readCensus`
+- `cmd/testtiming#parseTraceEvents`
+- `cmd/testtiming#renderCensus`
 - `cmd/testtiming/census_test.go`
 
 **Edit:**
-- `plan:cmd/testtiming#resourceRow`
-- `plan:cmd/testtiming#measurePackageResources`
-- `plan:cmd/testtiming#renderResources`
+- `cmd/testtiming#resourceRow`
+- `cmd/testtiming#measurePackageResources`
+- `cmd/testtiming#renderResources`
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/gitkit#FixtureGitEnv`
+- `internal/gitkit#FixtureGitEnv`
 
 **Intent:** The git census columns of D1 and the fixture split of D2, in a new file `cmd/testtiming/census.go`.
 `traceEnv` returns the environment lines that make every git process under the child write one trace2 event file: `GIT_TRACE2_EVENT=<dir>` with a directory, `GIT_TRACE2_ENV_VARS` set to `gitkit.FixtureGitEnv`, and `GIT_CONFIG_COUNT`, `GIT_CONFIG_KEY_0=trace2.maxFiles`, `GIT_CONFIG_VALUE_0=0` so git never stops writing files after its default cap.

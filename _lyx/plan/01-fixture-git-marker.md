@@ -1,11 +1,11 @@
 # Card 1 — fixture-git-marker
 
 **Create:**
-- `plan:internal/gitkit#FixtureGitEnv` -> `const FixtureGitEnv = "LYX_FIXTURE_GIT"`
-- `plan:internal/gitkit#fixtureGitEnviron` -> `func fixtureGitEnviron() []string`
-- `plan:internal/hubforge#markFixtureBuild` -> `func markFixtureBuild() func()`
-- `plan:internal/hubforge#fixtureBuildMu` -> `var fixtureBuildMu sync.Mutex`
-- `plan:internal/hubforge#fixtureBuilds` -> `var fixtureBuilds int`
+- `internal/gitkit#FixtureGitEnv`
+- `internal/gitkit#fixtureGitEnviron`
+- `internal/hubforge#markFixtureBuild`
+- `internal/hubforge#fixtureBuildMu`
+- `internal/hubforge#fixtureBuilds`
 
 **Edit:**
 - `internal/gitkit#MustRun`

@@ -12,7 +12,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/testkit/tmuxkit#registeredKeys`
+- `internal/testkit/tmuxkit#registeredKeys`
 
 **Prosa:**
 - `pattern/PATTERN-test-isolation.md`
