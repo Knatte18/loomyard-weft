@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -45,7 +45,8 @@ The run seed carries its start time, which the spawn order reads in place of the
 
 ### Decision: opener-seam-exported-from-reedengine
 
-- **Decision:** The file-event source both daemon loops wait on is a `reedengine.FileWatchOpener`, with `reedengine.OpenFileWatch` wrapping `fswatch.Watch`; `reedcli` imports neither `fswatch` nor fsnotify, and tier-1 tests pass an opener over a channel they feed.
+- **Decision:** The file-event source both daemon loops wait on is a `reedengine.FileWatchOpener`, with `reedengine.OpenFileWatch` wrapping `fswatch.Watch`; `reedcli`'s production files import neither `fswatch` nor fsnotify.
+`reedengine`'s tier-1 tests pass an opener over a channel they feed; `reedcli`'s loop lists sessions against a live tmux server, so its event branch is proven in tier 1 at its pure seams (the wake planner and the signal's consume) and live in the `tmux` tier with the production opener.
   `reedengine.NextWakeCadence` is the one backoff rule, and `reedengine.DiscoverSignalFileName` the one spelling of the discover signal's name, which `hubgeom` joins onto `fabricengine.HubScratchDir` for the geometry and `reedcli` joins onto the same for the daemon.
 - **Rationale:** `PATTERN-told-geometry` keeps `reedengine` told its paths; one declarer per rule and per literal keeps the two packages from drifting.
 - **Applies to:** cards 4, 5, 6

@@ -7,7 +7,6 @@
 - `plan:internal/shuttleengine#judgeReadiness` -> `func judgeReadiness(state SessionState, unmatched bool, box boxReading) readiness`
 - `plan:internal/shuttleengine#sessionReadiness` -> `func sessionReadiness(sc sendContext, cycler SessionCycler, hold *turnStartHold, capture string) readiness`
 - `plan:internal/shuttleengine#Runner.holdFor` -> `func (r *Runner) holdFor(guid string) *turnStartHold`
-- `internal/shuttleengine/readiness_test.go`
 
 **Edit:**
 - `internal/shuttleengine#IdleProbe`
@@ -23,7 +22,6 @@
 - `internal/shuttleengine/run_test.go`
 - `internal/shuttleengine/fakes_test.go`
 - `internal/shuttleengine/doc.go`
-- `cmd/lyx/testdata/test-budget.yaml`
 
 **Intent:** One readiness reading, built on the hook-derived session state, gates every orch injection and every verified send (D7).
 `boxReading` is what the pane says about the input box: whether the engine reads one (`InputBoxReader` present and a box found), its text, and whether the pane is too short; `readBox` fills it from a capture, with no box and not too short for an engine without the reader.
@@ -36,10 +34,11 @@
 `Runner` gains a mutex-guarded map of `turnStartHold` by strand guid, reached through `holdFor`, so the orch watcher's probes keep one hold across its ticks as the send keeps one across its polls.
 `Runner.SessionIdle` computes the reading through `sessionReadiness` over the strand's run state and one capture: a ready or held reading becomes `IdleProbe{Idle, Reason}`, with `TooShort` set when the held reason is the short pane; an `unknown` reading falls back to today's probe (`IdleSession`, `PaneTooShort`) and logs the cause at Debug.
 When the reading is ready and the pane shows the running-turn needle or no box, the probe still answers idle and logs the disagreement with the pane's last lines at Debug, through `paneTail`.
+Bound: this downgrades the pane probe, so a ready reading beside a needle or a missing box lets an injection reach a screen state the hooks do not report, such as a menu; it is bounded by the verified send's landed check, which retries or reports a submission that did not land, and by the fact that only the watcher's own commands and prompts are typed through this gate, never operator text.
 `IdleProbe` gains `Reason string`, the held reason, empty when idle.
-`readiness_test.go` is the table test over `judgeReadiness`, one row per state and cause in the acceptance list, plus the draft, short-pane and unmatched-turn-start rows.
-`session_test.go` drives `Runner.SessionIdle` over a fake reed and an engine with the signal parser, the cycler and the box reader (extending `fakes_test.go`): a hook turn end beside a pane needle reads idle and logs the disagreement; a turn start with no turn end reads held and is released by a later turn end, an interrupt report and the idle override across polls; a session-start line after a turn end leaves it idle; a draft reads held with its reason; an engine without the parser falls back to the pane probe.
-`run_test.go`'s `TestSend_WaitsForIdleSession` gains rows for a draft held by the reading, an unmatched turn start held by it, and a hook turn end beside a needle that types at once.
-`doc.go`'s verified-send section states the reading and its fallback.
+`judgeReadiness` has no test of its own: it is covered through the two public surfaces it serves.
+`session_test.go`'s `TestRunner_SessionIdle_ReturnsScriptedClassification` becomes the table over `Runner.SessionIdle`, driven over a fake reed and an engine with the signal parser, the cycler and the box reader (extending `fakes_test.go`), one row per state and cause in the acceptance list (`idle-done`, `idle-stalled`, `asking`/`awaiting-input`, `busy`/`background` ready; `busy`/`turn`, `asking`/`ask`, `dead` held with their reasons; `unknown` falling back to the pane probe), plus rows for a draft held with its reason, a pane too short, a hook turn end beside a pane needle that reads idle and logs the disagreement, a turn start with no turn end held and then released by a later turn end, an interrupt report and the idle override across polls, a session-start line after a turn end that leaves it idle, and its existing rows for an engine without the parser, which fall back to the pane probe.
+`run_test.go`'s `TestSend_WaitsForIdleSession` keeps to what is specific to the send: its existing draft and unmatched-turn-start rows are repinned to the reading's held reasons, and it gains one row, a hook turn end beside a needle that types at once.
+`doc.go`'s verified-send section states the reading and its fallback, and its session-state section replaces the statement that the state runs in shadow mode with no consumer acting on it with the reading's two consumers, `Runner.SessionIdle` and the verified send's idle wait.
 
 **ImpactSummary:** The idle probe and the send's idle wait change their decision source behind unchanged signatures; two struct types gain a field, and the only new seam state is the per-strand hold on the runner.

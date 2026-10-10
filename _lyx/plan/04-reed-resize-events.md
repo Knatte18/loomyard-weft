@@ -14,6 +14,7 @@
 - `internal/reedengine#watchdogDebounceQuiet`
 - `internal/reedengine#watchdogRetryBaseDelay`
 - `internal/reedengine/watchloop_test.go`
+- `internal/reedengine/watchdog_integration_test.go`
 - `internal/reedengine/doc.go`
 - `cmd/lyx/testdata/test-budget.yaml`
 
@@ -31,8 +32,8 @@ Promotion to signal mode, in `handleWatchOutcome`'s caller, opens the watcher on
 The watcher is closed when the loop returns.
 `watchTiming.SignalTick` goes, which leaves `watchdogSignalTick` unread until the next card deletes it with the doc sentences that name it; `watchdogDebounceQuiet` and `watchdogRetryBaseDelay` carry `//lyx:one-shot` with their reasons (a debounce after an event, a bounded retry after a failed apply) on their declaration lines.
 `watchloop_test.go` drives the loop with a fake opener: `TestWatchLoop_SignalMode` writes the signal file and sends one event per write, asserting no stat and no tmux call while no event arrives, one apply after a burst settles, and the file removed before the apply; new rows cover the retry on a failed apply with the escalating delay and abandonment after the cap, an event that finds no file running nothing, and an opener that fails leaving the loop in poll mode with one Warn and no later promotion.
-A new test asserts `watchDefaultTiming`'s periodic fields (`PollCycle`, `Dormant`) are at or above one second, the D2 floor assertion for this package.
-The existing `tmux`-tier self-heal tests keep running the production opener live.
+`TestWatchState`'s `DefaultTimingMatchesTheSixConstants` subtest drops `SignalTick` from its want and gains the assertion that `watchDefaultTiming`'s periodic fields (`PollCycle`, `Dormant`) are at or above one second, the D2 floor assertion for this package; no new test is added for it.
+The existing `tmux`-tier self-heal tests in `watchdog_integration_test.go` keep running the production opener live: `fastWatchTiming` drops its `SignalTick` line and the comment's mention of it, the no-self-trigger test's `time.Sleep(10 * timing.SignalTick)` sleeps a fixed duration of its own, and its calls to `startWatchLoop`, whose helper in `watchloop_test.go` gains the opener argument, pass `OpenFileWatch`.
 `doc.go`'s watchdog section replaces the signal-tick sentences with the event wait and the poll fallback, and `cmd/lyx/testdata/test-budget.yaml` raises `internal/reedengine` as the new tests need.
 
 **ImpactSummary:** The resize loop's signal mode changes its wait mechanism behind the same `Watch` surface, and the loop's unexported driver gains an opener parameter whose only callers are `Watch` and the loop's own tests.
