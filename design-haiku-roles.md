@@ -19,3 +19,13 @@ Run the driver and the judge on Haiku 5.5 where it holds (operator, 2026-10-08: 
 
 `driver` is `haiku[medium]` in `loom.yaml` from 2026-10-08, for runs started after that; the judge stays on Sonnet until the driver trial is read.
 Compare the driver row of the token report per role, and the hub interventions, against the Sonnet runs before it.
+
+## Seen in use
+
+
+
+- 2026-10-10, `bolt-and-store`: the Haiku 5.5 driver read its prompt, summarized its rules, and ended the turn asking "Tell me when to start", although the prompt says it runs autonomously with no operator to ask.
+
+  The Haiku drivers of `multi-llm-producer` and `daemon-wakeups`, on the same prompt, started stepping at once; a message from the orch got it going.
+
+  The driver stencil (`contracts/stencils/shed/shed-template-driver.md`) never says "start now"; a line that reading the prompt is the go-ahead and the first turn launches the first step would close it.
