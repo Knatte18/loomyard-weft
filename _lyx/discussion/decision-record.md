@@ -137,6 +137,12 @@ Reflog expiry and `gc.worktreePruneExpire=never` are unchanged.
 Rationale: git's two-week default keeps every young unreachable object loose, so `gc --auto` finds the count over its threshold at every removal and repacks without lowering it.
 A day covers any lyx or operator command still in progress whose new objects are not yet referenced.
 
+### Added after Discussion (parent, 2026-10-10): PATTERN overview back under its cap after merging main
+
+Decision: Main's PATTERN.md overview is already at 16380 of its 16384-byte cap, so this run's additions push it to 16430 after the merge. Fix forward on the task branch: shorten overview lines (wording only, no invariant dropped, detail moved into the pattern/ background files where needed) until the overview is at most 16200 bytes, so TestOverview_RealFilePassesCheck passes with headroom.
+
+Rationale: Publish verify failed only on TestOverview_RealFilePassesCheck (16430 > 16384); the same merge-only breach hit gate-test-scope and daemon-wakeups and is fixed the same way; headroom keeps the next landing from tripping it.
+
 ## Constraints
 
 - `PATTERN-hub-store-gc`: housekeeping stays the sole gc site and the sole writer of the keys; D9 changes the expiry line and D8 adds the skip, both recorded in the entry.
