@@ -231,7 +231,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "8fb083fccc333657659e0de9c4933673",
   "masterSessionId": "d71dfee7-7253-43bf-9929-8b9f8ea97558",
   "batches": {
@@ -276,6 +276,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-hygiene/d71dfee7-7253-43bf-9929-8b9f8ea97558/subagents/agent-aa48d1836cca79074.jsonl"
       ]
+    },
+    "7": {
+      "slug": "socket-path-refused-at-boot",
+      "cards": [
+        "07-socket-path-refused-at-boot",
+        "08-kit-config-text",
+        "09-hermetic-reed-servers",
+        "10-resize-signal-entry-at-boot",
+        "11-benchmark-rerun"
+      ],
+      "cardHashes": {
+        "07-socket-path-refused-at-boot": "958f59c01983def16d728a3f7d828370b850cb5f897ea794fba5f1574ee6a90e",
+        "08-kit-config-text": "aadb7f41a6740c06d9f9f6b63648dce45e1ca56a6c02cac5d0167687e18899e1",
+        "09-hermetic-reed-servers": "76c48f82335638d6957e5a109fe4de2dd91d8d2d90c4875b2e9e035c6b3a3fb0",
+        "10-resize-signal-entry-at-boot": "16172c1ad9b4e39275fcb20662873d45e2adae59f32c996233aa565be6b46595",
+        "11-benchmark-rerun": "68c3caf9b01280b82a6dc2b72aafdce99c08fb5bf3515dff3d61f181aa112eed"
+      },
+      "startSha": "594297e9d759e8b3cd6164f472ba477826ebb46e",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T16:12:16Z",
+      "sessionId": "d71dfee7-7253-43bf-9929-8b9f8ea97558",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
