@@ -130,6 +130,12 @@ The SIGQUIT dump and every child's stderr go to the step's captured stderr file.
 `internal/pairteardown` kills a live loop of the pair, by its pid file, after ending the reed session and before any worktree is removed (PATTERN-pair-teardown order kept).
 `lyx loom start` keeps the status strand on llm-driven runs instead of removing it, since the driver pane no longer shows the run's steps.
 
+### Added after Discussion (parent, 2026-10-10): PATTERN overview stays under its cap
+
+Decision: Main's PATTERN.md overview is at 16375 of its 16384-byte cap. Every card that adds or edits a PATTERN.md overview line keeps the overview at most 16200 bytes on the task branch: added text is offset by shortening wording in the same or another overview line, with detail moved into the pattern/ background file, and no invariant is dropped.
+
+Rationale: Three runs (gate-test-scope, daemon-wakeups, bolt-and-store) hit TestOverview_RealFilePassesCheck at Publish after merging main; fixing it in the cards avoids another Publish block and a goto.
+
 ## Constraints
 
 - PATTERN-shed-verb-set: the loop body, the flag and the pause flags live in `internal/shedverbs`; the kind vocabulary becomes six and the allowlist grows, both stated in the entry and its background file in the same commit.
