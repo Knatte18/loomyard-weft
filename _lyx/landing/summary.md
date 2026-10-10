@@ -1,55 +1,62 @@
-# Reed hygiene: Debug trace, socket check, hermetic servers, poll backoff
-
-Four reed fixes that land together.
+# reed: reachable Debug trace, socket-path refusal, hermetic servers
 
 Closes #495
 
+Three reed fixes, plus the idle-CPU investigation of the watchdog's children.
+
 ## What changes
 
-- **Debug trace is reachable.**
-  The durable logger sink admits Debug records when the process verbosity is Debug (`-vv` or `LYX_LOG_LEVEL=debug`).
-  The default stays Info and above, and the sink's 8 MiB cap bounds a chatty trace.
-  The CLI root hook keeps the `LYX_LOG_LEVEL` level when no `-v` is given.
-- **The watchdog verb keeps its stderr half.**
-  `lyx reed watchdog` no longer discards it, so a foreground `-vv` run writes Debug lines to stderr or `LYX_LOG_FILE`.
-  `SpawnWatchdog` drops `LYX_LOG_FILE` from the daemon's environment and passes `LYX_LOG_LEVEL` on, so a detached daemon never writes an uncapped file.
-  The verb's `Long` help names the two routes to a daemon Debug trace and says a running daemon keeps its start-up level.
-- **Over-long socket paths are refused.**
-  On POSIX the boot computes the socket path as tmux does, with `TMUX_TMPDIR` symlinks resolved, and refuses a path over 107 bytes on Linux or 103 elsewhere.
-  The message names the path, its length, the limit and `TMUX_TMPDIR`.
-  Unresolvable `shell` values are refused before any tmux round trip, naming the key.
-  `Up`'s zoom bracket runs the same host pre-flight (`preflightBootHost`), since it issues a tmux call before the boot refusals.
-- **Reed's servers are hermetic.**
-  On POSIX the server-starting invocation and the capability probe carry `-f /dev/null`, and each session pins `default-shell` and `default-command` to the resolved `shell`.
-  Strand panes therefore start non-login shells and reed's servers no longer read `~/.tmux.conf`.
-  `PATTERN-test-isolation`'s bound is replaced, and the test kit's tmux config text is exported as `ConfigText`.
-- **Idle watchdog children are identified and backed off.**
-  The daemon's per-session engines now drive the daemon's told `--tmux` binary, so a benchmark shim counts the watchers' calls.
-  A fresh boot installs the window-resized clear and signal entry, so sessions with no placed strand promote out of poll mode.
-  Poll mode in the resize watch loop backs off from 2 s to a 60 s ceiling (`NextWakeCadence`), which brings it under `PATTERN-daemon-wakeups`; `tickerPeriodFor` is deleted.
-  `docs/benchmarks/daemon-idle-cpu.md` gains an after-hygiene row and a section naming the children.
+- **Debug trace.**
+  The durable log sink in `internal/logger` admits Debug records when the process verbosity is Debug (`-vv` or `LYX_LOG_LEVEL=debug`).
+  Info and above stay admitted as before, and the 8 MiB cap bounds a chatty trace.
+  The CLI root hook in `cmd/lyx` no longer calls `SetVerbosity` when no `-v` is given, so a level set by `LYX_LOG_LEVEL` is no longer reset to the default.
+- **Watchdog verb.**
+  `lyx reed watchdog` no longer discards its stderr half, so a foreground `-vv` run shows its Debug lines.
+  `SpawnWatchdog` drops `LYX_LOG_FILE` from the daemon's environment, so a detached daemon never writes an uncapped file, and it passes `LYX_LOG_LEVEL` on.
+  The verb's `Long` help names the two routes to a Debug trace: a foreground `-vv` run, or `lyx reed up`, `attach` or `resume` with `LYX_LOG_LEVEL=debug` while no daemon runs for the hub.
+  A running daemon keeps the level it started with.
+- **Told tmux binary.**
+  The daemon's per-session engines drive the `--tmux` path the daemon was told, not each worktree's `reed.yaml` value.
+  One binary makes the daemon's spawn set measurable through one seam.
+- **Socket path.**
+  On POSIX the boot refuses a tmux socket path over the OS limit (107 bytes on Linux, 103 on other POSIX systems), computed as tmux does, with `TMUX_TMPDIR` symlinks resolved.
+  The message names the path, its length, the limit and `TMUX_TMPDIR` as the way forward.
+  Before, tmux failed on every call and the boot loop read each failure as a server not up yet.
+  `Up`'s zoom bracket in `internal/reedengine/zoom.go` now runs the same host pre-flight, since it issues a tmux call before the boot refusals.
+- **Hermetic servers.**
+  On POSIX, reed's server-starting `new-session` and its capability probe carry `-f /dev/null`, so reed's servers no longer read `~/.tmux.conf`.
+  Each session pins `default-shell` and `default-command` to the resolved absolute `shell`, per session and never `-g`, so strand panes start non-login shells.
+  An unresolvable `shell` is refused at boot naming the key; the attach pre-flight logs a warning and skips the two pins.
+  `pattern/PATTERN-test-isolation.md` replaces its bound on this, and `tmuxkit` exports `ConfigText` so a `reedengine` test can pin the shell lines the kit and reed share.
+- **Poll-mode backoff.**
+  The resize watch loop's poll mode waits from a re-armed timer: two seconds at base, doubling to a 60-second ceiling across ticks that applied nothing and saw no box change, back to base on an applied layout, a changed box or a deferral.
+  `PATTERN-daemon-wakeups.md` names this.
+  `tickerPeriodFor` is deleted.
+- **Resize signal entry at boot.**
+  A fresh POSIX boot with `watchdog: on` installs the window-resized hook array as a zero-pin rebuild, so sessions with fewer than two panes or no placed strand leave poll mode.
+  The call sits in the boot path, not in `pinGeometryOptionsLocked`, because the attach pre-flight also runs that function and a degrading attach would wipe the session's resize pins.
+- **Benchmark.**
+  `docs/benchmarks/daemon-idle-cpu.md` gains an after-hygiene row: children CPU fell from 14.44 s to 0.41 s per 600 s, and all three idle sessions reached signal mode.
+  The per-subcommand counts are consistent with the watcher round trips being the children, but cannot confirm it, since the earlier rows' shim could not see them.
 
-## Design decisions to know
+## Design decisions
 
-- The signal entry is installed in the fresh-boot path, not inside `pinGeometryOptionsLocked`, because the attach pre-flight also runs that function and a zero-pin rebuild there would wipe the session's resize pins.
-- The shell pins are per-session, never `-g`, because one server serves every worktree of the hub.
-  The attach pre-flight re-resolves the shell and, when it no longer resolves, warns and skips the two pins.
-- The daemon's `--tmux` is the value from the worktree whose spawn started it; other worktrees' `tmux` values are ignored and not compared.
-- Windows keeps its current boot, pane start and poll-only watcher; the socket check, `-f`, shell pins and hook install are POSIX-only.
-- Not done: a config-driven file log level (`logger-file-level`, #234) and the spawn audit log (`spawn-audit-log`, #231).
+- No config key and no new log artifact is added; `logger-file-level` (#234) and the spawn audit log (#231) stay open.
+- Windows keeps its current boot, pane start and poll-only watcher; psmux support for `-f`, `set-hook` and `run-shell` is unverified.
+- The daemon's `--tmux` is the value of the worktree whose spawn started it.
+  Nothing compares it with other worktrees' values, since a config value and a resolved path to the same binary differ as text.
+- `-f /dev/null` takes effect at a hub server's next start; a server an older lyx started keeps the operator's config, and its new sessions get only the shell pins.
 
-## Behaviour to be aware of
+## To check by hand
 
-- An operator who tuned reed's servers through `~/.tmux.conf` (prefix, key bindings, `escape-time`, terminal overrides) loses those settings, and no `reed.yaml` key replaces them.
-  A server an older lyx started keeps the operator's config until it exits.
-- A resize while a backed-off poll watcher waits heals up to a minute late: always on Windows, and on POSIX when a watcher never left poll mode.
-- Strand panes' shells run rc files but not the login profile.
-
-## Check by hand
-
-- Run `lyx -vv reed watchdog` in the foreground and confirm Debug spawn lines on stderr.
-  Then run `lyx reed up` with `LYX_LOG_LEVEL=debug` while no daemon runs for the hub, and confirm Debug lines in the hub logs directory's trace file.
-  The fix that makes `LYX_LOG_LEVEL` survive the root hook was added late and the end-to-end path was not run by hand.
-- The benchmark's counts are consistent with the watcher-round-trips hypothesis but do not confirm it; the report is a single sample per row.
-- `d6` socket-path resolution (`TMUX_TMPDIR` as a short symlink to a long directory, macOS `/tmp` resolving to `/private/tmp`): review the resolution fallback in `internal/reedengine/socketfile.go`; only Linux was run.
-- Nothing was run on Windows or macOS.
+- **Lost `~/.tmux.conf` settings.**
+  An operator who tuned reed's servers through `~/.tmux.conf` (prefix, key bindings, `escape-time`, terminal overrides) loses them, and no `reed.yaml` key replaces them.
+- **Late resize heal.**
+  A resize while a backed-off poll watcher waits heals up to a minute late: always on Windows, and on POSIX when a watcher never left poll mode.
+- **Windows.**
+  No Windows host ran the changes; the poll backoff is the only change that applies there.
+- **Benchmark binary.**
+  The benchmark ran on the branch at `c6c54c6f3`, before the root-hook fix and later review fixes, and each row is a single sample.
+  Re-run the procedure on the landed binary if the figures matter.
+- **Debug trace routes.**
+  Confirm `LYX_LOG_LEVEL=debug lyx reed up` against a fresh hub writes Debug spawn lines to the hub's durable log, as the help text claims.
