@@ -1,6 +1,6 @@
 # Batten opens a terminal window per run instead of VS Code
 
-`ide-opt-in` · Task · enhancement, ide, reed, batten · running · Publish
+`ide-opt-in` · Task · enhancement, ide, reed, batten · running · PR-Gate
 
 From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03.
 The common case is reviewing the final PR rather than watching an agent edit live, so VS Code per worktree should be opt-in.
