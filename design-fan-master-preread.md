@@ -5,7 +5,7 @@
 ## Seen
 
 The lens fan's design: the master reviewer reads most of what the round needs first, then forks, so each lens fork inherits that reading through the cache and needs little new reading, which keeps a fork cheap enough for a Sonnet medium reviewer.
-The first fanned run (`webster-replan-state`, Discussion rounds 1-4 and Plan round 1) did not work that way; the analysis is in `fan-usage-report`:
+The first fanned run (`webster-replan-state`, Discussion rounds 1-4 and Plan round 1) did not work that way; the analysis is in `docs/research/lens-fan-cost-analysis.md`:
 
 - The master forked after reading only the target, instructions and stencil (39-74k context), no code, then told every fork to verify the Decisions' premises against the code.
   In Discussion round 1 the master read 19 code files first, and its forks took 32 turns and 152k fresh tokens; rounds 2-4 took 81-125 fork turns and 435-485k fresh.
@@ -35,7 +35,7 @@ Estimate: about 200-250k fresh tokens per round, about 2x a solo Opus round inst
 
 ## Research (fan-lab, 2026-10-10)
 
-A research agent replayed `webster-replan-state` Discussion round 2 standalone (`lyx burler run`) per variant, master and forks `sonnet[medium]`; the full report is `fan-lab/.scratch/phase1.md` (worktree `fan-lab`, lab plumbing uncommitted there).
+A research agent replayed `webster-replan-state` Discussion round 2 standalone (`lyx burler run`) per variant, master and forks `sonnet[medium]`; the full reports are `docs/research/lens-fan-lab-phase0.md` and `lens-fan-lab-phase1.md`.
 Variants: A today's text; B a lens-agnostic reading checklist in step 1; C B plus a 6-call fork budget; D C plus a reading manifest the master writes before spawning.
 
 | Run | Fan | Master code pre-reads | Fork tool calls | Review side fresh | Verdict | F1 (BLOCKING) |
