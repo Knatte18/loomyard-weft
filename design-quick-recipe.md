@@ -2,6 +2,8 @@
 
 `quick-recipe` · Task · feature, bug, loom, shed, batten, fabric, board
 
+Depends on: [`driver-context`](design-driver-context.md)
+
 ## Seen
 
 Small cosmetic or narrow changes, such as `board-priority-headings`, are too small for a full loom run (Discussion, Plan, Webster, review rounds), so today they go to a hand-briefed agent in the prime instead.

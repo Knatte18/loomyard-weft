@@ -24,17 +24,21 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-#### High priority
-
-| # | Task | Slug | After | Labels |
-| --- | --- | --- | --- | --- |
-| 1 | **Quick recipe: one producer, then the usual PR; shared Publish, Finalize and teardown fixes**<br>• A simplified loom for small changes (one producer, verify retries to a budget, PR-Gate as usual), plus per-attempt verify logs, Finalize ignoring the parent weft batten records, teardown clearing abandoned claims, and Reflect reading the parent weft | [`quick-recipe`](design-quick-recipe.md) |  | loom, shed, batten, fabric, board |
-
 #### Normal priority
 
 | # | Task | Slug | After | Labels |
 | --- | --- | --- | --- | --- |
-| 2 | **Burler runs its round on MultiLLMProducer**<br>• The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review | [`burler-multi-llm`](design-burler-multi-llm.md) |  | burler, shed, stencil |
+| 1 | **Burler runs its round on MultiLLMProducer**<br>• The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review | [`burler-multi-llm`](design-burler-multi-llm.md) |  | burler, shed, stencil |
+
+### Layer A
+
+Waits only on Running or Ready entries.
+
+#### High priority
+
+| # | Task | Slug | After | Labels |
+| --- | --- | --- | --- | --- |
+| 1 | **Quick recipe: one producer, then the usual PR; shared Publish, Finalize and teardown fixes**<br>• A simplified loom for small changes (one producer, verify retries to a budget, PR-Gate as usual), plus per-attempt verify logs, Finalize ignoring the parent weft batten records, teardown clearing abandoned claims, and Reflect reading the parent weft | [`quick-recipe`](design-quick-recipe.md) | `driver-context` | loom, shed, batten, fabric, board |
 
 ## Notes
 
