@@ -323,7 +323,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "3c07589a8941246d08bcc7ed372dadef",
   "masterSessionId": "de618b9e-ea16-4992-b98e-5fa4a3031f27",
   "batches": {
@@ -367,6 +367,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-and-store/de618b9e-ea16-4992-b98e-5fa4a3031f27/subagents/agent-a5facbd7222837fa6.jsonl"
       ]
+    },
+    "6": {
+      "slug": "seed-commit-signature",
+      "cards": [
+        "06-seed-commit-signature",
+        "07-bolt-pull-first-seed-drop",
+        "08-prerun-seed-pull-first",
+        "09-stencil-sync-message"
+      ],
+      "cardHashes": {
+        "06-seed-commit-signature": "06f33e127e9e35e9ebaf283dd75de826acdf0a6321e68781f44308a177dc2c77",
+        "07-bolt-pull-first-seed-drop": "8a52ba5a889f4d5aff6a145956286cab7327af17040116c7b1354509c2a1809f",
+        "08-prerun-seed-pull-first": "e6ccbd4cb8fdcb34e08d7d046f2f5b25ef67412a39125841e7c02ddb03a25da7",
+        "09-stencil-sync-message": "cfa54fe5dd2224e7bad6af089e96065abc10395a85d021882b16777296bf542e"
+      },
+      "startSha": "7adab031b276a3aa1080641380405111b586fb5b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T06:35:26Z",
+      "sessionId": "de618b9e-ea16-4992-b98e-5fa4a3031f27",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
