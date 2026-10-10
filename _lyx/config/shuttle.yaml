@@ -16,3 +16,4 @@ claude_prompt_cache_ttl: 5m # prompt-cache TTL for every role without an entry i
 claude_prompt_cache_ttl_roles: # prompt-cache TTL per role, keyed by a strand's role segment (Spec.Role); the operator's own map, replacing the template's whole when present, so leaving a role out drops it to the default; values are Claude Code's, validated when a run starts, and the refusal names the accepted ones
     driver: 1h
     webster: 1h
+    orch: 1h
