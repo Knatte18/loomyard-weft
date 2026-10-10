@@ -1,0 +1,28 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/battencli.TestWire_EverySeamFilled
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/battencli
+      tail: '    wire_seams_test.go:94: c.env.InnerRun.Awake is nil after wire(); fill it or list it in intentionallyNil with a reason'
+    - id: github.com/Knatte18/loomyard/internal/loomcli.TestWire_EverySeamFilled
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/loomcli
+      tail: '    wiring_seams_test.go:64: c.env.InnerRun.Awake is nil after wire(); fill it or list it in intentionallyNil with a reason'
+    - id: github.com/Knatte18/loomyard/internal/loomrecipe.TestEscalation_BudgetContinueGrantsOneRoundThenAccept
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/loomrecipe
+      tail: '    escalation_test.go:119: Discussion-Burler budget-exempt Stuck entries = 3; want 1 (the granted round)'
+    - id: github.com/Knatte18/loomyard/internal/testkit/envkit.TestFullEnv_FillsEverySeam
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/testkit/envkit
+      tail: '    envkit_test.go:13: NilSeams(FullEnv) = [InnerRun.Awake]; want none'
+    - id: github.com/Knatte18/loomyard/internal/testkit/envkit.TestNilSeams_ReportsExactPaths
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/testkit/envkit
+      tail: '    envkit_test.go:29: NilSeams = [CommitPlan InnerRun.Awake Landing.PushBranch SeedChild.WriteSeed Shuttle Teardown.Remove]; want [CommitPlan Landing.PushBranch SeedChild.WriteSeed Shuttle Teardown.Remove]'
+    - id: github.com/Knatte18/loomyard/internal/testkit/envkit.TestNilSeams_SkipsNilLegalPaths
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/testkit/envkit
+      tail: '    envkit_test.go:38: NilSeams = [InnerRun.Awake]; want none for nil-legal seams'
+log_path: /home/knatte/Code/loomyard-LYXHUB/loop-small-bugs/.lyx/verify/verify-2.log
