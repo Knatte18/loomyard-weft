@@ -1,5 +1,7 @@
-# Step-level watchdog and a Windows verify timeout that kills the process tree
+# Windows verify timeout kills the whole process tree
 
 `verify-watchdog` · Note · enhancement, shed
 
-From run-recovery PR-Gate (2026-10-07): run-recovery gave `verifytree` a 60-minute timeout and kills the process group on Unix. Still open from #420: a step-level watchdog, so a `lyx shed step` that never returns is noticed without the hub reading panes; and on Windows the timeout kills only the shell, not the process tree it started.
+From run-recovery PR-Gate (2026-10-07): run-recovery gave `verifytree` a 60-minute timeout and kills the process group on Unix.
+Still open from #420: on Windows the timeout kills only the shell, not the process tree it started.
+The step-level watchdog for a `lyx shed step` that never returns moved into task `driver-context` (2026-10-10).
