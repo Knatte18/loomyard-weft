@@ -130,6 +130,12 @@ Decision: In card 6, refuseOverUnfinishedMerge reads the parent branch through r
 
 Rationale: Plan round 3 F2: reading first lets a read failure at any other row replace the merge_in_progress refusal D3 says those rows keep.
 
+### Added after Discussion (parent, 2026-10-10): Start reads the producer only on the parked merge-in path
+
+Decision: loom start and resume never read the status file strictly before the spawn: the current producer is read inside refuseOverUnfinishedMerge only after the merge-state probe shows a parked merge-in, the same exception path the parent-branch read already takes; with any other merge state no producer read happens, so a poisoned or truncated status file still reaches the spawned child, which logs the decode failure, and the bootstrap returns the ok envelope. TestSmokeBootstrapLifecycle's died-driver and malformed-status rows pass unchanged.
+
+Rationale: Publish verify failed in internal/loomcli TestSmokeBootstrapLifecycle: card 6 added currentProducer() (start.go:311-317, a ReadJSONStrict of the status file) before every spawn, breaking the pinned contract that bootstrap steps use only lenient reads (smoke_test.go:590-600); same shape as plan round-3 F2.
+
 ## Constraints
 
 - `PATTERN-refusal-way-forward`: every new Stuck reason or refusal names its way forward, lands with its refusal-spec row and a test reaches it (D1, D2, D3, D6).
