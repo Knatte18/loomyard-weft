@@ -1356,21 +1356,6 @@
       "body": "`lyx board intake import` writes only the issue title and body (`issueContent` in `internal/boardengine/intake.go`); `selfreportengine` never fetches comments, so every comment on an issue is lost at import.\nThe operator treats a comment as part of its issue: #479 and #480 carried as much in comments as in their bodies and were completed by hand on 2026-10-10.\n\n## Expected\n\n- `import`, for a new note and for `into`, appends each comment after the body under a `## Issue comment, \u003cdate\u003e` heading, oldest first.\n- `intake list` shows the comment count, so an orch sees that an issue has comments before it decides how to import it.\n- The pointer comment lyx itself posts on import is never carried back in.\n"
     },
     {
-      "id": 262,
-      "slug": "board-running-section",
-      "title": "Board README: a Running section before Layer A",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "board"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Tasks a run holds (locked by board-lock-running) render in their own Running section ahead of Layer A",
-      "body": "The board README gets a `Running` section under Tasks, before `Layer A`, holding every task a run holds: the entries `board-lock-running` locks against scope changes.\nA running task appears there and in no layer, so the layers show only work that can still be started or reshaped.\n\n## Shape\n\n- In `renderReadme` (`internal/boardengine/render.go`), split the open tasks on `IsRunStatus` (from `board-lock-running`, `internal/boardengine/runlock.go`) before the layer loop and write them first under `### Running`.\n- Use the same predicate as the lock, so the README and the refusal can never disagree on which entries are locked.\n- After and Before still render for a running entry.\n\nWaits for `board-lock-running` to land, since `IsRunStatus` comes with it; then the orch fixes it directly on `main`.\n"
-    },
-    {
       "id": 263,
       "slug": "orch-reload-late",
       "title": "orch watcher sends the post-compact reload minutes late while the operator chats",

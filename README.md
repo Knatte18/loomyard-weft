@@ -109,8 +109,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **Haiku 5.5 for the light roles: driver and judge** — [`haiku-roles`](design-haiku-roles.md) · enhancement, config, loom, burler
    - Move the roles that only steer or rule on a fixed question, the loom driver and the Bouncer judge, to Haiku 5.5 where a trial run shows it holds
 1. **lyx help index: a generated one-line command index, injected into the orch only** — [`help-index`](design-help-index.md) · enhancement, orch
-1. **Board README: a Running section before Layer A** — [`board-running-section`](design-board-running-section.md) · enhancement, board
-   - Tasks a run holds (locked by board-lock-running) render in their own Running section ahead of Layer A
 1. **One owner for child-process lifetime in internal/proc** — [`proc-child-lifetime`](design-proc-child-lifetime.md) · enhancement
    - Fold lyx gate test's process-group, Pdeathsig and job-object setup into internal/proc beside ConfigureGroupKill
 1. **An abandoned run leaves its board entry locked** — [`abandoned-run-claim`](design-abandoned-run-claim.md) · enhancement, batten, board
