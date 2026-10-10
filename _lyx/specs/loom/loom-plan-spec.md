@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=313095e9a6954908e608fa9528859c5a82d39456f7698df1ff24788bf6beaacb build=5a8be027428082c91c0d3af16eeacb02fed29eea time=2026-10-10T14:47:02Z -->
+<!-- lyx-stencil: sha256=f0ac5c9530f14499327f603c69eb7107ea49966f35a1d007af657878d321d6ae build=1e79825ff968848322198e80471cf827fcd53cea time=2026-10-10T18:51:22Z -->
 
 # Loom plan-spec — flat card list
 
@@ -363,6 +363,7 @@ A parked, more aggressive parallel-execution idea also exists — see the `inter
 Machine checks this format is designed to support, in this fixed order, one row per distinct `Check:` ID — never one row per presentation row, so the table below is itself the authoritative list and no count of it is pinned anywhere in prose.
 The IDs are split across two entry points, `ValidateFormat` and `Validate`: every one but `plan-unapproved` (row 3 below) is in the format-only set `ValidateFormat` runs, and `plan-unapproved` is additionally checked by `Validate`, the full entry point.
 The rows that name `internal/planglyph` as their emitter are an exception: that package's resolve pass adds them on top of both entry points.
+`glyph-ambiguous` is not raised for a member declared once per mutually exclusive build-constraint set, which resolves as one member.
 `card-fabric-reference` is the other exception: it is a `planparser` function outside both entry points, which the plan index appends to its own format validation.
 `done-card-edited` is the third: `loomshed.ValidatePlan` appends it after the index's validation.
 The rows below stay in one fixed order regardless of which entry point runs them, and `plan-unapproved` keeps its position-three slot in that order even though it alone belongs to the wider entry point:
@@ -439,7 +440,7 @@ The rows below stay in one fixed order regardless of which entry point runs them
     Emitted by `internal/planglyph`'s resolve pass, not by `internal/planparser`, at `ValidateFormat`, `Validate`, `ValidateRework` and `ValidateDispatch`, and never under `language: "none"`.
     The match is textual, and the finding is attributed to the deleting card; the fix is to move the delete to a card after the editing one.
 33. `redundant-file-target` — a card's own target list holds a file self glyph beside a member glyph that resolves into that file; one finding per file and member, attributed to the card, with `Ref` the member.
-    A member that resolves `not_found`, ambiguous or unreadably is skipped, since the resolve status policy already reports it.
+    A member that resolves `not_found`, ambiguous without being partitioned by build constraints, or unreadably is skipped, since the resolve status policy already reports it.
     The way forward is to keep the member glyphs and drop the file, or keep the file when the card changes the whole file.
     Emitted by `internal/planglyph`'s plan-gate pass at `ValidateFormat`, `Validate` and `ValidateRework`, never at `ValidateDispatch` and never under `language: "none"`: the verdict depends on a member's resolved file, which the run itself changes once record-batch binds a handle into a member glyph.
 34. `resign-interface-method` — an `Edit` re-sign arrow on a member glyph that resolves to a method whose signature does not open with `func`, which is how an interface method answers; its own spec is no declaration a head can re-sign.
