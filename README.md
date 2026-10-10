@@ -47,14 +47,6 @@ Waits only on Running or Ready entries.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Bugs
-
-#### Normal priority
-
-| # | Note | Slug | Labels |
-| --- | --- | --- | --- |
-| 1 | **webster: fabric-reference audit fails a piped lyx help call inside a compound command** | [`audit-piped-help-call`](design-audit-piped-help-call.md) | webster, fabric |
-
 ### Enhancements
 
 #### High priority
