@@ -1487,7 +1487,8 @@
       "title": "webster: fabric-reference check flags read-only commands and blocks recovery",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "webster"
       ],
       "issues": [
         493

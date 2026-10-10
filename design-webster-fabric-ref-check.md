@@ -1,6 +1,6 @@
 # webster: fabric-reference check flags read-only commands and blocks recovery
 
-`webster-fabric-ref-check` · Note · bug
+`webster-fabric-ref-check` · Note · bug, webster
 
 Imported from [issue #493](https://github.com/Knatte18/loomyard/issues/493).
 
