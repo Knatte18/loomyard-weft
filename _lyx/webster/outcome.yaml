@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "Batch 01-verify-log-per-run failed on a fabric-reference audit finding (fork ran `lyx fabric --help`) that recover-batch cannot check: needs_fresh."
+batches_done: 0
