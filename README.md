@@ -108,6 +108,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- |
 | 35 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
 | 36 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
+| 37 | **Recovery prompt does not say the card gates are always allowed**<br>• In run quick-recipe the second recovery fork was unsure whether `lyx gate test` and `lyx loom lint-comments` fell under the ban on fabric commands, and could not run the tmux tier for tmux-tagged card steps (only compile-checked; verify later ran them). Idea: the recovery prompt names the card and batch gates as always allowed, and says tmux-tagged steps are left to verify. | `recovery-gate-clarity` | webster, stencil |
 
 ### Features
 

@@ -1293,6 +1293,23 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #526](https://github.com/Knatte18/loomyard/issues/526).\n\nWhat happened: a comment in `contracts/recipes/loom-recipe.yaml` says PR-Gate's \"episode Stuck count never resets between rounds, so the budget is five rejection rounds per task\".\n`episodeStuckCount` in `internal/shedengine/run.go` disagrees: a Done by any row in the same segment ends the episode, and `PR-Rework` shares `PR-Review` with `PR-Gate`, so the count resets after every rework and `max_bounces: 5` never trips.\nAn agent trusted the comment and wrote a five-rejection bound into a design, which the review then had to overturn as blocking.\n\nWhy it is abnormal: the documented budget and the engine behaviour contradict each other, and any recipe whose rework row shares the gate's segment inherits the false bound.\n\nWhat to do: fix the comment, or change the engine if a per-task budget was intended.\n\nProvenance: task `quick-recipe`; note burler-discussion-r1.md.\n"
+    },
+    {
+      "id": 317,
+      "slug": "recovery-gate-clarity",
+      "title": "Recovery prompt does not say the card gates are always allowed",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "webster",
+        "stencil"
+      ],
+      "issues": [],
+      "priority": "low",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "In run quick-recipe the second recovery fork was unsure whether `lyx gate test` and `lyx loom lint-comments` fell under the ban on fabric commands, and could not run the tmux tier for tmux-tagged card steps (only compile-checked; verify later ran them). Idea: the recovery prompt names the card and batch gates as always allowed, and says tmux-tagged steps are left to verify.",
+      "body": ""
     }
   ]
 }
