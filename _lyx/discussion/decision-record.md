@@ -232,13 +232,6 @@ Rationale: Operator, 2026-10-10: the single-agent producer works today and stays
   - discussion-advisors-not-open-map-reconcile-reverts-scalar (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
-<!-- lyx:carry-over Plan-Review -->
-- Plan-Review, round 3: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
-  Review: _lyx/reviews/plan/round-3-review.md; fixer report: _lyx/reviews/plan/round-3-fixer-report.md.
-  - card7-call-test-conflicts-with-gate-once-fake (class consistency, severity MEDIUM, open in rounds 3)
-  - discussion-seats-row-bypasses-gate-quiescence-guard (class design, severity MEDIUM, open in rounds 3)
-<!-- /lyx:carry-over Plan-Review -->
-
 ## Acceptance criteria
 
 - The Discussion-Write row builds, with every seat's markers filled, when `discussion_advisors` is empty, has one entry, and has two entries; the chair's inputs cover every advisor output, and the chair is interactive exactly when `discussion_interactive` is set.
