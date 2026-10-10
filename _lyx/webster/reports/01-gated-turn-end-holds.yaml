@@ -1,0 +1,11 @@
+status: OK
+head_sha: f416bcc3c685f2aded30df144efec61b4e8b16bf
+deviations:
+  - internal/shuttleengine/gate.go
+  - internal/shuttleengine/spec.go
+  - internal/shuttleengine/run.go
+  - internal/websterengine/verifygate.go
+  - internal/websterengine/verifygatereport.go
+  - internal/websterengine/summary.go
+  - internal/websterengine/triage.go
+  - internal/websterengine/runlevel.go

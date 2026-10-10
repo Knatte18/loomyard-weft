@@ -1,8 +1,8 @@
 # Card 4 — verify-gate-way-forward
 
 **Create:**
-- `plan:internal/websterengine#verifyGateWayForward` -> `func verifyGateWayForward(fixPromptPath string) string`
-- `plan:internal/websterengine#verifyGateReprompt` -> `func verifyGateReprompt(fixPromptPath string) func(findingsPath string) string`
+- `internal/websterengine#verifyGateWayForward`
+- `internal/websterengine#verifyGateReprompt`
 
 **Edit:**
 - `internal/websterengine#NewVerifyGate` -> `func NewVerifyGate(geom Geometry, attempts int, batches []batcher.Batch, parentBranch ParentBranchFunc, frictionDir, fixPromptPath string) (shuttleengine.Gate, *VerifyGateNotes)`
