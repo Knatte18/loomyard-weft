@@ -182,6 +182,12 @@ Decision: Main's PATTERN.md overview is at 16375 of its 16384-byte cap. Every ca
 
 Rationale: Three runs (gate-test-scope, daemon-wakeups, bolt-and-store) hit TestOverview_RealFilePassesCheck at Publish after merging main; fixing it in the cards avoids another Publish block and a goto.
 
+### Added after Discussion (parent, 2026-10-10): Two Discussion producers side by side; D1 superseded
+
+Decision: Supersedes D1. The existing single-agent Discussion producer (DiscussionSpec on SingleLLMProducer, prompt.go and their tests) stays as it is, unchanged and selectable; card 7's deletion is dropped. The seat-table Discussion becomes a second producer with its own distinct name, doing the same job (writing the discussion protocol) with its own implementation: a chair plus N advisors, one per discussion_advisors entry, N >= 0. A loom.yaml key, named by the plan, selects which of the two producers the Discussion-Write row runs; the default selects the existing single-agent producer, so a hub that sets nothing behaves as today. discussion_advisors is read only by the seat-table producer; in a present loom.yaml an absent key takes the template's one advisor because configengine fills missing keys from the template before the unmarshal, while null, [], "" and [""] load as zero advisors; the acceptance criterion's 'absent key loads as zero advisors' holds for an in-memory Config.
+
+Rationale: Operator, 2026-10-10: the single-agent producer works today and stays as the reference and the fallback; the new multi-seat producer is tried alongside it and switched back by config if it does not hold, which a one-path rewrite would make impossible without a revert.
+
 ## Constraints
 
 - PATTERN-stencil-ownership: the table closure is evaluated per call and the seat engine reads every stencil and include from the told directory at run time; no embedded bytes.
