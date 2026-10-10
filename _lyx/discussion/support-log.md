@@ -40,6 +40,12 @@ _No rounds yet._
   Assumption: the bounded shell lifetime the board records still holds.
 - Stop condition home (auto-pick): the status file, consumed by the engine; see D3.
 - Retracting a condition (auto-pick): `--clear`, since the only other route is a hand edit of the status file, which the stencil forbids.
+  Round 1 narrowed it to the two conditions: clearing `pause_requested` too would have made Shed no longer its only writer of `false` and let a driver cancel an operator's pause.
+- Overriding another actor's stop condition (auto-pick, round 2): a second condition replaces the first and `--clear` removes both whoever set them, the answer naming what was overridden; see D3.
+  Refusing over a recorded target would force a `--clear` that also drops the other condition, and the orchestrator retargets stops as a run moves.
+- Child lifetime and a dead loop (auto-pick, round 2): parent-death signal and Job Object as `lyx gate test` does, and a dead loop's pid file turned into an `interrupted` stop instead of a fresh spawn; see D2 and D11.
+- Step tree and Windows identity (auto-pick, round 3): the Linux tree kill gates on a live group member started at or after the child, since the parent-death signal reaches the direct child only; on Windows a named job the loop joins replaces the start-time gate, since `proc.StartTime` reads nothing there and changing it would alter the claude engine's resume check; the loop spawns with `DetachBreakaway`; see D2 and D11.
+- Envelope currency (auto-pick, round 3): the status file's `state` joins the key, since a resume changes neither producer nor history, and a waiter retires what it prints; a stop serial in the engine's persist was rejected as a status schema change for a rare fold case; see D2.
 - Watchdog criterion and window (auto-pick): idle over batten's reading, 60 minutes default, configurable; see D4.
   Open: the right default is read off the first runs.
 - Sixth kind (auto-pick): `interrupted`, named in PATTERN-shed-verb-set; see D4.
@@ -51,4 +57,6 @@ _No rounds yet._
 - Guide stencil (auto-pick): rare branches move to a second stencil the prompt points at; see D9.
 - Status strand on llm runs (auto-pick): kept, since the driver pane goes quiet; see D11.
 - Idea 7 (auto-pick): out of scope, the board marks it optional.
+- PATTERN overview cap (parent, 2026-10-10): added after Discussion as a Constraint.
+  Three runs (gate-test-scope, daemon-wakeups, bolt-and-store) hit `TestOverview_RealFilePassesCheck` at Publish after merging main; keeping the overview under 16200 bytes in the cards avoids another Publish block and a goto.
 - Environment: nothing outside the two discussion files was touched; no tool failure blocked the steps.
