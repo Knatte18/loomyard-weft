@@ -1521,7 +1521,8 @@
       "title": "daemon idle Debug spawn lines reach no log sink; tmux socket path can exceed 108 bytes",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "reed"
       ],
       "issues": [
         495

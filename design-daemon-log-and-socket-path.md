@@ -1,6 +1,6 @@
 # daemon idle Debug spawn lines reach no log sink; tmux socket path can exceed 108 bytes
 
-`daemon-log-and-socket-path` · Note · bug
+`daemon-log-and-socket-path` · Note · bug, reed
 
 Imported from [issue #495](https://github.com/Knatte18/loomyard/issues/495).
 
