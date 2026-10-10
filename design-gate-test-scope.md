@@ -1,6 +1,6 @@
 # Gate test scope: which gate runs which tier, bounded hub-wide
 
-`gate-test-scope` · Task · bug, enhancement, webster, loom, stencil, config, burler · running · Plan-Bouncer
+`gate-test-scope` · Task · bug, enhancement, webster, loom, stencil, config, burler · running · Batchifier
 
 Depends on: [`plan-gate-checks`](design-plan-gate-checks.md)
 
