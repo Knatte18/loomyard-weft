@@ -1,6 +1,6 @@
 # MultiLLMProducer: one producer runs a chair and its advisors as seats
 
-`multi-llm-producer` · Task · feature, shed, shuttle · running · Loom-Preflight
+`multi-llm-producer` · Task · feature, shed, shuttle · running · Discussion-Write
 
 ## Goal
 
