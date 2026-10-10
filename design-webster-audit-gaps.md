@@ -1,6 +1,6 @@
 # Webster audit and recovery: pathless findings, read-only classifier, rebaseline Stuck
 
-`webster-audit-gaps` · Task · bug, enhancement, webster, fabric · running · Loom-Preflight
+`webster-audit-gaps` · Task · bug, enhancement, webster, fabric · running · Discussion-Write
 
 ## Goal
 
