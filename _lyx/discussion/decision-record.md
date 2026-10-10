@@ -182,6 +182,12 @@ Decision: D12's survival rule covers every answer git derives from config or rev
 
 Rationale: Round 3 F1: the hooks path depends on config, not geometry, so no in-process join can reproduce it, and replacing it would reintroduce the core.hooksPath bug hook.go records as fixed.
 
+### Added after Discussion (parent, 2026-10-10): D8 moves only reedcli's probes; other copies stay
+
+Decision: D8 moves reedcli's watchdog recognizer and /proc probes into tmuxkit as planned; the existing copies in loomcli (smoke_helpers_test.go) and orchcli (smoke_live_test.go) stay as they are and are out of this run's scope. D8's claim that tmuxkit holds the only copy is struck.
+
+Rationale: Round 3 F2: the claim was false, but folding the pre-existing loomcli and orchcli copies onto tmuxkit is consolidation beyond the board goal; the orchestrator files it as a board note.
+
 ## Constraints
 
 - `PATTERN-test-speed`: tier 2 has no tmux server; the tier table, gate table and "untagged tests spawn nothing" section record D6, D7 and D8.
