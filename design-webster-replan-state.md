@@ -1,6 +1,6 @@
 # Webster and round-gate bug sweep: replans, batch checks, fork sandbox, shell wait, test re-runs
 
-`webster-replan-state` · Task · bug, enhancement, webster, loom, burler, fabric
+`webster-replan-state` · Task · bug, enhancement, webster, loom, burler, fabric · running · Worktree-Create
 
 Depends on: [`gate-test-scope`](design-gate-test-scope.md), [`publish-recovery`](design-publish-recovery.md)
 
