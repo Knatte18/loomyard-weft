@@ -16,12 +16,13 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | At | Labels |
 | --- | --- | --- | --- | --- |
 | 1 | **Darn recipe: one producer, then the usual PR; shared Publish, Finalize and teardown fixes**<br>• The darn recipe: a simplified run for small changes (one producer, verify retries to a budget, PR-Gate as usual), plus per-attempt verify logs, Finalize ignoring the parent weft batten records, teardown clearing abandoned claims, and Reflect reading the parent weft | [`quick-recipe`](design-quick-recipe.md) | Plan-Burler | loom, shed, batten, fabric, board |
+| 2 | **Webster audit and recovery: pathless findings, read-only classifier, rebaseline Stuck** | [`webster-audit-gaps`](design-webster-audit-gaps.md) | Worktree-Create | webster, fabric |
 
 #### Normal priority
 
 | # | Task | Slug | At | Labels |
 | --- | --- | --- | --- | --- |
-| 2 | **CLI surface: a command index for the orch, one help form, intake keeps comments**<br>• lyx help index injected into the orch, a test-enforced form for Use/Short/Long including board payload keys, and intake that carries issue comments | [`cli-surface`](design-cli-surface.md) | Webster | orch, board, selfreport |
+| 3 | **CLI surface: a command index for the orch, one help form, intake keeps comments**<br>• lyx help index injected into the orch, a test-enforced form for Use/Short/Long including board payload keys, and intake that carries issue comments | [`cli-surface`](design-cli-surface.md) | Webster | orch, board, selfreport |
 
 ### Ready
 
@@ -32,13 +33,12 @@ Waits on nothing open; can start now.
 | # | Task | Slug | After | Labels |
 | --- | --- | --- | --- | --- |
 | 1 | **Lens fan: master pre-reads the cited code before forking, forks get a read budget**<br>• Make the lens fan work as designed: the master reads the cited code (and judges nothing) before forking, each fork has a tool-call budget, and Discussion and Plan use their own fans | [`fan-master-preread`](design-fan-master-preread.md) |  | burler, stencil |
-| 2 | **Webster audit and recovery: pathless findings, read-only classifier, rebaseline Stuck** | [`webster-audit-gaps`](design-webster-audit-gaps.md) |  | webster, fabric |
 
 #### Normal priority
 
 | # | Task | Slug | After | Labels |
 | --- | --- | --- | --- | --- |
-| 3 | **Reed hygiene: daemon log and socket path, plain strand shells, watchdog child CPU** | [`reed-hygiene`](design-reed-hygiene.md) |  | reed |
+| 2 | **Reed hygiene: daemon log and socket path, plain strand shells, watchdog child CPU** | [`reed-hygiene`](design-reed-hygiene.md) |  | reed |
 
 ## Notes
 
