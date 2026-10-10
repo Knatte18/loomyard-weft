@@ -1,6 +1,6 @@
 # board: refuse scope edits to a running task
 
-`board-lock-running` · Task · bug, board · running · Publish
+`board-lock-running` · Task · bug, board · running · PR-Gate
 
 A task whose run has started can still be edited on the board.
 On 2026-10-06 the orch folded two new issues into `bugfix-sessions` with `lyx board intake import --into` while that run sat planned and parked before Webster, so the board entry no longer matched the plan its run was executing.
