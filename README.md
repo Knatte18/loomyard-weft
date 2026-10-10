@@ -11,12 +11,18 @@ Concrete and claimable; only a task can run.
 
 Held by a run; its scope is locked until the run ends.
 
+#### High priority
+
+| # | Task | Slug | At | Labels |
+| --- | --- | --- | --- | --- |
+| 1 | **Darn recipe: one producer, then the usual PR; shared Publish, Finalize and teardown fixes**<br>• The darn recipe: a simplified run for small changes (one producer, verify retries to a budget, PR-Gate as usual), plus per-attempt verify logs, Finalize ignoring the parent weft batten records, teardown clearing abandoned claims, and Reflect reading the parent weft | [`quick-recipe`](design-quick-recipe.md) | Worktree-Create | loom, shed, batten, fabric, board |
+
 #### Normal priority
 
 | # | Task | Slug | At | Labels |
 | --- | --- | --- | --- | --- |
-| 1 | **Webster and round-gate bug sweep: replans, batch checks, fork sandbox, shell wait, test re-runs**<br>• Webster stays consistent across replans, its batch and fabric checks judge only what they should, implementer forks stay sandboxed, the shell wait leaves nothing running, and the round gate re-runs whole tests | [`webster-replan-state`](design-webster-replan-state.md) | Webster-Burler | webster, loom, burler, fabric |
-| 2 | **CLI surface: a command index for the orch, one help form, intake keeps comments**<br>• lyx help index injected into the orch, a test-enforced form for Use/Short/Long including board payload keys, and intake that carries issue comments | [`cli-surface`](design-cli-surface.md) | Plan-Burler | orch, board, selfreport |
+| 2 | **Webster and round-gate bug sweep: replans, batch checks, fork sandbox, shell wait, test re-runs**<br>• Webster stays consistent across replans, its batch and fabric checks judge only what they should, implementer forks stay sandboxed, the shell wait leaves nothing running, and the round gate re-runs whole tests | [`webster-replan-state`](design-webster-replan-state.md) | Webster-Burler | webster, loom, burler, fabric |
+| 3 | **CLI surface: a command index for the orch, one help form, intake keeps comments**<br>• lyx help index injected into the orch, a test-enforced form for Use/Short/Long including board payload keys, and intake that carries issue comments | [`cli-surface`](design-cli-surface.md) | Plan-Burler | orch, board, selfreport |
 
 ### Ready
 
@@ -26,8 +32,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | After | Labels |
 | --- | --- | --- | --- | --- |
-| 1 | **Darn recipe: one producer, then the usual PR; shared Publish, Finalize and teardown fixes**<br>• The darn recipe: a simplified run for small changes (one producer, verify retries to a budget, PR-Gate as usual), plus per-attempt verify logs, Finalize ignoring the parent weft batten records, teardown clearing abandoned claims, and Reflect reading the parent weft | [`quick-recipe`](design-quick-recipe.md) |  | loom, shed, batten, fabric, board |
-| 2 | **Lens fan: master pre-reads the cited code before forking, forks get a read budget**<br>• Make the lens fan work as designed: the master reads the cited code (and judges nothing) before forking, each fork has a tool-call budget, and Discussion and Plan use their own fans | [`fan-master-preread`](design-fan-master-preread.md) |  | burler, stencil |
+| 1 | **Lens fan: master pre-reads the cited code before forking, forks get a read budget**<br>• Make the lens fan work as designed: the master reads the cited code (and judges nothing) before forking, each fork has a tool-call budget, and Discussion and Plan use their own fans | [`fan-master-preread`](design-fan-master-preread.md) |  | burler, stencil |
 
 ## Notes
 

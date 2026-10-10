@@ -1,6 +1,6 @@
 # Darn recipe: one producer, then the usual PR; shared Publish, Finalize and teardown fixes
 
-`quick-recipe` · Task · feature, bug, loom, shed, batten, fabric, board
+`quick-recipe` · Task · feature, bug, loom, shed, batten, fabric, board · running · Worktree-Create
 
 Depends on: [`driver-context`](design-driver-context.md)
 
