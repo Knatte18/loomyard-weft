@@ -1,8 +1,8 @@
 # Card 2 — finalize-parent-records
 
 **Create:**
-- `plan:internal/landingshed#Finalize.commitParentRecords` -> `func (fz *Finalize) commitParentRecords(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error, bool)`
-- `plan:internal/loomcli#parentRecordsCommitter` -> `func parentRecordsCommitter(l *lyxcwd.Location, slug string) func() error`
+- `internal/landingshed#Finalize.commitParentRecords`
+- `internal/loomcli#parentRecordsCommitter`
 
 **Edit:**
 - `internal/landingshed#Deps`

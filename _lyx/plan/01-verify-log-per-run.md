@@ -1,10 +1,10 @@
 # Card 1 — verify-log-per-run
 
 **Create:**
-- `plan:internal/verifytree#verifyLogKeep` -> `const verifyLogKeep = 20`
-- `plan:internal/verifytree#nextLogPath` -> `func nextLogPath(dir string) (string, error)`
-- `plan:internal/verifytree#pruneLogs` -> `func pruneLogs(p Paths) error`
-- `plan:internal/verifytree#IsLogPath` -> `func IsLogPath(p Paths, path string) bool`
+- `internal/verifytree#verifyLogKeep`
+- `internal/verifytree#nextLogPath`
+- `internal/verifytree#pruneLogs`
+- `internal/verifytree#IsLogPath`
 
 **Edit:**
 - `internal/verifytree#Paths`

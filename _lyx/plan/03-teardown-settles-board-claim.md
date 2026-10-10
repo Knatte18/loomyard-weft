@@ -1,17 +1,17 @@
 # Card 3 — teardown-settles-board-claim
 
 **Create:**
-- `plan:internal/pairteardown#claimSettlement` -> `type claimSettlement string`
-- `plan:internal/pairteardown#claimKeep` -> `const claimKeep claimSettlement = "keep"`
-- `plan:internal/pairteardown#claimDone` -> `const claimDone claimSettlement = "done"`
-- `plan:internal/pairteardown#claimClear` -> `const claimClear claimSettlement = "clear"`
-- `plan:internal/pairteardown#claimHeld` -> `const claimHeld claimSettlement = "held"`
-- `plan:internal/pairteardown#settleClaim` -> `func settleClaim(status *string, landed, battenSeeded bool, battenState string) claimSettlement`
-- `plan:internal/pairteardown#Teardown.childLanded` -> `func (t *Teardown) childLanded(slug string) (bool, error)`
-- `plan:internal/pairteardown#Teardown.battenRunState` -> `func (t *Teardown) battenRunState(slug string) (seeded bool, state string, err error)`
-- `plan:internal/pairteardown#Teardown.readBoardClaim` -> `func (t *Teardown) readBoardClaim(slug string) (status *string, found bool, err error)`
-- `plan:internal/pairteardown#Teardown.writeBoardClaim` -> `func (t *Teardown) writeBoardClaim(slug string, status *string) error`
-- `plan:internal/pairteardown#Teardown.settleBoardClaim` -> `func (t *Teardown) settleBoardClaim(slug string, landed bool)`
+- `internal/pairteardown#claimSettlement`
+- `internal/pairteardown#claimKeep`
+- `internal/pairteardown#claimDone`
+- `internal/pairteardown#claimClear`
+- `internal/pairteardown#claimHeld`
+- `internal/pairteardown#settleClaim`
+- `internal/pairteardown#Teardown.childLanded`
+- `internal/pairteardown#Teardown.battenRunState`
+- `internal/pairteardown#Teardown.readBoardClaim`
+- `internal/pairteardown#Teardown.writeBoardClaim`
+- `internal/pairteardown#Teardown.settleBoardClaim`
 
 **Edit:**
 - `internal/pairteardown#Request`

@@ -1,10 +1,10 @@
 # Card 4 — halt-note-parent-fabric-status
 
 **Create:**
-- `plan:internal/fabricengine#IsWorktreeDirtyReason` -> `func IsWorktreeDirtyReason(text string) bool`
-- `plan:internal/fabricengine#Fabric.DirtyPaths` -> `func (f *Fabric) DirtyPaths() ([]string, error)`
-- `plan:internal/loomcli#loomCLI.parentDirtyPathsFromFabric` -> `func (c *loomCLI) parentDirtyPathsFromFabric() ([]string, error)`
-- `plan:internal/loomcli#renderParentFabricStatus` -> `func renderParentFabricStatus(paths []string, err error) string`
+- `internal/fabricengine#IsWorktreeDirtyReason`
+- `internal/fabricengine#Fabric.DirtyPaths`
+- `internal/loomcli#loomCLI.parentDirtyPathsFromFabric`
+- `internal/loomcli#renderParentFabricStatus`
 
 **Edit:**
 - `internal/loomcli#loomCLI`

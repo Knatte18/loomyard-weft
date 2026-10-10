@@ -1,12 +1,12 @@
 {
   "runGuid": "57d92b13c2c335b53e15b2a1a7d4e4d3",
-  "planFingerprint": "bb532b1d810c62abc9c214f1aebbc794d0ace21fb499ee1e79ad73ea4cc7b98a",
+  "planFingerprint": "3034e4699ada917d1555b8f80dd2a5544700c6b3a899dedbd53f89c0b97ad442",
   "planFileHashes": {
     "00-overview.md": "acb89b9ff5cb5b07ca8e41cdde73b0d371a7195ee12ace371d56ec635f679cd3",
-    "01-verify-log-per-run.md": "957f78938a43f871c691aaf4a53d6449b4d4288e1c3a47e25bd1d2adfd19e5fc",
-    "02-finalize-parent-records.md": "07997c77be2b6ec0951a505959440c1a04a561d6109304344c0c780cc15b6f67",
-    "03-teardown-settles-board-claim.md": "2c07d7768550038fe160096c2148617d5c78c033da0031e33efd834f993d0c93",
-    "04-halt-note-parent-fabric-status.md": "93fb3df91c126a107f35238dcfed80df3ef8f58f97fe8f1c223451badb4780e3",
+    "01-verify-log-per-run.md": "5fba5fe6bf28e15abc3febb59eaed78955cbecaacf1a2355a76064caf891835d",
+    "02-finalize-parent-records.md": "71a5eb812dbe85078665e90db38d54605866f7ad6dd3230188969dc8d3c2fda2",
+    "03-teardown-settles-board-claim.md": "f8e52151f470cd6d7cac24a96bbd5d3d80faea180de0fd4af49b2e34a8801172",
+    "04-halt-note-parent-fabric-status.md": "2046945aca033cffe2a1840eef4e458225aff5255aec4e4d408b39587dae99c6",
     "05-fabric-merge-base.md": "3732a12c03949b585f74c184d13462f27f0a0b1146296e95a6971e67d17cbb89",
     "06-verify-gate-told-command.md": "e74f290ab1ae2328ae8977bb9849a1f63af8aedfb517d98ddd1faf278122b8a6",
     "07-recipe-vocabulary.md": "192eeb8f59b918e33ce42eceb5f719c5e54b1a8ed3f659376f7b1d9516896ef0",
@@ -434,7 +434,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "0068be18351934c1680fdf7a7650d3ca",
   "masterSessionId": "8381d0ae-383e-4d1b-bed9-9cee07a1609b",
   "batches": {
@@ -447,16 +447,29 @@
         "04-halt-note-parent-fabric-status"
       ],
       "cardHashes": {
-        "01-verify-log-per-run": "957f78938a43f871c691aaf4a53d6449b4d4288e1c3a47e25bd1d2adfd19e5fc",
-        "02-finalize-parent-records": "07997c77be2b6ec0951a505959440c1a04a561d6109304344c0c780cc15b6f67",
-        "03-teardown-settles-board-claim": "2c07d7768550038fe160096c2148617d5c78c033da0031e33efd834f993d0c93",
-        "04-halt-note-parent-fabric-status": "93fb3df91c126a107f35238dcfed80df3ef8f58f97fe8f1c223451badb4780e3"
+        "01-verify-log-per-run": "5fba5fe6bf28e15abc3febb59eaed78955cbecaacf1a2355a76064caf891835d",
+        "02-finalize-parent-records": "71a5eb812dbe85078665e90db38d54605866f7ad6dd3230188969dc8d3c2fda2",
+        "03-teardown-settles-board-claim": "f8e52151f470cd6d7cac24a96bbd5d3d80faea180de0fd4af49b2e34a8801172",
+        "04-halt-note-parent-fabric-status": "2046945aca033cffe2a1840eef4e458225aff5255aec4e4d408b39587dae99c6"
       },
       "startSha": "b7d4fd0ba55de0c19ae91a8b1c114837c543bb01",
       "kind": "recovery",
       "spawnedAt": "2026-10-10T15:37:28Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-verify-log-per-run",
+        "status": "done",
+        "head_sha": "af89448afbc5546437e2fc38677d6bd54a67efe2",
+        "deviations": [
+          "internal/testkit/envkit/envkit.go",
+          "internal/pairteardown/claim.go",
+          "internal/fabricengine/dirtiness.go"
+        ]
+      },
+      "cardShas": [
+        "af89448afbc5546437e2fc38677d6bd54a67efe2"
+      ],
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quick-recipe/e67c9a3b-6efc-4de8-ad4b-f411b2b012bc/subagents/agent-a4797b1dac76dd596.jsonl"
       ],
