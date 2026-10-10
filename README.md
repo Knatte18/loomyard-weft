@@ -22,9 +22,7 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | After | Labels |
-| --- | --- | --- | --- | --- |
-| 1 | **Driver steps in only on trouble: Go loops the steps, context under 100k**<br>• Go runs the shed steps and wakes the driver only at a stop, so a Haiku driver stays under 100k; the orch can still pause or stop a run at a named producer | [`driver-context`](design-driver-context.md) |  | shed, stencil, loom |
+_None._
 
 ### Layer A
 
@@ -37,6 +35,7 @@ Waits only on Running or Ready entries.
 | 3 | **Burler runs its round on MultiLLMProducer**<br>• The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review | [`burler-multi-llm`](design-burler-multi-llm.md) | `multi-llm-producer`, `gate-test-scope` | burler, shed, stencil |
 | 4 | **Discussion-Write on MultiLLMProducer: a chair writes, advisors answer**<br>• Design and build a Discussion-Write whose writer is the chair, with advisors that study the code and answer its design questions live | [`discussion-multi-llm`](design-discussion-multi-llm.md) | `multi-llm-producer`, `gate-test-scope` | loom, stencil, shed |
 | 5 | **CLI surface: a command index for the orch, one help form, intake keeps comments**<br>• lyx help index injected into the orch, a test-enforced form for Use/Short/Long including board payload keys, and intake that carries issue comments | [`cli-surface`](design-cli-surface.md) | `gate-test-scope` | orch, board, selfreport |
+| 6 | **Driver steps in only on trouble: Go loops the steps, context under 100k**<br>• Go runs the shed steps and wakes the driver only at a stop, so a Haiku driver stays under 100k; the orch can still pause or stop a run at a named producer | [`driver-context`](design-driver-context.md) | `gate-test-scope`, `multi-llm-producer`, `bolt-and-store` | shed, stencil, loom |
 
 ### Layer B
 

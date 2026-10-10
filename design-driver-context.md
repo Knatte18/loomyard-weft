@@ -2,6 +2,8 @@
 
 `driver-context` · Task · enhancement, shed, stencil, loom
 
+Depends on: [`gate-test-scope`](design-gate-test-scope.md), [`multi-llm-producer`](design-multi-llm-producer.md), [`bolt-and-store`](design-bolt-and-store.md)
+
 ## Goal
 
 The driver steps in only when something goes wrong, and its context stays under 100k tokens for a whole run, since Haiku 5.5 is cheap only below that.
