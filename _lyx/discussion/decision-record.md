@@ -187,6 +187,12 @@ Decision: The rewritten CLAUDE.md push bullet keeps main's second line: a commit
 
 Rationale: main gained that line in 0cdd14ac9 after this branch forked; dropping it in the rewrite would revert it at landing.
 
+### Added after Discussion (parent, 2026-10-10): verifyrun keeps main's proc group kill
+
+Decision: main's internal/verifyrun/run.go now calls proc.ConfigureGroupKill and its package doc names internal/proc (git-robustness, 6741f7157); card 3's re-signing of Run and run keeps that call and that import line when the branch meets main, and adds no process-group code to verifyrun.
+
+Rationale: git-robustness landed while this plan was written; the two branches edit run.go for different reasons and must both survive the merge.
+
 ## Constraints
 
 - `PATTERN-told-geometry`: the slot engine is told its directory, count and cap; only a CLI layer resolves the board dir, `lyx gate`'s through its own pre-run (D7).
