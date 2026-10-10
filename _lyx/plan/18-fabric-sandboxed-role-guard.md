@@ -1,8 +1,8 @@
 # Card 18 — fabric-sandboxed-role-guard
 
 **Create:**
-- `plan:internal/fabriccli#readerVerb` -> `func readerVerb(cmd *cobra.Command) bool`
-- `plan:internal/fabriccli#sandboxedRoleRefusal` -> `func sandboxedRoleRefusal(cmd *cobra.Command, strandName string) string`
+- `internal/fabriccli#readerVerb`
+- `internal/fabriccli#sandboxedRoleRefusal`
 - `internal/fabriccli/roleguard_test.go`
 
 **Edit:**

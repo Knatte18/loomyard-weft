@@ -1,0 +1,4 @@
+status: OK
+head_sha: d30e142d268338754c1f6b9b187a20bddb28d23d
+deviations:
+  - internal/fabriccli/roleguard.go
