@@ -1074,7 +1074,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "b2d5922caa66e3f4babc32ddd55c6d05",
   "masterSessionId": "08326b93-c92f-494e-9138-c671cce1e474",
   "batches": {
@@ -1097,8 +1097,22 @@
       "startSha": "7648e8b273d85b161a8156fe5e843978fa694ca2",
       "kind": "recovery",
       "spawnedAt": "2026-10-10T09:40:54Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-fixture-git-marker",
+        "status": "done",
+        "head_sha": "f4c8a9103d9b9af3e4ab3eef1c2b115a33a9ccdf",
+        "deviations": [
+          "cmd/lyx/spawnobservability_test.go",
+          "cmd/testtiming/rusage_linux.go",
+          "cmd/testtiming/rusage_other.go",
+          "internal/testkit/tmuxkit/tmuxkit_test.go"
+        ]
+      },
+      "cardShas": [
+        "f4c8a9103d9b9af3e4ab3eef1c2b115a33a9ccdf"
+      ],
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/c9fab9d0-151f-424c-8602-7d36fe836e3e/subagents/agent-a2db08922bbb89d02.jsonl"
       ],
