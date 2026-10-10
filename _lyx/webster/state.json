@@ -1,20 +1,20 @@
 {
   "runGuid": "57fa24052584be6cb23e4d0a1018e0c5",
-  "planFingerprint": "61f38735f9d0dab8ed81f1c09c5c8d6c2d78dd40f518b022de6ced77be98b790",
+  "planFingerprint": "4464d7c20594a8e9c9e0ed0d215f2c3eb227e6a904ebd7147b5b6c42e7c55142",
   "planFileHashes": {
     "00-overview.md": "55b39b796589556285844d488333b4948021e7bb7bb13cc9c06c53a6e54d94cc",
     "01-shuttle-quiet-hold-send-lock.md": "0f491c4ec6235a92d84874e457b2c820871a3e4ec3967e2d00ffa0016ad207c4",
     "02-stencil-include-form.md": "de2abf7c9191ada55ca09b3952def3606fe856650444398ac6566138f9a36cc4",
     "03-seat-directive-stencils.md": "60846612f1b611b47d5a68b39e5f820a25f084dc27cbf97782c14d42b0192cc6",
     "04-seatengine-table.md": "f4d6b2e142b2e5fcf51cddc421507f44d6f7b5918c974f2241733461ede5ee53",
-    "05-seatengine-prompts.md": "7c5bd45e673172f6cbd3b6fcb928260538c86dce8d709fd3cac56667020c1e8f",
-    "06-seatengine-run.md": "5c01faa594f33808c706c8fea441cf14d46a09e31b0afc78fdd9172536e18b03",
-    "07-seatengine-probe-resume.md": "9a82853360c96f319249d66ef483d5dd27903c49534223febd8701ab3a789baf",
-    "08-shedfake-seat-runner.md": "ff24623f2c000bf91e990b3e34c001fb2645975cd2180b1bb848eb87b3f92a01",
-    "09-shedadapters-multillm.md": "44584d1453ccd9c2bd1c23f249205eb2f649a32ac1a3bc0314dfbe3faf9d1975",
-    "10-shedrecipe-env-seats.md": "17bef920804cc5337f5724bbcd1d0ac32deafbe81bd2f1b5b1d396dae345b965",
-    "11-shedrecipe-multillm-entry.md": "4fbd4316485f9279830e3a86c997cc2882996c76bdcb2c06b50bd96efe4ac538",
-    "12-multillm-fixture-recipe.md": "b1056674604c48870f960b5d39412118e6f30745d7b0291a9dd21f34f8028198",
+    "05-seatengine-prompts.md": "e878c3a8150093402b895606f342a56da5cb68ada823c7ede22d19413da104e3",
+    "06-seatengine-run.md": "e117a73c422e92fbfc9a28777b2f6eb83bd13711081f9587b18032c55ef0e0b2",
+    "07-seatengine-probe-resume.md": "71bf8a08c6b0805a41cdcc903072d4742f0be1f0ce27645eed97f146fa07b96b",
+    "08-shedfake-seat-runner.md": "7c61d498d8bd39a453d46894256c929f5dc7bfd4f6921f7ee9766f61e3e37ed0",
+    "09-shedadapters-multillm.md": "413f9da92ac99a8583fd00e67c842e8dea19236d361b85c8ecc1607b4d16f203",
+    "10-shedrecipe-env-seats.md": "034280db9b931c5d0436078f05ae67f92c1cec30268fe6daff50a06df22ae8fe",
+    "11-shedrecipe-multillm-entry.md": "f2b8ed0cc2ab1e847a7dea4eecf1b027ef5c0bd03ccb780b998007c0c0f2b767",
+    "12-multillm-fixture-recipe.md": "eadd0c51b85efd71f80d8be08bd0c130e76d3696e1d3d69c024a87ad4c2c5688",
     "13-seatengine-llm-smoke.md": "e8951da739371570431e88543a8b047607868325ef8c26beb983e8e1d592e421",
     "14-docs-overview.md": "4901d98056ca209a910d62a544a52cd33fc68d3d4aedbb95163cf88a12737eaf"
   },
@@ -313,7 +313,7 @@
       }
     }
   ],
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "0b798198c25e9ae4127acbb28769bf61",
   "masterSessionId": "3c705bf7-5396-4f17-9875-c68cd34b964e",
   "batches": {
@@ -362,21 +362,36 @@
         "09-shedadapters-multillm"
       ],
       "cardHashes": {
-        "05-seatengine-prompts": "7c5bd45e673172f6cbd3b6fcb928260538c86dce8d709fd3cac56667020c1e8f",
-        "06-seatengine-run": "5c01faa594f33808c706c8fea441cf14d46a09e31b0afc78fdd9172536e18b03",
-        "07-seatengine-probe-resume": "9a82853360c96f319249d66ef483d5dd27903c49534223febd8701ab3a789baf",
-        "08-shedfake-seat-runner": "ff24623f2c000bf91e990b3e34c001fb2645975cd2180b1bb848eb87b3f92a01",
-        "09-shedadapters-multillm": "44584d1453ccd9c2bd1c23f249205eb2f649a32ac1a3bc0314dfbe3faf9d1975"
+        "05-seatengine-prompts": "e878c3a8150093402b895606f342a56da5cb68ada823c7ede22d19413da104e3",
+        "06-seatengine-run": "e117a73c422e92fbfc9a28777b2f6eb83bd13711081f9587b18032c55ef0e0b2",
+        "07-seatengine-probe-resume": "71bf8a08c6b0805a41cdcc903072d4742f0be1f0ce27645eed97f146fa07b96b",
+        "08-shedfake-seat-runner": "7c61d498d8bd39a453d46894256c929f5dc7bfd4f6921f7ee9766f61e3e37ed0",
+        "09-shedadapters-multillm": "413f9da92ac99a8583fd00e67c842e8dea19236d361b85c8ecc1607b4d16f203"
       },
       "startSha": "3068ea714b0c75c51c95f258d789847677b683d9",
       "kind": "fork",
       "spawnedAt": "2026-10-10T05:39:08Z",
       "sessionId": "3c705bf7-5396-4f17-9875-c68cd34b964e",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-seatengine-prompts",
+        "status": "done",
+        "head_sha": "bffed1776d6ace00466ae5a0b099a875943c813d"
+      },
+      "cardShas": [
+        "bffed1776d6ace00466ae5a0b099a875943c813d"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-multi-llm-producer/3c705bf7-5396-4f17-9875-c68cd34b964e/subagents/agent-aa0f0500a05fe6e43.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-multi-llm-producer/3c705bf7-5396-4f17-9875-c68cd34b964e/subagents/agent-aa0f0500a05fe6e43.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-multi-llm-producer/3c705bf7-5396-4f17-9875-c68cd34b964e/subagents/agent-a506f67649f763534.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-multi-llm-producer/3c705bf7-5396-4f17-9875-c68cd34b964e/subagents/agent-a506f67649f763534.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-multi-llm-producer/3c705bf7-5396-4f17-9875-c68cd34b964e/subagents/agent-aa0f0500a05fe6e43.jsonl"
   ]
 }

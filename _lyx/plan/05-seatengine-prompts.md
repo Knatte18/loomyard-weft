@@ -1,11 +1,11 @@
 # Card 5 — seatengine-prompts
 
 **Create:**
-- `plan:internal/seatengine#noneValue` -> `const noneValue = "(none)"`
-- `plan:internal/seatengine#strandNames` -> `func strandNames(geom Geometry, table Table) (map[string]string, error)`
-- `plan:internal/seatengine#seatValues` -> `func seatValues(geom Geometry, table Table, seat Seat, names map[string]string, failed []string) (map[string]string, error)`
-- `plan:internal/seatengine#composePrompt` -> `func composePrompt(stencilsDir string, seat Seat, values map[string]string) (string, error)`
-- `plan:internal/seatengine#seatSpec` -> `func seatSpec(table Table, seat Seat, prompt string) shuttleengine.Spec`
+- `internal/seatengine#noneValue`
+- `internal/seatengine#strandNames`
+- `internal/seatengine#seatValues`
+- `internal/seatengine#composePrompt`
+- `internal/seatengine#seatSpec`
 - `internal/seatengine/prompt_test.go`
 
 **Edit:**

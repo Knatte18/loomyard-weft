@@ -11,11 +11,11 @@
 **Uses:**
 - `internal/loomcli#TestWire_EverySeamFilled`
 - `internal/modelspec#Registry`
-- `plan:internal/seatengine#New`
+- `internal/seatengine#New`
 - `internal/seatengine#RunnerShuttle`
 - `internal/seatengine#Geometry`
-- `plan:internal/shedadapters#SeatRunner`
-- `plan:internal/testkit/shedfake#SeatRunner`
+- `internal/shedadapters#SeatRunner`
+- `internal/testkit/shedfake#SeatRunner`
 
 **Intent:** Give the recipe `Env` the two run-wide values a `MultiLLM` row needs (D2, D12) and fill them in loom's wiring in the same card, since `TestWire_EverySeamFilled` reads every seam of `Env` through `envkit.NilSeams` and would fail between the two edits.
 `Env` gains `Seats shedadapters.SeatRunner`, the seat runner over the caller's shuttle runner, nil when no row uses it, and `Models modelspec.Registry`, the registry a seat's `model` spec resolves against, with doc comments naming the entry that reads each; `shedrecipeAllowedImports` admits `internal/modelspec`, a leaf.

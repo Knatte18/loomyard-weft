@@ -1,12 +1,12 @@
 # Card 9 — shedadapters-multillm
 
 **Create:**
-- `plan:internal/shedadapters#SeatRunner` -> `type SeatRunner interface`
-- `plan:internal/shedadapters#multiLLMEngineLabel` -> `const multiLLMEngineLabel = "seats"`
-- `plan:internal/shedadapters#MultiLLMProducer` -> `type MultiLLMProducer struct`
-- `plan:internal/shedadapters#NewMultiLLMProducer` -> `func NewMultiLLMProducer(name string, table seatengine.Table, seats SeatRunner, now func() time.Time) *MultiLLMProducer`
-- `plan:internal/shedadapters#MultiLLMProducer.Call` -> `func (p *MultiLLMProducer) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/shedadapters#MultiLLMProducer.mapOutcome` -> `func (p *MultiLLMProducer) mapOutcome(ctx context.Context, result seatengine.Result) (shedengine.Outcome, shedengine.OutputPointer, error)`
+- `internal/shedadapters#SeatRunner`
+- `internal/shedadapters#multiLLMEngineLabel`
+- `internal/shedadapters#MultiLLMProducer`
+- `internal/shedadapters#NewMultiLLMProducer`
+- `internal/shedadapters#MultiLLMProducer.Call`
+- `internal/shedadapters#MultiLLMProducer.mapOutcome`
 - `internal/shedadapters/multillm_test.go`
 
 **Edit:**
@@ -21,7 +21,7 @@
 - `internal/shedadapters#cancelErr`
 - `internal/shedadapters#gateAttemptsPointer`
 - `internal/shedadapters#gateFailedReason`
-- `plan:internal/testkit/shedfake#SeatRunner`
+- `internal/testkit/shedfake#SeatRunner`
 
 **Intent:** Add the fifth adapter (D1, D5, D7, D8, D11) in `multillm.go`, the thin translation layer over the seat engine.
 `SeatRunner` is the handle-shaped seam the recipe's `Env` carries: `Probe`, `Resume` and `Run` over `seatengine.Table`, which `*seatengine.Engine` satisfies, pinned by a compile-time assertion.

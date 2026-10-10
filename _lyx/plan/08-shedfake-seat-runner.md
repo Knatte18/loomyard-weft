@@ -1,10 +1,10 @@
 # Card 8 — shedfake-seat-runner
 
 **Create:**
-- `plan:internal/testkit/shedfake#SeatRunner` -> `type SeatRunner struct`
-- `plan:internal/testkit/shedfake#SeatRunner.Probe` -> `func (f *SeatRunner) Probe(table seatengine.Table) (seatengine.LiveTable, error)`
-- `plan:internal/testkit/shedfake#SeatRunner.Resume` -> `func (f *SeatRunner) Resume(table seatengine.Table, live seatengine.LiveTable) (seatengine.Result, error)`
-- `plan:internal/testkit/shedfake#SeatRunner.Run` -> `func (f *SeatRunner) Run(table seatengine.Table) (seatengine.Result, error)`
+- `internal/testkit/shedfake#SeatRunner`
+- `internal/testkit/shedfake#SeatRunner.Probe`
+- `internal/testkit/shedfake#SeatRunner.Resume`
+- `internal/testkit/shedfake#SeatRunner.Run`
 
 **Edit:**
 - `internal/testkit/shedfake/shedfake_test.go`
@@ -12,8 +12,8 @@
 
 **Uses:**
 - `internal/seatengine#Table`
-- `plan:internal/seatengine#LiveTable`
-- `plan:internal/seatengine#Result`
+- `internal/seatengine#LiveTable`
+- `internal/seatengine#Result`
 - `internal/testkit/shedfake#BurlerRunner`
 - `internal/testkit/shedfake#scripted`
 

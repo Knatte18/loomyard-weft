@@ -1,23 +1,23 @@
 # Card 6 — seatengine-run
 
 **Create:**
-- `plan:internal/seatengine#Engine` -> `type Engine struct`
-- `plan:internal/seatengine#New` -> `func New(shuttle Shuttle, geom Geometry) *Engine`
-- `plan:internal/seatengine#SeatResult` -> `type SeatResult struct`
-- `plan:internal/seatengine#Result` -> `type Result struct`
-- `plan:internal/seatengine#ErrSeatNotStopped` -> `var ErrSeatNotStopped = errors.New("seatengine: a seat could not be stopped")`
-- `plan:internal/seatengine#seatRun` -> `type seatRun struct`
-- `plan:internal/seatengine#Engine.Run` -> `func (e *Engine) Run(table Table) (Result, error)`
-- `plan:internal/seatengine#Engine.startSeat` -> `func (e *Engine) startSeat(table Table, seat Seat, names map[string]string, failed []string) (Handle, error)`
-- `plan:internal/seatengine#Engine.join` -> `func (e *Engine) join(table Table, chair Handle, advisors []*seatRun, sender *noticeSender) (Result, error)`
-- `plan:internal/seatengine#checkName` -> `func checkName(handle Handle, want string) error`
-- `plan:internal/seatengine#stopSeat` -> `func stopSeat(handle Handle) error`
-- `plan:internal/seatengine#noticeSender` -> `type noticeSender struct`
-- `plan:internal/seatengine#newNoticeSender` -> `func newNoticeSender(chairOutputs []string, retry time.Duration) *noticeSender`
-- `plan:internal/seatengine#noticeSender.queue` -> `func (s *noticeSender) queue(line string)`
-- `plan:internal/seatengine#noticeSender.start` -> `func (s *noticeSender) start(chair Handle)`
-- `plan:internal/seatengine#noticeSender.stop` -> `func (s *noticeSender) stop()`
-- `plan:internal/seatengine#advisorNotice` -> `func advisorNotice(name string, outputs []string, outcome shuttleengine.Outcome) string`
+- `internal/seatengine#Engine`
+- `internal/seatengine#New`
+- `internal/seatengine#SeatResult`
+- `internal/seatengine#Result`
+- `internal/seatengine#ErrSeatNotStopped`
+- `internal/seatengine#seatRun`
+- `internal/seatengine#Engine.Run`
+- `internal/seatengine#Engine.startSeat`
+- `internal/seatengine#Engine.join`
+- `internal/seatengine#checkName`
+- `internal/seatengine#stopSeat`
+- `internal/seatengine#noticeSender`
+- `internal/seatengine#newNoticeSender`
+- `internal/seatengine#noticeSender.queue`
+- `internal/seatengine#noticeSender.start`
+- `internal/seatengine#noticeSender.stop`
+- `internal/seatengine#advisorNotice`
 - `internal/seatengine/engine_test.go`
 - `internal/seatengine/seatfake_test.go`
 
@@ -26,10 +26,10 @@
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/seatengine#seatSpec`
-- `plan:internal/seatengine#composePrompt`
-- `plan:internal/seatengine#seatValues`
-- `plan:internal/seatengine#strandNames`
+- `internal/seatengine#seatSpec`
+- `internal/seatengine#composePrompt`
+- `internal/seatengine#seatValues`
+- `internal/seatengine#strandNames`
 - `internal/burlerengine#Engine.Run`
 - `internal/burlerengine#Engine.join`
 - `internal/shuttleengine#ErrNotStarted`

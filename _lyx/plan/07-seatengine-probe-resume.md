@@ -1,11 +1,11 @@
 # Card 7 — seatengine-probe-resume
 
 **Create:**
-- `plan:internal/seatengine#LiveTable` -> `type LiveTable struct`
-- `plan:internal/seatengine#Engine.Probe` -> `func (e *Engine) Probe(table Table) (LiveTable, error)`
-- `plan:internal/seatengine#Engine.Resume` -> `func (e *Engine) Resume(table Table, live LiveTable) (Result, error)`
-- `plan:internal/seatengine#Engine.probeSeat` -> `func (e *Engine) probeSeat(table Table, seat Seat, gated bool) (Handle, bool, error)`
-- `plan:internal/seatengine#resumeNotice` -> `func resumeNotice(name string, outputs []string) string`
+- `internal/seatengine#LiveTable`
+- `internal/seatengine#Engine.Probe`
+- `internal/seatengine#Engine.Resume`
+- `internal/seatengine#Engine.probeSeat`
+- `internal/seatengine#resumeNotice`
 - `internal/seatengine/resume_test.go`
 
 **Edit:**
@@ -13,9 +13,9 @@
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/seatengine#Engine.join`
-- `plan:internal/seatengine#stopSeat`
-- `plan:internal/seatengine#noticeSender`
+- `internal/seatengine#Engine.join`
+- `internal/seatengine#stopSeat`
+- `internal/seatengine#noticeSender`
 - `internal/burlerengine#Engine.ProbeRound`
 - `internal/burlerengine#Engine.Resume`
 - `internal/shuttleengine#Runner.ProbeGated`

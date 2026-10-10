@@ -29,7 +29,7 @@
 - `internal/segmentcolor#Segments`
 - `internal/seatengine#Table.Validate`
 - `internal/seatengine#ReservedMarkers`
-- `plan:internal/shedadapters#NewMultiLLMProducer`
+- `internal/shedadapters#NewMultiLLMProducer`
 
 **Intent:** Register the `MultiLLM` engine (D2, D12, PATTERN-shed-recipe-registry) in `entries_multillm.go`, one map entry and no `init()`.
 `multiLLMEntry` reads the row keys `role`, `segment`, `seats` and the optional `gates`, `timeout_min`, `interactive` and `tokens`, rejects an unknown row key, requires the absolute `WorktreeRoot`, `AnchorPath` and `StencilsDir` roots and the `Seats` seam through `requireSeam`, and builds a `seatengine.Table`: the role prefix, `parseSegment`'s segment checked against `segmentcolor.Segments`, `resolveGateSpec`'s gate, the timeout in minutes, the interactive flag and the tokens as table values.
