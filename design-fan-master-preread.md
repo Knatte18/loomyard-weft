@@ -105,7 +105,9 @@ While the forks run, YOU (the handler) do your own HOLISTIC review — architect
 The recommended text on the standard fan at `sonnet[high]` aborted at the 300k cap with no review written: review side 354k, $3.19, 288 s active.
 Three forks raised F1 through their hop budget, so the pre-read and the hop line work at high effort, but the round is slower than solo `opus[medium]` (225 s, $1.45, found F1) and about twice the price.
 Solo `opus[medium]` stays the reviewer; this entry is parked as a note.
-The next lever under test is a kick-start pack of the code the target cites, given to the solo reviewer (`enclose-kickstart`).
+A reviewer pre-read pack was then tried by hand on solo `opus[medium]`: the bodies of the 35 symbols the target cites, resolved with `lyx quarry resolve` (about 20k tokens), in a file the reviewer reads first.
+It was slower and dearer than plain solo (312 s against 225 s, $1.93 against $1.45 review side) and missed the BLOCKING finding; the reviewer read the pack and then made about 20 tool calls of its own.
+This is not the kick-start pack (`kick-start-pack`), which serves the implementer and the Burler fixer, and says nothing about it.
 
 Open if the fan comes back:
 
