@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster-Burler",
+  "current_producer": "Webster-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster-Burler",
-    "last": "Webster-Burler → goto",
+    "now": "Webster-Bouncer",
+    "last": "Webster-Burler → bounced to Webster-Bouncer",
     "wait": ""
   },
   "history": [
@@ -167,6 +167,13 @@
       "outcome": "goto",
       "output": "",
       "at": "2026-10-10T08:07:26Z"
+    },
+    {
+      "producer": "Webster-Burler",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/daemon-wakeups/_lyx/reviews/webster/round-3-review.md",
+      "at": "2026-10-10T08:15:56Z",
+      "gate_attempts": 2
     }
   ],
   "product": {
