@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "Batch 09-orch-held-injection-log: recover-batch refused with needs_fresh; the fork ran fabric-referencing commands (lyx fabric clone/add --help, cat _lyx/fabric/origin.json, git -C loomyard-weft remote get-url origin and ls-remote) that recovery cannot check."
+batches_done: 2
