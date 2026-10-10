@@ -158,6 +158,15 @@ Bound on the weakened guard: only an answer whose candidates provably never coex
   - d6-rename-old-way-forward-per-file-create (class design, severity MEDIUM, open in rounds 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - answersymbols-classifier-rerun-per-call (class design, severity MEDIUM, open in rounds 2)
+  - card2-warning-drops-shell-label-and-webstercli-test (class scope, severity MEDIUM, open in rounds 2)
+  - card4-run-reprompt-wiring-unpinned (class scope, severity MEDIUM, open in rounds 2)
+  - card6-recover-batch-prefix-still-says-fork (class consistency, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A gated run whose output files exist at a turn end with one unawaited shell outstanding stays waiting; the next turn end with nothing outstanding arrives at the gate; an ungated run under the same facts still counts at once.
