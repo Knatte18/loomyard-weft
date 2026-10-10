@@ -188,6 +188,12 @@ Decision: D8 moves reedcli's watchdog recognizer and /proc probes into tmuxkit a
 
 Rationale: Round 3 F2: the claim was false, but folding the pre-existing loomcli and orchcli copies onto tmuxkit is consolidation beyond the board goal; the orchestrator files it as a board note.
 
+### Added after Discussion (parent, 2026-10-10): D12 repository test checks the common dir
+
+Decision: D12's repository test is: HEAD present, and objects and refs present in the common dir, which is the commondir target when that file exists and the git dir itself otherwise. The lyxcwd.Resolve acceptance criterion gains a row: a gitfile whose commondir target is missing is refused with ErrNotAGitRepo.
+
+Rationale: Round 3 F3: git refuses a missing commondir target (rev-parse --show-toplevel exits 128), and D12 promises the walk-up behaves as --show-toplevel does; this is the pruned-worktree case.
+
 ## Constraints
 
 - `PATTERN-test-speed`: tier 2 has no tmux server; the tier table, gate table and "untagged tests spawn nothing" section record D6, D7 and D8.
