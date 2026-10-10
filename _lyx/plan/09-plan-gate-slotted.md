@@ -1,9 +1,9 @@
 # Card 9 — plan-gate-slotted
 
 **Create:**
-- `plan:internal/planglyph#NewSlottedIndex` -> `func NewSlottedIndex(matcher planparser.FabricReferenceMatcher, slots *gateslot.Pool, waitDir string) planindex.Index`
-- `plan:internal/planglyph#validateFormat` -> `func validateFormat(plan *planparser.Plan, worktreeRoot string, loader typesLoader) ([]Finding, error)`
-- `plan:internal/planglyph#validateFormatAfter` -> `func validateFormatAfter(plan *planparser.Plan, worktreeRoot string, done []planparser.Card, loader typesLoader) ([]Finding, error)`
+- `internal/planglyph#NewSlottedIndex`
+- `internal/planglyph#validateFormat`
+- `internal/planglyph#validateFormatAfter`
 
 **Edit:**
 - `internal/planglyph#NewIndex`

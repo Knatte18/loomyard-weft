@@ -1,9 +1,9 @@
 # Card 12 — raw-go-deny
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#steerRawGoDeny` -> `const steerRawGoDeny = ""`
-- `plan:internal/shuttleengine/claudeengine#noticeRawGoDeny` -> `const noticeRawGoDeny = ""`
-- `plan:internal/shuttleengine/claudeengine#rawGoCommandPattern` -> `const rawGoCommandPattern = ""`
+- `internal/shuttleengine/claudeengine#steerRawGoDeny`
+- `internal/shuttleengine/claudeengine#noticeRawGoDeny`
+- `internal/shuttleengine/claudeengine#rawGoCommandPattern`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine#standingDenies`

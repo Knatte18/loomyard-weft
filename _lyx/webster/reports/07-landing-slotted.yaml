@@ -1,0 +1,10 @@
+status: OK
+head_sha: b2e5617ccc9235962c193b5102e61c2c88fa262a
+deviations:
+  - internal/testkit/envkit/envkit.go
+  - internal/landingshed/seam_enforcement_test.go
+  - internal/loomshed/seam_enforcement_test.go
+  - internal/shedrecipe/seam_enforcement_test.go
+  - cmd/lyx/seamsignature_test.go
+  - internal/gatecli/cli.go
+  - internal/gatecli/run.go

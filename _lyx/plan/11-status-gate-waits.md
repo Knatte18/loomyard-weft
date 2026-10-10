@@ -1,7 +1,7 @@
 # Card 11 — status-gate-waits
 
 **Create:**
-- `plan:internal/loomcli#gateWaiting` -> `func gateWaiting(waitDir string, holders func() ([]gateslot.Holder, error), now func() time.Time, next func(st shedengine.Status) (string, error)) func(st shedengine.Status) (string, error)`
+- `internal/loomcli#gateWaiting`
 
 **Edit:**
 - `internal/loomcli#verifyWaiting` -> `func verifyWaiting(markerPath string, holders func() ([]gateslot.Holder, error), now func() time.Time, next func(st shedengine.Status) (string, error)) func(st shedengine.Status) (string, error)`

@@ -1,10 +1,10 @@
 # Card 10 — gate-cli
 
 **Create:**
-- `plan:internal/gatecli#Command` -> `func Command() *cobra.Command`
-- `plan:internal/gatecli#RunCLI` -> `func RunCLI(out io.Writer, args []string) int`
-- `plan:internal/gatecli#RunCLIIn` -> `func RunCLIIn(cwd string, out io.Writer, args []string) int`
-- `plan:internal/gatecli#SlotBusyExit` -> `const SlotBusyExit = 75`
+- `internal/gatecli#Command`
+- `internal/gatecli#RunCLI`
+- `internal/gatecli#RunCLIIn`
+- `internal/gatecli#SlotBusyExit`
 - `internal/gatecli/doc.go`
 - `internal/gatecli/child_linux.go`
 - `internal/gatecli/child_unix.go`

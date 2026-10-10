@@ -1,6 +1,6 @@
 {
   "runGuid": "7d850019e493feafc9e84417a15220b3",
-  "planFingerprint": "622ff3c4545a9857a8ab5bbc259e23ad1c6a95035afd41ef4f3a7f6402000493",
+  "planFingerprint": "c9710ce075b97127885477beb99f0f01924c163a05aba4d29c76206523d30c62",
   "planFileHashes": {
     "00-overview.md": "5426db669614f340cb89c879a58db5211131a50988ef69eafb027c90970439e3",
     "01-gateslot-pool.md": "bb6a001b1868745d3dab588992e54d1916ca23db85705dd28fe31ee432a4687a",
@@ -11,13 +11,13 @@
     "06-webster-sites-slotted.md": "1c1522f3e9c55bc5578d1464b5047147e20a29c4b29f310097c71b4b08f6d421",
     "07-landing-slotted.md": "b015b21ec3f2e08e095aec7a39f8bd8856695a0a869a8ade53960cdbd9b83854",
     "08-round-gate-slotted.md": "0b3e93e88cd448e4a83b5b04c12c220e1bd42a536a106ee65fb32253ec1570c1",
-    "09-plan-gate-slotted.md": "ec7aab9aceca84c5ae9fb5e1d570248247504d71428402ba432407f8f576e8f7",
-    "10-gate-cli.md": "896124ae37ee74a13e928c1a8c651427c096758de36a2d16c9c050c76cf77be3",
-    "11-status-gate-waits.md": "01419b7c74dcfa2400507537d0a8bc13467b41b70a83f94220020ded6b016e54",
-    "12-raw-go-deny.md": "527c2de28f518e3740db5ac6b002eb0242fbd158a1e223e977b78abf9026077d",
+    "09-plan-gate-slotted.md": "f1618885e68e21ecdb5719eb526940f99332d64744891fb021cd125d0c65165b",
+    "10-gate-cli.md": "095dcfa8fb7eb8163f152050cda03495e2f73995c0184d23289c541ab20d2c69",
+    "11-status-gate-waits.md": "a68a1e1d10acd7d2a2bdcc1c655bba9dad1d6fbcf02c243faa180ea652a1aa7b",
+    "12-raw-go-deny.md": "84d6bce39e52f282f3915e0d40f83dad0c8bcceaac64f6bc4acdbb0f2f8f9a4f",
     "13-verify-module-wide-check.md": "ed29b354e80b7902fb54b4352b7615e9e8d6194304f45b046b62c8d2cb56f3e5",
     "14-card-gate-tier1.md": "4c8e958297186d58dda778c08a9166a08f3fc5edfcb5ac83f92dc80e02d9c8f7",
-    "15-batch-gate.md": "5b681a8aedb919909a2de867cf600aa5e271ec72cda12e1e9cafdc2984911b5e",
+    "15-batch-gate.md": "69447aaaf5e85e179eb94bc47537d2c84ab21eeb22ad46503aa2c46def645718",
     "16-gate-route-stencils.md": "26c7e0c1f3ed4dfa5432ca9d299548190c29fdae80941ecc112a9778bfd0636c",
     "17-config-hubwide-write-refusal.md": "425d847a5ef9206d3fdb03a4a7230b2936a57895944bd4b78c6ae71369fc9431",
     "18-landing-hubwide.md": "9b14674c251ed645c975ca5f0bd7bfac2b7e854e9e907aff8f21b5ee00eed682",
@@ -601,7 +601,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "726ba574be9e0d6f1b5201a5aa0e1920",
   "masterSessionId": "1ea802b3-916a-4f78-a539-37ca5a7f4b14",
   "batches": {
@@ -661,20 +661,44 @@
       "cardHashes": {
         "07-landing-slotted": "b015b21ec3f2e08e095aec7a39f8bd8856695a0a869a8ade53960cdbd9b83854",
         "08-round-gate-slotted": "0b3e93e88cd448e4a83b5b04c12c220e1bd42a536a106ee65fb32253ec1570c1",
-        "09-plan-gate-slotted": "ec7aab9aceca84c5ae9fb5e1d570248247504d71428402ba432407f8f576e8f7",
-        "10-gate-cli": "896124ae37ee74a13e928c1a8c651427c096758de36a2d16c9c050c76cf77be3",
-        "11-status-gate-waits": "01419b7c74dcfa2400507537d0a8bc13467b41b70a83f94220020ded6b016e54",
-        "12-raw-go-deny": "527c2de28f518e3740db5ac6b002eb0242fbd158a1e223e977b78abf9026077d"
+        "09-plan-gate-slotted": "f1618885e68e21ecdb5719eb526940f99332d64744891fb021cd125d0c65165b",
+        "10-gate-cli": "095dcfa8fb7eb8163f152050cda03495e2f73995c0184d23289c541ab20d2c69",
+        "11-status-gate-waits": "a68a1e1d10acd7d2a2bdcc1c655bba9dad1d6fbcf02c243faa180ea652a1aa7b",
+        "12-raw-go-deny": "84d6bce39e52f282f3915e0d40f83dad0c8bcceaac64f6bc4acdbb0f2f8f9a4f"
       },
       "startSha": "8422ab71e2af97776321bd15a337ddee5756e347",
       "kind": "fork",
       "spawnedAt": "2026-10-10T04:56:41Z",
       "sessionId": "1ea802b3-916a-4f78-a539-37ca5a7f4b14",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-landing-slotted",
+        "status": "done",
+        "head_sha": "b2e5617ccc9235962c193b5102e61c2c88fa262a",
+        "deviations": [
+          "internal/testkit/envkit/envkit.go",
+          "internal/landingshed/seam_enforcement_test.go",
+          "internal/loomshed/seam_enforcement_test.go",
+          "internal/shedrecipe/seam_enforcement_test.go",
+          "cmd/lyx/seamsignature_test.go",
+          "internal/gatecli/cli.go",
+          "internal/gatecli/run.go"
+        ]
+      },
+      "cardShas": [
+        "b2e5617ccc9235962c193b5102e61c2c88fa262a"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-test-scope/1ea802b3-916a-4f78-a539-37ca5a7f4b14/subagents/agent-a474ea2bc38b16af1.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-test-scope/1ea802b3-916a-4f78-a539-37ca5a7f4b14/subagents/agent-a474ea2bc38b16af1.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-test-scope/1ea802b3-916a-4f78-a539-37ca5a7f4b14/subagents/agent-a3600e9b373605132.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-test-scope/1ea802b3-916a-4f78-a539-37ca5a7f4b14/subagents/agent-a3600e9b373605132.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-test-scope/1ea802b3-916a-4f78-a539-37ca5a7f4b14/subagents/agent-a474ea2bc38b16af1.jsonl"
   ]
 }

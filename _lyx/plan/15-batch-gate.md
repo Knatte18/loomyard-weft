@@ -19,7 +19,7 @@
 **Uses:**
 - `plan:internal/websterengine#gateScopeOf`
 - `plan:internal/websterengine#gateScope.steps`
-- `plan:internal/gatecli#SlotBusyExit`
+- `internal/gatecli#SlotBusyExit`
 
 **Intent:**
 Move tier 2 to one pass per batch (D2) and tell each fork beforehand what it may run (D8).
