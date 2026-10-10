@@ -14,8 +14,9 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | At | Labels |
 | --- | --- | --- | --- | --- |
 | 1 | **Lighter test suite: measured tiers, cheap tmux fixtures, no lingering children**<br>• Measure each tier, non-login shells and shared servers in tier 3, lyx built once, no background gc in fixtures (#472), a no-tmux scan for tiers 1-2 | [`test-suite-weight`](design-test-suite-weight.md) | Discussion-Burler | shuttle, reed, fabric |
-| 2 | **Daemons and wake-ups: event-driven waits, a timely orch reload, recorded revival order**<br>• A rule that lyx daemons wait on events or second-scale polls (reed watchdog first), the orch watcher reloads right after compaction, reed revives sessions by recorded start time | [`daemon-wakeups`](design-daemon-wakeups.md) | Webster | reed, orch, shuttle |
-| 3 | **Bolt and hub store: seeding without ping-pong, reconcile on a fresh Bolt, gc that stays out of the way**<br>• Seed stencils forward only and from a pulled Bolt, report failed reconcile pushes, and keep the hub store gc off busy runs and repeat repacks | [`bolt-and-store`](design-bolt-and-store.md) | Webster-Bouncer | stencil, fabric, config |
+| 2 | **Publish and loom recovery: a fix route from Publish, resume past its own merge, clean re-steps**<br>• A blocked Publish hands its failure to a fixer, resume survives its own staged merge, no false config warning at Finalize, re-step and decision-author fixes | [`publish-recovery`](design-publish-recovery.md) | Worktree-Create | loom, burler, fabric, config, stencil |
+| 3 | **Daemons and wake-ups: event-driven waits, a timely orch reload, recorded revival order**<br>• A rule that lyx daemons wait on events or second-scale polls (reed watchdog first), the orch watcher reloads right after compaction, reed revives sessions by recorded start time | [`daemon-wakeups`](design-daemon-wakeups.md) | Webster | reed, orch, shuttle |
+| 4 | **Bolt and hub store: seeding without ping-pong, reconcile on a fresh Bolt, gc that stays out of the way**<br>• Seed stencils forward only and from a pulled Bolt, report failed reconcile pushes, and keep the hub store gc off busy runs and repeat repacks | [`bolt-and-store`](design-bolt-and-store.md) | Webster-Bouncer | stencil, fabric, config |
 
 ### Ready
 
@@ -23,10 +24,9 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | After | Labels |
 | --- | --- | --- | --- | --- |
-| 1 | **Publish and loom recovery: a fix route from Publish, resume past its own merge, clean re-steps**<br>• A blocked Publish hands its failure to a fixer, resume survives its own staged merge, no false config warning at Finalize, re-step and decision-author fixes | [`publish-recovery`](design-publish-recovery.md) |  | loom, burler, fabric, config, stencil |
-| 2 | **Burler runs its round on MultiLLMProducer**<br>• The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review | [`burler-multi-llm`](design-burler-multi-llm.md) |  | burler, shed, stencil |
-| 3 | **Discussion-Write on MultiLLMProducer: a chair writes, advisors answer**<br>• Design and build a Discussion-Write whose writer is the chair, with advisors that study the code and answer its design questions live | [`discussion-multi-llm`](design-discussion-multi-llm.md) |  | loom, stencil, shed |
-| 4 | **CLI surface: a command index for the orch, one help form, intake keeps comments**<br>• lyx help index injected into the orch, a test-enforced form for Use/Short/Long including board payload keys, and intake that carries issue comments | [`cli-surface`](design-cli-surface.md) |  | orch, board, selfreport |
+| 1 | **Burler runs its round on MultiLLMProducer**<br>• The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review | [`burler-multi-llm`](design-burler-multi-llm.md) |  | burler, shed, stencil |
+| 2 | **Discussion-Write on MultiLLMProducer: a chair writes, advisors answer**<br>• Design and build a Discussion-Write whose writer is the chair, with advisors that study the code and answer its design questions live | [`discussion-multi-llm`](design-discussion-multi-llm.md) |  | loom, stencil, shed |
+| 3 | **CLI surface: a command index for the orch, one help form, intake keeps comments**<br>• lyx help index injected into the orch, a test-enforced form for Use/Short/Long including board payload keys, and intake that carries issue comments | [`cli-surface`](design-cli-surface.md) |  | orch, board, selfreport |
 
 ### Layer A
 
