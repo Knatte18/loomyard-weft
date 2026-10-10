@@ -15,14 +15,13 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | At | Labels |
 | --- | --- | --- | --- | --- |
-| 1 | **Darn recipe: one producer, then the usual PR; shared Publish, Finalize and teardown fixes**<br>• The darn recipe: a simplified run for small changes (one producer, verify retries to a budget, PR-Gate as usual), plus per-attempt verify logs, Finalize ignoring the parent weft batten records, teardown clearing abandoned claims, and Reflect reading the parent weft | [`quick-recipe`](design-quick-recipe.md) | Finalize | loom, shed, batten, fabric, board |
-| 2 | **Webster audit and recovery: pathless findings, read-only classifier, rebaseline Stuck** | [`webster-audit-gaps`](design-webster-audit-gaps.md) | Webster-Burler | webster, fabric |
+| 1 | **Webster audit and recovery: pathless findings, read-only classifier, rebaseline Stuck** | [`webster-audit-gaps`](design-webster-audit-gaps.md) | Webster-Burler | webster, fabric |
 
 #### Normal priority
 
 | # | Task | Slug | At | Labels |
 | --- | --- | --- | --- | --- |
-| 3 | **Reed hygiene: daemon log and socket path, plain strand shells, watchdog child CPU** | [`reed-hygiene`](design-reed-hygiene.md) | Webster | reed |
+| 2 | **Reed hygiene: daemon log and socket path, plain strand shells, watchdog child CPU** | [`reed-hygiene`](design-reed-hygiene.md) | Webster | reed |
 
 ### Ready
 
@@ -151,3 +150,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 29 | **lyx pause: stop every run at once, safely and on purpose**<br>• A hub-wide pause that interrupts every Claude session with Esc within seconds, unlike the step-boundary pauses, recorded as ordered so no failure or idle path fires | [`lyx-halt`](design-lyx-halt.md) | batten |
 | 30 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | reed, shuttle |
 | 31 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) | loom, stencil |
+
+## Done
+
+Finished, awaiting `lyx board prune`.
+
+| # | Entry | Slug | Labels |
+| --- | --- | --- | --- |
+| 1 | **Darn recipe: one producer, then the usual PR; shared Publish, Finalize and teardown fixes**<br>• The darn recipe: a simplified run for small changes (one producer, verify retries to a budget, PR-Gate as usual), plus per-attempt verify logs, Finalize ignoring the parent weft batten records, teardown clearing abandoned claims, and Reflect reading the parent weft | [`quick-recipe`](design-quick-recipe.md) | loom, shed, batten, fabric, board |
