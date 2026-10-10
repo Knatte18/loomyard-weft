@@ -1,0 +1,354 @@
+{
+  "runGuid": "9dec93383e814edddda7e7e8613f6ff8",
+  "planFingerprint": "8bdd2485392c992775a1bc2efbee3f88099977651d59bd4e37a05676a9ba469b",
+  "planFileHashes": {
+    "00-overview.md": "f83f9a55c80e33abeb85c6f8d36aeed17cb40f75535818bf26dce86ea82600f0",
+    "01-buildvcs-commit-time.md": "b0fc7a69610f8b9da9dbc7f3f261e4537c6bffeb001fef1a8bdf1d7152df1fcd",
+    "02-buildinfo-production-channel.md": "e7e001784621d3b593c258c6459ae85db1a0994d7a5d0243815fdfaa787eee23",
+    "03-stencilstore-forward-refresh.md": "b3b6513918d477b35d795d56b6770d285c62648aa988279469e522d823dd2198",
+    "04-stencil-source-ordering.md": "6d6d2775ef9de0b04584e868c5b869f20311c820ca10cd783cbfb9989566cdad",
+    "05-gitrepo-bolt-primitives.md": "ff9f12af9efafec8472e125b26e63854e05c023f54da7141dcebe4e77afec4aa",
+    "06-seed-commit-signature.md": "20d7f4de6fb94c127b9d9f2e1f9e40ee8ee0d999e7819b31625ecfb5e08d0637",
+    "07-bolt-pull-first-seed-drop.md": "e448d430c09eb296aeeaa0322e8dd62dc1b98d3a882fe36673b5cf30c4462e2b",
+    "08-prerun-seed-pull-first.md": "ec383c1043cadf0dc904a8c7fa9b0cf3e4fddda8e7ce614476ea0375a2ece4df",
+    "09-stencil-sync-message.md": "cfa54fe5dd2224e7bad6af089e96065abc10395a85d021882b16777296bf542e",
+    "10-hubreconcile-pull-first.md": "d2f8d64ec28d7f86a404bb5d8cada312d2179e714e17f06dd9e183043d2f8907",
+    "11-fabric-reconcile-push-failure.md": "86633254feb2840a7b8f91bb4da7c1f966eb23eb4f3147de27f91ff69610c082",
+    "12-housekeeping-inflight-prune.md": "8ae819ebe0814598c24f9ab38dad26df3da705846bcb9d819ec78d3b4edb2f51",
+    "13-bolt-push-seed-drop-retry.md": "577991a02b8f9f3f22ac1ee91e60ccd07107a855bff0b57ddfdf1d9dca9836c0"
+  },
+  "planOverviewFrameHash": "c1675c9c9f4eb6f49a04b421ac9b69930452d571ad9a4f169b7a9818eb614975",
+  "partition": [
+    {
+      "cards": [
+        "01-buildvcs-commit-time",
+        "02-buildinfo-production-channel",
+        "03-stencilstore-forward-refresh",
+        "04-stencil-source-ordering",
+        "05-gitrepo-bolt-primitives"
+      ],
+      "profile": "cautious",
+      "estimate": 295962,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54280,
+        "read_union": 76592,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 252,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/buildvcs/buildvcs_test.go": 360,
+              "file:internal/buildvcs/doc.go": 60,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/buildvcs": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/buildvcs": 2000
+            },
+            "messages": 48.5,
+            "written": 14802
+          },
+          {
+            "card": 2,
+            "card_text": 300,
+            "reads": {
+              "file:internal/buildinfo/buildinfo_test.go": 408,
+              "file:internal/buildinfo/doc.go": 216,
+              "file:pattern/PATTERN-leaf-packages.md": 456,
+              "file:tools/deploy/main_test.go": 2676,
+              "package:internal/buildinfo": 2000,
+              "package:pattern": 2000,
+              "package:tools/deploy": 2000,
+              "tests:internal/buildinfo": 2000,
+              "tests:pattern": 2000,
+              "tests:tools/deploy": 2000
+            },
+            "messages": 61.5,
+            "written": 18750
+          },
+          {
+            "card": 3,
+            "card_text": 588,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/stencilstore/doc.go": 108,
+              "file:internal/stencilstore/modefor_test.go": 192,
+              "file:internal/stencilstore/reconcile_test.go": 4608,
+              "file:internal/stencilstore/stencilstore_test.go": 2556,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/cliwire": 2000,
+              "package:internal/stencilcli": 2000,
+              "package:internal/stencilstore": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/cliwire": 2000,
+              "tests:internal/stencilcli": 2000,
+              "tests:internal/stencilstore": 2000
+            },
+            "messages": 187,
+            "written": 56688
+          },
+          {
+            "card": 4,
+            "card_text": 264,
+            "reads": {
+              "file:internal/fabricengine/warpforward_integration_test.go": 2340,
+              "package:cmd/lyx": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/stencilcli": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/stencilcli": 2000
+            },
+            "messages": 139,
+            "written": 41964
+          },
+          {
+            "card": 5,
+            "card_text": 336,
+            "reads": {
+              "file:cmd/lyx/gitrepoboundary_test.go": 3288,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/gitrepo/doc.go": 3864,
+              "file:internal/gitrepo/push_test.go": 8196,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/gitrepo": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/gitrepo": 2000
+            },
+            "messages": 108.5,
+            "written": 32886
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-seed-commit-signature",
+        "07-bolt-pull-first-seed-drop",
+        "08-prerun-seed-pull-first",
+        "09-stencil-sync-message"
+      ],
+      "profile": "cautious",
+      "estimate": 287164,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61280,
+        "read_union": 71996,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 312,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 135,
+            "written": 40812
+          },
+          {
+            "card": 7,
+            "card_text": 864,
+            "reads": {
+              "file:cmd/lyx/destructiveguard_test.go": 3828,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/fabricengine/doc.go": 16416,
+              "file:internal/fabricengine/export_test.go": 7224,
+              "file:internal/fabricengine/livestate_mutationoracle_test.go": 4548,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 284,
+            "written": 86064
+          },
+          {
+            "card": 8,
+            "card_text": 408,
+            "reads": {
+              "file:cmd/lyx/stencilseed_integration_test.go": 2892,
+              "file:docs/overview.md": 7908,
+              "package:cmd/lyx": 2000,
+              "package:docs": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:docs": 2000
+            },
+            "messages": 69,
+            "written": 21108
+          },
+          {
+            "card": 9,
+            "card_text": 204,
+            "reads": {
+              "file:internal/stencilcli/cli_integration_test.go": 5868,
+              "package:internal/stencilcli": 2000,
+              "tests:internal/stencilcli": 2000
+            },
+            "messages": 19,
+            "written": 5904
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-hubreconcile-pull-first",
+        "11-fabric-reconcile-push-failure",
+        "12-housekeeping-inflight-prune",
+        "13-bolt-push-seed-drop-retry"
+      ],
+      "profile": "cautious",
+      "estimate": 292238,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68280,
+        "read_union": 74900,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 372,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/hubreconcile/doc.go": 564,
+              "file:internal/hubreconcile/ensure_integration_test.go": 6900,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/hubreconcile": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/hubreconcile": 2000
+            },
+            "messages": 63,
+            "written": 19272
+          },
+          {
+            "card": 11,
+            "card_text": 276,
+            "reads": {
+              "file:internal/fabriccli/cli_test.go": 4764,
+              "file:internal/fabriccli/hubmutation_integration_test.go": 5088,
+              "package:internal/fabriccli": 2000,
+              "tests:internal/fabriccli": 2000
+            },
+            "messages": 39,
+            "written": 11976
+          },
+          {
+            "card": 12,
+            "card_text": 528,
+            "reads": {
+              "file:PATTERN.md": 1212,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/fabricengine/doc.go": 16416,
+              "file:internal/fabricengine/housekeeping_integration_test.go": 2028,
+              "file:internal/reedengine/overlay_test.go": 2604,
+              "file:pattern/PATTERN-hub-store-gc.md": 192,
+              "package:.": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/pairteardown": 2000,
+              "package:internal/reedengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/pairteardown": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 231.5,
+            "written": 69978
+          },
+          {
+            "card": 13,
+            "card_text": 432,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/fabricengine/doc.go": 16416,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 158,
+            "written": 47832
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "3c07589a8941246d08bcc7ed372dadef",
+  "masterSessionId": "de618b9e-ea16-4992-b98e-5fa4a3031f27",
+  "batches": {
+    "1": {
+      "slug": "buildvcs-commit-time",
+      "cards": [
+        "01-buildvcs-commit-time",
+        "02-buildinfo-production-channel",
+        "03-stencilstore-forward-refresh",
+        "04-stencil-source-ordering",
+        "05-gitrepo-bolt-primitives"
+      ],
+      "cardHashes": {
+        "01-buildvcs-commit-time": "b0fc7a69610f8b9da9dbc7f3f261e4537c6bffeb001fef1a8bdf1d7152df1fcd",
+        "02-buildinfo-production-channel": "e7e001784621d3b593c258c6459ae85db1a0994d7a5d0243815fdfaa787eee23",
+        "03-stencilstore-forward-refresh": "b3b6513918d477b35d795d56b6770d285c62648aa988279469e522d823dd2198",
+        "04-stencil-source-ordering": "6d6d2775ef9de0b04584e868c5b869f20311c820ca10cd783cbfb9989566cdad",
+        "05-gitrepo-bolt-primitives": "ff9f12af9efafec8472e125b26e63854e05c023f54da7141dcebe4e77afec4aa"
+      },
+      "startSha": "6741f715772c3ba749781b7073abe9a1bb01da53",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T06:25:37Z",
+      "sessionId": "de618b9e-ea16-4992-b98e-5fa4a3031f27",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
