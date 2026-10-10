@@ -1,6 +1,6 @@
 # loom-recipe.yaml comment misstates PR-Gate's rejection budget; max_bounces never trips
 
-`pr-gate-budget-comment` · Note · bug
+`pr-gate-budget-comment` · Note · bug, loom, shed
 
 Imported from [issue #526](https://github.com/Knatte18/loomyard/issues/526).
 
