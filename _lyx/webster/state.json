@@ -601,7 +601,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 19,
   "masterStrand": "726ba574be9e0d6f1b5201a5aa0e1920",
   "masterSessionId": "1ea802b3-916a-4f78-a539-37ca5a7f4b14",
   "batches": {
@@ -690,6 +690,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-test-scope/1ea802b3-916a-4f78-a539-37ca5a7f4b14/subagents/agent-ac215eb172aa3f520.jsonl"
       ]
+    },
+    "19": {
+      "slug": "publish-failure-record",
+      "cards": [
+        "19-publish-failure-record",
+        "20-publish-writes-failure",
+        "21-round-gate-tier3",
+        "22-webster-review-failure",
+        "23-comment-lint-clause",
+        "24-gate-tier-docs"
+      ],
+      "cardHashes": {
+        "19-publish-failure-record": "8750f49f9cc4ddd8ab3e7be43042d2583b05b430d30c34b0ca30bb102848b0c1",
+        "20-publish-writes-failure": "7d9f44c9a8cd0fc6242e09eb0e85c3fee18a7e82062cf8bfd1dbbb428ecb7a8f",
+        "21-round-gate-tier3": "ae592394a58d1ef6bf29ad98b24cba7354564057dccf1d20c8365df0a6549922",
+        "22-webster-review-failure": "d44dbb3daa5bc99f391890ca99bd81d4574abcec7604275e4d23c457d287f879",
+        "23-comment-lint-clause": "6e667f50359da73d26e2e1cabe5cdf52e7d5b3c76ce17c99a856055ee594228e",
+        "24-gate-tier-docs": "cd86eedc7cac20e48f93a0a16ff7c63e6506c7255cad0168a400778b29f1693e"
+      },
+      "startSha": "f53f6b57216e25d8b4f2512018ef4a055e52e1ae",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T05:30:27Z",
+      "sessionId": "1ea802b3-916a-4f78-a539-37ca5a7f4b14",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "landing-slotted",
