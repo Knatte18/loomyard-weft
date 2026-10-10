@@ -98,13 +98,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 30 | **No gate or test catches gofmt drift** | [`gate-gofmt-check`](design-gate-gofmt-check.md) |  |
 | 31 | **Plan review does not check that a prescribed refusal is reachable** | [`plan-refusal-reachability`](design-plan-refusal-reachability.md) | burler, stencil, loom |
 | 32 | **Board group index note prints under every audience**<br>• Webster-Review in cli-surface (PR #519) found the board group's help-index note also prints under the internal audience; the run disputed it as planned. Idea: scope a group's index note by audience like its commands. | `index-note-audience` | board |
+| 33 | **Burler fixer weighs each finding critically before fixing**<br>• Operator, 2026-10-10: with a separate fixer kept (fix_start parallel), the fixer should be critical of the reviewer's findings, not apply them blindly. Today burler-step-3-fix.md allows a dispute only for a factually false premise; severity, size, cost or rubric disagreement never justify one. Idea: let the fixer also dispute a finding whose proposed change would be wrong or make the code worse, with evidence, and choose its own fix when the reviewer's concrete change is wrong while the premise holds; the judge rules on disputes as today. | `fixer-critical-of-findings` | burler, stencil |
 
 #### Low priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 33 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
-| 34 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
+| 34 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
+| 35 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
 
 ### Features
 

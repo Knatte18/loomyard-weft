@@ -1251,6 +1251,22 @@
       "isolated": false,
       "brief": "In run cli-surface the Webster step trace logged `shuttle: session state disagrees (loop=held, state=busy)` before idle-done; no stop followed. Idea: find whether held and busy can disagree for long, and log which side wins.",
       "body": ""
+    },
+    {
+      "id": 313,
+      "slug": "fixer-critical-of-findings",
+      "title": "Burler fixer weighs each finding critically before fixing",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "burler",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Operator, 2026-10-10: with a separate fixer kept (fix_start parallel), the fixer should be critical of the reviewer's findings, not apply them blindly. Today burler-step-3-fix.md allows a dispute only for a factually false premise; severity, size, cost or rubric disagreement never justify one. Idea: let the fixer also dispute a finding whose proposed change would be wrong or make the code worse, with evidence, and choose its own fix when the reviewer's concrete change is wrong while the premise holds; the judge rules on disputes as today.",
+      "body": ""
     }
   ]
 }
