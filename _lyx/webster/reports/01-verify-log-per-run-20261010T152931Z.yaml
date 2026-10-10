@@ -1,0 +1,9 @@
+status: OK
+head_sha: 1a841585d3e4e8c232254e92782345585a492023
+deviations:
+  - internal/testkit/envkit/envkit.go
+  - internal/pairteardown/claim.go
+  - internal/landingshed/deps.go
+  - internal/fabricengine/dirtiness.go
+  - internal/fabricengine/diff.go
+  - internal/fabricengine/mergeerrors.go

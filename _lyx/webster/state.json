@@ -434,7 +434,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "1c06a35705e11073420756b41d655b63",
   "masterSessionId": "e67c9a3b-6efc-4de8-ad4b-f411b2b012bc",
   "batches": {
@@ -456,8 +456,28 @@
       "kind": "fork",
       "spawnedAt": "2026-10-10T15:15:48Z",
       "sessionId": "e67c9a3b-6efc-4de8-ad4b-f411b2b012bc",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "failed",
+      "digest": {
+        "batch": "01-verify-log-per-run",
+        "status": "failed",
+        "head_sha": "1a841585d3e4e8c232254e92782345585a492023",
+        "reasons": [
+          "webster: fabric-reference violation in \"/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quick-recipe/e67c9a3b-6efc-4de8-ad4b-f411b2b012bc/subagents/agent-a4797b1dac76dd596.jsonl\": ran a fabric-referencing command (\"sed -n 285,300p contracts/specs/refusal-spec.md | cut -c1-200; grep -n \\\"fabric commit\\\" -r contracts/specs plugins 2\u003e/dev/null | head -5; lyx fabric --help 2\u003e\u00261 | head -30\") that can rewrite run state — an implementer fork must never touch the fabric repo directly"
+        ]
+      },
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quick-recipe/e67c9a3b-6efc-4de8-ad4b-f411b2b012bc/subagents/agent-a4797b1dac76dd596.jsonl"
+      ],
+      "uncheckable": [
+        "fabric-reference: ran a fabric-referencing command (\"sed -n 285,300p contracts/specs/refusal-spec.md | cut -c1-200; grep -n \\\"fabric commit\\\" -r contracts/specs plugins 2\u003e/dev/null | head -5; lyx fabric --help 2\u003e\u00261 | head -30\") that can rewrite run state — an implementer fork must never touch the fabric repo directly"
+      ]
     }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quick-recipe/e67c9a3b-6efc-4de8-ad4b-f411b2b012bc/subagents/agent-a4797b1dac76dd596.jsonl"
+  ],
+  "auditDispositions": {
+    "fork:/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quick-recipe/e67c9a3b-6efc-4de8-ad4b-f411b2b012bc/subagents/agent-a4797b1dac76dd596.jsonl:fabric-reference:1": "failed"
   }
 }
