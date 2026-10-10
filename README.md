@@ -17,7 +17,7 @@ Waits on nothing open; can start now, in parallel.
 1. **Git robustness: stale pack index, background gc, network timeouts, reused slugs** — [`git-robustness`](design-git-robustness.md) · bug, enhancement, fabric, batten, stencil · running · Webster
    - Reindex-and-retry for every go-git call, no auto-gc under a live step, timeouts on git network calls, batten refuses a done slug, bounded HeadContains
    - **Before:** `publish-recovery`
-1. **MultiLLMProducer: one producer runs a chair and its advisors as seats** — [`multi-llm-producer`](design-multi-llm-producer.md) · feature, shed, shuttle · running · Worktree-Create
+1. **MultiLLMProducer: one producer runs a chair and its advisors as seats** — [`multi-llm-producer`](design-multi-llm-producer.md) · feature, shed, shuttle · running · Loom-Preflight
    - A producer beside SingleLLMProducer that runs N agents as seats, one chair that steers and decides the outcome plus advisor-1..n, with its own internal message channel; built standalone, used by nothing yet
    - **Before:** `burler-multi-llm`, `discussion-multi-llm`
 
