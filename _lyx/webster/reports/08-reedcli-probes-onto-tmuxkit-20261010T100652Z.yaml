@@ -1,0 +1,9 @@
+status: OK
+head_sha: 88bc7396d1c3caa90a80413f9d5fb88954cdf2f4
+deviations:
+  - internal/testkit/lyxbin/testmain_test.go
+  - internal/gatecli/prebuild.go
+  - cmd/testtiming/prebuild.go
+  - cmd/testtiming/redundancy.go
+  - cmd/testtiming/resources.go
+  - internal/loomcli/smoke_helpers_test.go
