@@ -1424,6 +1424,22 @@
       "isolated": false,
       "brief": "",
       "body": "From `gate-test-scope` (2026-10-10): the `PATTERN.md` overview was under its 16384-byte cap on both the task branch and main, but Publish merged main in and the overview reached 16559 bytes.\n`TestOverview_RealFilePassesCheck` then failed in verify, the run blocked at Publish, and it needed a parent decision plus a goto to Webster-Burler.\n\nIdea: give the overview headroom, with the overview check warning at about 95% of the cap, or let a shared size cap breached only by the merge be fixed through the Publish fix route.\n"
+    },
+    {
+      "id": 276,
+      "slug": "driver-silent-park",
+      "title": "Driver parks silently on a step failure without kind",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        488
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #488](https://github.com/Knatte18/loomyard/issues/488).\n\nSeen (bolt-and-store, 2026-10-10): at 06:18 UTC `lyx shed step` at Webster-Bouncer returned `ok:false` with `config file /home/knatte/Code/loomyard-LYXHUB/_board/_lyx/config/landing.yaml not found; run \"lyx config reconcile\"`, no `kind` and no trace.\nThe driver wrote a drive report, ran `commit-records --park` and told the parent nothing, while the run stayed `running`.\nThe hub learned of it only through batten's 45-minute \"no agent activity\" notice, and `lyx loom resume` answered \"the run is already running\".\nThe missing file arrived with the hub config reconcile after `gate-test-scope` landed (new `landing.yaml` and `gate.yaml`), so a run started on the older build hit the gap.\n\nWorkaround: the orchestrator messaged the driver to step again.\n\nExpected: a step failure without a `kind` is treated as a stop that reaches the parent (a halted run or a driver escalation), never a silent park; a missing hub config file names its cause with a refusal-spec row, and runs in flight across a deploy that adds a hub config file either get it reconciled or are told.\n"
     }
   ],
   "legacy_done": [
