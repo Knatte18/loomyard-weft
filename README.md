@@ -13,17 +13,17 @@ Held by a run; its scope is locked until the run ends.
 
 #### High priority
 
-| # | Task | Slug | At | Labels |
-| --- | --- | --- | --- | --- |
-| 1 | **Batten opens a terminal window per run instead of VS Code**<br>• VS Code per run is gone (c0d604f12); batten itself still opens no reed attach window, the orch does it by hand | [`ide-opt-in`](design-ide-opt-in.md) | Darn | ide, reed, batten |
-| 2 | **Webster audit and recovery: pathless findings, read-only classifier, rebaseline Stuck** | [`webster-audit-gaps`](design-webster-audit-gaps.md) | PR-Gate | webster, fabric |
+| # | Task | Slug | Recipe | At | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Batten opens a terminal window per run instead of VS Code**<br>• VS Code per run is gone (c0d604f12); batten itself still opens no reed attach window, the orch does it by hand | [`ide-opt-in`](design-ide-opt-in.md) | darn | Darn | ide, reed, batten |
+| 2 | **Webster audit and recovery: pathless findings, read-only classifier, rebaseline Stuck** | [`webster-audit-gaps`](design-webster-audit-gaps.md) | loom | awaiting · PR-Gate | webster, fabric |
 
 #### Normal priority
 
-| # | Task | Slug | At | Labels |
-| --- | --- | --- | --- | --- |
-| 3 | **Reed hygiene: daemon log and socket path, plain strand shells, watchdog child CPU** | [`reed-hygiene`](design-reed-hygiene.md) | Webster-Bouncer | reed |
-| 4 | **Loop machinery small bugs: bounce budget, PR-Gate comment, sleep-aware idle, skill-load hold**<br>• Five small faults in burler/loom, shed, batten and shuttle | [`loop-small-bugs`](design-loop-small-bugs.md) | Discussion-Write | loom, burler, shed, batten, shuttle |
+| # | Task | Slug | Recipe | At | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 3 | **Reed hygiene: daemon log and socket path, plain strand shells, watchdog child CPU** | [`reed-hygiene`](design-reed-hygiene.md) | loom | Webster-Bouncer | reed |
+| 4 | **Loop machinery small bugs: bounce budget, PR-Gate comment, sleep-aware idle, skill-load hold**<br>• Five small faults in burler/loom, shed, batten and shuttle | [`loop-small-bugs`](design-loop-small-bugs.md) | loom | Discussion-Write | loom, burler, shed, batten, shuttle |
 
 ### Ready
 
@@ -37,9 +37,9 @@ Waits only on Running or Ready entries.
 
 #### High priority
 
-| # | Task | Slug | After | Labels |
-| --- | --- | --- | --- | --- |
-| 1 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`webster-stability`](design-webster-stability.md) | `webster-audit-gaps` | webster, shuttle, stencil, quarry |
+| # | Task | Slug | Recipe | After | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`webster-stability`](design-webster-stability.md) | loom | `webster-audit-gaps` | webster, shuttle, stencil, quarry |
 
 ## Notes
 
