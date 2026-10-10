@@ -1,4 +1,4 @@
-# Card 9 — benchmark-rerun
+# Card 11 — benchmark-rerun
 
 **Prosa:**
 - `docs/benchmarks/daemon-idle-cpu.md`

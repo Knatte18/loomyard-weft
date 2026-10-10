@@ -1,4 +1,4 @@
-# Card 6 — socket-path-refused-at-boot
+# Card 7 — socket-path-refused-at-boot
 
 **Create:**
 - `plan:internal/reedengine#socketBaseFromEnv` -> `func socketBaseFromEnv() string`

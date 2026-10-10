@@ -1,4 +1,4 @@
-# Card 8 — resize-signal-entry-at-boot
+# Card 10 — resize-signal-entry-at-boot
 
 **Create:**
 - `plan:internal/reedengine#Engine.pinBootOptionsLocked` -> `func (e *Engine) pinBootOptionsLocked(mouse, shellPath string) error`
