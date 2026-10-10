@@ -21,9 +21,9 @@ The `standard` fan also points code lenses at design documents.
 
 Revise the fan so it works as designed:
 
-- the master reads all code the target cites before it spawns any fork, so every fork inherits that reading;
+- the master is told every lens of the fan up front, and before it spawns any fork it explores, for each lens, what that lens will need and reads it, so the forks inherit one shared reading instead of each exploring on its own (lyx cannot pick the relevant code itself: Discussion review is exploratory, so the master's judgment chooses what to read);
 - the master judges nothing before the fork point: a review written before forking would colour every fork, so the master's own holistic review stays after the forks are spawned;
-- each fork gets a tool-call budget (about 6) for reading beyond what it inherited;
+- each fork is told its context already holds the code, and gets a tool-call budget (about 6) for reading only what is missing; forks spending their budget show in the usage record that the master read too little;
 - Discussion-Review and Plan-Review use the `discussion` and `plan` fans instead of `standard`.
 
 Estimate: about 200-250k fresh tokens per round, about 2x a solo Opus round instead of 5-6x.
