@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "Batch 01-fixture-git-marker: record-batch failed (create-not-done: plan target cmd/testtiming#rusageStats does not resolve), and recover-batch ended status dead, dead_reason asking."
+batches_done: 0

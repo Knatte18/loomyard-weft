@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "Batch 01-fixture-git-marker is dead: its recovery already failed terminally, so no later batch can begin."
+batches_done: 0
