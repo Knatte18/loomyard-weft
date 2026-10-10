@@ -1,0 +1,69 @@
+{
+  "runGuid": "db2b644eb0fb6f5dcda76ba11ad5dfc2",
+  "planFingerprint": "b34eb91f3a161044d1985a3d3826b5822de0e6c7f8b7495d89f8000e03ba7f2f",
+  "planFileHashes": {
+    "00-overview.md": "25956c035a6c4bed02c520eaf1d993884dbdbb8f4d1d3b6a904d96d82ef05c31",
+    "12-cmd-lyx-budget-row-after-merge.md": "8f2819148b97ed3d2d730196d2d3740a8adb6ba447cace4b733e501a8297a8ed"
+  },
+  "planOverviewFrameHash": "77d7ccb609b9440cdf50bec1328c0eded4b9eedfb2a8f310f76c60d09781b9db",
+  "partition": [
+    {
+      "cards": [
+        "12-cmd-lyx-budget-row-after-merge"
+      ],
+      "profile": "cautious",
+      "estimate": 64868,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54448,
+        "read_union": 7732,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 288,
+            "reads": {
+              "file:cmd/lyx/testbudget_test.go": 1836,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1608,
+              "package:cmd/lyx/testdata": 2000,
+              "tests:cmd/lyx/testdata": 2000
+            },
+            "messages": 8,
+            "written": 2688
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 12,
+  "masterStrand": "25d8702aeec32d5e71b33ad78118c613",
+  "masterSessionId": "2276b83a-5188-46aa-a406-e718da4596ba",
+  "batches": {
+    "12": {
+      "slug": "cmd-lyx-budget-row-after-merge",
+      "cards": [
+        "12-cmd-lyx-budget-row-after-merge"
+      ],
+      "cardHashes": {
+        "12-cmd-lyx-budget-row-after-merge": "8f2819148b97ed3d2d730196d2d3740a8adb6ba447cace4b733e501a8297a8ed"
+      },
+      "startSha": "bf9b935568167d06169f0d6e9779b9ab0220d024",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T17:15:52Z",
+      "sessionId": "2276b83a-5188-46aa-a406-e718da4596ba",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
