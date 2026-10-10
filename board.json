@@ -938,6 +938,7 @@
         "burler"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "A report over round usage records for the fan-on decision; a lost usage record shows in the facts",
