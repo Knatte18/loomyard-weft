@@ -1,4 +1,4 @@
-# Lens fan: master pre-reads and reviews before forking, forks get a read budget
+# Lens fan: master pre-reads the cited code before forking, forks get a read budget
 
 `fan-master-preread` · Task · enhancement, burler, stencil
 
@@ -14,14 +14,15 @@ The first fanned run (`webster-replan-state`, Discussion rounds 1-4 and Plan rou
 - Fanned Discussion rounds cost 301-638k fresh against 86-121k for solo Opus rounds; Plan round 1 cost 901k fanned against 202-227k solo.
   The fan raised more MEDIUM and LOW findings, not more BLOCKING ones, and about half of raw fork findings were duplicates across lenses.
 
-The responsible text is `clusterRulesBlock` in `internal/burlerengine/prompt.go`: "After exploring the target fully" never says to read the code the target cites, "Fetch only what your lens needs" sets no budget, and the master's own holistic review runs after the fork point, where no fork inherits it.
+The responsible text is `clusterRulesBlock` in `internal/burlerengine/prompt.go`: "After exploring the target fully" never says to read the code the target cites, and "Fetch only what your lens needs" sets no budget.
 The `standard` fan also points code lenses at design documents.
 
 ## Idea
 
 Revise the fan so it works as designed:
 
-- the master reads all code the target cites and does its own holistic review before it spawns any fork, so every fork inherits both;
+- the master reads all code the target cites before it spawns any fork, so every fork inherits that reading;
+- the master judges nothing before the fork point: a review written before forking would colour every fork, so the master's own holistic review stays after the forks are spawned;
 - each fork gets a tool-call budget (about 6) for reading beyond what it inherited;
 - Discussion-Review and Plan-Review use the `discussion` and `plan` fans instead of `standard`.
 
