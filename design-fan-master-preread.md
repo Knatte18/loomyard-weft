@@ -1,6 +1,6 @@
 # Lens fan: master pre-reads the cited code before forking, forks get a read budget
 
-`fan-master-preread` · Task · enhancement, burler, stencil
+`fan-master-preread` · Note · enhancement, burler, stencil
 
 ## Seen
 
@@ -100,8 +100,15 @@ You are READ-ONLY — never Write/Edit/delete any file, never run any git comman
 While the forks run, YOU (the handler) do your own HOLISTIC review — architecture, cross-file invariants, PATTERN-fit — from the same context, reading further only where it or a fork's read list shows a gap, and prepare the ground truths and the severity rubric you will judge every finding against.
 ```
 
-Open before the fan goes back on:
+## Confirming run (2026-10-10): parked
 
-- A confirming run of the recommended text (or D at `sonnet[high]`) on the fixture must show F1; about 300k with the fixer.
+The recommended text on the standard fan at `sonnet[high]` aborted at the 300k cap with no review written: review side 354k, $3.19, 288 s active.
+Three forks raised F1 through their hop budget, so the pre-read and the hop line work at high effort, but the round is slower than solo `opus[medium]` (225 s, $1.45, found F1) and about twice the price.
+Solo `opus[medium]` stays the reviewer; this entry is parked as a note.
+The next lever under test is a kick-start pack of the code the target cites, given to the solo reviewer (`enclose-kickstart`).
+
+Open if the fan comes back:
+
+- The landing text must say "go straight on to step 2 in the same turn": the master ended its turn after posting the manifest.
 - The `discussion` fan has no lens aimed at a guard's callers; `scenarios` is the natural owner if a lens change is wanted.
 - Proposal E (not run): lyx extracts the target's citations (paths, backticked symbols) as the manifest's starting list without loading code, leaving the choice of what to read to the master; 22 of the 25 files the original forks needed are cited in the target, the other 3 one hop away.

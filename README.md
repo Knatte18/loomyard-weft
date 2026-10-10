@@ -29,11 +29,7 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-#### High priority
-
-| # | Task | Slug | After | Labels |
-| --- | --- | --- | --- | --- |
-| 1 | **Lens fan: master pre-reads the cited code before forking, forks get a read budget**<br>• Make the lens fan work as designed: the master reads the cited code (and judges nothing) before forking, each fork has a tool-call budget, and Discussion and Plan use their own fans | [`fan-master-preread`](design-fan-master-preread.md) |  | burler, stencil |
+_None._
 
 ## Notes
 
@@ -95,18 +91,19 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 23 | **Fold loomcli and orchcli tmux probe copies onto tmuxkit** | [`tmuxkit-probe-copies`](design-tmuxkit-probe-copies.md) | loom, orch, reed |
 | 24 | **Reconcile keeps an old default below the new floor** | [`reconcile-stale-default`](design-reconcile-stale-default.md) | config |
 | 25 | **Discussion advisors: operator-named areas per advisor on top of the landed all-advisors default**<br>• Each discussion_advisors entry takes an optional area (a lens, as in review fans); without one the advisor answers every question | [`discussion-advisor-mode`](design-discussion-advisor-mode.md) | loom, stencil, config |
-| 26 | **Plan format has no way to insert a card or remove a card file** | [`plan-card-insert`](design-plan-card-insert.md) | loom, burler, stencil |
-| 27 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` |  |
-| 28 | **Destructive no-argument verbs act on a bare invocation** | [`destructive-verb-confirm`](design-destructive-verb-confirm.md) | fabric, board |
-| 29 | **No gate or test catches gofmt drift** | [`gate-gofmt-check`](design-gate-gofmt-check.md) |  |
-| 30 | **Plan review does not check that a prescribed refusal is reachable** | [`plan-refusal-reachability`](design-plan-refusal-reachability.md) | burler, stencil, loom |
+| 26 | **Lens fan: master pre-reads the cited code before forking, forks get a read budget**<br>• Make the lens fan work as designed: the master reads the cited code (and judges nothing) before forking, each fork has a tool-call budget, and Discussion and Plan use their own fans | [`fan-master-preread`](design-fan-master-preread.md) | burler, stencil |
+| 27 | **Plan format has no way to insert a card or remove a card file** | [`plan-card-insert`](design-plan-card-insert.md) | loom, burler, stencil |
+| 28 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` |  |
+| 29 | **Destructive no-argument verbs act on a bare invocation** | [`destructive-verb-confirm`](design-destructive-verb-confirm.md) | fabric, board |
+| 30 | **No gate or test catches gofmt drift** | [`gate-gofmt-check`](design-gate-gofmt-check.md) |  |
+| 31 | **Plan review does not check that a prescribed refusal is reachable** | [`plan-refusal-reachability`](design-plan-refusal-reachability.md) | burler, stencil, loom |
 
 #### Low priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 31 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
-| 32 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
+| 32 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
+| 33 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
 
 ### Features
 
