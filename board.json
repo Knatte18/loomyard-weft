@@ -1291,6 +1291,20 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nIn the #512 incident (2026-10-10) a reviewer probing the CLI ran `lyx fabric unwire` and `lyx board retire-legacy` bare in a task pair; both acted at once, unwiring the pair and deleting legacy board files.\n57243019b closed the route it took (global `--json` never runs a command), but any bare call of these verbs still acts.\n\n## Idea\n\nGive destructive verbs that take no argument (`fabric unwire`, `board retire-legacy`, `board prune`) an explicit confirmation flag, so a bare call prints what it would do and changes nothing."
+    },
+    {
+      "id": 303,
+      "slug": "gate-gofmt-check",
+      "title": "No gate or test catches gofmt drift",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nOn 2026-10-10 `gofmt -l internal/loomcli/` on main (57243019b) lists `internal/loomcli/bootstrap_test.go` (a trailing blank line), and every test tier passed; the `webster-replan-state` conflict agent noticed it.\nNo test or gate step runs gofmt.\n\n## Idea\n\nAdd a gofmt check (`gofmt -l` over the module must print nothing) to the test suite or the verify gate, and fix the file in the same change."
     }
   ]
 }
