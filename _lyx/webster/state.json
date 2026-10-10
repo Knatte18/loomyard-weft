@@ -682,7 +682,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 21,
   "masterStrand": "024106e45ef378afbaedeac64b0dfd00",
   "masterSessionId": "4b72a718-bcaa-4396-ac52-cd53831c7acf",
   "batches": {
@@ -810,6 +810,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-a058bd474c5453d9d.jsonl"
       ]
+    },
+    "21": {
+      "slug": "turn-end-counts-with-nothing-outstanding",
+      "cards": [
+        "21-turn-end-counts-with-nothing-outstanding",
+        "22-one-shell-wait-rule-and-ended-shells",
+        "23-round-gate-reruns-the-top-level-test",
+        "24-recovery-count-and-retry"
+      ],
+      "cardHashes": {
+        "21-turn-end-counts-with-nothing-outstanding": "b7522372eb569b16b7fed1d25d2f457f31e4bc51b86505a26bf8241cc2111823",
+        "22-one-shell-wait-rule-and-ended-shells": "868956b10d1852663cadd2120f40dc25becbbda6f17aa8c039ad659d4b76f8d1",
+        "23-round-gate-reruns-the-top-level-test": "8c026fa10f5d6faca957ebb1ab1a79a8b2e7f6189171b8314f8cb38da2bf8936",
+        "24-recovery-count-and-retry": "2a12a7de3f88440b1cfdadcd5734b2f0aa708af1e546acbbe16708e8e0aee679"
+      },
+      "startSha": "d30e142d268338754c1f6b9b187a20bddb28d23d",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T13:31:05Z",
+      "sessionId": "4b72a718-bcaa-4396-ac52-cd53831c7acf",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "plan-gate-done-card-edited",
