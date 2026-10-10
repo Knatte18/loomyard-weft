@@ -15,7 +15,8 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- |
 | 1 | **Lighter test suite: measured tiers, cheap tmux fixtures, no lingering children**<br>• Measure each tier, non-login shells and shared servers in tier 3, lyx built once, no background gc in fixtures (#472), a no-tmux scan for tiers 1-2 | [`test-suite-weight`](design-test-suite-weight.md) | Plan-Burler | shuttle, reed, fabric |
 | 2 | **Publish and loom recovery: a fix route from Publish, resume past its own merge, clean re-steps**<br>• A blocked Publish hands its failure to a fixer, resume survives its own staged merge, no false config warning at Finalize, re-step and decision-author fixes | [`publish-recovery`](design-publish-recovery.md) | Webster | loom, burler, fabric, config, stencil |
-| 3 | **Daemons and wake-ups: event-driven waits, a timely orch reload, recorded revival order**<br>• A rule that lyx daemons wait on events or second-scale polls (reed watchdog first), the orch watcher reloads right after compaction, reed revives sessions by recorded start time | [`daemon-wakeups`](design-daemon-wakeups.md) | Finalize | reed, orch, shuttle |
+| 3 | **Discussion-Write on MultiLLMProducer: a chair writes, advisors answer**<br>• Design and build a Discussion-Write whose writer is the chair, with advisors that study the code and answer its design questions live | [`discussion-multi-llm`](design-discussion-multi-llm.md) | Worktree-Create | loom, stencil, shed |
+| 4 | **Daemons and wake-ups: event-driven waits, a timely orch reload, recorded revival order**<br>• A rule that lyx daemons wait on events or second-scale polls (reed watchdog first), the orch watcher reloads right after compaction, reed revives sessions by recorded start time | [`daemon-wakeups`](design-daemon-wakeups.md) | Finalize | reed, orch, shuttle |
 
 ### Ready
 
@@ -24,8 +25,7 @@ Waits on nothing open; can start now.
 | # | Task | Slug | After | Labels |
 | --- | --- | --- | --- | --- |
 | 1 | **Burler runs its round on MultiLLMProducer**<br>• The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review | [`burler-multi-llm`](design-burler-multi-llm.md) |  | burler, shed, stencil |
-| 2 | **Discussion-Write on MultiLLMProducer: a chair writes, advisors answer**<br>• Design and build a Discussion-Write whose writer is the chair, with advisors that study the code and answer its design questions live | [`discussion-multi-llm`](design-discussion-multi-llm.md) |  | loom, stencil, shed |
-| 3 | **CLI surface: a command index for the orch, one help form, intake keeps comments**<br>• lyx help index injected into the orch, a test-enforced form for Use/Short/Long including board payload keys, and intake that carries issue comments | [`cli-surface`](design-cli-surface.md) |  | orch, board, selfreport |
+| 2 | **CLI surface: a command index for the orch, one help form, intake keeps comments**<br>• lyx help index injected into the orch, a test-enforced form for Use/Short/Long including board payload keys, and intake that carries issue comments | [`cli-surface`](design-cli-surface.md) |  | orch, board, selfreport |
 
 ### Layer A
 
