@@ -1467,7 +1467,8 @@
       "title": "Flaky integration test: loomcli TestLoomResumeReconcilesTheHubConfigBeforeArming",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "loom"
       ],
       "issues": [
         492

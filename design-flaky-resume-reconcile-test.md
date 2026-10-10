@@ -1,6 +1,6 @@
 # Flaky integration test: loomcli TestLoomResumeReconcilesTheHubConfigBeforeArming
 
-`flaky-resume-reconcile-test` · Note · bug
+`flaky-resume-reconcile-test` · Note · bug, loom
 
 Imported from [issue #492](https://github.com/Knatte18/loomyard/issues/492).
 
