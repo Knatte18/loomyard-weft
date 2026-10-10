@@ -197,7 +197,7 @@
       }
     }
   ],
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "34a9f1520d27f80267545abe0c3f49b2",
   "masterSessionId": "660a4ba0-ba4a-4b41-b405-b97a02f1c926",
   "batches": {
@@ -254,11 +254,29 @@
       "kind": "fork",
       "spawnedAt": "2026-10-10T16:18:59Z",
       "sessionId": "660a4ba0-ba4a-4b41-b405-b97a02f1c926",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-git-reader-flag-rows",
+        "status": "done",
+        "head_sha": "1e332015aa0476459300021c77e37097198e47bb",
+        "deviations": [
+          "internal/websterengine/merriambase.go"
+        ]
+      },
+      "cardShas": [
+        "1e332015aa0476459300021c77e37097198e47bb"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-audit-gaps/660a4ba0-ba4a-4b41-b405-b97a02f1c926/subagents/agent-af80a54ccf9415c0b.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-audit-gaps/660a4ba0-ba4a-4b41-b405-b97a02f1c926/subagents/agent-af80a54ccf9415c0b.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-audit-gaps/660a4ba0-ba4a-4b41-b405-b97a02f1c926/subagents/agent-a45bd6a0106e3c9c2.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-audit-gaps/660a4ba0-ba4a-4b41-b405-b97a02f1c926/subagents/agent-a45bd6a0106e3c9c2.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-audit-gaps/660a4ba0-ba4a-4b41-b405-b97a02f1c926/subagents/agent-af80a54ccf9415c0b.jsonl"
   ]
 }
