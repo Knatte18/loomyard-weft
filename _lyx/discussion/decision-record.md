@@ -193,6 +193,12 @@ Decision: The watcher renders the index from its own recorded path; D4 claims th
 
 Rationale: A rare mismatch between two installed lyx binaries is not worth new launch-path plumbing in this task.
 
+### Added after Discussion (parent, 2026-10-10): Missing-binary bound at auto-reload
+
+Decision: startAutoReload keeps its existing error path: a failed index render is a tick error, and the watcher exits after the consecutive-error limit; D4's bound states this for that site, and the acceptance criterion for a missing path covers it.
+
+Rationale: Scope keeps the watcher's reload steps out; the record must state the real behaviour, not change it.
+
 ## Constraints
 
 - `PATTERN-cli-cobra`: `help` is a module with `Command()` and `RunCLI`; the registration oracle in `cmd/lyx/registration_test.go` scans `AddCommand` arguments only, so the plan either mounts `helpcli.Command()` through `AddCommand` before `SetHelpCommand` names it, or extends the oracle to see `SetHelpCommand`.
