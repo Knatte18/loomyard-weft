@@ -1,13 +1,12 @@
 {
   "current_producer": "Darn",
-  "state": "failed",
-  "error": "shedadapters: Darn (shuttle): shuttle run outcome died: shuttle: the provider never became ready",
-  "transient": "agent-start",
-  "pause_requested": true,
+  "state": "paused",
+  "error": "",
+  "pause_requested": false,
   "activity": {
     "now": "Darn",
     "last": "Preflight → done",
-    "wait": "shedadapters: Darn (shuttle): shuttle run outcome died: shuttle: the provider never became ready"
+    "wait": ""
   },
   "history": [
     {
