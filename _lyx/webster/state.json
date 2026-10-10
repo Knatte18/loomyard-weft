@@ -1,0 +1,348 @@
+{
+  "runGuid": "754d956959757d032606c78e090a81d6",
+  "planFingerprint": "525bd4e58d9912ac8b11b799191ebed3fc49b7541b9ccf1434bee45113db8a32",
+  "planFileHashes": {
+    "00-overview.md": "759bf1a8493fc600090a379106b2bc2c659393207705708fd22a2f80b20bb1b2",
+    "01-gated-turn-end-holds.md": "6430b203dc915f1c37f3e6db1105fff1c88509b71fb5a71ded3edac5089e7fd4",
+    "02-shell-result-unread-wording.md": "feb91d6a111358692cdbf6173c0f5d61bf0fbeac3f6a465a68086fb2d38f5f33",
+    "03-gate-entry-reprompt.md": "cdafc9831bf52e498c3cde1d4bbd9e6ad072c30587fbe0e3c7e0d94eb3d37044",
+    "04-verify-gate-way-forward.md": "1e1ded5e4e9b828d792bc7d15f297d5f7dc243fd32c51f1f581f750e1b7883c1",
+    "05-recovery-sessions-are-run-writes.md": "da4469ba1fc0afd5ef7c2a5c3876bb74200906e72df0eb101b7d06bbc7168278",
+    "06-contract-evidence-names-the-writer.md": "46da09180722c4b9635010465b189c1e92ea8d26902567e95ab1e1d2d139f28c",
+    "07-recover-batch-non-done-exits-non-zero.md": "f069c5cd0e117cc9b3ced99275116814213ef9b916db7f4432c10ed85d492c20",
+    "08-implementer-allowed-commands.md": "5be743840e2114b8d12b8378f6f91e76476b464ce83b618a208d1ce49195a96b",
+    "09-build-constraint-partition-classifier.md": "63a0e3cdd80b683b60eb1b73f616813340030c5e8f7e80b19df4f1635ab248e3",
+    "10-status-policies-read-the-classifier.md": "8d5b1e4310182f4fed55aa0d33dd32758610b44ab03b630ddef761f01ec43496",
+    "11-done-check-details-carry-the-lookup.md": "13d5f1c5f55c4eda85f0eefa91608c527f8e728a2cb0f72a20a51b38afa45c7b",
+    "12-answer-symbols-read-the-classifier.md": "ca98b09af1388703b1656602aad173789ca12070bf104dd6cc6a62cd8acadeb7",
+    "13-rename-old-side-partitioned.md": "b53868dbf1e9df059bf0e46e9f8709be2b58a1557922cb25039ec0301eb51eb4"
+  },
+  "planOverviewFrameHash": "84042c2f6eeccd37cc7201015bfbe2630ba3625f0a9881fc0f0351e961379cb8",
+  "partition": [
+    {
+      "cards": [
+        "01-gated-turn-end-holds",
+        "02-shell-result-unread-wording",
+        "03-gate-entry-reprompt",
+        "04-verify-gate-way-forward"
+      ],
+      "profile": "cautious",
+      "estimate": 275792,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54436,
+        "read_union": 121096,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 564,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/testdata/corpus/master-fork-running/case.yaml": 552,
+              "file:internal/shuttleengine/completionsignal_enforcement_test.go": 4260,
+              "file:internal/shuttleengine/doc.go": 3312,
+              "file:internal/shuttleengine/run_resume_test.go": 1488,
+              "file:internal/shuttleengine/waiting_test.go": 7548,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/corpus/master-fork-running": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/corpus/master-fork-running": 2000
+            },
+            "messages": 80.5,
+            "written": 24714
+          },
+          {
+            "card": 2,
+            "card_text": 288,
+            "reads": {
+              "file:internal/webstercli/verbs_test.go": 17580,
+              "file:internal/websterengine/doc.go": 7644,
+              "file:internal/websterengine/runlevel_test.go": 35316,
+              "file:internal/websterengine/summary_test.go": 1416,
+              "file:internal/websterengine/triage_test.go": 1560,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 90,
+            "written": 27288
+          },
+          {
+            "card": 3,
+            "card_text": 276,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 3312,
+              "file:internal/shuttleengine/gate_test.go": 9912,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 48.5,
+            "written": 14826
+          },
+          {
+            "card": 4,
+            "card_text": 432,
+            "reads": {
+              "file:internal/webstercli/verify_parity_integration_test.go": 1212,
+              "file:internal/websterengine/doc.go": 7644,
+              "file:internal/websterengine/runlevel_git_test.go": 2508,
+              "file:internal/websterengine/verifygate_integration_test.go": 2016,
+              "file:internal/websterengine/verifygate_test.go": 5136,
+              "file:internal/websterengine/verifygatereport_test.go": 2076,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 110,
+            "written": 33432
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-recovery-sessions-are-run-writes",
+        "06-contract-evidence-names-the-writer",
+        "07-recover-batch-non-done-exits-non-zero"
+      ],
+      "profile": "cautious",
+      "estimate": 278614,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61436,
+        "read_union": 115448,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 456,
+            "reads": {
+              "file:internal/websterengine/beginbatch_test.go": 11736,
+              "file:internal/websterengine/doc.go": 7644,
+              "file:internal/websterengine/recoverbatch_git_test.go": 3468,
+              "file:internal/websterengine/recoverbatch_test.go": 21684,
+              "file:internal/websterengine/reset_integration_test.go": 3156,
+              "file:internal/websterengine/runwrites_test.go": 1560,
+              "package:internal/websterengine": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 117.5,
+            "written": 35706
+          },
+          {
+            "card": 6,
+            "card_text": 576,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3996,
+              "file:internal/webstercli/acceptaudit_test.go": 3360,
+              "file:internal/webstercli/doc.go": 564,
+              "file:internal/websterengine/archivereset_test.go": 2100,
+              "file:internal/websterengine/contractevidence_test.go": 2364,
+              "file:internal/websterengine/doc.go": 7644,
+              "file:internal/websterengine/findingtext_test.go": 2640,
+              "file:internal/websterengine/recoverbatch_test.go": 21684,
+              "package:contracts/specs": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 166.5,
+            "written": 50526
+          },
+          {
+            "card": 7,
+            "card_text": 348,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3996,
+              "file:contracts/stencils/claims_test.go": 9228,
+              "file:contracts/stencils/webster/webster-template-master.md": 2988,
+              "file:internal/webstercli/doc.go": 564,
+              "file:internal/webstercli/verbs_test.go": 17580,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/webstercli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 50.5,
+            "written": 15498
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-implementer-allowed-commands",
+        "09-build-constraint-partition-classifier",
+        "10-status-policies-read-the-classifier",
+        "11-done-check-details-carry-the-lookup",
+        "12-answer-symbols-read-the-classifier",
+        "13-rename-old-side-partitioned"
+      ],
+      "profile": "cautious",
+      "estimate": 253610,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68436,
+        "read_union": 83144,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 204,
+            "reads": {
+              "file:contracts/stencils/claims_test.go": 9228,
+              "file:contracts/stencils/webster/webster-body-implementer.md": 1188,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000
+            },
+            "messages": 15.5,
+            "written": 4854
+          },
+          {
+            "card": 9,
+            "card_text": 372,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1608,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/planglyph": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/planglyph": 2000
+            },
+            "messages": 68.5,
+            "written": 20922
+          },
+          {
+            "card": 10,
+            "card_text": 372,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 7884,
+              "file:internal/planglyph/create_test.go": 3240,
+              "file:internal/planglyph/doc.go": 1080,
+              "file:internal/planglyph/resolve_test.go": 2820,
+              "package:contracts/specs": 2000,
+              "package:internal/planglyph": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/planglyph": 2000
+            },
+            "messages": 67,
+            "written": 20472
+          },
+          {
+            "card": 11,
+            "card_text": 324,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3996,
+              "file:internal/planglyph/doc.go": 1080,
+              "file:internal/planglyph/donecheck_test.go": 1284,
+              "file:internal/planglyph/status_completeness_test.go": 1968,
+              "package:contracts/specs": 2000,
+              "package:internal/planglyph": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/planglyph": 2000
+            },
+            "messages": 51,
+            "written": 15624
+          },
+          {
+            "card": 12,
+            "card_text": 408,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 7884,
+              "file:internal/planglyph/deleteorder_test.go": 1632,
+              "file:internal/planglyph/doc.go": 1080,
+              "file:internal/planglyph/glyphchain_test.go": 11628,
+              "package:contracts/specs": 2000,
+              "package:internal/planglyph": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/planglyph": 2000
+            },
+            "messages": 83,
+            "written": 25308
+          },
+          {
+            "card": 13,
+            "card_text": 300,
+            "reads": {
+              "file:internal/planglyph/doc.go": 1080,
+              "file:internal/planglyph/handle_test.go": 8100,
+              "file:internal/planglyph/planglyph_test.go": 5508,
+              "package:internal/planglyph": 2000,
+              "tests:internal/planglyph": 2000
+            },
+            "messages": 48.5,
+            "written": 14850
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "90f61a6cdf3575bd47829fe28df5e00c",
+  "masterSessionId": "d17934b3-89a3-4074-89b2-986ee3939957",
+  "batches": {
+    "1": {
+      "slug": "gated-turn-end-holds",
+      "cards": [
+        "01-gated-turn-end-holds",
+        "02-shell-result-unread-wording",
+        "03-gate-entry-reprompt",
+        "04-verify-gate-way-forward"
+      ],
+      "cardHashes": {
+        "01-gated-turn-end-holds": "6430b203dc915f1c37f3e6db1105fff1c88509b71fb5a71ded3edac5089e7fd4",
+        "02-shell-result-unread-wording": "feb91d6a111358692cdbf6173c0f5d61bf0fbeac3f6a465a68086fb2d38f5f33",
+        "03-gate-entry-reprompt": "cdafc9831bf52e498c3cde1d4bbd9e6ad072c30587fbe0e3c7e0d94eb3d37044",
+        "04-verify-gate-way-forward": "1e1ded5e4e9b828d792bc7d15f297d5f7dc243fd32c51f1f581f750e1b7883c1"
+      },
+      "startSha": "800a0e8923007107f6bbfea36bc86939a0b60905",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T18:16:25Z",
+      "sessionId": "d17934b3-89a3-4074-89b2-986ee3939957",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
