@@ -1,4 +1,4 @@
-# Card 13 — loom-idle-timeout-key
+# Card 14 — loom-idle-timeout-key
 
 **Edit:**
 - `internal/loomengine#Config`
@@ -12,4 +12,4 @@
 The hub reconcile seeds the key into every worktree's `loom.yaml` on the next binary change through `hubreconcile.Ensure`, which already adds a template key a file lacks, so no seeding code is written.
 `config_test.go`'s load table gains rows for the default, an explicit value and a floored zero; the template-tag test covers the new tag by construction.
 
-**ImpactSummary:** One additive config key; every existing `loom.yaml` loads as before until the reconcile seeds the key, and no reader consumes it until card 14.
+**ImpactSummary:** One additive config key; every existing `loom.yaml` loads as before until the reconcile seeds the key, and no reader consumes it until card 15.

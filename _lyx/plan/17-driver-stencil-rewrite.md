@@ -1,4 +1,4 @@
-# Card 16 — driver-stencil-rewrite
+# Card 17 — driver-stencil-rewrite
 
 **Create:**
 - `contracts/stencils/shed/shed-template-driver-guide.md`

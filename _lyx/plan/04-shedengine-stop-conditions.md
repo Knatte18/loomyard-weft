@@ -16,7 +16,7 @@
 **Create:**
 - `plan:internal/shedengine#conditionReason` -> `func conditionReason(when, target string) string`
 
-**Intent:** The engine honours the two stop conditions of D3 wherever it honours `pause_requested`, so the Go driver `lyx loom run` and the loop (card 10) both stop at them through one site.
+**Intent:** The engine honours the two stop conditions of D3 wherever it honours `pause_requested`, so the Go driver `lyx loom run` and the loop (card 11) both stop at them through one site.
 `Status` gains `PauseBefore` and `PauseAfter` (`pause_before`, `pause_after`, `omitempty`), their own ownership class: an outside actor sets and removes them through `pause` (card 6), and Shed writes them cleared only in the persist that records `paused` for a fired condition and in `Goto`'s persist.
 In `stepLocked` step 3, `before` fires when `current_producer` equals its target: the persist writes `paused` at the current row with `clearConditions` true and a `Reason` of `conditionReason("before", target)`, which renders `paused before <target>, as requested`; the `pause_requested` flag is consumed only when it was set, as today.
 After a producer returns with a routed running outcome (Done to `OnDone`, a bounced Stuck to `OnStuck`), `after` fires when the producer that ran equals its target: the one persist writes `paused` with `current_producer` at the routed row, both conditions cleared and the reason `paused after <target>, as requested`; a halt outcome (`blocked`, `awaiting`, `done`) wins and leaves the condition recorded, and a producer error leaves it too.

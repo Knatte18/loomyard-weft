@@ -25,3 +25,5 @@ The three platform files go, and with them the platform-split `runChild` and `te
 The existing `integration` scenario test covers the verb; this card changes no behavior.
 
 **ImpactSummary:** Two call sites in `run.go` take the new names; the deleted files' symbols had no caller outside this package.
+
+**Verify:** GOOS=windows go vet ./internal/proc ./internal/gatecli
