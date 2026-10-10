@@ -1,6 +1,6 @@
 # Loop machinery small bugs: bounce budget, PR-Gate comment, sleep-aware idle, skill-load hold
 
-`loop-small-bugs` · Task · bug, loom, burler, shed, batten, shuttle · running · Finalize
+`loop-small-bugs` · Task · bug, loom, burler, shed, batten, shuttle · done
 
 ## Goal
 
