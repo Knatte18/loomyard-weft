@@ -76,6 +76,7 @@
         "batten"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "A minimal pane under the orch listing every run in flight and its shed state; the per-run batten windows stay but the status bar hides them",
