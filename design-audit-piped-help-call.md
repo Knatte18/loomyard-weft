@@ -1,6 +1,6 @@
 # webster: fabric-reference audit fails a piped lyx help call inside a compound command
 
-`audit-piped-help-call` · Note · bug
+`audit-piped-help-call` · Note · bug, webster, fabric
 
 Imported from [issue #518](https://github.com/Knatte18/loomyard/issues/518).
 
