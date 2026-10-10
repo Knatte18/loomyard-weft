@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "Batch 01-fixture-git-marker: record-batch failed (create-not-done: plan target cmd/testtiming#rusageStats does not resolve), and recover-batch ended status dead, dead_reason asking.",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Batchifier → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "Batch 01-fixture-git-marker: record-batch failed (create-not-done: plan target cmd/testtiming#rusageStats does not resolve), and recover-batch ended status dead, dead_reason asking."
   },
   "history": [
     {
@@ -142,6 +142,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-10T09:10:19Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-10T09:31:55Z"
     }
   ],
   "product": {
