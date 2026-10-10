@@ -1,12 +1,12 @@
 {
-  "current_producer": "Publish",
-  "state": "blocked",
-  "error": "verify failed after merging parent branch \"main\" (exit code 1); output: /home/knatte/Code/loomyard-LYXHUB/bolt-and-store/.lyx/verify/verify.log; fix forward on the task branch, then resume",
+  "current_producer": "Webster-Burler",
+  "state": "paused",
+  "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Publish",
-    "last": "Publish → stuck",
-    "wait": "verify failed after merging parent branch \"main\" (exit code 1); output: /home/knatte/Code/loomyard-LYXHUB/bolt-and-store/.lyx/verify/verify.log; fix forward on the task branch, then resume"
+    "now": "Webster-Burler",
+    "last": "Webster-Burler → goto",
+    "wait": ""
   },
   "history": [
     {
@@ -202,6 +202,12 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-10T08:11:50Z"
+    },
+    {
+      "producer": "Webster-Burler",
+      "outcome": "goto",
+      "output": "",
+      "at": "2026-10-10T08:12:30Z"
     }
   ],
   "product": {
