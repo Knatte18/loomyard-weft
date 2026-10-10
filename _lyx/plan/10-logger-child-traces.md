@@ -1,8 +1,8 @@
 # Card 10 — logger-child-traces
 
 **Create:**
-- `plan:internal/logger#NewTraceID` -> `func NewTraceID() string`
-- `plan:internal/logger#TraceFilesFor` -> `func TraceFilesFor(dir, traceID string) ([]string, error)`
+- `internal/logger#NewTraceID`
+- `internal/logger#TraceFilesFor`
 
 **Edit:**
 - `internal/logger/trace_test.go`

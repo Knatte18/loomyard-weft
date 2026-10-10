@@ -12,7 +12,7 @@
 - `internal/loomcli/cli_test.go`
 
 **Uses:**
-- `plan:internal/shedverbs#LoopSpec`
+- `internal/shedverbs#LoopSpec`
 - `internal/shedrun#LoopLock`
 - `internal/shedrun#LoopPIDFile`
 - `internal/shedrun#LoopLog`
@@ -21,7 +21,7 @@
 - `internal/shedrun#LoopJobName`
 - `internal/shedrun#StepTraceCopy`
 - `internal/shedrun#StepStderr`
-- `plan:internal/logger#TraceFilesFor`
+- `internal/logger#TraceFilesFor`
 - `internal/logger#TraceDir`
 - `internal/shuttleengine#ReadAgentActivity`
 - `internal/shuttleengine#ReadWaitMarkers`

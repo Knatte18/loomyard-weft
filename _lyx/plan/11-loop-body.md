@@ -1,29 +1,29 @@
 # Card 11 — loop-body
 
 **Create:**
-- `plan:internal/shedverbs#LoopSpec` -> `type LoopSpec struct`
-- `plan:internal/shedverbs#ChildRequest` -> `type ChildRequest struct`
-- `plan:internal/shedverbs#Child` -> `type Child interface`
-- `plan:internal/shedverbs#ChildRunner` -> `type ChildRunner func(ctx context.Context, req ChildRequest) (Child, error)`
-- `plan:internal/shedverbs#LoopStop` -> `type LoopStop string`
-- `plan:internal/shedverbs#LoopStopHalted` -> `const LoopStopHalted LoopStop = "halted"`
-- `plan:internal/shedverbs#LoopStopCondition` -> `const LoopStopCondition LoopStop = "stop-condition"`
-- `plan:internal/shedverbs#LoopStopError` -> `const LoopStopError LoopStop = "error"`
-- `plan:internal/shedverbs#LoopStopInterrupted` -> `const LoopStopInterrupted LoopStop = "interrupted"`
-- `plan:internal/shedverbs#LoopStopBusy` -> `const LoopStopBusy LoopStop = "busy"`
-- `plan:internal/shedverbs#loopObject` -> `type loopObject struct`
-- `plan:internal/shedverbs#loopRestep` -> `type loopRestep struct`
-- `plan:internal/shedverbs#runLoop` -> `func runLoop(ctx context.Context, spec *Spec, argv []string, out io.Writer) int`
-- `plan:internal/shedverbs#stopDetail` -> `func stopDetail(stepErr, reason, transient string, traceFiles []string) string`
-- `plan:internal/shedverbs#loopEnvelope` -> `func loopEnvelope(step map[string]any, loop loopObject) map[string]any`
-- `plan:internal/shedverbs#interruptedRecord` -> `func interruptedRecord(spec *Spec, traceID, errText, traceFile, friction string) (map[string]any, string)`
-- `plan:internal/shedverbs#interruptedError` -> `func interruptedError(runID, producer, cause string) (string, string)`
-- `plan:internal/shedverbs#stdoutErrEnvelope` -> `func stdoutErrEnvelope(stdout []byte) (map[string]any, bool)`
-- `plan:internal/shedverbs#detailLineBudget` -> `const detailLineBudget = 40`
-- `plan:internal/shedverbs#detailByteBudget` -> `const detailByteBudget = 8192`
-- `plan:internal/shedverbs#UntilStopFlag` -> `const UntilStopFlag = "until-stop"`
-- `plan:internal/shedverbs#ArmStop` -> `type ArmStop struct`
-- `plan:internal/shedverbs#ReportLoopArmError` -> `func ReportLoopArmError(out io.Writer, stop ArmStop, err error) int`
+- `internal/shedverbs#LoopSpec`
+- `internal/shedverbs#ChildRequest`
+- `internal/shedverbs#Child`
+- `internal/shedverbs#ChildRunner`
+- `internal/shedverbs#LoopStop`
+- `internal/shedverbs#LoopStopHalted`
+- `internal/shedverbs#LoopStopCondition`
+- `internal/shedverbs#LoopStopError`
+- `internal/shedverbs#LoopStopInterrupted`
+- `internal/shedverbs#LoopStopBusy`
+- `internal/shedverbs#loopObject`
+- `internal/shedverbs#loopRestep`
+- `internal/shedverbs#runLoop`
+- `internal/shedverbs#stopDetail`
+- `internal/shedverbs#loopEnvelope`
+- `internal/shedverbs#interruptedRecord`
+- `internal/shedverbs#interruptedError`
+- `internal/shedverbs#stdoutErrEnvelope`
+- `internal/shedverbs#detailLineBudget`
+- `internal/shedverbs#detailByteBudget`
+- `internal/shedverbs#UntilStopFlag`
+- `internal/shedverbs#ArmStop`
+- `internal/shedverbs#ReportLoopArmError`
 - `internal/shedverbs/loop_test.go`
 
 **Edit:**
@@ -44,14 +44,14 @@
 
 **Uses:**
 - `internal/shedengine#WriteFailedStop`
-- `plan:internal/shedverbs#ReportArmError`
+- `internal/shedverbs#ReportArmError`
 - `internal/shedrun#LoopLock`
 - `internal/shedrun#StatusFile`
 - `internal/shedrun#RunLock`
 - `internal/shedrun#StatusLock`
-- `plan:internal/logger#NewTraceID`
+- `internal/logger#NewTraceID`
 - `internal/proc#TreeRecord`
-- `plan:internal/shedverbs#KindInterrupted`
+- `internal/shedverbs#KindInterrupted`
 - `internal/shedverbs#shortStepEnvelope`
 - `internal/shedverbs#shortStepErrFields`
 - `internal/shedverbs#stepErrFields`

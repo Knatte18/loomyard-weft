@@ -7,8 +7,8 @@
 - `plan:internal/shedverbs#quitGrace` -> `const quitGrace = 5 * time.Second`
 
 **Edit:**
-- `plan:internal/shedverbs#runLoop`
-- `plan:internal/shedverbs#LoopSpec`
+- `internal/shedverbs#runLoop`
+- `internal/shedverbs#LoopSpec`
 - `internal/shedverbs/loop_test.go`
 - `internal/shedverbs/doc.go`
 - `cmd/lyx#unboundedWaitFiles`
@@ -16,8 +16,8 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/shedverbs#Child`
-- `plan:internal/shedverbs#interruptedError`
+- `internal/shedverbs#Child`
+- `internal/shedverbs#interruptedError`
 
 **Intent:** D4: the loop kills a child step that shows no activity for the idle window and reports it as an `interrupted` stop with cause `watchdog`.
 `LoopSpec.IdleTimeout` is the window, told by the arming module (card 15), and `LoopSpec.Activity func() (time.Time, bool, error)` is the arming module's reading of the run's agent activity, newest over every live strand (a MultiLLM row's chair and advisors included), with a live verify wait marker counting as now; a zero `IdleTimeout` disarms the watchdog, and a window below one minute is floored to one minute with one Warn naming it.

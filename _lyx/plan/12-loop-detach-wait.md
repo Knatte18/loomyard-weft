@@ -22,10 +22,10 @@
 
 **Edit:**
 - `internal/shedverbs#stepCmd`
-- `plan:internal/shedverbs#runLoop`
-- `plan:internal/shedverbs#LoopSpec`
-- `plan:internal/shedverbs#ArmStop`
-- `plan:internal/shedverbs#ReportLoopArmError`
+- `internal/shedverbs#runLoop`
+- `internal/shedverbs#LoopSpec`
+- `internal/shedverbs#ArmStop`
+- `internal/shedverbs#ReportLoopArmError`
 - `internal/shedverbs#shedverbsAllowedImports`
 - `internal/shedcli#shedCLI.resolvePersistentPreRun`
 - `internal/loomcli#loomCLI.resolvePersistentPreRun`
@@ -43,8 +43,8 @@
 - `internal/proc#SelfRecord`
 - `internal/proc#HoldNamedJob`
 - `internal/proc#IsBreakawayRefused`
-- `plan:internal/shedverbs#interruptedError`
-- `plan:internal/logger#NewTraceID`
+- `internal/shedverbs#interruptedError`
+- `internal/logger#NewTraceID`
 - `internal/fswatch#Watch`
 - `internal/lock#TryAcquireWriteLock`
 - `internal/lock#AcquireWriteLockWithin`

@@ -1,10 +1,10 @@
 # Card 9 — interrupted-kind-and-arming-refusal
 
 **Create:**
-- `plan:internal/shedverbs#KindInterrupted` -> `const KindInterrupted = "interrupted"`
-- `plan:internal/shedverbs#KindlessRefusal` -> `type KindlessRefusal struct`
-- `plan:internal/shedverbs#ReportArmError` -> `func ReportArmError(out io.Writer, verb string, err error) int`
-- `plan:internal/loomcli#hubConfigWayForward` -> `const hubConfigWayForward = "way forward: run lyx config reconcile --apply in the hub, then step again"`
+- `internal/shedverbs#KindInterrupted`
+- `internal/shedverbs#KindlessRefusal`
+- `internal/shedverbs#ReportArmError`
+- `internal/loomcli#hubConfigWayForward`
 
 **Edit:**
 - `internal/shedverbs#StepKinds`
@@ -21,8 +21,8 @@
 - `pattern/PATTERN-shed-verb-set.md`
 
 **Rename:**
-- `internal/shedverbs#TestStepKinds_IsExactlyFive` -> `plan:internal/shedverbs#TestStepKinds_IsExactlySix`
-- `internal/shedcli#TestArmFromSeed_MissingRunRefusalCarriesNoKindField` -> `plan:internal/shedcli#TestArmFromSeed_RefusalEnvelopeKinds`
+- `internal/shedverbs#TestStepKinds_IsExactlyFive` -> `internal/shedverbs#TestStepKinds_IsExactlySix`
+- `internal/shedcli#TestArmFromSeed_MissingRunRefusalCarriesNoKindField` -> `internal/shedcli#TestArmFromSeed_RefusalEnvelopeKinds`
 
 **Uses:**
 - `internal/shedverbs#KindBootstrap`

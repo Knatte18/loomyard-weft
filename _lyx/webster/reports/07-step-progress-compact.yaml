@@ -1,0 +1,4 @@
+status: OK
+head_sha: d5e6e9e822ac4e686b384e6a5f1ce15008ff9922
+deviations:
+  - internal/logger/retention.go

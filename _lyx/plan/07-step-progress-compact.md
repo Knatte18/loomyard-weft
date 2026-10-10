@@ -6,7 +6,7 @@
 - `internal/shedverbs/doc.go`
 
 **Create:**
-- `plan:internal/shedverbs#compactProgress` -> `func compactProgress(p *shedengine.Progress) map[string]any`
+- `internal/shedverbs#compactProgress`
 
 **Uses:**
 - `internal/shedengine#Progress`
