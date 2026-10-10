@@ -682,7 +682,7 @@
       }
     }
   ],
-  "currentBatch": 25,
+  "currentBatch": 0,
   "masterStrand": "024106e45ef378afbaedeac64b0dfd00",
   "masterSessionId": "4b72a718-bcaa-4396-ac52-cd53831c7acf",
   "batches": {
@@ -867,8 +867,26 @@
       "kind": "fork",
       "spawnedAt": "2026-10-10T13:46:07Z",
       "sessionId": "4b72a718-bcaa-4396-ac52-cd53831c7acf",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "25-recovery-retry-on-the-verbs",
+        "status": "done",
+        "head_sha": "608749191198f0ebb8de0950c4c9d881b355eb7d",
+        "deviations": [
+          "internal/websterengine/doc.go",
+          "contracts/specs/refusal-spec.md"
+        ]
+      },
+      "cardShas": [
+        "608749191198f0ebb8de0950c4c9d881b355eb7d"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-a8fe4ad57677c6fe7.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-a8fe4ad57677c6fe7.jsonl"
+      ]
     },
     "7": {
       "slug": "plan-gate-done-card-edited",
@@ -920,6 +938,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-aff659375de37e0a6.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-a1cae0ab2eb5791c4.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-a058bd474c5453d9d.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-a8b6e45b7b1cfb79c.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-a8b6e45b7b1cfb79c.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-a8fe4ad57677c6fe7.jsonl"
   ]
 }
