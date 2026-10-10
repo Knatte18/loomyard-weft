@@ -682,7 +682,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 25,
   "masterStrand": "024106e45ef378afbaedeac64b0dfd00",
   "masterSessionId": "4b72a718-bcaa-4396-ac52-cd53831c7acf",
   "batches": {
@@ -852,6 +852,23 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-a8b6e45b7b1cfb79c.jsonl"
       ]
+    },
+    "25": {
+      "slug": "recovery-retry-on-the-verbs",
+      "cards": [
+        "25-recovery-retry-on-the-verbs",
+        "26-resume-reconcile-determinism"
+      ],
+      "cardHashes": {
+        "25-recovery-retry-on-the-verbs": "0c3a364359d8ed413cda697a4b596c6c6907a7568bdf0b7cd71891ef5873d54b",
+        "26-resume-reconcile-determinism": "0b6e02fe8c7eb6770b326196013a825889faf1a4633f4c79576d9a28a3f5fe84"
+      },
+      "startSha": "64a9658ecb8a26aef5eb9bccce867d0b157554ff",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T13:46:07Z",
+      "sessionId": "4b72a718-bcaa-4396-ac52-cd53831c7acf",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "plan-gate-done-card-edited",
