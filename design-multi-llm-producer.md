@@ -1,6 +1,6 @@
 # MultiLLMProducer: one producer runs a chair and its advisors as seats
 
-`multi-llm-producer` · Task · feature, shed, shuttle · awaiting · PR-Gate
+`multi-llm-producer` · Task · feature, shed, shuttle · running · PR-Gate
 
 ## Goal
 
