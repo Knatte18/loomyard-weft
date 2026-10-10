@@ -682,7 +682,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "024106e45ef378afbaedeac64b0dfd00",
   "masterSessionId": "4b72a718-bcaa-4396-ac52-cd53831c7acf",
   "batches": {
@@ -728,6 +728,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-af606b7cd26f1ebf4.jsonl"
       ]
+    },
+    "7": {
+      "slug": "plan-gate-done-card-edited",
+      "cards": [
+        "07-plan-gate-done-card-edited",
+        "08-webster-record-note",
+        "09-plan-review-webster-record-marker",
+        "10-verify-chain-splitter",
+        "11-pattern-entry-line-cap",
+        "12-done-checks-name-the-batch"
+      ],
+      "cardHashes": {
+        "07-plan-gate-done-card-edited": "e256c64c971e83ceeb75b5f04b0a65bfe52a866052f0d6ca503417793fcc8110",
+        "08-webster-record-note": "bf7e379086af52ac43013253833c7330b40c7a3c37acbfcfbbc72256e9e1e60c",
+        "09-plan-review-webster-record-marker": "772ee92d0b1a69952fa07d5b01eb03096f9ed7a7f3f00532cfc27cda024c38f1",
+        "10-verify-chain-splitter": "7569c6aca9dbdbf3d2298608543e43aa527364c4af1fc40fd4fc250a092cc9f0",
+        "11-pattern-entry-line-cap": "1a1dc8ff24141967a5aaf3453f17ba74a1d757a1c8da4479ad222465a579ce07",
+        "12-done-checks-name-the-batch": "3cec784be50ff37943e35d545c1a02a4f6ed896a008c26a0af8737f46c7ee195"
+      },
+      "startSha": "1be1a33ca44aa3f8d5382a8999a323a746eb003b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T13:05:22Z",
+      "sessionId": "4b72a718-bcaa-4396-ac52-cd53831c7acf",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
