@@ -1,8 +1,8 @@
 # Card 4 — reed-resize-events
 
 **Create:**
-- `plan:internal/reedengine#FileWatchOpener` -> `type FileWatchOpener func(dir string, names ...string) (<-chan fswatch.Event, func() error, error)`
-- `plan:internal/reedengine#OpenFileWatch` -> `func OpenFileWatch(dir string, names ...string) (<-chan fswatch.Event, func() error, error)`
+- `internal/reedengine#FileWatchOpener`
+- `internal/reedengine#OpenFileWatch`
 
 **Edit:**
 - `internal/reedengine#watchTiming`
@@ -19,8 +19,8 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/fswatch#Watch`
-- `plan:internal/fswatch#Event`
+- `internal/fswatch#Watch`
+- `internal/fswatch#Event`
 
 **Intent:** The resize loop's signal mode waits on the signal file through `fswatch` instead of a 100 ms stat tick (D4).
 `FileWatchOpener` is the event-source seam the loop is handed: `OpenFileWatch` is the production value, wrapping `fswatch.Watch` on the told directory and returning the watcher's event channel and its `Close`, and a test passes an opener that returns a channel it feeds.

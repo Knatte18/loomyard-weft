@@ -1,9 +1,9 @@
 # Card 2 — poll-floors
 
 **Create:**
-- `plan:internal/orchengine#pollFloor` -> `const pollFloor = time.Second`
-- `plan:internal/shuttleengine#pollFloor` -> `const pollFloor = time.Second`
-- `plan:internal/battenshed#pollFloor` -> `const pollFloor = time.Second`
+- `internal/orchengine#pollFloor`
+- `internal/shuttleengine#pollFloor`
+- `internal/battenshed#pollFloor`
 
 **Edit:**
 - `internal/orchengine#Config.PollInterval`

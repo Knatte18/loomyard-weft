@@ -1,11 +1,11 @@
 # Card 1 — fswatch-leaf
 
 **Create:**
-- `plan:internal/fswatch#Watcher` -> `type Watcher struct`
-- `plan:internal/fswatch#Event` -> `type Event struct`
-- `plan:internal/fswatch#Watch` -> `func Watch(dir string, names ...string) (*Watcher, error)`
-- `plan:internal/fswatch#Watcher.Events` -> `func (w *Watcher) Events() <-chan Event`
-- `plan:internal/fswatch#Watcher.Close` -> `func (w *Watcher) Close() error`
+- `internal/fswatch#Watcher`
+- `internal/fswatch#Event`
+- `internal/fswatch#Watch`
+- `internal/fswatch#Watcher.Events`
+- `internal/fswatch#Watcher.Close`
 - `internal/fswatch/doc.go`
 - `internal/fswatch/fswatch_test.go`
 - `internal/fswatch/leaf_enforcement_test.go`

@@ -24,7 +24,7 @@
 **Uses:**
 - `plan:internal/reedengine#NextWakeCadence`
 - `plan:internal/reedengine#DiscoverSignalFileName`
-- `plan:internal/reedengine#OpenFileWatch`
+- `internal/reedengine#OpenFileWatch`
 
 **Intent:** The discovery loop backs off while the session set is unchanged and wakes on the discover signal (D5, the `reedcli` half).
 `watchdogTiming` gains `DiscoveryCeiling`, filled from `watchdogHubDiscoveryCeiling` by `watchdogDefaultTiming`; `watchdogHubDiscoveryCycle` stays the 5 s base and its comment names the backoff.
