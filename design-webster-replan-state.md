@@ -2,8 +2,6 @@
 
 `webster-replan-state` · Task · bug, enhancement, webster, loom, burler, fabric · running · Plan-Burler
 
-Depends on: [`gate-test-scope`](design-gate-test-scope.md), [`publish-recovery`](design-publish-recovery.md)
-
 ## Goal
 
 - A `lyx loom goto` back to Plan after Webster started leaves webster state consistent, so Webster never hard-fails on a plan fingerprint mismatch (#466).

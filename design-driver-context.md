@@ -2,8 +2,6 @@
 
 `driver-context` · Task · enhancement, shed, stencil, loom, bug · running · Webster-Burler
 
-Depends on: [`daemon-wakeups`](design-daemon-wakeups.md)
-
 ## Goal
 
 The driver steps in only when something goes wrong, and its context stays under 100k tokens for a whole run, since Haiku 5.5 is cheap only below that.
