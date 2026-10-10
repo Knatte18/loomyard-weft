@@ -125,11 +125,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 29 | **lyx pause: stop every run at once, safely and on purpose**<br>• A hub-wide pause that interrupts every Claude session with Esc within seconds, unlike the step-boundary pauses, recorded as ordered so no failure or idle path fires | [`lyx-halt`](design-lyx-halt.md) | batten |
 | 30 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | reed, shuttle |
 | 31 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) | loom, stencil |
-
-## Done
-
-Finished, awaiting `lyx board prune`.
-
-| # | Entry | Slug | Labels |
-| --- | --- | --- | --- |
-| 1 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`webster-stability`](design-webster-stability.md) | webster, shuttle, stencil, quarry |
