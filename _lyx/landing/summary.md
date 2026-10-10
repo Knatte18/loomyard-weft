@@ -55,4 +55,6 @@ Closes #491
 - Run a real loom run with `--until-stop`, kill the driver shell mid-run, and confirm the loop survives and the next invocation prints its envelope.
 - The 60-minute idle default is a guess; a legitimately silent step (a long git transfer, a stale verify wait marker) may be killed, so watch the first runs.
 - `history_length` is not a strict move counter, so an unwatched envelope whose producer, history length and state all recur after a resume can be delivered although stale.
+- `internal/proc/tied.go` cannot import `internal/logger` without an import cycle, so it is listed in `spawnObservabilityAllowedSpawners` in `cmd/lyx/spawnobservability_test.go` with a reason: check that exemption is acceptable.
+- Two tests were adjusted to fit the change and deserve a look: `stepDriftWarningNeverBlocksExitCode` in `internal/stencilcli` now asserts the shared "drifted from worktree source" fragment of the one-line warning, and `envkit.FullEnv` in `internal/testkit/envkit` now sets `RunScratchDir`.
 - The fork's context cost depends on the provider's cache behaviour; if a fork costs more than reading the trace in place, the stencil should read small traces in place.
