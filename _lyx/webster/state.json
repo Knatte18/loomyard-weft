@@ -313,7 +313,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 10,
   "masterStrand": "0b798198c25e9ae4127acbb28769bf61",
   "masterSessionId": "3c705bf7-5396-4f17-9875-c68cd34b964e",
   "batches": {
@@ -351,6 +351,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-multi-llm-producer/3c705bf7-5396-4f17-9875-c68cd34b964e/subagents/agent-a506f67649f763534.jsonl"
       ]
+    },
+    "10": {
+      "slug": "shedrecipe-env-seats",
+      "cards": [
+        "10-shedrecipe-env-seats",
+        "11-shedrecipe-multillm-entry",
+        "12-multillm-fixture-recipe",
+        "13-seatengine-llm-smoke",
+        "14-docs-overview"
+      ],
+      "cardHashes": {
+        "10-shedrecipe-env-seats": "034280db9b931c5d0436078f05ae67f92c1cec30268fe6daff50a06df22ae8fe",
+        "11-shedrecipe-multillm-entry": "f2b8ed0cc2ab1e847a7dea4eecf1b027ef5c0bd03ccb780b998007c0c0f2b767",
+        "12-multillm-fixture-recipe": "eadd0c51b85efd71f80d8be08bd0c130e76d3696e1d3d69c024a87ad4c2c5688",
+        "13-seatengine-llm-smoke": "e8951da739371570431e88543a8b047607868325ef8c26beb983e8e1d592e421",
+        "14-docs-overview": "4901d98056ca209a910d62a544a52cd33fc68d3d4aedbb95163cf88a12737eaf"
+      },
+      "startSha": "bffed1776d6ace00466ae5a0b099a875943c813d",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T05:48:39Z",
+      "sessionId": "3c705bf7-5396-4f17-9875-c68cd34b964e",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "seatengine-prompts",
