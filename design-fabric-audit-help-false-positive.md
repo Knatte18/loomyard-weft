@@ -21,3 +21,4 @@ A `lyx ... --help`, `-h` or `--json` invocation (none runs a command since 57243
 
 PR #515 added a read-only fabric-reference classifier: `readOnlyLyxSegment` admits a lyx help call only when `--help` or `-h` is its last word.
 What remains is admitting a trailing `--json` (`lyx ... --json`, `lyx ... --help --json`), which since 57243019b never runs a command; a loop or a `$v` stays non-read-only on purpose.
+The classifier is an allow-list of plain words, so a quoted or globbed read (`git log --format='%h %s'`) also stays a correctness halt.
