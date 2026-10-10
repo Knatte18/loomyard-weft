@@ -1246,7 +1246,9 @@
       "title": "webster: create-not-done check fails on unexported plan targets, killing batches",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "webster",
+        "quarry"
       ],
       "issues": [
         511

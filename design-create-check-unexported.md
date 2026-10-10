@@ -1,6 +1,6 @@
 # webster: create-not-done check fails on unexported plan targets, killing batches
 
-`create-check-unexported` · Note · bug
+`create-check-unexported` · Note · bug, webster, quarry
 
 Imported from [issue #511](https://github.com/Knatte18/loomyard/issues/511).
 
