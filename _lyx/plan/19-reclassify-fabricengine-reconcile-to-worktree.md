@@ -24,7 +24,6 @@
 - `internal/fabricengine/syncweft_integration_test.go`
 - `internal/fabricengine/unwire_test.go`
 - `internal/fabricengine/warpforward_integration_test.go`
-- `internal/fabricengine/warplayout_test.go`
 - `internal/fabricengine/weftgit_exclude_test.go`
 - `internal/fabricengine/weftgit_pathspec_integration_test.go`
 - `internal/fabricengine/weftgit_unborn_warp_test.go`
@@ -32,13 +31,12 @@
 
 **Uses:**
 - `plan:internal/hubforge#CopyHub`
-- `plan:internal/hubforge#SharedHub`
 - `plan:internal/hubforge#Shape`
 
 **Intent:** The last third of fabricengine's hub-taking tests, under the same classification as card 17.
-`warplayout_test.go` is the one read-only test: it compares `WarpLayoutForForTest` with `lyxcwd.ResolveWorktree` on the prime, both in-process reads, so it takes `SharedHub` of the `.` no-pair shape.
+`warplayout_test.go` is not here: `lyxcwd.ResolveWorktree` spawns `rev-parse --show-toplevel` until card 24, and a spawned git is a write, so the test moves onto `SharedHub` in card 24.
 `weftgit_exclude_test.go` iterates `.`, `backend` and `wts/some-task`: the first two take the copy of their shape and the third stays on `NewHub`, since its anchor is outside the set.
 Every other test writes and copies.
 Pure refactor of fixtures: the existing assertions cover it.
 
-**ImpactSummary:** Fixture construction changes in twenty-eight test files; no production code and no assertion changes.
+**ImpactSummary:** Fixture construction changes in twenty-seven test files; no production code and no assertion changes.

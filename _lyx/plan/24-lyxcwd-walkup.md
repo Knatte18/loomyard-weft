@@ -5,10 +5,13 @@
 - `internal/lyxcwd#Resolve`
 - `internal/lyxcwd/leaf_enforcement_test.go`
 - `internal/lyxcwd/lyxcwd_test.go`
+- `internal/fabricengine/warplayout_test.go`
 
 **Uses:**
 - `plan:internal/dotgit#FindRoot`
 - `plan:internal/dotgit#ErrNotRepository`
+- `plan:internal/hubforge#SharedHub`
+- `plan:internal/hubforge#Shape`
 
 **Prosa:**
 - `docs/shared-libs/lyxcwd.md`
@@ -22,5 +25,9 @@ The function keeps its name and signature, so `resolveCore` and `resolveWithAnch
 The recorded-anchor read and the anchor gate are unchanged.
 Tests in `lyxcwd_test.go`, integration-tagged because the fixtures are real repositories: `TestResolve_AnchorScenario` gains steps for a linked worktree added with `git worktree add`, which resolves to the linked root with the same `Location` fields as today; a gitfile rewritten to a relative `gitdir:`, which resolves the same; a subdirectory holding an empty `.git` directory, which resolves to the enclosing root and still fails the gate with `ErrCwdOutsideAnchor`; a gitfile whose target was removed, and a linked worktree whose `commondir` target was removed, both refused with `ErrNotAGitRepo`; `TestResolve_NotAGitRepo` is unchanged and pins today's message.
 Spawn-freedom is pinned structurally by the leaf test: with `gitexec` out of the import set the package cannot spawn.
+With the spawn gone, `fabricengine`'s `TestWarpLayoutFor_FastPathMatchesResolveWorktree` makes only reads: it compares `WarpLayoutForForTest` with `lyxcwd.ResolveWorktree` on the prime, both in-process.
+So it takes `SharedHub` of the `.` no-pair shape under the overview's hub-fixture classification, and its file header stops calling the `ResolveWorktree` fallback spawning.
 
-**ImpactSummary:** One function body changes behind an unchanged signature; every `Resolve` caller in the tree sees the same `Location` and the same errors, and `lyxcwd`'s import set shrinks by one.
+**ImpactSummary:** One function body changes behind an unchanged signature; every `Resolve` caller in the tree sees the same `Location` and the same errors, and `lyxcwd`'s import set shrinks by one; one fabricengine test moves its fixture onto the shared hub.
+
+**Verify:** lyx gate test --tags integration ./internal/lyxcwd ./internal/fabricengine -- -run 'TestResolve|TestWarpLayoutFor'

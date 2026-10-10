@@ -35,7 +35,7 @@
 
 **Intent:** The hub-taking tests of reed, orch, shuttle, seat, treadle and burler, under the classification in Shared Decisions.
 Every test here brings reed up, runs the binary or a verb, or seeds config, so every one copies the `.` shape its call names; `notify_integration_test.go` adds `notify-task` and reads it back by name, so it copies the no-pair shape and keeps its `AddPair`.
-A hub copied for a reed-driven test keeps the hub's own `reedengine.ServerName` key, derived from the copy's path, so no two copies share a server.
+A hub copied for a reed-driven test keeps the hub's own `reedengine.ServerName` key, derived from the copy's path, so no two copies share a server; card 6's registration of that key, `reedengine.ServerName(h.Path)` before the first boot, follows the copy unchanged.
 Pure refactor of fixtures: the existing assertions cover it.
 
 **ImpactSummary:** Fixture construction changes in twenty-seven test files across six packages; no production code and no assertion changes.

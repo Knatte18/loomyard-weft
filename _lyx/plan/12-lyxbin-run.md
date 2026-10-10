@@ -23,6 +23,7 @@
 - `internal/orchcli/smoke_adopt_large_test.go`
 - `internal/orchcli/smoke_live_test.go`
 - `cmd/lyx/main_integration_test.go`
+- `internal/testkit/lyxbin/lyxbin.go`
 - `internal/testkit/lyxbin/lyxbin_integration_test.go`
 - `cmd/lyx/testdata/test-budget.yaml`
 
@@ -39,7 +40,7 @@ The per-package runners move onto it: loomcli's `runLoomCLINoFatal` becomes a on
 `mustRunReed` stays, since it drives the in-process seam, not a binary.
 Tests in `lyxbin_integration_test.go`: `TestRun_KillsTheGroupOnTimeout` runs the test binary itself in a sleeper role (an environment variable the file's `TestMain` honours, the way `gatecli`'s helper roles do) that starts a `sleep` child and sleeps, with a short timeout, and asserts `ErrTimeout`, exit code -1, and that both pids are gone; `TestRun_PassesTheEnvironment` sets a variable through `t.Setenv` and runs the test binary in a role that prints it, asserting the output.
 `lyxbin`'s budget row rises by two.
-`PATTERN-testkit.md`'s lyxbin bullet widens its exemption to "go build of ./cmd/lyx and running that binary under group kill".
+`PATTERN-testkit.md`'s lyxbin bullet widens its exemption to "go build of ./cmd/lyx and running that binary under group kill", and `lyxbin`'s package comment, which today says the kit runs nothing but that `go build`, widens to the same words.
 
 **ImpactSummary:** Four package-local runners collapse onto one kit function; their callers are the listed test files and their behaviour under a normal exit is unchanged.
 
