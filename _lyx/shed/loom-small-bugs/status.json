@@ -1,12 +1,12 @@
 {
   "current_producer": "Run-Shed",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "battenshed: Run-Shed: spawn inner shed run (resuming this run retries the spawn): exit status 1: {\"error\":\"darn config key \\\"verify\\\" is empty; run \\\"lyx config darn --set verify=\\u003ccommand\\u003e\\\" from the prime, then \\\"lyx loom resume\\\"\",\"ok\":false}",
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
     "last": "Seed-Child → done",
-    "wait": ""
+    "wait": "battenshed: Run-Shed: spawn inner shed run (resuming this run retries the spawn): exit status 1: {\"error\":\"darn config key \\\"verify\\\" is empty; run \\\"lyx config darn --set verify=\\u003ccommand\\u003e\\\" from the prime, then \\\"lyx loom resume\\\"\",\"ok\":false}"
   },
   "history": [
     {
