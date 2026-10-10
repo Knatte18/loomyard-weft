@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "batch 06-fabric-form: record-batch failed on a fabric-reference audit finding (fork ran `lyx fabric \u003cverb\u003e --help --json` in a loop), and recover-batch then errored without recovering: websterengine: resolve links in .../fabric-reference: lstat ...: file name too long",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Batchifier → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "batch 06-fabric-form: record-batch failed on a fabric-reference audit finding (fork ran `lyx fabric \u003cverb\u003e --help --json` in a loop), and recover-batch then errored without recovering: websterengine: resolve links in .../fabric-reference: lstat ...: file name too long"
   },
   "history": [
     {
@@ -123,6 +123,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-10T14:18:14Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-10T14:41:33Z"
     }
   ],
   "product": {
