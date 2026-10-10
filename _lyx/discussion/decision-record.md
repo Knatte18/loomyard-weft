@@ -241,6 +241,13 @@ Rationale: Rounds 1-4 each closed one bypass shape of a deny-list; the round-4 f
 - D7 refuses the conflict resolver's role too; a landing whose resolver needed a fabric verb would meet the refusal, though its stencil forbids any git.
 - D11 may not reproduce on a quiet machine; the card then documents the attempt and the dependencies it ruled out.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 4: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/discussion/round-4-review.md; fixer report: _lyx/reviews/discussion/round-4-fixer-report.md.
+  - d12-begin-batch-dead-refusal-stale (class consistency, severity MEDIUM, open in rounds 4)
+  - d8-reader-write-flags-unbounded (class design, severity BLOCKING, open in rounds 1, 2, 3, 4)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - A run with webster state, moved by goto to Plan-Bouncer, whose Plan loop adds a follow-up card after the last begun batch, continues at Webster over the kept batches with the new card batched, the restamped state is on disk before the first batch starts, and the run summary carries a warning naming the rebaseline.
