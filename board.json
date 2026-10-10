@@ -1478,6 +1478,22 @@
       "isolated": false,
       "brief": "",
       "body": "Seen (2026-10-10): after `daemon-wakeups` raised `poll_interval_ms` in the shuttle template to 1000 with a floor of 1000, `lyx config reconcile` kept the prime's and every pair's old default `500`, so every `lyx` command in them logs \"shuttle config: poll_interval_ms is below the floor and is raised to it\".\nThe orch set the prime to 1000 by hand with `lyx config shuttle --set`; pairs created earlier keep warning until they are torn down.\n\nIdea: reconcile updates a value that still equals the old template default, or at least one that the new floor would raise, and says so in its report.\n"
+    },
+    {
+      "id": 284,
+      "slug": "quarry-build-tag-ambiguous",
+      "title": "Build-tagged member declared once per tag set resolves ambiguous, so its plan Create can never pass record-batch",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        500
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #500](https://github.com/Knatte18/loomyard/issues/500).\n\nSeen (test-suite-weight, 2026-10-10): plan card 10 declares `plan:internal/testkit/tmuxkit#tmuxAllowed` as a Create, implemented the idiomatic Go way: `const tmuxAllowed = true` in `allow_tmux.go` (`//go:build tmux || llm`) and `const tmuxAllowed = false` in `allow_none.go` (`//go:build !tmux \u0026\u0026 !llm`).\n`lyx quarry resolve internal/testkit/tmuxkit#tmuxAllowed` returns `status: ambiguous` with both files as candidates, because quarry ignores build constraints, and record-batch's DoneChecks accept only `found` or `multipart`, so the batch fails `create-not-done` however it is implemented.\nThe recovery strand stopped to ask, and nobody in the run may edit `_lyx/plan` to drop the glyph.\n\nWorkaround: a parent ruling to restructure the code into one `var` plus an `init()` in the tagged file, listed as deviations.\n\nExpected: a member declared once per mutually exclusive build-constraint set resolves (quarry honours build constraints, or DoneChecks accept an ambiguous answer whose candidates all sit in files with disjoint build tags); and the plan validator flags such a glyph at Plan time rather than at record-batch.\n"
     }
   ],
   "legacy_done": [
