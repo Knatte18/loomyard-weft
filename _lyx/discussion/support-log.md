@@ -57,6 +57,8 @@ The session ran autonomously, so every turn below is the agent's own exploration
   A deny reads command text per role; the verb's own check covers every spawned role and needs no per-stencil wiring.
 - Refuse only `--by parent` from a task session.
   A task session could relabel its call as the operator's.
+- Tell the parent from a run agent by a slug-free strand name, the shape of `lyx config`'s hub-wide write check.
+  `hubgeom.decideParent` records a slug-bearing parent `<shortname>:<slug>:orch` for a pair created from a task worktree, so the slug rule would refuse the very caller the way forward names; comparing with the recorded parent name drops that premise.
 - An exemption for the driver role in D6.
   `run-message-routing` has not decided whether the driver records decisions; granting it now designs for an unbuilt route.
 
@@ -70,9 +72,13 @@ _No rounds yet._
 - Automatic versus hub-run goto: auto-pick hub-run; rationale in Scope and Rejected alternatives. Resolved.
 - Abort versus continue a staged merge-in: auto-pick abort and redo, bounded to a parent-sourced fabric record; rationale in D2. Resolved.
 - Narrow the resume and start guard: auto-pick yes, for Publish and Finalize over a parent-sourced parked merge only; rationale in D3. Resolved.
+- A non-zero verify exit whose failure record write failed: auto-pick no goto, the reason stays as today; rationale in D1. Resolved.
+- A conflict session that outlived its dead driver: auto-pick stop it through shuttle's stop verb before D2's abort; rationale in D2 and D3. Resolved.
+- A conflict-session stop that fails: auto-pick leave the merge untouched and stop Stuck naming `lyx reed remove <guid>`, as the existing seat and superseded-strand rows do; rationale in D2's Bound. Resolved.
+- A named `decision add` caller whose parent resolution errors: auto-pick refuse, naming the error and the operator's unnamed shell, so the guard never fails open; rationale in D6's Bound. Resolved.
 - Config notice rule: auto-pick the three-way comparison; rationale in D4. Resolved.
 - Whether #452 needs code: auto-pick no, pin the scenario; rationale in D5. Resolved.
 - Labels refused from a task session: auto-pick both `parent` and `operator`; rationale in D6. Resolved.
 - Driver exemption for `decision add`: auto-pick none; recorded as a bound in D6. Resolved.
-- Whether the orch strand name ever carries a slug: `orch-any-worktree` is unbuilt and unstarted; today it is `<shortname>:orch`. Resolved for this task, noted as a dependency for that entry.
+- Whether the orch strand name ever carries a slug: the recorded parent of a pair created from a task worktree already does, though no orch runs there until `orch-any-worktree`; D6 compares with the recorded parent name instead of assuming a slug-free one, and the decision record's Open risks carries the dependency. Resolved.
 - Environment: `lyx board get` and `lyx board list` worked; no tool failure was met. Nothing outside the two output files was touched.
