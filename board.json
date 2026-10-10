@@ -1442,6 +1442,23 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #488](https://github.com/Knatte18/loomyard/issues/488).\n\nSeen (bolt-and-store, 2026-10-10): at 06:18 UTC `lyx shed step` at Webster-Bouncer returned `ok:false` with `config file /home/knatte/Code/loomyard-LYXHUB/_board/_lyx/config/landing.yaml not found; run \"lyx config reconcile\"`, no `kind` and no trace.\nThe driver wrote a drive report, ran `commit-records --park` and told the parent nothing, while the run stayed `running`.\nThe hub learned of it only through batten's 45-minute \"no agent activity\" notice, and `lyx loom resume` answered \"the run is already running\".\nThe missing file arrived with the hub config reconcile after `gate-test-scope` landed (new `landing.yaml` and `gate.yaml`), so a run started on the older build hit the gap.\n\nWorkaround: the orchestrator messaged the driver to step again.\n\nExpected: a step failure without a `kind` is treated as a stop that reaches the parent (a halted run or a driver escalation), never a silent park; a missing hub config file names its cause with a refusal-spec row, and runs in flight across a deploy that adds a hub config file either get it reconciled or are told.\n"
+    },
+    {
+      "id": 277,
+      "slug": "tmuxkit-probe-copies",
+      "title": "Fold loomcli and orchcli tmux probe copies onto tmuxkit",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "orch",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "From `test-suite-weight` Discussion review (2026-10-10, round 3 F2): its D8 moves `reedcli`'s watchdog recognizer and `/proc` probes into `tmuxkit`, but `loomcli` (`smoke_helpers_test.go`) and `orchcli` (`smoke_live_test.go`) keep their own copies.\nA parent decision kept those two copies out of that run's scope.\n\nIdea: fold the `loomcli` and `orchcli` copies onto `tmuxkit` once `test-suite-weight` lands, per `PATTERN-testkit`.\n"
     }
   ],
   "legacy_done": [
