@@ -17,7 +17,8 @@ Settled: a Go table in `internal/loomengine`, told to the entry through a per-ca
 Turn 3, the producer's missing seams.
 The DiscussionWrite entry today wires the parent-review store's `PrepareRound` as the single-LLM producer's fresh-spawn preparation, and the spec is a per-call closure.
 `MultiLLMProducer` has neither.
-Settled: add both with the single-LLM shapes, through a second constructor, keeping the shipped constructor unchanged for the sibling Burler task.
+Settled: add both through a second constructor, keeping the shipped constructor unchanged for the sibling Burler task.
+The preparation returns only an error: the one preparation this task wires always returns an empty amendment, and carrying one into a seat's prompt would need a seat engine field no caller uses.
 
 Turn 4, config keys and models.
 The operator named the models per seat: chair `opus[high]`, advisor `sonnet[high]`, after a step down from `fable[high]`.
@@ -56,8 +57,10 @@ Settled: untagged tests over the table builder, the entry, the producer's two se
   Rejected: the seat engine resolves outputs under the worktree root and the discussion commit already covers `_lyx/discussion/`; an ephemeral file would be lost on the commit the chair's outputs ride.
 - An advisor section in the decision record.
   Rejected: the record's section set is pinned by the discussion parser and the record is Plan's sole input; advisor reliance belongs in the support log's interview.
-- Running the preparation amendment into every seat's prompt.
-  Rejected: the amendment describes what was done for the writer's fresh start; an advisor has no use for it and the bound is simpler.
+- A preparation with the single-LLM shape, its amendment appended to the chair's prompt, for `plan-multi-llm` to reuse.
+  Rejected: this task's only preparation returns an empty amendment, the append needs a new seat engine field, and `plan-multi-llm` is out of scope; that task adds the amendment path when it has a caller.
+- Leaving the two optional directives out of the table when empty, or filling them with a placeholder.
+  Rejected: the stencil fill refuses a missing key, and a placeholder puts text in the prompt that today's path does not; a listed optional value keeps today's rendering.
 - An `llm`-tier test for the discussion table.
   Rejected: the seat engine's smoke already proves the channel, and no gate runs the tier.
 
@@ -70,12 +73,12 @@ _No rounds yet._
 - Q1 Build a multi-seat Discussion at all? Resolved, auto-pick: yes, per the operator's recorded call on the board entry.
 - Q2 Seats in the recipe row or a Go table? Resolved, auto-pick: Go table in `loomengine`, per-call closure to the entry.
 - Q3 Keep the `DiscussionWrite` engine name? Resolved, auto-pick: yes.
-- Q4 How does the parent-review preparation reach the fresh start? Resolved, auto-pick: a fresh-spawn preparation seam on `MultiLLMProducer` with the single-LLM shape.
+- Q4 How does the parent-review preparation reach the fresh start? Resolved, auto-pick: a fresh-spawn preparation seam on `MultiLLMProducer` that returns only an error.
 - Q5 Config keys? Resolved, auto-pick: `discussion` for the chair, `discussion_advisors` list for the advisors, empty legal.
 - Q6 Template default for `discussion_advisors`? Resolved, auto-pick: one `sonnet[high]`; the chair's step-down is the operator's edit.
 - Q7 How many advisors, which roles? Resolved, auto-pick: one scout brief, count from config.
 - Q8 Advisor output file? Resolved, auto-pick: `_lyx/discussion/advisor-<n>.md`, committed, unparsed.
-- Q9 Advisor text in the decision record? Resolved, auto-pick: none; seat-attributed reliance in the support log's interview.
+- Q9 Advisor text in the decision record? Resolved, auto-pick: none; reliance is recorded in the support log's interview and, for autonomous picks, the question ledger, both by strand name.
 - Q10 Where does the advisor-aware wording live? Resolved, auto-pick: the Go-held autonomous `mode_rules` text and the chair stencil's interview step; no stencil asks the operator.
 - Q11 Operator's interactive turns? Resolved, auto-pick: chair alone.
 - Q12 Advisor skills? Resolved, auto-pick: `scribe:prose` only.
