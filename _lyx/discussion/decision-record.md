@@ -238,6 +238,12 @@ Decision: An implementer that needs a hub to test or measure against builds a sa
 
 Rationale: Batch 09's fork ran fabric commands against the real hub, which recovery cannot check (needs_fresh), and the card 14 fork's lyx fabric add idle-a/b/c pushed stray branches to Knatte18/loomyard and loomyard-weft.
 
+### Added after Discussion (parent, 2026-10-10): PATTERN overview back under its cap after merging main
+
+Decision: Main's PATTERN.md overview is already at 16380 of its 16384-byte cap, so this run's additions push it to 16576 after the merge. Fix forward on the task branch: put PATTERN-daemon-wakeups under an existing section instead of a new '## Daemons and waits' heading, and shorten overview lines (wording only, no invariant dropped, detail moved into the pattern/ background files where needed) until the overview is at most 16200 bytes, so TestOverview_RealFilePassesCheck passes with headroom.
+
+Rationale: Publish verify failed only on TestOverview_RealFilePassesCheck (16576 > 16384); the same merge-only breach hit gate-test-scope and was fixed the same way; headroom keeps the next landing from tripping it.
+
 ## Constraints
 
 - `PATTERN-leaf-packages`: `internal/fswatch` is added to the entry with its closed import set.
