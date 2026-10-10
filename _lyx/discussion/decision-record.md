@@ -230,6 +230,16 @@ Rationale: Three Discussion rounds each found new process-lifetime detail in the
 - An actor can retarget or clear another actor's stop condition; the pause verb's answer names what it overrode, and nothing tells the actor that set it (round 2).
 - The fork's context cost depends on the provider's cache behaviour; if a fork turns out costlier than reading the trace in place, the stencil falls back to reading in place for small traces.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/discussion/round-3-review.md; fixer report: _lyx/reviews/discussion/round-3-fixer-report.md.
+  - dead-loop-stop-busy-pid-file-fate (class decision, severity MEDIUM, open in rounds 3)
+  - envelope-currency-blind-to-resume (class design, severity MEDIUM, open in rounds 3)
+  - teardown-kills-loop-after-reed-session (class design, severity BLOCKING, open in rounds 1, 2, 3)
+  - windows-detach-stays-in-job-object (class design, severity MEDIUM, open in rounds 3)
+  - windows-start-time-gate-never-matches (class design, severity BLOCKING, open in rounds 3)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - `--until-stop` runs steps until `continue` is false and prints one envelope whose step keys equal the stop step's short envelope and whose `loop` key set is D1's closed set; a bare pause stops with `loop.stop: halted` and a fired condition with `loop.stop: stop-condition`.
