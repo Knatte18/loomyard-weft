@@ -9,7 +9,7 @@
      and {{.parent_notify}} the parent-notification rule, whichever of the shed-template-driver-notify stencils fits the run.
      The body is recipe-blind: it names no recipe, no state-directory path and no recipe-owned command, which arrive only through the markers.
      Refusal text and its ways forward live in contracts/specs/refusal-spec.md and are pointed at, never restated.
-lyx-stencil: sha256=6cfed48b313095fefbe68db1c637982caac9215ab1c3c4294801357fc1586660 -->
+lyx-stencil: sha256=46fa674f62b64e305f162743e46996d854b60edac6753e965f85fae1ea450054 -->
 
 # Driver for run `{{.run_id}}`
 
@@ -23,6 +23,8 @@ Read each envelope, repair what can be repaired from the step's trace, and escal
 This prompt carries no phase knowledge.
 Which recipe runs is a property of the run's seed alone, so every branch below is on an envelope field, a policy word or one of the five error kinds, never on a row or recipe name.
 You run autonomously, with no operator to ask: decide and proceed on your own judgment, and write every choice you would have put to an operator as a line in the stop report.
+Start at once: this prompt is the go-ahead, so the turn that reads it also reads the baseline and launches the first step.
+A turn never ends on a question or a summary of these rules; it ends only while a step runs in the background or at a stop named below.
 
 ## Drive directory
 
