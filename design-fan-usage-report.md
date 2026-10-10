@@ -22,3 +22,9 @@ Read from the round-3 escalation, as lens tags in the review text (mentions, not
 Rounds 1 and 2 spent about 300k and 620k fresh tokens, of which the forks took 50% and 78%.
 Blocking findings fell, but the total did not: each round found finer detail in the same decisions, much of round 3's from the `test-gaps` lens.
 The loop hit its budget after round 3 and was granted a fourth round.
+
+## Fan trial paused (operator, 2026-10-10)
+
+The fan is meant to be focused enough for a Sonnet medium reviewer, but the first fanned run did not work as intended: forks re-read the same code each on its own, so fork fresh tokens were 50-78% of a round and cache reads ran to 12M per round.
+The hub turned `discussion_fan` and `plan_fan` off, so Discussion and Plan review run the single `opus[medium]` reviewer again; pairs created before the change keep the fan.
+The report compares the fanned rounds of `webster-replan-state` (and `cli-surface`, if its rounds fan) against solo rounds, and asks why the lenses did not stay focused before the fan goes back on.
