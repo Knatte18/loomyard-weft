@@ -284,6 +284,14 @@ Rationale: `PATTERN-refusal-way-forward` binds every refusal a loom verb reaches
   - darn-reentry-input-missing (class design, severity MEDIUM, open in rounds 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - card3-gone-worktree-claim-unsettled (class design, severity MEDIUM, open in rounds 2)
+  - card3-real-claim-substrates-untested (class scope, severity MEDIUM, open in rounds 2)
+  - darn-seed-bound-card13-vs-card12 (class consistency, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 Recipe and selection:
