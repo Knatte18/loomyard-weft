@@ -24,3 +24,9 @@ Mutations from the traces:
 
 - A destructive verb that takes no argument (`fabric unwire`, `board retire-legacy`, `board prune`) does not act on a bare invocation from an agent probing the CLI, for example by requiring an explicit confirmation flag; or `--json` on any command never doubles as "describe".
 - Command-tree discovery has one documented read-only route (such as `lyx help --json <path>`) that agents can rely on for leaves and groups alike.
+
+## Seen again (2026-10-10, cli-surface Plan-Review round 1 rerun)
+
+After the pair was repaired, the rerun's reviewer (`ly:cli-surface:burler-review-2`) did the same walk from `/tmp` while measuring `Long` sizes; every run exited non-zero outside a hub, and it found no side effect.
+Two reviewers of one task reached for the same probe, so the `--json` trap is the natural guess and needs a fix in lyx, not only in prompts.
+The global `--json` flag's own help text reads "emit help as structured JSON instead of plain text", which invites the guess.
