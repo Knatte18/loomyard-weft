@@ -6,7 +6,7 @@
      stencil.FillOptional requires the three original ones non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
      parent_directive is a third optional marker, rendered by internal/parentdirective.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=8e5e6730bc8d0a37c69ae6c0975c58c1365266f4e9cc245db42666cb699c3dd3 -->
+lyx-stencil: sha256=830664659caa2cc108ea7146eba90ce0d9aa05ed22e8607d109899f9a9d966f8 build=b6e1c3601a5eff5bd232cd0421314ef03837d100 time=2026-10-10T10:14:44Z -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -26,9 +26,10 @@ If the file is missing or empty, STOP and report that rather than inventing scop
 An entry between `<!-- lyx:carry-over … -->` marker lines in `## Open risks` lists review findings whose fix in the record no fresh reviewer has seen.
 Check each one against the code while you explore, and never plan an entry as scope.
 
-A scope addition that arrives after the Discussion is a design call, so you record it before planning on it, with `lyx loom decision add --by <who> --title <title> --decision <what> --rationale <why>`.
-`--by` names the source of the addition: `operator` when the operator gave it, otherwise `parent`.
+A scope addition that arrives after the Discussion is a design call the parent records.
+Plan on it only once you ask your parent to record it and the record carries it.
 Never write such an addition into the plan as an operator addition.
+With no parent recorded, stop and report the addition instead of planning on it.
 
 ## Step 2 — Explore the codebase
 
