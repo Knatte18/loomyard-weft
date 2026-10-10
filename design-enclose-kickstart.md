@@ -24,4 +24,8 @@ Glyph↔path conversion stays in quarry; Loomyard never intersects lines with sy
 
 ## Review kick-start (2026-10-10)
 
-The fan-lab research (`fan-master-preread`) found solo `opus[medium]` the only medium-effort reviewer to find the BLOCKING finding, at 225 s per Discussion round; a pack of the code the target cites (22 of 25 files the forks needed) is the candidate to cut that time, and fan-lab tests it next.
+The fan-lab research (`fan-master-preread`) found solo `opus[medium]` the only medium-effort reviewer to find the BLOCKING finding, at 225 s per Discussion round; a pack of the code the target cites (22 of 25 files the forks needed) is the candidate to cut that time.
+
+One fan-lab run tested it by hand: the bodies of the 35 symbols the target cites, resolved with `lyx quarry resolve` (about 20k tokens), in a file the solo reviewer reads first.
+It was slower and dearer than plain solo (312 s against 225 s, $1.93 against $1.45 review side) and missed the BLOCKING finding; the reviewer read the pack and then made about 20 tool calls of its own, so the pack added cost without replacing exploration.
+On that single run the pack does not pay off for review; its use for verify failures and finding locations above stands on its own.
