@@ -115,6 +115,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Tasks a run holds (locked by board-lock-running) render in their own Running section ahead of Layer A
 1. **One owner for child-process lifetime in internal/proc** — [`proc-child-lifetime`](design-proc-child-lifetime.md) · enhancement
    - Fold lyx gate test's process-group, Pdeathsig and job-object setup into internal/proc beside ConfigureGroupKill
+1. **An abandoned run leaves its board entry locked** — [`abandoned-run-claim`](design-abandoned-run-claim.md) · enhancement, batten, board
+   - Batten teardown clears the run status of a run that ends without landing, so the entry is editable again
 
 ### Features
 
