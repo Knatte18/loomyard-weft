@@ -125,6 +125,27 @@
       "output": "child blocked → running at Webster",
       "at": "2026-10-10T10:10:17Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → blocked at Publish",
+      "at": "2026-10-10T12:00:03Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child blocked → paused at Webster-Burler",
+      "at": "2026-10-10T12:00:45Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child paused → running at Webster-Burler",
+      "at": "2026-10-10T12:00:49Z",
+      "budget_exempt": true
     }
   ]
 }

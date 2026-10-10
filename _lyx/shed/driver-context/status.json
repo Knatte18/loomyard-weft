@@ -62,6 +62,41 @@
       "output": "child awaiting → running at Plan-Bouncer",
       "at": "2026-10-10T10:47:25Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → blocked at Webster",
+      "at": "2026-10-10T11:59:53Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child blocked → running at Webster",
+      "at": "2026-10-10T12:02:06Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → blocked at Publish",
+      "at": "2026-10-10T12:20:43Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child blocked → paused at Webster-Burler",
+      "at": "2026-10-10T12:21:15Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child paused → running at Webster-Burler",
+      "at": "2026-10-10T12:21:19Z",
+      "budget_exempt": true
     }
   ]
 }
