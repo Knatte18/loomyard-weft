@@ -1,0 +1,251 @@
+{
+  "runGuid": "a6eda002b86a4ab90cc56eb59d5cc119",
+  "planFingerprint": "e891d496f09402b16b51ef3bb305fbb1ff80dad72ee5a8a9bc46c8d4be991e47",
+  "planFileHashes": {
+    "00-overview.md": "a4e81551ceb9603f1730fc8aef647668321e71229985ab9ff85623b427a12598",
+    "01-seat-table-optional-values.md": "bec0a6d7528097bef033e83236495e634dfd3f38f7f6058ca67e4d25e435bf4c",
+    "02-multillm-table-source-and-preparation.md": "945c90c42530fc5e703e5b44ba29b640f6258fa5a2cfcfac5efab8c42ddb3fbf",
+    "03-loom-config-discussion-keys.md": "26bedf7b67ebf51c076bf0cfd78958a500ed3b27a1dfc382dba700f27138ec2a",
+    "04-discussion-chair-and-advisor-stencils.md": "2a454035b49e745a9f13ea346919d40c71a4fc7435aaf810ba3ba38fab81d60d",
+    "05-discussion-table-builder.md": "45b5b9c18473c1d6ce3036b0ecf6c400d02ef426b04497246deaceeeb7f891bd",
+    "06-seat-runner-gate-once.md": "7f4e3df68834d5786c4eaf61223bb0e44ebbcca6e7c51c4191c2c64ff6c678ae",
+    "07-discussion-seats-entry.md": "71d23d0c5fa4ee3f250d3865b13928b6f8c0a29c00e9b978fa52b0d2f5a3b9c7",
+    "08-discussion-write-row-selection.md": "47634541c1563f263bcc68bf9ec9e96a8446483155526d85b3d5c85d65bf7464",
+    "09-docs-chair-and-advisors.md": "9310f13da9caee30355e2cca260165a5f73a2d12b886f079924e7825a9c7e356"
+  },
+  "planOverviewFrameHash": "83d9215c4a0fdec0e90a5ba62a9baf9f27b900b13de1a4dcf4360768dfecb485",
+  "partition": [
+    {
+      "cards": [
+        "01-seat-table-optional-values",
+        "02-multillm-table-source-and-preparation",
+        "03-loom-config-discussion-keys",
+        "04-discussion-chair-and-advisor-stencils",
+        "05-discussion-table-builder",
+        "06-seat-runner-gate-once"
+      ],
+      "profile": "cautious",
+      "estimate": 252738,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54724,
+        "read_union": 65732,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 384,
+            "reads": {
+              "file:internal/seatengine/doc.go": 888,
+              "file:internal/seatengine/prompt_test.go": 2304,
+              "file:internal/seatengine/table_test.go": 1752,
+              "package:internal/seatengine": 2000,
+              "tests:internal/seatengine": 2000
+            },
+            "messages": 63.5,
+            "written": 19434
+          },
+          {
+            "card": 2,
+            "card_text": 336,
+            "reads": {
+              "file:internal/shedadapters/doc.go": 3648,
+              "file:internal/shedadapters/multillm_test.go": 2904,
+              "package:internal/shedadapters": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 58,
+            "written": 17736
+          },
+          {
+            "card": 3,
+            "card_text": 528,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3624,
+              "file:internal/loomengine/template.yaml": 300,
+              "package:contracts/specs": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/yamlengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/yamlengine": 2000
+            },
+            "messages": 95.5,
+            "written": 29178
+          },
+          {
+            "card": 4,
+            "card_text": 480,
+            "reads": {
+              "file:contracts/stencils/loom/loom-template-discussion.md": 2220,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000
+            },
+            "messages": 77.5,
+            "written": 23730
+          },
+          {
+            "card": 5,
+            "card_text": 528,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1560,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 93.5,
+            "written": 28578
+          },
+          {
+            "card": 6,
+            "card_text": 276,
+            "reads": {
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/shedfake": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/shedfake": 2000
+            },
+            "messages": 44.5,
+            "written": 13626
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-discussion-seats-entry",
+        "08-discussion-write-row-selection",
+        "09-docs-chair-and-advisors"
+      ],
+      "profile": "cautious",
+      "estimate": 243928,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61724,
+        "read_union": 56828,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 720,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1560,
+              "file:internal/shedrecipe/doc.go": 288,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedbuild": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/shedrecipe_test": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedbuild": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/shedrecipe_test": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 213.5,
+            "written": 64770
+          },
+          {
+            "card": 8,
+            "card_text": 636,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1560,
+              "file:internal/loomrecipe/doc.go": 180,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/shedbuild": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/shedrecipe_test": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/shedbuild": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/shedrecipe_test": 2000
+            },
+            "messages": 187,
+            "written": 56736
+          },
+          {
+            "card": 9,
+            "card_text": 120,
+            "reads": {
+              "file:contracts/specs/shed-recipe-spec.md": 1332,
+              "file:docs/overview.md": 7992,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000
+            },
+            "messages": 12.5,
+            "written": 3870
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "0bf10377529dcc3262eb55f91468e9e2",
+  "masterSessionId": "50c86ff9-eb61-46d2-8023-afea88f64d85",
+  "batches": {
+    "1": {
+      "slug": "seat-table-optional-values",
+      "cards": [
+        "01-seat-table-optional-values",
+        "02-multillm-table-source-and-preparation",
+        "03-loom-config-discussion-keys",
+        "04-discussion-chair-and-advisor-stencils",
+        "05-discussion-table-builder",
+        "06-seat-runner-gate-once"
+      ],
+      "cardHashes": {
+        "01-seat-table-optional-values": "bec0a6d7528097bef033e83236495e634dfd3f38f7f6058ca67e4d25e435bf4c",
+        "02-multillm-table-source-and-preparation": "945c90c42530fc5e703e5b44ba29b640f6258fa5a2cfcfac5efab8c42ddb3fbf",
+        "03-loom-config-discussion-keys": "26bedf7b67ebf51c076bf0cfd78958a500ed3b27a1dfc382dba700f27138ec2a",
+        "04-discussion-chair-and-advisor-stencils": "2a454035b49e745a9f13ea346919d40c71a4fc7435aaf810ba3ba38fab81d60d",
+        "05-discussion-table-builder": "45b5b9c18473c1d6ce3036b0ecf6c400d02ef426b04497246deaceeeb7f891bd",
+        "06-seat-runner-gate-once": "7f4e3df68834d5786c4eaf61223bb0e44ebbcca6e7c51c4191c2c64ff6c678ae"
+      },
+      "startSha": "4277598dcfd0824844c7731d04c41d94f7f7c3d9",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T10:13:32Z",
+      "sessionId": "50c86ff9-eb61-46d2-8023-afea88f64d85",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
