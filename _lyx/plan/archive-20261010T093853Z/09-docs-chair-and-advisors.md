@@ -1,4 +1,4 @@
-# Card 8 — docs-chair-and-advisors
+# Card 9 — docs-chair-and-advisors
 
 **Prosa:**
 - `docs/overview.md`
