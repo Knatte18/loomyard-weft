@@ -34,9 +34,9 @@
 - `internal/fabricengine#MidMergeState`
 - `internal/fabricengine#Fabric.MergeAbort`
 - `internal/shuttleengine#Runner.StopStrand`
-- `plan:internal/mergeresolve#ConflictRole`
+- `internal/mergeresolve#ConflictRole`
 - `internal/agentname#Parse`
-- `plan:internal/agentname#MatchesRole`
+- `internal/agentname#MatchesRole`
 
 **Intent:** Publish and Finalize redo their own parked merge-in instead of halting on it (D2).
 `Deps` gains three told seams, each nil-is-absent like `CommitStatus`: `MergeState func() (fabricengine.MidMergeState, error)` probes the pair's merge state; `AbortMerge func() error` aborts the pair's parked fabric merge; `StopConflictSession func() (guid string, err error)` stops every live conflict-session strand of the run through shuttle's stop verb and returns an empty guid with a nil error when each stopped or none is live, the guid of the stop that failed beside its error, and an empty guid beside an error when the strand table could not be read.

@@ -1,10 +1,10 @@
 # Card 4 — conflict-role-export
 
 **Rename:**
-- `internal/mergeresolve#conflictRole` -> `plan:internal/mergeresolve#ConflictRole`
+- `internal/mergeresolve#conflictRole` -> `internal/mergeresolve#ConflictRole`
 
 **Create:**
-- `plan:internal/agentname#MatchesRole` -> `func MatchesRole(role, base string) bool`
+- `internal/agentname#MatchesRole`
 
 **Edit:**
 - `internal/agentname/agentname_test.go`
