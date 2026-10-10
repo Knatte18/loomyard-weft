@@ -1460,6 +1460,22 @@
       "isolated": false,
       "brief": "",
       "body": "From `daemon-wakeups` (2026-10-10, `docs/benchmarks/daemon-idle-cpu.md`): after the run, `lyx reed watchdog` spawns `list-sessions` sevenfold less often (11.8 to 1.6 per minute), but idle CPU stayed at about 100 s per hour, since about 85 s per hour is spent in child processes the benchmark shim cannot see.\n\nIdea: find which processes the watchdog's children are (likely the idle sessions' own watchers) and bring them under `PATTERN-daemon-wakeups`.\n"
+    },
+    {
+      "id": 279,
+      "slug": "flaky-resume-reconcile-test",
+      "title": "Flaky integration test: loomcli TestLoomResumeReconcilesTheHubConfigBeforeArming",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        492
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #492](https://github.com/Knatte18/loomyard/issues/492).\n\nThe webster integration-suite triage reported `internal/loomcli.TestLoomResumeReconcilesTheHubConfigBeforeArming` as flaky: it failed the first verify run and passed or vanished on rerun, with no change in between.\n\nThis is abnormal because a test that fails nondeterministically blocks verify gates, and the run in question halted blocked at Publish with \"verify failed after merging parent branch\" (anomaly `escalation-to-human`).\nThe halt note and the verify log on disk do not show whether this test caused that failure, so the link is unconfirmed.\n\nWhat to do: reproduce with repeated runs of `lyx gate test --tags integration ./internal/loomcli`, find the ordering, timing or shared-state dependency in the test, and make it deterministic.\n\nProvenance: task `bolt-and-store`; notes `webster-verify-triage.md`, `loom-halt.md`.\n"
     }
   ],
   "legacy_done": [

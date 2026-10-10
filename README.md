@@ -48,6 +48,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **webster record-batch 01 fails on create-not-done for a card named 3-proc-group-kill** | [`record-batch-card-scope`](design-record-batch-card-scope.md) | webster |
 | 3 | **shuttle raises a hold notice at the skill-load turn end, before the start prompt is sent** | [`hold-on-skill-load`](design-hold-on-skill-load.md) | shuttle |
 | 4 | **Implementer forks can push to the real hub remotes**<br>• A batch fork ran lyx fabric add against the real hub and pushed stray branches to GitHub | [`fork-real-remotes`](design-fork-real-remotes.md) | webster, fabric |
+| 5 | **Flaky integration test: loomcli TestLoomResumeReconcilesTheHubConfigBeforeArming** | [`flaky-resume-reconcile-test`](design-flaky-resume-reconcile-test.md) |  |
 
 ### Enhancements
 
