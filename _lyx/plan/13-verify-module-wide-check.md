@@ -1,7 +1,7 @@
 # Card 13 — verify-module-wide-check
 
 **Create:**
-- `plan:internal/planparser#checkVerifyModuleWide` -> `func checkVerifyModuleWide(plan *Plan) []ValidationError`
+- `internal/planparser#checkVerifyModuleWide`
 
 **Edit:**
 - `internal/planparser#validate`

@@ -1,7 +1,7 @@
 # Card 17 — config-hubwide-write-refusal
 
 **Create:**
-- `plan:internal/configcli#hubWriteRefusal` -> `func hubWriteRefusal(l *lyxcwd.Location, strandName string) (string, error)`
+- `internal/configcli#hubWriteRefusal`
 
 **Edit:**
 - `internal/configcli#configDirs`

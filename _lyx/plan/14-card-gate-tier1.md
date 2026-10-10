@@ -1,9 +1,9 @@
 # Card 14 — card-gate-tier1
 
 **Create:**
-- `plan:internal/websterengine#gateScope` -> `type gateScope struct`
-- `plan:internal/websterengine#gateScopeOf` -> `func gateScopeOf(plan *planparser.Plan, cards []planparser.Card, worktree string) gateScope`
-- `plan:internal/websterengine#gateScope.steps` -> `func (s gateScope) steps(tags string) []string`
+- `internal/websterengine#gateScope`
+- `internal/websterengine#gateScopeOf`
+- `internal/websterengine#gateScope.steps`
 
 **Edit:**
 - `internal/websterengine#cardGateCommand` -> `func cardGateCommand(plan *planparser.Plan, card planparser.Card, worktree string) []string`

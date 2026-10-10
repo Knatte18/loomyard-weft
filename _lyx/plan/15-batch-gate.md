@@ -1,7 +1,7 @@
 # Card 15 — batch-gate
 
 **Create:**
-- `plan:internal/websterengine#renderBatchGate` -> `func renderBatchGate(plan *planparser.Plan, cards []planparser.Card, worktree string) string`
+- `internal/websterengine#renderBatchGate`
 
 **Edit:**
 - `internal/websterengine#RenderForkPrompt` -> `func RenderForkPrompt(batch batcher.Batch, cardGates, batchGate, prevDigest, reportPath, planDir, promptWorktreeRoot, stencilsDir, specsDir, outcomePath, summaryPath string, selfFixCap int, notePath string) ([]byte, error)`
@@ -17,8 +17,8 @@
 - `contracts/specs/loom-plan-spec.md`
 
 **Uses:**
-- `plan:internal/websterengine#gateScopeOf`
-- `plan:internal/websterengine#gateScope.steps`
+- `internal/websterengine#gateScopeOf`
+- `internal/websterengine#gateScope.steps`
 - `internal/gatecli#SlotBusyExit`
 
 **Intent:**
