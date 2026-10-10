@@ -16,6 +16,10 @@ Turn that around:
 - A failed or stopped step answers at length: what went wrong, the trace lines that matter, and the paths to read further, so the driver can act on the answer itself and opens the trace only to dig deeper.
 - Retention never sweeps the trace of a step that failed or stopped before the driver has handled it, so the driver never reads a trace pre-emptively, and the stencil drops "After every step, read its `trace_file` right away".
 
+The heavy work at a failure goes to a one-shot fork of the driver: reading traces, reports and logs, and writing the distilled report it sends to the parent.
+The fork returns only its conclusion and the action to take, so the driver's own context stays clean across many stops.
+With the Go loop the driver's context stays small, so a fork that inherits it is cheap and stays under 100k too.
+
 The orch must still be able to tell the driver, in plain words, to stop the run at a chosen point, for example "stop after Batchifier, before Webster", and the driver must hit that point itself.
 `lyx loom pause` is not the route: it is too restrictive.
 So a stop condition, such as a producer to stop before or after, is recorded in the run's own state by a command, and the Go loop reads it between steps, stopping there before the next producer starts and waking the driver.
