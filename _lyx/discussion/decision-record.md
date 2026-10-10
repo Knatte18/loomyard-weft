@@ -181,6 +181,12 @@ Decision: The process-group, Pdeathsig and job-object code for lyx gate test liv
 
 Rationale: The parallel run git-robustness creates those internal/proc identifiers and deletes verifyrun's procgroup files; keeping D7's child code apart lets the two branches merge without conflict, and moving it into internal/proc is a later board note.
 
+### Added after Discussion (parent, 2026-10-10): CLAUDE.md push rule keeps the text-only line
+
+Decision: The rewritten CLAUDE.md push bullet keeps main's second line: a commit that changes only text no build or test reads, such as docs/ and CLAUDE.md, is pushed without the test run.
+
+Rationale: main gained that line in 0cdd14ac9 after this branch forked; dropping it in the rewrite would revert it at landing.
+
 ## Constraints
 
 - `PATTERN-told-geometry`: the slot engine is told its directory, count and cap; only a CLI layer resolves the board dir, `lyx gate`'s through its own pre-run (D7).
