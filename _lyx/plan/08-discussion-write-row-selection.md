@@ -1,11 +1,11 @@
 # Card 8 — discussion-write-row-selection
 
 **Create:**
-- `plan:internal/shedbuild#NewShedFrom` -> `func NewShedFrom(recipe Recipe, env shedrecipe.Env, paths ShedPaths) (*shedengine.Shed, error)`
-- `plan:internal/loomrecipe#discussionSeatsEngine` -> `const discussionSeatsEngine = "DiscussionSeats"`
-- `plan:internal/loomrecipe#applyDiscussionProducer` -> `func applyDiscussionProducer(recipe *shedbuild.Recipe, seats bool)`
-- `plan:internal/loomrecipe#newLoomSeats` -> `func newLoomSeats(writeOutputs bool) *shedfake.SeatRunner`
-- `plan:internal/loomrecipe#TestNew_DiscussionSeatsRunsTheWriterRowOnSeats` -> `func TestNew_DiscussionSeatsRunsTheWriterRowOnSeats(t *testing.T)`
+- `internal/shedbuild#NewShedFrom`
+- `internal/loomrecipe#discussionSeatsEngine`
+- `internal/loomrecipe#applyDiscussionProducer`
+- `internal/loomrecipe#newLoomSeats`
+- `internal/loomrecipe#TestNew_DiscussionSeatsRunsTheWriterRowOnSeats`
 
 **Edit:**
 - `internal/shedrecipe#Env`
@@ -19,7 +19,7 @@
 - `internal/loomrecipe#TestNoGatedRowAuthorizesForkSubagents`
 - `internal/loomrecipe/doc.go`
 - `internal/loomcli#loomCLI.wire`
-- `plan:internal/loomcli#TestWire_DiscussionTableEvaluatesToExpectedShape`
+- `internal/loomcli#TestWire_DiscussionTableEvaluatesToExpectedShape`
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**

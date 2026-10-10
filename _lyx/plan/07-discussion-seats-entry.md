@@ -1,10 +1,10 @@
 # Card 7 — discussion-seats-entry
 
 **Create:**
-- `plan:internal/shedrecipe#discussionSeatsEntry` -> `func discussionSeatsEntry(name string, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/shedrecipe#TestDiscussionSeatsEntry_ConstructionFailures` -> `func TestDiscussionSeatsEntry_ConstructionFailures(t *testing.T)`
-- `plan:internal/shedrecipe#TestDiscussionSeatsEntry_Call` -> `func TestDiscussionSeatsEntry_Call(t *testing.T)`
-- `plan:internal/loomcli#TestWire_DiscussionTableEvaluatesToExpectedShape` -> `func TestWire_DiscussionTableEvaluatesToExpectedShape(t *testing.T)`
+- `internal/shedrecipe#discussionSeatsEntry`
+- `internal/shedrecipe#TestDiscussionSeatsEntry_ConstructionFailures`
+- `internal/shedrecipe#TestDiscussionSeatsEntry_Call`
+- `internal/loomcli#TestWire_DiscussionTableEvaluatesToExpectedShape`
 
 **Edit:**
 - `internal/shedrecipe#Env`

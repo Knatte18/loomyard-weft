@@ -1,0 +1,4 @@
+status: OK
+head_sha: e5c32d8323f161879461b4fb849e5f36359b924c
+deviations:
+  - internal/loomrecipe/seam_enforcement_test.go
