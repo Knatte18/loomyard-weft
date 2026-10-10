@@ -1,6 +1,6 @@
 # Driver steps in only on trouble: Go loops the steps, context under 100k
 
-`driver-context` · Task · enhancement, shed, stencil, loom
+`driver-context` · Task · enhancement, shed, stencil, loom, bug
 
 Depends on: [`daemon-wakeups`](design-daemon-wakeups.md)
 
@@ -80,3 +80,17 @@ Ranked by whether it keeps a whole run under 100k:
 7. Lower effort or thinking for Sonnet drivers: about 10k.
 
 Changes 2 to 6 without 1 bring a 45-step run to about 90 to 95k, borderline.
+
+
+## From issue #491
+
+Imported from [issue #491](https://github.com/Knatte18/loomyard/issues/491).
+
+Seen (daemon-wakeups and bolt-and-store, 2026-10-10): after `lyx loom approve` at PR-Gate, batten read the approval, resumed the child and woke the parked driver.
+Each driver then checked the PR on GitHub (`gh pr view`), saw it OPEN with no review decision and history unchanged, concluded nothing was decided, wrote a stop report, parked again and asked the operator to approve.
+`lyx loom approve` writes a local record (`<pair>-weft/.lyx/loom/approval.json`) and never posts a GitHub review, so a driver judging by GitHub can never see an approval.
+Batten counts the decision as acted on and does not try again, so both runs hung at PR-Gate.
+
+Workaround: the orchestrator messaged each driver that the PR is approved and to step with `lyx shed step`.
+
+Expected: a woken driver at an awaiting PR-Gate steps the run (or reads the decision through a `lyx` verb), never judges a decision by the GitHub PR state; the driver stencil says so.
