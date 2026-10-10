@@ -1,6 +1,6 @@
 # Lighter test suite: measured tiers, cheap tmux fixtures, no lingering children
 
-`test-suite-weight` · Task · bug, enhancement, shuttle, reed, fabric · paused · Plan-Bouncer
+`test-suite-weight` · Task · bug, enhancement, shuttle, reed, fabric · running · Plan-Bouncer
 
 Depends on: [`gate-test-scope`](design-gate-test-scope.md), [`shuttle-send`](design-shuttle-send.md)
 
