@@ -224,6 +224,12 @@ Decision: tmuxkit's sweep reads each kit server's pane pids before kill-server a
 
 Rationale: No lingering children is the task's goal, and every tmux-tier package relies on the kit's sweep, not reed's down path.
 
+### Added after Discussion (parent, 2026-10-10): Symlinked start resolves before FindRoot
+
+Decision: gitWorktreeRoot resolves cwd with filepath.EvalSymlinks before dotgit.FindRoot and returns FindRoot's root unchanged; TestResolve_AnchorScenario gains a row whose link points at a subdirectory of the checkout, expecting the same Location as Resolve(root).
+
+Rationale: Replacing git rev-parse must keep its symlink behaviour, since the root decides HubPath and the reed socket key.
+
 ## Constraints
 
 - `PATTERN-test-speed`: tier 2 has no tmux server; the tier table, gate table and "untagged tests spawn nothing" section record D6, D7 and D8.
