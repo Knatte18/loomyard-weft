@@ -1,12 +1,12 @@
 {
   "current_producer": "Run-Shed",
-  "state": "failed",
-  "error": "battenshed: Run-Shed: spawn inner shed run (resuming this run retries the spawn): exit status 1: {\"error\":\"not initialized here; run \\\"lyx fabric reconcile\\\"\",\"ok\":false}",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
     "last": "Run-Shed → bounced to Run-Shed",
-    "wait": "battenshed: Run-Shed: spawn inner shed run (resuming this run retries the spawn): exit status 1: {\"error\":\"not initialized here; run \\\"lyx fabric reconcile\\\"\",\"ok\":false}"
+    "wait": ""
   },
   "history": [
     {
