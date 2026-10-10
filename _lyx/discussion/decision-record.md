@@ -246,6 +246,12 @@ Rationale: Plan round 4 MEDIUM F1, the review's own first fix; accepted at budge
   - windows-start-time-gate-never-matches (class design, severity BLOCKING, open in rounds 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 4: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/plan/round-4-review.md; fixer report: _lyx/reviews/plan/round-4-fixer-report.md.
+  - session-end-respawn-window (class design, severity MEDIUM, open in rounds 2, 3, 4)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - `--until-stop` runs steps until `continue` is false and prints one envelope whose step keys equal the stop step's short envelope and whose `loop` key set is D1's closed set; a bare pause stops with `loop.stop: halted` and a fired condition with `loop.stop: stop-condition`.
