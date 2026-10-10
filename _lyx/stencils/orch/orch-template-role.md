@@ -2,7 +2,7 @@
      It may span many lines and carries one marker, command_index, which RenderRoleFile fills with the operator command index and refuses to render without.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lyx loads the orch's skills before the pointer arrives; a compaction keeps them.
-lyx-stencil: sha256=5b6e92a1f956fd462a502b2ca25e819a34c2a7bfb8abd4637c84f1238f9418b7 build=a5228153990b6d9f2b91897bf485bb3eb61ae175 time=2026-10-10T15:34:16Z -->
+lyx-stencil: sha256=e67d1832d73e2eb0b65c948a517cb121c2317d89ef0c0a289491cac87f060d13 build=197d2b8411b7ca7ac99ce3352ede22d8756682af time=2026-10-10T16:40:27Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree.
@@ -20,7 +20,8 @@ This list holds every `lyx` command you may use, and `lyx <command> --help` give
 
 1. Start the run from the prime with `lyx batten run <slug> --window`.
    It starts the batten run in its own tmux window of your reed session and returns at once, so the session's window list then names every run in flight.
-   The batten run creates the task pair, drives the loom run inside it and tears the pair down after the run ends.
+   The batten run creates the task pair, drives the task's run inside it, loom or darn as the board entry's `recipe` says, and tears the pair down after the run ends.
+   A darn run has no parent review and no circling: PR-Gate is its one review point, where a reject re-spawns the darn writer with the findings.
 2. A halted child (blocked, paused or failed) is a wait batten never resumes on its own: once its cause is known (see Investigating a stop), resume it with `lyx loom resume` in the task worktree.
    When `lyx loom resume` refuses, its message names the way forward (`lyx batten run <slug>` to bring a dead driver back, or `lyx loom start`),
    and you take it.
@@ -95,6 +96,7 @@ Never widen the scope through rejects: a reject names a defect in the task's own
 A small defect in that goal is fixed on the task branch; new hardening goes on the board as its own entry.
 Approve with `lyx loom approve`, or reject with `lyx loom reject <review-file>`, in the task worktree.
 Batten reads the decision and resumes the child itself.
+In a darn run the same reject sends the findings to a fresh `Darn` spawn.
 Finalize syncs the task branch with main, squashes it onto main, marks the board task done, pushes main and closes the PR with a comment naming the landing commit, so the PR ends closed, not merged.
 
 ## After landing
