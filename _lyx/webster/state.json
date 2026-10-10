@@ -1,0 +1,173 @@
+{
+  "runGuid": "5890e7922560ff26722b9e5540688038",
+  "planFingerprint": "a3daf3a22a928b25afc69f049f9d4a6e873e731f7fdaedcf2fced939c330f5d0",
+  "planFileHashes": {
+    "00-overview.md": "78a22af4029f26e67d09d7d4aef3235248cb7566766e32408b93f3b7288337a4",
+    "01-headcontains-bounded-walk.md": "83662ea6a1b4c42dfadfa81a86e70889dc9c9702ca7dac0faf812004710607a4",
+    "02-gitrepo-retrying-read.md": "b993651568f7c1d75d947c924f15a438202800679677900682ebdd8a51b67401",
+    "03-proc-group-kill.md": "e59fd13e081a339326a231195ba3bd67b5629853e5d2128b16cf009f71684bda",
+    "04-gitexec-remote-bounds.md": "055ac4b8d0437ae412fcbd23e40aa995326dae11ec0f72d3d6c5767dc71e543f",
+    "05-hub-store-gc.md": "6b652dc956961d6a4c03a43d14d8e56c9f0b53e93120a3ed9034bf62c3e1fbc9",
+    "06-batten-window-done-refusal.md": "b994a2fbca30825668ecc2ed294a924412308710394fb525630415773801c1b1"
+  },
+  "planOverviewFrameHash": "f21b14ad3d7c1e059b7d7dd313b9b24771a477989e650b9ac50c504dace98538",
+  "partition": [
+    {
+      "cards": [
+        "01-headcontains-bounded-walk",
+        "02-gitrepo-retrying-read",
+        "03-proc-group-kill",
+        "04-gitexec-remote-bounds",
+        "05-hub-store-gc",
+        "06-batten-window-done-refusal"
+      ],
+      "profile": "cautious",
+      "estimate": 318902,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 53968,
+        "read_union": 90736,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 264,
+            "reads": {
+              "file:internal/gitrepo/blobread_integration_test.go": 2820,
+              "package:internal/gitrepo": 2000,
+              "tests:internal/gitrepo": 2000
+            },
+            "messages": 21,
+            "written": 6564
+          },
+          {
+            "card": 2,
+            "card_text": 1068,
+            "reads": {
+              "file:PATTERN.md": 1188,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/gitrepo/doc.go": 3756,
+              "file:internal/gitrepo/gogit_test.go": 5616,
+              "file:internal/gitrepo/parity_test.go": 5448,
+              "package:.": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/gitrepo": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/gitrepo": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 175,
+            "written": 53568
+          },
+          {
+            "card": 3,
+            "card_text": 348,
+            "reads": {
+              "file:internal/verifyrun/procgroup_unix.go": 336,
+              "file:internal/verifyrun/procgroup_windows.go": 252,
+              "file:internal/verifyrun/run.go": 960,
+              "package:internal/proc": 2000,
+              "package:internal/verifyrun": 2000,
+              "tests:internal/proc": 2000,
+              "tests:internal/verifyrun": 2000
+            },
+            "messages": 33,
+            "written": 10248
+          },
+          {
+            "card": 4,
+            "card_text": 792,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/gitexec/errorrender_test.go": 948,
+              "file:internal/gitexec/gitexec_test.go": 1980,
+              "file:internal/gitexec/transport_test.go": 720,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/gitexec": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/gitexec": 2000
+            },
+            "messages": 141.5,
+            "written": 43242
+          },
+          {
+            "card": 5,
+            "card_text": 744,
+            "reads": {
+              "file:PATTERN.md": 1188,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/fabricengine/doc.go": 16308,
+              "package:.": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 152.5,
+            "written": 46494
+          },
+          {
+            "card": 6,
+            "card_text": 432,
+            "reads": {
+              "file:internal/battencli/cli_test.go": 3504,
+              "file:internal/battencli/step_test.go": 1728,
+              "package:internal/battencli": 2000,
+              "tests:internal/battencli": 2000
+            },
+            "messages": 45.5,
+            "written": 14082
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "30d61be23ce166ce78f62e8ace4602ed",
+  "masterSessionId": "dd8ccc35-abd1-45b1-aecd-ad0ee1adf60c",
+  "batches": {
+    "1": {
+      "slug": "headcontains-bounded-walk",
+      "cards": [
+        "01-headcontains-bounded-walk",
+        "02-gitrepo-retrying-read",
+        "03-proc-group-kill",
+        "04-gitexec-remote-bounds",
+        "05-hub-store-gc",
+        "06-batten-window-done-refusal"
+      ],
+      "cardHashes": {
+        "01-headcontains-bounded-walk": "83662ea6a1b4c42dfadfa81a86e70889dc9c9702ca7dac0faf812004710607a4",
+        "02-gitrepo-retrying-read": "b993651568f7c1d75d947c924f15a438202800679677900682ebdd8a51b67401",
+        "03-proc-group-kill": "e59fd13e081a339326a231195ba3bd67b5629853e5d2128b16cf009f71684bda",
+        "04-gitexec-remote-bounds": "055ac4b8d0437ae412fcbd23e40aa995326dae11ec0f72d3d6c5767dc71e543f",
+        "05-hub-store-gc": "6b652dc956961d6a4c03a43d14d8e56c9f0b53e93120a3ed9034bf62c3e1fbc9",
+        "06-batten-window-done-refusal": "b994a2fbca30825668ecc2ed294a924412308710394fb525630415773801c1b1"
+      },
+      "startSha": "e12fb6afbbbe40bbe74a383a20a7f6eba847de2a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T04:08:05Z",
+      "sessionId": "dd8ccc35-abd1-45b1-aecd-ad0ee1adf60c",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
