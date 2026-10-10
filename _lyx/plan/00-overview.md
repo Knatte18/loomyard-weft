@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -23,19 +23,20 @@ Each card lands one decision of the record with its test, its doc and its refusa
 10 — verify-chain-splitter — one chain splitter for the two verify checks, splitting at || and |
 11 — pattern-entry-line-cap — fail a card prescribing a PATTERN entry line over the cap
 12 — done-checks-name-the-batch — a done-check refusal opens with the batch and its cards
-13 — read-only-classifier-allow-list — the read-only classifier admits plain-word lyx help, fabric readers and git reads
-14 — fabric-reference-policy-at-record-batch — a read-only fabric reference is a policy warning
-15 — recover-batch-accepts-read-only-fabric-references — recover-batch accepts them in line, with an envelope flag and a stencil rung
-16 — fabric-sandboxed-role-guard — lyx fabric refuses its mutating verbs from a sandboxed role
+13 — fabric-reader-verbs — one declaration of the lyx fabric reader verb names
+14 — read-only-classifier-allow-list — the read-only classifier admits plain-word lyx help, fabric readers and git reads
+15 — fabric-reference-policy-at-record-batch — a read-only fabric reference is a policy warning
+16 — recover-batch-accepts-read-only-fabric-references — recover-batch accepts them in line, with an envelope flag and a stencil rung
 17 — gate-and-verify-drop-the-strand-name — gate and verify runs hand their tests no strand name
-18 — implementer-sandbox-rule — the implementer stencil states the sandbox rule
-19 — fabric-way-forward-names-the-orch — every refused fabric verb's way forward names the orch
-20 — turn-end-counts-with-nothing-outstanding — webster's turn-end reading drops the shell expiry
-21 — one-shell-wait-rule-and-ended-shells — shuttle waits on both shell signals alike and records every shell a run ends over
-22 — round-gate-reruns-the-top-level-test — the Publish failure re-run names the top-level test only
-23 — recovery-count-and-retry — count recovery spawns, retry a dead recovery that committed, cap at two
-24 — recovery-retry-on-the-verbs — the verbs carry the count and the retry, and Master runs the second recovery
-25 — resume-reconcile-determinism — reproduce and remove the resume-reconcile test's nondeterminism
+18 — fabric-sandboxed-role-guard — lyx fabric refuses its mutating verbs from a sandboxed role
+19 — implementer-sandbox-rule — the implementer stencil states the sandbox rule
+20 — fabric-way-forward-names-the-orch — every refused fabric verb's way forward names the orch
+21 — turn-end-counts-with-nothing-outstanding — webster's turn-end reading drops the shell expiry
+22 — one-shell-wait-rule-and-ended-shells — shuttle waits on both shell signals alike and records every shell a run ends over
+23 — round-gate-reruns-the-top-level-test — the Publish failure re-run names the top-level test only
+24 — recovery-count-and-retry — count recovery spawns, retry a dead recovery that committed, cap at two
+25 — recovery-retry-on-the-verbs — the verbs carry the count and the retry, and Master runs the second recovery
+26 — resume-reconcile-determinism — reproduce and remove the resume-reconcile test's nondeterminism
 
 ## Shared Decisions
 
@@ -49,7 +50,7 @@ Each card lands one decision of the record with its test, its doc and its refusa
 
 - **Decision:** `websterengine` keeps importing no `fabricengine`: the read-only classifier reaches `ClassifyViolation`, `RecoverDeps` and `AcceptBatchFabricReference` as a `func(cmd string) bool`, and `webstercli` supplies `fabricengine.IsReadOnlyCommand`.
 - **Rationale:** the engine/cli split in `internal/websterengine`'s package doc.
-- **Applies to:** cards 13, 14, 15
+- **Applies to:** cards 14, 15, 16
 
 ### Decision: step-keyed-refusal-texts
 

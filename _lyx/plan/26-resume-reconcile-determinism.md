@@ -1,4 +1,4 @@
-# Card 25 — resume-reconcile-determinism
+# Card 26 — resume-reconcile-determinism
 
 **Edit:**
 - `internal/loomcli/smoke_prebootstrap_integration_test.go`
