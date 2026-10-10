@@ -14,8 +14,8 @@
 - `pattern/PATTERN-verified-tree.md`
 
 **Uses:**
-- `plan:internal/verifytree#WritePublishFailure`
-- `plan:internal/verifytree#RemovePublishFailure`
+- `internal/verifytree#WritePublishFailure`
+- `internal/verifytree#RemovePublishFailure`
 - `internal/websterengine#ParseVerifyFailures`
 
 **Intent:**

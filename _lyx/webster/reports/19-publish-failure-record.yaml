@@ -1,0 +1,8 @@
+status: OK
+head_sha: aa76dfb0d8268a8bb1195663f2289233e8956e43
+deviations:
+  - internal/testkit/envkit/envkit.go
+  - internal/loomcli/wiring_seams_test.go
+  - internal/landingshed/finalize_verify_test.go
+  - internal/loomshed/seam_enforcement_test.go
+  - internal/impactset/derive_integration_test.go

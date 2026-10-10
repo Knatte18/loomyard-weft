@@ -1,7 +1,7 @@
 # Card 23 — comment-lint-clause
 
 **Create:**
-- `plan:internal/commentlint#opensClause` -> `func opensClause(words []string) bool`
+- `internal/commentlint#opensClause`
 
 **Edit:**
 - `internal/commentlint#endsSemanticBreak`

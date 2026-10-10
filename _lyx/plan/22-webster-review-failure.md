@@ -1,7 +1,7 @@
 # Card 22 — webster-review-failure
 
 **Create:**
-- `plan:internal/loomshed#PublishFailureNote` -> `func PublishFailureNote(worktreeRoot, verifyDir string) string`
+- `internal/loomshed#PublishFailureNote`
 
 **Edit:**
 - `internal/shedadapters#ReadRubric` -> `func ReadRubric(stencilsDir, name, specsDir, publishFailure string) (string, error)`
@@ -21,7 +21,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/loomshed#checkedPublishFailure`
+- `internal/loomshed#checkedPublishFailure`
 
 **Intent:**
 Make the Webster-Review round after a goto from a failed Publish review the failure and the merge that brought it (D12).

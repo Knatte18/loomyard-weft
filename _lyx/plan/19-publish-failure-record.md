@@ -1,14 +1,14 @@
 # Card 19 — publish-failure-record
 
 **Create:**
-- `plan:internal/verifytree#FailureKind` -> `type FailureKind string`
-- `plan:internal/verifytree#FailureKindPlanVerify` -> `const FailureKindPlanVerify FailureKind = "plan_verify"`
-- `plan:internal/verifytree#FailureKindPublishVerify` -> `const FailureKindPublishVerify FailureKind = "publish_verify"`
-- `plan:internal/verifytree#FailedTest` -> `type FailedTest struct`
-- `plan:internal/verifytree#PublishFailure` -> `type PublishFailure struct`
-- `plan:internal/verifytree#WritePublishFailure` -> `func WritePublishFailure(p Paths, f PublishFailure) error`
-- `plan:internal/verifytree#ReadPublishFailure` -> `func ReadPublishFailure(p Paths) (PublishFailure, bool, error)`
-- `plan:internal/verifytree#RemovePublishFailure` -> `func RemovePublishFailure(p Paths) error`
+- `internal/verifytree#FailureKind`
+- `internal/verifytree#FailureKindPlanVerify`
+- `internal/verifytree#FailureKindPublishVerify`
+- `internal/verifytree#FailedTest`
+- `internal/verifytree#PublishFailure`
+- `internal/verifytree#WritePublishFailure`
+- `internal/verifytree#ReadPublishFailure`
+- `internal/verifytree#RemovePublishFailure`
 - `internal/verifytree/failure_test.go`
 
 **Edit:**

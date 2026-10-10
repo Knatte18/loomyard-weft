@@ -1,8 +1,8 @@
 # Card 21 — round-gate-tier3
 
 **Create:**
-- `plan:internal/loomshed#checkedPublishFailure` -> `func checkedPublishFailure(paths verifytree.Paths, worktreeRoot string) (verifytree.PublishFailure, bool)`
-- `plan:internal/loomshed#publishFailureCommand` -> `func publishFailureCommand(f verifytree.PublishFailure, packages []string) string`
+- `internal/loomshed#checkedPublishFailure`
+- `internal/loomshed#publishFailureCommand`
 - `internal/loomshed/publishfailure_test.go`
 - `internal/loomshed/publishfailure_integration_test.go`
 
@@ -18,7 +18,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/verifytree#ReadPublishFailure`
+- `internal/verifytree#ReadPublishFailure`
 - `internal/gitrepo#Repo.CommitParents`
 - `internal/gitrepo#New`
 
