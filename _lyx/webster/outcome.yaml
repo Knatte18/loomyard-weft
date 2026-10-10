@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "batch 06-fabric-form: record-batch failed on a fabric-reference audit finding (fork ran `lyx fabric <verb> --help --json` in a loop), and recover-batch then errored without recovering: websterengine: resolve links in .../fabric-reference: lstat ...: file name too long"
+batches_done: 1
