@@ -111,3 +111,9 @@ The two open weaknesses are test files and execution-time use.
   Log a trace line per `plan:` handle at record-batch (bound, failed, reason), so the next audit can count them.
 - **Keep the stencil's quarry advice as is.**
   `glyphs --text <pkg> | grep` then a batched `resolve` is what writers already do and what keeps findings at zero to two; add that recipe to the stencil as the worked example rather than leaving it implicit.
+
+## Follow-up audit
+
+a28e79d9c (2026-10-10) made the implementer stencil resolve the card's target and `Uses:` glyphs with one `lyx quarry resolve` call before any grep.
+Once a good number of runs have landed on it, an agent repeats this audit's execution-time count (quarry calls per implementer, grep-for-member calls, whole-file reads) against the zero-use baseline above, and re-checks the plan-side numbers.
+Like the first pass, it is a quick read-only survey by one agent, not a loom run.
