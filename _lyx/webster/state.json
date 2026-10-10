@@ -445,8 +445,12 @@
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cli-surface/3b48aefb-b68c-4aae-941c-ea8eb2256f6e/subagents/agent-a5d0d1f0ba840bec5.jsonl"
       ],
-      "uncheckable": [
-        "fabric-reference: ran a fabric-referencing command (\"for v in \\\"\\\" add list remove checkout pairs reconcile prune cleanup unwire shortname clone status commit push pull sync diff merge merge-in merge-stage; do printf \\\"%s: \\\" \\\"$v\\\"; lyx fabric $v --help --json 2\u003e/dev/null | jq -r .long | wc -c; done\") that can rewrite run state — an implementer fork must never touch the fabric repo directly"
+      "auditWarnings": [
+        {
+          "identity": "accepted:batch-06:1",
+          "class": "fabric-reference",
+          "detail": "accepted by accept-audit --batch, HEAD was the batch's start commit and the tree clean: ran a fabric-referencing command (\"for v in \\\"\\\" add list remove checkout pairs reconcile prune cleanup unwire shortname clone status commit push pull sync diff merge merge-in merge-stage; do printf \\\"%s: \\\" \\\"$v\\\"; lyx fabric $v --help --json 2\u003e/dev/null | jq -r .long | wc -c; done\") that can rewrite run state — an implementer fork must never touch the fabric repo directly"
+        }
       ]
     }
   },
@@ -455,6 +459,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cli-surface/3b48aefb-b68c-4aae-941c-ea8eb2256f6e/subagents/agent-a5d0d1f0ba840bec5.jsonl"
   ],
   "auditDispositions": {
+    "accepted:batch-06:1": "warned",
     "fork:/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cli-surface/3b48aefb-b68c-4aae-941c-ea8eb2256f6e/subagents/agent-a5d0d1f0ba840bec5.jsonl:fabric-reference:1": "failed"
   }
 }
