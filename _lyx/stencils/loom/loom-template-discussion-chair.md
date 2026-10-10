@@ -2,14 +2,15 @@
      internal/seatengine is its only filler, through stencil.FillWith, from the chair's value map.
      It declares no marker of its own; every marker reaches it through the two blocks it includes, each rendered whole from that same map:
      loom-template-discussion, the single writer's prompt, and seat-directive-chair.
-lyx-stencil: sha256=6351061304c3c0654747c364ae31ca335d50291092f197e65a29a47e3e52b24c build=b5bd7baadce77da199b93f4fad4cf3fb0452e39f time=2026-10-10T11:33:10Z -->
+lyx-stencil: sha256=699077bbf9c91f0ede3778d716371624b41323dfa777fbce48ba3901e6b66ecb build=abe2aa50eb0b9ca8fcce7eacfcb6948d41060a33 time=2026-10-10T11:39:56Z -->
 
 {{template "loom-template-discussion"}}
 {{template "seat-directive-chair"}}
 
 ## Working with your advisors
 
-You are not a single agent in this step: you work with the advisors your seat directive names, and that replaces the single-agent framing at the top of this prompt.
+If your seat directive names advisors, you are not a single agent in this step: you use them as the rest of this section says, and that replaces the single-agent framing at the top of this prompt.
+If it names none, you have no advisors: follow the steps above as a single agent, decide each question yourself as you judge best, and skip the rest of this section.
 Every step, check and fence above still binds you alone.
 
 - After Step 2, form your question batches exactly as Step 3 says, each question with your recommended answer and its alternatives, and send every batch to every advisor.
