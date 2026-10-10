@@ -8,7 +8,7 @@
 - `internal/gitexec/doc.go`
 
 **Create:**
-- `plan:internal/gitexec#RunStdin` -> `func RunStdin(args []string, cwd, stdin string) (string, error)`
+- `internal/gitexec#RunStdin`
 
 **Intent:** Give gitexec a checked form that feeds the git command its stdin, so a caller can hand `git cat-file --batch-check` its object names in one process instead of one `cat-file -t` per object (D4).
 `runCore` takes the stdin text and sets it on the command when it is non-empty; `RunGit` and `Run` pass the empty string and keep their behaviour byte for byte.

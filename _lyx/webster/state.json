@@ -1,15 +1,15 @@
 {
   "runGuid": "c48c7b8f7196b73e2be1202542e3612a",
-  "planFingerprint": "3792a4300d1312b8592f3c26afd944de75c10e75153db3ff80b6c05abe7f32b4",
+  "planFingerprint": "82bc14cd98b3275de1d8eeb6f7b9749246dd435c820746e961a8011cd7979faf",
   "planFileHashes": {
     "00-overview.md": "ab37d312e67763991dfe85135a44bae20272c8576f60e6a44f4dd6c5ade90ef6",
-    "01-gitexec-run-stdin.md": "6fd6984bdca30ac289b20cb23451286cd4c296d23adf83f65b40503e28441895",
-    "02-commits-named-by-one-batch-check.md": "0a14ba6f9caa6c9234aeab5324df992a66ba8414995653101f0fe44c5b2f1e32",
-    "03-rebaseline-refusals-keyed.md": "b19e3e57aa914bb8e7d4f9a10b2fc4a06874d99f534526a3430aad5f0b56c056",
-    "04-run-auto-rebaseline.md": "06be24f34725fd8553c14f890e04be40c7a4911ffbcc43de6f1af044faf32108",
-    "05-webster-row-auto-rebaseline-stuck.md": "4fda2bcefcc2290ed4840b445c0310d6f19bc9d64acdd6e003f7c9526cea7210",
-    "06-edited-done-cards.md": "cb31a9c8f19106104e87b2191c57a385e4ac14a753957909a73c210494cafceb",
-    "07-plan-gate-done-card-edited.md": "027f2e3d44f3e5cdca561fda79e28aff817f7819fd816f36a3c6322184ed200b",
+    "01-gitexec-run-stdin.md": "7a8dcf27ebcc16d8bb8a140811c1a7366dd415fc499b14b573df5f217bc7b696",
+    "02-commits-named-by-one-batch-check.md": "f61c44415b1a6251810ceff91256f49ab9ba121488e0ab585111926a5953f936",
+    "03-rebaseline-refusals-keyed.md": "2eaeab09689b9fd4f7e7dbcbabbb0cce99c4532f31bd3bb263b55b2ef6a456b2",
+    "04-run-auto-rebaseline.md": "15634546c05ad1eebfb68152c2485441b0c085e8a7d84096e3ee35fe472fe31b",
+    "05-webster-row-auto-rebaseline-stuck.md": "90710f487ab1bef29bbe72ce2bb38804a3eb0e37810d7aac58aa558b152d106b",
+    "06-edited-done-cards.md": "5e23d5545698c16d7a6d4dac558811989d4676f5b09dcc39c6e00ec559df99c5",
+    "07-plan-gate-done-card-edited.md": "e256c64c971e83ceeb75b5f04b0a65bfe52a866052f0d6ca503417793fcc8110",
     "08-webster-record-note.md": "bf7e379086af52ac43013253833c7330b40c7a3c37acbfcfbbc72256e9e1e60c",
     "09-plan-review-webster-record-marker.md": "772ee92d0b1a69952fa07d5b01eb03096f9ed7a7f3f00532cfc27cda024c38f1",
     "10-verify-chain-splitter.md": "7569c6aca9dbdbf3d2298608543e43aa527364c4af1fc40fd4fc250a092cc9f0",
@@ -682,7 +682,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "024106e45ef378afbaedeac64b0dfd00",
   "masterSessionId": "4b72a718-bcaa-4396-ac52-cd53831c7acf",
   "batches": {
@@ -697,19 +697,40 @@
         "06-edited-done-cards"
       ],
       "cardHashes": {
-        "01-gitexec-run-stdin": "6fd6984bdca30ac289b20cb23451286cd4c296d23adf83f65b40503e28441895",
-        "02-commits-named-by-one-batch-check": "0a14ba6f9caa6c9234aeab5324df992a66ba8414995653101f0fe44c5b2f1e32",
-        "03-rebaseline-refusals-keyed": "b19e3e57aa914bb8e7d4f9a10b2fc4a06874d99f534526a3430aad5f0b56c056",
-        "04-run-auto-rebaseline": "06be24f34725fd8553c14f890e04be40c7a4911ffbcc43de6f1af044faf32108",
-        "05-webster-row-auto-rebaseline-stuck": "4fda2bcefcc2290ed4840b445c0310d6f19bc9d64acdd6e003f7c9526cea7210",
-        "06-edited-done-cards": "cb31a9c8f19106104e87b2191c57a385e4ac14a753957909a73c210494cafceb"
+        "01-gitexec-run-stdin": "7a8dcf27ebcc16d8bb8a140811c1a7366dd415fc499b14b573df5f217bc7b696",
+        "02-commits-named-by-one-batch-check": "f61c44415b1a6251810ceff91256f49ab9ba121488e0ab585111926a5953f936",
+        "03-rebaseline-refusals-keyed": "2eaeab09689b9fd4f7e7dbcbabbb0cce99c4532f31bd3bb263b55b2ef6a456b2",
+        "04-run-auto-rebaseline": "15634546c05ad1eebfb68152c2485441b0c085e8a7d84096e3ee35fe472fe31b",
+        "05-webster-row-auto-rebaseline-stuck": "90710f487ab1bef29bbe72ce2bb38804a3eb0e37810d7aac58aa558b152d106b",
+        "06-edited-done-cards": "5e23d5545698c16d7a6d4dac558811989d4676f5b09dcc39c6e00ec559df99c5"
       },
       "startSha": "b6e1c3601a5eff5bd232cd0421314ef03837d100",
       "kind": "fork",
       "spawnedAt": "2026-10-10T12:44:51Z",
       "sessionId": "4b72a718-bcaa-4396-ac52-cd53831c7acf",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-gitexec-run-stdin",
+        "status": "done",
+        "head_sha": "1be1a33ca44aa3f8d5382a8999a323a746eb003b",
+        "deviations": [
+          "internal/websterengine/summary.go",
+          "internal/websterengine/autorebaseline.go"
+        ]
+      },
+      "cardShas": [
+        "1be1a33ca44aa3f8d5382a8999a323a746eb003b"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-af606b7cd26f1ebf4.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-af606b7cd26f1ebf4.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-af606b7cd26f1ebf4.jsonl"
+  ]
 }

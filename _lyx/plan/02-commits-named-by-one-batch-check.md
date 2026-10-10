@@ -6,10 +6,10 @@
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/websterengine#commitsFromBatchCheck` -> `func commitsFromBatchCheck(output string) ([]string, error)`
+- `internal/websterengine#commitsFromBatchCheck`
 
 **Uses:**
-- `plan:internal/gitexec#RunStdin`
+- `internal/gitexec#RunStdin`
 
 **Intent:** Classify every candidate `git rev-parse --disambiguate=<prefix>` lists in one `git cat-file --batch-check` run instead of one `cat-file -t` process per object (D4).
 `commitsNamedBy` joins the listed object names with newlines, hands them to `gitexec.RunStdin` as the batch-check's stdin, and passes the output to `commitsFromBatchCheck`.

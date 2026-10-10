@@ -16,7 +16,7 @@
 - `//contracts/specs/refusal-spec.md`
 
 **Create:**
-- `plan:internal/websterengine#followUpLanding` -> `func followUpLanding(step string) string`
+- `internal/websterengine#followUpLanding`
 
 **Uses:**
 - `internal/websterengine#batchCards`

@@ -11,9 +11,9 @@
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/websterengine#ErrAutoRebaseline` -> `var ErrAutoRebaseline error`
-- `plan:internal/websterengine#autoRebaseline` -> `func autoRebaseline(deps RunDeps, plan *planparser.Plan, st *State, sizes batcher.SizeSource) (string, error)`
-- `plan:internal/websterengine#appendRebaselineWarning` -> `func appendRebaselineWarning(websterDir, warning string) error`
+- `internal/websterengine#ErrAutoRebaseline`
+- `internal/websterengine#autoRebaseline`
+- `internal/websterengine#appendRebaselineWarning`
 
 **Uses:**
 - `internal/websterengine#Rebaseline`

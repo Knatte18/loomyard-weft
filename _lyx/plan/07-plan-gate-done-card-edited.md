@@ -8,7 +8,7 @@
 - `//contracts/specs/loom-plan-spec.md`
 
 **Uses:**
-- `plan:internal/websterengine#EditedDoneCards`
+- `internal/websterengine#EditedDoneCards`
 
 **Intent:** Refuse an edit to a done card at the plan gate instead of at the Webster row (D2).
 `ValidatePlan` keeps telling the index the done cards, and then appends one blocking `done-card-edited` finding per id `EditedDoneCards` returns, naming the card and the follow-up landing: a done card is frozen, and a finding against it lands as a follow-up card after the last begun batch with its Card Index line in `00-overview.md`.

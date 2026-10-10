@@ -1,7 +1,7 @@
 # Card 6 — edited-done-cards
 
 **Create:**
-- `plan:internal/websterengine#EditedDoneCards` -> `func EditedDoneCards(plan *planparser.Plan, st *State, planDir string) ([]string, error)`
+- `internal/websterengine#EditedDoneCards`
 
 **Edit:**
 - `internal/websterengine/begun_test.go`
