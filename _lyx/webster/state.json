@@ -1,0 +1,634 @@
+{
+  "runGuid": "7d850019e493feafc9e84417a15220b3",
+  "planFingerprint": "7b8c7f1d877578f348239d039777401694aa4e33006fba42314469542af9a51d",
+  "planFileHashes": {
+    "00-overview.md": "5426db669614f340cb89c879a58db5211131a50988ef69eafb027c90970439e3",
+    "01-gateslot-pool.md": "00e9c1fdf90fa0f92bc2b5058a47be45db08ee103ce8c1f7336277fed424e6c8",
+    "02-gate-config.md": "768e1bba8711a78d0f35ea4049995508d0bfd3566d866cd55e21b6e3d50fd63a",
+    "03-verifyrun-env.md": "1d9174130f6e7bac2de2fe5db9a0fdae7e353bbc8ba78543c75252ec6b751343",
+    "04-verifytree-slot.md": "0af0652dc7f4fe84bf6b11238e2b6cf2828af7ff227cce9f2870a88ef30989b9",
+    "05-hubgeom-gate-slots.md": "5cf0c9d1a2c539dbde66568ddbff97cb24952393b57592f626a4c0e7b768e198",
+    "06-webster-sites-slotted.md": "6ca45fe4dcca0666b9bff181692a0993063476c05160d9abe898059ff8f384c4",
+    "07-landing-slotted.md": "00875821b02751b887ca01106c0116e5c1f184dea2d47cc8f70d44147ecfaf4d",
+    "08-round-gate-slotted.md": "3d0b25599968e311a9cf0b1933d3ee8b3b7e5b790fe4777f7c5410f1f7f767fb",
+    "09-plan-gate-slotted.md": "943d84a6488e16bdfc7c4f04b597bd7ef61b4903946a543e979803353265dded",
+    "10-gate-cli.md": "2dda1c5ce9078ae6f43031bbda13d8887cc73d286c28562b3cfca396a2582e7b",
+    "11-status-gate-waits.md": "a0568e94cb0a1330df4c7228c0973cf0075006088e3abbf8b8a9102f2eaecc56",
+    "12-raw-go-deny.md": "99d565995f040742e879575bb94c7e3d8e936f6060e00fb9e03a1affa75e528f",
+    "13-verify-module-wide-check.md": "ed29b354e80b7902fb54b4352b7615e9e8d6194304f45b046b62c8d2cb56f3e5",
+    "14-card-gate-tier1.md": "4c8e958297186d58dda778c08a9166a08f3fc5edfcb5ac83f92dc80e02d9c8f7",
+    "15-batch-gate.md": "5b681a8aedb919909a2de867cf600aa5e271ec72cda12e1e9cafdc2984911b5e",
+    "16-gate-route-stencils.md": "26c7e0c1f3ed4dfa5432ca9d299548190c29fdae80941ecc112a9778bfd0636c",
+    "17-config-hubwide-write-refusal.md": "425d847a5ef9206d3fdb03a4a7230b2936a57895944bd4b78c6ae71369fc9431",
+    "18-landing-hubwide.md": "9b14674c251ed645c975ca5f0bd7bfac2b7e854e9e907aff8f21b5ee00eed682",
+    "19-publish-failure-record.md": "8750f49f9cc4ddd8ab3e7be43042d2583b05b430d30c34b0ca30bb102848b0c1",
+    "20-publish-writes-failure.md": "7d9f44c9a8cd0fc6242e09eb0e85c3fee18a7e82062cf8bfd1dbbb428ecb7a8f",
+    "21-round-gate-tier3.md": "ae592394a58d1ef6bf29ad98b24cba7354564057dccf1d20c8365df0a6549922",
+    "22-webster-review-failure.md": "d44dbb3daa5bc99f391890ca99bd81d4574abcec7604275e4d23c457d287f879",
+    "23-comment-lint-clause.md": "6e667f50359da73d26e2e1cabe5cdf52e7d5b3c76ce17c99a856055ee594228e",
+    "24-gate-tier-docs.md": "cd86eedc7cac20e48f93a0a16ff7c63e6506c7255cad0168a400778b29f1693e"
+  },
+  "planOverviewFrameHash": "f51abf2e6b13346698739cb8ba59fc9b3c68c9cf6d3753014825a786097c9e75",
+  "partition": [
+    {
+      "cards": [
+        "01-gateslot-pool",
+        "02-gate-config",
+        "03-verifyrun-env",
+        "04-verifytree-slot",
+        "05-hubgeom-gate-slots",
+        "06-webster-sites-slotted"
+      ],
+      "profile": "cautious",
+      "estimate": 328100,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54280,
+        "read_union": 88996,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 732,
+            "reads": {
+              "file:cmd/lyx/pathrules_test.go": 2292,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:docs/overview.md": 7908,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/gateslot": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/gateslot": 2000
+            },
+            "messages": 165,
+            "written": 50232
+          },
+          {
+            "card": 2,
+            "card_text": 432,
+            "reads": {
+              "file:cmd/lyx/configstrictness_test.go": 1740,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/configreg/configreg_test.go": 1836,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/gateslot": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/gateslot": 2000
+            },
+            "messages": 98.5,
+            "written": 29982
+          },
+          {
+            "card": 3,
+            "card_text": 204,
+            "reads": {
+              "file:internal/verifyrun/run_integration_test.go": 2160,
+              "package:internal/verifyrun": 2000,
+              "package:internal/verifytree": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/verifyrun": 2000,
+              "tests:internal/verifytree": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 62,
+            "written": 18804
+          },
+          {
+            "card": 4,
+            "card_text": 408,
+            "reads": {
+              "file:internal/loomshed/verifygate_integration_test.go": 3168,
+              "file:internal/verifytree/doc.go": 180,
+              "file:internal/verifytree/marker_test.go": 768,
+              "file:internal/verifytree/verify_integration_test.go": 3528,
+              "file:pattern/PATTERN-verified-tree.md": 192,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/verifytree": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "package:pattern": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/verifytree": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 130.5,
+            "written": 39558
+          },
+          {
+            "card": 5,
+            "card_text": 360,
+            "reads": {
+              "file:internal/hubgeom/doc.go": 396,
+              "file:internal/hubgeom/webstergeom_test.go": 1104,
+              "file:internal/websterengine/doc.go": 7188,
+              "package:internal/hubgeom": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 78.5,
+            "written": 23910
+          },
+          {
+            "card": 6,
+            "card_text": 288,
+            "reads": {
+              "file:internal/websterengine/cardverify_test.go": 588,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 73.5,
+            "written": 22338
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-landing-slotted",
+        "08-round-gate-slotted",
+        "09-plan-gate-slotted",
+        "10-gate-cli",
+        "11-status-gate-waits",
+        "12-raw-go-deny"
+      ],
+      "profile": "cautious",
+      "estimate": 363286,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61280,
+        "read_union": 113348,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 228,
+            "reads": {
+              "file:internal/loomcli/landingdeps_verify_test.go": 828,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 67,
+            "written": 20328
+          },
+          {
+            "card": 8,
+            "card_text": 276,
+            "reads": {
+              "file:internal/loomcli/wiring_test.go": 9048,
+              "file:internal/loomshed/verifygate_integration_test.go": 3168,
+              "file:internal/webstercli/verify_parity_integration_test.go": 1212,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/webstercli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 101.5,
+            "written": 30726
+          },
+          {
+            "card": 9,
+            "card_text": 480,
+            "reads": {
+              "file:internal/planglyph/doc.go": 1044,
+              "file:internal/planglyph/glyphchain_integration_test.go": 5112,
+              "package:internal/loomcli": 2000,
+              "package:internal/planglyph": 2000,
+              "package:internal/webstercli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 163,
+            "written": 49380
+          },
+          {
+            "card": 10,
+            "card_text": 720,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:contracts/specs/refusal-spec.md": 3396,
+              "file:docs/overview.md": 7908,
+              "file:tools/sandbox/SANDBOX-CORE-SUITE.md": 3876,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/gatecli": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 136,
+            "written": 41520
+          },
+          {
+            "card": 11,
+            "card_text": 384,
+            "reads": {
+              "file:contracts/specs/loom-status-spec.md": 1848,
+              "file:internal/loomcli/reviewstatus_test.go": 3792,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 72.5,
+            "written": 22134
+          },
+          {
+            "card": 12,
+            "card_text": 420,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:docs/overview.md": 7908,
+              "file:internal/shuttleengine/claudeengine/doc.go": 1584,
+              "file:internal/shuttleengine/claudeengine/hookcmd_integration_test.go": 3456,
+              "file:internal/shuttleengine/claudeengine/settings_test.go": 6840,
+              "file:pattern/PATTERN-no-denied-recovery.md": 204,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 80.5,
+            "written": 24570
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-verify-module-wide-check",
+        "14-card-gate-tier1",
+        "15-batch-gate",
+        "16-gate-route-stencils",
+        "17-config-hubwide-write-refusal",
+        "18-landing-hubwide"
+      ],
+      "profile": "cautious",
+      "estimate": 423422,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68280,
+        "read_union": 196664,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 384,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 7620,
+              "file:contracts/stencils/claims_test.go": 8232,
+              "file:contracts/stencils/loom/loom-template-plan.md": 3036,
+              "file:internal/loomcli/parity_test.go": 7680,
+              "file:internal/planparser/parse_test.go": 13356,
+              "file:internal/planparser/testdata/goodplan/01-json-row-type.md": 108,
+              "file:internal/planparser/validate_test.go": 24624,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/planparser": 2000,
+              "package:internal/planparser/testdata/goodplan": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/planparser": 2000,
+              "tests:internal/planparser/testdata/goodplan": 2000
+            },
+            "messages": 103,
+            "written": 31284
+          },
+          {
+            "card": 14,
+            "card_text": 432,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 7620,
+              "file:internal/websterengine/beginbatch_test.go": 10752,
+              "file:internal/websterengine/cardgate_test.go": 2160,
+              "file:internal/websterengine/doc.go": 7188,
+              "package:contracts/specs": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 95.5,
+            "written": 29082
+          },
+          {
+            "card": 15,
+            "card_text": 516,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:contracts/specs/loom-plan-spec.md": 7620,
+              "file:contracts/stencils/claims_test.go": 8232,
+              "file:contracts/stencils/webster/webster-body-implementer.md": 888,
+              "file:internal/websterengine/cardgate_test.go": 2160,
+              "file:internal/websterengine/doc.go": 7188,
+              "file:internal/websterengine/template_test.go": 11892,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 111,
+            "written": 33816
+          },
+          {
+            "card": 16,
+            "card_text": 180,
+            "reads": {
+              "file:CLAUDE.md": 864,
+              "file:contracts/stencils/claims_test.go": 8232,
+              "file:contracts/stencils/webster/webster-body-verify-fix.md": 588,
+              "package:.": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "tests:.": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000
+            },
+            "messages": 21.5,
+            "written": 6630
+          },
+          {
+            "card": 17,
+            "card_text": 432,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3396,
+              "file:internal/configcli/configcli_integration_test.go": 2052,
+              "file:internal/configcli/configcli_test.go": 9876,
+              "file:internal/configcli/doc.go": 372,
+              "file:internal/configcli/reconcile_integration_test.go": 1992,
+              "package:contracts/specs": 2000,
+              "package:internal/configcli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/configcli": 2000
+            },
+            "messages": 80.5,
+            "written": 24582
+          },
+          {
+            "card": 18,
+            "card_text": 384,
+            "reads": {
+              "file:internal/configcli/configcli_integration_test.go": 2052,
+              "file:internal/configreg/configreg_test.go": 1836,
+              "file:internal/configsync/configsync_test.go": 8256,
+              "file:internal/landingshed/doc.go": 996,
+              "file:internal/loomcli/wiring_test.go": 9048,
+              "package:internal/configcli": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/configsync": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/configsync": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 109,
+            "written": 33084
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "19-publish-failure-record",
+        "20-publish-writes-failure",
+        "21-round-gate-tier3",
+        "22-webster-review-failure",
+        "23-comment-lint-clause",
+        "24-gate-tier-docs"
+      ],
+      "profile": "cautious",
+      "estimate": 310466,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75280,
+        "read_union": 83512,
+        "cards": [
+          {
+            "card": 19,
+            "card_text": 348,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/verifytree/doc.go": 180,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/verifytree": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/verifytree": 2000
+            },
+            "messages": 80,
+            "written": 24348
+          },
+          {
+            "card": 20,
+            "card_text": 384,
+            "reads": {
+              "file:internal/landingshed/doc.go": 996,
+              "file:internal/landingshed/publish_verify_test.go": 3960,
+              "file:internal/loomcli/landingdeps_verify_test.go": 828,
+              "file:pattern/PATTERN-verified-tree.md": 192,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:pattern": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 113,
+            "written": 34284
+          },
+          {
+            "card": 21,
+            "card_text": 516,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/impactset/derive_test.go": 1836,
+              "file:internal/impactset/doc.go": 396,
+              "file:internal/loomshed/doc.go": 408,
+              "file:internal/loomshed/verifygate_integration_test.go": 3168,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/impactset": 2000,
+              "package:internal/loomshed": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/impactset": 2000,
+              "tests:internal/loomshed": 2000
+            },
+            "messages": 96,
+            "written": 29316
+          },
+          {
+            "card": 22,
+            "card_text": 468,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:contracts/stencils/claims_test.go": 8232,
+              "file:contracts/stencils/loom/loom-rubric-webster-review.md": 1020,
+              "file:contracts/stencils/rubric_test.go": 948,
+              "file:internal/shedadapters/rubric_test.go": 1704,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 166,
+            "written": 50268
+          },
+          {
+            "card": 23,
+            "card_text": 252,
+            "reads": {
+              "file:internal/commentlint/doc.go": 288,
+              "file:internal/commentlint/lint_test.go": 1224,
+              "file:pattern/PATTERN-comment-line-breaks.md": 288,
+              "package:internal/commentlint": 2000,
+              "package:pattern": 2000,
+              "tests:internal/commentlint": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 31.5,
+            "written": 9702
+          },
+          {
+            "card": 24,
+            "card_text": 156,
+            "reads": {
+              "file:PATTERN.md": 1176,
+              "file:pattern/PATTERN-test-speed.md": 1020,
+              "package:.": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 12,
+            "written": 3756
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "726ba574be9e0d6f1b5201a5aa0e1920",
+  "masterSessionId": "1ea802b3-916a-4f78-a539-37ca5a7f4b14",
+  "batches": {
+    "1": {
+      "slug": "gateslot-pool",
+      "cards": [
+        "01-gateslot-pool",
+        "02-gate-config",
+        "03-verifyrun-env",
+        "04-verifytree-slot",
+        "05-hubgeom-gate-slots",
+        "06-webster-sites-slotted"
+      ],
+      "cardHashes": {
+        "01-gateslot-pool": "00e9c1fdf90fa0f92bc2b5058a47be45db08ee103ce8c1f7336277fed424e6c8",
+        "02-gate-config": "768e1bba8711a78d0f35ea4049995508d0bfd3566d866cd55e21b6e3d50fd63a",
+        "03-verifyrun-env": "1d9174130f6e7bac2de2fe5db9a0fdae7e353bbc8ba78543c75252ec6b751343",
+        "04-verifytree-slot": "0af0652dc7f4fe84bf6b11238e2b6cf2828af7ff227cce9f2870a88ef30989b9",
+        "05-hubgeom-gate-slots": "5cf0c9d1a2c539dbde66568ddbff97cb24952393b57592f626a4c0e7b768e198",
+        "06-webster-sites-slotted": "6ca45fe4dcca0666b9bff181692a0993063476c05160d9abe898059ff8f384c4"
+      },
+      "startSha": "e446ec7b053e79529d83afd2327e94743527feda",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T04:47:14Z",
+      "sessionId": "1ea802b3-916a-4f78-a539-37ca5a7f4b14",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
