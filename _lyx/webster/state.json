@@ -434,9 +434,9 @@
       }
     }
   ],
-  "currentBatch": 1,
-  "masterStrand": "1c06a35705e11073420756b41d655b63",
-  "masterSessionId": "e67c9a3b-6efc-4de8-ad4b-f411b2b012bc",
+  "currentBatch": 0,
+  "masterStrand": "0068be18351934c1680fdf7a7650d3ca",
+  "masterSessionId": "8381d0ae-383e-4d1b-bed9-9cee07a1609b",
   "batches": {
     "1": {
       "slug": "verify-log-per-run",
@@ -455,8 +455,33 @@
       "startSha": "b7d4fd0ba55de0c19ae91a8b1c114837c543bb01",
       "kind": "recovery",
       "spawnedAt": "2026-10-10T15:30:27Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "failed",
+      "digest": {
+        "batch": "01-verify-log-per-run",
+        "status": "failed",
+        "head_sha": "b7d4fd0ba55de0c19ae91a8b1c114837c543bb01",
+        "reasons": [
+          "batch 01-verify-log-per-run holds cards 1-verify-log-per-run, 2-finalize-parent-records, 3-teardown-settles-board-claim, 4-halt-note-parent-fabric-status",
+          "create-not-done/2-finalize-parent-records[blocking]: Create target \"plan:internal/landingshed#Finalize.commitParentRecords\" still does not resolve",
+          "create-not-done/2-finalize-parent-records[blocking]: Create target \"plan:internal/loomcli#parentRecordsCommitter\" still does not resolve",
+          "create-not-done/3-teardown-settles-board-claim[blocking]: Create target \"plan:internal/pairteardown#claimSettlement\" still does not resolve",
+          "create-not-done/3-teardown-settles-board-claim[blocking]: Create target \"plan:internal/pairteardown#claimKeep\" still does not resolve",
+          "create-not-done/3-teardown-settles-board-claim[blocking]: Create target \"plan:internal/pairteardown#claimDone\" still does not resolve",
+          "create-not-done/3-teardown-settles-board-claim[blocking]: Create target \"plan:internal/pairteardown#claimClear\" still does not resolve",
+          "create-not-done/3-teardown-settles-board-claim[blocking]: Create target \"plan:internal/pairteardown#claimHeld\" still does not resolve",
+          "create-not-done/3-teardown-settles-board-claim[blocking]: Create target \"plan:internal/pairteardown#settleClaim\" still does not resolve",
+          "create-not-done/3-teardown-settles-board-claim[blocking]: Create target \"plan:internal/pairteardown#Teardown.childLanded\" still does not resolve",
+          "create-not-done/3-teardown-settles-board-claim[blocking]: Create target \"plan:internal/pairteardown#Teardown.battenRunState\" still does not resolve",
+          "create-not-done/3-teardown-settles-board-claim[blocking]: Create target \"plan:internal/pairteardown#Teardown.readBoardClaim\" still does not resolve",
+          "create-not-done/3-teardown-settles-board-claim[blocking]: Create target \"plan:internal/pairteardown#Teardown.writeBoardClaim\" still does not resolve",
+          "create-not-done/3-teardown-settles-board-claim[blocking]: Create target \"plan:internal/pairteardown#Teardown.settleBoardClaim\" still does not resolve",
+          "create-not-done/4-halt-note-parent-fabric-status[blocking]: Create target \"plan:internal/fabricengine#IsWorktreeDirtyReason\" still does not resolve",
+          "create-not-done/4-halt-note-parent-fabric-status[blocking]: Create target \"plan:internal/fabricengine#Fabric.DirtyPaths\" still does not resolve",
+          "create-not-done/4-halt-note-parent-fabric-status[blocking]: Create target \"plan:internal/loomcli#loomCLI.parentDirtyPathsFromFabric\" still does not resolve",
+          "create-not-done/4-halt-note-parent-fabric-status[blocking]: Create target \"plan:internal/loomcli#renderParentFabricStatus\" still does not resolve"
+        ]
+      },
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quick-recipe/e67c9a3b-6efc-4de8-ad4b-f411b2b012bc/subagents/agent-a4797b1dac76dd596.jsonl"
       ],
