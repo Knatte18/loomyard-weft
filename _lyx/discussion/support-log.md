@@ -39,6 +39,16 @@ The run is autonomous: no operator answered, and every question below was settle
 - Reading geometry through go-git's dotgit detection: go-git does not expose the common dir cleanly for a linked worktree, and the `.git` and `commondir` files are two reads.
 - Dropping the `rev-parse --disambiguate` and `<commit>:<path>` spawns: their answers are git's own disambiguation, which no in-process read reproduces.
 - Pinning `PATTERN-shuttle-stop` by review alone: it was already found false by review with nothing to catch it.
+- Serializing hub builds under a mutex so the fixture marker is exact: it changes the before-state's timing, which D3 must capture on the unchanged suite.
+- Attributing hub-build git by the fixture's directory in trace2: code under test runs git in the same hub directory, so the directory cannot tell the two apart.
+- Refusing to run `lyx` when `GIT_DIR` or `GIT_WORK_TREE` is set: a command that never resolves cwd would escape the refusal, while dropping both in `gitexec` covers every spawn.
+- Exporting the `.git` entry reader from `gitrepo` for `lyxcwd` to import: `gitrepo`'s in-package `gogit_test.go` imports `gitkit`, whose closure reaches `lyxcwd` through `configengine` and `logger`, so that test would be an import cycle.
+- Moving `gogit_test.go`'s `gitkit` uses into an external test package to break that cycle: the test reads `Repo`'s unexported fields, so it must stay in-package.
+- `lyxcwd` owning the reader and `gitrepo` importing `lyxcwd`: puts cwd resolution inside the git client's closure for one parser, where a stdlib-only leaf carries the parser and nothing else.
+- Walking past an unusable `.git` file to an enclosing repository: git refuses there, and walking on would resolve a pruned worktree inside another repository to that repository's parent.
+- Composing the hooks directory as a join on the common dir: it ignores `core.hooksPath`, the defect `fabricengine/hook.go` records as fixed by asking `--git-path hooks`.
+- Accepting a `commondir` file without checking its target: git refuses a git dir whose common dir is gone, the pruned-worktree case after its primary repository moved.
+- Bounding the template-root match by a following path separator: a rewritten path can end at a quote or a line end, so the separator rule needs a byte list, while a reserved name prefix needs none.
 
 ## Review rounds
 
@@ -85,6 +95,26 @@ _No rounds yet._
   Rationale: lyx never documented them, and honouring them would need a spawn to be faithful.
 - Auto-pick: `RemoveStrand` scan allowlist includes `reedcli` and `shuttlefake`.
   Rationale: reed's own verb and the fake are not shuttle-run stops.
+- Auto-pick (round 1): hub-build git is marked by a process-wide marker that a build counter sets while any hub build runs.
+  Rationale: `CloneAndWire` spawns through production `gitexec`, which no fixture helper reaches.
+- Auto-pick (round 1): `gitexec` drops `GIT_DIR` and `GIT_WORK_TREE` from git children.
+  Rationale: the in-process reads ignore them, so the spawns must too; fabric's post-checkout hook already unsets them and runs no `lyx`.
+- Auto-pick (round 2, replacing round 1's export from `gitrepo`): the `.git` entry reader lives in a new stdlib-only leaf, `internal/dotgit`, imported by `gitrepo` and `lyxcwd`.
+  Rationale: round 1's premise that `gitrepo` reaches no `lyxcwd` held for production imports only; `gogit_test.go` imports `gitkit`, and `go list -deps ./internal/gitkit` includes `lyxcwd`.
+- Auto-pick (round 2): `lyxcwd`'s walk-up treats `.git` entries as git's discovery does: a non-repository `.git` directory is skipped, and a `.git` file ends the walk, refused when its target is no repository.
+  Rationale: git 2.53 refuses a broken gitfile with exit 128 and resolves past an empty `.git` directory; "as `--show-toplevel` does" must hold in both cases.
+- Auto-pick (round 2): the before and after census compares per-subcommand totals, not the code-side column.
+  Rationale: D2's overlap bias moves counts between the two columns but never changes their sum.
+- Auto-pick (round 2): the test-budget constraint states the rule instead of a package list.
+  Rationale: the list already missed `loomcli`, and the plan decides which packages gain top-level tests.
+- Auto-pick (round 3): `--git-path hooks` survives as a spawn beside the disambiguation sites.
+  Rationale: its answer depends on `core.hooksPath`, which neither a geometry join nor a ref read reproduces.
+- Auto-pick (round 3): every test-side watchdog recognizer and `/proc` pid, argv or cwd probe moves onto `tmuxkit`, stated as a rule.
+  Rationale: `loomcli` and `orchcli` keep their own beside `reedcli`'s, so a `reedcli`-only move left duplicates `PATTERN-testkit` forbids.
+- Auto-pick (round 3): the walk-up's repository test checks `objects` and `refs` in the `commondir` target.
+  Rationale: git 2.53 exits 128 on a gitfile whose git dir names a missing common dir.
+- Auto-pick (round 1): a written shared template poisons its shape for the rest of the binary.
+  Rationale: a later copy of a written template would pass its own relocation checks on a wrong fixture.
 - Resolved from the codebase: the hermetic config already sets `gc.auto=0` and `maintenance.auto=false`, so #472's fix is the leftover check plus `autoDetach=false`.
 - Resolved from the codebase: reed's clean environment strips only Claude and agent keys, so the hermetic git variables and `TMUX_TMPDIR` reach test servers.
 - Environment: nothing outside the two discussion files was found broken; `lyx loom validate-discussion` ran before writing and reported only the missing files.

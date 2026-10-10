@@ -16,11 +16,14 @@ In:
 
 - `cmd/testtiming`: a per-package resource mode, a gate slot, the before and after report under `docs/benchmarks/`.
 - `internal/gitkit` and `internal/hubforge`: the fixture git marker, the hub template cache, the relocating hub copy, the shared read-only hub and its write check.
-- `internal/testkit/tmuxkit`: the private temp directory, the hermetic pre-started server with a non-login `default-command`, the package server, the end-of-package socket and leftover-process check.
+- `internal/testkit/tmuxkit`: the private temp directory, the hermetic pre-started server with a non-login `default-command`, the package server, the end-of-package socket and leftover-process check, and the one watchdog recognizer and `/proc` pid, argv and cwd probes every test package uses.
 - `internal/testkit/lyxbin`: the prebuilt-binary variable, once-per-binary build, and running the built `lyx` under group kill.
-- `internal/gatecli`: build `lyx` once for a tagged run and export it.
-- `internal/lyxcwd`, `internal/gitrepo`, `internal/fabricengine`: in-process geometry and ref lookups replacing `rev-parse` spawns.
-- `cmd/lyx` scans: tmux spawns barred from `integration`-only files, the `RemoveStrand` call-site scan.
+- `loomcli`, `reedcli`, `orchcli` and `cmd/lyx` tests: their per-package `lyx` runners move onto `lyxbin.Run`; every test package's own watchdog recognizer and `/proc` pid, argv or cwd probe is deleted in favour of `tmuxkit`'s.
+- `internal/gatecli`: build `lyx` once for a tagged run and export it, and strip an inherited value on an untagged run.
+- `internal/shuttleengine/claudeengine`: the prebuilt-binary variable joins the raw-go deny pattern and its steer text.
+- `internal/dotgit` (new), `internal/lyxcwd`, `internal/gitrepo`, `internal/fabricengine`: in-process geometry and ref lookups replacing `rev-parse` spawns.
+- `internal/gitexec`: drops `GIT_DIR` and `GIT_WORK_TREE` from every git child's environment.
+- `cmd/lyx` scans: tmux spawns barred from `integration`-only files, `hubforge.CopyHub` and `hubforge.SharedHub` barred from untagged files, the `RemoveStrand` selector scan.
 - Every tier-2 test that starts reed moves its reed-starting half into a `tmux` file.
 - Every hub-taking test is reclassified onto the shared template, a copy, or a fresh build.
 - Docs: `PATTERN.md` and the pattern background files named under Constraints, the package docs of every package above, `docs/benchmarks/running-tests.md`, `cmd/lyx/testdata/test-budget.yaml`.
@@ -49,15 +52,19 @@ Rationale: the goal names those columns, `go test -json` gives wall time only, a
 
 ### D2. Fixture git carries a marker; the harness splits the census on it
 
-Decision: every git process spawned by `gitkit` or `hubforge` carries an environment variable naming it fixture git (one constant, declared in `gitkit`, set by both packages' spawn helpers).
+Decision: fixture git carries an environment variable naming it fixture git (one constant, declared in `gitkit`).
+`gitkit`'s and `hubforge`'s own spawn helpers set it on the child.
+A hub build (`NewHub`, `AddPair`, and D11's template build) spawns its git through production `fabriccli.CloneAndWire` and `gitexec`, which no helper reaches, so `hubforge` sets the marker in the process environment for the build's duration: a counter under a `hubforge` mutex sets it when the first concurrent build starts and unsets it when the last one ends, so hub builds are not serialized.
 The harness points `GIT_TRACE2_EVENT` at a per-package directory, sets `GIT_TRACE2_ENV_VARS` to that variable and `trace2.maxFiles` to unlimited, and counts one file per git process, by subcommand, split on whether the marker was present.
-Git spawned by `lyx` (in-process `gitexec` or the built binary) carries no marker and counts as code under test.
-Rationale: the board names this split as the measurement's first job, and trace2's env-var capture is the one mechanism that labels a process by its spawner without touching production code.
+Any other git spawned by `lyx` (in-process `gitexec` or the built binary) carries no marker and counts as code under test.
+Bound: code-under-test git that a parallel test spawns while any hub build is in flight counts as fixture git; the report states that the split is exact for serial packages and approximate where hub builds overlap other tests.
+Rationale: the board names this split as the measurement's first job, and trace2's env-var capture is the one mechanism that labels a process by its spawner without touching production code; the process-wide marker is the one way to label the git a production call spawns on a fixture's behalf.
 
 ### D3. The report is measured twice in the same pair
 
 Decision: the first card lands the harness and records the before-state in `docs/benchmarks/test-suite-weight.md`, one table per tier, with the load average and the git census; the last card re-measures into the same file as the after-state.
 The file is a measurement report and may go stale; `running-tests.md` names the command that regenerates it.
+A before-to-after change in a git subcommand's count is read from its per-subcommand total, fixture and code summed, which D2's overlap bias does not move; the fixture/code split is reported beside it and never used for the comparison.
 Rationale: a before-state must be captured on the unchanged suite, and the operator can repeat the command on a quiet machine when the pair's run was loaded.
 
 ### D4. tmuxkit pre-starts every server it covers, hermetic and non-login
@@ -82,15 +89,20 @@ Under those tags it fails the package when a socket appeared whose key was not r
 Decision, static: the tier-purity scan, which bars tmuxkit spawns from untagged files, also bars them from files whose constraint lacks `tmux` and `llm`.
 Consequence: every tier-2 test that starts reed today, such as `loomcli`'s resume-after-reconcile test, splits its reed-starting assertions into a `tmux` file; the reconcile assertions stay tier 2 behind a verb that does not arm.
 Bound: a test that points `TMUX_TMPDIR` elsewhere escapes the runtime check, and a server started by a binary other than tmux is outside it.
+A package with only untagged files never calls `Main`, so it has neither the runtime check nor `TMUX_TMPDIR` isolation; a tier-1 test that reaches tmux through a production call, such as `reedengine` starting a server, passes the token scan and starts a server in the operator's default socket directory unchecked.
+That transitive escape is the same one the tier-purity scan already accepts for `DeltaGit`, and review is what catches it.
 Rationale: starting tmux has no static shape, so the socket directory tmuxkit already owns is the one place every server shows up.
 
 ### D7. `lyx` is built once per gate run and named by an environment variable
 
-Decision: `lyxbin` reads a variable naming a prebuilt `lyx`; when set, every `Build*` returns it after checking it exists and is executable, and fails the test naming a missing file as stale.
+Decision: `lyxbin` reads a variable naming a prebuilt `lyx`; when set, a default-flag build (`Build`, and `BuildInto` with empty ldflags) returns it after checking it exists and is executable, and fails the test naming a missing file as stale.
+A build with non-empty ldflags, such as `reedcli`'s switch-seed test stamping `buildinfo.Channel`, never returns the prebuilt binary: it builds once per test binary and per ldflags value.
 When unset, `lyxbin` builds once per test binary into the private temp directory of D8, so a raw `go test` on one package builds once, not once per test.
-`lyx gate test` with a non-empty `--tags` builds `./cmd/lyx` once into a per-invocation temp directory, inside the slot it holds, and exports the variable to `go test`; `cmd/testtiming` does the same for a tagged run.
+`lyx gate test` with a non-empty `--tags` builds `./cmd/lyx` once into a per-invocation temp directory, inside the slot it holds, and exports the variable to `go test`; with no tags it strips an inherited value from the child's environment; `cmd/testtiming` does the same for a tagged run.
 The variable joins the names an agent's shell command may not spell, beside the slot and strand variables.
-Bound: a forged value points every package at a binary from another tree; the agent deny closes it for spawned sessions, and an operator shell is outside it.
+Bound: a forged value points every package of a raw `go test` at a binary from another tree.
+The agent deny matches static text only, so a spawned session that sets the variable through a script, `bash -c` or a shell variable passes it, and an operator shell is outside it.
+A forged value never reaches a gated run, because `lyx gate test` always sets or strips the variable itself; the verify gates and the push rule run through it, so a forged binary can mislead only an ungated raw run.
 Rationale: four packages link tree-sitter through cgo on their own today; one build per run is the goal, and tier 1 never needs the binary by the tier-purity scan.
 
 ### D8. A private temp directory per test binary and a leftover-process check
@@ -98,10 +110,11 @@ Rationale: four packages link tree-sitter through cgo on their own today; one bu
 Decision: `tmuxkit.Main` points `TMPDIR` (`TMP` and `TEMP` on Windows) at a private directory for the binary's life, so every `t.TempDir`, `os.MkdirTemp("")`, `lyxbin` build and child temp file lands there.
 After `m.Run` it waits a bounded grace (a constant in tmuxkit, injectable for its own test), then on Linux scans `/proc` for processes whose cwd, exe or argv reference that directory, kills them, and fails the package naming pid and argv.
 A `lyx reed watchdog` is killed without failing the package: reed's daemon idles out on its own schedule and `daemon-wakeups` owns that schedule.
+The watchdog recognizer and the `/proc` probes it and the leftover scan share (listing pids, reading a pid's argv and cwd) live in `tmuxkit` as exported helpers, and no test package keeps its own: every test-side watchdog recognizer and `/proc` pid, argv or cwd probe moves onto them, whichever package holds it today.
 Then the directory is removed.
 Off Linux the scan is skipped and the directory is removed.
 Bound: a child whose cwd, exe and argv do not mention the directory escapes; a package that does not call `tmuxkit.Main` (untagged-only packages) has no check, which is fine because tier 1 spawns nothing.
-Rationale: this is the goal's "every test waits for the git and lyx children it starts", enforced without knowing how each test spawns, and it is where #472's lingering writer becomes a named failure instead of a flaky `TempDir` cleanup.
+Rationale: this is the goal's "a package fails when a test leaves a child running", enforced without knowing how each test spawns, and it is where #472's lingering writer becomes a named failure instead of a flaky `TempDir` cleanup.
 
 ### D9. Fixture git never gcs in the background
 
@@ -121,34 +134,53 @@ Rationale: today a timed-out `lyx` leaves its git children running, and `PATTERN
 
 Decision: `hubforge` builds, once per test binary and per shape, a template hub through `NewHub` plus `AddPair` for the shape's pairs; a shape is an anchor plus an ordered list of pair slugs, from a closed set declared in `hubforge`.
 `CopyHub(tb, shape)` returns a relocated copy of the template: every regular file copied without following links, the template root path rewritten to the copy's in every text file (both separator spellings), every link recreated through `fslink` with its rewritten target, the bares copied and their URLs rewritten, and the copy verified to contain the template root nowhere before it is returned.
+The template root's last path element begins with a fixed `hubforge` prefix that no `t.TempDir` path element carries, so no copy path has the template root as a string prefix, and neither the rewrite nor the verification scan can match a copy's own path.
 `SharedHub(tb, shape)` returns the template itself for a test that only reads it, and registers a cleanup that fingerprints the template's file tree in-process (paths, sizes, mtimes) and fails the test when the fingerprint changed since the template was built, naming the fixture; with `t.Parallel` the blame may land on a sharer, and the message says so.
+A changed fingerprint poisons the template for the rest of the test binary: `SharedHub` and `CopyHub` both compare the fingerprint against the build-time one before returning, and a mismatch, or a template an earlier check found changed, fails the calling test naming the fixture, so no later test runs on or copies a written template.
 `NewHub` stays for a shape outside the set.
-A write is any fabric mutating verb, any git write, `SeedConfig`, `AddPair`, and any run of the `lyx` binary, since every `lyx` command's pre-run seeds and commits.
+A write is anything that may change a file under the hub: any fabric mutating verb, `SeedConfig`, `AddPair`, any run of the `lyx` binary (every `lyx` command's pre-run seeds and commits), any in-process CLI verb (a verb that calls `hubreconcile.Ensure` writes and commits without being a fabric verb), and any spawned git subcommand, since a read such as `status` can rewrite `.git/index`.
+A read is a file read, a link read, or an in-process go-git read; the plan classifies a test as reads-only only when every hub access it makes is a read.
 The plan classifies every hub-taking test: reads only, shared; writes, copy of the nearest shape; shape outside the set, fresh.
 `gitkit.CopyRepo` is unchanged and stays pinned to `lyxcwd`.
+The tier-purity scan's banned tokens gain `hubforge.CopyHub` and `hubforge.SharedHub`, beside `hubforge.NewHub`, because both build a real hub on first use.
 Bound: the relocation rewrites text files only; a binary file carrying an absolute path would survive it, and the verification scan is what catches one.
+A write by a parallel sharer between a caller's entry check and its use passes that caller's check and is caught by the next check, which fails and poisons the template.
 Rationale: a hub cannot be copied byte for byte because its links and worktree pointers carry absolute paths, and a text rewrite plus relinking is the one relocation that needs no knowledge of which files carry them.
 
 ### D12. Geometry and ref lookups run in-process
 
 Decision:
 
-- `lyxcwd` finds the worktree root by reading the `.git` entry at cwd (a directory, or a `gitdir:` file whose target exists) and spawns no git on the happy path; a cwd with no usable `.git` entry is refused as today, with the same message.
-- `gitrepo` reads a repository's geometry (git dir, common dir, toplevel) from its `.git` entry and `commondir` file once per handle and caches it for the handle's life; a `--git-path` derivation becomes a join on that geometry, per-worktree paths (`HEAD`, `MERGE_HEAD`, `index`) on the git dir and shared ones on the common dir.
+- A new leaf package, `internal/dotgit`, importing only the standard library, reads a directory's `.git` entry: a `.git` directory, or a `gitdir:` file followed to its git dir, plus the git dir's `commondir` file.
+  It is the only `.git` parser; `gitrepo` and `lyxcwd` both import it.
+  It cannot live in `gitrepo`: `gitrepo`'s in-package `gogit_test.go` imports `gitkit`, which reaches `lyxcwd` through `configengine` and `logger`, so `lyxcwd` importing `gitrepo` is an import cycle in that test, and the test stays in-package because it reads `Repo`'s unexported fields.
+- `gitrepo` reads a repository's geometry (git dir, common dir, toplevel) through `dotgit` once per handle and caches it for the handle's life; a `--git-path` derivation becomes a join on that geometry, per-worktree paths (`HEAD`, `MERGE_HEAD`, `index`) on the git dir and shared ones on the common dir.
+- `lyxcwd` finds the worktree root by walking up from cwd through `dotgit`, as `--show-toplevel` does, and spawns no git on the happy path.
+  A `.git` directory ends the walk only when it is a repository: it holds `HEAD`, and its common dir, the `commondir` file's target when that file exists and the directory itself otherwise, holds `objects` and `refs` directories; any other `.git` directory is skipped, as git skips it.
+  A `.git` file ends the walk: its `gitdir:` target must be a repository by the same test, and otherwise the cwd is refused with `ErrNotAGitRepo`, as git refuses it, never resolved to an enclosing repository.
+  The recorded-anchor read and the anchor gate are unchanged, so a subpath-anchored hub resolves at its anchor directory as today, and a subdirectory elsewhere still fails the gate with `ErrCwdOutsideAnchor`; a cwd with no repository up to the filesystem root is refused with `ErrNotAGitRepo` and today's message.
 - Ref reads go through go-git: branch existence, HEAD's branch or detached state, HEAD's tree, the upstream of a branch, a ref's SHA.
-- `fabricengine`'s `rev-parse` spawns move onto those reads; a `rev-parse` survives only where the answer is git's own disambiguation (`--disambiguate`, `<commit>:<path>` existence).
+- `fabricengine`'s `rev-parse` spawns move onto those reads; a `rev-parse` survives only where the answer is git's own disambiguation (`--disambiguate`, `<commit>:<path>` existence) or depends on config, as `--git-path hooks` does: it names the `core.hooksPath` directory when one is set, which a join on the common dir would miss.
 - Every new read gains a row in the `gitoracle` parity test, the unborn branch and detached HEAD included.
 
 Nothing else is cached: HEAD and refs change under a process.
-`GIT_DIR` and `GIT_WORK_TREE` are not honoured by the in-process reads; a bare repository has no worktree and is refused as today.
-This refines `PATTERN-gitrepo-client-boundary`: go-git owns local reads, and `gitrepo`'s dotgit geometry read is the one local read beside it.
+`GIT_DIR` and `GIT_WORK_TREE` are not honoured by the in-process reads, and `gitexec` drops both from every git child's environment, so the surviving spawns follow the directory `lyx` names exactly as the in-process reads do, and one command never reads one repository and writes another; a bare repository has no worktree and is refused as today.
+Bound: an operator who sets either variable to point `lyx` at another repository has it ignored; `lyx`'s own post-checkout hook already unsets them and never runs `lyx`.
+This refines `PATTERN-gitrepo-client-boundary`: go-git owns local reads, and `gitrepo`'s geometry read through `dotgit` is the one local read beside it.
 Rationale: `rev-parse` was 38% of the census, nearly all geometry or ref lookups, and the goal is fewer spawns in every `lyx` command, not only in tests.
 
 ### D13. A scan pins `PATTERN-shuttle-stop`
 
-Decision: a `cmd/lyx` scan over production Go files fails when `RemoveStrand(` is called outside `internal/reedengine` (the owner), `internal/reedcli` (reed's own verb), `internal/shuttleengine`, `internal/loomcli`, `internal/orchcli` and `internal/testkit/shuttlefake`, naming the file; the allowlist is written once in the scan and matches the entry's exemption list, and the entry gains "(test)".
-Bound: the scan sees the call site, not whose strand it removes; `loomcli` and `orchcli` removing a shuttle run's strand is review discipline.
+Decision: a `cmd/lyx` scan over production Go files fails, naming the file, when a selector `.RemoveStrand` appears outside `internal/reedengine` (the owner), `internal/reedcli` (reed's own verb), `internal/shuttleengine`, `internal/loomcli`, `internal/orchcli` and `internal/testkit/shuttlefake`; the selector match catches a method value such as `reed.RemoveStrand` handed to a wrapper as well as a call.
+The allowlist is written once in the scan, and the entry's text is amended to name every allowed package: `reedengine` as reed's owner, `reedcli` as reed's own remove verb and `shuttlefake` as the test fake, beside its existing `shuttleengine`, `loomcli` and `orchcli`; the entry gains "(test)".
+Bound: the scan sees the selector, not whose strand it removes; `loomcli` and `orchcli` removing a shuttle run's strand is review discipline, and so is an allowed package handing the method out under another name, as `orchcli`'s strand-ops wrapper does.
 Rationale: the entry was found false with nothing to catch it; a call-site scan is what makes the next drift visible.
+
+### Added after Discussion (parent, 2026-10-10): rev-parse --git-path hooks survives D12
+
+Decision: D12's survival rule covers every answer git derives from config or revision syntax, not only disambiguation: the rev-parse --git-path hooks spawn in internal/fabricengine/hook.go stays, since it honours core.hooksPath; the acceptance criterion that only disambiguation sites survive reads with this exception.
+
+Rationale: Round 3 F1: the hooks path depends on config, not geometry, so no in-process join can reproduce it, and replacing it would reintroduce the core.hooksPath bug hook.go records as fixed.
 
 ## Constraints
 
@@ -157,14 +189,16 @@ Rationale: the entry was found false with nothing to catch it; a call-site scan 
 - `PATTERN-testkit`: `lyxbin`'s bound widens per D10; `tmuxkit`'s bound covers starting its servers with its own config and the `/proc` scan; no kit imports `hubforge`, so D11's fingerprint lives in `hubforge`.
 - `PATTERN-hubforge-fixtures`: every hub fixture is still built through `fabriccli.CloneAndWire`; a copy is a relocation of such a hub, and the entry says so.
 - `PATTERN-gate-slot`: the harness takes a slot, and `lyx gate test`'s build runs inside the slot it holds.
-- `PATTERN-cwd-resolution`: `lyxcwd` keeps sole ownership of worktree-root resolution; D12 changes its implementation, not its boundary, and the background's "imports gitexec only" line is updated if the import goes.
+- `PATTERN-cwd-resolution`: `lyxcwd` keeps sole ownership of worktree-root resolution, and its import cap widens to admit `dotgit`: the background's "imports the standard library and `internal/gitexec` only" line and `lyxcwd`'s `leaf_enforcement_test.go` allowlist both gain `internal/dotgit` in the same commit, and `gitexec` leaves both if `lyxcwd` no longer imports it.
+  The cap keeps `fabricengine -> logger -> lyxcwd` acyclic, so `dotgit` inherits that duty by importing the standard library alone.
+- `PATTERN-leaf-packages`: gains `internal/dotgit`, importing only the standard library, with a test-pinned allowlist like `lyxcwd`'s.
 - `PATTERN-gitrepo-client-boundary`: refined by D12 as stated there.
 - `PATTERN-gogit-read-helper`: every new go-git read runs through `readGoGit`.
 - `PATTERN-hub-store-gc`: untouched; D9 configures fixture repositories, not hub stores.
 - `PATTERN-spawn-observability`: `lyx gate test`'s build logs its spawn; the harness and the kits are outside the rule.
 - `PATTERN-no-denied-recovery`: the new variable is a denied name, so no refusal or stencil may spell it.
-- `PATTERN-shuttle-stop`: pinned by D13.
-- `PATTERN-test-economy` and the test budget: new behaviour is covered at the kits' public surface; rows for `tmuxkit`, `lyxbin`, `hubforge`, `gitkit`, `cmd/testtiming`, `cmd/lyx`, `lyxcwd`, `gitrepo` and `gatecli` are raised in the same commit as the tests that need it.
+- `PATTERN-shuttle-stop`: pinned by D13, and its exemption list amended to D13's allowlist.
+- `PATTERN-test-economy` and the test budget: new behaviour is covered at the kits' public surface; a package's row in `cmd/lyx/testdata/test-budget.yaml` rises in the same commit as the tests that push the package past it.
 - Docs land in the same commit: package docs of every changed package, the pattern background files above, `running-tests.md`; `docs/overview.md` is unchanged unless the module table changes.
 - CLAUDE.md's push rule is unchanged: both tiers through `lyx gate test`.
 
@@ -181,7 +215,7 @@ Rationale: the entry was found false with nothing to catch it; a call-site scan 
 ## Open risks
 
 - Relocation completeness: a wired hub may carry an absolute path in a file the text rewrite does not reach; the verification scan fails the copy, and the plan's first copy test exercises a hub with a pair, a records sibling, portals and launchers.
-- Shared-hub blame: a parallel sharer's write can be blamed on a reader; the message names the fixture so the writer is found by `-run`.
+- Shared-hub blame: a parallel sharer's write can be blamed on a reader; the message names the fixture so the writer is found by `-run`, and D11's poisoning fails every later `SharedHub` and `CopyHub` of that shape instead of letting them run on the written template.
 - Process count noise: the fork counter is system-wide; a loaded run inflates it, and the report says so.
 - `go test` passes the environment through to test binaries, and reed strips only its own keys; a future stripper could drop the prebuilt-binary variable, which `lyxbin` reports as a missing file.
 - Moving reed-starting tests to tier 3 moves their coverage from the batch gate to Publish; the tmux-tier impacted pass at the round gate with a Publish failure record is the backstop.
@@ -190,25 +224,27 @@ Rationale: the entry was found false with nothing to catch it; a call-site scan 
 ## Acceptance criteria
 
 - `go run ./cmd/testtiming -resources` prints, for every package of the tier, the columns of D1, and the report file holds a before and an after table per tier with the load average.
-- A git spawned by `gitkit` or `hubforge` is counted as fixture git; one spawned by `gitexec` in the same binary is counted as code under test.
+- A git spawned by `gitkit` or `hubforge`, including one `fabriccli.CloneAndWire` spawns inside `NewHub`, is counted as fixture git; one spawned by `gitexec` in the same binary outside a hub build is counted as code under test.
 - A tmux server started through `Socket`, `KillOnCleanup` or `PackageServer` reads no `~/.tmux.conf`, and a strand pane reed splits on it runs a non-login shell.
 - Two tests of one package share one `PackageServer` key and a hub-driven test keeps its hub key.
 - A package built without `tmux` or `llm` whose test starts a tmux server fails after `m.Run`, naming the socket; a `tmux` build with an unregistered socket fails the same way.
-- A file constrained to `integration` alone that references a tmuxkit spawn fails the tier-purity scan.
-- With the variable set to an existing executable, `lyxbin.Build` returns it without building; with it set to a missing path, the test fails naming it stale; unset, two tests in one binary share one build.
-- `lyx gate test --tags integration <pkg>` builds `lyx` once and the package's tests see the variable; `lyx gate test <pkg>` with no tags builds nothing.
+- A file constrained to `integration` alone that references a tmuxkit spawn fails the tier-purity scan, and an untagged file that references `hubforge.CopyHub` or `hubforge.SharedHub` fails it too.
+- With the variable set to an existing executable, `lyxbin.Build` returns it without building; with it set to a missing path, the test fails naming it stale; unset, two tests in one binary share one build; set or unset, `BuildWithLDFlags` with non-empty flags builds a binary carrying those flags.
+- `lyx gate test --tags integration <pkg>` builds `lyx` once and the package's tests see the variable; `lyx gate test <pkg>` with no tags builds nothing, and its tests do not see an inherited value.
 - A spawned agent's command that names the variable is denied.
 - A test that leaves a child whose argv names the package's temp directory fails the package after `m.Run`, naming pid and argv, and the child is gone; a leftover `lyx reed watchdog` is killed without a failure.
 - `t.TempDir` of a tagged package lands under the private directory, and the directory is gone after `Main` returns.
 - The hermetic config disables detached gc, and a `lyx` child run through `lyxbin.Run` sees the hermetic variables.
 - `lyxbin.Run` on a command that outlives its timeout kills the command's group and returns a timeout error.
 - `CopyHub` of a one-pair shape yields a hub where `fabric status` is clean, `git worktree list` resolves, the portals and launcher links resolve, and no file contains the template root.
-- `SharedHub` fails the test that writes into it, naming the fixture.
-- `lyxcwd.Resolve` on a worktree root, a linked worktree, and a `.git` file with a relative `gitdir:` spawns no git; a directory without `.git` is refused with today's message.
+- `SharedHub` fails the test that writes into it, naming the fixture, and a later `SharedHub` or `CopyHub` of the same shape in that binary fails naming the fixture.
+- `lyxcwd.Resolve` on a worktree root, a linked worktree, a `.git` file with a relative `gitdir:`, and a subpath anchor's directory spawns no git and returns the same `Location` as today; a subdirectory outside the anchor fails with `ErrCwdOutsideAnchor`, and a directory under no `.git` is refused with today's message.
+  Inside an outer repository, a directory whose `.git` file names a missing git dir, or a git dir whose `commondir` target is missing, is refused with `ErrNotAGitRepo`, and a directory holding an empty `.git` directory resolves to the outer repository, all as `rev-parse --show-toplevel` does.
+- A git child spawned through `gitexec` while `GIT_DIR` or `GIT_WORK_TREE` is set in `lyx`'s environment sees neither.
 - `gitrepo`'s geometry read matches `rev-parse --git-dir`, `--git-common-dir` and `--show-toplevel` on a primary and a linked worktree, in the parity oracle.
 - The ref reads match `rev-parse` on an unborn branch, a detached HEAD, a branch with and without upstream, in the parity oracle.
-- `fabricengine`'s integration tier passes with `rev-parse` surviving only at the disambiguation sites, and the census shows the drop.
-- A production file outside the allowlist calling `RemoveStrand(` fails the scan naming the file.
+- `fabricengine`'s integration tier passes with `rev-parse` surviving only at the disambiguation sites and `--git-path hooks`, the hook lands in the `core.hooksPath` directory on a repository that sets it, and the census shows the drop in `rev-parse`'s per-subcommand total.
+- A production file outside the allowlist that calls `RemoveStrand` or takes it as a method value fails the scan naming the file.
 - `TestLoomResumeReconcilesTheHubConfigBeforeArming`'s reconcile half runs in tier 2 and starts no tmux; its arming half runs in a `tmux` file.
 
 ## Notes for the plan writer
@@ -218,5 +254,5 @@ Rationale: the entry was found false with nothing to catch it; a call-site scan 
 - `internal/gatecli/run.go` builds the environment the child gets; the build step goes before `go test` there.
 - `internal/reedengine/lifecycle.go` starts the server with `new-session` against a key; D4's pre-start must leave that call working.
 - `cmd/lyx/tierpurity_test.go` and `tmuxkitspawn_test.go` are where D6's static half lives; `knownTierTags` is the tag vocabulary.
-- `internal/reedcli/smoke_proctree_test.go` already recognises the watchdog daemon; D8 reuses that recognition.
+- `internal/reedcli/smoke_proctree_test.go` already recognises the watchdog daemon; D8 moves that recognizer into `tmuxkit`.
 - The census tool in `docs/benchmarks/fixture-copy.md` describes the trace2 directory method D2 reuses.
