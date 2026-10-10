@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | At | Labels |
 | --- | --- | --- | --- | --- |
-| 3 | **Reed hygiene: daemon log and socket path, plain strand shells, watchdog child CPU** | [`reed-hygiene`](design-reed-hygiene.md) | Webster-Bouncer | reed |
+| 3 | **Reed hygiene: daemon log and socket path, plain strand shells, watchdog child CPU** | [`reed-hygiene`](design-reed-hygiene.md) | Webster-Burler | reed |
 | 4 | **Loop machinery small bugs: bounce budget, PR-Gate comment, sleep-aware idle, skill-load hold**<br>• Five small faults in burler/loom, shed, batten and shuttle | [`loop-small-bugs`](design-loop-small-bugs.md) | Discussion-Write | loom, burler, shed, batten, shuttle |
 
 ### Ready
