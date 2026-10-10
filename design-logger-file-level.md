@@ -1,4 +1,4 @@
-# Configurable file log level in logger.yaml
+# Config-driven file log level
 
 `logger-file-level` · Note · enhancement, config
 
