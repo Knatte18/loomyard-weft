@@ -233,6 +233,14 @@ Rationale: Round 3 F3: git refuses a missing commondir target (rev-parse --show-
 - Moving reed-starting tests to tier 3 moves their coverage from the batch gate to Publish; the tmux-tier impacted pass at the round gate with a Publish failure record is the backstop.
 - go-git's view of an unborn branch and a detached HEAD must match `rev-parse --abbrev-ref HEAD` with the unborn fallback; the parity rows pin it.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/discussion/round-3-review.md; fixer report: _lyx/reviews/discussion/round-3-fixer-report.md.
+  - d12-hooks-path-spawn-removed (class design, severity BLOCKING, open in rounds 3)
+  - d12-walkup-diverges-from-show-toplevel (class design, severity MEDIUM, open in rounds 2, 3)
+  - d8-proc-probes-duplicated (class design, severity BLOCKING, open in rounds 2, 3)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - `go run ./cmd/testtiming -resources` prints, for every package of the tier, the columns of D1, and the report file holds a before and an after table per tier with the load average.
