@@ -1282,18 +1282,19 @@
     {
       "id": 301,
       "slug": "retire-loom-status-strand",
-      "title": "Retire the loom-status strand; the driver pane is the run status",
+      "title": "driver-context brought the loom-status pane back on llm-driven runs",
       "kind": "note",
       "labels": [
-        "enhancement",
+        "bug",
         "loom",
         "reed"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
-      "brief": "Runs still open a loom-status pane at the top of their window; the driver pane already shows the run state",
-      "body": "## Seen\n\nEvery run still opens a `loom-status` strand (`statusStrandDisplayName` in `internal/loomcli/bootstrap.go`) at the top of its tmux window, as `quick-recipe` showed on 2026-10-10.\n`driver-context` (f5b5218f7) kept it for both driver kinds.\nThe operator reads a run's state from its driver pane, so the status pane is outdated and only takes window space.\n\n## Idea\n\nStop spawning the `loom-status` strand; the driver pane is the run's status.\n"
+      "brief": "Since f5b5218f7 lyx loom start keeps the status strand on every run; llm-driven runs had removed it, and the driver pane is the run status",
+      "body": "## Seen\n\n`driver-context` (f5b5218f7) brought the `loom-status` strand back on llm-driven runs: `lyx loom start` now ensures the status strand on every run, where it used to remove it on an llm-driven one (`internal/loomcli/start.go`, its step 2 and `mustUseLLMDriverArm`).\nRuns started on the new binary, `quick-recipe` and the restarted `cli-surface` (2026-10-10), again show a `loom-status` pane at the top of their window; runs started before it do not.\nThe operator reads a run's state from its driver pane, and llm-driven runs had shown no status pane for a long time.\n\n## Idea\n\nRestore the earlier behaviour: an llm-driven run removes the status strand, and only a go-driven run keeps it.\n"
     }
   ]
 }
