@@ -1,6 +1,6 @@
 # Finalize blocks on the parent weft's uncommitted batten status records
 
-`finalize-weft-batten-dirty` · Note · bug
+`finalize-weft-batten-dirty` · Note · bug, fabric, batten
 
 Imported from [issue #501](https://github.com/Knatte18/loomyard/issues/501).
 

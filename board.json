@@ -1503,7 +1503,9 @@
       "title": "Finalize blocks on the parent weft's uncommitted batten status records",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "fabric",
+        "batten"
       ],
       "issues": [
         501
