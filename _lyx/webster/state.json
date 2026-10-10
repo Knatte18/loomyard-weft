@@ -682,7 +682,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 13,
   "masterStrand": "024106e45ef378afbaedeac64b0dfd00",
   "masterSessionId": "4b72a718-bcaa-4396-ac52-cd53831c7acf",
   "batches": {
@@ -728,6 +728,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-replan-state/4b72a718-bcaa-4396-ac52-cd53831c7acf/subagents/agent-af606b7cd26f1ebf4.jsonl"
       ]
+    },
+    "13": {
+      "slug": "fabric-reader-verbs",
+      "cards": [
+        "13-fabric-reader-verbs",
+        "14-read-only-classifier-allow-list",
+        "15-fabric-reference-policy-at-record-batch",
+        "16-recover-batch-accepts-read-only-fabric-references",
+        "17-gate-and-verify-drop-the-strand-name"
+      ],
+      "cardHashes": {
+        "13-fabric-reader-verbs": "617e89a5b06c62308451419a3d2ed239a01dd0473cf1f3ee14f3014c256b3059",
+        "14-read-only-classifier-allow-list": "ed6a29583d1923a95f9beaa16f1e76764fb74e48e268f9de01a1bc690d674fc9",
+        "15-fabric-reference-policy-at-record-batch": "0ca67227e2aa6cb5d1bd3ce25190fd20f563f1aa8b96ee9efd8c926fd587f871",
+        "16-recover-batch-accepts-read-only-fabric-references": "8b5c6569beb73baf8a2eb87f3542a1e09d46167e00ec8fb093d20711215dab0b",
+        "17-gate-and-verify-drop-the-strand-name": "eb5aa42545b8ee203dbace2eda55ca8bcb06de8fbf6b20cda37ac8d500dca431"
+      },
+      "startSha": "548c81ff883caa84c19374dac2488fcb79b02177",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T13:13:33Z",
+      "sessionId": "4b72a718-bcaa-4396-ac52-cd53831c7acf",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "plan-gate-done-card-edited",
