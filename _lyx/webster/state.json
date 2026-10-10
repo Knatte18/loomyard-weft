@@ -1074,7 +1074,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "5c22230428022e32cdafd47073ba6706",
   "masterSessionId": "143f4fc0-509f-4ad6-be6b-62362a043089",
   "batches": {
@@ -1158,6 +1158,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/143f4fc0-509f-4ad6-be6b-62362a043089/subagents/agent-ac8347d604cbb13df.jsonl"
       ]
+    },
+    "8": {
+      "slug": "reedcli-probes-onto-tmuxkit",
+      "cards": [
+        "08-reedcli-probes-onto-tmuxkit",
+        "09-loomcli-resume-split",
+        "10-tmuxkit-socket-check",
+        "11-lyxbin-prebuilt",
+        "12-lyxbin-run",
+        "13-gatecli-prebuild"
+      ],
+      "cardHashes": {
+        "08-reedcli-probes-onto-tmuxkit": "c84e609f234e698f76a91b63f0cef2b0cc13a83e81eea8685ba785a216f605d7",
+        "09-loomcli-resume-split": "0225da4f10c9659c1fbdf89773ad56e794d903acfdfce1f40e005857acba4bbc",
+        "10-tmuxkit-socket-check": "3f721656298e2938d67e37e5ae5a103f6d05104712195ac687b8bc652df3401d",
+        "11-lyxbin-prebuilt": "888a4a4618837ca4c5a870171bc80e915c8834d602e2ca994d267670610e3897",
+        "12-lyxbin-run": "b3a91837d2792e5b55732ef3b15e48c5cc27fe11f34f34d412630ef95e181780",
+        "13-gatecli-prebuild": "a41466a5bbdf1ae3c0e882b8819c49e0a6a3e55af9e1782fbc150abb62cef870"
+      },
+      "startSha": "f0c572e2c04a08515fba4817d146db4399b16c60",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T09:50:43Z",
+      "sessionId": "143f4fc0-509f-4ad6-be6b-62362a043089",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
