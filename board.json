@@ -1459,21 +1459,6 @@
       "isolated": false,
       "brief": "",
       "body": "From `test-suite-weight` Discussion review (2026-10-10, round 3 F2): its D8 moves `reedcli`'s watchdog recognizer and `/proc` probes into `tmuxkit`, but `loomcli` (`smoke_helpers_test.go`) and `orchcli` (`smoke_live_test.go`) keep their own copies.\nA parent decision kept those two copies out of that run's scope.\n\nIdea: fold the `loomcli` and `orchcli` copies onto `tmuxkit` once `test-suite-weight` lands, per `PATTERN-testkit`.\n"
-    },
-    {
-      "id": 278,
-      "slug": "batten-notice-lean",
-      "title": "Batten notices without absolute paths and attach tail",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "batten"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Seen (2026-10-10): every `[batten notice]` injected into the orch session carries absolute paths (`output: /home/.../\u003cslug\u003e/.lyx/verify/verify.log`, `report: /home/.../\u003cslug\u003e/_lyx/shed/\u003cslug\u003e/drive-reports/...`) and ends with `cd \u003cpair\u003e \u0026\u0026 lyx reed attach`.\nThe orch knows the hub and pair layout and composes the attach command itself from its role, so the tail and the repeated hub prefix are tokens paid on every notice, in an Opus session whose every turn re-reads its context.\n\nIdea:\n- Paths in a notice are relative to the task pair (`.lyx/verify/verify.log`, `_lyx/shed/\u003cslug\u003e/drive-reports/...`), since the slug already names the pair.\n- Drop the trailing `cd \u003cpair\u003e \u0026\u0026 lyx reed attach` from the notice.\n"
     }
   ],
   "legacy_done": [
