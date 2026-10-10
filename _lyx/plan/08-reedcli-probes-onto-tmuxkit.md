@@ -5,10 +5,10 @@
 - `internal/reedcli/smoke_test.go`
 
 **Uses:**
-- `plan:internal/testkit/tmuxkit#Pids`
-- `plan:internal/testkit/tmuxkit#ProcArgv`
-- `plan:internal/testkit/tmuxkit#ProcCwd`
-- `plan:internal/testkit/tmuxkit#IsWatchdog`
+- `internal/testkit/tmuxkit#Pids`
+- `internal/testkit/tmuxkit#ProcArgv`
+- `internal/testkit/tmuxkit#ProcCwd`
+- `internal/testkit/tmuxkit#IsWatchdog`
 
 **Intent:** The second half of D8 as amended: reedcli's own copies of the pid, argv and cwd probes and the watchdog recognizer go, and the kit's are used instead.
 `linuxPids`, `linuxProcArgv`, `linuxProcCwd` and `linuxIsWatchdogDaemon` are deleted from `smoke_proctree_test.go`; `linuxProcPPID`, `linuxProcComm`, `linuxDescendantClosure`, `linuxTmuxSocketPids` and `linuxHubHolders` stay and call `tmuxkit.Pids`, `tmuxkit.ProcArgv` and `tmuxkit.ProcCwd`, and the watchdog check becomes `tmuxkit.IsWatchdog(argv)` on an argv read through the kit.

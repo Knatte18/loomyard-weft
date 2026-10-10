@@ -1,15 +1,15 @@
 # Card 7 — tmuxkit-private-tmpdir-leftovers
 
 **Create:**
-- `plan:internal/testkit/tmuxkit#afterRun` -> `func afterRun(w io.Writer, dir string, code int, grace time.Duration, sweep func()) int`
-- `plan:internal/testkit/tmuxkit#leftoverGrace` -> `const leftoverGrace = 2 * time.Second`
-- `plan:internal/testkit/tmuxkit#leftover` -> `type leftover struct`
-- `plan:internal/testkit/tmuxkit#leftovers` -> `func leftovers(dir string) []leftover`
-- `plan:internal/testkit/tmuxkit#Pids` -> `func Pids() []int`
-- `plan:internal/testkit/tmuxkit#ProcArgv` -> `func ProcArgv(pid int) ([]string, bool)`
-- `plan:internal/testkit/tmuxkit#ProcCwd` -> `func ProcCwd(pid int) (string, bool)`
-- `plan:internal/testkit/tmuxkit#ProcExe` -> `func ProcExe(pid int) (string, bool)`
-- `plan:internal/testkit/tmuxkit#IsWatchdog` -> `func IsWatchdog(argv []string) bool`
+- `internal/testkit/tmuxkit#afterRun`
+- `internal/testkit/tmuxkit#leftoverGrace`
+- `internal/testkit/tmuxkit#leftover`
+- `internal/testkit/tmuxkit#leftovers`
+- `internal/testkit/tmuxkit#Pids`
+- `internal/testkit/tmuxkit#ProcArgv`
+- `internal/testkit/tmuxkit#ProcCwd`
+- `internal/testkit/tmuxkit#ProcExe`
+- `internal/testkit/tmuxkit#IsWatchdog`
 
 **Edit:**
 - `internal/testkit/tmuxkit#Main`

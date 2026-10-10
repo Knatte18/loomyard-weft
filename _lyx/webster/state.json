@@ -1,6 +1,6 @@
 {
   "runGuid": "fff73e1104de3f235db98a26ed5f5a7a",
-  "planFingerprint": "2ac69546fcf9cfb69142e5937b9fafa7a253898abaf6f81a551f0fd0512fa13f",
+  "planFingerprint": "f8e2daa0941fac4a96ce3301998a8088b08eaa7e36c775ac59fec09f8953febf",
   "planFileHashes": {
     "00-overview.md": "0ad33d2e71cd0bd2b348dfeb400a6eaa60d570779badff67c14470d91eac61e4",
     "01-fixture-git-marker.md": "7d78f3450efed061b64d1f2d18f2334b9e02647384d3daf608908d3967a06753",
@@ -8,11 +8,11 @@
     "03-testtiming-git-census.md": "0c8363fc8e5ece5d6d331f061bc7b48489ee8cf7fd0394889740b084745ff83a",
     "04-weight-report-before.md": "e6f8e34325a8642013436b88622c15dafcd8312b4c66674699fe52ce3eb667fb",
     "05-tmuxkit-hermetic-server.md": "6ae6a6f6c6c3845587a9f53b9a5528eace5bdb2a5f9887c7816505441636ed04",
-    "06-tmuxkit-package-server.md": "216770486c311891eb77f25541ebba0ab53a394ee02c19e7ec0fba8bacaf32a4",
-    "07-tmuxkit-private-tmpdir-leftovers.md": "88f1bf609644aa88ebe006663e5f7cc3dc36f4f4ceb28c6a34c8ae2df9ac7e82",
-    "08-reedcli-probes-onto-tmuxkit.md": "2a81fcb94ba6c4dcdc98024ae769790b516d0b1258ef4410ec2a87fe31d33165",
+    "06-tmuxkit-package-server.md": "37d44b74163c186662a7010c92e6321c53a82c9394c7fdf87438487442516abe",
+    "07-tmuxkit-private-tmpdir-leftovers.md": "73974ebfa80d942e7303616062bc87f1bc4894c5e8ab60d62179c8c347e0945d",
+    "08-reedcli-probes-onto-tmuxkit.md": "c84e609f234e698f76a91b63f0cef2b0cc13a83e81eea8685ba785a216f605d7",
     "09-loomcli-resume-split.md": "0225da4f10c9659c1fbdf89773ad56e794d903acfdfce1f40e005857acba4bbc",
-    "10-tmuxkit-socket-check.md": "cd9165e8d1ce564422aae6d2f551a078762cc9d20e72a4086cddb945df03d05d",
+    "10-tmuxkit-socket-check.md": "3f721656298e2938d67e37e5ae5a103f6d05104712195ac687b8bc652df3401d",
     "11-lyxbin-prebuilt.md": "888a4a4618837ca4c5a870171bc80e915c8834d602e2ca994d267670610e3897",
     "12-lyxbin-run.md": "b3a91837d2792e5b55732ef3b15e48c5cc27fe11f34f34d412630ef95e181780",
     "13-gatecli-prebuild.md": "a41466a5bbdf1ae3c0e882b8819c49e0a6a3e55af9e1782fbc150abb62cef870",
@@ -1074,7 +1074,7 @@
       }
     }
   ],
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "5c22230428022e32cdafd47073ba6706",
   "masterSessionId": "143f4fc0-509f-4ad6-be6b-62362a043089",
   "batches": {
@@ -1128,18 +1128,40 @@
         "07-tmuxkit-private-tmpdir-leftovers"
       ],
       "cardHashes": {
-        "06-tmuxkit-package-server": "216770486c311891eb77f25541ebba0ab53a394ee02c19e7ec0fba8bacaf32a4",
-        "07-tmuxkit-private-tmpdir-leftovers": "88f1bf609644aa88ebe006663e5f7cc3dc36f4f4ceb28c6a34c8ae2df9ac7e82"
+        "06-tmuxkit-package-server": "37d44b74163c186662a7010c92e6321c53a82c9394c7fdf87438487442516abe",
+        "07-tmuxkit-private-tmpdir-leftovers": "73974ebfa80d942e7303616062bc87f1bc4894c5e8ab60d62179c8c347e0945d"
       },
       "startSha": "f4c8a9103d9b9af3e4ab3eef1c2b115a33a9ccdf",
       "kind": "fork",
       "spawnedAt": "2026-10-10T09:43:14Z",
       "sessionId": "143f4fc0-509f-4ad6-be6b-62362a043089",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-tmuxkit-package-server",
+        "status": "done",
+        "head_sha": "f0c572e2c04a08515fba4817d146db4399b16c60",
+        "deviations": [
+          "internal/testkit/tmuxkit/proc.go",
+          "internal/burlerengine/smoke_round_test.go",
+          "internal/shuttlecli/smoke_interrupt_test.go",
+          "pattern/PATTERN-testkit.md",
+          "pattern/PATTERN-test-speed.md"
+        ]
+      },
+      "cardShas": [
+        "f0c572e2c04a08515fba4817d146db4399b16c60"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/143f4fc0-509f-4ad6-be6b-62362a043089/subagents/agent-ac8347d604cbb13df.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/143f4fc0-509f-4ad6-be6b-62362a043089/subagents/agent-ac8347d604cbb13df.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/c9fab9d0-151f-424c-8602-7d36fe836e3e/subagents/agent-a2db08922bbb89d02.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/c9fab9d0-151f-424c-8602-7d36fe836e3e/subagents/agent-a2db08922bbb89d02.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/143f4fc0-509f-4ad6-be6b-62362a043089/subagents/agent-ac8347d604cbb13df.jsonl"
   ]
 }

@@ -1,0 +1,8 @@
+status: OK
+head_sha: f0c572e2c04a08515fba4817d146db4399b16c60
+deviations:
+  - internal/testkit/tmuxkit/proc.go
+  - internal/burlerengine/smoke_round_test.go
+  - internal/shuttlecli/smoke_interrupt_test.go
+  - pattern/PATTERN-testkit.md
+  - pattern/PATTERN-test-speed.md

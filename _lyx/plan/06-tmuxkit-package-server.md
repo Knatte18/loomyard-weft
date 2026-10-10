@@ -1,9 +1,9 @@
 # Card 6 — tmuxkit-package-server
 
 **Create:**
-- `plan:internal/testkit/tmuxkit#PackageServer` -> `func PackageServer(t *testing.T, tmux string) string`
-- `plan:internal/testkit/tmuxkit#packageServerOnce` -> `var packageServerOnce sync.Once`
-- `plan:internal/testkit/tmuxkit#packageServerKey` -> `var packageServerKey string`
+- `internal/testkit/tmuxkit#PackageServer`
+- `internal/testkit/tmuxkit#packageServerOnce`
+- `internal/testkit/tmuxkit#packageServerKey`
 
 **Edit:**
 - `internal/reedengine/contract_integration_test.go`

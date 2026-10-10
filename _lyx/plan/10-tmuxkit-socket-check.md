@@ -7,7 +7,7 @@
 - `internal/testkit/tmuxkit/allow_none.go`
 
 **Edit:**
-- `plan:internal/testkit/tmuxkit#afterRun`
+- `internal/testkit/tmuxkit#afterRun`
 - `internal/testkit/tmuxkit/tmuxkit_test.go`
 - `cmd/lyx/testdata/test-budget.yaml`
 
