@@ -1151,7 +1151,8 @@
       "title": "Darn prompt names a bare-slug board get and a nonexistent final-summary spec path",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "stencil"
       ],
       "issues": [
         531

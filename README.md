@@ -40,7 +40,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 1 | **Darn prompt names a bare-slug board get and a nonexistent final-summary spec path** | [`darn-prompt-paths`](design-darn-prompt-paths.md) |  |
+| 1 | **Darn prompt names a bare-slug board get and a nonexistent final-summary spec path** | [`darn-prompt-paths`](design-darn-prompt-paths.md) | stencil |
 
 ### Enhancements
 

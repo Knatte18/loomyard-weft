@@ -1,6 +1,6 @@
 # Darn prompt names a bare-slug board get and a nonexistent final-summary spec path
 
-`darn-prompt-paths` · Note · bug
+`darn-prompt-paths` · Note · bug, stencil
 
 Imported from [issue #531](https://github.com/Knatte18/loomyard/issues/531).
 
