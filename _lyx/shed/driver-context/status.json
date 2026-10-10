@@ -1,12 +1,13 @@
 {
   "current_producer": "Plan-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Plan-Bouncer: round 4 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYXHUB/driver-context/_lyx/reviews/plan/round-4-escalation.md; decide with `lyx loom circling accept driver-context` or `lyx loom circling continue driver-context`, then run `lyx loom resume` in the task worktree to resume",
+  "parent_notice": "Review segment of task `driver-context` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/driver-context/_lyx/reviews/plan/round-4-escalation.md` with a one-shot fork.",
   "pause_requested": false,
   "activity": {
     "now": "Plan-Bouncer",
-    "last": "Plan-Burler → bounced to Plan-Bouncer",
-    "wait": ""
+    "last": "Plan-Bouncer → awaiting",
+    "wait": "bouncer Plan-Bouncer: round 4 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYXHUB/driver-context/_lyx/reviews/plan/round-4-escalation.md; decide with `lyx loom circling accept driver-context` or `lyx loom circling continue driver-context`, then run `lyx loom resume` in the task worktree to resume"
   },
   "history": [
     {
@@ -145,6 +146,12 @@
       "at": "2026-10-10T10:45:38Z",
       "gate_attempts": 0,
       "budget_exempt": true
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/driver-context/_lyx/reviews/plan/round-4-bouncer-ledger.md",
+      "at": "2026-10-10T10:46:31Z"
     }
   ],
   "product": {
