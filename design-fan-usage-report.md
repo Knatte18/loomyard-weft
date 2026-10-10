@@ -25,6 +25,7 @@ The loop hit its budget after round 3 and was granted a fourth round.
 
 ## Fan trial paused (operator, 2026-10-10)
 
-The fan is meant to be focused enough for a Sonnet medium reviewer, but the first fanned run did not work as intended: forks re-read the same code each on its own, so fork fresh tokens were 50-78% of a round and cache reads ran to 12M per round.
+The fan's design: the master reviewer reads most of what the round needs first, then forks, so each lens fork inherits that reading through the cache and needs little new reading, which keeps a fork cheap enough for a Sonnet medium reviewer.
+In the first fanned run the forks' fresh tokens were 50-78% of a round (round 2: 485k over 5 forks, about 97k each) and their cache reads 12M, which suggests each fork read much on its own after the fork point.
 The hub turned `discussion_fan` and `plan_fan` off, so Discussion and Plan review run the single `opus[medium]` reviewer again; pairs created before the change keep the fan.
-The report compares the fanned rounds of `webster-replan-state` (and `cli-surface`, if its rounds fan) against solo rounds, and asks why the lenses did not stay focused before the fan goes back on.
+The report compares the fanned rounds of `webster-replan-state` (and `cli-surface`, if its rounds fan) against solo rounds, and, before the fan goes back on, measures from the transcripts how much the master read before forking and what each fork read after it, so the fix targets the right side: the master's pre-read or the fork stencil's licence to read further.
