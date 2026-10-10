@@ -1,9 +1,9 @@
 # Card 15 — loom-arms-loop
 
 **Create:**
-- `plan:internal/loomcli#loopSpecFor` -> `func loopSpecFor(loc *lyxcwd.Location, runID string, idle time.Duration, activity func() (time.Time, bool, error)) shedverbs.LoopSpec`
-- `plan:internal/loomcli#agentActivityFor` -> `func agentActivityFor(loc *lyxcwd.Location, cfg shuttleengine.Config) func() (time.Time, bool, error)`
-- `plan:internal/loomcli#loomCLI.loomAfterInterrupt` -> `func (c *loomCLI) loomAfterInterrupt(ctx context.Context, producer, cause, traceFile string) string`
+- `internal/loomcli#loopSpecFor`
+- `internal/loomcli#agentActivityFor`
+- `internal/loomcli#loomCLI.loomAfterInterrupt`
 
 **Edit:**
 - `internal/loomcli#loomCLI`

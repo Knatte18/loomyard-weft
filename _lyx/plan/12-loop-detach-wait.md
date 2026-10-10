@@ -1,20 +1,20 @@
 # Card 12 — loop-detach-wait
 
 **Create:**
-- `plan:internal/shedverbs#LoopPIDRecord` -> `type LoopPIDRecord struct`
-- `plan:internal/shedverbs#ReadLoopPIDRecord` -> `func ReadLoopPIDRecord(path string) (LoopPIDRecord, bool, error)`
-- `plan:internal/shedverbs#WriteLoopPIDRecord` -> `func WriteLoopPIDRecord(path string, rec LoopPIDRecord) error`
-- `plan:internal/shedverbs#runUntilStop` -> `func runUntilStop(ctx context.Context, spec *Spec, argv []string, out io.Writer) int`
-- `plan:internal/shedverbs#spawnLoop` -> `func spawnLoop(spec *Spec, argv []string) (<-chan struct{}, error)`
-- `plan:internal/shedverbs#waitLoopEnvelope` -> `func waitLoopEnvelope(ctx context.Context, spec *Spec, spawned <-chan struct{}) ([]byte, bool, error)`
-- `plan:internal/shedverbs#envelopeCurrent` -> `func envelopeCurrent(envelope []byte, st shedengine.Status) bool`
-- `plan:internal/shedverbs#deadLoopStop` -> `func deadLoopStop(ctx context.Context, spec *Spec, rec LoopPIDRecord, out io.Writer) int`
-- `plan:internal/shedverbs#procChildRunner` -> `func procChildRunner(ctx context.Context, req ChildRequest) (Child, error)`
-- `plan:internal/shedverbs#LoopDetachedFlag` -> `const LoopDetachedFlag = "loop-detached"`
-- `plan:internal/shedverbs#TeardownLoopID` -> `const TeardownLoopID = "teardown"`
-- `plan:internal/shedverbs#loopLockGrace` -> `const loopLockGrace = 5 * time.Second`
-- `plan:internal/shedverbs#waitPollFloor` -> `const waitPollFloor = time.Second`
-- `plan:internal/shedverbs#waitPollCeiling` -> `const waitPollCeiling = 30 * time.Second`
+- `internal/shedverbs#LoopPIDRecord`
+- `internal/shedverbs#ReadLoopPIDRecord`
+- `internal/shedverbs#WriteLoopPIDRecord`
+- `internal/shedverbs#runUntilStop`
+- `internal/shedverbs#spawnLoop`
+- `internal/shedverbs#waitLoopEnvelope`
+- `internal/shedverbs#envelopeCurrent`
+- `internal/shedverbs#deadLoopStop`
+- `internal/shedverbs#procChildRunner`
+- `internal/shedverbs#LoopDetachedFlag`
+- `internal/shedverbs#TeardownLoopID`
+- `internal/shedverbs#loopLockGrace`
+- `internal/shedverbs#waitPollFloor`
+- `internal/shedverbs#waitPollCeiling`
 - `internal/shedverbs/loopwait_test.go`
 - `internal/shedverbs/loop_integration_test.go`
 - `internal/shedverbs/testmain_integration_test.go`

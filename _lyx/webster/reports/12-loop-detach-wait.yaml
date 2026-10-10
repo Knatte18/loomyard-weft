@@ -1,0 +1,14 @@
+status: OK
+head_sha: 69324f89f78b0de04dfc3c9458a10070d34806c1
+deviations:
+  - internal/shedcli/cli.go
+  - internal/loomcli/cli.go
+  - internal/loomcli/arm.go
+  - internal/loomcli/sharedbootstrap.go
+  - internal/loomcli/smoke_drivingsurface_test.go
+  - internal/loomcli/smoke_starttail_test.go
+  - internal/shedverbs/testmain_test.go
+  - internal/shedverbs/loopchild.go
+  - internal/shedverbs/looppid.go
+  - internal/shedverbs/loopwatchdog.go
+  - pattern/PATTERN-driver-choice-single-site.md

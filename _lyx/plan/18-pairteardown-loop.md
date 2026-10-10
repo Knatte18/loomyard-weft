@@ -24,9 +24,9 @@
 - `internal/shedrun#LoopLock`
 - `internal/shedrun#LoopPIDFile`
 - `internal/shedrun#LoopJobName`
-- `plan:internal/shedverbs#ReadLoopPIDRecord`
-- `plan:internal/shedverbs#WriteLoopPIDRecord`
-- `plan:internal/shedverbs#TeardownLoopID`
+- `internal/shedverbs#ReadLoopPIDRecord`
+- `internal/shedverbs#WriteLoopPIDRecord`
+- `internal/shedverbs#TeardownLoopID`
 - `internal/proc#KillTree`
 - `internal/proc#TerminateNamedJob`
 - `internal/pairteardown#runLockFree`

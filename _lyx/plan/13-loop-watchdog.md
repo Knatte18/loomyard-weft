@@ -1,10 +1,10 @@
 # Card 13 — loop-watchdog
 
 **Create:**
-- `plan:internal/shedverbs#idleWatch` -> `type idleWatch struct`
-- `plan:internal/shedverbs#watchIdle` -> `func watchIdle(ctx context.Context, w idleWatch) (time.Duration, bool)`
-- `plan:internal/shedverbs#newestActivity` -> `func newestActivity(traceFiles []string, agent func() (time.Time, bool, error)) (time.Time, bool)`
-- `plan:internal/shedverbs#quitGrace` -> `const quitGrace = 5 * time.Second`
+- `internal/shedverbs#idleWatch`
+- `internal/shedverbs#watchIdle`
+- `internal/shedverbs#newestActivity`
+- `internal/shedverbs#quitGrace`
 
 **Edit:**
 - `internal/shedverbs#runLoop`
