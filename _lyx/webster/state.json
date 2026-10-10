@@ -1074,7 +1074,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 20,
   "masterStrand": "6207061aa885c318cb6613a9996f300f",
   "masterSessionId": "7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b",
   "batches": {
@@ -1199,6 +1199,23 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b/subagents/agent-a9bc499ce47143ad5.jsonl"
       ]
+    },
+    "20": {
+      "slug": "reclassify-fabriccli-and-geometry",
+      "cards": [
+        "20-reclassify-fabriccli-and-geometry",
+        "21-reclassify-loom-webster-shed"
+      ],
+      "cardHashes": {
+        "20-reclassify-fabriccli-and-geometry": "2688913207916c9fc0c7b56066ac815075fea09b991b57f79ca34eba158747df",
+        "21-reclassify-loom-webster-shed": "4c660637fbd6d45021a4ce3aaf82df761052144f86cd34e19e81dfc10021e691"
+      },
+      "startSha": "5fdd2b1f8596e6a5d3de9ce3f91ea6a308e74bd3",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T10:27:16Z",
+      "sessionId": "7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b",
+      "terminal": false,
+      "status": ""
     },
     "6": {
       "slug": "tmuxkit-package-server",
