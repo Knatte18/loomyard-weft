@@ -2,6 +2,8 @@
 
 `cli-surface` · Task · bug, enhancement, orch, board, selfreport
 
+Depends on: [`gate-test-scope`](design-gate-test-scope.md), [`git-robustness`](design-git-robustness.md)
+
 ## Goal
 
 The orch knows every `lyx` command it may use without reading `--help` first, and every command's help reads the same way:
