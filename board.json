@@ -1634,6 +1634,22 @@
       "isolated": false,
       "brief": "Each discussion_advisors entry takes an optional area (a lens, as in review fans); without one the advisor answers every question",
       "body": "## Seen\n\nThe chair-and-advisors Discussion (`discussion-multi-llm`) sends every question batch to every advisor, by the operator's PR-Gate ruling on PR #504 (2026-10-10).\nThe first draft instead gave each advisor its own area of the design, which narrows each advisor's view but spreads the study.\n\n## Idea\n\nSupport both, selected per hub in `loom.yaml` (for example `discussion_advisor_mode: all | areas`, default `all`), with the value passed to the chair stencil as a marker.\nDecide after `discussion-multi-llm-bench`, which can compare the two modes on the same tasks.\n\n## Operator-named areas\n\nThe operator also wants to choose which area each advisor studies (2026-10-10), rather than leaving the split to the chair.\nOne shape: each `discussion_advisors` entry carries a model-spec plus an optional area, for example `{model: sonnet[high], area: error-handling}`, and the area names a lens text the advisor stencil includes, the way Burler's review fans name lenses (`correctness`, `error-handling`, `test-gaps`).\nAn entry without an area answers every question; an entry with one still sees every batch but answers from its lens.\nThis could replace the `all | areas` switch: the per-entry area is the selection.\n"
+    },
+    {
+      "id": 293,
+      "slug": "background-gate-shell-discarded",
+      "title": "Master's wait stops waiting on a still-running background shell at a turn end",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        505
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #505](https://github.com/Knatte18/loomyard/issues/505).\n\n## What happened\n\nMaster's wait counted a turn end while a background shell was still running: an integration `lyx gate test --tags integration` run over several packages, piped through `grep` and `tail`.\nThe shell was reported only by the transcript, so the wait stopped waiting on it after `background_shell_wait_min` (10 minutes).\nThat turn end finished the run because Master's output files existed, and lyx did not stop the shell.\nShuttle then removed Master's strand, which ended the session and the shell with it.\nThe run's final outcome was `done`.\n\n## Why it is abnormal\n\nThe integration test run was still in progress when the run finished, so its result was never seen by Master or the loom.\nA run can report `done` with a gate tier unfinished, and the shell is killed silently rather than waited for or stopped explicitly.\n\n## What to do\n\nDecide whether a still-running background shell should hold the turn end past `background_shell_wait_min` when it is a gate run.\nAt minimum, make lyx stop the shell explicitly and record in the run that its result was discarded, so the outcome is not read as \"tests passed\".\n\nTask: discussion-multi-llm. Notes: webster-background-shell.md\n"
     }
   ],
   "legacy_done": [
