@@ -16,3 +16,8 @@ The fabric-reference audit (`ClassifyViolation`, `internal/websterengine/audit.g
 ## Expected
 
 A `lyx ... --help`, `-h` or `--json` invocation (none runs a command since 57243019b) is not a fabric reference, or the implementer stencil forbids running `lyx` at all so forks read code instead.
+
+## After `webster-replan-state` (PR #515)
+
+PR #515 added a read-only fabric-reference classifier: `readOnlyLyxSegment` admits a lyx help call only when `--help` or `-h` is its last word.
+What remains is admitting a trailing `--json` (`lyx ... --json`, `lyx ... --help --json`), which since 57243019b never runs a command; a loop or a `$v` stays non-read-only on purpose.
