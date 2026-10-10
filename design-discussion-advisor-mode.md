@@ -1,4 +1,4 @@
-# Discussion advisors: operator-named areas per advisor, or all advisors on every question
+# Discussion advisors: operator-named areas per advisor on top of the landed all-advisors default
 
 `discussion-advisor-mode` · Note · enhancement, loom, stencil, config
 

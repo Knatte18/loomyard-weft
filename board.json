@@ -1621,7 +1621,7 @@
     {
       "id": 292,
       "slug": "discussion-advisor-mode",
-      "title": "Discussion advisors: operator-named areas per advisor, or all advisors on every question",
+      "title": "Discussion advisors: operator-named areas per advisor on top of the landed all-advisors default",
       "kind": "note",
       "labels": [
         "enhancement",
