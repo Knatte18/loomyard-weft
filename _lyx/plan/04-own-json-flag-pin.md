@@ -1,7 +1,7 @@
 # Card 4 — own-json-flag-pin
 
 **Create:**
-- `plan:cmd/lyx#TestOwnJSONFlags` -> `func TestOwnJSONFlags(t *testing.T)`
+- `cmd/lyx#TestOwnJSONFlags`
 
 **Edit:**
 - `cmd/lyx/testdata/test-budget.yaml`

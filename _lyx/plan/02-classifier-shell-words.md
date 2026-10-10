@@ -1,10 +1,10 @@
 # Card 2 — classifier-shell-words
 
 **Create:**
-- `plan:internal/fabricengine#shellWord` -> `type shellWord struct`
-- `plan:internal/fabricengine#splitShellWords` -> `func splitShellWords(segment string) ([]shellWord, bool)`
-- `plan:internal/fabricengine#dropStderrRedirections` -> `func dropStderrRedirections(cmd string) string`
-- `plan:internal/fabricengine#readOnlySedSegment` -> `func readOnlySedSegment(words []shellWord) bool`
+- `internal/fabricengine#shellWord`
+- `internal/fabricengine#splitShellWords`
+- `internal/fabricengine#dropStderrRedirections`
+- `internal/fabricengine#readOnlySedSegment`
 
 **Edit:**
 - `internal/fabricengine#IsReadOnlyCommand`

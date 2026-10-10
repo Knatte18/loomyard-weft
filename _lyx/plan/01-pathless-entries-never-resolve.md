@@ -1,8 +1,8 @@
 # Card 1 — pathless-entries-never-resolve
 
 **Create:**
-- `plan:internal/websterengine#pathlessEntry` -> `func pathlessEntry(class AuditViolationClass, detail string) string`
-- `plan:internal/websterengine#pathlessEntryClass` -> `func pathlessEntryClass(entry string) (AuditViolationClass, bool)`
+- `internal/websterengine#pathlessEntry`
+- `internal/websterengine#pathlessEntryClass`
 
 **Edit:**
 - `internal/websterengine#failOnCorrectness`
