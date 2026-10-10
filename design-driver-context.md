@@ -1,6 +1,16 @@
-# Driver context stays under 100k: Go loops the steps, quieter step output
+# Driver steps in only on trouble: Go loops the steps, context under 100k
 
-`driver-context` · Note · enhancement, shed, stencil, loom
+`driver-context` · Task · enhancement, shed, stencil, loom
+
+## Goal
+
+The driver steps in only when something goes wrong, and its context stays under 100k tokens for a whole run, since Haiku 5.5 is cheap only below that.
+Build idea 1 below: Go runs the steps in a loop and wakes the driver only at a stop (error, interrupt, blocked, awaiting gate, run end).
+Ideas 2 to 6 come along where they still apply once the loop is in Go; idea 7 is optional.
+
+The orch must still be able to stop a run at a chosen event, as today when it asks the driver to pause right before Webster, or pauses a run while Plan-Write runs (`lyx loom pause`) to compare plans across runs.
+So the Go loop honours a pause the orch sets at any time, and a stop at a named producer (for example "stop before Webster") can be set on a running run, by the orch directly or through the driver, and takes effect before that producer starts.
+A message to the driver still reaches it promptly while the Go loop runs.
 
 ## Seen
 
