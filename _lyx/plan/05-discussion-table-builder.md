@@ -12,6 +12,7 @@
 
 **Edit:**
 - `internal/loomengine#TestDiscussionPaths`
+- `internal/loomengine#TestParentReviewBrief_NamesPathsAndSubmitLines`
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
@@ -22,6 +23,7 @@
 - `internal/loomengine#DiscussionSupportLog`
 - `internal/loomengine#DiscussionDir`
 - `internal/loomengine#LoomFrictionDir`
+- `internal/loomengine#ParentReviewBrief`
 - `internal/seatengine#Table`
 - `plan:internal/seatengine#Prompts`
 
@@ -36,6 +38,7 @@ The parent name is not a parameter: the seat engine renders every seat's parent 
 Further rows: the table validates and every prompt composes with no `PATTERN.md` at the root, with `cfg.Friction` empty over a stencils directory without the directive stencils, and with an unreadable friction note directive; with `PATTERN.md` planted the chair prompt carries the designer directive before Step 1; and an on-disk edit of the chair stencil reaches the chair prompt.
 `TestDiscussionTable_Refuses` covers an empty slug, a missing stencils directory naming the first stencil read, an unparsable chair model, and an advisor entry the registry does not define naming the key, the index and the way forward.
 `TestDiscussionPaths` gains the advisor notes path for an anchored and an unanchored location.
+`TestParentReviewBrief_NamesPathsAndSubmitLines` gains an assertion that the brief rendered with an `advisor-1.md` planted beside the two discussion files names neither that file nor any `advisor-` path, pinning D7's bound that the parent-review brief reads the two discussion files only.
 The budget file's `internal/loomengine` row rises by two for the two new tests.
 
-**ImpactSummary:** Additive: nothing calls the builder yet, the single-agent composer and its tests are untouched, and the one edited test gains rows only.
+**ImpactSummary:** Additive: nothing calls the builder yet, the single-agent composer and its tests are untouched, and the two edited tests gain rows or assertions only.

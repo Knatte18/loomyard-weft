@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -8,7 +8,7 @@ language: go
 
 The Discussion-Write row gains a second producer, `DiscussionSeats`, beside the unchanged single-agent `DiscussionWrite`: a chair that writes the discussion as the single writer does, plus one advisor seat per entry of `loom.yaml`'s new `discussion_advisors` list, each studying the task and answering the chair over the session message channel.
 `loom.yaml`'s new `discussion_producer` key selects which of the two the row runs, defaulting to the single-agent producer, so a hub that sets nothing behaves as today.
-The seat engine and the producer gain only additive seams, the config keys and the two new stencils land before the table builder that reads them, the fake seat runner learns to evaluate a gate, the registry entry lands under a coverage-guard bridge, and the selection then wires it into the row.
+The seat engine and the producer gain only additive seams, the config keys and the two new stencils land before the table builder that reads them, the fake seat runner learns to evaluate a gate, the registry entry and its wired table land under a coverage-guard bridge, and the selection then wires the entry into the row.
 The decision record's carry-over entries were checked against the tree: the open-map entry for `discussion_advisors` is card 3's work, and the orch trust-rule entry is design text that no card touches.
 
 ## Card Index
@@ -19,8 +19,8 @@ The decision record's carry-over entries were checked against the tree: the open
 4 — discussion-chair-and-advisor-stencils — the chair stencil includes the discussion stencil, the advisor stencil ships, and both register under their roles
 5 — discussion-table-builder — loomengine builds the seat-table producer's table from the location, config and registry
 6 — seat-runner-gate-once — the fake seat runner evaluates a table's gate once on a done chair, as the fake shuttle does
-7 — discussion-seats-entry — the DiscussionSeats registry entry runs the told table on MultiLLMProducer behind the commit decorator
-8 — discussion-write-row-selection — loomrecipe builds the Discussion-Write row with the engine loom.yaml selects, and loomcli wires the table and the choice
+7 — discussion-seats-entry — the DiscussionSeats registry entry runs the told table on MultiLLMProducer behind the commit decorator, and loomcli wires the table
+8 — discussion-write-row-selection — loomrecipe builds the Discussion-Write row with the engine loom.yaml selects, and loomcli wires the choice
 9 — docs-chair-and-advisors — the overview and the recipe spec describe the two producers and the keys that select and shape them
 
 ## Shared Decisions
@@ -30,12 +30,12 @@ The decision record's carry-over entries were checked against the tree: the open
 - **Decision:** The parent's decision superseding D1 is implemented as a second registry engine, `DiscussionSeats`, built by its own `shedrecipe` entry over `Env.DiscussionTable`, while the `DiscussionWrite` entry, `DiscussionSpec`, `prompt.go` and their tests stay untouched.
   `loom.yaml`'s `discussion_producer` key takes `single` (the default) or `seats`; `loomcli` turns it into `Env.DiscussionSeats`, and `loomrecipe.New` rewrites the Discussion-Write row's engine in the parsed recipe before building, so the row name, its gates, its routing and the status file are the same whichever producer runs.
   D10's rename of the `discussion` role-map key is dropped: `discussion` keeps the single-agent stencil, and `discussion-chair` and `discussion-advisor` are added.
-- **Rationale:** the row name is the durable resume identity and the recipe file is embedded, so the choice has to be applied where loom already applies `loom.yaml` to rows, the review budget in `loomrecipe.New`; a registry name of its own keeps the recipe registry's one-engine-per-build contract and the cross-consumer coverage guard honest.
+- **Rationale:** the row name is the durable resume identity and the recipe file is embedded, so the choice has to be applied where loom already applies `loom.yaml` to rows, the review budget in `loomrecipe.New`; a registry name of its own keeps the recipe registry's one-engine-per-build contract and the cross-consumer coverage guard honest, while the gate-quiescence guard, which D1's kept engine name would have left as it is, gains `DiscussionSeats` as a writer engine and a row over the substituted recipe in card 8.
 - **Applies to:** cards 3, 7, 8, 9
 
 ### Decision: chair-stencil-includes-the-discussion-stencil
 
-- **Decision:** The chair's opening stencil is a new `loom-template-discussion-chair` that includes `loom-template-discussion` whole and `seat-directive-chair`, then adds the advisors section D6 describes; the discussion stencil's bytes are unchanged.
+- **Decision:** The chair's opening stencil is a new `loom-template-discussion-chair` that includes `loom-template-discussion` whole and `seat-directive-chair`, then adds the advisors section D6 describes, opening with a sentence that replaces the included stencil's single-agent framing; the discussion stencil's agent-facing body is unchanged, and only its leading header comment, which every fill strips, gains the chair stencil's include as its second filler.
 - **Rationale:** D6 put the chair seat directive into the discussion stencil, but the single-agent composer fills that stencil through `stencil.FillOptional` with no includes, which refuses an include it has no entry for, and the parent's decision keeps that composer as it is; an include carries D6's rationale (one source for the writer's fence and gates, no duplicated contract) without touching the single path.
   The seat engine fills an included block's markers from the same value map and refuses an include that includes, which the discussion stencil does not.
 - **Applies to:** cards 4, 5
@@ -56,7 +56,7 @@ The decision record's carry-over entries were checked against the tree: the open
 
 - **Decision:** `DiscussionTable` takes no parent name; the seat engine renders every seat's parent directive from `Geometry.ParentName`, which `wire` already tells it.
 - **Rationale:** a parameter the builder cannot use would be dead.
-- **Applies to:** cards 5, 8
+- **Applies to:** cards 5, 7
 
 ### Decision: mode-rules-wrapped
 
@@ -72,13 +72,14 @@ The decision record's carry-over entries were checked against the tree: the open
 
 ### Decision: coverage-guard-bridge
 
-- **Decision:** card 7 adds `DiscussionSeats` to the coverage guard's allowlist, since no recipe row names it until card 8's substitution; card 8 adds it to `loomrecipe.RecipeEngines` and removes the allowlist entry, which the guard's drift check forces.
+- **Decision:** card 7 adds `DiscussionSeats` to the coverage guard's allowlist, since no recipe row names it until card 8's substitution; card 8 adds it to `loomrecipe.RecipeEngines` and to the engine-set test's want set, and removes the allowlist entry, which the guard's drift check forces.
+  Card 7 also fills the new func-typed `Env.DiscussionTable` in `loomcli`'s `wire`, since `TestWire_EverySeamFilled` refuses a nil seam `wire` does not list; card 8 adds only the `DiscussionSeats` choice.
 - **Rationale:** each card builds and tests green on its own, and the guard's own drift rule makes the bridge impossible to leave behind.
 - **Applies to:** cards 7, 8
 
 ### Decision: test-budget-trajectory
 
-- **Decision:** `cmd/lyx/testdata/test-budget.yaml` rises by two on `internal/loomengine` in card 5, by two on `internal/shedrecipe` in card 7, and by one each on `internal/loomrecipe` and `internal/loomcli` in card 8; every other card adds rows or subtests to existing tests.
+- **Decision:** `cmd/lyx/testdata/test-budget.yaml` rises by two on `internal/loomengine` in card 5, by two on `internal/shedrecipe` and by one on `internal/loomcli` in card 7, and by one on `internal/loomrecipe` in card 8; every other card adds rows or subtests to existing tests.
 - **Rationale:** each of those packages is at its budget today, and the raise lands in the commit that adds the tests.
 - **Applies to:** cards 5, 7, 8
 
