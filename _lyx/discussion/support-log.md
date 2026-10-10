@@ -18,7 +18,7 @@ Autonomous run: no operator answered, so each batch below is the question the pr
    A reed-written config file like the kit's, or `-f /dev/null` plus session pins?
    Picked the pins (D7): per-worktree shell, no file, and tmux's `default-shell` wants an absolute path, which `exec.LookPath` gives.
 5. Watchdog children.
-   Code reading identified them before any measurement: the per-session resize watchers in poll mode, through the worktree's tmux, which the shim did not wrap.
+   Code reading points at them before any measurement, as a hypothesis the re-measurement confirms or refutes: the per-session resize watchers in poll mode, through the worktree's tmux, which the shim did not wrap.
    Three decisions follow: the told tmux (D3), the signal entry at boot (D4), poll backoff (D5), then a re-measurement (D8).
 6. Windows.
    Change it alongside or leave it?
@@ -36,6 +36,9 @@ Autonomous run: no operator answered, so each batch below is the question the pr
 - Global `-g` shell options at boot: the first booter's shell would bind every sibling's strand panes.
 - A lower poll ceiling for Windows resizes: the pattern's rule is one ceiling the loops share, and Windows is poll-only by an unverified capability, not by design.
 - Passing `-f` on Windows too: unverified on psmux, and a wrong flag there costs the whole boot.
+- Keeping the watchdog verb's stderr discard only for a detached daemon, keyed on a non-terminal stderr or a spawn flag: dropping `LYX_LOG_FILE` from the spawn's environment gives the same bound with no new flag and no terminal probe.
+- A warning when a worktree's `tmux` value differs from the daemon's told path: a config value and a resolved path to the same binary differ as text, so it would fire on healthy hubs.
+- One 107-byte socket limit for all of POSIX: macOS and the BSDs have a 104-byte `sun_path`, so a 104-to-107-byte path would pass the check and still fail in tmux.
 - Measuring only sessions with strands: the earlier rows measured strand-less sessions, and the third row must compare.
 
 ## Review rounds
@@ -53,5 +56,5 @@ _No rounds yet._
 - Q7 (auto-pick): config file or session pins for the shell options. Pins; rationale in D7 and A4.
 - Q8 (auto-pick): Windows changes. None; rationale in A2.
 - Q9 (auto-pick): re-measurement shape. Three idle strand-less sessions, as before; rationale in A5.
-- Q10 (resolved by reading): what the watchdog's children are. The per-session poll-mode round trips; see D8.
+- Q10 (hypothesis from reading): what the watchdog's children are. The per-session poll-mode round trips, to be confirmed by the re-measurement; see D8.
 - Environment: nothing outside the two discussion files looked broken during this session.
