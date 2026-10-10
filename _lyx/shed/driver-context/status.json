@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "run-exit audit found 1 correctness finding(s): 1) parent-write: Master wrote \"/home/knatte/Code/loomyard-LYXHUB/driver-context/internal/stencilcli/cli_integration_test.go\" — Master may write only its two contract files (outcome.yaml and summary.md); any other write means Master implemented a batch itself or hand-wrote a batch report; way forward: 1) git checkout 0e9431f49a27ae425f1183aa2ce0c0cc163e66e7 -- /home/knatte/Code/loomyard-LYXHUB/driver-context/internal/stencilcli/cli_integration_test.go (rm a path the head does not hold); 2) lyx webster accept-audit; 3) re-step the Webster row",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Batchifier → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "run-exit audit found 1 correctness finding(s): 1) parent-write: Master wrote \"/home/knatte/Code/loomyard-LYXHUB/driver-context/internal/stencilcli/cli_integration_test.go\" — Master may write only its two contract files (outcome.yaml and summary.md); any other write means Master implemented a batch itself or hand-wrote a batch report; way forward: 1) git checkout 0e9431f49a27ae425f1183aa2ce0c0cc163e66e7 -- /home/knatte/Code/loomyard-LYXHUB/driver-context/internal/stencilcli/cli_integration_test.go (rm a path the head does not hold); 2) lyx webster accept-audit; 3) re-step the Webster row"
   },
   "history": [
     {
@@ -163,6 +163,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-10T10:47:32Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-10T11:59:52Z"
     }
   ],
   "product": {
