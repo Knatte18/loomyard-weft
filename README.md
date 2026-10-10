@@ -13,7 +13,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | At | Labels |
 | --- | --- | --- | --- | --- |
-| 1 | **Gate test scope: which gate runs which tier, bounded hub-wide**<br>• Card gate tests only its own packages at tier 1, tier 2 per batch and at the plan verify, a hub-wide slot lock for gate test runs, guarded publish_verify | [`gate-test-scope`](design-gate-test-scope.md) | Webster-Bouncer | webster, loom, stencil, config, burler |
+| 1 | **Gate test scope: which gate runs which tier, bounded hub-wide**<br>• Card gate tests only its own packages at tier 1, tier 2 per batch and at the plan verify, a hub-wide slot lock for gate test runs, guarded publish_verify | [`gate-test-scope`](design-gate-test-scope.md) | Describe | webster, loom, stencil, config, burler |
 | 2 | **Daemons and wake-ups: event-driven waits, a timely orch reload, recorded revival order**<br>• A rule that lyx daemons wait on events or second-scale polls (reed watchdog first), the orch watcher reloads right after compaction, reed revives sessions by recorded start time | [`daemon-wakeups`](design-daemon-wakeups.md) | Webster | reed, orch, shuttle |
 | 3 | **Bolt and hub store: seeding without ping-pong, reconcile on a fresh Bolt, gc that stays out of the way**<br>• Seed stencils forward only and from a pulled Bolt, report failed reconcile pushes, and keep the hub store gc off busy runs and repeat repacks | [`bolt-and-store`](design-bolt-and-store.md) | Webster | stencil, fabric, config |
 
