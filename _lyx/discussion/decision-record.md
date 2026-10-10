@@ -248,6 +248,12 @@ No operator was available; each pick below is the Discussion producer's own, rec
   - watcher-index-stale-after-deploy (class design, severity MEDIUM, open in rounds 1, 2, 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - watcher-added-decisions-precedence-split (class decision, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - `lyx help index` exits 0, prints the nested form of D2, names every `operator` leaf in `newRoot()`, names no `role` or `internal` leaf, and prints a group only when it has a leaf in the audience.
