@@ -1074,7 +1074,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 25,
   "masterStrand": "6207061aa885c318cb6613a9996f300f",
   "masterSessionId": "7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b",
   "batches": {
@@ -1269,6 +1269,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b/subagents/agent-a47843738c4d42a65.jsonl"
       ]
+    },
+    "25": {
+      "slug": "gitrepo-geometry",
+      "cards": [
+        "25-gitrepo-geometry",
+        "26-gitrepo-ref-reads",
+        "27-gitexec-drop-gitdir-env",
+        "28-fabricengine-geometry-reads",
+        "29-fabricengine-branch-and-ref-reads",
+        "30-fabricengine-head-upstream-tree-reads"
+      ],
+      "cardHashes": {
+        "25-gitrepo-geometry": "558891e9c06fd69f03756d77dc0372b39063ddcb3d29a76f0a5a4de80aee9aac",
+        "26-gitrepo-ref-reads": "8aadb1e4aa5ebe5a6670b623a666313479a5570c667da6326349bb7abfe6b72b",
+        "27-gitexec-drop-gitdir-env": "00598ab1b36a40bc3671310dc5036ccffbe6e98db930913ed6cb99bb825e01f7",
+        "28-fabricengine-geometry-reads": "735d4d53249bd295ad2a73e2be5aa584b319c959dc25e1170a8caf815b631a00",
+        "29-fabricengine-branch-and-ref-reads": "4543e04369911b29c77109634e23067d3919d81456069d726d9df33b4def4cbe",
+        "30-fabricengine-head-upstream-tree-reads": "0cbea5b10cdc269564667dfd95ba60ac3297d6c5f9ed0ff18ce12c4cecc8c191"
+      },
+      "startSha": "279fbfe09a874f619e28cdf1a5b0e896e59281b9",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T10:36:17Z",
+      "sessionId": "7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b",
+      "terminal": false,
+      "status": ""
     },
     "6": {
       "slug": "tmuxkit-package-server",
