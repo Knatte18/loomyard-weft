@@ -90,6 +90,27 @@
       "output": "child paused → running at Webster-Burler",
       "at": "2026-10-10T10:02:38Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at PR-Gate",
+      "at": "2026-10-10T10:08:42Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at PR-Gate",
+      "at": "2026-10-10T10:11:41Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → blocked at Finalize",
+      "at": "2026-10-10T10:11:55Z",
+      "budget_exempt": true
     }
   ]
 }

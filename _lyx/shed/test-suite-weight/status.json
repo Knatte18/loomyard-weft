@@ -111,6 +111,20 @@
       "output": "child blocked → running at Webster",
       "at": "2026-10-10T09:42:41Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → blocked at Webster",
+      "at": "2026-10-10T10:10:01Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child blocked → running at Webster",
+      "at": "2026-10-10T10:10:17Z",
+      "budget_exempt": true
     }
   ]
 }
