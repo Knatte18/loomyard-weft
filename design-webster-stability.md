@@ -2,6 +2,8 @@
 
 `webster-stability` · Task · bug, webster, shuttle, stencil, quarry
 
+Depends on: [`webster-audit-gaps`](design-webster-audit-gaps.md)
+
 ## Goal
 
 Close the Webster faults that stop or mislead runs outside the audit: background gate shells, Master fixing verify failures itself, recovery attribution and gates, and Create checks that cannot pass for unexported or build-tagged members.
