@@ -1599,6 +1599,23 @@
       "isolated": false,
       "brief": "A simplified loom for small changes: preflight, one producer that does the whole change in one session, verify, PR and PR-Gate as usual",
       "body": "## Seen\n\nSmall cosmetic or narrow changes, such as `board-priority-headings`, are too small for a full loom run (Discussion, Plan, Webster, review rounds), so today they go to a hand-briefed agent in the prime instead.\nThat path skips the pair, the preflight, the verify gate, the PR and PR-Gate, and the orch has to brief, watch and land each one by hand.\n\n## Idea\n\nA second task recipe for quick tasks, run through batten and shed like a loom run but with a strongly simplified loom inside:\n\n- the same outer lifecycle: batten creates the pair, preflight runs, and teardown removes the pair after landing;\n- one LLM producer that does the whole change in a single session: reads the board entry, edits, runs the tests and commits;\n- the usual Publish: verify gate, PR, the orch's PR-Gate with a reviewer fork, then Finalize.\n\nNo Discussion, no Plan, no Webster, no Burler rounds.\n## Operator decisions (2026-10-10)\n\n- The operator picks the recipe when the task is created, through the board entry's existing `recipe` field; no size guard.\n- A failed verify sends the run back to the same producer to fix it, up to a configured budget of attempts; past the budget the run escalates to the parent.\n"
+    },
+    {
+      "id": 291,
+      "slug": "discussion-multi-llm-bench",
+      "title": "Bench the chair-and-advisors Discussion against the solo writer before switching it on",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "stencil"
+      ],
+      "issues": [],
+      "priority": "high",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on",
+      "body": "## Seen\n\n`discussion-multi-llm` adds a second Discussion producer: a chair that writes, with advisors that study the code and answer its design questions live.\nThe default keeps the existing solo Discussion-Write, so landing it changes no run.\n\n## Idea\n\nBefore any hub selects the chair-and-advisors producer, bench it against the solo writer on the same tasks: Discussion-Review rounds and findings, parent-review outcome, token cost per seat, and wall time.\nThen the operator watches it in action on at least one live run before it is switched on.\n\n## Operator decisions (2026-10-10)\n\n- Models for the trial: the chair on `opus[medium]`, one advisor on `sonnet[high]`.\n- Not in production until the bench and a watched run have shown it holds.\n"
     }
   ],
   "legacy_done": [
