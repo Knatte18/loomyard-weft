@@ -601,7 +601,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "726ba574be9e0d6f1b5201a5aa0e1920",
   "masterSessionId": "1ea802b3-916a-4f78-a539-37ca5a7f4b14",
   "batches": {
@@ -647,6 +647,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-test-scope/1ea802b3-916a-4f78-a539-37ca5a7f4b14/subagents/agent-a3600e9b373605132.jsonl"
       ]
+    },
+    "7": {
+      "slug": "landing-slotted",
+      "cards": [
+        "07-landing-slotted",
+        "08-round-gate-slotted",
+        "09-plan-gate-slotted",
+        "10-gate-cli",
+        "11-status-gate-waits",
+        "12-raw-go-deny"
+      ],
+      "cardHashes": {
+        "07-landing-slotted": "b015b21ec3f2e08e095aec7a39f8bd8856695a0a869a8ade53960cdbd9b83854",
+        "08-round-gate-slotted": "0b3e93e88cd448e4a83b5b04c12c220e1bd42a536a106ee65fb32253ec1570c1",
+        "09-plan-gate-slotted": "ec7aab9aceca84c5ae9fb5e1d570248247504d71428402ba432407f8f576e8f7",
+        "10-gate-cli": "896124ae37ee74a13e928c1a8c651427c096758de36a2d16c9c050c76cf77be3",
+        "11-status-gate-waits": "01419b7c74dcfa2400507537d0a8bc13467b41b70a83f94220020ded6b016e54",
+        "12-raw-go-deny": "527c2de28f518e3740db5ac6b002eb0242fbd158a1e223e977b78abf9026077d"
+      },
+      "startSha": "8422ab71e2af97776321bd15a337ddee5756e347",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T04:56:41Z",
+      "sessionId": "1ea802b3-916a-4f78-a539-37ca5a7f4b14",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
