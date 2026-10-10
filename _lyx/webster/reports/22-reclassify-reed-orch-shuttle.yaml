@@ -1,0 +1,7 @@
+status: OK
+head_sha: 279fbfe09a874f619e28cdf1a5b0e896e59281b9
+deviations:
+  - internal/configcli/configcli_integration_test.go
+  - cmd/lyx/stencilseed_integration_test.go
+  - internal/gitexec/doc.go
+  - internal/lyxcwd/anchor.go

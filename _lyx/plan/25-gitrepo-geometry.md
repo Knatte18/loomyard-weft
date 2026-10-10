@@ -16,8 +16,8 @@
 - `cmd/lyx/gitrepoboundary_test.go`
 
 **Uses:**
-- `plan:internal/dotgit#Read`
-- `plan:internal/dotgit#FindRoot`
+- `internal/dotgit#Read`
+- `internal/dotgit#FindRoot`
 
 **Prosa:**
 - `internal/gitrepo/doc.go`

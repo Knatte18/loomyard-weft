@@ -1,13 +1,13 @@
 # Card 23 — dotgit-leaf
 
 **Create:**
-- `plan:internal/dotgit#Geometry` -> `type Geometry struct`
-- `plan:internal/dotgit#ErrNotRepository` -> `var ErrNotRepository = errors.New("dotgit: not a git repository")`
-- `plan:internal/dotgit#Read` -> `func Read(dir string) (Geometry, error)`
-- `plan:internal/dotgit#IsRepository` -> `func IsRepository(g Geometry) bool`
-- `plan:internal/dotgit#FindRoot` -> `func FindRoot(start string) (root string, g Geometry, err error)`
-- `plan:internal/dotgit#readGitFile` -> `func readGitFile(path string) (string, error)`
-- `plan:internal/dotgit#readCommonDir` -> `func readCommonDir(gitDir string) (string, error)`
+- `internal/dotgit#Geometry`
+- `internal/dotgit#ErrNotRepository`
+- `internal/dotgit#Read`
+- `internal/dotgit#IsRepository`
+- `internal/dotgit#FindRoot`
+- `internal/dotgit#readGitFile`
+- `internal/dotgit#readCommonDir`
 - `internal/dotgit/doc.go`
 - `internal/dotgit/dotgit_test.go`
 - `internal/dotgit/leaf_enforcement_test.go`

@@ -8,8 +8,8 @@
 - `internal/fabricengine/warplayout_test.go`
 
 **Uses:**
-- `plan:internal/dotgit#FindRoot`
-- `plan:internal/dotgit#ErrNotRepository`
+- `internal/dotgit#FindRoot`
+- `internal/dotgit#ErrNotRepository`
 - `internal/hubforge#SharedHub`
 - `internal/hubforge#Shape`
 
