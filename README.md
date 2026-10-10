@@ -53,6 +53,11 @@ Starts when every entry it names under After is done.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
+### Bugs
+
+1. **Batten idle notices count machine sleep as idle time** — [`idle-notice-after-sleep`](design-idle-notice-after-sleep.md) · bug, batten
+   - After a hibernate every run raises an idle notice for the whole sleep; the idle clock should skip time the machine was asleep
+
 ### Enhancements
 
 1. **Convergence: measure hub and driver interventions, fix at the source, hardening freezes** — [`convergence-plan`](design-convergence-plan.md) · enhancement, orch, shed
