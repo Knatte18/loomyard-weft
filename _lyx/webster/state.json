@@ -1074,7 +1074,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 14,
   "masterStrand": "6207061aa885c318cb6613a9996f300f",
   "masterSessionId": "7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b",
   "batches": {
@@ -1120,6 +1120,27 @@
       "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/test-suite-weight/.lyx/shuttle/777456ae693b63cfc488437b6193c8e3",
       "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/test-suite-weight/.lyx/shuttle/777456ae693b63cfc488437b6193c8e3/events.jsonl",
       "eventsOffset": 1599
+    },
+    "14": {
+      "slug": "claudeengine-prebuilt-deny",
+      "cards": [
+        "14-claudeengine-prebuilt-deny",
+        "15-gitkit-no-detached-gc",
+        "16-hubforge-templates",
+        "17-reclassify-fabricengine-add-to-dot"
+      ],
+      "cardHashes": {
+        "14-claudeengine-prebuilt-deny": "5cae486982fde52d1dbcb0ed10a6651e9a502dcb302ebd62a4c68739bee77857",
+        "15-gitkit-no-detached-gc": "aaf35f9cb36d813ea6af12e711c244caf20c4c0b3c3f0666bc03c39463007a07",
+        "16-hubforge-templates": "828393b651a295031f82527df3e22cb98f2d7d7ba1119e3adfcf6bf087e378fb",
+        "17-reclassify-fabricengine-add-to-dot": "3c0ba9793f0f43a3aa3d7abb5d2578192105149cb3b976c01cdc9f1c4371867c"
+      },
+      "startSha": "d44ca24f457031a826f350471c6885a8d0b8a25a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T10:16:50Z",
+      "sessionId": "7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b",
+      "terminal": false,
+      "status": ""
     },
     "6": {
       "slug": "tmuxkit-package-server",
