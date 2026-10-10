@@ -1,17 +1,17 @@
 # Card 26 — gitrepo-ref-reads
 
 **Create:**
-- `plan:internal/gitrepo#ErrRefNotFound` -> `var ErrRefNotFound = errors.New("gitrepo: ref not found")`
-- `plan:internal/gitrepo#Repo.BranchExists` -> `func (r *Repo) BranchExists(branch string) (bool, error)`
-- `plan:internal/gitrepo#Repo.RefSHA` -> `func (r *Repo) RefSHA(ref string) (string, error)`
-- `plan:internal/gitrepo#Repo.HeadRef` -> `func (r *Repo) HeadRef() (branch string, detached bool, err error)`
-- `plan:internal/gitrepo#Repo.RefTree` -> `func (r *Repo) RefTree(ref string) (string, error)`
-- `plan:internal/gitrepo#Repo.Upstream` -> `func (r *Repo) Upstream(branch string) (sha string, ok bool, err error)`
-- `plan:internal/gitrepo/internal/gitoracle#BranchExists` -> `func BranchExists(t testing.TB, dir, branch string) bool`
-- `plan:internal/gitrepo/internal/gitoracle#RefSHA` -> `func RefSHA(t testing.TB, dir, ref string) (string, bool)`
-- `plan:internal/gitrepo/internal/gitoracle#HeadRef` -> `func HeadRef(t testing.TB, dir string) (branch string, detached bool, err error)`
-- `plan:internal/gitrepo/internal/gitoracle#RefTree` -> `func RefTree(t testing.TB, dir, ref string) (string, error)`
-- `plan:internal/gitrepo/internal/gitoracle#Upstream` -> `func Upstream(t testing.TB, dir, branch string) (string, bool)`
+- `internal/gitrepo#ErrRefNotFound`
+- `internal/gitrepo#Repo.BranchExists`
+- `internal/gitrepo#Repo.RefSHA`
+- `internal/gitrepo#Repo.HeadRef`
+- `internal/gitrepo#Repo.RefTree`
+- `internal/gitrepo#Repo.Upstream`
+- `internal/gitrepo/internal/gitoracle#BranchExists`
+- `internal/gitrepo/internal/gitoracle#RefSHA`
+- `internal/gitrepo/internal/gitoracle#HeadRef`
+- `internal/gitrepo/internal/gitoracle#RefTree`
+- `internal/gitrepo/internal/gitoracle#Upstream`
 
 **Edit:**
 - `internal/gitrepo/parity_test.go`

@@ -7,8 +7,8 @@
 - `cmd/lyx/checkedcall_test.go`
 
 **Uses:**
-- `plan:internal/gitrepo#Repo.GitDir`
-- `plan:internal/gitrepo#Repo.CommonDir`
+- `internal/gitrepo#Repo.GitDir`
+- `internal/gitrepo#Repo.CommonDir`
 
 **Intent:** D12: fabricengine's geometry spawns become joins on `gitrepo`'s geometry.
 `weftGitDir` returns `f.records.GitDir()`, the per-worktree git dir, which keeps the correspondence index scoped per pair as today.

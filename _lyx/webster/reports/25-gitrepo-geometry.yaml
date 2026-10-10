@@ -1,0 +1,5 @@
+status: OK
+head_sha: 3d8a43bbe31991ab588c5a73b1ddaee297a6f710
+deviations:
+  - internal/gitrepo/refreads.go
+  - cmd/lyx/checkedcall_test.go

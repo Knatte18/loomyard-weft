@@ -13,9 +13,9 @@
 - `internal/fabricengine#checkUnlandedWork`
 
 **Uses:**
-- `plan:internal/gitrepo#Repo.HeadRef`
-- `plan:internal/gitrepo#Repo.Upstream`
-- `plan:internal/gitrepo#Repo.RefTree`
+- `internal/gitrepo#Repo.HeadRef`
+- `internal/gitrepo#Repo.Upstream`
+- `internal/gitrepo#Repo.RefTree`
 
 **Prosa:**
 - `internal/fabricengine/doc.go`

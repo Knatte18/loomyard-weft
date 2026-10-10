@@ -1,13 +1,13 @@
 # Card 25 — gitrepo-geometry
 
 **Create:**
-- `plan:internal/gitrepo#Repo.geometry` -> `func (r *Repo) geometry() (dotgit.Geometry, error)`
-- `plan:internal/gitrepo#Repo.GitDir` -> `func (r *Repo) GitDir() (string, error)`
-- `plan:internal/gitrepo#Repo.CommonDir` -> `func (r *Repo) CommonDir() (string, error)`
-- `plan:internal/gitrepo#Repo.Toplevel` -> `func (r *Repo) Toplevel() (string, error)`
-- `plan:internal/gitrepo/internal/gitoracle#GitDir` -> `func GitDir(t testing.TB, dir string) (string, error)`
-- `plan:internal/gitrepo/internal/gitoracle#CommonDir` -> `func CommonDir(t testing.TB, dir string) (string, error)`
-- `plan:internal/gitrepo/internal/gitoracle#Toplevel` -> `func Toplevel(t testing.TB, dir string) (string, error)`
+- `internal/gitrepo#Repo.geometry`
+- `internal/gitrepo#Repo.GitDir`
+- `internal/gitrepo#Repo.CommonDir`
+- `internal/gitrepo#Repo.Toplevel`
+- `internal/gitrepo/internal/gitoracle#GitDir`
+- `internal/gitrepo/internal/gitoracle#CommonDir`
+- `internal/gitrepo/internal/gitoracle#Toplevel`
 
 **Edit:**
 - `internal/gitrepo#Repo`

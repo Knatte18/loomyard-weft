@@ -16,9 +16,9 @@
 - `cmd/lyx/checkedcall_test.go`
 
 **Uses:**
-- `plan:internal/gitrepo#Repo.BranchExists`
-- `plan:internal/gitrepo#Repo.RefSHA`
-- `plan:internal/gitrepo#ErrRefNotFound`
+- `internal/gitrepo#Repo.BranchExists`
+- `internal/gitrepo#Repo.RefSHA`
+- `internal/gitrepo#ErrRefNotFound`
 - `internal/gitrepo#Repo.CurrentSHA`
 
 **Intent:** D12: fabricengine's branch-existence, HEAD-existence and ref-SHA spawns move onto `gitrepo`'s reads.

@@ -1,6 +1,6 @@
 {
   "runGuid": "fff73e1104de3f235db98a26ed5f5a7a",
-  "planFingerprint": "017d158458d968e1da3ae5916de08ac8beb447e7da3a596ddf13e66e10d2444a",
+  "planFingerprint": "feb231a74b19d32c5bf03144a5be5885d08cadfccc2032b8eded9dbe73f37c6f",
   "planFileHashes": {
     "00-overview.md": "0ad33d2e71cd0bd2b348dfeb400a6eaa60d570779badff67c14470d91eac61e4",
     "01-fixture-git-marker.md": "7d78f3450efed061b64d1f2d18f2334b9e02647384d3daf608908d3967a06753",
@@ -27,12 +27,12 @@
     "22-reclassify-reed-orch-shuttle.md": "2f4666c50546fa26690438959c85c4789c81bb5df79b0e4bb7c51a0f4109cc5a",
     "23-dotgit-leaf.md": "e4dedf83f4dbbe3ec810e56e489f5ce85c1702f9a3a67ec251b7b58b25f93939",
     "24-lyxcwd-walkup.md": "47f4f3ee21dfdc6bcc8aa2c0c3094c949bffda16c3d0d0587f160b78d54bc9f2",
-    "25-gitrepo-geometry.md": "558891e9c06fd69f03756d77dc0372b39063ddcb3d29a76f0a5a4de80aee9aac",
-    "26-gitrepo-ref-reads.md": "8aadb1e4aa5ebe5a6670b623a666313479a5570c667da6326349bb7abfe6b72b",
-    "27-gitexec-drop-gitdir-env.md": "00598ab1b36a40bc3671310dc5036ccffbe6e98db930913ed6cb99bb825e01f7",
-    "28-fabricengine-geometry-reads.md": "735d4d53249bd295ad2a73e2be5aa584b319c959dc25e1170a8caf815b631a00",
-    "29-fabricengine-branch-and-ref-reads.md": "4543e04369911b29c77109634e23067d3919d81456069d726d9df33b4def4cbe",
-    "30-fabricengine-head-upstream-tree-reads.md": "0cbea5b10cdc269564667dfd95ba60ac3297d6c5f9ed0ff18ce12c4cecc8c191",
+    "25-gitrepo-geometry.md": "b4a7d5bda1ec8e8855ab96b0ebba5ab6386ae4ee0664c21b313c789db74d8965",
+    "26-gitrepo-ref-reads.md": "92f69d2323ed5fe7c4eb1a9755e4ad0c6aeb338bafec0e1e470a9255f504a60d",
+    "27-gitexec-drop-gitdir-env.md": "1129c6a921a30650826d84c898666b5db6e472521ed02e2f12b8066e2aaf40e1",
+    "28-fabricengine-geometry-reads.md": "cc969e8c266f9ea356cd61ba171b83f00a025265727167c9f09569aba6db9fd8",
+    "29-fabricengine-branch-and-ref-reads.md": "1beb56570cc50454745197c069f76d4b7bdd1fde4acbb058c58b68d4318c1bdf",
+    "30-fabricengine-head-upstream-tree-reads.md": "6b903c148849bce1be29fd3634a6a76575a76a8f300e04cc323e3030f3b9f461",
     "31-tierpurity-tmux-constraint.md": "e0be9a1afca4dacfaeecc8bf87b08ee33d6d4e042291bd3c40d15d840a9d4e9a",
     "32-removestrand-scan.md": "2078bed08182a006f399c12437cf508766cf08e38fb434e101bc56b4ef37dbfb",
     "33-weight-report-after.md": "1cae5d859b2d543fcfc0d687f3ff05c40c0eafe55d1fdaa66c4da3b27787fef1"
@@ -1074,7 +1074,7 @@
       }
     }
   ],
-  "currentBatch": 25,
+  "currentBatch": 0,
   "masterStrand": "6207061aa885c318cb6613a9996f300f",
   "masterSessionId": "7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b",
   "batches": {
@@ -1281,19 +1281,37 @@
         "30-fabricengine-head-upstream-tree-reads"
       ],
       "cardHashes": {
-        "25-gitrepo-geometry": "558891e9c06fd69f03756d77dc0372b39063ddcb3d29a76f0a5a4de80aee9aac",
-        "26-gitrepo-ref-reads": "8aadb1e4aa5ebe5a6670b623a666313479a5570c667da6326349bb7abfe6b72b",
-        "27-gitexec-drop-gitdir-env": "00598ab1b36a40bc3671310dc5036ccffbe6e98db930913ed6cb99bb825e01f7",
-        "28-fabricengine-geometry-reads": "735d4d53249bd295ad2a73e2be5aa584b319c959dc25e1170a8caf815b631a00",
-        "29-fabricengine-branch-and-ref-reads": "4543e04369911b29c77109634e23067d3919d81456069d726d9df33b4def4cbe",
-        "30-fabricengine-head-upstream-tree-reads": "0cbea5b10cdc269564667dfd95ba60ac3297d6c5f9ed0ff18ce12c4cecc8c191"
+        "25-gitrepo-geometry": "b4a7d5bda1ec8e8855ab96b0ebba5ab6386ae4ee0664c21b313c789db74d8965",
+        "26-gitrepo-ref-reads": "92f69d2323ed5fe7c4eb1a9755e4ad0c6aeb338bafec0e1e470a9255f504a60d",
+        "27-gitexec-drop-gitdir-env": "1129c6a921a30650826d84c898666b5db6e472521ed02e2f12b8066e2aaf40e1",
+        "28-fabricengine-geometry-reads": "cc969e8c266f9ea356cd61ba171b83f00a025265727167c9f09569aba6db9fd8",
+        "29-fabricengine-branch-and-ref-reads": "1beb56570cc50454745197c069f76d4b7bdd1fde4acbb058c58b68d4318c1bdf",
+        "30-fabricengine-head-upstream-tree-reads": "6b903c148849bce1be29fd3634a6a76575a76a8f300e04cc323e3030f3b9f461"
       },
       "startSha": "279fbfe09a874f619e28cdf1a5b0e896e59281b9",
       "kind": "fork",
       "spawnedAt": "2026-10-10T10:36:17Z",
       "sessionId": "7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "25-gitrepo-geometry",
+        "status": "done",
+        "head_sha": "3d8a43bbe31991ab588c5a73b1ddaee297a6f710",
+        "deviations": [
+          "internal/gitrepo/refreads.go",
+          "cmd/lyx/checkedcall_test.go"
+        ]
+      },
+      "cardShas": [
+        "3d8a43bbe31991ab588c5a73b1ddaee297a6f710"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b/subagents/agent-a989a95a7ca054239.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b/subagents/agent-a989a95a7ca054239.jsonl"
+      ]
     },
     "6": {
       "slug": "tmuxkit-package-server",
@@ -1384,6 +1402,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b/subagents/agent-a0b96461f8e3a02d8.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b/subagents/agent-a9bc499ce47143ad5.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b/subagents/agent-a4d828465f4ba274e.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b/subagents/agent-a47843738c4d42a65.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b/subagents/agent-a47843738c4d42a65.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b/subagents/agent-a989a95a7ca054239.jsonl"
   ]
 }

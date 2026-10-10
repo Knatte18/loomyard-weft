@@ -1,7 +1,7 @@
 # Card 27 — gitexec-drop-gitdir-env
 
 **Create:**
-- `plan:internal/gitexec#childEnv` -> `func childEnv(extra []string) []string`
+- `internal/gitexec#childEnv`
 
 **Edit:**
 - `internal/gitexec#runCore`
