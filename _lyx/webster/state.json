@@ -1,0 +1,242 @@
+{
+  "runGuid": "1b31f55388844b17cbc57a86e99955bc",
+  "planFingerprint": "2c1883b2949f0c903262e6c1461baa2e00f53b087ce179bd0c1790f74ccd5d49",
+  "planFileHashes": {
+    "00-overview.md": "a58b8548029be8dea38356862cdff8b8af2bb2ccddb551d77781df1ea7f157a0",
+    "01-midmerge-record-fields.md": "e7e411be5c8daa9a5d67c06882ad1b47ee21bfaf50827e7e97b45276e5fe377e",
+    "02-config-changes-three-way.md": "e4dc2c174ad35c16e184681fe3b19282a6c5eadf9482abbf08679e873a7b2774",
+    "03-publish-verify-failed-fix-route.md": "1e9a1b20683ac8f186bcd0369c1099cdede89165678fd674ec853a7431619b5b",
+    "04-conflict-role-export.md": "78fe3330ef6cf47c2c893fb4fc8d7cb8180e4375ff9ec279d7da8149af0bb24c",
+    "05-landing-pre-merge-clear.md": "40202e61bfaf74b71de50a182dfdd2b983ad3756e29a1e9688bfdca7820570d1",
+    "06-resume-start-own-leftover.md": "ba44819d5e8772e279a7225488a1a925c9b933ea9e46a034771c789c3d66b04a",
+    "07-decision-add-refuses-task-session.md": "72e95a2dcf6f110090d7bed08de5439f5a8663843eb18321046d850a96efb91a",
+    "08-stopped-young-run-dir-rows.md": "af556ebfd64dd4ab4de87ec67cccddd9b760a2ac84eede62d7acc673ea5d3fc9"
+  },
+  "planOverviewFrameHash": "e94c13c80fb8af5fdb78ba6057b7c41a997f9862fa1ef4c5c19cd85bb3bee71e",
+  "partition": [
+    {
+      "cards": [
+        "01-midmerge-record-fields",
+        "02-config-changes-three-way",
+        "03-publish-verify-failed-fix-route",
+        "04-conflict-role-export"
+      ],
+      "profile": "cautious",
+      "estimate": 240482,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54328,
+        "read_union": 83584,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 216,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 16416,
+              "file:internal/fabricengine/midmerge_integration_test.go": 1872,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 109,
+            "written": 32916
+          },
+          {
+            "card": 2,
+            "card_text": 264,
+            "reads": {
+              "file:internal/fabricengine/configchanges_integration_test.go": 1932,
+              "file:internal/fabricengine/doc.go": 16416,
+              "file:internal/landingshed/doc.go": 1068,
+              "file:internal/landingshed/finalize_test.go": 7368,
+              "package:internal/fabricengine": 2000,
+              "package:internal/landingshed": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 136,
+            "written": 41064
+          },
+          {
+            "card": 3,
+            "card_text": 336,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3624,
+              "file:contracts/stencils/claims_test.go": 8484,
+              "file:contracts/stencils/orch/orch-template-role.md": 1836,
+              "file:internal/landingshed/doc.go": 1068,
+              "file:internal/landingshed/publish_verify_test.go": 5232,
+              "file:internal/landingshed/verifygate_test.go": 4932,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "package:internal/landingshed": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/orch": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 73,
+            "written": 22236
+          },
+          {
+            "card": 4,
+            "card_text": 204,
+            "reads": {
+              "file:internal/agentname/agentname_test.go": 1800,
+              "package:internal/agentname": 2000,
+              "package:internal/mergeresolve": 2000,
+              "tests:internal/agentname": 2000,
+              "tests:internal/mergeresolve": 2000
+            },
+            "messages": 20.5,
+            "written": 6354
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-landing-pre-merge-clear",
+        "06-resume-start-own-leftover",
+        "07-decision-add-refuses-task-session",
+        "08-stopped-young-run-dir-rows"
+      ],
+      "profile": "cautious",
+      "estimate": 285886,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61328,
+        "read_union": 93068,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 696,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1560,
+              "file:contracts/specs/refusal-spec.md": 3624,
+              "file:internal/landingshed/doc.go": 1068,
+              "file:internal/loomcli/landingdeps_integration_test.go": 1068,
+              "file:internal/loomcli/landingdeps_markdone_test.go": 1164,
+              "file:internal/loomcli/landingdeps_test.go": 1488,
+              "file:internal/loomcli/landingdeps_verify_test.go": 984,
+              "file:internal/loomcli/wiring_publish_integration_test.go": 1152,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 193.5,
+            "written": 58746
+          },
+          {
+            "card": 6,
+            "card_text": 516,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3624,
+              "file:docs/overview.md": 7980,
+              "file:internal/loomcli/cli_test.go": 3168,
+              "file:internal/loomcli/resume_test.go": 4284,
+              "file:internal/loomcli/start_midmerge_test.go": 3132,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 124.5,
+            "written": 37866
+          },
+          {
+            "card": 7,
+            "card_text": 396,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3624,
+              "file:contracts/stencils/claims_test.go": 8484,
+              "file:contracts/stencils/loom/loom-template-plan.md": 3048,
+              "file:docs/overview.md": 7980,
+              "file:internal/loomcli/decision_test.go": 2772,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 94,
+            "written": 28596
+          },
+          {
+            "card": 8,
+            "card_text": 132,
+            "reads": {
+              "file:internal/shuttleengine/attach_test.go": 14352,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 20.5,
+            "written": 6282
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "90411d9438cf23c81bdac38333420a97",
+  "masterSessionId": "8edf3b49-551a-48e5-bae4-e0f8523936d5",
+  "batches": {
+    "1": {
+      "slug": "midmerge-record-fields",
+      "cards": [
+        "01-midmerge-record-fields",
+        "02-config-changes-three-way",
+        "03-publish-verify-failed-fix-route",
+        "04-conflict-role-export"
+      ],
+      "cardHashes": {
+        "01-midmerge-record-fields": "e7e411be5c8daa9a5d67c06882ad1b47ee21bfaf50827e7e97b45276e5fe377e",
+        "02-config-changes-three-way": "e4dc2c174ad35c16e184681fe3b19282a6c5eadf9482abbf08679e873a7b2774",
+        "03-publish-verify-failed-fix-route": "1e9a1b20683ac8f186bcd0369c1099cdede89165678fd674ec853a7431619b5b",
+        "04-conflict-role-export": "78fe3330ef6cf47c2c893fb4fc8d7cb8180e4375ff9ec279d7da8149af0bb24c"
+      },
+      "startSha": "7648e8b273d85b161a8156fe5e843978fa694ca2",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T08:39:49Z",
+      "sessionId": "8edf3b49-551a-48e5-bae4-e0f8523936d5",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
