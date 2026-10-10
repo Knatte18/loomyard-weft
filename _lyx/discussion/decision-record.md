@@ -124,6 +124,12 @@ Decision: In card 5's preMerge.clear, a StopConflictSession error with an empty 
 
 Rationale: Plan round 3 F1: otherwise the Stuck reason names strand () and 'lyx reed remove ' with no guid, a way forward that cannot be followed (PATTERN-refusal-way-forward); D2 licenses that Stuck only for a stop that fails on a found strand.
 
+### Added after Discussion (parent, 2026-10-10): refuseOverUnfinishedMerge reads the parent branch only on its own exception path
+
+Decision: In card 6, refuseOverUnfinishedMerge reads the parent branch through recordedParentBranch only when the state is parked, Verb is merge-in and the current producer is loomshed.NamePublish or loomshed.NameFinalize; every other parked state takes today's merge_in_progress refusal without the read. The TestRunDriverSpawnAndWait_MidMerge_ProbeErrorRefuses row sets the run's current producer to Publish.
+
+Rationale: Plan round 3 F2: reading first lets a read failure at any other row replace the merge_in_progress refusal D3 says those rows keep.
+
 ## Constraints
 
 - `PATTERN-refusal-way-forward`: every new Stuck reason or refusal names its way forward, lands with its refusal-spec row and a test reaches it (D1, D2, D3, D6).
