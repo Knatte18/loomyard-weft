@@ -51,6 +51,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 6 | **webster: fabric-reference check flags read-only commands and blocks recovery** | [`webster-fabric-ref-check`](design-webster-fabric-ref-check.md) | webster |
 | 7 | **webster: wait stops on a background shell at turn end and leaves it running** | [`webster-background-shell-wait`](design-webster-background-shell-wait.md) | webster |
 | 8 | **daemon idle Debug spawn lines reach no log sink; tmux socket path can exceed 108 bytes** | [`daemon-log-and-socket-path`](design-daemon-log-and-socket-path.md) | reed |
+| 9 | **Round gate re-runs a failing subtest alone and breaks subtests that share state** | [`subtest-rerun-shared-state`](design-subtest-rerun-shared-state.md) |  |
 
 ### Enhancements
 
