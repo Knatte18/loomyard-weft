@@ -1,6 +1,6 @@
 # Reed hygiene: daemon log and socket path, plain strand shells, watchdog child CPU
 
-`reed-hygiene` · Task · bug, enhancement, reed · running · Webster
+`reed-hygiene` · Task · bug, enhancement, reed · running · Webster-Bouncer
 
 ## Goal
 
