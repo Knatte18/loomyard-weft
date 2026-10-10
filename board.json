@@ -1197,7 +1197,10 @@
       "title": "Plan format has no way to insert a card or remove a card file",
       "kind": "note",
       "labels": [
-        "enhancement"
+        "enhancement",
+        "loom",
+        "burler",
+        "stencil"
       ],
       "issues": [
         508

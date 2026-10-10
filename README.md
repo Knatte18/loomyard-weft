@@ -85,7 +85,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 24 | **Fold loomcli and orchcli tmux probe copies onto tmuxkit** | [`tmuxkit-probe-copies`](design-tmuxkit-probe-copies.md) | loom, orch, reed |
 | 25 | **Reconcile keeps an old default below the new floor** | [`reconcile-stale-default`](design-reconcile-stale-default.md) | config |
 | 26 | **Discussion advisors: operator-named areas per advisor on top of the landed all-advisors default**<br>• Each discussion_advisors entry takes an optional area (a lens, as in review fans); without one the advisor answers every question | [`discussion-advisor-mode`](design-discussion-advisor-mode.md) | loom, stencil, config |
-| 27 | **Plan format has no way to insert a card or remove a card file** | [`plan-card-insert`](design-plan-card-insert.md) |  |
+| 27 | **Plan format has no way to insert a card or remove a card file** | [`plan-card-insert`](design-plan-card-insert.md) | loom, burler, stencil |
 
 #### Low priority
 

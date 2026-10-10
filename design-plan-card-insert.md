@@ -1,6 +1,6 @@
 # Plan format has no way to insert a card or remove a card file
 
-`plan-card-insert` · Note · enhancement
+`plan-card-insert` · Note · enhancement, loom, burler, stencil
 
 Imported from [issue #508](https://github.com/Knatte18/loomyard/issues/508).
 
