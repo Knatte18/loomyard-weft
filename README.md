@@ -58,6 +58,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **Batten idle notices count machine sleep as idle time** — [`idle-notice-after-sleep`](design-idle-notice-after-sleep.md) · bug, batten
    - After a hibernate every run raises an idle notice for the whole sleep; the idle clock should skip time the machine was asleep
 1. **Stencil seeding ping-pongs on Bolt: prod-mode binaries overwrite each other's stencils** — [`stencil-seed-ping-pong`](design-stencil-seed-ping-pong.md) · bug, stencil
+1. **fabric reconcile on a stale Bolt: seed commits conflict on push, yet ok:true** — [`reconcile-stale-bolt`](design-reconcile-stale-bolt.md) · bug, fabric, config
 
 ### Enhancements
 
