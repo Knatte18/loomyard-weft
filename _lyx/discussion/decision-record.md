@@ -118,6 +118,12 @@ Bound: the check reads the exported name and the recorded parent name and nothin
 An unresolvable parent never lets a named caller through: the error refuses the real parent's call too, and the operator's unnamed shell is the way past it.
 When a driver route for recording decisions is built (`run-message-routing`), it needs its own label or exemption; none is given now.
 
+### Added after Discussion (parent, 2026-10-10): An unreadable strand table is an infrastructure error, not a stuck conflict session
+
+Decision: In card 5's preMerge.clear, a StopConflictSession error with an empty guid (the strand table could not be read) is returned as an error that both producers' gateStop map to a cancellation or fault, with the merge left untouched and no AbortMerge; the guid-naming Stuck reason 'conflict session not stopped' stays only for an error with a non-empty guid. The planned premerge_test.go table gains a row: the stop seam returns an empty guid and an error, asserting an error return, no AbortMerge call and no merge-in.
+
+Rationale: Plan round 3 F1: otherwise the Stuck reason names strand () and 'lyx reed remove ' with no guid, a way forward that cannot be followed (PATTERN-refusal-way-forward); D2 licenses that Stuck only for a stop that fails on a found strand.
+
 ## Constraints
 
 - `PATTERN-refusal-way-forward`: every new Stuck reason or refusal names its way forward, lands with its refusal-spec row and a test reaches it (D1, D2, D3, D6).
