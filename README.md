@@ -76,6 +76,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 20 | **Haiku 5.5 for the light roles: driver and judge**<br>• Move the roles that only steer or rule on a fixed question, the loom driver and the Bouncer judge, to Haiku 5.5 where a trial run shows it holds | [`haiku-roles`](design-haiku-roles.md) | config, loom, burler |
 | 21 | **One owner for child-process lifetime in internal/proc**<br>• Fold lyx gate test's process-group, Pdeathsig and job-object setup into internal/proc beside ConfigureGroupKill | [`proc-child-lifetime`](design-proc-child-lifetime.md) |  |
 | 22 | **An abandoned run leaves its board entry locked**<br>• Batten teardown clears the run status of a run that ends without landing, so the entry is editable again | [`abandoned-run-claim`](design-abandoned-run-claim.md) | batten, board |
+| 23 | **PATTERN overview breaks its cap only after merging main** | [`pattern-overview-headroom`](design-pattern-overview-headroom.md) | loom |
 
 ### Features
 

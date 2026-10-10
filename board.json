@@ -1409,6 +1409,21 @@
       "isolated": false,
       "brief": "A batch fork ran lyx fabric add against the real hub and pushed stray branches to GitHub",
       "body": "## Seen\n\nOn 2026-10-10, `daemon-wakeups` batch 09's implementer fork ran `lyx fabric clone/add --help`, read the real hub's `_lyx/fabric/origin.json` and ran `git ls-remote` on the weft repo.\nThe card 14 fork's `lyx fabric add idle-a/b/c` pushed branches `idle-a`, `idle-b`, `idle-c` to `Knatte18/loomyard` and `idle-*-weft` to `Knatte18/loomyard-weft`.\nRecovery refused the batch with `needs_fresh`; the parent reset it and recorded a sandbox rule as a decision.\n\n## Idea\n\nAn implementer fork cannot reach the real hub's fabric or remotes: its stencil states the sandbox-hub rule (local bare repos as origins), and lyx refuses `lyx fabric` writes and pushes to the hub's own remotes from an implementer strand, the way the hub-wide config refuses writes from a task worktree.\n"
+    },
+    {
+      "id": 275,
+      "slug": "pattern-overview-headroom",
+      "title": "PATTERN overview breaks its cap only after merging main",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "From `gate-test-scope` (2026-10-10): the `PATTERN.md` overview was under its 16384-byte cap on both the task branch and main, but Publish merged main in and the overview reached 16559 bytes.\n`TestOverview_RealFilePassesCheck` then failed in verify, the run blocked at Publish, and it needed a parent decision plus a goto to Webster-Burler.\n\nIdea: give the overview headroom, with the overview check warning at about 95% of the cap, or let a shared size cap breached only by the merge be fixed through the Publish fix route.\n"
     }
   ],
   "legacy_done": [
