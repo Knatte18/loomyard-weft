@@ -227,3 +227,17 @@ The halt note and the verify log on disk do not show whether this test caused th
 What to do: reproduce with repeated runs of `lyx gate test --tags integration ./internal/loomcli`, find the ordering, timing or shared-state dependency in the test, and make it deterministic.
 
 Provenance: task `bolt-and-store`; notes `webster-verify-triage.md`, `loom-halt.md`.
+
+
+## From issue #498
+
+Imported from [issue #498](https://github.com/Knatte18/loomyard/issues/498).
+
+Seen (test-suite-weight, 2026-10-10): `lyx webster record-batch 01` refused on create-not-done, and `lyx webster recover-batch 01` spawned a recovery strand.
+The strand committed a working fix (f4c8a9103), then ended its turn with "Batch gate is running; I'll write the report once it finishes".
+`internal/websterengine/classify.go:43-45` classifies a turn end with no report as terminal `dead/asking`, and `awaitTerminal` (`recoverbatch.go`) stops the strand, so the report was never written.
+Once dead, `record-batch` refuses, `begin-batch` reports the batch exhausted, and Master's stencil tells Master to stop on `dead`; the run blocked at Webster, and a `lyx loom goto --to Webster` plus resume blocked again on "Batch 01 is dead".
+
+Workaround: the orchestrator ran `lyx webster recover-batch 01` again by hand; `RecoverSpawnOrAttach` spawns a fresh cold recovery strand when the prior record is terminal dead.
+
+Expected: a recovery strand waiting on its own background gate is not dead at a turn end (wait for the shell, or its stencil forbids ending the turn before the report), and a dead batch whose recovery left commits gets a second recovery from Master or the Webster row without the orchestrator.
