@@ -167,6 +167,12 @@ Rationale: Plan round 3 F2: reading first lets a read failure at any other row r
   - d3-conflict-session-outlives-driver (class decision, severity MEDIUM, open in rounds 2, 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/plan/round-3-review.md; fixer report: _lyx/reviews/plan/round-3-fixer-report.md.
+  - stop-seam-empty-guid-becomes-stuck (class design, severity BLOCKING, open in rounds 3)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - Publish with a plan verify or `publish_verify` that exits non-zero and whose failure record is written stops Stuck with a reason ending in the `lyx loom goto --to Webster-Burler` then `lyx loom resume` way forward; the timed-out, unstartable and dirty-tree reasons, and a non-zero exit whose record write failed, are unchanged and name no goto.
