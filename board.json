@@ -371,6 +371,7 @@
         "fabric"
       ],
       "issues": [],
+      "priority": "low",
       "depends_on": [],
       "isolated": false,
       "brief": "Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date",
