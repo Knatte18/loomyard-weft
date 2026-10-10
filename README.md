@@ -62,6 +62,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **Cobra Use and Short texts follow no common form** — [`cli-help-form`](design-cli-help-form.md) · bug, board
 1. **Board intake drops issue comments** — [`intake-comments`](design-intake-comments.md) · bug, board, selfreport
    - intake import carries every issue comment into the entry body, not only the issue body
+1. **orch watcher sends the post-compact reload minutes late while the operator chats** — [`orch-reload-late`](design-orch-reload-late.md) · bug, orch
 
 ### Enhancements
 

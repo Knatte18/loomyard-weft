@@ -1368,6 +1368,23 @@
       "isolated": false,
       "brief": "Tasks a run holds (locked by board-lock-running) render in their own Running section ahead of Layer A",
       "body": "The board README gets a `Running` section under Tasks, before `Layer A`, holding every task a run holds: the entries `board-lock-running` locks against scope changes.\nA running task appears there and in no layer, so the layers show only work that can still be started or reshaped.\n\n## Shape\n\n- In `renderReadme` (`internal/boardengine/render.go`), split the open tasks on `IsRunStatus` (from `board-lock-running`, `internal/boardengine/runlock.go`) before the layer loop and write them first under `### Running`.\n- Use the same predicate as the lock, so the README and the refusal can never disagree on which entries are locked.\n- After and Before still render for a running entry.\n\nWaits for `board-lock-running` to land, since `IsRunStatus` comes with it; then the orch fixes it directly on `main`.\n"
+    },
+    {
+      "id": 263,
+      "slug": "orch-reload-late",
+      "title": "orch watcher sends the post-compact reload minutes late while the operator chats",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "orch"
+      ],
+      "issues": [
+        481
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #481](https://github.com/Knatte18/loomyard/issues/481).\n\nAfter a distill on 2026-10-10, the watcher's resume steps (`/color`, `/reload-plugins`, the \"read role.md and the orch note\" prompt) reached the orch session almost three minutes after the compaction, after the operator had already held four exchanges with the un-reloaded session.\nThe operator reports the same lateness after earlier compactions as well; `lifecycle-waits` (done) and #356, #390 fixed neighbouring cases, not this one.\n\n## Timeline (UTC, from the orch transcript and `.lyx/orch/watch.log`)\n\n- 04:07:10 handoff note requested (`handoff-20261010T040710Z.md`), written, turn ended.\n- 04:08:25 compaction boundary written to the transcript.\n- 04:08:45 the operator's next message arrives; the session works on it with no role, skills or color reloaded.\n- 04:08:26, 04:09:53, 04:10:24, 04:10:57: at each of the orch's turn ends the watcher logs `orch: session state disagrees with the idle probe` with `idle=false state=asking cause=awaiting-input`, and injects nothing.\n- 04:11:09 the phase enters `resuming` (`state.json`), and 04:11:12 `/reload-plugins` and the resume prompt land.\n\nSo the session's own state said it was waiting for input at every turn end, but the pane idle probe said not idle, and the watcher waited for the probe.\n\n## Expected\n\n- The resume steps follow the compaction boundary at once, before the operator's next message is taken, or are queued so they run ahead of it.\n- A turn end whose session state is `asking`/awaiting input is enough to inject; a disagreeing pane probe does not hold the reload back for minutes.\n- The watcher logs why each resume step waited, so the delay can be read from `watch.log` without the transcript.\n"
     }
   ],
   "legacy_done": [
