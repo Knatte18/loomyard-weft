@@ -16,7 +16,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Batten opens a terminal window per run instead of VS Code**<br>• VS Code per run is gone (c0d604f12); batten itself still opens no reed attach window, the orch does it by hand | [`ide-opt-in`](design-ide-opt-in.md) | darn | Darn | ide, reed, batten |
-| 2 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`webster-stability`](design-webster-stability.md) | loom | Worktree-Create | webster, shuttle, stencil, quarry |
+| 2 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`webster-stability`](design-webster-stability.md) | loom | Loom-Preflight | webster, shuttle, stencil, quarry |
 
 #### Normal priority
 

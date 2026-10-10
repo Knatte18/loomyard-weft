@@ -1,6 +1,6 @@
 # Webster stability: gate shells, Master self-fix, recovery, Create checks
 
-`webster-stability` · Task · bug, webster, shuttle, stencil, quarry · running · Worktree-Create
+`webster-stability` · Task · bug, webster, shuttle, stencil, quarry · running · Loom-Preflight
 
 Depends on: [`webster-audit-gaps`](design-webster-audit-gaps.md)
 
