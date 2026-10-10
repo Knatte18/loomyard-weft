@@ -27,3 +27,81 @@ One documented form for `Use` and `Short`, enforced by a test that walks the com
 
 - `Use` carries positional arguments in one spelling (`<arg>` required, `[<arg>]` optional) and required flags only.
 - `Short` starts in lower case, has no final period, and says what the command does in terms of when to reach for it.
+
+
+## Issue comment, 2026-10-09
+
+## `[json-payload]`: name the shapes once, reference them per command
+
+Only `lyx board` takes a JSON payload, in 10 commands.
+The form is always one JSON object with unknown keys rejected, and the keys fall into a few shapes that recur across commands:
+
+| Shape | Keys | Used by |
+| --- | --- | --- |
+| `<addr>` | `slug` or `id` | `get`, `remove`, `promote`, `set-status`, and `merge`'s `set_status` |
+| `<task>` | `slug`, plus optional `title`, `brief`, `body`, `depends_on`, `isolated`, `status`, `kind`, `labels`, `recipe`, `short_name` | `upsert`, each element of `upsert-batch`, `merge`'s `upsert` |
+
+Proposal: define each shape once, in the `lyx board` group's help, and have each command's `Use` reference it instead of saying `[json-payload]`:
+
+```
+board: payload shapes: <addr> = {slug|id}; <task> = {slug, title?, brief?, body?, depends_on?, kind?, labels?, …}
+  get <addr>
+  remove <addr>
+  promote <addr>
+  set-status <addr>+{status}
+  set-deps {slug, depends_on}
+  upsert <task>
+  upsert-batch {tasks: [<task>]}
+  merge {remove_slugs?, upsert: <task>, set_status?: <addr>+{status}}
+  intake close {issue, reason, completed?}
+  intake import {issue, slug|into, title?, brief?, labels?}
+```
+
+The shapes are then stated in one place, the command index (#479) carries them for the cost of one line, and an agent can call most board commands without reading `--help` first.
+A test can hold the shapes and the payload parsers together, so a key added to one cannot be missing from the other.
+
+## `set-deps` takes no `id`
+
+`get`, `remove`, `promote` and `set-status` address an entry by `slug` or `id`; `set-deps` takes `slug` only.
+It should take `<addr>` like the others.
+
+
+
+## Issue comment, 2026-10-09
+
+## Long help: too long at the top
+
+Every command's `--help` together is 159 KB, about 40k tokens.
+The median page is about 740 bytes, which is fine; the problem is the top, where about ten pages run 2.5–5.4 KB each:
+
+| Page | Bytes |
+| --- | --- |
+| `lyx loom` | 5,419 |
+| `lyx webster` | 5,088 |
+| `lyx fabric clone` | 4,973 |
+| `lyx loom start` / `lyx start` | 4,385 / 4,380 |
+| `lyx webster reset` | 4,157 |
+| `lyx fabric cleanup` | 3,936 |
+| `lyx webster validate` | 2,866 |
+| `lyx loom resume` | 2,782 |
+| `lyx fabric remove` | 2,740 |
+
+Measured 2026-10-09 by walking every command's `--help`, without global flags, `-h` and the "Use … --help" hint.
+
+Three patterns recur:
+
+- **A group page restates its subcommands in prose.** `lyx loom --help` describes all its subcommands in one long paragraph, and Cobra then lists them again under "Available Commands"; the list alone is enough.
+- **Implementation detail.** `start` "seeds the status file, commits the seed, and spawns/attaches the detached driver session"; `fabric clone` explains that the binding is "a plain single-line record, .lyx-warp, kept at the board root".
+  That belongs in the package's `doc.go`.
+- **Edge cases and refusals stated up front.** `fabric clone` spends several paragraphs on when `--reset` and `--subpath` are refused.
+  The error message at the moment of refusal, naming the remedy, serves better.
+
+Proposed norm for `Long`: what the command does, when to use it, what its arguments and flags mean, and one or two examples.
+Everything else moves to `doc.go` or to the error messages.
+Under that norm the largest pages would likely shrink to about a third, which also makes `lyx <command> --help | grep …`, the orch's usual lookup, cheaper and less noisy.
+
+
+
+## Issue comment, 2026-10-10
+
+Imported into the board as `cli-help-form`.
