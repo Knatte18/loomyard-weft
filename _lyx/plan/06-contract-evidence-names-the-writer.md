@@ -1,8 +1,8 @@
 # Card 6 — contract-evidence-names-the-writer
 
 **Create:**
-- `plan:internal/websterengine#unclearedContract` -> `type unclearedContract struct`
-- `plan:internal/websterengine#noteWroteLast` -> `func noteWroteLast(writer string) string`
+- `internal/websterengine#unclearedContract`
+- `internal/websterengine#noteWroteLast`
 
 **Edit:**
 - `internal/websterengine#contractFileStatus` -> `func contractFileStatus(geom Geometry, writes RunWrites, path string) (contract, cleared bool, writer string, err error)`

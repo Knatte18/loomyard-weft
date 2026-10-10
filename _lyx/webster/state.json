@@ -1,6 +1,6 @@
 {
   "runGuid": "754d956959757d032606c78e090a81d6",
-  "planFingerprint": "5c7bec34cdd887f852e6501ed363be54003111a5e00a5a418d6b7351d38d5a3e",
+  "planFingerprint": "70f94299fb65500b79ca262cc7353f4522ea01d5525292f4059acfd4389a6f33",
   "planFileHashes": {
     "00-overview.md": "759bf1a8493fc600090a379106b2bc2c659393207705708fd22a2f80b20bb1b2",
     "01-gated-turn-end-holds.md": "6430b203dc915f1c37f3e6db1105fff1c88509b71fb5a71ded3edac5089e7fd4",
@@ -8,7 +8,7 @@
     "03-gate-entry-reprompt.md": "cdafc9831bf52e498c3cde1d4bbd9e6ad072c30587fbe0e3c7e0d94eb3d37044",
     "04-verify-gate-way-forward.md": "1188383e006ea007bf85a4ecb4b2eca63935a7a1876f0392ba32cd55cd5d45c4",
     "05-recovery-sessions-are-run-writes.md": "da4469ba1fc0afd5ef7c2a5c3876bb74200906e72df0eb101b7d06bbc7168278",
-    "06-contract-evidence-names-the-writer.md": "46da09180722c4b9635010465b189c1e92ea8d26902567e95ab1e1d2d139f28c",
+    "06-contract-evidence-names-the-writer.md": "a5949e44dfe2ef245d94c9d372a782d5ffc176799408cfab07f692e33ca0fc64",
     "07-recover-batch-non-done-exits-non-zero.md": "f069c5cd0e117cc9b3ced99275116814213ef9b916db7f4432c10ed85d492c20",
     "08-implementer-allowed-commands.md": "5be743840e2114b8d12b8378f6f91e76476b464ce83b618a208d1ce49195a96b",
     "09-build-constraint-partition-classifier.md": "63a0e3cdd80b683b60eb1b73f616813340030c5e8f7e80b19df4f1635ab248e3",
@@ -319,7 +319,7 @@
       }
     }
   ],
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "90f61a6cdf3575bd47829fe28df5e00c",
   "masterSessionId": "d17934b3-89a3-4074-89b2-986ee3939957",
   "batches": {
@@ -377,18 +377,42 @@
       ],
       "cardHashes": {
         "05-recovery-sessions-are-run-writes": "da4469ba1fc0afd5ef7c2a5c3876bb74200906e72df0eb101b7d06bbc7168278",
-        "06-contract-evidence-names-the-writer": "46da09180722c4b9635010465b189c1e92ea8d26902567e95ab1e1d2d139f28c",
+        "06-contract-evidence-names-the-writer": "a5949e44dfe2ef245d94c9d372a782d5ffc176799408cfab07f692e33ca0fc64",
         "07-recover-batch-non-done-exits-non-zero": "f069c5cd0e117cc9b3ced99275116814213ef9b916db7f4432c10ed85d492c20"
       },
       "startSha": "f416bcc3c685f2aded30df144efec61b4e8b16bf",
       "kind": "fork",
       "spawnedAt": "2026-10-10T18:21:05Z",
       "sessionId": "d17934b3-89a3-4074-89b2-986ee3939957",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-recovery-sessions-are-run-writes",
+        "status": "done",
+        "head_sha": "aee4414e1841016b0bbbba5aef5b731d75bb40df",
+        "deviations": [
+          "internal/websterengine/runlevel.go",
+          "internal/websterengine/archive.go",
+          "internal/websterengine/findingtext.go",
+          "internal/websterengine/runwrites.go",
+          "internal/webstercli/recoverbatch.go",
+          "internal/webstercli/acceptaudit.go",
+          "internal/websterengine/contractevidence_test.go"
+        ]
+      },
+      "cardShas": [
+        "aee4414e1841016b0bbbba5aef5b731d75bb40df"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-stability/d17934b3-89a3-4074-89b2-986ee3939957/subagents/agent-a45450ffc154a2fac.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-stability/d17934b3-89a3-4074-89b2-986ee3939957/subagents/agent-a45450ffc154a2fac.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-stability/d17934b3-89a3-4074-89b2-986ee3939957/subagents/agent-ae5aaf5bf3970c035.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-stability/d17934b3-89a3-4074-89b2-986ee3939957/subagents/agent-ae5aaf5bf3970c035.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-stability/d17934b3-89a3-4074-89b2-986ee3939957/subagents/agent-a45450ffc154a2fac.jsonl"
   ]
 }

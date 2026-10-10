@@ -1,0 +1,10 @@
+status: OK
+head_sha: aee4414e1841016b0bbbba5aef5b731d75bb40df
+deviations:
+  - internal/websterengine/runlevel.go
+  - internal/websterengine/archive.go
+  - internal/websterengine/findingtext.go
+  - internal/websterengine/runwrites.go
+  - internal/webstercli/recoverbatch.go
+  - internal/webstercli/acceptaudit.go
+  - internal/websterengine/contractevidence_test.go
