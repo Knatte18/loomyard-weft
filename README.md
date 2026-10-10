@@ -21,9 +21,9 @@ Held by a run; its scope is locked until the run ends.
    - A producer beside SingleLLMProducer that runs N agents as seats, one chair that steers and decides the outcome plus advisor-1..n, with its own internal message channel; built standalone, used by nothing yet
    - **Before:** `burler-multi-llm`, `discussion-multi-llm`
 
-### Layer B
+### Layer A
 
-Starts when every entry it names under After is done.
+Waits on nothing that is not running; next to start.
 
 1. **Lighter test suite: measured tiers, cheap tmux fixtures, no lingering children** — [`test-suite-weight`](design-test-suite-weight.md) · bug, enhancement, shuttle, reed, fabric
    - Measure each tier, non-login shells and shared servers in tier 3, lyx built once, no background gc in fixtures (#472), a no-tmux scan for tiers 1-2
@@ -39,7 +39,7 @@ Starts when every entry it names under After is done.
    - Design and build a Discussion-Write whose writer is the chair, with advisors that study the code and answer its design questions live
    - **After:** `multi-llm-producer`, `gate-test-scope`
 
-### Layer C
+### Layer B
 
 Starts when every entry it names under After is done.
 
@@ -109,7 +109,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 1. **Haiku 5.5 for the light roles: driver and judge** — [`haiku-roles`](design-haiku-roles.md) · enhancement, config, loom, burler
    - Move the roles that only steer or rule on a fixed question, the loom driver and the Bouncer judge, to Haiku 5.5 where a trial run shows it holds
 1. **lyx help index: a generated one-line command index, injected into the orch only** — [`help-index`](design-help-index.md) · enhancement, orch
-1. **One owner for child-process lifetime in internal/proc** — [`proc-child-lifetime`](design-proc-child-lifetime.md) · enhancement
+1. **One owner for child-process lifetime in internal/proc** — [`proc-child-lifetime`](design-proc-child-lifetime.md) · enhancement · 
    - Fold lyx gate test's process-group, Pdeathsig and job-object setup into internal/proc beside ConfigureGroupKill
 1. **An abandoned run leaves its board entry locked** — [`abandoned-run-claim`](design-abandoned-run-claim.md) · enhancement, batten, board
    - Batten teardown clears the run status of a run that ends without landing, so the entry is editable again
