@@ -49,7 +49,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 4 | **Implementer forks can push to the real hub remotes**<br>• A batch fork ran lyx fabric add against the real hub and pushed stray branches to GitHub | [`fork-real-remotes`](design-fork-real-remotes.md) | webster, fabric |
 | 5 | **Flaky integration test: loomcli TestLoomResumeReconcilesTheHubConfigBeforeArming** | [`flaky-resume-reconcile-test`](design-flaky-resume-reconcile-test.md) | loom |
 | 6 | **webster: fabric-reference check flags read-only commands and blocks recovery** | [`webster-fabric-ref-check`](design-webster-fabric-ref-check.md) | webster |
-| 7 | **webster: wait stops on a background shell at turn end and leaves it running** | [`webster-background-shell-wait`](design-webster-background-shell-wait.md) |  |
+| 7 | **webster: wait stops on a background shell at turn end and leaves it running** | [`webster-background-shell-wait`](design-webster-background-shell-wait.md) | webster |
+| 8 | **daemon idle Debug spawn lines reach no log sink; tmux socket path can exceed 108 bytes** | [`daemon-log-and-socket-path`](design-daemon-log-and-socket-path.md) |  |
 
 ### Enhancements
 

@@ -1,6 +1,6 @@
 # webster: wait stops on a background shell at turn end and leaves it running
 
-`webster-background-shell-wait` · Note · bug
+`webster-background-shell-wait` · Note · bug, webster
 
 Imported from [issue #496](https://github.com/Knatte18/loomyard/issues/496).
 

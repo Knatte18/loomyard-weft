@@ -1504,7 +1504,8 @@
       "title": "webster: wait stops on a background shell at turn end and leaves it running",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "webster"
       ],
       "issues": [
         496
@@ -1513,6 +1514,22 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #496](https://github.com/Knatte18/loomyard/issues/496).\n\nA `webster-background-shell` note reported that Master's wait stopped waiting on a still-running background shell at a turn end.\nThe wait counts the turn end after `background_shell_wait_min` (10 minutes) for a shell only the transcript reports, and at once for one the Stop payload reports when Master's output files exist.\nlyx did not stop the shell; it ended only because shuttle removes Master's strand when the run finishes.\nThe run's final outcome was `done`.\n\nThis is abnormal because a background shell can outlive the decision to stop waiting, and its output is lost without any record beyond the note.\nSuggested fix: stop or explicitly report the shell when the wait gives up, or make the shell-wait rule consistent between transcript-reported and Stop-payload-reported shells.\n\nProvenance: task `daemon-wakeups`; note `webster-background-shell.md`.\n"
+    },
+    {
+      "id": 282,
+      "slug": "daemon-log-and-socket-path",
+      "title": "daemon idle Debug spawn lines reach no log sink; tmux socket path can exceed 108 bytes",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        495
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #495](https://github.com/Knatte18/loomyard/issues/495).\n\nTwo smaller frictions while measuring the daemon's idle behavior:\n\n1. The daemon's idle Debug spawn lines never reach any sink, so spawn counts could not be read from lyx logs.\n   The agent counted spawns through a tmux wrapper instead.\n   Suggested fix: route those Debug lines to the daemon log at a verbosity the operator can enable.\n2. A tmux socket path under a deeply nested scratch directory exceeded the 108-byte socket limit.\n   `TMUX_TMPDIR` had to be set to a short path by hand.\n   Suggested fix: have lyx detect an over-long socket path and fail with a message naming `TMUX_TMPDIR`, or choose a short default location.\n\nProvenance: task `daemon-wakeups`; note `09-orch-held-injection-log.md`.\n"
     }
   ],
   "legacy_done": [
