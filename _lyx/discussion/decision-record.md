@@ -218,6 +218,12 @@ Decision: Card 10's Create plan:internal/testkit/tmuxkit#tmuxAllowed is met with
 
 Rationale: quarry ignores build constraints and reads two build-tagged declarations as ambiguous, which record-batch's done check refuses (#500); nobody in the run may edit _lyx/plan to drop the glyph.
 
+### Added after Discussion (parent, 2026-10-10): Kit sweep reaps pane process trees
+
+Decision: tmuxkit's sweep reads each kit server's pane pids before kill-server and kills the remaining members of those sessions after it, as reed's reapPaneChildren does; a tmuxkit integration test runs a pane with trap '' HUP; sleep 300, sweeps, and asserts no leftover.
+
+Rationale: No lingering children is the task's goal, and every tmux-tier package relies on the kit's sweep, not reed's down path.
+
 ## Constraints
 
 - `PATTERN-test-speed`: tier 2 has no tmux server; the tier table, gate table and "untagged tests spawn nothing" section record D6, D7 and D8.
