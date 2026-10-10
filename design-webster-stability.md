@@ -1,6 +1,6 @@
 # Webster stability: gate shells, Master self-fix, recovery, Create checks
 
-`webster-stability` · Task · bug, webster, shuttle, stencil, quarry · awaiting · PR-Gate
+`webster-stability` · Task · bug, webster, shuttle, stencil, quarry · running · PR-Gate
 
 ## Goal
 
