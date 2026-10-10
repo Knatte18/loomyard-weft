@@ -32,3 +32,76 @@ Estimate: about 200-250k fresh tokens per round, about 2x a solo Opus round inst
 
 - The fan stays off in the hub until this task lands and a fanned run shows the estimate holds.
 - Until then Discussion-Review and Plan-Review run solo on `opus[medium]`, and Webster-Review on `sonnet[medium]`.
+
+## Research (fan-lab, 2026-10-10)
+
+A research agent replayed `webster-replan-state` Discussion round 2 standalone (`lyx burler run`) per variant, master and forks `sonnet[medium]`; the full report is `fan-lab/.scratch/phase1.md` (worktree `fan-lab`, lab plumbing uncommitted there).
+Variants: A today's text; B a lens-agnostic reading checklist in step 1; C B plus a 6-call fork budget; D C plus a reading manifest the master writes before spawning.
+
+| Run | Fan | Master code pre-reads | Fork tool calls | Review side fresh | Verdict | F1 (BLOCKING) |
+|---|---|---|---|---|---|---|
+| A | discussion | 0 | 2 | 216k | APPROVED | no |
+| B | discussion | 2 | 8 | 154k | APPROVED | no |
+| C | discussion | 2 | 0 | 133k | APPROVED | no |
+| D | discussion | 12 | 1 | 198k | APPROVED | no |
+| D | standard | 3 | 1 | 154k | APPROVED | no |
+| original round 2 | standard, sonnet[high] | 0 | 135 | 619k | BLOCKING | yes |
+
+Findings:
+
+- Only the manifest (D) makes a Sonnet-medium master pre-read; in A-C it read instruction 2 at once and forked after the board entry and a few pattern files.
+- No master judged anything before the spawn, in any variant.
+- Only the D runs reproduced round 2's code-grounded MEDIUMs; A-C findings were text-level.
+- No run found F1, which needs one hop past the target's citations (the D7 guard on `push` → `Fabric.Commit` → `SpawnDetachedPush`); at medium effort the forks barely read in any variant, so no one made the hop.
+- Fork cost is driven by effort, not the budget: the original's 485k fork fresh came from `sonnet[high]` forks told to verify against code.
+- A D round costs about 150-200k review side, still 1.5-2x a solo `opus[medium]` round.
+- Every fork already inherits instruction 2 and so every lens, since the master reads it before spawning.
+
+Recommendation: adopt D, with a checklist line for callers and spawned processes (untested). Step 1 (`clusterPrereadBlock`, explore file only, cluster rounds only):
+
+```
+## Reading for the fork reviewers
+
+This round fans out: in step 2 you spawn fork reviewers, and each fork inherits your context as it stands at the spawn.
+Your reading in this step is the forks' reading, so read here what the review will need, once, instead of leaving each fork to read it again.
+
+Before you leave this step, read:
+
+- every file the target names, at the definitions of the symbols it cites;
+- for each symbol the target changes, guards or removes: its direct callers and callees, and every path that reaches it from another process, such as a child the code spawns or a command that calls the guarded verb in-process;
+- the `pattern/` background file of every PATTERN entry the target names or touches;
+- the board entry of the task the target belongs to, through `lyx board get`;
+- the failure, restart and resume paths of each change the target makes.
+
+Read definitions and call sites, not whole files: a fork re-reads its inherited context on every turn.
+Judge nothing while you read: write no finding, verdict or assessment, not even in a status line or a note to yourself.
+A judgement in your context before the spawn colours every fork; your own review starts after the forks are spawned.
+
+End this step with a reading manifest as a plain message: one line per file and symbol you read, grouped by the part of the target it serves.
+The manifest names what you read and nothing about what you found.
+```
+
+Step 2 (`clusterRulesBlock`), replacing the spawn trigger, the fork boilerplate and the holistic paragraph; the consolidation paragraph is unchanged:
+
+```
+This is a cluster round: as soon as step 1's reading is done, spawn ALL of the fork reviewers below in a SINGLE message via the Agent tool with `subagent_type: "fork"`, one per lens listed here — never pass a `name` (named forks silently lose inherited context).
+
+Lenses for this round:
+
+<lenses>
+
+Each fork's prompt is this boilerplate plus that lens's emphasis text, and nothing else: never add a direction to verify against the code or to read files.
+Your inherited context already holds the target, the rules and the code the target rests on; review from it.
+The reading manifest in your context lists what is already read; check it before any tool call.
+You may make at most 6 tool calls, each only for something your lens needs that the manifest lacks, such as a caller or a spawned process one hop beyond it, and never to re-read what your context already shows.
+End your final message with one line per tool call you made: what you read and why your context lacked it.
+You are READ-ONLY — never Write/Edit/delete any file, never run any git command, never touch the two round output files, and never call the Agent tool yourself (forks cannot nest); return your findings ONLY as your final message, each with a severity, a class, a location, and a one-line summary.
+
+While the forks run, YOU (the handler) do your own HOLISTIC review — architecture, cross-file invariants, PATTERN-fit — from the same context, reading further only where it or a fork's read list shows a gap, and prepare the ground truths and the severity rubric you will judge every finding against.
+```
+
+Open before the fan goes back on:
+
+- A confirming run of the recommended text (or D at `sonnet[high]`) on the fixture must show F1; about 300k with the fixer.
+- The `discussion` fan has no lens aimed at a guard's callers; `scenarios` is the natural owner if a lens change is wanted.
+- Proposal E (not run): lyx extracts the target's citations (paths, backticked symbols) as the manifest's starting list without loading code, leaving the choice of what to read to the master; 22 of the 25 files the original forks needed are cited in the target, the other 3 one hop away.
