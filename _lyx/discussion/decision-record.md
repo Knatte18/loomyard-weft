@@ -274,6 +274,15 @@ Keying the skip on a mark the verb writes only after a successful render, not on
   - d11-pointer-names-stale-role-file (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - card11-skip-phase-end-offset (class design, severity MEDIUM, open in rounds 2)
+  - orch-resume-absent-state-no-refusal (class scope, severity MEDIUM, open in rounds 2)
+  - overview-opener-decision-vs-card6-tests (class scope, severity MEDIUM, open in rounds 1, 2)
+  - shuttleengine-doc-shadow-mode-stale (class scope, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - The guard fails on a sub-second duration literal without `//lyx:one-shot` in a declared file, on a `time.NewTicker` call in an undeclared production file, and passes on `main` after this task.
