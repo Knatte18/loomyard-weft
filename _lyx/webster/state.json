@@ -434,7 +434,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 1,
   "masterStrand": "1c06a35705e11073420756b41d655b63",
   "masterSessionId": "e67c9a3b-6efc-4de8-ad4b-f411b2b012bc",
   "batches": {
@@ -453,19 +453,10 @@
         "04-halt-note-parent-fabric-status": "93fb3df91c126a107f35238dcfed80df3ef8f58f97fe8f1c223451badb4780e3"
       },
       "startSha": "b7d4fd0ba55de0c19ae91a8b1c114837c543bb01",
-      "kind": "fork",
-      "spawnedAt": "2026-10-10T15:15:48Z",
-      "sessionId": "e67c9a3b-6efc-4de8-ad4b-f411b2b012bc",
-      "terminal": true,
-      "status": "failed",
-      "digest": {
-        "batch": "01-verify-log-per-run",
-        "status": "failed",
-        "head_sha": "1a841585d3e4e8c232254e92782345585a492023",
-        "reasons": [
-          "webster: fabric-reference violation in \"/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quick-recipe/e67c9a3b-6efc-4de8-ad4b-f411b2b012bc/subagents/agent-a4797b1dac76dd596.jsonl\": ran a fabric-referencing command (\"sed -n 285,300p contracts/specs/refusal-spec.md | cut -c1-200; grep -n \\\"fabric commit\\\" -r contracts/specs plugins 2\u003e/dev/null | head -5; lyx fabric --help 2\u003e\u00261 | head -30\") that can rewrite run state — an implementer fork must never touch the fabric repo directly"
-        ]
-      },
+      "kind": "recovery",
+      "spawnedAt": "2026-10-10T15:30:27Z",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quick-recipe/e67c9a3b-6efc-4de8-ad4b-f411b2b012bc/subagents/agent-a4797b1dac76dd596.jsonl"
       ],
@@ -475,7 +466,13 @@
           "class": "fabric-reference",
           "detail": "accepted by accept-audit --batch, HEAD was the batch's start commit and the tree clean: ran a fabric-referencing command (\"sed -n 285,300p contracts/specs/refusal-spec.md | cut -c1-200; grep -n \\\"fabric commit\\\" -r contracts/specs plugins 2\u003e/dev/null | head -5; lyx fabric --help 2\u003e\u00261 | head -30\") that can rewrite run state — an implementer fork must never touch the fabric repo directly"
         }
-      ]
+      ],
+      "strandGuid": "51785275cba6b9e1dc187100b688cea4",
+      "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/quick-recipe/.lyx/shuttle/0316a099669b5081497a8b2f2f8ac137",
+      "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/quick-recipe/.lyx/shuttle/0316a099669b5081497a8b2f2f8ac137/events.jsonl",
+      "eventsOffset": 1563,
+      "recoveries": 1,
+      "recoveryStartSha": "b7d4fd0ba55de0c19ae91a8b1c114837c543bb01"
     }
   },
   "seenForkTranscripts": [
