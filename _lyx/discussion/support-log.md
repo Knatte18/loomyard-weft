@@ -18,7 +18,7 @@ The session ran autonomously, so every question below was posed and answered by 
    Pick: a per-entry re-prompt line and a way-forward line atop the findings; no new verb, since an in-session fork can only be spawned by Master's Agent tool.
 4. Why did the second recovery disown the first one's files?
    `recordedSessions` lists the Master session and each batch's begin-time Master session; a recovery strand's session is nowhere in state.
-   Pick: record recovery session ids on the batch, audit them, keep the contract-file evidence on Master alone.
+   Pick: record recovery session ids on the batch, audit them, and count their writes with the forks' in the contract-file evidence.
 5. Why did `recover-batch 1` exit 0 on a failed batch?
    The CLI exits non-zero only on `ErrBatchFailed` and refusals; a `stuck` or `dead` digest returns `ok: true`.
    The exact path in the quick-recipe run cannot be recovered from the code.
@@ -34,7 +34,7 @@ The session ran autonomously, so every question below was posed and answered by 
    quarry is an external pinned module; its `Symbol.File` names each candidate's file.
    Pick: a classifier in planglyph over the candidate files, exact through `go/build.Context.MatchFile` over enumerated environments.
 9. Which policies change?
-   Edit, Delete, Rename, `Uses:`, the Create done-check, `answerSymbols` and the plan-gate member reads accept a partitioned answer; Delete-still-exists and `create-already-exists` do not.
+   Edit, Delete, a Rename's new side, `Uses:`, the Create done-check, `answerSymbols` and the plan-gate member reads accept a partitioned answer; Delete-still-exists, `create-already-exists` and a Rename's old side, which `renameDeclSource` keeps Found-only, do not.
 
 ## Rejected alternatives
 
@@ -51,6 +51,10 @@ The session ran autonomously, so every question below was posed and answered by 
 - Telling the implementer to run `tmux`-tagged tests through `lyx gate test --tags tmux`: the tier table runs that tier at Publish, and a strand compiling it is enough.
 - Changing quarry to honor build constraints: an external module at a pinned version; the plan-time and done-check policies are lyx's.
 - A textual disjointness rule ("every candidate has a constraint and no two are equal"): fails open on `//go:build linux` beside `//go:build amd64`.
+- Enumerating GOOS over the mentioned names plus one unmentioned: unmentioned OSes are not interchangeable, since `unix` and the GOOS implications follow the GOOS, so `!windows` beside `unix` would read partitioned under `plan9`.
+- Deriving a partitioned Rename's new declaration from any candidate: the candidates' signatures may differ per constraint, the reason `renameDeclSource` already refuses `multipart`.
+- Starting each environment from `build.Default`: its `Compiler`, `ReleaseTags` and `ToolTags` hold `gc`, `go1.N` and tool tags true, so a `!gc` or `!go1.21` file beside an unconstrained one would read partitioned.
+- Leaving the free-tag cap to the plan writer: it bounds both the guard and the enumeration cost, so it is decided here.
 - Treating a partitioned Create target as "does not exist yet": a declaration occupies the name whichever file holds it.
 - Letting a Create reuse a name the same card deletes (#507's first option): Edit now covers per-constraint bodies, and the resolve pass reading the tree before any card runs is by design.
 
@@ -66,7 +70,7 @@ _No rounds yet._
 | 2 | Apply the hold to ungated runs? | resolved, auto-pick | No (D1, scope). |
 | 3 | Per-entry or per-result re-prompt text? | resolved, auto-pick | Per-entry (D2). |
 | 4 | Add a mechanical guard against Master self-fix at the gate? | resolved, auto-pick | No; the run-exit audit covers it (D2). |
-| 5 | Record recovery sessions or start the second recovery clean? | resolved, auto-pick | Record and audit them; contract-file evidence stays Master-only (D3). |
+| 5 | Record recovery sessions or start the second recovery clean? | resolved, auto-pick | Record and audit them; in the contract-file evidence they count with fork writes (D3). |
 | 6 | Which terminal statuses exit non-zero from `recover-batch`? | resolved, auto-pick | Every terminal non-done: `failed`, `stuck`, `dead` (D3). |
 | 7 | What does the implementer do with a `tmux`- or `llm`-tagged test? | resolved, auto-pick | Compile only through `lyx gate test --tags <tag> ... -- -run '^$'`; the later gates run it (D4). |
 | 8 | Does the resolver skip unexported or test-file symbols? | resolved by probe | No; both resolve `found` at HEAD (D5). |
@@ -75,3 +79,6 @@ _No rounds yet._
 | 11 | Does a partitioned Create target pass the Create inversion? | resolved, auto-pick | No; it stays `create-already-exists` (D6). |
 | 12 | Is #507's Create-after-Delete reuse in scope? | resolved, auto-pick | No; Edit covers it (scope). |
 | 13 | Why did the quick-recipe `recover-batch 1` exit 0 on a failed batch? | open, unrecoverable | The run's records are not in this worktree; D3's rule covers every path. |
+| 14 | Does a Rename's old side accept a partitioned member? | resolved, round 2 | No; it stays Found-only and the refusal names Delete-and-Create or per-file Edit (D6). |
+| 15 | What is the free-tag cap? | resolved, round 2 | Four (D6). |
+| 16 | How does the plan spell a partitioned member's rename? | resolved, round 3 | A Delete of the old member and one Create declaration of the new handle on a card editing each candidate file, or a per-file Edit; never a Create per file, which is `handle-collision` (D6). |
