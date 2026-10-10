@@ -11,7 +11,7 @@ Concrete and claimable; only a task can run.
 
 Held by a run; its scope is locked until the run ends.
 
-1. **Gate test scope: which gate runs which tier, bounded hub-wide** — [`gate-test-scope`](design-gate-test-scope.md) · bug, enhancement, webster, loom, stencil, config, burler · running · Plan-Bouncer
+1. **Gate test scope: which gate runs which tier, bounded hub-wide** — [`gate-test-scope`](design-gate-test-scope.md) · bug, enhancement, webster, loom, stencil, config, burler · running · Plan-Burler
    - Card gate tests only its own packages at tier 1, tier 2 per batch and at the plan verify, a hub-wide slot lock for gate test runs, guarded publish_verify
    - **Before:** `test-suite-weight`, `publish-recovery`, `burler-multi-llm`, `discussion-multi-llm`, `cli-surface`, `webster-replan-state`
 1. **Git robustness: stale pack index, background gc, network timeouts, reused slugs** — [`git-robustness`](design-git-robustness.md) · bug, enhancement, fabric, batten, stencil · running · Webster-Burler
@@ -21,9 +21,9 @@ Held by a run; its scope is locked until the run ends.
    - A producer beside SingleLLMProducer that runs N agents as seats, one chair that steers and decides the outcome plus advisor-1..n, with its own internal message channel; built standalone, used by nothing yet
    - **Before:** `burler-multi-llm`, `discussion-multi-llm`
 
-### Layer B
+### Layer A
 
-Starts when every entry it names under After is done.
+Waits on nothing that is not running; next to start.
 
 1. **Lighter test suite: measured tiers, cheap tmux fixtures, no lingering children** — [`test-suite-weight`](design-test-suite-weight.md) · bug, enhancement, shuttle, reed, fabric
    - Measure each tier, non-login shells and shared servers in tier 3, lyx built once, no background gc in fixtures (#472), a no-tmux scan for tiers 1-2
@@ -42,7 +42,7 @@ Starts when every entry it names under After is done.
    - lyx help index injected into the orch, a test-enforced form for Use/Short/Long including board payload keys, and intake that carries issue comments
    - **After:** `gate-test-scope`, `git-robustness`
 
-### Layer C
+### Layer B
 
 Starts when every entry it names under After is done.
 
