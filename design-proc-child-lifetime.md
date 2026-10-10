@@ -6,3 +6,5 @@ Two process-lifetime implementations exist once `gate-test-scope` and `git-robus
 The orch kept them apart on 2026-10-10 so the two parallel branches would merge without conflict.
 
 Idea: move the `lyx gate` child-lifetime setup into `internal/proc` beside `ConfigureGroupKill`, so one package owns child-process lifetime, and consider whether `verifyrun` and `gitexec` should gain the parent-death signal and job object as well.
+
+The package also lacks a `doc.go`; its file headers carry the description (PR-Gate review of PR #483).

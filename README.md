@@ -14,7 +14,7 @@ Held by a run; its scope is locked until the run ends.
 1. **Gate test scope: which gate runs which tier, bounded hub-wide** — [`gate-test-scope`](design-gate-test-scope.md) · bug, enhancement, webster, loom, stencil, config, burler · running · Plan-Burler
    - Card gate tests only its own packages at tier 1, tier 2 per batch and at the plan verify, a hub-wide slot lock for gate test runs, guarded publish_verify
    - **Before:** `test-suite-weight`, `publish-recovery`, `burler-multi-llm`, `discussion-multi-llm`, `cli-surface`, `webster-replan-state`
-1. **Git robustness: stale pack index, background gc, network timeouts, reused slugs** — [`git-robustness`](design-git-robustness.md) · bug, enhancement, fabric, batten, stencil · running · PR-Gate
+1. **Git robustness: stale pack index, background gc, network timeouts, reused slugs** — [`git-robustness`](design-git-robustness.md) · bug, enhancement, fabric, batten, stencil · running · Finalize
    - Reindex-and-retry for every go-git call, no auto-gc under a live step, timeouts on git network calls, batten refuses a done slug, bounded HeadContains
    - **Before:** `publish-recovery`, `cli-surface`
 1. **MultiLLMProducer: one producer runs a chair and its advisors as seats** — [`multi-llm-producer`](design-multi-llm-producer.md) · feature, shed, shuttle · running · Discussion-Burler
@@ -111,6 +111,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Batten teardown clears the run status of a run that ends without landing, so the entry is editable again
 1. **Hub store gc runs while other runs use the store** — [`store-gc-while-busy`](design-store-gc-while-busy.md) · enhancement, fabric
    - Remove's foreground gc --auto repacks the shared store under other runs; skip it while runs are in flight
+1. **Hub store gc may repack at every teardown** — [`store-gc-loose-objects`](design-store-gc-loose-objects.md) · enhancement, fabric
+   - Loose objects younger than the prune expiry keep gc --auto over threshold; prune them at landing
 
 ### Features
 
