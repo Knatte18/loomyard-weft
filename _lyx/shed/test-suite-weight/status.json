@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "blocked",
-  "error": "Batch 01-fixture-git-marker is dead: its recovery already failed terminally, so no later batch can begin.",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": "Batch 01-fixture-git-marker is dead: its recovery already failed terminally, so no later batch can begin."
+    "wait": ""
   },
   "history": [
     {
