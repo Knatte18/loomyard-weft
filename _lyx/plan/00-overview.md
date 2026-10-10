@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -34,8 +34,10 @@ The cards run shuttleengine first, then websterengine and webstercli, then the s
 
 ### Decision: classifier-takes-the-worktree-root
 
-- **Decision:** every planglyph policy that reads an `ambiguous` answer calls `classifyAmbiguity(worktreeRoot, candidates)` itself, so the functions that read answers gain a `worktreeRoot` parameter rather than a pre-classified answer type.
-- **Rationale:** quarry's `ResolveResult` cannot carry the classification, and threading the told root keeps the one-batched-Resolve discipline and the status tripwire's allowlist unchanged.
+- **Decision:** each planglyph pass classifies each `ambiguous` answer it reads once, through `classifyAmbiguity(worktreeRoot, candidates)`.
+  A policy that visits each answer once (`statusFindings`, `createFindings`, `doneCheckVerdicts`, `renameDeclSource`) calls the classifier itself and gains a `worktreeRoot` parameter;
+  a pass that consults one answer many times (`LaterDeleteReferences`, `planGatePass` and the caller-coverage walk it runs) builds a `partitioned` map once through `partitionedAnswers` and threads the map rather than the root.
+- **Rationale:** quarry's `ResolveResult` cannot carry the classification, and threading the told root or the per-pass map keeps the one-batched-Resolve discipline and the status tripwire's allowlist unchanged, while each candidate file is read once per pass, as D6 bounds it.
 - **Applies to:** cards 10 to 13
 
 ### Decision: wording-cards-grep-the-old-text

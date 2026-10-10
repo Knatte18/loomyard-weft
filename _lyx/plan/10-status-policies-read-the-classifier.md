@@ -17,6 +17,7 @@
 
 **Intent:** Route the resolve status policy and the Create inversion through the classifier (decision D6).
 In `statusFindings`, the `ambiguous` arm calls `classifyAmbiguity(worktreeRoot, r.Candidates)`: a partitioned answer passes with no finding, like `multipart`, for every target the policy covers (Edit, Delete, a Rename's endpoints, `Uses:`); an unpartitioned one is `glyph-ambiguous` as today, its detail listing each candidate through `candidateList`.
+Bound on the weakened guard: only an answer whose candidates provably never coexist in one build environment passes; the free-tag cap and every read or parse failure fall back to `ambiguous`, no tag is held true by the building toolchain, a Rename's old side never accepts several declarations (card 13), and the Delete direction of the done-check keeps blocking on any surviving declaration (card 11).
 `candidateList` renders each candidate as `ID (file, constraint)`, with the file and constraint omitted when the candidate carries no file, so one renderer still serves both ambiguous arms.
 `createFindings` keeps its verdict: an ambiguous Create target, partitioned or not, is `create-already-exists`, its detail now naming each candidate's file and constraint through the classifier's description.
 `resolvePass` and `DetectDrift`'s post-repair revalidation pass their `worktreeRoot` through.
