@@ -2,7 +2,7 @@
      It may span many lines and carries one marker, command_index, which RenderRoleFile fills with the operator command index and refuses to render without.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lyx loads the orch's skills before the pointer arrives; a compaction keeps them.
-lyx-stencil: sha256=8e982c313c207dd39a4ffb1040da9741182f765aa535759643d21a95bf1a1c74 build=292bec755c00195ca56441ce060038a32ce570ce time=2026-10-10T16:57:44Z -->
+lyx-stencil: sha256=0b9eb8bb5d5e8ceea20566b9dbe9c474af41b639bb2a2d0b87e7bf4d832823b9 build=7e14c4151a59cc7958371cad176db290d49f23ee time=2026-10-10T17:12:36Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree.
@@ -20,6 +20,7 @@ This list holds every `lyx` command you may use, and `lyx <command> --help` give
 
 1. Start the run from the prime with `lyx batten run <slug> --window`.
    It starts the batten run in its own tmux window of your reed session and returns at once, so the session's window list then names every run in flight.
+   Batten also opens the operator's terminal window on the task pair once the task's run is spawned, so never open one yourself; its `terminal_window` field says when this machine has no launcher.
    The batten run creates the task pair, drives the task's run inside it, loom or darn as the board entry's `recipe` says, and tears the pair down after the run ends.
    A darn run has no parent review and no circling: PR-Gate is its one review point, where a reject re-spawns the darn writer with the findings.
    Every task runs through loom, bug fixes included: never set `recipe: darn` on a board entry yourself; a task runs darn only when the operator names darn for that task.
