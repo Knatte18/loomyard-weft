@@ -1,6 +1,6 @@
 # Driver steps in only on trouble: Go loops the steps, context under 100k
 
-`driver-context` · Task · enhancement, shed, stencil, loom, bug · running · Finalize
+`driver-context` · Task · enhancement, shed, stencil, loom, bug · done
 
 ## Goal
 
