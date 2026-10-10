@@ -1443,6 +1443,21 @@
       "isolated": false,
       "brief": "",
       "body": "From `test-suite-weight` Discussion review (2026-10-10, round 3 F2): its D8 moves `reedcli`'s watchdog recognizer and `/proc` probes into `tmuxkit`, but `loomcli` (`smoke_helpers_test.go`) and `orchcli` (`smoke_live_test.go`) keep their own copies.\nA parent decision kept those two copies out of that run's scope.\n\nIdea: fold the `loomcli` and `orchcli` copies onto `tmuxkit` once `test-suite-weight` lands, per `PATTERN-testkit`.\n"
+    },
+    {
+      "id": 278,
+      "slug": "watchdog-child-cpu",
+      "title": "Reed watchdog children still burn idle CPU",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "From `daemon-wakeups` (2026-10-10, `docs/benchmarks/daemon-idle-cpu.md`): after the run, `lyx reed watchdog` spawns `list-sessions` sevenfold less often (11.8 to 1.6 per minute), but idle CPU stayed at about 100 s per hour, since about 85 s per hour is spent in child processes the benchmark shim cannot see.\n\nIdea: find which processes the watchdog's children are (likely the idle sessions' own watchers) and bring them under `PATTERN-daemon-wakeups`.\n"
     }
   ],
   "legacy_done": [
