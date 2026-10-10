@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | At | Labels |
 | --- | --- | --- | --- | --- |
-| 3 | **Reed hygiene: daemon log and socket path, plain strand shells, watchdog child CPU** | [`reed-hygiene`](design-reed-hygiene.md) | Discussion-Bouncer | reed |
+| 3 | **Reed hygiene: daemon log and socket path, plain strand shells, watchdog child CPU** | [`reed-hygiene`](design-reed-hygiene.md) | Plan-Write | reed |
 
 ### Ready
 
