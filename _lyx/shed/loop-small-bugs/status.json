@@ -1,12 +1,12 @@
 {
   "current_producer": "Worktree-Create",
-  "state": "blocked",
-  "error": "source worktree has uncommitted changes",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Worktree-Create",
     "last": "Worktree-Create → stuck",
-    "wait": "source worktree has uncommitted changes"
+    "wait": ""
   },
   "history": [
     {
