@@ -61,6 +61,8 @@ Settled: untagged tests over the table builder, the entry, the producer's two se
   Rejected: this task's only preparation returns an empty amendment, the append needs a new seat engine field, and `plan-multi-llm` is out of scope; that task adds the amendment path when it has a caller.
 - Leaving the two optional directives out of the table when empty, or filling them with a placeholder.
   Rejected: the stencil fill refuses a missing key, and a placeholder puts text in the prompt that today's path does not; a listed optional value keeps today's rendering.
+- Stopping the advisors before the chair's gate runs, so no advisor edit can land while the gate waits.
+  Rejected: a parent-review reject re-prompts the chair inside the gate, and the advisors must still be up to answer the rework's questions (D9); it would also need a seat engine change this task's additive rule does not cover.
 - An `llm`-tier test for the discussion table.
   Rejected: the seat engine's smoke already proves the channel, and no gate runs the tier.
 
