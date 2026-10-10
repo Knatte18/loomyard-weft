@@ -1,0 +1,71 @@
+{
+  "runGuid": "18366ff7f9327457f93e84186bba314d",
+  "planFingerprint": "2f2e53976aa2521cd71641d96903461da61bf3f1709769bed151b9db85c7dc02",
+  "planFileHashes": {
+    "00-overview.md": "f00a3343eedf5d4625f7304f05c9613d1d168dcbc5805b39b20b0d5bf6f23c9e",
+    "10-chair-batches-to-every-advisor.md": "aebeb1b6c1faa1b437688efc8c0399cdda023a0187f0da234a11317c1d1cae8e"
+  },
+  "planOverviewFrameHash": "717f4ff8d235bffb4976e280122232d1965875bfd50e4eb13d6826441032668b",
+  "partition": [
+    {
+      "cards": [
+        "10-chair-batches-to-every-advisor"
+      ],
+      "profile": "cautious",
+      "estimate": 70554,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54232,
+        "read_union": 10796,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 276,
+            "reads": {
+              "file:contracts/stencils/loom/loom-template-discussion-chair.md": 288,
+              "file:contracts/stencils/loom/loom-template-discussion.md": 2232,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000
+            },
+            "messages": 17.5,
+            "written": 5526
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 10,
+  "masterStrand": "160d3748d1d4ecf077e6ce309563c14e",
+  "masterSessionId": "578ed7cd-3121-4de6-87d6-a9dacf6c643e",
+  "batches": {
+    "10": {
+      "slug": "chair-batches-to-every-advisor",
+      "cards": [
+        "10-chair-batches-to-every-advisor"
+      ],
+      "cardHashes": {
+        "10-chair-batches-to-every-advisor": "aebeb1b6c1faa1b437688efc8c0399cdda023a0187f0da234a11317c1d1cae8e"
+      },
+      "startSha": "7f6e976ad52d55dc9dab56950710e320cd6ea377",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T11:19:23Z",
+      "sessionId": "578ed7cd-3121-4de6-87d6-a9dacf6c643e",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
