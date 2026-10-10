@@ -1,10 +1,10 @@
 # Card 9 — orch-held-injection-log
 
 **Create:**
-- `plan:internal/orchengine#heldReason` -> `func heldReason(probe shuttleengine.IdleProbe) string`
-- `plan:internal/orchengine#Watcher.logHeld` -> `func (w *Watcher) logHeld(st *State, probe shuttleengine.IdleProbe) error`
-- `plan:internal/orchengine#Watcher.logTyped` -> `func (w *Watcher) logTyped(st State, step string)`
-- `plan:internal/orchengine#reloadStepName` -> `func reloadStepName(step int) string`
+- `internal/orchengine#heldReason`
+- `internal/orchengine#Watcher.logHeld`
+- `internal/orchengine#Watcher.logTyped`
+- `internal/orchengine#reloadStepName`
 
 **Edit:**
 - `internal/orchengine#Watcher`

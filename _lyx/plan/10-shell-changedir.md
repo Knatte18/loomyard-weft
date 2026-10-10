@@ -1,8 +1,8 @@
 # Card 10 — shell-changedir
 
 **Create:**
-- `plan:internal/shell#posixShell.ChangeDir` -> `func (p posixShell) ChangeDir(dir string) string`
-- `plan:internal/shell#pwshShell.ChangeDir` -> `func (p pwshShell) ChangeDir(dir string) string`
+- `internal/shell#posixShell.ChangeDir`
+- `internal/shell#pwshShell.ChangeDir`
 
 **Edit:**
 - `internal/shell#Shell`

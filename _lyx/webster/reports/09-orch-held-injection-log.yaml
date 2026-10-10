@@ -1,0 +1,6 @@
+status: OK
+head_sha: a353b4d023a5bfab3c10b1b3753ebabcad9f5de3
+deviations:
+  - internal/orchengine/resumecontext.go
+  - internal/orchcli/resumecontext.go
+  - internal/orchcli/refusal_integration_test.go

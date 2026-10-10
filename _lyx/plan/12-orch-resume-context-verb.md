@@ -1,8 +1,8 @@
 # Card 12 — orch-resume-context-verb
 
 **Create:**
-- `plan:internal/orchcli#orchCLI.resumeContextCmd` -> `func (c *orchCLI) resumeContextCmd() *cobra.Command`
-- `plan:internal/orchcli#resumeContextCommand` -> `func resumeContextCommand(primeAnchor string) string`
+- `internal/orchcli#orchCLI.resumeContextCmd`
+- `internal/orchcli#resumeContextCommand`
 
 **Edit:**
 - `internal/orchcli#Command`
@@ -15,7 +15,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/orchengine#ResumeContext`
+- `internal/orchengine#ResumeContext`
 - `internal/shuttleengine/claudeengine#SessionStartContext`
 - `internal/shell#Shell`
 

@@ -1,12 +1,12 @@
 # Card 11 — orch-resume-context-engine
 
 **Create:**
-- `plan:internal/orchengine#ResumeMark` -> `type ResumeMark struct`
-- `plan:internal/orchengine#WriteResumeMark` -> `func WriteResumeMark(p Paths, mark ResumeMark) error`
-- `plan:internal/orchengine#ReadResumeMark` -> `func ReadResumeMark(p Paths) (ResumeMark, bool, error)`
-- `plan:internal/orchengine#ClearResumeMark` -> `func ClearResumeMark(p Paths) error`
-- `plan:internal/orchengine#ResumeContext` -> `func ResumeContext(p Paths, stencilsDir string, now time.Time) (string, error)`
-- `plan:internal/orchengine#Watcher.hookDelivered` -> `func (w *Watcher) hookDelivered(st State) (ResumeMark, bool)`
+- `internal/orchengine#ResumeMark`
+- `internal/orchengine#WriteResumeMark`
+- `internal/orchengine#ReadResumeMark`
+- `internal/orchengine#ClearResumeMark`
+- `internal/orchengine#ResumeContext`
+- `internal/orchengine#Watcher.hookDelivered`
 - `internal/orchengine/resumecontext_test.go`
 
 **Edit:**
