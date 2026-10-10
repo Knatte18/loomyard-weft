@@ -1361,6 +1361,69 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #516](https://github.com/Knatte18/loomyard/issues/516).\n\nA plan card prescribed a refusal branch (a zero-batch refusal after an accepted auto-rebaseline) with a fixed signature.\nReview of the implementation flagged that no test reaches the refusal; the fixing agent then found that no plan can reach it, because the plan parser refuses a cardless plan before `Run` forms any batch.\nThe branch was kept and its text pinned with a golden test of the error constructor, which conflicts with the rule against code for impossible states.\n\nThis is abnormal because the plan passed its Plan-Bouncer and Plan-Burler rounds with a prescribed refusal that is unreachable by construction, and the contradiction surfaced only after the code was written.\n\nWhat to do: have plan review (or the plan-time checks) verify that every refusal a card prescribes is reachable from some input that passes upstream validation, or require the card to say how a test reaches it.\n\nProvenance: task `webster-replan-state`, from note `burler-webster-r1.md`.\n"
+    },
+    {
+      "id": 307,
+      "slug": "fabric-readonly-git-write-flags",
+      "title": "Read-only classifier may admit a git reader flag that writes",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "fabric",
+        "webster"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\n`webster-replan-state` landed (5a8be0274) with Webster-Review finding `d8-reader-write-flags-unbounded` (design, BLOCKING) open: the reader allow-list in `internal/fabricengine/refscanner.go` admits git reader commands without bounding their flags, so a reader given a writing flag could pass as read-only.\n\n## Idea\n\nCheck the classifier against the flags each admitted git reader accepts, and reject any flag that writes."
+    },
+    {
+      "id": 308,
+      "slug": "begin-batch-dead-refusal-text",
+      "title": "begin-batch terminal-dead refusal does not name the retry and recovery_exhausted",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "webster"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\n`webster-replan-state` landed (5a8be0274) with finding `d12-begin-batch-dead-refusal-stale` (MEDIUM) open: begin-batch's refusal for a terminal-dead batch predates the second recovery.\n\n## Idea\n\nThe refusal names the second-recovery route and the `recovery_exhausted` state that 5a8be0274 added."
+    },
+    {
+      "id": 309,
+      "slug": "auto-rebaseline-mergebase-stuck",
+      "title": "Auto-rebaseline merge-base failure may escape the Stuck mapping",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\n`webster-replan-state` landed (5a8be0274) with finding `card4-merriambase-failure-escapes-stuck` (MEDIUM) open: an error computing the merge base during auto-rebaseline may surface as a hard failure instead of Stuck.\n\n## Idea\n\nMap that error to Stuck with a way forward, and test it."
+    },
+    {
+      "id": 310,
+      "slug": "webster-replan-thin-tests",
+      "title": "Thin test rows for the fabric classifier, rebaseline and shell wait",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "webster",
+        "fabric",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\n`webster-replan-state` landed (5a8be0274) with findings `card14-classifier-rows-miss-glob-and-tilde` and `thin-test-rows-cards-13-11-17-21` (MEDIUM) open: the classifier tables lack glob and tilde cases, and the rebaseline and shell-wait tables are thin.\n\n## Idea\n\nAdd those rows."
     }
   ]
 }
