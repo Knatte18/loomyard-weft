@@ -1,0 +1,404 @@
+{
+  "runGuid": "61c6272154041ac171909ff283569909",
+  "planFingerprint": "e69298f0b7b450d6b7f36ca73288926004af5a7f078e706e5d64f77d28786483",
+  "planFileHashes": {
+    "00-overview.md": "50b393cf7046eb870669c8df4a7d4cf468a37a206fe5855d3abdc6482c0f5f87",
+    "01-fswatch-leaf.md": "51cd79408c6ea5710a3084ef828192406b94b08b88fc4c291694aa6b5bb62883",
+    "02-poll-floors.md": "a7f82c101796943610a57cc17796a96c355f46a15954f37d443ca9402f0626c4",
+    "03-seed-started-at.md": "e86f171f5775dd140db714ab1c42302e1d5d35e106bfacb9bb1969505a5bf8c7",
+    "04-reed-resize-events.md": "837934e5c396dabe9af4ec5cdd45cacd74dde55acaa00a457366e0477802976c",
+    "05-reed-wake-cadence.md": "9f646e99616faa683ffaf1e3742339f405414d055e9737136353a32786d9e815",
+    "06-watchdog-discovery-backoff.md": "656af65d70fd46581536a5b627d3060f465e35301d93ae7d05b7ac8f8d05b979",
+    "07-session-start-signal.md": "daef3d3fb61635662aa15cae41b3249a604bbb69613eba261232fb559a1f2b23",
+    "08-readiness-reading.md": "debed1575195089748d76db79affd8b73c3d16cc00310960deb9524285414d99",
+    "09-orch-held-injection-log.md": "0522abfd76ec31e703ddff4531d34edb4cdb1ec4cef04f4667f17538a0ecc89a",
+    "10-shell-changedir.md": "79759b16bb021bf9c0aea74a5e0158097ea4f1f233d5b3b2a5c8dc4f32bcdb61",
+    "11-orch-resume-context-engine.md": "66e9a908ad82433473015401780db137e413dcd4f4f65805e8f73cd1905972b0",
+    "12-orch-resume-context-verb.md": "94238ae9da96df827989dc1244499a5281422f87c3914e39b97e3b808e3355cf",
+    "13-daemon-wakeups-guard.md": "a80b5f833c8d7588b1a0e14d0a6eba0810cb9390a5005c935341451d1969323f",
+    "14-idle-cpu-benchmark.md": "b22330e20ae5ae0df0a9d83430459a10c91a266d6da0b13809be7097ebd37282"
+  },
+  "planOverviewFrameHash": "720ffcfccc8c05c7847875a572e12e499d19613dd1b189472ef54632c76253be",
+  "partition": [
+    {
+      "cards": [
+        "01-fswatch-leaf",
+        "02-poll-floors",
+        "03-seed-started-at",
+        "04-reed-resize-events"
+      ],
+      "profile": "cautious",
+      "estimate": 390514,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54532,
+        "read_union": 195588,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 420,
+            "reads": {
+              "file:PATTERN.md": 1188,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:docs/overview.md": 7908,
+              "file:docs/shared-libs/README.md": 516,
+              "file:go.mod": 552,
+              "file:go.sum": 1884,
+              "file:pattern/PATTERN-leaf-packages.md": 456,
+              "package:.": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:docs/shared-libs": 2000,
+              "package:internal/fswatch": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:docs/shared-libs": 2000,
+              "tests:internal/fswatch": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 90,
+            "written": 27420
+          },
+          {
+            "card": 2,
+            "card_text": 516,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/battenshed/innerrun_test.go": 7860,
+              "file:internal/orchengine/config_test.go": 2364,
+              "file:internal/orchengine/template.yaml": 120,
+              "file:internal/shedrecipe/entries_batten_test.go": 4044,
+              "file:internal/shuttlecli/cli_test.go": 5460,
+              "file:internal/shuttleengine/attach_test.go": 14352,
+              "file:internal/shuttleengine/claudeengine/corpus_test.go": 4440,
+              "file:internal/shuttleengine/config_test.go": 3912,
+              "file:internal/shuttleengine/fixture_test.go": 2124,
+              "file:internal/shuttleengine/gate_list_test.go": 4332,
+              "file:internal/shuttleengine/gate_test.go": 9912,
+              "file:internal/shuttleengine/startup_test.go": 15024,
+              "file:internal/shuttleengine/template.yaml": 216,
+              "file:internal/shuttleengine/wait_test.go": 14256,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/orchengine": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/shuttlecli": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/orchengine": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 205.5,
+            "written": 62166
+          },
+          {
+            "card": 3,
+            "card_text": 240,
+            "reads": {
+              "file:internal/hubgeom/doc.go": 396,
+              "file:internal/hubgeom/spawnorder_test.go": 1284,
+              "file:internal/shedrun/doc.go": 288,
+              "file:internal/shedrun/seed_test.go": 3876,
+              "package:internal/hubgeom": 2000,
+              "package:internal/shedrun": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 47.5,
+            "written": 14490
+          },
+          {
+            "card": 4,
+            "card_text": 468,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/reedengine/doc.go": 10356,
+              "file:internal/reedengine/watchdog_integration_test.go": 4968,
+              "file:internal/reedengine/watchloop_test.go": 10332,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 119.5,
+            "written": 36318
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-reed-wake-cadence",
+        "06-watchdog-discovery-backoff",
+        "07-session-start-signal",
+        "08-readiness-reading"
+      ],
+      "profile": "cautious",
+      "estimate": 357440,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61532,
+        "read_union": 121308,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 540,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/hubgeom/doc.go": 396,
+              "file:internal/hubgeom/hubgeom_test.go": 2988,
+              "file:internal/reedengine/doc.go": 10356,
+              "file:internal/reedengine/ensuresession_integration_test.go": 1404,
+              "file:internal/reedengine/namerepair_test.go": 2616,
+              "file:internal/reedengine/naming_integration_test.go": 1536,
+              "file:internal/reedengine/watchdog_test.go": 2052,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/hubgeom": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 167,
+            "written": 50640
+          },
+          {
+            "card": 6,
+            "card_text": 528,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/reedcli/watchdog_integration_test.go": 5796,
+              "file:internal/reedcli/watchdog_test.go": 5196,
+              "file:internal/reedcli/watchdogreap_integration_test.go": 5160,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/reedcli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/reedcli": 2000
+            },
+            "messages": 120.5,
+            "written": 36678
+          },
+          {
+            "card": 7,
+            "card_text": 504,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/shuttleengine/claudeengine/doc.go": 1632,
+              "file:internal/shuttleengine/claudeengine/hookcmd_integration_test.go": 3456,
+              "file:internal/shuttleengine/claudeengine/settings_test.go": 6840,
+              "file:internal/shuttleengine/claudeengine/signals_test.go": 3492,
+              "file:internal/shuttleengine/doc.go": 3228,
+              "file:internal/shuttleengine/sessionread_test.go": 2688,
+              "file:internal/shuttleengine/sessionstate_test.go": 3348,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 159,
+            "written": 48204
+          },
+          {
+            "card": 8,
+            "card_text": 528,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 3228,
+              "file:internal/shuttleengine/fakes_test.go": 8664,
+              "file:internal/shuttleengine/run_test.go": 17856,
+              "file:internal/shuttleengine/session_test.go": 4980,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 128.5,
+            "written": 39078
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-orch-held-injection-log",
+        "10-shell-changedir",
+        "11-orch-resume-context-engine",
+        "12-orch-resume-context-verb",
+        "13-daemon-wakeups-guard",
+        "14-idle-cpu-benchmark"
+      ],
+      "profile": "cautious",
+      "estimate": 266618,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68532,
+        "read_union": 82532,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 432,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/orchengine/doc.go": 4188,
+              "file:internal/orchengine/watcher_test.go": 25896,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 102.5,
+            "written": 31182
+          },
+          {
+            "card": 10,
+            "card_text": 192,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/shell/shell_test.go": 3240,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shell": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shell": 2000
+            },
+            "messages": 30.5,
+            "written": 9342
+          },
+          {
+            "card": 11,
+            "card_text": 564,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/orchengine/doc.go": 4188,
+              "file:internal/orchengine/seam_enforcement_test.go": 696,
+              "file:internal/orchengine/state_test.go": 2316,
+              "file:internal/orchengine/watcher_test.go": 25896,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 108.5,
+            "written": 33114
+          },
+          {
+            "card": 12,
+            "card_text": 372,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/orchcli/cli_test.go": 3264,
+              "file:internal/orchcli/doc.go": 636,
+              "file:internal/orchcli/start_test.go": 5580,
+              "file:internal/orchengine/doc.go": 4188,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 75.5,
+            "written": 23022
+          },
+          {
+            "card": 13,
+            "card_text": 288,
+            "reads": {
+              "file:PATTERN.md": 1188,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "package:.": 2000,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/orchengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/orchengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 55.5,
+            "written": 16938
+          },
+          {
+            "card": 14,
+            "card_text": 156,
+            "reads": {
+              "package:docs/benchmarks": 2000,
+              "tests:docs/benchmarks": 2000
+            },
+            "messages": 6,
+            "written": 1956
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "5e896c8eda5f757cb8f4dc06f750d828",
+  "masterSessionId": "958e9658-b395-406d-838c-6375899e0c47",
+  "batches": {
+    "1": {
+      "slug": "fswatch-leaf",
+      "cards": [
+        "01-fswatch-leaf",
+        "02-poll-floors",
+        "03-seed-started-at",
+        "04-reed-resize-events"
+      ],
+      "cardHashes": {
+        "01-fswatch-leaf": "51cd79408c6ea5710a3084ef828192406b94b08b88fc4c291694aa6b5bb62883",
+        "02-poll-floors": "a7f82c101796943610a57cc17796a96c355f46a15954f37d443ca9402f0626c4",
+        "03-seed-started-at": "e86f171f5775dd140db714ab1c42302e1d5d35e106bfacb9bb1969505a5bf8c7",
+        "04-reed-resize-events": "837934e5c396dabe9af4ec5cdd45cacd74dde55acaa00a457366e0477802976c"
+      },
+      "startSha": "58791f2b0c0a5e2f567983c623e1867350d59b04",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T05:50:49Z",
+      "sessionId": "958e9658-b395-406d-838c-6375899e0c47",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
