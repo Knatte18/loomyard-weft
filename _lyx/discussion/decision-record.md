@@ -193,6 +193,12 @@ Decision: main's internal/verifyrun/run.go now calls proc.ConfigureGroupKill and
 
 Rationale: git-robustness landed while this plan was written; the two branches edit run.go for different reasons and must both survive the merge.
 
+### Added after Discussion (parent, 2026-10-10): Keep the PATTERN.md overview under its cap after merging main
+
+Decision: Fix forward on the task branch by tightening the task's own PATTERN.md wording, or moving its detail to a pattern/ background file, until the overview is under the 16384-byte cap that TestOverview_RealFilePassesCheck enforces; change nothing else.
+
+Rationale: Verify after merging main fails: the task's gate-tier-docs addition and main's recent PATTERN.md additions together make the overview 16559 bytes, though each side alone is under the cap.
+
 ## Constraints
 
 - `PATTERN-told-geometry`: the slot engine is told its directory, count and cap; only a CLI layer resolves the board dir, `lyx gate`'s through its own pre-run (D7).
