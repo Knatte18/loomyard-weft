@@ -1,6 +1,6 @@
 # recover-batch treats a pathless fabric-reference finding as a path and fails with ENAMETOOLONG
 
-`recover-batch-pathless-finding` · Note · bug
+`recover-batch-pathless-finding` · Note · bug, webster
 
 Imported from [issue #513](https://github.com/Knatte18/loomyard/issues/513).
 
