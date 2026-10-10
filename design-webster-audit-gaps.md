@@ -1,6 +1,6 @@
 # Webster audit and recovery: pathless findings, read-only classifier, rebaseline Stuck
 
-`webster-audit-gaps` · Task · bug, enhancement, webster, fabric · awaiting · PR-Gate
+`webster-audit-gaps` · Task · bug, enhancement, webster, fabric · running · PR-Gate
 
 ## Goal
 
