@@ -102,6 +102,3 @@ Under that norm the largest pages would likely shrink to about a third, which al
 
 
 
-## Issue comment, 2026-10-10
-
-Imported into the board as `cli-help-form`.
