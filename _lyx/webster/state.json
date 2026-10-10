@@ -1074,9 +1074,9 @@
       }
     }
   ],
-  "currentBatch": 0,
-  "masterStrand": "5c22230428022e32cdafd47073ba6706",
-  "masterSessionId": "143f4fc0-509f-4ad6-be6b-62362a043089",
+  "currentBatch": 8,
+  "masterStrand": "6207061aa885c318cb6613a9996f300f",
+  "masterSessionId": "7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b",
   "batches": {
     "1": {
       "slug": "fixture-git-marker",
@@ -1179,23 +1179,15 @@
       },
       "startSha": "f0c572e2c04a08515fba4817d146db4399b16c60",
       "kind": "recovery",
-      "spawnedAt": "2026-10-10T10:07:15Z",
-      "terminal": true,
-      "status": "failed",
-      "digest": {
-        "batch": "08-reedcli-probes-onto-tmuxkit",
-        "status": "failed",
-        "head_sha": "88bc7396d1c3caa90a80413f9d5fb88954cdf2f4",
-        "reasons": [
-          "create-not-done/10-tmuxkit-socket-check[blocking]: Create target \"plan:internal/testkit/tmuxkit#tmuxAllowed\" still does not resolve"
-        ]
-      },
+      "spawnedAt": "2026-10-10T10:10:57Z",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/143f4fc0-509f-4ad6-be6b-62362a043089/subagents/agent-a100ac933f319b941.jsonl"
       ],
-      "strandGuid": "57525d0694a19a17ad89bd1639e6aac0",
-      "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/test-suite-weight/.lyx/shuttle/24ea808d70110d0907cfcb8bbc2934e7",
-      "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/test-suite-weight/.lyx/shuttle/24ea808d70110d0907cfcb8bbc2934e7/events.jsonl",
+      "strandGuid": "74e12c5bd201b58a697b3cbf402d57ea",
+      "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/test-suite-weight/.lyx/shuttle/ab6fefaa6fc9bb48016c38cc700d52c2",
+      "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/test-suite-weight/.lyx/shuttle/ab6fefaa6fc9bb48016c38cc700d52c2/events.jsonl",
       "eventsOffset": 1598
     }
   },
