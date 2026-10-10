@@ -46,6 +46,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 5 | **Bounce budget blocks a review segment after its round was approved, before the Bouncer verdict** | [`bounce-budget-after-approved`](design-bounce-budget-after-approved.md) | burler, loom |
 | 6 | **Master's wait stops waiting on a still-running background shell at a turn end**<br>• A gate run still in a background shell is cut off at a turn end and the run still reports done | [`background-gate-shell-discarded`](design-background-gate-shell-discarded.md) | webster, shuttle |
 | 7 | **Webster Master fixes a verify failure itself instead of spawning the fixer fork**<br>• Master edited and committed a test fix itself; the run-exit audit blocked it as a parent-write | [`master-self-fix`](design-master-self-fix.md) | webster, stencil |
+| 8 | **webster: create-not-done check fails on unexported plan targets, killing batches** | [`create-check-unexported`](design-create-check-unexported.md) |  |
 
 ### Enhancements
 

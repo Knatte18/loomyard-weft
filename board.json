@@ -1239,6 +1239,22 @@
       "isolated": false,
       "brief": "The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison",
       "body": ""
+    },
+    {
+      "id": 299,
+      "slug": "create-check-unexported",
+      "title": "webster: create-not-done check fails on unexported plan targets, killing batches",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        511
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #511](https://github.com/Knatte18/loomyard/issues/511).\n\n## What happened\n\nTwo batches in one loom run were refused by `lyx webster record-batch` with `create-not-done`, and the run halted `blocked` at `Webster` with anomaly `escalation-to-human`.\n\n- Batch `01-fixture-git-marker`: `create-not-done/2-testtiming-resources[blocking]: Create target \"plan:cmd/testtiming#rusageStats\" still does not resolve`. `lyx webster recover-batch` then ended with status `dead`, `dead_reason` `asking`.\n- Batch `08-reedcli-probes-onto-tmuxkit`: `create-not-done/10-tmuxkit-socket-check[blocking]: Create target \"plan:internal/testkit/tmuxkit#tmuxAllowed\" still does not resolve`. `lyx webster recover-batch 08` refused with the same `batch_failed` message.\n\nBoth unresolved targets are unexported (lowercase) identifiers.\nThat is the common factor visible in the notes; whether the target was genuinely never created could not be established from them.\n\n## Why it is abnormal\n\n- The failure repeats after recovery for the same target, so recovery does not change the outcome and the batch ends up dead.\n- If the check cannot resolve unexported identifiers (or identifiers declared in test files), a correct implementation is still reported as not done, and the loom escalates to a human for no real defect.\n- The refusal text does not say how the target was looked up, so the operator cannot tell a missing symbol from a resolver limitation.\n- After `lyx loom goto` back into `Webster`, the loop halted again at once with \"Batch 01-fixture-git-marker is dead: its recovery already failed terminally, so no later batch can begin\", so a dead batch also blocks the way forward the halt tells the operator to take. The wording of that halt changed between runs (\"was begun\" vs \"can begin\").\n\n## What to do\n\n1. Check how `plan:\u003cpkg\u003e#\u003cname\u003e` Create targets are resolved and confirm unexported identifiers resolve.\n2. Make the `create-not-done` message say which lookup was done and in which files.\n3. Decide whether `goto` into `Webster` should be able to revive a dead batch, or whether the halt should say the operator must replace it.\n\nTrace files are under `.lyx/logs/`; archived webster reports are under `_lyx/webster/reports/`.\n\nProvenance: task `test-suite-weight`; notes `loom-halt.md`, `loom-halt-2.md`, `loom-halt-3.md`, `loom-halt-4.md`, `webster-refusal-record-batch.md`, `webster-refusal-record-batch-2.md`, `webster-refusal-recover-batch.md`, `binary-change-restep-20261010-121015.md`.\n"
     }
   ]
 }
