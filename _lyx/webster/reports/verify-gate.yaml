@@ -1,0 +1,10 @@
+attempt: 3
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/stencilcli.TestStencilCLI_Scenario/drift_warning_never_blocks_exit_code
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/stencilcli
+      tail: '        cli_integration_test.go:505: expected a port-back drift warning on stderr; got "time=2026-10-10T13:58:58.683+02:00 level=WARN msg=\"stencilstore: 2 stencils drifted from worktree source: loom-template-rework: source-ahead, loom-rubric-discussion-review: source-ahead -- the board copy is untouched and a binary older than the source deployed it -- run a production deploy (update-plugins.sh)\" trace=53eca17d288139a0\ntime=2026-10-10T13:58:58.683+02:00 level=WARN msg=\"stencilstore: edited stencils have fallen behind a newer shipped default; see lyx stencil diff\" trace=53eca17d288139a0 stencils=\"landing-template-conflict, landing-template-describe\"\n"'
+log_path: /home/knatte/Code/loomyard-LYXHUB/driver-context/.lyx/verify/verify.log
+fix_commits:
+    - 9583e670b99380014e6fe1954edeb503ac71591e
