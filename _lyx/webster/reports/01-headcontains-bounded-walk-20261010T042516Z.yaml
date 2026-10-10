@@ -1,0 +1,9 @@
+status: OK
+head_sha: 310538e35bcfe18fbcbbf10bd42eb462b98cef63
+deviations:
+  - internal/gitexec/export_test.go
+  - internal/fabricengine/export_test.go
+  - internal/fabricengine/housekeeping.go
+  - internal/proc/procgroup.go
+  - internal/proc/procgroup_linux.go
+  - internal/proc/procgroup_windows.go
