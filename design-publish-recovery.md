@@ -1,6 +1,6 @@
 # Publish and loom recovery: a fix route from Publish, resume past its own merge, clean re-steps
 
-`publish-recovery` · Task · bug, loom, burler, fabric, config, stencil · running · Plan-Bouncer
+`publish-recovery` · Task · bug, loom, burler, fabric, config, stencil · running · Batchifier
 
 Depends on: [`gate-test-scope`](design-gate-test-scope.md), [`git-robustness`](design-git-robustness.md)
 
