@@ -14,7 +14,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | At | Labels |
 | --- | --- | --- | --- | --- |
 | 1 | **Lighter test suite: measured tiers, cheap tmux fixtures, no lingering children**<br>• Measure each tier, non-login shells and shared servers in tier 3, lyx built once, no background gc in fixtures (#472), a no-tmux scan for tiers 1-2 | [`test-suite-weight`](design-test-suite-weight.md) | Webster | shuttle, reed, fabric |
-| 2 | **Publish and loom recovery: a fix route from Publish, resume past its own merge, clean re-steps**<br>• A blocked Publish hands its failure to a fixer, resume survives its own staged merge, no false config warning at Finalize, re-step and decision-author fixes | [`publish-recovery`](design-publish-recovery.md) | awaiting · PR-Gate | loom, burler, fabric, config, stencil |
+| 2 | **Publish and loom recovery: a fix route from Publish, resume past its own merge, clean re-steps**<br>• A blocked Publish hands its failure to a fixer, resume survives its own staged merge, no false config warning at Finalize, re-step and decision-author fixes | [`publish-recovery`](design-publish-recovery.md) | PR-Gate | loom, burler, fabric, config, stencil |
 | 3 | **Discussion-Write on MultiLLMProducer: a chair writes, advisors answer**<br>• Design and build a Discussion-Write whose writer is the chair, with advisors that study the code and answer its design questions live | [`discussion-multi-llm`](design-discussion-multi-llm.md) | Plan-Burler | loom, stencil, shed |
 | 4 | **Driver steps in only on trouble: Go loops the steps, context under 100k**<br>• Go runs the shed steps and wakes the driver only at a stop, so a Haiku driver stays under 100k; the driver can still stop a run at a point the orch names | [`driver-context`](design-driver-context.md) | Plan-Burler | shed, stencil, loom |
 
@@ -46,7 +46,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 1 | **Batten idle notices count machine sleep as idle time**<br>• After a hibernate every run raises an idle notice for the whole sleep; the idle clock should skip time the machine was asleep | [`idle-notice-after-sleep`](design-idle-notice-after-sleep.md) | batten |
 | 2 | **shuttle raises a hold notice at the skill-load turn end, before the start prompt is sent** | [`hold-on-skill-load`](design-hold-on-skill-load.md) | shuttle |
 | 3 | **daemon idle Debug spawn lines reach no log sink; tmux socket path can exceed 108 bytes** | [`daemon-log-and-socket-path`](design-daemon-log-and-socket-path.md) | reed |
-| 4 | **Build-tagged member declared once per tag set resolves ambiguous, so its plan Create can never pass record-batch** | [`quarry-build-tag-ambiguous`](design-quarry-build-tag-ambiguous.md) |  |
+| 4 | **Build-tagged member declared once per tag set resolves ambiguous, so its plan Create can never pass record-batch** | [`quarry-build-tag-ambiguous`](design-quarry-build-tag-ambiguous.md) | webster, loom |
 
 ### Enhancements
 

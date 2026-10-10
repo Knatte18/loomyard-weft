@@ -1,6 +1,6 @@
 # Build-tagged member declared once per tag set resolves ambiguous, so its plan Create can never pass record-batch
 
-`quarry-build-tag-ambiguous` · Note · bug
+`quarry-build-tag-ambiguous` · Note · bug, webster, loom
 
 Imported from [issue #500](https://github.com/Knatte18/loomyard/issues/500).
 
