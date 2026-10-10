@@ -136,6 +136,12 @@ Decision: loom start and resume never read the status file strictly before the s
 
 Rationale: Publish verify failed in internal/loomcli TestSmokeBootstrapLifecycle: card 6 added currentProducer() (start.go:311-317, a ReadJSONStrict of the status file) before every spawn, breaking the pinned contract that bootstrap steps use only lenient reads (smoke_test.go:590-600); same shape as plan round-3 F2.
 
+### Added after Discussion (parent, 2026-10-10): Smoke subtest re-run failure is a gate artifact
+
+Decision: Treat the round gate's failure of TestSmokeBootstrapLifecycle/died_driver_proceeds_to_the_success_envelope_and_logs_why (run.lock: no such file or directory) as not caused by this branch; the F1/F2 fix in d2ad9fc55 stands, smoke_test.go stays unchanged, and the round counts as done when the full TestSmokeBootstrapLifecycle and the tmux tier pass.
+
+Rationale: The round gate re-runs each failing subtest alone with an anchored -run filter; this subtest depends on the scratch dir and run.lock that the earlier subtests' loom start bootstraps create, so alone it always fails. Run whole, TestSmokeBootstrapLifecycle passes on d2ad9fc55, and so does the full tmux tier over cmd/lyx, loomcli, orchcli, reedcli and shedcli. The gate defect is on main and is filed separately.
+
 ## Constraints
 
 - `PATTERN-refusal-way-forward`: every new Stuck reason or refusal names its way forward, lands with its refusal-spec row and a test reaches it (D1, D2, D3, D6).
