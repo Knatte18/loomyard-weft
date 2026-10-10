@@ -1225,6 +1225,20 @@
       "isolated": false,
       "brief": "test-suite-weight moved the test kit to non-login panes without the user tmux config; reed own servers still read ~/.tmux.conf and start login shells for strand panes, noted as a bound in PATTERN",
       "body": ""
+    },
+    {
+      "id": 298,
+      "slug": "suite-weight-quiet-rerun",
+      "title": "Re-measure the test suite weight on a quiet machine",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison",
+      "body": ""
     }
   ]
 }
