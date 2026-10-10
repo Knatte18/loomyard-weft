@@ -1074,7 +1074,7 @@
       }
     }
   ],
-  "currentBatch": 31,
+  "currentBatch": 0,
   "masterStrand": "6207061aa885c318cb6613a9996f300f",
   "masterSessionId": "7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b",
   "batches": {
@@ -1329,8 +1329,25 @@
       "kind": "fork",
       "spawnedAt": "2026-10-10T10:46:00Z",
       "sessionId": "7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "31-tierpurity-tmux-constraint",
+        "status": "done",
+        "head_sha": "d37398c624bab27f88fb31d1c3411f484b40e149",
+        "deviations": [
+          "internal/lyxcwd/enforcement_test.go"
+        ]
+      },
+      "cardShas": [
+        "d37398c624bab27f88fb31d1c3411f484b40e149"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b/subagents/agent-a7146ce7c507f2517.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b/subagents/agent-a7146ce7c507f2517.jsonl"
+      ]
     },
     "6": {
       "slug": "tmuxkit-package-server",
@@ -1422,6 +1439,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b/subagents/agent-a9bc499ce47143ad5.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b/subagents/agent-a4d828465f4ba274e.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b/subagents/agent-a47843738c4d42a65.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b/subagents/agent-a989a95a7ca054239.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b/subagents/agent-a989a95a7ca054239.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b/subagents/agent-a7146ce7c507f2517.jsonl"
   ]
 }
