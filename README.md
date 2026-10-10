@@ -87,6 +87,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 34 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
 | 35 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
 | 36 | **Fabric audit: plain readers accept unquoted globs and any flag**<br>• readOnlyCommands readers (cat, grep -r) accept unquoted globs and arbitrary flags | [`audit-reader-globs`](design-audit-reader-globs.md) | webster, fabric |
+| 37 | **overview.md still says recipe must be loom or empty**<br>• docs/overview.md:49 predates darn | [`overview-recipe-line`](design-overview-recipe-line.md) | batten |
 
 ### Features
 

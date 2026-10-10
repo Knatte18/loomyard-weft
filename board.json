@@ -1148,6 +1148,22 @@
       "isolated": false,
       "brief": "Two branches raising one test-budget row to the same value merge clean but overflow on main",
       "body": "Seen 2026-10-10: webster-audit-gaps and reed-hygiene each added one cmd/lyx test and each raised the cmd/lyx row in `cmd/lyx/testdata/test-budget.yaml` from 73 to 74.\nThe edits are textually identical, so the merge is clean, but the merged package overflows its budget; the failure only shows when verify runs after merging main (both runs blocked on it once) or, worse, on main after Finalize.\nIdea: the budget row records a delta per branch, or the verify-after-merge failure message names the merged count to set, so the fix is mechanical and the PR-Gate reviewer need not count tests by hand."
+    },
+    {
+      "id": 321,
+      "slug": "overview-recipe-line",
+      "title": "overview.md still says recipe must be loom or empty",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "batten"
+      ],
+      "issues": [],
+      "priority": "low",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "docs/overview.md:49 predates darn",
+      "body": "From the ide-opt-in PR-Gate review (PR #530, 2026-10-10): `docs/overview.md` around line 49 says a board entry's recipe \"must be `loom` or empty\", but the darn recipe has landed.\nAlso: batten's terminal-window marker is deleted when the child has no status file, so a status file vanishing mid-run (seen once in cli-surface) opens a second window."
     }
   ]
 }
