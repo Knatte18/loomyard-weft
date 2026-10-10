@@ -241,6 +241,13 @@ No operator was available; each pick below is the Discussion producer's own, rec
 - The strand's recorded binary is new in round 3: an orch strand launched before the field existed has no recorded path, so its watcher's renders go idle with the reason until the orch is relaunched, and the plan states how that reason names the way forward (`lyx orch stop`, then `lyx orch start`).
 - A hub whose stencils directory holds an operator-edited role stencil without the new marker renders no index; `stencilstore`'s hash check leaves such a file alone, so the plan says how the missing marker surfaces (a render error naming the stencil, as the one-line stencils already do).
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/discussion/round-3-review.md; fixer report: _lyx/reviews/discussion/round-3-fixer-report.md.
+  - missing-binary-bound-auto-reload (class design, severity MEDIUM, open in rounds 3)
+  - watcher-index-stale-after-deploy (class design, severity MEDIUM, open in rounds 1, 2, 3)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - `lyx help index` exits 0, prints the nested form of D2, names every `operator` leaf in `newRoot()`, names no `role` or `internal` leaf, and prints a group only when it has a leaf in the audience.
