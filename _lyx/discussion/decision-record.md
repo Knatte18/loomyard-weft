@@ -252,6 +252,12 @@ Rationale: Verify after merging main fails: the task's gate-tier-docs addition a
   - package-docs-describe-old-behavior (class design, severity MEDIUM, open in rounds 1, 2, 3)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 5: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/webster/round-5-review.md; fixer report: _lyx/reviews/webster/round-5-fixer-report.md.
+  - gate-way-forward-untested-at-sites (class scope, severity MEDIUM, open in rounds 5)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - The card gate for a card with targets in the root module and a nested module is `lyx gate test` over the root directories, then `lyx gate test -C <module>` over module-relative directories, then `lyx loom lint-comments`, each step on its own line with no `&&` chain, with no `go build ./...` and no `-tags integration`; a card with only stencil or doc targets runs only the lint.
