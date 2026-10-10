@@ -34,6 +34,20 @@
       "output": "child paused → running at Batchifier",
       "at": "2026-10-10T18:15:31Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at PR-Gate",
+      "at": "2026-10-10T18:49:43Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at PR-Gate",
+      "at": "2026-10-10T18:50:59Z",
+      "budget_exempt": true
     }
   ]
 }
