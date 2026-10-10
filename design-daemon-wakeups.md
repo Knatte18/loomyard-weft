@@ -1,6 +1,6 @@
 # Daemons and wake-ups: event-driven waits, a timely orch reload, recorded revival order
 
-`daemon-wakeups` · Task · bug, enhancement, reed, orch, shuttle · blocked · Publish
+`daemon-wakeups` · Task · bug, enhancement, reed, orch, shuttle · running · Webster-Burler
 
 ## Goal
 
