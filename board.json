@@ -1496,6 +1496,22 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #500](https://github.com/Knatte18/loomyard/issues/500).\n\nSeen (test-suite-weight, 2026-10-10): plan card 10 declares `plan:internal/testkit/tmuxkit#tmuxAllowed` as a Create, implemented the idiomatic Go way: `const tmuxAllowed = true` in `allow_tmux.go` (`//go:build tmux || llm`) and `const tmuxAllowed = false` in `allow_none.go` (`//go:build !tmux \u0026\u0026 !llm`).\n`lyx quarry resolve internal/testkit/tmuxkit#tmuxAllowed` returns `status: ambiguous` with both files as candidates, because quarry ignores build constraints, and record-batch's DoneChecks accept only `found` or `multipart`, so the batch fails `create-not-done` however it is implemented.\nThe recovery strand stopped to ask, and nobody in the run may edit `_lyx/plan` to drop the glyph.\n\nWorkaround: a parent ruling to restructure the code into one `var` plus an `init()` in the tagged file, listed as deviations.\n\nExpected: a member declared once per mutually exclusive build-constraint set resolves (quarry honours build constraints, or DoneChecks accept an ambiguous answer whose candidates all sit in files with disjoint build tags); and the plan validator flags such a glyph at Plan time rather than at record-batch.\n"
+    },
+    {
+      "id": 285,
+      "slug": "finalize-weft-batten-dirty",
+      "title": "Finalize blocks on the parent weft's uncommitted batten status records",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        501
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #501](https://github.com/Knatte18/loomyard/issues/501).\n\nSeen (publish-recovery, 2026-10-10): after `lyx loom approve`, Finalize stopped blocked with \"fabricengine: merge preconditions failed: worktree dirty\".\nThe task pair and its weft were clean; the dirty tree was the prime's weft (`loomyard-weft`, `main-weft`), holding two uncommitted batten records: `_lyx/shed/publish-recovery/status.json` and `_lyx/shed/test-suite-weight/status.json`.\nBatten writes these from the prime while runs are in flight and commits them later through weft sync, so any Finalize that runs between a write and its sync commit hits the precondition.\n\nWorkaround: the orchestrator ran `lyx fabric commit` in the prime, then `lyx loom resume` in the pair.\n\nExpected: Finalize's merge precondition ignores, or commits first, the parent weft's own batten records (`_lyx/shed/*/status.json` written by batten runs), so a sibling run's status write never blocks a landing.\n"
     }
   ],
   "legacy_done": [

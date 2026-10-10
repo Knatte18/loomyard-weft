@@ -47,6 +47,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **shuttle raises a hold notice at the skill-load turn end, before the start prompt is sent** | [`hold-on-skill-load`](design-hold-on-skill-load.md) | shuttle |
 | 3 | **daemon idle Debug spawn lines reach no log sink; tmux socket path can exceed 108 bytes** | [`daemon-log-and-socket-path`](design-daemon-log-and-socket-path.md) | reed |
 | 4 | **Build-tagged member declared once per tag set resolves ambiguous, so its plan Create can never pass record-batch** | [`quarry-build-tag-ambiguous`](design-quarry-build-tag-ambiguous.md) | webster, loom |
+| 5 | **Finalize blocks on the parent weft's uncommitted batten status records** | [`finalize-weft-batten-dirty`](design-finalize-weft-batten-dirty.md) |  |
 
 ### Enhancements
 
