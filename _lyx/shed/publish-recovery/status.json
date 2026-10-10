@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster-Burler",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "bounce budget exhausted for Webster-Burler; way forward: \"lyx shed goto publish-recovery --to Webster-Burler\" gives segment \"Webster-Review\" a fresh budget",
   "pause_requested": false,
   "activity": {
     "now": "Webster-Burler",
-    "last": "Webster-Bouncer → bounced to Webster-Burler",
-    "wait": ""
+    "last": "Webster-Burler → stuck",
+    "wait": "bounce budget exhausted for Webster-Burler; way forward: \"lyx shed goto publish-recovery --to Webster-Burler\" gives segment \"Webster-Review\" a fresh budget"
   },
   "history": [
     {
@@ -219,6 +219,13 @@
       "outcome": "stuck",
       "output": "/home/knatte/Code/loomyard-LYXHUB/publish-recovery/_lyx/reviews/webster/round-2-bouncer-ledger.md",
       "at": "2026-10-10T09:54:06Z"
+    },
+    {
+      "producer": "Webster-Burler",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/publish-recovery/_lyx/reviews/webster/round-3-review.md",
+      "at": "2026-10-10T10:01:02Z",
+      "gate_attempts": 0
     }
   ],
   "product": {
