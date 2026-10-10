@@ -36,6 +36,7 @@ reed's one layout rule today would collapse the orch above and grow the overview
 
 The `[batten notice]` line typed into the orch drops the trailing `cd <pair> && lyx reed attach`: the orch knows where a run's pair is, and the attach command is for the operator, who gets it in the overview.
 `renderNotice` in `internal/battenshed/notice.go` builds that line.
+Its paths (`output`, `report`) are relative to the task pair, since the slug already names the pair, not absolute with the hub prefix repeated (operator, 2026-10-10): every notice lands in an Opus session that re-reads its context each turn.
 
 ## Notice wording: a wait is not an error (operator, 2026-10-05)
 
