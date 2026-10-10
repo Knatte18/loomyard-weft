@@ -32,7 +32,7 @@ The session ran autonomously, so every turn below is the writer's own question a
    Answer: Finalize commits the parent's `_lyx/shed/` subtree first; D9.
 9. Where does an abandoned run's claim get cleared?
    Every pair teardown goes through `internal/pairteardown`.
-   Answer: the composite clears it; D10.
+   Answer: the composite settles it, marking a landed run done and clearing only an abandoned run's claim, judged by batten's state for the slug; D10.
 10. How should Friction-Reflect learn the parent's status?
     Go writes the halt note; fabric owns git.
     Answer: a Go-written section in the halt note; D11.
@@ -63,12 +63,16 @@ The session ran autonomously, so every turn below is the writer's own question a
   Rejected: the no-op-transition skip exists to avoid one commit per bounce, and the skip while mid-merge would still leave dirt for a sibling landing.
 - Clearing the claim in batten's `Worktree-Teardown` row and in `lyx fabric remove` separately.
   Rejected: two call sites for one rule; the teardown composite is already the chokepoint.
+- Clearing the claim whenever the entry is not done, judging the board alone.
+  Rejected: it clears a landed run whose done mark failed and releases a run batten still holds.
 - Setting a word such as `stopped` as the released status.
   Rejected: an empty status is what the entry had before the run, and batten's notices already tell the orch why the run ended.
 - The reflection agent running `lyx fabric status` in the parent.
   Rejected: a deterministic read belongs in Go, and the halt note is the place Go already writes.
 - Appending attempts into one `verify.log` with headers.
   Rejected: a per-run file is simpler for a reader and lets the failure record point at a file nothing rewrites.
+- A stencil sentence telling a re-entered `Darn` spawn to inspect the task branch for its own earlier commits.
+  Rejected: Go already holds the run's history and the Publish failure record, so a rendered prior-work token states why the spawn re-entered without the agent reconstructing it.
 - Unbounded verify-log retention.
   Rejected: a long-lived prime's `.lyx/verify/` would grow without end.
 
@@ -90,7 +94,7 @@ _No rounds yet._
 | 8 | Default writer model and timeout | resolved, auto-pick | `opus[medium]`, 180 min; D7 |
 | 9 | Verify log naming and retention | resolved, auto-pick | `verify-<n>.log`, newest twenty; D8 |
 | 10 | Finalize and the parent weft's records | resolved, auto-pick | commit `_lyx/shed/` first; D9 |
-| 11 | Where the claim is cleared and to what | resolved, auto-pick | pairteardown, cleared to empty; D10 |
+| 11 | Where the claim is cleared and to what | resolved, auto-pick | pairteardown; landed marks done, abandoned clears to empty, a `running` batten run keeps it; D10 |
 | 12 | How Friction-Reflect reads the parent | resolved, auto-pick | Go-written halt note section; D11 |
 | 13 | Skills and color for the darn writer | resolved, auto-pick | `scribe:prose`, `scribe:code-quality`, `darn` segment; D4 |
 | 14 | Whether the darn gate narrows by impacted set | resolved, auto-pick | no, full verify; D6 |
