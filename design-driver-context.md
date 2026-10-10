@@ -10,6 +10,12 @@ The driver steps in only when something goes wrong, and its context stays under 
 Build idea 1 below: Go runs the steps in a loop and wakes the driver only at a stop (error, interrupt, blocked, awaiting gate, run end).
 Ideas 2 to 6 come along where they still apply once the loop is in Go; idea 7 is optional.
 
+`lyx shed step` says too much on success and too little on failure: a successful step prints its envelope plus stderr slog noise the driver must read, while a failed one prints too little, so the stencil has the driver read every step's trace in case a later failure needs it before retention sweeps it.
+Turn that around:
+- A successful step answers in one short line, and the driver reads almost nothing before the next step.
+- A failed or stopped step answers at length: what went wrong, the trace lines that matter, and the paths to read further, so the driver can act on the answer itself and opens the trace only to dig deeper.
+- Retention never sweeps the trace of a step that failed or stopped before the driver has handled it, so the driver never reads a trace pre-emptively, and the stencil drops "After every step, read its `trace_file` right away".
+
 The orch must still be able to tell the driver, in plain words, to stop the run at a chosen point, for example "stop after Batchifier, before Webster", and the driver must hit that point itself.
 `lyx loom pause` is not the route: it is too restrictive.
 So a stop condition, such as a producer to stop before or after, is recorded in the run's own state by a command, and the Go loop reads it between steps, stopping there before the next producer starts and waking the driver.
