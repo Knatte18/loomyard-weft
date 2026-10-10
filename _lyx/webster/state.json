@@ -1,0 +1,342 @@
+{
+  "runGuid": "57fa24052584be6cb23e4d0a1018e0c5",
+  "planFingerprint": "e47e85f01917f53183994abf42c1ed0d79c6b38edf411e68877fc5704299a32b",
+  "planFileHashes": {
+    "00-overview.md": "55b39b796589556285844d488333b4948021e7bb7bb13cc9c06c53a6e54d94cc",
+    "01-shuttle-quiet-hold-send-lock.md": "2ac874530c180bfe645c2b83c468759d85c5cf99f18a5b4d68a915569f461513",
+    "02-stencil-include-form.md": "9f5de7134b1c2fc762da2fa0b7d39cdc42a7953aba1ae1ce7582cba7da88fe4e",
+    "03-seat-directive-stencils.md": "2de3e9328b63e007c7548894231da253e16a6e00032cb88df12d1e00fc37dc9e",
+    "04-seatengine-table.md": "bfbbfc19eeb7e0bbbeac6014d7bfd8e9dac467034936b24d8448f503afc38c14",
+    "05-seatengine-prompts.md": "48924d97747627213507c553dc07ceb5906c4a228389a0d987777d8253daee93",
+    "06-seatengine-run.md": "5c01faa594f33808c706c8fea441cf14d46a09e31b0afc78fdd9172536e18b03",
+    "07-seatengine-probe-resume.md": "9a82853360c96f319249d66ef483d5dd27903c49534223febd8701ab3a789baf",
+    "08-shedfake-seat-runner.md": "b07f8cb3cfcab8eeec97a0bb48734d9e60cb9a399271d260c5570f8d65ac818c",
+    "09-shedadapters-multillm.md": "44584d1453ccd9c2bd1c23f249205eb2f649a32ac1a3bc0314dfbe3faf9d1975",
+    "10-shedrecipe-env-seats.md": "f21f248b99ef2e510ae04a938f21f5190abd7167f3b53ea05a410a73c9ccbdb4",
+    "11-shedrecipe-multillm-entry.md": "e0e3fd408283b2198cc3ae6ef64792acf31f0d1df4c4a1ad18830eef2e4fee8b",
+    "12-multillm-fixture-recipe.md": "b1056674604c48870f960b5d39412118e6f30745d7b0291a9dd21f34f8028198",
+    "13-seatengine-llm-smoke.md": "e8951da739371570431e88543a8b047607868325ef8c26beb983e8e1d592e421",
+    "14-docs-overview.md": "4901d98056ca209a910d62a544a52cd33fc68d3d4aedbb95163cf88a12737eaf"
+  },
+  "planOverviewFrameHash": "e0b919b808258d43003b1f3e6e47823c58c29f5a74e93b47a0d0eef404864ca6",
+  "partition": [
+    {
+      "cards": [
+        "01-shuttle-quiet-hold-send-lock",
+        "02-stencil-include-form",
+        "03-seat-directive-stencils",
+        "04-seatengine-table"
+      ],
+      "profile": "cautious",
+      "estimate": 194596,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54268,
+        "read_union": 55812,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 324,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/shuttleengine/doc.go": 3228,
+              "file:internal/shuttleengine/hold_test.go": 2544,
+              "file:internal/shuttleengine/run_test.go": 17856,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 74.5,
+            "written": 22674
+          },
+          {
+            "card": 2,
+            "card_text": 300,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/stencil/export_test.go": 1272,
+              "file:internal/stencil/stencil_test.go": 3972,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/stencil": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/stencil": 2000
+            },
+            "messages": 43,
+            "written": 13200
+          },
+          {
+            "card": 3,
+            "card_text": 252,
+            "reads": {
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/seat": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/seat": 2000
+            },
+            "messages": 39.5,
+            "written": 12102
+          },
+          {
+            "card": 4,
+            "card_text": 540,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/seatengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/seatengine": 2000
+            },
+            "messages": 120,
+            "written": 36540
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-seatengine-prompts",
+        "06-seatengine-run",
+        "07-seatengine-probe-resume",
+        "08-shedfake-seat-runner",
+        "09-shedadapters-multillm"
+      ],
+      "profile": "cautious",
+      "estimate": 205896,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61268,
+        "read_union": 26068,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 360,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/seatengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/seatengine": 2000
+            },
+            "messages": 54,
+            "written": 16560
+          },
+          {
+            "card": 6,
+            "card_text": 660,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/seatengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/seatengine": 2000
+            },
+            "messages": 144,
+            "written": 43860
+          },
+          {
+            "card": 7,
+            "card_text": 396,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/seatengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/seatengine": 2000
+            },
+            "messages": 60,
+            "written": 18396
+          },
+          {
+            "card": 8,
+            "card_text": 300,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/testkit/shedfake/shedfake_test.go": 2868,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/testkit/shedfake": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/testkit/shedfake": 2000
+            },
+            "messages": 46.5,
+            "written": 14250
+          },
+          {
+            "card": 9,
+            "card_text": 444,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/shedadapters/doc.go": 3516,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shedadapters": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 83.5,
+            "written": 25494
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-shedrecipe-env-seats",
+        "11-shedrecipe-multillm-entry",
+        "12-multillm-fixture-recipe",
+        "13-seatengine-llm-smoke",
+        "14-docs-overview"
+      ],
+      "profile": "cautious",
+      "estimate": 225312,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68268,
+        "read_union": 64932,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 324,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 101,
+            "written": 30624
+          },
+          {
+            "card": 11,
+            "card_text": 540,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:contracts/specs/shed-recipe-spec.md": 1260,
+              "file:internal/shedrecipe/doc.go": 192,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/shedbuild": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/shedrecipe_test": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/shedbuild": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/shedrecipe_test": 2000
+            },
+            "messages": 120,
+            "written": 36540
+          },
+          {
+            "card": 12,
+            "card_text": 264,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/shedrecipe/testdata": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/shedrecipe/testdata": 2000
+            },
+            "messages": 37,
+            "written": 11364
+          },
+          {
+            "card": 13,
+            "card_text": 300,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1524,
+              "file:internal/burlerengine/smoke_round_test.go": 4284,
+              "file:internal/burlerengine/testmain_test.go": 252,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/seatengine": 2000,
+              "package:internal/seatengine/testdata": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/seatengine": 2000,
+              "tests:internal/seatengine/testdata": 2000
+            },
+            "messages": 38,
+            "written": 11700
+          },
+          {
+            "card": 14,
+            "card_text": 84,
+            "reads": {
+              "file:docs/overview.md": 7908,
+              "package:docs": 2000,
+              "tests:docs": 2000
+            },
+            "messages": 6,
+            "written": 1884
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "0b798198c25e9ae4127acbb28769bf61",
+  "masterSessionId": "3c705bf7-5396-4f17-9875-c68cd34b964e",
+  "batches": {
+    "1": {
+      "slug": "shuttle-quiet-hold-send-lock",
+      "cards": [
+        "01-shuttle-quiet-hold-send-lock",
+        "02-stencil-include-form",
+        "03-seat-directive-stencils",
+        "04-seatengine-table"
+      ],
+      "cardHashes": {
+        "01-shuttle-quiet-hold-send-lock": "2ac874530c180bfe645c2b83c468759d85c5cf99f18a5b4d68a915569f461513",
+        "02-stencil-include-form": "9f5de7134b1c2fc762da2fa0b7d39cdc42a7953aba1ae1ce7582cba7da88fe4e",
+        "03-seat-directive-stencils": "2de3e9328b63e007c7548894231da253e16a6e00032cb88df12d1e00fc37dc9e",
+        "04-seatengine-table": "bfbbfc19eeb7e0bbbeac6014d7bfd8e9dac467034936b24d8448f503afc38c14"
+      },
+      "startSha": "e027503e636b2137e93fad8a193e8ca63d658ac0",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T05:32:40Z",
+      "sessionId": "3c705bf7-5396-4f17-9875-c68cd34b964e",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
