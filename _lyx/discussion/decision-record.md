@@ -212,6 +212,12 @@ Decision: Beside D4: a server reed starts itself on a registered key after the t
 
 Rationale: Plan round 3 F3: the record keeps reed's spawn unchanged, so the plan has no lever on reed's side; a PATH wrapper would give reed-started servers exit-empty off and @lyx_test_server on, changing the behaviour those tests pin, widen card 5 and every reed-booting test, and need a psmux story.
 
+### Added after Discussion (parent, 2026-10-10): Batch 08 tmuxAllowed: one var plus init, not two build-tagged consts
+
+Decision: Card 10's Create plan:internal/testkit/tmuxkit#tmuxAllowed is met with one 'var tmuxAllowed = false' in tmuxkit.go and a 'func init()' in allow_tmux.go (//go:build tmux || llm) that sets it true; allow_none.go is dropped; the changed paths are reported as deviations.
+
+Rationale: quarry ignores build constraints and reads two build-tagged declarations as ambiguous, which record-batch's done check refuses (#500); nobody in the run may edit _lyx/plan to drop the glyph.
+
 ## Constraints
 
 - `PATTERN-test-speed`: tier 2 has no tmux server; the tier table, gate table and "untagged tests spawn nothing" section record D6, D7 and D8.
