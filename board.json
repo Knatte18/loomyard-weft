@@ -1203,8 +1203,26 @@
       "body": "Imported from [issue #516](https://github.com/Knatte18/loomyard/issues/516).\n\nA plan card prescribed a refusal branch (a zero-batch refusal after an accepted auto-rebaseline) with a fixed signature.\nReview of the implementation flagged that no test reaches the refusal; the fixing agent then found that no plan can reach it, because the plan parser refuses a cardless plan before `Run` forms any batch.\nThe branch was kept and its text pinned with a golden test of the error constructor, which conflicts with the rule against code for impossible states.\n\nThis is abnormal because the plan passed its Plan-Bouncer and Plan-Burler rounds with a prescribed refusal that is unreachable by construction, and the contradiction surfaced only after the code was written.\n\nWhat to do: have plan review (or the plan-time checks) verify that every refusal a card prescribes is reachable from some input that passes upstream validation, or require the card to say how a test reaches it.\n\nProvenance: task `webster-replan-state`, from note `burler-webster-r1.md`.\n"
     },
     {
-      "id": 307,
-      "slug": "webster-audit-recovery",
+      "id": 308,
+      "slug": "reed-hygiene",
+      "title": "Reed hygiene: daemon log and socket path, plain strand shells, watchdog child CPU",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "enhancement",
+        "reed"
+      ],
+      "issues": [
+        495
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Goal\n\nThree reed fixes: daemon log and socket path, strand panes that read the user's tmux config, and the watchdog's idle child CPU.\n\n## 1. Daemon Debug lines and socket path (#495)\n\nFound while measuring the daemon's idle behaviour in task `daemon-wakeups`:\n\n- The daemon's idle Debug spawn lines reach no sink, so spawn counts could not be read from lyx logs; the agent counted spawns through a tmux wrapper.\n  Expected: those Debug lines go to the daemon log at a verbosity the operator can enable.\n- A tmux socket path under a deeply nested scratch directory passed the 108-byte socket limit, and `TMUX_TMPDIR` had to be set by hand.\n  Expected: lyx detects an over-long socket path and fails with a message naming `TMUX_TMPDIR`, or chooses a short default location.\n\n## 2. Strand panes read `~/.tmux.conf` and start login shells\n\n`test-suite-weight` (b7d4fd0ba) moved the test kit to non-login panes without the user's tmux config; reed's own servers still read `~/.tmux.conf` and start login shells for strand panes, recorded as a bound in PATTERN.\nExpected: reed's servers and strand panes start without the user's tmux config and without login shells, and the PATTERN bound is lifted.\n\n## 3. Watchdog children burn idle CPU\n\nFrom `daemon-wakeups` (`docs/benchmarks/daemon-idle-cpu.md`): `lyx reed watchdog` spawns `list-sessions` far less often since that run (11.8 to 1.6 per minute), but idle CPU stayed at about 100 s per hour, about 85 s of it in child processes the benchmark shim cannot see.\nExpected: find which processes the watchdog's children are (likely the idle sessions' own watchers), bring them under `PATTERN-daemon-wakeups`, and re-measure.\n"
+    },
+    {
+      "id": 309,
+      "slug": "webster-audit-gaps",
       "title": "Webster audit and recovery: pathless findings, read-only classifier, rebaseline Stuck",
       "kind": "task",
       "labels": [
@@ -1222,24 +1240,6 @@
       "isolated": false,
       "brief": "",
       "body": "## Goal\n\nClose the webster audit and recovery gaps that `cli-surface` batch 06 hit and that `webster-replan-state` (5a8be0274) left open, in `internal/websterengine` and `internal/fabricengine/refscanner.go`.\n\n## 1. recover-batch fails on a pathless finding (#513)\n\nIn run `cli-surface` (2026-10-10), batch 06 failed `record-batch` on a fabric-reference audit finding whose only `uncheckable` entry is a shell command (`for v in ...; do lyx fabric $v --help --json ...; done`).\n`lyx webster recover-batch 06` then errored with \"websterengine: resolve links in .../fabric-reference: lstat ...: file name too long\".\n`RecoverSpawnOrAttach` passes `prior.Uncheckable` to `contractWritesFor` (`contractevidence.go`), whose `contractCanon` calls `canonicalPath` (`audit.go`), which runs `filepath.EvalSymlinks` on the finding text; ENAMETOOLONG is not `ErrNotExist`, so it is returned.\n5a8be0274 added an early exit when every pathless finding is read-only (`recoverbatch.go`), but a pathless finding that is not read-only still reaches `contractWritesFor` → `contractCanon`.\n\nExpected: `contractWritesFor` and `splitContractPaths` skip pathless entries, so recover-batch returns its documented refusal naming `accept-audit --batch NN`.\n\n## 2. The fabric-reference audit fails help-only lyx calls (#514)\n\nBatch 06's implementer fork read help with `lyx fabric $v --help --json`; the audit (`ClassifyViolation`) classed it as a correctness violation, and `fabricengine.IsReadOnlyCommand` rejected it, so `accept-audit` could not keep the batch's six committed cards (workaround: `reset --to batch-start`, `accept-audit`, redo the batch).\n5a8be0274's `readOnlyLyxSegment` admits a lyx help call only when `--help` or `-h` is its last word.\n\nExpected:\n\n- a trailing `--json` (`lyx ... --json`, `lyx ... --help --json`) is read-only too, since 57243019b no command runs under the global `--json`;\n- a quoted or globbed argument to an admitted reader (`git log --format='%h %s'`) does not on its own make a command non-read-only;\n- a loop or a `$v` expansion stays non-read-only on purpose.\n\n## 3. Reader flags that write (Webster-Review finding `d8-reader-write-flags-unbounded`, BLOCKING at landing)\n\nThe reader allow-list in `refscanner.go` admits git reader commands without bounding their flags, so a reader given a writing flag could pass as read-only.\nExpected: check each admitted git reader's flags and reject any flag that writes (for example an output-file or config-writing flag).\n\n## 4. Auto-rebaseline merge-base failure (finding `card4-merriambase-failure-escapes-stuck`)\n\nAn error computing the merge base during auto-rebaseline may surface as a hard failure instead of Stuck.\nExpected: map it to Stuck with a way forward, and test it.\n\n## 5. begin-batch's terminal-dead refusal text (finding `d12-begin-batch-dead-refusal-stale`)\n\nThe refusal predates the second recovery.\nExpected: it names the second-recovery route and the `recovery_exhausted` state that 5a8be0274 added.\n\n## 6. Thin test rows (findings `card14-classifier-rows-miss-glob-and-tilde`, `thin-test-rows-cards-13-11-17-21`)\n\nThe classifier tables lack glob and tilde cases, and the rebaseline and shell-wait tables are thin.\nExpected: add those rows alongside items 2-4.\n"
-    },
-    {
-      "id": 308,
-      "slug": "reed-hygiene",
-      "title": "Reed hygiene: daemon log and socket path, plain strand shells, watchdog child CPU",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "enhancement",
-        "reed"
-      ],
-      "issues": [
-        495
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Goal\n\nThree reed fixes: daemon log and socket path, strand panes that read the user's tmux config, and the watchdog's idle child CPU.\n\n## 1. Daemon Debug lines and socket path (#495)\n\nFound while measuring the daemon's idle behaviour in task `daemon-wakeups`:\n\n- The daemon's idle Debug spawn lines reach no sink, so spawn counts could not be read from lyx logs; the agent counted spawns through a tmux wrapper.\n  Expected: those Debug lines go to the daemon log at a verbosity the operator can enable.\n- A tmux socket path under a deeply nested scratch directory passed the 108-byte socket limit, and `TMUX_TMPDIR` had to be set by hand.\n  Expected: lyx detects an over-long socket path and fails with a message naming `TMUX_TMPDIR`, or chooses a short default location.\n\n## 2. Strand panes read `~/.tmux.conf` and start login shells\n\n`test-suite-weight` (b7d4fd0ba) moved the test kit to non-login panes without the user's tmux config; reed's own servers still read `~/.tmux.conf` and start login shells for strand panes, recorded as a bound in PATTERN.\nExpected: reed's servers and strand panes start without the user's tmux config and without login shells, and the PATTERN bound is lifted.\n\n## 3. Watchdog children burn idle CPU\n\nFrom `daemon-wakeups` (`docs/benchmarks/daemon-idle-cpu.md`): `lyx reed watchdog` spawns `list-sessions` far less often since that run (11.8 to 1.6 per minute), but idle CPU stayed at about 100 s per hour, about 85 s of it in child processes the benchmark shim cannot see.\nExpected: find which processes the watchdog's children are (likely the idle sessions' own watchers), bring them under `PATTERN-daemon-wakeups`, and re-measure.\n"
     }
   ]
 }
