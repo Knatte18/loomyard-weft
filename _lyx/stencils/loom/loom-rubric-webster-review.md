@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- it carries no top-level stencil markers of its own, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=9fff3ccdd43815991d25f7ca7dfd78db2addb562a5a947eb6e09b9e0deb0dfe6 -->
+lyx-stencil: sha256=5046d9640245d4e6e2cac22c38c752bb3c409d5b7d2234bafb02c33510f4a6b3 -->
 
 # Webster-Review rubric
 
@@ -38,11 +38,21 @@ nothing else states it.
 
    Earlier generations' code is context, never the subject.
 4. With no such round, review `git diff $(git merge-base <product.parent> HEAD)..HEAD` — every commit the current branch introduces over that merge base.
+5. When the `## Publish failure` section below renders a merge-in commit, the range also includes that merge's diff, `git diff <merge>^1 <merge>`, which is the parent branch's changes the merge brought in and steps 3 and 4 exclude.
+   Nothing else widens the range.
 
 All steps are read-only.
 If neither status file can be read, or its `product.parent` is empty or absent, raise a BLOCKING finding stating that the review range could not be determined, and review nothing.
 The same finding is raised when the live round's `record.json` is unreadable or its `head_sha` is empty.
 Silently reviewing a guessed range is a worse failure than an honest block.
+
+## Publish failure
+
+{{.publish_failure}}
+
+`none` means no Publish failure is on record, and this section raises nothing.
+Otherwise a Publish verify failed after the branch's last merge-in, and the failure is what this round exists to fix.
+Raise each failing test named above as a BLOCKING finding, reading the merge's diff and the log for its cause, in addition to reviewing the branch's own range.
 
 ## Do not flag
 

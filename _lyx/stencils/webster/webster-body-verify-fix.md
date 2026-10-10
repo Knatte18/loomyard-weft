@@ -5,7 +5,7 @@
      stencil.FillOptional requires all of them non-empty.
      {{.friction_directive}} is the one optional marker (filled via stencil.FillOptional), rendering as nothing when Tier 2 is off.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=6d3398d3eda591dc9f89056777984ebd26c245e83e1001f65ba2b5795f3afce8 -->
+lyx-stencil: sha256=f13db08a2ecfad9b3f13d10900b83d6fd31b6deccd12e336436383fc7f1007bc -->
 
 # Webster verify-gate fixer fork — fix the recorded failures in source, commit, report
 
@@ -41,7 +41,8 @@ A report that lists dirty paths instead of failures means the worktree held unco
   Never commit a path under `_lyx`.
 - Never write, create or delete Merriam's contract files `{{.outcome_path}}` and `{{.summary_path}}`, even though you inherit Merriam's instruction to write them as a final action.
   A fixer writing either forges the run's terminal judgment and halts the run at its exit audit.
-- Before you report, run the failing packages' tests with `-tags integration` and fix what they still report.
+- Before you report, run `lyx gate test --tags integration <the findings' packages>` as its own Bash call with `run_in_background`, wait for it, and fix what it still reports.
+  A slot-busy exit (`lyx gate test` exiting with a JSON error naming the slot holders) is re-run, never counted as a failure.
 - Leave the worktree clean: no uncommitted change may remain when you end your turn.
 
 ## Your final action
