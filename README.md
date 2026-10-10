@@ -14,7 +14,7 @@ Held by a run; its scope is locked until the run ends.
 1. **Gate test scope: which gate runs which tier, bounded hub-wide** — [`gate-test-scope`](design-gate-test-scope.md) · bug, enhancement, webster, loom, stencil, config, burler · running · Webster
    - Card gate tests only its own packages at tier 1, tier 2 per batch and at the plan verify, a hub-wide slot lock for gate test runs, guarded publish_verify
    - **Before:** `test-suite-weight`, `publish-recovery`, `burler-multi-llm`, `discussion-multi-llm`, `cli-surface`, `webster-replan-state`
-1. **MultiLLMProducer: one producer runs a chair and its advisors as seats** — [`multi-llm-producer`](design-multi-llm-producer.md) · feature, shed, shuttle · running · Plan-Burler
+1. **MultiLLMProducer: one producer runs a chair and its advisors as seats** — [`multi-llm-producer`](design-multi-llm-producer.md) · feature, shed, shuttle · running · Plan-Bouncer
    - A producer beside SingleLLMProducer that runs N agents as seats, one chair that steers and decides the outcome plus advisor-1..n, with its own internal message channel; built standalone, used by nothing yet
    - **Before:** `burler-multi-llm`, `discussion-multi-llm`
 1. **Daemons and wake-ups: event-driven waits, a timely orch reload, recorded revival order** — [`daemon-wakeups`](design-daemon-wakeups.md) · bug, enhancement, reed, orch, shuttle · running · Plan-Write
