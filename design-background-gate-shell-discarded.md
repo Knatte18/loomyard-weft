@@ -46,3 +46,20 @@ This is abnormal: the run can finish, or be held for the parent, while a verific
 What to do: when a shell is still running at a turn end, either keep waiting until it exits or a hard limit, or stop it explicitly and record that its result was discarded, so the outcome does not depend on whether the output files already exist.
 
 Provenance: task `driver-context`; notes `webster-background-shell.md`, `webster-background-shell-2.md`.
+
+
+## From issue #517
+
+Imported from [issue #517](https://github.com/Knatte18/loomyard/issues/517).
+
+The `lyx webster` Master wait counted a Master turn end while several of Master's background shells were still running.
+Per the note, the wait stops waiting on a shell at a turn end: after `background_shell_wait_min` (10 minutes) for a shell only the transcript reports, and at once for a shell the Stop payload reports when Master's output files exist.
+The run then finished with outcome `done`, and lyx did not stop the shells; shuttle removing Master's strand ended the session and the shells with it.
+The shells in question were `lyx gate test --tags integration ...` runs, so the run was declared done while integration test runs were unfinished and their results were never read.
+Three such shells were recorded in one run.
+
+This is abnormal because a run can finish as `done` with verification work in flight, and the result of that work is silently discarded.
+
+What to do: when a turn end finds live background shells, either hold the run for the parent instead of finishing it, or stop the shells explicitly and record that their results were not consumed; at minimum surface this as a halt or warning rather than a friction note after the fact.
+
+Provenance: task `webster-replan-state`, from note `webster-background-shell.md`.
