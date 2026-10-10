@@ -1,0 +1,17 @@
+status: OK
+head_sha: 595473ad89a088b3f7571383e5a22e01f3d225f3
+deviations:
+  - internal/gitrepo/doc.go
+  - internal/battencli/wire_seams_test.go
+  - internal/landingshed/deps.go
+  - internal/landingshed/publish_verify_test.go
+  - internal/shedrecipe/recipe.go
+  - internal/shedrecipe/fixture_test.go
+  - internal/loomcli/sharedbootstrap.go
+  - internal/loomcli/arm.go
+  - internal/loomcli/landingdeps.go
+  - internal/loomshed/verifygate.go
+  - internal/webstercli/verify_parity_integration_test.go
+  - internal/fabricengine/warpforward.go
+  - internal/darnengine/config.go
+  - internal/darnengine/spec.go

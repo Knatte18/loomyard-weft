@@ -1,8 +1,8 @@
 # Card 7 — recipe-vocabulary
 
 **Create:**
-- `plan:internal/shedrun#RecipeDarn` -> `const RecipeDarn = "darn"`
-- `plan:internal/segmentcolor#Darn` -> `const Darn Segment = "darn"`
+- `internal/shedrun#RecipeDarn`
+- `internal/segmentcolor#Darn`
 
 **Edit:**
 - `internal/shedrun#RecipeNames`

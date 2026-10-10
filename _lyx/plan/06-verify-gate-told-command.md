@@ -1,8 +1,8 @@
 # Card 6 — verify-gate-told-command
 
 **Create:**
-- `plan:internal/loomcli#verifySource` -> `type verifySource struct`
-- `plan:internal/loomcli#planVerifySource` -> `func planVerifySource(l *lyxcwd.Location) verifySource`
+- `internal/loomcli#verifySource`
+- `internal/loomcli#planVerifySource`
 
 **Edit:**
 - `internal/loomshed#NewVerifyGate` -> `func NewVerifyGate(worktreeRoot, verifyDir, siteLabel string, command, mergeBase func() (string, error), slots *gateslot.Pool) shuttleengine.Gate`

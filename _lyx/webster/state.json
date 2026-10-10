@@ -1,17 +1,17 @@
 {
   "runGuid": "57d92b13c2c335b53e15b2a1a7d4e4d3",
-  "planFingerprint": "3034e4699ada917d1555b8f80dd2a5544700c6b3a899dedbd53f89c0b97ad442",
+  "planFingerprint": "c07d8adf7f66acef79289e189c99a9d82f503f3313686deff3d039f3f8126eda",
   "planFileHashes": {
     "00-overview.md": "acb89b9ff5cb5b07ca8e41cdde73b0d371a7195ee12ace371d56ec635f679cd3",
     "01-verify-log-per-run.md": "5fba5fe6bf28e15abc3febb59eaed78955cbecaacf1a2355a76064caf891835d",
     "02-finalize-parent-records.md": "71a5eb812dbe85078665e90db38d54605866f7ad6dd3230188969dc8d3c2fda2",
     "03-teardown-settles-board-claim.md": "f8e52151f470cd6d7cac24a96bbd5d3d80faea180de0fd4af49b2e34a8801172",
     "04-halt-note-parent-fabric-status.md": "2046945aca033cffe2a1840eef4e458225aff5255aec4e4d408b39587dae99c6",
-    "05-fabric-merge-base.md": "3732a12c03949b585f74c184d13462f27f0a0b1146296e95a6971e67d17cbb89",
-    "06-verify-gate-told-command.md": "e74f290ab1ae2328ae8977bb9849a1f63af8aedfb517d98ddd1faf278122b8a6",
-    "07-recipe-vocabulary.md": "192eeb8f59b918e33ce42eceb5f719c5e54b1a8ed3f659376f7b1d9516896ef0",
-    "08-darn-config.md": "46f5b76d4a78e17d55156d639dca80c4921a51828f74fb62ae498208e1ac7adc",
-    "09-darn-stencil-and-spec.md": "5b7591cdf2e6e081d183c35f346ea948b5b1e643219a8ecbbf146315c5a66220",
+    "05-fabric-merge-base.md": "a223944ee946bf696dbfbbf96e3fe8d86eafbf3a39d6dc47850ec9ceaffb4db7",
+    "06-verify-gate-told-command.md": "141b2e1d688c06457cbd4db806cf7ae1c373af8d0472447343b6dcee5114c088",
+    "07-recipe-vocabulary.md": "9d7855041fd301099ae29b0128e925a1da7eadf28ab8265b5020f2859c255285",
+    "08-darn-config.md": "e061c1459fa797629ead22a4002d7f78ee145c1f3b8362cf84183180d9631ce1",
+    "09-darn-stencil-and-spec.md": "b04c8d54c38dbcf8835cae026667f22afda5b418c4f23201831b6f0a7fd7c74e",
     "10-darn-producer-and-entry.md": "f846d00041f5295bb337ae0e8212191c5c52f0bf7433c7dbfd09929c5bcc509b",
     "11-darn-builder-and-routing.md": "804d232b950bcac90e985632c7a4037dddbbeac98f97b7abcad5513aa9d38da6",
     "12-loom-arms-darn.md": "0f664399a3da99322044f294225e81d6a65902fb5dac035370cf3e4835b5deba",
@@ -434,7 +434,7 @@
       }
     }
   ],
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "0068be18351934c1680fdf7a7650d3ca",
   "masterSessionId": "8381d0ae-383e-4d1b-bed9-9cee07a1609b",
   "batches": {
@@ -497,22 +497,53 @@
         "09-darn-stencil-and-spec"
       ],
       "cardHashes": {
-        "05-fabric-merge-base": "3732a12c03949b585f74c184d13462f27f0a0b1146296e95a6971e67d17cbb89",
-        "06-verify-gate-told-command": "e74f290ab1ae2328ae8977bb9849a1f63af8aedfb517d98ddd1faf278122b8a6",
-        "07-recipe-vocabulary": "192eeb8f59b918e33ce42eceb5f719c5e54b1a8ed3f659376f7b1d9516896ef0",
-        "08-darn-config": "46f5b76d4a78e17d55156d639dca80c4921a51828f74fb62ae498208e1ac7adc",
-        "09-darn-stencil-and-spec": "5b7591cdf2e6e081d183c35f346ea948b5b1e643219a8ecbbf146315c5a66220"
+        "05-fabric-merge-base": "a223944ee946bf696dbfbbf96e3fe8d86eafbf3a39d6dc47850ec9ceaffb4db7",
+        "06-verify-gate-told-command": "141b2e1d688c06457cbd4db806cf7ae1c373af8d0472447343b6dcee5114c088",
+        "07-recipe-vocabulary": "9d7855041fd301099ae29b0128e925a1da7eadf28ab8265b5020f2859c255285",
+        "08-darn-config": "e061c1459fa797629ead22a4002d7f78ee145c1f3b8362cf84183180d9631ce1",
+        "09-darn-stencil-and-spec": "b04c8d54c38dbcf8835cae026667f22afda5b418c4f23201831b6f0a7fd7c74e"
       },
       "startSha": "af89448afbc5546437e2fc38677d6bd54a67efe2",
       "kind": "fork",
       "spawnedAt": "2026-10-10T15:49:06Z",
       "sessionId": "8381d0ae-383e-4d1b-bed9-9cee07a1609b",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-fabric-merge-base",
+        "status": "done",
+        "head_sha": "595473ad89a088b3f7571383e5a22e01f3d225f3",
+        "deviations": [
+          "internal/gitrepo/doc.go",
+          "internal/battencli/wire_seams_test.go",
+          "internal/landingshed/deps.go",
+          "internal/landingshed/publish_verify_test.go",
+          "internal/shedrecipe/recipe.go",
+          "internal/shedrecipe/fixture_test.go",
+          "internal/loomcli/sharedbootstrap.go",
+          "internal/loomcli/arm.go",
+          "internal/loomcli/landingdeps.go",
+          "internal/loomshed/verifygate.go",
+          "internal/webstercli/verify_parity_integration_test.go",
+          "internal/fabricengine/warpforward.go",
+          "internal/darnengine/config.go",
+          "internal/darnengine/spec.go"
+        ]
+      },
+      "cardShas": [
+        "595473ad89a088b3f7571383e5a22e01f3d225f3"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quick-recipe/8381d0ae-383e-4d1b-bed9-9cee07a1609b/subagents/agent-a4f7330ab94b7aadb.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quick-recipe/8381d0ae-383e-4d1b-bed9-9cee07a1609b/subagents/agent-a4f7330ab94b7aadb.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quick-recipe/e67c9a3b-6efc-4de8-ad4b-f411b2b012bc/subagents/agent-a4797b1dac76dd596.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quick-recipe/e67c9a3b-6efc-4de8-ad4b-f411b2b012bc/subagents/agent-a4797b1dac76dd596.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quick-recipe/8381d0ae-383e-4d1b-bed9-9cee07a1609b/subagents/agent-a4f7330ab94b7aadb.jsonl"
   ],
   "auditDispositions": {
     "accepted:batch-01:1": "warned",

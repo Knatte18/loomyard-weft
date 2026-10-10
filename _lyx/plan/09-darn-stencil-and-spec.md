@@ -2,13 +2,13 @@
 
 **Create:**
 - `contracts/stencils/darn/darn-template-write.md`
-- `plan:contracts/stencils#DarnTemplateWrite` -> `var DarnTemplateWrite []byte`
-- `plan:internal/darnengine#darnStencilName` -> `const darnStencilName = "darn-template-write"`
-- `plan:internal/darnengine#darnRole` -> `const darnRole = "darn"`
-- `plan:internal/darnengine#darnSkills` -> `var darnSkills = []string{"scribe:prose", "scribe:code-quality"}`
-- `plan:internal/darnengine#noneToken` -> `const noneToken = "(none)"`
-- `plan:internal/darnengine#DarnInputs` -> `type DarnInputs struct`
-- `plan:internal/darnengine#DarnSpec` -> `func DarnSpec(in DarnInputs, cfg Config, reg modelspec.Registry) (shuttleengine.Spec, error)`
+- `contracts/stencils#DarnTemplateWrite`
+- `internal/darnengine#darnStencilName`
+- `internal/darnengine#darnRole`
+- `internal/darnengine#darnSkills`
+- `internal/darnengine#noneToken`
+- `internal/darnengine#DarnInputs`
+- `internal/darnengine#DarnSpec`
 - `internal/darnengine/spec_test.go`
 
 **Edit:**

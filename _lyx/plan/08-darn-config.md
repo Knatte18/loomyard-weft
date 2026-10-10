@@ -3,12 +3,12 @@
 **Create:**
 - `internal/darnengine/doc.go`
 - `internal/darnengine/template.yaml`
-- `plan:internal/darnengine#configTemplate` -> `var configTemplate string`
-- `plan:internal/darnengine#ConfigTemplate` -> `func ConfigTemplate() string`
-- `plan:internal/darnengine#Config` -> `type Config struct`
-- `plan:internal/darnengine#LoadConfig` -> `func LoadConfig(baseDir, module string) (Config, error)`
-- `plan:internal/darnengine#verifyWayForward` -> `const verifyWayForward = "run \"lyx config darn --set verify=<command>\" from the prime, then \"lyx loom resume\""`
-- `plan:internal/darnengine#VerifyCommand` -> `func VerifyCommand(baseDir string) (string, error)`
+- `internal/darnengine#configTemplate`
+- `internal/darnengine#ConfigTemplate`
+- `internal/darnengine#Config`
+- `internal/darnengine#LoadConfig`
+- `internal/darnengine#verifyWayForward`
+- `internal/darnengine#VerifyCommand`
 - `internal/darnengine/config_test.go`
 
 **Edit:**

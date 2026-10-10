@@ -1,8 +1,8 @@
 # Card 5 — fabric-merge-base
 
 **Create:**
-- `plan:internal/gitrepo#Repo.MergeBase` -> `func (r *Repo) MergeBase(a, b string) (string, error)`
-- `plan:internal/fabricengine#Fabric.MergeBase` -> `func (f *Fabric) MergeBase(ref string) (string, error)`
+- `internal/gitrepo#Repo.MergeBase`
+- `internal/fabricengine#Fabric.MergeBase`
 
 **Edit:**
 - `internal/gitrepo/ancestry_test.go`
