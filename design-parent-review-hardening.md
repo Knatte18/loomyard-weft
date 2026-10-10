@@ -18,4 +18,5 @@ The parent-review gate holds its promises in the cases the first version left op
 - **Entry order.** `shedrecipe` does not require `parent-review` to be the gate list's last entry; a must-pass entry after it would be `not_reached` at a deadline finalize while the review is pending.
 - **`delivered` after a verdict** can write `delivery.json` after the discussion commit and leave `_lyx` dirty until the next status commit.
 - **Round numbers** grow on every fresh spawn with no reviewer (empty `round-N/`, never committed).
+- **A rewrite after a parent reject goes unreviewed.** In `daemon-wakeups` (2026-10-10) the orch rejected the Discussion once, the parent-review cap was then reached, and the rewrite went on to Plan with no parent review; a rewrite after a reject always gets one more parent review, or reaching the cap escalates instead of passing silently.
 - **Review scope.** The brief says "Do not re-review the design's internal quality", narrower than millhouse's `orch-review`; confirm with the operator.
