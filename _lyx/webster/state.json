@@ -1074,9 +1074,9 @@
       }
     }
   ],
-  "currentBatch": 0,
-  "masterStrand": "b2d5922caa66e3f4babc32ddd55c6d05",
-  "masterSessionId": "08326b93-c92f-494e-9138-c671cce1e474",
+  "currentBatch": 6,
+  "masterStrand": "5c22230428022e32cdafd47073ba6706",
+  "masterSessionId": "143f4fc0-509f-4ad6-be6b-62362a043089",
   "batches": {
     "1": {
       "slug": "fixture-git-marker",
@@ -1120,6 +1120,23 @@
       "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/test-suite-weight/.lyx/shuttle/777456ae693b63cfc488437b6193c8e3",
       "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/test-suite-weight/.lyx/shuttle/777456ae693b63cfc488437b6193c8e3/events.jsonl",
       "eventsOffset": 1599
+    },
+    "6": {
+      "slug": "tmuxkit-package-server",
+      "cards": [
+        "06-tmuxkit-package-server",
+        "07-tmuxkit-private-tmpdir-leftovers"
+      ],
+      "cardHashes": {
+        "06-tmuxkit-package-server": "216770486c311891eb77f25541ebba0ab53a394ee02c19e7ec0fba8bacaf32a4",
+        "07-tmuxkit-private-tmpdir-leftovers": "88f1bf609644aa88ebe006663e5f7cc3dc36f4f4ceb28c6a34c8ae2df9ac7e82"
+      },
+      "startSha": "f4c8a9103d9b9af3e4ab3eef1c2b115a33a9ccdf",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T09:43:14Z",
+      "sessionId": "143f4fc0-509f-4ad6-be6b-62362a043089",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
