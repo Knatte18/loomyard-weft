@@ -1,9 +1,9 @@
 # Card 9 — hermetic-reed-servers
 
 **Create:**
-- `plan:internal/reedengine#Engine.serverSpawnArgv` -> `func (e *Engine) serverSpawnArgv(goos string, debugArgs []string) []string`
-- `plan:internal/reedengine#resolveShellPath` -> `func resolveShellPath(shell string) (string, error)`
-- `plan:internal/reedengine#shellOptionArgvs` -> `func shellOptionArgvs(target, shellPath string) [][]string`
+- `internal/reedengine#Engine.serverSpawnArgv`
+- `internal/reedengine#resolveShellPath`
+- `internal/reedengine#shellOptionArgvs`
 - `internal/reedengine/serverconfig_integration_test.go`
 
 **Edit:**
@@ -23,7 +23,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/testkit/tmuxkit#ConfigText`
+- `internal/testkit/tmuxkit#ConfigText`
 
 **Intent:**
 Decision D7: reed's own servers read no `~/.tmux.conf`, and strand panes start non-login shells.

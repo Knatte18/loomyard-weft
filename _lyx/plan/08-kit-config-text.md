@@ -1,7 +1,7 @@
 # Card 8 — kit-config-text
 
 **Create:**
-- `plan:internal/testkit/tmuxkit#ConfigText` -> `func ConfigText(shell string) string`
+- `internal/testkit/tmuxkit#ConfigText`
 
 **Edit:**
 - `internal/testkit/tmuxkit#serverConfig`

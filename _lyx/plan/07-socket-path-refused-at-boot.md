@@ -1,11 +1,11 @@
 # Card 7 — socket-path-refused-at-boot
 
 **Create:**
-- `plan:internal/reedengine#socketBaseFromEnv` -> `func socketBaseFromEnv() string`
-- `plan:internal/reedengine#socketDirUnder` -> `func socketDirUnder(base string) string`
-- `plan:internal/reedengine#resolvedSocketDir` -> `func resolvedSocketDir() string`
-- `plan:internal/reedengine#unixSocketPathLimit` -> `func unixSocketPathLimit(goos string) int`
-- `plan:internal/reedengine#checkSocketPathLength` -> `func checkSocketPathLength(dir, key string, limit int) error`
+- `internal/reedengine#socketBaseFromEnv`
+- `internal/reedengine#socketDirUnder`
+- `internal/reedengine#resolvedSocketDir`
+- `internal/reedengine#unixSocketPathLimit`
+- `internal/reedengine#checkSocketPathLength`
 
 **Edit:**
 - `internal/reedengine#socketDirFromEnv`

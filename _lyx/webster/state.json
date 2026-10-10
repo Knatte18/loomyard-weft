@@ -1,6 +1,6 @@
 {
   "runGuid": "bf42c2b6170726942b8b9049bb54130b",
-  "planFingerprint": "287b83a24fbb2907ab543b03a72b48dc8bc60f97ff7f60cfaafc8bd0c6c696c8",
+  "planFingerprint": "021d9236a3e0131d6e5271a1e08f59b55b3b03388bc9eba67395eacc8b4dae7d",
   "planFileHashes": {
     "00-overview.md": "87dcfcade8c26037bbd7d23defff5d00a76f5dec1baa8a78e41dbd7adab5eec8",
     "01-logger-debug-at-debug-verbosity.md": "6b80ce81593a1ce3cc72f17cd65648c7549322313960c56dcfbba2f8322a4b51",
@@ -9,10 +9,10 @@
     "04-daemon-engines-use-told-tmux.md": "71b0feec9f4c759afc8be291e970c92a5d621022f23320ed80f82bee841afbac",
     "05-poll-mode-backoff.md": "38a38bfaf3b5517ca0e074e137ef7469055ecc47669c730ca53a767c238d9dd5",
     "06-drop-ticker-period.md": "31e610211e7b521c7e3e30a251cebb16ca69af2a21a1ad519904bef90fea38f6",
-    "07-socket-path-refused-at-boot.md": "958f59c01983def16d728a3f7d828370b850cb5f897ea794fba5f1574ee6a90e",
-    "08-kit-config-text.md": "aadb7f41a6740c06d9f9f6b63648dce45e1ca56a6c02cac5d0167687e18899e1",
-    "09-hermetic-reed-servers.md": "76c48f82335638d6957e5a109fe4de2dd91d8d2d90c4875b2e9e035c6b3a3fb0",
-    "10-resize-signal-entry-at-boot.md": "16172c1ad9b4e39275fcb20662873d45e2adae59f32c996233aa565be6b46595",
+    "07-socket-path-refused-at-boot.md": "7290807e6a1cef3257b2d13f2476cad7b86e67ee2d2df4c0e248e3d9e266010c",
+    "08-kit-config-text.md": "62e10da6fd70bf423ee6b5386c3d62fa6324535733fa4642051a4e265e7b6cd0",
+    "09-hermetic-reed-servers.md": "f1495b9bb6dc730a6f84a2b094e2378c2d6667d33a5b8b6be671dfb74f9a20ce",
+    "10-resize-signal-entry-at-boot.md": "d3515d777b09a0825f33597143e33028bcd94fdae4049b880a224d22a22fb86b",
     "11-benchmark-rerun.md": "68c3caf9b01280b82a6dc2b72aafdce99c08fb5bf3515dff3d61f181aa112eed"
   },
   "planOverviewFrameHash": "15e9c4923b35746c785b78871607d27f2b1e2aad26dfe56c0a2d272f3c1c604a",
@@ -231,7 +231,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "8fb083fccc333657659e0de9c4933673",
   "masterSessionId": "d71dfee7-7253-43bf-9929-8b9f8ea97558",
   "batches": {
@@ -287,21 +287,39 @@
         "11-benchmark-rerun"
       ],
       "cardHashes": {
-        "07-socket-path-refused-at-boot": "958f59c01983def16d728a3f7d828370b850cb5f897ea794fba5f1574ee6a90e",
-        "08-kit-config-text": "aadb7f41a6740c06d9f9f6b63648dce45e1ca56a6c02cac5d0167687e18899e1",
-        "09-hermetic-reed-servers": "76c48f82335638d6957e5a109fe4de2dd91d8d2d90c4875b2e9e035c6b3a3fb0",
-        "10-resize-signal-entry-at-boot": "16172c1ad9b4e39275fcb20662873d45e2adae59f32c996233aa565be6b46595",
+        "07-socket-path-refused-at-boot": "7290807e6a1cef3257b2d13f2476cad7b86e67ee2d2df4c0e248e3d9e266010c",
+        "08-kit-config-text": "62e10da6fd70bf423ee6b5386c3d62fa6324535733fa4642051a4e265e7b6cd0",
+        "09-hermetic-reed-servers": "f1495b9bb6dc730a6f84a2b094e2378c2d6667d33a5b8b6be671dfb74f9a20ce",
+        "10-resize-signal-entry-at-boot": "d3515d777b09a0825f33597143e33028bcd94fdae4049b880a224d22a22fb86b",
         "11-benchmark-rerun": "68c3caf9b01280b82a6dc2b72aafdce99c08fb5bf3515dff3d61f181aa112eed"
       },
       "startSha": "594297e9d759e8b3cd6164f472ba477826ebb46e",
       "kind": "fork",
       "spawnedAt": "2026-10-10T16:12:16Z",
       "sessionId": "d71dfee7-7253-43bf-9929-8b9f8ea97558",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-socket-path-refused-at-boot",
+        "status": "done",
+        "head_sha": "d6edcfbdd4c1e105e9f29078fbdb03396b69bad5",
+        "deviations": [
+          "internal/reedengine/zoom.go"
+        ]
+      },
+      "cardShas": [
+        "d6edcfbdd4c1e105e9f29078fbdb03396b69bad5"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-hygiene/d71dfee7-7253-43bf-9929-8b9f8ea97558/subagents/agent-acd42c338de1b7c2e.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-hygiene/d71dfee7-7253-43bf-9929-8b9f8ea97558/subagents/agent-acd42c338de1b7c2e.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-hygiene/d71dfee7-7253-43bf-9929-8b9f8ea97558/subagents/agent-aa48d1836cca79074.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-hygiene/d71dfee7-7253-43bf-9929-8b9f8ea97558/subagents/agent-aa48d1836cca79074.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-hygiene/d71dfee7-7253-43bf-9929-8b9f8ea97558/subagents/agent-acd42c338de1b7c2e.jsonl"
   ]
 }
