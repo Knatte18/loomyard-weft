@@ -1153,6 +1153,7 @@
         "burler"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "Move the roles that only steer or rule on a fixed question, the loom driver and the Bouncer judge, to Haiku 5.5 where a trial run shows it holds",
