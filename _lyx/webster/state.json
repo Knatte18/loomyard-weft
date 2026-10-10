@@ -375,9 +375,9 @@
       }
     }
   ],
-  "currentBatch": 0,
-  "masterStrand": "5e896c8eda5f757cb8f4dc06f750d828",
-  "masterSessionId": "958e9658-b395-406d-838c-6375899e0c47",
+  "currentBatch": 9,
+  "masterStrand": "2ee651ecfc03a68f5c2ff0f0ca61f5ec",
+  "masterSessionId": "51aa2a9c-200a-4737-96be-412c05352663",
   "batches": {
     "1": {
       "slug": "fswatch-leaf",
@@ -472,29 +472,12 @@
       },
       "startSha": "2e5940f992557e6680121f8bf1168c92d5ee41c2",
       "kind": "fork",
-      "spawnedAt": "2026-10-10T06:18:57Z",
-      "sessionId": "958e9658-b395-406d-838c-6375899e0c47",
-      "terminal": true,
-      "status": "failed",
-      "digest": {
-        "batch": "09-orch-held-injection-log",
-        "status": "failed",
-        "head_sha": "7437e1029ce52092264e43515674f5cdaca02ba8",
-        "reasons": [
-          "webster: fabric-reference violation in \"/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-daemon-wakeups/958e9658-b395-406d-838c-6375899e0c47/subagents/agent-a7d4a4f2e31294b03.jsonl\": ran a fabric-referencing command (\"sed -n 1,60p docs/benchmarks/haiku-5-5.md; which tmux lyx go gcc pgrep; nproc; uname -srm; cat deploy-dev | head -30; lyx fabric clone --help 2\u003e\u00261 | head -30; lyx reed watchdog --help 2\u003e\u00261 | head -30\") that can rewrite run state — an implementer fork must never touch the fabric repo directly",
-          "webster: fabric-reference violation in \"/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-daemon-wakeups/958e9658-b395-406d-838c-6375899e0c47/subagents/agent-a7d4a4f2e31294b03.jsonl\": ran a fabric-referencing command (\"lyx fabric clone --help 2\u003e\u00261 | sed -n 30,80p; cat _lyx/fabric/origin.json; ls /home/knatte/Code/loomyard-LYXHUB; git remote -v | head -3\") that can rewrite run state — an implementer fork must never touch the fabric repo directly",
-          "webster: fabric-reference violation in \"/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-daemon-wakeups/958e9658-b395-406d-838c-6375899e0c47/subagents/agent-a7d4a4f2e31294b03.jsonl\": ran a fabric-referencing command (\"cd /home/knatte/Code/loomyard-LYXHUB \u0026\u0026 git -C loomyard-weft remote get-url origin; timeout 30 git ls-remote --heads \\\"$(git -C loomyard-weft remote get-url origin)\\\" 2\u003e\u00261 | head -3; sed -n 1,60p daemon-wakeups/tools/deploy/main.go | head -80; ls daemon-wakeups/.dev-bin 2\u003e/dev/null | head\") that can rewrite run state — an implementer fork must never touch the fabric repo directly",
-          "webster: fabric-reference violation in \"/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-daemon-wakeups/958e9658-b395-406d-838c-6375899e0c47/subagents/agent-a7d4a4f2e31294b03.jsonl\": ran a fabric-referencing command (\"cd /tmp \u0026\u0026 lyx fabric add --help 2\u003e\u00261 | head -50; lyx reed up --help 2\u003e\u00261 | head -30\") that can rewrite run state — an implementer fork must never touch the fabric repo directly"
-        ]
-      },
+      "spawnedAt": "2026-10-10T06:58:15Z",
+      "sessionId": "51aa2a9c-200a-4737-96be-412c05352663",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-daemon-wakeups/958e9658-b395-406d-838c-6375899e0c47/subagents/agent-a7d4a4f2e31294b03.jsonl"
-      ],
-      "uncheckable": [
-        "fabric-reference: ran a fabric-referencing command (\"sed -n 1,60p docs/benchmarks/haiku-5-5.md; which tmux lyx go gcc pgrep; nproc; uname -srm; cat deploy-dev | head -30; lyx fabric clone --help 2\u003e\u00261 | head -30; lyx reed watchdog --help 2\u003e\u00261 | head -30\") that can rewrite run state — an implementer fork must never touch the fabric repo directly",
-        "fabric-reference: ran a fabric-referencing command (\"lyx fabric clone --help 2\u003e\u00261 | sed -n 30,80p; cat _lyx/fabric/origin.json; ls /home/knatte/Code/loomyard-LYXHUB; git remote -v | head -3\") that can rewrite run state — an implementer fork must never touch the fabric repo directly",
-        "fabric-reference: ran a fabric-referencing command (\"cd /home/knatte/Code/loomyard-LYXHUB \u0026\u0026 git -C loomyard-weft remote get-url origin; timeout 30 git ls-remote --heads \\\"$(git -C loomyard-weft remote get-url origin)\\\" 2\u003e\u00261 | head -3; sed -n 1,60p daemon-wakeups/tools/deploy/main.go | head -80; ls daemon-wakeups/.dev-bin 2\u003e/dev/null | head\") that can rewrite run state — an implementer fork must never touch the fabric repo directly",
-        "fabric-reference: ran a fabric-referencing command (\"cd /tmp \u0026\u0026 lyx fabric add --help 2\u003e\u00261 | head -50; lyx reed up --help 2\u003e\u00261 | head -30\") that can rewrite run state — an implementer fork must never touch the fabric repo directly"
       ]
     }
   },
