@@ -196,6 +196,12 @@ Decision: Plan settles round 3's F1-F6 as stated: (F1) teardown and a dead loop 
 
 Rationale: Three Discussion rounds each found new process-lifetime detail in the same area while the design's goal and scope held; the fixes are stated precisely enough to plan and test, so a fourth round would add cost without changing the design.
 
+### Added after Discussion (parent, 2026-10-10): Teardown mark survives dead-loop stops
+
+Decision: Card 12's deadLoopStop keeps a pid file whose record names the teardown as its loop id instead of retiring it, and writes no loop envelope over it, so every invocation until RemovePair stops loop-exited and spawns nothing; card 18 states the mark survives every dead-loop stop; TestUntilStop_DeadLoopStopsLoopExited gains rows for the waiter on the teardown-held lock and for a second and third invocation over the mark.
+
+Rationale: Plan round 4 MEDIUM F1, the review's own first fix; accepted at budget rather than a fifth round.
+
 ## Constraints
 
 - PATTERN overview cap (added by the parent, 2026-10-10): every card that adds or edits a `PATTERN.md` overview line keeps the overview at most 16200 bytes on the task branch, under its 16384-byte cap; added text is offset by shortening wording in the same or another overview line, with detail moved into the `pattern/` background file, and no invariant is dropped.
