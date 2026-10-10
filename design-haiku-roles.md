@@ -1,6 +1,6 @@
 # Haiku 5.5 for the light roles: driver and judge
 
-`haiku-roles` · Note · enhancement, config, loom, burler
+`haiku-roles` · Note · enhancement, config, loom, burler · 
 
 ## Seen
 
