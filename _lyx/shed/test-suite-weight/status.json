@@ -48,6 +48,20 @@
       "output": "child paused → running at Plan-Bouncer",
       "at": "2026-10-10T08:24:51Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at Plan-Bouncer",
+      "at": "2026-10-10T09:09:32Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at Plan-Bouncer",
+      "at": "2026-10-10T09:10:08Z",
+      "budget_exempt": true
     }
   ]
 }
