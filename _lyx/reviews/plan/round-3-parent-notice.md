@@ -1,0 +1,1 @@
+Review segment of task `bolt-and-store` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/bolt-and-store/_lyx/reviews/plan/round-3-escalation.md` with a one-shot fork.
