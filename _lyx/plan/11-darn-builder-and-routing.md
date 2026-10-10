@@ -10,6 +10,7 @@
 **Edit:**
 - `internal/loomrecipe/doc.go`
 - `internal/loomrecipe/interruptpolicy_meta_test.go`
+- `internal/loomrecipe/recipe_test.go`
 - `internal/loomshed#InterruptPolicies`
 - `internal/loomshed/interruptpolicy_test.go`
 - `internal/shedrecipe#Env`
@@ -24,9 +25,12 @@
 no review budget applies, since the recipe has no review segment.
 `DarnRouting` projects `recipes.DarnRecipe` through `shedbuild.RoutingOf` and reads no budget, so `goto` is never refused by it.
 `InterruptPolicies` gains `NameDarn` with `InterruptPolicyReinvoke`, since the single-session adapter re-attaches.
-Tests: `darnrecipe_test.go` builds the recipe from `envkit.FullEnv` and pins the row order, engines and producer types against a darn row table, that every row has an interrupt policy, that `PR-Gate`'s on_stuck resolves to `Darn` inside segment `PR-Review`, that the structural check has no findings, that the built `Darn` row's `verify` gate carries `DarnVerifyAttempts` as its attempts, and that a budget below 1 is refused with the recorded way forward before any row builds;
-the interrupt-policy meta test unions the rows of `New` and `NewDarn` in both directions;
+Tests: `darnrecipe_test.go` builds the recipe from `envkit.FullEnv` and pins the row order, engines and producer types against a darn row table, that `PR-Gate`'s on_stuck resolves to `Darn` inside segment `PR-Review`, that the built `Darn` row's `verify` gate carries `DarnVerifyAttempts` as its attempts, and that a budget below 1 is refused with the recorded way forward before any row builds;
+`TestRecipe_StructuralCheckHasNoFindings` becomes a table over the two embedded recipes, `recipes.LoomRecipe` and `recipes.DarnRecipe`;
+the interrupt-policy meta test unions the rows of `New` and `NewDarn` in both directions, which is the darn rows' interrupt-policy coverage;
 `FullEnv` sets `DarnVerifyAttempts: 3`.
-The verified-tree background's site list gains the Darn gate, the refusal spec gains the row `darn.yaml: verify_attempts below 1`, and the loomrecipe doc describes the second builder and its stamped budget.
+The verified-tree background's opening names the told verify command, the plan's in a loom run and `darn.yaml`'s in a darn run, in place of the plan's alone, and its `publish_verify` clause names that told command as `BaseCommand`;
+its site list gains the Darn gate.
+The refusal spec gains the row `darn.yaml: verify_attempts below 1`, and the loomrecipe doc describes the second builder and its stamped budget.
 
 **ImpactSummary:** One new `Env` field and the closed interrupt-policy table gains one row; loom's builder and routing are untouched.
