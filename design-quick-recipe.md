@@ -1,6 +1,6 @@
 # Darn recipe: one producer, then the usual PR; shared Publish, Finalize and teardown fixes
 
-`quick-recipe` · Task · feature, bug, loom, shed, batten, fabric, board · running · Loom-Preflight
+`quick-recipe` · Task · feature, bug, loom, shed, batten, fabric, board · running · Discussion-Write
 
 Depends on: [`driver-context`](design-driver-context.md)
 
