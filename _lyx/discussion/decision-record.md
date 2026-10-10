@@ -190,6 +190,12 @@ Decision: The step-idle watchdog's activity source counts activity from every se
 
 Rationale: Run discussion-multi-llm moves Discussion-Write onto MultiLLMProducer with a chair and advisors; a watchdog reading one producer strand would see a working Discussion as idle while advisors answer.
 
+### Added after Discussion (parent, 2026-10-10): Loop process lifetime: settle round-3 findings at Plan
+
+Decision: Plan settles round 3's F1-F6 as stated: (F1) teardown and a dead loop kill the step's whole recorded process group, gated on the loop's start time and the held loop lock rather than the group leader's, and the teardown and loop-killed acceptance rows assert that a grandchild of the step is dead; (F2) on Windows the kill uses a creation time read through GetProcessTimes added to internal/proc, or a named job object the teardown terminates, with its bound against pid reuse stated; (F3) the loop is spawned with proc.DetachBreakaway on Windows; (F4) a waiter retires the envelope it prints, and the currency check includes the status file's state, so an envelope recorded at a halt is stale once the file reads running; (F5) a dead-loop stop that ends busy keeps the pid file and writes no envelope, so the next invocation retries it; (F6) the loop is gone only when the loop lock is free and no envelope exists.
+
+Rationale: Three Discussion rounds each found new process-lifetime detail in the same area while the design's goal and scope held; the fixes are stated precisely enough to plan and test, so a fourth round would add cost without changing the design.
+
 ## Constraints
 
 - PATTERN overview cap (added by the parent, 2026-10-10): every card that adds or edits a `PATTERN.md` overview line keeps the overview at most 16200 bytes on the task branch, under its 16384-byte cap; added text is offset by shortening wording in the same or another overview line, with detail moved into the `pattern/` background file, and no invariant is dropped.
