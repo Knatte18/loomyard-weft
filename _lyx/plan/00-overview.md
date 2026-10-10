@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -20,7 +20,7 @@ The plan stencil's scope-addition instruction, the orch role's escalation list, 
 1 — midmerge-record-fields — MidMerge answers a parked record's verb, source and SHAs
 2 — config-changes-three-way — ReadConfigChanges intersects the fork-point diff with the parent-tip diff; the notice names the parent tip
 3 — publish-verify-failed-fix-route — a recorded Publish verify failure names the Webster-Burler goto; spec row and orch escalation item
-4 — conflict-role-export — export mergeresolve's conflict role constant
+4 — conflict-role-export — export mergeresolve's conflict role constant; agentname recognises a role's numbered forms
 5 — landing-pre-merge-clear — Publish and Finalize stop their run's conflict session, abort their own parked merge-in and merge afresh; other merge state stops Stuck with its way forward
 6 — resume-start-own-leftover — resume and start proceed over the row's own parked merge-in at Publish or Finalize
 7 — decision-add-refuses-task-session — decision add refuses both labels from a named session other than the recorded parent; plan stencil asks the parent instead
