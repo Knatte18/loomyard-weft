@@ -319,7 +319,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "90f61a6cdf3575bd47829fe28df5e00c",
   "masterSessionId": "d17934b3-89a3-4074-89b2-986ee3939957",
   "batches": {
@@ -409,6 +409,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-stability/d17934b3-89a3-4074-89b2-986ee3939957/subagents/agent-a45450ffc154a2fac.jsonl"
       ]
+    },
+    "8": {
+      "slug": "implementer-allowed-commands",
+      "cards": [
+        "08-implementer-allowed-commands",
+        "09-build-constraint-partition-classifier",
+        "10-status-policies-read-the-classifier",
+        "11-done-check-details-carry-the-lookup",
+        "12-answer-symbols-read-the-classifier",
+        "13-rename-old-side-partitioned"
+      ],
+      "cardHashes": {
+        "08-implementer-allowed-commands": "5be743840e2114b8d12b8378f6f91e76476b464ce83b618a208d1ce49195a96b",
+        "09-build-constraint-partition-classifier": "63a0e3cdd80b683b60eb1b73f616813340030c5e8f7e80b19df4f1635ab248e3",
+        "10-status-policies-read-the-classifier": "8d5b1e4310182f4fed55aa0d33dd32758610b44ab03b630ddef761f01ec43496",
+        "11-done-check-details-carry-the-lookup": "13d5f1c5f55c4eda85f0eefa91608c527f8e728a2cb0f72a20a51b38afa45c7b",
+        "12-answer-symbols-read-the-classifier": "ca98b09af1388703b1656602aad173789ca12070bf104dd6cc6a62cd8acadeb7",
+        "13-rename-old-side-partitioned": "b53868dbf1e9df059bf0e46e9f8709be2b58a1557922cb25039ec0301eb51eb4"
+      },
+      "startSha": "aee4414e1841016b0bbbba5aef5b731d75bb40df",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T18:27:17Z",
+      "sessionId": "d17934b3-89a3-4074-89b2-986ee3939957",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
