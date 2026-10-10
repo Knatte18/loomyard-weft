@@ -1,6 +1,6 @@
 # Discussion-Write on MultiLLMProducer: a chair writes, advisors answer
 
-`discussion-multi-llm` · Task · feature, loom, stencil, shed · running · Finalize
+`discussion-multi-llm` · Task · feature, loom, stencil, shed · done
 
 Depends on: [`multi-llm-producer`](design-multi-llm-producer.md), [`gate-test-scope`](design-gate-test-scope.md)
 
