@@ -19,6 +19,8 @@ Held by a run; its scope is locked until the run ends.
    - **Before:** `burler-multi-llm`, `discussion-multi-llm`
 1. **Daemons and wake-ups: event-driven waits, a timely orch reload, recorded revival order** — [`daemon-wakeups`](design-daemon-wakeups.md) · bug, enhancement, reed, orch, shuttle · running · Discussion-Burler
    - A rule that lyx daemons wait on events or second-scale polls (reed watchdog first), the orch watcher reloads right after compaction, reed revives sessions by recorded start time
+1. **Bolt and hub store: seeding without ping-pong, reconcile on a fresh Bolt, gc that stays out of the way** — [`bolt-and-store`](design-bolt-and-store.md) · bug, enhancement, stencil, fabric, config · running · Worktree-Create
+   - Seed stencils forward only and from a pulled Bolt, report failed reconcile pushes, and keep the hub store gc off busy runs and repeat repacks
 
 ### Layer A
 
@@ -40,8 +42,6 @@ Waits on nothing that is not running; next to start.
 1. **CLI surface: a command index for the orch, one help form, intake keeps comments** — [`cli-surface`](design-cli-surface.md) · bug, enhancement, orch, board, selfreport
    - lyx help index injected into the orch, a test-enforced form for Use/Short/Long including board payload keys, and intake that carries issue comments
    - **After:** `gate-test-scope`
-1. **Bolt and hub store: seeding without ping-pong, reconcile on a fresh Bolt, gc that stays out of the way** — [`bolt-and-store`](design-bolt-and-store.md) · bug, enhancement, stencil, fabric, config
-   - Seed stencils forward only and from a pulled Bolt, report failed reconcile pushes, and keep the hub store gc off busy runs and repeat repacks
 
 ### Layer B
 
