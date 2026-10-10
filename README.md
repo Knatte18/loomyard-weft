@@ -48,12 +48,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 7 | **webster: create-not-done check fails on unexported plan targets, killing batches** | [`create-check-unexported`](design-create-check-unexported.md) | webster, quarry |
 | 8 | **webster: fabric-reference audit fails a piped lyx help call inside a compound command** | [`audit-piped-help-call`](design-audit-piped-help-call.md) | webster, fabric |
 | 9 | **webster: a second recovery's prompt marks the first recovery's uncommitted files as not written by this run** | [`recovery-attribution`](design-recovery-attribution.md) | webster |
+| 10 | **loom-recipe.yaml comment misstates PR-Gate's rejection budget; max_bounces never trips** | [`pr-gate-budget-comment`](design-pr-gate-budget-comment.md) |  |
 
 #### Low priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 10 | **Shuttle logs held loop and busy state disagreeing**<br>• In run cli-surface the Webster step trace logged `shuttle: session state disagrees (loop=held, state=busy)` before idle-done; no stop followed. Idea: find whether held and busy can disagree for long, and log which side wins. | `shuttle-state-disagrees` | shuttle |
+| 11 | **Shuttle logs held loop and busy state disagreeing**<br>• In run cli-surface the Webster step trace logged `shuttle: session state disagrees (loop=held, state=busy)` before idle-done; no stop followed. Idea: find whether held and busy can disagree for long, and log which side wins. | `shuttle-state-disagrees` | shuttle |
 
 ### Enhancements
 

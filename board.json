@@ -1275,6 +1275,22 @@
       "isolated": false,
       "brief": "Fan-lab 2026-10-10: a solo opus[medium] reviewer given a kick-start pack (\"read all listed spans first\") read the pack and then explored about 20 more tool calls, so the pack came on top of exploration instead of replacing it; neither the prompt nor the ladder card said to stay with the pack. Idea: the prompt says the pack is the read set and is trusted as read; any read beyond it needs a named gap (a caller or spawned process one hop out), within a small tool-call budget, and the reviewer ends with one line per extra read saying why the pack lacked it (the fork rule from fan-master-preread variant D).",
       "body": ""
+    },
+    {
+      "id": 316,
+      "slug": "pr-gate-budget-comment",
+      "title": "loom-recipe.yaml comment misstates PR-Gate's rejection budget; max_bounces never trips",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        526
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #526](https://github.com/Knatte18/loomyard/issues/526).\n\nWhat happened: a comment in `contracts/recipes/loom-recipe.yaml` says PR-Gate's \"episode Stuck count never resets between rounds, so the budget is five rejection rounds per task\".\n`episodeStuckCount` in `internal/shedengine/run.go` disagrees: a Done by any row in the same segment ends the episode, and `PR-Rework` shares `PR-Review` with `PR-Gate`, so the count resets after every rework and `max_bounces: 5` never trips.\nAn agent trusted the comment and wrote a five-rejection bound into a design, which the review then had to overturn as blocking.\n\nWhy it is abnormal: the documented budget and the engine behaviour contradict each other, and any recipe whose rework row shares the gate's segment inherits the false bound.\n\nWhat to do: fix the comment, or change the engine if a per-task budget was intended.\n\nProvenance: task `quick-recipe`; note burler-discussion-r1.md.\n"
     }
   ]
 }
