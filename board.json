@@ -1349,7 +1349,10 @@
       "title": "Plan review does not check that a prescribed refusal is reachable",
       "kind": "note",
       "labels": [
-        "enhancement"
+        "enhancement",
+        "burler",
+        "stencil",
+        "loom"
       ],
       "issues": [
         516

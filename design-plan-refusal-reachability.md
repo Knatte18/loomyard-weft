@@ -1,6 +1,6 @@
 # Plan review does not check that a prescribed refusal is reachable
 
-`plan-refusal-reachability` · Note · enhancement
+`plan-refusal-reachability` · Note · enhancement, burler, stencil, loom
 
 Imported from [issue #516](https://github.com/Knatte18/loomyard/issues/516).
 
