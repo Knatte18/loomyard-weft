@@ -1,0 +1,529 @@
+{
+  "runGuid": "09c435768177848e47cc3084c4ecf68e",
+  "planFingerprint": "1b1aea239e943981c7e5c1230df66e8adaec5576f7c410f46ec31b3c60e249f8",
+  "planFileHashes": {
+    "00-overview.md": "d13980dbb92488956906b8dd8dc5046595be313b7ce493fb31e58b23a8777395",
+    "01-proc-tied-child.md": "c8e8b273a0582dd07495d0adb302c40ccb0df98fd53c33f22b8d49f8f5f737b3",
+    "02-gatecli-tied-child.md": "571c974a6d1538ef7751b217fe930358efae57dd0a382661729b68b3b92ab75c",
+    "03-shedrun-loop-files.md": "80ea60960173bd26183ab469088cb58ffab5a6f00b386c2cdb3db10c18cb30f1",
+    "04-shedengine-stop-conditions.md": "7f1c85070141ea8cda0235565382d8582810724d8c8317fe7d1a0b392b0ab55f",
+    "05-shedengine-failed-stop.md": "b69ca40f4890ded56323440eab984680bd15d7270f55178c5d768c90030452ce",
+    "06-pause-conditions.md": "e51a5aa7bedffd34282ce27e97994cd5759cb7736484410407dbdd697bc46bf7",
+    "07-step-progress-compact.md": "5eec74ebf34706140f72ce7ea7a53e498faaf4870922ed2444c3334a74eec5dd",
+    "08-pattern-overview-room.md": "0665db4767525d20bc3ddab4ad685c2de0d9eac7b5de09808f7cb6c91efc67cd",
+    "09-interrupted-kind-and-arming-refusal.md": "e2f2e22cbe3fae1c33512a6910957d452606d08c9c4676fba0263b4d44d16778",
+    "10-logger-child-traces.md": "ac0a87d6de16934798c476d4439292ef31e022ec4404b68eafbebdfd08b0f800",
+    "11-loop-body.md": "8ebf1f543de7cb4dc914fcbe184ab4badfe99993627e031654b9459cd28e33d0",
+    "12-loop-detach-wait.md": "1427041fdffbbd787139b0c6309435cae6dcf5887727956cd76a44ecb57d53ff",
+    "13-loop-watchdog.md": "f14d6b5f28115d4fb1dfc2cf49629b689f7e4655ddd0274bef77c776d2af1acb",
+    "14-loom-idle-timeout-key.md": "1d29b871a729929f781de045fd95a8cd98a7fb53bc52cf11ec3c07bf677fef27",
+    "15-loom-arms-loop.md": "1da051f8684721b824f33743bea141d2e9e8326f53f874d20b4e56179f93f2b4",
+    "16-start-keeps-status-strand.md": "acaea145e3870623f58074543a25ded0c27f326765a5f7850a257703957d52c9",
+    "17-driver-stencil-rewrite.md": "f288e5f8d8f86e1abfbfd72f74717d91cedc85e7ed08da52ccdfe00bbc7d23ad",
+    "18-pairteardown-loop.md": "5e22e80e6af1a7355693a54eec7bde13f9baa634dbfd71f53ff219a430498568",
+    "19-plan-gate-findings-file.md": "cb99b907d333bed3834394c563e139f2fce9ed1b11a4927c7072b1fe23f7daa3",
+    "20-stencil-drift-once.md": "368d51287a3cd267fa57f3a511d8afd973e568bbb4ba8863e8ba67c8da254c6b"
+  },
+  "planOverviewFrameHash": "5a282ae36ddc0567982667572d2d3b30918ac311bf16b1c0845f1443de1079a6",
+  "partition": [
+    {
+      "cards": [
+        "01-proc-tied-child",
+        "02-gatecli-tied-child",
+        "03-shedrun-loop-files",
+        "04-shedengine-stop-conditions",
+        "05-shedengine-failed-stop",
+        "06-pause-conditions"
+      ],
+      "profile": "cautious",
+      "estimate": 253936,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54616,
+        "read_union": 65304,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 528,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1572,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/proc": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/proc": 2000
+            },
+            "messages": 92,
+            "written": 28128
+          },
+          {
+            "card": 2,
+            "card_text": 348,
+            "reads": {
+              "file:internal/gatecli/child_linux.go": 156,
+              "file:internal/gatecli/child_unix.go": 600,
+              "file:internal/gatecli/child_windows.go": 864,
+              "file:internal/gatecli/doc.go": 576,
+              "package:internal/gatecli": 2000,
+              "tests:internal/gatecli": 2000
+            },
+            "messages": 51.5,
+            "written": 15798
+          },
+          {
+            "card": 3,
+            "card_text": 324,
+            "reads": {
+              "file:internal/shedrun/doc.go": 324,
+              "file:internal/shedrun/paths_test.go": 1860,
+              "package:internal/shedrun": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 64,
+            "written": 19524
+          },
+          {
+            "card": 4,
+            "card_text": 384,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1572,
+              "file:contracts/specs/loom-status-spec.md": 1956,
+              "file:internal/shedengine/doc.go": 1272,
+              "file:internal/shedengine/goto_test.go": 4752,
+              "file:internal/shedengine/status_test.go": 1188,
+              "file:internal/shedengine/step_test.go": 6924,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/shedengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/shedengine": 2000
+            },
+            "messages": 82.5,
+            "written": 25134
+          },
+          {
+            "card": 5,
+            "card_text": 324,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1572,
+              "file:internal/shedengine/doc.go": 1272,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shedengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shedengine": 2000
+            },
+            "messages": 50,
+            "written": 15324
+          },
+          {
+            "card": 6,
+            "card_text": 408,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1572,
+              "file:contracts/specs/refusal-spec.md": 3624,
+              "file:internal/shedverbs/doc.go": 168,
+              "file:internal/shedverbs/pause_test.go": 1152,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedcli": 2000,
+              "package:internal/shedverbs": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedcli": 2000,
+              "tests:internal/shedverbs": 2000
+            },
+            "messages": 99,
+            "written": 30108
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-step-progress-compact",
+        "08-pattern-overview-room",
+        "09-interrupted-kind-and-arming-refusal",
+        "10-logger-child-traces",
+        "11-loop-body"
+      ],
+      "profile": "cautious",
+      "estimate": 309092,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61616,
+        "read_union": 83820,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 252,
+            "reads": {
+              "file:internal/shedverbs/doc.go": 168,
+              "file:internal/shedverbs/step_test.go": 10860,
+              "package:internal/shedverbs": 2000,
+              "tests:internal/shedverbs": 2000
+            },
+            "messages": 33,
+            "written": 10152
+          },
+          {
+            "card": 8,
+            "card_text": 324,
+            "reads": {
+              "file:PATTERN.md": 1272,
+              "package:.": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 24,
+            "written": 7524
+          },
+          {
+            "card": 9,
+            "card_text": 588,
+            "reads": {
+              "file:PATTERN.md": 1272,
+              "file:contracts/specs/refusal-spec.md": 3624,
+              "file:internal/loomcli/wiring_test.go": 9216,
+              "file:internal/shedverbs/doc.go": 168,
+              "file:pattern/PATTERN-shed-verb-set.md": 516,
+              "package:.": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedcli": 2000,
+              "package:internal/shedverbs": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedcli": 2000,
+              "tests:internal/shedverbs": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 153,
+            "written": 46488
+          },
+          {
+            "card": 10,
+            "card_text": 276,
+            "reads": {
+              "file:internal/logger/sink_test.go": 5988,
+              "file:internal/logger/trace_test.go": 1188,
+              "package:internal/logger": 2000,
+              "tests:internal/logger": 2000
+            },
+            "messages": 34,
+            "written": 10476
+          },
+          {
+            "card": 11,
+            "card_text": 1116,
+            "reads": {
+              "file:PATTERN.md": 1272,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1572,
+              "file:contracts/specs/refusal-spec.md": 3624,
+              "file:docs/overview.md": 8004,
+              "file:internal/shedcli/cli_test.go": 2856,
+              "file:internal/shedverbs/doc.go": 168,
+              "file:pattern/PATTERN-shed-verb-set.md": 516,
+              "package:.": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedcli": 2000,
+              "package:internal/shedverbs": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedcli": 2000,
+              "tests:internal/shedverbs": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 293,
+            "written": 89016
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "12-loop-detach-wait",
+        "13-loop-watchdog",
+        "14-loom-idle-timeout-key",
+        "15-loom-arms-loop",
+        "16-start-keeps-status-strand"
+      ],
+      "profile": "cautious",
+      "estimate": 319030,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68616,
+        "read_union": 70684,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 1224,
+            "reads": {
+              "file:PATTERN.md": 1272,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1572,
+              "file:contracts/specs/refusal-spec.md": 3624,
+              "file:internal/shedverbs/doc.go": 168,
+              "file:pattern/PATTERN-daemon-wakeups.md": 468,
+              "file:pattern/PATTERN-shed-verb-set.md": 516,
+              "package:.": 2000,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedcli": 2000,
+              "package:internal/shedverbs": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedcli": 2000,
+              "tests:internal/shedverbs": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 286.5,
+            "written": 87174
+          },
+          {
+            "card": 13,
+            "card_text": 432,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1572,
+              "file:internal/shedverbs/doc.go": 168,
+              "file:pattern/PATTERN-daemon-wakeups.md": 468,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shedverbs": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shedverbs": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 96.5,
+            "written": 29382
+          },
+          {
+            "card": 14,
+            "card_text": 180,
+            "reads": {
+              "file:internal/loomengine/config_test.go": 5844,
+              "file:internal/loomengine/template.yaml": 300,
+              "package:internal/loomengine": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 31.5,
+            "written": 9630
+          },
+          {
+            "card": 15,
+            "card_text": 468,
+            "reads": {
+              "file:internal/loomcli/cli_test.go": 3168,
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 106,
+            "written": 32268
+          },
+          {
+            "card": 16,
+            "card_text": 276,
+            "reads": {
+              "file:docs/overview.md": 8004,
+              "file:internal/loomcli/smoke_driverstrand_test.go": 3168,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 70,
+            "written": 21276
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "17-driver-stencil-rewrite",
+        "18-pairteardown-loop",
+        "19-plan-gate-findings-file",
+        "20-stencil-drift-once"
+      ],
+      "profile": "cautious",
+      "estimate": 313762,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75616,
+        "read_union": 104460,
+        "cards": [
+          {
+            "card": 17,
+            "card_text": 420,
+            "reads": {
+              "file:contracts/stencils/orch/orch-template-role.md": 1836,
+              "file:contracts/stencils/shed/shed-template-driver.md": 2964,
+              "file:docs/overview.md": 8004,
+              "file:internal/loomcli/driverprompt_test.go": 2220,
+              "file:internal/loomcli/driverspec_test.go": 1344,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "package:contracts/stencils/shed": 2000,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/orch": 2000,
+              "tests:contracts/stencils/shed": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 123.5,
+            "written": 37470
+          },
+          {
+            "card": 18,
+            "card_text": 672,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1572,
+              "file:internal/pairteardown/doc.go": 468,
+              "file:internal/pairteardown/teardown_integration_test.go": 3072,
+              "file:internal/pairteardown/teardown_test.go": 2376,
+              "file:pattern/PATTERN-pair-teardown.md": 108,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/pairteardown": 2000,
+              "package:internal/shedverbs": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/pairteardown": 2000,
+              "tests:internal/shedverbs": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 126.5,
+            "written": 38622
+          },
+          {
+            "card": 19,
+            "card_text": 408,
+            "reads": {
+              "file:internal/loomcli/parity_test.go": 7884,
+              "file:internal/loomcli/validate_test.go": 6468,
+              "file:internal/loomshed/doc.go": 432,
+              "file:internal/loomshed/gatefindings_test.go": 2196,
+              "file:internal/loomshed/gates_test.go": 7560,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 131,
+            "written": 39708
+          },
+          {
+            "card": 20,
+            "card_text": 336,
+            "reads": {
+              "file:internal/stencilstore/doc.go": 180,
+              "file:internal/stencilstore/reconcile_test.go": 5940,
+              "package:internal/stencilstore": 2000,
+              "tests:internal/stencilstore": 2000
+            },
+            "messages": 58.5,
+            "written": 17886
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "aa143fce7f38b5b92946363e7ea2e322",
+  "masterSessionId": "9c21f887-456d-406f-be85-d2457070e9fe",
+  "batches": {
+    "1": {
+      "slug": "proc-tied-child",
+      "cards": [
+        "01-proc-tied-child",
+        "02-gatecli-tied-child",
+        "03-shedrun-loop-files",
+        "04-shedengine-stop-conditions",
+        "05-shedengine-failed-stop",
+        "06-pause-conditions"
+      ],
+      "cardHashes": {
+        "01-proc-tied-child": "c8e8b273a0582dd07495d0adb302c40ccb0df98fd53c33f22b8d49f8f5f737b3",
+        "02-gatecli-tied-child": "571c974a6d1538ef7751b217fe930358efae57dd0a382661729b68b3b92ab75c",
+        "03-shedrun-loop-files": "80ea60960173bd26183ab469088cb58ffab5a6f00b386c2cdb3db10c18cb30f1",
+        "04-shedengine-stop-conditions": "7f1c85070141ea8cda0235565382d8582810724d8c8317fe7d1a0b392b0ab55f",
+        "05-shedengine-failed-stop": "b69ca40f4890ded56323440eab984680bd15d7270f55178c5d768c90030452ce",
+        "06-pause-conditions": "e51a5aa7bedffd34282ce27e97994cd5759cb7736484410407dbdd697bc46bf7"
+      },
+      "startSha": "184648f0d15a09c3d6d0ea6dca464fae950691e5",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T10:48:06Z",
+      "sessionId": "9c21f887-456d-406f-be85-d2457070e9fe",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
