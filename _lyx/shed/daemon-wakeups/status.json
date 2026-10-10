@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "blocked",
-  "error": "Batch 09-orch-held-injection-log: recover-batch refused with needs_fresh; the fork ran fabric-referencing commands (lyx fabric clone/add --help, cat _lyx/fabric/origin.json, git -C loomyard-weft remote get-url origin and ls-remote) that recovery cannot check.",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": "Batch 09-orch-held-injection-log: recover-batch refused with needs_fresh; the fork ran fabric-referencing commands (lyx fabric clone/add --help, cat _lyx/fabric/origin.json, git -C loomyard-weft remote get-url origin and ls-remote) that recovery cannot check."
+    "wait": ""
   },
   "history": [
     {
