@@ -1,0 +1,6 @@
+status: OK
+head_sha: 5819a6f5c48d809e3c4e308ed9c5fcc751f2d91c
+deviations:
+  - internal/boardcli/payload.go
+  - internal/boardcli/cli_test.go
+  - cmd/lyx/testdata/test-budget.yaml

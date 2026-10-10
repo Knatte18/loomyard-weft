@@ -369,7 +369,7 @@
       }
     }
   ],
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "4b1aa1d856e051f187c9536a0790934c",
   "masterSessionId": "3b48aefb-b68c-4aae-941c-ea8eb2256f6e",
   "batches": {
@@ -432,11 +432,29 @@
       "kind": "fork",
       "spawnedAt": "2026-10-10T14:27:44Z",
       "sessionId": "3b48aefb-b68c-4aae-941c-ea8eb2256f6e",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "failed",
+      "digest": {
+        "batch": "06-fabric-form",
+        "status": "failed",
+        "head_sha": "5819a6f5c48d809e3c4e308ed9c5fcc751f2d91c",
+        "reasons": [
+          "webster: fabric-reference violation in \"/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cli-surface/3b48aefb-b68c-4aae-941c-ea8eb2256f6e/subagents/agent-a5d0d1f0ba840bec5.jsonl\": ran a fabric-referencing command (\"for v in \\\"\\\" add list remove checkout pairs reconcile prune cleanup unwire shortname clone status commit push pull sync diff merge merge-in merge-stage; do printf \\\"%s: \\\" \\\"$v\\\"; lyx fabric $v --help --json 2\u003e/dev/null | jq -r .long | wc -c; done\") that can rewrite run state — an implementer fork must never touch the fabric repo directly"
+        ]
+      },
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cli-surface/3b48aefb-b68c-4aae-941c-ea8eb2256f6e/subagents/agent-a5d0d1f0ba840bec5.jsonl"
+      ],
+      "uncheckable": [
+        "fabric-reference: ran a fabric-referencing command (\"for v in \\\"\\\" add list remove checkout pairs reconcile prune cleanup unwire shortname clone status commit push pull sync diff merge merge-in merge-stage; do printf \\\"%s: \\\" \\\"$v\\\"; lyx fabric $v --help --json 2\u003e/dev/null | jq -r .long | wc -c; done\") that can rewrite run state — an implementer fork must never touch the fabric repo directly"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cli-surface/3b48aefb-b68c-4aae-941c-ea8eb2256f6e/subagents/agent-a46df6e2fad4cd7b2.jsonl"
-  ]
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cli-surface/3b48aefb-b68c-4aae-941c-ea8eb2256f6e/subagents/agent-a46df6e2fad4cd7b2.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cli-surface/3b48aefb-b68c-4aae-941c-ea8eb2256f6e/subagents/agent-a5d0d1f0ba840bec5.jsonl"
+  ],
+  "auditDispositions": {
+    "fork:/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cli-surface/3b48aefb-b68c-4aae-941c-ea8eb2256f6e/subagents/agent-a5d0d1f0ba840bec5.jsonl:fabric-reference:1": "failed"
+  }
 }
