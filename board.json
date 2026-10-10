@@ -1305,6 +1305,22 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nOn 2026-10-10 `gofmt -l internal/loomcli/` on main (57243019b) lists `internal/loomcli/bootstrap_test.go` (a trailing blank line), and every test tier passed; the `webster-replan-state` conflict agent noticed it.\nNo test or gate step runs gofmt.\n\n## Idea\n\nAdd a gofmt check (`gofmt -l` over the module must print nothing) to the test suite or the verify gate, and fix the file in the same change."
+    },
+    {
+      "id": 304,
+      "slug": "recover-batch-pathless-finding",
+      "title": "recover-batch treats a pathless fabric-reference finding as a path and fails with ENAMETOOLONG",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        513
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #513](https://github.com/Knatte18/loomyard/issues/513).\n\n## Seen\n\nIn run `cli-surface` (2026-10-10), batch 06 failed `record-batch` on a fabric-reference audit finding whose only `uncheckable` entry is a shell command (`for v in ...; do lyx fabric $v --help --json ...; done`).\n`lyx webster recover-batch 06` then errored with \"websterengine: resolve links in .../fabric-reference: lstat ...: file name too long\".\n`RecoverSpawnOrAttach` (`internal/websterengine/recoverbatch.go:377-378`) passes `prior.Uncheckable` to `contractWritesFor` (`contractevidence.go:136-137`), whose `contractCanon` calls `canonicalPath` (`audit.go:463-485`), which runs `filepath.EvalSymlinks` on the finding text; ENAMETOOLONG is not `ErrNotExist`, so `audit.go:474` returns it.\n\n## Workaround\n\n`lyx webster reset --to batch-start --batch 6`, then `lyx webster accept-audit --batch 6`, then `lyx webster run`, discarding the batch's commits.\n\n## Expected\n\n`contractWritesFor` and `splitContractPaths` skip pathless entries, so recover-batch returns its documented refusal naming `accept-audit --batch NN`.\n"
     }
   ]
 }

@@ -58,6 +58,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 7 | **Master's wait stops waiting on a still-running background shell at a turn end**<br>• A gate run still in a background shell is cut off at a turn end and the run still reports done | [`background-gate-shell-discarded`](design-background-gate-shell-discarded.md) | webster, shuttle |
 | 8 | **Webster Master fixes a verify failure itself instead of spawning the fixer fork**<br>• Master edited and committed a test fix itself; the run-exit audit blocked it as a parent-write | [`master-self-fix`](design-master-self-fix.md) | webster, stencil |
 | 9 | **webster: create-not-done check fails on unexported plan targets, killing batches** | [`create-check-unexported`](design-create-check-unexported.md) | webster, quarry |
+| 10 | **recover-batch treats a pathless fabric-reference finding as a path and fails with ENAMETOOLONG** | [`recover-batch-pathless-finding`](design-recover-batch-pathless-finding.md) |  |
 
 ### Enhancements
 
