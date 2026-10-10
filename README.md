@@ -15,7 +15,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | At | Labels |
 | --- | --- | --- | --- | --- |
-| 1 | **Webster audit and recovery: pathless findings, read-only classifier, rebaseline Stuck** | [`webster-audit-gaps`](design-webster-audit-gaps.md) | Webster-Bouncer | webster, fabric |
+| 1 | **Webster audit and recovery: pathless findings, read-only classifier, rebaseline Stuck** | [`webster-audit-gaps`](design-webster-audit-gaps.md) | Describe | webster, fabric |
 
 #### Normal priority
 
