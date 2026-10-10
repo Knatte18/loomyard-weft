@@ -1,6 +1,6 @@
 # Driver steps in only on trouble: Go loops the steps, context under 100k
 
-`driver-context` · Task · enhancement, shed, stencil, loom, bug · awaiting · Discussion-Bouncer
+`driver-context` · Task · enhancement, shed, stencil, loom, bug · running · Discussion-Bouncer
 
 Depends on: [`daemon-wakeups`](design-daemon-wakeups.md)
 
