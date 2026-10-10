@@ -15,7 +15,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`webster-stability`](design-webster-stability.md) | loom | paused · Batchifier | webster, shuttle, stencil, quarry |
+| 1 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`webster-stability`](design-webster-stability.md) | loom | Batchifier | webster, shuttle, stencil, quarry |
 
 #### Normal priority
 
