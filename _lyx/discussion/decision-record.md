@@ -232,6 +232,12 @@ The board's first expectation says the resume steps follow the boundary before t
 Keeping the typed pointer as the fallback keeps today's behaviour when the hook does not fire or its render fails.
 Keying the skip on a mark the verb writes only after a successful render, not on the recording command's event, which is written whatever the verb does, is what makes the fallback reachable.
 
+### Added after Discussion (parent, 2026-10-10): Batch work never touches the real hub's fabric or remotes
+
+Decision: An implementer that needs a hub to test or measure against builds a sandbox hub under its scratch dir whose origins are local bare repos, and never runs lyx fabric clone/add/remove or any push against the real hub or its GitHub remotes, nor reads the real hub's _lyx/fabric files. Batch 09 is reset to its start and runs fresh under this rule.
+
+Rationale: Batch 09's fork ran fabric commands against the real hub, which recovery cannot check (needs_fresh), and the card 14 fork's lyx fabric add idle-a/b/c pushed stray branches to Knatte18/loomyard and loomyard-weft.
+
 ## Constraints
 
 - `PATTERN-leaf-packages`: `internal/fswatch` is added to the entry with its closed import set.
