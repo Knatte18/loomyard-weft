@@ -1074,7 +1074,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "2853878c0424d54e8d4b663ad5834169",
   "masterSessionId": "c9fab9d0-151f-424c-8602-7d36fe836e3e",
   "batches": {
@@ -1098,8 +1098,25 @@
       "kind": "fork",
       "spawnedAt": "2026-10-10T09:10:54Z",
       "sessionId": "c9fab9d0-151f-424c-8602-7d36fe836e3e",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "failed",
+      "digest": {
+        "batch": "01-fixture-git-marker",
+        "status": "failed",
+        "head_sha": "5e62316cd0179123b13c4c54f104660348845a98",
+        "reasons": [
+          "create-not-done/2-testtiming-resources[blocking]: Create target \"plan:cmd/testtiming#rusageStats\" still does not resolve"
+        ]
+      },
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/c9fab9d0-151f-424c-8602-7d36fe836e3e/subagents/agent-a2db08922bbb89d02.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/c9fab9d0-151f-424c-8602-7d36fe836e3e/subagents/agent-a2db08922bbb89d02.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/c9fab9d0-151f-424c-8602-7d36fe836e3e/subagents/agent-a2db08922bbb89d02.jsonl"
+  ]
 }

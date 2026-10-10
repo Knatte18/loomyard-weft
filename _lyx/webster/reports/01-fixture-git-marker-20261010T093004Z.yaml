@@ -1,0 +1,7 @@
+status: OK
+head_sha: 5e62316cd0179123b13c4c54f104660348845a98
+deviations:
+  - cmd/lyx/spawnobservability_test.go
+  - cmd/testtiming/rusage_linux.go
+  - cmd/testtiming/rusage_other.go
+  - internal/testkit/tmuxkit/tmuxkit_test.go
