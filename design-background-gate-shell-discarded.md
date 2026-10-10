@@ -28,3 +28,21 @@ Task: discussion-multi-llm. Notes: webster-background-shell.md
 
 The shell-wait fault itself (#496) is in the scope of the running task `webster-replan-state`; this note adds the gate-run case, where a cut-off gate tier leaves the run reading as `done`.
 Close it when that run lands if its fix covers a running gate shell.
+
+
+## From issue #509
+
+Imported from [issue #509](https://github.com/Knatte18/loomyard/issues/509).
+
+Webster's wait stopped waiting on a background shell at Master's turn end.
+The shells were `lyx gate test --tags integration` runs, still running when the wait counted the turn end.
+The wait counts the turn end after `background_shell_wait_min` (10 minutes) for a shell only the transcript reports, and at once for one the Stop payload reports when Master's output files exist.
+lyx did not stop the shell; shuttle removed Master's strand on finishing, which killed the session and the shell with it.
+The same note was written for two separate shells in one run, and the run ended `stuck`.
+In a later run the outcome was `done`, so the integration gate result Master was waiting for was never observed either way.
+
+This is abnormal: the run can finish, or be held for the parent, while a verification Master started is still in flight and is then killed unobserved.
+
+What to do: when a shell is still running at a turn end, either keep waiting until it exits or a hard limit, or stop it explicitly and record that its result was discarded, so the outcome does not depend on whether the output files already exist.
+
+Provenance: task `driver-context`; notes `webster-background-shell.md`, `webster-background-shell-2.md`.
