@@ -1275,6 +1275,22 @@
       "isolated": false,
       "brief": "Since f5b5218f7 lyx loom start keeps the status strand on every run; llm-driven runs had removed it, and the driver pane is the run status",
       "body": "## Seen\n\n`driver-context` (f5b5218f7) brought the `loom-status` strand back on llm-driven runs: `lyx loom start` now ensures the status strand on every run, where it used to remove it on an llm-driven one (`internal/loomcli/start.go`, its step 2 and `mustUseLLMDriverArm`).\nRuns started on the new binary, `quick-recipe` and the restarted `cli-surface` (2026-10-10), again show a `loom-status` pane at the top of their window; runs started before it do not.\nThe operator reads a run's state from its driver pane, and llm-driven runs had shown no status pane for a long time.\n\n## Idea\n\nRestore the earlier behaviour: an llm-driven run removes the status strand, and only a go-driven run keeps it.\n"
+    },
+    {
+      "id": 302,
+      "slug": "destructive-verb-confirm",
+      "title": "Destructive no-argument verbs act on a bare invocation",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nIn the #512 incident (2026-10-10) a reviewer probing the CLI ran `lyx fabric unwire` and `lyx board retire-legacy` bare in a task pair; both acted at once, unwiring the pair and deleting legacy board files.\n57243019b closed the route it took (global `--json` never runs a command), but any bare call of these verbs still acts.\n\n## Idea\n\nGive destructive verbs that take no argument (`fabric unwire`, `board retire-legacy`, `board prune`) an explicit confirmation flag, so a bare call prints what it would do and changes nothing."
     }
   ]
 }
