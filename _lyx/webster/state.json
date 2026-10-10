@@ -685,15 +685,5 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-driver-context/9c21f887-456d-406f-be85-d2457070e9fe/subagents/agent-a4552c0f13bfda48e.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-driver-context/9c21f887-456d-406f-be85-d2457070e9fe/subagents/agent-ac256f65544632b6f.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-driver-context/9c21f887-456d-406f-be85-d2457070e9fe/subagents/agent-a17bf221b0f50ead2.jsonl"
-  ],
-  "pendingAuditFindings": [
-    {
-      "id": "9c21f887-456d-406f-be85-d2457070e9fe/parent:parent-write:4",
-      "class": "parent-write",
-      "detail": "Master wrote \"/home/knatte/Code/loomyard-LYXHUB/driver-context/internal/stencilcli/cli_integration_test.go\" — Master may write only its two contract files (outcome.yaml and summary.md); any other write means Master implemented a batch itself or hand-wrote a batch report",
-      "paths": [
-        "/home/knatte/Code/loomyard-LYXHUB/driver-context/internal/stencilcli/cli_integration_test.go"
-      ]
-    }
   ]
 }
