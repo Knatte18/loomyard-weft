@@ -232,6 +232,12 @@ Rationale: Operator, 2026-10-10: the single-agent producer works today and stays
   - discussion-advisors-not-open-map-reconcile-reverts-scalar (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - claims-rows-gofmt-indent (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - The Discussion-Write row builds, with every seat's markers filled, when `discussion_advisors` is empty, has one entry, and has two entries; the chair's inputs cover every advisor output, and the chair is interactive exactly when `discussion_interactive` is set.
