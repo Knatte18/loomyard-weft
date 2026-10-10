@@ -38,6 +38,8 @@ Waits on nothing that is not running; next to start.
 1. **Discussion-Write on MultiLLMProducer: a chair writes, advisors answer** — [`discussion-multi-llm`](design-discussion-multi-llm.md) · feature, loom, stencil, shed
    - Design and build a Discussion-Write whose writer is the chair, with advisors that study the code and answer its design questions live
    - **After:** `multi-llm-producer`, `gate-test-scope`
+1. **CLI surface: a command index for the orch, one help form, intake keeps comments** — [`cli-surface`](design-cli-surface.md) · bug, enhancement, orch, board, selfreport
+   - lyx help index injected into the orch, a test-enforced form for Use/Short/Long including board payload keys, and intake that carries issue comments
 
 ### Layer B
 
@@ -57,9 +59,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - After a hibernate every run raises an idle notice for the whole sleep; the idle clock should skip time the machine was asleep
 1. **Stencil seeding ping-pongs on Bolt: prod-mode binaries overwrite each other's stencils** — [`stencil-seed-ping-pong`](design-stencil-seed-ping-pong.md) · bug, stencil
 1. **fabric reconcile on a stale Bolt: seed commits conflict on push, yet ok:true** — [`reconcile-stale-bolt`](design-reconcile-stale-bolt.md) · bug, fabric, config
-1. **Cobra Use and Short texts follow no common form** — [`cli-help-form`](design-cli-help-form.md) · bug, board
-1. **Board intake drops issue comments** — [`intake-comments`](design-intake-comments.md) · bug, board, selfreport
-   - intake import carries every issue comment into the entry body, not only the issue body
 1. **orch watcher sends the post-compact reload minutes late while the operator chats** — [`orch-reload-late`](design-orch-reload-late.md) · bug, orch
 
 ### Enhancements
@@ -108,7 +107,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Trace files carry only high-level messages and logger.yaml sets no level; add a file log level so most of lyx can be traced on demand
 1. **Haiku 5.5 for the light roles: driver and judge** — [`haiku-roles`](design-haiku-roles.md) · enhancement, config, loom, burler
    - Move the roles that only steer or rule on a fixed question, the loom driver and the Bouncer judge, to Haiku 5.5 where a trial run shows it holds
-1. **lyx help index: a generated one-line command index, injected into the orch only** — [`help-index`](design-help-index.md) · enhancement, orch
 1. **One owner for child-process lifetime in internal/proc** — [`proc-child-lifetime`](design-proc-child-lifetime.md) · enhancement · 
    - Fold lyx gate test's process-group, Pdeathsig and job-object setup into internal/proc beside ConfigureGroupKill
 1. **An abandoned run leaves its board entry locked** — [`abandoned-run-claim`](design-abandoned-run-claim.md) · enhancement, batten, board
