@@ -3,7 +3,7 @@
      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the codebase and the plan once, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lyx/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive. parent_directive is a third optional marker, rendered by internal/parentdirective. edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=62a0516c7e8f8280b2d177edb85a7a3dc20acde2c7ab3a360c62fd4dbf97b5d8 -->
+lyx-stencil: sha256=397230b5ffb94ef3584d7d0fd6ddd95e8a69f5668c969bf5972b146c5f25afbf build=5a8be027428082c91c0d3af16eeacb02fed29eea time=2026-10-10T14:47:02Z -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -57,7 +57,9 @@ Read the trail by status — a resumed session thus picks up exactly where the l
   it is finished and committed.
 - `stuck` → its fork reported stuck and the previous session never finished the recovery: run `lyx webster recover-batch <NN>` for it as the failure ladder below describes, before touching any later batch.
 - `failed` → webster rejected that batch's report: run `lyx webster recover-batch <NN>` as the failure ladder describes and follow the failure ladder below, exactly as for `stuck`, unless the failure names a plan edit as its way forward (see the `record-batch` `batch_failed` rung below).
-- `dead` → its recovery already failed terminally: the run is exhausted for that batch — write `outcome: stuck` naming it (per the dead rung of the failure ladder) and stop.
+- `dead` → its recovery failed terminally; read that batch's `recovery_retry` from `lyx webster status`.
+  With `recovery_retry: true`, run `lyx webster recover-batch <NN>` once more, backgrounded, as the failure ladder below describes.
+  With `recovery_retry: false`, the run is exhausted for that batch: write `outcome: stuck` naming it (per the dead rungs of the failure ladder) and stop.
   Do NOT skip it and do NOT begin any later batch.
 
 ## The loop: begin-batch, fork, wait for its notification, record-batch — verbatim sequence
@@ -110,9 +112,14 @@ You never read raw fork output beyond its own turn, and you never open a file to
   Never run it in the foreground, never poll it and never `sleep`.
   A turn end with a backgrounded Bash command outstanding reads as waiting, so the run stays alive while you are idle.
 - `recover-batch <NN>` completes with a terminal `status: done` → move on to the next batch.
-- `recover-batch <NN>` completes with a terminal `status: stuck` OR `status: dead` (any `dead_reason`) → the recovery itself failed.
+- `recover-batch <NN>` completes with a terminal `status: stuck` → the recovery itself failed.
   You have exhausted this batch's recovery: stop the run here — write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` naming the batch and the failure, and stop.
   Do NOT re-fork it, do NOT begin the next batch (batch N+1 assumes N is committed).
+- `recover-batch <NN>` completes with a terminal `status: dead` (any `dead_reason`) and `recovery_retry: true` → the dead recovery committed work of its own and the batch has a recovery left.
+  Run `lyx webster recover-batch <NN>` once more, backgrounded, and act on its completion notification by these rungs; that second recovery is the last.
+- `recover-batch <NN>` completes with a terminal `status: dead` and `recovery_retry: false` → the recovery itself failed and earns no retry.
+  Stop exactly as for a terminal `stuck` recovery: write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` naming the batch and the failure, and stop.
+  Do NOT re-fork it, do NOT begin the next batch.
 - `recover-batch <NN>` refuses with `{"batch_failed": true, "card_amended": true}` → a card of the batch was amended after the attempt began, so webster failed the attempt to re-run the batch on the amended card.
   Run `lyx webster recover-batch <NN>` again, backgrounded, even though the failed attempt was a recovery; each amendment forces at most one such re-run.
 - `recover-batch <NN>` refuses with `{"batch_failed": true}` → the recovery strand said done but webster's checks rejected its work, so the recovery itself failed (the `card_amended` rung above takes precedence).
@@ -121,6 +128,12 @@ You never read raw fork output beyond its own turn, and you never open a file to
   The same flag also marks a refusal before any recovery ran, when a later card still references a symbol the batch deletes, and the stuck handling is unchanged.
 - `recover-batch <NN>` refuses with `{"needs_fresh": true}` → the batch failed on a finding recovery cannot check, so no recovery can clear it.
   Write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop.
+  Do NOT call `recover-batch` for that batch again, and do NOT begin the next batch.
+- `recover-batch <NN>` refuses with `{"recovery_exhausted": true}` → the batch has had its two recoveries, so no third can run.
+  Write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop.
+  Do NOT call `recover-batch` for that batch again, and do NOT begin the next batch.
+- `recover-batch <NN>` refuses with `{"audit_not_acceptable": true}` → the batch failed on read-only fabric references that `recover-batch` would accept in line, but its evidence does not hold, such as a worktree with changes.
+  Master cannot clean the tree: write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop.
   Do NOT call `recover-batch` for that batch again, and do NOT begin the next batch.
 - `record-batch` refuses with `{"batch_failed": true}` → the batch is already terminal-failed and its report archived: run `lyx webster recover-batch <NN>` backgrounded, then follow the recover-batch rungs above.
   When the refusal's message names a plan edit as its way forward (a later card still references a symbol the batch deletes), that edit is not Master's to make: write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop without calling `recover-batch`.
@@ -131,7 +144,7 @@ You never read raw fork output beyond its own turn, and you never open a file to
 - `begin-batch <NN>` refuses because the batch **already has a report** (a resumed run found a crashed session's leftover) → do NOT fork;
   the refusal names the batch's recorded state and the one remedy that state calls for, and you follow exactly that remedy:
   `record-batch` or `recover-batch` for the batch (the latter backgrounded, per the rung above), or, for a finished batch, beginning the next one.
-  A batch whose recovery is exhausted ends the run: write `outcome: stuck` naming the batch, as the dead rung above does.
+  A dead batch with `recovery_retry: false` ends the run: write `outcome: stuck` naming the batch, as the dead rungs above do.
   Then continue the loop from the next batch.
 - Any verb refuses with `{"config_invalid": true}` → a config file under `_lyx/config` has broken content, and the operator's fix is not Master's to make.
   Write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop without calling another verb.

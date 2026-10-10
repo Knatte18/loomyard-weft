@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- its only markers are the ones ReadRubric fills, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=1f69975f28430612b25d4d762db4599a8c66c5172f0c0ec5646b40fbabc51ab9 -->
+lyx-stencil: sha256=1d14bdec548547f594073c05c6ba85d8a1ad28fcf0edcb5bf62ba50052fd7e1d build=5a8be027428082c91c0d3af16eeacb02fed29eea time=2026-10-10T14:47:02Z -->
 
 # Plan-Review rubric
 
@@ -23,6 +23,14 @@ Sitting behind a mechanical gate over this round's own output makes this gate's 
 **`support-log.md` is outside this review entirely.**
 It appears in neither the artifact list nor the answer key, and it must not be read or reasoned from.
 `Plan-Write` provably never reads it, so a finding grounded in its content cannot be satisfied except by inventing the missing link.
+
+## Write surface
+
+{{.webster_record}}
+
+`none` means webster has begun no batch, and no card is frozen.
+Otherwise a done card is frozen: a fix never edits its file.
+A fix to its work is a follow-up card placed after the last begun batch, with its Card Index line in `00-overview.md`, in the format `{{.specs_dir}}/loom/loom-plan-spec.md` defines.
 
 ## Do not flag
 

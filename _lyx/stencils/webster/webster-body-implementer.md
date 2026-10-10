@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=17dfbf0b42faddc451cf3f9908d6cd75dfbbbf0cf2e1f4dae742b97ce24c8352 build=a28e79d9c8d06d46becfb1324885670b9db5a702 time=2026-10-10T10:12:09Z -->
+<!-- lyx-stencil: sha256=a99cb592f014e84aaafc0e546513595f72a4b92312506b0aa0e718f362c000f5 build=5a8be027428082c91c0d3af16eeacb02fed29eea time=2026-10-10T14:47:02Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -47,6 +47,13 @@ For EACH card file listed above, in the order listed:
    every card's gate (the steps above, plus its own `verify:` when it declares one) is checked right after that card's own commit, never bundled into a later card.
 
 If any card's gate fails, or a test the card broke fails, and you cannot fix it within your self-fix bound (see next section), stop and report `status: FAILED` — do not continue to a later card on top of a broken one.
+
+## The sandbox rule
+
+Never clone the hub's remotes, and never run a mutating `lyx fabric` verb.
+A scratch hub is a Go test fixture over local bare repositories (`hubforge`).
+`lyx fabric` refuses its mutating verbs from your strand; the refusal is the rule's owner.
+When the work itself needs a refused verb, stop and report `status: FAILED`, so the orch runs the verb.
 
 ## The batch gate — once, after the last card
 
