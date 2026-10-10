@@ -1,6 +1,6 @@
 # Lighter test suite: measured tiers, cheap tmux fixtures, no lingering children
 
-`test-suite-weight` · Task · bug, enhancement, shuttle, reed, fabric · running · PR-Gate
+`test-suite-weight` · Task · bug, enhancement, shuttle, reed, fabric · running · Finalize
 
 ## Seen
 
