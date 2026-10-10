@@ -37,23 +37,17 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ### Bugs
 
-#### High priority
-
-| # | Note | Slug | Labels |
-| --- | --- | --- | --- |
-| 1 | **driver-context brought the loom-status pane back on llm-driven runs**<br>• Since f5b5218f7 lyx loom start keeps the status strand on every run; llm-driven runs had removed it, and the driver pane is the run status | [`retire-loom-status-strand`](design-retire-loom-status-strand.md) | loom, reed |
-
 #### Normal priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 2 | **Batten idle notices count machine sleep as idle time**<br>• After a hibernate every run raises an idle notice for the whole sleep; the idle clock should skip time the machine was asleep | [`idle-notice-after-sleep`](design-idle-notice-after-sleep.md) | batten |
-| 3 | **shuttle raises a hold notice at the skill-load turn end, before the start prompt is sent** | [`hold-on-skill-load`](design-hold-on-skill-load.md) | shuttle |
-| 4 | **Build-tagged member declared once per tag set resolves ambiguous, so its plan Create can never pass record-batch** | [`quarry-build-tag-ambiguous`](design-quarry-build-tag-ambiguous.md) | webster, loom, quarry |
-| 5 | **Bounce budget blocks a review segment after its round was approved, before the Bouncer verdict** | [`bounce-budget-after-approved`](design-bounce-budget-after-approved.md) | burler, loom |
-| 6 | **Master's wait stops waiting on a still-running background shell at a turn end**<br>• A gate run still in a background shell is cut off at a turn end and the run still reports done | [`background-gate-shell-discarded`](design-background-gate-shell-discarded.md) | webster, shuttle |
-| 7 | **Webster Master fixes a verify failure itself instead of spawning the fixer fork**<br>• Master edited and committed a test fix itself; the run-exit audit blocked it as a parent-write | [`master-self-fix`](design-master-self-fix.md) | webster, stencil |
-| 8 | **webster: create-not-done check fails on unexported plan targets, killing batches** | [`create-check-unexported`](design-create-check-unexported.md) | webster, quarry |
+| 1 | **Batten idle notices count machine sleep as idle time**<br>• After a hibernate every run raises an idle notice for the whole sleep; the idle clock should skip time the machine was asleep | [`idle-notice-after-sleep`](design-idle-notice-after-sleep.md) | batten |
+| 2 | **shuttle raises a hold notice at the skill-load turn end, before the start prompt is sent** | [`hold-on-skill-load`](design-hold-on-skill-load.md) | shuttle |
+| 3 | **Build-tagged member declared once per tag set resolves ambiguous, so its plan Create can never pass record-batch** | [`quarry-build-tag-ambiguous`](design-quarry-build-tag-ambiguous.md) | webster, loom, quarry |
+| 4 | **Bounce budget blocks a review segment after its round was approved, before the Bouncer verdict** | [`bounce-budget-after-approved`](design-bounce-budget-after-approved.md) | burler, loom |
+| 5 | **Master's wait stops waiting on a still-running background shell at a turn end**<br>• A gate run still in a background shell is cut off at a turn end and the run still reports done | [`background-gate-shell-discarded`](design-background-gate-shell-discarded.md) | webster, shuttle |
+| 6 | **Webster Master fixes a verify failure itself instead of spawning the fixer fork**<br>• Master edited and committed a test fix itself; the run-exit audit blocked it as a parent-write | [`master-self-fix`](design-master-self-fix.md) | webster, stencil |
+| 7 | **webster: create-not-done check fails on unexported plan targets, killing batches** | [`create-check-unexported`](design-create-check-unexported.md) | webster, quarry |
 
 ### Enhancements
 
