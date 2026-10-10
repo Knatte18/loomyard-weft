@@ -81,6 +81,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 23 | **PATTERN overview breaks its cap only after merging main** | [`pattern-overview-headroom`](design-pattern-overview-headroom.md) | loom |
 | 24 | **Fold loomcli and orchcli tmux probe copies onto tmuxkit** | [`tmuxkit-probe-copies`](design-tmuxkit-probe-copies.md) | loom, orch, reed |
 | 25 | **Reed watchdog children still burn idle CPU** | [`watchdog-child-cpu`](design-watchdog-child-cpu.md) | reed |
+| 26 | **Reconcile keeps an old default below the new floor** | [`reconcile-stale-default`](design-reconcile-stale-default.md) | config |
 
 ### Features
 
