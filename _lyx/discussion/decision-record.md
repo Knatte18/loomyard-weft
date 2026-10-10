@@ -154,6 +154,13 @@ Rationale: CLAUDE.md requires a new cross-cutting invariant in PATTERN in the sa
   - d1-split-lock-retry-race (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - card2-headcontains-notfound-swallows-walk-failure (class consistency, severity MEDIUM, open in rounds 2)
+  - card5-remove-subtest-vacuous (class scope, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - Regression for #468: build a `Repo`'s pack index, commit with the git CLI, run `git repack -d` and `git prune-packed`, then `UntrackedFiles` and `WorktreeChangedFiles` succeed and report the right paths.
