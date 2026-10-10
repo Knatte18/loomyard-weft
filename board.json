@@ -1431,7 +1431,9 @@
       "title": "Driver parks silently on a step failure without kind",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "shed",
+        "loom"
       ],
       "issues": [
         488

@@ -1,6 +1,6 @@
 # Driver parks silently on a step failure without kind
 
-`driver-silent-park` · Note · bug
+`driver-silent-park` · Note · bug, shed, loom
 
 Imported from [issue #488](https://github.com/Knatte18/loomyard/issues/488).
 
