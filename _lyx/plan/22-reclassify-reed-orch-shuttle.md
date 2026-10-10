@@ -30,8 +30,8 @@
 - `internal/burlerengine/smoke_round_test.go`
 
 **Uses:**
-- `plan:internal/hubforge#CopyHub`
-- `plan:internal/hubforge#Shape`
+- `internal/hubforge#CopyHub`
+- `internal/hubforge#Shape`
 
 **Intent:** The hub-taking tests of reed, orch, shuttle, seat, treadle and burler, under the classification in Shared Decisions.
 Every test here brings reed up, runs the binary or a verb, or seeds config, so every one copies the `.` shape its call names; `notify_integration_test.go` adds `notify-task` and reads it back by name, so it copies the no-pair shape and keeps its `AddPair`.

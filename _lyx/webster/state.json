@@ -1,6 +1,6 @@
 {
   "runGuid": "fff73e1104de3f235db98a26ed5f5a7a",
-  "planFingerprint": "36a2d7e94197e67d00eddfbfa5f03c710001004a21f74799a1e9d7a7950a0b66",
+  "planFingerprint": "f644730fa5f980a1961cc35d5fb88a90584045c6f7e01f242b5f7b662c57ba11",
   "planFileHashes": {
     "00-overview.md": "0ad33d2e71cd0bd2b348dfeb400a6eaa60d570779badff67c14470d91eac61e4",
     "01-fixture-git-marker.md": "7d78f3450efed061b64d1f2d18f2334b9e02647384d3daf608908d3967a06753",
@@ -18,15 +18,15 @@
     "13-gatecli-prebuild.md": "3d51d97c7ed06077237865cff3203a9f88bd34633ed25436a76570336e03e994",
     "14-claudeengine-prebuilt-deny.md": "5cae486982fde52d1dbcb0ed10a6651e9a502dcb302ebd62a4c68739bee77857",
     "15-gitkit-no-detached-gc.md": "aaf35f9cb36d813ea6af12e711c244caf20c4c0b3c3f0666bc03c39463007a07",
-    "16-hubforge-templates.md": "828393b651a295031f82527df3e22cb98f2d7d7ba1119e3adfcf6bf087e378fb",
-    "17-reclassify-fabricengine-add-to-dot.md": "3c0ba9793f0f43a3aa3d7abb5d2578192105149cb3b976c01cdc9f1c4371867c",
-    "18-reclassify-fabricengine-head-to-push.md": "b7f5783d7445f866bb09fb6ca2aa7200515f1062b417ea93d0a7cdfd3f1cfb18",
-    "19-reclassify-fabricengine-reconcile-to-worktree.md": "83d2bb0c73ede7c8eebac7d1d4381a32ae5824500ca88e09da2e99991ac2c5bd",
-    "20-reclassify-fabriccli-and-geometry.md": "aeca923cc00c74741bc6ea028857ac10c8d38ebeb2c8f50eaf31ae3beee3f3ce",
-    "21-reclassify-loom-webster-shed.md": "cdf636fb5d8ceeb995b7f997311ddabc2c96d582b4c9ccc632197b96e655d395",
-    "22-reclassify-reed-orch-shuttle.md": "3d00aef920f5a57ac28c049ff97e2b2ffe2f20da7082364c69cd04cf0934cce9",
+    "16-hubforge-templates.md": "e6b608c60554167b44962023939cae357f1561441285eb94ba9cafcca1425a38",
+    "17-reclassify-fabricengine-add-to-dot.md": "666beb86fd47814cf314e27720dffa590539efbd31916fcc23d04ae08a112d05",
+    "18-reclassify-fabricengine-head-to-push.md": "c758b2af8e1a7a4df920efe815ec63eaf25dc2c715688368f555a085e3dfacd2",
+    "19-reclassify-fabricengine-reconcile-to-worktree.md": "1cca9fd9c49a781e04c1eafbeabe9671f4361c1dfea3e8b9c81b6e5e69d3eba0",
+    "20-reclassify-fabriccli-and-geometry.md": "2688913207916c9fc0c7b56066ac815075fea09b991b57f79ca34eba158747df",
+    "21-reclassify-loom-webster-shed.md": "4c660637fbd6d45021a4ce3aaf82df761052144f86cd34e19e81dfc10021e691",
+    "22-reclassify-reed-orch-shuttle.md": "2f4666c50546fa26690438959c85c4789c81bb5df79b0e4bb7c51a0f4109cc5a",
     "23-dotgit-leaf.md": "0124c68527ac28925d7eaf2e274b1d6e59b0bc3cdb8e3fbde306d122d35535e3",
-    "24-lyxcwd-walkup.md": "71e1cf3dd66a4f894d54482f2413174d6a84f52d508639cfc0093dd1852714af",
+    "24-lyxcwd-walkup.md": "c04f6a26cb5f62bec06104527f95e2f1b7220bf6b09fd3f83a202c9091439061",
     "25-gitrepo-geometry.md": "27704eda489ee970de0b08bc7bbd8a1195235d5ed80d622f68b0ae3d1c3ef265",
     "26-gitrepo-ref-reads.md": "8aadb1e4aa5ebe5a6670b623a666313479a5570c667da6326349bb7abfe6b72b",
     "27-gitexec-drop-gitdir-env.md": "00598ab1b36a40bc3671310dc5036ccffbe6e98db930913ed6cb99bb825e01f7",
@@ -1074,7 +1074,7 @@
       }
     }
   ],
-  "currentBatch": 14,
+  "currentBatch": 0,
   "masterStrand": "6207061aa885c318cb6613a9996f300f",
   "masterSessionId": "7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b",
   "batches": {
@@ -1132,15 +1132,39 @@
       "cardHashes": {
         "14-claudeengine-prebuilt-deny": "5cae486982fde52d1dbcb0ed10a6651e9a502dcb302ebd62a4c68739bee77857",
         "15-gitkit-no-detached-gc": "aaf35f9cb36d813ea6af12e711c244caf20c4c0b3c3f0666bc03c39463007a07",
-        "16-hubforge-templates": "828393b651a295031f82527df3e22cb98f2d7d7ba1119e3adfcf6bf087e378fb",
-        "17-reclassify-fabricengine-add-to-dot": "3c0ba9793f0f43a3aa3d7abb5d2578192105149cb3b976c01cdc9f1c4371867c"
+        "16-hubforge-templates": "e6b608c60554167b44962023939cae357f1561441285eb94ba9cafcca1425a38",
+        "17-reclassify-fabricengine-add-to-dot": "666beb86fd47814cf314e27720dffa590539efbd31916fcc23d04ae08a112d05"
       },
       "startSha": "d44ca24f457031a826f350471c6885a8d0b8a25a",
       "kind": "fork",
       "spawnedAt": "2026-10-10T10:16:50Z",
       "sessionId": "7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "14-claudeengine-prebuilt-deny",
+        "status": "done",
+        "head_sha": "5665db59dc3d0b4c90776bdc8bb2b7641d282e99",
+        "deviations": [
+          "internal/shuttleengine/claudeengine/hookcmd_integration_test.go",
+          "internal/shuttleengine/claudeengine/settings.go",
+          "internal/gitkit/hermetic.go",
+          "internal/hubforge/hub.go",
+          "internal/hubforge/template.go",
+          "pattern/PATTERN-no-denied-recovery.md",
+          "pattern/PATTERN-test-speed.md",
+          "pattern/PATTERN-hubforge-fixtures.md"
+        ]
+      },
+      "cardShas": [
+        "5665db59dc3d0b4c90776bdc8bb2b7641d282e99"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b/subagents/agent-a0b96461f8e3a02d8.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b/subagents/agent-a0b96461f8e3a02d8.jsonl"
+      ]
     },
     "6": {
       "slug": "tmuxkit-package-server",
@@ -1227,6 +1251,7 @@
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/c9fab9d0-151f-424c-8602-7d36fe836e3e/subagents/agent-a2db08922bbb89d02.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/143f4fc0-509f-4ad6-be6b-62362a043089/subagents/agent-ac8347d604cbb13df.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/143f4fc0-509f-4ad6-be6b-62362a043089/subagents/agent-a100ac933f319b941.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/143f4fc0-509f-4ad6-be6b-62362a043089/subagents/agent-a100ac933f319b941.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b/subagents/agent-a0b96461f8e3a02d8.jsonl"
   ]
 }

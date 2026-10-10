@@ -26,9 +26,9 @@
 - `internal/fabricengine/dotlyxjunction_integration_test.go`
 
 **Uses:**
-- `plan:internal/hubforge#CopyHub`
-- `plan:internal/hubforge#SharedHub`
-- `plan:internal/hubforge#Shape`
+- `internal/hubforge#CopyHub`
+- `internal/hubforge#SharedHub`
+- `internal/hubforge#Shape`
 
 **Intent:** The first third of fabricengine's hub-taking tests move onto the template model under the classification in the overview's Shared Decisions.
 Every test in these files runs a fabric verb, seeds config, adds a pair or spawns git against its hub, so every one is a write and takes `CopyHub` of the nearest shape: the anchor its `NewHub` call names, the one-pair shape where the test's first act is `AddPair` of a slug it reads back only through the `Hub` accessors, and the no-pair shape otherwise, keeping its own `AddPair`.

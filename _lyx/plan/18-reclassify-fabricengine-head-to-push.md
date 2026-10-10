@@ -32,9 +32,9 @@
 - `internal/fabricengine/pushanchored_integration_test.go`
 
 **Uses:**
-- `plan:internal/hubforge#CopyHub`
-- `plan:internal/hubforge#SharedHub`
-- `plan:internal/hubforge#Shape`
+- `internal/hubforge#CopyHub`
+- `internal/hubforge#SharedHub`
+- `internal/hubforge#Shape`
 
 **Intent:** The second third of fabricengine's hub-taking tests, under the same classification as card 17.
 The live-state matrix, its self-tests, `openparent_integration_test.go` and `mergein_integration_test.go` iterate the anchors `.` and `backend`, both in the shape set, so every cell takes the copy of its anchor's shape; every cell arranges a state or runs a verb, so none is read-only.

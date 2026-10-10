@@ -1,19 +1,19 @@
 # Card 16 — hubforge-templates
 
 **Create:**
-- `plan:internal/hubforge#Shape` -> `type Shape struct`
-- `plan:internal/hubforge#Shapes` -> `func Shapes() []Shape`
-- `plan:internal/hubforge#TemplatePairSlug` -> `const TemplatePairSlug = "pair"`
-- `plan:internal/hubforge#templatePrefix` -> `const templatePrefix = "hubforge-template-"`
-- `plan:internal/hubforge#hubTemplate` -> `type hubTemplate struct`
-- `plan:internal/hubforge#templates` -> `var templates map[string]*hubTemplate`
-- `plan:internal/hubforge#templatesMu` -> `var templatesMu sync.Mutex`
-- `plan:internal/hubforge#templateFor` -> `func templateFor(tb testing.TB, shape Shape) *hubTemplate`
-- `plan:internal/hubforge#CopyHub` -> `func CopyHub(tb testing.TB, shape Shape) *Hub`
-- `plan:internal/hubforge#SharedHub` -> `func SharedHub(tb testing.TB, shape Shape) *Hub`
-- `plan:internal/hubforge#relocateHub` -> `func relocateHub(src, dst string) error`
-- `plan:internal/hubforge#fingerprint` -> `func fingerprint(root string) (string, error)`
-- `plan:internal/hubforge#hubAt` -> `func hubAt(tb testing.TB, root string, shape Shape) *Hub`
+- `internal/hubforge#Shape`
+- `internal/hubforge#Shapes`
+- `internal/hubforge#TemplatePairSlug`
+- `internal/hubforge#templatePrefix`
+- `internal/hubforge#hubTemplate`
+- `internal/hubforge#templates`
+- `internal/hubforge#templatesMu`
+- `internal/hubforge#templateFor`
+- `internal/hubforge#CopyHub`
+- `internal/hubforge#SharedHub`
+- `internal/hubforge#relocateHub`
+- `internal/hubforge#fingerprint`
+- `internal/hubforge#hubAt`
 
 **Edit:**
 - `internal/hubforge#NewHub`

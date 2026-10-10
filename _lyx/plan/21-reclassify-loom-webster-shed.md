@@ -21,8 +21,8 @@
 - `internal/battencli/lifecycle_integration_test.go`
 
 **Uses:**
-- `plan:internal/hubforge#CopyHub`
-- `plan:internal/hubforge#Shape`
+- `internal/hubforge#CopyHub`
+- `internal/hubforge#Shape`
 
 **Intent:** The hub-taking tests of loom, landing, webster, shed and batten, under the classification in Shared Decisions.
 Every test here seeds config and adds a pair or runs a verb against its hub, so every one copies; `newWiredPairFixture` in `smoke_helpers_test.go` seeds four modules' config before adding its pair, so it copies the `.` no-pair shape and keeps its own `AddPair`, and `webstercli`'s `seedPersistentPreRunFixture` copies the shape of the anchor it is passed.

@@ -10,8 +10,8 @@
 **Uses:**
 - `plan:internal/dotgit#FindRoot`
 - `plan:internal/dotgit#ErrNotRepository`
-- `plan:internal/hubforge#SharedHub`
-- `plan:internal/hubforge#Shape`
+- `internal/hubforge#SharedHub`
+- `internal/hubforge#Shape`
 
 **Prosa:**
 - `docs/shared-libs/lyxcwd.md`

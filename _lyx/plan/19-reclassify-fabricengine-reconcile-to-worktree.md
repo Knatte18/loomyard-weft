@@ -30,8 +30,8 @@
 - `internal/fabricengine/worktreelist_test.go`
 
 **Uses:**
-- `plan:internal/hubforge#CopyHub`
-- `plan:internal/hubforge#Shape`
+- `internal/hubforge#CopyHub`
+- `internal/hubforge#Shape`
 
 **Intent:** The last third of fabricengine's hub-taking tests, under the same classification as card 17.
 `warplayout_test.go` is not here: `lyxcwd.ResolveWorktree` spawns `rev-parse --show-toplevel` until card 24, and a spawned git is a write, so the test moves onto `SharedHub` in card 24.

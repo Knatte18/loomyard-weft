@@ -21,9 +21,9 @@
 - `internal/stencilcli/cli_integration_test.go`
 
 **Uses:**
-- `plan:internal/hubforge#CopyHub`
-- `plan:internal/hubforge#SharedHub`
-- `plan:internal/hubforge#Shape`
+- `internal/hubforge#CopyHub`
+- `internal/hubforge#SharedHub`
+- `internal/hubforge#Shape`
 
 **Intent:** The hub-taking tests of fabriccli and the geometry, preflight, config, board, ide and stencil packages, under the classification in Shared Decisions.
 `hubgeom`'s geometry test reads geometry in its first steps and adds a pair in a later one, so it copies the `.` no-pair shape; a reviewer splitting the reads into a `SharedHub` test is a later economy, not this card's.

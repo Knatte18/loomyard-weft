@@ -1,0 +1,11 @@
+status: OK
+head_sha: 5665db59dc3d0b4c90776bdc8bb2b7641d282e99
+deviations:
+  - internal/shuttleengine/claudeengine/hookcmd_integration_test.go
+  - internal/shuttleengine/claudeengine/settings.go
+  - internal/gitkit/hermetic.go
+  - internal/hubforge/hub.go
+  - internal/hubforge/template.go
+  - pattern/PATTERN-no-denied-recovery.md
+  - pattern/PATTERN-test-speed.md
+  - pattern/PATTERN-hubforge-fixtures.md
