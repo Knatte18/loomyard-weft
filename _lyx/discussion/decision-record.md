@@ -206,6 +206,12 @@ Decision: D4's 'Reed is unchanged' means reed's pane start mode. reedengine's st
 
 Rationale: Plan-Review round 1 F3/F5: without it reed reaps D4's session-less pre-started server after staleSocketGrace and replaces it with a config-less login-shell server, so D4's goal fails; keying on exit-empty off would also skip the reap for an operator whose tmux.conf sets it, and a placeholder session breaks D4's own wait for reed's new-session and Down's teardown.
 
+### Added after Discussion (parent, 2026-10-10): D4 bound: a server reed boots itself after a test's own down reads the operator config
+
+Decision: Beside D4: a server reed starts itself on a registered key after the test's own down or kill-server, or before a registration placed after the first boot, carries no -f; it reads the operator's config and starts login-shell panes. Such tests pin reed's own start, teardown or recovery, so they run on reed's real boot path. No tmux PATH wrapper.
+
+Rationale: Plan round 3 F3: the record keeps reed's spawn unchanged, so the plan has no lever on reed's side; a PATH wrapper would give reed-started servers exit-empty off and @lyx_test_server on, changing the behaviour those tests pin, widen card 5 and every reed-booting test, and need a psmux story.
+
 ## Constraints
 
 - `PATTERN-test-speed`: tier 2 has no tmux server; the tier table, gate table and "untagged tests spawn nothing" section record D6, D7 and D8.
