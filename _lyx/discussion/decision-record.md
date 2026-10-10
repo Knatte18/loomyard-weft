@@ -256,6 +256,12 @@ Rationale: Rounds 1-4 each closed one bypass shape of a deny-list; the round-4 f
   - thin-test-rows-cards-13-11-17-21 (class scope, severity MEDIUM, open in rounds 1, 2, 3)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 2: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/webster/round-2-review.md; fixer report: _lyx/reviews/webster/round-2-fixer-report.md.
+  - loop-agrees-stale-waited-out-comment (class consistency, severity MEDIUM, open in rounds 1, 2)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - A run with webster state, moved by goto to Plan-Bouncer, whose Plan loop adds a follow-up card after the last begun batch, continues at Webster over the kept batches with the new card batched, the restamped state is on disk before the first batch starts, and the run summary carries a warning naming the rebaseline.
