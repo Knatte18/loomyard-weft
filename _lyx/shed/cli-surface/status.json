@@ -1,12 +1,13 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Discussion-Bouncer: round 3 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYXHUB/cli-surface/_lyx/reviews/discussion/round-3-escalation.md; decide with `lyx loom circling accept cli-surface` or `lyx loom circling continue cli-surface`, then run `lyx loom resume` in the task worktree to resume",
+  "parent_notice": "Review segment of task `cli-surface` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/cli-surface/_lyx/reviews/discussion/round-3-escalation.md` with a one-shot fork.",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler → bounced to Discussion-Bouncer",
-    "wait": ""
+    "last": "Discussion-Bouncer → awaiting",
+    "wait": "bouncer Discussion-Bouncer: round 3 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYXHUB/cli-surface/_lyx/reviews/discussion/round-3-escalation.md; decide with `lyx loom circling accept cli-surface` or `lyx loom circling continue cli-surface`, then run `lyx loom resume` in the task worktree to resume"
   },
   "history": [
     {
@@ -66,6 +67,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/cli-surface/_lyx/reviews/discussion/round-3-review.md",
       "at": "2026-10-10T12:07:49Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/cli-surface/_lyx/reviews/discussion/round-3-bouncer-ledger.md",
+      "at": "2026-10-10T12:08:46Z"
     }
   ],
   "product": {
