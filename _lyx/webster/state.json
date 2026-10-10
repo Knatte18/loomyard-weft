@@ -1,0 +1,463 @@
+{
+  "runGuid": "57d92b13c2c335b53e15b2a1a7d4e4d3",
+  "planFingerprint": "bb532b1d810c62abc9c214f1aebbc794d0ace21fb499ee1e79ad73ea4cc7b98a",
+  "planFileHashes": {
+    "00-overview.md": "acb89b9ff5cb5b07ca8e41cdde73b0d371a7195ee12ace371d56ec635f679cd3",
+    "01-verify-log-per-run.md": "957f78938a43f871c691aaf4a53d6449b4d4288e1c3a47e25bd1d2adfd19e5fc",
+    "02-finalize-parent-records.md": "07997c77be2b6ec0951a505959440c1a04a561d6109304344c0c780cc15b6f67",
+    "03-teardown-settles-board-claim.md": "2c07d7768550038fe160096c2148617d5c78c033da0031e33efd834f993d0c93",
+    "04-halt-note-parent-fabric-status.md": "93fb3df91c126a107f35238dcfed80df3ef8f58f97fe8f1c223451badb4780e3",
+    "05-fabric-merge-base.md": "3732a12c03949b585f74c184d13462f27f0a0b1146296e95a6971e67d17cbb89",
+    "06-verify-gate-told-command.md": "e74f290ab1ae2328ae8977bb9849a1f63af8aedfb517d98ddd1faf278122b8a6",
+    "07-recipe-vocabulary.md": "192eeb8f59b918e33ce42eceb5f719c5e54b1a8ed3f659376f7b1d9516896ef0",
+    "08-darn-config.md": "46f5b76d4a78e17d55156d639dca80c4921a51828f74fb62ae498208e1ac7adc",
+    "09-darn-stencil-and-spec.md": "5b7591cdf2e6e081d183c35f346ea948b5b1e643219a8ecbbf146315c5a66220",
+    "10-darn-producer-and-entry.md": "f846d00041f5295bb337ae0e8212191c5c52f0bf7433c7dbfd09929c5bcc509b",
+    "11-darn-builder-and-routing.md": "804d232b950bcac90e985632c7a4037dddbbeac98f97b7abcad5513aa9d38da6",
+    "12-loom-arms-darn.md": "0f664399a3da99322044f294225e81d6a65902fb5dac035370cf3e4835b5deba",
+    "13-batten-admits-darn.md": "245bcc93b00f634b133f5afa2477013ee5cca9eef01b20e4070b96507bb38d69",
+    "14-docs-name-the-recipe.md": "45e26e6f97448f82bc84cc048964b05ff182ffbee47a51e79941f62bbcd2f6d3"
+  },
+  "planOverviewFrameHash": "f27c9049c9709337643226e4e0716fd0e7393909dfd35c659e8f57a5c7bb5731",
+  "partition": [
+    {
+      "cards": [
+        "01-verify-log-per-run",
+        "02-finalize-parent-records",
+        "03-teardown-settles-board-claim",
+        "04-halt-note-parent-fabric-status"
+      ],
+      "profile": "cautious",
+      "estimate": 411596,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54496,
+        "read_union": 144760,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 708,
+            "reads": {
+              "file:internal/landingshed/finalize_verify_test.go": 2640,
+              "file:internal/landingshed/publish_verify_test.go": 5580,
+              "file:internal/landingshed/verifygate_integration_test.go": 1668,
+              "file:internal/landingshed/verifygate_test.go": 4932,
+              "file:internal/loomshed/publishfailure_test.go": 2532,
+              "file:internal/loomshed/verifygate_integration_test.go": 3564,
+              "file:internal/verifytree/doc.go": 336,
+              "file:internal/verifytree/failure_test.go": 1152,
+              "file:internal/verifytree/verify_integration_test.go": 4908,
+              "file:internal/webstercli/verify_integration_test.go": 1956,
+              "file:internal/websterengine/verifygate_test.go": 5016,
+              "file:pattern/PATTERN-verified-tree.md": 240,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/verifytree": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "package:pattern": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/verifytree": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 257,
+            "written": 77808
+          },
+          {
+            "card": 2,
+            "card_text": 324,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 3864,
+              "file:internal/landingshed/doc.go": 1176,
+              "file:internal/landingshed/finalize_test.go": 7368,
+              "file:internal/loomcli/landingdeps_integration_test.go": 1068,
+              "package:contracts/specs": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 96.5,
+            "written": 29274
+          },
+          {
+            "card": 3,
+            "card_text": 636,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1584,
+              "file:internal/battencli/lifecycle_integration_test.go": 16212,
+              "file:internal/pairteardown/doc.go": 576,
+              "file:internal/pairteardown/teardown_integration_test.go": 4536,
+              "file:internal/pairteardown/teardown_test.go": 5724,
+              "file:pattern/PATTERN-pair-teardown.md": 132,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/pairteardown": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/pairteardown": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 145,
+            "written": 44136
+          },
+          {
+            "card": 4,
+            "card_text": 372,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1584,
+              "file:contracts/stencils/friction/friction-template-reflection.md": 888,
+              "file:internal/fabricengine/diff_integration_test.go": 2784,
+              "file:internal/fabricengine/mergevocab_test.go": 3300,
+              "file:internal/loomcli/halt_test.go": 6984,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/stencils/friction": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/stencils/friction": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 202.5,
+            "written": 61122
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-fabric-merge-base",
+        "06-verify-gate-told-command",
+        "07-recipe-vocabulary",
+        "08-darn-config",
+        "09-darn-stencil-and-spec"
+      ],
+      "profile": "cautious",
+      "estimate": 416764,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61496,
+        "read_union": 148712,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 228,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1584,
+              "file:internal/fabricengine/mergesiblings_integration_test.go": 3468,
+              "file:internal/gitrepo/ancestry_test.go": 900,
+              "file:internal/gitrepo/merge_integration_test.go": 6504,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/gitrepo": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/gitrepo": 2000
+            },
+            "messages": 132,
+            "written": 39828
+          },
+          {
+            "card": 6,
+            "card_text": 636,
+            "reads": {
+              "file:contracts/specs/shed-recipe-spec.md": 1368,
+              "file:internal/landingshed/doc.go": 1176,
+              "file:internal/landingshed/verifygate_test.go": 4932,
+              "file:internal/loomcli/landingdeps_integration_test.go": 1068,
+              "file:internal/loomcli/landingdeps_markdone_test.go": 1164,
+              "file:internal/loomcli/landingdeps_test.go": 2196,
+              "file:internal/loomcli/landingdeps_verify_test.go": 984,
+              "file:internal/loomcli/wiring_publish_integration_test.go": 1164,
+              "file:internal/loomcli/wiring_test.go": 10800,
+              "file:internal/loomshed/doc.go": 480,
+              "file:internal/loomshed/verifygate_integration_test.go": 3564,
+              "file:internal/shedrecipe/entries_gate_test.go": 4008,
+              "file:internal/webstercli/verify_parity_integration_test.go": 1212,
+              "package:contracts/specs": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:internal/webstercli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 245,
+            "written": 74136
+          },
+          {
+            "card": 7,
+            "card_text": 300,
+            "reads": {
+              "file:internal/reedengine/config_test.go": 2676,
+              "file:internal/reedengine/template_posix.yaml": 228,
+              "file:internal/reedengine/template_windows.yaml": 228,
+              "file:internal/segmentcolor/segmentcolor_test.go": 804,
+              "file:internal/shedcli/doc.go": 384,
+              "file:internal/shedcli/table_test.go": 1680,
+              "file:internal/shedrun/seed_test.go": 4164,
+              "package:internal/reedengine": 2000,
+              "package:internal/segmentcolor": 2000,
+              "package:internal/shedcli": 2000,
+              "package:internal/shedrun": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/segmentcolor": 2000,
+              "tests:internal/shedcli": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 110,
+            "written": 33300
+          },
+          {
+            "card": 8,
+            "card_text": 396,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1584,
+              "file:docs/overview.md": 8124,
+              "file:internal/configreg/configreg_test.go": 1896,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/darnengine": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/darnengine": 2000
+            },
+            "messages": 107.5,
+            "written": 32646
+          },
+          {
+            "card": 9,
+            "card_text": 396,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1584,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/darn": 2000,
+              "package:internal/darnengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/darn": 2000,
+              "tests:internal/darnengine": 2000
+            },
+            "messages": 87.5,
+            "written": 26646
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-darn-producer-and-entry",
+        "11-darn-builder-and-routing",
+        "12-loom-arms-darn",
+        "13-batten-admits-darn",
+        "14-docs-name-the-recipe"
+      ],
+      "profile": "cautious",
+      "estimate": 387642,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68496,
+        "read_union": 127200,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 588,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1584,
+              "file:contracts/specs/refusal-spec.md": 3864,
+              "file:internal/loomrecipe/recipe_test.go": 3240,
+              "file:internal/loomshed/doc.go": 480,
+              "file:internal/shedrecipe/registry_test.go": 1656,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/recipes": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 207.5,
+            "written": 62838
+          },
+          {
+            "card": 11,
+            "card_text": 432,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1584,
+              "file:contracts/specs/refusal-spec.md": 3864,
+              "file:internal/loomrecipe/doc.go": 216,
+              "file:internal/loomrecipe/interruptpolicy_meta_test.go": 804,
+              "file:internal/loomrecipe/recipe_test.go": 3240,
+              "file:internal/loomshed/interruptpolicy_test.go": 516,
+              "file:pattern/PATTERN-verified-tree.md": 240,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 121,
+            "written": 36732
+          },
+          {
+            "card": 12,
+            "card_text": 648,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1584,
+              "file:contracts/specs/refusal-spec.md": 3864,
+              "file:docs/overview.md": 8124,
+              "file:internal/loomcli/arm_seed_test.go": 1500,
+              "file:internal/loomcli/reject_test.go": 2904,
+              "file:internal/loomcli/sharedbootstrap_test.go": 2556,
+              "file:internal/loomcli/wiring_test.go": 10800,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 213,
+            "written": 64548
+          },
+          {
+            "card": 13,
+            "card_text": 312,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1584,
+              "file:internal/battencli/lifecycle_integration_test.go": 16212,
+              "file:internal/battencli/wire_test.go": 6864,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 63,
+            "written": 19212
+          },
+          {
+            "card": 14,
+            "card_text": 216,
+            "reads": {
+              "file:contracts/stencils/orch/orch-template-role.md": 1896,
+              "file:docs/overview.md": 8124,
+              "file:plugins/ly/skills/board/SKILL.md": 1548,
+              "package:contracts/stencils/orch": 2000,
+              "package:docs": 2000,
+              "package:internal/boardcli": 2000,
+              "package:plugins/ly/skills/board": 2000,
+              "tests:contracts/stencils/orch": 2000,
+              "tests:docs": 2000,
+              "tests:internal/boardcli": 2000,
+              "tests:plugins/ly/skills/board": 2000
+            },
+            "messages": 28,
+            "written": 8616
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "1c06a35705e11073420756b41d655b63",
+  "masterSessionId": "e67c9a3b-6efc-4de8-ad4b-f411b2b012bc",
+  "batches": {
+    "1": {
+      "slug": "verify-log-per-run",
+      "cards": [
+        "01-verify-log-per-run",
+        "02-finalize-parent-records",
+        "03-teardown-settles-board-claim",
+        "04-halt-note-parent-fabric-status"
+      ],
+      "cardHashes": {
+        "01-verify-log-per-run": "957f78938a43f871c691aaf4a53d6449b4d4288e1c3a47e25bd1d2adfd19e5fc",
+        "02-finalize-parent-records": "07997c77be2b6ec0951a505959440c1a04a561d6109304344c0c780cc15b6f67",
+        "03-teardown-settles-board-claim": "2c07d7768550038fe160096c2148617d5c78c033da0031e33efd834f993d0c93",
+        "04-halt-note-parent-fabric-status": "93fb3df91c126a107f35238dcfed80df3ef8f58f97fe8f1c223451badb4780e3"
+      },
+      "startSha": "b7d4fd0ba55de0c19ae91a8b1c114837c543bb01",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T15:15:48Z",
+      "sessionId": "e67c9a3b-6efc-4de8-ad4b-f411b2b012bc",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
