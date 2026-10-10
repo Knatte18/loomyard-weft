@@ -11,7 +11,7 @@
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/seatengine#Table`
+- `internal/seatengine#Table`
 - `plan:internal/seatengine#LiveTable`
 - `plan:internal/seatengine#Result`
 - `internal/testkit/shedfake#BurlerRunner`

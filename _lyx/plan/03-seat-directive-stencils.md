@@ -7,8 +7,8 @@
 **Create:**
 - `//contracts/stencils/seat/seat-directive-chair.md`
 - `//contracts/stencils/seat/seat-directive-advisor.md`
-- `plan:contracts/stencils#SeatDirectiveChair` -> `var SeatDirectiveChair []byte`
-- `plan:contracts/stencils#SeatDirectiveAdvisor` -> `var SeatDirectiveAdvisor []byte`
+- `contracts/stencils#SeatDirectiveChair`
+- `contracts/stencils#SeatDirectiveAdvisor`
 
 **Intent:** Ship the two shared seat blocks (D3, D6) under a new `seat` family, each an embedded byte var in `stencils.go` with a registry row in `entries`, so they are seeded and listed like every stencil; neither joins `roleOpeningStencils`, since a seat block is not an opening stencil.
 Both blocks open with the header comment every stencil carries, naming which markers they declare and that a seat stencil pulls them in with `{{template "seat-directive-chair"}}` or `{{template "seat-directive-advisor"}}`, the bare form with no pipeline, which card 2's fill hands the seat's value map.

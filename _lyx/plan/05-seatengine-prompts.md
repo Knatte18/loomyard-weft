@@ -15,8 +15,8 @@
 - `internal/agentname#Format`
 - `internal/parentdirective#Directive`
 - `internal/editdirective#Directive`
-- `plan:internal/stencil#FillWith`
-- `plan:internal/seatengine#ReservedMarkers`
+- `internal/stencil#FillWith`
+- `internal/seatengine#ReservedMarkers`
 - `internal/testkit/stencilkit#Seed`
 
 **Intent:** Compose each seat's prompt and shuttle spec (D3, D4, D5, D6, D10) in `prompt.go`.

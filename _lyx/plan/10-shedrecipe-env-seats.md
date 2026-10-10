@@ -12,8 +12,8 @@
 - `internal/loomcli#TestWire_EverySeamFilled`
 - `internal/modelspec#Registry`
 - `plan:internal/seatengine#New`
-- `plan:internal/seatengine#RunnerShuttle`
-- `plan:internal/seatengine#Geometry`
+- `internal/seatengine#RunnerShuttle`
+- `internal/seatengine#Geometry`
 - `plan:internal/shedadapters#SeatRunner`
 - `plan:internal/testkit/shedfake#SeatRunner`
 

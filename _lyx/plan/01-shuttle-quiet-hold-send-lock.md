@@ -12,7 +12,7 @@
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/shuttleengine#Run.StrandName` -> `func (run *Run) StrandName() string`
+- `internal/shuttleengine#Run.StrandName`
 
 **Intent:** Give shuttle the three small things the seat engine needs, all provider-neutral (D7, D10).
 `Spec` gains one knob, `QuietHold bool`, documented as "skips the held-turn parent notice alone": `Run.notifyHeld` returns early when `run.spec.QuietHold` is set, exactly as it does for an interactive run, and nothing else reads the field.

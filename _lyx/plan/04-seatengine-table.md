@@ -2,21 +2,21 @@
 
 **Create:**
 - `internal/seatengine/doc.go`
-- `plan:internal/seatengine#RoleChair` -> `const RoleChair = "chair"`
-- `plan:internal/seatengine#RoleAdvisor` -> `const RoleAdvisor = "advisor"`
-- `plan:internal/seatengine#AdvisorName` -> `func AdvisorName(n int) string`
-- `plan:internal/seatengine#SeatRole` -> `func SeatRole(prefix, seat string) string`
-- `plan:internal/seatengine#Seat` -> `type Seat struct`
-- `plan:internal/seatengine#Table` -> `type Table struct`
-- `plan:internal/seatengine#ReservedMarkers` -> `func ReservedMarkers() []string`
-- `plan:internal/seatengine#Table.Validate` -> `func (t Table) Validate(stencilsDir string) error`
-- `plan:internal/seatengine#Table.Chair` -> `func (t Table) Chair() Seat`
-- `plan:internal/seatengine#Table.Outputs` -> `func (t Table) Outputs() []string`
-- `plan:internal/seatengine#Geometry` -> `type Geometry struct`
-- `plan:internal/seatengine#Handle` -> `type Handle interface`
-- `plan:internal/seatengine#Shuttle` -> `type Shuttle interface`
-- `plan:internal/seatengine#runnerShuttle` -> `type runnerShuttle struct`
-- `plan:internal/seatengine#RunnerShuttle` -> `func RunnerShuttle(r *shuttleengine.Runner) Shuttle`
+- `internal/seatengine#RoleChair`
+- `internal/seatengine#RoleAdvisor`
+- `internal/seatengine#AdvisorName`
+- `internal/seatengine#SeatRole`
+- `internal/seatengine#Seat`
+- `internal/seatengine#Table`
+- `internal/seatengine#ReservedMarkers`
+- `internal/seatengine#Table.Validate`
+- `internal/seatengine#Table.Chair`
+- `internal/seatengine#Table.Outputs`
+- `internal/seatengine#Geometry`
+- `internal/seatengine#Handle`
+- `internal/seatengine#Shuttle`
+- `internal/seatengine#runnerShuttle`
+- `internal/seatengine#RunnerShuttle`
 - `internal/seatengine/table_test.go`
 
 **Edit:**
@@ -27,7 +27,7 @@
 - `internal/burlerengine#Shuttle`
 - `internal/burlerengine#RunnerShuttle`
 - `internal/agentname#ValidateRole`
-- `plan:internal/stencil#IncludeNames`
+- `internal/stencil#IncludeNames`
 - `internal/stencilstore#Read`
 
 **Intent:** Open the new package `internal/seatengine` (D1) with its declarations: the table, its validation, the told geometry and the handle-shaped shuttle seam, in `table.go`, `geometry.go` and `shuttle.go`.

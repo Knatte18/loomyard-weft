@@ -27,8 +27,8 @@
 - `internal/modelspec#Parse`
 - `internal/modelspec#Registry.Resolve`
 - `internal/segmentcolor#Segments`
-- `plan:internal/seatengine#Table.Validate`
-- `plan:internal/seatengine#ReservedMarkers`
+- `internal/seatengine#Table.Validate`
+- `internal/seatengine#ReservedMarkers`
 - `plan:internal/shedadapters#NewMultiLLMProducer`
 
 **Intent:** Register the `MultiLLM` engine (D2, D12, PATTERN-shed-recipe-registry) in `entries_multillm.go`, one map entry and no `init()`.

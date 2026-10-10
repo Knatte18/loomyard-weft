@@ -7,9 +7,9 @@
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/stencil#FillWith` -> `func FillWith(template []byte, includes map[string][]byte, values map[string]string, optional []string) ([]byte, error)`
-- `plan:internal/stencil#IncludeNames` -> `func IncludeNames(template []byte) ([]string, error)`
-- `plan:internal/stencil#includeNames` -> `func includeNames(root *parse.ListNode) []string`
+- `internal/stencil#FillWith`
+- `internal/stencil#IncludeNames`
+- `internal/stencil#includeNames`
 
 **Intent:** Add the stencil include form (D3) beside `Fill` and `FillOptional`, keeping `stencil` a leaf over the standard library.
 `FillWith` renders a template together with named included templates: it strips the leading comment of the main template and of every include, parses the main template, and parses each include into the same template set under its name through the parsed template's own `New(name).Parse`, so a `{{template "name"}}` action in the main template resolves to it.
