@@ -1268,6 +1268,23 @@
       "isolated": false,
       "brief": "After a hibernate every run raises an idle notice for the whole sleep; the idle clock should skip time the machine was asleep",
       "body": "## Seen\n\nThe machine hibernated from 2026-10-08 22:17 to 2026-10-10 06:01 CEST with three runs in flight.\nMinutes after waking, batten raised an idle notice for each run (\"agents idle for 31h46m\"), although every agent had resumed its turn and was working.\nThe orch has to check the system log for a sleep window before reading any idle notice (orch role, Investigating a stop).\n\n## Idea\n\nThe idle clock measures time the machine was awake: it uses a clock that stops during suspend (`CLOCK_MONOTONIC` on Linux rather than wall time), or drops a gap that matches a sleep window.\nAfter a wake, a run is idle only once its agents have stayed quiet for the idle threshold of awake time.\n"
+    },
+    {
+      "id": 257,
+      "slug": "stencil-seed-ping-pong",
+      "title": "Stencil seeding ping-pongs on Bolt: prod-mode binaries overwrite each other's stencils",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "stencil"
+      ],
+      "issues": [
+        477
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #477](https://github.com/Knatte18/loomyard/issues/477).\n\nBolt took 150 stencil and spec seed commits from 2026-10-05 to 2026-10-08 (86 `lyx: seed stencils`, 64 `lyx: seed specs`), next to 1678 `board sync` commits.\nSeeding should commit only when a shipped default changes, so most of these are two binaries overwriting each other.\n\n## What the history shows\n\n`_lyx/stencils/loom/loom-template-plan.md` changed in 73 of the stencil seeds and `loom/loom-rubric-plan-review.md` in 66.\nThe plan template's blob hash in Bolt switches between two versions within minutes:\n\n| Time (10-08) | Blob |\n| --- | --- |\n| 10:56 | 7285c5d → 2f77cd9 |\n| 10:58 | 7285c5d → 2f77cd9 |\n| 10:59 | 7285c5d → 2f77cd9 |\n| 11:12 | 7285c5d |\n| 14:10 | 12f5d3d |\n| 16:49 | 2f77cd9 → 12f5d3d |\n| 17:05 | 2f77cd9 → 12f5d3d |\n| 17:06 | 2f77cd9 → 12f5d3d |\n\nRun `git log -- _lyx/stencils/loom/loom-template-plan.md` on Bolt and hash each version to reproduce the table.\n\n## Why it can happen\n\nEvery lyx command's root pre-run seeds the hub-level stencils and specs from the running binary's embedded registry (`cmd/lyx/stencilseed.go`, `seedStencilsAt`), commits and pushes.\nIn `ModeProduction`, `stencilstore.reconcileOne` refreshes an untouched stencil whenever its body differs from the shipped one, with no notion of which version is newer.\nThe comment there says so itself: an older binary in prod mode downgrades the board's stencils.\n`ModeProduction` is the zero value, so every unstamped binary seeds in prod mode: a plain `go build ./cmd/lyx`, `go install`, and `internal/testkit/lyxbin`'s builds (empty ldflags).\nOnly `tools/deploy` stamps `Channel=dev` for `./deploy-dev`.\n\nTwo prod-mode binaries built from different commits, both run against one hub, flip each changed stencil on every invocation, and every flip becomes a commit and push on Bolt.\nOn 2026-10-08 the installed `lyx` was rebuilt several times from `main`, while task worktrees whose branches edit the plan template and rubric (plan-gate work) were running.\nWhich second binary did the flipping is not established; candidates are an unstamped build run inside a task worktree and an installed binary from before the latest `update-plugins.sh`.\n\n## Effects\n\n- Producers read whichever version the last command seeded, so a running task's Plan or review prompt can change under it mid-run.\n- Bolt's history fills with seed noise.\n- A clone that has not pulled Bolt for a while seeds on its stale copy and then fails to push (separate issue: reconcile seeds before pulling Bolt).\n\n## Possible directions\n\n- Stamp the content with the source commit and refresh only forward, never to an older commit's default.\n- Or seed only from the installed production binary (`update-plugins.sh` stamps a production channel, and an unstamped build seeds nothing).\n- Log which binary (path, revision) made each seed commit, in the commit message, so the next flip can be traced.\n"
     }
   ],
   "legacy_done": [
