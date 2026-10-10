@@ -34,6 +34,12 @@ Waits on nothing open; can start now.
 | 1 | **Lens fan: master pre-reads the cited code before forking, forks get a read budget**<br>• Make the lens fan work as designed: the master reads the cited code (and judges nothing) before forking, each fork has a tool-call budget, and Discussion and Plan use their own fans | [`fan-master-preread`](design-fan-master-preread.md) |  | burler, stencil |
 | 2 | **Webster audit and recovery: pathless findings, read-only classifier, rebaseline Stuck** | [`webster-audit-recovery`](design-webster-audit-recovery.md) |  | webster, fabric |
 
+#### Normal priority
+
+| # | Task | Slug | After | Labels |
+| --- | --- | --- | --- | --- |
+| 3 | **Reed hygiene: daemon log and socket path, plain strand shells, watchdog child CPU** | [`reed-hygiene`](design-reed-hygiene.md) |  | reed |
+
 ## Notes
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
@@ -52,12 +58,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- |
 | 2 | **Batten idle notices count machine sleep as idle time**<br>• After a hibernate every run raises an idle notice for the whole sleep; the idle clock should skip time the machine was asleep | [`idle-notice-after-sleep`](design-idle-notice-after-sleep.md) | batten |
 | 3 | **shuttle raises a hold notice at the skill-load turn end, before the start prompt is sent** | [`hold-on-skill-load`](design-hold-on-skill-load.md) | shuttle |
-| 4 | **daemon idle Debug spawn lines reach no log sink; tmux socket path can exceed 108 bytes** | [`daemon-log-and-socket-path`](design-daemon-log-and-socket-path.md) | reed |
-| 5 | **Build-tagged member declared once per tag set resolves ambiguous, so its plan Create can never pass record-batch** | [`quarry-build-tag-ambiguous`](design-quarry-build-tag-ambiguous.md) | webster, loom, quarry |
-| 6 | **Bounce budget blocks a review segment after its round was approved, before the Bouncer verdict** | [`bounce-budget-after-approved`](design-bounce-budget-after-approved.md) | burler, loom |
-| 7 | **Master's wait stops waiting on a still-running background shell at a turn end**<br>• A gate run still in a background shell is cut off at a turn end and the run still reports done | [`background-gate-shell-discarded`](design-background-gate-shell-discarded.md) | webster, shuttle |
-| 8 | **Webster Master fixes a verify failure itself instead of spawning the fixer fork**<br>• Master edited and committed a test fix itself; the run-exit audit blocked it as a parent-write | [`master-self-fix`](design-master-self-fix.md) | webster, stencil |
-| 9 | **webster: create-not-done check fails on unexported plan targets, killing batches** | [`create-check-unexported`](design-create-check-unexported.md) | webster, quarry |
+| 4 | **Build-tagged member declared once per tag set resolves ambiguous, so its plan Create can never pass record-batch** | [`quarry-build-tag-ambiguous`](design-quarry-build-tag-ambiguous.md) | webster, loom, quarry |
+| 5 | **Bounce budget blocks a review segment after its round was approved, before the Bouncer verdict** | [`bounce-budget-after-approved`](design-bounce-budget-after-approved.md) | burler, loom |
+| 6 | **Master's wait stops waiting on a still-running background shell at a turn end**<br>• A gate run still in a background shell is cut off at a turn end and the run still reports done | [`background-gate-shell-discarded`](design-background-gate-shell-discarded.md) | webster, shuttle |
+| 7 | **Webster Master fixes a verify failure itself instead of spawning the fixer fork**<br>• Master edited and committed a test fix itself; the run-exit audit blocked it as a parent-write | [`master-self-fix`](design-master-self-fix.md) | webster, stencil |
+| 8 | **webster: create-not-done check fails on unexported plan targets, killing batches** | [`create-check-unexported`](design-create-check-unexported.md) | webster, quarry |
 
 ### Enhancements
 
@@ -70,45 +75,43 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 3 | **Haiku 5.5 for the Bouncer judge: is its ruling simple enough**<br>• The driver already runs on Haiku 5.5; decide per Bouncer row whether the judge ruling is simple enough for Haiku, trial it, and switch only where it holds | [`haiku-roles`](design-haiku-roles.md) | config, loom, burler |
 | 4 | **Burler runs its round on MultiLLMProducer**<br>• The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review | [`burler-multi-llm`](design-burler-multi-llm.md) | burler, shed, stencil |
 | 5 | **PATTERN overview breaks its cap only after merging main** | [`pattern-overview-headroom`](design-pattern-overview-headroom.md) | loom |
-| 6 | **Reed watchdog children still burn idle CPU** | [`watchdog-child-cpu`](design-watchdog-child-cpu.md) | reed |
-| 7 | **Bench the chair-and-advisors Discussion against the solo writer before switching it on**<br>• Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on | [`discussion-multi-llm-bench`](design-discussion-multi-llm-bench.md) | loom, stencil |
+| 6 | **Bench the chair-and-advisors Discussion against the solo writer before switching it on**<br>• Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on | [`discussion-multi-llm-bench`](design-discussion-multi-llm-bench.md) | loom, stencil |
 
 #### Normal priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 8 | **Convergence: log hub interventions and driver repairs per run by class**<br>• Record every hub intervention and driver repair with a class and cause, so interventions per run and repeat failure classes are visible | [`convergence-plan`](design-convergence-plan.md) | orch, shed |
-| 9 | **Parent-review gate: wait bound off the boundary, no mid-turn sends, live smoke**<br>• Close the cases the first parent-review gate left open: expiry while the writer is mid-turn, sends into a running turn after restart, poll cost, and one live smoke run | [`parent-review-hardening`](design-parent-review-hardening.md) | orch |
-| 10 | **Reopen the prime VS Code window with one short command**<br>• A snap refresh left the prime window wrong; lyx ide spawn needs the slug and fails from the hub root | [`ide-reopen-prime`](design-ide-reopen-prime.md) | ide |
-| 11 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | fabric, loom |
-| 12 | **shedrecipe: capability declaration instead of manual seam-threading**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | shed |
-| 13 | **lyx seeds the prime VS Code setup: title, orch start task, keybindings**<br>• LY: prime/LY: <slug> titles, prime opens with reed up+attach only, orch start and open board as tasks with lyx keybindings, no launch.json | [`ide-prime-setup`](design-ide-prime-setup.md) | ide, orch |
-| 14 | **Discussion stage has no sanctioned path to land a repository edit ahead of Plan**<br>• Discussion has no sanctioned path to commit a PATTERN edit ahead of Plan | [`discussion-lands-invariant`](design-discussion-lands-invariant.md) | loom |
-| 15 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | shed |
-| 16 | **Kick-start packs from tool locations through quarry Enclose**<br>• Turn file:line locations from verify failures, lint and audits into member glyphs with quarry enclose, then into a kick-start pack | [`enclose-kickstart`](design-enclose-kickstart.md) | quarry |
-| 17 | **Audit how plans use glyphs in practice, then tune the plan stencil**<br>• First audit done (findings below); re-run it by one agent after a good number of runs land on the implementer quarry hint (a28e79d9c) | [`glyph-practice-audit`](design-glyph-practice-audit.md) | loom, stencil |
-| 18 | **Capture real hook payloads into fixtures**<br>• Run the llm-tier hook-capture scenario once and turn the real StopFailure, Notification and SessionEnd payloads into corpus fixtures | [`shuttle-hook-payload-corpus`](design-shuttle-hook-payload-corpus.md) | shuttle |
-| 19 | **Shuttle: the launch line carries the first turn**<br>• /color already goes through the verified send; the skill-load message or the prompt should ride the launch line so only later turns are typed | [`shuttle-color-verified-send`](design-shuttle-color-verified-send.md) | shuttle |
-| 20 | **Carry-over check re-reads the written file**<br>• WriteCarryOver checks the splice on the produced lines before the atomic rename; re-reading the file after the rename and checking what is on disk would also catch a concurrent writer | `carryover-verify-on-disk` | loom |
-| 21 | **reed: strands state their size; parallel agents share the window evenly**<br>• Replace the one collapse-all-but-the-newest rule with per-strand sizing: content-sized panes like the runs overview, and parallel agents that share space evenly | [`reed-layout-shares`](design-reed-layout-shares.md) | reed |
-| 22 | **Configurable file log level in logger.yaml**<br>• Trace files carry only high-level messages and logger.yaml sets no level; add a file log level so most of lyx can be traced on demand | [`logger-file-level`](design-logger-file-level.md) | config |
-| 23 | **One owner for child-process lifetime in internal/proc**<br>• Fold lyx gate test's process-group, Pdeathsig and job-object setup into internal/proc beside ConfigureGroupKill | [`proc-child-lifetime`](design-proc-child-lifetime.md) |  |
-| 24 | **Fold loomcli and orchcli tmux probe copies onto tmuxkit** | [`tmuxkit-probe-copies`](design-tmuxkit-probe-copies.md) | loom, orch, reed |
-| 25 | **Reconcile keeps an old default below the new floor** | [`reconcile-stale-default`](design-reconcile-stale-default.md) | config |
-| 26 | **Discussion advisors: operator-named areas per advisor on top of the landed all-advisors default**<br>• Each discussion_advisors entry takes an optional area (a lens, as in review fans); without one the advisor answers every question | [`discussion-advisor-mode`](design-discussion-advisor-mode.md) | loom, stencil, config |
-| 27 | **Plan format has no way to insert a card or remove a card file** | [`plan-card-insert`](design-plan-card-insert.md) | loom, burler, stencil |
-| 28 | **Reed strand panes still read ~/.tmux.conf and start login shells**<br>• test-suite-weight moved the test kit to non-login panes without the user tmux config; reed own servers still read ~/.tmux.conf and start login shells for strand panes, noted as a bound in PATTERN | `reed-strand-login-shells` | reed |
-| 29 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` |  |
-| 30 | **Destructive no-argument verbs act on a bare invocation** | [`destructive-verb-confirm`](design-destructive-verb-confirm.md) | fabric, board |
-| 31 | **No gate or test catches gofmt drift** | [`gate-gofmt-check`](design-gate-gofmt-check.md) |  |
-| 32 | **Plan review does not check that a prescribed refusal is reachable** | [`plan-refusal-reachability`](design-plan-refusal-reachability.md) | burler, stencil, loom |
+| 7 | **Convergence: log hub interventions and driver repairs per run by class**<br>• Record every hub intervention and driver repair with a class and cause, so interventions per run and repeat failure classes are visible | [`convergence-plan`](design-convergence-plan.md) | orch, shed |
+| 8 | **Parent-review gate: wait bound off the boundary, no mid-turn sends, live smoke**<br>• Close the cases the first parent-review gate left open: expiry while the writer is mid-turn, sends into a running turn after restart, poll cost, and one live smoke run | [`parent-review-hardening`](design-parent-review-hardening.md) | orch |
+| 9 | **Reopen the prime VS Code window with one short command**<br>• A snap refresh left the prime window wrong; lyx ide spawn needs the slug and fails from the hub root | [`ide-reopen-prime`](design-ide-reopen-prime.md) | ide |
+| 10 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | fabric, loom |
+| 11 | **shedrecipe: capability declaration instead of manual seam-threading**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | shed |
+| 12 | **lyx seeds the prime VS Code setup: title, orch start task, keybindings**<br>• LY: prime/LY: <slug> titles, prime opens with reed up+attach only, orch start and open board as tasks with lyx keybindings, no launch.json | [`ide-prime-setup`](design-ide-prime-setup.md) | ide, orch |
+| 13 | **Discussion stage has no sanctioned path to land a repository edit ahead of Plan**<br>• Discussion has no sanctioned path to commit a PATTERN edit ahead of Plan | [`discussion-lands-invariant`](design-discussion-lands-invariant.md) | loom |
+| 14 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | shed |
+| 15 | **Kick-start packs from tool locations through quarry Enclose**<br>• Turn file:line locations from verify failures, lint and audits into member glyphs with quarry enclose, then into a kick-start pack | [`enclose-kickstart`](design-enclose-kickstart.md) | quarry |
+| 16 | **Audit how plans use glyphs in practice, then tune the plan stencil**<br>• First audit done (findings below); re-run it by one agent after a good number of runs land on the implementer quarry hint (a28e79d9c) | [`glyph-practice-audit`](design-glyph-practice-audit.md) | loom, stencil |
+| 17 | **Capture real hook payloads into fixtures**<br>• Run the llm-tier hook-capture scenario once and turn the real StopFailure, Notification and SessionEnd payloads into corpus fixtures | [`shuttle-hook-payload-corpus`](design-shuttle-hook-payload-corpus.md) | shuttle |
+| 18 | **Shuttle: the launch line carries the first turn**<br>• /color already goes through the verified send; the skill-load message or the prompt should ride the launch line so only later turns are typed | [`shuttle-color-verified-send`](design-shuttle-color-verified-send.md) | shuttle |
+| 19 | **Carry-over check re-reads the written file**<br>• WriteCarryOver checks the splice on the produced lines before the atomic rename; re-reading the file after the rename and checking what is on disk would also catch a concurrent writer | `carryover-verify-on-disk` | loom |
+| 20 | **reed: strands state their size; parallel agents share the window evenly**<br>• Replace the one collapse-all-but-the-newest rule with per-strand sizing: content-sized panes like the runs overview, and parallel agents that share space evenly | [`reed-layout-shares`](design-reed-layout-shares.md) | reed |
+| 21 | **Configurable file log level in logger.yaml**<br>• Trace files carry only high-level messages and logger.yaml sets no level; add a file log level so most of lyx can be traced on demand | [`logger-file-level`](design-logger-file-level.md) | config |
+| 22 | **One owner for child-process lifetime in internal/proc**<br>• Fold lyx gate test's process-group, Pdeathsig and job-object setup into internal/proc beside ConfigureGroupKill | [`proc-child-lifetime`](design-proc-child-lifetime.md) |  |
+| 23 | **Fold loomcli and orchcli tmux probe copies onto tmuxkit** | [`tmuxkit-probe-copies`](design-tmuxkit-probe-copies.md) | loom, orch, reed |
+| 24 | **Reconcile keeps an old default below the new floor** | [`reconcile-stale-default`](design-reconcile-stale-default.md) | config |
+| 25 | **Discussion advisors: operator-named areas per advisor on top of the landed all-advisors default**<br>• Each discussion_advisors entry takes an optional area (a lens, as in review fans); without one the advisor answers every question | [`discussion-advisor-mode`](design-discussion-advisor-mode.md) | loom, stencil, config |
+| 26 | **Plan format has no way to insert a card or remove a card file** | [`plan-card-insert`](design-plan-card-insert.md) | loom, burler, stencil |
+| 27 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` |  |
+| 28 | **Destructive no-argument verbs act on a bare invocation** | [`destructive-verb-confirm`](design-destructive-verb-confirm.md) | fabric, board |
+| 29 | **No gate or test catches gofmt drift** | [`gate-gofmt-check`](design-gate-gofmt-check.md) |  |
+| 30 | **Plan review does not check that a prescribed refusal is reachable** | [`plan-refusal-reachability`](design-plan-refusal-reachability.md) | burler, stencil, loom |
 
 #### Low priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 33 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
-| 34 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
+| 31 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
+| 32 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
 
 ### Features
 
