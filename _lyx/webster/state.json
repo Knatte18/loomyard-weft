@@ -496,7 +496,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 12,
   "masterStrand": "aa143fce7f38b5b92946363e7ea2e322",
   "masterSessionId": "9c21f887-456d-406f-be85-d2457070e9fe",
   "batches": {
@@ -541,6 +541,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-driver-context/9c21f887-456d-406f-be85-d2457070e9fe/subagents/agent-ae5b8b2f5d0936ab3.jsonl"
       ]
+    },
+    "12": {
+      "slug": "loop-detach-wait",
+      "cards": [
+        "12-loop-detach-wait",
+        "13-loop-watchdog",
+        "14-loom-idle-timeout-key",
+        "15-loom-arms-loop",
+        "16-start-keeps-status-strand"
+      ],
+      "cardHashes": {
+        "12-loop-detach-wait": "127d2318824ce5b6b8b1667860cd0a070a9dcc201546306fdd5e4d090c8d401a",
+        "13-loop-watchdog": "afd7246827ce048d310e17b4ad7c933d6d9fd374094e7b08da1718de5230b38b",
+        "14-loom-idle-timeout-key": "1d29b871a729929f781de045fd95a8cd98a7fb53bc52cf11ec3c07bf677fef27",
+        "15-loom-arms-loop": "fd6ced9f56e6e5e6ad8832f4a661f099b5f704e5595cd5321685e935e2c6f430",
+        "16-start-keeps-status-strand": "acaea145e3870623f58074543a25ded0c27f326765a5f7850a257703957d52c9"
+      },
+      "startSha": "d5e6e9e822ac4e686b384e6a5f1ce15008ff9922",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T11:14:39Z",
+      "sessionId": "9c21f887-456d-406f-be85-d2457070e9fe",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "step-progress-compact",
