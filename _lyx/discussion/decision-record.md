@@ -174,6 +174,12 @@ A day covers any lyx or operator command still in progress whose new objects are
   - forced-refresh-nonprod-binary-freezes-copy (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 4: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/plan/round-4-review.md; fixer report: _lyx/reviews/plan/round-4-fixer-report.md.
+  - drop-not-serialised-against-push-rebase (class design, severity MEDIUM, open in rounds 4)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A production binary whose revision descends from the recorded one refreshes an untouched, differing stencil and writes its revision and commit time; one whose revision does not leaves the file and logs the Info line.
