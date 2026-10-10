@@ -32,6 +32,7 @@ Waits on nothing open; can start now.
 | # | Task | Slug | After | Labels |
 | --- | --- | --- | --- | --- |
 | 1 | **Lens fan: master pre-reads the cited code before forking, forks get a read budget**<br>• Make the lens fan work as designed: the master reads the cited code (and judges nothing) before forking, each fork has a tool-call budget, and Discussion and Plan use their own fans | [`fan-master-preread`](design-fan-master-preread.md) |  | burler, stencil |
+| 2 | **Webster audit and recovery: pathless findings, read-only classifier, rebaseline Stuck** | [`webster-audit-recovery`](design-webster-audit-recovery.md) |  | webster, fabric |
 
 ## Notes
 
@@ -57,10 +58,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 7 | **Master's wait stops waiting on a still-running background shell at a turn end**<br>• A gate run still in a background shell is cut off at a turn end and the run still reports done | [`background-gate-shell-discarded`](design-background-gate-shell-discarded.md) | webster, shuttle |
 | 8 | **Webster Master fixes a verify failure itself instead of spawning the fixer fork**<br>• Master edited and committed a test fix itself; the run-exit audit blocked it as a parent-write | [`master-self-fix`](design-master-self-fix.md) | webster, stencil |
 | 9 | **webster: create-not-done check fails on unexported plan targets, killing batches** | [`create-check-unexported`](design-create-check-unexported.md) | webster, quarry |
-| 10 | **recover-batch treats a pathless fabric-reference finding as a path and fails with ENAMETOOLONG** | [`recover-batch-pathless-finding`](design-recover-batch-pathless-finding.md) | webster |
-| 11 | **Fabric-reference audit fails a batch for help-only lyx fabric --help calls** | [`fabric-audit-help-false-positive`](design-fabric-audit-help-false-positive.md) | webster, fabric, stencil |
-| 12 | **Read-only classifier may admit a git reader flag that writes** | [`fabric-readonly-git-write-flags`](design-fabric-readonly-git-write-flags.md) | fabric, webster |
-| 13 | **Auto-rebaseline merge-base failure may escape the Stuck mapping** | [`auto-rebaseline-mergebase-stuck`](design-auto-rebaseline-mergebase-stuck.md) | webster |
 
 ### Enhancements
 
@@ -105,15 +102,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 30 | **Destructive no-argument verbs act on a bare invocation** | [`destructive-verb-confirm`](design-destructive-verb-confirm.md) | fabric, board |
 | 31 | **No gate or test catches gofmt drift** | [`gate-gofmt-check`](design-gate-gofmt-check.md) |  |
 | 32 | **Plan review does not check that a prescribed refusal is reachable** | [`plan-refusal-reachability`](design-plan-refusal-reachability.md) | burler, stencil, loom |
-| 33 | **begin-batch terminal-dead refusal does not name the retry and recovery_exhausted** | [`begin-batch-dead-refusal-text`](design-begin-batch-dead-refusal-text.md) | webster |
-| 34 | **Thin test rows for the fabric classifier, rebaseline and shell wait** | [`webster-replan-thin-tests`](design-webster-replan-thin-tests.md) | webster, fabric, shuttle |
 
 #### Low priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 35 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
-| 36 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
+| 33 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
+| 34 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
 
 ### Features
 

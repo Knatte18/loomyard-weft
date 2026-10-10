@@ -1232,42 +1232,6 @@
       "body": "## Seen\n\nOn 2026-10-10 `gofmt -l internal/loomcli/` on main (57243019b) lists `internal/loomcli/bootstrap_test.go` (a trailing blank line), and every test tier passed; the `webster-replan-state` conflict agent noticed it.\nNo test or gate step runs gofmt.\n\n## Idea\n\nAdd a gofmt check (`gofmt -l` over the module must print nothing) to the test suite or the verify gate, and fix the file in the same change."
     },
     {
-      "id": 304,
-      "slug": "recover-batch-pathless-finding",
-      "title": "recover-batch treats a pathless fabric-reference finding as a path and fails with ENAMETOOLONG",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster"
-      ],
-      "issues": [
-        513
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #513](https://github.com/Knatte18/loomyard/issues/513).\n\n## Seen\n\nIn run `cli-surface` (2026-10-10), batch 06 failed `record-batch` on a fabric-reference audit finding whose only `uncheckable` entry is a shell command (`for v in ...; do lyx fabric $v --help --json ...; done`).\n`lyx webster recover-batch 06` then errored with \"websterengine: resolve links in .../fabric-reference: lstat ...: file name too long\".\n`RecoverSpawnOrAttach` (`internal/websterengine/recoverbatch.go:377-378`) passes `prior.Uncheckable` to `contractWritesFor` (`contractevidence.go:136-137`), whose `contractCanon` calls `canonicalPath` (`audit.go:463-485`), which runs `filepath.EvalSymlinks` on the finding text; ENAMETOOLONG is not `ErrNotExist`, so `audit.go:474` returns it.\n\n## Workaround\n\n`lyx webster reset --to batch-start --batch 6`, then `lyx webster accept-audit --batch 6`, then `lyx webster run`, discarding the batch's commits.\n\n## Expected\n\n`contractWritesFor` and `splitContractPaths` skip pathless entries, so recover-batch returns its documented refusal naming `accept-audit --batch NN`.\n\n## After `webster-replan-state` (PR #515)\n\nPR #515 added an early exit for a batch whose pathless findings are all read-only (`recoverbatch.go:444`).\nA pathless finding that is not read-only still reaches `contractWritesFor` → `contractCanon` (`recoverbatch.go:450-451`), so the ENAMETOOLONG error can still happen.\n"
-    },
-    {
-      "id": 305,
-      "slug": "fabric-audit-help-false-positive",
-      "title": "Fabric-reference audit fails a batch for help-only lyx fabric --help calls",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster",
-        "fabric",
-        "stencil"
-      ],
-      "issues": [
-        514
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #514](https://github.com/Knatte18/loomyard/issues/514).\n\n## Seen\n\nIn run `cli-surface` (2026-10-10), batch 06's implementer fork read help text with `for v in ...; do lyx fabric $v --help --json | jq -r .long | wc -c; done`.\nThe fabric-reference audit (`ClassifyViolation`, `internal/websterengine/audit.go:384-396`) classed it as a correctness violation, and `fabricengine.IsReadOnlyCommand` (`internal/fabricengine/refscanner.go:184-229`) rejects it, so `accept-audit` could not keep the batch's six committed cards.\n\n## Workaround\n\n`lyx webster reset --to batch-start --batch 6`, `lyx webster accept-audit --batch 6`, then redo the batch, discarding cards 6-11.\n\n## Expected\n\nA `lyx ... --help`, `-h` or `--json` invocation (none runs a command since 57243019b) is not a fabric reference, or the implementer stencil forbids running `lyx` at all so forks read code instead.\n\n## After `webster-replan-state` (PR #515)\n\nPR #515 added a read-only fabric-reference classifier: `readOnlyLyxSegment` admits a lyx help call only when `--help` or `-h` is its last word.\nWhat remains is admitting a trailing `--json` (`lyx ... --json`, `lyx ... --help --json`), which since 57243019b never runs a command; a loop or a `$v` stays non-read-only on purpose.\nThe classifier is an allow-list of plain words, so a quoted or globbed read (`git log --format='%h %s'`) also stays a correctness halt.\n"
-    },
-    {
       "id": 306,
       "slug": "plan-refusal-reachability",
       "title": "Plan review does not check that a prescribed refusal is reachable",
@@ -1288,66 +1252,24 @@
     },
     {
       "id": 307,
-      "slug": "fabric-readonly-git-write-flags",
-      "title": "Read-only classifier may admit a git reader flag that writes",
-      "kind": "note",
+      "slug": "webster-audit-recovery",
+      "title": "Webster audit and recovery: pathless findings, read-only classifier, rebaseline Stuck",
+      "kind": "task",
       "labels": [
         "bug",
-        "fabric",
-        "webster"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\n`webster-replan-state` landed (5a8be0274) with Webster-Review finding `d8-reader-write-flags-unbounded` (design, BLOCKING) open: the reader allow-list in `internal/fabricengine/refscanner.go` admits git reader commands without bounding their flags, so a reader given a writing flag could pass as read-only.\n\n## Idea\n\nCheck the classifier against the flags each admitted git reader accepts, and reject any flag that writes."
-    },
-    {
-      "id": 308,
-      "slug": "begin-batch-dead-refusal-text",
-      "title": "begin-batch terminal-dead refusal does not name the retry and recovery_exhausted",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "webster"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\n`webster-replan-state` landed (5a8be0274) with finding `d12-begin-batch-dead-refusal-stale` (MEDIUM) open: begin-batch's refusal for a terminal-dead batch predates the second recovery.\n\n## Idea\n\nThe refusal names the second-recovery route and the `recovery_exhausted` state that 5a8be0274 added."
-    },
-    {
-      "id": 309,
-      "slug": "auto-rebaseline-mergebase-stuck",
-      "title": "Auto-rebaseline merge-base failure may escape the Stuck mapping",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\n`webster-replan-state` landed (5a8be0274) with finding `card4-merriambase-failure-escapes-stuck` (MEDIUM) open: an error computing the merge base during auto-rebaseline may surface as a hard failure instead of Stuck.\n\n## Idea\n\nMap that error to Stuck with a way forward, and test it."
-    },
-    {
-      "id": 310,
-      "slug": "webster-replan-thin-tests",
-      "title": "Thin test rows for the fabric classifier, rebaseline and shell wait",
-      "kind": "note",
-      "labels": [
         "enhancement",
         "webster",
-        "fabric",
-        "shuttle"
+        "fabric"
       ],
-      "issues": [],
+      "issues": [
+        513,
+        514
+      ],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "## Seen\n\n`webster-replan-state` landed (5a8be0274) with findings `card14-classifier-rows-miss-glob-and-tilde` and `thin-test-rows-cards-13-11-17-21` (MEDIUM) open: the classifier tables lack glob and tilde cases, and the rebaseline and shell-wait tables are thin.\n\n## Idea\n\nAdd those rows."
+      "body": "## Goal\n\nClose the webster audit and recovery gaps that `cli-surface` batch 06 hit and that `webster-replan-state` (5a8be0274) left open, in `internal/websterengine` and `internal/fabricengine/refscanner.go`.\n\n## 1. recover-batch fails on a pathless finding (#513)\n\nIn run `cli-surface` (2026-10-10), batch 06 failed `record-batch` on a fabric-reference audit finding whose only `uncheckable` entry is a shell command (`for v in ...; do lyx fabric $v --help --json ...; done`).\n`lyx webster recover-batch 06` then errored with \"websterengine: resolve links in .../fabric-reference: lstat ...: file name too long\".\n`RecoverSpawnOrAttach` passes `prior.Uncheckable` to `contractWritesFor` (`contractevidence.go`), whose `contractCanon` calls `canonicalPath` (`audit.go`), which runs `filepath.EvalSymlinks` on the finding text; ENAMETOOLONG is not `ErrNotExist`, so it is returned.\n5a8be0274 added an early exit when every pathless finding is read-only (`recoverbatch.go`), but a pathless finding that is not read-only still reaches `contractWritesFor` → `contractCanon`.\n\nExpected: `contractWritesFor` and `splitContractPaths` skip pathless entries, so recover-batch returns its documented refusal naming `accept-audit --batch NN`.\n\n## 2. The fabric-reference audit fails help-only lyx calls (#514)\n\nBatch 06's implementer fork read help with `lyx fabric $v --help --json`; the audit (`ClassifyViolation`) classed it as a correctness violation, and `fabricengine.IsReadOnlyCommand` rejected it, so `accept-audit` could not keep the batch's six committed cards (workaround: `reset --to batch-start`, `accept-audit`, redo the batch).\n5a8be0274's `readOnlyLyxSegment` admits a lyx help call only when `--help` or `-h` is its last word.\n\nExpected:\n\n- a trailing `--json` (`lyx ... --json`, `lyx ... --help --json`) is read-only too, since 57243019b no command runs under the global `--json`;\n- a quoted or globbed argument to an admitted reader (`git log --format='%h %s'`) does not on its own make a command non-read-only;\n- a loop or a `$v` expansion stays non-read-only on purpose.\n\n## 3. Reader flags that write (Webster-Review finding `d8-reader-write-flags-unbounded`, BLOCKING at landing)\n\nThe reader allow-list in `refscanner.go` admits git reader commands without bounding their flags, so a reader given a writing flag could pass as read-only.\nExpected: check each admitted git reader's flags and reject any flag that writes (for example an output-file or config-writing flag).\n\n## 4. Auto-rebaseline merge-base failure (finding `card4-merriambase-failure-escapes-stuck`)\n\nAn error computing the merge base during auto-rebaseline may surface as a hard failure instead of Stuck.\nExpected: map it to Stuck with a way forward, and test it.\n\n## 5. begin-batch's terminal-dead refusal text (finding `d12-begin-batch-dead-refusal-stale`)\n\nThe refusal predates the second recovery.\nExpected: it names the second-recovery route and the `recovery_exhausted` state that 5a8be0274 added.\n\n## 6. Thin test rows (findings `card14-classifier-rows-miss-glob-and-tilde`, `thin-test-rows-cards-13-11-17-21`)\n\nThe classifier tables lack glob and tilde cases, and the rebaseline and shell-wait tables are thin.\nExpected: add those rows alongside items 2-4.\n"
     }
   ]
 }
