@@ -3,13 +3,13 @@
 **Create:**
 - `internal/planglyph/buildenv.go`
 - `internal/planglyph/buildenv_test.go`
-- `plan:internal/planglyph#buildPair` -> `type buildPair struct`
-- `plan:internal/planglyph#pinnedBuildPairs` -> `var pinnedBuildPairs []buildPair`
-- `plan:internal/planglyph#maxFreeTags` -> `const maxFreeTags = 4`
-- `plan:internal/planglyph#constrainedCandidate` -> `type constrainedCandidate struct`
-- `plan:internal/planglyph#ambiguity` -> `type ambiguity struct`
-- `plan:internal/planglyph#classifyAmbiguity` -> `func classifyAmbiguity(worktreeRoot string, candidates []quarry.Symbol) ambiguity`
-- `plan:internal/planglyph#candidateConstraint` -> `func candidateConstraint(name string, source []byte) string`
+- `internal/planglyph#buildPair`
+- `internal/planglyph#pinnedBuildPairs`
+- `internal/planglyph#maxFreeTags`
+- `internal/planglyph#constrainedCandidate`
+- `internal/planglyph#ambiguity`
+- `internal/planglyph#classifyAmbiguity`
+- `internal/planglyph#candidateConstraint`
 
 **Edit:**
 - `cmd/lyx/testdata/test-budget.yaml`

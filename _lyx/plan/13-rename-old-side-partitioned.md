@@ -9,7 +9,7 @@
 - `internal/planglyph/planglyph_test.go`
 
 **Uses:**
-- `plan:internal/planglyph#classifyAmbiguity`
+- `internal/planglyph#classifyAmbiguity`
 - `internal/planglyph#candidateList`
 
 **Intent:** Keep a Rename's old side Found-only and name the way forward for a partitioned member (decision D6).

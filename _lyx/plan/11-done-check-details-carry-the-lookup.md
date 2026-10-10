@@ -9,7 +9,7 @@
 - `internal/planglyph/status_completeness_test.go`
 
 **Uses:**
-- `plan:internal/planglyph#classifyAmbiguity`
+- `internal/planglyph#classifyAmbiguity`
 - `internal/planglyph#candidateList`
 - `internal/planglyph#resolveKeyFor`
 

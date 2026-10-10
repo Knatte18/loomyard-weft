@@ -1,7 +1,7 @@
 # Card 12 — answer-symbols-read-the-classifier
 
 **Create:**
-- `plan:internal/planglyph#partitionedAnswers` -> `func partitionedAnswers(worktreeRoot string, answers map[string]quarry.ResolveResult) map[string]bool`
+- `internal/planglyph#partitionedAnswers`
 
 **Edit:**
 - `internal/planglyph#answerSymbols` -> `func answerSymbols(r quarry.ResolveResult, partitioned bool) (symbols []quarry.Symbol, readable bool)`
@@ -17,7 +17,7 @@
 - `internal/planglyph/glyphchain_test.go`
 
 **Uses:**
-- `plan:internal/planglyph#classifyAmbiguity`
+- `internal/planglyph#classifyAmbiguity`
 
 **Intent:** Let every pass that resolves a member into its declarations see a partitioned member's candidates (decision D6), classifying each ambiguous answer once per pass.
 `partitionedAnswers` calls `classifyAmbiguity` once for each `ambiguous` answer in a pass's answer map and returns the targets it reports partitioned, so each candidate file is read once per pass however often the pass consults the answer.

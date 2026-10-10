@@ -12,8 +12,8 @@
 - `internal/planglyph/create_test.go`
 
 **Uses:**
-- `plan:internal/planglyph#classifyAmbiguity`
-- `plan:internal/planglyph#constrainedCandidate`
+- `internal/planglyph#classifyAmbiguity`
+- `internal/planglyph#constrainedCandidate`
 
 **Intent:** Route the resolve status policy and the Create inversion through the classifier (decision D6).
 In `statusFindings`, the `ambiguous` arm calls `classifyAmbiguity(worktreeRoot, r.Candidates)`: a partitioned answer passes with no finding, like `multipart`, for every target the policy covers (Edit, Delete, a Rename's endpoints, `Uses:`); an unpartitioned one is `glyph-ambiguous` as today, its detail listing each candidate through `candidateList`.
