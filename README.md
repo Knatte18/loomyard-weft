@@ -22,13 +22,16 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | At | Labels |
 | --- | --- | --- | --- | --- |
 | 2 | **Reed hygiene: daemon log and socket path, plain strand shells, watchdog child CPU** | [`reed-hygiene`](design-reed-hygiene.md) | Publish | reed |
-| 3 | **Loop machinery small bugs: bounce budget, PR-Gate comment, sleep-aware idle, skill-load hold**<br>• Five small faults in burler/loom, shed, batten and shuttle | [`loom-small-bugs`](design-loom-small-bugs.md) | paused · Darn | loom, burler, shed, batten, shuttle |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | After | Labels |
+| --- | --- | --- | --- | --- |
+| 1 | **Loop machinery small bugs: bounce budget, PR-Gate comment, sleep-aware idle, skill-load hold**<br>• Five small faults in burler/loom, shed, batten and shuttle | [`loom-small-bugs`](design-loom-small-bugs.md) |  | loom, burler, shed, batten, shuttle |
 
 ### Layer A
 
