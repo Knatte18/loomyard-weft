@@ -5,15 +5,15 @@
 - `internal/fabricengine/refscanner_test.go`
 
 **Create:**
-- `plan:internal/fabricengine#plainWord` -> `func plainWord(word string) bool`
-- `plan:internal/fabricengine#readOnlyLyxSegment` -> `func readOnlyLyxSegment(words []string) bool`
-- `plan:internal/fabricengine#readOnlyGitSegment` -> `func readOnlyGitSegment(words []string) bool`
+- `internal/fabricengine#plainWord`
+- `internal/fabricengine#readOnlyLyxSegment`
+- `internal/fabricengine#readOnlyGitSegment`
 
 **Uses:**
 - `internal/fabricengine#readOnlyCommands`
 - `internal/fabricengine#substitutionMarkers`
 - `internal/fabricengine#blankQuotedSpans`
-- `plan:internal/fabricengine#FabricReaderVerbs`
+- `internal/fabricengine#FabricReaderVerbs`
 
 **Intent:** Turn the read-only classifier into an allow-list of plain words that admits the `lyx` help forms, the `lyx fabric` readers and a closed set of `git` reads (D8 and the parent's addition).
 `IsReadOnlyCommand` stays the one classifier, closed and static, keeps its quote-aware segment split and now reads `||` as a separator; it keeps every refusal it has: output redirection, command or process substitution, backgrounding, and a first word that is quoted or not a listed command, so `env`, `xargs`, `bash -c` and a variable stay rejected.

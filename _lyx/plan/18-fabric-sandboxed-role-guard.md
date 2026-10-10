@@ -18,7 +18,7 @@
 - `internal/agentname#RoleDriver`
 - `internal/agentname#RoleOrch`
 - `internal/agentname#StrandNameEnv`
-- `plan:internal/fabricengine#FabricReaderVerbs`
+- `internal/fabricengine#FabricReaderVerbs`
 
 **Intent:** Refuse every mutating `lyx fabric` verb from an implementer fork, a recovery strand or any other slugged task-session role, and say in `add --help` that it pushes (D7).
 The guard is the first check of `fabric`'s persistent pre-run, installed in `addWeftVerbs` ahead of the weft pre-run's early return for a topology verb, and it runs only when the `fabric` command has a parent, as `main.go` mounts it; `configcli`'s in-process sync runs `Command()` as its own root through `RunCLIIn` and so passes.

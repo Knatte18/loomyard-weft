@@ -1,0 +1,10 @@
+status: OK
+head_sha: 6f614a7041d770a8a884e83bc505216997b9e8b9
+deviations:
+  - internal/websterengine/auditledger.go
+  - internal/websterengine/runlevel.go
+  - internal/websterengine/recordbatch.go
+  - internal/loomcli/wiring.go
+  - cmd/lyx/testdata/test-budget.yaml
+  - internal/gatecli/doc.go
+  - internal/verifytree/doc.go

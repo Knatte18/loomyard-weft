@@ -1,7 +1,7 @@
 # Card 13 — fabric-reader-verbs
 
 **Create:**
-- `plan:internal/fabricengine#FabricReaderVerbs` -> `func FabricReaderVerbs() []string`
+- `internal/fabricengine#FabricReaderVerbs`
 
 **Intent:** Declare the `lyx fabric` reader verb names once, so the read-only classifier (card 14) and the sandboxed-role guard (card 18) build their reader sets from the same names (D7 and D8).
 `FabricReaderVerbs` returns `list`, `pairs`, `status`, `diff`, `shortname`, `prune` and `cleanup`, a fresh slice on every call so no caller can change another's set.
