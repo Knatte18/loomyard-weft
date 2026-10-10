@@ -63,3 +63,9 @@ This is abnormal because a run can finish as `done` with verification work in fl
 What to do: when a turn end finds live background shells, either hold the run for the parent instead of finishing it, or stop the shells explicitly and record that their results were not consumed; at minimum surface this as a halt or warning rather than a friction note after the fact.
 
 Provenance: task `webster-replan-state`, from note `webster-background-shell.md`.
+
+## After `webster-replan-state` (5a8be0274)
+
+5a8be0274 applies one shell-wait rule to both signals, keyed on the output files; it records every shell a run ends over in `Result.EndedShells`, lists them in webster's summary, and lets a stale shell hold the run until its own timeout instead of ten minutes.
+#517 came from that run's own Master, which ran the old binary.
+What remains: when the output files exist, a turn end still finishes the run as `done` over a live gate shell whose result nobody read; decide whether a live `lyx gate test` shell holds the run or turns its outcome into a warning.
