@@ -23,6 +23,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | At | Labels |
 | --- | --- | --- | --- | --- |
 | 3 | **CLI surface: a command index for the orch, one help form, intake keeps comments**<br>• lyx help index injected into the orch, a test-enforced form for Use/Short/Long including board payload keys, and intake that carries issue comments | [`cli-surface`](design-cli-surface.md) | Webster | orch, board, selfreport |
+| 4 | **Reed hygiene: daemon log and socket path, plain strand shells, watchdog child CPU** | [`reed-hygiene`](design-reed-hygiene.md) | Worktree-Create | reed |
 
 ### Ready
 
@@ -33,12 +34,6 @@ Waits on nothing open; can start now.
 | # | Task | Slug | After | Labels |
 | --- | --- | --- | --- | --- |
 | 1 | **Lens fan: master pre-reads the cited code before forking, forks get a read budget**<br>• Make the lens fan work as designed: the master reads the cited code (and judges nothing) before forking, each fork has a tool-call budget, and Discussion and Plan use their own fans | [`fan-master-preread`](design-fan-master-preread.md) |  | burler, stencil |
-
-#### Normal priority
-
-| # | Task | Slug | After | Labels |
-| --- | --- | --- | --- | --- |
-| 2 | **Reed hygiene: daemon log and socket path, plain strand shells, watchdog child CPU** | [`reed-hygiene`](design-reed-hygiene.md) |  | reed |
 
 ## Notes
 
