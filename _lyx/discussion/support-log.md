@@ -26,7 +26,7 @@ Each turn below is a question the producer put to itself after reading the board
    `upsert` spells the full task key list; `upsert-batch` and `merge` reference `<task>`, defined once in the group's `Long` and on the index's `board` line.
 7. What is enforceable on `Long`?
    A byte cap; content is review.
-   Set at 2,000 bytes, between the measured median (about 740 bytes) and the ten largest pages (2.5 to 5.4 KB).
+   Set at 2,000 bytes, between the measured median (about 740 bytes) and the ten largest pages (2.5 to 5.4 KB), which make up the bulk of the 40k tokens a full `--help` dump costs.
 8. What does a carried comment look like?
    `## Issue comment, <date>`, the form the operator used when completing #479 and #480 by hand; one level deeper under a fold's `## From issue #N`.
    Author not recorded.
@@ -45,13 +45,35 @@ Each turn below is a question the producer put to itself after reading the board
 - **Hiding `role` and `internal` commands from `--help`.** The operator decided on 2026-10-09 that the annotation decides what the orch is handed, never what help shows.
 - **A `<addr>` shorthand for `{slug|id}`.** Short enough to spell literally; a shorthand would need a legend for three characters saved.
 - **Flag descriptions in the index.** Measured at another 14 KB; the orch reads `--help` for a flag's meaning.
-- **A full-path index line (`lyx batten goto …`).** 11 to 12 percent larger than the nested form for the same content.
+- **A full-path index line (`lyx batten goto …`).** 11 to 12 percent larger than the nested form for the same content; the operator measured the nested form at about 3.5k tokens for the `operator` audience.
+- **The watcher rendering the index from its own command tree.** The `lyx orch watch` process outlives a deploy, so its tree describes the old binary while the orch calls the new one.
+- **The watcher running `lyx help index` through its own `PATH`.** The watcher is a detached daemon without reed's pane prelude, so its `PATH` can name a different `lyx` from the orch pane's, such as the installed one while the orch runs from `.dev-bin`.
+- **Exempting `help` from the whole `cmd/lyx` tree walk.** Would leave `help` and `index` outside the audience and form tests; only the bare-group check conflicts with keeping the built-in's root help.
+- **Keeping the built-in's `Find` fallback for `lyx help <group> <unknown>`.** Prints the group's help for a mistyped verb, where every other lyx group refuses an unknown subcommand.
+- **The watcher running its own executable's path, recorded at its start.** Matches the pane only when one `lyx orch start` both launches the strand and spawns the watcher; a `start` that only spawns a watcher for a live strand, or a reed resume relaunching the pane from another `lyx`, leaves the two apart.
+- **Leaving `startAutoReload`'s render error as a failed tick.** A missing binary would then spawn a failing `help index` every poll until the consecutive-error limit ends the watcher, where the other render sites go idle.
+- **Restarting or refusing a watcher whose build stamp differs.** Interrupts a live orch's watcher on every landing's deploy, to fix one string the watcher can fetch from the current binary instead.
+- **Equality of `Use` key names alone in the board coupling test.** Passes a wrong `?` or `|` marker; the round-1 review found `merge` already marking its required `upsert` optional.
 - **Recording the comment author in the heading.** Not in the operator's hand-made form; the issue link above the body gives the context.
 - **Dropping every lyx-authored comment by author.** The author of a `gh`-token comment is the operator's account, so authorship does not identify lyx; the pointer's form does.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+The review raised nine findings; all were fixed in `decision-record.md`.
+The form test reads a `{…}` span as one token (D6); the coupling test compares required, optional and exclusive keys, and `merge`'s `upsert` lost its wrong `?` (D7); the watcher takes its index from the `lyx` on `PATH` (D4); runnable groups such as `lyx config` carry an audience and a leaf-style line (D2, D3); the index skips `completion` and unannotated commands (D2); D1 bounds the replacement help command and decides that `lyx --json` lists `help`; D11's pointer filter matches the whole trimmed body only.
+Measurement narrative moved here, and the registration route is stated in Constraints only.
+
+### Round 2
+
+The review raised three findings; all were fixed in `decision-record.md`.
+D1 states how `help` meets the `cmd/lyx` tree walk (exempt from the bare-group check alone, `operator` on `help` and `index`, `Use` `help [<command>...]`, with D6 gaining the `[<arg>...]` form) and refuses an unknown word at any depth of a help topic with `unknown subcommand`; D4 runs the watcher's index source from the absolute path the watcher was started from rather than its own `PATH`, with a bound for a missing path, and Constraints name `PATTERN-pane-binary-resolution`.
+
+### Round 3
+
+The review raised three findings; all were fixed in `decision-record.md`.
+D4 has reed record each strand's prelude binary at every launch and relaunch, and the watcher's index source runs the orch strand's recorded path, since the watcher's own executable differs from the pane's on a watcher-only start and after a reed resume; `startAutoReload` goes idle on a render failure like the other two sites, the one change Scope admits to the reload steps; D9 exempts the root's module list, which the tree-walk test pins.
 
 ## Question ledger
 
@@ -67,6 +89,8 @@ _No rounds yet._
 | Q8 | Comment heading form? | Auto-pick A6: `## Issue comment, <YYYY-MM-DD>`, date only. |
 | Q9 | Operator skill name? | Auto-pick A7: `ly:cli`. |
 | Q10 | Registration oracle and `SetHelpCommand`? | Open for the plan: mount through `AddCommand` too, or extend the oracle; listed under Constraints. |
-| Q11 | Does `lyx --json` list the new `help` module? | Open for the plan; listed under Open risks. |
-| Q12 | Optionality of `merge`'s keys in `Use`? | Open for the plan: read from the parser; the coupling test pins it. |
+| Q11 | Does `lyx --json` list the new `help` module? | Decided in round 1 (D1): yes, with `index`; `completion` stays skipped. |
+| Q12 | Optionality of `merge`'s keys in `Use`? | Read from the parser in round 1 (D7): `upsert` required, `remove_slugs` and `set_status` optional; the coupling test compares optionality. |
 | Q13 | Environment | `lyx board get` and `lyx board list` ran clean; nothing outside the two output files was touched. |
+| Q14 | Which binary does the watcher's index describe? | Auto-pick A9, revised in rounds 2 and 3: the absolute path reed records on the orch strand at each launch and relaunch, run at each render, not a `PATH` lookup or the watcher's own executable. |
+| Q15 | How does `help` meet the `cmd/lyx` tree walk, and what does `lyx help <group> <unknown>` do? | Decided in round 2 (D1): exempt from the bare-group check alone; an unknown word at any depth is refused with `unknown subcommand`. |
