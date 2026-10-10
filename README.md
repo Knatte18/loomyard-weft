@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 1. **Git robustness: stale pack index, background gc, network timeouts, reused slugs** — [`git-robustness`](design-git-robustness.md) · bug, enhancement, fabric, batten, stencil · awaiting · PR-Gate
    - Reindex-and-retry for every go-git call, no auto-gc under a live step, timeouts on git network calls, batten refuses a done slug, bounded HeadContains
    - **Before:** `publish-recovery`, `cli-surface`
-1. **MultiLLMProducer: one producer runs a chair and its advisors as seats** — [`multi-llm-producer`](design-multi-llm-producer.md) · feature, shed, shuttle · running · Discussion-Burler
+1. **MultiLLMProducer: one producer runs a chair and its advisors as seats** — [`multi-llm-producer`](design-multi-llm-producer.md) · feature, shed, shuttle · running · Discussion-Bouncer
    - A producer beside SingleLLMProducer that runs N agents as seats, one chair that steers and decides the outcome plus advisor-1..n, with its own internal message channel; built standalone, used by nothing yet
    - **Before:** `burler-multi-llm`, `discussion-multi-llm`
 1. **Daemons and wake-ups: event-driven waits, a timely orch reload, recorded revival order** — [`daemon-wakeups`](design-daemon-wakeups.md) · bug, enhancement, reed, orch, shuttle · running · Discussion-Write
