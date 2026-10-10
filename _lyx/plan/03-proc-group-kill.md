@@ -1,8 +1,8 @@
 # Card 3 — Process-group kill moves from verifyrun to proc
 
 **Create:**
-- `plan:internal/proc#ConfigureGroupKill` -> `func ConfigureGroupKill(cmd *exec.Cmd, report func(pid int, groupErr error))`
-- `plan:internal/proc#ErrNoProcessGroup` -> `var ErrNoProcessGroup error`
+- `internal/proc#ConfigureGroupKill`
+- `internal/proc#ErrNoProcessGroup`
 
 **Edit:**
 - `internal/verifyrun/run.go`

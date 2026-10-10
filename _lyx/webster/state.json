@@ -1,14 +1,14 @@
 {
   "runGuid": "5890e7922560ff26722b9e5540688038",
-  "planFingerprint": "a3daf3a22a928b25afc69f049f9d4a6e873e731f7fdaedcf2fced939c330f5d0",
+  "planFingerprint": "bfa4d493ffbc6c076c31e9b8c54f27d46e9f69301209fa9421c367a8718e29af",
   "planFileHashes": {
     "00-overview.md": "78a22af4029f26e67d09d7d4aef3235248cb7566766e32408b93f3b7288337a4",
     "01-headcontains-bounded-walk.md": "83662ea6a1b4c42dfadfa81a86e70889dc9c9702ca7dac0faf812004710607a4",
-    "02-gitrepo-retrying-read.md": "b993651568f7c1d75d947c924f15a438202800679677900682ebdd8a51b67401",
-    "03-proc-group-kill.md": "e59fd13e081a339326a231195ba3bd67b5629853e5d2128b16cf009f71684bda",
-    "04-gitexec-remote-bounds.md": "055ac4b8d0437ae412fcbd23e40aa995326dae11ec0f72d3d6c5767dc71e543f",
-    "05-hub-store-gc.md": "6b652dc956961d6a4c03a43d14d8e56c9f0b53e93120a3ed9034bf62c3e1fbc9",
-    "06-batten-window-done-refusal.md": "b994a2fbca30825668ecc2ed294a924412308710394fb525630415773801c1b1"
+    "02-gitrepo-retrying-read.md": "50ffa4763945055bd86a083056c170b129c476a622b2d868eb645497d92b254c",
+    "03-proc-group-kill.md": "8464ddd15793b5630a9f1f514dece9808d88ec4fa7c88ab16c16da5d84609d83",
+    "04-gitexec-remote-bounds.md": "96168a62fa7d65ceaabe759c6301e0ecd852e8ea89c888018fc7acf45464bc06",
+    "05-hub-store-gc.md": "2310ecf38f3f56764aa565e56693590f551b720ad48f31b01fa8e6b854301420",
+    "06-batten-window-done-refusal.md": "65e592d99bb89115ee1d940eb8131f914baf4a05cf3384395edcc7c33e0cbd05"
   },
   "planOverviewFrameHash": "f21b14ad3d7c1e059b7d7dd313b9b24771a477989e650b9ac50c504dace98538",
   "partition": [
@@ -140,7 +140,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "30d61be23ce166ce78f62e8ace4602ed",
   "masterSessionId": "dd8ccc35-abd1-45b1-aecd-ad0ee1adf60c",
   "batches": {
@@ -156,17 +156,29 @@
       ],
       "cardHashes": {
         "01-headcontains-bounded-walk": "83662ea6a1b4c42dfadfa81a86e70889dc9c9702ca7dac0faf812004710607a4",
-        "02-gitrepo-retrying-read": "b993651568f7c1d75d947c924f15a438202800679677900682ebdd8a51b67401",
-        "03-proc-group-kill": "e59fd13e081a339326a231195ba3bd67b5629853e5d2128b16cf009f71684bda",
-        "04-gitexec-remote-bounds": "055ac4b8d0437ae412fcbd23e40aa995326dae11ec0f72d3d6c5767dc71e543f",
-        "05-hub-store-gc": "6b652dc956961d6a4c03a43d14d8e56c9f0b53e93120a3ed9034bf62c3e1fbc9",
-        "06-batten-window-done-refusal": "b994a2fbca30825668ecc2ed294a924412308710394fb525630415773801c1b1"
+        "02-gitrepo-retrying-read": "50ffa4763945055bd86a083056c170b129c476a622b2d868eb645497d92b254c",
+        "03-proc-group-kill": "8464ddd15793b5630a9f1f514dece9808d88ec4fa7c88ab16c16da5d84609d83",
+        "04-gitexec-remote-bounds": "96168a62fa7d65ceaabe759c6301e0ecd852e8ea89c888018fc7acf45464bc06",
+        "05-hub-store-gc": "2310ecf38f3f56764aa565e56693590f551b720ad48f31b01fa8e6b854301420",
+        "06-batten-window-done-refusal": "65e592d99bb89115ee1d940eb8131f914baf4a05cf3384395edcc7c33e0cbd05"
       },
       "startSha": "e12fb6afbbbe40bbe74a383a20a7f6eba847de2a",
       "kind": "recovery",
       "spawnedAt": "2026-10-10T04:25:30Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-headcontains-bounded-walk",
+        "status": "done",
+        "head_sha": "506ad41b38f1b30af67109c37575c560ab609585",
+        "deviations": [
+          "internal/proc/procgroup_linux.go",
+          "internal/proc/procgroup_windows.go"
+        ]
+      },
+      "cardShas": [
+        "506ad41b38f1b30af67109c37575c560ab609585"
+      ],
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-git-robustness/dd8ccc35-abd1-45b1-aecd-ad0ee1adf60c/subagents/agent-a45f834b87f819509.jsonl"
       ],

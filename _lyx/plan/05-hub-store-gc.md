@@ -1,10 +1,10 @@
 # Card 5 — Hub stores never auto-gc; lyx runs gc at pair removal
 
 **Create:**
-- `plan:internal/fabricengine#gcAutoThreshold` -> `var gcAutoThreshold = 6700`
-- `plan:internal/fabricengine#disableStoreAutoGC` -> `func disableStoreAutoGC(l *lyxcwd.Location) error`
-- `plan:internal/fabricengine#housekeepStores` -> `func housekeepStores(l *lyxcwd.Location)`
-- `plan:internal/fabricengine#SetGCAutoThresholdForTest` -> `func SetGCAutoThresholdForTest(t *testing.T, threshold int)`
+- `internal/fabricengine#gcAutoThreshold`
+- `internal/fabricengine#disableStoreAutoGC`
+- `internal/fabricengine#housekeepStores`
+- `internal/fabricengine#SetGCAutoThresholdForTest`
 - `internal/fabricengine/housekeeping_integration_test.go`
 - `pattern/PATTERN-hub-store-gc.md`
 

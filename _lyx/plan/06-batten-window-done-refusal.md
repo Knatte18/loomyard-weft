@@ -1,7 +1,7 @@
 # Card 6 — batten run --window refuses a done slug before opening a window
 
 **Create:**
-- `plan:internal/battencli#battenCLI.checkRunStatus` -> `func (c *battenCLI) checkRunStatus() (found bool, err error)`
+- `internal/battencli#battenCLI.checkRunStatus`
 
 **Edit:**
 - `internal/battencli#battenCLI.battenPreRun`

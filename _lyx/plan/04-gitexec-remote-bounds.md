@@ -1,11 +1,11 @@
 # Card 4 — Every git remote command runs under a deadline and a low-speed limit
 
 **Create:**
-- `plan:internal/gitexec#remoteDeadline` -> `var remoteDeadline = 10 * time.Minute`
-- `plan:internal/gitexec#remoteWaitDelay` -> `const remoteWaitDelay = 10 * time.Second`
-- `plan:internal/gitexec#lowSpeedEnv` -> `var lowSpeedEnv = []string{"GIT_HTTP_LOW_SPEED_LIMIT=1000", "GIT_HTTP_LOW_SPEED_TIME=60"}`
-- `plan:internal/gitexec#SetRemoteDeadlineForTest` -> `func SetRemoteDeadlineForTest(t *testing.T, d time.Duration)`
-- `plan:internal/gitexec#SetKillReporter` -> `func SetKillReporter(report func(args []string, pid int, groupErr error))`
+- `internal/gitexec#remoteDeadline`
+- `internal/gitexec#remoteWaitDelay`
+- `internal/gitexec#lowSpeedEnv`
+- `internal/gitexec#SetRemoteDeadlineForTest`
+- `internal/gitexec#SetKillReporter`
 - `internal/gitexec/doc.go`
 
 **Edit:**
@@ -25,7 +25,7 @@
 
 **Uses:**
 - `internal/gitexec#subcommand`
-- `plan:internal/proc#ConfigureGroupKill`
+- `internal/proc#ConfigureGroupKill`
 
 **Intent:** Decision D3 (#458): a git network call can hang forever on a dead connection after a laptop sleep.
 All git under `internal/` runs through `runCore`, so one change there bounds every remote call lyx makes, with no per-caller wiring and no change at any `Run`/`RunGit` call site (`PATTERN-gitexec-checked-call`).

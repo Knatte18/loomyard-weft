@@ -1,7 +1,7 @@
 # Card 2 — Every go-git read retries whole after a repack
 
 **Create:**
-- `plan:internal/gitrepo#readGoGit` -> `func readGoGit[T any](r *Repo, read func(repo *git.Repository) (T, error)) (T, error)`
+- `internal/gitrepo#readGoGit`
 - `internal/gitrepo/gogitcaller_test.go`
 - `pattern/PATTERN-gogit-read-helper.md`
 
