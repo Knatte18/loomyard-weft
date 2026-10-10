@@ -1386,9 +1386,7 @@
       ],
       "issues": [],
       "depends_on": [
-        "gate-test-scope",
-        "multi-llm-producer",
-        "bolt-and-store"
+        "daemon-wakeups"
       ],
       "isolated": false,
       "brief": "Go runs the shed steps and wakes the driver only at a stop, so a Haiku driver stays under 100k; the driver can still stop a run at a point the orch names",

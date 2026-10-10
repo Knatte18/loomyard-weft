@@ -2,7 +2,7 @@
 
 `driver-context` · Task · enhancement, shed, stencil, loom
 
-Depends on: [`gate-test-scope`](design-gate-test-scope.md), [`multi-llm-producer`](design-multi-llm-producer.md), [`bolt-and-store`](design-bolt-and-store.md)
+Depends on: [`daemon-wakeups`](design-daemon-wakeups.md)
 
 ## Goal
 
