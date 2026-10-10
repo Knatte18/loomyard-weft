@@ -140,7 +140,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 1,
   "masterStrand": "30d61be23ce166ce78f62e8ace4602ed",
   "masterSessionId": "dd8ccc35-abd1-45b1-aecd-ad0ee1adf60c",
   "batches": {
@@ -163,25 +163,17 @@
         "06-batten-window-done-refusal": "b994a2fbca30825668ecc2ed294a924412308710394fb525630415773801c1b1"
       },
       "startSha": "e12fb6afbbbe40bbe74a383a20a7f6eba847de2a",
-      "kind": "fork",
-      "spawnedAt": "2026-10-10T04:08:05Z",
-      "sessionId": "dd8ccc35-abd1-45b1-aecd-ad0ee1adf60c",
-      "terminal": true,
-      "status": "failed",
-      "digest": {
-        "batch": "01-headcontains-bounded-walk",
-        "status": "failed",
-        "head_sha": "310538e35bcfe18fbcbbf10bd42eb462b98cef63",
-        "reasons": [
-          "create-not-done/3-proc-group-kill[blocking]: Create target \"plan:internal/proc#ConfigureGroupKill\" still does not resolve"
-        ]
-      },
+      "kind": "recovery",
+      "spawnedAt": "2026-10-10T04:25:30Z",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-git-robustness/dd8ccc35-abd1-45b1-aecd-ad0ee1adf60c/subagents/agent-a45f834b87f819509.jsonl"
       ],
-      "bracketTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-git-robustness/dd8ccc35-abd1-45b1-aecd-ad0ee1adf60c/subagents/agent-a45f834b87f819509.jsonl"
-      ]
+      "strandGuid": "c5fa50b82fffa7085a34f514ba48b626",
+      "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/git-robustness/.lyx/shuttle/82701a545770db689fbe3bbbc7cad574",
+      "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/git-robustness/.lyx/shuttle/82701a545770db689fbe3bbbc7cad574/events.jsonl",
+      "eventsOffset": 1577
     }
   },
   "seenForkTranscripts": [
