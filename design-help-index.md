@@ -106,6 +106,3 @@ Borderline: `webster status`, `webster reset` and `shuttle state` may serve the 
 
 
 
-## Issue comment, 2026-10-10
-
-Imported into the board as `help-index`.
