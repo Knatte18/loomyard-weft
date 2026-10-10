@@ -1,6 +1,6 @@
 # Board README shows priority as its own sub-table per group
 
-`board-priority-headings` · Note · enhancement, board
+`board-priority-headings` · Note · enhancement, board · done
 
 ## Seen
 

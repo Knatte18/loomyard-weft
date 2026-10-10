@@ -11,6 +11,8 @@ Concrete and claimable; only a task can run.
 
 Held by a run; its scope is locked until the run ends.
 
+#### Normal priority
+
 | # | Task | Slug | At | Labels |
 | --- | --- | --- | --- | --- |
 | 1 | **Lighter test suite: measured tiers, cheap tmux fixtures, no lingering children**<br>• Measure each tier, non-login shells and shared servers in tier 3, lyx built once, no background gc in fixtures (#472), a no-tmux scan for tiers 1-2 | [`test-suite-weight`](design-test-suite-weight.md) | Webster | shuttle, reed, fabric |
@@ -22,6 +24,8 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
+#### Normal priority
+
 | # | Task | Slug | After | Labels |
 | --- | --- | --- | --- | --- |
 | 1 | **Burler runs its round on MultiLLMProducer**<br>• The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review | [`burler-multi-llm`](design-burler-multi-llm.md) |  | burler, shed, stencil |
@@ -32,6 +36,8 @@ Waits on nothing open; can start now.
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ### Bugs
+
+#### Normal priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
@@ -45,15 +51,22 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ### Enhancements
 
+#### High priority
+
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 1 | **Batten opens a terminal window per run instead of VS Code** _(high priority)_<br>• VS Code per run is gone (c0d604f12); batten itself still opens no reed attach window, the orch does it by hand | [`ide-opt-in`](design-ide-opt-in.md) | ide, reed, batten |
-| 2 | **Compare fanned and solo review rounds from their usage records** _(high priority)_<br>• A report over round usage records for the fan-on decision; a lost usage record shows in the facts | [`fan-usage-report`](design-fan-usage-report.md) | burler |
-| 3 | **Haiku 5.5 for the Bouncer judge: is its ruling simple enough** _(high priority)_<br>• The driver already runs on Haiku 5.5; decide per Bouncer row whether the judge ruling is simple enough for Haiku, trial it, and switch only where it holds | [`haiku-roles`](design-haiku-roles.md) | config, loom, burler |
-| 4 | **An abandoned run leaves its board entry locked** _(high priority)_<br>• Batten teardown clears the run status of a run that ends without landing, so the entry is editable again | [`abandoned-run-claim`](design-abandoned-run-claim.md) | batten, board |
-| 5 | **PATTERN overview breaks its cap only after merging main** _(high priority)_ | [`pattern-overview-headroom`](design-pattern-overview-headroom.md) | loom |
-| 6 | **Reed watchdog children still burn idle CPU** _(high priority)_ | [`watchdog-child-cpu`](design-watchdog-child-cpu.md) | reed |
-| 7 | **Bench the chair-and-advisors Discussion against the solo writer before switching it on** _(high priority)_<br>• Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on | [`discussion-multi-llm-bench`](design-discussion-multi-llm-bench.md) | loom, stencil |
+| 1 | **Batten opens a terminal window per run instead of VS Code**<br>• VS Code per run is gone (c0d604f12); batten itself still opens no reed attach window, the orch does it by hand | [`ide-opt-in`](design-ide-opt-in.md) | ide, reed, batten |
+| 2 | **Compare fanned and solo review rounds from their usage records**<br>• A report over round usage records for the fan-on decision; a lost usage record shows in the facts | [`fan-usage-report`](design-fan-usage-report.md) | burler |
+| 3 | **Haiku 5.5 for the Bouncer judge: is its ruling simple enough**<br>• The driver already runs on Haiku 5.5; decide per Bouncer row whether the judge ruling is simple enough for Haiku, trial it, and switch only where it holds | [`haiku-roles`](design-haiku-roles.md) | config, loom, burler |
+| 4 | **An abandoned run leaves its board entry locked**<br>• Batten teardown clears the run status of a run that ends without landing, so the entry is editable again | [`abandoned-run-claim`](design-abandoned-run-claim.md) | batten, board |
+| 5 | **PATTERN overview breaks its cap only after merging main** | [`pattern-overview-headroom`](design-pattern-overview-headroom.md) | loom |
+| 6 | **Reed watchdog children still burn idle CPU** | [`watchdog-child-cpu`](design-watchdog-child-cpu.md) | reed |
+| 7 | **Bench the chair-and-advisors Discussion against the solo writer before switching it on**<br>• Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on | [`discussion-multi-llm-bench`](design-discussion-multi-llm-bench.md) | loom, stencil |
+
+#### Normal priority
+
+| # | Note | Slug | Labels |
+| --- | --- | --- | --- |
 | 8 | **Convergence: log hub interventions and driver repairs per run by class**<br>• Record every hub intervention and driver repair with a class and cause, so interventions per run and repeat failure classes are visible | [`convergence-plan`](design-convergence-plan.md) | orch, shed |
 | 9 | **Parent-review gate: wait bound off the boundary, no mid-turn sends, live smoke**<br>• Close the cases the first parent-review gate left open: expiry while the writer is mid-turn, sends into a running turn after restart, poll cost, and one live smoke run | [`parent-review-hardening`](design-parent-review-hardening.md) | orch |
 | 10 | **Reopen the prime VS Code window with one short command**<br>• A snap refresh left the prime window wrong; lyx ide spawn needs the slug and fails from the hub root | [`ide-reopen-prime`](design-ide-reopen-prime.md) | ide |
@@ -73,16 +86,27 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 24 | **Fold loomcli and orchcli tmux probe copies onto tmuxkit** | [`tmuxkit-probe-copies`](design-tmuxkit-probe-copies.md) | loom, orch, reed |
 | 25 | **Reconcile keeps an old default below the new floor** | [`reconcile-stale-default`](design-reconcile-stale-default.md) | config |
 | 26 | **Friction-Reflect reads the parent weft when a halt names a dirty worktree**<br>• Reflect misread a parent-weft dirty halt as noise because the task worktree was clean | [`reflect-reads-parent-weft`](design-reflect-reads-parent-weft.md) | loom, fabric |
-| 27 | **Board README shows priority as its own sub-table per group**<br>• One sub-table per priority under #### High / Normal / Low priority headings in every README group, replacing the italic title suffix | [`board-priority-headings`](design-board-priority-headings.md) | board |
-| 28 | **Fabric's Windows path behaviour verified on a Windows host** _(low priority)_<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
-| 29 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history** _(low priority)_<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
 
-### Features
+#### Low priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 1 | **Runs overview pane under the orch; batten windows hidden** _(high priority)_<br>• A minimal pane under the orch listing every run in flight and its shed state; the per-run batten windows stay but the status bar hides them | [`runs-overview`](design-runs-overview.md) | reed, orch, batten |
-| 2 | **A quick task recipe: batten and shed around one LLM producer, then the usual PR** _(high priority)_<br>• A simplified loom for small changes: preflight, one producer that does the whole change in one session, verify, PR and PR-Gate as usual | [`quick-recipe`](design-quick-recipe.md) | loom, shed, batten |
+| 27 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
+| 28 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
+
+### Features
+
+#### High priority
+
+| # | Note | Slug | Labels |
+| --- | --- | --- | --- |
+| 1 | **Runs overview pane under the orch; batten windows hidden**<br>• A minimal pane under the orch listing every run in flight and its shed state; the per-run batten windows stay but the status bar hides them | [`runs-overview`](design-runs-overview.md) | reed, orch, batten |
+| 2 | **A quick task recipe: batten and shed around one LLM producer, then the usual PR**<br>• A simplified loom for small changes: preflight, one producer that does the whole change in one session, verify, PR and PR-Gate as usual | [`quick-recipe`](design-quick-recipe.md) | loom, shed, batten |
+
+#### Normal priority
+
+| # | Note | Slug | Labels |
+| --- | --- | --- | --- |
 | 3 | **An MCP server over lyx exposing the verbs agents need**<br>• A few coarse MCP tools over lyx, chosen by measured agent use and exposed per role, so agents see typed schemas instead of guessing CLI shapes | [`lyx-mcp`](design-lyx-mcp.md) | shuttle, stencil |
 | 4 | **creel: the one way to reach an agent**<br>• Post (pulled mail with reminders), inject and interrupt to any agent by name, through one daemon per hub; built standalone first, then wired in two stages | [`creel`](design-creel.md) | reed |
 | 5 | **Kick-start pack: pre-resolved glyph spans for implementer and Burler**<br>• Someday (roadmap): #227, #228 — measured win, committed, not yet scheduled | [`kick-start-pack`](design-kick-start-pack.md) | webster, quarry |
@@ -139,3 +163,4 @@ Finished, awaiting `lyx board prune`.
 | 17 | **MultiLLMProducer: one producer runs a chair and its advisors as seats**<br>• A producer beside SingleLLMProducer that runs N agents as seats, one chair that steers and decides the outcome plus advisor-1..n, with its own internal message channel; built standalone, used by nothing yet | [`multi-llm-producer`](design-multi-llm-producer.md) | shed, shuttle |
 | 18 | **Daemons and wake-ups: event-driven waits, a timely orch reload, recorded revival order**<br>• A rule that lyx daemons wait on events or second-scale polls (reed watchdog first), the orch watcher reloads right after compaction, reed revives sessions by recorded start time | [`daemon-wakeups`](design-daemon-wakeups.md) | reed, orch, shuttle |
 | 19 | **Bolt and hub store: seeding without ping-pong, reconcile on a fresh Bolt, gc that stays out of the way**<br>• Seed stencils forward only and from a pulled Bolt, report failed reconcile pushes, and keep the hub store gc off busy runs and repeat repacks | [`bolt-and-store`](design-bolt-and-store.md) | stencil, fabric, config |
+| 20 | **Board README shows priority as its own sub-table per group**<br>• One sub-table per priority under #### High / Normal / Low priority headings in every README group, replacing the italic title suffix | [`board-priority-headings`](design-board-priority-headings.md) | board |
