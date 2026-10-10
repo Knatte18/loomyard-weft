@@ -26,3 +26,9 @@ The question is whether the judge's job is simple enough for Haiku 5.5: read wha
 - 2026-10-10, `bolt-and-store`: the Haiku 5.5 driver read its prompt, summarized its rules, and ended the turn asking "Tell me when to start", although the prompt says it runs autonomously with no operator to ask.
   The Haiku drivers of `multi-llm-producer` and `daemon-wakeups`, on the same prompt, started stepping at once; a message from the orch got it going.
   Fixed in 189fd59c8: the driver stencil now says the prompt is the go-ahead and a turn never ends on a question.
+
+## Analysis and decision (operator, 2026-10-10)
+
+The analysis is in `docs/research/haiku-judge.md` (5459376bb): keep Sonnet on the Discussion-Bouncer judge; trial Haiku 5.5 on the Plan-Bouncer and Webster-Bouncer judges; seed passes are safe for Haiku.
+The `judge` key sets all three rows at once, so the judge stays on Sonnet for now.
+The trial waits for the note `per-role-models`, which gives each row's judge its own model key, and then runs Haiku 5.5 on the Plan-Bouncer and Webster-Bouncer judges only.
