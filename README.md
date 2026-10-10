@@ -11,7 +11,7 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now, in parallel.
 
-1. **board: refuse scope edits to a running task** — [`board-lock-running`](design-board-lock-running.md) · bug, board · running · PR-Gate
+1. **board: refuse scope edits to a running task** — [`board-lock-running`](design-board-lock-running.md) · bug, board · awaiting · PR-Gate
    - The board already marks running tasks; a write that changes the scope of a running task is refused
 1. **Gate test scope: which gate runs which tier, bounded hub-wide** — [`gate-test-scope`](design-gate-test-scope.md) · bug, enhancement, webster, loom, stencil, config, burler · running · Plan-Write
    - Card gate tests only its own packages at tier 1, tier 2 per batch and at the plan verify, a hub-wide slot lock for gate test runs, guarded publish_verify
