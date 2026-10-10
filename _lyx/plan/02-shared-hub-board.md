@@ -1,9 +1,9 @@
 # Card 2 — shared-hub-board
 
 **Create:**
-- `plan:internal/boardengine#OpenHub` -> `func OpenHub(hubPath string) (*Board, error)`
-- `plan:internal/boardengine#Board.SetRunStatus` -> `func (b *Board) SetRunStatus(slug, status string) error`
-- `plan:internal/testkit/boardkit#HubWithBoardConfig` -> `func HubWithBoardConfig(t *testing.T) string`
+- `internal/boardengine#OpenHub`
+- `internal/boardengine#Board.SetRunStatus`
+- `internal/testkit/boardkit#HubWithBoardConfig`
 
 **Edit:**
 - `internal/loomcli#loomCommitStatusDeps`

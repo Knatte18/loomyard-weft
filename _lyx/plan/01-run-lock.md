@@ -1,13 +1,13 @@
 # Card 1 — run-lock
 
 **Create:**
-- `plan:internal/boardengine#RunStatus` -> `func RunStatus(state, producer string) string`
-- `plan:internal/boardengine#IsRunStatus` -> `func IsRunStatus(status *string) bool`
-- `plan:internal/boardengine#ErrRunLocked` -> `var ErrRunLocked error`
-- `plan:internal/boardengine#RunLockedError` -> `type RunLockedError struct`
-- `plan:internal/boardengine#RunLockedError.Error` -> `func (e *RunLockedError) Error() string`
-- `plan:internal/boardengine#RunLockedError.Is` -> `func (e *RunLockedError) Is(target error) bool`
-- `plan:internal/boardengine#checkRunLocks` -> `func checkRunLocks(loaded, after []Task) error`
+- `internal/boardengine#RunStatus`
+- `internal/boardengine#IsRunStatus`
+- `internal/boardengine#ErrRunLocked`
+- `internal/boardengine#RunLockedError`
+- `internal/boardengine#RunLockedError.Error`
+- `internal/boardengine#RunLockedError.Is`
+- `internal/boardengine#checkRunLocks`
 - `internal/boardengine/runlock_test.go`
 
 **Edit:**

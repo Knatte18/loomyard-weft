@@ -8,10 +8,10 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/boardengine#OpenHub`
-- `plan:internal/boardengine#Board.SetRunStatus`
-- `plan:internal/boardengine#RunStatus`
-- `plan:internal/testkit/boardkit#HubWithBoardConfig`
+- `internal/boardengine#OpenHub`
+- `internal/boardengine#Board.SetRunStatus`
+- `internal/boardengine#RunStatus`
+- `internal/testkit/boardkit#HubWithBoardConfig`
 
 **Intent:**
 `lyx batten run <slug>` claims the board entry before the pair exists, so the run lock starts at the claim instead of at loom's first transition.
