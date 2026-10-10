@@ -199,6 +199,12 @@ Decision: startAutoReload keeps its existing error path: a failed index render i
 
 Rationale: Scope keeps the watcher's reload steps out; the record must state the real behaviour, not change it.
 
+### Added after Discussion (parent, 2026-10-10): Root Long keeps its module list
+
+Decision: D9's group-Long rule exempts the root: its module list stays, since TestCLITree_EveryCommand pins it.
+
+Rationale: Keeps an existing test-pinned contract; the rule targets subgroup Long texts.
+
 ## Constraints
 
 - `PATTERN-cli-cobra`: `help` is a module with `Command()` and `RunCLI`; the registration oracle in `cmd/lyx/registration_test.go` scans `AddCommand` arguments only, so the plan either mounts `helpcli.Command()` through `AddCommand` before `SetHelpCommand` names it, or extends the oracle to see `SetHelpCommand`.
