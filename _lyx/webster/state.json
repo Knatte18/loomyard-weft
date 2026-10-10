@@ -434,7 +434,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "0068be18351934c1680fdf7a7650d3ca",
   "masterSessionId": "8381d0ae-383e-4d1b-bed9-9cee07a1609b",
   "batches": {
@@ -486,6 +486,29 @@
       "eventsOffset": 1563,
       "recoveries": 2,
       "recoveryStartSha": "b7d4fd0ba55de0c19ae91a8b1c114837c543bb01"
+    },
+    "5": {
+      "slug": "fabric-merge-base",
+      "cards": [
+        "05-fabric-merge-base",
+        "06-verify-gate-told-command",
+        "07-recipe-vocabulary",
+        "08-darn-config",
+        "09-darn-stencil-and-spec"
+      ],
+      "cardHashes": {
+        "05-fabric-merge-base": "3732a12c03949b585f74c184d13462f27f0a0b1146296e95a6971e67d17cbb89",
+        "06-verify-gate-told-command": "e74f290ab1ae2328ae8977bb9849a1f63af8aedfb517d98ddd1faf278122b8a6",
+        "07-recipe-vocabulary": "192eeb8f59b918e33ce42eceb5f719c5e54b1a8ed3f659376f7b1d9516896ef0",
+        "08-darn-config": "46f5b76d4a78e17d55156d639dca80c4921a51828f74fb62ae498208e1ac7adc",
+        "09-darn-stencil-and-spec": "5b7591cdf2e6e081d183c35f346ea948b5b1e643219a8ecbbf146315c5a66220"
+      },
+      "startSha": "af89448afbc5546437e2fc38677d6bd54a67efe2",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T15:49:06Z",
+      "sessionId": "8381d0ae-383e-4d1b-bed9-9cee07a1609b",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
