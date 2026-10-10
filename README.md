@@ -41,6 +41,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 4 | **Build-tagged member declared once per tag set resolves ambiguous, so its plan Create can never pass record-batch** | [`quarry-build-tag-ambiguous`](design-quarry-build-tag-ambiguous.md) | webster, loom |
 | 5 | **Finalize blocks on the parent weft's uncommitted batten status records** | [`finalize-weft-batten-dirty`](design-finalize-weft-batten-dirty.md) | fabric, batten |
 | 6 | **Publish verify log is overwritten by a later run, so the failure is lost** | [`verify-log-overwritten`](design-verify-log-overwritten.md) | loom |
+| 7 | **Bounce budget blocks a review segment after its round was approved, before the Bouncer verdict** | [`bounce-budget-after-approved`](design-bounce-budget-after-approved.md) |  |
 
 ### Enhancements
 

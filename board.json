@@ -1531,6 +1531,22 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #502](https://github.com/Knatte18/loomyard/issues/502).\n\nSeen (publish-recovery, 2026-10-10): the Publish verify failed once (exit 1, the #497 subtest re-run), and a later verify run overwrote `.lyx/verify/verify.log`, so Friction-Reflect could not read the original failure and reflected on the later, passing log.\n\nWorkaround: none; the failure was reconstructed from the drive report and the orch's own investigation.\n\nExpected: the verify log is kept per attempt (for example `verify-\u003cattempt\u003e.log`, or appended with an attempt header), so a later run never erases the evidence of an earlier failure.\n"
+    },
+    {
+      "id": 287,
+      "slug": "bounce-budget-after-approved",
+      "title": "Bounce budget blocks a review segment after its round was approved, before the Bouncer verdict",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        503
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #503](https://github.com/Knatte18/loomyard/issues/503).\n\nSeen (publish-recovery, 2026-10-10): Webster-Review's round 3 review was APPROVED (one LOW finding) and its fixer finished with a green verify gate, but the run blocked with \"bounce budget exhausted for Webster-Burler\" before the Bouncer wrote `round-3-bouncer-verdict.md`.\n`lyx loom circling accept` refused, since the run was blocked rather than awaiting, so the orchestrator needed an investigation fork, then `lyx shed goto publish-recovery --to Webster-Burler` and `lyx loom resume`, which spent another review round on approved work.\n\nWorkaround: goto Webster-Burler plus resume.\n\nExpected: the bounce budget is checked before a round starts, not after an approved round ends, so a round whose review approved always reaches its Bouncer verdict and the run moves on.\n"
     }
   ],
   "legacy_done": [
