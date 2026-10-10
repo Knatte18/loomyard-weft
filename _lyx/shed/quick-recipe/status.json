@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "Batch 01-verify-log-per-run failed on a fabric-reference audit finding (fork ran `lyx fabric --help`) that recover-batch cannot check: needs_fresh.",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Batchifier → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "Batch 01-verify-log-per-run failed on a fabric-reference audit finding (fork ran `lyx fabric --help`) that recover-batch cannot check: needs_fresh."
   },
   "history": [
     {
@@ -123,6 +123,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-10T15:14:55Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-10T15:29:54Z"
     }
   ],
   "product": {
