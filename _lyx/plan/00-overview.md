@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -71,6 +71,18 @@ A `help` module adds `lyx help index`, a generated one-line-per-command index of
 - **Decision:** the watcher's index source is built in orchcli from reed's strand status and an injectable runner; the runner alone spawns `<path> help index`.
 - **Rationale:** every new test is tier 1, so the path selection and the missing-path refusals are tested through a fake runner, and the one spawning function is thin and logged.
 - **Applies to:** card 14
+
+### Decision: added-watcher-decisions-yield-to-d4
+
+- **Decision:** both decisions the record adds after Discussion about the watcher yield to D4, Scope and the acceptance criteria, by one rule: where an added decision contradicts those sections, the plan follows the sections.
+  "Watcher index binary" is read as the watcher rendering from the path recorded on the orch strand, which card 13 records at every launch and relaunch and card 14's source runs; the watcher's own executable is never the index source.
+  "Missing-binary bound at auto-reload" yields to D4's Bound, Scope Out's one carve-out and the acceptance criterion on the watcher's render: `startAutoReload` turns a role-file render failure, the index source's included, into idle with the reason, like `startClearing` and `reloadAfterCompaction`, and never a failed tick.
+- **Rationale:** each added decision contradicts several sections of the record that agree with each other.
+  "Watcher index binary" declines launch-path plumbing that Scope "In", D4, the `PATTERN-pane-binary-resolution` constraint and the acceptance criteria all require, and it points at an Open risks entry that does not exist.
+  "Missing-binary bound at auto-reload" rests on Scope keeping the reload steps out, while Scope Out names the `startAutoReload` change as its one exception, and D4's Bound and the acceptance criterion require idle at all three sites.
+  One rule for both keeps the plan coherent, and the record's Open risks entry on a strand recorded before the field existed ("its watcher's renders go idle with the reason") then holds at every render site.
+  With the path recorded on every launch, the `StartSpawnWatcher` and reed-resume mismatch the first added decision accepts does not arise, so no open risk carries it.
+- **Applies to:** cards 13, 14
 
 ### Decision: classification-lives-in-the-annotation
 

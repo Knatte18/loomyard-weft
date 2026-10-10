@@ -29,6 +29,7 @@
 
 **Intent:** Bring `reed` and `orch` to the D3, D6 and D8 form.
 `reed remove <guid> | --name <name>` becomes `remove [<guid>]`, with `--name` documented in `Flags:` and `Long` as the other way to address a strand; every other reed `Use` already fits.
+The D9 cap is checked by measurement: before editing, the implementer measures every reed and orch page's `Long` (`lyx <path> --help --json | jq -r .long | wc -c`, groups and hidden verbs included) and trims every page over 2,000 bytes, its rationale moving to the package doc; when this plan was written none was over.
 Audiences in reed: `up`, `down`, `list`, `status`, `attach`, `add`, `remove` and `resume` are `operator`; `switch` is `role` (the operator's named example: only the pinned key binding runs it); `watchdog` is `internal` (a daemon lyx spawns).
 Audiences in orch: `start`, `status`, `refresh`, `distill` and `stop` are `operator`; the hidden `watch` and `resume-context` are `internal`, as every hidden command must be.
 `Short`s already start lower-case and stay; each is read once for the "when to reach for it" rule and reworded only where it names what the verb is rather than when to use it.
