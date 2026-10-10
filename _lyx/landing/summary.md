@@ -1,49 +1,53 @@
-# Discussion-Write: add a seats producer, a chair plus advisors
+# Discussion-Write: add a seats producer, a chair with advisors
 
-Adds a second producer for the Discussion-Write row: a chair writes the decision record and support log, and advisors study the task, the board, the code and PATTERN in parallel and answer the chair's design questions live over the session message channel.
-The existing single-agent producer is unchanged and stays the default, so a hub that sets nothing behaves as before.
+Discussion-Write can now run a second producer: a chair that interviews and writes the decision record and the support log, plus advisors that study the task, the board, the code and PATTERN in parallel and answer the chair's design questions live over the session message channel.
+Agents designing together beat one agent asking and answering itself, and an advisor's dialogue with the chair stays out of the parent's context.
+The existing single-agent producer is unchanged and stays the default, so a hub that sets nothing behaves as today.
 
 ## What changes
 
-- `loom.yaml` gains `discussion_producer` (`single` or `seats`, default `single`), which selects the producer the Discussion-Write row runs.
-  An unknown value is a config refusal.
-- `loom.yaml` gains `discussion_advisors`, a list of model-specs with one advisor per entry, read only by the seats producer.
-  The chair's model stays the `discussion` key.
-  An empty list runs the chair alone; an absent key, null, `[]`, `""` and `[""]` all load as zero advisors, and an entry that is empty beside another entry, fails to parse or fails to resolve is refused at load, naming the key, the index and the way forward.
-  The template default is `["sonnet[high]"]`, which a present `loom.yaml` picks up when the key is absent.
-  The key is an open-map key, so `lyx config reconcile` and `--set` keep the operator's spelling whole.
-- `internal/loomengine` builds the seat table in Go (`discussiontable.go`) and `shedrecipe` gains a `DiscussionSeats` registry entry that runs it on `MultiLLMProducer` behind the commit decorator.
-  The table is rebuilt on every call, so stencils and directives are read at call time.
-  `loomrecipe` builds the row with the engine `discussion_producer` selects; the row name `Discussion-Write` is unchanged.
-- `MultiLLMProducer` gains a second constructor taking a per-call table source and a fresh-spawn preparation; the existing constructor keeps its signature.
-  The preparation runs after the probe finds no live chair and before the archive, never on the resume path, and an error from it archives nothing and starts no seat.
-  The entry uses it to keep the parent-review preparation as the single-agent path has it.
-- `seatengine.Table` gains a list of value names that may be empty, for `pattern_directive` and `friction_directive`; only a listed name may be blank, and a listed reserved marker is a validation error.
-- Two stencils: `loom-template-discussion-chair` (an include on the existing discussion stencil, which keeps every claim it pins) and `loom-template-discussion-advisor`.
-  An advisor writes its notes to `_lyx/discussion/advisor-<n>.md` as soon as its study is done, answers the chair with evidence, messages only the chair and mutates no git state.
-  The chair records each advisor answer it relied on under its turn in `## Interview`, and in autonomous mode marks an advisor-informed pick in the question ledger, both naming the advisor's strand.
-  The autonomous `mode_rules` text gains one sentence when advisors exist.
-- `docs/overview.md`, the `shedadapters`, `shedrecipe`, `loomrecipe` and `seatengine` package docs, the recipe spec and the refusal spec's loom section describe the two producers and the keys.
+- `loom.yaml` gains `discussion_producer`, `single` (the default) or `seats`, which selects the Discussion-Write row's producer.
+  Any other value is a config refusal with its way forward, listed in the refusal spec.
+- `loom.yaml` gains `discussion_advisors`, a model-spec list with one advisor per entry; the template default is `["sonnet[high]"]`.
+  Only the `seats` producer reads it.
+  An empty list runs the chair alone.
+  The key joins `loomengine.ConfigOpenMaps`, so `lyx config reconcile` and `--set` keep the operator's scalar, null or list spelling whole.
+  Every entry is parsed and resolved at load, whatever `discussion_producer` holds; an empty entry beside another, an unparseable entry or an unresolved one is refused naming the key, the entry index and the way forward.
+- `internal/loomengine` builds the discussion seat table in Go (`DiscussionTable`): a chair seat (the `discussion` model, outputs the two discussion files, inputs every advisor's notes file) and one advisor seat per entry (output `_lyx/discussion/advisor-<n>.md`).
+  A new registry entry in `internal/shedrecipe` (`DiscussionSeats`) runs the table on `MultiLLMProducer` behind the commit decorator, with the row's gates on the chair.
+  `internal/loomrecipe` builds the Discussion-Write row with the engine `loom.yaml` selects; the row keeps its name, gates and routing under either producer.
+- Two new stencils: `loom-template-discussion-chair` (includes the discussion stencil whole and adds an advisors section) and `loom-template-discussion-advisor`.
+  The chair sends every question batch to every advisor and settles after weighing all answers.
+  A relied-on advisor answer is recorded under its turn in `## Interview`, and in autonomous mode a pick resting on one is marked advisor-informed in the question ledger, both naming the advisor's strand.
+  An advisor writes its notes file as soon as its study is done, answers the chair with evidence and a recommendation, messages only the chair, and mutates no git state.
+- The autonomous `mode_rules` text gains one sentence, only when the table has advisors, sending design questions to the advisors.
+- `MultiLLMProducer` gains a second constructor taking a per-call table source and a fresh-spawn preparation returning an error; the existing constructor keeps its signature.
+  On the fresh path the order is probe, prepare, archive, run; the preparation never runs on resume, and its error archives nothing and starts no seat.
+  The entry wires the parent-review store's `PrepareRound` as that preparation when the gate list holds an enabled `parent-review` entry.
+- `seatengine.Table` gains a field naming the table values that may be empty; `pattern_directive` and `friction_directive` are listed.
+  A listed name that is also a reserved marker is a validation error, and every unlisted value keeps the blank-value refusal.
+- `roleOpeningStencils` keys the discussion seats as `discussion-chair` and `discussion-advisor`.
+- Docs: `docs/overview.md`, the `shedadapters`, `shedrecipe`, `loomrecipe` and `seatengine` package docs, the shed-recipe spec and the refusal spec.
 
 ## Design decisions
 
-- Two producers side by side rather than a replacement, so the seats producer can be tried and switched back by config.
-  `discussion_advisors` is read only when `discussion_producer` is `seats`, but its entries are resolved at load whatever that key holds.
-- The advisor notes file is committed with the discussion files, read by no parser and never by Plan.
-  The discussion gate and the parent-review brief still read only the two discussion files.
-- Every message to the producer goes to the chair, and in interactive mode the operator's turns go to the chair alone.
-- The role map in `contracts/stencils` keys seats by strand role: `discussion-chair` and `discussion-advisor`.
-  The token report needs no change and shows the seats as separate rows.
-- Not bounded here: an advisor ignoring its brief can still edit the decision record or add files under `_lyx/discussion/`.
-  An edit made while the chair's gate waits skips the self-check and the parent review, leaving the Discussion-Review perch as the one check before Plan.
-- An in-flight run parked on Discussion-Write under the old binary is not migrated.
-  With `discussion_producer: seats`, stop that run's writer before the new binary drives it.
+- The advisor notes file is committed with the discussion by the existing whole-directory commit and archived on a fresh respawn like the two discussion files.
+  No Go code parses it, Plan-Write never reads it, and the discussion gate, `lyx loom decision add`, the Discussion-Review targets and the parent-review brief still read the two discussion files only.
+- Every message to the producer goes to the chair, and only the chair is interactive under `discussion_interactive`; the parent's verdict verbs are unchanged.
+  A parent-review reject re-prompts the live chair, so the advisors stay up for the rework.
+- Failure handling is the seat engine's: a chair death or timeout halts the run, an advisor that fails or dies is reported to the chair once, and every advisor is stopped when the chair ends.
+- An earlier design retired the single-agent producer; it was kept instead so the new producer can be tried beside it and switched back by config.
+- The template default is one advisor, but the default producer is `single`, so no hub gets advisors until it sets `discussion_producer: seats`.
+- In a present `loom.yaml`, an absent `discussion_advisors` takes the template's one advisor because reconcile fills missing keys from the template; null, `[]`, `""` and `[""]` load as zero advisors.
 
 ## To check by hand
 
-- `discussion-seats-row-bypasses-gate-quiescence-guard`: the `DiscussionSeats` row runs on `MultiLLMProducer`, so check that the gate-quiescence guard in `internal/loomrecipe` (`gatequiescence_test.go`) still covers the row's chair gate.
-- `card7-call-test-conflicts-with-gate-once-fake`: the `Call` test of the `DiscussionSeats` entry in `internal/shedrecipe/entries_discussionseats_test.go` runs against the fake seat runner in `internal/testkit/shedfake`, which now evaluates a table's gate once on a done chair; check the test and the fake agree.
-- `lyx gate test --tags integration` was started for `internal/shedrecipe`, `internal/loomcli`, `internal/testkit/envkit`, `internal/battencli`, `internal/shedbuild`, `internal/loomshed`, `internal/loomrecipe` and `contracts/specs` but its result was not recorded; run it.
-- No `llm`-tier test covers the new table; run the seat engine's `llm` smoke by hand to prove the chair-advisor channel, then run a Discussion with `discussion_producer: seats` and one advisor.
-- Whether the one-advisor default is worth the tokens: compare the token report's `discussion-advisor` row against earlier Discussion-Review round counts.
-- `internal/loomrecipe/seam_enforcement_test.go` allowlist gained `internal/loomshed`, because `loomrecipe` now imports it; confirm the import is wanted.
+- An in-flight run parked on Discussion-Write under the old binary is restarted, not migrated: the seat probe looks for a `discussion-chair` strand, so under `seats` it would start a fresh table beside a live old writer.
+  Stop such a writer before the new binary drives the run.
+- Advisor edits are bounded by stencil text and the agents' settings denies only.
+  An advisor can edit the two discussion files or add files under `_lyx/discussion/`, and an edit made while the chair's gate waits reaches the commit with only the Discussion-Review perch ahead of it.
+- An advisor can message the run's parent, the orch, and only the orch's judgment keeps it from acting on the message; the advisor strand name `discussion-advisor-<n>` identifies the sender.
+- `discussion_advisors` must keep its scalar or null value through `lyx config reconcile`; the open-map entry is covered by tests, but run a reconcile on a real hub once.
+- The `claims-rows-gofmt-indent` finding on the chair-stencil claims rows in `contracts/stencils/claims_test.go` was fixed after its review; confirm `gofmt` is clean there.
+- The seat channel itself is not exercised by any gate: a live `discussion_producer: seats` run (chair plus one advisor, autonomous and interactive) was not run.
+- The integration suite was running when the last run record was written; run `lyx gate test --tags integration ./...` before relying on the change.
