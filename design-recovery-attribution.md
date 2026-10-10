@@ -1,6 +1,6 @@
 # webster: a second recovery's prompt marks the first recovery's uncommitted files as not written by this run
 
-`recovery-attribution` · Note · bug
+`recovery-attribution` · Note · bug, webster
 
 Imported from [issue #522](https://github.com/Knatte18/loomyard/issues/522).
 

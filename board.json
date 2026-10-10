@@ -1274,7 +1274,8 @@
       "title": "webster: a second recovery's prompt marks the first recovery's uncommitted files as not written by this run",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "webster"
       ],
       "issues": [
         522

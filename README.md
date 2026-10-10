@@ -48,7 +48,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 6 | **Webster Master fixes a verify failure itself instead of spawning the fixer fork**<br>• Master edited and committed a test fix itself; the run-exit audit blocked it as a parent-write | [`master-self-fix`](design-master-self-fix.md) | webster, stencil |
 | 7 | **webster: create-not-done check fails on unexported plan targets, killing batches** | [`create-check-unexported`](design-create-check-unexported.md) | webster, quarry |
 | 8 | **webster: fabric-reference audit fails a piped lyx help call inside a compound command** | [`audit-piped-help-call`](design-audit-piped-help-call.md) | webster, fabric |
-| 9 | **webster: a second recovery's prompt marks the first recovery's uncommitted files as not written by this run** | [`recovery-attribution`](design-recovery-attribution.md) |  |
+| 9 | **webster: a second recovery's prompt marks the first recovery's uncommitted files as not written by this run** | [`recovery-attribution`](design-recovery-attribution.md) | webster |
 
 #### Low priority
 
