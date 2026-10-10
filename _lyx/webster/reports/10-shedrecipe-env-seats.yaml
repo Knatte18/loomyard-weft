@@ -1,0 +1,7 @@
+status: OK
+head_sha: ee0ac707c5a9abba4c9edca845b3ab234ad302c2
+deviations:
+  - internal/shedrecipe/seam_enforcement_test.go
+  - internal/shedrecipe/registry_test.go
+  - internal/shedrecipe/conformance_test.go
+  - internal/shedrecipe/testdata/multillm-recipe.yaml

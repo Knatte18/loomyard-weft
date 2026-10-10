@@ -1,10 +1,10 @@
 # Card 11 — shedrecipe-multillm-entry
 
 **Create:**
-- `plan:internal/shedrecipe#multiLLMEntry` -> `func multiLLMEntry(name string, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/shedrecipe#multiLLMSeat` -> `func multiLLMSeat(i int, cfg Config, env Env) (seatengine.Seat, error)`
-- `plan:internal/shedrecipe#resolveSeatModel` -> `func resolveSeatModel(entry string, i int, spec string, reg modelspec.Registry) (model, effort, version string, err error)`
-- `plan:internal/shedrecipe#parseSegment` -> `func parseSegment(entry, raw string) (segmentcolor.Segment, error)`
+- `internal/shedrecipe#multiLLMEntry`
+- `internal/shedrecipe#multiLLMSeat`
+- `internal/shedrecipe#resolveSeatModel`
+- `internal/shedrecipe#parseSegment`
 - `internal/shedrecipe/entries_multillm_test.go`
 
 **Edit:**

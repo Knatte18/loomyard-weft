@@ -1,6 +1,6 @@
 {
   "runGuid": "57fa24052584be6cb23e4d0a1018e0c5",
-  "planFingerprint": "4464d7c20594a8e9c9e0ed0d215f2c3eb227e6a904ebd7147b5b6c42e7c55142",
+  "planFingerprint": "be692909f9bc477832754f9ff4dfe76d765d8bf02a667edba5fc5ab26e5765ad",
   "planFileHashes": {
     "00-overview.md": "55b39b796589556285844d488333b4948021e7bb7bb13cc9c06c53a6e54d94cc",
     "01-shuttle-quiet-hold-send-lock.md": "0f491c4ec6235a92d84874e457b2c820871a3e4ec3967e2d00ffa0016ad207c4",
@@ -13,8 +13,8 @@
     "08-shedfake-seat-runner.md": "7c61d498d8bd39a453d46894256c929f5dc7bfd4f6921f7ee9766f61e3e37ed0",
     "09-shedadapters-multillm.md": "413f9da92ac99a8583fd00e67c842e8dea19236d361b85c8ecc1607b4d16f203",
     "10-shedrecipe-env-seats.md": "034280db9b931c5d0436078f05ae67f92c1cec30268fe6daff50a06df22ae8fe",
-    "11-shedrecipe-multillm-entry.md": "f2b8ed0cc2ab1e847a7dea4eecf1b027ef5c0bd03ccb780b998007c0c0f2b767",
-    "12-multillm-fixture-recipe.md": "eadd0c51b85efd71f80d8be08bd0c130e76d3696e1d3d69c024a87ad4c2c5688",
+    "11-shedrecipe-multillm-entry.md": "ad139b38d47020eaefe8b3bfd8af085b4a0020a412b94b65258e19a72aafeb1d",
+    "12-multillm-fixture-recipe.md": "f2ae3b4f9fc3b1cd4b186292800951c43290d4583ddd0932529d971bff516d6c",
     "13-seatengine-llm-smoke.md": "e8951da739371570431e88543a8b047607868325ef8c26beb983e8e1d592e421",
     "14-docs-overview.md": "4901d98056ca209a910d62a544a52cd33fc68d3d4aedbb95163cf88a12737eaf"
   },
@@ -313,7 +313,7 @@
       }
     }
   ],
-  "currentBatch": 10,
+  "currentBatch": 0,
   "masterStrand": "0b798198c25e9ae4127acbb28769bf61",
   "masterSessionId": "3c705bf7-5396-4f17-9875-c68cd34b964e",
   "batches": {
@@ -363,8 +363,8 @@
       ],
       "cardHashes": {
         "10-shedrecipe-env-seats": "034280db9b931c5d0436078f05ae67f92c1cec30268fe6daff50a06df22ae8fe",
-        "11-shedrecipe-multillm-entry": "f2b8ed0cc2ab1e847a7dea4eecf1b027ef5c0bd03ccb780b998007c0c0f2b767",
-        "12-multillm-fixture-recipe": "eadd0c51b85efd71f80d8be08bd0c130e76d3696e1d3d69c024a87ad4c2c5688",
+        "11-shedrecipe-multillm-entry": "ad139b38d47020eaefe8b3bfd8af085b4a0020a412b94b65258e19a72aafeb1d",
+        "12-multillm-fixture-recipe": "f2ae3b4f9fc3b1cd4b186292800951c43290d4583ddd0932529d971bff516d6c",
         "13-seatengine-llm-smoke": "e8951da739371570431e88543a8b047607868325ef8c26beb983e8e1d592e421",
         "14-docs-overview": "4901d98056ca209a910d62a544a52cd33fc68d3d4aedbb95163cf88a12737eaf"
       },
@@ -372,8 +372,28 @@
       "kind": "fork",
       "spawnedAt": "2026-10-10T05:48:39Z",
       "sessionId": "3c705bf7-5396-4f17-9875-c68cd34b964e",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "10-shedrecipe-env-seats",
+        "status": "done",
+        "head_sha": "ee0ac707c5a9abba4c9edca845b3ab234ad302c2",
+        "deviations": [
+          "internal/shedrecipe/seam_enforcement_test.go",
+          "internal/shedrecipe/registry_test.go",
+          "internal/shedrecipe/conformance_test.go",
+          "internal/shedrecipe/testdata/multillm-recipe.yaml"
+        ]
+      },
+      "cardShas": [
+        "ee0ac707c5a9abba4c9edca845b3ab234ad302c2"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-multi-llm-producer/3c705bf7-5396-4f17-9875-c68cd34b964e/subagents/agent-a4f9c5c3354b65645.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-multi-llm-producer/3c705bf7-5396-4f17-9875-c68cd34b964e/subagents/agent-a4f9c5c3354b65645.jsonl"
+      ]
     },
     "5": {
       "slug": "seatengine-prompts",
@@ -415,6 +435,7 @@
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-multi-llm-producer/3c705bf7-5396-4f17-9875-c68cd34b964e/subagents/agent-a506f67649f763534.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-multi-llm-producer/3c705bf7-5396-4f17-9875-c68cd34b964e/subagents/agent-aa0f0500a05fe6e43.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-multi-llm-producer/3c705bf7-5396-4f17-9875-c68cd34b964e/subagents/agent-aa0f0500a05fe6e43.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-multi-llm-producer/3c705bf7-5396-4f17-9875-c68cd34b964e/subagents/agent-a4f9c5c3354b65645.jsonl"
   ]
 }
