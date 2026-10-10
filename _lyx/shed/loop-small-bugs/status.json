@@ -1,9 +1,8 @@
 {
   "current_producer": "Batchifier",
-  "state": "running",
+  "state": "paused",
   "error": "",
   "pause_requested": false,
-  "pause_before": "Batchifier",
   "activity": {
     "now": "Batchifier",
     "last": "Plan-Bouncer → done",
