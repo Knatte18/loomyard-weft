@@ -13,17 +13,17 @@ Held by a run; its scope is locked until the run ends.
 
 #### High priority
 
-| # | Task | Slug | Recipe | At | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Batten opens a terminal window per run instead of VS Code**<br>• VS Code per run is gone (c0d604f12); batten itself still opens no reed attach window, the orch does it by hand | [`ide-opt-in`](design-ide-opt-in.md) | darn | Darn | ide, reed, batten |
-| 2 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`webster-stability`](design-webster-stability.md) | loom | Discussion-Write | webster, shuttle, stencil, quarry |
+| # | Task | Slug | At | Labels |
+| --- | --- | --- | --- | --- |
+| 1 | **Batten opens a terminal window per run instead of VS Code**<br>• VS Code per run is gone (c0d604f12); batten itself still opens no reed attach window, the orch does it by hand | [`ide-opt-in`](design-ide-opt-in.md) | Publish | ide, reed, batten |
+| 2 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`webster-stability`](design-webster-stability.md) | Discussion-Write | webster, shuttle, stencil, quarry |
 
 #### Normal priority
 
-| # | Task | Slug | Recipe | At | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 3 | **Reed hygiene: daemon log and socket path, plain strand shells, watchdog child CPU** | [`reed-hygiene`](design-reed-hygiene.md) | loom | awaiting · PR-Gate | reed |
-| 4 | **Loop machinery small bugs: bounce budget, PR-Gate comment, sleep-aware idle, skill-load hold**<br>• Five small faults in burler/loom, shed, batten and shuttle | [`loop-small-bugs`](design-loop-small-bugs.md) | loom | Discussion-Bouncer | loom, burler, shed, batten, shuttle |
+| # | Task | Slug | At | Labels |
+| --- | --- | --- | --- | --- |
+| 3 | **Reed hygiene: daemon log and socket path, plain strand shells, watchdog child CPU** | [`reed-hygiene`](design-reed-hygiene.md) | awaiting · PR-Gate | reed |
+| 4 | **Loop machinery small bugs: bounce budget, PR-Gate comment, sleep-aware idle, skill-load hold**<br>• Five small faults in burler/loom, shed, batten and shuttle | [`loop-small-bugs`](design-loop-small-bugs.md) | Discussion-Bouncer | loom, burler, shed, batten, shuttle |
 
 ### Ready
 
