@@ -26,6 +26,8 @@ So a stop condition, such as a producer to stop before or after, is recorded in 
 Setting it never restarts the loop or interrupts a running producer: the producer in progress always finishes.
 A message to the driver still reaches it promptly while the loop runs, and the driver turns such a request into that command, using the producer names the step envelope and the recipe give it.
 
+The Go loop also watches its own steps: a step that never returns is noticed and stops the loop as a failure that wakes the driver, so the hub never has to read panes to find a hung `lyx shed step` (from `verify-watchdog`, #420).
+
 ## Seen
 
 A study of 19 driver sessions (2026-10-10) found that every finished run's driver passed 100k tokens of context, peaking at 112k to 190k.
