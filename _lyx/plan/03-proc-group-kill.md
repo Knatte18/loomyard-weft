@@ -5,7 +5,7 @@
 - `plan:internal/proc#ErrNoProcessGroup` -> `var ErrNoProcessGroup error`
 
 **Edit:**
-- `internal/verifyrun#run`
+- `internal/verifyrun/run.go`
 
 **Delete:**
 - `internal/verifyrun/procgroup_unix.go`
@@ -21,6 +21,7 @@
 
 `ErrNoProcessGroup` is declared once, in a platform-neutral file of `proc`.
 `verifyrun.run` calls `proc.ConfigureGroupKill` with a `report` closure that logs today's three messages through `internal/logger` by outcome (group killed, group kill failed and shell killed alone, no process group so descendants may outlive the shell), and the two `procgroup_*.go` files are deleted.
+`run.go`'s package doc, which says `verifyrun` imports only the standard library and `internal/logger`, names `internal/proc` as well.
 Behavior is unchanged; `verifyrun`'s `TestRun_ExpiryKillsBackgroundedDescendant` and `TestRun_Cancellation` cover it, and card 4's timeout test exercises the group kill from gitexec.
 
 **ImpactSummary:** `verifyrun.run`'s kill setup moves behind `proc.ConfigureGroupKill` with the same signals and log lines; no other caller changes.

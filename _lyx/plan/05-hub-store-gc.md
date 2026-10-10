@@ -27,7 +27,8 @@ It must contain none of `cmd/lyx/destructiveguard_test.go`'s banned tokens.
 - `disableStoreAutoGC` sets `gc.auto=0` and `maintenance.auto=false` with `git config` in the shared config of the code store (through `l.WorktreePath()`) and of the records store (through `RecordsRepoRoot(l)`), via `gitexec.Run` (`PATTERN-fabric-git`, `PATTERN-gitexec-checked-call`).
   `maintenance.auto=false` turns off git's post-command `git maintenance run --auto`, whose repack tasks under a `geometric` or `incremental` `maintenance.strategy` `gc.auto` does not govern.
 - `housekeepStores` calls `disableStoreAutoGC`, then runs `git -c gc.auto=<gcAutoThreshold> -c gc.autoDetach=false -c gc.worktreePruneExpire=never gc --auto --quiet` in each store, so it runs in the foreground, only when the store is above git's default threshold, and never prunes a worktree's admin entry, which stays under fabric's destruction gate.
-  It is best-effort and returns nothing: each failure, including another gc holding `gc.pid`, is logged as a warning through `internal/logger` and never fails the caller; each gc run logs its spawn and its end (`PATTERN-spawn-observability`).
+  It is best-effort and returns nothing: each failure, a non-zero git exit, is logged as a warning through `internal/logger` and never fails the caller; each gc run logs its spawn and its end (`PATTERN-spawn-observability`).
+  Another live gc holding `gc.pid` is no failure: `gc --auto` then exits 0 without packing or printing anything, so that store is skipped silently until a later removal.
 - `gcAutoThreshold` is git's default `gc.auto`; it is a variable only so a test can lower it through `SetGCAutoThresholdForTest`, in `export_test.go`, restoring it in `t.Cleanup`.
   It is not operator configuration.
 
@@ -40,18 +41,19 @@ An existing hub picks the keys up at its next pair create or removal.
 Bound, stated in `doc.go` and the PATTERN background: the two keys disable git's automatic gc and maintenance for everyone using the store, the operator's manual git included; lyx's housekeeping is the replacement, a manual `git gc` still works, and maintenance an operator registers with `git maintenance start` stays outside lyx's control.
 
 `internal/fabricengine/doc.go` describes the store settings and the housekeeping step.
-PATTERN: add one short entry under `## Fabric and git`, `PATTERN-hub-store-gc` — hub stores carry `gc.auto=0` and `maintenance.auto=false`, and fabricengine's housekeeping at pair removal is the only lyx code that runs `gc` or writes `gc.*` or `maintenance.*` on them.
+PATTERN: add one short entry under `## Fabric and git`, `PATTERN-hub-store-gc` — hub stores carry `gc.auto=0` and `maintenance.auto=false`, and fabricengine's housekeeping at pair removal is the only lyx code that runs `gc` or writes `gc.*` or `maintenance.*` on them, and is no destructive primitive under `PATTERN-fabric-destruction-chokepoint`.
+The entry line carries that short carve-out clause so the inlined overview states the exemption.
 Its background file `pattern/PATTERN-hub-store-gc.md` holds the carve-out: housekeeping deletes only unreachable objects and expired reflog entries past git's default expiry, never a worktree's admin entry, and is not a destructive primitive under `PATTERN-fabric-destruction-chokepoint`; the operator's manual `git gc` and `git maintenance start` stay outside lyx's control.
 The entry fits in the room card 2 freed under `MaxOverviewBytes`.
 
 Tests: `housekeeping_integration_test.go` holds one integration test over hubs built with `hubforge.NewHub` and `hubforge.AddPairWith` (`PATTERN-hubforge-fixtures`), not parallel because it lowers `gcAutoThreshold` and captures `logger.SetOutput` (process-global state, named in a comment).
-hubforge already sets both keys, so each subtest first unsets them in both stores with `git config --unset`.
+hubforge already sets both keys, and `hubforge.AddPairWith` runs `Topology.Add`, which writes them back, so each subtest unsets them in both stores with `git config --unset` immediately before the step whose write it checks.
 Its subtests:
 
-- After a pair is created, both stores' config holds `gc.auto=0` and `maintenance.auto=false`.
-- After a pair is removed, both stores' config holds both keys again.
+- With both keys unset before the pair is created, after the pair is created both stores' config holds `gc.auto=0` and `maintenance.auto=false`.
+- With both keys unset after `AddPairWith` returns, and checked absent in both stores, after the pair is removed both stores' config holds both keys again.
 - With the threshold lowered and reachable loose objects committed in a store so that its sampled `objects/17` directory is above it, a Remove leaves those objects packed (absent from `objects/17`) before it returns.
-- With `gc.pid` held in a store by a live process on this host, a Remove still succeeds and the captured log holds a warning naming the gc failure.
+- With `gc.bigPackThreshold=bogus` written into one store's config after the pair is created, which makes `gc --auto` exit 128 on its config parse whatever the threshold, a Remove still succeeds and the captured log holds a warning naming that store's gc failure.
 
 Raise `internal/fabricengine`'s row in `cmd/lyx/testdata/test-budget.yaml` by one.
 

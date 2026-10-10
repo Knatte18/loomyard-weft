@@ -12,7 +12,9 @@ Its contract is unchanged: true for HEAD and its ancestors, false with no error 
 Its doc comment states the bound and what it lets through: a descendant whose committer time is more than 24 hours older than the target's, from clock skew on the committing machine, makes it answer false for a commit that is in HEAD; its one caller, `fabricengine.StencilSource`, then logs the "behind the build" drift line instead of "source ahead", and neither blocks.
 
 `blobread_integration_test.go`'s `TestHistoryReads` keeps its existing `HeadContains` contract rows and gains a step for the bound.
-Its fixture commits an old history with `GIT_COMMITTER_DATE` set days before a side-branch target commit and a HEAD commit after it, then deletes one old commit's loose object file.
+The step builds its own repository with `newRepo` and leaves the shared fixture untouched, since the other steps read the shared repository's HEAD and whole history.
+Its own fixture commits at least three old commits with `GIT_COMMITTER_DATE` set days before a side-branch target commit and a HEAD commit after it, then deletes the oldest old commit's loose object file.
+go-git's committer-time walker loads every parent of a commit before returning that commit, so the bounded walk still reads the newest old commit (HEAD's parent) and that commit's parent; deleting either of those two would fail the bounded walk too, which is why the deleted commit sits at least three generations below HEAD.
 `HeadContains(target)` answers `(false, nil)`, which an unbounded walk cannot, since reading the deleted commit would fail.
 
 **ImpactSummary:** `HeadContains` reads fewer commits for an absent target and can answer false for a skewed descendant; `fabricengine.StencilSource` is its one caller and only logs on either answer.

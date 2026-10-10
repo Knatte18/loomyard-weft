@@ -55,9 +55,11 @@ Add an unexported reindex counter field to `Repo`, incremented under the exclusi
 `goGit()` keeps its open-and-cache behavior; its doc names `readGoGit` as its only caller and drops the "hold the lock for the whole use" instruction, which `readGoGit` now owns.
 
 Route every listed method's go-git use through `readGoGit`, one call per read, and delete every direct `goGitMu` lock and `goGit()` call from them.
-A wrapped read never calls another `Repo` method; a composite method such as `ChangedFilesSince`, `FileAtRevision`, `FilesInDirAtRevision` or `HeadContains` either does its whole go-git work in one `read` closure (tree resolution, diff and walk together) or calls `readGoGit` once per read in sequence.
+A wrapped read never calls another `Repo` method; a composite method such as `ChangedFilesSince`, `FileAtRevision` or `FilesInDirAtRevision` either does its whole go-git work in one `read` closure (tree resolution, diff and walk together) or calls `readGoGit` once per read in sequence.
 `WorktreeChangedFiles` and `UntrackedFiles` run `repo.Worktree()`, the exclude read and `Status()` inside one `read`, under the shared lock D1 names in place of today's exclusive lock.
-A method that legitimately expects a missing object maps `plumbing.ErrObjectNotFound` after `readGoGit` returns, so the retry happens before the "absent" answer: `SHAExists` folds it into false, and `HeadContains` into false with no error.
+A method that legitimately expects a missing object maps `plumbing.ErrObjectNotFound` after `readGoGit` returns, so the retry happens before the "absent" answer: `SHAExists` folds it into false.
+`HeadContains` calls `readGoGit` twice in sequence: first the target commit lookup alone, whose not-found it folds into false with no error, then the HEAD read and the bounded walk.
+A not-found during the walk is a missing ancestor, not an absent target: it stays an error, wrapped as today, so card 1's `(false, nil)` assertion still tells a bounded walk from an unbounded one.
 Error wrapping and every method's contract stay as they are.
 Update `gogit.go`'s file comment to describe `readGoGit` in place of `lookupObjectRetrying`.
 
@@ -66,8 +68,11 @@ Update `gogit.go`'s file comment to describe `readGoGit` in place of `lookupObje
 Tests:
 
 - `parity_test.go`: a new table-driven integration test is the #468 regression.
-  Its fixture builds a `Repo`'s pack index (`forcePackIndexFreeze`), commits with the git CLI, runs `git repack -d` and `git prune-packed`, and each row asserts one method answers correctly afterwards: `UntrackedFiles` and `WorktreeChangedFiles` report the right paths, and `ChangedFilesSince`, `HeadContains`, `PathRevisions`, `CommitParents` and `SHAExists` each answer as for an unrepacked store.
+  Each row builds its own repository and `Repo`, freezes that `Repo`'s pack index (`forcePackIndexFreeze`), commits with the git CLI, runs `git repack -d` and `git prune-packed`, and only then makes its one read, as `TestSHAExists_MixedBackend_RepackBetweenCommitAndRead` does today.
+  A shared fixture would not do: the first row's retry reindexes the handle, so every later row would read a fresh index and pass even if its method bypassed `readGoGit`.
+  Each row asserts one method answers correctly: `UntrackedFiles` and `WorktreeChangedFiles` report the right paths, and `ChangedFilesSince`, `HeadContains`, `PathRevisions`, `CommitParents` and `SHAExists` each answer as for an unrepacked store.
   `TestSHAExists_MixedBackend_RepackBetweenCommitAndRead` becomes the table's `SHAExists` row and is deleted as a separate test.
+  `forcePackIndexFreeze`'s doc names `readGoGit`'s whole-read retry in place of `lookupObjectRetrying`.
 - `gogit_test.go`: the `concurrent callers` subtest of `TestGoGit_StandaloneRepo` drives exported methods instead of the deleted `lookupObjectRetrying`; it gains a row in which two goroutines read one `Repo` over a stale pack index after a repack, both succeed, and the reindex counter rose by exactly one.
   A further subtest asserts a read for a genuinely absent sha, repeated with the pack set unchanged, reindexes at most once.
   Its file comment stops naming `lookupObjectRetrying`.
