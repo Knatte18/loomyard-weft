@@ -12,8 +12,9 @@ Ideas 2 to 6 come along where they still apply once the loop is in Go; idea 7 is
 
 The orch must still be able to tell the driver, in plain words, to stop the run at a chosen point, for example "stop after Batchifier, before Webster", and the driver must hit that point itself.
 `lyx loom pause` is not the route: it is too restrictive.
-So the Go loop takes a stop condition, such as a producer to stop before or after, and stops there before the next producer starts, waking the driver.
-A message to the driver still reaches it promptly while the loop runs, and the driver turns such a request into the loop's stop condition (re-arming a loop already running), using the producer names the step envelope and the recipe give it.
+So a stop condition, such as a producer to stop before or after, is recorded in the run's own state by a command, and the Go loop reads it between steps, stopping there before the next producer starts and waking the driver.
+Setting it never restarts the loop or interrupts a running producer: the producer in progress always finishes.
+A message to the driver still reaches it promptly while the loop runs, and the driver turns such a request into that command, using the producer names the step envelope and the recipe give it.
 
 ## Seen
 
