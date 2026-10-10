@@ -55,6 +55,20 @@
       "output": "child awaiting → running at PR-Gate",
       "at": "2026-10-10T17:08:45Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at PR-Gate",
+      "at": "2026-10-10T17:25:36Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at PR-Gate",
+      "at": "2026-10-10T17:26:54Z",
+      "budget_exempt": true
     }
   ]
 }
