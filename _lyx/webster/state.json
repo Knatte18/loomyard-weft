@@ -1,16 +1,16 @@
 {
   "runGuid": "a6eda002b86a4ab90cc56eb59d5cc119",
-  "planFingerprint": "e891d496f09402b16b51ef3bb305fbb1ff80dad72ee5a8a9bc46c8d4be991e47",
+  "planFingerprint": "05306dcca58b2ffd47528825fbde42ecd442ed236ae8e7ef3070cb958276d7ee",
   "planFileHashes": {
     "00-overview.md": "a4e81551ceb9603f1730fc8aef647668321e71229985ab9ff85623b427a12598",
-    "01-seat-table-optional-values.md": "bec0a6d7528097bef033e83236495e634dfd3f38f7f6058ca67e4d25e435bf4c",
-    "02-multillm-table-source-and-preparation.md": "945c90c42530fc5e703e5b44ba29b640f6258fa5a2cfcfac5efab8c42ddb3fbf",
-    "03-loom-config-discussion-keys.md": "26bedf7b67ebf51c076bf0cfd78958a500ed3b27a1dfc382dba700f27138ec2a",
-    "04-discussion-chair-and-advisor-stencils.md": "2a454035b49e745a9f13ea346919d40c71a4fc7435aaf810ba3ba38fab81d60d",
-    "05-discussion-table-builder.md": "45b5b9c18473c1d6ce3036b0ecf6c400d02ef426b04497246deaceeeb7f891bd",
+    "01-seat-table-optional-values.md": "ebcc129fb59c5c3e6995d3b1ffb1abf7b65f54a8f240eec477c70f4eae6700c4",
+    "02-multillm-table-source-and-preparation.md": "3b7a02b5e7c7e3360280d852bb184d3df9ab50e39e97ac81814eb3deee86728c",
+    "03-loom-config-discussion-keys.md": "f2b523b67dcd4d2e0bfe3a78007d29dc87a02587b482c2829338f7fc81d268d3",
+    "04-discussion-chair-and-advisor-stencils.md": "fa7a93d7d37f50f2f4428133d39c919c01cb2949a5dd121ba119cdea33c0af5f",
+    "05-discussion-table-builder.md": "1ab4924c1f73f8d63a0ad5e129c09a4b7942e598a5883f065223f915f1ece43a",
     "06-seat-runner-gate-once.md": "7f4e3df68834d5786c4eaf61223bb0e44ebbcca6e7c51c4191c2c64ff6c678ae",
-    "07-discussion-seats-entry.md": "71d23d0c5fa4ee3f250d3865b13928b6f8c0a29c00e9b978fa52b0d2f5a3b9c7",
-    "08-discussion-write-row-selection.md": "47634541c1563f263bcc68bf9ec9e96a8446483155526d85b3d5c85d65bf7464",
+    "07-discussion-seats-entry.md": "dafe57922427ec350890ac06121d21a6062e0bfc7505d0f23f6cd28fba63ea0e",
+    "08-discussion-write-row-selection.md": "e76cc30f87011582cba73a92fba770e9d6cf51fbbc9362207f26e241d34dc9d0",
     "09-docs-chair-and-advisors.md": "9310f13da9caee30355e2cca260165a5f73a2d12b886f079924e7825a9c7e356"
   },
   "planOverviewFrameHash": "83d9215c4a0fdec0e90a5ba62a9baf9f27b900b13de1a4dcf4360768dfecb485",
@@ -218,7 +218,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "0bf10377529dcc3262eb55f91468e9e2",
   "masterSessionId": "50c86ff9-eb61-46d2-8023-afea88f64d85",
   "batches": {
@@ -233,19 +233,36 @@
         "06-seat-runner-gate-once"
       ],
       "cardHashes": {
-        "01-seat-table-optional-values": "bec0a6d7528097bef033e83236495e634dfd3f38f7f6058ca67e4d25e435bf4c",
-        "02-multillm-table-source-and-preparation": "945c90c42530fc5e703e5b44ba29b640f6258fa5a2cfcfac5efab8c42ddb3fbf",
-        "03-loom-config-discussion-keys": "26bedf7b67ebf51c076bf0cfd78958a500ed3b27a1dfc382dba700f27138ec2a",
-        "04-discussion-chair-and-advisor-stencils": "2a454035b49e745a9f13ea346919d40c71a4fc7435aaf810ba3ba38fab81d60d",
-        "05-discussion-table-builder": "45b5b9c18473c1d6ce3036b0ecf6c400d02ef426b04497246deaceeeb7f891bd",
+        "01-seat-table-optional-values": "ebcc129fb59c5c3e6995d3b1ffb1abf7b65f54a8f240eec477c70f4eae6700c4",
+        "02-multillm-table-source-and-preparation": "3b7a02b5e7c7e3360280d852bb184d3df9ab50e39e97ac81814eb3deee86728c",
+        "03-loom-config-discussion-keys": "f2b523b67dcd4d2e0bfe3a78007d29dc87a02587b482c2829338f7fc81d268d3",
+        "04-discussion-chair-and-advisor-stencils": "fa7a93d7d37f50f2f4428133d39c919c01cb2949a5dd121ba119cdea33c0af5f",
+        "05-discussion-table-builder": "1ab4924c1f73f8d63a0ad5e129c09a4b7942e598a5883f065223f915f1ece43a",
         "06-seat-runner-gate-once": "7f4e3df68834d5786c4eaf61223bb0e44ebbcca6e7c51c4191c2c64ff6c678ae"
       },
       "startSha": "4277598dcfd0824844c7731d04c41d94f7f7c3d9",
       "kind": "fork",
       "spawnedAt": "2026-10-10T10:13:32Z",
       "sessionId": "50c86ff9-eb61-46d2-8023-afea88f64d85",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-seat-table-optional-values",
+        "status": "done",
+        "head_sha": "9fede5a55e0f053ba42945fab11db26e80a9d40e"
+      },
+      "cardShas": [
+        "9fede5a55e0f053ba42945fab11db26e80a9d40e"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-multi-llm/50c86ff9-eb61-46d2-8023-afea88f64d85/subagents/agent-acc318856107c1ab8.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-multi-llm/50c86ff9-eb61-46d2-8023-afea88f64d85/subagents/agent-acc318856107c1ab8.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-multi-llm/50c86ff9-eb61-46d2-8023-afea88f64d85/subagents/agent-acc318856107c1ab8.jsonl"
+  ]
 }

@@ -12,9 +12,9 @@
 - `internal/yamlengine#TestReconcile`
 
 **Create:**
-- `plan:internal/loomengine#DiscussionProducerSingle` -> `const DiscussionProducerSingle = "single"`
-- `plan:internal/loomengine#DiscussionProducerSeats` -> `const DiscussionProducerSeats = "seats"`
-- `plan:internal/loomengine#validateAdvisorSpecs` -> `func validateAdvisorSpecs(key string, specs ModelSpecList, reg modelspec.Registry) error`
+- `internal/loomengine#DiscussionProducerSingle`
+- `internal/loomengine#DiscussionProducerSeats`
+- `internal/loomengine#validateAdvisorSpecs`
 
 **Prosa:**
 - `contracts/specs/refusal-spec.md`

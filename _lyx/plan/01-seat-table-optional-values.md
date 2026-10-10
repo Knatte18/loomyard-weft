@@ -10,8 +10,8 @@
 - `internal/seatengine/doc.go`
 
 **Create:**
-- `plan:internal/seatengine#composeSeatPrompt` -> `func composeSeatPrompt(stencilsDir string, seat Seat, values map[string]string, optional []string) (string, error)`
-- `plan:internal/seatengine#Prompts` -> `func Prompts(geom Geometry, table Table) (map[string]string, error)`
+- `internal/seatengine#composeSeatPrompt`
+- `internal/seatengine#Prompts`
 
 **Uses:**
 - `internal/seatengine#seatValues`

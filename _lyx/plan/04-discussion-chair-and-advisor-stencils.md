@@ -3,8 +3,8 @@
 **Create:**
 - `contracts/stencils/loom/loom-template-discussion-chair.md`
 - `contracts/stencils/loom/loom-template-discussion-advisor.md`
-- `plan:contracts/stencils#LoomTemplateDiscussionChair` -> `var LoomTemplateDiscussionChair []byte`
-- `plan:contracts/stencils#LoomTemplateDiscussionAdvisor` -> `var LoomTemplateDiscussionAdvisor []byte`
+- `contracts/stencils#LoomTemplateDiscussionChair`
+- `contracts/stencils#LoomTemplateDiscussionAdvisor`
 
 **Edit:**
 - `contracts/stencils#entries`

@@ -8,8 +8,8 @@
 - `internal/shedadapters/doc.go`
 
 **Create:**
-- `plan:internal/shedadapters#TableSource` -> `type TableSource func() (seatengine.Table, error)`
-- `plan:internal/shedadapters#NewMultiLLMProducerSourced` -> `func NewMultiLLMProducerSourced(name string, tables TableSource, seats SeatRunner, now func() time.Time, prepareFreshSpawn func() error) *MultiLLMProducer`
+- `internal/shedadapters#TableSource`
+- `internal/shedadapters#NewMultiLLMProducerSourced`
 
 **Uses:**
 - `internal/shedadapters#SpecSource`

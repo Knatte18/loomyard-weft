@@ -24,8 +24,8 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/shedadapters#TableSource`
-- `plan:internal/shedadapters#NewMultiLLMProducerSourced`
+- `internal/shedadapters#TableSource`
+- `internal/shedadapters#NewMultiLLMProducerSourced`
 - `internal/shedrecipe#discussionWriteEntry`
 - `internal/shedrecipe#resolveGateSpec`
 - `internal/shedrecipe#requireSeam`
@@ -38,8 +38,8 @@
 - `internal/loomshed#NewDiscussionGate`
 - `internal/loomcli#hubLocation`
 - `internal/loomcli#TestWire_DiscussionSpecEvaluatesToExpectedShape`
-- `plan:internal/loomengine#DiscussionTable`
-- `plan:internal/seatengine#Prompts`
+- `internal/loomengine#DiscussionTable`
+- `internal/seatengine#Prompts`
 
 **Intent:** Register the seat-table Discussion producer under its own engine name, `DiscussionSeats`, beside the unchanged `DiscussionWrite` entry (the parent's decision superseding D1; D2, D3, D9).
 `Env` gains `DiscussionTable`, a `shedadapters.TableSource` the entry evaluates once per `Call`; its doc keeps the reason it is a closure, the same reason `DiscussionSpec` gives, and `DiscussionSpec` stays for the single-agent entry.

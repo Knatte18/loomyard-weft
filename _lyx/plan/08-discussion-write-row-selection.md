@@ -33,7 +33,7 @@
 - `internal/loomrecipe#wantProducerTable`
 - `internal/loomcli#hubLocation`
 - `internal/loomcli#seedLoomConfigWithKeys`
-- `plan:internal/loomengine#DiscussionProducerSeats`
+- `internal/loomengine#DiscussionProducerSeats`
 - `internal/testkit/shedfake#SeatRunner`
 
 **Intent:** Let `loom.yaml`'s `discussion_producer` select which of the two producers the Discussion-Write row runs, keeping the row name, its gates and its routing (the parent's decision superseding D1).
