@@ -1,8 +1,8 @@
 # Card 10 — tmuxkit-socket-check
 
 **Create:**
-- `plan:internal/testkit/tmuxkit#checkSockets` -> `func checkSockets(dir string, allowed bool) []string`
-- `plan:internal/testkit/tmuxkit#tmuxAllowed` -> `const tmuxAllowed = true`
+- `internal/testkit/tmuxkit#checkSockets`
+- `internal/testkit/tmuxkit#tmuxAllowed`
 - `internal/testkit/tmuxkit/allow_tmux.go`
 - `internal/testkit/tmuxkit/allow_none.go`
 

@@ -1,0 +1,5 @@
+status: OK
+head_sha: d44ca24f457031a826f350471c6885a8d0b8a25a
+deviations:
+  - internal/testkit/tmuxkit/allow_none.go
+  - internal/testkit/tmuxkit/allow_tmux.go

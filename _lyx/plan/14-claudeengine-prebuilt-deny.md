@@ -6,7 +6,7 @@
 - `internal/shuttleengine/claudeengine/settings_test.go`
 
 **Uses:**
-- `plan:internal/gateslot#PrebuiltLyxEnv`
+- `internal/gateslot#PrebuiltLyxEnv`
 
 **Prosa:**
 - `pattern/PATTERN-no-denied-recovery.md`

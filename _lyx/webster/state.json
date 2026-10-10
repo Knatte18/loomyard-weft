@@ -1,6 +1,6 @@
 {
   "runGuid": "fff73e1104de3f235db98a26ed5f5a7a",
-  "planFingerprint": "f8e2daa0941fac4a96ce3301998a8088b08eaa7e36c775ac59fec09f8953febf",
+  "planFingerprint": "36a2d7e94197e67d00eddfbfa5f03c710001004a21f74799a1e9d7a7950a0b66",
   "planFileHashes": {
     "00-overview.md": "0ad33d2e71cd0bd2b348dfeb400a6eaa60d570779badff67c14470d91eac61e4",
     "01-fixture-git-marker.md": "7d78f3450efed061b64d1f2d18f2334b9e02647384d3daf608908d3967a06753",
@@ -12,11 +12,11 @@
     "07-tmuxkit-private-tmpdir-leftovers.md": "73974ebfa80d942e7303616062bc87f1bc4894c5e8ab60d62179c8c347e0945d",
     "08-reedcli-probes-onto-tmuxkit.md": "c84e609f234e698f76a91b63f0cef2b0cc13a83e81eea8685ba785a216f605d7",
     "09-loomcli-resume-split.md": "0225da4f10c9659c1fbdf89773ad56e794d903acfdfce1f40e005857acba4bbc",
-    "10-tmuxkit-socket-check.md": "3f721656298e2938d67e37e5ae5a103f6d05104712195ac687b8bc652df3401d",
-    "11-lyxbin-prebuilt.md": "888a4a4618837ca4c5a870171bc80e915c8834d602e2ca994d267670610e3897",
-    "12-lyxbin-run.md": "b3a91837d2792e5b55732ef3b15e48c5cc27fe11f34f34d412630ef95e181780",
-    "13-gatecli-prebuild.md": "a41466a5bbdf1ae3c0e882b8819c49e0a6a3e55af9e1782fbc150abb62cef870",
-    "14-claudeengine-prebuilt-deny.md": "8c67e5d865c5be9fb1856a856c19ea841373c16a634589616d51018aa5bb3e09",
+    "10-tmuxkit-socket-check.md": "eb8a3104f34368ca56c3c8e92b2dc07f98d76fc6955914d16acf54e9e453a3e2",
+    "11-lyxbin-prebuilt.md": "835b744f8ef120f90f0ab4818f639032ddde84be560df5d01e9e28974e5ffe9e",
+    "12-lyxbin-run.md": "02b1212586b335aa9e89a9295660ff8118bbd39b512d1a1518c78d46dea4cfea",
+    "13-gatecli-prebuild.md": "3d51d97c7ed06077237865cff3203a9f88bd34633ed25436a76570336e03e994",
+    "14-claudeengine-prebuilt-deny.md": "5cae486982fde52d1dbcb0ed10a6651e9a502dcb302ebd62a4c68739bee77857",
     "15-gitkit-no-detached-gc.md": "aaf35f9cb36d813ea6af12e711c244caf20c4c0b3c3f0666bc03c39463007a07",
     "16-hubforge-templates.md": "828393b651a295031f82527df3e22cb98f2d7d7ba1119e3adfcf6bf087e378fb",
     "17-reclassify-fabricengine-add-to-dot.md": "3c0ba9793f0f43a3aa3d7abb5d2578192105149cb3b976c01cdc9f1c4371867c",
@@ -1074,7 +1074,7 @@
       }
     }
   ],
-  "currentBatch": 8,
+  "currentBatch": 0,
   "masterStrand": "6207061aa885c318cb6613a9996f300f",
   "masterSessionId": "7b8ba8a5-8ffd-44b2-8d9c-22d90d79d64b",
   "batches": {
@@ -1172,16 +1172,28 @@
       "cardHashes": {
         "08-reedcli-probes-onto-tmuxkit": "c84e609f234e698f76a91b63f0cef2b0cc13a83e81eea8685ba785a216f605d7",
         "09-loomcli-resume-split": "0225da4f10c9659c1fbdf89773ad56e794d903acfdfce1f40e005857acba4bbc",
-        "10-tmuxkit-socket-check": "3f721656298e2938d67e37e5ae5a103f6d05104712195ac687b8bc652df3401d",
-        "11-lyxbin-prebuilt": "888a4a4618837ca4c5a870171bc80e915c8834d602e2ca994d267670610e3897",
-        "12-lyxbin-run": "b3a91837d2792e5b55732ef3b15e48c5cc27fe11f34f34d412630ef95e181780",
-        "13-gatecli-prebuild": "a41466a5bbdf1ae3c0e882b8819c49e0a6a3e55af9e1782fbc150abb62cef870"
+        "10-tmuxkit-socket-check": "eb8a3104f34368ca56c3c8e92b2dc07f98d76fc6955914d16acf54e9e453a3e2",
+        "11-lyxbin-prebuilt": "835b744f8ef120f90f0ab4818f639032ddde84be560df5d01e9e28974e5ffe9e",
+        "12-lyxbin-run": "02b1212586b335aa9e89a9295660ff8118bbd39b512d1a1518c78d46dea4cfea",
+        "13-gatecli-prebuild": "3d51d97c7ed06077237865cff3203a9f88bd34633ed25436a76570336e03e994"
       },
       "startSha": "f0c572e2c04a08515fba4817d146db4399b16c60",
       "kind": "recovery",
       "spawnedAt": "2026-10-10T10:10:57Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "08-reedcli-probes-onto-tmuxkit",
+        "status": "done",
+        "head_sha": "d44ca24f457031a826f350471c6885a8d0b8a25a",
+        "deviations": [
+          "internal/testkit/tmuxkit/allow_none.go",
+          "internal/testkit/tmuxkit/allow_tmux.go"
+        ]
+      },
+      "cardShas": [
+        "d44ca24f457031a826f350471c6885a8d0b8a25a"
+      ],
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-suite-weight/143f4fc0-509f-4ad6-be6b-62362a043089/subagents/agent-a100ac933f319b941.jsonl"
       ],

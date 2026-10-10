@@ -1,10 +1,10 @@
 # Card 13 — gatecli-prebuild
 
 **Create:**
-- `plan:internal/gatecli#prebuildLyx` -> `func prebuildLyx(ctx context.Context, goBinary, root string) (bin string, cleanup func(), err error)`
-- `plan:internal/gatecli#buildRoot` -> `func buildRoot(location *lyxcwd.Location, dir string) string`
-- `plan:internal/gateslot#StripPrebuilt` -> `func StripPrebuilt(env []string) []string`
-- `plan:cmd/testtiming#prebuildLyx` -> `func prebuildLyx(tags string) (env []string, cleanup func(), err error)`
+- `internal/gatecli#prebuildLyx`
+- `internal/gatecli#buildRoot`
+- `internal/gateslot#StripPrebuilt`
+- `cmd/testtiming#prebuildLyx`
 
 **Edit:**
 - `internal/gatecli#runTest`
@@ -18,7 +18,7 @@
 - `internal/websterengine/cardverify_test.go`
 
 **Uses:**
-- `plan:internal/gateslot#PrebuiltLyxEnv`
+- `internal/gateslot#PrebuiltLyxEnv`
 
 **Prosa:**
 - `internal/gatecli/doc.go`

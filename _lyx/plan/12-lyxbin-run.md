@@ -1,8 +1,8 @@
 # Card 12 — lyxbin-run
 
 **Create:**
-- `plan:internal/testkit/lyxbin#Run` -> `func Run(bin, dir string, timeout time.Duration, args ...string) (output string, exitCode int, err error)`
-- `plan:internal/testkit/lyxbin#ErrTimeout` -> `var ErrTimeout = errors.New("lyxbin: the command outlived its timeout")`
+- `internal/testkit/lyxbin#Run`
+- `internal/testkit/lyxbin#ErrTimeout`
 
 **Edit:**
 - `internal/loomcli/smoke_helpers_test.go`

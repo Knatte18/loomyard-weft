@@ -1,13 +1,13 @@
 # Card 11 — lyxbin-prebuilt
 
 **Create:**
-- `plan:internal/gateslot#PrebuiltLyxEnv` -> `const PrebuiltLyxEnv = "LYX_PREBUILT_LYX"`
-- `plan:internal/testkit/lyxbin#ErrStalePrebuilt` -> `var ErrStalePrebuilt = errors.New("lyxbin: the prebuilt lyx binary is missing or not executable")`
-- `plan:internal/testkit/lyxbin#prebuilt` -> `func prebuilt() (string, bool, error)`
-- `plan:internal/testkit/lyxbin#buildOnce` -> `func buildOnce(ldflags string) (string, error)`
-- `plan:internal/testkit/lyxbin#builds` -> `var builds map[string]*buildResult`
-- `plan:internal/testkit/lyxbin#buildResult` -> `type buildResult struct`
-- `plan:internal/testkit/lyxbin#buildsMu` -> `var buildsMu sync.Mutex`
+- `internal/gateslot#PrebuiltLyxEnv`
+- `internal/testkit/lyxbin#ErrStalePrebuilt`
+- `internal/testkit/lyxbin#prebuilt`
+- `internal/testkit/lyxbin#buildOnce`
+- `internal/testkit/lyxbin#builds`
+- `internal/testkit/lyxbin#buildResult`
+- `internal/testkit/lyxbin#buildsMu`
 
 **Edit:**
 - `internal/testkit/lyxbin#BuildInto`
