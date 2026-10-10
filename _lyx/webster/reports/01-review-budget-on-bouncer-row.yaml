@@ -1,0 +1,12 @@
+status: OK
+head_sha: d084607f0a956112d8efc1acf52ebe4c7a6aee79
+deviations:
+  - internal/shedadapters/bouncer.go
+  - internal/shedadapters/bouncer_clear_test.go
+  - internal/shuttleengine/fakes_test.go
+  - internal/shuttleengine/fixture_test.go
+  - internal/shuttleengine/hold_test.go
+  - internal/shuttleengine/wait.go
+  - internal/shuttleengine/waitmark.go
+  - internal/shuttleengine/waitshadow.go
+  - internal/shuttleengine/rundir.go

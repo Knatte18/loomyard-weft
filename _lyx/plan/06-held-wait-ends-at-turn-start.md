@@ -12,7 +12,7 @@
 - `internal/shuttleengine#TestWait_LogsSessionStateBesideItsClassification`
 
 **Uses:**
-- `plan:internal/shuttleengine#turnStartOffsets`
+- `internal/shuttleengine#turnStartOffsets`
 - `internal/shuttleengine#Run.endHeldWait`
 - `internal/shuttleengine#Run.loopClassification`
 

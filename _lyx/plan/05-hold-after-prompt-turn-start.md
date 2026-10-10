@@ -10,9 +10,9 @@
 - `internal/shuttleengine#TestWait_LogsSessionStateBesideItsClassification`
 
 **Create:**
-- `plan:internal/shuttleengine#Run.armHoldGuard` -> `func (run *Run) armHoldGuard()`
-- `plan:internal/shuttleengine#turnStartOffsets` -> `func turnStartOffsets(engine Engine, data []byte, startOffset int64) []int64`
-- `plan:internal/shuttleengine#withRunOffset` -> `func withRunOffset(offset int64) runOpt`
+- `internal/shuttleengine#Run.armHoldGuard`
+- `internal/shuttleengine#turnStartOffsets`
+- `internal/shuttleengine#withRunOffset`
 
 **Uses:**
 - `internal/shuttleengine#SessionSignalParser`

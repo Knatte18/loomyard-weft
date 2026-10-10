@@ -12,12 +12,12 @@
 - `internal/battenshed#TestNotice_APIErrorStall`
 
 **Create:**
-- `plan:internal/battenshed#sleepGapTolerance` -> `const sleepGapTolerance = time.Minute`
-- `plan:internal/battenshed#sleepGap` -> `func sleepGap(prevWallNanos, wallNanos int64, prevAwake, awake time.Duration) time.Duration`
-- `plan:internal/battenshed#childWait.observeClocks` -> `func (w *childWait) observeClocks(wallNanos int64, awake time.Duration, stamp activityStamp)`
-- `plan:internal/battenshed#childWait.awakeSince` -> `func (w *childWait) awakeSince(now, at time.Time) time.Duration`
-- `plan:internal/battenshed#noticeHarness.suspend` -> `func (h *noticeHarness) suspend(d time.Duration)`
-- `plan:internal/battenshed#TestSleepGap` -> `func TestSleepGap(t *testing.T)`
+- `internal/battenshed#sleepGapTolerance`
+- `internal/battenshed#sleepGap`
+- `internal/battenshed#childWait.observeClocks`
+- `internal/battenshed#childWait.awakeSince`
+- `internal/battenshed#noticeHarness.suspend`
+- `internal/battenshed#TestSleepGap`
 
 **Uses:**
 - `internal/battenshed#innerRunProducer.noticeCondition`
