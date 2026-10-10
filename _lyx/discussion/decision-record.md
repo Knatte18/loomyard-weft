@@ -167,6 +167,12 @@ Bound on the weakened guard: only an answer whose candidates provably never coex
   - card6-recover-batch-prefix-still-says-fork (class consistency, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - partitioned-member-consumers-uncovered (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - A gated run whose output files exist at a turn end with one unawaited shell outstanding stays waiting; the next turn end with nothing outstanding arrives at the gate; an ungated run under the same facts still counts at once.
