@@ -1,0 +1,9 @@
+lyx webster recover-batch refused
+
+Arguments: 09
+
+```
+webster: batch 09 failed on findings recovery cannot check: fabric-reference: ran a fabric-referencing command ("sed -n 1,60p docs/benchmarks/haiku-5-5.md; which tmux lyx go gcc pgrep; nproc; uname -srm; cat deploy-dev | head -30; lyx fabric clone --help 2>&1 | head -30; lyx reed watchdog --help 2>&1 | head -30") that can rewrite run state — an implementer fork must never touch the fabric repo directly (the finding names no path), fabric-reference: ran a fabric-referencing command ("lyx fabric clone --help 2>&1 | sed -n 30,80p; cat _lyx/fabric/origin.json; ls /home/knatte/Code/loomyard-LYXHUB; git remote -v | head -3") that can rewrite run state — an implementer fork must never touch the fabric repo directly (the finding names no path), fabric-reference: ran a fabric-referencing command ("cd /home/knatte/Code/loomyard-LYXHUB && git -C loomyard-weft remote get-url origin; timeout 30 git ls-remote --heads \"$(git -C loomyard-weft remote get-url origin)\" 2>&1 | head -3; sed -n 1,60p daemon-wakeups/tools/deploy/main.go | head -80; ls daemon-wakeups/.dev-bin 2>/dev/null | head") that can rewrite run state — an implementer fork must never touch the fabric repo directly (the finding names no path), fabric-reference: ran a fabric-referencing command ("cd /tmp && lyx fabric add --help 2>&1 | head -50; lyx reed up --help 2>&1 | head -30") that can rewrite run state — an implementer fork must never touch the fabric repo directly (the finding names no path); way forward: when the worktree is clean and HEAD is the batch's start commit ("lyx webster reset --to batch-start --batch 09" moves it there if the batch committed), or the batch's commits are kept and every recorded command is read-only, "lyx webster accept-audit --batch 9" then "lyx webster recover-batch 9"; otherwise 1) lyx webster reset --to start; 2) lyx webster run
+```
+
+needs_fresh: true
