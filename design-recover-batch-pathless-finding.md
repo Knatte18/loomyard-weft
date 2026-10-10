@@ -17,3 +17,8 @@ In run `cli-surface` (2026-10-10), batch 06 failed `record-batch` on a fabric-re
 ## Expected
 
 `contractWritesFor` and `splitContractPaths` skip pathless entries, so recover-batch returns its documented refusal naming `accept-audit --batch NN`.
+
+## After `webster-replan-state` (PR #515)
+
+PR #515 added an early exit for a batch whose pathless findings are all read-only (`recoverbatch.go:444`).
+A pathless finding that is not read-only still reaches `contractWritesFor` → `contractCanon` (`recoverbatch.go:450-451`), so the ENAMETOOLONG error can still happen.
