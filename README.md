@@ -86,7 +86,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 24 | **Fold loomcli and orchcli tmux probe copies onto tmuxkit** | [`tmuxkit-probe-copies`](design-tmuxkit-probe-copies.md) | loom, orch, reed |
 | 25 | **Reconcile keeps an old default below the new floor** | [`reconcile-stale-default`](design-reconcile-stale-default.md) | config |
 | 26 | **Friction-Reflect reads the parent weft when a halt names a dirty worktree**<br>• Reflect misread a parent-weft dirty halt as noise because the task worktree was clean | [`reflect-reads-parent-weft`](design-reflect-reads-parent-weft.md) | loom, fabric |
-| 27 | **Config switch: every advisor gets every question, or each advisor owns an area**<br>• A loom.yaml key that picks between all-advisors-all-questions (default) and per-advisor areas for the chair-and-advisors Discussion | [`discussion-advisor-mode`](design-discussion-advisor-mode.md) | loom, stencil, config |
+| 27 | **Discussion advisors: operator-named areas per advisor, or all advisors on every question**<br>• Each discussion_advisors entry takes an optional area (a lens, as in review fans); without one the advisor answers every question | [`discussion-advisor-mode`](design-discussion-advisor-mode.md) | loom, stencil, config |
 
 #### Low priority
 
