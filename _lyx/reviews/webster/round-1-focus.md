@@ -1,12 +1,11 @@
 ---
 round: 1
 focus:
-  - "Card 5 (landing pre-merge clear): does the abort-own-parked-merge-in step run before the clean check in both Publish and Finalize, stop only the run's own conflict session, and leave other merge state Stuck with a way forward naming only verbs the agents' settings allow?"
-  - "Card 5 seams: does every new `landingshed.Deps` seam follow the nil-is-absent convention, with `internal/loomcli`'s drift guard filling the production wiring?"
-  - "Cards 1, 5, 6: do landing and the loom verbs read the parked record's verb, source and SHAs through the one `MidMerge` answer on `fabricengine.MidMergeState`, and does resume/start let only the row's own leftover through at Publish or Finalize?"
-  - "Card 2: does `ReadConfigChanges` intersect the fork-point diff with the parent-tip diff so a parent-side change never reads as a task edit, and does the notice name the parent tip?"
-  - "Card 3 and card 7: does each added Stuck reason or refusal land with its refusal-spec row and a test row that reaches it, and does `decision add` refuse both labels from a named session other than the recorded parent?"
-  - "Test economy across all cards: any new test that duplicates an existing test's coverage, or any added behavior (notably card 4's numbered-form recognition and card 8's stopped young run dir rows) left without coverage?"
+  - "Publish failure: `TestSmokeBootstrapLifecycle` subtests `died_driver_proceeds_to_the_success_envelope_and_logs_why` and `malformed_status_proceeds_to_the_success_envelope_and_logs_why` (`internal/loomcli/smoke_test.go`). The log shows `state: decode failed` refusing the bootstrap before the driver ran. Settle whether `currentProducer` in `internal/loomcli/start.go` is the only strict status read on the `lyx loom start` path before the spawn, or whether another site (Seed step, midmerge record read, resume own-leftover read) still returns `state.ErrDecode` as a refusal."
+  - "Same failure: settle whether the `state.ErrDecode` fallback in `currentProducer` keeps the ordinary merge refusal over a parked mid-merge state, as cards 01, 03 and 06 of the plan require, and whether `start_midmerge_test.go` covers both the decode-failure and the parked-merge case."
+  - "The merge-in commit 6235b4043 (`git diff 6235b4043^1 6235b4043`): look for parent-branch changes to the status file schema, `state.ReadJSONStrict` callers, or driver-log writing under `.lyx/loom/driver.log` that interact with the new midmerge record fields from plan card 01 and make the smoke test's rigged status files (unknown field, truncated JSON) fail earlier than before."
+  - "Per-card mechanical check for each plan card 01-08: confirm each group's type-specific check from the plan spec ran against that group's own targets, and that the diff matches each card's `Produces`."
+  - "Test economy: new tests in `internal/fabricengine` (config changes three-way, carried-over parent change row) and `internal/loomcli` that duplicate an existing test's coverage; name the covering test."
 ---
 
-Focus is seeded from the plan's card index and shared decisions; the review range is settled by the rubric.
+Seed focus for round 1, set from the Publish failure section, its log and the last commit `d2ad9fc55`, which already targets `currentProducer`.
