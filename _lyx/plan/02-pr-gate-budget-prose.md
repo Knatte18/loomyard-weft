@@ -14,5 +14,5 @@ Both blocks keep their fixed-column wrapping, the style of the comment block the
 In the overview's loom section, the sentence on `reject <review-file>` keeps its first clause and replaces "refuses once the `PR-Review` segment's five rejection rounds are spent" with: its refusal once the gate's bounce budget is spent exists but is unreachable under the recipe, whose `PR-Rework` Done ends the gate's episode after every rework.
 Every link in the file stays as it is, so PATTERN-markdown-link-integrity holds.
 
-Grep the repository for "never resets" and "rejection rounds" before finishing: the Go comments the first phrase hits are rewritten by card 1 or describe the Burler row's own episode and stay true; `internal/loomengine`'s "rejection round" names the rework directory layout and stays.
+Grep the repository for "never resets" and "rejection rounds" before finishing: the Go comments the first phrase hits all sit in doc comments card 1 rewrites, including `internal/shedengine`'s `Routing.Bounces` doc, whose clause on a Burler episode that never resets is false; `internal/loomengine`'s "rejection round" names the rework directory layout and stays.
 No test asserts either phrase, and the reject verb's refusal message in `internal/loomcli/reject.go` is unchanged (AC6).

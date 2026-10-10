@@ -7,6 +7,7 @@
 - `internal/shedadapters#NewBouncer`
 - `internal/shedadapters#Bouncer.Call`
 - `internal/shedadapters/doc.go`
+- `internal/shedengine#Routing.Bounces`
 - `internal/shedadapters#TestBurlerProducer_RoundScan`
 - `internal/shedadapters#TestBurlerProducer_Call_DoneReturnsStuckNeverDone`
 - `internal/shedadapters#TestBurlerProducer_Gate_FailedGateMapsToStuckWithEmptyPointer`
@@ -41,6 +42,7 @@ The in-body comment in `Call` above the unjudged hand-back replaces "each hand-b
 `NewBouncer`'s budget rule drops the two-row consequence and the documented-not-compensated offset, and says the Bouncer row's count is the segment's whole budget on judged rounds, fresh in every generation.
 The Warn comment at the settled-generation clear in `Bouncer.Call` drops "can spend the leftover budget that halts the run, since the round producer's own bounce episode never resets"; the clear is still logged at Warn for its cost in sessions.
 `doc.go`'s Burler paragraph (the sentences on the Stuck being `BudgetExempt` only after a budget continue decision) states the new rule: every hand-back for judgment is exempt, the gate-failed exit is counted.
+`Routing.Bounces`'s doc comment in `internal/shedengine/progress.go` drops the clause that a Burler's own episode never resets, which `episodeStuckCount` already contradicts, and says instead that a Burler-round row sits off the main line, so the count reported while it is current is its step's main-line row's; the method's code is unchanged.
 Go comments use semantic line breaks; the lint runs in the card gate.
 
 Tests, per PATTERN-test-economy as extensions of the tests that already cover each hand-back:
@@ -52,4 +54,4 @@ Tests, per PATTERN-test-economy as extensions of the tests that already cover ea
 AC3 and AC4 need no new assertion: the clear test already pins that a re-entered segment re-seeds from round 1, and `lyx loom status` reads the Bouncer row's count, which this card leaves as it is.
 The package's test count drops by one, so `cmd/lyx/testdata/test-budget.yaml` stays.
 
-**ImpactSummary:** Two Burler returns flip to exempt, one method and one test are deleted, the Bouncer's code is untouched and five doc comments are rewritten; no caller outside `internal/shedadapters` changes.
+**ImpactSummary:** Two Burler returns flip to exempt, one method and one test are deleted, the Bouncer's code is untouched and six doc comments are rewritten, one of them on `Routing.Bounces` in `internal/shedengine` with its code unchanged; no caller outside `internal/shedadapters` changes.
