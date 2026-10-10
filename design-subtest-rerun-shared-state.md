@@ -1,6 +1,6 @@
 # Round gate re-runs a failing subtest alone and breaks subtests that share state
 
-`subtest-rerun-shared-state` · Note · bug
+`subtest-rerun-shared-state` · Note · bug, loom, burler
 
 Imported from [issue #497](https://github.com/Knatte18/loomyard/issues/497).
 
