@@ -1165,6 +1165,23 @@
       "isolated": false,
       "brief": "The per-round usage files hold no judge entry, so judge cost can only be read from session transcripts",
       "body": "## Seen\n\nThe haiku-roles analysis (`docs/research/haiku-judge.md`, 5459376bb) had to measure judge and seed cost from session transcripts, since the per-round usage files have no judge entry.\n\n## Idea\n\nRecord judge and seed passes in the usage files like other roles, so the token report per role shows them and a Haiku trial can be compared without reading transcripts.\n"
+    },
+    {
+      "id": 326,
+      "slug": "per-role-models",
+      "title": "Model and effort set per role and per review row",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "config",
+        "loom",
+        "burler"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Every agent a run spawns gets its own model key; first the judge per Bouncer row, then every other role that can only be set in a group or in the built-in recipe",
+      "body": "## Seen\n\nThe haiku-roles analysis (`docs/research/haiku-judge.md`, 5459376bb) found that one `judge` key in `loom.yaml` sets the model for all three Bouncer rows and their seed passes; a per-row model exists only as `model`/`effort` in the recipe, which is built into the binary.\n\n## Idea (operator, 2026-10-10)\n\nMost agents a run spawns should take a model of their own in config.\n\n- Give each Bouncer row's judge, and its seed pass, its own model key in config, so Discussion-Bouncer can stay on Sonnet while Plan-Bouncer and Webster-Bouncer try Haiku 5.5.\n- Find every other role in the loom and darn recipes, batten and webster whose model is shared with another role or settable only in the recipe, and give it its own key in the same task.\n- Once it lands, the haiku-roles trial runs Haiku 5.5 on the Plan-Bouncer and Webster-Bouncer judges only.\n"
     }
   ]
 }

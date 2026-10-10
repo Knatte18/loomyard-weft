@@ -82,15 +82,16 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 33 | **Test-budget rows collide silently when two runs raise the same row**<br>• Two branches raising one test-budget row to the same value merge clean but overflow on main | [`test-budget-collision`](design-test-budget-collision.md) | loom |
 | 34 | **reed servers ignore ~/.tmux.conf**<br>• Since reed-hygiene (c6dc1fffc) reed servers start with -f /dev/null, so the operator loses prefix, key bindings and escape-time; no reed.yaml key replaces them | `reed-tmux-conf` | reed |
 | 35 | **Judge and seed passes are missing from the per-round usage files**<br>• The per-round usage files hold no judge entry, so judge cost can only be read from session transcripts | [`judge-usage-unrecorded`](design-judge-usage-unrecorded.md) | burler, loom |
+| 36 | **Model and effort set per role and per review row**<br>• Every agent a run spawns gets its own model key; first the judge per Bouncer row, then every other role that can only be set in a group or in the built-in recipe | [`per-role-models`](design-per-role-models.md) | config, loom, burler |
 
 #### Low priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 36 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
-| 37 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
-| 38 | **Fabric audit: plain readers accept unquoted globs and any flag**<br>• readOnlyCommands readers (cat, grep -r) accept unquoted globs and arbitrary flags | [`audit-reader-globs`](design-audit-reader-globs.md) | webster, fabric |
-| 39 | **overview.md still says recipe must be loom or empty**<br>• docs/overview.md:49 predates darn | [`overview-recipe-line`](design-overview-recipe-line.md) | batten |
+| 37 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
+| 38 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
+| 39 | **Fabric audit: plain readers accept unquoted globs and any flag**<br>• readOnlyCommands readers (cat, grep -r) accept unquoted globs and arbitrary flags | [`audit-reader-globs`](design-audit-reader-globs.md) | webster, fabric |
+| 40 | **overview.md still says recipe must be loom or empty**<br>• docs/overview.md:49 predates darn | [`overview-recipe-line`](design-overview-recipe-line.md) | batten |
 
 ### Features
 
