@@ -1191,7 +1191,7 @@
       "id": 253,
       "slug": "burler-multi-llm",
       "title": "Burler runs its round on MultiLLMProducer",
-      "kind": "task",
+      "kind": "note",
       "labels": [
         "enhancement",
         "burler",
@@ -1199,6 +1199,7 @@
         "stencil"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review",
