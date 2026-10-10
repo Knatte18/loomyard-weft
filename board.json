@@ -1284,6 +1284,22 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #522](https://github.com/Knatte18/loomyard/issues/522).\n\nSeen in run quick-recipe (2026-10-10): batch 01's first recovery strand (shuttle run 0316a099) edited 19 files for card 1 and was stopped uncommitted when Webster restarted. The second recovery's prompt listed all 19 under \"Not written by this run: leave it untouched, never stage or commit it\", so the strand blocked on card 1.\n\nWorkaround: orch told the recovery strand to treat the 19 files as batch 01's own work and commit them under card 1.\n\nExpected: files an earlier recovery attempt of the same batch wrote count as the batch's own work (attribution by batch, not by shuttle run id), or the second recovery starts from a clean tree with the first attempt's diff offered as reference. Related: recover-batch 1 exited 0 while the batch ended failed and terminal."
+    },
+    {
+      "id": 315,
+      "slug": "pack-is-the-read-set",
+      "title": "Reviewer treats the kick-start pack as its read set, with a budget beyond it",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "burler",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Fan-lab 2026-10-10: a solo opus[medium] reviewer given a kick-start pack (\"read all listed spans first\") read the pack and then explored about 20 more tool calls, so the pack came on top of exploration instead of replacing it; neither the prompt nor the ladder card said to stay with the pack. Idea: the prompt says the pack is the read set and is trusted as read; any read beyond it needs a named gap (a caller or spawned process one hop out), within a small tool-call budget, and the reviewer ends with one line per extra read saying why the pack lacked it (the fork rule from fan-master-preread variant D).",
+      "body": ""
     }
   ]
 }
