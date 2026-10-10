@@ -21,6 +21,7 @@ Pick: yes, for the task-branch build that is a descendant of main's recorded com
 Batch 4, pull cost.
 Can the pre-run afford a fetch on every command?
 Pick: no; the fetch is gated on a due write, which keeps the common case free.
+The reported incident was a lagging clone that committed seed output on top of a Bolt 1829 commits behind its upstream.
 
 Batch 5, conflict resolution.
 Regenerate the seed inside the push, or drop and let the next pre-run regenerate?
@@ -50,6 +51,10 @@ Pick: no; a start verb must not die on a push blip, and the absent stamp makes t
 - Pushing the seed commit at the pre-run instead of riding the next board push: the same network cost on every pass that writes, for a window the drop rule already closes.
 - Regenerating the seed inside the push retry: the push path would need the registry, the mode and the ancestry read, duplicating the pre-run.
 - Including the hub-wide config commit in the drop set: the build stamp would say the hub is reconciled while the pulled copy holds an older config.
+- Commit time as the only ordering, with no ancestry read: exposed to clock skew even where the worktree holds both commits and ancestry is exact.
+- Leaving a consumer hub's stencils unrefreshed once its worktree cannot establish ancestry: a regression from today, where a production binary refreshes an untouched copy.
+- A drop that refuses whenever a non-seed commit is ahead: the board commit that triggers the push is nearly always ahead, so the drop would almost never fire.
+- Pushing seed commits at once so they never share an ahead set with board commits: a push on every writing pass, and a failed push still leaves the seed beneath the next board commit.
 - Board run status as the in-flight signal: persisted state that an abandoned run leaves behind.
 - A scheduled or deferred gc after a skipped one: a new daemon duty for a case the next quiet removal covers.
 - A rate limit of one gc per store per interval: bounds the repeat but leaves the loose count high, which is the reported cause.
@@ -63,6 +68,14 @@ _No rounds yet._
 ## Question ledger
 
 - Auto-pick: forward-only by build ancestry, recorded per file in the stamp line (D1). Rationale in Interview batch 2.
+- Auto-pick: commit time as D1's fallback where the worktree lacks either commit, covering consumer hubs and the specs pass (review round 1).
+- Auto-pick: `lyx stencil sync` commits under `lyx: sync <subtree>` so D5 never drops an operator's forced refresh (D3, review round 1).
+- Auto-pick: D5's primitive drops seed commits and replays the remaining ahead commits onto upstream, restoring the original tip on a replay conflict (review round 1).
+- Auto-pick: an unpushed hub-wide config commit keeps the stamp absent and warns at each start verb until the operator acts (D4, review round 1).
+- Auto-pick: a probe with no tmux server reports no sessions; any other probe failure skips gc with a Warn (D8, review round 1).
+- Auto-pick: `lyx stencil sync` from a binary D2 does not let refresh writes no recorded revision, so a forced refresh never blocks a later production refresh (D1, review round 2).
+- Auto-pick: D5's signature requires D3's label, so a pre-change seed or sync commit is never dropped and keeps today's push failure (D5, review round 2).
+- Auto-pick: a conflicting hub-wide config commit clears only through the operator's `git pull --rebase` in the board dir; a board push clears only a transport failure (D4, review round 2).
 - Auto-pick: a production channel stamped by the deploy tool, and an unstamped or modified build never refreshes (D2). Rationale in batch 3.
 - Auto-pick: the seed commit label reuses `hubreconcile`'s revision label form (D3).
 - Auto-pick: the fetch is gated on a due write; transport failure skips the pass with a warning (D4). Rationale in batch 4.
