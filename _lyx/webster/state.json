@@ -1,20 +1,20 @@
 {
   "runGuid": "61c6272154041ac171909ff283569909",
-  "planFingerprint": "fa5a3a451ced24ec897ec6d2e90b77889597bc4b19aba4753ba34fe4070a7135",
+  "planFingerprint": "5ee4c7b1c0c4f20ad884986f6a643b6e4e30c92ed87b07f2d8e13006501b9b4f",
   "planFileHashes": {
     "00-overview.md": "50b393cf7046eb870669c8df4a7d4cf468a37a206fe5855d3abdc6482c0f5f87",
     "01-fswatch-leaf.md": "8f41b324ca129defd8b1c75ffd1309b395385622951dec322a0ea4e989a99be1",
     "02-poll-floors.md": "a29ac6613580a6580dcb91453b089729348d0bb223138b2f63dc32b7aa586102",
     "03-seed-started-at.md": "e86f171f5775dd140db714ab1c42302e1d5d35e106bfacb9bb1969505a5bf8c7",
     "04-reed-resize-events.md": "9a4239b23f2a3daa1ca59ef41c81984a973242edd01bb60ecd10659edbc3e806",
-    "05-reed-wake-cadence.md": "9f646e99616faa683ffaf1e3742339f405414d055e9737136353a32786d9e815",
-    "06-watchdog-discovery-backoff.md": "10c61089fa9401a4afed7ec5ca98ac70e438286e311cdfd404e373a419c80dd3",
-    "07-session-start-signal.md": "daef3d3fb61635662aa15cae41b3249a604bbb69613eba261232fb559a1f2b23",
-    "08-readiness-reading.md": "debed1575195089748d76db79affd8b73c3d16cc00310960deb9524285414d99",
-    "09-orch-held-injection-log.md": "0522abfd76ec31e703ddff4531d34edb4cdb1ec4cef04f4667f17538a0ecc89a",
+    "05-reed-wake-cadence.md": "90cd04cedc95587a04bdd8c198f0c28b8ddc859b75512e8153ecd43c06b2a6cf",
+    "06-watchdog-discovery-backoff.md": "2f7cc2f6d49bed33c04bf9346f22e20933bfcc8ba27660af82aa5cd82e0b5eee",
+    "07-session-start-signal.md": "2942fa10447bae223a475c3083afae34c2799da8068c6b63203b3b4a398d9e97",
+    "08-readiness-reading.md": "68c63665dd503f556acb7a788b896b28872bd608d963b346df890be84394d468",
+    "09-orch-held-injection-log.md": "fb708bdc5837fa7dcb5ca8f723c4f4bedfaac1886800b03567853effac140303",
     "10-shell-changedir.md": "79759b16bb021bf9c0aea74a5e0158097ea4f1f233d5b3b2a5c8dc4f32bcdb61",
     "11-orch-resume-context-engine.md": "66e9a908ad82433473015401780db137e413dcd4f4f65805e8f73cd1905972b0",
-    "12-orch-resume-context-verb.md": "94238ae9da96df827989dc1244499a5281422f87c3914e39b97e3b808e3355cf",
+    "12-orch-resume-context-verb.md": "1ccc805ec6ab061e20ee6d5d5bc9f1b3864c46409670707d98574c90ba2d65bd",
     "13-daemon-wakeups-guard.md": "a80b5f833c8d7588b1a0e14d0a6eba0810cb9390a5005c935341451d1969323f",
     "14-idle-cpu-benchmark.md": "b22330e20ae5ae0df0a9d83430459a10c91a266d6da0b13809be7097ebd37282"
   },
@@ -375,7 +375,7 @@
       }
     }
   ],
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "5e896c8eda5f757cb8f4dc06f750d828",
   "masterSessionId": "958e9658-b395-406d-838c-6375899e0c47",
   "batches": {
@@ -426,20 +426,35 @@
         "08-readiness-reading"
       ],
       "cardHashes": {
-        "05-reed-wake-cadence": "9f646e99616faa683ffaf1e3742339f405414d055e9737136353a32786d9e815",
-        "06-watchdog-discovery-backoff": "10c61089fa9401a4afed7ec5ca98ac70e438286e311cdfd404e373a419c80dd3",
-        "07-session-start-signal": "daef3d3fb61635662aa15cae41b3249a604bbb69613eba261232fb559a1f2b23",
-        "08-readiness-reading": "debed1575195089748d76db79affd8b73c3d16cc00310960deb9524285414d99"
+        "05-reed-wake-cadence": "90cd04cedc95587a04bdd8c198f0c28b8ddc859b75512e8153ecd43c06b2a6cf",
+        "06-watchdog-discovery-backoff": "2f7cc2f6d49bed33c04bf9346f22e20933bfcc8ba27660af82aa5cd82e0b5eee",
+        "07-session-start-signal": "2942fa10447bae223a475c3083afae34c2799da8068c6b63203b3b4a398d9e97",
+        "08-readiness-reading": "68c63665dd503f556acb7a788b896b28872bd608d963b346df890be84394d468"
       },
       "startSha": "185da4e55ba1ff0ec45c261d2827db32dc945c08",
       "kind": "fork",
       "spawnedAt": "2026-10-10T06:04:18Z",
       "sessionId": "958e9658-b395-406d-838c-6375899e0c47",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-reed-wake-cadence",
+        "status": "done",
+        "head_sha": "2e5940f992557e6680121f8bf1168c92d5ee41c2"
+      },
+      "cardShas": [
+        "2e5940f992557e6680121f8bf1168c92d5ee41c2"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-daemon-wakeups/958e9658-b395-406d-838c-6375899e0c47/subagents/agent-a296f636943ac7792.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-daemon-wakeups/958e9658-b395-406d-838c-6375899e0c47/subagents/agent-a296f636943ac7792.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-daemon-wakeups/958e9658-b395-406d-838c-6375899e0c47/subagents/agent-a1dd124fbd3d21c25.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-daemon-wakeups/958e9658-b395-406d-838c-6375899e0c47/subagents/agent-a1dd124fbd3d21c25.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-daemon-wakeups/958e9658-b395-406d-838c-6375899e0c47/subagents/agent-a296f636943ac7792.jsonl"
   ]
 }

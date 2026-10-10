@@ -1,10 +1,10 @@
 # Card 7 — session-start-signal
 
 **Create:**
-- `plan:internal/shuttleengine#SessionSignalSessionStart` -> `const SessionSignalSessionStart SessionSignalKind = "session_start"`
-- `plan:internal/shuttleengine/claudeengine#hookEventSessionStart` -> `const hookEventSessionStart = "SessionStart"`
-- `plan:internal/shuttleengine/claudeengine#compactionMatcher` -> `const compactionMatcher = "compact"`
-- `plan:internal/shuttleengine/claudeengine#SessionStartContext` -> `func SessionStartContext(text string) ([]byte, error)`
+- `internal/shuttleengine#SessionSignalSessionStart`
+- `internal/shuttleengine/claudeengine#hookEventSessionStart`
+- `internal/shuttleengine/claudeengine#compactionMatcher`
+- `internal/shuttleengine/claudeengine#SessionStartContext`
 
 **Edit:**
 - `internal/shuttleengine#Spec`

@@ -16,7 +16,7 @@
 
 **Uses:**
 - `plan:internal/orchengine#ResumeContext`
-- `plan:internal/shuttleengine/claudeengine#SessionStartContext`
+- `internal/shuttleengine/claudeengine#SessionStartContext`
 - `internal/shell#Shell`
 
 **Intent:** The CLI half of D11: the hidden `lyx orch resume-context` verb and the hook command the orch run's spec carries.

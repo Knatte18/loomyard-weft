@@ -1,13 +1,13 @@
 # Card 6 — watchdog-discovery-backoff
 
 **Create:**
-- `plan:internal/reedcli#watchdogHubDiscoveryCeiling` -> `const watchdogHubDiscoveryCeiling = 60 * time.Second`
-- `plan:internal/reedcli#discoveryWake` -> `type discoveryWake struct`
-- `plan:internal/reedcli#discoveryWake.afterCycle` -> `func (d *discoveryWake) afterCycle(now time.Time, changed bool)`
-- `plan:internal/reedcli#discoveryWake.onSignal` -> `func (d *discoveryWake) onSignal(now time.Time)`
-- `plan:internal/reedcli#discoveryWake.next` -> `func (d *discoveryWake) next(now time.Time) time.Duration`
-- `plan:internal/reedcli#sameSessionSet` -> `func sameSessionSet(a, b []string) bool`
-- `plan:internal/reedcli#consumeDiscoverSignal` -> `func consumeDiscoverSignal(path string) (bool, error)`
+- `internal/reedcli#watchdogHubDiscoveryCeiling`
+- `internal/reedcli#discoveryWake`
+- `internal/reedcli#discoveryWake.afterCycle`
+- `internal/reedcli#discoveryWake.onSignal`
+- `internal/reedcli#discoveryWake.next`
+- `internal/reedcli#sameSessionSet`
+- `internal/reedcli#consumeDiscoverSignal`
 - `internal/reedcli/doc.go`
 
 **Edit:**
@@ -22,8 +22,8 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/reedengine#NextWakeCadence`
-- `plan:internal/reedengine#DiscoverSignalFileName`
+- `internal/reedengine#NextWakeCadence`
+- `internal/reedengine#DiscoverSignalFileName`
 - `internal/reedengine#OpenFileWatch`
 
 **Intent:** The discovery loop backs off while the session set is unchanged and wakes on the discover signal (D5, the `reedcli` half).

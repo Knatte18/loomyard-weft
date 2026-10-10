@@ -1,12 +1,12 @@
 # Card 8 — readiness-reading
 
 **Create:**
-- `plan:internal/shuttleengine#readiness` -> `type readiness struct`
-- `plan:internal/shuttleengine#boxReading` -> `type boxReading struct`
-- `plan:internal/shuttleengine#readBox` -> `func readBox(engine Engine, capture string) boxReading`
-- `plan:internal/shuttleengine#judgeReadiness` -> `func judgeReadiness(state SessionState, unmatched bool, box boxReading) readiness`
-- `plan:internal/shuttleengine#sessionReadiness` -> `func sessionReadiness(sc sendContext, cycler SessionCycler, hold *turnStartHold, capture string) readiness`
-- `plan:internal/shuttleengine#Runner.holdFor` -> `func (r *Runner) holdFor(guid string) *turnStartHold`
+- `internal/shuttleengine#readiness`
+- `internal/shuttleengine#boxReading`
+- `internal/shuttleengine#readBox`
+- `internal/shuttleengine#judgeReadiness`
+- `internal/shuttleengine#sessionReadiness`
+- `internal/shuttleengine#Runner.holdFor`
 
 **Edit:**
 - `internal/shuttleengine#IdleProbe`

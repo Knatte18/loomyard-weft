@@ -21,7 +21,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/shuttleengine#SessionSignalSessionStart`
+- `internal/shuttleengine#SessionSignalSessionStart`
 
 **Intent:** The watcher logs why each step waited and when it was typed (D8), over the readiness reading the probe now carries (D7).
 `heldReason` returns the probe's `Reason`, else `paneTooShortReason` for a probe reporting `TooShort`, else a fixed text for a not-idle probe with no reason (the pane fallback).

@@ -1,13 +1,13 @@
 # Card 5 — reed-wake-cadence
 
 **Create:**
-- `plan:internal/reedengine#NextWakeCadence` -> `func NextWakeCadence(current, base, ceiling time.Duration, changed bool) time.Duration`
-- `plan:internal/reedengine#DiscoverSignalFileName` -> `const DiscoverSignalFileName = "reed-discover.signal"`
-- `plan:internal/reedengine#nameRepairCeiling` -> `const nameRepairCeiling = 60 * time.Second`
-- `plan:internal/reedengine#nameRepairTiming` -> `type nameRepairTiming struct`
-- `plan:internal/reedengine#nameRepairDefaultTiming` -> `func nameRepairDefaultTiming() nameRepairTiming`
-- `plan:internal/reedengine#Engine.watchNames` -> `func (e *Engine) watchNames(ctx context.Context, namer SessionNamer, t nameRepairTiming) error`
-- `plan:internal/reedengine#Engine.touchDiscoverSignal` -> `func (e *Engine) touchDiscoverSignal()`
+- `internal/reedengine#NextWakeCadence`
+- `internal/reedengine#DiscoverSignalFileName`
+- `internal/reedengine#nameRepairCeiling`
+- `internal/reedengine#nameRepairTiming`
+- `internal/reedengine#nameRepairDefaultTiming`
+- `internal/reedengine#Engine.watchNames`
+- `internal/reedengine#Engine.touchDiscoverSignal`
 
 **Edit:**
 - `internal/reedengine#Geometry`
