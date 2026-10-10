@@ -20,7 +20,7 @@
     {
       "id": 25,
       "slug": "convergence-plan",
-      "title": "Convergence: measure hub and driver interventions, fix at the source, hardening freezes",
+      "title": "Convergence: log hub interventions and driver repairs per run by class",
       "kind": "note",
       "labels": [
         "enhancement",
@@ -28,11 +28,10 @@
         "shed"
       ],
       "issues": [],
-      "priority": "high",
       "depends_on": [],
       "isolated": false,
-      "brief": "Plan for lyx to converge rather than accumulate bugs: per-run intervention log, real-wiring tests, feature freezes",
-      "body": "Operator 2026-09-30: take a step back and plan for convergence, not keep accepting more bugs.\nObserved today: nearly every hub intervention was in same-day new code (#319: approve nil dep, reject reading its file argument as run-id), and both passed tests built on fake deps.\nIngredients: (1) log every hub intervention and ly-drive repair per run with a class and cause, so interventions per run and new-vs-repeat failure classes are visible; (2) every fix at the source with a test that drives the real CLI wiring, not only fakes; (3) freeze periods with no new verbs or recipe rows, hardening only, until the intervention rate flattens.\nGoal: the outside LLM steps in rarely, and for the task rather than for lyx.\n## Model trial (from `model-spec-short-form`, operator 2026-10-01)\n\nTry `fable[high]` for discussion and review, where design judgement matters (refusal-audit's holes came from opus Discussion and opus reviews; a Fable review found the design problem), and keep sonnet for implementation.\nChange it only between runs, and measure review rounds, PR rejects and interventions before and after.\n\n## Friction on halt\n\nMoved to task `agent-self-reflect` (operator, 2026-10-03).\n\n"
+      "brief": "Record every hub intervention and driver repair with a class and cause, so interventions per run and repeat failure classes are visible",
+      "body": "## Seen\n\nOperator 2026-09-30: take a step back and plan for convergence, not keep accepting more bugs.\nThat day nearly every hub intervention was in same-day new code (#319: approve nil dep, reject reading its file argument as run-id), and both passed tests built on fake deps.\n\n## Idea\n\nLog every hub intervention and every driver repair per run with a class and a cause, so interventions per run and new versus repeat failure classes are visible over time.\nFixing at the source with a test through the real CLI wiring, and hardening-only periods when the rate climbs, are working practice and need no build.\n\nGoal: the outside LLM steps in rarely, and for the task rather than for lyx.\n"
     },
     {
       "id": 37,
