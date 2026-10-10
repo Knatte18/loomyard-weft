@@ -16,11 +16,13 @@
 - `plan:internal/buildvcs#Identity.Label`
 - `plan:internal/fabricengine#BinaryLabel`
 - `plan:internal/fabricengine#Bolt.PullThenCommitWritten`
+- `plan:internal/fabricengine#BoltWrite`
 - `plan:internal/fabricengine#BoltWriteResult`
+- `internal/fabricengine#NewMutations`
 
 **Intent:** D3 and D4 for the hub-wide config write.
 `ensure` reads the per-worktree label from `running.Identity.Label()`, the moved copy of `revisionLabel`, and `walkHub` passes `fabricengine.BinaryLabel()` to `reconcileHubWide`, whose commit subject becomes `lyx: reconcile hub-wide config for build <label>` with the shared parenthesised label; the per-worktree commits keep their `for build <short revision>` subject.
-`reconcileHubWide` commits through `Bolt.PullThenCommitWritten`, restoring the config snapshot on a write or commit error as today; a skipped result, fetch failure or divergence, leaves the files unwritten and reports `skipped`, and a push failure after a landed commit logs the Warn as today and also reports `skipped`.
+`reconcileHubWide` commits through `Bolt.PullThenCommitWritten` with one `BoltWrite` and a local `NewMutations` record rooted at the board dir's parent, since the walk has no envelope and a drop is logged inside Bolt, restoring the config snapshot on a write or commit error as today; a skipped result, fetch failure, dirty board or divergence, leaves the files unwritten and reports `skipped`, and a push failure after a landed commit logs the Warn as today and also reports `skipped`.
 `walkHub` folds that into the skipped it already returns for a mid-merge worktree, so `ensure` leaves the stamp absent and the next start verb reruns the walk; a rerun whose unpushed hub-wide commit sits over a moved upstream meets the divergence skip, keeps the stamp absent and repeats the Warn, and only a resolved `git pull --rebase` in the board dir, or a board push that lands the commit after a transport failure, clears it.
 `revisionLabel` and `shortRevisionLength` are deleted with their last caller moved.
 `doc.go` adds the pull-first step and the stamp-absent rule for a skipped or unpushed hub-wide commit beside the mid-merge one.

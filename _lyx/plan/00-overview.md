@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -19,12 +19,13 @@ Store gc at pair removal skips while another pair's reed session is live and pru
 4 — stencil-source-ordering — `StencilSource` answers the ordering by ancestry or commit time and stamps the running binary
 5 — gitrepo-bolt-primitives — upstream SHA, commit detail, cherry-pick and the rebase-failed sentinel
 6 — seed-commit-signature — the shared binary label, seed and sync subjects and the seed-commit recognizer
-7 — bolt-pull-first-seed-drop — `Bolt.PullThenCommitWritten`, the gated seed-commit drop and the push retry
+7 — bolt-pull-first-seed-drop — `Bolt.PullThenCommitWritten` over an ordered list of writes and the gated seed-commit drop
 8 — prerun-seed-pull-first — the root pre-run gates on a due write, pulls Bolt first and labels its commit
 9 — stencil-sync-message — `lyx stencil sync` commits under its own labelled subject
 10 — hubreconcile-pull-first — the hub-wide write pulls first and leaves the stamp absent when it cannot land
 11 — fabric-reconcile-push-failure — a hub-config or warp-binding commit or push failure fails the verb
 12 — housekeeping-inflight-prune — gc skips under another pair's live session and prunes day-old loose objects
+13 — bolt-push-seed-drop-retry — Bolt's push drops seed commits and retries once on a rebase conflict, recorded in the envelope of each fabric verb that holds a record
 
 ## Shared Decisions
 
@@ -48,7 +49,7 @@ Store gc at pair removal skips while another pair's reed session is live and pru
 
 ### Decision: skip-warns-once-in-bolt
 
-- **Decision:** the fetch-failure and divergence Warns are logged inside `Bolt.pullFirst`, once, and callers only read the returned skip.
+- **Decision:** the fetch-failure, dirty-board and divergence Warns are logged inside `Bolt.pullFirst`, once, and callers only read the returned skip.
 - **Rationale:** three callers would otherwise repeat the same way-forward text; D6 is then checked at one site.
 - **Applies to:** cards 7, 8, 10, 11
 

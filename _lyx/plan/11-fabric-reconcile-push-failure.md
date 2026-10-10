@@ -8,11 +8,12 @@
 
 **Uses:**
 - `plan:internal/fabricengine#Bolt.PullThenCommitWritten`
+- `plan:internal/fabricengine#BoltWrite`
 - `plan:internal/fabricengine#BoltWriteResult`
 - `internal/fabriccli#errWithRecordFields`
 
 **Intent:** D4 and D7 for `lyx fabric reconcile`.
-`runReconcile` heals the hub-wide config through `Bolt.PullThenCommitWritten`, which records the file writes and the commit itself, so the handler's own `KindFileWritten` and `KindCommitCreated` appends go; a skipped heal, fetch failure or divergence, writes nothing and is reported under `hub_config_detail` with the skip's detail, which is not a failure of the verb.
+`runReconcile` heals the hub-wide config through `Bolt.PullThenCommitWritten` with one `BoltWrite`, which records the file writes and the commit itself, so the handler's own `KindFileWritten` and `KindCommitCreated` appends go; a skipped heal, fetch failure, dirty board or divergence, writes nothing and is reported under `hub_config_detail` with the skip's detail, which is not a failure of the verb.
 A commit or push failure of the hub-wide config, or of the warp-binding record on either the `recorded` or the `present` path, no longer leaves the exit code alone: the envelope is built as today, `hub_config_detail`, `warp_binding` and `warp_binding_detail` included, and returned through `errWithRecordFields` with an error naming the first failure and the way forward, a re-run once the remote is reachable, or `git pull --rebase` in the board dir then `lyx board sync` for a rejected push; the pair-failure error keeps precedence when both occur.
 `contracts/specs/refusal-spec.md` has no fabric section, so no row is added (`PATTERN-refusal-way-forward` binds webster, shed and loom).
 `Command`'s `reconcile` long help drops the sentence saying a commit or push failure leaves the exit code unchanged and says instead that it fails the verb with the envelope kept, and `runReconcile`'s doc comment says the same.
