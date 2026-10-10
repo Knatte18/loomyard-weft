@@ -10,22 +10,22 @@
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/fabricengine#BoltSkip` -> `type BoltSkip string`
-- `plan:internal/fabricengine#BoltSkipFetchFailed` -> `const BoltSkipFetchFailed BoltSkip = "fetch_failed"`
-- `plan:internal/fabricengine#BoltSkipDiverged` -> `const BoltSkipDiverged BoltSkip = "diverged"`
-- `plan:internal/fabricengine#BoltSkipDirty` -> `const BoltSkipDirty BoltSkip = "dirty"`
-- `plan:internal/fabricengine#BoltWrite` -> `type BoltWrite struct`
-- `plan:internal/fabricengine#BoltWriteResult` -> `type BoltWriteResult struct`
-- `plan:internal/fabricengine#Bolt.PullThenCommitWritten` -> `func (b *Bolt) PullThenCommitWritten(writes []BoltWrite, rec *Mutations) (BoltWriteResult, error)`
-- `plan:internal/fabricengine#Bolt.pullFirst` -> `func (b *Bolt) pullFirst(rec *Mutations) (BoltSkip, string, error)`
-- `plan:internal/fabricengine#seedCommitsAhead` -> `func seedCommitsAhead(repo *gitrepo.Repo, ahead []string) (seed, other, touched []string, err error)`
-- `plan:internal/fabricengine#boardDropRequest` -> `func boardDropRequest(boardDir string, touched []string) pathRequest`
-- `plan:internal/fabricengine#pathOwnershipBoardWorktree` -> `const pathOwnershipBoardWorktree pathOwnershipKind = 10`
-- `plan:internal/fabricengine#ownedBoardWorktree` -> `func ownedBoardWorktree() pathOwnership`
-- `plan:internal/fabricengine#pathDirtinessTrackedOn` -> `const pathDirtinessTrackedOn pathDirtinessKind = 4`
-- `plan:internal/fabricengine#dirtyTrackedOn` -> `func dirtyTrackedOn(paths []string) pathDirtiness`
-- `plan:internal/fabricengine#dropSeedCommits` -> `func dropSeedCommits(rec *Mutations, req pathRequest, repo *gitrepo.Repo, upstream string, ahead []string) error`
-- `plan:internal/fabricengine#KindCommitsDropped` -> `const KindCommitsDropped Kind = "commits_dropped"`
+- `internal/fabricengine#BoltSkip`
+- `internal/fabricengine#BoltSkipFetchFailed`
+- `internal/fabricengine#BoltSkipDiverged`
+- `internal/fabricengine#BoltSkipDirty`
+- `internal/fabricengine#BoltWrite`
+- `internal/fabricengine#BoltWriteResult`
+- `internal/fabricengine#Bolt.PullThenCommitWritten`
+- `internal/fabricengine#Bolt.pullFirst`
+- `internal/fabricengine#seedCommitsAhead`
+- `internal/fabricengine#boardDropRequest`
+- `internal/fabricengine#pathOwnershipBoardWorktree`
+- `internal/fabricengine#ownedBoardWorktree`
+- `internal/fabricengine#pathDirtinessTrackedOn`
+- `internal/fabricengine#dirtyTrackedOn`
+- `internal/fabricengine#dropSeedCommits`
+- `internal/fabricengine#KindCommitsDropped`
 - `internal/fabricengine/boltpullfirst_integration_test.go`
 
 **Uses:**
@@ -39,7 +39,7 @@
 - `internal/gitrepo#Repo.Fetch`
 - `internal/gitrepo#Repo.MergeFFOnly`
 - `internal/gitrepo#Repo.ResetKeep`
-- `plan:internal/fabricengine#IsSeedCommit`
+- `internal/fabricengine#IsSeedCommit`
 - `internal/fabricengine#checkPathRequest`
 - `internal/fabricengine#isRegisteredLinkedWorktreeIn`
 - `internal/fabricengine#WeftWarpSlug`

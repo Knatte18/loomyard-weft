@@ -4,11 +4,11 @@
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/fabricengine#BinaryLabel` -> `func BinaryLabel() string`
-- `plan:internal/fabricengine#binaryLabel` -> `func binaryLabel(id buildvcs.Identity, channel, executable string) string`
-- `plan:internal/fabricengine#SeedCommitMessage` -> `func SeedCommitMessage(subtree, label string) string`
-- `plan:internal/fabricengine#SyncCommitMessage` -> `func SyncCommitMessage(subtree, label string) string`
-- `plan:internal/fabricengine#IsSeedCommit` -> `func IsSeedCommit(message string, paths []string) bool`
+- `internal/fabricengine#BinaryLabel`
+- `internal/fabricengine#binaryLabel`
+- `internal/fabricengine#SeedCommitMessage`
+- `internal/fabricengine#SyncCommitMessage`
+- `internal/fabricengine#IsSeedCommit`
 - `internal/fabricengine/seedsignature_test.go`
 
 **Uses:**

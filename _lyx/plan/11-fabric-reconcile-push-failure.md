@@ -7,9 +7,9 @@
 - `internal/fabriccli/hubmutation_integration_test.go`
 
 **Uses:**
-- `plan:internal/fabricengine#Bolt.PullThenCommitWritten`
-- `plan:internal/fabricengine#BoltWrite`
-- `plan:internal/fabricengine#BoltWriteResult`
+- `internal/fabricengine#Bolt.PullThenCommitWritten`
+- `internal/fabricengine#BoltWrite`
+- `internal/fabricengine#BoltWriteResult`
 - `internal/fabriccli#errWithRecordFields`
 
 **Intent:** D4 and D7 for `lyx fabric reconcile`.

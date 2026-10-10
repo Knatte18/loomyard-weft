@@ -5,8 +5,8 @@
 - `internal/stencilcli/cli_integration_test.go`
 
 **Uses:**
-- `plan:internal/fabricengine#SyncCommitMessage`
-- `plan:internal/fabricengine#BinaryLabel`
+- `internal/fabricengine#SyncCommitMessage`
+- `internal/fabricengine#BinaryLabel`
 - `internal/fabricengine#CommitSeededStencils`
 
 **Intent:** D3 for the operator's forced refresh.

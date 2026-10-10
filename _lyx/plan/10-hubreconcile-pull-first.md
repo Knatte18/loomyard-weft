@@ -14,10 +14,10 @@
 
 **Uses:**
 - `internal/buildvcs#Identity.Label`
-- `plan:internal/fabricengine#BinaryLabel`
-- `plan:internal/fabricengine#Bolt.PullThenCommitWritten`
-- `plan:internal/fabricengine#BoltWrite`
-- `plan:internal/fabricengine#BoltWriteResult`
+- `internal/fabricengine#BinaryLabel`
+- `internal/fabricengine#Bolt.PullThenCommitWritten`
+- `internal/fabricengine#BoltWrite`
+- `internal/fabricengine#BoltWriteResult`
 - `internal/fabricengine#NewMutations`
 
 **Intent:** D3 and D4 for the hub-wide config write.

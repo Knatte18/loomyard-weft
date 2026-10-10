@@ -1,6 +1,6 @@
 {
   "runGuid": "9dec93383e814edddda7e7e8613f6ff8",
-  "planFingerprint": "bd768cebdb4671d07af85b42bfc21dd64f4b1eba5400a34d9c7952a15356211f",
+  "planFingerprint": "e0253b8ebc22a2d527d45c3893a81b2b1beedf173c78aaeed4ef9ec2aa201da3",
   "planFileHashes": {
     "00-overview.md": "f83f9a55c80e33abeb85c6f8d36aeed17cb40f75535818bf26dce86ea82600f0",
     "01-buildvcs-commit-time.md": "f94e9ff164b71020bbeb156e991c2dbdbf344fd22ed7bdd57b56e31f1a1c2b27",
@@ -8,14 +8,14 @@
     "03-stencilstore-forward-refresh.md": "7cdd263b193ca57d34e7ddfc24284b2e9412f251a099289d1c82c184610e0abf",
     "04-stencil-source-ordering.md": "c4af229128cc0818431dcb4af9d28540e77856fae8dfa595e626882765f98491",
     "05-gitrepo-bolt-primitives.md": "006ee5edd881023888862377d1d9a64b24c7102da51e5555b3af7ce1ccb0d1a1",
-    "06-seed-commit-signature.md": "06f33e127e9e35e9ebaf283dd75de826acdf0a6321e68781f44308a177dc2c77",
-    "07-bolt-pull-first-seed-drop.md": "8a52ba5a889f4d5aff6a145956286cab7327af17040116c7b1354509c2a1809f",
-    "08-prerun-seed-pull-first.md": "e6ccbd4cb8fdcb34e08d7d046f2f5b25ef67412a39125841e7c02ddb03a25da7",
-    "09-stencil-sync-message.md": "cfa54fe5dd2224e7bad6af089e96065abc10395a85d021882b16777296bf542e",
-    "10-hubreconcile-pull-first.md": "7ff4a836f0a6040954dac884d87a90391af7db2262395da729e92900e82d47b9",
-    "11-fabric-reconcile-push-failure.md": "86633254feb2840a7b8f91bb4da7c1f966eb23eb4f3147de27f91ff69610c082",
+    "06-seed-commit-signature.md": "4f8498b73a2657936a5422ad7df134cae2da9da195094e3138f9133bb3d7d69d",
+    "07-bolt-pull-first-seed-drop.md": "c1e43c0d251be9bf104ee686280c1f5bde7b238abd2aa02ce57307d2f9e1f6c8",
+    "08-prerun-seed-pull-first.md": "dca966d3ebc988f2a738a2d8e1b5b5497c20a265d27aac39417cd9db518e4189",
+    "09-stencil-sync-message.md": "b18c6c9c37f897a2f2e9d80b502dc6af8ef24aafe2cd518a8d40bb8405ef0fcf",
+    "10-hubreconcile-pull-first.md": "b441bb2a093c96722d14516a46162c2145ffae95a2116bc3d6db604cd17fd72a",
+    "11-fabric-reconcile-push-failure.md": "ee0fa0a2949f1775e49bc53febcbaa1d755d12888b754b09eef752b9e6e61ece",
     "12-housekeeping-inflight-prune.md": "8ae819ebe0814598c24f9ab38dad26df3da705846bcb9d819ec78d3b4edb2f51",
-    "13-bolt-push-seed-drop-retry.md": "88164d62ec627d51875524e789da3a18d9c48a17208da57809a4abc83c26ea9b"
+    "13-bolt-push-seed-drop-retry.md": "0eaccb1522de5f1cd565a2f4c4616af09db43d8f3ada5c660871e15c5398c49f"
   },
   "planOverviewFrameHash": "c1675c9c9f4eb6f49a04b421ac9b69930452d571ad9a4f169b7a9818eb614975",
   "partition": [
@@ -323,7 +323,7 @@
       }
     }
   ],
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "3c07589a8941246d08bcc7ed372dadef",
   "masterSessionId": "de618b9e-ea16-4992-b98e-5fa4a3031f27",
   "batches": {
@@ -377,20 +377,41 @@
         "09-stencil-sync-message"
       ],
       "cardHashes": {
-        "06-seed-commit-signature": "06f33e127e9e35e9ebaf283dd75de826acdf0a6321e68781f44308a177dc2c77",
-        "07-bolt-pull-first-seed-drop": "8a52ba5a889f4d5aff6a145956286cab7327af17040116c7b1354509c2a1809f",
-        "08-prerun-seed-pull-first": "e6ccbd4cb8fdcb34e08d7d046f2f5b25ef67412a39125841e7c02ddb03a25da7",
-        "09-stencil-sync-message": "cfa54fe5dd2224e7bad6af089e96065abc10395a85d021882b16777296bf542e"
+        "06-seed-commit-signature": "4f8498b73a2657936a5422ad7df134cae2da9da195094e3138f9133bb3d7d69d",
+        "07-bolt-pull-first-seed-drop": "c1e43c0d251be9bf104ee686280c1f5bde7b238abd2aa02ce57307d2f9e1f6c8",
+        "08-prerun-seed-pull-first": "dca966d3ebc988f2a738a2d8e1b5b5497c20a265d27aac39417cd9db518e4189",
+        "09-stencil-sync-message": "b18c6c9c37f897a2f2e9d80b502dc6af8ef24aafe2cd518a8d40bb8405ef0fcf"
       },
       "startSha": "7adab031b276a3aa1080641380405111b586fb5b",
       "kind": "fork",
       "spawnedAt": "2026-10-10T06:35:26Z",
       "sessionId": "de618b9e-ea16-4992-b98e-5fa4a3031f27",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-seed-commit-signature",
+        "status": "done",
+        "head_sha": "ddee050b67d7b55e66401191f8650312908754fd",
+        "deviations": [
+          "internal/fabricengine/mutation.go",
+          "internal/fabricengine/stencilcommit.go",
+          "internal/fabricengine/bolt.go",
+          "internal/fabricengine/destroy.go"
+        ]
+      },
+      "cardShas": [
+        "ddee050b67d7b55e66401191f8650312908754fd"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-and-store/de618b9e-ea16-4992-b98e-5fa4a3031f27/subagents/agent-a62da4848a9807b5a.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-and-store/de618b9e-ea16-4992-b98e-5fa4a3031f27/subagents/agent-a62da4848a9807b5a.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-and-store/de618b9e-ea16-4992-b98e-5fa4a3031f27/subagents/agent-a5facbd7222837fa6.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-and-store/de618b9e-ea16-4992-b98e-5fa4a3031f27/subagents/agent-a5facbd7222837fa6.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-bolt-and-store/de618b9e-ea16-4992-b98e-5fa4a3031f27/subagents/agent-a62da4848a9807b5a.jsonl"
   ]
 }

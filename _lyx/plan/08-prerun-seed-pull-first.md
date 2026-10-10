@@ -12,10 +12,10 @@
 **Uses:**
 - `internal/stencilstore#WritesDue`
 - `internal/stencilstore#ModeFor`
-- `plan:internal/fabricengine#Bolt.PullThenCommitWritten`
-- `plan:internal/fabricengine#BoltWrite`
-- `plan:internal/fabricengine#SeedCommitMessage`
-- `plan:internal/fabricengine#BinaryLabel`
+- `internal/fabricengine#Bolt.PullThenCommitWritten`
+- `internal/fabricengine#BoltWrite`
+- `internal/fabricengine#SeedCommitMessage`
+- `internal/fabricengine#BinaryLabel`
 - `internal/fabricengine#StencilSource`
 - `internal/fabricengine#NewBolt`
 - `internal/fabricengine#NewMutations`

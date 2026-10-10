@@ -1,0 +1,7 @@
+status: OK
+head_sha: ddee050b67d7b55e66401191f8650312908754fd
+deviations:
+  - internal/fabricengine/mutation.go
+  - internal/fabricengine/stencilcommit.go
+  - internal/fabricengine/bolt.go
+  - internal/fabricengine/destroy.go

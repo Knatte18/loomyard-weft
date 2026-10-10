@@ -14,10 +14,10 @@
 
 **Uses:**
 - `internal/gitrepo#ErrPullRebaseFailed`
-- `plan:internal/fabricengine#seedCommitsAhead`
-- `plan:internal/fabricengine#boardDropRequest`
-- `plan:internal/fabricengine#dropSeedCommits`
-- `plan:internal/fabricengine#KindCommitsDropped`
+- `internal/fabricengine#seedCommitsAhead`
+- `internal/fabricengine#boardDropRequest`
+- `internal/fabricengine#dropSeedCommits`
+- `internal/fabricengine#KindCommitsDropped`
 - `internal/gitrepo#Repo.UpstreamSHA`
 - `internal/gitrepo#PushLockFileName`
 - `internal/gitrepo#Repo.CommitsNotIn`
