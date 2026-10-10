@@ -1,6 +1,6 @@
 # CLI surface: a command index for the orch, one help form, intake keeps comments
 
-`cli-surface` · Task · bug, enhancement, orch, board, selfreport · running · Plan-Bouncer
+`cli-surface` · Task · bug, enhancement, orch, board, selfreport · running · Plan-Burler
 
 Depends on: [`gate-test-scope`](design-gate-test-scope.md), [`git-robustness`](design-git-robustness.md)
 
