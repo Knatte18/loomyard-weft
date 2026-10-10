@@ -12,9 +12,9 @@
 - `internal/boardcli/intake_test.go`
 
 **Uses:**
-- `plan:internal/selfreportengine#ListIssueComments`
-- `plan:internal/selfreportengine#IssueComment`
-- `plan:internal/boardengine#IssueComment`
+- `internal/selfreportengine#ListIssueComments`
+- `internal/selfreportengine#IssueComment`
+- `internal/boardengine#IssueComment`
 
 **Intent:** Wire the comments through `lyx board intake` (D11).
 `intakeIssueView` gains `Comments int`, tagged `comments`, and `intakeList` fills it from the issue's count, so `intake list` shows comments per issue with no per-issue call.

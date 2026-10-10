@@ -1,9 +1,9 @@
 # Card 9 — board-payload-use
 
 **Create:**
-- `plan:internal/boardcli#payloadKeys` -> `type payloadKeys struct`
-- `plan:internal/boardcli#payloadLegend` -> `const payloadLegend = "A payload is one JSON object as a single quoted argument; ? marks an optional key, a|b exactly one of the two, <task> stands for upsert's payload, and an unknown key is refused."`
-- `plan:internal/boardengine#UpsertPayloadKeys` -> `func UpsertPayloadKeys() (required, optional []string)`
+- `internal/boardcli#payloadKeys`
+- `internal/boardcli#payloadLegend`
+- `internal/boardengine#UpsertPayloadKeys`
 - `internal/boardcli/payload_test.go`
 
 **Edit:**

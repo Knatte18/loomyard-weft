@@ -1,8 +1,8 @@
 # Card 10 — issue-comments-fetch
 
 **Create:**
-- `plan:internal/selfreportengine#IssueComment` -> `type IssueComment struct`
-- `plan:internal/selfreportengine#ListIssueComments` -> `func ListIssueComments(number int) ([]IssueComment, error)`
+- `internal/selfreportengine#IssueComment`
+- `internal/selfreportengine#ListIssueComments`
 
 **Edit:**
 - `internal/selfreportengine#Issue`

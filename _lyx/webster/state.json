@@ -1,6 +1,6 @@
 {
   "runGuid": "7801ee2258a7ed0d45e261f54cf45059",
-  "planFingerprint": "9f082198b0116fc7f091e7969d4573095a99e1dc0f638335c4e03a988a7be98c",
+  "planFingerprint": "afed7a70dd5406d9388fe78027690e518bb563f98ca1b708504a83d8dc327120",
   "planFileHashes": {
     "00-overview.md": "bff97c582e1b9360c9fbcf582e3c26ad014c60ea17609ba704bac9141b60cce7",
     "01-audience-and-index-renderer.md": "db4e09648391ba821dc7ff2911a9883a04944df8b9da40fc09067b3418f6a162",
@@ -11,10 +11,10 @@
     "06-fabric-form.md": "a6911a88930ec7622adbf195a7cf394199d7b906569f92bf5d92dbae667f0400",
     "07-loom-form.md": "c2b948fa6a9e18190a21ac6ab5ac1c266386ca4fcbf661c944dd8b9abaf96fe7",
     "08-webster-form.md": "1e72abfe9dd057ae4a2ed02575ca873671742e44aa6dd3e964f6d52080eef219",
-    "09-board-payload-use.md": "b5a6a2557b0be3c460b70d822b98820522cdbadc85d6fc5871f735ce214011a6",
-    "10-issue-comments-fetch.md": "ad9584acafe4d458f697cb003bf43a99e140d70550fcfed2bf4ba49bca9ec982",
-    "11-intake-comments-body.md": "23443578ff79bab8107afd08a180eb8ee35b27b73d4af46c7d124aa0b70f1e2f",
-    "12-intake-carries-comments.md": "788e50598360f5aa2a49214503b54b7865513d0b4fdc89f87f3003e0f8714f85",
+    "09-board-payload-use.md": "ebe5519504a817f36d810abded45a3aa762fc9570424dad63b560c73f8374f99",
+    "10-issue-comments-fetch.md": "e395fc7544abe84d5e2378341ea8aa78e1daa3fcf43f70316c26d89f766b813f",
+    "11-intake-comments-body.md": "d1c1e6f3e0594c709b011cdd8ff0f7d0e19427f4a82a9127f2614931a0e108b0",
+    "12-intake-carries-comments.md": "f8da50bd7528c72328a6fe1962967c170bea4e8d669409252ac53a1f4596e1ff",
     "13-strand-lyx-bin.md": "3388e9e466fe15be764113e44b56561eb48d04d2f9d5e8c6e2d7cd02c9aae2d8",
     "14-role-file-command-index.md": "0ff35cb3187931a6135f25872b62ee4ca00a8ed8137a56f147a8bac7b51fc178",
     "15-operator-cli-skill.md": "9a3663800119f3a7d301940d57b579446be728859b3411a2e0d8a21b9f2d66c5",
@@ -369,7 +369,7 @@
       }
     }
   ],
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "cd9832c397376d456167457c00e0e665",
   "masterSessionId": "de70b31b-744a-45e8-bfba-7376f2c2e8ec",
   "batches": {
@@ -424,15 +424,28 @@
         "06-fabric-form": "a6911a88930ec7622adbf195a7cf394199d7b906569f92bf5d92dbae667f0400",
         "07-loom-form": "c2b948fa6a9e18190a21ac6ab5ac1c266386ca4fcbf661c944dd8b9abaf96fe7",
         "08-webster-form": "1e72abfe9dd057ae4a2ed02575ca873671742e44aa6dd3e964f6d52080eef219",
-        "09-board-payload-use": "b5a6a2557b0be3c460b70d822b98820522cdbadc85d6fc5871f735ce214011a6",
-        "10-issue-comments-fetch": "ad9584acafe4d458f697cb003bf43a99e140d70550fcfed2bf4ba49bca9ec982",
-        "11-intake-comments-body": "23443578ff79bab8107afd08a180eb8ee35b27b73d4af46c7d124aa0b70f1e2f"
+        "09-board-payload-use": "ebe5519504a817f36d810abded45a3aa762fc9570424dad63b560c73f8374f99",
+        "10-issue-comments-fetch": "e395fc7544abe84d5e2378341ea8aa78e1daa3fcf43f70316c26d89f766b813f",
+        "11-intake-comments-body": "d1c1e6f3e0594c709b011cdd8ff0f7d0e19427f4a82a9127f2614931a0e108b0"
       },
       "startSha": "1666f9302cc84301d142cfbc1340a96dd99a1911",
       "kind": "recovery",
       "spawnedAt": "2026-10-10T14:44:06Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-fabric-form",
+        "status": "done",
+        "head_sha": "4dafcdd2ce1c6e31e2faf6c152967052572b8277",
+        "deviations": [
+          "internal/boardcli/payload.go",
+          "internal/boardcli/doc.go",
+          "internal/boardengine/doc.go"
+        ]
+      },
+      "cardShas": [
+        "4dafcdd2ce1c6e31e2faf6c152967052572b8277"
+      ],
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cli-surface/3b48aefb-b68c-4aae-941c-ea8eb2256f6e/subagents/agent-a5d0d1f0ba840bec5.jsonl"
       ],

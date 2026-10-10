@@ -1,7 +1,7 @@
 # Card 11 — intake-comments-body
 
 **Create:**
-- `plan:internal/boardengine#IssueComment` -> `type IssueComment struct`
+- `internal/boardengine#IssueComment`
 
 **Edit:**
 - `internal/boardengine#InboxIssue`
