@@ -434,7 +434,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 10,
   "masterStrand": "0068be18351934c1680fdf7a7650d3ca",
   "masterSessionId": "8381d0ae-383e-4d1b-bed9-9cee07a1609b",
   "batches": {
@@ -486,6 +486,29 @@
       "eventsOffset": 1563,
       "recoveries": 2,
       "recoveryStartSha": "b7d4fd0ba55de0c19ae91a8b1c114837c543bb01"
+    },
+    "10": {
+      "slug": "darn-producer-and-entry",
+      "cards": [
+        "10-darn-producer-and-entry",
+        "11-darn-builder-and-routing",
+        "12-loom-arms-darn",
+        "13-batten-admits-darn",
+        "14-docs-name-the-recipe"
+      ],
+      "cardHashes": {
+        "10-darn-producer-and-entry": "f846d00041f5295bb337ae0e8212191c5c52f0bf7433c7dbfd09929c5bcc509b",
+        "11-darn-builder-and-routing": "804d232b950bcac90e985632c7a4037dddbbeac98f97b7abcad5513aa9d38da6",
+        "12-loom-arms-darn": "0f664399a3da99322044f294225e81d6a65902fb5dac035370cf3e4835b5deba",
+        "13-batten-admits-darn": "245bcc93b00f634b133f5afa2477013ee5cca9eef01b20e4070b96507bb38d69",
+        "14-docs-name-the-recipe": "45e26e6f97448f82bc84cc048964b05ff182ffbee47a51e79941f62bbcd2f6d3"
+      },
+      "startSha": "595473ad89a088b3f7571383e5a22e01f3d225f3",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T15:59:24Z",
+      "sessionId": "8381d0ae-383e-4d1b-bed9-9cee07a1609b",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "fabric-merge-base",
