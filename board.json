@@ -218,6 +218,7 @@
         "fabric"
       ],
       "issues": [],
+      "priority": "low",
       "depends_on": [],
       "isolated": false,
       "brief": "Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant",
@@ -250,6 +251,7 @@
         "batten"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "VS Code per run is gone (c0d604f12); batten itself still opens no reed attach window, the orch does it by hand",
@@ -1461,6 +1463,7 @@
         "reed"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "",
