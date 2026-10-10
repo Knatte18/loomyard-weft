@@ -14,7 +14,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | At | Labels |
 | --- | --- | --- | --- | --- |
 | 1 | **Daemons and wake-ups: event-driven waits, a timely orch reload, recorded revival order**<br>• A rule that lyx daemons wait on events or second-scale polls (reed watchdog first), the orch watcher reloads right after compaction, reed revives sessions by recorded start time | [`daemon-wakeups`](design-daemon-wakeups.md) | Webster | reed, orch, shuttle |
-| 2 | **Bolt and hub store: seeding without ping-pong, reconcile on a fresh Bolt, gc that stays out of the way**<br>• Seed stencils forward only and from a pulled Bolt, report failed reconcile pushes, and keep the hub store gc off busy runs and repeat repacks | [`bolt-and-store`](design-bolt-and-store.md) | Webster | stencil, fabric, config |
+| 2 | **Bolt and hub store: seeding without ping-pong, reconcile on a fresh Bolt, gc that stays out of the way**<br>• Seed stencils forward only and from a pulled Bolt, report failed reconcile pushes, and keep the hub store gc off busy runs and repeat repacks | [`bolt-and-store`](design-bolt-and-store.md) | Webster-Bouncer | stencil, fabric, config |
 
 ### Ready
 

@@ -1,6 +1,6 @@
 # Bolt and hub store: seeding without ping-pong, reconcile on a fresh Bolt, gc that stays out of the way
 
-`bolt-and-store` · Task · bug, enhancement, stencil, fabric, config · running · Webster
+`bolt-and-store` · Task · bug, enhancement, stencil, fabric, config · running · Webster-Bouncer
 
 ## Goal
 
