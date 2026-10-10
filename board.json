@@ -1116,7 +1116,7 @@
     },
     {
       "id": 318,
-      "slug": "loom-small-bugs",
+      "slug": "loop-small-bugs",
       "title": "Loop machinery small bugs: bounce budget, PR-Gate comment, sleep-aware idle, skill-load hold",
       "kind": "task",
       "labels": [
@@ -1132,7 +1132,6 @@
         526,
         485
       ],
-      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "Five small faults in burler/loom, shed, batten and shuttle",

@@ -31,7 +31,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | After | Labels |
 | --- | --- | --- | --- | --- |
-| 1 | **Loop machinery small bugs: bounce budget, PR-Gate comment, sleep-aware idle, skill-load hold**<br>• Five small faults in burler/loom, shed, batten and shuttle | [`loom-small-bugs`](design-loom-small-bugs.md) |  | loom, burler, shed, batten, shuttle |
+| 1 | **Loop machinery small bugs: bounce budget, PR-Gate comment, sleep-aware idle, skill-load hold**<br>• Five small faults in burler/loom, shed, batten and shuttle | [`loop-small-bugs`](design-loop-small-bugs.md) |  | loom, burler, shed, batten, shuttle |
 
 ### Layer A
 
