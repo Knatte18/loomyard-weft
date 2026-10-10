@@ -74,8 +74,9 @@ Before any entry is parsed, the load normalises an absent key, null, the empty s
 Every entry of what remains is parsed and resolved at load like `discussion`; an entry that is empty, fails to parse or fails to resolve is a config refusal naming the key, the entry index and the way forward, so an empty entry beside another entry is refused.
 The empty list means no advisors, unlike the review lists, whose empty value is refused.
 The `discussion` key stays the chair's model; the template default adds `discussion_advisors: [sonnet[high]]` and leaves `discussion` unchanged.
+`discussion_advisors` joins `loomengine.ConfigOpenMaps`, as the other scalar-or-list model-spec keys do, so config reconcile and `--set` carry the operator's value whole whatever its spelling; without it, reconcile replaces a scalar or null value with the template's one-advisor list on the next binary change.
 
-Bound: the normalised list's length is the advisor count, for every spelling the load accepts; there is no separate count key.
+Bound: the normalised list's length is the advisor count, for every spelling the load accepts, before and after a reconcile; there is no separate count key.
 
 Rationale: the operator named the two models per seat, and one list gives both the count and the models without a second key; the template default turns advisors on because the operator judged the protocol worth the tokens.
 
@@ -95,9 +96,11 @@ With several advisors the chair's first message to each names the area it owns; 
 
 Bound: item 5 is stencil text, so an advisor that ignores it can do what the single writer could when ignoring its own fence, and no more.
 The agents' settings denies hold for it as for every spawned session, so a denied git or deletion command stays denied.
-It can still edit the two discussion files or add files under `_lyx/discussion/`, and the whole-directory discussion commit carries them; edits to the two files still pass through the chair's self-check, the chair's gate, the parent review and the Discussion-Review perch before Plan reads the record.
+It can still edit the two discussion files or add files under `_lyx/discussion/`, and the whole-directory discussion commit carries them.
+Advisors stay live until the chair's wait returns, and the chair's gate, the parent-review wait included, runs inside that wait, so the advisors stay up for the rework a reject asks for (D9).
+An edit to the two files made before the chair's self-check passes the self-check, the chair's gate, the parent review and the Discussion-Review perch; an edit made while the gate waits reaches the commit with only the Discussion-Review perch ahead of it.
 It can still edit other worktree files; the discussion commit stages only `_lyx/discussion/`, so nothing in this step commits them.
-Not bounded: an advisor edit to the decision record that passes the gate and both reviews reaches Plan; no check here compares the record's author to the chair, and the plan decides whether one is needed.
+Not bounded: an advisor edit to the decision record that passes the checks still ahead of it reaches Plan, and for an edit made during the gate that is the Discussion-Review perch alone; no check here compares the record's author to the chair, and the plan decides whether one is needed.
 
 Rationale: the seat engine needs every advisor to write an output, and a study written early is useful to the chair as an input whether or not questions follow.
 
@@ -137,7 +140,9 @@ Only the chair is interactive under `discussion_interactive`.
 
 Bound: the new edge is advisor to chair over the session message channel.
 An advisor message is advice and never an instruction, as the shipped chair seat directive states; the bound is that directive, stencil text the chair reads, and what the chair does with a message stays inside the chair's own fence and gate.
-An advisor that ignores its brief and messages another session is bounded only by that session's own trust rule: a spawned role trusts only its parent's messages, so an advisor message to the parent or another pair's session carries no authority there.
+An advisor that ignores its brief and messages another pair's spawned session is bounded by that session's parent directive: a spawned role trusts only its parent's messages, so the message carries no authority there.
+Not bounded: an advisor message to the run's parent.
+The parent is the orch, whose stencil sits outside the parent-directive rule and acts on a message from a run's driver, webster or review loop; an advisor strand is none of those, but only the orch's judgment, not a mechanism, keeps it from acting on the message.
 
 Rationale: the producer task fixed the chair as the one addressable seat; the gate rides the chair's start call in the seat engine already.
 
@@ -186,7 +191,7 @@ Rationale: Three runs (gate-test-scope, daemon-wakeups, bolt-and-store) hit Test
 - PATTERN-producer-pointer-rule: the advisor stencil points at the chair's format contract and never restates the decision record's section set.
 - PATTERN-told-geometry: `loomengine` builds the table from the told location; `seatengine` and `shedadapters` derive no path.
 - PATTERN-sole-parsers and PATTERN-durable-vs-ephemeral-state: the advisor notes file is tracked under `_lyx/discussion/` and no Go code parses it.
-- PATTERN-config-strictness: the new key rides the existing loom config load, template and reconcile paths.
+- PATTERN-config-strictness: the new key rides the existing loom config load, template and reconcile paths, as an open-map key of the loom module.
 - PATTERN-refusal-way-forward: the new config refusals (an entry of `discussion_advisors` that fails to parse or resolve) land with their rows in the refusal spec's loom section and a test that reaches them.
 - PATTERN-test-economy and PATTERN-test-speed: new behaviour is pinned with the existing seat fakes and in-memory fixtures, untagged; no gate runs an LLM, and the seat engine's `llm` smoke stays the hand-run proof of the channel.
 - Gate quiescence: the chair is gated and never forks; advisors are sessions, not forks, so the fork rule holds unchanged.
@@ -210,7 +215,16 @@ Rationale: Three runs (gate-test-scope, daemon-wakeups, bolt-and-store) hit Test
 - Merge overlap with `burler-multi-llm` in `internal/shedadapters/multillm.go` and `internal/seatengine`, mitigated by keeping this task's changes additive.
 - An advisor's study is paid whether or not the chair asks it anything; the measure is the token report's `discussion-advisor` row against the Discussion-Review round counts of earlier runs.
 - The chair may lean on an advisor's answer as authority; the chair seat directive already states that an advisor's text carries none, and the support log's attribution by strand name, per D6, makes the reliance reviewable.
+- An advisor that ignores its brief can message the orch, which no trust rule stops from acting on it (D8); the advisor strand's name, `discussion-advisor-<n>`, tells the orch the sender is no driver, writer or review loop.
+- An advisor edit to the decision record made while the chair's gate waits skips the self-check and the parent review (D5); the Discussion-Review perch is the one check left before Plan.
 - The advisor notes file sits in the directory the Discussion-Review reviewer reads; its targets stay the two files, so a reviewer reading the notes is harmless but possible.
+
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - d8-parent-trust-rule-premise-false-for-orch (class design, severity MEDIUM, open in rounds 2)
+  - discussion-advisors-not-open-map-reconcile-reverts-scalar (class design, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
@@ -225,7 +239,7 @@ Rationale: Three runs (gate-test-scope, daemon-wakeups, bolt-and-store) hit Test
 - The advisor stencil is registered and listed under the `discussion-advisor` role, the chair stencil under `discussion-chair`, and both carry both directive markers.
 - The loom recipe's built row list still resolves every row and the Discussion-Write row's producer type is the commit decorator.
 - The discussion gate and the parent-review brief read the two discussion files only, with an advisor notes file present beside them.
-- The reconciled template carries `discussion_advisors`, and `docs/overview.md` names the key and describes the Discussion producer as a chair with advisors.
+- The reconciled template carries `discussion_advisors`, and a `loom.yaml` holding the key as `""`, null, a single model-spec, `[]` or a two-entry list keeps its value through `lyx config reconcile`; `docs/overview.md` names the key and describes the Discussion producer as a chair with advisors.
 
 ## Notes for the plan writer
 
