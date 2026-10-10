@@ -1521,7 +1521,8 @@
       "title": "Publish verify log is overwritten by a later run, so the failure is lost",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "loom"
       ],
       "issues": [
         502

@@ -40,7 +40,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 3 | **daemon idle Debug spawn lines reach no log sink; tmux socket path can exceed 108 bytes** | [`daemon-log-and-socket-path`](design-daemon-log-and-socket-path.md) | reed |
 | 4 | **Build-tagged member declared once per tag set resolves ambiguous, so its plan Create can never pass record-batch** | [`quarry-build-tag-ambiguous`](design-quarry-build-tag-ambiguous.md) | webster, loom |
 | 5 | **Finalize blocks on the parent weft's uncommitted batten status records** | [`finalize-weft-batten-dirty`](design-finalize-weft-batten-dirty.md) | fabric, batten |
-| 6 | **Publish verify log is overwritten by a later run, so the failure is lost** | [`verify-log-overwritten`](design-verify-log-overwritten.md) |  |
+| 6 | **Publish verify log is overwritten by a later run, so the failure is lost** | [`verify-log-overwritten`](design-verify-log-overwritten.md) | loom |
 
 ### Enhancements
 

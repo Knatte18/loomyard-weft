@@ -1,6 +1,6 @@
 # Publish verify log is overwritten by a later run, so the failure is lost
 
-`verify-log-overwritten` · Note · bug
+`verify-log-overwritten` · Note · bug, loom
 
 Imported from [issue #502](https://github.com/Knatte18/loomyard/issues/502).
 
