@@ -10,9 +10,10 @@ The driver steps in only when something goes wrong, and its context stays under 
 Build idea 1 below: Go runs the steps in a loop and wakes the driver only at a stop (error, interrupt, blocked, awaiting gate, run end).
 Ideas 2 to 6 come along where they still apply once the loop is in Go; idea 7 is optional.
 
-The orch must still be able to stop a run at a chosen event, as today when it asks the driver to pause right before Webster, or pauses a run while Plan-Write runs (`lyx loom pause`) to compare plans across runs.
-So the Go loop honours a pause the orch sets at any time, and a stop at a named producer (for example "stop before Webster") can be set on a running run, by the orch directly or through the driver, and takes effect before that producer starts.
-A message to the driver still reaches it promptly while the Go loop runs.
+The orch must still be able to tell the driver, in plain words, to stop the run at a chosen point, for example "stop after Batchifier, before Webster", and the driver must hit that point itself.
+`lyx loom pause` is not the route: it is too restrictive.
+So the Go loop takes a stop condition, such as a producer to stop before or after, and stops there before the next producer starts, waking the driver.
+A message to the driver still reaches it promptly while the loop runs, and the driver turns such a request into the loop's stop condition (re-arming a loop already running), using the producer names the step envelope and the recipe give it.
 
 ## Seen
 
