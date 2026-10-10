@@ -34,7 +34,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | After | Labels |
 | --- | --- | --- | --- | --- |
-| 1 | **Quick recipe: one producer, then the usual PR; shared Publish, Finalize and teardown fixes**<br>• A simplified loom for small changes (one producer, verify retries to a budget, PR-Gate as usual), plus per-attempt verify logs, Finalize ignoring the parent weft batten records, teardown clearing abandoned claims, and Reflect reading the parent weft | [`quick-recipe`](design-quick-recipe.md) | `driver-context` | loom, shed, batten, fabric, board |
+| 1 | **Darn recipe: one producer, then the usual PR; shared Publish, Finalize and teardown fixes**<br>• The darn recipe: a simplified run for small changes (one producer, verify retries to a budget, PR-Gate as usual), plus per-attempt verify logs, Finalize ignoring the parent weft batten records, teardown clearing abandoned claims, and Reflect reading the parent weft | [`quick-recipe`](design-quick-recipe.md) | `driver-context` | loom, shed, batten, fabric, board |
 
 ## Notes
 

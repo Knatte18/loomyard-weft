@@ -1,4 +1,4 @@
-# Quick recipe: one producer, then the usual PR; shared Publish, Finalize and teardown fixes
+# Darn recipe: one producer, then the usual PR; shared Publish, Finalize and teardown fixes
 
 `quick-recipe` · Task · feature, bug, loom, shed, batten, fabric, board
 
@@ -11,7 +11,7 @@ That path skips the pair, the preflight, the verify gate, the PR and PR-Gate, an
 
 ## Idea
 
-A second task recipe for quick tasks, run through batten and shed like a loom run but with a strongly simplified loom inside:
+A second task recipe, `darn`, for quick tasks, run through batten and shed like a loom run but with a strongly simplified loom inside:
 
 - the same outer lifecycle: batten creates the pair, preflight runs, and teardown removes the pair after landing;
 - one LLM producer that does the whole change in a single session: reads the board entry, edits, runs the tests and commits;
@@ -22,6 +22,7 @@ No Discussion, no Plan, no Webster, no Burler rounds.
 
 - The operator picks the recipe when the task is created, through the board entry's existing `recipe` field; no size guard.
 - A failed verify sends the run back to the same producer to fix it, up to a configured budget of attempts; past the budget the run escalates to the parent.
+- The recipe is named `darn` (mending a small hole in the fabric); it is never called "loom".
 
 ## Prime agents block runs (2026-10-10)
 
