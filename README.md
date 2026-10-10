@@ -40,19 +40,24 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ### Bugs
 
+#### High priority
+
+| # | Note | Slug | Labels |
+| --- | --- | --- | --- |
+| 1 | **Agent probing 'lyx <verb> --json' as help ran destructive leaf verbs (fabric unwire) in a task pair** | [`json-leaf-runs-verb`](design-json-leaf-runs-verb.md) | fabric, board, stencil |
+
 #### Normal priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 1 | **Batten idle notices count machine sleep as idle time**<br>• After a hibernate every run raises an idle notice for the whole sleep; the idle clock should skip time the machine was asleep | [`idle-notice-after-sleep`](design-idle-notice-after-sleep.md) | batten |
-| 2 | **shuttle raises a hold notice at the skill-load turn end, before the start prompt is sent** | [`hold-on-skill-load`](design-hold-on-skill-load.md) | shuttle |
-| 3 | **daemon idle Debug spawn lines reach no log sink; tmux socket path can exceed 108 bytes** | [`daemon-log-and-socket-path`](design-daemon-log-and-socket-path.md) | reed |
-| 4 | **Build-tagged member declared once per tag set resolves ambiguous, so its plan Create can never pass record-batch** | [`quarry-build-tag-ambiguous`](design-quarry-build-tag-ambiguous.md) | webster, loom, quarry |
-| 5 | **Bounce budget blocks a review segment after its round was approved, before the Bouncer verdict** | [`bounce-budget-after-approved`](design-bounce-budget-after-approved.md) | burler, loom |
-| 6 | **Master's wait stops waiting on a still-running background shell at a turn end**<br>• A gate run still in a background shell is cut off at a turn end and the run still reports done | [`background-gate-shell-discarded`](design-background-gate-shell-discarded.md) | webster, shuttle |
-| 7 | **Webster Master fixes a verify failure itself instead of spawning the fixer fork**<br>• Master edited and committed a test fix itself; the run-exit audit blocked it as a parent-write | [`master-self-fix`](design-master-self-fix.md) | webster, stencil |
-| 8 | **webster: create-not-done check fails on unexported plan targets, killing batches** | [`create-check-unexported`](design-create-check-unexported.md) | webster, quarry |
-| 9 | **Agent probing 'lyx <verb> --json' as help ran destructive leaf verbs (fabric unwire) in a task pair** | [`json-leaf-runs-verb`](design-json-leaf-runs-verb.md) |  |
+| 2 | **Batten idle notices count machine sleep as idle time**<br>• After a hibernate every run raises an idle notice for the whole sleep; the idle clock should skip time the machine was asleep | [`idle-notice-after-sleep`](design-idle-notice-after-sleep.md) | batten |
+| 3 | **shuttle raises a hold notice at the skill-load turn end, before the start prompt is sent** | [`hold-on-skill-load`](design-hold-on-skill-load.md) | shuttle |
+| 4 | **daemon idle Debug spawn lines reach no log sink; tmux socket path can exceed 108 bytes** | [`daemon-log-and-socket-path`](design-daemon-log-and-socket-path.md) | reed |
+| 5 | **Build-tagged member declared once per tag set resolves ambiguous, so its plan Create can never pass record-batch** | [`quarry-build-tag-ambiguous`](design-quarry-build-tag-ambiguous.md) | webster, loom, quarry |
+| 6 | **Bounce budget blocks a review segment after its round was approved, before the Bouncer verdict** | [`bounce-budget-after-approved`](design-bounce-budget-after-approved.md) | burler, loom |
+| 7 | **Master's wait stops waiting on a still-running background shell at a turn end**<br>• A gate run still in a background shell is cut off at a turn end and the run still reports done | [`background-gate-shell-discarded`](design-background-gate-shell-discarded.md) | webster, shuttle |
+| 8 | **Webster Master fixes a verify failure itself instead of spawning the fixer fork**<br>• Master edited and committed a test fix itself; the run-exit audit blocked it as a parent-write | [`master-self-fix`](design-master-self-fix.md) | webster, stencil |
+| 9 | **webster: create-not-done check fails on unexported plan targets, killing batches** | [`create-check-unexported`](design-create-check-unexported.md) | webster, quarry |
 
 ### Enhancements
 

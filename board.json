@@ -1265,11 +1265,15 @@
       "title": "Agent probing 'lyx \u003cverb\u003e --json' as help ran destructive leaf verbs (fabric unwire) in a task pair",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "fabric",
+        "board",
+        "stencil"
       ],
       "issues": [
         512
       ],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "",

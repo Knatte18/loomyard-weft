@@ -1,6 +1,6 @@
 # Agent probing 'lyx <verb> --json' as help ran destructive leaf verbs (fabric unwire) in a task pair
 
-`json-leaf-runs-verb` · Note · bug
+`json-leaf-runs-verb` · Note · bug, fabric, board, stencil
 
 Imported from [issue #512](https://github.com/Knatte18/loomyard/issues/512).
 
