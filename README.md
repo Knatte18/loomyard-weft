@@ -41,6 +41,8 @@ Waits on nothing that is not running; next to start.
 1. **CLI surface: a command index for the orch, one help form, intake keeps comments** — [`cli-surface`](design-cli-surface.md) · bug, enhancement, orch, board, selfreport
    - lyx help index injected into the orch, a test-enforced form for Use/Short/Long including board payload keys, and intake that carries issue comments
    - **After:** `gate-test-scope`, `git-robustness`
+1. **Daemons and wake-ups: event-driven waits, a timely orch reload, recorded revival order** — [`daemon-wakeups`](design-daemon-wakeups.md) · bug, enhancement, reed, orch, shuttle
+   - A rule that lyx daemons wait on events or second-scale polls (reed watchdog first), the orch watcher reloads right after compaction, reed revives sessions by recorded start time
 
 ### Layer B
 
@@ -60,7 +62,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - After a hibernate every run raises an idle notice for the whole sleep; the idle clock should skip time the machine was asleep
 1. **Stencil seeding ping-pongs on Bolt: prod-mode binaries overwrite each other's stencils** — [`stencil-seed-ping-pong`](design-stencil-seed-ping-pong.md) · bug, stencil
 1. **fabric reconcile on a stale Bolt: seed commits conflict on push, yet ok:true** — [`reconcile-stale-bolt`](design-reconcile-stale-bolt.md) · bug, fabric, config
-1. **orch watcher sends the post-compact reload minutes late while the operator chats** — [`orch-reload-late`](design-orch-reload-late.md) · bug, orch
 
 ### Enhancements
 
@@ -90,14 +91,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
    - Turn file:line locations from verify failures, lint and audits into member glyphs with quarry enclose, then into a kick-start pack
 1. **Audit how plans use glyphs in practice, then tune the plan stencil** — [`glyph-practice-audit`](design-glyph-practice-audit.md) · enhancement, loom, stencil
    - Runs only after many tasks have landed with glyph plans: measure glyph use, how writers find glyphs, Plan rounds and handle binding from real runs; kick-start waits on it
-1. **Daemons wait on events, not tight polls: near-zero CPU while idle** — [`daemon-idle-cost`](design-daemon-idle-cost.md) · enhancement, reed
-   - reed watchdog polls a signal file every 100 ms around the clock; a rule for every lyx daemon (creel and later ones): event-driven waits, second-scale backoff polls, pinned by a guard
 1. **Capture real hook payloads into fixtures** — [`shuttle-hook-payload-corpus`](design-shuttle-hook-payload-corpus.md) · enhancement, shuttle
    - Run the llm-tier hook-capture scenario once and turn the real StopFailure, Notification and SessionEnd payloads into corpus fixtures
 1. **Shuttle: the launch line carries the first turn** — [`shuttle-color-verified-send`](design-shuttle-color-verified-send.md) · enhancement, shuttle
    - /color already goes through the verified send; the skill-load message or the prompt should ride the launch line so only later turns are typed
-1. **reed: spawn order from a recorded start time** — `reed-spawn-order-start-time` · enhancement, reed
-   - Revival orders sessions by the mtime of seed.json, which re-materialization can move; record an explicit start time in the run record and order by it
 1. **Carry-over check re-reads the written file** — `carryover-verify-on-disk` · enhancement, loom
    - WriteCarryOver checks the splice on the produced lines before the atomic rename; re-reading the file after the rename and checking what is on disk would also catch a concurrent writer
 1. **reed: strands state their size; parallel agents share the window evenly** — [`reed-layout-shares`](design-reed-layout-shares.md) · enhancement, reed
