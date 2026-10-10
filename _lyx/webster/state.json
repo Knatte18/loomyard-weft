@@ -369,7 +369,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "4b1aa1d856e051f187c9536a0790934c",
   "masterSessionId": "3b48aefb-b68c-4aae-941c-ea8eb2256f6e",
   "batches": {
@@ -409,6 +409,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cli-surface/3b48aefb-b68c-4aae-941c-ea8eb2256f6e/subagents/agent-a46df6e2fad4cd7b2.jsonl"
       ]
+    },
+    "6": {
+      "slug": "fabric-form",
+      "cards": [
+        "06-fabric-form",
+        "07-loom-form",
+        "08-webster-form",
+        "09-board-payload-use",
+        "10-issue-comments-fetch",
+        "11-intake-comments-body"
+      ],
+      "cardHashes": {
+        "06-fabric-form": "a6911a88930ec7622adbf195a7cf394199d7b906569f92bf5d92dbae667f0400",
+        "07-loom-form": "c2b948fa6a9e18190a21ac6ab5ac1c266386ca4fcbf661c944dd8b9abaf96fe7",
+        "08-webster-form": "1e72abfe9dd057ae4a2ed02575ca873671742e44aa6dd3e964f6d52080eef219",
+        "09-board-payload-use": "b5a6a2557b0be3c460b70d822b98820522cdbadc85d6fc5871f735ce214011a6",
+        "10-issue-comments-fetch": "ad9584acafe4d458f697cb003bf43a99e140d70550fcfed2bf4ba49bca9ec982",
+        "11-intake-comments-body": "23443578ff79bab8107afd08a180eb8ee35b27b73d4af46c7d124aa0b70f1e2f"
+      },
+      "startSha": "1666f9302cc84301d142cfbc1340a96dd99a1911",
+      "kind": "fork",
+      "spawnedAt": "2026-10-10T14:27:44Z",
+      "sessionId": "3b48aefb-b68c-4aae-941c-ea8eb2256f6e",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
