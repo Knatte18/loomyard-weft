@@ -1,6 +1,6 @@
 # Bounce budget blocks a review segment after its round was approved, before the Bouncer verdict
 
-`bounce-budget-after-approved` · Note · bug
+`bounce-budget-after-approved` · Note · bug, burler, loom
 
 Imported from [issue #503](https://github.com/Knatte18/loomyard/issues/503).
 

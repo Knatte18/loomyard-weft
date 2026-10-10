@@ -41,7 +41,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 4 | **Build-tagged member declared once per tag set resolves ambiguous, so its plan Create can never pass record-batch** | [`quarry-build-tag-ambiguous`](design-quarry-build-tag-ambiguous.md) | webster, loom |
 | 5 | **Finalize blocks on the parent weft's uncommitted batten status records** | [`finalize-weft-batten-dirty`](design-finalize-weft-batten-dirty.md) | fabric, batten |
 | 6 | **Publish verify log is overwritten by a later run, so the failure is lost** | [`verify-log-overwritten`](design-verify-log-overwritten.md) | loom |
-| 7 | **Bounce budget blocks a review segment after its round was approved, before the Bouncer verdict** | [`bounce-budget-after-approved`](design-bounce-budget-after-approved.md) |  |
+| 7 | **Bounce budget blocks a review segment after its round was approved, before the Bouncer verdict** | [`bounce-budget-after-approved`](design-bounce-budget-after-approved.md) | burler, loom |
 
 ### Enhancements
 
@@ -71,8 +71,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 22 | **One owner for child-process lifetime in internal/proc**<br>• Fold lyx gate test's process-group, Pdeathsig and job-object setup into internal/proc beside ConfigureGroupKill | [`proc-child-lifetime`](design-proc-child-lifetime.md) |  |
 | 23 | **Fold loomcli and orchcli tmux probe copies onto tmuxkit** | [`tmuxkit-probe-copies`](design-tmuxkit-probe-copies.md) | loom, orch, reed |
 | 24 | **Reconcile keeps an old default below the new floor** | [`reconcile-stale-default`](design-reconcile-stale-default.md) | config |
-| 25 | **Fabric's Windows path behaviour verified on a Windows host** _(low priority)_<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
-| 26 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history** _(low priority)_<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
+| 25 | **Friction-Reflect reads the parent weft when a halt names a dirty worktree**<br>• Reflect misread a parent-weft dirty halt as noise because the task worktree was clean | [`reflect-reads-parent-weft`](design-reflect-reads-parent-weft.md) | loom, fabric |
+| 26 | **Fabric's Windows path behaviour verified on a Windows host** _(low priority)_<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
+| 27 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history** _(low priority)_<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
 
 ### Features
 

@@ -1538,7 +1538,9 @@
       "title": "Bounce budget blocks a review segment after its round was approved, before the Bouncer verdict",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "burler",
+        "loom"
       ],
       "issues": [
         503
@@ -1547,6 +1549,22 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #503](https://github.com/Knatte18/loomyard/issues/503).\n\nSeen (publish-recovery, 2026-10-10): Webster-Review's round 3 review was APPROVED (one LOW finding) and its fixer finished with a green verify gate, but the run blocked with \"bounce budget exhausted for Webster-Burler\" before the Bouncer wrote `round-3-bouncer-verdict.md`.\n`lyx loom circling accept` refused, since the run was blocked rather than awaiting, so the orchestrator needed an investigation fork, then `lyx shed goto publish-recovery --to Webster-Burler` and `lyx loom resume`, which spent another review round on approved work.\n\nWorkaround: goto Webster-Burler plus resume.\n\nExpected: the bounce budget is checked before a round starts, not after an approved round ends, so a round whose review approved always reaches its Bouncer verdict and the run moves on.\n"
+    },
+    {
+      "id": 288,
+      "slug": "reflect-reads-parent-weft",
+      "title": "Friction-Reflect reads the parent weft when a halt names a dirty worktree",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Reflect misread a parent-weft dirty halt as noise because the task worktree was clean",
+      "body": "Seen (publish-recovery, 2026-10-10): Finalize blocked on \"worktree dirty\" from the prime weft's batten records (#501), and Friction-Reflect dismissed it as a process signal because the task worktree was clean.\n\nIdea: Friction-Reflect also reads the parent weft's status (`lyx fabric status` in the parent) when a halt names a dirty worktree, so it attributes the halt to the right tree.\n"
     }
   ],
   "legacy_done": [
