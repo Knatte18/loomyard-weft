@@ -1144,6 +1144,22 @@
       "isolated": false,
       "brief": "docs/overview.md:49 predates darn",
       "body": "From the ide-opt-in PR-Gate review (PR #530, 2026-10-10): `docs/overview.md` around line 49 says a board entry's recipe \"must be `loom` or empty\", but the darn recipe has landed.\nAlso: batten's terminal-window marker is deleted when the child has no status file, so a status file vanishing mid-run (seen once in cli-surface) opens a second window."
+    },
+    {
+      "id": 322,
+      "slug": "darn-prompt-paths",
+      "title": "Darn prompt names a bare-slug board get and a nonexistent final-summary spec path",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        531
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #531](https://github.com/Knatte18/loomyard/issues/531).\n\nThe darn agent prompt contains two instructions that fail when followed literally.\n\n- It says to read the task with `lyx board get \u003cslug\u003e`, but `board get` takes a JSON object, so the bare slug fails with `invalid json`.\n  `lyx board get '{\"slug\":\"\u003cslug\u003e\"}'` works.\n- It names the final-summary spec at `\u003chub\u003e/_board/_lyx/specs/final-summary-spec.md`, which does not exist.\n  The spec lives in the repository at `contracts/specs/final-summary-spec.md`, and the agent had to find that copy itself.\n\nBoth are abnormal because the prompt is the agent's authoritative instructions, so each wrong pointer costs a failed call or a search and risks the agent using the wrong source.\n\nFix the darn prompt stencil to emit the JSON-object form of `lyx board get` and the `contracts/specs/final-summary-spec.md` path.\n\nProvenance: task slug `ide-opt-in`, note `Darn.md`.\n"
     }
   ]
 }
