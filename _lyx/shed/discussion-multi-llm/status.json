@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Bouncer",
+  "current_producer": "Plan-Write",
   "state": "paused",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Bouncer",
-    "last": "Plan-Burler → bounced to Plan-Bouncer",
+    "now": "Plan-Write",
+    "last": "Plan-Write → goto",
     "wait": ""
   },
   "history": [
@@ -79,6 +79,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/discussion-multi-llm/_lyx/reviews/plan/round-1-review.md",
       "at": "2026-10-10T09:38:11Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Plan-Write",
+      "outcome": "goto",
+      "output": "",
+      "at": "2026-10-10T09:38:43Z"
     }
   ],
   "product": {
