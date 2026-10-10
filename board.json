@@ -1210,6 +1210,21 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #508](https://github.com/Knatte18/loomyard/issues/508).\n\nPlan cards are numbered contiguously and each card file name is tied to its number.\nA Plan-Review fix that needed one new card ahead of card 8 therefore renumbered cards 8 to 19, twelve files.\n\nThe fixer rules allow file changes only through Edit or Write and name no way to rename or remove a file.\nThe fixer rewrote each card under its new name and removed the old files with `rm`, which the rules neither allow nor forbid.\n\nThis is abnormal: a routine plan edit forces a fixer to guess at an unstated rule and do a bulk, error-prone rewrite.\n\nWhat to do, either of:\n- add a plan verb that inserts a card and renumbers the rest;\n- state a rule for removing a file inside the fixer's write surface.\n\nProvenance: task `driver-context`; note `burler-plan-r1.md`.\n"
+    },
+    {
+      "id": 297,
+      "slug": "reed-strand-login-shells",
+      "title": "Reed strand panes still read ~/.tmux.conf and start login shells",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "test-suite-weight moved the test kit to non-login panes without the user tmux config; reed own servers still read ~/.tmux.conf and start login shells for strand panes, noted as a bound in PATTERN",
+      "body": ""
     }
   ]
 }
