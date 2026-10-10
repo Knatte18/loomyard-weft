@@ -11,14 +11,12 @@ Concrete and claimable; only a task can run.
 
 Held by a run; its scope is locked until the run ends.
 
-#### Normal priority
-
 | # | Task | Slug | At | Labels |
 | --- | --- | --- | --- | --- |
 | 1 | **Lighter test suite: measured tiers, cheap tmux fixtures, no lingering children**<br>• Measure each tier, non-login shells and shared servers in tier 3, lyx built once, no background gc in fixtures (#472), a no-tmux scan for tiers 1-2 | [`test-suite-weight`](design-test-suite-weight.md) | Publish | shuttle, reed, fabric |
 | 2 | **Webster and round-gate bug sweep: replans, batch checks, fork sandbox, shell wait, test re-runs**<br>• Webster stays consistent across replans, its batch and fabric checks judge only what they should, implementer forks stay sandboxed, the shell wait leaves nothing running, and the round gate re-runs whole tests | [`webster-replan-state`](design-webster-replan-state.md) | Plan-Burler | webster, loom, burler, fabric |
 | 3 | **CLI surface: a command index for the orch, one help form, intake keeps comments**<br>• lyx help index injected into the orch, a test-enforced form for Use/Short/Long including board payload keys, and intake that carries issue comments | [`cli-surface`](design-cli-surface.md) | Discussion-Burler | orch, board, selfreport |
-| 4 | **Driver steps in only on trouble: Go loops the steps, context under 100k**<br>• Go runs the shed steps and wakes the driver only at a stop, so a Haiku driver stays under 100k; the driver can still stop a run at a point the orch names | [`driver-context`](design-driver-context.md) | Webster | shed, stencil, loom |
+| 4 | **Driver steps in only on trouble: Go loops the steps, context under 100k**<br>• Go runs the shed steps and wakes the driver only at a stop, so a Haiku driver stays under 100k; the driver can still stop a run at a point the orch names | [`driver-context`](design-driver-context.md) | blocked · Webster | shed, stencil, loom |
 
 ### Ready
 
@@ -30,19 +28,15 @@ _None._
 
 Waits only on Running or Ready entries.
 
-#### High priority
-
 | # | Task | Slug | After | Labels |
 | --- | --- | --- | --- | --- |
-| 1 | **Quick recipe: one producer, then the usual PR; shared Publish, Finalize and teardown fixes**<br>• A simplified loom for small changes (one producer, verify retries to a budget, PR-Gate as usual), plus per-attempt verify logs, Finalize ignoring the parent weft batten records, teardown clearing abandoned claims, and Reflect reading the parent weft | [`quick-recipe`](design-quick-recipe.md) | `driver-context` | loom, shed, batten, fabric, board |
+| 1 | **Quick recipe: one producer, then the usual PR; shared Publish, Finalize and teardown fixes** _(high priority)_<br>• A simplified loom for small changes (one producer, verify retries to a budget, PR-Gate as usual), plus per-attempt verify logs, Finalize ignoring the parent weft batten records, teardown clearing abandoned claims, and Reflect reading the parent weft | [`quick-recipe`](design-quick-recipe.md) | `driver-context` | loom, shed, batten, fabric, board |
 
 ## Notes
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ### Bugs
-
-#### Normal priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
@@ -55,22 +49,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ### Enhancements
 
-#### High priority
-
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 1 | **Batten opens a terminal window per run instead of VS Code**<br>• VS Code per run is gone (c0d604f12); batten itself still opens no reed attach window, the orch does it by hand | [`ide-opt-in`](design-ide-opt-in.md) | ide, reed, batten |
-| 2 | **Compare fanned and solo review rounds from their usage records**<br>• A report over round usage records for the fan-on decision; a lost usage record shows in the facts | [`fan-usage-report`](design-fan-usage-report.md) | burler |
-| 3 | **Haiku 5.5 for the Bouncer judge: is its ruling simple enough**<br>• The driver already runs on Haiku 5.5; decide per Bouncer row whether the judge ruling is simple enough for Haiku, trial it, and switch only where it holds | [`haiku-roles`](design-haiku-roles.md) | config, loom, burler |
-| 4 | **Burler runs its round on MultiLLMProducer**<br>• The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review | [`burler-multi-llm`](design-burler-multi-llm.md) | burler, shed, stencil |
-| 5 | **PATTERN overview breaks its cap only after merging main** | [`pattern-overview-headroom`](design-pattern-overview-headroom.md) | loom |
-| 6 | **Reed watchdog children still burn idle CPU** | [`watchdog-child-cpu`](design-watchdog-child-cpu.md) | reed |
-| 7 | **Bench the chair-and-advisors Discussion against the solo writer before switching it on**<br>• Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on | [`discussion-multi-llm-bench`](design-discussion-multi-llm-bench.md) | loom, stencil |
-
-#### Normal priority
-
-| # | Note | Slug | Labels |
-| --- | --- | --- | --- |
+| 1 | **Batten opens a terminal window per run instead of VS Code** _(high priority)_<br>• VS Code per run is gone (c0d604f12); batten itself still opens no reed attach window, the orch does it by hand | [`ide-opt-in`](design-ide-opt-in.md) | ide, reed, batten |
+| 2 | **Compare fanned and solo review rounds from their usage records** _(high priority)_<br>• A report over round usage records for the fan-on decision; a lost usage record shows in the facts | [`fan-usage-report`](design-fan-usage-report.md) | burler |
+| 3 | **Haiku 5.5 for the Bouncer judge: is its ruling simple enough** _(high priority)_<br>• The driver already runs on Haiku 5.5; decide per Bouncer row whether the judge ruling is simple enough for Haiku, trial it, and switch only where it holds | [`haiku-roles`](design-haiku-roles.md) | config, loom, burler |
+| 4 | **Burler runs its round on MultiLLMProducer** _(high priority)_<br>• The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review | [`burler-multi-llm`](design-burler-multi-llm.md) | burler, shed, stencil |
+| 5 | **PATTERN overview breaks its cap only after merging main** _(high priority)_ | [`pattern-overview-headroom`](design-pattern-overview-headroom.md) | loom |
+| 6 | **Reed watchdog children still burn idle CPU** _(high priority)_ | [`watchdog-child-cpu`](design-watchdog-child-cpu.md) | reed |
+| 7 | **Bench the chair-and-advisors Discussion against the solo writer before switching it on** _(high priority)_<br>• Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on | [`discussion-multi-llm-bench`](design-discussion-multi-llm-bench.md) | loom, stencil |
 | 8 | **Convergence: log hub interventions and driver repairs per run by class**<br>• Record every hub intervention and driver repair with a class and cause, so interventions per run and repeat failure classes are visible | [`convergence-plan`](design-convergence-plan.md) | orch, shed |
 | 9 | **Parent-review gate: wait bound off the boundary, no mid-turn sends, live smoke**<br>• Close the cases the first parent-review gate left open: expiry while the writer is mid-turn, sends into a running turn after restart, poll cost, and one live smoke run | [`parent-review-hardening`](design-parent-review-hardening.md) | orch |
 | 10 | **Reopen the prime VS Code window with one short command**<br>• A snap refresh left the prime window wrong; lyx ide spawn needs the slug and fails from the hub root | [`ide-reopen-prime`](design-ide-reopen-prime.md) | ide |
@@ -90,26 +77,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 24 | **Fold loomcli and orchcli tmux probe copies onto tmuxkit** | [`tmuxkit-probe-copies`](design-tmuxkit-probe-copies.md) | loom, orch, reed |
 | 25 | **Reconcile keeps an old default below the new floor** | [`reconcile-stale-default`](design-reconcile-stale-default.md) | config |
 | 26 | **Discussion advisors: operator-named areas per advisor on top of the landed all-advisors default**<br>• Each discussion_advisors entry takes an optional area (a lens, as in review fans); without one the advisor answers every question | [`discussion-advisor-mode`](design-discussion-advisor-mode.md) | loom, stencil, config |
-
-#### Low priority
-
-| # | Note | Slug | Labels |
-| --- | --- | --- | --- |
-| 27 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
-| 28 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
+| 27 | **Fabric's Windows path behaviour verified on a Windows host** _(low priority)_<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
+| 28 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history** _(low priority)_<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
 
 ### Features
 
-#### High priority
-
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 1 | **Runs overview pane under the orch; batten windows hidden**<br>• A minimal pane under the orch listing every run in flight and its shed state; the per-run batten windows stay but the status bar hides them | [`runs-overview`](design-runs-overview.md) | reed, orch, batten |
-
-#### Normal priority
-
-| # | Note | Slug | Labels |
-| --- | --- | --- | --- |
+| 1 | **Runs overview pane under the orch; batten windows hidden** _(high priority)_<br>• A minimal pane under the orch listing every run in flight and its shed state; the per-run batten windows stay but the status bar hides them | [`runs-overview`](design-runs-overview.md) | reed, orch, batten |
 | 2 | **An MCP server over lyx exposing the verbs agents need**<br>• A few coarse MCP tools over lyx, chosen by measured agent use and exposed per role, so agents see typed schemas instead of guessing CLI shapes | [`lyx-mcp`](design-lyx-mcp.md) | shuttle, stencil |
 | 3 | **creel: the one way to reach an agent**<br>• Post (pulled mail with reminders), inject and interrupt to any agent by name, through one daemon per hub; built standalone first, then wired in two stages | [`creel`](design-creel.md) | reed |
 | 4 | **Kick-start pack: pre-resolved glyph spans for implementer and Burler**<br>• Someday (roadmap): #227, #228 — measured win, committed, not yet scheduled | [`kick-start-pack`](design-kick-start-pack.md) | webster, quarry |
