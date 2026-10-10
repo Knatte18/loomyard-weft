@@ -20,3 +20,8 @@ No Discussion, no Plan, no Webster, no Burler rounds.
 
 - The operator picks the recipe when the task is created, through the board entry's existing `recipe` field; no size guard.
 - A failed verify sends the run back to the same producer to fix it, up to a configured budget of attempts; past the budget the run escalates to the parent.
+
+## Prime agents block runs (2026-10-10)
+
+A hand-briefed agent editing in the prime leaves it dirty, and `lyx batten run` then stops at Worktree-Create ("source worktree has uncommitted changes") until the agent pushes, as `cli-surface` did while the seats N=0 prompt fix (abe2aa50e) was in progress.
+The quick recipe runs such fixes in their own pair, so the prime stays clean; the operator wants the orch's prime-agent fixes to move to it over time.
