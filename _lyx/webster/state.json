@@ -1,6 +1,6 @@
 {
   "runGuid": "7801ee2258a7ed0d45e261f54cf45059",
-  "planFingerprint": "afed7a70dd5406d9388fe78027690e518bb563f98ca1b708504a83d8dc327120",
+  "planFingerprint": "bb69f7ecebcacb612d5a42ecbd7d14d8d2f6bfd7725f7382c848790a80455d2f",
   "planFileHashes": {
     "00-overview.md": "bff97c582e1b9360c9fbcf582e3c26ad014c60ea17609ba704bac9141b60cce7",
     "01-audience-and-index-renderer.md": "db4e09648391ba821dc7ff2911a9883a04944df8b9da40fc09067b3418f6a162",
@@ -14,9 +14,9 @@
     "09-board-payload-use.md": "ebe5519504a817f36d810abded45a3aa762fc9570424dad63b560c73f8374f99",
     "10-issue-comments-fetch.md": "e395fc7544abe84d5e2378341ea8aa78e1daa3fcf43f70316c26d89f766b813f",
     "11-intake-comments-body.md": "d1c1e6f3e0594c709b011cdd8ff0f7d0e19427f4a82a9127f2614931a0e108b0",
-    "12-intake-carries-comments.md": "f8da50bd7528c72328a6fe1962967c170bea4e8d669409252ac53a1f4596e1ff",
+    "12-intake-carries-comments.md": "31134ea0071329ebfe3d6359c9f96b4e0f2777380836379cea18905dba2978ed",
     "13-strand-lyx-bin.md": "3388e9e466fe15be764113e44b56561eb48d04d2f9d5e8c6e2d7cd02c9aae2d8",
-    "14-role-file-command-index.md": "0ff35cb3187931a6135f25872b62ee4ca00a8ed8137a56f147a8bac7b51fc178",
+    "14-role-file-command-index.md": "a68b691a47be8bce52ddc29e758a58ea1b822a3993c419007eb8cc9166d73a4d",
     "15-operator-cli-skill.md": "9a3663800119f3a7d301940d57b579446be728859b3411a2e0d8a21b9f2d66c5",
     "16-cli-form-guard.md": "e105987981a13ec675100e4659e86a236cfa687925d52a01bd58cc3c22142b8a"
   },
@@ -369,7 +369,7 @@
       }
     }
   ],
-  "currentBatch": 12,
+  "currentBatch": 0,
   "masterStrand": "cd9832c397376d456167457c00e0e665",
   "masterSessionId": "de70b31b-744a-45e8-bfba-7376f2c2e8ec",
   "batches": {
@@ -420,9 +420,9 @@
         "16-cli-form-guard"
       ],
       "cardHashes": {
-        "12-intake-carries-comments": "f8da50bd7528c72328a6fe1962967c170bea4e8d669409252ac53a1f4596e1ff",
+        "12-intake-carries-comments": "31134ea0071329ebfe3d6359c9f96b4e0f2777380836379cea18905dba2978ed",
         "13-strand-lyx-bin": "3388e9e466fe15be764113e44b56561eb48d04d2f9d5e8c6e2d7cd02c9aae2d8",
-        "14-role-file-command-index": "0ff35cb3187931a6135f25872b62ee4ca00a8ed8137a56f147a8bac7b51fc178",
+        "14-role-file-command-index": "a68b691a47be8bce52ddc29e758a58ea1b822a3993c419007eb8cc9166d73a4d",
         "15-operator-cli-skill": "9a3663800119f3a7d301940d57b579446be728859b3411a2e0d8a21b9f2d66c5",
         "16-cli-form-guard": "e105987981a13ec675100e4659e86a236cfa687925d52a01bd58cc3c22142b8a"
       },
@@ -430,8 +430,22 @@
       "kind": "fork",
       "spawnedAt": "2026-10-10T15:02:02Z",
       "sessionId": "de70b31b-744a-45e8-bfba-7376f2c2e8ec",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "12-intake-carries-comments",
+        "status": "done",
+        "head_sha": "37fe8d3bc353eb63b62ce491d47839da497e7992"
+      },
+      "cardShas": [
+        "37fe8d3bc353eb63b62ce491d47839da497e7992"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cli-surface/de70b31b-744a-45e8-bfba-7376f2c2e8ec/subagents/agent-a52db71b2a2772e39.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cli-surface/de70b31b-744a-45e8-bfba-7376f2c2e8ec/subagents/agent-a52db71b2a2772e39.jsonl"
+      ]
     },
     "6": {
       "slug": "fabric-form",
@@ -487,7 +501,8 @@
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cli-surface/3b48aefb-b68c-4aae-941c-ea8eb2256f6e/subagents/agent-a46df6e2fad4cd7b2.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cli-surface/3b48aefb-b68c-4aae-941c-ea8eb2256f6e/subagents/agent-a5d0d1f0ba840bec5.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cli-surface/3b48aefb-b68c-4aae-941c-ea8eb2256f6e/subagents/agent-a5d0d1f0ba840bec5.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-cli-surface/de70b31b-744a-45e8-bfba-7376f2c2e8ec/subagents/agent-a52db71b2a2772e39.jsonl"
   ],
   "auditDispositions": {
     "accepted:batch-06:1": "warned",

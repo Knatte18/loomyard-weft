@@ -1,8 +1,8 @@
 # Card 12 — intake-carries-comments
 
 **Create:**
-- `plan:internal/boardcli#importPointer` -> `func importPointer(slug string) string`
-- `plan:internal/boardcli#isImportPointer` -> `func isImportPointer(body string) bool`
+- `internal/boardcli#importPointer`
+- `internal/boardcli#isImportPointer`
 
 **Edit:**
 - `internal/boardcli#intakeIssueView`

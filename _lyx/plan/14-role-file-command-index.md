@@ -1,8 +1,8 @@
 # Card 14 — role-file-command-index
 
 **Create:**
-- `plan:internal/orchcli#newIndexSource` -> `func newIndexSource(strands strandOps, run func(bin string) (string, error)) func() (string, error)`
-- `plan:internal/orchcli#runHelpIndex` -> `func runHelpIndex(bin string) (string, error)`
+- `internal/orchcli#newIndexSource`
+- `internal/orchcli#runHelpIndex`
 
 **Edit:**
 - `contracts/stencils/orch/orch-template-role.md`
