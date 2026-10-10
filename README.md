@@ -40,6 +40,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 1 | **Darn prompt names a bare-slug board get and a nonexistent final-summary spec path** | [`darn-prompt-paths`](design-darn-prompt-paths.md) | stencil |
+| 2 | **Go accepts a CONVERGED verdict with an open BLOCKING finding**<br>• A Bouncer judge can return CONVERGED while a BLOCKING finding is still open, and a key the judge drops from its ledger is lost silently; check both in Go | [`judge-converged-open-blocking`](design-judge-converged-open-blocking.md) | burler, loom |
 
 ### Enhancements
 
