@@ -148,6 +148,12 @@ Rationale: Round 3 F1 is concrete, verified at bouncer_circling_test.go lines 31
   - d9-refusal-at-spent-budget-no-rejudge (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 4: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/plan/round-4-review.md; fixer report: _lyx/reviews/plan/round-4-fixer-report.md.
+  - replay-guard-exemption-keys-on-escalation-only (class design, severity MEDIUM, open in rounds 4)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - With every new key empty or absent, a run spawns each Bouncer's judge on `judge`, each seed on its segment's judge model, and PR-Rework on `plan`, so every role runs on the model it runs on today.
