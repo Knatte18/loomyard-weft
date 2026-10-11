@@ -2,6 +2,8 @@
 
 `darn-write-rename` · Task · enhancement, loom, shed
 
+Depends on: [`darn-perch`](design-darn-perch.md)
+
 ## Seen (operator, 2026-10-11)
 
 `darn` names both the recipe and its writer row `Darn` (engine `DarnWrite`), which is confusing.

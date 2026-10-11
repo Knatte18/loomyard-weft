@@ -1068,7 +1068,9 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [],
+      "depends_on": [
+        "darn-perch"
+      ],
       "isolated": false,
       "brief": "The recipe and its writer row are both named darn; rename the row to Darn-Write like loom's -Write rows.",
       "body": "## Seen (operator, 2026-10-11)\n\n`darn` names both the recipe and its writer row `Darn` (engine `DarnWrite`), which is confusing.\nThe loom recipe avoids this: its rows are named for what they do (`Discussion-Write`, `Plan-Write`, `Webster`), and no row is named `Loom`.\n\n## Wanted\n\nRename the darn writer row from `Darn` to `Darn-Write`, matching the loom `-Write` rows and the engine name `DarnWrite`.\nRow names are durable on-disk identities pinned against `internal/loomshed` `Name*` constants, so rename the constant with the row, and keep an in-flight darn run whose status names the old row resumable.\nUpdate every reference: recipe edges (`PR-Gate`'s `on_stuck`, the perch rows `darn-perch` added), docs, stencils and tests.\n"
