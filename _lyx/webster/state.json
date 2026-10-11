@@ -1,12 +1,12 @@
 {
   "runGuid": "a00440791244c292ac303e1ee6346762",
-  "planFingerprint": "d3da051d576de6072ba0a4bd39ff9c43183fa5c0825340e2eaec1827e131722e",
+  "planFingerprint": "b2da20e3d0a0e53d7592d5212082ffa9549ca4ae1991d714964b0e9d4ab1aa11",
   "planFileHashes": {
     "00-overview.md": "1fe1d3e5375f44221a446b481c8bece7928f4b87685482d41e24ad5d5eb9226b",
-    "01-begun-card-bound.md": "71ff56e3114bce6871bd49a62bd17cc198023d1c38fb32458059ab472fc63fc4",
-    "02-planparser-renumber.md": "1ebaff994221aa11b9f259565a910cd9c64c524d125b76fe9670854b68afe2cb",
-    "03-planparser-restore.md": "37d005fffebd8125b0de49dd0798246ad901840dcbd4c9d16fe5724ba33e33f1",
-    "04-loom-card-verbs.md": "7a6ea584cf32f4afb91fd157fa127fe8b20eaaa999764448e6b45e4899fee09f",
+    "01-begun-card-bound.md": "1f3824120be30459684f312284752d116563431d21c39d0977d9184da01618fe",
+    "02-planparser-renumber.md": "208554455b7d8dd9669239b971b1a08f1e6e5599bd12d42cb5c228f0af4dc8bc",
+    "03-planparser-restore.md": "a4c44f30f1d2d0660c056da62fa94b3b9bc5048fe8c1d02c41565d703220a9a4",
+    "04-loom-card-verbs.md": "0d1ca21856f1a2f63801c2f253c7e93f266b73402fd3e03fd3d6cfebc3362964",
     "05-plan-stencil-rules.md": "bb29f1bebc421b85d2fafd5f037d76464f5963f2ee22d783da8da51e9888baca"
   },
   "planOverviewFrameHash": "788f73f6f55a523264de2a7efc776adfc56a4aa06a7bf98314607c27e22c27a4",
@@ -129,7 +129,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "f6211d0ba2ca57d13c580435b6a483a0",
   "masterSessionId": "fc232e9f-afe6-40fc-8551-306db5c34777",
   "batches": {
@@ -143,18 +143,38 @@
         "05-plan-stencil-rules"
       ],
       "cardHashes": {
-        "01-begun-card-bound": "71ff56e3114bce6871bd49a62bd17cc198023d1c38fb32458059ab472fc63fc4",
-        "02-planparser-renumber": "1ebaff994221aa11b9f259565a910cd9c64c524d125b76fe9670854b68afe2cb",
-        "03-planparser-restore": "37d005fffebd8125b0de49dd0798246ad901840dcbd4c9d16fe5724ba33e33f1",
-        "04-loom-card-verbs": "7a6ea584cf32f4afb91fd157fa127fe8b20eaaa999764448e6b45e4899fee09f",
+        "01-begun-card-bound": "1f3824120be30459684f312284752d116563431d21c39d0977d9184da01618fe",
+        "02-planparser-renumber": "208554455b7d8dd9669239b971b1a08f1e6e5599bd12d42cb5c228f0af4dc8bc",
+        "03-planparser-restore": "a4c44f30f1d2d0660c056da62fa94b3b9bc5048fe8c1d02c41565d703220a9a4",
+        "04-loom-card-verbs": "0d1ca21856f1a2f63801c2f253c7e93f266b73402fd3e03fd3d6cfebc3362964",
         "05-plan-stencil-rules": "bb29f1bebc421b85d2fafd5f037d76464f5963f2ee22d783da8da51e9888baca"
       },
       "startSha": "a5334fc72ccc820ec08f4e05bfcc329938d750ec",
       "kind": "fork",
       "spawnedAt": "2026-10-11T10:43:01Z",
       "sessionId": "fc232e9f-afe6-40fc-8551-306db5c34777",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-begun-card-bound",
+        "status": "done",
+        "head_sha": "c826f686c060c5f912a97b185b15082cbbf0548f",
+        "deviations": [
+          "internal/planparser/restore.go"
+        ]
+      },
+      "cardShas": [
+        "c826f686c060c5f912a97b185b15082cbbf0548f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-gaps/fc232e9f-afe6-40fc-8551-306db5c34777/subagents/agent-ab3eefea31343d7bf.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-gaps/fc232e9f-afe6-40fc-8551-306db5c34777/subagents/agent-ab3eefea31343d7bf.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-gaps/fc232e9f-afe6-40fc-8551-306db5c34777/subagents/agent-ab3eefea31343d7bf.jsonl"
+  ]
 }

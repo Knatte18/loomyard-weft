@@ -1,12 +1,12 @@
 # Card 3 — planparser-restore
 
 **Create:**
-- `plan:internal/planparser#RestoreResult` -> `type RestoreResult struct`
-- `plan:internal/planparser#RestoreRenumber` -> `func RestoreRenumber(ops RenumberIO, planDir, journalPath string) (*RestoreResult, error)`
-- `plan:internal/planparser#ErrRenumberNoJournal` -> `var ErrRenumberNoJournal error`
-- `plan:internal/planparser#ErrRenumberJournalInvalid` -> `var ErrRenumberJournalInvalid error`
-- `plan:internal/planparser#ErrRenumberRestoreFailed` -> `var ErrRenumberRestoreFailed error`
-- `plan:internal/planparser#readRenumberJournal` -> `func readRenumberJournal(ops RenumberIO, journalPath string) (renumberJournal, bool, error)`
+- `internal/planparser#RestoreResult`
+- `internal/planparser#RestoreRenumber`
+- `internal/planparser#ErrRenumberNoJournal`
+- `internal/planparser#ErrRenumberJournalInvalid`
+- `internal/planparser#ErrRenumberRestoreFailed`
+- `internal/planparser#readRenumberJournal`
 
 **Edit:**
 - `internal/planparser/renumber_test.go`
@@ -15,10 +15,10 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/planparser#RenumberIO`
-- `plan:internal/planparser#renumberJournal`
-- `plan:internal/planparser#reverseRenumber`
-- `plan:internal/planparser#ErrRenumberIOFailed`
+- `internal/planparser#RenumberIO`
+- `internal/planparser#renumberJournal`
+- `internal/planparser#reverseRenumber`
+- `internal/planparser#ErrRenumberIOFailed`
 - `internal/planparser#cardFileName`
 
 **Intent:** Add `RestoreRenumber`, the journal's only reader, which card 4's `restore-renumber` verb calls after an interrupted `InsertCard` or `RemoveCard` left the journal on disk.

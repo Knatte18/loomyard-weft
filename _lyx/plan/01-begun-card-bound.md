@@ -1,7 +1,7 @@
 # Card 1 — begun-card-bound
 
 **Create:**
-- `plan:internal/websterengine#LastBegunCard` -> `func LastBegunCard(st *State) int`
+- `internal/websterengine#LastBegunCard`
 
 **Edit:**
 - `internal/websterengine/begun_test.go`

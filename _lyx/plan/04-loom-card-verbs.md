@@ -3,16 +3,16 @@
 **Create:**
 - `internal/loomcli/renumber.go`
 - `internal/loomcli/renumber_test.go`
-- `plan:internal/loomcli#renumberDeps` -> `type renumberDeps struct`
-- `plan:internal/loomcli#loomCLI.newRenumberDeps` -> `func (c *loomCLI) newRenumberDeps() renumberDeps`
-- `plan:internal/loomcli#insertCardVerb` -> `func insertCardVerb(out io.Writer, d renumberDeps, position, slug, intent string) int`
-- `plan:internal/loomcli#removeCardVerb` -> `func removeCardVerb(out io.Writer, d renumberDeps, position string) int`
-- `plan:internal/loomcli#restoreRenumberVerb` -> `func restoreRenumberVerb(out io.Writer, d renumberDeps) int`
-- `plan:internal/loomcli#renumberRefusal` -> `func renumberRefusal(verb string, err error) string`
-- `plan:internal/loomcli#renumberEnvelope` -> `func renumberEnvelope(planDir string, res *planparser.RenumberResult) map[string]any`
-- `plan:internal/loomcli#loomCLI.insertCardCmd` -> `func (c *loomCLI) insertCardCmd() *cobra.Command`
-- `plan:internal/loomcli#loomCLI.removeCardCmd` -> `func (c *loomCLI) removeCardCmd() *cobra.Command`
-- `plan:internal/loomcli#loomCLI.restoreRenumberCmd` -> `func (c *loomCLI) restoreRenumberCmd() *cobra.Command`
+- `internal/loomcli#renumberDeps`
+- `internal/loomcli#loomCLI.newRenumberDeps`
+- `internal/loomcli#insertCardVerb`
+- `internal/loomcli#removeCardVerb`
+- `internal/loomcli#restoreRenumberVerb`
+- `internal/loomcli#renumberRefusal`
+- `internal/loomcli#renumberEnvelope`
+- `internal/loomcli#loomCLI.insertCardCmd`
+- `internal/loomcli#loomCLI.removeCardCmd`
+- `internal/loomcli#loomCLI.restoreRenumberCmd`
 
 **Edit:**
 - `internal/loomcli#Command`
@@ -30,16 +30,16 @@
 - `internal/loomcli#approveVerb`
 - `internal/loomcli#approveDeps`
 - `internal/planparser#PlanDir`
-- `plan:internal/planparser#RenumberJournalPath`
-- `plan:internal/planparser#OSRenumberIO`
-- `plan:internal/planparser#InsertCard`
-- `plan:internal/planparser#RemoveCard`
-- `plan:internal/planparser#RestoreRenumber`
+- `internal/planparser#RenumberJournalPath`
+- `internal/planparser#OSRenumberIO`
+- `internal/planparser#InsertCard`
+- `internal/planparser#RemoveCard`
+- `internal/planparser#RestoreRenumber`
 - `internal/websterengine#LoadState`
 - `internal/websterengine#AcquireStateMutation`
 - `internal/websterengine#Dir`
 - `internal/websterengine#ScratchDir`
-- `plan:internal/websterengine#LastBegunCard`
+- `internal/websterengine#LastBegunCard`
 
 **Intent:** Add the three `lyx loom` verbs, flat siblings of `validate-plan`, each a thin cobra shell over a verb function that takes its side effects as `renumberDeps`, the shape `approveVerb` and `approveDeps` set.
 

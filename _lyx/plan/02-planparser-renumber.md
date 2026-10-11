@@ -3,27 +3,27 @@
 **Create:**
 - `internal/planparser/renumber.go`
 - `internal/planparser/renumber_test.go`
-- `plan:internal/planparser#PlanScratchDir` -> `func PlanScratchDir(anchorPath string) string`
-- `plan:internal/planparser#RenumberJournalPath` -> `func RenumberJournalPath(anchorPath string) string`
-- `plan:internal/planparser#RenumberIO` -> `type RenumberIO struct`
-- `plan:internal/planparser#OSRenumberIO` -> `func OSRenumberIO() RenumberIO`
-- `plan:internal/planparser#MovedCard` -> `type MovedCard struct`
-- `plan:internal/planparser#ProseMention` -> `type ProseMention struct`
-- `plan:internal/planparser#RenumberResult` -> `type RenumberResult struct`
-- `plan:internal/planparser#InsertCard` -> `func InsertCard(ops RenumberIO, planDir, journalPath string, number int, slug, intent string) (*RenumberResult, error)`
-- `plan:internal/planparser#RemoveCard` -> `func RemoveCard(ops RenumberIO, planDir, journalPath string, number int) (*RenumberResult, error)`
-- `plan:internal/planparser#ErrRenumberInput` -> `var ErrRenumberInput error`
-- `plan:internal/planparser#ErrRenumberPlanInconsistent` -> `var ErrRenumberPlanInconsistent error`
-- `plan:internal/planparser#ErrRenumberJournalExists` -> `var ErrRenumberJournalExists error`
-- `plan:internal/planparser#ErrRenumberIOFailed` -> `var ErrRenumberIOFailed error`
-- `plan:internal/planparser#ErrRenumberReversalFailed` -> `var ErrRenumberReversalFailed error`
-- `plan:internal/planparser#renumberJournal` -> `type renumberJournal struct`
-- `plan:internal/planparser#renumberPrecheck` -> `func renumberPrecheck(ops RenumberIO, planDir, journalPath string) (*Plan, error)`
-- `plan:internal/planparser#moveCardBytes` -> `func moveCardBytes(data []byte, from, to int) []byte`
-- `plan:internal/planparser#writeRenumberJournal` -> `func writeRenumberJournal(ops RenumberIO, journalPath string, j renumberJournal) error`
-- `plan:internal/planparser#reverseRenumber` -> `func reverseRenumber(ops RenumberIO, planDir string, j renumberJournal) error`
-- `plan:internal/planparser#proseMentions` -> `func proseMentions(ops RenumberIO, planDir string, plan *Plan, oldNumbers []int) ([]ProseMention, error)`
-- `plan:internal/planparser#cardSlugRe` -> `var cardSlugRe *regexp.Regexp`
+- `internal/planparser#PlanScratchDir`
+- `internal/planparser#RenumberJournalPath`
+- `internal/planparser#RenumberIO`
+- `internal/planparser#OSRenumberIO`
+- `internal/planparser#MovedCard`
+- `internal/planparser#ProseMention`
+- `internal/planparser#RenumberResult`
+- `internal/planparser#InsertCard`
+- `internal/planparser#RemoveCard`
+- `internal/planparser#ErrRenumberInput`
+- `internal/planparser#ErrRenumberPlanInconsistent`
+- `internal/planparser#ErrRenumberJournalExists`
+- `internal/planparser#ErrRenumberIOFailed`
+- `internal/planparser#ErrRenumberReversalFailed`
+- `internal/planparser#renumberJournal`
+- `internal/planparser#renumberPrecheck`
+- `internal/planparser#moveCardBytes`
+- `internal/planparser#writeRenumberJournal`
+- `internal/planparser#reverseRenumber`
+- `internal/planparser#proseMentions`
+- `internal/planparser#cardSlugRe`
 
 **Edit:**
 - `internal/planparser/doc.go`
