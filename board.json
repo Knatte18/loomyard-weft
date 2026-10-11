@@ -953,7 +953,7 @@
       "id": 406,
       "slug": "driver-arbiter",
       "title": "Driver arbiter: a cold, stronger agent decides when a driver is stuck",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "feature",
         "shed",
