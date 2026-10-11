@@ -36,8 +36,9 @@ Card 5 calls `readShedRecord` and `useShedRecord` from `run`; this card adds the
 `readShedRecord` takes a slug's tags newest first, as `archivedSlugs` orders them, and reads `tags[0].Commit`.
 It returns nil and no error when `tags` is empty, when `status.json` is absent at the tag (`gitrepo.ErrPathNotAtRevision`), or when the status's history is empty, since a run with no history entry has no span end; each takes the transcript-window span card 2 set.
 It names its two files through `shedrun.TreeRunFileRels(slug)`.
-That call's run-id error is propagated as a fail-loud wiring guard no test reaches: `archivedSlugs` keys tags by the segment between two slashes, so no tagged slug carries a separator.
-It decodes `status.json` into `shedengine.Status` with `encoding/json` and the seed, when present, through `shedrun.ParseSeed`, and parses `started_at`, `at` and `last_at` as RFC 3339.
+That call's run-id error is wrapped with the slug, the tag's `Name` and both files, `seed.json` and `status.json`, in the shape of the decode errors below (Decision 9), and is a fail-loud wiring guard no test reaches: `archivedSlugs` keys tags by the segment between two slashes, so no tagged slug carries a separator.
+It decodes `status.json` into `shedengine.Status` with `encoding/json` and the seed, when present, through `shedrun.ParseSeed`, and parses as RFC 3339 the seed's `started_at` when present, every entry's `at`, and an entry's `last_at` only when its `Repeats` > 0, since `last_at` is omitted on an unfolded entry.
+A `seed.json` absent at the tag (`gitrepo.ErrPathNotAtRevision`) is no seed, not an abort: the record keeps a zero `StartedAt`.
 A seed or status that fails to decode, or a timestamp in either that fails to parse, aborts with an error naming the slug, the tag's `Name` and the file, `seed.json` or `status.json`.
 
 `RunTally` gains `Shed *ShedRecord`, nil when no shed status was read.
@@ -53,10 +54,11 @@ Elapsed over every row sums to the span.
 The "All runs" section prints the Producers table summed per producer name over the runs with a record, its share over the sum of those runs' spans, and prints none when no run has a record.
 
 Tests: a new table test `TestShedRecordSpanAndProducers` in `count_test.go` over `readShedRecord`, `useShedRecord`, `Producers` and `WriteMarkdown`, with a map-backed fake `ArchiveTrees` keyed by commit and path and runs built by `CountRun` over synthetic, timestamped transcripts:
-- a seed with `started_at`, a folded entry ending at its `last_at` and an entry that finishes earlier than one before it: the span runs from `started_at` to the latest end, the out-of-order entry's interval is empty, elapsed sums to the span, each producer's idle is exact and `Idle()` is the span minus the working union;
+- a seed with `started_at`, an unfolded entry with no `last_at`, which reads without error, a folded entry ending at its `last_at` and an entry that finishes earlier than one before it: the span runs from `started_at` to the latest end, the out-of-order entry's interval is empty, elapsed sums to the span, each producer's idle is exact and `Idle()` is the span minus the working union;
 - a seed without `started_at`: the span starts at the earliest transcript line; with an older tag committed after that line it starts at the older tag's date; with a first entry ending before that line it starts at that end;
+- a tag holding `status.json` and no `seed.json` gives a record whose span starts at the earliest transcript line;
 - a slug with two tags whose commits hold different statuses reads the newest tag's;
-- a status and a seed that fail to decode each abort with an error naming the slug, the tag and the file;
+- a status and a seed that fail to decode, a seed whose `started_at` is not RFC 3339, a status entry whose `at` is not and a folded entry (`repeats` > 0) whose `last_at` is not each abort with an error naming the slug, the tag's `Name` and the file;
 - no tags, a tag without `status.json` and a status with an empty history each return no record;
 - the report prints the Producers table for a run with a record, the no-status line for a run without one, and the summed Producers table in "All runs".
 

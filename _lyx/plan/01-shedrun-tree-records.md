@@ -7,6 +7,7 @@
 **Edit:**
 - `internal/shedrun#ReadSeed`
 - `internal/shedrun/doc.go`
+- `internal/shedrun/paths.go`
 - `internal/shedrun/paths_test.go`
 - `internal/shedrun/seed_test.go`
 - `cmd/lyx/testdata/test-budget.yaml`
@@ -26,11 +27,16 @@ It applies no alias and no legacy `self` fallback, since a tree read from git ha
 `ReadSeed` keeps its run-id validation and file read and calls `ParseSeed` for the rest, wrapping its error as `shedrun: seed for run %q: %w`.
 That rewords `ReadSeed`'s decode error from `shedrun: decode seed for run %q`; a grep of the repository for `decode seed for run` and `params key must not be empty` finds no test asserting either text.
 
+`TreeRunFileRels` goes in `paths.go` and `ParseSeed` in `seed.go`.
 The package doc in `doc.go` gains one sentence each for `TreeRunFileRels` (tree-relative, no alias, no legacy fallback) and `ParseSeed` (the decoder over bytes a caller read elsewhere, the same strictness as `ReadSeed`).
+`doc.go`'s closing claim and `paths.go`'s file header both say every constructor is a `filepath.Join` onto a told `*lyxcwd.Location`'s `AnchorPath()`, which `TreeRunFileRels` and the existing relative constructors `SeedRel`, `StatusRel`, `DriveReportsRel` and `RunsRootRel` break.
+Both narrow it to what holds, worded by return shape: every constructor that returns an absolute path joins onto a told `Location`'s `AnchorPath()`, the `*Rel` constructors and `TreeRunFileRels` return relative paths, and no constructor resolves a cwd or spawns git.
+The first sentence of `paths.go`'s header, which lists the file's kinds of path, gains the tree-relative seed and status paths a git tree read takes.
 
 Tests:
 - `TestRunsRootRel` in `paths_test.go` gains assertions that `TreeRunFileRels("x")` returns `_lyx/shed/x/seed.json` and `_lyx/shed/x/status.json` with forward slashes on every platform, that `TreeRunFileRels("self")` returns the `self` directory's paths with no alias, and that `TreeRunFileRels("a/b")` returns an error and empty paths.
-- a new table test `TestParseSeed` in `seed_test.go`: a seed carrying `started_at` decodes with it; a seed carrying the retired `parent` key decodes and drops it; an absent driver decodes as `DriverGo`; an unknown key, an unknown driver and an empty params key each return an error.
+- a new table test `TestParseSeed` in `seed_test.go`: an unknown driver and an empty params key each return an error, the two validation branches no existing test reaches.
+  The `started_at`, retired `parent` key, absent-driver and unknown-key behaviors stay covered through `ReadSeed`, which calls `ParseSeed`, by `TestWriteSeed_ReadSeed_RoundTrip`, `TestSeed_LegacyParentKey` and `TestReadSeed_AbsentDriverDefaultsToGo`.
 
 Raise `internal/shedrun`'s row in `cmd/lyx/testdata/test-budget.yaml` by the new top-level test.
 

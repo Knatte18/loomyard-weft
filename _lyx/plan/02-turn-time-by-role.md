@@ -63,7 +63,8 @@ Tests: a new test `TestRunTimeByRole` in `count_test.go` over `CountRun` and `Wr
 - a `<local-command-stdout>` user line typed between turns adds no working time after it;
 - an assistant `tool_use` line followed after a long gap by its tool result counts the gap as working;
 - two overlapping sessions of one role count their union, and a sub-agent transcript counts under `<role>+sub`;
-- `Idle` is the span minus the union of all working intervals, and the report's role table carries the `time` and `time share` cells, the `idle` row and, with an `OrchTally` charge given, an orch row whose time cells are blank.
+- `Idle` is the span minus the union of all working intervals, and the report's role table carries the `time` and `time share` cells, the `idle` row and, with an `OrchTally` charge given, an orch row whose time cells are blank;
+- two runs whose working intervals overlap in wall-clock time: "All runs" gives each role the sum of its per-run times and idle the sum of the per-run idle, divides time share by the sum of the runs' spans, and is followed by the explanatory paragraph.
 
 The existing `TestCountRun` assertion on the `webster+sub` row is a prefix that ends at the `share` cell, so it still holds.
 Raise `tools/tokencount`'s row in `cmd/lyx/testdata/test-budget.yaml` by the new top-level test.

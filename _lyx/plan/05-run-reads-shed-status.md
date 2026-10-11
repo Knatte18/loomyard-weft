@@ -22,7 +22,8 @@ Wire the archived shed status into every counted run and retitle the report (dec
 Below, "the weft flag" is the flag `repositoryFlag` names.
 
 `resolveHub` makes the hub flag's value absolute and clean: empty is `filepath.Dir(wd)`, a relative path joins onto `wd` (never `filepath.Abs`, which reads the process cwd outside `internal/lyxcwd`), then `filepath.Clean`.
-When the result differs from `filepath.Clean(filepath.Dir(wd))` and `weft` is empty it refuses with an error naming the given hub, the current worktree's hub and the weft flag, saying the default weft would read another hub's records and that the weft flag must name that hub's weft repository; the flag is spelled through `repositoryFlag`.
+It takes `filepath.Dir(wd)` as the current worktree's parent, assuming the tool runs from the worktree root, as the hub flag's existing default does and as the launchers ensure by changing to the repository root; run from a subdirectory, the correct hub is refused and the weft flag is the way through.
+When the result differs from `filepath.Clean(filepath.Dir(wd))` and `weft` is empty it refuses with an error naming the given hub, the current directory's parent as the hub it assumes and the weft flag, saying the default weft would read another hub's records and that the weft flag must name that hub's weft repository; the flag is spelled through `repositoryFlag`.
 The refusal is reached by the hub flag naming any directory other than the current worktree's parent with the weft flag empty; the same hub with a trailing slash or as a relative path resolves equal and passes.
 It bounds Decision 8's wider weft default: the default can no longer pair one hub's slugs with another hub's records.
 

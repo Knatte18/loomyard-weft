@@ -23,6 +23,6 @@ A line that lacks the `refs/tags/archive/<slug>/<sha>` shape, a commit or a date
 `recentRuns` counts a slug as finished when it has at least one tag.
 `run`, the caller of both re-signed functions, passes `finishedRuns`'s map straight to `recentRuns`, so its body compiles unchanged and is listed only as that caller.
 
-Tests in `count_test.go`: `TestArchivedSlugs` becomes a table over `archivedSlugs` that pins a slug with two tags in newest-first order, two tags of one date ordered by name, and the skipped malformed lines (no sha segment, another namespace, a missing date); `TestRecentRuns` passes its finished slugs as a map of tags.
+Tests in `count_test.go`: `TestArchivedSlugs` becomes a table over `archivedSlugs` that pins a slug with two tags in newest-first order, two tags of one date ordered by name, and the skipped malformed lines (no sha segment, another namespace, a well-shaped ref with an empty object-name field and a valid date, a missing date); `TestRecentRuns` passes its finished slugs as a map of tags.
 
 **ImpactSummary:** The finished-run lookup now also yields each tag's commit and date; which runs count as finished is unchanged for the lightweight tags lyx creates, and `run` is the only production caller of `finishedRuns` and `recentRuns`.
