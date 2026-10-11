@@ -16,3 +16,5 @@ The PR-Gate fork then narrows to what needs the orch's context: the run against 
 
 - Whether the review covers only changes from the parent that touch the task's packages or glyphs, or the whole merge.
 - Where in the recipe it runs (after Publish's merge, before PR-Gate) and what a finding sends back to.
+- Relation to `prgate-stale-base`: a run sent back to Publish because the parent moved during PR-Gate redoes the merge this review would cover.
+- For the operator (2026-10-11, undecided): when to start this and `alignment-agent`, now that `burler-split-budget` has landed; the operator wants to discuss it later.
