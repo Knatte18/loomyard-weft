@@ -39,6 +39,7 @@ The session ran autonomously, so every turn below is a question the writer put t
 - Wait longer or retry the startup sends on a not-idle reading: the screen does not change, so the extra wait only delays the same failure.
 - Tolerate any single non-alphanumeric character, or a list of shell end-of-line marks: only `%` has been seen; a wider set lets more real drafts through the pre-write guard.
 - Probe every second and keep dismissing on every probe that sees a gate: reopens the stray-keypress hazard the 10-second cadence was added for.
+- Back `awaitStartup` off from one second to the dismissal gap while the capture is unchanged: a pane that turns ready after a static boot screen would go unseen for up to the backed-off interval, which undoes D5.
 - A new `startup_probe_ms` or dismissal-gap config key: the existing poll interval and liveness multiple already express both numbers.
 - Open the batten window as soon as the pair's reed session exists: about 2–3 s gain after D5, against new handling for a spawn that fails after the window is open.
 - Move Seed-Child's `main-weft` push or skip the color typing before the window opens: under 2 s.
