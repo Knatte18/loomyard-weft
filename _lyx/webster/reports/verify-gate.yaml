@@ -1,0 +1,11 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/lyxcwd.TestEnforcement_FabricVocabulary/tree-scan
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/lyxcwd
+      tail: |4-
+                enforcement_test.go:960: fabric-vocabulary leak found:
+                    tools/tokencount/main_test.go: bare weft/warp token outside the owner set
+                    tools/tokencount/time_integration_test.go: bare weft/warp token outside the owner set
+log_path: /home/knatte/Code/loomyard-LYXHUB/run-time-by-role/.lyx/verify/verify-2.log
