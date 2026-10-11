@@ -66,7 +66,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 21 | **End the seat hold deferral when the advisor itself is held or dead**<br>• The hold notice deferral only got a shorter cap (10 min); ending it as soon as the advisor is held or dead is not built. | [`hold-deferral-end-on-held`](design-hold-deferral-end-on-held.md) | shuttle |
 | 22 | **Measure the Webster kick-start pack with and without**<br>• Repeat the audit count (grep-for-member calls and whole-file reads per fork) on real loom runs with kickstart_pack on and off. | [`kickstart-pack-measure`](design-kickstart-pack-measure.md) | webster |
 | 23 | **Burler: reviewer row, then fixer row**<br>• Split the Burler round into two Shed rows, Burler-Review then Burler-Fix, each a zero-advisor MultiLLMProducer, so the fixer no longer spawns first and waits on the reviewer. | [`burler-chair-late-spawn`](design-burler-chair-late-spawn.md) | burler |
-| 24 | **Per-segment review budget and accept on a spent budget**<br>• Let each review segment set its own bounce budget and accept the work when the budget is spent instead of escalating to the parent; for Webster-Review, one round then accept. | [`segment-budget-accept`](design-segment-budget-accept.md) | loom, burler |
+| 24 | **Per-perch review budget and auto-accept flag**<br>• Each perch (Discussion, Plan, Webster) gets its own bounce budget and an auto-accept flag that accepts the work on a spent budget instead of escalating to the parent. | [`segment-budget-accept`](design-segment-budget-accept.md) | loom, burler |
 
 #### Low priority
 

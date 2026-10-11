@@ -965,7 +965,7 @@
     {
       "id": 400,
       "slug": "segment-budget-accept",
-      "title": "Per-segment review budget and accept on a spent budget",
+      "title": "Per-perch review budget and auto-accept flag",
       "kind": "note",
       "labels": [
         "enhancement",
@@ -975,8 +975,8 @@
       "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "Let each review segment set its own bounce budget and accept the work when the budget is spent instead of escalating to the parent; for Webster-Review, one round then accept.",
-      "body": "## Seen (2026-10-11)\n\n`loom.yaml` `review_max_bounces` is one budget for every Bouncer review segment (Discussion-Review, Plan-Review, Webster-Review), and a spent budget always escalates to the parent, which today answers with `lyx loom circling accept`.\nNothing accepts on its own.\nWebster-Burler's first rounds in the four newest runs yielded 0 BLOCKING, 1 MEDIUM, 1 LOW, 3 NIT and 2 empty reviews (`burler-chair-late-spawn`).\n\n## Idea (operator, 2026-10-11)\n\nFor Go code the tests in verify carry the weight, so Webster-Review runs at most one round and then accepts the work as it stands, without escalating to the parent.\nThis needs two settings per segment: its own bounce budget (such as `webster_max_bounces`), and what a spent budget does (escalate, as today, or accept).\n\n## Open\n\n- After one round nobody checks the fixer's changes except verify; that holds for Go code, less for prose such as stencils (see `burler-chair-late-spawn`).\n"
+      "brief": "Each perch (Discussion, Plan, Webster) gets its own bounce budget and an auto-accept flag that accepts the work on a spent budget instead of escalating to the parent.",
+      "body": "## Seen (2026-10-11)\n\n`loom.yaml` `review_max_bounces` is one budget for every Bouncer review segment (Discussion-Review, Plan-Review, Webster-Review), and a spent budget always escalates to the parent, which today answers with `lyx loom circling accept`.\nNothing accepts on its own.\nWebster-Burler's first rounds in the four newest runs yielded 0 BLOCKING, 1 MEDIUM, 1 LOW, 3 NIT and 2 empty reviews (`burler-chair-late-spawn`).\n\n## Idea (operator, 2026-10-11)\n\nFor Go code the tests in verify carry the weight, so Webster-Review runs at most one round and then accepts the work as it stands, without escalating to the parent.\nThis needs two settings per segment: its own bounce budget (such as `webster_max_bounces`), and what a spent budget does (escalate, as today, or accept).\nOperator, 2026-10-11: both settings exist per perch, for Discussion, Plan and Webster (code) alike: a bounce budget per perch and an auto-accept flag per perch.\n\n## Open\n\n- After one round nobody checks the fixer's changes except verify; that holds for Go code, less for prose such as stencils (see `burler-chair-late-spawn`).\n"
     }
   ]
 }

@@ -1,4 +1,4 @@
-# Per-segment review budget and accept on a spent budget
+# Per-perch review budget and auto-accept flag
 
 `segment-budget-accept` · Note · enhancement, loom, burler
 
@@ -12,6 +12,7 @@ Webster-Burler's first rounds in the four newest runs yielded 0 BLOCKING, 1 MEDI
 
 For Go code the tests in verify carry the weight, so Webster-Review runs at most one round and then accepts the work as it stands, without escalating to the parent.
 This needs two settings per segment: its own bounce budget (such as `webster_max_bounces`), and what a spent budget does (escalate, as today, or accept).
+Operator, 2026-10-11: both settings exist per perch, for Discussion, Plan and Webster (code) alike: a bounce budget per perch and an auto-accept flag per perch.
 
 ## Open
 
