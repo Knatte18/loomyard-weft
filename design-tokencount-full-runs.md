@@ -1,6 +1,6 @@
 # Tokencount default counts only full loom runs
 
-`tokencount-full-runs` · Task · enhancement, shed · running · Describe
+`tokencount-full-runs` · Task · enhancement, shed · running · Publish
 
 ## Seen (operator, 2026-10-11)
 
