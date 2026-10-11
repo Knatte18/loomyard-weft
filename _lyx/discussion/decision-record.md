@@ -171,6 +171,12 @@ The comm probe moves too, so after this task no test file outside the kit reads 
   - headroom-byte-count-overstates-cut (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - card6-old-reader-meaning-stated-in-untargeted-files (class consistency, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - The headroom function, as table rows: grew from under the line to above it fails and names the bytes to cut to the line; grew from a base above the line fails and names the bytes to cut back to the base size; grew to exactly the line passes; shrank while above the line passes; unchanged above the line passes; absent at the base and present above the line fails; absent at the head passes.
