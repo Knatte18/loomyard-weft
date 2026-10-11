@@ -41,3 +41,8 @@ A fresh agent run from the prime drives it; neither loom nor darn fits, since th
   It should also measure how many Burler rounds each draft needs to converge and the total time and tokens to the final discussion, not only the draft against the answer key.
   A co-chair variant (see `discussion-advisor-mode`) is a candidate for the same comparison.
 - The operator confirmed (2026-10-11) that the bench agent may create and tear down the bench pairs, add a temporary board note per bench slug holding a copy of the reference task body (the writer reads it with `lyx board get`) and remove them after, and approve each bench pair's Discussion parent-review gate itself.
+
+## Seen in the first run (2026-10-11)
+
+The operator, watching `dbench-ohsh`, saw that the chair-advisor back and forth takes time and remarked that each batch should carry many questions.
+The first round runs on the current chair stencil, unchanged, to learn whether the advisor setup is worth having; if it is, a candidate change is for the chair to send every question it has in batch 1 and only follow-ups after.
