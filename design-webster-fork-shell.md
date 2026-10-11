@@ -18,4 +18,5 @@ tmux -L askexp kill-server; rm -rf "$(cat /tmp/claude-1000/askdir)" /tmp/claude-
 
 - Whether the edit directive reaches Webster implementer forks at all, and if so why the fork ignored it.
 - Whether the implementer stencil should name a scratch place inside the pair and forbid `rm` on a computed path.
-- Whether a pending permission prompt in a fork should reach the operator as a notice instead of waiting unseen.
+- Detection (operator, 2026-10-11: such a stall must be noticed, it likely sat a while): `shuttle-hook-first` D5 installs a `PermissionRequest` hook that reads the session as asking at once.
+  Open: whether the hook fires for a fork's prompt in Merriam's session, and what turns a run that stays asking past a bound into a notice that reaches the operator.
