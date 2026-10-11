@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **Tokencount default counts only full loom runs**<br>• With no slugs, tokencount picks the most recent runs, which today were bench pairs that stopped after Discussion; count only full loom runs | [`tokencount-full-runs`](design-tokencount-full-runs.md) | darn | Darn-Bouncer | shed |
+| 2 | **Tokencount default counts only full loom runs**<br>• With no slugs, tokencount picks the most recent runs, which today were bench pairs that stopped after Discussion; count only full loom runs | [`tokencount-full-runs`](design-tokencount-full-runs.md) | darn | Darn-Burler | shed |
 
 ### Ready
 
