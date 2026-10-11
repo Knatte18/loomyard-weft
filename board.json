@@ -1040,6 +1040,33 @@
       "isolated": false,
       "brief": "awaitStartup checks the pane every 10 s, so every shuttle start and every batten window waits about 10 s after the agent is up",
       "body": "## Seen (2026-10-11)\n\n`lyx batten run \u003cslug\u003e --window` opens the Konsole window about 11 s after the child loom run is spawned, every time (per-role-models 11.2 s; gate-test-hygiene, small-fixes-batch, seats-chair-first 11.0–11.1 s).\nThe Claude driver is up within about a second; the rest is a fixed wait.\n\n- Batten opens the window only after `lyx loom start --no-attach` exits (`internal/battenshed/innerrun.go`, `innerRunProducer.Call`; `internal/battencli/wire.go`, `Spawn` runs it with `cmd.Run()`).\n- `loom start` returns only after shuttle's `start` (`internal/shuttleengine/run.go`) has passed `awaitStartup` (`internal/shuttleengine/wait.go`), which captures the pane and between checks sleeps `poll_interval_ms × liveness_every_n_polls`, 1000 ms × 10 = 10 s.\n  The 10 s cadence is deliberate there, to avoid stray keypresses during trust-prompt dismissal.\n- The same `awaitStartup` gates every shuttle start, so every agent a run spawns (reviewers, fixers, judges, seeds, Webster's Master) likely waits up to 10 s longer than it needs to.\n- The window runs only `lyx reed attach` in the pair (`internal/termwindow/termwindow.go`), which needs the pair's tmux session, up about 0.1 s after the spawn.\n\n## Idea, ranked by gain\n\n1. Probe every `poll_interval_ms` (1 s) during startup and replay the trust-prompt dismissal at most once per 10 s; saves about 8–9 s on every shuttle start, not only batten.\n2. Open the window as soon as the pair's reed session exists rather than after `loom start` exits; saves about 11 s on each batten start, and batten then has to handle a spawn that fails after the window is open.\n3. Minor, under 2 s: Seed-Child's `main-weft` push after the spawn, and no segment-color typing before the window opens.\n"
+    },
+    {
+      "id": 332,
+      "slug": "dbench-ohsh",
+      "title": "Webster stability: gate shells, Master self-fix, recovery, Create checks",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster",
+        "shuttle",
+        "stencil",
+        "quarry"
+      ],
+      "issues": [
+        505,
+        509,
+        517,
+        522,
+        511,
+        500,
+        507
+      ],
+      "priority": "high",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Fix the Webster faults outside the audit that stop or mislead runs",
+      "body": "## Goal\n\nClose the Webster faults that stop or mislead runs outside the audit: background gate shells, Master fixing verify failures itself, recovery attribution and gates, and Create checks that cannot pass for unexported or build-tagged members.\n\n## 1. A background gate shell is cut off at a turn end (#505, #509, #517)\n\nMaster's wait counted a turn end while a background `lyx gate test --tags integration` shell was still running; after `background_shell_wait_min` the wait stopped, the run finished `done` because Master's output files existed, and shuttle removing the strand killed the shell.\nA run can report `done` with a gate tier unfinished.\nExpected: a running gate shell holds the turn end, or lyx stops it explicitly and records in the run that its result was discarded, so the outcome never reads as \"tests passed\".\n\n## 2. Master fixes a verify failure itself\n\nIn `driver-context` (2026-10-10) Master (`sonnet[medium]`) edited and committed a failing assertion itself on Publish verify attempt 3, although its stencil sends verify failures to one fixer fork; the run-exit audit blocked it as a parent-write and the fix had to be reverted, `accept-audit`ed and redone through a fork.\nExpected: the rule is stated where Master reads a verify failure, not only in its rules list, or Master has a verb that spawns the verify fixer, so the right path is the easy one.\n\n## 3. A second recovery treats the first recovery's files as foreign (#522)\n\nIn `quick-recipe` (2026-10-10) batch 01's first recovery edited 19 files for card 1 and was stopped uncommitted when Webster restarted; the second recovery's prompt listed them under \"Not written by this run: leave it untouched\", and the strand blocked.\nExpected: files an earlier recovery of the same batch wrote count as the batch's own work (attribution by batch, not by shuttle run id), or the second recovery starts from a clean tree with the first attempt's diff offered as reference.\nAlso: `recover-batch 1` exited 0 while the batch ended failed and terminal; it should exit non-zero.\n\n## 4. The recovery prompt does not name its allowed gates\n\nThe same recovery was unsure whether `lyx gate test` and `lyx loom lint-comments` fell under the ban on fabric commands, and could only compile-check tmux-tagged card steps.\nExpected: the recovery prompt names the card and batch gates as always allowed, and says tmux-tagged steps are left to verify.\n\n## 5. Create check fails on unexported targets (#511)\n\n`record-batch` refused two batches with `create-not-done` for unexported targets (`plan:cmd/testtiming#rusageStats`, `plan:internal/testkit/tmuxkit#tmuxAllowed`); recovery failed the same way and the batches died.\nExpected: find whether the check resolves unexported identifiers and identifiers in test files; fix it if not, and make the refusal say how the target was looked up, so a missing symbol is told apart from a resolver limit.\n\n## 6. Build-tagged and per-GOOS members resolve ambiguous (#500, #507)\n\nA member declared once per mutually exclusive build-constraint set (`tmuxAllowed` in `allow_tmux.go` and `allow_none.go`), or once per GOOS (`StartTime` in `internal/proc`, `runChild` in `internal/gatecli`), resolves `ambiguous` in quarry, and DoneChecks accept only `found` or `multipart`, so its Create or Edit can never pass.\nExpected: DoneChecks accept an ambiguous answer whose candidates all sit in files with disjoint build constraints (or quarry honours build constraints), and the plan validator flags such a glyph at Plan time rather than at record-batch.\n\n"
     }
   ]
 }
