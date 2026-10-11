@@ -6,7 +6,7 @@
      stencil.FillOptional requires the three original ones non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
      parent_directive is a third optional marker, rendered by internal/parentdirective.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=da3e39cce51ebcb05aeaa4db7d7137cc6821d7e6ed06a30e979a302cfef501a3 build=98ce55225776e3d8bde7f5bee80c350eed84dbe8 time=2026-10-11T13:57:03Z -->
+lyx-stencil: sha256=18fc9125be54df66a0feae37a9feb08688f7d55abae34ffcf73e615f68328fbf build=c279a38bafb5aced5978bceb727ff9c06e756848 time=2026-10-11T15:39:39Z -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -149,6 +149,10 @@ An implementation card lists the implementation's member glyphs under `**Edit:**
 A `**Create:**` test file, after the implementation's `**Edit:**`, appears only for a surface no existing test file covers.
 
 `**Edit:**` lists the member glyphs the card changes, and a file path only for a file with no symbol to name: a test file the card adds tests to, a non-Go file, or a whole file the card creates or deletes.
+A card names an existing test function, fake or helper it changes as a member glyph, for example `internal/x#TestFoo` or `internal/x#fakeClock`.
+A plain test-file path stays only for a test file the card adds tests to without changing an existing member.
+A new test function in an existing file is a `**Create:**` declaration with a `plan:` handle.
+A new test file is a `**Create:**` path.
 Listing a file or a package beside a member of it on one card is refused: `redundant-package-target` and `redundant-file-target` in `{{.specs_dir}}/loom/loom-plan-spec.md` say what counts and the way forward.
 
 A card that changes a member's parameters, results, type parameters or receiver writes that `**Edit:**` bullet with the re-sign arrow, `` `<glyph>` -> `<new declaration head>` ``, the head written like a `Create` head.

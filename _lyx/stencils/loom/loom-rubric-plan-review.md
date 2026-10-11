@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- its only markers are the ones ReadRubric fills, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=1145f45b55445c1912a10d691e7bec48656e3c909bda2a22f8a3b76ce1fe7af9 build=3a5a34ac796c9e54a3cf6050e62779ade14a3ff8 time=2026-10-11T14:22:22Z -->
+lyx-stencil: sha256=7fbc030f9ce0db6661a78165108c65e69bbe0d01b482247e518f92cb01e42edd build=c279a38bafb5aced5978bceb727ff9c06e756848 time=2026-10-11T15:39:39Z -->
 
 # Plan-Review rubric
 
@@ -61,6 +61,7 @@ Do not flag any of the following as a finding:
   a vague "seems redundant" is not a finding.
 - **Member glyphs on an `Edit` card.**
   An `Edit` card whose targets are only Go file paths of non-test files while its `Intent` names specific symbols is a finding; the finding names the member glyphs to list instead.
+  An `Edit` card that lists only a test-file path while its `Intent` changes a named existing test, fake or helper is a finding too; the finding names the member glyphs to list.
 - **The re-sign arrow.**
   An `Edit` member glyph without the re-sign arrow, while the card's `Intent` changes that member's parameters, results, type parameters or receiver, is a finding; the finding names the arrow to add.
   It never fires for an interface method or a struct field, which take no arrow.

@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=ad5d608645d1edcc12fadb15daa8aabdd830868fad6b0c4e122d705e3e712eff build=98ce55225776e3d8bde7f5bee80c350eed84dbe8 time=2026-10-11T13:57:03Z -->
+<!-- lyx-stencil: sha256=e867b3aaa4263c197876760263757273782185a6fd3b65449ab214d3f6a4528f build=c279a38bafb5aced5978bceb727ff9c06e756848 time=2026-10-11T15:39:39Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -33,8 +33,7 @@ For EACH card file listed above, in the order listed:
    It is your whole instruction for that card.
    If its `**Intent:**` field is empty, fall back to that card's one-line intent from the Card Index in `_lyx/plan/00-overview.md`, matched by the same NN/slug.
 2. A card names its targets under its own type label(s) and what it reads under `**Uses:**`; see `{{.specs_dir}}/loom/loom-plan-spec.md` for the full grammar. Make exactly the changes the card describes, in exactly the targets its type labels name.
-   Locate them with one `lyx quarry resolve <glyph>...` call over the card's target and `Uses:` glyphs: each answer gives the member's `file` and its `start` and `end` lines, so read those spans instead of grepping for them or reading whole files.
-   A `plan:` handle names a member the card creates and does not resolve yet.
+{{.locate}}
 3. Run each step of the card's gate from the list below, in order, each as its own foreground Bash call under the gate rule in your system prompt.
    A failure here is the card's own gate — fix it before moving on;
    this gate is implicit in every card, never optional.
@@ -51,7 +50,7 @@ For EACH card file listed above, in the order listed:
    A non-zero exit fails the card exactly like the gate in step 3 — there is no separate "deferred verify" concept;
    every card's gate (the steps above, plus its own `verify:` when it declares one) is checked right after that card's own commit, never bundled into a later card.
 
-If any card's gate fails, or a test the card broke fails, and you cannot fix it within your self-fix bound (see next section), stop and report `status: FAILED` — do not continue to a later card on top of a broken one.
+If any card's gate fails, or a test the card broke fails, and you cannot fix it within your self-fix bound (see next section), stop and report `status: FAILED` — do not continue to a later card on top of a broken one.{{.kickstart_pack}}
 
 ## The sandbox rule
 
