@@ -108,6 +108,12 @@ Rationale: the board asks for judge and seed in the usage files like other roles
 Decision: the lens-fact and lens-exclusion readers treat a record that has no review half (a seed-only or judge-only record, left when the Burler round's own write failed) as a missing record.
 Rationale: today a failed Burler write leaves no file and those readers report it missing; a Bouncer-created record must not turn that into a record claiming a solo round with no lenses.
 
+### Added after Discussion (parent, 2026-10-11): Card 5 targets TestBouncer_CirclingGuard
+
+Decision: Add internal/shedadapters#TestBouncer_CirclingGuard to card 5 Edit list and ImpactSummary; in the rows at the checkpoint with no recurring open key and a rising count over new keys, round 2 ledger keeps alpha at status resolved beside the new open keys; state the new row content in Intent and reword the claim that every round-2-or-later ledger keeps its previous keys so it holds after the change. Before closing, enumerate every Bouncer settle path the guard runs on (harvest and replay, every verdict word) by reading ledger contents, not by grepping for BLOCKING.
+
+Rationale: Round 3 F1 is concrete, verified at bouncer_circling_test.go lines 310-311 and 339-340, and its fix is narrow; resolved alpha leaves circlingEvidence unearned so both rows stay Stuck as today. Accepting unconverged would leave card 5 verify run failing on a test outside its Edit list.
+
 ## Constraints
 
 - `PATTERN-refusal-way-forward`: D9's refusal names its way forward, gets its shed-section row in the same commit, and a test reaches it.
