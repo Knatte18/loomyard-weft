@@ -46,7 +46,8 @@ Tests, in `session_test.go`:
 `start_test.go` holds `TestStart_LoneEOLMarkBoxTakesStartupSends`, the end-to-end check through shuttle's real start path.
 Wire it as `corpus_test.go` does: a `shuttleengine.NewRunner` over a `shuttlefake.Reed`, with `SetClock` on an injected clock that never sleeps for real.
 The engine is a test type embedding `*Claude` that overrides only `Prepare` to return a canned `Launch` with a `PromptLine`, so every box and session reading is Claude's own.
-The reed's `AddStrandFn` returns a strand with a segment color, and its capture serves `pane-idle-eol-mark.txt` until a send arrives, then whatever the test's paste hook needs for the send to land.
+The reed's `AddStrandFn` returns a strand with a segment color, and its capture serves `pane-idle-eol-mark.txt` on every read.
+So each send's pre-write guard, the skill-load send's included, reads the lone-`%` box as idle, and each paste's confirm read sees an empty box, which lands the send.
 The spec names one skill.
 The test asserts that `StartGated` returns a run and a nil error, that the color command and the skill-load message each reached the pane through the fake's paste or text hook, and that no send failed busy or in-draft.
 It is the only `claudeengine` test that drives a start with Claude's own box reading, so it raises `internal/shuttleengine/claudeengine` in `cmd/lyx/testdata/test-budget.yaml` from 103 to 104.

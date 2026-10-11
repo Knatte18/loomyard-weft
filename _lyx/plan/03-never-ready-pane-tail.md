@@ -7,6 +7,7 @@
 - `internal/shuttleengine#paneTail`
 - `internal/shuttleengine#Run.abandonStartup`
 - `internal/shuttleengine/startup_test.go`
+- `internal/shuttleengine/fakes_test.go`
 
 **Uses:**
 - `internal/shuttleengine#paneTailLines`
@@ -33,9 +34,17 @@ Nothing is added in every other case:
 The function keeps its single `return result, fmt.Errorf(format, args...)`, growing `format` and `args` before it, so `completionsignal_enforcement_test.go`'s `abandonStartup [Errorf]` count stays 1.
 Its doc comment states the tail and the three conditions.
 
-Tests, all in `startup_test.go`:
+Each exclusion has a test row that reaches it with the other two conditions holding, so the row's no-tail assertion turns on that one condition.
+
+Tests, in `startup_test.go`, with one fake change in `fakes_test.go`:
 - `TestStartup_PaneNotLiveMidStartup`'s "pane goes not-live" row asserts the error ends with `"The pane's last lines:\n" + lastCapture`.
-- `TestStartup_SkillLoadTurns`'s "pane that dies during a load turn is a died startup" row asserts the error does not contain `The pane's last lines:`.
+- `skillReed` gains a `Screen string` field that `CapturePane` serves as its first line, ahead of the sent texts; empty, it changes no capture.
+  `TestStartup_SkillLoadTurns`'s "pane that dies during a load turn is a died startup" row sets `Screen` through `skillStartFixtureWith`'s configure hook, so its startup probe records a non-empty capture.
+  The row asserts the error does not contain `The pane's last lines:`, which then turns on `run.state.Started`.
+- `TestStartup_MechanismFailure` gains a row "status errors after a pending capture exhaust the retry cap".
+  `flakyStatusReed` gains a `passFirst int` field: its first `passFirst` `Status` calls answer from the inner reed, and the next `failFirst` fail; the existing row's zero `passFirst` keeps its behavior.
+  The new row's inner reed answers the strand live with `CaptureQueue` holding one non-empty pending screen, and its `flakyStatusReed` has `passFirst: 1` and `failFirst: maxStatusRetries`.
+  Every row of the table asserts the error does not contain `The pane's last lines:`, which on the new row turns on the cause, since it is never ready and holds a capture.
 - `TestStartup_CaptureAlwaysErroringUntilWindowExpires` asserts the error does not contain `The pane's last lines:`.
 - `TestStartup_SendFailuresTearDown`'s "a skill-load send that stays busy" row asserts `The pane's last lines:` occurs exactly once in the error.
 

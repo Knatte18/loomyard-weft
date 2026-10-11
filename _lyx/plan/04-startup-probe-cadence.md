@@ -3,7 +3,6 @@
 **Create:**
 - `plan:internal/shuttleengine#dismissalGap` -> `func dismissalGap(cfg Config) time.Duration`
 - `plan:internal/shuttleengine#playInputsSent` -> `func playInputsSent(reed ReedOps, guid string, inputs []PaneInput) (int, error)`
-- `plan:internal/shuttleengine#TestStartup_GateDismissalGap` -> `func TestStartup_GateDismissalGap(t *testing.T)`
 
 **Edit:**
 - `internal/shuttleengine#Run`
@@ -61,15 +60,19 @@ Bound, in its doc comment: the throttle only removes key presses and never adds 
 
 Tests, in `startup_test.go`, all on the injected fake clock with `PollIntervalMS: 1000`, `LivenessEveryNPolls: 10`:
 - `TestStartup_ReadyProbeTiming` replaces its "probe cadence matches Wait" row with two rows; its doc comment and the file's header comment drop the matches-Wait claim.
+  Its `//testtiming:keep` reason is reworded to what the rows pin: no sleep when ready on the first probe, the base interval while the pane redraws, and the backoff to the dismissal gap while it does not.
   - "a pane that redraws between probes is probed every poll interval": distinct captures on each probe, script pending, pending, ready; 3 status calls, 2 s elapsed.
   - "an unchanged pane backs off to the dismissal gap": one constant non-empty capture, six pending probes then ready; sleeps 1, 2, 4, 8, 10 and 10 s, so 7 status calls and 35 s elapsed.
 - `TestStartup_TickCap` computes `wantTicks` from `pollInterval(cfg)`.
-- New `TestStartup_GateDismissalGap`, table-driven, `StartupTimeoutS: 30`, the startup script always `StartupTrustPrompt` and a distinct capture on every probe so the backoff stays at the base.
-  Each row asserts the start fails wrapping `ErrNotStarted` with the record's outcome died, and the virtual times of the plays.
+- `TestStartup_UndismissableGateUntilWindowExpires` becomes the table-driven gate-never-clears test, renamed `TestStartup_GateNeverClearsUntilWindowExpires`; each row builds its own reed, engine and config.
+  Each row asserts the start fails wrapping `ErrNotStarted` with the record's outcome died and one strand removal, and the virtual times of the plays.
+  Its doc comment and `//testtiming:keep` reason say it pins a gate that never clears: its dismissals' virtual times, at most one play per dismissal gap, until the window expires.
+  - "a gate whose accepting option cannot be located sends no key": today's case unchanged, the empty-sequence branch, with no `SendKey` call and no dismissal log line.
+  The other three rows use `StartupTimeoutS: 30`, the startup script always `StartupTrustPrompt` and a distinct capture on every probe so the backoff stays at the base.
   - "a gate that never clears is dismissed once per gap": one `Enter` at each of 0, 10, 20 and 30 s, so 4 `SendKey` calls over the 32 probes.
   - "a play whose first key fails leaves the next probe free": `SendKeyErr` set, so a `SendKey` call on every probe.
   - "a play that sends its first key and fails a later one starts the gap": a test engine whose dismiss sequence is two keys and a reed that fails the second, so plays at 0, 10, 20 and 30 s only.
-  It is the package's one new top-level test, within `internal/shuttleengine`'s row in `cmd/lyx/testdata/test-budget.yaml`.
+  The package gains no top-level test.
 
 **ImpactSummary:** Every shuttle start's pre-ready probe now runs from one second and backs off to the dismissal gap, and startup-gate keys, in `awaitStartup` and in `Wait`'s startup probe, are at least one dismissal gap apart; `playInputs`' callers see no change.
 
