@@ -15,15 +15,14 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Burler: reviewer row then fixer row, lean fixer, per-perch budget and auto-accept**<br>• Split the Burler round into Burler-Review and Burler-Fix rows, skip the fixer on an empty review, give the fixer only the fix report, and give each perch its own bounce budget and auto-accept flag. | [`burler-split-budget`](design-burler-split-budget.md) | loom | Finalize | loom, burler |
-| 2 | **Batten lands itself; the orch wakes only for judgement**<br>• Batten runs the landing steps after Finalize and handles notices that name their own action, so the orch is woken only for parent review, unsettled escalations, PR-Gate and unknown halts. | [`orch-wake-policy`](design-orch-wake-policy.md) | loom | Publish | batten, orch |
-| 3 | **Config layers and per-task run settings**<br>• Config resolves through a repo default, the worktree file and an untracked local override under .lyx/; a board task carries run settings that batten writes into the pair local override. | [`config-layers-run-settings`](design-config-layers-run-settings.md) | loom | awaiting · Discussion-Bouncer | config, batten, board |
+| 1 | **Batten lands itself; the orch wakes only for judgement**<br>• Batten runs the landing steps after Finalize and handles notices that name their own action, so the orch is woken only for parent review, unsettled escalations, PR-Gate and unknown halts. | [`orch-wake-policy`](design-orch-wake-policy.md) | loom | Publish | batten, orch |
+| 2 | **Config layers and per-task run settings**<br>• Config resolves through a repo default, the worktree file and an untracked local override under .lyx/; a board task carries run settings that batten writes into the pair local override. | [`config-layers-run-settings`](design-config-layers-run-settings.md) | loom | awaiting · Discussion-Bouncer | config, batten, board |
 
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 4 | **Parent-review wait: warm writer cache on reject, wait bound off the boundary, gate hardening**<br>• A late reject resumes the writer on a cold cache, a writer stuck mid-turn outlives the wait bound, and the PR #336 review left gate gaps | [`parent-review-wait`](design-parent-review-wait.md) | loom | Plan-Write | loom, shuttle, orch |
+| 3 | **Parent-review wait: warm writer cache on reject, wait bound off the boundary, gate hardening**<br>• A late reject resumes the writer on a cold cache, a writer stuck mid-turn outlives the wait bound, and the PR #336 review left gate gaps | [`parent-review-wait`](design-parent-review-wait.md) | loom | Plan-Write | loom, shuttle, orch |
 
 ### Ready
 
@@ -144,3 +143,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 30 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) | loom, stencil |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Labels |
+| --- | --- | --- | --- |
+| 1 | **Burler: reviewer row then fixer row, lean fixer, per-perch budget and auto-accept**<br>• Split the Burler round into Burler-Review and Burler-Fix rows, skip the fixer on an empty review, give the fixer only the fix report, and give each perch its own bounce budget and auto-accept flag. | [`burler-split-budget`](design-burler-split-budget.md) | loom, burler |
