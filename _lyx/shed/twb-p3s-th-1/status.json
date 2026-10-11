@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Write",
+  "current_producer": "Plan-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Write",
-    "last": "Loom-Preflight → done",
+    "now": "Plan-Write",
+    "last": "Discussion-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -20,6 +20,19 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-11T18:15:06Z"
+    },
+    {
+      "producer": "Discussion-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/twb-p3s-th-1/_lyx/discussion/decision-record.md",
+      "at": "2026-10-11T18:16:30Z",
+      "gate_attempts": 0
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/twb-p3s-th-1/_lyx/reviews/discussion/round-2-bouncer-ledger.md",
+      "at": "2026-10-11T18:16:31Z"
     }
   ],
   "product": {
