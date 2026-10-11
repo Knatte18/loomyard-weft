@@ -1,11 +1,11 @@
 {
-  "current_producer": "Publish",
+  "current_producer": "PR-Gate",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Publish",
-    "last": "Darn-Bouncer → done",
+    "now": "PR-Gate",
+    "last": "Publish → done",
     "wait": ""
   },
   "history": [
@@ -41,6 +41,12 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/darn-write-rename/_lyx/reviews/darn/round-1-bouncer-ledger.md",
       "at": "2026-10-11T11:04:17Z"
+    },
+    {
+      "producer": "Publish",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-11T11:08:52Z"
     }
   ],
   "product": {
