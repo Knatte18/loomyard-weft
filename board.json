@@ -1059,24 +1059,6 @@
       "body": "Seen at pane-inject-safety PR-Gate (PR #548): the paste-then-Enter submit rests on each provider's `PasteSubmits()` answer, and no live test checks that Claude Code takes a bracketed paste followed by Enter as a submit.\n\nIdea: a tmux-tier or llm-tier test that pastes a short prompt into a live session and checks it was submitted, so a Claude Code change that breaks it fails a test instead of a run."
     },
     {
-      "id": 367,
-      "slug": "batten-windows-hidden",
-      "title": "Batten windows stay but are hidden from the status bar",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "batten",
-        "reed"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\n`lyx batten run --window` gives each batten run its own window in the prime's reed session, which is where its process lives, and each shows up as a `batten:\u003cslug\u003e` button on status line 1 of the orch's session.\nTheir output says nothing useful to the operator.\n\n## Wanted (operator, 2026-10-08)\n\n- The batten windows stay, since the batten process lives there, but they are not visible: they carry a marker the status bar skips, so status line 1 shows no `batten:\u003cslug\u003e` buttons.\n- The runs overview (note `runs-overview`) is where runs are watched; until it exists, `lyx batten status` and each run's own terminal window cover it.\n",
-      "status": "done"
-    },
-    {
       "id": 368,
       "slug": "tokencount-crash-gap",
       "title": "Tokencount counts a crashed turn's gap as working time",
