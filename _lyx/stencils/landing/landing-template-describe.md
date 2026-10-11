@@ -4,7 +4,7 @@
      DescribeSpec via internal/stencil, then handed to shuttle as the describing agent's whole
      prompt. Every marker below is a top-level {{.X}} substitution; stencil.Fill requires every
      marker non-empty, parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective) included, and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=23fff0c0b4c8ab11489a8d13b61e53729c0d06c786646eccb98ed2742245bd26 -->
+lyx-stencil: sha256=ffd06f2f0c1b98a14975214fd00d6bbcd746a071d6cc79c001b6956fa508817b build=797b125e102191d97e6b763964b96572e727581e time=2026-10-11T08:58:56Z -->
 
 # Change description — write the one description this task lands under
 
@@ -22,7 +22,7 @@ Read only these sources, and use read-only git for the diff:
   An entry between `<!-- lyx:carry-over … -->` marker lines in `## Open risks` lists the findings a review left open.
   Each finding a Plan-Review or Webster-Review entry lists becomes one item to check by hand in your description, worded as the finding and where it is, never as a review round.
   A Discussion-Review entry is not carried into the description.
-- The board entry, via `lyx board get {{.slug}}`.
+- The board entry, via `lyx board get '{"slug":"{{.slug}}"}'`.
 - The diff of the task branch `{{.task_branch}}` against its merge base with the parent branch `{{.parent_branch}}` — for example `git diff $(git merge-base {{.parent_branch}} {{.task_branch}}) {{.task_branch}}`.
 - The run records, one per plan generation with the oldest first and the live one last, only as a source of manual-check items:
 {{.run_record_paths}}
@@ -33,7 +33,7 @@ Read only these sources, and use read-only git for the diff:
 
 ## What to write
 
-Write exactly one file, `{{.description_path}}`, in the format of the final-summary spec (`final-summary-spec.md`):
+Write exactly one file, `{{.description_path}}`, in the format of the final-summary spec (`loom-final-summary-spec.md`):
 
 1. A first line `# <title>`, the title at most 72 characters.
 2. A body for the reader described above, covering:
