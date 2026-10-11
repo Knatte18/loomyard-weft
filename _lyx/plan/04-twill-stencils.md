@@ -3,8 +3,8 @@
 **Create:**
 - `contracts/stencils/twill/twill-directive.md`
 - `contracts/stencils/twill/twill-write-scope.md`
-- `plan:contracts/stencils#TwillDirective` -> `var TwillDirective []byte`
-- `plan:contracts/stencils#TwillWriteScope` -> `var TwillWriteScope []byte`
+- `contracts/stencils#TwillDirective`
+- `contracts/stencils#TwillWriteScope`
 
 **Edit:**
 - `contracts/stencils#entries`

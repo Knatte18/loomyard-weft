@@ -1,17 +1,17 @@
 {
   "runGuid": "3c69429c22fa42c39af14884145ac7e6",
-  "planFingerprint": "9e4c1a6d4149606626ec38321772d1e065e27b2dd8e73e86bf58bdcf9506a5b2",
+  "planFingerprint": "55c4955bca48422ef4a1ec6ecff250e091adda3c7319a00f4f758e36cb7be9d8",
   "planFileHashes": {
     "00-overview.md": "fb7f723a82618e780c1c41f3cf644941d74633265a5916cd8483e7617dc13567",
-    "01-shuttle-await-poll.md": "983ba43ebda18b6684d049f4ab11e651aedf4e16740a47feba58db5fb8ace438",
-    "02-shuttle-await-verb.md": "4057fedeaa0dbf7c1d2913099c5aba7df0c50b30b7daf9bc18375d8f50916e57",
+    "01-shuttle-await-poll.md": "06f5367499ce009e97a89b63e2c75a5bc26b0804d1d7744c728fc3e9a8fc6185",
+    "02-shuttle-await-verb.md": "f96ac036e985e1efbc0b089270977fbb8f9a27617cbfe2c4b742d4dc76ef029c",
     "03-twill-lenses.md": "8ea218b4e54a5573c58338a8232000279f6d2d7be9c84dbb9ef757ea2fc0fd23",
-    "04-twill-stencils.md": "25eff61d427aaa7b3fdd18d54e0235bf137c33dea85b75af537f331ffd5d58d3",
-    "05-twilldirective-package.md": "1593fe0473d260e2c88d13dc0d7aeb9d90db10181de04b7a85aa27c8e130b7da",
-    "06-discussion-template-twill-markers.md": "4a4f012261096c2ba576a61452c81de367db6d9ab0b20bdf4095993b5bd06284",
+    "04-twill-stencils.md": "cb7969d006fbd78fdd90d74d439a6bca9e7004f2b835b8d3ce7475834122b591",
+    "05-twilldirective-package.md": "6ce474f37f61658acd292eb133d9adb8fb4c7fa9726db9389f5edaa4675c1048",
+    "06-discussion-template-twill-markers.md": "c42a3b858c7f07269a69b46213aad1f43ee65f36ddc5bd12b07db33e9a17c17f",
     "07-twill-config-value.md": "c8b24e05b1e1928f8d9f2e57d61fd50d50bc07e85bbba6cb294a13989df24c66",
     "08-discussion-ready-marker.md": "78a8bfab2ae059a99ac5d732ea02da801e07de0ae8834ae8eaec91904d0aeb3a",
-    "09-discussion-spec-twill.md": "d656f9aa7535759d538028eb5ae8401d358eba254905c3623c0bb90d1acb6ff3",
+    "09-discussion-spec-twill.md": "92b55299752f95647fb3b2547859f38b4dd8fec0262422dc5e5fafa1394340e2",
     "10-discussion-marker-fresh-spawn.md": "cdfc638944e74b90723d08fd306c5836d51f68c2189a385e0c9e8e9aaacd67d0"
   },
   "planOverviewFrameHash": "247de8e6e5be541da8476002d9265538713a5b756573c6ee20abd25843229713",
@@ -223,7 +223,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "52e875014a597e85c63999b3b57aac7b",
   "masterSessionId": "c16ce497-cd68-4306-9384-3169d04571aa",
   "batches": {
@@ -238,19 +238,49 @@
         "06-discussion-template-twill-markers"
       ],
       "cardHashes": {
-        "01-shuttle-await-poll": "983ba43ebda18b6684d049f4ab11e651aedf4e16740a47feba58db5fb8ace438",
-        "02-shuttle-await-verb": "4057fedeaa0dbf7c1d2913099c5aba7df0c50b30b7daf9bc18375d8f50916e57",
+        "01-shuttle-await-poll": "06f5367499ce009e97a89b63e2c75a5bc26b0804d1d7744c728fc3e9a8fc6185",
+        "02-shuttle-await-verb": "f96ac036e985e1efbc0b089270977fbb8f9a27617cbfe2c4b742d4dc76ef029c",
         "03-twill-lenses": "8ea218b4e54a5573c58338a8232000279f6d2d7be9c84dbb9ef757ea2fc0fd23",
-        "04-twill-stencils": "25eff61d427aaa7b3fdd18d54e0235bf137c33dea85b75af537f331ffd5d58d3",
-        "05-twilldirective-package": "1593fe0473d260e2c88d13dc0d7aeb9d90db10181de04b7a85aa27c8e130b7da",
-        "06-discussion-template-twill-markers": "4a4f012261096c2ba576a61452c81de367db6d9ab0b20bdf4095993b5bd06284"
+        "04-twill-stencils": "cb7969d006fbd78fdd90d74d439a6bca9e7004f2b835b8d3ce7475834122b591",
+        "05-twilldirective-package": "6ce474f37f61658acd292eb133d9adb8fb4c7fa9726db9389f5edaa4675c1048",
+        "06-discussion-template-twill-markers": "c42a3b858c7f07269a69b46213aad1f43ee65f36ddc5bd12b07db33e9a17c17f"
       },
       "startSha": "c97da9f6d1936dae4326601e8a16558bf08956fe",
       "kind": "fork",
       "spawnedAt": "2026-10-11T10:42:03Z",
       "sessionId": "c16ce497-cd68-4306-9384-3169d04571aa",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-shuttle-await-poll",
+        "status": "done",
+        "head_sha": "40fd8d693c70adee7ace366f79f06f45a49cedb2",
+        "deviations": [
+          "internal/shuttleengine/await.go",
+          "internal/shuttlecli/await.go",
+          "internal/twilldirective/twilldirective.go",
+          "internal/burlerengine/template.yaml",
+          "internal/loomengine/prompt.go",
+          "internal/loomengine/discussiontable_test.go",
+          "internal/loomengine/prompt_test.go",
+          "contracts/stencils/stencils.go",
+          "contracts/stencils/markers_test.go",
+          "contracts/stencils/claims_test.go",
+          "docs/overview.md"
+        ]
+      },
+      "cardShas": [
+        "40fd8d693c70adee7ace366f79f06f45a49cedb2"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-twill-discusser/c16ce497-cd68-4306-9384-3169d04571aa/subagents/agent-a57cd042aaff2d2dc.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-twill-discusser/c16ce497-cd68-4306-9384-3169d04571aa/subagents/agent-a57cd042aaff2d2dc.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-twill-discusser/c16ce497-cd68-4306-9384-3169d04571aa/subagents/agent-a57cd042aaff2d2dc.jsonl"
+  ]
 }

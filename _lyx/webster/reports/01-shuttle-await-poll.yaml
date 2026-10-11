@@ -1,0 +1,14 @@
+status: OK
+head_sha: 40fd8d693c70adee7ace366f79f06f45a49cedb2
+deviations:
+  - internal/shuttleengine/await.go
+  - internal/shuttlecli/await.go
+  - internal/twilldirective/twilldirective.go
+  - internal/burlerengine/template.yaml
+  - internal/loomengine/prompt.go
+  - internal/loomengine/discussiontable_test.go
+  - internal/loomengine/prompt_test.go
+  - contracts/stencils/stencils.go
+  - contracts/stencils/markers_test.go
+  - contracts/stencils/claims_test.go
+  - docs/overview.md

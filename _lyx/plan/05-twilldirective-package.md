@@ -2,22 +2,22 @@
 
 **Create:**
 - `internal/twilldirective/doc.go`
-- `plan:internal/twilldirective#MarkerName` -> `const MarkerName = "twill_directive"`
-- `plan:internal/twilldirective#WriteScopeMarkerName` -> `const WriteScopeMarkerName = "twill_write_scope"`
-- `plan:internal/twilldirective#directiveStencil` -> `const directiveStencil = "twill-directive"`
-- `plan:internal/twilldirective#writeScopeStencil` -> `const writeScopeStencil = "twill-write-scope"`
-- `plan:internal/twilldirective#Lens` -> `type Lens struct`
-- `plan:internal/twilldirective#Values` -> `type Values struct`
-- `plan:internal/twilldirective#Directive` -> `func Directive(stencilsDir string, v Values) (string, error)`
-- `plan:internal/twilldirective#WriteScope` -> `func WriteScope(stencilsDir, readyMarker string) (string, error)`
+- `internal/twilldirective#MarkerName`
+- `internal/twilldirective#WriteScopeMarkerName`
+- `internal/twilldirective#directiveStencil`
+- `internal/twilldirective#writeScopeStencil`
+- `internal/twilldirective#Lens`
+- `internal/twilldirective#Values`
+- `internal/twilldirective#Directive`
+- `internal/twilldirective#WriteScope`
 - `internal/twilldirective/twilldirective_test.go`
 
 **Edit:**
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:contracts/stencils#TwillDirective`
-- `plan:contracts/stencils#TwillWriteScope`
+- `contracts/stencils#TwillDirective`
+- `contracts/stencils#TwillWriteScope`
 
 **Intent:**
 Add `internal/twilldirective`, the small package of decision record D3 that renders the two twill stencils of card 4 from a told stencils directory at call time, the way `internal/editdirective` and `internal/parentdirective` render theirs (`PATTERN-stencil-ownership`).

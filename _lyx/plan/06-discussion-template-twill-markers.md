@@ -11,8 +11,8 @@
 - `contracts/stencils#wordingClaims`
 
 **Uses:**
-- `plan:internal/twilldirective#MarkerName`
-- `plan:internal/twilldirective#WriteScopeMarkerName`
+- `internal/twilldirective#MarkerName`
+- `internal/twilldirective#WriteScopeMarkerName`
 
 **Intent:**
 Give the discussion template the two optional twill markers of decision record D2 and thread them through the composer, rendering nothing for `single` and for the chair so their prompts stay byte-identical.

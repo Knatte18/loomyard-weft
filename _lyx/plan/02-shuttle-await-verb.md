@@ -1,8 +1,8 @@
 # Card 2 — shuttle-await-verb
 
 **Create:**
-- `plan:internal/shuttlecli#awaitVerb` -> `const awaitVerb = "await"`
-- `plan:internal/shuttlecli#shuttleCLI.awaitCmd` -> `func (c *shuttleCLI) awaitCmd() *cobra.Command`
+- `internal/shuttlecli#awaitVerb`
+- `internal/shuttlecli#shuttleCLI.awaitCmd`
 
 **Edit:**
 - `internal/shuttlecli/cli.go`
@@ -12,8 +12,8 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/shuttleengine#AwaitAny`
-- `plan:internal/shuttleengine#DefaultAwaitCap`
+- `internal/shuttleengine#AwaitAny`
+- `internal/shuttleengine#DefaultAwaitCap`
 - `internal/burlercli#burlerCLI.awaitReviewCmd`
 
 **Intent:**

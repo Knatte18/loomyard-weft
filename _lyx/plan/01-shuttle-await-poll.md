@@ -1,9 +1,9 @@
 # Card 1 — shuttle-await-poll
 
 **Create:**
-- `plan:internal/shuttleengine#AwaitAny` -> `func AwaitAny(ctx context.Context, paths []string, cap time.Duration) (string, bool, error)`
-- `plan:internal/shuttleengine#awaitAny` -> `func awaitAny(ctx context.Context, clock Clock, paths []string, cap time.Duration) (string, bool, error)`
-- `plan:internal/shuttleengine#DefaultAwaitCap` -> `const DefaultAwaitCap = 250 * time.Second`
+- `internal/shuttleengine#AwaitAny`
+- `internal/shuttleengine#awaitAny`
+- `internal/shuttleengine#DefaultAwaitCap`
 - `internal/shuttleengine/await_test.go`
 
 **Edit:**

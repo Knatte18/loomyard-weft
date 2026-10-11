@@ -18,10 +18,10 @@
 **Uses:**
 - `plan:internal/loomengine#DiscussionProducerTwill`
 - `plan:internal/loomengine#DiscussionReadyMarker`
-- `plan:internal/twilldirective#Directive`
-- `plan:internal/twilldirective#WriteScope`
-- `plan:internal/twilldirective#Values`
-- `plan:internal/twilldirective#Lens`
+- `internal/twilldirective#Directive`
+- `internal/twilldirective#WriteScope`
+- `internal/twilldirective#Values`
+- `internal/twilldirective#Lens`
 - `internal/burlerengine#LoadConfig`
 - `internal/burlerengine#ResolveFan`
 - `internal/burlerengine#Lens`
