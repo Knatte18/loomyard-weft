@@ -28,7 +28,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Rename the darn writer row to Darn-Write**<br>• The recipe and its writer row are both named darn; rename the row to Darn-Write like loom's -Write rows. | [`darn-write-rename`](design-darn-write-rename.md) | darn |  | loom, shed |
+| 1 | **Darn: rename the writer row to Darn-Write, and close the perch gaps**<br>• Rename Darn to Darn-Write; add a Describe row after the perch, take Darn-Burler's verify budget from darn.yaml, and test an exhausted perch budget. | [`darn-write-rename`](design-darn-write-rename.md) | darn |  | loom, shed |
 
 ### Layer A
 
