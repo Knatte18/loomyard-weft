@@ -38,6 +38,18 @@ All three changes held: every writer forked before writing, every rejection cite
 Missed by every arm: a check against the wrong parent directory, and test names with a banned PATTERN token (caught only by the verify gate); a `pattern-scans` lens is the candidate.
 The agent recommends building twill for Plan-Write at `opus[medium]` with these four lenses and the cited-rejection rule, then benching whether Plan-Review can run one round.
 
+## Bench round 3: twill `opus[high]` (2026-10-11)
+
+Round 2's setup unchanged, writer at `opus[high]`; spend $23.44; record in `.scratch/twill-plan-bench/results.md` (Round 3) and `round-3/`.
+
+| Reference | single `opus[high]` | twill `opus[medium]` | twill `opus[high]` |
+|---|---|---|---|
+| `shuttle-startup-ready` | 1.0 / 0.5 | 0.5 / 0.5 | 0.5 / 0.0 |
+| `run-time-by-role` | 4.5 / 2.5 | 2.0 / 3.5 | 1.0 / 3.5 |
+
+Twill `opus[high]` averaged $5.86 and 12.5 minutes per plan, 12% and about 2.3 minutes over `opus[medium]`.
+The gain on `run-time-by-role` is one key avoided by wording, not by a lens or a read of the vocabulary scan, and lies within the run-to-run spread; the agent recommends `opus[medium]`.
+
 ## Open
 
 - Whether lens review lets Plan-Review run fewer rounds, as the operator chose for Discussion.
