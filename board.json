@@ -975,7 +975,7 @@
       "id": 402,
       "slug": "orch-wake-policy",
       "title": "Batten lands itself; the orch wakes only for judgement",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "feature",
         "batten",
