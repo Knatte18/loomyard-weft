@@ -1,6 +1,6 @@
 # Shuttle reads agent state from hooks first, the pane only where no hook exists
 
-`shuttle-hook-first` · Task · enhancement, shuttle
+`shuttle-hook-first` · Task · enhancement, bug, shuttle, loom
 
 Depends on: [`shuttle-startup-ready`](design-shuttle-startup-ready.md)
 
@@ -102,3 +102,18 @@ The payload shapes those hooks parse are unverified against a real session (an O
 Run the scenario once and commit the captured payloads as fixtures, so the parsers are tested against real shapes.
 
 Do this first in the task: rules keyed on payload fields wait until the captured fixtures confirm the shapes; rules keyed only on hook names do not.
+
+## Folded in: a stray character in an idle input box blocks resume (was note stray-draft-blocks-resume, issue #554)
+
+Seen 2026-10-11 in `small-fixes-oct11`: after a Discussion-review escalation was accepted, `lyx loom resume` refused to wake the parked driver, retries included.
+The driver's pane showed an idle Claude Code UI whose input box held one stray character, `❯ +`, typed by nobody; resume read it as an operator draft, and the run stayed `awaiting` until the operator attached and deleted it.
+Same class as #549's stray `%`.
+
+The operator-draft check stays on the pane after this task, so it needs its own rule:
+- a lone stray non-alphanumeric character in an otherwise idle input box does not block a resume or a start for good: treat it as no draft, or clear it after a bounded wait with no operator activity;
+- every refusal for an operator draft quotes the text it found, so the orch can act without opening the pane.
+
+## Folded in: bound Merriam's fork transcript read (was note fork-transcript-tail-read)
+
+Seen in the `fork-wait-noise` PR #555 review: `internal/shuttleengine/claudeengine` `holdsPendingToolCall` parses each fork transcript in full at every turn-end activity read of Merriam, so a Master with many batches or large fork transcripts pays that parse on every read.
+Read each fork transcript backward from its tail and stop at the first tool result or pending call, so the cost is bounded by the tail, not the transcript length.
