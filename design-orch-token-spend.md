@@ -31,4 +31,6 @@ Its sources need no upkeep: board entries and notes, the in-flight runs' records
 
 - Cheap models (such as Haiku) for the orch's simple agent jobs, like counting; fresh agents cost about $37 in the two measured days.
 - The `orch: 1h` cache lifetime in `shuttle.yaml` never applied, since a distill does not restart the orch process; a restart applies it, worth only a few dollars over two days.
+  Measured 2026-10-11 on the orch's main transcript (3,288 calls, 23 compactions): 39 cache expiries, 37 after more than 5 min idle; cache cost $228 under 5m against $225 simulated under 1h, so 1h saves about 1.6%.
+  Cache reads are 80% of the cache bill, so the lever is the context size each call reads, not the TTL.
 - The operator is also weighing running the orch on Sonnet, since most orch turns run `lyx` commands rather than reason deeply; cache reads cost the same on Opus 5.5 and Sonnet 5.5, so it saves about a quarter of the main session's spend.
