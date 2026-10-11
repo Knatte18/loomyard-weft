@@ -15,7 +15,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Burler runs its round on MultiLLMProducer**<br>• The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review | [`burler-multi-llm`](design-burler-multi-llm.md) | loom | Webster-Bouncer | burler, shed, stencil |
+| 1 | **Burler runs its round on MultiLLMProducer**<br>• The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review | [`burler-multi-llm`](design-burler-multi-llm.md) | loom | Describe | burler, shed, stencil |
 
 #### Normal priority
 
