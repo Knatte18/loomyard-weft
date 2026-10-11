@@ -90,16 +90,22 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 23 | **End the seat hold deferral when the advisor itself is held or dead**<br>• The hold notice deferral only got a shorter cap (10 min); ending it as soon as the advisor is held or dead is not built. | [`hold-deferral-end-on-held`](design-hold-deferral-end-on-held.md) | shuttle |
 | 24 | **Measure the Webster kick-start pack with and without**<br>• Repeat the audit count (grep-for-member calls and whole-file reads per fork) on real loom runs with kickstart_pack on and off. | [`kickstart-pack-measure`](design-kickstart-pack-measure.md) | webster |
 | 25 | **twill-plan bench round 2 pair twb-p2s-tw-1**<br>• Bench pair for twill-plan round 2; torn down after the run | [`twb-p2s-tw-1`](design-twb-p2s-tw-1.md) |  |
+| 26 | **twill-plan bench round 2 pair twb-p2s-tw-2**<br>• Bench pair for twill-plan round 2; torn down after the run | [`twb-p2s-tw-2`](design-twb-p2s-tw-2.md) |  |
+| 27 | **twill-plan bench round 2 pair twb-p2s-oh-2**<br>• Bench pair for twill-plan round 2; torn down after the run | [`twb-p2s-oh-2`](design-twb-p2s-oh-2.md) |  |
+| 28 | **twill-plan bench round 2 pair twb-p2r-tw-1**<br>• Bench pair for twill-plan round 2; torn down after the run | [`twb-p2r-tw-1`](design-twb-p2r-tw-1.md) |  |
+| 29 | **twill-plan bench round 2 pair twb-p2r-tw-2**<br>• Bench pair for twill-plan round 2; torn down after the run | [`twb-p2r-tw-2`](design-twb-p2r-tw-2.md) |  |
+| 30 | **twill-plan bench round 2 pair twb-p2r-oh-1**<br>• Bench pair for twill-plan round 2; torn down after the run | [`twb-p2r-oh-1`](design-twb-p2r-oh-1.md) |  |
+| 31 | **twill-plan bench round 2 pair twb-p2r-oh-2**<br>• Bench pair for twill-plan round 2; torn down after the run | [`twb-p2r-oh-2`](design-twb-p2r-oh-2.md) |  |
 
 #### Low priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 26 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
-| 27 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
-| 28 | **Bench the chair-and-advisors Discussion against the solo writer before switching it on**<br>• Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on | [`discussion-multi-llm-bench`](design-discussion-multi-llm-bench.md) | loom, stencil |
-| 29 | **Discussion advisors: operator-named areas per advisor on top of the landed all-advisors default**<br>• Each discussion_advisors entry takes an optional area (a lens, as in review fans); without one the advisor answers every question | [`discussion-advisor-mode`](design-discussion-advisor-mode.md) | loom, stencil, config |
-| 30 | **Fabric audit: plain readers accept unquoted globs and any flag**<br>• readOnlyCommands readers (cat, grep -r) accept unquoted globs and arbitrary flags | [`audit-reader-globs`](design-audit-reader-globs.md) | webster, fabric |
+| 32 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
+| 33 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
+| 34 | **Bench the chair-and-advisors Discussion against the solo writer before switching it on**<br>• Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on | [`discussion-multi-llm-bench`](design-discussion-multi-llm-bench.md) | loom, stencil |
+| 35 | **Discussion advisors: operator-named areas per advisor on top of the landed all-advisors default**<br>• Each discussion_advisors entry takes an optional area (a lens, as in review fans); without one the advisor answers every question | [`discussion-advisor-mode`](design-discussion-advisor-mode.md) | loom, stencil, config |
+| 36 | **Fabric audit: plain readers accept unquoted globs and any flag**<br>• readOnlyCommands readers (cat, grep -r) accept unquoted globs and arbitrary flags | [`audit-reader-globs`](design-audit-reader-globs.md) | webster, fabric |
 
 ### Features
 
