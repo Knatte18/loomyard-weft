@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -16,10 +16,11 @@ Every terminal batch pass traces the outcome of each `plan:` handle bind.
 1 — plan-test-member-rule — the plan template and the plan-review rubric name existing test members as glyphs
 2 — kickstart-pack-index — the code index builds a batch's pack of resolved member glyphs and unresolved refs
 3 — bind-outcomes — BindHandles returns a per-handle bound-or-failed outcome through a planindex type
-4 — bind-trace — every terminal pass logs one line per owned plan: handle with its outcome and reason
-5 — kickstart-pack-switch — webster.yaml gains the boolean kickstart_pack, template default true
-6 — pack-stencils-and-render — the locate step and the pack section become stencils RenderForkPrompt fills
-7 — begin-batch-builds-pack — begin-batch builds the pack into the fork prompt only and traces its state
+4 — owned-handles — the plan: handle ownership rule moves out of planglyph into the exported planparser.OwnedHandles
+5 — bind-trace — every terminal pass logs one line per owned plan: handle with its outcome and reason
+6 — kickstart-pack-switch — webster.yaml gains the boolean kickstart_pack, template default true
+7 — pack-stencils-and-render — the locate step and the pack section become stencils RenderForkPrompt fills
+8 — begin-batch-builds-pack — begin-batch builds the pack into the fork prompt only and traces its state
 
 ## Shared Decisions
 

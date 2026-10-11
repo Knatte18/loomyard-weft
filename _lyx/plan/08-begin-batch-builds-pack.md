@@ -1,8 +1,9 @@
-# Card 7 — begin-batch builds the pack into the fork prompt
+# Card 8 — begin-batch builds the pack into the fork prompt
 
 **Create:**
-- `plan:internal/websterengine#buildKickstartPack` -> `func buildKickstartPack(deps BeginDeps, index planindex.Index, batch batcher.Batch, number int) (*planindex.Pack, error)`
+- `plan:internal/websterengine#buildKickstartPack` -> `func buildKickstartPack(deps BeginDeps, index planindex.Index, batch batcher.Batch, number int) *planindex.Pack`
 - `plan:internal/websterengine_test#fakeIndex.KickstartPack` -> `func (i *fakeIndex) KickstartPack(plan *planparser.Plan, cards []planparser.Card, worktreeRoot string) (planindex.Pack, error)`
+- `plan:internal/websterengine_test#fakeIndex.ValidateDispatch` -> `func (i *fakeIndex) ValidateDispatch(plan *planparser.Plan, worktreeRoot string, completed, forthcoming []planparser.Card) ([]planindex.Finding, error)`
 - `plan:internal/websterengine_test#TestBeginBatch_KickstartPack` -> `func TestBeginBatch_KickstartPack(t *testing.T)`
 
 **Edit:**
@@ -15,7 +16,8 @@
 - `internal/websterengine#Config`
 - `internal/websterengine#RenderForkPrompt`
 - `internal/websterengine_test#newBeginFixture`
-- `internal/websterengine_test#seedRewritingPlanDir`
+- `internal/websterengine_test#mustFingerprint`
+- `internal/websterengine_test#writeWorktreeFile`
 - `internal/websterengine_test#captureLogs`
 
 **Intent:**
@@ -26,9 +28,11 @@ Decisions D3, D5, D6 and D9: each `begin-batch` builds the batch's kick-start pa
 - With `deps.Config.KickstartPack` false, it returns a nil pack.
 - Otherwise it parses the plan afresh from `deps.Plan.Dir` with `planparser.ParsePlan`.
   The re-resolution may have canonicalized handles on disk, so the pack's spellings must match the card files the fork reads.
-  A parse error is returned, and `BeginBatch` wraps it as a transient error naming `lyx webster begin-batch N` as the way forward, as it does for the card-hash read.
-- When the fresh plan has `language: none`, it returns a nil pack, so the prompt renders as with the switch off.
-- Otherwise it takes the fresh plan's cards whose numbers are the batch's.
+  A parse error degrades the pack and never refuses, as D5 has a failed resolve degrade: it logs at Warn with the error and builds the pack from `deps.Plan` and `batch.Cards` instead.
+  That pack's member glyphs resolve as usual, and only a `plan:` handle the re-resolution canonicalized may keep its draft spelling.
+  `buildKickstartPack` therefore returns no error, and `BeginBatch` gains no refusal.
+- When the plan the pack is built from has `language: none`, it returns a nil pack, so the prompt renders as with the switch off.
+- Otherwise it takes that plan's cards whose numbers are the batch's.
   It calls `index.KickstartPack` with them and `deps.Geom.WorktreeRoot`, the told root (`PATTERN-told-geometry`).
 - On a `KickstartPack` error, it logs at Warn with the error and keeps the degraded pack the index returned.
   `begin-batch` does not refuse.
@@ -46,17 +50,26 @@ An unresolved member glyph, up to every one of a degraded pack's, keeps today's 
 `fakeIndex` gains `pack *planindex.Pack` and `packErr error`.
 When `pack` is set, its new `KickstartPack` override returns `*pack, packErr`.
 Otherwise it forwards to the embedded real index.
+`fakeIndex` also gains `breakPlanAfterValidate bool`.
+Its new `ValidateDispatch` override forwards to the embedded index and then, when the field is set, appends to the plan's `00-overview.md` Card Index a line for card 3, which has no card file.
+`restampFingerprint` accepts that overview, since it keeps its frontmatter and its `## Card Index` and the batch's own card files still hash.
+`planparser.ParsePlan` refuses it, since `parseCardFile` finds no file for card 3, so the fresh parse in `buildKickstartPack` fails after the re-resolution passed.
 
 `TestBeginBatch_KickstartPack` is a new table test in `internal/websterengine/beginbatch_test.go`.
 It runs over `newBeginFixture` with `captureLogs`, at a verbosity that keeps Info lines, so it does not call `t.Parallel`.
+Each row writes its own plan with `plankit.Write` into a `t.TempDir()`, because `buildKickstartPack` reads the plan on disk and `seedPlanDir`'s cards carry no member glyph.
+It parses that plan into `fx.Deps.Plan`, points `fx.Deps.Geom.PlanDir` at it and sets `fx.Deps.State.PlanFingerprint` with `mustFingerprint`, as `TestBeginBatch_RestampsFingerprintEvenWhenPlanDrifts` does.
+The plan's cards 1 and 2 match the fixture's batches, and card 2 is a `Prosa` card on `base.txt`.
+Card 1 carries an `ImpactSummary`, since its `Edit` group makes `ValidateFormat`'s `card-missing-field` require one, and every ref resolves against the fixture worktree, so `ValidateDispatch` reports nothing blocking.
 Rows:
-- Switch on, with the card's `Edit` member glyph written into the fixture worktree: the prompt file carries the pack section with the glyph, file, span and signature.
+- Switch on, card 1 an `Edit` card on a member glyph whose declaration the row writes into the fixture worktree with `writeWorktreeFile`: the prompt file carries the pack section with the glyph, file, span and signature.
   `BeginResult.Advisories` and every other `BeginResult` field carry no pack text.
   The D9 line reads `on` with the counts.
-- Switch off: the prompt carries the quarry fragment and no pack heading, and the D9 line reads `off`.
-- A `language: none` plan with the switch on renders as switch off, and the D9 line reads `language-none`.
+- Switch off over the same plan: the prompt carries the quarry fragment and no pack heading, and the D9 line reads `off`.
+- The same plan written with `language: none` and the switch on: the prompt renders as switch off, and the D9 line reads `language-none`.
 - A `fakeIndex.pack` degraded pack with an `ErrQuarryUnavailable` `packErr`: `begin-batch` succeeds, the prompt lists every entry under the unresolved heading, and a Warn line names the error.
-- With the switch on over `seedRewritingPlanDir`, whose handles the re-resolution canonicalizes: the pack lists the canonical `plan:` spelling now on disk, not the draft.
+- Switch on, card 1 declaring the draft handle `plan:internal/foo#Barr` -> `func Bar()` beside an `Edit` member glyph that resolves, as `seedRewritingPlanDir`'s card 1 does without its unresolvable card 2: the re-resolution canonicalizes the handle on disk, and the pack lists the canonical `plan:internal/foo#Bar` spelling, not the draft.
+- The same plan with `breakPlanAfterValidate` set: `begin-batch` succeeds, a Warn line names the parse error, the pack still lists the resolved member glyph, and the D9 line reads `on`.
 
 Raise the `internal/websterengine` row in `cmd/lyx/testdata/test-budget.yaml` by one more.
 In `internal/websterengine/doc.go`, add a section on the kick-start pack:

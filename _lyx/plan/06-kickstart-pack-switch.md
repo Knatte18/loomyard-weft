@@ -1,4 +1,4 @@
-# Card 5 — The kickstart_pack switch in webster.yaml
+# Card 6 — The kickstart_pack switch in webster.yaml
 
 **Edit:**
 - `internal/websterengine#Config`
@@ -8,7 +8,7 @@
 **Intent:**
 Decision D3: `webster.yaml` gains a boolean `kickstart_pack` with a template default of `true`.
 It turns the begin-batch kick-start pack on and off, so runs with and without the pack can be compared.
-Card 7 reads it.
+Card 8 reads it.
 
 Add `KickstartPack bool` with yaml tag `kickstart_pack` to `Config`.
 Its doc comment says that `true` renders the batch's resolved member glyphs into the fork prompt, and `false` renders the fork prompt as it was before the pack.
@@ -29,4 +29,4 @@ Extend `TestLoadConfig`'s table:
 - A new row has a hand-written file without the key and resolves it to `true`.
 - A new row has `kickstart_pack: maybe` and fails marked `configengine.ErrInvalid`.
 
-**ImpactSummary:** one new field on `Config` and one new template key; no reader acts on it until card 7, and existing `webster.yaml` files keep loading with the key filled to `true`.
+**ImpactSummary:** one new field on `Config` and one new template key; no reader acts on it until card 8, and existing `webster.yaml` files keep loading with the key filled to `true`.

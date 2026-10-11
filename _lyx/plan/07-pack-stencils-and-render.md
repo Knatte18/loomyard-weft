@@ -1,13 +1,14 @@
-# Card 6 — Locate fragments and pack section in the fork prompt
+# Card 7 — Locate fragments and pack section in the fork prompt
 
 **Create:**
 - `contracts/stencils/webster/webster-fragment-locate-quarry.md`
 - `contracts/stencils/webster/webster-fragment-locate-pack.md`
 - `contracts/stencils/webster/webster-fragment-pack-section.md`
+- `contracts/stencils/webster/webster-fragment-pack-empty.md`
 - `plan:contracts/stencils#WebsterFragmentLocateQuarry` -> `var WebsterFragmentLocateQuarry []byte`
 - `plan:contracts/stencils#WebsterFragmentLocatePack` -> `var WebsterFragmentLocatePack []byte`
 - `plan:contracts/stencils#WebsterFragmentPackSection` -> `var WebsterFragmentPackSection []byte`
-- `plan:internal/websterengine#noMemberGlyphsLine` -> `const noMemberGlyphsLine = "no member glyphs on this batch's cards"`
+- `plan:contracts/stencils#WebsterFragmentPackEmpty` -> `var WebsterFragmentPackEmpty []byte`
 - `plan:internal/websterengine#renderPackSection` -> `func renderPackSection(stencilsDir string, pack planindex.Pack) (string, error)`
 
 **Edit:**
@@ -18,21 +19,21 @@
 - `internal/websterengine#RenderForkPrompt` -> `func RenderForkPrompt(batch batcher.Batch, cardGates, batchGate, prevDigest, reportPath, planDir, promptWorktreeRoot, stencilsDir, specsDir, outcomePath, summaryPath string, selfFixCap int, notePath string, pack *planindex.Pack) ([]byte, error)`
 - `internal/websterengine#RenderRecoveryPrompt`
 - `internal/websterengine#BeginBatch`
-- `internal/websterengine_test#renderFork`
+- `internal/websterengine_test#renderFork` -> `func renderFork(batch batcher.Batch, root, stencilsDir, specsDir, prevDigest string, selfFixCap int, notePath string, pack *planindex.Pack) (string, error)`
 - `internal/websterengine_test#forkTemplateMarkerValues`
 - `internal/websterengine_test#recoveryTemplateMarkerValues`
 - `internal/websterengine_test#TestTemplates_FillRequiresEveryRequiredMarker`
 - `internal/websterengine_test#TestRenderPrompts`
 - `internal/websterengine_test#TestRenderPrompts_ParentDirective`
+- `internal/websterengine_test#TestRenderPrompts_FrictionDirective`
 
 **Uses:**
 - `plan:internal/planindex#Pack`
-- `internal/websterengine#noPrecedingBatchDigest`
 
 **Intent:**
 Decisions D7 and D8: the fork prompt's locate step and its pack section become stencils.
 `RenderForkPrompt` picks one by its pack argument.
-Card 7 passes a real pack.
+Card 8 passes a real pack.
 
 Stencils (`PATTERN-stencil-ownership`):
 - Move the two locate sentences of step 2 in `webster-body-implementer.md` verbatim into `webster-fragment-locate-quarry.md`, keeping their indentation.
@@ -45,17 +46,20 @@ Stencils (`PATTERN-stencil-ownership`):
   - Spans are as of the batch's start, so in a file already edited in this batch, find the member by its listed signature.
   - A `plan:` entry names a member a card creates and does not resolve yet, so there is nothing to locate.
   - An unresolved member glyph is located with `lyx quarry resolve` or a grep, since a member glyph names a package, not a file.
-  It does not restate card grammar; step 2 already points at `loom-plan-spec.md` (`PATTERN-producer-pointer-rule`).
+  - Card grammar is in `{{.specs_dir}}/loom/loom-plan-spec.md`.
+  The fragment points there for card grammar and never restates it (`PATTERN-producer-pointer-rule`).
 - `webster-fragment-pack-section.md` holds the pack's fixed heading and lead-in, the `{{.pack_entries}}` marker, an unresolved heading with its lead-in, and the `{{.pack_unresolved}}` marker.
+- `webster-fragment-pack-empty.md` holds D8's one line, "no member glyphs on this batch's cards".
 - The body gains an optional `{{.kickstart_pack}}` marker where the section renders.
   Place it so that an empty fill leaves no byte behind.
 - Each new stencil carries a banner comment like its siblings and is registered as an embedded default in `contracts/stencils/stencils.go`: a `//go:embed` var and an `entries` row beside the other webster stencils.
-- Both `.md` fragments are marker-free, since they are filled verbatim into a marker.
+- The quarry fragment and the empty-pack fragment are marker-free, since they are filled verbatim into a marker.
+  The pack fragment's one marker is `specs_dir`.
 
 Rendering in `internal/websterengine/render.go`:
 - `RenderForkPrompt` takes a trailing `pack *planindex.Pack`.
 - With a nil pack (switch off, or `language: none`), it fills `locate` with the quarry fragment's banner-stripped text and leaves `kickstart_pack` empty.
-- With a non-nil pack, it fills `locate` with the pack fragment and `kickstart_pack` with `renderPackSection`'s output.
+- With a non-nil pack, it fills the pack fragment's `specs_dir` with `specsDir` through `stencil.Fill`, fills `locate` with the result, and fills `kickstart_pack` with `renderPackSection`'s output.
 - `RenderRecoveryPrompt` always fills `locate` with the quarry fragment and never fills `kickstart_pack`.
   Its signature is unchanged.
 - Both prompts list `kickstart_pack` as optional to `stencil.FillOptional`.
@@ -63,15 +67,16 @@ Rendering in `internal/websterengine/render.go`:
 `renderPackSection` reads `webster-fragment-pack-section` through `stencilstore` and fills its two markers with Go-rendered lists only:
 - `pack_entries` is one bullet per resolved entry with its glyph.
   Under each bullet, one sub-bullet per declaration gives `file:start-end` and the signature.
-- When the pack holds no member glyph at all, resolved or unresolved, `pack_entries` is `noMemberGlyphsLine` (D8).
+- When the pack holds no member glyph at all, resolved or unresolved, `pack_entries` is the banner-stripped text of `webster-fragment-pack-empty`, read through `stencilstore` (D8).
   `planparser.IsHandleRef` tells a `plan:` ref from a member glyph.
 - `pack_unresolved` is one bullet per unresolved ref with its reason, or `none`.
 
 `BeginBatch` passes a nil pack on this card.
-The fork prompt keeps rendering exactly as before until card 7 builds a pack.
+The fork prompt keeps rendering exactly as before until card 8 builds a pack.
 
 Tests in `internal/websterengine/template_test.go`:
 - `renderFork` takes the pack.
+- `TestRenderPrompts_FrictionDirective` passes a nil pack.
 - `forkTemplateMarkerValues` and `recoveryTemplateMarkerValues` supply `locate` and `kickstart_pack`.
 - `TestTemplates_FillRequiresEveryRequiredMarker` lists `locate` as required and `kickstart_pack` as optional for fork and recovery.
 - `TestRenderPrompts_ParentDirective` passes a nil pack.
@@ -89,8 +94,9 @@ Tests in `contracts/stencils`:
 - In `wordingClaims`, the `webster-body-implementer.md` row's quarry-locate claim moves to a new `webster-fragment-locate-quarry.md` row, pinning both sentences in full.
   The body row instead pins `{{.locate}}` and `{{.kickstart_pack}}`.
 - A new `webster-fragment-locate-pack.md` row pins each D7 instruction.
-  This includes that a `plan:` entry has nothing to locate, and that an unresolved member glyph is located with `lyx quarry resolve` or a grep.
-- `TestStencils_TopLevelMarkers` gains rows for the three new stencils: none for the two fragments, and `pack_entries` and `pack_unresolved` for the section.
+  This includes that a `plan:` entry has nothing to locate, that an unresolved member glyph is located with `lyx quarry resolve` or a grep, and the `loom-plan-spec.md` pointer.
+- A new `webster-fragment-pack-empty.md` row pins the D8 line.
+- `TestStencils_TopLevelMarkers` gains rows for the four new stencils: none for the quarry and empty-pack fragments, `specs_dir` for the pack fragment, and `pack_entries` and `pack_unresolved` for the section.
 - `TestRegistry_MatchesOnDiskTree` already pins the registration.
 
-**ImpactSummary:** `RenderForkPrompt` gains a parameter whose callers (`BeginBatch` and the template tests) change on this card; with a nil pack the fork prompt and the recovery prompt render the same bytes as before, and three stencils join the registry.
+**ImpactSummary:** `RenderForkPrompt` gains a parameter whose callers (`BeginBatch` and the template tests) change on this card; with a nil pack the fork prompt and the recovery prompt render the same bytes as before, and four stencils join the registry.

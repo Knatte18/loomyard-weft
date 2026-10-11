@@ -21,7 +21,7 @@
 **Intent:**
 Decisions D4 and D5 call for a pack built from a batch's cards and resolved through the code index.
 `internal/websterengine` gets it without linking quarry or the C grammars.
-Card 7 calls it from `BeginBatch`.
+Card 8 calls it from `BeginBatch`.
 
 In `internal/planindex/planindex.go`, declare the pack types with standard-library fields only, so `planindex` keeps its import set:
 - `PackDeclaration`: `File string`, `Start int`, `End int`, `Signature string`.
@@ -80,4 +80,4 @@ It asserts the exact `Pack` for these rows:
 Raise the `internal/planglyph` row in `cmd/lyx/testdata/test-budget.yaml` by one.
 Add `KickstartPack` to `internal/planglyph/doc.go`'s description of what the package serves through `planindex.Index`.
 
-**ImpactSummary:** the `planindex.Index` interface gains one method, implemented by `planglyph#index` and inherited by every embedding test fake; no existing caller's behavior changes until card 7 calls it.
+**ImpactSummary:** the `planindex.Index` interface gains one method, implemented by `planglyph#index` and inherited by every embedding test fake; no existing caller's behavior changes until card 8 calls it.

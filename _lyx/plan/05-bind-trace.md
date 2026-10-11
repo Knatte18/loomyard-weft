@@ -1,4 +1,4 @@
-# Card 4 — Trace one line per plan: handle in every terminal pass
+# Card 5 — Trace one line per plan: handle in every terminal pass
 
 **Create:**
 - `plan:internal/websterengine#bindCardNotDone` -> `const bindCardNotDone planindex.BindReason = "card-not-done"`
@@ -16,6 +16,9 @@
 - `internal/websterengine#PersistRecoveryTerminal`
 - `internal/websterengine/doc.go`
 - `internal/websterengine_test#fakeIndex`
+- `internal/websterengine_test#fakeIndex.Delta`
+- `internal/websterengine_test#fakeDelta`
+- `internal/websterengine_test#fakeDelta.BindHandles`
 - `internal/websterengine_test#TestRecoverBatch_TerminalRunsTheSamePostBatchChecksAsRecordBatch`
 - `cmd/lyx/testdata/test-budget.yaml`
 
@@ -61,8 +64,15 @@ Tests:
 - Give `fakeIndex` a `doneErr` field.
   When it is set, its new `DoneChecks` override returns it.
   Otherwise the override forwards to the embedded index.
+- Give `fakeIndex` a `bindErr` field, which `fakeIndex.Delta` copies into the `fakeDelta` it returns.
+  `fakeDelta` gains the matching `bindErr` field, and its `BindHandles` returns that error, with no findings and no outcomes, when it is set.
+  Otherwise it forwards to `planglyph.BindHandles` as today.
 - `TestRecordBatch_BindTrace` is a new table test in `internal/websterengine/recordbatch_test.go`.
   It drives `RecordBatch` over the record fixture with `captureLogs`, at a verbosity that keeps Info lines, so it does not call `t.Parallel`.
+  The fixture's own plan directory is empty and its batch holds one card, so a bound handle's `RewriteRefs` would fail on `ParsePlan` and no batch would mix two cards.
+  Each row therefore writes its own plan with `plankit.Write` into a `t.TempDir()`, as `writeRecordPlanDir` does, and points `Deps.Geom.PlanDir`, `Deps.Plan`, `Deps.Batches` and batch 1's begun `Cards` at it.
+  The mixed row's batch 1 holds two cards.
+  The row then re-stamps the state with `websterengine.RestampPlanBaseline`, so `PlanEditError` accepts the plan, and sets `fakeIndex.delta` to the created symbols its handles match.
   For each row it asserts the exact set of `webster: handle bind` lines by card, handle, outcome and glyph or reason.
   The rows are:
   - all handles bound
@@ -72,8 +82,7 @@ Tests:
   - an `ErrQuarryUnavailable` delta (`fakeIndex.deltaErr`) logs `delta-unavailable` once per handle and nothing else
   - a `language: none` plan logs `language-none` per handle
   - a card with no handles logs nothing
-  - an `Index` lookup error (`Geom.Index` nil), a `DoneChecks` error (`doneErr`), a plain `Delta` error and a `BindHandles` error log no line
-- For the `BindHandles` error row, make the plan's `RewriteRefs` fail, for example with a read-only plan directory.
+  - an `Index` lookup error (`Geom.Index` nil), a `DoneChecks` error (`doneErr`), a plain `Delta` error and a `BindHandles` error (`bindErr`) log no line
 - Extend `TestRecoverBatch_TerminalRunsTheSamePostBatchChecksAsRecordBatch` so its unlanded card also declares a `plan:` handle.
   Assert that recover-batch logs that handle's `card-not-done` line, which shows the recovery path logs the same lines.
 
