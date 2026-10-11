@@ -22,16 +22,13 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 2 | **Shuttle start and seat holds: tolerate a stray % at the prompt, probe every second, cap the seat hold deferral**<br>• A ready pane with a stray % fails the producer, awaitStartup sleeps 10 s between checks, and a seat chair hold deferral of 20 min can hide a wedged advisor | [`shuttle-startup-ready`](design-shuttle-startup-ready.md) | loom | Discussion-Burler | shuttle, batten |
+| 3 | **Small fixes: tokencount gaps and slug reuse, loom step help, plan rubric file-target rule, batten notice state**<br>• Five small independent fixes across tools/tokencount, loomcli help, the plan review rubric and batten notices | [`small-fixes-oct11`](design-small-fixes-oct11.md) | loom | Worktree-Create | shed, loom, burler, stencil, batten |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | After | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Small fixes: tokencount gaps and slug reuse, loom step help, plan rubric file-target rule, batten notice state**<br>• Five small independent fixes across tools/tokencount, loomcli help, the plan review rubric and batten notices | [`small-fixes-oct11`](design-small-fixes-oct11.md) | loom |  | shed, loom, burler, stencil, batten |
+_None._
 
 ### Layer A
 
