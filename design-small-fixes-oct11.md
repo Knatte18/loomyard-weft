@@ -1,6 +1,6 @@
 # Small fixes: tokencount gaps and slug reuse, loom step help, plan rubric file-target rule, batten notice state
 
-`small-fixes-oct11` · Task · bug, enhancement, shed, loom, burler, stencil, batten · running · Worktree-Create
+`small-fixes-oct11` · Task · bug, enhancement, shed, loom, burler, stencil, batten · running · Loom-Preflight
 
 # tokencount-crash-gap: Tokencount counts a crashed turn's gap as working time
 
