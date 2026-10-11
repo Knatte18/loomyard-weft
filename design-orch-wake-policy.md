@@ -1,6 +1,6 @@
 # Batten lands itself; the orch wakes only for judgement
 
-`orch-wake-policy` · Task · feature, batten, orch · awaiting · PR-Gate
+`orch-wake-policy` · Task · feature, batten, orch · running · PR-Gate
 
 Split out of note `orch-owns-the-loop` (2026-10-11); its session-continue part is now note `orch-continue`.
 
