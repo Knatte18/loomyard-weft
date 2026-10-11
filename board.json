@@ -656,21 +656,6 @@
       "body": "## Why\n\nShuttle types `/color \u003ccolor\u003e` into a fresh session's pane, and with skills it types the skill-load message and then the prompt as well.\nEvery typed send is a chance for a lost or half-landed message, and the operator finds the typing clumsy (2026-10-08).\n\n## Facts (Claude Code 2.1.294 CLI reference)\n\n- No CLI flag, settings key or environment variable sets the session color; `/color` in the session is the only way.\n- The positional `claude \"\u003ctext\u003e\"` submits its text as the first user turn of an interactive session, and a slash command or skill invocation works there.\n- Only one positional prompt exists, so the launch line carries one first turn.\n\n## Proposal\n\n- The launch line carries the first turn in every case: the skill-load message when skills are named, else the prompt, so only the turns after the first are typed.\n- `/color` stays typed, as there is no launch-time alternative, but goes through shuttle's verified send once `shuttle-send` lands, after the session is ready.\n\n## Priority\n\nOperator, 2026-10-08: low; the typed skill load is robust, and the launch line saves only a little time.\n\n## Done on 2026-10-08\n\n`/color` goes through shuttle's verified send after the session is ready (main e12fb6afb, with the settle wait from 7b3d140cb).\nWhat remains is the first proposal bullet: the launch line carries the first turn.\n"
     },
     {
-      "id": 203,
-      "slug": "carryover-verify-on-disk",
-      "title": "Carry-over check re-reads the written file",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "WriteCarryOver checks the splice on the produced lines before the atomic rename; re-reading the file after the rename and checking what is on disk would also catch a concurrent writer",
-      "body": ""
-    },
-    {
       "id": 204,
       "slug": "lyx-halt",
       "title": "lyx pause: stop every run at once, safely and on purpose",
@@ -800,21 +785,6 @@
       "status": ""
     },
     {
-      "id": 283,
-      "slug": "reconcile-stale-default",
-      "title": "Reconcile keeps an old default below the new floor",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "config"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Seen (2026-10-10): after `daemon-wakeups` raised `poll_interval_ms` in the shuttle template to 1000 with a floor of 1000, `lyx config reconcile` kept the prime's and every pair's old default `500`, so every `lyx` command in them logs \"shuttle config: poll_interval_ms is below the floor and is raised to it\".\nThe orch set the prime to 1000 by hand with `lyx config shuttle --set`; pairs created earlier keep warning until they are torn down.\n\nIdea: reconcile updates a value that still equals the old template default, or at least one that the new floor would raise, and says so in its report.\n"
-    },
-    {
       "id": 291,
       "slug": "discussion-multi-llm-bench",
       "title": "Bench the chair-and-advisors Discussion against the solo writer before switching it on",
@@ -898,22 +868,6 @@
       "body": ""
     },
     {
-      "id": 302,
-      "slug": "destructive-verb-confirm",
-      "title": "Destructive no-argument verbs act on a bare invocation",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "fabric",
-        "board"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nIn the #512 incident (2026-10-10) a reviewer probing the CLI ran `lyx fabric unwire` and `lyx board retire-legacy` bare in a task pair; both acted at once, unwiring the pair and deleting legacy board files.\n57243019b closed the route it took (global `--json` never runs a command), but any bare call of these verbs still acts.\n\n## Idea\n\nGive destructive verbs that take no argument (`fabric unwire`, `board retire-legacy`, `board prune`) an explicit confirmation flag, so a bare call prints what it would do and changes nothing."
-    },
-    {
       "id": 306,
       "slug": "plan-refusal-reachability",
       "title": "Plan review does not check that a prescribed refusal is reachable",
@@ -931,21 +885,6 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #516](https://github.com/Knatte18/loomyard/issues/516).\n\nA plan card prescribed a refusal branch (a zero-batch refusal after an accepted auto-rebaseline) with a fixed signature.\nReview of the implementation flagged that no test reaches the refusal; the fixing agent then found that no plan can reach it, because the plan parser refuses a cardless plan before `Run` forms any batch.\nThe branch was kept and its text pinned with a golden test of the error constructor, which conflicts with the rule against code for impossible states.\n\nThis is abnormal because the plan passed its Plan-Bouncer and Plan-Burler rounds with a prescribed refusal that is unreachable by construction, and the contradiction surfaced only after the code was written.\n\nWhat to do: have plan review (or the plan-time checks) verify that every refusal a card prescribes is reachable from some input that passes upstream validation, or require the card to say how a test reaches it.\n\nProvenance: task `webster-replan-state`, from note `burler-webster-r1.md`.\n"
-    },
-    {
-      "id": 311,
-      "slug": "index-note-audience",
-      "title": "Board group index note prints under every audience",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "board"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Webster-Review in cli-surface (PR #519) found the board group's help-index note also prints under the internal audience; the run disputed it as planned. Idea: scope a group's index note by audience like its commands.",
-      "body": ""
     },
     {
       "id": 313,
@@ -995,39 +934,6 @@
       "isolated": false,
       "brief": "readOnlyCommands readers (cat, grep -r) accept unquoted globs and arbitrary flags",
       "body": "From the webster-audit-gaps PR-Gate review (PR #528, 2026-10-10): the classifier now splits lyx, git and sed segments into shell words and bounds unquoted globs there, but the `readOnlyCommands` readers (`cat *`, `grep -r`) still accept unquoted globs and arbitrary flags, as before the task.\nAlso, an unquoted glob after `--` is admitted for `git log` and `git diff`; git treats it as a pathspec, but the reason lives only in the code, not in `doc.go`."
-    },
-    {
-      "id": 321,
-      "slug": "overview-recipe-line",
-      "title": "overview.md still says recipe must be loom or empty",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "batten"
-      ],
-      "issues": [],
-      "priority": "low",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "docs/overview.md:49 predates darn",
-      "body": "From the ide-opt-in PR-Gate review (PR #530, 2026-10-10): `docs/overview.md` around line 49 says a board entry's recipe \"must be `loom` or empty\", but the darn recipe has landed.\nAlso: batten's terminal-window marker is deleted when the child has no status file, so a status file vanishing mid-run (seen once in cli-surface) opens a second window."
-    },
-    {
-      "id": 322,
-      "slug": "darn-prompt-paths",
-      "title": "Darn prompt names a bare-slug board get and a nonexistent final-summary spec path",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "stencil"
-      ],
-      "issues": [
-        531
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #531](https://github.com/Knatte18/loomyard/issues/531).\n\nThe darn agent prompt contains two instructions that fail when followed literally.\n\n- It says to read the task with `lyx board get \u003cslug\u003e`, but `board get` takes a JSON object, so the bare slug fails with `invalid json`.\n  `lyx board get '{\"slug\":\"\u003cslug\u003e\"}'` works.\n- It names the final-summary spec at `\u003chub\u003e/_board/_lyx/specs/final-summary-spec.md`, which does not exist.\n  The spec lives in the repository at `contracts/specs/final-summary-spec.md`, and the agent had to find that copy itself.\n\nBoth are abnormal because the prompt is the agent's authoritative instructions, so each wrong pointer costs a failed call or a search and risks the agent using the wrong source.\n\nFix the darn prompt stencil to emit the JSON-object form of `lyx board get` and the `contracts/specs/final-summary-spec.md` path.\n\nProvenance: task slug `ide-opt-in`, note `Darn.md`.\n"
     },
     {
       "id": 323,
@@ -1109,6 +1015,29 @@
       "isolated": false,
       "brief": "PATTERN overview headroom, test-budget rows that collide after merge, a gofmt check, and the last tmux probe copies onto tmuxkit",
       "body": "Four test- and gate-hygiene faults, merged from notes on 2026-10-11.\nThe first two block runs at Publish only after main is merged in; together they cost several parent decisions and gotos on 2026-10-10.\n\n## PATTERN overview headroom (was `pattern-overview-headroom`)\n\nFrom `gate-test-scope` (2026-10-10): the `PATTERN.md` overview was under its 16384-byte cap on both the task branch and main, but Publish merged main in and the overview reached 16559 bytes.\n`TestOverview_RealFilePassesCheck` then failed in verify, the run blocked at Publish, and it needed a parent decision plus a goto to Webster-Burler.\nThe same block then hit `daemon-wakeups` and `bolt-and-store` the same day, and `daemon-wakeups` landed at 16337 bytes although a parent decision asked for at most 16200: a target only in prose does not stick.\n\nIdea: give the overview headroom, with the overview check warning at about 95% of the cap, or let a shared size cap breached only by the merge be fixed through the Publish fix route.\n\n## Test-budget rows collide (was `test-budget-collision`)\n\nSeen 2026-10-10: webster-audit-gaps and reed-hygiene each added one cmd/lyx test and each raised the cmd/lyx row in `cmd/lyx/testdata/test-budget.yaml` from 73 to 74.\nThe edits are textually identical, so the merge is clean, but the merged package overflows its budget; the failure only shows when verify runs after merging main (both runs blocked on it once) or, worse, on main after Finalize.\n\nIdea: the budget row records a delta per branch, or the verify-after-merge failure message names the merged count to set, so the fix is mechanical and the PR-Gate reviewer need not count tests by hand.\n\n## No gofmt check (was `gate-gofmt-check`)\n\nOn 2026-10-10 `gofmt -l internal/loomcli/` on main (57243019b) lists `internal/loomcli/bootstrap_test.go` (a trailing blank line), and every test tier passed; the `webster-replan-state` conflict agent noticed it.\nNo test or gate step runs gofmt.\n\nIdea: add a gofmt check (`gofmt -l` over the module must print nothing) to the test suite or the verify gate, and fix the file in the same change.\n\n## tmux probe copies (was `tmuxkit-probe-copies`)\n\nFrom `test-suite-weight` Discussion review (2026-10-10, round 3 F2): its D8 moved `reedcli`'s watchdog recognizer and `/proc` probes into `tmuxkit`, but `loomcli` (`smoke_helpers_test.go`) and `orchcli` (`smoke_live_test.go`) keep their own copies.\n\nIdea: fold the `loomcli` and `orchcli` copies onto `tmuxkit`, per `PATTERN-testkit`.\n"
+    },
+    {
+      "id": 328,
+      "slug": "small-fixes-batch",
+      "title": "Small fixes: darn prompt paths, recipe doc line, stale reconcile default, destructive-verb confirm, index note audience, carry-over on disk",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "enhancement",
+        "stencil",
+        "batten",
+        "config",
+        "fabric",
+        "board",
+        "loom"
+      ],
+      "issues": [
+        531
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Six small independent fixes across darn stencil, docs, config reconcile, fabric/board verbs, board help and loom carry-over",
+      "body": "Six small, independent fixes, merged from notes on 2026-10-11.\n\n## Darn prompt paths (was `darn-prompt-paths`, issue #531)\n\nThe darn agent prompt contains two instructions that fail when followed literally.\n\n- It says to read the task with `lyx board get \u003cslug\u003e`, but `board get` takes a JSON object, so the bare slug fails with `invalid json`.\n  `lyx board get '{\"slug\":\"\u003cslug\u003e\"}'` works.\n- It names the final-summary spec at `\u003chub\u003e/_board/_lyx/specs/final-summary-spec.md`, which does not exist.\n  The spec lives in the repository at `contracts/specs/final-summary-spec.md`, and the agent had to find that copy itself.\n\nFix the darn prompt stencil to emit the JSON-object form of `lyx board get` and the `contracts/specs/final-summary-spec.md` path.\n\n## overview.md recipe line and the batten window marker (was `overview-recipe-line`)\n\nFrom the ide-opt-in PR-Gate review (PR #530, 2026-10-10): `docs/overview.md` around line 49 says a board entry's recipe \"must be `loom` or empty\", but the darn recipe has landed.\nAlso: batten's terminal-window marker is deleted when the child has no status file, so a status file vanishing mid-run (seen once in cli-surface) opens a second window.\n\n## Reconcile keeps a stale default (was `reconcile-stale-default`)\n\nSeen (2026-10-10): after `daemon-wakeups` raised `poll_interval_ms` in the shuttle template to 1000 with a floor of 1000, `lyx config reconcile` kept the prime's and every pair's old default `500`, so every `lyx` command in them logs \"shuttle config: poll_interval_ms is below the floor and is raised to it\".\n\nIdea: reconcile updates a value that still equals the old template default, or at least one that the new floor would raise, and says so in its report.\n\n## Destructive no-argument verbs (was `destructive-verb-confirm`)\n\nIn the #512 incident (2026-10-10) a reviewer probing the CLI ran `lyx fabric unwire` and `lyx board retire-legacy` bare in a task pair; both acted at once, unwiring the pair and deleting legacy board files.\n57243019b closed the route it took (global `--json` never runs a command), but any bare call of these verbs still acts.\n\nIdea: give destructive verbs that take no argument (`fabric unwire`, `board retire-legacy`, `board prune`) an explicit confirmation flag, so a bare call prints what it would do and changes nothing.\nEvery caller of these verbs in lyx itself (stencils, skills, the orch role, Go callers) passes the flag in the same change.\n\n## Board group index note audience (was `index-note-audience`)\n\nWebster-Review in cli-surface (PR #519) found the board group's help-index note also prints under the internal audience; the run disputed it as planned.\nIdea: scope a group's index note by audience like its commands.\n\n## Carry-over check on disk (was `carryover-verify-on-disk`)\n\n`WriteCarryOver` checks the splice on the produced lines before the atomic rename; re-reading the file after the rename and checking what is on disk would also catch a concurrent writer.\n"
     }
   ]
 }
