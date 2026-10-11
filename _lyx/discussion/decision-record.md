@@ -209,6 +209,14 @@ Rationale: Round-3 Discussion-Review F1 and F2: finalize in internal/shuttleengi
   - d2-bound-overstates-probe-reach (class design, severity MEDIUM, open in rounds 1, 2, 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - card12-throttle-test-duplicates (class consistency, severity MEDIUM, open in rounds 1)
+  - card5-second-refusal-table (class consistency, severity MEDIUM, open in rounds 1)
+  - d5-slug-choice-untested (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - With a delivered open request and no verdict, no ping is carried before the interval since the latest delivered-at, last-prompt or last-ping time, one is carried at the interval, the next one interval after that, and none after the third in the round.
