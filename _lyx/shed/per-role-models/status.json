@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Burler",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Burler",
-    "last": "Plan-Bouncer → bounced to Plan-Burler",
+    "now": "Plan-Bouncer",
+    "last": "Plan-Burler → bounced to Plan-Bouncer",
     "wait": ""
   },
   "history": [
@@ -102,6 +102,14 @@
       "outcome": "stuck",
       "output": "/home/knatte/Code/loomyard-LYXHUB/per-role-models/_lyx/reviews/plan/round-2-bouncer-ledger.md",
       "at": "2026-10-11T09:03:03Z"
+    },
+    {
+      "producer": "Plan-Burler",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/per-role-models/_lyx/reviews/plan/round-3-review.md",
+      "at": "2026-10-11T09:07:59Z",
+      "gate_attempts": 0,
+      "budget_exempt": true
     }
   ],
   "product": {
