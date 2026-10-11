@@ -60,11 +60,28 @@ The session ran autonomously: every question below was settled by the writer as 
 - Classifying "cannot lock ref" as a git transport failure in `gitexec`: it is a rejected push, not an unreached remote, and `IsTransportFailure`'s contract excludes rejected pushes; fabric's push retry already handles the analogous "(failed)" refusal.
 - A fixed `update-plugins.sh` call in Go: lyx drives other repositories, which have no such script.
 - Holding the prime lock over pull and deploy: a deploy near ten minutes would make a waiting Worktree-Create or Worktree-Teardown go Stuck.
+- Failing the coalesced push on an exhausted remote "cannot lock ref": it would add an error to `fabric sync` and every verb on the coalesced path, where today the refusal is a Warn that leaves commits unpushed.
 - Halting at once on a dirty prime: a prime agent mid-commit would turn a landing into an orch wake.
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1: eight findings, all fixed.
+  BLOCKING F1, D5's freshness test referenced the blocked state's start, which follows the record's write: Publish now stamps `written_at`, matched against the halting attempt.
+  MEDIUM F2, D2's trust claim leaned on a guard that stops only a mistaken write: D2 names PR-Gate approval of the landed tip as the trust anchor and says the deploy may push `prod`.
+  MEDIUM F3, D6 ignored `rebaseRetryTriggers` catching "rejected": D6 names the retried primitives and orders the check before the rebase and `ErrPushRejected` mapping.
+  MEDIUM F4, D5's goto and resume retries were unbounded with the notice suppressed: a time cap, then the blocked notice.
+  MEDIUM F5, Land failure episodes were undefined against their own way forward: D4 defines an episode as one row entry.
+  LOW F6 Goal wake list, F7 permanent "cannot lock ref" in D6's bound, F8 dirty-prime wait only when the pull runs.
+- Round 2: five findings, all fixed.
+  MEDIUM F1, `written_at` precision unstated against shed's whole-second history `at`: D5 fixes one precision and which bound is inclusive.
+  MEDIUM F2, the goto's paused state still woke the orch: D5 suppresses that notice too, the cap's notice names the actual state, and the paused arm resumes on `goto-done` on every entry.
+  MEDIUM F3, PR-Gate reviews only `require_pr_to_base` parents: the deploy runs only for a listed parent.
+  MEDIUM F4, exhausted retries turned the coalesced push's warning into an error: that path keeps its Warn through a sentinel of its own.
+  LOW F5, Scope overstated D6's coverage.
+- Round 3: three findings, all fixed.
+  MEDIUM F1, a capped D5 retry had no recorded end, so a later halt repeated it: the marker gains `capped`, the cap runs from `started`, and an unfinished marker in an unexpected state counts as the retry spent.
+  LOW F2, Scope left out D6's widening of the "(failed)" retry: Scope In names it and Scope Out defers to D6.
+  LOW F3, D2's bound claimed a PR-Gate-reviewed tip the Land row does not check: the bound now states the Land-time list check and the list-edit gap.
 
 ## Question ledger
 
