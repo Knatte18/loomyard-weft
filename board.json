@@ -1048,7 +1048,9 @@
       "title": "A stray character in a driver's input box blocks loom resume",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "shuttle",
+        "loom"
       ],
       "issues": [
         554

@@ -74,7 +74,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 3 | **A stray character in a driver's input box blocks loom resume** | [`stray-draft-blocks-resume`](design-stray-draft-blocks-resume.md) |  |
+| 3 | **A stray character in a driver's input box blocks loom resume** | [`stray-draft-blocks-resume`](design-stray-draft-blocks-resume.md) | shuttle, loom |
 
 ### Enhancements
 

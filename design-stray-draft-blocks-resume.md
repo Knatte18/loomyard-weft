@@ -1,6 +1,6 @@
 # A stray character in a driver's input box blocks loom resume
 
-`stray-draft-blocks-resume` · Note · bug
+`stray-draft-blocks-resume` · Note · bug, shuttle, loom
 
 Imported from [issue #554](https://github.com/Knatte18/loomyard/issues/554).
 
