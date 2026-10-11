@@ -1057,6 +1057,23 @@
       "isolated": false,
       "brief": "The recipe and its writer row are both named darn; rename the row to Darn-Write like loom's -Write rows.",
       "body": "## Seen (operator, 2026-10-11)\n\n`darn` names both the recipe and its writer row `Darn` (engine `DarnWrite`), which is confusing.\nThe loom recipe avoids this: its rows are named for what they do (`Discussion-Write`, `Plan-Write`, `Webster`), and no row is named `Loom`.\n\n## Wanted\n\nRename the darn writer row from `Darn` to `Darn-Write`, matching the loom `-Write` rows and the engine name `DarnWrite`.\nRow names are durable on-disk identities pinned against `internal/loomshed` `Name*` constants, so rename the constant with the row, and keep an in-flight darn run whose status names the old row resumable.\nUpdate every reference: recipe edges (`PR-Gate`'s `on_stuck`, the perch rows `darn-perch` added), docs, stencils and tests.\n"
+    },
+    {
+      "id": 350,
+      "slug": "batten-notice-trim",
+      "title": "Batten notices drop the attach clause and use hub-relative paths",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "batten",
+        "orch"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Remove the trailing cd \u0026\u0026 lyx reed attach from batten notices, and render paths relative to the hub directory.",
+      "body": "## Seen (operator, 2026-10-11)\n\nA batten notice to the orch ends with `; cd \u003cabsolute pair path\u003e \u0026\u0026 lyx reed attach` (`internal/battenshed/notice.go:150`, `renderNotice`), and its report clause carries the stop report's absolute path.\nThe orch knows how to attach to a pair, so the attach clause is noise, and absolute paths repeat the hub directory every orch already works in.\n\n## Wanted\n\n- Drop the attach clause from every batten notice.\n- Render every path in a notice relative to the hub directory (the directory holding the prime and the task pairs), for example `fixer-critical-of-findings/_lyx/shed/fixer-critical-of-findings/drive-reports/drive-report-….md`.\n- Update the notice tests and the docs that quote a notice line.\n"
     }
   ]
 }
