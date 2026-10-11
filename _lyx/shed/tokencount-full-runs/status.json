@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "Publish",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Darn-Bouncer → done",
+    "now": "Publish",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -41,6 +41,13 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/tokencount-full-runs/_lyx/reviews/darn/round-1-bouncer-ledger.md",
       "at": "2026-10-11T14:32:49Z"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/tokencount-full-runs/_lyx/landing/summary.md",
+      "at": "2026-10-11T14:33:16Z",
+      "gate_attempts": 0
     }
   ],
   "product": {
