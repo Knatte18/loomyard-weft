@@ -1003,6 +1003,22 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #554](https://github.com/Knatte18/loomyard/issues/554).\n\n## Seen (2026-10-11, small-fixes-oct11)\n\nAfter a Discussion-review escalation was accepted with `lyx loom circling accept`, `lyx loom resume` in the pair refused to wake the parked driver, and kept refusing on retries.\nThe driver's pane showed a fully idle Claude Code UI whose input box held one stray character, `❯ +`, which nobody had typed on purpose.\nResume read it as an operator draft and refused, so the run stayed `awaiting` at Discussion-Bouncer until the operator attached and deleted the character by hand.\n\nSame class as #549, where a stray `%` after the prompt failed a provider start.\n\n## Workaround\n\nThe operator attaches with `lyx reed attach` in the pair, deletes the stray character, and the orch runs `lyx loom resume`.\n\n## Expected\n\nA lone stray non-alphanumeric character in an otherwise idle input box does not block a resume or a start for good.\nEither treat a single stray marker as no draft, or clear it after a bounded wait with no operator activity, and in any case say in the refusal which text was found so the orch can act without opening the pane.\nMoving readiness detection to hooks (board task `shuttle-hook-first`) covers the idle half; the operator-draft check stays on the pane and needs this rule."
+    },
+    {
+      "id": 393,
+      "slug": "fork-transcript-tail-read",
+      "title": "Merriam turn-end read parses every fork transcript in full",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shuttle"
+      ],
+      "issues": [],
+      "priority": "low",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (2026-10-11, fork-wait-noise PR #555 review)\n\n`claudeengine` `holdsPendingToolCall` parses each fork transcript in full at every turn-end activity read of Merriam.\nA Master with many batches or large fork transcripts pays that parse on every read.\n\n## Idea\n\nRead each fork transcript backward from its tail and stop at the first tool result or pending call, so the cost stays bounded by the tail, not the transcript length."
     }
   ]
 }
