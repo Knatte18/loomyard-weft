@@ -1,0 +1,325 @@
+{
+  "runGuid": "160159b0435420b7b0c3611c91b94790",
+  "planFingerprint": "95cb4375866bd51812598cfd4984f22d1f14be9392fdbc7623fcd769476d6266",
+  "planFileHashes": {
+    "00-overview.md": "2340c58e4dfda369bd5949baf86bf8d98beb24d78616e19fd6798375e6c8cee4",
+    "01-gofmt-guard.md": "9b91023c380ee6a2bf36d961e061f55dcb0020654aae11ffa72b831919aa1ca9",
+    "02-pattern-headroom.md": "981de2b811a59e630449c24933ea9ded8850fc83744d0232d5ce8859d6c8199c",
+    "03-lint-pattern-verb.md": "44af1acf1d14b2624513601df6bad453c2246e9d1fd90561f30a35e1764eeb97",
+    "04-card-gate-lint-pattern.md": "19e117bfd5076d818624b3c150e1821b2323bb729229ec9e9282c75915600837",
+    "05-pair-merge-base-rename.md": "caa78bb60dded5b2da0c1e8b5428a9ded362e6388a3b680d4cf948a1b02f8b34",
+    "06-round-gate-headroom.md": "019abfc09a75d6e859e2a575754c186b316a45b3f21f48c8541ff65ac3f60e46",
+    "07-test-budget-message.md": "b3f6e3be28ebd3420fdb7eef65b6a47fa7b9a993af63d8b3477d481a92d804fe",
+    "08-tmuxkit-proc-probes.md": "f91ef974c67a9fef249d9785220e58d62af3b44270f6170a12501cca0845d37d",
+    "09-proc-reads-through-kit.md": "473c0cdcd2d4be43543a597d58b1678d2f2dbb87fe4a6dcfa5c312aaf732a65e",
+    "10-pattern-overview-trim.md": "bfc414b792b6b05c1898914e458872dece1b7b31c30898aacd554df71cbdc0b2"
+  },
+  "planOverviewFrameHash": "8147996ae6d1c648ee183c0610c9ad06694b8d8181c1bfa1c6f9a488071eedb1",
+  "partition": [
+    {
+      "cards": [
+        "01-gofmt-guard",
+        "02-pattern-headroom",
+        "03-lint-pattern-verb",
+        "04-card-gate-lint-pattern",
+        "05-pair-merge-base-rename"
+      ],
+      "profile": "cautious",
+      "estimate": 315206,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54532,
+        "read_union": 107032,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 468,
+            "reads": {
+              "file:cmd/lyx/testbudget_test.go": 1836,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:internal/fabricengine/pull.go": 4524,
+              "file:internal/pattern/doc.go": 936,
+              "file:internal/reedengine/lifecycle_test.go": 7056,
+              "file:internal/testkit/scankit/scankit.go": 4320,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/boardcli": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/pattern": 2000,
+              "package:internal/reedengine": 2000,
+              "package:internal/shedverbs": 2000,
+              "package:internal/shell": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/boardcli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/pattern": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/shedverbs": 2000,
+              "tests:internal/shell": 2000
+            },
+            "messages": 219.5,
+            "written": 66318
+          },
+          {
+            "card": 2,
+            "card_text": 324,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:internal/pattern/doc.go": 936,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/pattern": 2000
+            },
+            "messages": 50,
+            "written": 15324
+          },
+          {
+            "card": 3,
+            "card_text": 516,
+            "reads": {
+              "file:docs/overview.md": 8280,
+              "file:internal/commentlint/diff.go": 1404,
+              "file:internal/loomcli/lintcomments.go": 876,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/patternlint": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/patternlint": 2000
+            },
+            "messages": 105,
+            "written": 32016
+          },
+          {
+            "card": 4,
+            "card_text": 300,
+            "reads": {
+              "file:contracts/stencils/webster/webster-body-implementer.md": 1260,
+              "file:docs/overview.md": 8280,
+              "file:internal/websterengine/doc.go": 7716,
+              "file:pattern/PATTERN-gate-self-check-parity.md": 276,
+              "file:pattern/PATTERN-test-speed.md": 1236,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:docs": 2000,
+              "package:internal/websterengine": 2000,
+              "package:internal/websterengine_test": 2000,
+              "package:pattern": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:docs": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:internal/websterengine_test": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 93,
+            "written": 28200
+          },
+          {
+            "card": 5,
+            "card_text": 84,
+            "reads": {
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 39,
+            "written": 11784
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-round-gate-headroom",
+        "07-test-budget-message",
+        "08-tmuxkit-proc-probes",
+        "09-proc-reads-through-kit",
+        "10-pattern-overview-trim"
+      ],
+      "profile": "cautious",
+      "estimate": 354984,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61532,
+        "read_union": 100096,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 672,
+            "reads": {
+              "file:contracts/recipes/loom-recipe.yaml": 4932,
+              "file:contracts/specs/refusal-spec.md": 4008,
+              "file:contracts/specs/shed-recipe-spec.md": 1380,
+              "file:internal/loomcli/darnwiring.go": 1740,
+              "file:internal/loomshed/doc.go": 648,
+              "file:pattern/PATTERN-gate-self-check-parity.md": 276,
+              "file:pattern/PATTERN-test-speed.md": 1236,
+              "package:contracts/recipes": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/webstercli": 2000,
+              "package:pattern": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 184.5,
+            "written": 56022
+          },
+          {
+            "card": 7,
+            "card_text": 192,
+            "reads": {
+              "file:pattern/PATTERN-test-speed.md": 1236,
+              "package:cmd/lyx": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 46,
+            "written": 13992
+          },
+          {
+            "card": 8,
+            "card_text": 300,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:internal/testkit/tmuxkit/proc.go": 1116,
+              "file:internal/testkit/tmuxkit/tmuxkit.go": 5628,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/testkit/tmuxkit": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/testkit/tmuxkit": 2000
+            },
+            "messages": 49.5,
+            "written": 15150
+          },
+          {
+            "card": 9,
+            "card_text": 432,
+            "reads": {
+              "file:internal/reedcli/smoke_proctree_test.go": 2076,
+              "package:cmd/lyx": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/pairteardown_test": 2000,
+              "package:internal/reedcli": 2000,
+              "package:internal/shedverbs": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/pairteardown_test": 2000,
+              "tests:internal/reedcli": 2000,
+              "tests:internal/shedverbs": 2000
+            },
+            "messages": 151,
+            "written": 45732
+          },
+          {
+            "card": 10,
+            "card_text": 660,
+            "reads": {
+              "file:PATTERN.md": 1284,
+              "file:internal/pattern/check.go": 1908,
+              "file:pattern/PATTERN-batcher-registry.md": 84,
+              "file:pattern/PATTERN-cliwire-sole-wiring.md": 96,
+              "file:pattern/PATTERN-comment-line-breaks.md": 324,
+              "file:pattern/PATTERN-driver-choice-single-site.md": 420,
+              "file:pattern/PATTERN-fabric-destruction-chokepoint.md": 96,
+              "file:pattern/PATTERN-failure-stop-visible.md": 168,
+              "file:pattern/PATTERN-gitrepo-client-boundary.md": 60,
+              "file:pattern/PATTERN-glyph-conversion-chokepoint.md": 96,
+              "file:pattern/PATTERN-gogit-read-helper.md": 180,
+              "file:pattern/PATTERN-hub-store-gc.md": 216,
+              "file:pattern/PATTERN-hubforge-fixtures.md": 108,
+              "file:pattern/PATTERN-leaf-packages.md": 600,
+              "file:pattern/PATTERN-no-denied-recovery.md": 240,
+              "file:pattern/PATTERN-pane-binary-resolution.md": 216,
+              "file:pattern/PATTERN-ref-shape-registry.md": 192,
+              "file:pattern/PATTERN-refusal-way-forward.md": 108,
+              "file:pattern/PATTERN-review-round.md": 96,
+              "file:pattern/PATTERN-shed-run-directory.md": 240,
+              "file:pattern/PATTERN-shed-verb-set.md": 552,
+              "file:pattern/PATTERN-shuttle-provider-seam.md": 84,
+              "file:pattern/PATTERN-shuttle-stop.md": 168,
+              "file:pattern/PATTERN-sole-parsers.md": 324,
+              "file:pattern/PATTERN-stencil-ownership.md": 120,
+              "file:pattern/PATTERN-test-isolation.md": 756,
+              "file:pattern/PATTERN-test-speed.md": 1236,
+              "file:pattern/PATTERN-testkit.md": 300,
+              "file:pattern/PATTERN-transient-stop.md": 144,
+              "package:.": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 206,
+            "written": 62460
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "f74ecc642ace577ac46b1d79a1521442",
+  "masterSessionId": "1298509d-4f95-4821-a04d-f236737d8974",
+  "batches": {
+    "1": {
+      "slug": "gofmt-guard",
+      "cards": [
+        "01-gofmt-guard",
+        "02-pattern-headroom",
+        "03-lint-pattern-verb",
+        "04-card-gate-lint-pattern",
+        "05-pair-merge-base-rename"
+      ],
+      "cardHashes": {
+        "01-gofmt-guard": "9b91023c380ee6a2bf36d961e061f55dcb0020654aae11ffa72b831919aa1ca9",
+        "02-pattern-headroom": "981de2b811a59e630449c24933ea9ded8850fc83744d0232d5ce8859d6c8199c",
+        "03-lint-pattern-verb": "44af1acf1d14b2624513601df6bad453c2246e9d1fd90561f30a35e1764eeb97",
+        "04-card-gate-lint-pattern": "19e117bfd5076d818624b3c150e1821b2323bb729229ec9e9282c75915600837",
+        "05-pair-merge-base-rename": "caa78bb60dded5b2da0c1e8b5428a9ded362e6388a3b680d4cf948a1b02f8b34"
+      },
+      "startSha": "1e79825ff968848322198e80471cf827fcd53cea",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T08:34:32Z",
+      "sessionId": "1298509d-4f95-4821-a04d-f236737d8974",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
