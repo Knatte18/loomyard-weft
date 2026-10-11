@@ -22,10 +22,13 @@ Autonomous run: no operator answered; every decision below is an auto-pick recor
 - **Reading live status for in-flight runs.** The tool counts finished runs; an in-flight run's later rows are missing anyway.
 - **A separate time table instead of new columns.** The board asks for time beside tokens.
 - **Renaming the output file.** No request for it, and it would break the operator's path.
+- **Applying the weft default only when `-hub` is also defaulted.** It silently skips the status for a named-slug run with `-hub` set; refusing and naming `-weft` tells the operator.
+- **Taking the no-status fallback when an archived seed or status fails to decode.** It hides a shape change behind a run that looks like it had no status.
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1: the interrupt marker ends a turn; orch transcripts stay out of every union and "All runs" sums per-run figures; the weft default is bounded by refusing a foreign `-hub` without `-weft`; the fallback span start is bounded by the slug's next-older archive tag and the first entry's end; Producers intervals take the latest earlier end; the `shedrun` helper's shape and decode-failure behavior are named; restating Auto-mode bullets and Decision 6's counterfactual are cut.
+- Round 2: a `<local-command-stdout>` user line ends a turn, since `/model` and similar commands write user lines that start no model turn; a named slug whose worktree still exists reads no archive tag; the foreign `-hub` check compares absolute, cleaned paths; the duplicated mid-turn crash risk is cut.
 
 ## Question ledger
 
@@ -38,5 +41,10 @@ _No rounds yet._
 - Q: Which archive tag when a slug has several? — Auto-pick: newest tagged commit by committer date. Resolved.
 - Q: Weft default when slugs are named? — Auto-pick: the default applies whenever `-weft` is empty. Resolved.
 - Q: Orch time? — Auto-pick: blank; orch spans runs. Resolved.
+- Q: Do orch sub-agents charged to a run enter its idle union? — Auto-pick: no; parent review is idle. Resolved.
+- Q: Weft default with a foreign `-hub`? — Auto-pick: refuse and name `-weft`. Resolved.
+- Q: A named slug that is still in flight? — Auto-pick: its existing worktree marks it in flight, so no archive tag is read and it takes the no-status fallback. Resolved.
+- Q: Does a local slash command's output start working time? — Auto-pick: no; a `<local-command-stdout>` user line ends the turn. Resolved.
+- Q: An archived seed or status that fails to decode? — Auto-pick: abort the report, naming slug, tag and file. Resolved.
 - Q: Report path and title? — Auto-pick: path unchanged, title "Token usage and time by role". Resolved.
 - Note: `tools/tokencount` sits near its `test-budget.yaml` row; a card whose new top-level tests push past it lists that file under `Edit:`.
