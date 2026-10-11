@@ -1,7 +1,7 @@
 # Card 6 — round-gate-headroom
 
 **Create:**
-- `plan:internal/loomshed#headroomFindings` -> `func headroomFindings(f pattern.Finding) string`
+- `internal/loomshed#headroomFindings`
 
 **Edit:**
 - `internal/loomshed#NewVerifyGate` -> `func NewVerifyGate(worktreeRoot, verifyDir, siteLabel string, command, mergeBase func() (string, error), wholeDiff bool, slots *gateslot.Pool) shuttleengine.Gate`

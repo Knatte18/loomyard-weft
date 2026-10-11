@@ -1,0 +1,11 @@
+status: OK
+head_sha: 7bc69f2ef39dbb7171612bab5ac7b823ae18cc7a
+deviations:
+  - internal/loomshed/seam_enforcement_test.go
+  - cmd/lyx/tierpurity_test.go
+  - internal/pairteardown/teardown_integration_test.go
+  - internal/gatecli/test_integration_test.go
+  - internal/shedverbs/loop_integration_test.go
+  - internal/loomcli/smoke_helpers_test.go
+  - internal/orchcli/smoke_live_test.go
+  - internal/reedcli/smoke_proctree_test.go

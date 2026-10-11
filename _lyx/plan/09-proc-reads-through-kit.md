@@ -14,9 +14,9 @@
 - `internal/loomcli#parentPID`
 
 **Uses:**
-- `plan:internal/testkit/tmuxkit#ProcPPID`
-- `plan:internal/testkit/tmuxkit#ProcState`
-- `plan:internal/testkit/tmuxkit#ProcComm`
+- `internal/testkit/tmuxkit#ProcPPID`
+- `internal/testkit/tmuxkit#ProcState`
+- `internal/testkit/tmuxkit#ProcComm`
 - `internal/testkit/tmuxkit#Pids`
 - `internal/testkit/tmuxkit#ProcArgv`
 - `internal/testkit/tmuxkit#ProcCwd`

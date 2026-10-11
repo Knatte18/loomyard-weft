@@ -1,11 +1,11 @@
 # Card 8 — tmuxkit-proc-probes
 
 **Create:**
-- `plan:internal/testkit/tmuxkit#procStatFields` -> `func procStatFields(pid int) ([]string, bool)`
-- `plan:internal/testkit/tmuxkit#ProcPPID` -> `func ProcPPID(pid int) (int, bool)`
-- `plan:internal/testkit/tmuxkit#ProcState` -> `func ProcState(pid int) (string, bool)`
-- `plan:internal/testkit/tmuxkit#ProcComm` -> `func ProcComm(pid int) (string, bool)`
-- `plan:internal/testkit/tmuxkit#TestProcProbes_OwnProcess` -> `func TestProcProbes_OwnProcess(t *testing.T)`
+- `internal/testkit/tmuxkit#procStatFields`
+- `internal/testkit/tmuxkit#ProcPPID`
+- `internal/testkit/tmuxkit#ProcState`
+- `internal/testkit/tmuxkit#ProcComm`
+- `internal/testkit/tmuxkit#TestProcProbes_OwnProcess`
 
 **Edit:**
 - `internal/testkit/tmuxkit/proc.go`
