@@ -1,6 +1,6 @@
 # Webster forks wake Merriam on every gate wait
 
-`fork-wait-noise` · Task · enhancement, webster, stencil · running · Plan-Bouncer
+`fork-wait-noise` · Task · enhancement, webster, stencil · running · Batchifier
 
 ## Seen (operator, 2026-10-11, pane-inject-safety's Webster run)
 
