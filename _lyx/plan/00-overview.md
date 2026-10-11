@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -20,8 +20,9 @@ The shed engine, the seat engine and the `single` and `seats` behaviour are unto
 5 — twilldirective-package — `internal/twilldirective` renders both stencils from a told directory
 6 — discussion-template-twill-markers — two optional markers in the discussion template, threaded through the composer and the chair table
 7 — twill-config-value — `discussion_producer: twill` loads; the unknown-value error names all three
-8 — discussion-spec-twill — `DiscussionSpec` renders the twill block, resolves the fan and sets fork subagents for `twill`
-9 — discussion-marker-fresh-spawn — Go removes a stale ready marker before a fresh Discussion-Write spawn
+8 — discussion-ready-marker — the ready marker's path accessor and its removal, under `.lyx`
+9 — discussion-spec-twill — `DiscussionSpec` renders the twill block, resolves the fan and sets fork subagents for `twill`
+10 — discussion-marker-fresh-spawn — Go removes a stale ready marker before a fresh Discussion-Write spawn
 
 ## Shared Decisions
 

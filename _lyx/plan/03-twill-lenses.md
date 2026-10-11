@@ -20,4 +20,4 @@ The fan is well under the cluster cap.
 
 `TestConfigTemplate_DecodesAndIsSelfConsistent` raises its lens and fan counts by two and one, adds `twill-discussion` to the per-fan entry counts and to the resolved-order table, so the template still decodes strictly and the new fan resolves through `ResolveFan` in the stated order.
 
-**ImpactSummary:** A data-only change to the embedded template; no Go code reads the new names until card 8.
+**ImpactSummary:** A data-only change to the embedded template; no Go code reads the new names until card 9.
