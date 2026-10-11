@@ -2,8 +2,6 @@
 
 `burler-multi-llm` · Task · enhancement, burler, shed, stencil
 
-Depends on: [`twill-discusser`](design-twill-discusser.md)
-
 ## Goal
 
 Burler's review round runs on `MultiLLMProducer` instead of its own two-agent wiring (operator, 2026-10-08).
