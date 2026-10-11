@@ -47,6 +47,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 5 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`dbench-n0fm`](design-dbench-n0fm.md) | webster, shuttle, stencil, quarry |
 | 6 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`dbench-n0oh`](design-dbench-n0oh.md) | webster, shuttle, stencil, quarry |
 | 7 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`dbench-n0om`](design-dbench-n0om.md) | webster, shuttle, stencil, quarry |
+| 8 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`dbench-solo`](design-dbench-solo.md) | webster, shuttle, stencil, quarry |
 
 ### Enhancements
 
