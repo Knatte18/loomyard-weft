@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **Tokencount reports wall-clock time per role**<br>• tokencount adds each run's wall-clock time per role and its idle time, so the slowest producer shows | [`run-time-by-role`](design-run-time-by-role.md) | loom | Webster-Burler | shed, loom |
+| 2 | **Tokencount reports wall-clock time per role**<br>• tokencount adds each run's wall-clock time per role and its idle time, so the slowest producer shows | [`run-time-by-role`](design-run-time-by-role.md) | loom | Webster-Bouncer | shed, loom |
 
 ### Ready
 
