@@ -39,8 +39,10 @@ The session ran autonomously: no operator answered, so every turn below is a que
 - **Suppress every chair notice while any advisor seat is live.** In Burler the reviewer's pane stays up through the fix, so a stalled fixer would never notify.
 - **Suppress at the turn end only, with no deferral.** A chair that ends its turn the instant after sending a batch sees an advisor not yet started and notifies falsely; a chair suppressed at its turn end whose advisor later goes idle would never notify.
 - **Track batches in a ledger the chair writes.** Adds stencil-enforced bookkeeping Go must trust; session state is already recorded.
+- **Include the shared seat directives unchanged, or include them and name which of their lines Burler overrides.** Their wording opens the channel before acceptance, lets the chair ask for a wrap-up and has the chair end its turn for an up line; carrying both rule sets in one prompt leaves the agent to pick a winner.
 - **Forbid all chair–reviewer messages.** Safe, but discards the one capability the seat table adds; scoping it after acceptance keeps independence.
 - **Make the settle interval a config key.** No one asked to tune it.
+- **Bound the deferral by the advisor's own deadline.** Every seat shares the table timeout and the chair starts first, so the chair's deadline always comes first and the bound never fires; a wedged mid-turn advisor would hide a chair stall for the chair's whole run.
 
 ## Review rounds
 
