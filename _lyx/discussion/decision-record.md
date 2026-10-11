@@ -144,6 +144,12 @@ Decision: D3 and D5 state the premise as: tmux runs a client's queue without int
 
 Rationale: Round 3 F2, probed on tmux 3.6: during a sourced run-shell 'sleep 2' another client saw the file's global on values and an unchained new-session died, while the chained one survived.
 
+### Added after Discussion (parent, 2026-10-11): An interrupted starter leaves the server file-less until its next start
+
+Decision: D3 step 2's claim goes to the server's first starter when that starter reaches its guard invocation. A starter whose boot ends between spawn and guard invocation leaves the server up and unclaimed; it stays file-less until the server's next start, which the last worktree's down causes. No recovery path is built for this.
+
+Rationale: Round 3 F3: later boots see the same pid and start_time and are not candidates, so nothing claims the server; the case needs an interrupted boot in a narrow window and its effect is only a missing personal config until restart, which does not justify more machinery.
+
 ## Constraints
 
 - `PATTERN-test-isolation`: its "Hermetic servers" section states that a server reed starts reads no `~/.tmux.conf`.
