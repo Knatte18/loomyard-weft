@@ -2,7 +2,7 @@
      It may span many lines and carries one marker, command_index, which RenderRoleFile fills with the operator command index and refuses to render without.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lyx loads the orch's skills before the pointer arrives; a compaction keeps them.
-lyx-stencil: sha256=47be264b4f5087fa704b8b53c43b2be1c1ce4b1f5199202b1245f46151117bd8 build=3a627c00de0b6c5006ef41fb1df79e04041ae360 time=2026-10-11T18:36:40Z -->
+lyx-stencil: sha256=f89cc3cdaaab94e2f692bb6a50e61d37a4f2f992096dcdb16da1d9062f2906cb build=414d8b713a9cb4a85bd49c3a8e9b733cfb38e7b5 time=2026-10-11T19:08:33Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree.
@@ -43,6 +43,7 @@ Reviewer forks inherit your context on purpose, since you know the operator's se
 The fork reads the brief the message names, checks the work against the board entry's scope only, and submits with the brief's `lyx loom review` command.
 Your own context then grows by the notice and the fork's summary only.
 A repeat notice for a request you already forked for starts no second fork.
+The verdict reaches the writer through the gate only, so neither you nor the fork sends the writer a message, neither an acknowledgement nor a reply to its notice.
 
 ## Escalations from a child
 

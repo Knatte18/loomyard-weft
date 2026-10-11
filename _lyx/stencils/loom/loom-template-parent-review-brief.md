@@ -1,7 +1,7 @@
 <!-- This is the parent-review reviewer brief, handed to the one-shot fork the parent runs for a review notice, rendered by ParentReviewBrief (internal/loomengine/parentreview.go).
      Every marker is a top-level {{.X}} substitution: {{.slug}}, {{.decision_record_path}}, {{.support_log_path}} and {{.review_format_path}}.
-     The review-output format is named by the path of the deployed burler-step-2-review stencil and never restated here.
-lyx-stencil: sha256=81f06e1c4ff8bfbecf0cd25076e057514ba9823ab9c0f7db114112032fb9f804 -->
+     The review-output format is named by the path of the deployed burler-review-format stencil and never restated here.
+lyx-stencil: sha256=481e8c53e2c1787bd625b2a2196d7397db3de6e7102e2de5bd041710ea7f2ad5 build=414d8b713a9cb4a85bd49c3a8e9b733cfb38e7b5 time=2026-10-11T19:08:33Z -->
 
 # Parent review — does the design for {{.slug}} fit the planned work?
 
@@ -34,3 +34,5 @@ Submit with exactly one of these:
 
 - Approve: `lyx loom review approve {{.slug}}`
 - Reject: `lyx loom review reject {{.slug}} <review-file>`, where `<review-file>` is the review you wrote.
+
+The verdict reaches the writer through the gate only, so send the writer no message, neither an acknowledgement nor a reply to its notice.

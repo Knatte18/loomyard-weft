@@ -12,7 +12,7 @@
      each sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
      The literal `{` / `}` characters around {{.slug}} in the board-read example below are ordinary JSON punctuation, not template syntax — only `{{` begins a template action.
-lyx-stencil: sha256=41d13616f0b7f86164739f48712d743855d9304f46a314bf897ea40ccf206653 build=50cf6a425dbe80a753a35d27747d7ee0b7faea86 time=2026-10-11T11:03:20Z -->
+lyx-stencil: sha256=c3dbad6fe3e49ae59057747d4675df0da5ef40353cce634b12a1d2efabc42f52 build=414d8b713a9cb4a85bd49c3a8e9b733cfb38e7b5 time=2026-10-11T19:08:33Z -->
 
 # Discussion — interview, then write the decision record
 
@@ -142,8 +142,8 @@ Fix whatever it reports, then re-run it until it exits 0 before ending your turn
 
 ## Messages the gate may send after you end your turn
 
-Once `lyx loom validate-discussion` passes, the gate may send you one of two messages.
-Neither changes the design on its own.
+Once `lyx loom validate-discussion` passes, the gate may send you one of three messages.
+None changes the design on its own.
 
 - **A delivery prompt** asks you to notify the parent reviewer and then record the delivery.
   Follow it as written.
@@ -152,6 +152,8 @@ Neither changes the design on its own.
   Read it and address every finding, BLOCKING and NIT alike, by fixing it in the discussion or by answering it.
   Append one parent-review entry to the support log's `## Review rounds`, listing each finding with its disposition: fixed, or answered with the reason.
   Then re-run `lyx loom validate-discussion` until it exits 0, and end your turn.
+- **A keep-alive prompt** asks only that you end your turn.
+  It changes nothing in the discussion.
 
 ## Never use `AskUserQuestion`
 
