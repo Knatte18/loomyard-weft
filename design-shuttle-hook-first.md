@@ -2,8 +2,6 @@
 
 `shuttle-hook-first` · Task · enhancement, bug, shuttle, loom
 
-Depends on: [`shuttle-startup-ready`](design-shuttle-startup-ready.md)
-
 ## Seen (2026-10-11, main at a35c8c2b1)
 
 Claude Code state reaches shuttle through three channels: the recording hooks `buildSettings` installs (`internal/shuttleengine/claudeengine#buildSettings`, settings.go:265-320), pane captures read through reed, and process or file state (reed's pane liveness, Claude's `~/.claude/sessions` registry, transcript files).
