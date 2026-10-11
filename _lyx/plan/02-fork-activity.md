@@ -8,9 +8,10 @@
 - `internal/shuttleengine/claudeengine#Claude`
 - `internal/shuttleengine/claudeengine#New`
 - `internal/shuttleengine/claudeengine#NewFromConfig`
-- `internal/shuttleengine/claudeengine#Claude.TurnEndActivity`
+- `internal/shuttleengine/claudeengine/activity.go`
 - `internal/shuttleengine/claudeengine/activity_test.go`
 - `internal/shuttleengine/claudeengine/doc.go`
+- `internal/shuttleengine#ActivityReader`
 - `internal/shuttleengine#TurnEndActivity`
 - `internal/shuttleengine#AgentActivity`
 - `internal/shuttleengine/doc.go`
@@ -52,6 +53,9 @@ a live call ends or backgrounds at that same ceiling, so the cap never cuts a he
 Docs:
 `TurnEndActivity.TranscriptModTime` and `AgentActivity.LastActivity` in `internal/shuttleengine/activity.go`, and the agent-activity paragraph of `internal/shuttleengine/doc.go`, say the session's last activity, its forks included, rather than the transcript's last write;
 the field names stay.
+The `ActivityReader.TurnEndActivity` interface method doc, the `ActivityReader` and `TurnEndActivity` type docs, the `Claude.TurnEndActivity` doc and the file header of `claudeengine/activity.go` likewise say the reading is the session's last activity, its forks included, with a fork's pending call reading active up to `bashMaxTimeout` past its last write, and that the API-error part reads the main transcript only;
+none keeps a sentence calling the reading the transcript's last write time.
+`claudeengine/activity.go` is a whole-file target because its file header changes beside `Claude.TurnEndActivity`.
 The activity-reading paragraph of `claudeengine/doc.go` describes the fork part, the pending-call reading and its ceiling cap.
 
 Tests, in the existing `TestTurnEndActivity` (no new top-level test):
