@@ -1,0 +1,8 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/cmd/lyx.TestGofmt_ModuleFilesAreFormatted
+      kind: test
+      package: github.com/Knatte18/loomyard/cmd/lyx
+      tail: '    gofmt_test.go:80: internal/websterengine/template_test.go:604: not gofmt-formatted; current "\t\t\t\tcontains:   []string{testCardGates, testBatchGate, testOutcomePath, testSummaryPath},", formatted "\t\t\t\tcontains:    []string{testCardGates, testBatchGate, testOutcomePath, testSummaryPath},"; edit the file to match the formatted line'
+log_path: /home/knatte/Code/loomyard-LYXHUB/plan-glyph-tuning/.lyx/verify/verify-2.log
