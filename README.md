@@ -53,7 +53,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 1 | **Cold review of the merge from the parent before PR-Gate**<br>• When the parent moved while a task ran, loom has a cold-start agent review the result of merging the parent in, since no earlier review saw that interaction. | [`merge-review`](design-merge-review.md) | loom, burler |
 | 2 | **Alignment agent in loom checks a run against the board and runs in flight**<br>• A cold-start agent at parent review and PR-Gate reads the board and in-flight runs records and checks alignment, waking the orch only on an overlap. | [`alignment-agent`](design-alignment-agent.md) | orch, loom |
 | 3 | **Twill for Plan-Write: audit and bench**<br>• Bench a self-forking lens review for the plan writer, as twill does for Discussion | [`twill-plan`](design-twill-plan.md) | loom, stencil |
-| 4 | **Twill-plan bench: sonnet[medium] arm**<br>• Bench twill Plan-Write with the writer on sonnet[medium] under the round-2 setup, to compare with the opus and sonnet[high] arms. | [`twill-plan-sonnet-medium`](design-twill-plan-sonnet-medium.md) | loom, stencil |
+| 4 | **Twill-plan bench: sonnet[medium] twill and single Fable arms**<br>• Bench twill Plan-Write on sonnet[medium], and a single Fable plan writer, under the round-2 setup, against the arms already run. | [`twill-plan-sonnet-medium`](design-twill-plan-sonnet-medium.md) | loom, stencil |
 
 #### Normal priority
 

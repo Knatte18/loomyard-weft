@@ -1,10 +1,15 @@
-# Twill-plan bench: sonnet[medium] arm
+# Twill-plan bench: sonnet[medium] twill and single Fable arms
 
 `twill-plan-sonnet-medium` · Note · enhancement, loom, stencil
 
 ## Idea (operator, 2026-10-11)
 
 Run one more arm of the `twill-plan` bench: twill with the plan writer on `sonnet[medium]`, planned for 2026-10-12.
+
+Second arm, same setup (operator, 2026-10-11): a single Fable 5.1 plan writer without twill, against twill `opus[medium]`.
+At list prices Fable costs 2.5x Opus on output and cache writes and 1.25x on cache hits; on the token volume of twill `opus[medium]` it would cost about $9.60 per plan against $4.90, and on that of single `opus[high]` about $5.50-6.50.
+The question is whether a single Fable writer finds as much as twill `opus[medium]` with fewer turns and no forks.
+Take the Fable model key from the hub's models config; raise the spend cap for this arm accordingly.
 
 ## Setup
 

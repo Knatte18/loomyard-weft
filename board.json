@@ -1038,7 +1038,7 @@
     {
       "id": 419,
       "slug": "twill-plan-sonnet-medium",
-      "title": "Twill-plan bench: sonnet[medium] arm",
+      "title": "Twill-plan bench: sonnet[medium] twill and single Fable arms",
       "kind": "note",
       "labels": [
         "enhancement",
@@ -1049,8 +1049,8 @@
       "priority": "high",
       "depends_on": [],
       "isolated": false,
-      "brief": "Bench twill Plan-Write with the writer on sonnet[medium] under the round-2 setup, to compare with the opus and sonnet[high] arms.",
-      "body": "## Idea (operator, 2026-10-11)\n\nRun one more arm of the `twill-plan` bench: twill with the plan writer on `sonnet[medium]`, planned for 2026-10-12.\n\n## Setup\n\nExactly the round-2 setup of `twill-plan` (directive before Step 3, the four tuned lenses, cited rejections, references `shuttle-startup-ready` and `run-time-by-role`, two runs per reference), graded against the same keys and costed with `tools/tokencount`, so it compares with the four arms already run.\nRecords: `.scratch/twill-plan-bench/results.md`, `results-sonnet.md`, `tokens-*.md`; a fresh agent runs it, spend cap about $20.\n\n## Seen so far\n\n- Twill `sonnet[high]` matched twill `opus[medium]` within spread but cost only 9% less: per plan it used about 1.3x the output and 1.5x the cache reads, from more `validate-plan` passes (one of four first passes succeeded) and more, mostly LOW, fork findings.\n- Two of its 18 rejections kept a key defect; `opus[medium]` kept none.\n- The open question is whether medium effort cuts the token volume enough to pay off, or worsens the judgement and the `validate-plan` retries.\n"
+      "brief": "Bench twill Plan-Write on sonnet[medium], and a single Fable plan writer, under the round-2 setup, against the arms already run.",
+      "body": "## Idea (operator, 2026-10-11)\n\nRun one more arm of the `twill-plan` bench: twill with the plan writer on `sonnet[medium]`, planned for 2026-10-12.\n\nSecond arm, same setup (operator, 2026-10-11): a single Fable 5.1 plan writer without twill, against twill `opus[medium]`.\nAt list prices Fable costs 2.5x Opus on output and cache writes and 1.25x on cache hits; on the token volume of twill `opus[medium]` it would cost about $9.60 per plan against $4.90, and on that of single `opus[high]` about $5.50-6.50.\nThe question is whether a single Fable writer finds as much as twill `opus[medium]` with fewer turns and no forks.\nTake the Fable model key from the hub's models config; raise the spend cap for this arm accordingly.\n\n## Setup\n\nExactly the round-2 setup of `twill-plan` (directive before Step 3, the four tuned lenses, cited rejections, references `shuttle-startup-ready` and `run-time-by-role`, two runs per reference), graded against the same keys and costed with `tools/tokencount`, so it compares with the four arms already run.\nRecords: `.scratch/twill-plan-bench/results.md`, `results-sonnet.md`, `tokens-*.md`; a fresh agent runs it, spend cap about $20.\n\n## Seen so far\n\n- Twill `sonnet[high]` matched twill `opus[medium]` within spread but cost only 9% less: per plan it used about 1.3x the output and 1.5x the cache reads, from more `validate-plan` passes (one of four first passes succeeded) and more, mostly LOW, fork findings.\n- Two of its 18 rejections kept a key defect; `opus[medium]` kept none.\n- The open question is whether medium effort cuts the token volume enough to pay off, or worsens the judgement and the `validate-plan` retries.\n"
     }
   ]
 }
