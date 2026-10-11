@@ -51,14 +51,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- |
 | 1 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-so-sm-1`](design-twb-so-sm-1.md) | webster, shuttle, stencil, quarry |
 | 2 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-so-sh-1`](design-twb-so-sh-1.md) | webster, shuttle, stencil, quarry |
-| 3 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-tw-sh-1`](design-twb-tw-sh-1.md) | webster, shuttle, stencil, quarry |
 
 #### Normal priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 4 | **loom step help contradicts itself and hides the driverless seed**<br>• Help says step bootstraps like start, then that it never seeds; name the driverless seed command | [`loom-step-help-seed`](design-loom-step-help-seed.md) | loom |
-| 5 | **shuttle start dies with 'provider never became ready' when the idle pane shows a stray % after the prompt** | [`shuttle-stray-percent`](design-shuttle-stray-percent.md) | shuttle |
+| 3 | **loom step help contradicts itself and hides the driverless seed**<br>• Help says step bootstraps like start, then that it never seeds; name the driverless seed command | [`loom-step-help-seed`](design-loom-step-help-seed.md) | loom |
+| 4 | **shuttle start dies with 'provider never became ready' when the idle pane shows a stray % after the prompt** | [`shuttle-stray-percent`](design-shuttle-stray-percent.md) | shuttle |
 
 ### Enhancements
 
@@ -101,7 +100,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 28 | **No live test that a paste followed by Enter submits in Claude Code** | [`paste-submit-live-check`](design-paste-submit-live-check.md) | shuttle |
 | 29 | **Tokencount counts a crashed turn's gap as working time** | [`tokencount-crash-gap`](design-tokencount-crash-gap.md) | shed |
 | 30 | **Tokencount mixes older runs' transcripts into a reused slug** | [`tokencount-slug-reuse`](design-tokencount-slug-reuse.md) | shed |
-| 31 | **Discussion chair drafts with advisors, then forks itself for twill lens reviews** | [`seats-twill-combined`](design-seats-twill-combined.md) | loom, stencil, config |
+| 31 | **One seats Discussion producer: advisor count and lens forks as config axes** | [`seats-twill-combined`](design-seats-twill-combined.md) | loom, stencil, config |
 
 #### Low priority
 
