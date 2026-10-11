@@ -1,6 +1,6 @@
 # Small fixes: darn prompt paths, recipe doc line, stale reconcile default, destructive-verb confirm, index note audience, carry-over on disk
 
-`small-fixes-batch` · Task · bug, enhancement, stencil, batten, config, fabric, board, loom · running · Discussion-Bouncer
+`small-fixes-batch` · Task · bug, enhancement, stencil, batten, config, fabric, board, loom · running · Discussion-Burler
 
 Six small, independent fixes, merged from notes on 2026-10-11.
 
