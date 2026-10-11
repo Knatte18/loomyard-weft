@@ -1,6 +1,8 @@
 # Burler runs its round on MultiLLMProducer
 
-`burler-multi-llm` · Note · enhancement, burler, shed, stencil
+`burler-multi-llm` · Task · enhancement, burler, shed, stencil
+
+Depends on: [`twill-discusser`](design-twill-discusser.md)
 
 ## Goal
 
