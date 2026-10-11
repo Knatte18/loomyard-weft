@@ -1,0 +1,20 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/battencli.TestWire_EverySeamFilled
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/battencli
+      tail: '    wire_seams_test.go:95: c.env.ParentReview.RenderKeepAlive is nil after wire(); fill it or list it in intentionallyNil with a reason'
+    - id: github.com/Knatte18/loomyard/internal/testkit/envkit.TestFullEnv_FillsEverySeam
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/testkit/envkit
+      tail: '    envkit_test.go:13: NilSeams(FullEnv) = [ParentReview.RenderKeepAlive]; want none'
+    - id: github.com/Knatte18/loomyard/internal/testkit/envkit.TestNilSeams_ReportsExactPaths
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/testkit/envkit
+      tail: '    envkit_test.go:29: NilSeams = [CommitPlan Landing.PushBranch ParentReview.RenderKeepAlive SeedChild.WriteSeed Shuttle Teardown.Remove]; want [CommitPlan Landing.PushBranch SeedChild.WriteSeed Shuttle Teardown.Remove]'
+    - id: github.com/Knatte18/loomyard/internal/testkit/envkit.TestNilSeams_SkipsNilLegalPaths
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/testkit/envkit
+      tail: '    envkit_test.go:38: NilSeams = [ParentReview.RenderKeepAlive]; want none for nil-legal seams'
+log_path: /home/knatte/Code/loomyard-LYXHUB/parent-review-wait/.lyx/verify/verify-2.log
