@@ -21,7 +21,11 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **TwillDiscusser: a Discussion writer that forks lens reviewers before it writes**<br>• Single-LLM Discussion-Write producer: explore, fork waiting lens forks, write, forks review the record as outsiders; forks keep their cache warm themselves | [`twill-discusser`](design-twill-discusser.md) | loom |  | loom, stencil |
 
 ## Notes
 
@@ -74,16 +78,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 25 | **reed servers ignore ~/.tmux.conf**<br>• Since reed-hygiene (c6dc1fffc) reed servers start with -f /dev/null, so the operator loses prefix, key bindings and escape-time; no reed.yaml key replaces them | `reed-tmux-conf` | reed |
 | 26 | **Startup probe sleeps 10 s between checks; batten window waits for it**<br>• awaitStartup checks the pane every 10 s, so every shuttle start and every batten window waits about 10 s after the agent is up | [`startup-probe-wait`](design-startup-probe-wait.md) | batten |
 | 27 | **Parent-review wait lets the idle writer cache expire before a reject**<br>• A reject after more than 5 minutes resumes the writer or chair on a cold cache; keep it warm with a periodic ping, or resume a fresh session | [`parent-review-cold-cache`](design-parent-review-cold-cache.md) | loom, shuttle |
-| 28 | **TwillDiscusser: a Discussion writer that forks lens reviewers before it writes**<br>• Single-LLM Discussion-Write producer: explore, fork waiting lens forks, write, forks review the record as outsiders; forks keep their cache warm themselves | [`twill-discusser`](design-twill-discusser.md) | loom, stencil |
 
 #### Low priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 29 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
-| 30 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
-| 31 | **Haiku 5.5 for the Bouncer judge: is its ruling simple enough**<br>• The driver already runs on Haiku 5.5; decide per Bouncer row whether the judge ruling is simple enough for Haiku, trial it, and switch only where it holds | [`haiku-roles`](design-haiku-roles.md) | config, loom, burler |
-| 32 | **Fabric audit: plain readers accept unquoted globs and any flag**<br>• readOnlyCommands readers (cat, grep -r) accept unquoted globs and arbitrary flags | [`audit-reader-globs`](design-audit-reader-globs.md) | webster, fabric |
+| 28 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
+| 29 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
+| 30 | **Haiku 5.5 for the Bouncer judge: is its ruling simple enough**<br>• The driver already runs on Haiku 5.5; decide per Bouncer row whether the judge ruling is simple enough for Haiku, trial it, and switch only where it holds | [`haiku-roles`](design-haiku-roles.md) | config, loom, burler |
+| 31 | **Fabric audit: plain readers accept unquoted globs and any flag**<br>• readOnlyCommands readers (cat, grep -r) accept unquoted globs and arbitrary flags | [`audit-reader-globs`](design-audit-reader-globs.md) | webster, fabric |
 
 ### Features
 

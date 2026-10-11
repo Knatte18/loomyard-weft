@@ -1068,7 +1068,7 @@
       "id": 343,
       "slug": "twill-discusser",
       "title": "TwillDiscusser: a Discussion writer that forks lens reviewers before it writes",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "loom",
