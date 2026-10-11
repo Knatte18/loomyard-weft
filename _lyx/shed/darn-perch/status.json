@@ -27,6 +27,13 @@
       "output": "child running → awaiting at PR-Gate",
       "at": "2026-10-11T10:28:06Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at PR-Gate",
+      "at": "2026-10-11T10:30:53Z",
+      "budget_exempt": true
     }
   ]
 }
