@@ -6,6 +6,7 @@
 - `internal/discussionparser#TestWriteCarryOver_RendersConvergedAndAcceptedEntries`
 - `contracts/stencils/loom/loom-template-plan.md`
 - `contracts/stencils/loom/loom-template-rework.md`
+- `contracts/stencils#wordingClaims`
 
 **Intent:**
 Change the converged closing text `renderCarryOver` renders from `converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix` to `converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which`.
@@ -15,10 +16,13 @@ The `CarryOverConverged` doc comment says the same: each listed finding was fixe
 In `TestWriteCarryOver_RendersConvergedAndAcceptedEntries`, the existing `converged` row's expected bullet becomes the new closing text; the `accepted` row is unchanged, and no test is added.
 This card greps for the old text: the only assertion of it is that converged row.
 
+In `wordingClaims`, two whys still call a carry-over entry an unreviewed fix: the `loom-rubric-plan-review.md` row's `is not part of the answer key` claim and the `loom-template-rework.md` row's `never plan an entry as scope` claim.
+Reword each why so it describes an entry's findings as fixed or disputed by the closing round's fixer and unseen by a fresh reviewer; both `must` phrases stay unchanged.
+
 In `loom-template-plan.md` (Step 1) and `loom-template-rework.md` (step 3 of the rework sequence), the carry-over sentence says an entry between the marker lines lists review findings the closing round's fixer fixed or disputed, unseen by a fresh reviewer, and that the entry's fixer report says which; the following sentence, that the reader checks each one against the code and never plans an entry as scope, stays so the pinned claim `never plan an entry as scope` holds.
 No marker is added or removed in either stencil.
 Every edited comment and markdown line uses semantic line breaks.
 
-**ImpactSummary:** One rendered string and one const comment in discussionparser, the one test row that pins the string, and one sentence in each of two loom stencils; no caller signature changes.
+**ImpactSummary:** One rendered string and one const comment in discussionparser, the one test row that pins the string, one sentence in each of two loom stencils and two claim whys whose phrases are unchanged; no caller signature changes.
 
 **Commit:** 3: Converged carry-over entry says fixed or disputed, fixer report says which

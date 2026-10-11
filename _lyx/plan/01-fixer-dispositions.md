@@ -29,7 +29,7 @@ The marker set and the header comment's closing sentence are unchanged.
 
 In `wordingClaims`, in the `burler-step-3-fix.md` row, replace the `only for a factually wrong premise` claim with claims that pin: the `premise false` ground, the `every fix worse` ground, the every-fix bound (a phrase stating that one sound change means the finding is fixed, not disputed), the still-forbidden grounds (severity, size, cost, taste and rubric disagreement never justify a dispute), the ground named per `Disputed` entry, and the fixed-differently mark inside the changes list.
 In the `burler-template-fix-orchestrator.md` row, add a claim that Validate checks each finding's premise and its proposed change.
-Each claim's `why` names D1 to D3 of this task's decision record as provenance.
+Each claim's `why` states the rule its phrase pins, as the neighbouring rows do.
 Every claim is a short distinctive phrase copied from the stencil text as written on this card.
 
 In `pattern/PATTERN-review-round.md`, the opening sentence and the dispute bullet state both dispute grounds, the every-fix bound and the fix-with-own-change outcome, and keep that a dispute never converges a segment on its own and that severity, size, cost or disagreement with the rubric never justify one.
