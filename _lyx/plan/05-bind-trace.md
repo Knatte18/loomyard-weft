@@ -23,8 +23,8 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/planparser#OwnedHandles`
-- `plan:internal/planindex#BindOutcome`
+- `internal/planparser#OwnedHandles`
+- `internal/planindex#BindOutcome`
 - `internal/websterengine_test#captureLogs`
 
 **Intent:**

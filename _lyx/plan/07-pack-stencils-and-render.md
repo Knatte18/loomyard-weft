@@ -28,7 +28,7 @@
 - `internal/websterengine_test#TestRenderPrompts_FrictionDirective`
 
 **Uses:**
-- `plan:internal/planindex#Pack`
+- `internal/planindex#Pack`
 
 **Intent:**
 Decisions D7 and D8: the fork prompt's locate step and its pack section become stencils.

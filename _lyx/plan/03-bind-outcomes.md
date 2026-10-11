@@ -1,10 +1,10 @@
 # Card 3 — A per-handle bind outcome from BindHandles
 
 **Create:**
-- `plan:internal/planindex#BindReason` -> `type BindReason string`
-- `plan:internal/planindex#BindNoDeltaMatch` -> `const BindNoDeltaMatch BindReason = "no-delta-match"`
-- `plan:internal/planindex#BindSiblingUnmatched` -> `const BindSiblingUnmatched BindReason = "sibling-unmatched"`
-- `plan:internal/planindex#BindOutcome` -> `type BindOutcome struct`
+- `internal/planindex#BindReason`
+- `internal/planindex#BindNoDeltaMatch`
+- `internal/planindex#BindSiblingUnmatched`
+- `internal/planindex#BindOutcome`
 
 **Edit:**
 - `internal/planindex#Delta`

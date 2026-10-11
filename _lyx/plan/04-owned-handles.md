@@ -1,7 +1,7 @@
 # Card 4 — Handle ownership moves into planparser
 
 **Create:**
-- `plan:internal/planparser#OwnedHandles` -> `func OwnedHandles(c Card) []string`
+- `internal/planparser#OwnedHandles`
 
 **Delete:**
 - `internal/planglyph#cardOwnHandles`

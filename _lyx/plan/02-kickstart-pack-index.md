@@ -1,14 +1,14 @@
 # Card 2 — The code index builds a batch's kick-start pack
 
 **Create:**
-- `plan:internal/planindex#PackDeclaration` -> `type PackDeclaration struct`
-- `plan:internal/planindex#PackEntry` -> `type PackEntry struct`
-- `plan:internal/planindex#PackUnresolved` -> `type PackUnresolved struct`
-- `plan:internal/planindex#Pack` -> `type Pack struct`
-- `plan:internal/planglyph#KickstartPack` -> `func KickstartPack(plan *planparser.Plan, cards []planparser.Card, worktreeRoot string) (planindex.Pack, error)`
-- `plan:internal/planglyph#index.KickstartPack` -> `func (index) KickstartPack(plan *planparser.Plan, cards []planparser.Card, worktreeRoot string) (planindex.Pack, error)`
+- `internal/planindex#PackDeclaration`
+- `internal/planindex#PackEntry`
+- `internal/planindex#PackUnresolved`
+- `internal/planindex#Pack`
+- `internal/planglyph#KickstartPack`
+- `internal/planglyph#index.KickstartPack`
 - `internal/planglyph/pack_test.go`
-- `plan:internal/planglyph#TestKickstartPack` -> `func TestKickstartPack(t *testing.T)`
+- `internal/planglyph#TestKickstartPack`
 
 **Edit:**
 - `internal/planindex#Index`
