@@ -1,9 +1,9 @@
 # Card 4 — keepalive-wiring
 
 **Create:**
-- `plan:internal/loomengine#DiscussionWriterRole` -> `func DiscussionWriterRole(cfg Config) string`
-- `plan:internal/loomcli#keepAliveInterval` -> `func keepAliveInterval(lifetime, waitBound time.Duration) time.Duration`
-- `plan:internal/loomcli#TestNewParentReviewConfig_KeepAliveInterval` -> `func TestNewParentReviewConfig_KeepAliveInterval(t *testing.T)`
+- `internal/loomengine#DiscussionWriterRole`
+- `internal/loomcli#keepAliveInterval`
+- `internal/loomcli#TestNewParentReviewConfig_KeepAliveInterval`
 
 **Edit:**
 - `internal/loomcli#newParentReviewConfig` -> `func newParentReviewConfig(location *lyxcwd.Location, reedCfg reedengine.Config, cfg loomengine.Config, stencilsDir string, engine shuttleengine.Engine, shuttleCfg shuttleengine.Config) (parentreview.GateConfig, error)`
@@ -13,7 +13,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/loomengine#ParentReviewKeepAlivePrompt`
+- `internal/loomengine#ParentReviewKeepAlivePrompt`
 
 **Intent:**
 D1's wiring: the loom wiring sets the keep-alive interval from the writer's prompt-cache lifetime, which only the engine answers.

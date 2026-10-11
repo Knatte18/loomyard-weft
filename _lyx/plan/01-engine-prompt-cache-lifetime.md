@@ -6,10 +6,10 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#Claude.PromptCacheLifetime` -> `func (c *Claude) PromptCacheLifetime(spec shuttleengine.Spec, cfg shuttleengine.Config) (time.Duration, error)`
-- `plan:internal/shuttleengine#fakeEngine.PromptCacheLifetime` -> `func (e *fakeEngine) PromptCacheLifetime(spec Spec, cfg Config) (time.Duration, error)`
-- `plan:internal/testkit/shuttlefake#Engine.PromptCacheLifetime` -> `func (e *Engine) PromptCacheLifetime(spec shuttleengine.Spec, cfg shuttleengine.Config) (time.Duration, error)`
-- `plan:internal/shuttleengine/claudeengine#TestPromptCacheLifetime` -> `func TestPromptCacheLifetime(t *testing.T)`
+- `internal/shuttleengine/claudeengine#Claude.PromptCacheLifetime`
+- `internal/shuttleengine#fakeEngine.PromptCacheLifetime`
+- `internal/testkit/shuttlefake#Engine.PromptCacheLifetime`
+- `internal/shuttleengine/claudeengine#TestPromptCacheLifetime`
 
 **Uses:**
 - `internal/shuttleengine/claudeengine#resolvePromptCacheTTL`

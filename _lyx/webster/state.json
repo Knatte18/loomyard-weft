@@ -1,12 +1,12 @@
 {
   "runGuid": "07e65081fbbc2ba838ef7daf8e703770",
-  "planFingerprint": "cb92de77e86933e3f8db0f5f4a33f707e59c983f34dbc267b4a6ac5e23b40f58",
+  "planFingerprint": "1913fa9f4fd81b8021af5061aba75aba204cb1b7647edb81b762aa568ce3adc0",
   "planFileHashes": {
     "00-overview.md": "c6b99305ecb3f50a642c20440f5c1dee36a4a13286711c0a36b2885297e3b344",
-    "01-engine-prompt-cache-lifetime.md": "f513bdd2d99f7e03bd58316b80f36f413ac1c4b9865051fc1ee816c0407f3163",
-    "02-keepalive-stencil.md": "ed26e427cb531f65b7fbfe97254dc55c2218917bda2b3ab2beaf89afc854beea",
-    "03-keepalive-pings.md": "7328e28b2599039f8aa88df6af50dc3692045acde4a44a90fdc3f663095eb7ce",
-    "04-keepalive-wiring.md": "3f97f1235b6160fad8f667604a897df9265772b1f8571879ac81a9c94cf7b77a",
+    "01-engine-prompt-cache-lifetime.md": "aba1d89e415eb15f3fbb7d3659ba32120ba99ed148d3c895bb794c0b71b9f2f1",
+    "02-keepalive-stencil.md": "48d417c480b2dca9100cddca9f5c5e383bd9599d74915d075897fa2f493dc155",
+    "03-keepalive-pings.md": "6f2620b8dec9db373b7cdc02ea57c0aba8bc408b87e37974c1f0fff8805a9ab0",
+    "04-keepalive-wiring.md": "69220da8c98c635758032ad88b7c22a10379337b862a7874b33d17ab7498861d",
     "05-parent-review-no-pass-at-cap.md": "f8f3695d4cfb070c3bdd9ddc463b8de2ae990c05ec4eb2d4caac12d0744ad31c",
     "06-parent-review-last-gate.md": "90c8dc431c531243adcea016ac7ca564ddcdae72898bdac09f43b4e2f082dcd7",
     "07-prepare-round-reuses-empty.md": "6b43b5755ad4f5e049a9610888f4b8ed5ac2520f8bfed8f8e73a07eeac3c7ace",
@@ -325,7 +325,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "20f1a3997484d0ee70d876da16bf69d9",
   "masterSessionId": "175a5055-3107-4812-a3df-358934c9aeb4",
   "batches": {
@@ -338,17 +338,34 @@
         "04-keepalive-wiring"
       ],
       "cardHashes": {
-        "01-engine-prompt-cache-lifetime": "f513bdd2d99f7e03bd58316b80f36f413ac1c4b9865051fc1ee816c0407f3163",
-        "02-keepalive-stencil": "ed26e427cb531f65b7fbfe97254dc55c2218917bda2b3ab2beaf89afc854beea",
-        "03-keepalive-pings": "7328e28b2599039f8aa88df6af50dc3692045acde4a44a90fdc3f663095eb7ce",
-        "04-keepalive-wiring": "3f97f1235b6160fad8f667604a897df9265772b1f8571879ac81a9c94cf7b77a"
+        "01-engine-prompt-cache-lifetime": "aba1d89e415eb15f3fbb7d3659ba32120ba99ed148d3c895bb794c0b71b9f2f1",
+        "02-keepalive-stencil": "48d417c480b2dca9100cddca9f5c5e383bd9599d74915d075897fa2f493dc155",
+        "03-keepalive-pings": "6f2620b8dec9db373b7cdc02ea57c0aba8bc408b87e37974c1f0fff8805a9ab0",
+        "04-keepalive-wiring": "69220da8c98c635758032ad88b7c22a10379337b862a7874b33d17ab7498861d"
       },
       "startSha": "86982fa436e864bbbaf0de93016d63baeef01514",
       "kind": "fork",
       "spawnedAt": "2026-10-11T18:41:26Z",
       "sessionId": "175a5055-3107-4812-a3df-358934c9aeb4",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-engine-prompt-cache-lifetime",
+        "status": "done",
+        "head_sha": "95c8e6506e7db24c57ebb5b60ca96e166660ca22"
+      },
+      "cardShas": [
+        "95c8e6506e7db24c57ebb5b60ca96e166660ca22"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-parent-review-wait/175a5055-3107-4812-a3df-358934c9aeb4/subagents/agent-ad3a53bf2bd8218b9.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-parent-review-wait/175a5055-3107-4812-a3df-358934c9aeb4/subagents/agent-ad3a53bf2bd8218b9.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-parent-review-wait/175a5055-3107-4812-a3df-358934c9aeb4/subagents/agent-ad3a53bf2bd8218b9.jsonl"
+  ]
 }

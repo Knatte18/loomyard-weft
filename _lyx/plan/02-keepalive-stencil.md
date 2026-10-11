@@ -2,10 +2,10 @@
 
 **Create:**
 - `contracts/stencils/loom/loom-template-parent-review-keepalive.md`
-- `plan:contracts/stencils#LoomTemplateParentReviewKeepalive` -> `var LoomTemplateParentReviewKeepalive []byte`
-- `plan:internal/loomengine#parentReviewKeepAliveStencil` -> `const parentReviewKeepAliveStencil = "loom-template-parent-review-keepalive"`
-- `plan:internal/loomengine#ParentReviewKeepAlivePrompt` -> `func ParentReviewKeepAlivePrompt(stencilsDir string, ping int) (string, error)`
-- `plan:internal/loomengine#TestParentReviewKeepAlivePrompt_OneLineNamingPing` -> `func TestParentReviewKeepAlivePrompt_OneLineNamingPing(t *testing.T)`
+- `contracts/stencils#LoomTemplateParentReviewKeepalive`
+- `internal/loomengine#parentReviewKeepAliveStencil`
+- `internal/loomengine#ParentReviewKeepAlivePrompt`
+- `internal/loomengine#TestParentReviewKeepAlivePrompt_OneLineNamingPing`
 
 **Edit:**
 - `contracts/stencils#entries`

@@ -1,11 +1,11 @@
 # Card 3 — keepalive-pings
 
 **Create:**
-- `plan:internal/parentreview#maxKeepAlives` -> `const maxKeepAlives = 3`
-- `plan:internal/parentreview#Store.RecordPing` -> `func (s Store) RecordPing() error`
-- `plan:internal/parentreview#closures.pingDue` -> `func (c *closures) pingDue(d Delivery, now time.Time) bool`
-- `plan:internal/parentreview#closures.ping` -> `func (c *closures) ping(r Round) (shuttleengine.GateResult, error)`
-- `plan:internal/parentreview#TestGate_KeepAlive` -> `func TestGate_KeepAlive(t *testing.T)`
+- `internal/parentreview#maxKeepAlives`
+- `internal/parentreview#Store.RecordPing`
+- `internal/parentreview#closures.pingDue`
+- `internal/parentreview#closures.ping`
+- `internal/parentreview#TestGate_KeepAlive`
 
 **Edit:**
 - `internal/parentreview#GateConfig`
