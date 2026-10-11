@@ -1,4 +1,4 @@
-# Shuttle start: tolerate a stray % at the prompt, probe readiness every second
+# Shuttle start and seat holds: tolerate a stray % at the prompt, probe every second, cap the seat hold deferral
 
 `shuttle-startup-ready` · Task · bug, enhancement, shuttle, batten · 
 
@@ -62,3 +62,9 @@ The Claude driver is up within about a second; the rest is a fixed wait.
 1. Probe every `poll_interval_ms` (1 s) during startup and replay the trust-prompt dismissal at most once per 10 s; saves about 8–9 s on every shuttle start, not only batten.
 2. Open the window as soon as the pair's reed session exists rather than after `loom start` exits; saves about 11 s on each batten start, and batten then has to handle a spawn that fails after the window is open.
 3. Minor, under 2 s: Seed-Child's `main-weft` push after the spawn, and no segment-color typing before the window opens.
+
+# Part 3: seat chair hold deferral cap
+
+Seen at burler-multi-llm PR-Gate (PR #552): `holdNoticeMaxDeferral` defers a seat chair's held notice up to 20 min while advisor work is outstanding, so an advisor stuck mid-turn hides a real chair stall for up to 20 min.
+
+Idea: shorten the cap once runs show typical advisor batch times, or end the deferral when the advisor itself is held or dead.

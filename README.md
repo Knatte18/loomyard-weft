@@ -25,7 +25,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Shuttle start: tolerate a stray % at the prompt, probe readiness every second**<br>• A ready pane with a stray % after the prompt fails the whole producer, and awaitStartup sleeps 10 s between checks on every agent start | [`shuttle-startup-ready`](design-shuttle-startup-ready.md) | loom |  | shuttle, batten |
+| 1 | **Shuttle start and seat holds: tolerate a stray % at the prompt, probe every second, cap the seat hold deferral**<br>• A ready pane with a stray % fails the producer, awaitStartup sleeps 10 s between checks, and a seat chair hold deferral of 20 min can hide a wedged advisor | [`shuttle-startup-ready`](design-shuttle-startup-ready.md) | loom |  | shuttle, batten |
 
 ### Layer A
 
