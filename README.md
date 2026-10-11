@@ -22,7 +22,6 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 2 | **Batten notices: no attach clause, pair-relative paths, wait is not an error**<br>• Remove the trailing cd && lyx reed attach from batten notices, and render paths relative to the hub directory. | [`batten-notice-trim`](design-batten-notice-trim.md) | darn | Darn-Write | batten, orch |
-| 3 | **Tokencount reports wall-clock time per role**<br>• tokencount adds each run's wall-clock time per role and its idle time, so the slowest producer shows | [`run-time-by-role`](design-run-time-by-role.md) | loom | Finalize | shed, loom |
 
 ### Ready
 
@@ -162,3 +161,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 32 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) | loom, stencil |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Labels |
+| --- | --- | --- | --- |
+| 1 | **Tokencount reports wall-clock time per role**<br>• tokencount adds each run's wall-clock time per role and its idle time, so the slowest producer shows | [`run-time-by-role`](design-run-time-by-role.md) | shed, loom |
