@@ -15,7 +15,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Batten lands itself; the orch wakes only for judgement**<br>• Batten runs the landing steps after Finalize and handles notices that name their own action, so the orch is woken only for parent review, unsettled escalations, PR-Gate and unknown halts. | [`orch-wake-policy`](design-orch-wake-policy.md) | loom | Publish | batten, orch |
+| 1 | **Batten lands itself; the orch wakes only for judgement**<br>• Batten runs the landing steps after Finalize and handles notices that name their own action, so the orch is woken only for parent review, unsettled escalations, PR-Gate and unknown halts. | [`orch-wake-policy`](design-orch-wake-policy.md) | loom | PR-Gate | batten, orch |
 | 2 | **Config layers and per-task run settings**<br>• Config resolves through a repo default, the worktree file and an untracked local override under .lyx/; a board task carries run settings that batten writes into the pair local override. | [`config-layers-run-settings`](design-config-layers-run-settings.md) | loom | awaiting · Discussion-Bouncer | config, batten, board |
 
 #### Normal priority
