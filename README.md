@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **Model keys per judge row, seed and PR-Rework; judge verdict and usage fixes**<br>• Own model keys for each Bouncer row judge and seed pass and for PR-Rework; Go refuses CONVERGED with an open BLOCKING finding; judge and seed usage recorded | [`per-role-models`](design-per-role-models.md) | loom | Webster-Bouncer | config, loom, burler |
+| 2 | **Model keys per judge row, seed and PR-Rework; judge verdict and usage fixes**<br>• Own model keys for each Bouncer row judge and seed pass and for PR-Rework; Go refuses CONVERGED with an open BLOCKING finding; judge and seed usage recorded | [`per-role-models`](design-per-role-models.md) | loom | Describe | config, loom, burler |
 
 ### Ready
 
