@@ -1,0 +1,303 @@
+{
+  "runGuid": "16f8ef8ffc1a54c19e0caf9289e492ae",
+  "planFingerprint": "fd2be82f712af8f1542e0c21bba4557bc59c2d45e13d6f536e4ff1e076c38bea",
+  "planFileHashes": {
+    "00-overview.md": "de29bdb2c824016e0478f52464fdc14037bd0cd830ec0318eeb12a08e820ee0b",
+    "01-hook-recording-capture.md": "a94249aec00c055d3fbbdab511509b1ad1a76ba0a4b4a014d3fd10e685fbd81b",
+    "02-session-start-source.md": "83eebb1cbb685e46e5fbb1dfe618614a13505af0ce0394b94061ebc113709b78",
+    "03-idle-fresh-fold.md": "1a590bc92d8ef4a3b93ab4c39c0e04ee035cf305a8b59be7c15e9d9b00048b88",
+    "04-permission-request-ask.md": "566fc67cb7700b063fd583daf6a528208b229fc039514c7cac67229591034d09",
+    "05-fork-transcript-tail.md": "8cb2f574d44565cee39c435ea9170a7b929539c9c6185b60f9bed7b2059a11af",
+    "06-clear-compact-confirm.md": "08938f3d113e1605742e1b0b37e7a358f3f84dfd67aec7edecdf3033f519314c",
+    "07-startup-needs-session-start.md": "b6704b8215411a6ebdb4b9beeefed6061d4fc55da10be1f7e02f7773a2b9c7a8",
+    "08-dead-session-ends-run.md": "13602846bf48f5fb6d32859473307deea1addbce3aaa0e0e37dc684fc6ff6812",
+    "09-stray-input-reader.md": "c8d185fbfdb8a237fa8fe4eee247d6e74b7419e2d3e2c622e256161c8160dc23",
+    "10-stray-character-clear.md": "1c96df3b998af2144c238cf9bf4cb0f2ce3a0c5ea76a34ba52de95efee653318",
+    "11-batten-busy-notice-box.md": "3d5eebccdd8d70be4020daadd0c73ce1f25c4f5d7444142cfee31b4c6a73905c"
+  },
+  "planOverviewFrameHash": "b4c69095c17f8280e7ca3425daac525ba95e8d6eea154a2832851b792bbc5f4f",
+  "partition": [
+    {
+      "cards": [
+        "01-hook-recording-capture",
+        "02-session-start-source",
+        "03-idle-fresh-fold",
+        "04-permission-request-ask",
+        "05-fork-transcript-tail"
+      ],
+      "profile": "cautious",
+      "estimate": 357200,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54352,
+        "read_union": 162760,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 636,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:internal/shuttlecli/smoke_turns_test.go": 5676,
+              "file:internal/shuttleengine/claudeengine/doc.go": 1920,
+              "file:internal/shuttleengine/claudeengine/settings_test.go": 7884,
+              "file:internal/shuttleengine/claudeengine/signals_test.go": 3552,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttlecli": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/corpus/hook-capture": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/corpus/hook-capture": 2000
+            },
+            "messages": 83,
+            "written": 25536
+          },
+          {
+            "card": 2,
+            "card_text": 384,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 1920,
+              "file:internal/shuttleengine/claudeengine/signals_test.go": 3552,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 90,
+            "written": 27384
+          },
+          {
+            "card": 3,
+            "card_text": 660,
+            "reads": {
+              "file:docs/overview.md": 8400,
+              "file:internal/orchengine/doc.go": 4584,
+              "file:internal/orchengine/watcher_test.go": 29652,
+              "file:internal/shuttleengine/claudeengine/doc.go": 1920,
+              "file:internal/shuttleengine/doc.go": 3792,
+              "file:internal/shuttleengine/fakes_test.go": 10344,
+              "file:internal/shuttleengine/run_test.go": 22200,
+              "file:internal/shuttleengine/session_test.go": 7212,
+              "file:internal/shuttleengine/sessionstate_test.go": 3420,
+              "file:internal/shuttleengine/startup_test.go": 17508,
+              "file:internal/shuttleengine/waitshadow_test.go": 2928,
+              "package:docs": 2000,
+              "package:internal/orchengine": 2000,
+              "package:internal/shuttlecli": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/corpus/hook-capture": 2000,
+              "tests:docs": 2000,
+              "tests:internal/orchengine": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/corpus/hook-capture": 2000
+            },
+            "messages": 165,
+            "written": 50160
+          },
+          {
+            "card": 4,
+            "card_text": 384,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 1920,
+              "file:internal/shuttleengine/claudeengine/signals_test.go": 3552,
+              "file:internal/shuttleengine/doc.go": 3792,
+              "file:internal/shuttleengine/sessionstate_test.go": 3420,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/corpus/hook-capture": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/corpus/hook-capture": 2000
+            },
+            "messages": 82,
+            "written": 24984
+          },
+          {
+            "card": 5,
+            "card_text": 324,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/activity_test.go": 1668,
+              "file:internal/shuttleengine/claudeengine/doc.go": 1920,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 39,
+            "written": 12024
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-clear-compact-confirm",
+        "07-startup-needs-session-start",
+        "08-dead-session-ends-run",
+        "09-stray-input-reader",
+        "10-stray-character-clear",
+        "11-batten-busy-notice-box"
+      ],
+      "profile": "cautious",
+      "estimate": 345524,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61352,
+        "read_union": 140400,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 420,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 3792,
+              "file:internal/shuttleengine/fakes_test.go": 10344,
+              "file:internal/shuttleengine/session_test.go": 7212,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 75,
+            "written": 22920
+          },
+          {
+            "card": 7,
+            "card_text": 564,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 1920,
+              "file:internal/shuttleengine/claudeengine/settings_test.go": 7884,
+              "file:internal/shuttleengine/doc.go": 3792,
+              "file:internal/shuttleengine/fakes_test.go": 10344,
+              "file:internal/shuttleengine/startup_test.go": 17508,
+              "file:internal/shuttleengine/wait_test.go": 16284,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 112,
+            "written": 34164
+          },
+          {
+            "card": 8,
+            "card_text": 660,
+            "reads": {
+              "file:docs/overview.md": 8400,
+              "file:internal/shuttleengine/completionsignal_enforcement_test.go": 4260,
+              "file:internal/shuttleengine/doc.go": 3792,
+              "file:internal/shuttleengine/fakes_test.go": 10344,
+              "file:internal/shuttleengine/startup_test.go": 17508,
+              "file:internal/shuttleengine/wait_test.go": 16284,
+              "package:docs": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 93,
+            "written": 28560
+          },
+          {
+            "card": 9,
+            "card_text": 276,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:internal/shuttleengine/claudeengine/doc.go": 1920,
+              "file:internal/shuttleengine/claudeengine/session_test.go": 2640,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 58,
+            "written": 17676
+          },
+          {
+            "card": 10,
+            "card_text": 624,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 1920,
+              "file:internal/shuttleengine/doc.go": 3792,
+              "file:internal/shuttleengine/fakes_test.go": 10344,
+              "file:internal/shuttleengine/run_test.go": 22200,
+              "file:pattern/PATTERN-pane-text-injection.md": 204,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:pattern": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 102,
+            "written": 31224
+          },
+          {
+            "card": 11,
+            "card_text": 228,
+            "reads": {
+              "file:internal/battenshed/doc.go": 1236,
+              "file:internal/battenshed/innerrun_awaiting_test.go": 8112,
+              "package:internal/battenshed": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 30,
+            "written": 9228
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "35ec47d9193eaad9dd5dd8acd4e263ca",
+  "masterSessionId": "083e7d38-68fd-45af-a62f-b92257a1887b",
+  "batches": {
+    "1": {
+      "slug": "hook-recording-capture",
+      "cards": [
+        "01-hook-recording-capture",
+        "02-session-start-source",
+        "03-idle-fresh-fold",
+        "04-permission-request-ask",
+        "05-fork-transcript-tail"
+      ],
+      "cardHashes": {
+        "01-hook-recording-capture": "a94249aec00c055d3fbbdab511509b1ad1a76ba0a4b4a014d3fd10e685fbd81b",
+        "02-session-start-source": "83eebb1cbb685e46e5fbb1dfe618614a13505af0ce0394b94061ebc113709b78",
+        "03-idle-fresh-fold": "1a590bc92d8ef4a3b93ab4c39c0e04ee035cf305a8b59be7c15e9d9b00048b88",
+        "04-permission-request-ask": "566fc67cb7700b063fd583daf6a528208b229fc039514c7cac67229591034d09",
+        "05-fork-transcript-tail": "8cb2f574d44565cee39c435ea9170a7b929539c9c6185b60f9bed7b2059a11af"
+      },
+      "startSha": "56717045782c08584bf18f9685bd3325a565f9d3",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T15:21:57Z",
+      "sessionId": "083e7d38-68fd-45af-a62f-b92257a1887b",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
