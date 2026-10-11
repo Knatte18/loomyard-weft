@@ -14,7 +14,7 @@
 - `internal/hubgeom/doc.go`
 
 **Create:**
-- `plan:internal/hubgeom#burlerGeometry` -> `func burlerGeometry(l *lyxcwd.Location, prime bool) burlerengine.Geometry`
+- `internal/hubgeom#burlerGeometry`
 
 **Uses:**
 - `internal/hubgeom#isPrimeWorktree`

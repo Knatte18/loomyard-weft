@@ -1,0 +1,17 @@
+status: OK
+head_sha: 154d4adf555dae584db69c428a987ded381734ed
+deviations:
+  - internal/seatengine/work.go
+  - internal/shuttleengine/session.go
+  - internal/shuttleengine/hold.go
+  - internal/shuttleengine/wait.go
+  - internal/shuttleengine/run.go
+  - internal/seatengine/shuttle.go
+  - internal/seatengine/resume.go
+  - internal/seatengine/prompt.go
+  - internal/seatengine/table.go
+  - internal/seatengine/engine.go
+  - internal/shuttleengine/spec.go
+  - internal/burlerengine/geometry.go
+  - internal/hubgeom/hubgeom.go
+  - internal/standalonegeom/burlergeom.go

@@ -1,14 +1,14 @@
 {
   "runGuid": "d14c5e3b8e8375429e867b8d279cc510",
-  "planFingerprint": "6812cf34dc73f43db091c2402e6fe38c7bd61839860830db4fc6c661e536751c",
+  "planFingerprint": "8a44eb7aaad87cd9feef4b1cd91146d85e1e6890aa6c1e27d87a5561214e88db",
   "planFileHashes": {
     "00-overview.md": "ea0aad7481a45c994ba5490c8064e16bda1cb89f6ae3e04652db50f3a5c7a1ca",
-    "01-shuttle-hold-deferral.md": "cf32fa69eab8ca75f3817312d43eac2eb33e5b142a09ae5e98766214dc03a8f6",
-    "02-shuttle-run-session-state.md": "7e50ba668cad8d61d97fc932af474d7bed4a5fa85bf6aba0ec1fb8642a589e53",
+    "01-shuttle-hold-deferral.md": "b1999bc81d4f86f5e9825f195c2def62e78c8ca0cdf4534b016f0f89f8df2d4f",
+    "02-shuttle-run-session-state.md": "68a60f697a69f3123a1fd85c0c8bcb634c70f2b4f109099661cc27086a1e25cf",
     "03-seat-gate-fork-round.md": "2421a25507ac49b5979d66d155deb0f242fd7c12b38a466d6db84638d8c0270e",
     "04-seat-required-advisor.md": "bde22825486e990233ab6beaa3d7b769868f48292c4ee17e03c54f344d9549a0",
-    "05-seat-chair-hold-deferral.md": "227c0ddde7e61907a78dbf4356028d62c63396cfa0ddeb072af4ea247d3af33c",
-    "06-burler-geometry-names.md": "f7e5aa2c59e8dd6d91717e26d3fc709bc0e4b407d2b77622ffcb270ff6bb5ddf",
+    "05-seat-chair-hold-deferral.md": "702db07a2e9c9ecb6f6e766bc3cb2c815e76e7c7bd0325f24148b8133e65df95",
+    "06-burler-geometry-names.md": "8bf9678b129d9cff02a5ef99618185abe187c3e291ed2e88e0869679b522807a",
     "07-retire-fix-start.md": "4181de31ae5e399d78e1392174970dbea5bc23a733cfe1eddcd2ee0903223632",
     "08-burler-seat-table.md": "535aea5427b9063b847d650d59298013acce0404709abe2ea930a741ecd6e766",
     "09-burler-seat-stencils.md": "e53c1e30c7101739e42105f144b904ab46127e0ee1f26336ffbd1a0fc240dcdd",
@@ -301,7 +301,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "d1c39658b55d6ed78e0cdce70c2493f6",
   "masterSessionId": "37436d3e-55ad-4522-86d3-05fdee6ccb1e",
   "batches": {
@@ -316,19 +316,52 @@
         "06-burler-geometry-names"
       ],
       "cardHashes": {
-        "01-shuttle-hold-deferral": "cf32fa69eab8ca75f3817312d43eac2eb33e5b142a09ae5e98766214dc03a8f6",
-        "02-shuttle-run-session-state": "7e50ba668cad8d61d97fc932af474d7bed4a5fa85bf6aba0ec1fb8642a589e53",
+        "01-shuttle-hold-deferral": "b1999bc81d4f86f5e9825f195c2def62e78c8ca0cdf4534b016f0f89f8df2d4f",
+        "02-shuttle-run-session-state": "68a60f697a69f3123a1fd85c0c8bcb634c70f2b4f109099661cc27086a1e25cf",
         "03-seat-gate-fork-round": "2421a25507ac49b5979d66d155deb0f242fd7c12b38a466d6db84638d8c0270e",
         "04-seat-required-advisor": "bde22825486e990233ab6beaa3d7b769868f48292c4ee17e03c54f344d9549a0",
-        "05-seat-chair-hold-deferral": "227c0ddde7e61907a78dbf4356028d62c63396cfa0ddeb072af4ea247d3af33c",
-        "06-burler-geometry-names": "f7e5aa2c59e8dd6d91717e26d3fc709bc0e4b407d2b77622ffcb270ff6bb5ddf"
+        "05-seat-chair-hold-deferral": "702db07a2e9c9ecb6f6e766bc3cb2c815e76e7c7bd0325f24148b8133e65df95",
+        "06-burler-geometry-names": "8bf9678b129d9cff02a5ef99618185abe187c3e291ed2e88e0869679b522807a"
       },
       "startSha": "50cf6a425dbe80a753a35d27747d7ee0b7faea86",
       "kind": "fork",
       "spawnedAt": "2026-10-11T11:55:26Z",
       "sessionId": "37436d3e-55ad-4522-86d3-05fdee6ccb1e",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-shuttle-hold-deferral",
+        "status": "done",
+        "head_sha": "154d4adf555dae584db69c428a987ded381734ed",
+        "deviations": [
+          "internal/seatengine/work.go",
+          "internal/shuttleengine/session.go",
+          "internal/shuttleengine/hold.go",
+          "internal/shuttleengine/wait.go",
+          "internal/shuttleengine/run.go",
+          "internal/seatengine/shuttle.go",
+          "internal/seatengine/resume.go",
+          "internal/seatengine/prompt.go",
+          "internal/seatengine/table.go",
+          "internal/seatengine/engine.go",
+          "internal/shuttleengine/spec.go",
+          "internal/burlerengine/geometry.go",
+          "internal/hubgeom/hubgeom.go",
+          "internal/standalonegeom/burlergeom.go"
+        ]
+      },
+      "cardShas": [
+        "154d4adf555dae584db69c428a987ded381734ed"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-multi-llm/37436d3e-55ad-4522-86d3-05fdee6ccb1e/subagents/agent-a304b9be54b06aba7.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-multi-llm/37436d3e-55ad-4522-86d3-05fdee6ccb1e/subagents/agent-a304b9be54b06aba7.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-multi-llm/37436d3e-55ad-4522-86d3-05fdee6ccb1e/subagents/agent-a304b9be54b06aba7.jsonl"
+  ]
 }

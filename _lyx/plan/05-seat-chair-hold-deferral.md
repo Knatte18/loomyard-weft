@@ -16,13 +16,13 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/seatengine#advisorWork` -> `type advisorWork struct`
-- `plan:internal/seatengine#advisorWork.add` -> `func (w *advisorWork) add(run *seatRun)`
-- `plan:internal/seatengine#advisorWork.bindSender` -> `func (w *advisorWork) bindSender(sender *noticeSender)`
-- `plan:internal/seatengine#advisorWork.outstanding` -> `func (w *advisorWork) outstanding() bool`
+- `internal/seatengine#advisorWork`
+- `internal/seatengine#advisorWork.add`
+- `internal/seatengine#advisorWork.bindSender`
+- `internal/seatengine#advisorWork.outstanding`
 
 **Uses:**
-- `plan:internal/shuttleengine#Run.SessionState`
+- `internal/shuttleengine#Run.SessionState`
 - `internal/seatengine#noticeSender.wasSent`
 - `internal/seatengine#advisorUpNotice`
 

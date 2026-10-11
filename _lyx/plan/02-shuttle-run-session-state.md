@@ -1,7 +1,7 @@
 # Card 2 — shuttle-run-session-state
 
 **Create:**
-- `plan:internal/shuttleengine#Run.SessionState` -> `func (run *Run) SessionState() (RunSessionState, error)`
+- `internal/shuttleengine#Run.SessionState`
 
 **Edit:**
 - `internal/shuttleengine/session_test.go`

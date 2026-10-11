@@ -8,9 +8,9 @@
 - `internal/shuttleengine/doc.go`
 
 **Create:**
-- `plan:internal/shuttleengine#holdNoticeSettle` -> `const holdNoticeSettle = 45 * time.Second`
-- `plan:internal/shuttleengine#holdNoticeMaxDeferral` -> `const holdNoticeMaxDeferral = 20 * time.Minute`
-- `plan:internal/shuttleengine#Run.settleDeferredHold` -> `func (run *Run) settleDeferredHold()`
+- `internal/shuttleengine#holdNoticeSettle`
+- `internal/shuttleengine#holdNoticeMaxDeferral`
+- `internal/shuttleengine#Run.settleDeferredHold`
 
 **Uses:**
 - `internal/shuttleengine#Run.notifyHeld`
