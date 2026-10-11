@@ -15,7 +15,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **TwillDiscusser: a Discussion writer that forks lens reviewers before it writes**<br>• Single-LLM Discussion-Write producer: explore, fork waiting lens forks, write, forks review the record as outsiders; forks keep their cache warm themselves | [`twill-discusser`](design-twill-discusser.md) | loom | Discussion-Bouncer | loom, stencil |
+| 1 | **TwillDiscusser: a Discussion writer that forks lens reviewers before it writes**<br>• Single-LLM Discussion-Write producer: explore, fork waiting lens forks, write, forks review the record as outsiders; forks keep their cache warm themselves | [`twill-discusser`](design-twill-discusser.md) | loom | Discussion-Burler | loom, stencil |
 
 ### Ready
 
