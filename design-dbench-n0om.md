@@ -1,6 +1,6 @@
 # Webster stability: gate shells, Master self-fix, recovery, Create checks
 
-`dbench-n0om` · Note · bug, webster, shuttle, stencil, quarry · running · Discussion-Bouncer
+`dbench-n0om` · Note · bug, webster, shuttle, stencil, quarry
 
 ## Goal
 
