@@ -50,6 +50,13 @@ Round 2's setup unchanged, writer at `opus[high]`; spend $23.44; record in `.scr
 Twill `opus[high]` averaged $5.86 and 12.5 minutes per plan, 12% and about 2.3 minutes over `opus[medium]`.
 The gain on `run-time-by-role` is one key avoided by wording, not by a lens or a read of the vocabulary scan, and lies within the run-to-run spread; the agent recommends `opus[medium]`.
 
+## Bench: twill `sonnet[high]` (2026-10-11, operator's request)
+
+Round 2's setup unchanged, writer at `sonnet[high]`; spend $19.09; record in `.scratch/twill-plan-bench/results-sonnet.md` and `round-sonnet/`.
+Repeated / partly repeated: 1.0 / 0.5 on `shuttle-startup-ready` at $4.47 per plan, 2.5 / 2.0 on `run-time-by-role` at $5.08, close to twill `opus[medium]` and within the arm's spread, at about 9% less cost and more writer time.
+Behavior: forks spawned on time, only one of four first `validate-plan` passes succeeded, the forks raised more and mostly LOW findings, and two of 18 rejections kept a key defect (one on a wrong, uncited premise), where `opus[medium]` kept none.
+The agent finds no reason to prefer it over `opus[medium]`.
+
 ## Open
 
 - Whether lens review lets Plan-Review run fewer rounds, as the operator chose for Discussion.
