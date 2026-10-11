@@ -1,6 +1,6 @@
 # Plan review rubric gives no warning about the redundant-file-target check
 
-`plan-rubric-file-target` · Note · enhancement
+`plan-rubric-file-target` · Note · enhancement, loom, burler, stencil
 
 Imported from [issue #542](https://github.com/Knatte18/loomyard/issues/542).
 

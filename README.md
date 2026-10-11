@@ -86,7 +86,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 20 | **Parent-review wait lets the idle writer cache expire before a reject**<br>• A reject after more than 5 minutes resumes the writer or chair on a cold cache; keep it warm with a periodic ping, or resume a fresh session | [`parent-review-cold-cache`](design-parent-review-cold-cache.md) | loom, shuttle |
 | 21 | **Cut the orch's token spend**<br>• Wake the orch less: an alignment agent in loom reviews against the board, waking the orch only on overlap | [`orch-token-spend`](design-orch-token-spend.md) | orch, loom |
 | 22 | **Plan-fixing agents have no way to delete a card file when a card cut renumbers cards** | [`plan-fix-card-delete`](design-plan-fix-card-delete.md) | loom, burler |
-| 23 | **Plan review rubric gives no warning about the redundant-file-target check** | [`plan-rubric-file-target`](design-plan-rubric-file-target.md) |  |
+| 23 | **Plan review rubric gives no warning about the redundant-file-target check** | [`plan-rubric-file-target`](design-plan-rubric-file-target.md) | loom, burler, stencil |
 
 #### Low priority
 

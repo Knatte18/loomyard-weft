@@ -1094,7 +1094,10 @@
       "title": "Plan review rubric gives no warning about the redundant-file-target check",
       "kind": "note",
       "labels": [
-        "enhancement"
+        "enhancement",
+        "loom",
+        "burler",
+        "stencil"
       ],
       "issues": [
         542
