@@ -7,6 +7,7 @@ It maps `file:line` ranges from tool output to the innermost enclosing member gl
 Markdown is out of its scope: a `.md` location is a per-item rejection.
 
 Use in Loomyard once it lands, building on the kick-start pack:
+this waits for task `plan-glyph-tuning`, which builds the Webster pack behind a config switch, and for its with/without measurement to show the pack helps (operator, 2026-10-11).
 
 - Verify failures (`go test` failure lines, `go vet`, compile errors) give the recovery agent or fixer a pack of the failing members.
 - Comment-lint findings and Webster audit findings carry glyphs instead of lines.
