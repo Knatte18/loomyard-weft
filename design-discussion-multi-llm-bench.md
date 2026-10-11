@@ -37,3 +37,4 @@ A fresh agent run from the prime drives it; neither loom nor darn fits, since th
 - Order: one DualDW run first, (`opus[high]`, `sonnet[high]`), which the operator watches; the rest run in parallel once that one holds.
 - Grading: each reference finding the Bouncer kept, avoided or repeated; decision overlap with the final discussion, new and missing decisions; writer tokens and wall time (`tools/tokencount`); how many batches the chair sent and whether it used the answers.
 - Report: `docs/research/discussion-bench.md`.
+- Before start, the operator confirms that the bench agent may create and tear down the bench pairs, add a temporary board note per bench slug holding a copy of the reference task body (the writer reads it with `lyx board get`) and remove them after, and approve each bench pair's Discussion parent-review gate itself.
