@@ -15,14 +15,14 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Glyphs end to end: test members as glyphs, traced plan: binds, a switchable Webster kick-start pack**<br>• Plan cards name changed tests as glyphs, record-batch logs each plan: bind, and Go injects resolved glyph spans into each Webster batch fork behind a config switch | [`plan-glyph-tuning`](design-plan-glyph-tuning.md) | loom | Loom-Preflight | loom, stencil, webster, quarry |
+| 1 | **Glyphs end to end: test members as glyphs, traced plan: binds, a switchable Webster kick-start pack**<br>• Plan cards name changed tests as glyphs, record-batch logs each plan: bind, and Go injects resolved glyph spans into each Webster batch fork behind a config switch | [`plan-glyph-tuning`](design-plan-glyph-tuning.md) | loom | Discussion-Write | loom, stencil, webster, quarry |
 
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 2 | **Shuttle start and seat holds: tolerate a stray % at the prompt, probe every second, cap the seat hold deferral**<br>• A ready pane with a stray % fails the producer, awaitStartup sleeps 10 s between checks, and a seat chair hold deferral of 20 min can hide a wedged advisor | [`shuttle-startup-ready`](design-shuttle-startup-ready.md) | loom | Publish | shuttle, batten |
-| 3 | **Tokencount default counts only full loom runs**<br>• With no slugs, tokencount picks the most recent runs, which today were bench pairs that stopped after Discussion; count only full loom runs | [`tokencount-full-runs`](design-tokencount-full-runs.md) | darn | Worktree-Create | shed |
+| 3 | **Tokencount default counts only full loom runs**<br>• With no slugs, tokencount picks the most recent runs, which today were bench pairs that stopped after Discussion; count only full loom runs | [`tokencount-full-runs`](design-tokencount-full-runs.md) | darn | Darn-Write | shed |
 
 ### Ready
 
