@@ -1272,6 +1272,23 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #549](https://github.com/Knatte18/loomyard/issues/549).\n\n## What happened\n\n`lyx shed step` halted the `Darn-Write` producer as `failed` (anomaly `producer-hard-failure`) with:\n\n```\nshedadapters: Darn-Write (shuttle): shuttle run outcome died: shuttle: the provider never became ready\n```\n\nThe trace shows the start sequence failing before the provider took any input:\n\n- `shuttle: could not type the segment color` with `the session is not idle ... the pane is not idle; retry once the session is idle`.\n- `shuttle: start failed before the provider took its first input; strand torn down`, cause `shuttle: load skills [scribe:prose scribe:code-quality]: shuttle: the session is not idle`.\n\nThe pane's last lines, quoted by lyx itself, show a fully started Claude Code UI waiting at an empty prompt, with a stray `%` after the prompt character:\n\n```\n❯ %\n────────────────────────────\n  ⏵⏵ bypass permissions on (shift+tab to cycle)\n```\n\nThe first idle check failed about 70 seconds after the run started, and the skill-load idle check failed about 60 seconds after that, so the pane stayed \"not idle\" through both waits although the provider was visibly ready.\n\n## Why it is abnormal\n\nThe provider was up and at an empty prompt, yet reed/shuttle classified the pane as not idle and gave up, tearing down the strand and failing the whole producer.\nThe stray `%` is likely a leftover from the shell's end-of-line marker or a partial draft, and idle detection treats any text after `❯` as an operator draft.\nA later reflection agent spawned in the same worktree reached `busy` on the same Claude Code version without trouble, so the failure is in the idle/readiness detection, not the provider.\n\n## What to do\n\n- Make the idle check tolerate a lone trailing `%` (or similar non-input terminal marker) after the prompt character, or clear the input line before checking.\n- On a not-idle result during start, retry or wait longer, rather than failing immediately with the generic `provider never became ready`.\n- Include the pane's last lines in the final `shedadapters` failure message, as the trace already does, so the cause is visible without opening the trace.\n\nProvenance: task `batten-notice-trim`, from `loom-halt.md`.\n"
+    },
+    {
+      "id": 371,
+      "slug": "seats-twill-combined",
+      "title": "Discussion chair drafts with advisors, then forks itself for twill lens reviews",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "stencil",
+        "config"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\n`loom.yaml` `discussion_producer` takes one of `single`, `seats` and `twill`, so a run gets either a chair with advisors or a writer that forks itself into lens reviews, never both.\nThe chair stencil (`contracts/stencils/loom/loom-template-discussion-chair.md`) carries no twill directive.\n\n## Idea (operator, 2026-10-11)\n\n- The chair writes the first draft with its advisors, as seats does.\n- It then forks itself once per lens of the `twill-discussion` fan, as twill does, and folds the lens findings into the record.\n- The forks share the chair's prompt cache, so the lens pass stays cheap; the advisors bring an outside view the forks cannot, since forks share the chair's priors.\n\n## Open\n\n- Whether this is a fourth `discussion_producer` value or twill becomes a flag on top of `single` and `seats`.\n- Bench it against the arms of the twill bench and the chair-blind-questions bench (`.scratch/twill-bench/results.md` holds the earlier arms while it lasts).\n"
     }
   ]
 }
