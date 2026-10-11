@@ -1,6 +1,6 @@
 # Shuttle reads agent state from hooks first, the pane only where no hook exists
 
-`shuttle-hook-first` · Task · enhancement, bug, shuttle, loom · running · Plan-Bouncer
+`shuttle-hook-first` · Task · enhancement, bug, shuttle, loom · running · Plan-Burler
 
 ## Seen (2026-10-11, main at a35c8c2b1)
 
