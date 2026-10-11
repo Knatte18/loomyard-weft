@@ -1,8 +1,8 @@
 # Card 14 — batten retries a busy driver pane and notices the orch once per stall
 
 **Create:**
-- `plan:internal/battenshed#ErrChildDriverBusy` -> `var ErrChildDriverBusy = errors.New("battenshed: the task worktree's driver pane is busy")`
-- `plan:internal/battenshed#innerRunProducer.noticeDriverBusy` -> `func (p *innerRunProducer) noticeDriverBusy(ctx context.Context, w *childWait)`
+- `internal/battenshed#ErrChildDriverBusy`
+- `internal/battenshed#innerRunProducer.noticeDriverBusy`
 
 **Edit:**
 - `internal/battenshed#innerRunProducer.awaitingStep`

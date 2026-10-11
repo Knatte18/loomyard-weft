@@ -1,9 +1,9 @@
 # Card 16 — batten status flags a halted batten over a done child
 
 **Create:**
-- `plan:internal/battencli#haltedOverDoneChild` -> `func haltedOverDoneChild(slug string, st, child shedengine.Status, childFound bool) (string, bool)`
-- `plan:internal/battencli#battenCLI.readChildStatus` -> `func (c *battenCLI) readChildStatus() (shedengine.Status, bool)`
-- `plan:internal/battencli#childDoneFlagKey` -> `const childDoneFlagKey = "child_done_batten_halted"`
+- `internal/battencli#haltedOverDoneChild`
+- `internal/battencli#battenCLI.readChildStatus`
+- `internal/battencli#childDoneFlagKey`
 
 **Edit:**
 - `internal/battencli#battenCLI.battenStatusExtras`

@@ -1,7 +1,7 @@
 # Card 15 — battencli maps the child's driver-busy refusal to batten's sentinel
 
 **Create:**
-- `plan:internal/battencli#childRefusalKind` -> `func childRefusalKind(childOutput string) string`
+- `internal/battencli#childRefusalKind`
 
 **Edit:**
 - `internal/battencli#childSpawnError`
@@ -11,8 +11,8 @@
 - `internal/battencli#childNotParked`
 
 **Uses:**
-- `plan:internal/battenshed#ErrChildDriverBusy`
-- `plan:internal/shedrun#StartDriverBusyKind`
+- `internal/battenshed#ErrChildDriverBusy`
+- `internal/shedrun#StartDriverBusyKind`
 - `internal/battenshed#ErrChildNotParked`
 - `internal/shedrun#StartNotParkedKind`
 

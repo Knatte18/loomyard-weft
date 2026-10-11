@@ -1,6 +1,6 @@
 {
   "runGuid": "441e474ad6880346ecc94beac6502632",
-  "planFingerprint": "012e4060948c843027a9e28a2f68d3748fb0ff95313e3f0fbeece55089be099e",
+  "planFingerprint": "0f72801b3b5921b506ef9e505fc09f5bddbc5d35a45b40bd1db1eb912da9cb02",
   "planFileHashes": {
     "00-overview.md": "3d091cba03d21c3a21ddb1a4c574040205f6a7a957bf97651762f3ffd8da9124",
     "01-reed-paste-submit.md": "1739b7e3c1a3a9487e1b90e09ee23d7e6055319f57a5efbcea3ee4e5ea4c4fa4",
@@ -14,11 +14,11 @@
     "09-claude-paste-path.md": "40095818b87393d896c366e7adc512d7522bee76bf5f0fbdd4b72783828ee155",
     "10-claude-paste-live-check.md": "3f4b583d07882d2600f7891d0e9722315ee0c7efdc6b0902632d9a14128d973b",
     "11-orch-held-typed-steps.md": "8a9e6c1bc320d7b088f32a1a5ec8401256b654fca9f306f67772b6db5a9629a0",
-    "12-shedrun-driver-busy.md": "f5c0e99ba60997f287093d46e9ce02ccf188bf2e50cec190c4bd8b5e9cc9c9e8",
-    "13-loom-driver-busy-refusal.md": "2bbfa665226082909232c04a8665f1ce0bab8b0461ec6e27c027b36e2921e959",
-    "14-battenshed-driver-busy-retry.md": "04534f6e1333ea05130e4ebba1d27069e63b4de9610dca5c2a42c35b09c2512a",
-    "15-battencli-driver-busy-kind.md": "c949aaff1b46292e2861501a5897fc301442ace49ce8b1e3fcb529343a7b568b",
-    "16-batten-status-halted-flag.md": "433a4d14c8f0962b400cd1662da31607b344a50c1b5c7ee317e0e1b95d7a0142",
+    "12-shedrun-driver-busy.md": "512236181e92dac3a7fc0c688e27dfe565c2e61bf263d228276da5f718e4adb0",
+    "13-loom-driver-busy-refusal.md": "2c087282618f456711f7e9f7eae284f602b7d360cfc637e86961527e74a59417",
+    "14-battenshed-driver-busy-retry.md": "92e560b63ab5ba9b7026c27b12c34af9535d50c941d1bd4726fbaf510442b7fb",
+    "15-battencli-driver-busy-kind.md": "9c715a22c5e4abd5d20a27dc90403d0ae8a1d47bde114e037ce7b33ba64e5925",
+    "16-batten-status-halted-flag.md": "12d9d3b00488506c481ef5718f0ff7294fb368096a716d438460d8bfa50de922",
     "17-orch-after-landing-stencil.md": "7a75e82948eb68324b16e4f7033278922044e589023432e829a96ee093b4d238"
   },
   "planOverviewFrameHash": "663b3854c0a3a292495fb9fcb5b30da6930cb93bfd6a58f757f61be01faad67a",
@@ -349,7 +349,7 @@
       }
     }
   ],
-  "currentBatch": 12,
+  "currentBatch": 0,
   "masterStrand": "a64b9fb2b25a3e277fdf6a93c2078388",
   "masterSessionId": "f9bc3152-93fb-4519-a9b0-e6aaa07dae56",
   "batches": {
@@ -410,19 +410,41 @@
         "17-orch-after-landing-stencil"
       ],
       "cardHashes": {
-        "12-shedrun-driver-busy": "f5c0e99ba60997f287093d46e9ce02ccf188bf2e50cec190c4bd8b5e9cc9c9e8",
-        "13-loom-driver-busy-refusal": "2bbfa665226082909232c04a8665f1ce0bab8b0461ec6e27c027b36e2921e959",
-        "14-battenshed-driver-busy-retry": "04534f6e1333ea05130e4ebba1d27069e63b4de9610dca5c2a42c35b09c2512a",
-        "15-battencli-driver-busy-kind": "c949aaff1b46292e2861501a5897fc301442ace49ce8b1e3fcb529343a7b568b",
-        "16-batten-status-halted-flag": "433a4d14c8f0962b400cd1662da31607b344a50c1b5c7ee317e0e1b95d7a0142",
+        "12-shedrun-driver-busy": "512236181e92dac3a7fc0c688e27dfe565c2e61bf263d228276da5f718e4adb0",
+        "13-loom-driver-busy-refusal": "2c087282618f456711f7e9f7eae284f602b7d360cfc637e86961527e74a59417",
+        "14-battenshed-driver-busy-retry": "92e560b63ab5ba9b7026c27b12c34af9535d50c941d1bd4726fbaf510442b7fb",
+        "15-battencli-driver-busy-kind": "9c715a22c5e4abd5d20a27dc90403d0ae8a1d47bde114e037ce7b33ba64e5925",
+        "16-batten-status-halted-flag": "12d9d3b00488506c481ef5718f0ff7294fb368096a716d438460d8bfa50de922",
         "17-orch-after-landing-stencil": "7a75e82948eb68324b16e4f7033278922044e589023432e829a96ee093b4d238"
       },
       "startSha": "faeedf66295eedc930e3640556a04f9bd1a922c9",
       "kind": "fork",
       "spawnedAt": "2026-10-11T11:25:51Z",
       "sessionId": "f9bc3152-93fb-4519-a9b0-e6aaa07dae56",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "12-shedrun-driver-busy",
+        "status": "done",
+        "head_sha": "9650811177ac6b7b82d7d6b588f520f85f15baf7",
+        "deviations": [
+          "cmd/lyx/testdata/test-budget.yaml",
+          "internal/battenshed/notice.go",
+          "internal/battenshed/deps.go",
+          "internal/loomcli/start.go",
+          "internal/loomcli/resume.go",
+          "internal/battencli/lifecycle_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "9650811177ac6b7b82d7d6b588f520f85f15baf7"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pane-inject-safety/f9bc3152-93fb-4519-a9b0-e6aaa07dae56/subagents/agent-a78f9e311b64895ff.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pane-inject-safety/f9bc3152-93fb-4519-a9b0-e6aaa07dae56/subagents/agent-a78f9e311b64895ff.jsonl"
+      ]
     },
     "7": {
       "slug": "shuttle-pending-send",
@@ -470,6 +492,7 @@
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pane-inject-safety/f9bc3152-93fb-4519-a9b0-e6aaa07dae56/subagents/agent-ae18c106c6287f9af.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pane-inject-safety/f9bc3152-93fb-4519-a9b0-e6aaa07dae56/subagents/agent-ab9fdfe6d82c5b138.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pane-inject-safety/f9bc3152-93fb-4519-a9b0-e6aaa07dae56/subagents/agent-ab9fdfe6d82c5b138.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pane-inject-safety/f9bc3152-93fb-4519-a9b0-e6aaa07dae56/subagents/agent-a78f9e311b64895ff.jsonl"
   ]
 }

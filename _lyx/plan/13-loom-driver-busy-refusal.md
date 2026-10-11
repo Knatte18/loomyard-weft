@@ -1,8 +1,8 @@
 # Card 13 — loom start and resume refuse a busy driver pane with its own kind
 
 **Create:**
-- `plan:internal/loomcli#loomCLI.resumeReportPath` -> `func (c *loomCLI) resumeReportPath(runID string) (string, error)`
-- `plan:internal/loomcli#driverBusyMessage` -> `func driverBusyMessage(err error, retry string) string`
+- `internal/loomcli#loomCLI.resumeReportPath`
+- `internal/loomcli#driverBusyMessage`
 
 **Edit:**
 - `internal/loomcli#loomCLI.resumeParkedDriver`
@@ -15,8 +15,8 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/shedrun#StartDriverBusyKind`
-- `plan:internal/shedrun#ResumeReport`
+- `internal/shedrun#StartDriverBusyKind`
+- `internal/shedrun#ResumeReport`
 - `internal/shedrun#ParkMarker`
 - `internal/loomcli#driverReportPath`
 - `internal/loomcli#driverResumeLine`

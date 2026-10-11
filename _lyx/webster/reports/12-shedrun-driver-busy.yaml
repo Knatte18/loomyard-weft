@@ -1,0 +1,9 @@
+status: OK
+head_sha: 9650811177ac6b7b82d7d6b588f520f85f15baf7
+deviations:
+  - cmd/lyx/testdata/test-budget.yaml
+  - internal/battenshed/notice.go
+  - internal/battenshed/deps.go
+  - internal/loomcli/start.go
+  - internal/loomcli/resume.go
+  - internal/battencli/lifecycle_integration_test.go

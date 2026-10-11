@@ -1,9 +1,9 @@
 # Card 12 — shedrun declares the driver-busy kind and the resume report file
 
 **Create:**
-- `plan:internal/shedrun#StartDriverBusyKind` -> `const StartDriverBusyKind = "driver_busy"`
-- `plan:internal/shedrun#ResumeReportFileName` -> `const ResumeReportFileName = "driver-resume-report"`
-- `plan:internal/shedrun#ResumeReport` -> `func ResumeReport(l *lyxcwd.Location, runID string) string`
+- `internal/shedrun#StartDriverBusyKind`
+- `internal/shedrun#ResumeReportFileName`
+- `internal/shedrun#ResumeReport`
 
 **Edit:**
 - `internal/shedrun#TestParkMarker`
