@@ -50,13 +50,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 1 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-seat-lead-1`](design-twb-seat-lead-1.md) | webster, shuttle, stencil, quarry |
+| 2 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-seat-blind-1`](design-twb-seat-blind-1.md) | webster, shuttle, stencil, quarry |
 
 #### Normal priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 2 | **loom step help contradicts itself and hides the driverless seed**<br>• Help says step bootstraps like start, then that it never seeds; name the driverless seed command | [`loom-step-help-seed`](design-loom-step-help-seed.md) | loom |
-| 3 | **shuttle start dies with 'provider never became ready' when the idle pane shows a stray % after the prompt** | [`shuttle-stray-percent`](design-shuttle-stray-percent.md) | shuttle |
+| 3 | **loom step help contradicts itself and hides the driverless seed**<br>• Help says step bootstraps like start, then that it never seeds; name the driverless seed command | [`loom-step-help-seed`](design-loom-step-help-seed.md) | loom |
+| 4 | **shuttle start dies with 'provider never became ready' when the idle pane shows a stray % after the prompt** | [`shuttle-stray-percent`](design-shuttle-stray-percent.md) | shuttle |
 
 ### Enhancements
 
