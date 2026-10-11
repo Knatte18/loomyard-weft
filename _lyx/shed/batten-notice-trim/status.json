@@ -1,13 +1,12 @@
 {
   "current_producer": "Darn-Write",
-  "state": "failed",
-  "error": "shedadapters: Darn-Write (shuttle): shuttle run outcome died: shuttle: the provider never became ready",
-  "transient": "agent-start",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Darn-Write",
     "last": "Preflight → done",
-    "wait": "shedadapters: Darn-Write (shuttle): shuttle run outcome died: shuttle: the provider never became ready"
+    "wait": ""
   },
   "history": [
     {
