@@ -1047,6 +1047,24 @@
       "isolated": false,
       "brief": "The draft guard checks once before about a second of typing; the first Enter is never checked, and slash-command sends press a blind Enter.",
       "body": "## Seen (2026-10-11, operator)\n\nText lyx injects into a Claude pane (batten notices, resume pointers, driver resume lines, `/clear`, `/compact`, `/reload-plugins`) regularly merges with what the operator is typing, or wipes it.\nThe draft guard checks the input box once, before typing, and the send then spends about a second typing into the pane (Escape, 300 ms sleep, text, settle reads, Enter) with nothing stopping the operator from typing in between.\nThe first Enter of a verified send (`confirmSubmitted`, `internal/shuttleengine/send.go:346`) is never checked against the box, so a merged draft is submitted.\n`boxHoldsSentText` (`internal/shuttleengine/run.go`) only matches the leading 48 characters, so a merged box reads as \"holds the sent text\" and gets further Enters.\n`ClearSession`, `CompactSession` and `ReloadPlugins` (`internal/shuttleengine/session.go`) type the command and a blind Enter on the strength of the caller's earlier probe, so `/clear` can land on an operator draft.\n`judgeReadiness` (`internal/shuttleengine/readiness.go:83`) reads ready when no box is found, so a menu or picker on screen passes the guard, and the leading Escape then closes it.\nThe leading Escape can complete a double-Esc that clears the operator's draft, or interrupt a turn the operator just started.\n\n## Idea\n\nA check that refuses the Enter after the text merged comes too late: the operator's draft is already spoiled.\nSo prevent the merge first, and keep the Enter check only as a last guard (operator, 2026-10-11):\n\n1. **Defer while the operator types.** Hold an injection while the attached client's `#{client_activity}` is under a few seconds old and the target pane is its active pane; the injection waits in a queue and is retried, never dropped.\n2. **Send text and Enter atomically.** `load-buffer` + `paste-buffer -p -d` + `send-keys Enter` as one tmux command list, and drop the leading Escape and the 300 ms settle, so the window between check and submit shrinks from about a second to the capture-to-write gap.\n   Needs a live check that Claude Code treats a paste-end followed by Enter as a submit.\n3. **Last guard: check the box right before Enter.** Press Enter only when the box holds exactly the sent text (or the paste placeholder).\n   On a mismatch, send no Enter, never clear or edit the box, and requeue the injection until the box reads empty again (the operator sent or cleared the draft).\n4. Route `/clear`, `/compact`, `/reload-plugins`, color and session-rename through the same path, and treat an unreadable box as not idle in `judgeReadiness`.\n\nLater: file-based notice delivery to the orch through a Stop hook, so fewer notices are typed at all.\n"
+    },
+    {
+      "id": 347,
+      "slug": "darn-perch",
+      "title": "Darn gets a perch review with a configurable budget",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "loom",
+        "burler",
+        "shed"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "After the darn writer, a Bouncer and Burler perch reviews the diff before Publish; its round budget is set in darn.yaml, and 0 turns it off.",
+      "body": "## Wanted (operator, 2026-10-11)\n\nDarn keeps its one writer: the `Darn` row (`DarnWrite`) still reads the board entry, edits, tests and commits everything itself, as today.\nAfter it, a perch reviews the diff as a safety net before Publish: a Bouncer row whose `on_stuck` points at a Burler-round row, whose own `on_stuck` points back, wired the way the loom recipe wires its review segments (`contracts/recipes/loom-recipe.yaml`, e.g. `Webster-Bouncer` and `Webster-Burler`).\n\n## Budget\n\nThe perch's round budget is set in darn's config (`darn.yaml`, beside the verify budget), so it is easy to change per hub.\nA budget of `0` is valid and means no review: the run goes from `Darn` straight to `Publish`, as today.\nState the chosen default and the key's name in the PR description.\n\n## Notes\n\n- `darn-recipe.yaml` row names are durable on-disk identities pinned against `internal/loomshed` `Name*` constants; adding rows needs matching constants, and an in-flight darn run parked past `Darn` must still resume.\n- PR-Gate keeps bouncing to `Darn` on a rejection.\n- Update the darn recipe's header comment, the darn and loom docs (`doc.go`) and `docs/overview.md` if the execution stack description changes.\n"
     }
   ]
 }

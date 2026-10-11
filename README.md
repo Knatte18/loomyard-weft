@@ -24,7 +24,11 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Darn gets a perch review with a configurable budget**<br>• After the darn writer, a Bouncer and Burler perch reviews the diff before Publish; its round budget is set in darn.yaml, and 0 turns it off. | [`darn-perch`](design-darn-perch.md) | darn |  | loom, burler, shed |
 
 ### Layer A
 
