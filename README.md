@@ -11,17 +11,11 @@ Concrete and claimable; only a task can run.
 
 Held by a run; its scope is locked until the run ends.
 
-#### High priority
-
-| # | Task | Slug | Recipe | At | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Test and gate hygiene: merge-only verify failures, gofmt, tmux probe copies**<br>• PATTERN overview headroom, test-budget rows that collide after merge, a gofmt check, and the last tmux probe copies onto tmuxkit | [`gate-test-hygiene`](design-gate-test-hygiene.md) | loom | Finalize | loom, orch |
-
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **Model keys per judge row, seed and PR-Rework; judge verdict and usage fixes**<br>• Own model keys for each Bouncer row judge and seed pass and for PR-Rework; Go refuses CONVERGED with an open BLOCKING finding; judge and seed usage recorded | [`per-role-models`](design-per-role-models.md) | loom | Publish | config, loom, burler |
+| 1 | **Model keys per judge row, seed and PR-Rework; judge verdict and usage fixes**<br>• Own model keys for each Bouncer row judge and seed pass and for PR-Rework; Go refuses CONVERGED with an open BLOCKING finding; judge and seed usage recorded | [`per-role-models`](design-per-role-models.md) | loom | Publish | config, loom, burler |
 
 ### Ready
 
@@ -134,3 +128,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 30 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | reed, shuttle |
 | 31 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) | loom, stencil |
 | 32 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | webster |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Labels |
+| --- | --- | --- | --- |
+| 1 | **Test and gate hygiene: merge-only verify failures, gofmt, tmux probe copies**<br>• PATTERN overview headroom, test-budget rows that collide after merge, a gofmt check, and the last tmux probe copies onto tmuxkit | [`gate-test-hygiene`](design-gate-test-hygiene.md) | loom, orch |
