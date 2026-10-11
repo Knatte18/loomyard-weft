@@ -1,13 +1,13 @@
 {
   "current_producer": "Preflight",
-  "state": "blocked",
-  "error": "preconditions not met: worktree-clean: uncommitted state changes under `_lyx`: M _lyx/config/loom.yaml; way forward: commit or stash the code changes with git, and commit the _lyx changes with `lyx fabric commit`, then re-step; a session lyx refuses the verb from reports status: FAILED and the orch runs it",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "pause_after": "Discussion-Write",
   "activity": {
     "now": "Preflight",
     "last": "Preflight → stuck",
-    "wait": "preconditions not met: worktree-clean: uncommitted state changes under `_lyx`: M _lyx/config/loom.yaml; way forward: commit or stash the code changes with git, and commit the _lyx changes with `lyx fabric commit`, then re-step; a session lyx refuses the verb from reports status: FAILED and the orch runs it"
+    "wait": ""
   },
   "history": [
     {
