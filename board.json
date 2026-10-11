@@ -1103,6 +1103,52 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\n`contracts/stencils/loom/loom-template-discussion-chair.md` tells the chair to send each question with its recommended answer and its alternatives to every advisor.\nThe advisor then reads the chair's pick before it studies the question, so its answer is anchored on the chair's options and lean, and it rarely finds an option the chair did not list.\n\n## Idea (operator, 2026-10-11)\n\n- The chair still forms each question with its options and its own recommended answer, but keeps them to itself.\n- It sends the advisors the bare question only, so each advisor explores and answers on its own.\n- The chair then weighs the advisors' answers against its own pick; an answer outside its options counts as a new option.\n- Questions must therefore be open, never leading: a question must not name or hint at the chair's preferred answer.\n\n## Open\n\n- Whether the ledger records the chair's private pick before the advisors answer, so a review can see where an advisor changed the outcome.\n- Whether the advisor stencil (`loom-template-discussion-advisor.md`) needs a line saying it gets no options and should name the alternatives it sees.\n"
+    },
+    {
+      "id": 360,
+      "slug": "operator-quiet-clock",
+      "title": "Operator-quiet window reads the wall clock, not an injected clock",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Seen at pane-inject-safety PR-Gate (PR #548): `activeClientOnPane` in reedengine compares client activity against `time.Now()`, so tests of the `operator_quiet_s` window cannot use an injected clock.\n\nIdea: take the clock from the caller, as the rest of the engine does, so the quiet-window edges are testable without sleeping."
+    },
+    {
+      "id": 361,
+      "slug": "paste-size-limit",
+      "title": "A paste over tmux message size fails whole, with no chunking",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shuttle",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Seen at pane-inject-safety PR-Gate (PR #548): the one-command set-buffer + paste-buffer + Enter path sends the text in one tmux command, so a text over tmux's command size limit fails the whole send.\n\nIdea: load the buffer in chunks (or from a file with `load-buffer`) before the single paste-and-Enter step, and test a text above the limit."
+    },
+    {
+      "id": 362,
+      "slug": "paste-submit-live-check",
+      "title": "No live test that a paste followed by Enter submits in Claude Code",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Seen at pane-inject-safety PR-Gate (PR #548): the paste-then-Enter submit rests on each provider's `PasteSubmits()` answer, and no live test checks that Claude Code takes a bracketed paste followed by Enter as a submit.\n\nIdea: a tmux-tier or llm-tier test that pastes a short prompt into a live session and checks it was submitted, so a Claude Code change that breaks it fails a test instead of a run."
     }
   ]
 }
