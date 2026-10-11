@@ -18,13 +18,4 @@ Most agents a run spawns should take a model of their own in config.
   - Webster's implementer and verify-fix forks inherit `webster.yaml` `master`.
   - The Bouncer escalation fork and the fan's lens forks inherit the parent session's model.
   - `landing.yaml` `describe` and `darn.yaml` `writer` are set hub-wide only, so a trial cannot be scoped to one task pair.
-
-## Scope (operator, 2026-10-11)
-
-- In scope: a model key per Bouncer row's judge and per row's seed pass, with today's `judge` key as the fallback, and a key of its own for PR-Rework.
-- Out of scope: forks keep the model of the session that forks them, by design.
-  Webster's implementer and verify-fix forks, the escalation fork and the lens forks stay forks, because a fork starts at once with its parent's context.
-  Millhouse ran a fresh agent per implementer under a separate orchestrator ("Builder"), and each cold start spent long reading background and loading tools before it began.
-  A different implementer model therefore means a different `master` model.
-- Out of scope: `describe` and `writer` scoped per task pair belong to `config-overlay`.
-- The Haiku judge trial is dropped (see `haiku-roles`); the keys are wanted on their own merits.
+- Once it lands, the haiku-roles trial runs Haiku 5.5 on the Plan-Bouncer and Webster-Bouncer judges only.
