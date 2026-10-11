@@ -13,14 +13,12 @@
 - `internal/fabricengine_test#TestUnwire_LeavesSiblingWorktreeUndirtied`
 - `internal/fabricengine_test#TestUnwire_PreservesUserSymlinkAtAnchor`
 - `internal/fabricengine_test#TestUnwire_LeavesWarpBindingInPlace`
+- `internal/fabricengine/doc.go`
 - `internal/fabriccli#Command`
 - `internal/fabriccli#runUnwire` -> `func runUnwire(ctx context.Context, out io.Writer, apply bool) int`
+- `internal/fabriccli_test#TestRunCLI_HubMutationScenario`
 - `tools/sandbox/SANDBOX-CORE-SUITE.md`
 - `tools/sandbox/SANDBOX-FABRIC-SUITE.md`
-- `cmd/lyx/testdata/test-budget.yaml`
-
-**Create:**
-- `internal/fabriccli/unwire_integration_test.go`
 
 **Uses:**
 - `internal/fabricengine#scanOnDiskJunctionNames`
@@ -38,9 +36,11 @@ To answer the exclude question without writing, give `unseedGitExclude` a `dryRu
 CLI: in `fabriccli.Command`, give the `unwire` command a `--apply` bool flag ("remove the junctions and exclude lines (default is dry-run/report)"), read it in the `RunE` and pass it to `runUnwire`, which adds `"applied": res.Applied` to the envelope beside the existing three fields; rewrite the `Long` so its first sentence states that without `--apply` the verb only reports what it would remove and changes nothing, and extend the example with `lyx fabric unwire --apply`.
 Bare `unwire` stays out of `FabricReaderVerbs`, so `readerVerb` still refuses it from a sandboxed role and `IsReadOnlyCommand` still classes it as mutating; `TestSandboxedRoleGuard`'s `unwire` row therefore stays as it is.
 Tests: retarget every caller of `Unwire` in the seven fabricengine tests listed to pass `true`; in `TestUnwire_RemovesOnDiskJunctionsIncludingStale`, run a dry run first and assert it reports the same sorted `JunctionsRemoved`, `GitExclude == "reverted"`, `Applied == false`, no mutation entries, and that every junction is still on disk, before the applied run; in `TestUnwire_NeverWiredWarpIsIdempotentNoOp`, assert a dry run on the torn-down pair reports empty `JunctionsRemoved` and `GitExclude == "unchanged"`.
-Add `internal/fabriccli/unwire_integration_test.go` (tagged `integration`, package `fabriccli_test`, using `hubforge.CopyHub` like `cli_test.go`) with one test that drives `RunCLIIn` for `unwire` in the prime worktree: the bare run exits 0 with `"applied": false`, the junctions listed and still wired, and empty `mutations`; `unwire --apply` exits 0 with `"applied": true` and the junctions gone.
-Raise `internal/fabriccli`'s row in `cmd/lyx/testdata/test-budget.yaml` by one for it.
-Sandbox suites: every `lyx fabric unwire` the suites instruct the agent to run becomes `lyx fabric unwire --apply` (S6's goal, durability note and watch line; F5's goal, watch steps and second idempotent run; F6's alternation), and F5 gains one step that runs bare `lyx fabric unwire` first and checks it reports `"applied": false` with the junctions it would remove while leaving them wired; the suites' other wording stays as it is.
+The engine tests pin the junction state, so the CLI plumbing is pinned by one new step in `TestRunCLI_HubMutationScenario`, placed before the steps that damage the hub, asserting only the envelope: it adds a pair, runs bare `unwire` in the pair's code worktree through `runFabric` and expects exit 0, `"applied": false` and empty `mutations`, then `unwire --apply` and expects exit 0 and `"applied": true`, then removes the pair again so the later steps see the hub they expect; no new test file and no test-budget raise.
+Docs: in `internal/fabricengine/doc.go`'s `Unwire` paragraph, name the `apply` parameter and state that without it nothing is removed and the result reports what an applied run would remove.
+Every other comment that today states unwire always removes follows: the `Unwire` doc comment names `apply` and both modes; `UnwireVerbResult`'s doc comment and its `JunctionsRemoved` and `GitExclude` field comments say that on a dry run they report the junctions that would be removed and `reverted` for an exclude line that would be stripped, leaving both in place; `runUnwire`'s doc comment states the dry-run default; and the file headers of `internal/fabricengine/unwire.go` and `internal/fabriccli/unwire.go` say that without `--apply` (`apply` false) the verb only reports what it would remove.
+Sandbox suites: every unwire the suites instruct the agent to run becomes `lyx fabric unwire --apply`: in `SANDBOX-CORE-SUITE.md`, the operating-model sentence saying S6 reverses its scaffolding with `lyx fabric unwire`, and S6's goal, durability note and watch line; in `SANDBOX-FABRIC-SUITE.md`, F5's goal, watch steps and second idempotent run, F11's verb list, whose bare `unwire` becomes `unwire --apply` so the dirty-worktree matrix exercises the destructive path, and F15's alternation.
+F5 gains one step that runs bare `lyx fabric unwire` first and checks it reports `"applied": false` with the junctions it would remove while leaving them wired; the suites' other wording stays as it is.
 Bound: `--apply` restores today's behaviour plus the `applied` field; the dry run reads state only.
 
-**ImpactSummary:** One re-signed exported engine verb with eight callers (the CLI handler and seven integration tests), one unexported helper with two callers, and the `unwire` command's flag, help, envelope and sandbox instructions.
+**ImpactSummary:** One re-signed exported engine verb with eight callers (the CLI handler and seven integration tests), one unexported helper with two callers, and the `unwire` command's flag, help, envelope, package doc and sandbox instructions.

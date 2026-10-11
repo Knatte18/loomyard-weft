@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -33,7 +33,7 @@ Each card is one fix and commits on its own; no card depends on a later one.
 
 - **Decision:** a card that adds a new top-level test raises that package's row in `cmd/lyx/testdata/test-budget.yaml` by one in the same commit; every other card extends an existing test or table.
 - **Rationale:** every targeted package sits at its budget today, so a new test fails `cmd/lyx/testbudget_test.go` without the raise.
-- **Applies to:** cards 5, 6, 9
+- **Applies to:** cards 5, 9
 
 ## Rename mechanic
 
