@@ -1,0 +1,334 @@
+{
+  "runGuid": "d14c5e3b8e8375429e867b8d279cc510",
+  "planFingerprint": "6812cf34dc73f43db091c2402e6fe38c7bd61839860830db4fc6c661e536751c",
+  "planFileHashes": {
+    "00-overview.md": "ea0aad7481a45c994ba5490c8064e16bda1cb89f6ae3e04652db50f3a5c7a1ca",
+    "01-shuttle-hold-deferral.md": "cf32fa69eab8ca75f3817312d43eac2eb33e5b142a09ae5e98766214dc03a8f6",
+    "02-shuttle-run-session-state.md": "7e50ba668cad8d61d97fc932af474d7bed4a5fa85bf6aba0ec1fb8642a589e53",
+    "03-seat-gate-fork-round.md": "2421a25507ac49b5979d66d155deb0f242fd7c12b38a466d6db84638d8c0270e",
+    "04-seat-required-advisor.md": "bde22825486e990233ab6beaa3d7b769868f48292c4ee17e03c54f344d9549a0",
+    "05-seat-chair-hold-deferral.md": "227c0ddde7e61907a78dbf4356028d62c63396cfa0ddeb072af4ea247d3af33c",
+    "06-burler-geometry-names.md": "f7e5aa2c59e8dd6d91717e26d3fc709bc0e4b407d2b77622ffcb270ff6bb5ddf",
+    "07-retire-fix-start.md": "4181de31ae5e399d78e1392174970dbea5bc23a733cfe1eddcd2ee0903223632",
+    "08-burler-seat-table.md": "535aea5427b9063b847d650d59298013acce0404709abe2ea930a741ecd6e766",
+    "09-burler-seat-stencils.md": "e53c1e30c7101739e42105f144b904ab46127e0ee1f26336ffbd1a0fc240dcdd",
+    "10-remove-await-review.md": "ac2495249e7c1168715674275ec1430e8cff5718aa48f1fa1bee0f855e051e87",
+    "11-delete-fix-start-type.md": "622d25ed2b495c60b71ec2136912a0abffc5059364cd90b5bbb609ff441ceb7b",
+    "12-delete-burler-shuttle.md": "96bcf11d4c81375127850da0961106c8559f4018fac6e8cb3bc324ea0354706a"
+  },
+  "planOverviewFrameHash": "5a313e543ddd682da44031606630f741bb489f5fc10f24234ed4cb64eb7a11a3",
+  "partition": [
+    {
+      "cards": [
+        "01-shuttle-hold-deferral",
+        "02-shuttle-run-session-state",
+        "03-seat-gate-fork-round",
+        "04-seat-required-advisor",
+        "05-seat-chair-hold-deferral",
+        "06-burler-geometry-names"
+      ],
+      "profile": "cautious",
+      "estimate": 294850,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54700,
+        "read_union": 85824,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 600,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 3504,
+              "file:internal/shuttleengine/hold_test.go": 2664,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 67,
+            "written": 20700
+          },
+          {
+            "card": 2,
+            "card_text": 300,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 3504,
+              "file:internal/shuttleengine/session_test.go": 6468,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 35,
+            "written": 10800
+          },
+          {
+            "card": 3,
+            "card_text": 516,
+            "reads": {
+              "file:internal/seatengine/doc.go": 984,
+              "file:internal/seatengine/engine_test.go": 4524,
+              "file:internal/seatengine/prompt_test.go": 2760,
+              "file:internal/seatengine/resume_test.go": 2088,
+              "file:internal/seatengine/table_test.go": 1908,
+              "package:internal/seatengine": 2000,
+              "tests:internal/seatengine": 2000
+            },
+            "messages": 69.5,
+            "written": 21366
+          },
+          {
+            "card": 4,
+            "card_text": 696,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:internal/seatengine/doc.go": 984,
+              "file:internal/seatengine/engine_test.go": 4524,
+              "file:internal/seatengine/prompt_test.go": 2760,
+              "file:internal/seatengine/table_test.go": 1908,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/seatengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/seatengine": 2000
+            },
+            "messages": 97.5,
+            "written": 29946
+          },
+          {
+            "card": 5,
+            "card_text": 672,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:internal/seatengine/doc.go": 984,
+              "file:internal/seatengine/engine_test.go": 4524,
+              "file:internal/seatengine/seatfake_test.go": 3480,
+              "file:internal/seatengine/smoke_seats_test.go": 1788,
+              "file:internal/seatengine/testdata/smoke-advisor.md": 120,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/seatengine": 2000,
+              "package:internal/seatengine/testdata": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/seatengine": 2000,
+              "tests:internal/seatengine/testdata": 2000
+            },
+            "messages": 111.5,
+            "written": 34122
+          },
+          {
+            "card": 6,
+            "card_text": 492,
+            "reads": {
+              "file:internal/burlerengine/smoke_cluster_test.go": 3828,
+              "file:internal/burlerengine/smoke_round_test.go": 4428,
+              "file:internal/hubgeom/doc.go": 444,
+              "file:internal/hubgeom/hubgeom_test.go": 3024,
+              "file:internal/standalonegeom/standalonegeom_test.go": 2904,
+              "package:internal/burlercli": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/hubgeom": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/standalonegeom": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/standalonegeom": 2000
+            },
+            "messages": 123,
+            "written": 37392
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-retire-fix-start",
+        "08-burler-seat-table",
+        "09-burler-seat-stencils",
+        "10-remove-await-review",
+        "11-delete-fix-start-type",
+        "12-delete-burler-shuttle"
+      ],
+      "profile": "cautious",
+      "estimate": 434498,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61700,
+        "read_union": 174012,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 480,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4068,
+              "file:docs/overview.md": 8352,
+              "file:internal/burlerengine/doc.go": 4152,
+              "file:internal/burlerengine/engine_test.go": 20340,
+              "file:internal/loomcli/wiring_test.go": 11580,
+              "file:internal/loomengine/config.go": 8604,
+              "file:internal/loomengine/config_test.go": 7212,
+              "file:internal/loomengine/template.yaml": 432,
+              "file:internal/shedrecipe/entries_burler_test.go": 8160,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 154.5,
+            "written": 46830
+          },
+          {
+            "card": 8,
+            "card_text": 1572,
+            "reads": {
+              "file:docs/overview.md": 8352,
+              "file:internal/burlercli/wiring_test.go": 9912,
+              "file:internal/burlerengine/doc.go": 4152,
+              "file:internal/burlerengine/engine_test.go": 20340,
+              "file:internal/burlerengine/prompt_test.go": 6768,
+              "file:internal/burlerengine/smoke_cluster_test.go": 3828,
+              "file:internal/burlerengine/smoke_round_test.go": 4428,
+              "file:internal/burlerengine/template_test.go": 3000,
+              "package:contracts/stencils": 2000,
+              "package:docs": 2000,
+              "package:internal/burlercli": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:docs": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 308.5,
+            "written": 94122
+          },
+          {
+            "card": 9,
+            "card_text": 540,
+            "reads": {
+              "file:contracts/stencils/burler/burler-template-fix-orchestrator.md": 468,
+              "file:contracts/stencils/burler/burler-template-review-orchestrator.md": 372,
+              "file:contracts/stencils/claims_test.go": 9960,
+              "file:contracts/stencils/seat/seat-directive-advisor.md": 192,
+              "file:contracts/stencils/seat/seat-directive-chair.md": 324,
+              "file:internal/burlerengine/doc.go": 4152,
+              "file:internal/burlerengine/prompt_test.go": 6768,
+              "file:internal/burlerengine/template_test.go": 3000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/burler": 2000,
+              "package:contracts/stencils/seat": 2000,
+              "package:internal/burlerengine": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/burler": 2000,
+              "tests:contracts/stencils/seat": 2000,
+              "tests:internal/burlerengine": 2000
+            },
+            "messages": 69.5,
+            "written": 21390
+          },
+          {
+            "card": 10,
+            "card_text": 384,
+            "reads": {
+              "file:docs/overview.md": 8352,
+              "file:internal/burlercli/await.go": 876,
+              "file:internal/burlercli/cli_test.go": 6288,
+              "file:internal/burlermarker/doc.go": 168,
+              "file:tools/sandbox/SANDBOX-BURLER-SUITE.md": 2448,
+              "package:docs": 2000,
+              "package:internal/burlercli": 2000,
+              "package:internal/burlermarker": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:docs": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/burlermarker": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 53,
+            "written": 16284
+          },
+          {
+            "card": 11,
+            "card_text": 156,
+            "reads": {
+              "package:internal/burlerengine": 2000,
+              "tests:internal/burlerengine": 2000
+            },
+            "messages": 24,
+            "written": 7356
+          },
+          {
+            "card": 12,
+            "card_text": 204,
+            "reads": {
+              "file:internal/burlerengine/shuttle_test.go": 744,
+              "package:internal/burlerengine": 2000,
+              "tests:internal/burlerengine": 2000
+            },
+            "messages": 42,
+            "written": 12804
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "d1c39658b55d6ed78e0cdce70c2493f6",
+  "masterSessionId": "37436d3e-55ad-4522-86d3-05fdee6ccb1e",
+  "batches": {
+    "1": {
+      "slug": "shuttle-hold-deferral",
+      "cards": [
+        "01-shuttle-hold-deferral",
+        "02-shuttle-run-session-state",
+        "03-seat-gate-fork-round",
+        "04-seat-required-advisor",
+        "05-seat-chair-hold-deferral",
+        "06-burler-geometry-names"
+      ],
+      "cardHashes": {
+        "01-shuttle-hold-deferral": "cf32fa69eab8ca75f3817312d43eac2eb33e5b142a09ae5e98766214dc03a8f6",
+        "02-shuttle-run-session-state": "7e50ba668cad8d61d97fc932af474d7bed4a5fa85bf6aba0ec1fb8642a589e53",
+        "03-seat-gate-fork-round": "2421a25507ac49b5979d66d155deb0f242fd7c12b38a466d6db84638d8c0270e",
+        "04-seat-required-advisor": "bde22825486e990233ab6beaa3d7b769868f48292c4ee17e03c54f344d9549a0",
+        "05-seat-chair-hold-deferral": "227c0ddde7e61907a78dbf4356028d62c63396cfa0ddeb072af4ea247d3af33c",
+        "06-burler-geometry-names": "f7e5aa2c59e8dd6d91717e26d3fc709bc0e4b407d2b77622ffcb270ff6bb5ddf"
+      },
+      "startSha": "50cf6a425dbe80a753a35d27747d7ee0b7faea86",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T11:55:26Z",
+      "sessionId": "37436d3e-55ad-4522-86d3-05fdee6ccb1e",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
