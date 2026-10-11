@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Bouncer",
+  "current_producer": "Batchifier",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Bouncer",
-    "last": "Plan-Burler → bounced to Plan-Bouncer",
+    "now": "Batchifier",
+    "last": "Plan-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -82,6 +82,12 @@
       "at": "2026-10-11T11:00:20Z",
       "gate_attempts": 0,
       "budget_exempt": true
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/pane-inject-safety/_lyx/reviews/plan/round-1-bouncer-ledger.md",
+      "at": "2026-10-11T11:01:01Z"
     }
   ],
   "product": {
