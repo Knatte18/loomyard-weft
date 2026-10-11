@@ -51,6 +51,8 @@ Autonomous run: no operator answered; every pick below is an auto-pick, listed i
 - **The wait verb as a new `lyx` module, or under `loom`.** A new module costs sandbox coverage and docs for one verb; `loom` would not serve Burler or a later non-loom caller, while shuttle runs every agent.
 - **A Go-side audit of fork writes, as Burler's cluster round does.** The record passes `validate-discussion`, parent review and Discussion-Review; the writer's own write scope is stencil-level too.
 - **Re-forking after a gate re-prompt or a parent reject.** Doubles fork cost for a revision Discussion-Review will review anyway.
+- **Keeping `await-review`'s 200 ms poll for the shared wait.** One stat a second is the floor `PATTERN-daemon-wakeups` sets for the waits it governs, and costs a cache-warming waiter nothing it notices (D9).
+- **Building the wait on `internal/fswatch`.** A watched path's parent directory, such as a marker's `.lyx` subdirectory, may not exist when the wait starts, so a watcher needs a stat fallback anyway.
 - **Unbounded fork waiting.** A writer that never writes the marker would keep six forks taking cached turns until the 480-minute deadline.
 
 ## Review rounds
@@ -74,4 +76,6 @@ _No rounds yet._
 - **Q13 (auto-pick).** Interactive mode? Same procedure; forks are spawned after the interview, so they do not wait through it.
 - **Q15 (resolved by `ly:orch`, operator scope addition).** Is the wait Twill-specific? No: a general keep-cache-warm primitive for forks, seats chairs and writers on parent review (D9).
 - **Q16 (auto-pick).** Which conditions does the general wait watch? One or more file paths, the first to appear ending the wait; messages are not watched, and a sender needing an immediate wake writes a marker (D9).
+- **Q17 (auto-pick, review round 1).** What does a writer relaunched after its process died do about its lost forks? Resumes at its first unfinished step of 3 to 8, records its lost or never-spawned forks in step 7, and never re-forks (D4; refined in review round 2).
+- **Q18 (auto-pick, review round 1).** How often does the shared wait poll? Once a second, by stat, with no `fswatch` watcher (D9).
 - **Q14 (open, for the bench).** Do six forks find enough to pay for themselves, and how much does inheriting the writer's reasoning blunt them? Measured by the post-landing bench.
