@@ -1,6 +1,6 @@
 # shuttle start dies with 'provider never became ready' when the idle pane shows a stray % after the prompt
 
-`shuttle-stray-percent` · Note · bug
+`shuttle-stray-percent` · Note · bug, shuttle
 
 Imported from [issue #549](https://github.com/Knatte18/loomyard/issues/549).
 

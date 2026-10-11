@@ -59,7 +59,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 5 | **loom step help contradicts itself and hides the driverless seed**<br>• Help says step bootstraps like start, then that it never seeds; name the driverless seed command | [`loom-step-help-seed`](design-loom-step-help-seed.md) | loom |
-| 6 | **shuttle start dies with 'provider never became ready' when the idle pane shows a stray % after the prompt** | [`shuttle-stray-percent`](design-shuttle-stray-percent.md) |  |
+| 6 | **shuttle start dies with 'provider never became ready' when the idle pane shows a stray % after the prompt** | [`shuttle-stray-percent`](design-shuttle-stray-percent.md) | shuttle |
 
 ### Enhancements
 
