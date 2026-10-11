@@ -17,27 +17,15 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Burler runs its round on MultiLLMProducer**<br>• The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review | [`burler-multi-llm`](design-burler-multi-llm.md) | loom | Describe | burler, shed, stencil |
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | At | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 2 | **Batten notices: no attach clause, pair-relative paths, wait is not an error**<br>• Remove the trailing cd && lyx reed attach from batten notices, and render paths relative to the hub directory. | [`batten-notice-trim`](design-batten-notice-trim.md) | darn | Finalize | batten, orch |
-
 ### Ready
 
 Waits on nothing open; can start now.
-
-_None._
-
-### Layer A
-
-Waits only on Running or Ready entries.
 
 #### Normal priority
 
 | # | Task | Slug | Recipe | After | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Batten windows stay but are hidden from the status bar** | [`batten-windows-hidden`](design-batten-windows-hidden.md) | darn | `batten-notice-trim` | batten, reed |
+| 1 | **Batten windows stay but are hidden from the status bar** | [`batten-windows-hidden`](design-batten-windows-hidden.md) | darn |  | batten, reed |
 
 ## Notes
 
@@ -163,3 +151,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 32 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) | loom, stencil |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Labels |
+| --- | --- | --- | --- |
+| 1 | **Batten notices: no attach clause, pair-relative paths, wait is not an error**<br>• Remove the trailing cd && lyx reed attach from batten notices, and render paths relative to the hub directory. | [`batten-notice-trim`](design-batten-notice-trim.md) | batten, orch |
