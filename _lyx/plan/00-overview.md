@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -43,8 +43,9 @@ With every new key empty, every role runs on the model it runs on today.
 
 ### Decision: replay-guard-skips-an-escalated-round
 
-- **Decision:** On the replay path, the convergence guard runs only when the round carries no escalation record; a round the parent has been handed stands as recorded.
-- **Rationale:** D7 bounds the guard so a pending accept is never refused, and an escalated round's judgment is what the parent's decision settles over; archiving it would leave the decision pointing at nothing.
+- **Decision:** On the replay path, the convergence guard runs only when the round carries neither an escalation record nor a circling decision file; a round the parent has been handed, or has decided, stands as recorded.
+- **Rationale:** D7 bounds the guard so a pending accept is never refused, and an escalated or decided round's judgment is what the parent's decision settles over; archiving it would leave the decision pointing at nothing.
+  The decision file is checked as well as the escalation record because `RecordCirclingDecision` also records a decision over a legacy CIRCLING round that carries no escalation record.
 - **Applies to:** card 5
 
 ## verify:
