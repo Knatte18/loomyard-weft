@@ -22,9 +22,8 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 2 | **reed servers ignore ~/.tmux.conf**<br>• Since reed-hygiene (c6dc1fffc) reed servers start with -f /dev/null, so the operator loses prefix, key bindings and escape-time; no reed.yaml key replaces them | `reed-tmux-conf` | loom | Webster-Burler | reed |
-| 3 | **Plan gaps: inserting a card, unreachable prescribed refusals**<br>• Give the fixer a sanctioned way to insert or remove a card, and make plan review check that every prescribed refusal is reachable | [`plan-gaps`](design-plan-gaps.md) | loom | Finalize | loom, burler, stencil |
-| 4 | **Pane injection never merges with the operator draft, and batten survives a draft**<br>• Defer and atomically send injected text, guard the Enter, and keep batten alive through a busy driver pane so teardown still runs. | [`pane-inject-safety`](design-pane-inject-safety.md) | loom | Webster | shuttle, batten, orch, reed |
-| 5 | **Darn: rename the writer row to Darn-Write, and close the perch gaps**<br>• Rename Darn to Darn-Write; add a Describe row after the perch, take Darn-Burler's verify budget from darn.yaml, and test an exhausted perch budget. | [`darn-write-rename`](design-darn-write-rename.md) | darn | awaiting · PR-Gate | loom, shed |
+| 3 | **Pane injection never merges with the operator draft, and batten survives a draft**<br>• Defer and atomically send injected text, guard the Enter, and keep batten alive through a busy driver pane so teardown still runs. | [`pane-inject-safety`](design-pane-inject-safety.md) | loom | Webster | shuttle, batten, orch, reed |
+| 4 | **Darn: rename the writer row to Darn-Write, and close the perch gaps**<br>• Rename Darn to Darn-Write; add a Describe row after the perch, take Darn-Burler's verify budget from darn.yaml, and test an exhausted perch budget. | [`darn-write-rename`](design-darn-write-rename.md) | darn | awaiting · PR-Gate | loom, shed |
 
 ### Ready
 
@@ -153,3 +152,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 32 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) | loom, stencil |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Labels |
+| --- | --- | --- | --- |
+| 1 | **Plan gaps: inserting a card, unreachable prescribed refusals**<br>• Give the fixer a sanctioned way to insert or remove a card, and make plan review check that every prescribed refusal is reachable | [`plan-gaps`](design-plan-gaps.md) | loom, burler, stencil |
