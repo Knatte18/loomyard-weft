@@ -31,7 +31,9 @@
 Put `/clear`, `/compact`, `/reload-plugins` and `/color` behind the same pre-write guard, paste-submit and confirmation as every other write (decision D6), so none of them types on a caller's earlier probe.
 
 `sequenceText` joins the `Text` of a choreography's steps and ignores its keys and pauses.
-`sendSequence(sc, inputs)` sends a choreography as one write: for a paste-path engine (`TextPaster` with `InputBoxReader` and `SessionCycler`) it is `sendVerified(sc, sequenceText(inputs))`, so the slash command is pasted once and confirmed by the box reading empty, since it starts no turn; for any other engine it runs `awaitIdleSession` and then `playInputs`, keeping that engine's own keys behind the same guard.
+`sendSequence(sc, inputs)` sends a choreography as one write.
+An empty choreography, a provider with no command for the request such as a color outside its palette, returns nil before the guard, with no idle wait, no activity query and no paste, as `typeColor` does today.
+Otherwise, for a paste-path engine (`TextPaster` with `InputBoxReader` and `SessionCycler`) it is `sendVerified(sc, sequenceText(inputs))`, so the slash command is pasted once and confirmed by the box reading empty, since it starts no turn; for any other engine it runs `awaitIdleSession` and then `playInputs`, keeping that engine's own keys behind the same guard.
 
 `Runner.ClearSession`, `Runner.ReloadPlugins` and `Runner.CompactSession` find the run through `FindRun`, build `r.newSendContext(state, runDir)` with `sc.hold = r.holdFor(guid)`, and call `sendSequence` over the cycler's sequence, in place of `requireLiveStrand` plus a bare `playInputs`; their doc comments drop "the caller has already probed idleness itself".
 `typeColor(sc, color)` becomes `sendSequence(sc, engine.ColorSequence(color))` and returns its error, held or not; the settle loop and its two constants go.
@@ -41,7 +43,7 @@ What this lets through and what bounds it: a session command into a box holding 
 
 Tests:
 - `TestRunner_ClearSession_PlaysScriptedSequence`, `TestRunner_CompactSession_PlaysSequenceForFocus` and `TestRunner_ReloadPlugins_PlaysSequenceOnALiveShuttleStrand` gain rows: with a drafted box the command types nothing and fails wrapping `ErrSessionBusy` even though the caller's own probe was idle; with an active operator it is held; with an empty box a paste-path engine issues one `PasteSubmit` of `/clear` (resp. `/compact <focus>`, `/reload-plugins`) and no `SendText`.
-- `TestRunner_TypeColor_PlaysTheSequenceAndWaitsItOut`: a held color returns an error wrapping `ErrSessionBusy`, and a pasted `/color <name>` is confirmed by the empty box.
+- `TestRunner_TypeColor_PlaysTheSequenceAndWaitsItOut`: a held color returns an error wrapping `ErrSessionBusy`, a pasted `/color <name>` is confirmed by the empty box, and a color with no command returns nil with no `PasteSubmit` and no `OperatorActive` call.
 - `TestRunner_Start_TypesTheSegmentColorAfterStartup` keeps passing with the color pasted, and a held color still starts the run.
 
 Update the session-cycling paragraph of `internal/shuttleengine/doc.go`.

@@ -8,6 +8,7 @@
 **Edit:**
 - `internal/battencli#battenCLI.battenStatusExtras`
 - `internal/battencli/run_test.go`
+- `internal/battencli/lifecycle_integration_test.go`
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
@@ -22,7 +23,10 @@ Flag a batten run that stopped before its teardown while its child loom run is d
 `readChildStatus` resolves the task worktree with `taskWorktreeLocation(c.location, c.slug)` and reads `shedrun.StatusFile(task, shedrun.SelfRunID)` through its status lock, as the Run-Shed wiring's `ReadStatus` does; an absent pair, an absent or unreadable file and a lock that cannot be taken all answer found false, since failing to read the child must never change batten's own status answer.
 `battenStatusExtras` adds `childDoneFlagKey` with the flag text when `haltedOverDoneChild` answers true, and no key otherwise, including when the pair or the child status is gone.
 
-Test: a new table test in `run_test.go` over `haltedOverDoneChild`: failed, blocked and paused batten over a done child carry the flag naming `lyx batten run <slug>`; a running or done batten, a child that is not done and an absent child carry none.
+Tests:
+- a new table test in `run_test.go` over `haltedOverDoneChild`, the state matrix alone: failed, blocked and paused batten over a done child carry the flag naming `lyx batten run <slug>`; a running or done batten and a child that is not done carry none.
+- a new step in `lifecycle_integration_test.go`'s `TestBattenIntegration_Rows` pins the status surface over a real pair: after Worktree-Create, a done child status written at `shedrun.StatusFile(task, shedrun.SelfRunID)` and a failed batten status make the `status` verb's envelope carry `child_done_batten_halted` naming `lyx batten run <slug>`; with the child status file removed the envelope omits the key.
+
 Raise `internal/battencli`'s row in `cmd/lyx/testdata/test-budget.yaml` by the new top-level test.
 
 **ImpactSummary:** One status key added to batten's status envelope; the generic status body and every other key are unchanged.

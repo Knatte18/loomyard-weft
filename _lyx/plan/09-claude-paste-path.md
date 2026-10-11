@@ -2,7 +2,7 @@
 
 **Create:**
 - `plan:internal/shuttleengine/claudeengine#pasteSubmitsOnEnter` -> `const pasteSubmitsOnEnter = true`
-- `plan:internal/shuttleengine/claudeengine#pasteCollapseMinChars` -> `const pasteCollapseMinChars = 800`
+- `plan:internal/shuttleengine/claudeengine#PasteCollapseMinChars` -> `const PasteCollapseMinChars = 800`
 - `plan:internal/shuttleengine/claudeengine#Claude.PasteSubmits` -> `func (c *Claude) PasteSubmits() bool`
 - `plan:internal/shuttleengine/claudeengine#Claude.OwnPastePlaceholder` -> `func (c *Claude) OwnPastePlaceholder(boxText, text string) bool`
 - `pattern/PATTERN-pane-text-injection.md`
@@ -37,7 +37,7 @@ Move Claude onto the paste path (decisions D2 and D6), which makes every text ly
 
 `Claude` implements `shuttleengine.TextPaster`, asserted in `session.go`'s compile-time block beside `InputBoxReader` and `InputBoxClearer`.
 `PasteSubmits` answers `pasteSubmitsOnEnter`, true under assumption A7 (an Enter right after the bracketed paste end submits); card 10's live check pins it, and if that check finds otherwise this one constant flips to false, which makes shuttle paste without the Enter and send the first Enter as a guarded one.
-`OwnPastePlaceholder(boxText, text)` answers true only when `boxText`, trimmed, matches `pastePlaceholderShape` as a whole, `text` has at least `pasteCollapseMinChars` characters (Claude Code's collapse threshold, which card 10 also pins), and, when the placeholder shows `+<m> lines`, `m` equals the number of newlines in `text`.
+`OwnPastePlaceholder(boxText, text)` answers true only when `boxText`, trimmed, matches `pastePlaceholderShape` as a whole, `text` has at least `PasteCollapseMinChars` characters (Claude Code's collapse threshold, exported so card 10's live check in another package sizes its texts from it and pins it), and, when the placeholder shows `+<m> lines`, `m` equals the number of newlines in `text`.
 `pastePlaceholderShape` gains a capture group for the line count; `PastePlaceholder`, which had no other caller after card 6, is deleted, and `TestPastePlaceholder` becomes the table over `OwnPastePlaceholder` (a short text's placeholder is refused, a line-count mismatch is refused, a quoted placeholder inside other words is refused).
 
 The leading Escape and its 300 ms settle go (D6: prompt suggestion is off in every shuttle-launched session, so the Escape guarded nothing and could complete a double-Esc or interrupt a turn): `ComposeSend` returns the text step and the Enter, `TypeSequence` the text step alone, and `composeSendSettleMS` is deleted.

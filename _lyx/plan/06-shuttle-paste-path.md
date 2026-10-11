@@ -54,7 +54,7 @@ For an engine that implements `TextPaster`, `InputBoxReader` and `SessionCycler`
 - the box normalizes to exactly the sent text, or `OwnPastePlaceholder(boxText, text)` holds: the Enter did not take, so `guardedEnter` and read again;
 - no readable box: send nothing and read again; a window that ends this way fails with `ErrSubmissionNotLanded` and no Enter and no clear key;
 - the box contains the normalized sent text beside other text: return an error wrapping `ErrSentTextInDraft` that quotes the box, with no Enter, no clear and no edit;
-- any other text: return a plain error wrapping `ErrSessionBusy` ("the input box holds text that is not this send's"), with no key sent.
+- any other text: return a plain error wrapping `ErrSessionBusy` that quotes the box it read (`the input box holds text that is not this send's: %q`), with no key sent, so loom's `driver_busy` refusal (card 13) and batten's report (card 14) can name the draft (D8, D9).
 A window that ends on an exact match fails with `ErrSubmissionNotLanded` through `failUnlanded`.
 `guardedEnter` asks `operatorActivityHold` immediately before the key and sends `Enter` only when it returns ""; a held Enter is skipped and the read repeats inside the window.
 
@@ -68,7 +68,7 @@ Bound: the placeholder acceptance can submit an operator paste that replaced a s
 Fakes: `tuiReed.PasteSubmit` puts `text` into its box and submits it unless the Enter is swallowed, recording through `fakeReed.PasteSubmit`; `pasteEngine` embeds `tuiEngine`, answers `PasteSubmits` from a field and `OwnPastePlaceholder` for a `[Pasted text #1]` box when the text is 20 characters or longer.
 
 Tests:
-- `TestRun_Send_ConfirmsSubmission` rows over `pasteEngine` and `tuiReed`: a send issues one `PasteSubmit` and no `SendText`, no `Escape`; a swallowed Enter leaves the exact text, which gets one guarded Enter and lands; a placeholder box gets the guarded Enter only for a long text, and for a short text fails; an active operator before the guarded Enter gets none; a box holding the sent text plus a draft fails wrapping `ErrSentTextInDraft` and `ErrSessionBusy` with no Enter, no `C-u`; a foreign draft fails wrapping `ErrSessionBusy` with no key; a box-less capture through the window fails `ErrSubmissionNotLanded` with no Enter and no `C-u`; the `PasteSubmits` false variant settles, then sends the Enter.
+- `TestRun_Send_ConfirmsSubmission` rows over `pasteEngine` and `tuiReed`: a send issues one `PasteSubmit` and no `SendText`, no `Escape`; a swallowed Enter leaves the exact text, which gets one guarded Enter and lands; a placeholder box gets the guarded Enter only for a long text, and for a short text fails; an active operator before the guarded Enter gets none; a box holding the sent text plus a draft fails wrapping `ErrSentTextInDraft` and `ErrSessionBusy` with no Enter, no `C-u`; a foreign draft fails wrapping `ErrSessionBusy` with no key and an error text carrying the draft; a box-less capture through the window fails `ErrSubmissionNotLanded` with no Enter and no `C-u`; the `PasteSubmits` false variant settles, then sends the Enter.
 - `TestRun_Send_DeliveryVerification`: a text of 60 characters whose first 48 sit inside a longer draft is no longer accepted as held.
 - `TestStartup_SendFailuresTearDown` rows: a skill load or prompt delivery held past `send_ready_timeout_s` by an active operator, and a prompt delivery failing on a foreign box, each return a died start whose error names the cause.
 
