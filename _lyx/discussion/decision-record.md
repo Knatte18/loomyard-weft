@@ -15,13 +15,14 @@ In:
 - The next-round reviewer's prior-rounds instruction in `internal/burlerengine/prompt.go` (`priorRoundsBlock`): a re-raised disputed finding answers the dispute's evidence.
 - The pinned claims for both stencils in `contracts/stencils/claims_test.go`, and the prior-rounds assertion in `internal/burlerengine/prompt_test.go`.
 - Docs that state the dispute rule: `internal/burlerengine/doc.go`, `pattern/PATTERN-review-round.md`, `docs/overview.md`.
+- The converged carry-over entry's closing text in `internal/discussionparser/carryover.go` (`renderCarryOver` and the `CarryOverConverged` comment) and its test row, and the sentence describing a carry-over entry in `contracts/stencils/loom/loom-template-plan.md` and `loom-template-rework.md` (D7).
 
 Out:
 
 - The judge: `contracts/stencils/bouncer/bouncer-template-judge.md`, the Go-held decision rule and the facts file are unchanged; the judge still never reads a fixer-report.
 - The review-file format and the reviewer's own review step (`burler-step-2-review.md`).
-- The carry-over entry text in `internal/discussionparser/carryover.go`.
-- Burler's two-agent wiring, which `burler-multi-llm` replaces; this task changes stencil text and one prompt string that move with the stencils.
+- The carry-over entry's structure, the accepted-circling closing text and which findings carry over (`carriesOver`).
+- Burler's two-agent wiring, which `burler-multi-llm` replaces; this task changes stencil text, one prompt string that moves with the stencils, and the carry-over closing text, which burler does not own.
 - Any Go parsing of the fixer-report; it stays free-form prose, existence-checked only.
 
 ## Decisions
@@ -43,12 +44,15 @@ Ordering the checks keeps "fix with own change" from becoming a softer dispute.
 ### D2 — The new dispute ground and its bound
 
 Decision: a finding whose premise holds may be disputed only when the fixer shows that every change addressing it makes the target worse, not only the proposed one.
-The evidence is cited text: code, the fasit, the rubric (its `Do not flag` list included), a `PATTERN` entry, or a test or caller the change would break, or verify output.
+"Every change" includes changes outside the fixer's write surface: a finding whose only sound change leaves the surface is deferred under D3, never disputed.
+The evidence is cited text: code, the fasit, the rubric, a `PATTERN` entry, or a test or caller the change would break, or verify output.
+A finding the rubric's `Do not flag` list excludes is disputed on the `premise false` ground, never on this one.
 Severity, size, cost, taste, and disagreement with the rubric or PATTERN still never justify a dispute.
 Each `Disputed` entry names its ground (`premise false` or `every fix worse`), the finding id and the evidence.
 
 Bound: the new ground lets a finding stay unfixed only when cited evidence shows harm from every addressing change; a finding where one sound change exists falls to D3 and is fixed.
 A dispute still never converges a segment on its own (D5).
+In the round the segment converges, no reviewer reads the dispute, so the fixer's cited evidence is its only bound.
 
 Rationale: an example the old rule cannot express is a true duplication whose only removal is an import a leaf-package rule forbids; the finding is real and no fix is legal.
 Requiring evidence against every fix keeps the ground from absorbing ordinary disagreement.
@@ -61,6 +65,7 @@ A finding whose `**Fix:**` line is vague or absent is fixed as the fixer sees fi
 The fixer's own change stays inside its fix-scope write surface; a change that would need to leave it is deferred with that reason.
 
 Bound: this lets the fixer skip the reviewer's prescription, never the finding; the premise is still resolved this round, and the next round's fresh reviewer judges the result.
+In the round the segment converges there is no next reviewer, so the fixer's cited evidence is the only bound on its own change.
 
 Rationale: the fixer has read the code and the fasit as closely as the reviewer, and `loom.yaml` can give it a stronger model than the reviewer's; a fixer that cannot overrule a bad prescription spends that judgment applying it.
 Recording the departure inline keeps the fixer-report's sections as they are while giving the next reviewer the reason.
@@ -69,15 +74,21 @@ Recording the departure inline keeps the fixer-report's sections as they are whi
 
 Decision: `priorRoundsBlock`'s closing sentence gains one rule: a reviewer that re-raises a finding a prior fixer-report disputed states, in that finding's `**Issue:**`, why the dispute's evidence does not hold.
 The existing phrase `deferred and disputed items` stays.
+The clean-room order is otherwise unchanged: the reviewer saves its own findings first, and once it has read a prior fixer-report it amends the matching finding's `**Issue:**` in its saved review before it ends its turn, since the ready marker that releases the fixer is written only after the reviewer is done.
 
-Rationale: today a dispute is settled by the next round's fresh reviewer, who re-raises or drops it, and the judge rules on the resulting review.
-That path stays, but a reviewer that re-raises without engaging the evidence turns every dispute into a circling key; the rule makes a re-raise carry an answer the judge and the next fixer can read.
+Rationale: today a dispute is settled by the next round's fresh reviewer, who re-raises or drops it, and the judge rules on the resulting review by class and severity alone, so every path D5 names exists without this rule.
+What the rule adds is the reviewer's answer for the next fixer, which re-runs D1 on the re-raised finding: it can concede and fix, or dispute again on new evidence, so a persisting dispute is decided on its merits rather than by repetition.
 
 ### D5 — The judge and convergence are unchanged
 
-Decision: the judge stencil, the decision rule, the facts file and the carry-over text do not change.
-A disputed finding's key stays open in the ledger while a later review re-raises it, and the existing CIRCLING path settles a dispute that persists.
-A closing-round dispute reaches `## Open risks` like any other addressed finding, with the fixer-report path the carry-over entry already names.
+Decision: the judge stencil, the decision rule and the facts file do not change.
+A disputed finding's key stays open in the ledger while a later review re-raises it, and the decision rule settles a dispute that persists by the finding's class and severity:
+
+- a design-class finding at MEDIUM or worse rules `CONTINUE`, and CIRCLING from the checkpoint round on;
+- a BLOCKING finding of any other class rules `CONTINUE` until the bounce budget escalates it;
+- any other finding does not block, so the segment converges from round 2 on.
+
+A closing-round dispute reaches `## Open risks` like any other finding of that round only when it is MEDIUM or BLOCKING, in the carry-over entry D7 words, with the fixer-report path the entry already names; a LOW or NIT one is recorded only in that round's fixer-report.
 
 Rationale: the brief says the judge rules on disputes as today; the convergence rules already treat a dispute as no convergence signal.
 
@@ -88,6 +99,16 @@ The `PATTERN.md` one-liner (`fix or dispute each finding with evidence`) stays a
 `contracts/stencils/claims_test.go` replaces the `only for a factually wrong premise` claim with claims for both grounds, the every-fix bound, the still-forbidden grounds and the fixed-differently mark, and adds a fix-orchestrator claim that Validate checks the premise and the proposed change.
 
 Rationale: `PATTERN-review-round` currently says a dispute needs evidence that the premise is false, which the new ground contradicts; the CLAUDE.md docs rule puts the change in the same commit.
+
+### D7 — The converged carry-over entry no longer asserts a fix
+
+Decision: `renderCarryOver`'s converged closing text says each listed finding was fixed or disputed by the round's fixer, that no fresh reviewer has seen the result, and that the fixer report says which, for example: "converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which".
+The `CarryOverConverged` comment and the converged row in `internal/discussionparser/carryover_test.go` follow it.
+The carry-over sentence in `loom-template-plan.md` and `loom-template-rework.md` says an entry lists review findings the closing round's fixer fixed or disputed, unseen by a fresh reviewer, and that the entry's fixer report says which; each reader still checks the entry against the code and never plans it as scope.
+The accepted-circling text already allows an unfixed finding and stays.
+
+Rationale: today's text "addressed by the round's fixer, and no fresh reviewer has seen the fix" tells the plan writer, whose sole input is the decision record, that a fix exists.
+An every-fix-worse dispute (D2) leaves a defect the fixer agrees is real and makes no fix, so the unchanged text would misstate it; the fixer-report path is the only pointer to which outcome a finding had, and the entry must send the reader there.
 
 ## Constraints
 
@@ -102,25 +123,35 @@ Rationale: `PATTERN-review-round` currently says a dispute needs evidence that t
 ## Auto-mode assumptions
 
 - The fixer-report stays free-form, so the fixed-differently mark is prose inside the existing changes list, not a new section; no Go reads it.
-- The new dispute ground covers a premise that holds as fact but whose every remedy is harmful; a finding the rubric's `Do not flag` list excludes counts as a false premise, as today.
-- The reviewer-side rule (D4) is in scope, though the brief names only the fixer, because without it the broader dispute ground feeds the CIRCLING path instead of settling.
+- The new dispute ground covers a premise that holds as fact but whose every remedy is harmful; a `Do not flag` finding stays a false premise, as today (D2).
+- The reviewer-side rule (D4) is in scope, though the brief names only the fixer, because without it a re-raised dispute carries no answer the next fixer can weigh, and is decided by repetition rather than on its merits.
+- The carry-over text change (D7) is in scope, though the brief names only the fixer, because the new dispute ground makes today's converged text false.
 - Model defaults and the judge's model are untouched; whether a cheaper fixer should keep these freedoms is not this task's question.
 
 ## Open risks
 
 - A fixer may overuse D3 to swap a correct prescription for one it prefers; the only check is the next fresh reviewer, as for every fix today.
-- A closing-round dispute converges without a fresh reviewer seeing its evidence; the carry-over entry's fixer-report path is the only pointer to it, as today.
+- A closing-round dispute converges without a fresh reviewer seeing its evidence; for a MEDIUM or BLOCKING one the carry-over entry names it and points at the fixer report that says it was disputed (D7), and a LOW or NIT one has no pointer outside that fixer-report.
+  An every-fix-worse dispute leaves a defect the fixer agrees is real, which today's false-premise dispute never does.
 - `burler-multi-llm` rewrites the round's wiring; if it renames or merges these stencils, the claims added here move with the text.
+
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - carryover-text-misstates-dispute (class design, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
-- `burler-step-3-fix.md` states the three dispositions in D1's order, both dispute grounds with D2's every-fix bound and evidence kinds, the still-forbidden grounds, the ground named per `Disputed` entry, and D3's fixed-differently mark inside the changes list.
+- `burler-step-3-fix.md` states the three dispositions in D1's order, both dispute grounds with D2's every-fix bound and evidence kinds, a `Do not flag` finding as `premise false`, an off-surface-only fix as deferred, the still-forbidden grounds, the ground named per `Disputed` entry, and D3's fixed-differently mark inside the changes list.
 - `burler-template-fix-orchestrator.md`'s Validate step checks each finding's premise and its proposed change, and points at instruction 3 for what to do with the result.
 - The next reviewer's prior-rounds block carries D4's rule and still contains `deferred and disputed items`.
 - The claims table pins: both dispute grounds; the every-fix bound; severity, size, cost and rubric disagreement still never justify a dispute; the fixed-differently mark; the Validate step's two checks. The retired `only for a factually wrong premise` claim is gone.
 - A rendered fixer prompt (the existing compose test) still keeps the fix-everything body out of the orchestrator.
 - `pattern/PATTERN-review-round.md`, `internal/burlerengine/doc.go` and `docs/overview.md` state the same rule as the stencil, and no file still says a dispute needs a false premise alone.
-- The burler, stencils and shedadapters packages pass `lyx gate test`, and `lyx loom lint-comments` passes on edited Go files.
+- A converged carry-over entry renders D7's closing text, saying each finding was fixed or disputed and that the fixer report says which; the existing converged row in `carryover_test.go` pins it, and no converged text still says the fixer addressed each finding or that a fix exists.
+- `loom-template-plan.md` and `loom-template-rework.md` describe a carry-over entry as fixed-or-disputed findings with the fixer report saying which, and their existing claims (`is not part of the answer key`, `never plan an entry as scope`) still hold.
+- The burler, discussionparser, stencils and shedadapters packages pass `lyx gate test`, and `lyx loom lint-comments` passes on edited Go files.
 
 ## Notes for the plan writer
 
