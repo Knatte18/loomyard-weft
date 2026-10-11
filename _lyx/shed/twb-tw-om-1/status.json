@@ -1,12 +1,11 @@
 {
-  "current_producer": "Discussion-Write",
-  "state": "running",
+  "current_producer": "Discussion-Bouncer",
+  "state": "paused",
   "error": "",
   "pause_requested": false,
-  "pause_after": "Discussion-Write",
   "activity": {
-    "now": "Discussion-Write",
-    "last": "Loom-Preflight → done",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Write → done",
     "wait": ""
   },
   "history": [
@@ -27,6 +26,13 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-11T11:10:06Z"
+    },
+    {
+      "producer": "Discussion-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/twb-tw-om-1/_lyx/discussion/decision-record.md",
+      "at": "2026-10-11T11:23:41Z",
+      "gate_attempts": 0
     }
   ],
   "product": {
