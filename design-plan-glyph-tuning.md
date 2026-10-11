@@ -1,6 +1,6 @@
 # Glyphs end to end: test members as glyphs, traced plan: binds, a switchable Webster kick-start pack
 
-`plan-glyph-tuning` · Task · enhancement, loom, stencil, webster, quarry · running · Worktree-Create
+`plan-glyph-tuning` · Task · enhancement, loom, stencil, webster, quarry · running · Loom-Preflight
 
 ## Basis
 

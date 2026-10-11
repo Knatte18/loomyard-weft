@@ -15,7 +15,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Glyphs end to end: test members as glyphs, traced plan: binds, a switchable Webster kick-start pack**<br>• Plan cards name changed tests as glyphs, record-batch logs each plan: bind, and Go injects resolved glyph spans into each Webster batch fork behind a config switch | [`plan-glyph-tuning`](design-plan-glyph-tuning.md) | loom | Worktree-Create | loom, stencil, webster, quarry |
+| 1 | **Glyphs end to end: test members as glyphs, traced plan: binds, a switchable Webster kick-start pack**<br>• Plan cards name changed tests as glyphs, record-batch logs each plan: bind, and Go injects resolved glyph spans into each Webster batch fork behind a config switch | [`plan-glyph-tuning`](design-plan-glyph-tuning.md) | loom | Loom-Preflight | loom, stencil, webster, quarry |
 
 #### Normal priority
 
