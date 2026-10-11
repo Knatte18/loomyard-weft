@@ -1,13 +1,13 @@
 # Card 5 — Trace one line per plan: handle in every terminal pass
 
 **Create:**
-- `plan:internal/websterengine#bindCardNotDone` -> `const bindCardNotDone planindex.BindReason = "card-not-done"`
-- `plan:internal/websterengine#bindBatchNotDone` -> `const bindBatchNotDone planindex.BindReason = "batch-not-done"`
-- `plan:internal/websterengine#bindDeltaUnavailable` -> `const bindDeltaUnavailable planindex.BindReason = "delta-unavailable"`
-- `plan:internal/websterengine#bindLanguageNone` -> `const bindLanguageNone planindex.BindReason = "language-none"`
-- `plan:internal/websterengine#logBindOutcomes` -> `func logBindOutcomes(batch int, outcomes []planindex.BindOutcome)`
-- `plan:internal/websterengine_test#fakeIndex.DoneChecks` -> `func (i *fakeIndex) DoneChecks(plan *planparser.Plan, cards []planparser.Card, worktreeRoot string) ([]planindex.Finding, error)`
-- `plan:internal/websterengine_test#TestRecordBatch_BindTrace` -> `func TestRecordBatch_BindTrace(t *testing.T)`
+- `internal/websterengine#bindCardNotDone`
+- `internal/websterengine#bindBatchNotDone`
+- `internal/websterengine#bindDeltaUnavailable`
+- `internal/websterengine#bindLanguageNone`
+- `internal/websterengine#logBindOutcomes`
+- `internal/websterengine_test#fakeIndex.DoneChecks`
+- `internal/websterengine_test#TestRecordBatch_BindTrace`
 
 **Edit:**
 - `internal/websterengine#postBatchInputs`

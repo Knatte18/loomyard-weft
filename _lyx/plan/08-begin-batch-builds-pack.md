@@ -1,10 +1,10 @@
 # Card 8 — begin-batch builds the pack into the fork prompt
 
 **Create:**
-- `plan:internal/websterengine#buildKickstartPack` -> `func buildKickstartPack(deps BeginDeps, index planindex.Index, batch batcher.Batch, number int) *planindex.Pack`
-- `plan:internal/websterengine_test#fakeIndex.KickstartPack` -> `func (i *fakeIndex) KickstartPack(plan *planparser.Plan, cards []planparser.Card, worktreeRoot string) (planindex.Pack, error)`
-- `plan:internal/websterengine_test#fakeIndex.ValidateDispatch` -> `func (i *fakeIndex) ValidateDispatch(plan *planparser.Plan, worktreeRoot string, completed, forthcoming []planparser.Card) ([]planindex.Finding, error)`
-- `plan:internal/websterengine_test#TestBeginBatch_KickstartPack` -> `func TestBeginBatch_KickstartPack(t *testing.T)`
+- `internal/websterengine#buildKickstartPack`
+- `internal/websterengine_test#fakeIndex.KickstartPack`
+- `internal/websterengine_test#fakeIndex.ValidateDispatch`
+- `internal/websterengine_test#TestBeginBatch_KickstartPack`
 
 **Edit:**
 - `internal/websterengine#BeginBatch`

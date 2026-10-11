@@ -1,16 +1,16 @@
 {
   "runGuid": "6e24c39aef2ba6bd61e1bfd73123569f",
-  "planFingerprint": "ebecae52551460093c43ef3b328f528fd8eb6338110571ebc2e25fbf003badfc",
+  "planFingerprint": "d1cfc93d6ea46055ddde98d3b688a4b63b2a8b5a0af945fca4cb1be4b956b093",
   "planFileHashes": {
     "00-overview.md": "0ea87a1939cac30a466f3a4112c6c2c6a8a4d666c8ebfbd8682e3e82cc2c8c36",
     "01-plan-test-member-rule.md": "554034eda27e7488da836a617a1738f7f8fa01c7d9955920377f22997fa0b829",
     "02-kickstart-pack-index.md": "059d96f42be6b6ba155d794b7c099df61b2aaa4edc65f594a698c3573fb27add",
     "03-bind-outcomes.md": "9af9a041de89fcf5fdd06b33c6319ed844153f9493567747f408b4ee9e0b3891",
     "04-owned-handles.md": "13d35965ac413b00b494b71b45db45baeafaa79fbf4ff95c498130bcf4d31c42",
-    "05-bind-trace.md": "a345f1ca10468c9bee7fdb796d6fd9ba71790cad3ea0fa155c5259c03c7f7f8b",
+    "05-bind-trace.md": "86de809f64f6d71102135986eab64f205d4d829536b5a1bea28e5e72b737e9ba",
     "06-kickstart-pack-switch.md": "b06c321ea7dd9d65d4e3f59bb81e835a1fd9dbfee13880f8f16848a6cfe376a4",
-    "07-pack-stencils-and-render.md": "95223d5f5cc8bade21f609431627f48bebd86f0346968c20084813304e99fce3",
-    "08-begin-batch-builds-pack.md": "7f07eec57f0951942ef8ff0aa988294c6bb696d5c48f09cd5e37953907ca2e49"
+    "07-pack-stencils-and-render.md": "88d85408f94145d58f17cdf67fe32b415ade3a42a5aa1aade3e275cfa0368606",
+    "08-begin-batch-builds-pack.md": "5ad764e5d96a66ca2314e1ce56e9048a6b3b014bdc9426c7c4a5eb7509cb0458"
   },
   "planOverviewFrameHash": "0296f58275e38264bd8884a123e4f760d8085940cb6add7f6f40db901aa3bcac",
   "partition": [
@@ -194,7 +194,7 @@
       }
     }
   ],
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "068cbcc202bb407af842b08fc4891154",
   "masterSessionId": "f3b81597-e7e0-4486-9f89-437b50808449",
   "batches": {
@@ -245,20 +245,39 @@
         "08-begin-batch-builds-pack"
       ],
       "cardHashes": {
-        "05-bind-trace": "a345f1ca10468c9bee7fdb796d6fd9ba71790cad3ea0fa155c5259c03c7f7f8b",
+        "05-bind-trace": "86de809f64f6d71102135986eab64f205d4d829536b5a1bea28e5e72b737e9ba",
         "06-kickstart-pack-switch": "b06c321ea7dd9d65d4e3f59bb81e835a1fd9dbfee13880f8f16848a6cfe376a4",
-        "07-pack-stencils-and-render": "95223d5f5cc8bade21f609431627f48bebd86f0346968c20084813304e99fce3",
-        "08-begin-batch-builds-pack": "7f07eec57f0951942ef8ff0aa988294c6bb696d5c48f09cd5e37953907ca2e49"
+        "07-pack-stencils-and-render": "88d85408f94145d58f17cdf67fe32b415ade3a42a5aa1aade3e275cfa0368606",
+        "08-begin-batch-builds-pack": "5ad764e5d96a66ca2314e1ce56e9048a6b3b014bdc9426c7c4a5eb7509cb0458"
       },
       "startSha": "987cf43eadbdc928042311a7ece8d2a1eb00d2cc",
       "kind": "fork",
       "spawnedAt": "2026-10-11T15:18:37Z",
       "sessionId": "f3b81597-e7e0-4486-9f89-437b50808449",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-bind-trace",
+        "status": "done",
+        "head_sha": "faed67c7d832e4cce217f3af825e97584ba52cf8",
+        "deviations": [
+          ".gitattributes",
+          "internal/websterengine/render.go"
+        ]
+      },
+      "cardShas": [
+        "faed67c7d832e4cce217f3af825e97584ba52cf8"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-glyph-tuning/f3b81597-e7e0-4486-9f89-437b50808449/subagents/agent-ad1d5300247701c45.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-glyph-tuning/f3b81597-e7e0-4486-9f89-437b50808449/subagents/agent-ad1d5300247701c45.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-glyph-tuning/f3b81597-e7e0-4486-9f89-437b50808449/subagents/agent-a76960d770a100c92.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-glyph-tuning/f3b81597-e7e0-4486-9f89-437b50808449/subagents/agent-a76960d770a100c92.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-glyph-tuning/f3b81597-e7e0-4486-9f89-437b50808449/subagents/agent-ad1d5300247701c45.jsonl"
   ]
 }

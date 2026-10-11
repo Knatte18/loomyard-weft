@@ -5,11 +5,11 @@
 - `contracts/stencils/webster/webster-fragment-locate-pack.md`
 - `contracts/stencils/webster/webster-fragment-pack-section.md`
 - `contracts/stencils/webster/webster-fragment-pack-empty.md`
-- `plan:contracts/stencils#WebsterFragmentLocateQuarry` -> `var WebsterFragmentLocateQuarry []byte`
-- `plan:contracts/stencils#WebsterFragmentLocatePack` -> `var WebsterFragmentLocatePack []byte`
-- `plan:contracts/stencils#WebsterFragmentPackSection` -> `var WebsterFragmentPackSection []byte`
-- `plan:contracts/stencils#WebsterFragmentPackEmpty` -> `var WebsterFragmentPackEmpty []byte`
-- `plan:internal/websterengine#renderPackSection` -> `func renderPackSection(stencilsDir string, pack planindex.Pack) (string, error)`
+- `contracts/stencils#WebsterFragmentLocateQuarry`
+- `contracts/stencils#WebsterFragmentLocatePack`
+- `contracts/stencils#WebsterFragmentPackSection`
+- `contracts/stencils#WebsterFragmentPackEmpty`
+- `internal/websterengine#renderPackSection`
 
 **Edit:**
 - `contracts/stencils/webster/webster-body-implementer.md`
