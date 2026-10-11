@@ -164,6 +164,12 @@ Decision: D6's migration strip compares each value as written, before ${env:...}
 
 Rationale: An env-expanded comparison strips a literal that only equals this environment's expansion of a marker below, changing the worktree's resolution in any other environment.
 
+### Added after Discussion (parent, 2026-10-11): Migration may add seeded-default keys
+
+Decision: D6 and its acceptance criterion state that migration leaves every key a worktree's file held resolving unchanged, but may add keys the seeded default holds under a worktree whose file lacked them, such as a seed-only alias or lens the prime holds.
+
+Rationale: The sparse layering resolves missing keys from the default, so the claim that every worktree's resolution is unchanged is false for keys the file lacked.
+
 ## Constraints
 
 - `PATTERN-hub-wide-config` changes: `<BoardDir>/_lyx/config/` also holds per-worktree modules' repo defaults, and a hub-wide module also reads the reading worktree's local override, restricted to `LocalKeys`.
