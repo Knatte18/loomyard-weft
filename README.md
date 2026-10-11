@@ -11,18 +11,12 @@ Concrete and claimable; only a task can run.
 
 Held by a run; its scope is locked until the run ends.
 
-#### High priority
-
-| # | Task | Slug | Recipe | At | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Webster forks wake Merriam on every gate wait**<br>• Forks end their turn while a background gate runs, so Merriam gets a finished notice and a wasted turn each time; quick checks and long paths add more | [`fork-wait-noise`](design-fork-wait-noise.md) | loom | Finalize | webster, stencil |
-
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **Shuttle start and seat holds: tolerate a stray % at the prompt, probe every second, cap the seat hold deferral**<br>• A ready pane with a stray % fails the producer, awaitStartup sleeps 10 s between checks, and a seat chair hold deferral of 20 min can hide a wedged advisor | [`shuttle-startup-ready`](design-shuttle-startup-ready.md) | loom | Webster | shuttle, batten |
-| 3 | **Small fixes: tokencount gaps and slug reuse, loom step help, plan rubric file-target rule, batten notice state**<br>• Five small independent fixes across tools/tokencount, loomcli help, the plan review rubric and batten notices | [`small-fixes-oct11`](design-small-fixes-oct11.md) | loom | Plan-Burler | shed, loom, burler, stencil, batten |
+| 1 | **Shuttle start and seat holds: tolerate a stray % at the prompt, probe every second, cap the seat hold deferral**<br>• A ready pane with a stray % fails the producer, awaitStartup sleeps 10 s between checks, and a seat chair hold deferral of 20 min can hide a wedged advisor | [`shuttle-startup-ready`](design-shuttle-startup-ready.md) | loom | Webster | shuttle, batten |
+| 2 | **Small fixes: tokencount gaps and slug reuse, loom step help, plan rubric file-target rule, batten notice state**<br>• Five small independent fixes across tools/tokencount, loomcli help, the plan review rubric and batten notices | [`small-fixes-oct11`](design-small-fixes-oct11.md) | loom | Plan-Burler | shed, loom, burler, stencil, batten |
 
 ### Ready
 
@@ -38,7 +32,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Glyphs end to end: test members as glyphs, traced plan: binds, a switchable Webster kick-start pack**<br>• Plan cards name changed tests as glyphs, record-batch logs each plan: bind, and Go injects resolved glyph spans into each Webster batch fork behind a config switch | [`plan-glyph-tuning`](design-plan-glyph-tuning.md) | loom | `fork-wait-noise`, `small-fixes-oct11` | loom, stencil, webster, quarry |
+| 1 | **Glyphs end to end: test members as glyphs, traced plan: binds, a switchable Webster kick-start pack**<br>• Plan cards name changed tests as glyphs, record-batch logs each plan: bind, and Go injects resolved glyph spans into each Webster batch fork behind a config switch | [`plan-glyph-tuning`](design-plan-glyph-tuning.md) | loom | `small-fixes-oct11` | loom, stencil, webster, quarry |
 
 #### Normal priority
 
@@ -152,3 +146,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 29 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) | loom, stencil |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Labels |
+| --- | --- | --- | --- |
+| 1 | **Webster forks wake Merriam on every gate wait**<br>• Forks end their turn while a background gate runs, so Merriam gets a finished notice and a wasted turn each time; quick checks and long paths add more | [`fork-wait-noise`](design-fork-wait-noise.md) | webster, stencil |
