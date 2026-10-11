@@ -1,9 +1,9 @@
 # Card 14 — parent-review-expiry-probe
 
 **Create:**
-- `plan:internal/parentreview#NewExpiryProbe` -> `func NewExpiryProbe(cfg GateConfig) func() (bool, error)`
-- `plan:internal/parentreview#Store.peekLatest` -> `func (s Store) peekLatest() (Round, bool, error)`
-- `plan:internal/parentreview#TestExpiryProbe` -> `func TestExpiryProbe(t *testing.T)`
+- `internal/parentreview#NewExpiryProbe`
+- `internal/parentreview#Store.peekLatest`
+- `internal/parentreview#TestExpiryProbe`
 
 **Edit:**
 - `internal/parentreview/doc.go`

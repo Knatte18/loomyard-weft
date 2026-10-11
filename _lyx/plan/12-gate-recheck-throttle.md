@@ -1,7 +1,7 @@
 # Card 12 — gate-recheck-throttle
 
 **Create:**
-- `plan:internal/shuttleengine#gateRecheckEvery` -> `const gateRecheckEvery = 5 * time.Second`
+- `internal/shuttleengine#gateRecheckEvery`
 
 **Edit:**
 - `internal/shuttleengine#Run`

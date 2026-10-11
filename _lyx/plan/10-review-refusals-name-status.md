@@ -1,7 +1,7 @@
 # Card 10 — review-refusals-name-status
 
 **Create:**
-- `plan:internal/loomcli#reviewStatusWay` -> `func reviewStatusWay(slug string, bySlug bool) string`
+- `internal/loomcli#reviewStatusWay`
 
 **Edit:**
 - `internal/loomcli#reviewWayNoOpen`

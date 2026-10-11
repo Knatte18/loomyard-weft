@@ -1,8 +1,8 @@
 # Card 13 — gate-entry-expiry-probe
 
 **Create:**
-- `plan:internal/shuttleengine#Run.probeExpiry` -> `func (run *Run) probeExpiry() (string, bool)`
-- `plan:internal/shuttleengine#TestGatePending_ExpiryProbeEndsMidTurnWait` -> `func TestGatePending_ExpiryProbeEndsMidTurnWait(t *testing.T)`
+- `internal/shuttleengine#Run.probeExpiry`
+- `internal/shuttleengine#TestGatePending_ExpiryProbeEndsMidTurnWait`
 
 **Edit:**
 - `internal/shuttleengine#GateEntry`
