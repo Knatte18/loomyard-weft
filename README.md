@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **Batten notices: no attach clause, pair-relative paths, wait is not an error**<br>• Remove the trailing cd && lyx reed attach from batten notices, and render paths relative to the hub directory. | [`batten-notice-trim`](design-batten-notice-trim.md) | darn | Describe | batten, orch |
+| 2 | **Batten notices: no attach clause, pair-relative paths, wait is not an error**<br>• Remove the trailing cd && lyx reed attach from batten notices, and render paths relative to the hub directory. | [`batten-notice-trim`](design-batten-notice-trim.md) | darn | Publish | batten, orch |
 
 ### Ready
 
