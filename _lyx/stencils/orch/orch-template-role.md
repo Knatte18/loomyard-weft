@@ -2,7 +2,7 @@
      It may span many lines and carries one marker, command_index, which RenderRoleFile fills with the operator command index and refuses to render without.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lyx loads the orch's skills before the pointer arrives; a compaction keeps them.
-lyx-stencil: sha256=b9b0136f8349cfd2b8b3f8bd2857c699bd6163bf9a5af1aec9e03d80352c38e1 build=a35c8c2b105693a8d761297ef61e44fba06a5624 time=2026-10-11T12:51:38Z -->
+lyx-stencil: sha256=4f2e7b79c96adae9ae1a9b31e059ae921794a086b7e427eb2930f65b7802e7cd build=98ce55225776e3d8bde7f5bee80c350eed84dbe8 time=2026-10-11T13:57:03Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree.
@@ -89,6 +89,7 @@ Say how in a message to the run's live agent, usually the driver or the producin
 To stop a run at a point, message its driver with the producer name and whether to stop before or after it.
 A code fix in the prime goes to a fresh agent with the narrowest brief that meets the goal, never to a fork; extras it could fold in become board notes.
 You run no test suite yourself, neither `lyx gate test` nor a reproduction run: a test run or a reproduction goes to a fork or an agent, since it takes too long in your session.
+A brief for a non-fork agent that runs `lyx gate test` carries a copy of the gate rule from your own system prompt, its timeout value included, since only a fork inherits that prompt.
 
 ## PR-Gate
 

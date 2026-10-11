@@ -5,7 +5,7 @@
      stencil.FillOptional requires all of them non-empty.
      {{.friction_directive}} is the one optional marker (filled via stencil.FillOptional), rendering as nothing when Tier 2 is off.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=f13db08a2ecfad9b3f13d10900b83d6fd31b6deccd12e336436383fc7f1007bc -->
+lyx-stencil: sha256=e4e1d24df727d682e9e6e952cef5e0ec563d0580697c05245f97726dd752f3ea build=98ce55225776e3d8bde7f5bee80c350eed84dbe8 time=2026-10-11T13:57:03Z -->
 
 # Webster verify-gate fixer fork — fix the recorded failures in source, commit, report
 
@@ -33,15 +33,19 @@ A report that lists dirty paths instead of failures means the worktree held unco
 
 ## The rules
 
+Your session's working directory already is the worktree root, `{{.worktree_root}}`: run every Bash command from there, give the paths in Bash commands worktree-relative, and follow the gate rule in your system prompt for `cd` and for quick checks.
+Paths you pass to the Read, Write and Edit tools stay absolute.
+You never run a Bash call in the background, and you end your turn only after your final reply.
+
 - Fix the cause in source.
 - Never delete, skip or weaken a test to make it pass: no `t.Skip`, no loosened assertion, no removed case.
   A test that is wrong is fixed to assert what the plan intends, never to assert less.
 - Never touch the plan directory `{{.plan_dir}}` or anything under `_lyx`: they sit outside every code commit, and the run-exit audit flags a fork that writes there.
-- Commit each fix to the repo with normal git from `{{.worktree_root}}`, with the subject `fix: <summary>`, where `<summary>` says what the fix repairs.
+- Commit each fix to the repo with normal git from your working directory, with the subject `fix: <summary>`, where `<summary>` says what the fix repairs.
   Never commit a path under `_lyx`.
 - Never write, create or delete Merriam's contract files `{{.outcome_path}}` and `{{.summary_path}}`, even though you inherit Merriam's instruction to write them as a final action.
   A fixer writing either forges the run's terminal judgment and halts the run at its exit audit.
-- Before you report, run `lyx gate test --tags integration <the findings' packages>` as its own Bash call with `run_in_background`, wait for it, and fix what it still reports.
+- Before you report, run `lyx gate test --tags integration <the findings' packages>` as a foreground Bash call under the gate rule in your system prompt, and fix what it still reports.
   A slot-busy exit (`lyx gate test` exiting with a JSON error naming the slot holders) is re-run, never counted as a failure.
 - Leave the worktree clean: no uncommitted change may remain when you end your turn.
 

@@ -6,7 +6,7 @@
      stencil.FillOptional requires the three original ones non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
      parent_directive is a third optional marker, rendered by internal/parentdirective.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=d55d9d5a6216e28eb3285be99cd10ed35cf85a51b8bae679114e9bd3630da2d5 build=c00b2e524fb6d3ab53b64a6c901f8a4fcc80c7e3 time=2026-10-11T11:09:36Z -->
+lyx-stencil: sha256=da3e39cce51ebcb05aeaa4db7d7137cc6821d7e6ed06a30e979a302cfef501a3 build=98ce55225776e3d8bde7f5bee80c350eed84dbe8 time=2026-10-11T13:57:03Z -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -178,7 +178,7 @@ That is the `card-field-overlap` finding — see `{{.specs_dir}}/loom/loom-plan-
 Every `Verify:`/`verify:` value — a card's optional `**Verify:**` and the plan-level `## verify:` section — is one or more runnable shell commands, never prose;
 the plan-level `## verify:` is the single integration check run once at the end of the whole plan.
 A per-card `**Verify:**` is exceptional rather than routine, written only for what a package-scoped automatic test run cannot catch on its own — the plan-level `## verify:` section is the single integration check for the whole plan.
-A card's `**Verify:**` is package-scoped: a module-wide pattern (`./...`, `all`) or a `tmux` or `llm` tag run is refused by `verify-module-wide`, and `lyx gate test [-C <module>] [--tags <tags>] <packages>`, run as a background Bash call, is the route for a wider or tagged run.
+A card's `**Verify:**` is package-scoped: a module-wide pattern (`./...`, `all`) or a `tmux` or `llm` tag run is refused by `verify-module-wide`, and `lyx gate test [-C <module>] [--tags <tags>] <packages>`, run in the foreground under the gate rule in your system prompt, is the route for a wider or tagged run.
 The plan-level `## verify:` section must cover every package any card targets, running each package's tests including its hermetic build-tagged tests (for example `-tags integration`), either by naming each package or by a pattern that covers them (`./...`).
 A nested module's packages are tested with `go -C <module>` and module-relative package paths; `verify-nested-module` in `{{.specs_dir}}/loom/loom-plan-spec.md` names the form the gate refuses.
 The `llm` tag, which gates tests that spawn a real LLM, is compiled rather than run (for example `go vet -tags llm <packages>`).
