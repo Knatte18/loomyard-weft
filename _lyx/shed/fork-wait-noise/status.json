@@ -5,7 +5,7 @@
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
-    "last": "Seed-Child → done",
+    "last": "Run-Shed → bounced to Run-Shed",
     "wait": ""
   },
   "history": [
@@ -20,6 +20,34 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-11T13:01:04Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at Discussion-Bouncer",
+      "at": "2026-10-11T13:24:02Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at Discussion-Bouncer",
+      "at": "2026-10-11T13:24:44Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at Discussion-Bouncer",
+      "at": "2026-10-11T13:30:46Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at Discussion-Bouncer",
+      "at": "2026-10-11T13:31:24Z",
+      "budget_exempt": true
     }
   ]
 }
