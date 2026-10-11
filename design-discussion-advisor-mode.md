@@ -24,6 +24,27 @@ This could replace the `all | areas` switch: the per-entry area is the selection
 An alternative to an advisor: one seat is a co-chair that does its own exploration of the code and the task rather than only answering the chair's batches, so the draft gets a second independent study.
 How the co-chair's findings reach the chair, and who writes the decision record, is open.
 
+## Lens advisors as forks of the chair (2026-10-11)
+
+The operator compares lens advisors with Burler's review fan, whose lens forks each review from one focus.
+Burler's lenses are forks of the reviewer: they inherit its context and cached prefix and run on its model.
+Seats advisors are fresh sessions on their own models, and each re-reads the code; in the first bench run (`dbench-ohsh`) the advisor's cache reads exceeded the chair's.
+A variant: fork the lens advisors from the chair once it has read the task and code, so each lens starts with the chair's study at little cost, at the price of running on the chair's model.
+Fresh-session advisors give breadth through different models, chair forks through different focus; a later bench can compare the two.
+Lenses need a producer change either way: today the engine and chair stencil send every batch to every advisor with no focus.
+
+## Board advisor in place of parent review (2026-10-11)
+
+The operator asks whether an advisor with a board lens could take over Discussion's parent review, whose job is mostly checking the draft against everything else planned on the board.
+Parent review also checks the draft against operator decisions made in the orch chat but not yet on the board, and against runs in flight; the one parent-review reject on 2026-10-11 (`per-role-models` round 1, seed model) was of that kind, which no advisor could have caught.
+Proposal: put a board-lens advisor in the second bench round and compare what it catches with what parent review catches before making parent review optional.
+
+## Advisor answers (operator, 2026-10-11)
+
+Advisors write too much.
+When an advisor agrees with the chair's pick, it says so in one line with no reasoning, since "I agree because ..." is clutter for the chair.
+Every extension, correction or departure is explained.
+
 ## When (operator, 2026-10-11)
 
 Advisors with different roles is a later enhancement.
