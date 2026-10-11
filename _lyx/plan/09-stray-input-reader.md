@@ -1,8 +1,8 @@
 # Card 9 — The StrayInputReader capability and Claude's stray-character judgment
 
 **Create:**
-- `plan:internal/shuttleengine#StrayInputReader` -> `type StrayInputReader interface`
-- `plan:internal/shuttleengine/claudeengine#Claude.StrayInput` -> `func (c *Claude) StrayInput(capture string) (text string, ok bool)`
+- `internal/shuttleengine#StrayInputReader`
+- `internal/shuttleengine/claudeengine#Claude.StrayInput`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine/session_test.go`

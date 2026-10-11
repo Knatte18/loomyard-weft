@@ -1,7 +1,7 @@
 # Card 7 — Startup needs a SessionStart line beside the pane's ready reading
 
 **Create:**
-- `plan:internal/shuttleengine#sessionStartRecorded` -> `func sessionStartRecorded(engine Engine, eventsPath string) (bool, error)`
+- `internal/shuttleengine#sessionStartRecorded`
 
 **Edit:**
 - `internal/shuttleengine#Launch`

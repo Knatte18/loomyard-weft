@@ -1,7 +1,7 @@
 # Card 6 — Confirm /clear and /compact by their SessionStart lines
 
 **Create:**
-- `plan:internal/shuttleengine#sessionStartedSince` -> `func sessionStartedSince(engine Engine, eventsPath string, offset int64, source SessionStartSource) bool`
+- `internal/shuttleengine#sessionStartedSince`
 
 **Edit:**
 - `internal/shuttleengine#sendContext`

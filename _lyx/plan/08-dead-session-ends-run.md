@@ -1,7 +1,7 @@
 # Card 8 — A proven dead Claude process ends the run
 
 **Create:**
-- `plan:internal/shuttleengine#Run.sessionGone` -> `func (run *Run) sessionGone() bool`
+- `internal/shuttleengine#Run.sessionGone`
 
 **Edit:**
 - `internal/shuttleengine#Run`

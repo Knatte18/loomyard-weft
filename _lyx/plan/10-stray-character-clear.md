@@ -1,7 +1,7 @@
 # Card 10 — Clear a lone stray character from an idle box once, then read it as residue
 
 **Create:**
-- `plan:internal/shuttleengine#strayClear` -> `type strayClear struct`
+- `internal/shuttleengine#strayClear`
 
 **Edit:**
 - `internal/shuttleengine#InputBoxClearer`
@@ -17,7 +17,7 @@
 - `pattern/PATTERN-pane-text-injection.md`
 
 **Uses:**
-- `plan:internal/shuttleengine#StrayInputReader`
+- `internal/shuttleengine#StrayInputReader`
 
 **Intent:**
 D8's guard half, closing #554, over the `StrayInputReader` capability card 9 adds.
