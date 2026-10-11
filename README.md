@@ -28,11 +28,17 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
+_None._
+
+### Layer A
+
+Waits only on Running or Ready entries.
+
 #### Normal priority
 
 | # | Task | Slug | Recipe | After | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Batten windows stay but are hidden from the status bar** | [`batten-windows-hidden`](design-batten-windows-hidden.md) | darn |  | batten, reed |
+| 1 | **Batten windows stay but are hidden from the status bar** | [`batten-windows-hidden`](design-batten-windows-hidden.md) | darn | `batten-notice-trim` | batten, reed |
 
 ## Notes
 
