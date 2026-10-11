@@ -34,8 +34,9 @@ Every `list-sessions` argv in the package is built through `listSessionsArgv` wi
 `ListSessions`'s doc comment names the filter in place of the identical bare invocation it describes.
 `statusFormatSessions` wraps each of the `#{S:}` loop's two bodies in `#{?<filter>,<body>,}`, so the status bar's session row skips a session that does not count; a conditional in a loop body is evaluated per session (probed).
 
-`TestListSessions` asserts the one call's argv is `listSessionsArgv` for the host GOOS with the `#{session_name}` format, beside its existing capture check.
-`TestSwitchClientVia_IssuesOnlyTheThreeCommands`'s `wantArgv` rows carry the filtered `list-sessions` argv.
+`TestListSessions` asserts the one call's argv against a literal, beside its existing capture check: `list-sessions -f <reedSessionFilter> -F #{session_name}` off Windows and `list-sessions -F #{session_name}` on Windows.
+It also gains two literal rows over `listSessionsArgv`, in the shape of `TestServerSpawnArgv`'s `goos` rows, one for `linux` and one for `windows`, so both halves of the split are pinned on every host.
+`TestSwitchClientVia_IssuesOnlyTheThreeCommands`'s `wantArgv` rows carry the filtered `list-sessions` argv as literals, never built through `listSessionsArgv`.
 `TestBoot_TmuxConf` gains the subtest for a file that runs `new-session -d -s operator`: after the boot `ListSessions` returns the reed session alone, the expansion of `#{T:status-format[1]}` against the reed session names no `operator` button, and after the worktree's `Down` the server is gone, which `IsNoServer` on a `ListSessions` error shows; the `switchClientVia` argv row stands in for the switch, since the PTY-attached switch harness is linux-only.
 Every other test of these call sites scripts the fake by verb and is unaffected.
 
@@ -44,6 +45,6 @@ Every other test of these call sites scripts the fake by verb and is unaffected.
 Bound: the filter lets the server be killed while a file-created session lives and hides that session from reed, and nothing else; a reed session still keeps the server alive, and on a server without a `sourced` claim the filter admits every session, so Windows and pre-change servers behave as today.
 A multiplexer that rejects the format in the status bar degrades the session row, non-fatally like every geometry pin.
 
-**ImpactSummary:** Eight call sites in one package plus one status-bar format; the two engine-less exports change their listing for `internal/reedcli` and `internal/pairteardown` without a signature change, and the argv on Windows is byte-identical to today's.
+**ImpactSummary:** Every `list-sessions` call in one package plus one status-bar format; the two engine-less exports change their listing for `internal/reedcli` and `internal/pairteardown` without a signature change, and the argv on Windows is byte-identical to today's.
 
 **Verify:** lyx gate test --tags tmux ./internal/reedengine

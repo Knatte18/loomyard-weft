@@ -30,7 +30,9 @@ On POSIX it reads the home directory through `os.UserHomeDir`, passing the empty
 `ensureServerAndSessionLocked` and `withBootOpLockKeepingZoom` take the new result; this card discards it in both, and card 3 consumes it in the boot.
 
 `TestTmuxConfPath` is table-driven over a `t.TempDir` fixture: the empty value, a `~/` value expanding against the home argument to an existing file, an absolute existing regular file accepted unchanged, and one refusal row each for a relative path, a missing file, a directory, a name holding `[`, a name holding a space, and a name holding `$`; every refusal row asserts the error names `tmux_conf`, `LYX_REED_TMUX_CONF` and the path.
-`TestUp_BootValidation` gains rows `TmuxConfRelative`, `TmuxConfMissing` and `TmuxConfGlobChar`, each skipping on Windows in `setup` the way `ShellUnresolvable` does, with `wantErr` naming the key, so the refusal is pinned at both boot entries with zero tmux calls; a row that needs a fixture file creates it in `setup` and hands the path to `configure` through a variable the row's closures share.
+`TestUp_BootValidation` gains two rows, both setting the relative path `tmux.conf`, which needs no fixture file.
+`TmuxConfRelative` skips on Windows in `setup` the way `ShellUnresolvable` does, with `wantErr` naming the key, so the refusal's wiring is pinned at both boot entries with zero tmux calls; `TestTmuxConfPath` stays the covering test for each refusal class, as it does for `shell`'s single `ShellUnresolvable` row.
+`TmuxConfUnvalidatedOnWindows` skips off Windows, with `notErr` naming the key the way `ValidWatchdog_On` does, so the Windows boot is not refused for `tmux_conf` (D7's "neither validated" half).
 `test-budget.yaml` raises `internal/reedengine` to 248 for the new test.
 
 `doc.go`'s "Operator config" paragraph gains one sentence: a non-empty `tmux_conf` is refused on a POSIX boot unless it names an absolute path to an existing regular file free of whitespace and the listed characters, naming the key, the variable and the path; card 3 rewrites the paragraph around the sourcing itself.

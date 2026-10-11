@@ -7,7 +7,6 @@
 - `internal/reedengine/template_windows.yaml`
 - `internal/reedengine_test#TestLoadConfig_TemplateDefaultsResolve`
 - `internal/reedengine_test#TestLoadConfig_EnvOverride`
-- `internal/configreg_test#TestFill`
 - `internal/testkit/tmuxkit#setEnv`
 - `internal/testkit/tmuxkit#TestSetEnv`
 
@@ -21,7 +20,7 @@ The Windows comment says the key is parsed but neither validated nor sourced, si
 
 `TestLoadConfig_TemplateDefaultsResolve` asserts `TmuxConf` is empty; the package runs under `tmuxkit.Main`, which this card makes unset the variable, so a developer's own value cannot reach the assertion.
 `TestLoadConfig_EnvOverride` sets `LYX_REED_TMUX_CONF` to a path through `t.Setenv` and asserts `TmuxConf` carries it verbatim, since loading applies no validation.
-`TestFill` gains the row `reed dropped tmux_conf` with key path `tmux_conf`, pinning that a reed.yaml lacking the key loads with the template default and that "lyx config reconcile", which fills from the same template, adds it.
+The criterion that "lyx config reconcile" adds the key to a reed.yaml lacking it needs no new row: `TestFill`'s `reed dropped top-level key` row pins, for an `${env:...}` key, that the load takes the template default and the fill writes the key back, and the fill is key-agnostic, so the `TestLoadConfig_EnvOverride` assertion that the template carries `tmux_conf` under `LYX_REED_TMUX_CONF` completes it.
 
 `setEnv` additionally runs `os.Unsetenv("LYX_REED_TMUX_CONF")`, beside the `TMUX` and `TMUX_PANE` unsets, so every reed.yaml a tagged test renders from the template resolves `tmux_conf` to empty.
 The kit's package doc comment gains one sentence saying so.
