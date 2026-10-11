@@ -1,0 +1,37 @@
+status: OK
+head_sha: b72553f9a33cfa64d51df0100c3c98cc45fbe3fa
+deviations:
+  - .gitattributes
+  - contracts/specs/shed-recipe-spec.md
+  - contracts/stencils/loom/loom-template-parent-review-brief.md
+  - internal/loomengine/parentreview.go
+  - internal/loomengine/parentreview_test.go
+  - internal/burlerengine/cluster.go
+  - internal/burlerengine/geometry.go
+  - internal/burlerengine/engine.go
+  - internal/burlerengine/handoff.go
+  - internal/burlerengine/resume.go
+  - internal/burlerengine/prompt.go
+  - internal/burlerengine/profile.go
+  - internal/pattern/doc.go
+  - internal/pattern/pattern.go
+  - internal/friction/doc.go
+  - internal/friction/friction.go
+  - internal/shedadapters/bouncer.go
+  - internal/shedadapters/bouncerfiles.go
+  - internal/shedadapters/bouncer_clear_test.go
+  - internal/shedadapters/bouncer_fixture_test.go
+  - internal/shedadapters/burler.go
+  - internal/shedadapters/burler_test.go
+  - internal/shedadapters/attachprobe_test.go
+  - internal/shedadapters/focus.go
+  - internal/shedadapters/gateattempts.go
+  - internal/shedadapters/roundusage.go
+  - internal/shedadapters/singlellm.go
+  - internal/shedrecipe/entries_bouncer_test.go
+  - internal/shedrecipe/fixture_test.go
+  - internal/shuttleengine/run.go
+  - internal/testkit/shedfake/shedfake.go
+  - internal/testkit/shedfake/shedfake_test.go
+  - internal/loomshed/loomshed.go
+  - pattern/PATTERN-review-round.md

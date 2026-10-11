@@ -1,6 +1,6 @@
 {
   "runGuid": "649e6fa3e0aee8edd7e28b74d9fe8760",
-  "planFingerprint": "4dfa11e17cd4683c276a19431f860a5bed940a0d118317be5c0e2bde9e3c1be0",
+  "planFingerprint": "66a7d2e91bdfc9557a46b5d3de8058c86efe2d43c00f5bda03adaa86bc107ac6",
   "planFileHashes": {
     "00-overview.md": "aa1b8c249f906e2aec1b44bcd671945705f7335e0fae9dc45c37f882899bcfff",
     "01-review-carries-fix.md": "a799aaa0f015ec23d61ab47f61f703099c5317dd6ee5fb49097b3ad4b9027a38",
@@ -12,7 +12,7 @@
     "07-bouncer-auto-accept.md": "80feb41e73d723adfd80b2336fa2e88fae7e02831f7efd6e01c3ed57f03c0283",
     "08-perch-budget-keys.md": "92b14359c27b8e272aaa3d250e59f45f61090a2873a2a08ab95974b98ddfbec2",
     "09-perch-budget-wiring.md": "7c4f15267799bb7fae9344932d310ead92cfc7d321b4fc810586b4477637eb3e",
-    "10-retire-burler-round.md": "cae5e5f874f4c86e20d6ee7cde9eb03c1d1d7a4511ace3bcb1fb23fad9f43fe4"
+    "10-retire-burler-round.md": "43d78c1cd3094ce5929439f7b673ced44bbe8b1683d70694f993b93b1671783e"
   },
   "planOverviewFrameHash": "54c6ff002692467dd7dd0c1bbb5e3b544bad958485f8fa4f5093352b64d76429",
   "partition": [
@@ -412,7 +412,7 @@
       }
     }
   ],
-  "currentBatch": 10,
+  "currentBatch": 0,
   "masterStrand": "2c86fa9c079c3fb37dac2b5ffe110dd5",
   "masterSessionId": "0fbd85a5-7f16-469f-9570-80370a462352",
   "batches": {
@@ -455,14 +455,64 @@
         "10-retire-burler-round"
       ],
       "cardHashes": {
-        "10-retire-burler-round": "cae5e5f874f4c86e20d6ee7cde9eb03c1d1d7a4511ace3bcb1fb23fad9f43fe4"
+        "10-retire-burler-round": "43d78c1cd3094ce5929439f7b673ced44bbe8b1683d70694f993b93b1671783e"
       },
       "startSha": "314ad550ebc0e2d2a8956fabe2976de7d3c7f175",
       "kind": "fork",
       "spawnedAt": "2026-10-11T18:03:56Z",
       "sessionId": "0fbd85a5-7f16-469f-9570-80370a462352",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "10-retire-burler-round",
+        "status": "done",
+        "head_sha": "b72553f9a33cfa64d51df0100c3c98cc45fbe3fa",
+        "deviations": [
+          ".gitattributes",
+          "contracts/specs/shed-recipe-spec.md",
+          "contracts/stencils/loom/loom-template-parent-review-brief.md",
+          "internal/loomengine/parentreview.go",
+          "internal/loomengine/parentreview_test.go",
+          "internal/burlerengine/cluster.go",
+          "internal/burlerengine/geometry.go",
+          "internal/burlerengine/engine.go",
+          "internal/burlerengine/handoff.go",
+          "internal/burlerengine/resume.go",
+          "internal/burlerengine/prompt.go",
+          "internal/burlerengine/profile.go",
+          "internal/pattern/doc.go",
+          "internal/pattern/pattern.go",
+          "internal/friction/doc.go",
+          "internal/friction/friction.go",
+          "internal/shedadapters/bouncer.go",
+          "internal/shedadapters/bouncerfiles.go",
+          "internal/shedadapters/bouncer_clear_test.go",
+          "internal/shedadapters/bouncer_fixture_test.go",
+          "internal/shedadapters/burler.go",
+          "internal/shedadapters/burler_test.go",
+          "internal/shedadapters/attachprobe_test.go",
+          "internal/shedadapters/focus.go",
+          "internal/shedadapters/gateattempts.go",
+          "internal/shedadapters/roundusage.go",
+          "internal/shedadapters/singlellm.go",
+          "internal/shedrecipe/entries_bouncer_test.go",
+          "internal/shedrecipe/fixture_test.go",
+          "internal/shuttleengine/run.go",
+          "internal/testkit/shedfake/shedfake.go",
+          "internal/testkit/shedfake/shedfake_test.go",
+          "internal/loomshed/loomshed.go",
+          "pattern/PATTERN-review-round.md"
+        ]
+      },
+      "cardShas": [
+        "b72553f9a33cfa64d51df0100c3c98cc45fbe3fa"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-split-budget/0fbd85a5-7f16-469f-9570-80370a462352/subagents/agent-a87aa85a6c8542630.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-split-budget/0fbd85a5-7f16-469f-9570-80370a462352/subagents/agent-a87aa85a6c8542630.jsonl"
+      ]
     },
     "4": {
       "slug": "split-burler-rows",
@@ -567,6 +617,7 @@
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-split-budget/0fbd85a5-7f16-469f-9570-80370a462352/subagents/agent-a700753ba62f1574c.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-split-budget/0fbd85a5-7f16-469f-9570-80370a462352/subagents/agent-a1ebcf49a81e52040.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-split-budget/0fbd85a5-7f16-469f-9570-80370a462352/subagents/agent-ae03839f91bf23243.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-split-budget/0fbd85a5-7f16-469f-9570-80370a462352/subagents/agent-ae03839f91bf23243.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-split-budget/0fbd85a5-7f16-469f-9570-80370a462352/subagents/agent-a87aa85a6c8542630.jsonl"
   ]
 }

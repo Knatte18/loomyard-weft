@@ -116,7 +116,7 @@
 - `internal/burlerengine#seatPrompts`
 
 **Create:**
-- `plan:internal/burlerengine#chairPrompt` -> `func chairPrompt(t *testing.T, stencilsDir, parentName string, p *Profile, table seatengine.Table) string`
+- `internal/burlerengine#chairPrompt`
 
 **Edit:**
 - `internal/shedadapters#BouncerConfig`
