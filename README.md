@@ -45,6 +45,14 @@ Waits only on Running or Ready entries.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
+### Bugs
+
+#### Normal priority
+
+| # | Note | Slug | Labels |
+| --- | --- | --- | --- |
+| 1 | **Webster fork used sed -i and an rm on a computed /tmp path, stalling on a permission prompt**<br>• An implementer fork broke the edit directive and hit Claude Code's dangerous-rm prompt | [`webster-fork-shell`](design-webster-fork-shell.md) | webster, stencil |
+
 ### Enhancements
 
 #### High priority
