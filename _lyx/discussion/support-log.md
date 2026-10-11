@@ -24,6 +24,8 @@ Autonomous run: no operator answered; every pick below is an auto-pick recorded 
 - Restating the timeout number in every stencil: drifts from the constant; a pointer at the steer keeps one source.
 - A PATTERN entry for the foreground rule: it is agent guidance pinned by claims tests, not a code-structure invariant.
 - A configurable ceiling in `shuttle.yaml`: no one asked for a per-hub value; one constant suffices.
+- A ceiling below `step_idle_timeout_min` instead of counting forks as activity (D9): the quiet stretch a waiting Merriam shows is the whole batch, not one call, so no ceiling keeps a long batch alive.
+- Counting an outstanding fork as live activity in `shuttleengine`: it would read a hung fork as live until the run deadline; reading the fork's own transcript keeps the idle kill working on a fork that stopped writing.
 
 ## Review rounds
 
@@ -39,3 +41,5 @@ _No rounds yet._
 - Q6: Do the orch's own agent briefs need the rule? — Resolved, auto-pick: forks inherit the steer; fresh agents get it through a pointer in the orch's brief (D6).
 - Q7: Does Master need a guard for an interim notice? — Resolved, auto-pick: yes, one line in loop step 4 (D5).
 - Q8: Does Claude Code honour `BASH_MAX_TIMEOUT_MS` above ten minutes? — Open: assumed yes; listed under Open risks, observable in the first Webster run after landing.
+- Q9: How do the idle watchdogs see a Merriam waiting on a working fork? — Resolved, auto-pick: claudeengine's activity reading counts the session's fork transcripts and an in-flight fork tool call, the latter for at most the Bash timeout ceiling past the fork's last write (D9).
+- Q10: Does a fork that sent an interim notice stay outstanding in shuttle? — Resolved from evidence: no; Claude Code reports it `finished` and the Stop payload lists only running tasks, so D5 states its bounds against a held turn end and a gated arrival.
