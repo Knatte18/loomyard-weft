@@ -1,4 +1,4 @@
-# Card 7 — A proven dead Claude process ends the run
+# Card 8 — A proven dead Claude process ends the run
 
 **Create:**
 - `plan:internal/shuttleengine#Run.sessionGone` -> `func (run *Run) sessionGone() bool`

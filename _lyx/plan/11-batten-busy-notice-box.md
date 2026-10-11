@@ -1,4 +1,4 @@
-# Card 9 — Batten's driver-busy notice quotes the box text
+# Card 11 — Batten's driver-busy notice quotes the box text
 
 **Edit:**
 - `internal/battenshed#innerRunProducer.noticeDriverBusy` -> `func (p *innerRunProducer) noticeDriverBusy(ctx context.Context, w *childWait, cause error)`

@@ -1,4 +1,4 @@
-# Card 5 — Confirm /clear and /compact by their SessionStart lines
+# Card 6 — Confirm /clear and /compact by their SessionStart lines
 
 **Create:**
 - `plan:internal/shuttleengine#sessionStartedSince` -> `func sessionStartedSince(engine Engine, eventsPath string, offset int64, source SessionStartSource) bool`
@@ -29,7 +29,7 @@ Bound: the wait never exceeds the existing submit window, and an engine with no 
 
 `TestRunner_ClearSession_PlaysScriptedSequence` and `TestRunner_CompactSession_PlaysSequenceForFocus` gain rows: a matching `SessionStart` line appended past the pre-send offset confirms the send; a line with the other source does not;
 with none in the window the send confirms on the empty box once the window closes.
-The fake engine parses the `SESSIONSTART:<source>` line card 2 introduced, and the fake reed appends it on the paste.
+The fake engine parses the `SESSIONSTART:<source>` line card 3 introduced, and the fake reed appends it on the paste.
 `shuttleengine/doc.go`'s paragraph on `Runner.ClearSession` and `Runner.CompactSession` states the confirmation.
 
 **ImpactSummary:** `Runner.ClearSession` and `Runner.CompactSession`, and so the orch watcher's cycles, confirm on the hook line and wait up to the submit window when it never comes; `Runner.ReloadPlugins` and every other send are unchanged.

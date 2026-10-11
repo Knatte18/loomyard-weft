@@ -1,4 +1,4 @@
-# Card 4 — Read a fork transcript's pending call from its tail
+# Card 5 — Read a fork transcript's pending call from its tail
 
 **Edit:**
 - `internal/shuttleengine/claudeengine#holdsPendingToolCall`

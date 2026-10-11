@@ -1,4 +1,4 @@
-# Card 3 — PermissionRequest reads asking at once, and every Notification type is mapped
+# Card 4 — PermissionRequest reads asking at once, and every Notification type is mapped
 
 **Create:**
 - `plan:internal/shuttleengine/claudeengine#notificationElicitationURLDialog` -> `const notificationElicitationURLDialog = "elicitation_url_dialog"`
@@ -9,6 +9,7 @@
 - `internal/shuttleengine#SessionFold.applyTranscriptMarkers`
 - `internal/shuttleengine/claudeengine/signals_test.go`
 - `internal/shuttleengine/sessionstate_test.go`
+- `internal/shuttleengine/claudeengine/testdata/corpus/hook-capture/case.yaml`
 - `internal/shuttleengine/doc.go`
 - `internal/shuttleengine/claudeengine/doc.go`
 
@@ -23,7 +24,8 @@ An ask from an `AskUserQuestion` call or a `Notification` is released the same w
 Bound: an ask holds every send until the next turn signal or an interrupt marker; a granted permission writes neither, so it reads asking for the rest of its turn.
 
 Tests:
-`TestParseSessionSignals` gains rows over the captured `PermissionRequest` and `Notification` lines in `testdata/hooks/events.jsonl` and one row per table entry, an unknown type yielding no signal;
+`TestParseSessionSignals` gains rows over the captured `PermissionRequest` and `Notification` lines in `testdata/corpus/hook-capture/events.jsonl` and one row per table entry, an unknown type yielding no signal;
+the `hook-capture` corpus case's `states` gains the asking entry its `PermissionRequest` line now yields, and changes any `Notification` entry the table maps differently, so `TestCorpus_ReplaysEachTurnEnd` replays the real lines through the new mapping;
 `TestSessionFold` gains rows: `PermissionRequest` reads asking, an interrupt marker past that ask reads idle-stalled with cause interrupt, and a marker older than the ask leaves it asking.
 `claudeengine/doc.go` and `shuttleengine/doc.go`'s fold section state the table and the release.
 
