@@ -21,3 +21,19 @@ Then the operator watches it in action on at least one live run before it is swi
 
 The seats producer with an empty `discussion_advisors` list covers the single writer's job: one chair prompt for every advisor count says "use your advisors if you have any; with none, decide each question yourself as you judge best", with no conditional rendering.
 Once that is tested, the single producer is parked, since seats with N=0 covers it; the bench should include an N=0 run against solo to show they match.
+
+## Bench design (operator, 2026-10-11)
+
+Runs after `seats-chair-first` has landed and is deployed, so the chair starts first and asks in rounds.
+A fresh agent run from the prime drives it; neither loom nor darn fits, since the output is a report, not a change.
+
+- Reference: `webster-stability`, whose Discussion solo `fable[high]` wrote on base 800a0e892.
+  Its first draft (records repo, `archive/webster-stability/*`, commit 82e8b0f9), its final discussion after three Discussion-Review rounds (e77a1372), and each round's findings are the answer key; `loop-small-bugs` (base 292bec755) is the fallback.
+- Configurations, at most one advisor:
+  - seats (chair, advisor): (`opus[high]`, `opus[medium]`), (`opus[high]`, `sonnet[high]`), (`opus[high]`, `sonnet[medium]`), (`opus[medium]`, `sonnet[medium]`);
+  - seats with N=0: `fable[medium]`, `opus[high]`, `opus[medium]`;
+  - control: the single producer on `opus[medium]`, against seats N=0 on `opus[medium]`.
+- Method: one bench pair per configuration, reset to the base, models in the pair's own `loom.yaml` (`discussion_producer`, `discussion`, `discussion_advisors`), `lyx loom step` through Discussion-Write only, then the decision record and support log copied out.
+- Order: one DualDW run first, (`opus[high]`, `sonnet[high]`), which the operator watches; the rest run in parallel once that one holds.
+- Grading: each reference finding the Bouncer kept, avoided or repeated; decision overlap with the final discussion, new and missing decisions; writer tokens and wall time (`tools/tokencount`); how many batches the chair sent and whether it used the answers.
+- Report: `docs/research/discussion-bench.md`.
