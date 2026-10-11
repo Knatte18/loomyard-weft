@@ -485,22 +485,6 @@
       "body": "Operator, 2026-10-08: quarry gains `Enclose`, written as quarry's task `enclose-locations` (in the quarry repo; the operator spawns it).\nIt maps `file:line` ranges from tool output to the innermost enclosing member glyphs, with the same Symbol data `Resolve` returns, also at a git revision (`quarry enclose [--rev R]`).\nMarkdown is out of its scope: a `.md` location is a per-item rejection.\n\nUse in Loomyard once it lands, building on the kick-start pack:\nthis waits for task `plan-glyph-tuning`, which builds the Webster pack behind a config switch, and for its with/without measurement to show the pack helps (operator, 2026-10-11).\n\n- Verify failures (`go test` failure lines, `go vet`, compile errors) give the recovery agent or fixer a pack of the failing members.\n- Comment-lint findings and Webster audit findings carry glyphs instead of lines.\n- A review finding that cites `path:line` despite the glyph rule is mapped at the reviewed revision, then resolved in the working tree, so the fixer's own edits never shift it.\n\nGlyph↔path conversion stays in quarry; Loomyard never intersects lines with symbol spans itself.\n\n## Quarry's Enclose as delivered (quarry PR #36, 2026-10-08)\n\n- Released in quarry v0.3.0: `(*Repo).Enclose(locs)` and `(*Repo).EncloseAt(rev, locs)`, with `EncloseResult`, `EncloseReasons` and `RenderEncloseJSON`; paths are relative to the repo root, not the cwd, and an unknown rev fails the whole call.\n- They take location spellings (`path:N`, `path:N-M`, `path:N:col`), not structs; Loomyard formats tool-output locations into them.\n- Rejections carry a closed reason set (`EncloseReasons`), including `unaddressable` for a `.go` file in the repo root or a path containing `#`; Loomyard cites `path:line` for any rejected item.\n- A `found` glyph may not Resolve afterwards (an explicitly named gitignored file, a file without a package clause, a path through a symlinked directory; `quarry/enclose.go`). Loomyard treats a Resolve miss after Enclose as \"no current span\", never as an error, the same as a member the fixer deleted or renamed.\n- Loomyard pins quarry v0.2.1; this task bumps `go.mod` to v0.3.0, which has no other breaking change.\n"
     },
     {
-      "id": 193,
-      "slug": "lyx-cleanup",
-      "title": "lyx cleanup: one command runs every module cleanup",
-      "kind": "note",
-      "labels": [
-        "feature",
-        "batten",
-        "board"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Drop finished batten statuses, prune the board, clear disposable .scratch and .lyx files, each through the owning module verb",
-      "body": "## Wanted\n\nThe operator (2026-10-08): one command that tidies the repo, running every cleanup there is.\nToday finished batten runs leave `_lyx/shed/\u003cslug\u003e/` behind in the records repo for good (one directory per slug that ever ran), done board entries wait for `lyx board prune`, and `.scratch/` and `.lyx/` gather drafts and logs nobody reads again.\n\n## Proposal\n\n- A top-level verb, such as `lyx cleanup`, that only calls each module's own cleanup verb, so no module learns about another's state.\n- Batten's cleanup removes the status directory of every run whose status is terminal and done; it never touches a running, halted or failed run.\n- It runs `lyx board prune`.\n- It clears what `.scratch/` and `.lyx/` hold that can be discarded: old orch notes beyond the latest, logs past an age, stale drafts.\n  Which `.lyx/` paths are disposable is a design call for the task that builds it.\n- A dry run lists what would go before anything is removed.\n\nRelated: note `batten-reused-slug`, where a leftover done status blocked a new task with the same slug.\n"
-    },
-    {
       "id": 201,
       "slug": "shuttle-color-verified-send",
       "title": "Shuttle: the launch line carries the first turn",
@@ -1055,19 +1039,21 @@
     {
       "id": 421,
       "slug": "test-tmp-cleanup",
-      "title": "lyx cleans up its own temp files",
+      "title": "lyx cleans up after itself: temp files and one cleanup command",
       "kind": "task",
       "labels": [
         "bug",
         "fabric",
-        "loom"
+        "loom",
+        "batten",
+        "board"
       ],
       "issues": [],
       "priority": "high",
       "depends_on": [],
       "isolated": false,
-      "brief": "Tests and fixtures leave GBs of gitkit, hubforge and smoke-binary temps in /tmp; remove them on exit and sweep leftovers",
-      "body": "## Problem (operator, 2026-10-11)\n\nlyx must clean up its own temporary files while it runs; it may not leave garbage behind.\nOn this machine `/tmp` is a RAM tmpfs, and the leftovers had grown to 8.5 GB, enough to make hibernation fail (kernel `Error -12 creating image`, `Cannot allocate memory`) three times on 2026-10-11 and once the evening before.\n\n## Seen (2026-10-11)\n\nLeftovers in `/tmp`, all older than two hours:\n\n- 220 `loomcli-smoke-lyx-*` directories of about 34 MB each (a built `lyx` binary), about 7.5 GB in all\n- over 20 000 `gitkit-gitconfig-*` files\n- over 2 000 `hubforge-bare-*` directories\n- 171 `gitkit-repo-*` directories\n\nThe orch deleted every one older than two hours by hand; `/tmp` went from 8.5 GB to 1.1 GB.\n\nSources found:\n\n- `internal/gitkit/hermetic.go`: the hermetic git config file from `os.CreateTemp(\"\", \"gitkit-gitconfig-*\")`, once per test binary, never removed.\n- `internal/gitkit/gitkit.go` `buildRepoTemplate` and `internal/hubforge/hub.go` `buildBareTemplate`: once-per-binary fixture templates from `os.MkdirTemp`, never removed.\n- `loomcli-smoke-lyx-*`: a `lyx` binary built for the `internal/loomcli` smoke tests; the creating site was not found by a literal grep.\n- Other `os.MkdirTemp(\"\", ...)` sites to check: `internal/testkit/lyxbin`, `internal/gatecli/prebuild.go` and `cmd/testtiming` (`lyx-prebuilt-`, `lyxbin-`, `ttr-`, `ttt-`, `testtiming-redundancy-`).\n\n## Wanted\n\n- Every temp file or directory lyx or its tests create is removed when the creating process ends, including on test failure and panic; once-per-binary fixtures are removed in `TestMain` after `m.Run`.\n- Prefer a per-run root under one lyx-owned directory, so a killed process's leftovers can be swept by age at the next start.\n- A scan or test that fails a new bare `os.MkdirTemp(\"\", ...)` or `os.CreateTemp(\"\", ...)` without a matching cleanup.\n"
+      "brief": "Tests and fixtures leave GBs of temps in /tmp; remove them on exit, sweep leftovers, and add lyx cleanup running every module cleanup",
+      "body": "## Problem (operator, 2026-10-11)\n\nlyx must clean up its own temporary files while it runs; it may not leave garbage behind.\nOn this machine `/tmp` is a RAM tmpfs, and the leftovers had grown to 8.5 GB, enough to make hibernation fail (kernel `Error -12 creating image`, `Cannot allocate memory`) three times on 2026-10-11 and once the evening before.\n\n## Seen (2026-10-11)\n\nLeftovers in `/tmp`, all older than two hours:\n\n- 220 `loomcli-smoke-lyx-*` directories of about 34 MB each (a built `lyx` binary), about 7.5 GB in all\n- over 20 000 `gitkit-gitconfig-*` files\n- over 2 000 `hubforge-bare-*` directories\n- 171 `gitkit-repo-*` directories\n\nThe orch deleted every one older than two hours by hand; `/tmp` went from 8.5 GB to 1.1 GB.\n\nSources found:\n\n- `internal/gitkit/hermetic.go`: the hermetic git config file from `os.CreateTemp(\"\", \"gitkit-gitconfig-*\")`, once per test binary, never removed.\n- `internal/gitkit/gitkit.go` `buildRepoTemplate` and `internal/hubforge/hub.go` `buildBareTemplate`: once-per-binary fixture templates from `os.MkdirTemp`, never removed.\n- `loomcli-smoke-lyx-*`: a `lyx` binary built for the `internal/loomcli` smoke tests; the creating site was not found by a literal grep.\n- Other `os.MkdirTemp(\"\", ...)` sites to check: `internal/testkit/lyxbin`, `internal/gatecli/prebuild.go` and `cmd/testtiming` (`lyx-prebuilt-`, `lyxbin-`, `ttr-`, `ttt-`, `testtiming-redundancy-`).\n\n## Wanted\n\n- Every temp file or directory lyx or its tests create is removed when the creating process ends, including on test failure and panic; once-per-binary fixtures are removed in `TestMain` after `m.Run`.\n- Prefer a per-run root under one lyx-owned directory, so a killed process's leftovers can be swept by age at the next start.\n- A scan or test that fails a new bare `os.MkdirTemp(\"\", ...)` or `os.CreateTemp(\"\", ...)` without a matching cleanup.\n\n## Merged: `lyx-cleanup` (operator, 2026-10-08; merged 2026-10-11)\n\nThe operator wants one command that tidies the repo, running every cleanup there is.\nToday finished batten runs leave `_lyx/shed/\u003cslug\u003e/` behind in the records repo for good (one directory per slug that ever ran), done board entries wait for `lyx board prune`, and `.scratch/` and `.lyx/` gather drafts and logs nobody reads again.\n\n- A top-level verb, such as `lyx cleanup`, that only calls each module's own cleanup verb, so no module learns about another's state.\n- Batten's cleanup removes the status directory of every run whose status is terminal and done; it never touches a running, halted or failed run.\n- It runs `lyx board prune`.\n- It clears what `.scratch/` and `.lyx/` hold that can be discarded: old orch notes beyond the latest, logs past an age, stale drafts.\n  Which `.lyx/` paths are disposable is a design call for this task.\n- It sweeps lyx temp leftovers past an age, the sweep this task's own temp root makes possible.\n- A dry run lists what would go before anything is removed.\n\nRelated: note `batten-reused-slug`, where a leftover done status blocked a new task with the same slug.\n"
     }
   ]
 }
