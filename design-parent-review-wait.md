@@ -1,6 +1,6 @@
 # Parent-review wait: warm writer cache on reject, wait bound off the boundary, gate hardening
 
-`parent-review-wait` · Task · enhancement, loom, shuttle, orch · running · Describe
+`parent-review-wait` · Task · enhancement, loom, shuttle, orch · running · Publish
 
 # Part 1: keep the waiting writer's cache warm
 
