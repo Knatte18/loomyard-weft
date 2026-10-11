@@ -15,5 +15,7 @@ Starting a ready task then needs no hand step, which `orch-split` needs for a me
 
 ## Open
 
-- Which settings a task may carry: a closed list of keys, or any key of the recipe's config module.
+- Which settings a task may carry.
+  Operator, 2026-10-11: any key, overriding only the keys the task names.
 - Where batten applies them, so landing does not flag them as config changes meant for the parent.
+  Operator, 2026-10-11: an untracked local override file under `.lyx/` that overrides `_lyx/config`, as Millhouse's `config.local.yaml` did; see `config-overlay`.
