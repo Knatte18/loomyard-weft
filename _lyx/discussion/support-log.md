@@ -14,6 +14,7 @@ Autonomous mode: no operator answered; every decision below is an auto-pick reco
    Conclusion: the verbs refuse positions in the begun region.
 5. For the refusal gap, read `PATTERN-refusal-way-forward` (a new refusal is reached by a test), `refusal-spec.md`'s wiring-guard class, and the code-quality rule against code paths the code's guarantees prevent.
    Conclusion: the plan writer names each prescribed refusal's reaching input and test, and Plan-Review flags a card that cannot.
+   Residual risk: a reviewer may still miss an unreachable refusal whose upstream rejection lies several packages away; the rule makes the card state its reaching input, which narrows but does not close that gap.
 
 ## Rejected alternatives
 
@@ -29,6 +30,12 @@ Autonomous mode: no operator answered; every decision below is an auto-pick reco
   Those are generic across segments and are being edited by `fixer-critical-of-findings` and `burler-multi-llm`; the plan rubric reaches the Plan-Burler fixer already.
 - **A mechanical reachability check in Go.**
   Reachability depends on what upstream code rejects; no plan-time parser can decide it.
+- **The orch reversing an unreversed renumber by hand from the halt's envelope.**
+  A hand file operation is none of `refusal-spec.md`'s admitted ways forward, and file names alone cannot restore a deleted card's bytes or a moved card's heading and `Commit:` prefix.
+- **Refusing a plan directory with changes against HEAD, so `git checkout` restores it.**
+  Plan-Write and Plan-Burler insert cards mid-session, before the row's commit seam, so the refusal would block the verbs' main use.
+- **Restoring the journal implicitly inside the next `insert-card` or `remove-card` call.**
+  It hides a destructive restore behind an unrelated verb; a dedicated verb makes the discard of later edits a named step.
 - **Adding a Webster-Review rubric rule against constructor-only refusal tests.**
   The board entry asks for a plan-time fix; the plan rubric bullet already states that a constructor-only test does not reach a refusal.
 
@@ -46,4 +53,6 @@ _No rounds yet._
 - Q6 (resolved, auto-pick): how agents learn of the verbs? One sentence each in the plan and rework stencils and the plan rubric's write surface; burler stencils unchanged.
 - Q7 (resolved, auto-pick): reachability check mechanical or review? Review: writer rule plus a matching rubric bullet.
 - Q8 (resolved, auto-pick): Webster-Review rubric in scope? No; recorded as rejected.
-- Q9 (open, for the plan): does `lyx webster rebaseline` require each renumbered unbegun card to be named with `--card`? Recorded under Open risks.
+- Q9 (resolved, code read in review round 1): does `lyx webster rebaseline` require each renumbered unbegun card to be named with `--card`? Standalone, yes, every number from `N` to the last card plus one; under the Webster row `autoRebaseline` names them itself. Recorded under Constraints.
+- Q10 (resolved, auto-pick, review round 2): how is an interrupted or unreversible renumber recovered? A `.lyx` journal of pre-call bytes written before the first apply step, read only by a dedicated `lyx loom restore-renumber` verb that both other verbs and the reversal-failure halt name. Recorded in D2.
+- Q11 (resolved, auto-pick, review round 3): what if the journal itself is partial or undecodable? It is written to a temporary name and renamed into place, so a partial journal never exists; one that does not decode is a correctness halt whose way forward is deleting it and running `lyx loom validate-plan`. Recorded in D2.
