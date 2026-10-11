@@ -57,7 +57,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 2 | **loom step help contradicts itself and hides the driverless seed**<br>• Help says step bootstraps like start, then that it never seeds; name the driverless seed command | [`loom-step-help-seed`](design-loom-step-help-seed.md) | loom |
-| 3 | **clihelp: TestRenderIndex_FormsAndFiltering races on a shared cobra tree (concurrent map writes)** | [`clihelp-index-test-race`](design-clihelp-index-test-race.md) |  |
+| 3 | **clihelp: TestRenderIndex_FormsAndFiltering races on a shared cobra tree (concurrent map writes)** | [`clihelp-index-test-race`](design-clihelp-index-test-race.md) | orch |
 
 ### Enhancements
 

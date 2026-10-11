@@ -1,6 +1,6 @@
 # clihelp: TestRenderIndex_FormsAndFiltering races on a shared cobra tree (concurrent map writes)
 
-`clihelp-index-test-race` · Note · bug
+`clihelp-index-test-race` · Note · bug, orch
 
 Imported from [issue #547](https://github.com/Knatte18/loomyard/issues/547).
 
