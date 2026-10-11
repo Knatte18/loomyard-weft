@@ -1063,6 +1063,7 @@
         "loom"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "Tests and fixtures leave GBs of gitkit, hubforge and smoke-binary temps in /tmp; remove them on exit and sweep leftovers",
