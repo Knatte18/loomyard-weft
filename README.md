@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 2 | **Pane injection never merges with the operator draft, and batten survives a draft**<br>• Defer and atomically send injected text, guard the Enter, and keep batten alive through a busy driver pane so teardown still runs. | [`pane-inject-safety`](design-pane-inject-safety.md) | loom | Webster-Burler | shuttle, batten, orch, reed |
-| 3 | **Tokencount reports wall-clock time per role**<br>• tokencount adds each run's wall-clock time per role and its idle time, so the slowest producer shows | [`run-time-by-role`](design-run-time-by-role.md) | loom | Batchifier | shed, loom |
+| 3 | **Tokencount reports wall-clock time per role**<br>• tokencount adds each run's wall-clock time per role and its idle time, so the slowest producer shows | [`run-time-by-role`](design-run-time-by-role.md) | loom | Webster | shed, loom |
 
 ### Ready
 
