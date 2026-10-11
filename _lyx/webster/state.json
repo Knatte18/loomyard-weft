@@ -349,7 +349,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "a64b9fb2b25a3e277fdf6a93c2078388",
   "masterSessionId": "f9bc3152-93fb-4519-a9b0-e6aaa07dae56",
   "batches": {
@@ -398,6 +398,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pane-inject-safety/f9bc3152-93fb-4519-a9b0-e6aaa07dae56/subagents/agent-ae18c106c6287f9af.jsonl"
       ]
+    },
+    "7": {
+      "slug": "shuttle-pending-send",
+      "cards": [
+        "07-shuttle-pending-send",
+        "08-shuttle-session-commands",
+        "09-claude-paste-path",
+        "10-claude-paste-live-check",
+        "11-orch-held-typed-steps"
+      ],
+      "cardHashes": {
+        "07-shuttle-pending-send": "9a7efc71a57f37e15ba225ca6584464791e6dd19215e57d758337e45ccc59e9f",
+        "08-shuttle-session-commands": "b9525c5082455d85dc6763e3e73bacd90527b7a2d7a857fd833e9ac13f4c301f",
+        "09-claude-paste-path": "ddc0c16648bbfa53d7edadacfe23333f4374356d23f1d1f9ac7b5a84ad7cc341",
+        "10-claude-paste-live-check": "863a76ecd8df067a91d479ad14f3dab5f21eec16b59477e74a0d3b28635aa890",
+        "11-orch-held-typed-steps": "04fa98766e7c60b70d3bee1546757626dbd795ca0463ff976fe978fa2c058e12"
+      },
+      "startSha": "d2aca58540f9637b32141d98195b43c17531d6a6",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T11:14:20Z",
+      "sessionId": "f9bc3152-93fb-4519-a9b0-e6aaa07dae56",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
