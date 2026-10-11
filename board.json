@@ -856,7 +856,7 @@
       "id": 313,
       "slug": "fixer-critical-of-findings",
       "title": "Burler fixer weighs each finding critically before fixing",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "burler",
@@ -905,7 +905,7 @@
       "id": 323,
       "slug": "reed-tmux-conf",
       "title": "reed servers ignore ~/.tmux.conf",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "reed"
