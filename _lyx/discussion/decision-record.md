@@ -69,12 +69,14 @@ Decision: when the Bouncer harvests a judge pass that this Call spawned or attac
 
 The second check follows the judge's own decision rule: any BLOCKING finding in the latest round, or a parse-error row for it, rules CONTINUE, and the judge stencil forbids relabelling a BLOCKING finding downward.
 Bound: the guard only ever turns a CONVERGED into a re-judge; it never accepts anything the judge did not, and CONTINUE and CIRCLING verdicts pass it untouched.
-A verdict already on disk at Call entry, settled by an earlier Call, is not re-checked.
+A CONVERGED on disk at Call entry with no live judge is never settled again: Go clears the generation and re-seeds, whether an earlier Call settled it or crashed before harvesting it, so no CONVERGED verdict reaches Done unchecked.
+A pending escalation accept the parent recorded reaches Done over a CONTINUE or CIRCLING round without the guard, open BLOCKING findings included: it is bounded by the parent's decision, and the guard never refuses it.
 Rationale: a weaker or careless judge can otherwise approve past a BLOCKING finding with nothing in Go to catch it.
 
 ### D8. Go refuses a ledger that drops a previous key
 
 Decision: on harvesting a judge pass of round N ≥ 2, for any verdict, Go refuses the judgment when a key in round N-1's ledger is absent from round N's ledger.
+The same check runs when Go settles a CONTINUE or CIRCLING verdict already on disk at Call entry, after the entry-time probe finds no live judge, so a judgment that a crashed Call never harvested cannot settle a lossy ledger and make it round N+1's baseline.
 The check runs only when round N-1's ledger parses; an unreadable or malformed previous ledger skips it with a logged warning, since there is nothing trustworthy to compare against, and the facts file already shows that ledger as a parse-error row.
 Bound: the check compares keys only, not status, class or severity; it enforces the judge stencil's existing lossless carry-forward rule and adds no new obligation on the judge.
 Rationale: the decision record's carried findings come only from the judge's ledger, so a dropped key loses a finding silently.
@@ -83,15 +85,18 @@ Rationale: the decision record's carried findings come only from the judge's led
 
 Decision: a judgment refused by D7 or D8 takes the route a retired verdict word already takes: Go archives the round's three judge outputs (verdict, ledger, focus), so the round reads as unjudged, and returns a degraded Stuck whose Reason names the refusal cause and ends in `way forward: the round is re-judged`.
 The round producer's unjudged-round check hands straight back and the Bouncer's next Call re-judges.
-Bound: each refusal spends one bounce unit, so a judge that keeps producing refused judgments reaches the segment's `review_max_bounces` budget escalation to the parent; the guard cannot loop.
+The judge stays the only writer of its verdict, ledger and focus files: Go archives them and never rewrites them.
+Bound: each refusal spends one counted bounce unit, so a judge that keeps producing refused judgments reaches the segment's `review_max_bounces` budget, where the run blocks with Shed's budget-exhausted halt; the guard cannot loop.
+A refusal never escalates to the parent, even on a round whose budget is already reached: there the one refusal blocks the run with Shed's budget-exhausted halt and no re-judge, where a valid CONTINUE of the same round escalates with cause budget.
+Escalating a refused round would need a judged round to point at and to settle the parent's decision over, and the refusal has just archived that round's judgment; the block's way forward, a `lyx shed goto` to the Bouncer row, gives it a fresh budget and a re-judge.
 The refusal is bound by `PATTERN-refusal-way-forward`: it lands with a row in `contracts/specs/refusal-spec.md`'s shed section, whose way forward is the transition the run takes by itself (the re-judge), and a test that reaches it.
-Rationale: overriding the verdict to CONTINUE in Go would leave the next round with the CONVERGED pass's empty focus file and a ledger Go has just judged untrustworthy; re-judging keeps the judge the only writer of its three files.
+Rationale: the retired-verdict route already archives and re-judges a round within the bounce budget, so the refusal adds no new loop or state.
 
 ### D10. Judge and seed passes go into `round-<N>-usage.yaml`
 
 Decision: the usage record gains two optional lists, `seed` and `judge`, each entry one pass in the existing per-half shape: model, effort, start, end, wall seconds and the token reading (`tokens_known`, fresh and cache-read tokens).
 A judge pass appends to round N's `judge` list; a seed pass appends to round 1's `seed` list; a re-judged round therefore shows every pass it took.
-An entry is recorded for every pass whose shuttle call returned a result, with tokens unknown when the provider could not read the session; a pass that fails to spawn records nothing.
+An entry is recorded for every pass whose shuttle call returned a result, with tokens unknown when the provider could not read the session; a pass that fails to spawn records nothing, and neither does a judge pass whose result reached no Call, such as a judgment a crashed Call never harvested that a later Call settles from disk (D8).
 Each writer reads the record if present and replaces or appends only its own part: the Burler round writer replaces `review`, `fix`, `fan` and `lenses` and keeps `seed` and `judge`; the Bouncer appends to its list and keeps the rest.
 A malformed existing record is not merged into: the writer archives it the way a stale judge output is archived and writes a fresh record holding only its own part, with a logged warning.
 A failed usage write only logs, as the Burler round's does today, and never changes the Bouncer's outcome.
@@ -127,8 +132,15 @@ Rationale: today a failed Burler write leaves no file and those readers report i
 
 ## Open risks
 
-- A Sonnet judge that rules CONVERGED with a BLOCKING finding in the review, which the stencil already forbids, now spends a bounce unit per refusal; if that happens often, escalations to the parent rise until the stencil or the judge model changes.
+- A judge that rules CONVERGED with a BLOCKING finding in the review, which the stencil already forbids, now spends a bounce unit per refusal; if that happens often, runs blocked at the bounce budget rise until the stencil or the judge model changes.
+- A refusal on a round whose budget is already reached halts the run on the first refusal with Shed's generic block instead of the parent escalation a CONTINUE there gets (D9); the operator recovers through the block's `goto` way forward, without the escalation brief.
 - The usage record's merge-on-write relies on the Bouncer and Burler rows of one segment never running concurrently; a future producer that runs them in parallel must revisit D10.
+
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - d9-refusal-at-spent-budget-no-rejudge (class design, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
@@ -136,16 +148,19 @@ Rationale: today a failed Burler write leaves no file and those readers report i
 - Setting `seed` moves every segment's seed to it, and setting `plan_judge` alone moves Plan-Bouncer's seed with its judge while no seed key is set.
 - Setting `plan_judge` changes only Plan-Bouncer's judge model; Discussion-Bouncer's and Webster-Bouncer's judges stay on `judge`, and a set `seed` or `plan_seed` keeps Plan-Bouncer's seed off it.
 - Setting `webster_seed` changes only Webster-Bouncer's seed model, and the judge of that row is unaffected.
+- With `seed` and `plan_seed` both set, Plan-Bouncer's seed runs on `plan_seed` and the other segments' seeds run on `seed`.
 - Setting `rework` changes PR-Rework's model, and Plan-Write keeps `plan`.
 - A malformed or unknown-alias value in any new key fails the run before round 1 with an error naming the key.
 - A Bouncer row in a recipe that names `model`, `effort` or `version` is rejected at recipe build.
 - A judge CONVERGED with an open BLOCKING ledger entry is archived and re-judged, spending one bounce unit, and the Reason names the cause and the way forward.
 - A judge CONVERGED over a review report that carries a BLOCKING finding, or one that does not parse, is archived and re-judged.
 - A judge of round 2 or later whose ledger lacks a key from round N-1's ledger is archived and re-judged, whatever its verdict.
+- A CONTINUE or CIRCLING verdict on disk at Call entry, with no live judge and a ledger lacking a key from round N-1's ledger, is archived and re-judged instead of settled.
 - A malformed previous ledger skips the key check without refusing the judgment.
 - A CONVERGED verdict with no open BLOCKING entry, no BLOCKING review finding and a lossless ledger settles exactly as today.
-- Repeated refusals reach the segment's budget escalation and never loop.
-- After a round is judged, its `round-<N>-usage.yaml` holds the review and fix halves and one `judge` entry per judge pass, with model, effort, run times and token reading.
+- Repeated refusals reach the segment's bounce budget and block the run with Shed's budget-exhausted halt, and never loop.
+- A refusal on a round whose budget is already reached blocks the run with Shed's budget-exhausted halt on that refusal, writes no escalation record and spawns no re-judge.
+- After a round is judged, its `round-<N>-usage.yaml` holds the review and fix halves and one `judge` entry per judge pass whose result reached a Call, with model, effort, run times and token reading.
 - Round 1's record holds a `seed` entry after the seed pass, and the Burler round's later write keeps it.
 - A judge or seed pass whose provider could not read the session records `tokens_known: false` and no token fields.
 - A record holding only a seed or judge part is read as missing by the lens-fact and lens-exclusion readers.
