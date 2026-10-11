@@ -1,12 +1,12 @@
 {
-  "current_producer": "Discussion-Bouncer",
+  "current_producer": "Discussion-Burler",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "pause_before": "Batchifier",
   "activity": {
-    "now": "Discussion-Bouncer",
-    "last": "Discussion-Write → done",
+    "now": "Discussion-Burler",
+    "last": "Discussion-Bouncer → bounced to Discussion-Burler",
     "wait": ""
   },
   "history": [
@@ -28,6 +28,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/small-fixes-batch/_lyx/discussion/decision-record.md",
       "at": "2026-10-11T07:48:31Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-11T07:49:28Z"
     }
   ],
   "product": {
