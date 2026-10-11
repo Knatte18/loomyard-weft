@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **Small fixes: darn prompt paths, recipe doc line, stale reconcile default, destructive-verb confirm, index note audience, carry-over on disk**<br>• Six small independent fixes across darn stencil, docs, config reconcile, fabric/board verbs, board help and loom carry-over | [`small-fixes-batch`](design-small-fixes-batch.md) | loom | Discussion-Bouncer | stencil, batten, config, fabric, board, loom |
+| 2 | **Small fixes: darn prompt paths, recipe doc line, stale reconcile default, destructive-verb confirm, index note audience, carry-over on disk**<br>• Six small independent fixes across darn stencil, docs, config reconcile, fabric/board verbs, board help and loom carry-over | [`small-fixes-batch`](design-small-fixes-batch.md) | loom | Plan-Write | stencil, batten, config, fabric, board, loom |
 
 ### Ready
 
