@@ -1,0 +1,147 @@
+{
+  "runGuid": "5178aa682a8cf33f652482414c57e720",
+  "planFingerprint": "28b6dbb1fd36796631c7d03642656f3fdfd89e00fdee4d46ab3cb9d5c056152a",
+  "planFileHashes": {
+    "00-overview.md": "f5976b9b4734cace1e082e3e991086e603154624ed0cf31170ce07ae122d8556",
+    "01-claude-lone-eol-mark.md": "1550cdbe4405987ac44cddaffcaa4d6d4e051a7948ed542b37e53739e4e1243d",
+    "02-start-error-on-result.md": "5e1a2e3cdc680beb73750ed0810327a63cad979542b4f7fd3d0cd2614dfe7d05",
+    "03-never-ready-pane-tail.md": "0e122ee39117154a8f709478b9e922939779ed1e03c41dbe2b4753a315baeda8",
+    "04-startup-probe-cadence.md": "5d47882ab1880b0497dd69c6a55a457bfef666ea216c0c45baaea81e1e7a8558",
+    "05-hold-deferral-ten-minutes.md": "84ff650046d0346ab8427c09e2e782e473a4ecc4a60d7ded0216a320a98af393"
+  },
+  "planOverviewFrameHash": "f9b06795f6f914786fc63adc07c195c2bf4b256d51e86b42b6abdd3660436a36",
+  "partition": [
+    {
+      "cards": [
+        "01-claude-lone-eol-mark",
+        "02-start-error-on-result",
+        "03-never-ready-pane-tail",
+        "04-startup-probe-cadence",
+        "05-hold-deferral-ten-minutes"
+      ],
+      "profile": "cautious",
+      "estimate": 228484,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54256,
+        "read_union": 79212,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 756,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:internal/shuttleengine/claudeengine/corpus_test.go": 4440,
+              "file:internal/shuttleengine/claudeengine/session_test.go": 2544,
+              "file:internal/shuttleengine/claudeengine/testdata/pane-idle-empty.txt": 72,
+              "file:pattern/PATTERN-pane-text-injection.md": 192,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 82.5,
+            "written": 25506
+          },
+          {
+            "card": 2,
+            "card_text": 384,
+            "reads": {
+              "file:internal/shedadapters/singlellm_test.go": 7872,
+              "file:internal/shuttleengine/doc.go": 3780,
+              "file:internal/shuttleengine/startup_test.go": 15540,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 65.5,
+            "written": 20034
+          },
+          {
+            "card": 3,
+            "card_text": 636,
+            "reads": {
+              "file:internal/shuttleengine/fakes_test.go": 10284,
+              "file:internal/shuttleengine/startup_test.go": 15540,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 49,
+            "written": 15336
+          },
+          {
+            "card": 4,
+            "card_text": 948,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 3780,
+              "file:internal/shuttleengine/fakes_test.go": 10284,
+              "file:internal/shuttleengine/fixture_test.go": 2196,
+              "file:internal/shuttleengine/startup_test.go": 15540,
+              "file:internal/shuttleengine/template.yaml": 216,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 83,
+            "written": 25848
+          },
+          {
+            "card": 5,
+            "card_text": 192,
+            "reads": {
+              "file:internal/shuttleengine/hold_test.go": 3528,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 27,
+            "written": 8292
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "a1bbf7fe069252d119c22d213e1b4777",
+  "masterSessionId": "2188b9f7-65bb-4836-8bad-9309e2bc02b2",
+  "batches": {
+    "1": {
+      "slug": "claude-lone-eol-mark",
+      "cards": [
+        "01-claude-lone-eol-mark",
+        "02-start-error-on-result",
+        "03-never-ready-pane-tail",
+        "04-startup-probe-cadence",
+        "05-hold-deferral-ten-minutes"
+      ],
+      "cardHashes": {
+        "01-claude-lone-eol-mark": "1550cdbe4405987ac44cddaffcaa4d6d4e051a7948ed542b37e53739e4e1243d",
+        "02-start-error-on-result": "5e1a2e3cdc680beb73750ed0810327a63cad979542b4f7fd3d0cd2614dfe7d05",
+        "03-never-ready-pane-tail": "0e122ee39117154a8f709478b9e922939779ed1e03c41dbe2b4753a315baeda8",
+        "04-startup-probe-cadence": "5d47882ab1880b0497dd69c6a55a457bfef666ea216c0c45baaea81e1e7a8558",
+        "05-hold-deferral-ten-minutes": "84ff650046d0346ab8427c09e2e782e473a4ecc4a60d7ded0216a320a98af393"
+      },
+      "startSha": "a35c8c2b105693a8d761297ef61e44fba06a5624",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T13:54:56Z",
+      "sessionId": "2188b9f7-65bb-4836-8bad-9309e2bc02b2",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
