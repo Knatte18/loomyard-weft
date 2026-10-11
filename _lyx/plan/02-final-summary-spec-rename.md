@@ -4,7 +4,7 @@
 - `contracts/specs/final-summary-spec.md` -> `contracts/specs/loom-final-summary-spec.md`
 
 **Create:**
-- `plan:contracts/specs#LoomFinalSummarySpec` -> `var LoomFinalSummarySpec []byte`
+- `contracts/specs#LoomFinalSummarySpec`
 
 **Edit:**
 - `contracts/specs#entries`

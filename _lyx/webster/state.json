@@ -1,13 +1,13 @@
 {
   "runGuid": "6e91da9b89ca5b8b2b2b9ccec7d19293",
-  "planFingerprint": "7dbabfc534abc6da16b88588cbc5e008f0c26ba52e7dad2d62cde711628797a1",
+  "planFingerprint": "7e3afb19eea6eb45ec68eb528d82c9d25f3de0b6c6e6626d91d7b21bee86c347",
   "planFileHashes": {
     "00-overview.md": "018e7a354c26d355ffb16a5e99bbfe8670a3d8a7ded051c048f77ec685c45dd6",
     "01-darn-board-get-json.md": "0df9f75898495f6a6761f4508039f44e9cedb57043db623512679b78bea99846",
-    "02-final-summary-spec-rename.md": "7c83fe18cf611d2e60f9df1046be74b3053388aff9cfb1635830df2dd4bdaefb",
+    "02-final-summary-spec-rename.md": "c95c9ee82e3b89aa73b1ee2a3ac7409467567a282c0b184db461a5c9a3fff4c7",
     "03-overview-batten-recipes.md": "ad1f0058738fca727a737ee8150af4c5047e88b1ccb6ed7f0c143e7da6ca16c1",
-    "04-batten-terminal-marker-reset.md": "c2ec77529dcf19c29b2c4b146e1a380a37de64fe33c6dff5a1a6c9b6c31d0118",
-    "05-reconcile-floor-migrate.md": "bdb189daeb240bf063715bc4d8d39ae85247cd6fd0841971cdbe1c0cc5e66c30",
+    "04-batten-terminal-marker-reset.md": "619a6194a9535671b3ba05a736882f46ab029cf2e33b2a16e0041c47dee00023",
+    "05-reconcile-floor-migrate.md": "c6d9d409622634bf6cb58e20fb6aca17f02669b7c57db83e930b7c4b9c7fee71",
     "06-fabric-unwire-apply.md": "4ed0ebcad93755650955112dc179393581be09d0da671d08a706446a5dc82d97",
     "07-board-prune-retire-apply.md": "7903ffbdcd4052e621dd4eb5f4a848636f2ae4afcf6274eaf6a675c064543626",
     "08-index-note-audience.md": "59b01e70c5d88795f6ecc0af883dc54c861c87983c62391e2c97ed09bb25fa11",
@@ -250,7 +250,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "a259d402af2bc3b366acd2663e000da1",
   "masterSessionId": "11e57731-7c3e-4237-af9a-772e8cad2455",
   "batches": {
@@ -265,17 +265,37 @@
       ],
       "cardHashes": {
         "01-darn-board-get-json": "0df9f75898495f6a6761f4508039f44e9cedb57043db623512679b78bea99846",
-        "02-final-summary-spec-rename": "7c83fe18cf611d2e60f9df1046be74b3053388aff9cfb1635830df2dd4bdaefb",
+        "02-final-summary-spec-rename": "c95c9ee82e3b89aa73b1ee2a3ac7409467567a282c0b184db461a5c9a3fff4c7",
         "03-overview-batten-recipes": "ad1f0058738fca727a737ee8150af4c5047e88b1ccb6ed7f0c143e7da6ca16c1",
-        "04-batten-terminal-marker-reset": "c2ec77529dcf19c29b2c4b146e1a380a37de64fe33c6dff5a1a6c9b6c31d0118",
-        "05-reconcile-floor-migrate": "bdb189daeb240bf063715bc4d8d39ae85247cd6fd0841971cdbe1c0cc5e66c30"
+        "04-batten-terminal-marker-reset": "619a6194a9535671b3ba05a736882f46ab029cf2e33b2a16e0041c47dee00023",
+        "05-reconcile-floor-migrate": "c6d9d409622634bf6cb58e20fb6aca17f02669b7c57db83e930b7c4b9c7fee71"
       },
       "startSha": "1e79825ff968848322198e80471cf827fcd53cea",
       "kind": "fork",
       "spawnedAt": "2026-10-11T08:31:12Z",
       "sessionId": "11e57731-7c3e-4237-af9a-772e8cad2455",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-darn-board-get-json",
+        "status": "done",
+        "head_sha": "e666a2eb24ddb37ea06744014d2f35f8e250f235",
+        "deviations": [
+          "internal/orchengine/seam_enforcement_test.go"
+        ]
+      },
+      "cardShas": [
+        "e666a2eb24ddb37ea06744014d2f35f8e250f235"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-small-fixes-batch/11e57731-7c3e-4237-af9a-772e8cad2455/subagents/agent-a30d4225f61fbc95e.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-small-fixes-batch/11e57731-7c3e-4237-af9a-772e8cad2455/subagents/agent-a30d4225f61fbc95e.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-small-fixes-batch/11e57731-7c3e-4237-af9a-772e8cad2455/subagents/agent-a30d4225f61fbc95e.jsonl"
+  ]
 }

@@ -1,10 +1,10 @@
 # Card 4 — batten-terminal-marker-reset
 
 **Rename:**
-- `internal/battenshed#terminalOpenedFile` -> `plan:internal/battenshed#TerminalOpenedFile`
+- `internal/battenshed#terminalOpenedFile` -> `internal/battenshed#TerminalOpenedFile`
 
 **Create:**
-- `plan:internal/battenshed#ClearTerminalOpened` -> `func ClearTerminalOpened(scratchDir, producer string) error`
+- `internal/battenshed#ClearTerminalOpened`
 
 **Edit:**
 - `internal/battenshed#innerRunProducer.Call`

@@ -1,10 +1,10 @@
 # Card 5 — reconcile-floor-migrate
 
 **Create:**
-- `plan:internal/yamlengine#RaiseIntFloor` -> `func RaiseIntFloor(existing []byte, key string, floor int) ([]byte, string, error)`
-- `plan:internal/shuttleengine#MigrateConfig` -> `func MigrateConfig(existing []byte) ([]byte, []string, error)`
-- `plan:internal/orchengine#MigrateConfig` -> `func MigrateConfig(existing []byte) ([]byte, []string, error)`
-- `plan:internal/loomengine#MigrateConfig` -> `func MigrateConfig(existing []byte) ([]byte, []string, error)`
+- `internal/yamlengine#RaiseIntFloor`
+- `internal/shuttleengine#MigrateConfig`
+- `internal/orchengine#MigrateConfig`
+- `internal/loomengine#MigrateConfig`
 - `internal/yamlengine/floor_test.go`
 
 **Edit:**
