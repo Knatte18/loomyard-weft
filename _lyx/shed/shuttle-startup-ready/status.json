@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Bouncer",
+  "current_producer": "Plan-Burler",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Bouncer",
-    "last": "Plan-Burler → bounced to Plan-Bouncer",
+    "now": "Plan-Burler",
+    "last": "Plan-Bouncer → bounced to Plan-Burler",
     "wait": ""
   },
   "history": [
@@ -88,6 +88,12 @@
       "at": "2026-10-11T13:45:27Z",
       "gate_attempts": 0,
       "budget_exempt": true
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/shuttle-startup-ready/_lyx/reviews/plan/round-1-bouncer-ledger.md",
+      "at": "2026-10-11T13:46:09Z"
     }
   ],
   "product": {
