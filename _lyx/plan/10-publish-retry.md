@@ -1,17 +1,17 @@
 # Card 10 — publish-retry
 
 **Create:**
-- `plan:internal/battenshed#ErrChildRunBusy` -> `var ErrChildRunBusy error`
-- `plan:internal/battenshed#ChildPublishFailure` -> `type ChildPublishFailure struct`
-- `plan:internal/battenshed#publishRetry` -> `type publishRetry struct`
-- `plan:internal/battenshed#publishRetryCap` -> `const publishRetryCap = 30 * time.Minute`
-- `plan:internal/battenshed#publishRetryFileSuffix` -> `const publishRetryFileSuffix = "-publish-retry"`
-- `plan:internal/battenshed#recordMatchesHalt` -> `func recordMatchesHalt(record ChildPublishFailure, head string, status shedengine.Status, publishRow string) bool`
-- `plan:internal/battenshed#innerRunProducer.publishRetryDecision` -> `func (p *innerRunProducer) publishRetryDecision(ctx context.Context, status shedengine.Status) publishRetry`
-- `plan:internal/battenshed#innerRunProducer.publishRetryStep` -> `func (p *innerRunProducer) publishRetryStep(ctx context.Context, w *childWait) *waitEnd`
+- `internal/battenshed#ErrChildRunBusy`
+- `internal/battenshed#ChildPublishFailure`
+- `internal/battenshed#publishRetry`
+- `internal/battenshed#publishRetryCap`
+- `internal/battenshed#publishRetryFileSuffix`
+- `internal/battenshed#recordMatchesHalt`
+- `internal/battenshed#innerRunProducer.publishRetryDecision`
+- `internal/battenshed#innerRunProducer.publishRetryStep`
 - `internal/battenshed/innerrun_publishretry_test.go`
-- `plan:internal/battencli#readChildPublishFailure` -> `func readChildPublishFailure(taskLocation *lyxcwd.Location) (battenshed.ChildPublishFailure, bool, error)`
-- `plan:internal/battencli#TestReadChildPublishFailure_MapsTheRecord` -> `func TestReadChildPublishFailure_MapsTheRecord(t *testing.T)`
+- `internal/battencli#readChildPublishFailure`
+- `internal/battencli#TestReadChildPublishFailure_MapsTheRecord`
 
 **Edit:**
 - `internal/battenshed#InnerRunDeps`
@@ -20,7 +20,7 @@
 - `internal/battenshed#childWait`
 - `internal/battenshed#innerRunProducer.haltedStep`
 - `internal/battenshed#innerRunProducer.noticeCondition`
-- `plan:internal/battenshed#runMarkerSuffixes`
+- `internal/battenshed#runMarkerSuffixes`
 - `internal/battenshed/doc.go`
 - `internal/battencli#battenCLI.wire`
 - `internal/battencli#childSpawnError`
@@ -33,7 +33,7 @@
 - `internal/shedengine#ShedBusyKind`
 - `internal/verifytree#ReadPublishFailure`
 - `internal/loomshed#NamePublish`
-- `plan:internal/battenshed#ClearRunMarkers`
+- `internal/battenshed#ClearRunMarkers`
 
 **Intent:**
 Batten retries the first Publish verify failure of a batten run on its own (D5): it sends the child to the failure record's target producer and resumes it, and a second such failure wakes the orch.

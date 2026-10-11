@@ -1,20 +1,20 @@
 # Card 7 — row-failure-notice
 
 **Create:**
-- `plan:internal/battenshed#RowNoticeDeps` -> `type RowNoticeDeps struct`
-- `plan:internal/battenshed#rowNotifier` -> `type rowNotifier struct`
-- `plan:internal/battenshed#newRowNotifier` -> `func newRowNotifier(producer, slug, scratchDir string, deps RowNoticeDeps) rowNotifier`
-- `plan:internal/battenshed#rowNotifier.failed` -> `func (n rowNotifier) failed(ctx context.Context, step, reason string)`
-- `plan:internal/battenshed#rowNotifier.send` -> `func (n rowNotifier) send(ctx context.Context, line string) bool`
-- `plan:internal/battenshed#rowNoticeFileSuffix` -> `const rowNoticeFileSuffix = "-row-notice"`
-- `plan:internal/battenshed#rowNoticeRetrySpacing` -> `const rowNoticeRetrySpacing = 30 * time.Second`
-- `plan:internal/battenshed#runMarkerSuffixes` -> `var runMarkerSuffixes []string`
-- `plan:internal/battenshed#ClearRunMarkers` -> `func ClearRunMarkers(scratchDir string) error`
-- `plan:internal/battenshed#TestWorktreeTeardown_FailureNoticeOncePerEpisode` -> `func TestWorktreeTeardown_FailureNoticeOncePerEpisode(t *testing.T)`
+- `internal/battenshed#RowNoticeDeps`
+- `internal/battenshed#rowNotifier`
+- `internal/battenshed#newRowNotifier`
+- `internal/battenshed#rowNotifier.failed`
+- `internal/battenshed#rowNotifier.send`
+- `internal/battenshed#rowNoticeFileSuffix`
+- `internal/battenshed#rowNoticeRetrySpacing`
+- `internal/battenshed#runMarkerSuffixes`
+- `internal/battenshed#ClearRunMarkers`
+- `internal/battenshed#TestWorktreeTeardown_FailureNoticeOncePerEpisode`
 - `internal/battenshed/rownotice_test.go`
-- `plan:internal/battencli#battenHistoryLen` -> `func battenHistoryLen(location *lyxcwd.Location, slug string) (int, error)`
-- `plan:internal/battencli#rowNotices` -> `func rowNotices(location *lyxcwd.Location, slug string) battenshed.RowNoticeDeps`
-- `plan:internal/battencli#TestWire_BattenStatusSeamsReadBattensOwnStatus` -> `func TestWire_BattenStatusSeamsReadBattensOwnStatus(t *testing.T)`
+- `internal/battencli#battenHistoryLen`
+- `internal/battencli#rowNotices`
+- `internal/battencli#TestWire_BattenStatusSeamsReadBattensOwnStatus`
 
 **Delete:**
 - `internal/battencli#TestWire_PauseRequestedReadsBattensOwnStatus`

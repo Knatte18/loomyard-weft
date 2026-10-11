@@ -1,36 +1,36 @@
 # Card 8 — land-producer
 
 **Create:**
-- `plan:internal/battenshed#LandDeps` -> `type LandDeps struct`
-- `plan:internal/battenshed#LandingSettings` -> `type LandingSettings struct`
-- `plan:internal/battenshed#DeployResult` -> `type DeployResult struct`
-- `plan:internal/battenshed#landProducer` -> `type landProducer struct`
-- `plan:internal/battenshed#NewLand` -> `func NewLand(name, slug string, deps LandDeps, primeLock PrimeLock, scratchDir string) shedengine.ShedProducer`
-- `plan:internal/battenshed#landProducer.Call` -> `func (p *landProducer) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/battenshed#landProducer.acquireLandLock` -> `func (p *landProducer) acquireLandLock(ctx context.Context) (release func() error, stuckReason string, err error)`
-- `plan:internal/battenshed#landProducer.waitCleanPrime` -> `func (p *landProducer) waitCleanPrime(ctx context.Context) (stuckReason string, err error)`
-- `plan:internal/battenshed#landProducer.newlyReady` -> `func (p *landProducer) newlyReady() (ready []string, stuckReason string)`
-- `plan:internal/battenshed#rowNotifier.ready` -> `func (n rowNotifier) ready(ctx context.Context, landed string, slugs []string)`
-- `plan:internal/battenshed#readySnapshotFileSuffix` -> `const readySnapshotFileSuffix = "-ready-snapshot"`
-- `plan:internal/battenshed#landLockPollBase` -> `const landLockPollBase = time.Second`
-- `plan:internal/battenshed#landLockPollCeiling` -> `const landLockPollCeiling = 30 * time.Second`
-- `plan:internal/battenshed#primeDirtyWaitBound` -> `const primeDirtyWaitBound = 10 * time.Minute`
-- `plan:internal/battenshed#primeDirtyPollInterval` -> `const primeDirtyPollInterval = 5 * time.Second`
-- `plan:internal/battenshed#deployTimeout` -> `const deployTimeout = 30 * time.Minute`
+- `internal/battenshed#LandDeps`
+- `internal/battenshed#LandingSettings`
+- `internal/battenshed#DeployResult`
+- `internal/battenshed#landProducer`
+- `internal/battenshed#NewLand`
+- `internal/battenshed#landProducer.Call`
+- `internal/battenshed#landProducer.acquireLandLock`
+- `internal/battenshed#landProducer.waitCleanPrime`
+- `internal/battenshed#landProducer.newlyReady`
+- `internal/battenshed#rowNotifier.ready`
+- `internal/battenshed#readySnapshotFileSuffix`
+- `internal/battenshed#landLockPollBase`
+- `internal/battenshed#landLockPollCeiling`
+- `internal/battenshed#primeDirtyWaitBound`
+- `internal/battenshed#primeDirtyPollInterval`
+- `internal/battenshed#deployTimeout`
 - `internal/battenshed/land_test.go`
 
 **Edit:**
-- `plan:internal/battenshed#runMarkerSuffixes`
+- `internal/battenshed#runMarkerSuffixes`
 - `internal/battenshed/doc.go`
 - `cmd/lyx#unboundedWaitFiles`
 - `pattern/PATTERN-daemon-wakeups.md`
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/battenshed#RowNoticeDeps`
-- `plan:internal/battenshed#newRowNotifier`
-- `plan:internal/battenshed#rowNotifier.failed`
-- `plan:internal/battenshed#rowNotifier.send`
+- `internal/battenshed#RowNoticeDeps`
+- `internal/battenshed#newRowNotifier`
+- `internal/battenshed#rowNotifier.failed`
+- `internal/battenshed#rowNotifier.send`
 - `internal/battenshed#PrimeLock`
 - `internal/battenshed#acquirePrimeLock`
 

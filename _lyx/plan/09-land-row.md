@@ -1,16 +1,16 @@
 # Card 9 — land-row
 
 **Create:**
-- `plan:internal/shedrun#LandLock` -> `func LandLock(l *lyxcwd.Location) string`
-- `plan:internal/battencli#LandLock` -> `func LandLock(l *lyxcwd.Location) string`
-- `plan:internal/battencli#readySlugs` -> `func readySlugs(tasks []boardengine.Task) []string`
-- `plan:internal/battencli#runDeploy` -> `func runDeploy(ctx context.Context, primeDir, command, logPath string, timeout time.Duration) (battenshed.DeployResult, error)`
-- `plan:internal/battencli#TestReadySlugs` -> `func TestReadySlugs(t *testing.T)`
+- `internal/shedrun#LandLock`
+- `internal/battencli#LandLock`
+- `internal/battencli#readySlugs`
+- `internal/battencli#runDeploy`
+- `internal/battencli#TestReadySlugs`
 - `internal/battencli/deploy_integration_test.go`
-- `plan:internal/shedrecipe#landEntry` -> `func landEntry(name string, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/battenrecipe#NameLand` -> `const NameLand = "Land"`
-- `plan:internal/battenrecipe#TestRecipeEngines_ReportsEveryEngineNameSortedOnce` -> `func TestRecipeEngines_ReportsEveryEngineNameSortedOnce(t *testing.T)`
-- `plan:internal/battenrecipe#TestNew_PauseDuringLandReentersTheRowThroughGotoThenRun` -> `func TestNew_PauseDuringLandReentersTheRowThroughGotoThenRun(t *testing.T)`
+- `internal/shedrecipe#landEntry`
+- `internal/battenrecipe#NameLand`
+- `internal/battenrecipe#TestRecipeEngines_ReportsEveryEngineNameSortedOnce`
+- `internal/battenrecipe#TestNew_PauseDuringLandReentersTheRowThroughGotoThenRun`
 
 **Delete:**
 - `internal/battenrecipe#TestRecipeEngines_ReportsExactlyTheFourEngineNamesSorted`
@@ -24,7 +24,7 @@
 - `internal/battencli#TestPreGoto`
 - `internal/battencli#haltedOverDoneChild`
 - `internal/battencli#TestHaltedOverDoneChild`
-- `plan:internal/battencli#TestWire_BattenStatusSeamsReadBattensOwnStatus`
+- `internal/battencli#TestWire_BattenStatusSeamsReadBattensOwnStatus`
 - `internal/battencli#fourRowRunForRecipe`
 - `internal/battencli#stepAwaitingApprovalResumeDoneTeardown_ArchivesTheRunRecords`
 - `internal/battencli#shortPollBattenRecipe`
@@ -46,9 +46,9 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/battenshed#NewLand`
-- `plan:internal/battenshed#LandDeps`
-- `plan:internal/battencli#rowNotices`
+- `internal/battenshed#NewLand`
+- `internal/battenshed#LandDeps`
+- `internal/battencli#rowNotices`
 - `internal/landingshed#LoadConfig`
 - `internal/verifyrun#Run`
 

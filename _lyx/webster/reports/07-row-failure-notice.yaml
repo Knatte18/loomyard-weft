@@ -1,0 +1,15 @@
+status: OK
+head_sha: d34668b2ac3c997de98739fbb007a8db84bcdff8
+deviations:
+  - cmd/lyx/gitrepoboundary_test.go
+  - cmd/lyx/verifiedtree_test.go
+  - pattern/PATTERN-verified-tree.md
+  - internal/landingshed/verifygate.go
+  - internal/loomcli/darnwiring.go
+  - internal/loomcli/landingdeps.go
+  - internal/battencli/land.go
+  - internal/battencli/publishretry.go
+  - internal/battencli/publishretry_test.go
+  - internal/battencli/run_test.go
+  - internal/battencli/wire_test.go
+  - internal/shedrecipe/entries_batten_test.go
