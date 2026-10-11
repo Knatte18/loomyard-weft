@@ -1072,6 +1072,23 @@
       "isolated": false,
       "brief": "tokencount adds each run's wall-clock time per role and its idle time, so the slowest producer shows",
       "body": "## Seen (operator, 2026-10-11)\n\n`tools/tokencount` reports each finished run's tokens and estimated cost per run and per role, but nothing reports where a run's wall-clock time goes.\nThe operator wants to see the time each producer takes and where most of a run's time is spent.\n\n## Wanted\n\n- `tools/tokencount` reports wall-clock time beside tokens: per run and per role, from the transcript lines' timestamps it already reads, with sub-agents under their parent's role as for tokens.\n- Time no session spends working (parent review, PR-Gate, waits for a gate slot, a parked driver) shows as its own line per run, read from whatever the run's shed/loom status records; if the status records no per-phase timestamps, say so in the report and add them.\n- Each role's share of the run's total time, so the slowest producer stands out.\n- Update the package doc and the launchers' report description.\n"
+    },
+    {
+      "id": 352,
+      "slug": "orch-manifest",
+      "title": "Orch manifest in Bolt, cold reviewer replaces PR-Gate",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "orch",
+        "loom",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The orch keeps a manifest of its context in Bolt; a cold agent reviews PRs from it as a loom row",
+      "body": "## Seen (operator, 2026-10-11)\n\nThe hub orchestrator is now the largest token spender, ahead of Burler and Webster, and frequent distills have not cut it much.\nThe orch's value at PR-Gate and parent review is that it knows everything that has happened and is planned, which a cold Bouncer lacks.\n\n## Idea (operator, 2026-10-11)\n\n- Keep a manifest in Bolt that the orch updates as it goes: the context that otherwise lives only in the orch's chat.\n- A cold-start agent reviews at PR-Gate (and similar points) with the manifest as its basis, so loom can spawn it as a row of its own and the orch drops out of that loop; notices then go to the orch only for landings, stops and real escalations.\n\n## Points raised in discussion\n\n- The manifest holds only what `lyx` cannot derive: direction, cross-task operator decisions, patterns seen across runs, approaches on hold. Runs in flight, dependencies and touched files the reviewer reads itself; a single task's intent stays in its board body.\n- Pairs reach Bolt only through `lyx`, so the manifest needs a read verb, and dated entries.\n- A stale manifest gives a confident wrong review; the orch prunes it at each distill, and the orch note could fold into it.\n- Open, for the operator: whether an approved review merges to `main` (and reaches prod at the next `update-plugins.sh`) on its own, or still waits for a short orch yes.\n- The operator is also weighing running the orch on Sonnet, since most orch turns run `lyx` commands rather than reason deeply.\n"
     }
   ]
 }
