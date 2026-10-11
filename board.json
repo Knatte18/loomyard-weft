@@ -973,6 +973,7 @@
         "burler"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "Each perch (Discussion, Plan, Webster) gets its own bounce budget and an auto-accept flag that accepts the work on a spent budget instead of escalating to the parent.",
