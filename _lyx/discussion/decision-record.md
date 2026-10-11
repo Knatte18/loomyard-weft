@@ -152,6 +152,12 @@ None.
   - journal-write-failure-no-outcome (class design, severity MEDIUM, open in rounds 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - lease-test-release-unobservable (class design, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - `insert-card` at a middle position moves every later card up by one (file name, heading number, explicit `Commit:` prefix, Card Index number), writes the new card's heading-only file and Card Index line, and the result passes the `index-file-mismatch` and `card-numbering` checks.
