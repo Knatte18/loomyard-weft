@@ -1060,7 +1060,7 @@
       "isolated": false,
       "brief": "Bench pair for twill-plan round 3; torn down after the run",
       "body": "Temporary bench pair for board note twill-plan, round 3. Plan-Write only, from a frozen decision record.",
-      "status": "running · Discussion-Write"
+      "status": "paused · Plan-Bouncer"
     },
     {
       "id": 413,
