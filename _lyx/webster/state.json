@@ -250,7 +250,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "a259d402af2bc3b366acd2663e000da1",
   "masterSessionId": "11e57731-7c3e-4237-af9a-772e8cad2455",
   "batches": {
@@ -293,6 +293,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-small-fixes-batch/11e57731-7c3e-4237-af9a-772e8cad2455/subagents/agent-a30d4225f61fbc95e.jsonl"
       ]
+    },
+    "6": {
+      "slug": "fabric-unwire-apply",
+      "cards": [
+        "06-fabric-unwire-apply",
+        "07-board-prune-retire-apply",
+        "08-index-note-audience",
+        "09-carry-over-concurrent-write"
+      ],
+      "cardHashes": {
+        "06-fabric-unwire-apply": "4ed0ebcad93755650955112dc179393581be09d0da671d08a706446a5dc82d97",
+        "07-board-prune-retire-apply": "7903ffbdcd4052e621dd4eb5f4a848636f2ae4afcf6274eaf6a675c064543626",
+        "08-index-note-audience": "59b01e70c5d88795f6ecc0af883dc54c861c87983c62391e2c97ed09bb25fa11",
+        "09-carry-over-concurrent-write": "6e0867425d3bc94b01305aa12273f00725e605b24468dc9fcc04dc93cc57e487"
+      },
+      "startSha": "e666a2eb24ddb37ea06744014d2f35f8e250f235",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T08:35:59Z",
+      "sessionId": "11e57731-7c3e-4237-af9a-772e8cad2455",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
