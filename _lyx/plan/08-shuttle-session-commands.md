@@ -1,8 +1,8 @@
 # Card 8 — session commands and the color step through the guarded path
 
 **Create:**
-- `plan:internal/shuttleengine#sendSequence` -> `func sendSequence(sc sendContext, inputs []PaneInput) error`
-- `plan:internal/shuttleengine#sequenceText` -> `func sequenceText(inputs []PaneInput) string`
+- `internal/shuttleengine#sendSequence`
+- `internal/shuttleengine#sequenceText`
 
 **Edit:**
 - `internal/shuttleengine#Runner.ClearSession`

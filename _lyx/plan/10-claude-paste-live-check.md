@@ -8,9 +8,9 @@
 
 **Uses:**
 - `internal/reedengine#Engine.PasteSubmit`
-- `plan:internal/shuttleengine/claudeengine#Claude.PasteSubmits`
-- `plan:internal/shuttleengine/claudeengine#Claude.OwnPastePlaceholder`
-- `plan:internal/shuttleengine/claudeengine#PasteCollapseMinChars`
+- `internal/shuttleengine/claudeengine#Claude.PasteSubmits`
+- `internal/shuttleengine/claudeengine#Claude.OwnPastePlaceholder`
+- `internal/shuttleengine/claudeengine#PasteCollapseMinChars`
 - `internal/shuttleengine/claudeengine#Claude.InputBoxText`
 
 **Intent:**

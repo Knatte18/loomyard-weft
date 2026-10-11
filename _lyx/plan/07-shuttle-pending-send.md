@@ -1,11 +1,11 @@
 # Card 7 — shuttle's pending-send record keeps a retry from typing twice
 
 **Create:**
-- `plan:internal/shuttleengine#pendingSend` -> `type pendingSend struct`
-- `plan:internal/shuttleengine#pendingSendFileName` -> `const pendingSendFileName = "pending-send.json"`
-- `plan:internal/shuttleengine#savePendingSend` -> `func savePendingSend(runDir string, p pendingSend) error`
-- `plan:internal/shuttleengine#loadPendingSend` -> `func loadPendingSend(runDir string) (pendingSend, bool, error)`
-- `plan:internal/shuttleengine#clearPendingSend` -> `func clearPendingSend(runDir string) error`
+- `internal/shuttleengine#pendingSend`
+- `internal/shuttleengine#pendingSendFileName`
+- `internal/shuttleengine#savePendingSend`
+- `internal/shuttleengine#loadPendingSend`
+- `internal/shuttleengine#clearPendingSend`
 
 **Edit:**
 - `internal/shuttleengine#sendContext`

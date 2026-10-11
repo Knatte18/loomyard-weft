@@ -1,0 +1,7 @@
+status: OK
+head_sha: faeedf66295eedc930e3640556a04f9bd1a922c9
+deviations:
+  - internal/shuttleengine/config.go
+  - internal/shuttleengine/session_test.go
+  - internal/shuttleengine/claudeengine/startup_test.go
+  - internal/shuttlecli/modelpin_test.go

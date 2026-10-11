@@ -1,10 +1,10 @@
 # Card 9 — claudeengine takes the paste path and drops the leading Escape
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#pasteSubmitsOnEnter` -> `const pasteSubmitsOnEnter = true`
-- `plan:internal/shuttleengine/claudeengine#PasteCollapseMinChars` -> `const PasteCollapseMinChars = 800`
-- `plan:internal/shuttleengine/claudeengine#Claude.PasteSubmits` -> `func (c *Claude) PasteSubmits() bool`
-- `plan:internal/shuttleengine/claudeengine#Claude.OwnPastePlaceholder` -> `func (c *Claude) OwnPastePlaceholder(boxText, text string) bool`
+- `internal/shuttleengine/claudeengine#pasteSubmitsOnEnter`
+- `internal/shuttleengine/claudeengine#PasteCollapseMinChars`
+- `internal/shuttleengine/claudeengine#Claude.PasteSubmits`
+- `internal/shuttleengine/claudeengine#Claude.OwnPastePlaceholder`
 - `pattern/PATTERN-pane-text-injection.md`
 
 **Edit:**

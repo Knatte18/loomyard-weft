@@ -1,7 +1,7 @@
 # Card 11 — the orch watcher waits out a held write instead of failing the tick
 
 **Create:**
-- `plan:internal/orchengine#Watcher.heldTyping` -> `func (w *Watcher) heldTyping(st *State, step string, err error) (held bool, saveErr error)`
+- `internal/orchengine#Watcher.heldTyping`
 
 **Edit:**
 - `internal/orchengine#State`

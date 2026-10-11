@@ -1,6 +1,6 @@
 {
   "runGuid": "441e474ad6880346ecc94beac6502632",
-  "planFingerprint": "00e9424574a910bf6837ca4c74f124aa027955801a0aa973b76f0b446ac4bc3a",
+  "planFingerprint": "012e4060948c843027a9e28a2f68d3748fb0ff95313e3f0fbeece55089be099e",
   "planFileHashes": {
     "00-overview.md": "3d091cba03d21c3a21ddb1a4c574040205f6a7a957bf97651762f3ffd8da9124",
     "01-reed-paste-submit.md": "1739b7e3c1a3a9487e1b90e09ee23d7e6055319f57a5efbcea3ee4e5ea4c4fa4",
@@ -9,11 +9,11 @@
     "04-shuttle-reed-seam.md": "16bf06e743774275243faf0fa2291c7eeddd3b7cb834a4575b86969d49987cd4",
     "05-shuttle-prewrite-guard.md": "bfda58208c71c475224c0d364657dc6c11d3fc860f53aa36e7b036560644e435",
     "06-shuttle-paste-path.md": "345a0b4b32377dd6bb4571fcdb3720e572359a62679b30c25ade5321123f3ed0",
-    "07-shuttle-pending-send.md": "9a7efc71a57f37e15ba225ca6584464791e6dd19215e57d758337e45ccc59e9f",
-    "08-shuttle-session-commands.md": "b9525c5082455d85dc6763e3e73bacd90527b7a2d7a857fd833e9ac13f4c301f",
-    "09-claude-paste-path.md": "ddc0c16648bbfa53d7edadacfe23333f4374356d23f1d1f9ac7b5a84ad7cc341",
-    "10-claude-paste-live-check.md": "863a76ecd8df067a91d479ad14f3dab5f21eec16b59477e74a0d3b28635aa890",
-    "11-orch-held-typed-steps.md": "04fa98766e7c60b70d3bee1546757626dbd795ca0463ff976fe978fa2c058e12",
+    "07-shuttle-pending-send.md": "0e829cfa968c394f989e4fcdb22864def715edf05f27fb794a1d6bcf969e495f",
+    "08-shuttle-session-commands.md": "57bcca552df9d253ea0899258ad78c7b9fa34dcf7648e1f181655713339daac4",
+    "09-claude-paste-path.md": "40095818b87393d896c366e7adc512d7522bee76bf5f0fbdd4b72783828ee155",
+    "10-claude-paste-live-check.md": "3f4b583d07882d2600f7891d0e9722315ee0c7efdc6b0902632d9a14128d973b",
+    "11-orch-held-typed-steps.md": "8a9e6c1bc320d7b088f32a1a5ec8401256b654fca9f306f67772b6db5a9629a0",
     "12-shedrun-driver-busy.md": "f5c0e99ba60997f287093d46e9ce02ccf188bf2e50cec190c4bd8b5e9cc9c9e8",
     "13-loom-driver-busy-refusal.md": "2bbfa665226082909232c04a8665f1ce0bab8b0461ec6e27c027b36e2921e959",
     "14-battenshed-driver-busy-retry.md": "04534f6e1333ea05130e4ebba1d27069e63b4de9610dca5c2a42c35b09c2512a",
@@ -349,7 +349,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "a64b9fb2b25a3e277fdf6a93c2078388",
   "masterSessionId": "f9bc3152-93fb-4519-a9b0-e6aaa07dae56",
   "batches": {
@@ -409,21 +409,42 @@
         "11-orch-held-typed-steps"
       ],
       "cardHashes": {
-        "07-shuttle-pending-send": "9a7efc71a57f37e15ba225ca6584464791e6dd19215e57d758337e45ccc59e9f",
-        "08-shuttle-session-commands": "b9525c5082455d85dc6763e3e73bacd90527b7a2d7a857fd833e9ac13f4c301f",
-        "09-claude-paste-path": "ddc0c16648bbfa53d7edadacfe23333f4374356d23f1d1f9ac7b5a84ad7cc341",
-        "10-claude-paste-live-check": "863a76ecd8df067a91d479ad14f3dab5f21eec16b59477e74a0d3b28635aa890",
-        "11-orch-held-typed-steps": "04fa98766e7c60b70d3bee1546757626dbd795ca0463ff976fe978fa2c058e12"
+        "07-shuttle-pending-send": "0e829cfa968c394f989e4fcdb22864def715edf05f27fb794a1d6bcf969e495f",
+        "08-shuttle-session-commands": "57bcca552df9d253ea0899258ad78c7b9fa34dcf7648e1f181655713339daac4",
+        "09-claude-paste-path": "40095818b87393d896c366e7adc512d7522bee76bf5f0fbdd4b72783828ee155",
+        "10-claude-paste-live-check": "3f4b583d07882d2600f7891d0e9722315ee0c7efdc6b0902632d9a14128d973b",
+        "11-orch-held-typed-steps": "8a9e6c1bc320d7b088f32a1a5ec8401256b654fca9f306f67772b6db5a9629a0"
       },
       "startSha": "d2aca58540f9637b32141d98195b43c17531d6a6",
       "kind": "fork",
       "spawnedAt": "2026-10-11T11:14:20Z",
       "sessionId": "f9bc3152-93fb-4519-a9b0-e6aaa07dae56",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-shuttle-pending-send",
+        "status": "done",
+        "head_sha": "faeedf66295eedc930e3640556a04f9bd1a922c9",
+        "deviations": [
+          "internal/shuttleengine/config.go",
+          "internal/shuttleengine/session_test.go",
+          "internal/shuttleengine/claudeengine/startup_test.go",
+          "internal/shuttlecli/modelpin_test.go"
+        ]
+      },
+      "cardShas": [
+        "faeedf66295eedc930e3640556a04f9bd1a922c9"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pane-inject-safety/f9bc3152-93fb-4519-a9b0-e6aaa07dae56/subagents/agent-ab9fdfe6d82c5b138.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pane-inject-safety/f9bc3152-93fb-4519-a9b0-e6aaa07dae56/subagents/agent-ab9fdfe6d82c5b138.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pane-inject-safety/f9bc3152-93fb-4519-a9b0-e6aaa07dae56/subagents/agent-ae18c106c6287f9af.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pane-inject-safety/f9bc3152-93fb-4519-a9b0-e6aaa07dae56/subagents/agent-ae18c106c6287f9af.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pane-inject-safety/f9bc3152-93fb-4519-a9b0-e6aaa07dae56/subagents/agent-ab9fdfe6d82c5b138.jsonl"
   ]
 }
