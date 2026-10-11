@@ -1,6 +1,6 @@
 # Pane injection never merges with the operator draft, and batten survives a draft
 
-`pane-inject-safety` · Task · bug, shuttle, batten, orch, reed · awaiting · PR-Gate
+`pane-inject-safety` · Task · bug, shuttle, batten, orch, reed · running · PR-Gate
 
 Two faults around lyx typing into a Claude pane, merged into one task (operator, 2026-10-11).
 
