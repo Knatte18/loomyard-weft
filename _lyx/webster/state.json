@@ -1,0 +1,160 @@
+{
+  "runGuid": "e5683edf57a02ec0d9466db8c2957490",
+  "planFingerprint": "5ff45e0cb131123560defcbed5223170366e91704dc58a375e26d3c9d0820f8d",
+  "planFileHashes": {
+    "00-overview.md": "c1781c9c45e01a2d366746c4793412ec266bbb2b879f4f80e84d8cb354f6f243",
+    "01-shedrun-tree-records.md": "0f3507cfaa2dbb26c22992f5309d40f57f533641ba659b82e53643688c9e6f3d",
+    "02-turn-time-by-role.md": "f44efb2e17d80801449e0b910a3be90e8a741cb8fd5006a87aefd529834545e1",
+    "03-archive-tag-dates.md": "2ed89db644985d8bcb6803b9a8072a3742089688f3fea71aab5e322960490fd4",
+    "04-shed-span-producers.md": "032000025c56aa2be8e11577944fa049ddf9d7f69a4581a0bb037d10d260b82b",
+    "05-run-reads-shed-status.md": "72680e7a4c90873ccc4b918ae2d4ec10dbd1f1246d2cec98de452b2a923a0bc6",
+    "06-time-docs.md": "dca08a07aacb935ae511f0dc38c8d5b873d044b1162193289ac09efc053787de"
+  },
+  "planOverviewFrameHash": "d076a1f8876660dfb1b61960cee69d921699fd34b0745e6627737934843d0a5f",
+  "partition": [
+    {
+      "cards": [
+        "01-shedrun-tree-records",
+        "02-turn-time-by-role",
+        "03-archive-tag-dates",
+        "04-shed-span-producers",
+        "05-run-reads-shed-status",
+        "06-time-docs"
+      ],
+      "profile": "cautious",
+      "estimate": 204130,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54388,
+        "read_union": 33156,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 516,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:internal/shedrun/doc.go": 372,
+              "file:internal/shedrun/paths.go": 2364,
+              "file:internal/shedrun/paths_test.go": 2160,
+              "file:internal/shedrun/seed_test.go": 4176,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shedrun": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 56,
+            "written": 17316
+          },
+          {
+            "card": 2,
+            "card_text": 864,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:tools/tokencount/count_test.go": 3648,
+              "package:cmd/lyx/testdata": 2000,
+              "package:tools/tokencount": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 123.5,
+            "written": 37914
+          },
+          {
+            "card": 3,
+            "card_text": 336,
+            "reads": {
+              "file:tools/tokencount/count_test.go": 3648,
+              "package:tools/tokencount": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 41.5,
+            "written": 12786
+          },
+          {
+            "card": 4,
+            "card_text": 804,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:tools/tokencount/count_test.go": 3648,
+              "package:cmd/lyx/testdata": 2000,
+              "package:tools/tokencount": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 89.5,
+            "written": 27654
+          },
+          {
+            "card": 5,
+            "card_text": 564,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:tools/tokencount/main_test.go": 264,
+              "package:cmd/lyx/testdata": 2000,
+              "package:tools/tokencount": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 45.5,
+            "written": 14214
+          },
+          {
+            "card": 6,
+            "card_text": 252,
+            "reads": {
+              "file:tools/tokencount/main.go": 2832,
+              "file:tools/tokencount/tokencount.cmd": 168,
+              "file:tools/tokencount/tokencount.sh": 204,
+              "package:tools/tokencount": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 21.5,
+            "written": 6702
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "e29d2cf86b4c29d47c846c249d5d7dfc",
+  "masterSessionId": "53d9c43e-3f9d-4b39-bb8d-dc3e51a771b3",
+  "batches": {
+    "1": {
+      "slug": "shedrun-tree-records",
+      "cards": [
+        "01-shedrun-tree-records",
+        "02-turn-time-by-role",
+        "03-archive-tag-dates",
+        "04-shed-span-producers",
+        "05-run-reads-shed-status",
+        "06-time-docs"
+      ],
+      "cardHashes": {
+        "01-shedrun-tree-records": "0f3507cfaa2dbb26c22992f5309d40f57f533641ba659b82e53643688c9e6f3d",
+        "02-turn-time-by-role": "f44efb2e17d80801449e0b910a3be90e8a741cb8fd5006a87aefd529834545e1",
+        "03-archive-tag-dates": "2ed89db644985d8bcb6803b9a8072a3742089688f3fea71aab5e322960490fd4",
+        "04-shed-span-producers": "032000025c56aa2be8e11577944fa049ddf9d7f69a4581a0bb037d10d260b82b",
+        "05-run-reads-shed-status": "72680e7a4c90873ccc4b918ae2d4ec10dbd1f1246d2cec98de452b2a923a0bc6",
+        "06-time-docs": "dca08a07aacb935ae511f0dc38c8d5b873d044b1162193289ac09efc053787de"
+      },
+      "startSha": "c00b2e524fb6d3ab53b64a6c901f8a4fcc80c7e3",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T11:53:58Z",
+      "sessionId": "53d9c43e-3f9d-4b39-bb8d-dc3e51a771b3",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
