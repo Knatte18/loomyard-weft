@@ -74,7 +74,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 25 | **reed servers ignore ~/.tmux.conf**<br>• Since reed-hygiene (c6dc1fffc) reed servers start with -f /dev/null, so the operator loses prefix, key bindings and escape-time; no reed.yaml key replaces them | `reed-tmux-conf` | reed |
 | 26 | **Startup probe sleeps 10 s between checks; batten window waits for it**<br>• awaitStartup checks the pane every 10 s, so every shuttle start and every batten window waits about 10 s after the agent is up | [`startup-probe-wait`](design-startup-probe-wait.md) | batten |
 | 27 | **Parent-review wait lets the idle writer cache expire before a reject**<br>• A reject after more than 5 minutes resumes the writer or chair on a cold cache; keep it warm with a periodic ping, or resume a fresh session | [`parent-review-cold-cache`](design-parent-review-cold-cache.md) | loom, shuttle |
-| 28 | **Discussion writer forks lens forks after exploring, before writing**<br>• Burler-style lens fan inside the Discussion writer: one strong model explores, forks per lens for must-settle lists, then writes; bench against solo | [`discussion-lens-fan`](design-discussion-lens-fan.md) | loom, stencil |
+| 28 | **TwillDiscusser: a Discussion writer that forks lens reviewers before it writes**<br>• Single-LLM Discussion-Write producer: explore, fork waiting lens forks, write, forks review the record as outsiders; forks keep their cache warm themselves | [`twill-discusser`](design-twill-discusser.md) | loom, stencil |
 
 #### Low priority
 
