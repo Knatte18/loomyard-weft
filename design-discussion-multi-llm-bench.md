@@ -37,4 +37,7 @@ A fresh agent run from the prime drives it; neither loom nor darn fits, since th
 - Order: one DualDW run first, (`opus[high]`, `sonnet[high]`), which the operator watches; the rest run in parallel once that one holds.
 - Grading: each reference finding the Bouncer kept, avoided or repeated; decision overlap with the final discussion, new and missing decisions; writer tokens and wall time (`tools/tokencount`); how many batches the chair sent and whether it used the answers.
 - Report: `docs/research/discussion-bench.md`.
-- Before start, the operator confirms that the bench agent may create and tear down the bench pairs, add a temporary board note per bench slug holding a copy of the reference task body (the writer reads it with `lyx board get`) and remove them after, and approve each bench pair's Discussion parent-review gate itself.
+- Second round (operator, 2026-10-11): a separate bench round with two advisors, such as chair `opus[high]` with advisors `opus[medium]` and `sonnet[high]`, testing whether a broader first draft beats a later Burler review-and-fix round in strength and speed.
+  It should also measure how many Burler rounds each draft needs to converge and the total time and tokens to the final discussion, not only the draft against the answer key.
+  A co-chair variant (see `discussion-advisor-mode`) is a candidate for the same comparison.
+- The operator confirmed (2026-10-11) that the bench agent may create and tear down the bench pairs, add a temporary board note per bench slug holding a copy of the reference task body (the writer reads it with `lyx board get`) and remove them after, and approve each bench pair's Discussion parent-review gate itself.
