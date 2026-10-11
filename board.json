@@ -1076,7 +1076,9 @@
       "title": "Plan-fixing agents have no way to delete a card file when a card cut renumbers cards",
       "kind": "note",
       "labels": [
-        "enhancement"
+        "enhancement",
+        "loom",
+        "burler"
       ],
       "issues": [
         543
