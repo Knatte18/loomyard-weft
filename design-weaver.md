@@ -47,6 +47,8 @@ The plan is updated as the run goes, since an implementer may have to deviate fr
 
 Open against the code:
 - This answers the fixed-rows question above: the run is a frontier of ready batches, not a fixed row list.
+  The recipe can still be fixed if the batches are data, not rows: a Batchify row forms the frontier, a Batch-Run row runs it and loops back to Batchify while cards remain, then the run goes on to the plan-level verify, the way the Burler round loops over rounds.
+  New for Shed: one row that runs several spawns in parallel and finishes when all of them have.
 - Parallel worktrees need a merge back into the task branch after each batch; glyph disjointness rules out textual conflicts but not semantic ones, so the verify gate runs on the merged result.
 - Who writes an implementer's deviation into the plan (the implementer through its report, Go from the report, or Master Weaver), and how the batchifier tells a deviated card's new glyphs from its planned ones.
 - What the existing batcher module (`batcher` config) and Webster's partition and sequencing already give a batchifier.
