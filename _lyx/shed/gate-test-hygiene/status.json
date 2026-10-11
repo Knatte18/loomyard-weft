@@ -1,12 +1,12 @@
 {
   "current_producer": "Run-Shed",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "battenshed: Run-Shed: resume decided inner shed run (resuming this run retries the spawn): exit status 1: time=2026-10-11T11:04:07.012+02:00 level=WARN msg=\"loom: could not resume the parked driver\" trace=cbd06d2af7d52e20 guid=1f18a3717fe07efa8e77ed71b9195e01 attempts=1 err=\"shuttle: the session is not idle: strand \\\"1f18a3717fe07efa8e77ed71b9195e01\\\": the input box holds a draft: \\\"Tok\\\"; retry once the session is idle. The pane's last lines:\\n● The run gate-test-hygiene is parked at awaiting: PR #537 (https://github.com/Knatte18/loomyard/pull/537) waits for review. No repair was needed, and I\\n  sent nothing to the parent.\\n  The operator decides next:\\n  - lyx loom approve lands the pull request.\\n  - lyx loom reject sends findings back to rework.\\n  The stop report is at _lyx/shed/gate-test-hygiene/drive-reports/drive-report-20261011-094153-b5f8.md, and the run records are committed. Two notes on the\\n  way:\\n  - The orch's first message named the row before Batchifier Plan-Burler; the recipe calls it Plan-Review. The pause was set on Batchifier itself, so this\\n    did not change where the stop would land.\\n  - The Batchifier stop was cleared on the orch's later instruction, so the run went straight through. I told the orch both.\\n✻ Worked for 12s · done 11:02\\n───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── ly:gate-test-hygiene:driver ─\\n❯\\u00a0Tok\\n────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── ... (truncated)",
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
-    "last": "Seed-Child → done",
-    "wait": ""
+    "last": "Run-Shed → bounced to Run-Shed",
+    "wait": "battenshed: Run-Shed: resume decided inner shed run (resuming this run retries the spawn): exit status 1: time=2026-10-11T11:04:07.012+02:00 level=WARN msg=\"loom: could not resume the parked driver\" trace=cbd06d2af7d52e20 guid=1f18a3717fe07efa8e77ed71b9195e01 attempts=1 err=\"shuttle: the session is not idle: strand \\\"1f18a3717fe07efa8e77ed71b9195e01\\\": the input box holds a draft: \\\"Tok\\\"; retry once the session is idle. The pane's last lines:\\n● The run gate-test-hygiene is parked at awaiting: PR #537 (https://github.com/Knatte18/loomyard/pull/537) waits for review. No repair was needed, and I\\n  sent nothing to the parent.\\n  The operator decides next:\\n  - lyx loom approve lands the pull request.\\n  - lyx loom reject sends findings back to rework.\\n  The stop report is at _lyx/shed/gate-test-hygiene/drive-reports/drive-report-20261011-094153-b5f8.md, and the run records are committed. Two notes on the\\n  way:\\n  - The orch's first message named the row before Batchifier Plan-Burler; the recipe calls it Plan-Review. The pause was set on Batchifier itself, so this\\n    did not change where the stop would land.\\n  - The Batchifier stop was cleared on the orch's later instruction, so the run went straight through. I told the orch both.\\n✻ Worked for 12s · done 11:02\\n───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── ly:gate-test-hygiene:driver ─\\n❯\\u00a0Tok\\n────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── ... (truncated)"
   },
   "history": [
     {
@@ -20,6 +20,13 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-11T07:41:46Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at PR-Gate",
+      "at": "2026-10-11T09:01:46Z",
+      "budget_exempt": true
     }
   ]
 }
