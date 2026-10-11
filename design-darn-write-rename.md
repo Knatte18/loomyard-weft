@@ -18,5 +18,6 @@ Update every reference: recipe edges (`PR-Gate`'s `on_stuck`, the perch rows `da
 - **Stale PR description.** The darn writer writes `_lyx/landing/summary.md` before the perch, and `Darn-Burler` (`fix-scope: source`) can change the code after it, so Publish can open the PR with a description of the pre-fix diff.
   Loom avoids this with a `Describe` row after `Webster-Bouncer` that writes the description from the final diff.
   Give darn the same: `Darn-Bouncer`'s `on_done` goes to a `Describe` row, then Publish; with `review_max_bounces: 0` the writer's own description stands and the run goes to Publish as today.
+  A PR-Gate rejection bounces to the writer row, so the rework path also passes the perch and `Describe` before Publish; check that a re-run Publish updates the open PR's description rather than keeping the first one, in darn and in loom (whose rejections walk `PR-Rework` through `Describe` to Publish).
 - **No hardcoded verify budget (operator).** `Darn-Burler`'s verify gate has `attempts: 3` hardcoded in `darn-recipe.yaml`; stamp it from `darn.yaml`'s `verify_attempts` as the `Darn` row's gate is.
 - **Exhausted budget untested.** No test shows what a darn run does when the perch exhausts `review_max_bounces`, routed through loom's escalation with no decision record; add one, and fix whatever it shows.
