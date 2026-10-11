@@ -138,11 +138,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 29 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) | loom, stencil |
-
-## Done
-
-Finished, awaiting `lyx board prune --apply`.
-
-| # | Entry | Slug | Labels |
-| --- | --- | --- | --- |
-| 1 | **Small fixes: tokencount gaps and slug reuse, loom step help, plan rubric file-target rule, batten notice state**<br>• Five small independent fixes across tools/tokencount, loomcli help, the plan review rubric and batten notices | [`small-fixes-oct11`](design-small-fixes-oct11.md) | shed, loom, burler, stencil, batten |

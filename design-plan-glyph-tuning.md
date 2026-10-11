@@ -2,8 +2,6 @@
 
 `plan-glyph-tuning` · Task · enhancement, loom, stencil, webster, quarry
 
-Depends on: [`small-fixes-oct11`](design-small-fixes-oct11.md)
-
 ## Basis
 
 The glyph practice audit (2026-10-10, follow-up 2026-10-11) found the plan side sound: about 60% of plan targets are glyphs, glyph findings are rare and fixed in one pass, and the gate costs no extra Plan rounds or time.
