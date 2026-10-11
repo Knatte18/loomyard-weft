@@ -11,21 +11,23 @@ Concrete and claimable; only a task can run.
 
 Held by a run; its scope is locked until the run ends.
 
+#### High priority
+
+| # | Task | Slug | Recipe | At | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Burler: reviewer row then fixer row, lean fixer, per-perch budget and auto-accept**<br>• Split the Burler round into Burler-Review and Burler-Fix rows, skip the fixer on an empty review, give the fixer only the fix report, and give each perch its own bounce budget and auto-accept flag. | [`burler-split-budget`](design-burler-split-budget.md) | loom | Worktree-Create | loom, burler |
+
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Shuttle reads agent state from hooks first, the pane only where no hook exists**<br>• Install SessionStart on every run, end awaitStartup on it, map PermissionRequest and dead readings; keep pane reads only for dialogs, drafts and operator activity | [`shuttle-hook-first`](design-shuttle-hook-first.md) | loom | Webster | shuttle, loom |
+| 2 | **Shuttle reads agent state from hooks first, the pane only where no hook exists**<br>• Install SessionStart on every run, end awaitStartup on it, map PermissionRequest and dead readings; keep pane reads only for dialogs, drafts and operator activity | [`shuttle-hook-first`](design-shuttle-hook-first.md) | loom | Webster | shuttle, loom |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### High priority
-
-| # | Task | Slug | Recipe | After | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Burler: reviewer row then fixer row, lean fixer, per-perch budget and auto-accept**<br>• Split the Burler round into Burler-Review and Burler-Fix rows, skip the fixer on an empty review, give the fixer only the fix report, and give each perch its own bounce budget and auto-accept flag. | [`burler-split-budget`](design-burler-split-budget.md) | loom |  | loom, burler |
+_None._
 
 ### Layer A
 
