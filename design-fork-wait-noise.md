@@ -29,6 +29,8 @@ Inside the fork, the background calls carry noise of their own, for example:
 - Quick checks (`lint-comments`, `lint-pattern`, reading a finished task's output file) run as background calls, so each adds a notice and a turn.
 - Commands carry long absolute paths: the task output file under the system temp directory, and `cd <absolute pair path>` while the fork already works in that pair.
 
+The interim wakes do not keep Merriam's cache warm in any way it needs: the hub's `shuttle.yaml` gives the `webster` role a one-hour prompt-cache lifetime, so Merriam's cache outlives any batch under an hour without them.
+
 ## Wanted
 
 - One notice per batch fork: the fork waits for its gate inside its turn instead of ending it, for example with a capped in-turn wait like `lyx shuttle await` on the gate's result, so Merriam wakes only for the fork's final report.
