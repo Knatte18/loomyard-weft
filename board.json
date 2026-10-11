@@ -1264,6 +1264,21 @@
       "isolated": false,
       "brief": "",
       "body": "Seen at batten-notice-trim PR-Gate (PR #551): the notices with their own text (quiet, api-error, driver-dead) lost the `child state X` clause when the condition was rephrased, so they no longer say which state the child is in.\n\nIdea: carry the state in the rephrased condition for these notices too, as `haltText` does for halts."
+    },
+    {
+      "id": 376,
+      "slug": "seat-hold-deferral-cap",
+      "title": "Seat chair hold deferral of 20 min can hide a wedged advisor",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Seen at burler-multi-llm PR-Gate (PR #552): `holdNoticeMaxDeferral` defers a seat chair's held notice up to 20 min while advisor work is outstanding, so an advisor stuck mid-turn hides a real chair stall for up to 20 min.\n\nIdea: shorten the cap once runs show typical advisor batch times, or end the deferral when the advisor itself is held or dead."
     }
   ]
 }
