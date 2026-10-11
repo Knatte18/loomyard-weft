@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 2 | **Model keys per judge row, seed and PR-Rework; judge verdict and usage fixes**<br>• Own model keys for each Bouncer row judge and seed pass and for PR-Rework; Go refuses CONVERGED with an open BLOCKING finding; judge and seed usage recorded | [`per-role-models`](design-per-role-models.md) | loom | Plan-Burler | config, loom, burler |
-| 3 | **Small fixes: darn prompt paths, recipe doc line, stale reconcile default, destructive-verb confirm, index note audience, carry-over on disk**<br>• Six small independent fixes across darn stencil, docs, config reconcile, fabric/board verbs, board help and loom carry-over | [`small-fixes-batch`](design-small-fixes-batch.md) | loom | awaiting · PR-Gate | stencil, batten, config, fabric, board, loom |
+| 3 | **Small fixes: darn prompt paths, recipe doc line, stale reconcile default, destructive-verb confirm, index note audience, carry-over on disk**<br>• Six small independent fixes across darn stencil, docs, config reconcile, fabric/board verbs, board help and loom carry-over | [`small-fixes-batch`](design-small-fixes-batch.md) | loom | PR-Gate | stencil, batten, config, fabric, board, loom |
 
 ### Ready
 
