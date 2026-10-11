@@ -151,6 +151,12 @@ Rationale: the rephrase in commit `17b09e97f` moved state into `haltText` for st
   - placeholder-parent-branch-unbounded (class design, severity MEDIUM, open in rounds 1, 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - card2-package-doc-edit-has-no-target (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A transcript whose non-turn-ending line (an assistant `tool_use` line, or a user `tool_result` line) is followed an hour later by a user prompt line counts that hour as idle, not working, for the role and the run.
