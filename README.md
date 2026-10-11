@@ -15,7 +15,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Model keys per judge row, seed and PR-Rework; judge verdict and usage fixes**<br>• Own model keys for each Bouncer row judge and seed pass and for PR-Rework; Go refuses CONVERGED with an open BLOCKING finding; judge and seed usage recorded | [`per-role-models`](design-per-role-models.md) | loom | PR-Gate | config, loom, burler |
+| 1 | **Model keys per judge row, seed and PR-Rework; judge verdict and usage fixes**<br>• Own model keys for each Bouncer row judge and seed pass and for PR-Rework; Go refuses CONVERGED with an open BLOCKING finding; judge and seed usage recorded | [`per-role-models`](design-per-role-models.md) | loom | awaiting · PR-Gate | config, loom, burler |
 | 2 | **TwillDiscusser: a Discussion writer that forks lens reviewers before it writes**<br>• Single-LLM Discussion-Write producer: explore, fork waiting lens forks, write, forks review the record as outsiders; forks keep their cache warm themselves | [`twill-discusser`](design-twill-discusser.md) | loom | Loom-Preflight | loom, stencil |
 
 ### Ready
