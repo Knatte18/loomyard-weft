@@ -138,6 +138,12 @@ Decision: The guard invocation (claim, source-file, pins) exits non-zero wheneve
 
 Rationale: Round 3 F1, probed on tmux 3.6: one tmux exit status carries the claim, the source and both pins, and a typo in the operator file exits 1 while both pins applied. Reading the pins back is the only signal that separates the two, and it keeps D4's rule that a typo in a personal config must not take a hub down.
 
+### Added after Discussion (parent, 2026-10-11): Client queues interleave at a waiting command
+
+Decision: D3 and D5 state the premise as: tmux runs a client's queue without interleaving other clients until a command waits; a waiting command in the operator file (run-shell without -b, as tpm's last line) lets other clients run between the file's lines and reed's pins. D5 step 1's chained session-local destroy-unattached off with the tag, and the non-waiting claim, are what keep that window harmless; the plan must not treat the file's effect as atomic against other boots.
+
+Rationale: Round 3 F2, probed on tmux 3.6: during a sourced run-shell 'sleep 2' another client saw the file's global on values and an unchained new-session died, while the chained one survived.
+
 ## Constraints
 
 - `PATTERN-test-isolation`: its "Hermetic servers" section states that a server reed starts reads no `~/.tmux.conf`.
