@@ -1098,7 +1098,7 @@
       "isolated": false,
       "brief": "Plan-Write bench pair; temporary",
       "body": "Temporary bench pair for the twill-plan note: Plan-Write only, on a fixed base with a fixed decision record. Removed after the bench.",
-      "status": "running · Loom-Preflight"
+      "status": "running · Discussion-Write"
     }
   ]
 }
