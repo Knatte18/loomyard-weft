@@ -18,6 +18,7 @@ Split the hub orchestrator into two agents:
 ## Open
 
 - How a question the run driver cannot settle reaches the operator: through the conversational orch, or as a notice of its own.
+  The operator can keep both agents on Remote Control and gets a notification from the run driver when it needs input (operator, 2026-10-11).
 - Who writes what on the board: the run driver only claims, sets statuses and prunes, while scope edits and notes stay with the conversational orch, or both write freely.
 - How an operator decision reaches the run driver (start this bundle, change a hub config), and how the run driver learns the operator's settled decisions it needs at parent review.
 - How much of the run driver is an LLM at all: most of the run loop is mechanical, as loom's driver now is; see `orch-owns-the-loop`.
