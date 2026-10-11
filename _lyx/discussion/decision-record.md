@@ -132,6 +132,14 @@ Rationale: playInputs returns on the first failing SendKey, so a failed play can
 - A gate that needs more than one dismissal within 10 seconds still takes 10 seconds per extra key, as today.
 - A legitimately long advisor turn over 10 minutes now reaches the parent as a stall notice.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - d4-cause-present-tail-misdescribed (class design, severity MEDIUM, open in rounds 2)
+  - d5-misreads-daemon-wakeups-scope (class design, severity MEDIUM, open in rounds 1, 2)
+  - d6-dismissal-gap-edges-unstated (class design, severity MEDIUM, open in rounds 1, 2)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - A capture with a ready Claude box holding only `%` after the caret classifies idle, and its box text reads empty.
