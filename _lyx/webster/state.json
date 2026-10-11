@@ -1,0 +1,160 @@
+{
+  "runGuid": "a00440791244c292ac303e1ee6346762",
+  "planFingerprint": "d3da051d576de6072ba0a4bd39ff9c43183fa5c0825340e2eaec1827e131722e",
+  "planFileHashes": {
+    "00-overview.md": "1fe1d3e5375f44221a446b481c8bece7928f4b87685482d41e24ad5d5eb9226b",
+    "01-begun-card-bound.md": "71ff56e3114bce6871bd49a62bd17cc198023d1c38fb32458059ab472fc63fc4",
+    "02-planparser-renumber.md": "1ebaff994221aa11b9f259565a910cd9c64c524d125b76fe9670854b68afe2cb",
+    "03-planparser-restore.md": "37d005fffebd8125b0de49dd0798246ad901840dcbd4c9d16fe5724ba33e33f1",
+    "04-loom-card-verbs.md": "7a6ea584cf32f4afb91fd157fa127fe8b20eaaa999764448e6b45e4899fee09f",
+    "05-plan-stencil-rules.md": "bb29f1bebc421b85d2fafd5f037d76464f5963f2ee22d783da8da51e9888baca"
+  },
+  "planOverviewFrameHash": "788f73f6f55a523264de2a7efc776adfc56a4aa06a7bf98314607c27e22c27a4",
+  "partition": [
+    {
+      "cards": [
+        "01-begun-card-bound",
+        "02-planparser-renumber",
+        "03-planparser-restore",
+        "04-loom-card-verbs",
+        "05-plan-stencil-rules"
+      ],
+      "profile": "cautious",
+      "estimate": 306910,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54508,
+        "read_union": 84804,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 264,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:internal/websterengine/begun_test.go": 636,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 51.5,
+            "written": 15714
+          },
+          {
+            "card": 2,
+            "card_text": 948,
+            "reads": {
+              "file:cmd/lyx/pathrules_test.go": 2340,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:internal/planparser/doc.go": 1632,
+              "file:pattern/PATTERN-sole-parsers.md": 324,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/planparser": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/planparser": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 209.5,
+            "written": 63798
+          },
+          {
+            "card": 3,
+            "card_text": 468,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:internal/planparser/doc.go": 1632,
+              "file:pattern/PATTERN-sole-parsers.md": 324,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/planparser": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/planparser": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 79,
+            "written": 24168
+          },
+          {
+            "card": 4,
+            "card_text": 852,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:contracts/specs/loom-plan-spec.md": 7896,
+              "file:contracts/specs/refusal-spec.md": 4032,
+              "file:docs/overview.md": 8316,
+              "file:internal/loomcli/arm_seed_test.go": 1980,
+              "file:internal/loomcli/doc.go": 672,
+              "file:internal/loomcli/wiring_test.go": 11196,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 191.5,
+            "written": 58302
+          },
+          {
+            "card": 5,
+            "card_text": 216,
+            "reads": {
+              "file:contracts/stencils/loom/loom-rubric-plan-review.md": 1320,
+              "file:contracts/stencils/loom/loom-template-plan.md": 3084,
+              "file:contracts/stencils/loom/loom-template-rework.md": 1008,
+              "package:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils/loom": 2000
+            },
+            "messages": 18,
+            "written": 5616
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "f6211d0ba2ca57d13c580435b6a483a0",
+  "masterSessionId": "fc232e9f-afe6-40fc-8551-306db5c34777",
+  "batches": {
+    "1": {
+      "slug": "begun-card-bound",
+      "cards": [
+        "01-begun-card-bound",
+        "02-planparser-renumber",
+        "03-planparser-restore",
+        "04-loom-card-verbs",
+        "05-plan-stencil-rules"
+      ],
+      "cardHashes": {
+        "01-begun-card-bound": "71ff56e3114bce6871bd49a62bd17cc198023d1c38fb32458059ab472fc63fc4",
+        "02-planparser-renumber": "1ebaff994221aa11b9f259565a910cd9c64c524d125b76fe9670854b68afe2cb",
+        "03-planparser-restore": "37d005fffebd8125b0de49dd0798246ad901840dcbd4c9d16fe5724ba33e33f1",
+        "04-loom-card-verbs": "7a6ea584cf32f4afb91fd157fa127fe8b20eaaa999764448e6b45e4899fee09f",
+        "05-plan-stencil-rules": "bb29f1bebc421b85d2fafd5f037d76464f5963f2ee22d783da8da51e9888baca"
+      },
+      "startSha": "a5334fc72ccc820ec08f4e05bfcc329938d750ec",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T10:43:01Z",
+      "sessionId": "fc232e9f-afe6-40fc-8551-306db5c34777",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
