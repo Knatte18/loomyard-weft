@@ -16,7 +16,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Config layers and per-task run settings**<br>• Config resolves through a repo default, the worktree file and an untracked local override under .lyx/; a board task carries run settings that batten writes into the pair local override. | [`config-layers-run-settings`](design-config-layers-run-settings.md) | loom | awaiting · Discussion-Bouncer | config, batten, board |
-| 2 | **Driver arbiter: a cold, stronger agent decides when a driver is stuck**<br>• A stuck driver spawns a cold arbiter agent instead of waking the orch | [`driver-arbiter`](design-driver-arbiter.md) | loom | Loom-Preflight | shed, orch, stencil |
+| 2 | **Driver arbiter: a cold, stronger agent decides when a driver is stuck**<br>• A stuck driver spawns a cold arbiter agent instead of waking the orch | [`driver-arbiter`](design-driver-arbiter.md) | loom | Discussion-Write | shed, orch, stencil |
 
 #### Normal priority
 
