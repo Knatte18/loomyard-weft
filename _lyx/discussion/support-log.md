@@ -54,16 +54,33 @@ Autonomous run: no operator answered; every pick below is an auto-pick recorded 
 - Local override at `.lyx/config/<module>.yaml`, moving the staging copy elsewhere: a staging file left by an aborted edit under the old binary would be read as an override.
 - Read a hub-wide module's per-task override from the board task at load time instead of a pair file: couples `configengine` to the board and the slug.
 - Let a local override set any hub-wide key: reopens the shell-command trust gap that made darn hub-wide.
+- Let a per-worktree module's local layer set any key and only restate the bound: `reed.shell`, `shuttle.claude` and the `claude_deny_*` guards would then change untracked, unseen at landing, the same gap D4 closes for darn.
+- An allowlist for per-worktree modules too: most of their keys are session tuning, so a denylist names the few dangerous keys instead of every safe one.
 - Run settings as dotted keys (`loom.review_max_bounces`): the nested shape mirrors the file batten writes and the board's JSON.
 - Rewrite run settings before every Run-Shed child launch: a Stuck there self-routes and never halts, `lyx loom resume` bypasses it, and a rewrite can race a live driver; Seed-Child only, with a notice on a running task's edit, was chosen after the lens review.
 - Strip only in the walk that seeds the default: an interrupted walk or a skipped pair would never be stripped; a per-worktree marker replaced it.
 - Refuse unknown keys in every layer: breaks `lyx config --set`'s `preserved` tolerance and a binary downgrade.
 - Validate run-settings values at board write by calling each module's loader: `boardengine` cannot import `configreg` (cycle), and a generic shape check plus load-time validation suffices.
+- Keep `darn.review_max_bounces` local with a floor of 1 at the local layer: a value rule for one key in one layer, where closing the key keeps D4 a key list.
+- Strip keys by comparing values after `${env:...}` expansion: the result depends on the walk's environment and each worktree's `.env`, so a stripped literal could resolve differently in any other process.
 - Merge open maps per entry across layers: departs from the existing template-versus-file rule; kept consistent instead.
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1: four findings, all fixed.
+  F1 (BLOCKING): D4's bound was false for reed's and shuttle's executable, sourced-file, run-dir and guard keys — fixed: `LocalDenied` closes them to the local layer, and the board-history claim now covers only what Seed-Child writes.
+  F2 (BLOCKING): pruning seed-only upper layers deleted operator aliases, lenses and fans — fixed: D2 leaves every seed-only layer untouched, and D5 and D8 accept their unknown keys.
+  F3 (MEDIUM): D6's strip silently turned equal pins into inherited values — fixed: D6 states it and reports each stripped key.
+  F4 (LOW): D9's removal did not name what it discards — fixed: D9 names the Stuck-window hand override.
+- Round 2: three findings, all fixed.
+  F1 (BLOCKING): `reed.mouse` and `reed.debug_log` set the hub's shared tmux server at boot yet stayed open to the local layer — fixed: reed's `LocalDenied` adds both, and D4 names a shared process's boot option as a category every key is tested against.
+  F2 (MEDIUM): D6's leaf-wise strip inside an open map changed the resolved value — fixed: D6 strips an open map as one unit and never changes a worktree's resolution; an acceptance criterion pins it.
+  F3 (LOW): D4's rationale ignored `${env:...}` markers on the denied keys — fixed: the rationale rests on persistence in the pair.
+- Round 3: four findings, all fixed.
+  F1 (BLOCKING): landing's `require_pr_to_base`, `squash` and `co_authored_by` and darn's `review_max_bounces` were open to the local layer, so a pair could skip PR approval and Darn-Review and reshape the parent branch's commit — fixed: `LocalKeys` keeps only model picks, timeouts and `verify_attempts`, and D4's categories add reviews, approval gates and what lands on the parent branch.
+  F2 (MEDIUM): D4's rationale claimed the denied keys had no untracked route today, but the pair's `.env` binds their markers — fixed: the rationale rests on the local layer adding no new route, and R3 names `.env` for the parent.
+  F3 (MEDIUM): D6 left the strip's comparison form open, and an expanded comparison could strip a literal equal to the walk's expansion of a marker — fixed: D6 compares unexpanded nodes, and an acceptance row pins the kept literal.
+  F4 (LOW): seeding the default changes keys a worktree file lacks, such as a seed-only alias the prime holds — fixed: D6 narrows its claim to held keys and reports the others as `inherited`.
 
 ## Question ledger
 
@@ -71,10 +88,11 @@ _No rounds yet._
 - Q2 (auto-pick): how are layers shown? `--resolved` with per-leaf layer, reconcile results per layer, menu marks (D7).
 - Q3 (auto-pick): base layer full, upper layers sparse (D2).
 - Q4 (auto-pick): local override path `<anchor>/.lyx/config/<module>.local.yaml` (D3).
-- Q5 (auto-pick): hub-wide modules' local layer restricted to `LocalKeys`, excluding shell-command keys and hub-level facts (D4).
+- Q5 (auto-pick, revised in review rounds 1 to 3): hub-wide modules' local layer restricted to `LocalKeys`, and per-worktree modules' to every key outside `LocalDenied`, excluding executables, sourced files, cross-pair keys including shared boot options and what lands on the parent branch, and guards including reviews and approval gates (D4).
 - Q6 (auto-pick, revised after lens review): migration strips each worktree lacking a tracked marker, once (D6).
 - Q7 (auto-pick): `run_settings` nested by module, migrated and validated at write, slug-session guard (D8).
 - Q8 (auto-pick, revised after lens review): batten writes a pair's local files only at Seed-Child (D9).
 - Q9 (auto-pick): open maps carried whole across layers (D1).
 - Q10 (open, for the parent): whether D4's narrowing of the operator's "any key" ruling stands (R1).
 - Q11 (open, for the parent): whether the `kickstart_pack` incident's cause gets its own note (R4).
+- Q12 (open, for the parent): whether the pair's `.env` route to marker-carrying denied keys gets an entry of its own (R3).
