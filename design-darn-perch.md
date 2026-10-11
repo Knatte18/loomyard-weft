@@ -1,6 +1,6 @@
 # Darn gets a perch review with a configurable budget
 
-`darn-perch` · Task · enhancement, loom, burler, shed · running · Worktree-Create
+`darn-perch` · Task · enhancement, loom, burler, shed · running · Darn
 
 ## Wanted (operator, 2026-10-11)
 
