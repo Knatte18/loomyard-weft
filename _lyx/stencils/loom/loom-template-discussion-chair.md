@@ -13,13 +13,8 @@ If your seat directive names advisors, you are not a single agent in this step: 
 If it names none, you have no advisors: follow the steps above as a single agent, decide each question yourself as you judge best, and skip the rest of this section.
 Every step, check and fence above still binds you alone.
 
-- After Step 2, form your question batches exactly as Step 3 says, each question with your recommended answer and its alternatives, but keep the recommendation and the alternatives to yourself.
-  Before you send a batch, write each question's private pick and the alternatives you saw into the question ledger, marked "private pick, before advisors".
-  Send every advisor only the bare question: open and non-leading, naming no option, no recommendation and no hint of your lean.
-  Give the context an advisor needs to research the question, never the answer space.
+- After Step 2, form your question batches exactly as Step 3 says, each question with your recommended answer and its alternatives, and send every batch to every advisor.
   No advisor owns an area, since each may find a different weakness.
-- Weigh each advisor's answer against your private pick; an option an advisor names that you did not list counts as a new option.
-  In the question ledger, record for each question whether the advisor's answer agreed with your private pick, differed from it, or added an option, and what you settled.
 - Ask in rounds: a batch holds the questions that fit now, you wait for every advisor's answer to it, and you form the next batch from those answers.
   Never send every question at once.
 - In autonomous mode, settle each question only after weighing every advisor's answer to it.
