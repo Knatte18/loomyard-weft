@@ -926,6 +926,36 @@
       "isolated": false,
       "brief": "The slug-reuse cutoff is always applied; a tag commit date skewed against transcript timestamps could silently drop sessions.",
       "body": "Seen at the PR-Gate review of small-fixes-oct11 (PR #556, 2026-10-11): `tools/tokencount` now takes a cutoff from the slug's archive tags and skips main-session transcripts that start before it, with no flag to turn it off.\nA tag whose commit date is skewed against the transcript timestamps could drop sessions silently; the report only says how many it skipped.\n\nIdea: watch for this in the tokencount-full-runs measurements, and if it shows, add a flag to disable the cutoff or a tolerance window."
+    },
+    {
+      "id": 394,
+      "slug": "reed-socket-test-fd-sweep",
+      "title": "Sweep tests that rely on a closed listener socket file",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A forked child of a parallel test can inherit a closed listener fd and keep a stale socket answering; sweep other tests for the same race.",
+      "body": "Seen in shuttle-startup-ready (PR #557, 2026-10-11): `TestRemoveStaleSocket` in `internal/reedengine` failed at Publish verify because a parallel test's forked child inherited the closed listener's fd, so the \"stale\" socket still answered.\nCommit `ea4e53819` fixed `TestRemoveStaleSocket` and `TestRemoveSocketFileOnceGone` by building the stale socket from a datagram socket that never listens (`bindStaleUnixSocket`).\n\nIdea: sweep other tests that build a stale socket by closing a listener and move them to `bindStaleUnixSocket`."
+    },
+    {
+      "id": 395,
+      "slug": "hold-deferral-end-on-held",
+      "title": "End the seat hold deferral when the advisor itself is held or dead",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The hold notice deferral only got a shorter cap (10 min); ending it as soon as the advisor is held or dead is not built.",
+      "body": "Seen in shuttle-startup-ready (PR #557, 2026-10-11): Part 3 shortened `holdNoticeMaxDeferral` from 20 to 10 minutes (`hold.go`).\nThe alternative from the same idea was not built: end the deferral as soon as the advisor the chair waits on is itself held or dead, instead of waiting out the cap."
     }
   ]
 }
