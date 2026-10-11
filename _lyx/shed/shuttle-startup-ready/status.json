@@ -1,11 +1,11 @@
 {
-  "current_producer": "Worktree-Create",
+  "current_producer": "Seed-Child",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Worktree-Create",
-    "last": "Worktree-Create → stuck",
+    "now": "Seed-Child",
+    "last": "Worktree-Create → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,12 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-11T13:08:33Z"
+    },
+    {
+      "producer": "Worktree-Create",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-11T13:11:09Z"
     }
   ]
 }
