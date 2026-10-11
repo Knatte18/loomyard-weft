@@ -34,6 +34,20 @@
       "output": "child failed → running at Darn-Write",
       "at": "2026-10-11T12:10:08Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at PR-Gate",
+      "at": "2026-10-11T12:33:52Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at PR-Gate",
+      "at": "2026-10-11T12:35:00Z",
+      "budget_exempt": true
     }
   ]
 }
