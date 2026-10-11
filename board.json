@@ -1075,7 +1075,6 @@
         "stencil"
       ],
       "issues": [],
-      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "Burler-style lens fan inside the Discussion writer: one strong model explores, forks per lens for must-settle lists, then writes; bench against solo",
