@@ -1,12 +1,12 @@
 {
-  "current_producer": "Loom-Preflight",
+  "current_producer": "Discussion-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "pause_after": "Discussion-Write",
   "activity": {
-    "now": "Loom-Preflight",
-    "last": "Preflight → done",
+    "now": "Discussion-Write",
+    "last": "Loom-Preflight → done",
     "wait": ""
   },
   "history": [
@@ -15,6 +15,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-11T13:02:41Z"
+    },
+    {
+      "producer": "Loom-Preflight",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-11T13:04:03Z"
     }
   ],
   "product": {
