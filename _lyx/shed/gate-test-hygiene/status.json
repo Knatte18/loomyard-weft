@@ -1,12 +1,12 @@
 {
   "current_producer": "Finalize",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "verify failed after merging parent branch \"main\" (exit code 1); output: /home/knatte/Code/loomyard-LYXHUB/gate-test-hygiene/.lyx/verify/verify-7.log; fix forward on the task branch, then resume",
   "pause_requested": false,
   "activity": {
     "now": "Finalize",
-    "last": "PR-Gate → done",
-    "wait": ""
+    "last": "Finalize → stuck",
+    "wait": "verify failed after merging parent branch \"main\" (exit code 1); output: /home/knatte/Code/loomyard-LYXHUB/gate-test-hygiene/.lyx/verify/verify-7.log; fix forward on the task branch, then resume"
   },
   "history": [
     {
@@ -159,6 +159,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-11T09:06:10Z"
+    },
+    {
+      "producer": "Finalize",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-11T09:06:51Z"
     }
   ],
   "product": {
