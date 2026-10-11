@@ -14,7 +14,7 @@ In:
 - `internal/burlerengine` builds a `seatengine.Table` per round and runs, probes and resumes it through `seatengine`, replacing its own two-run start, join and probe.
 - `internal/seatengine` gains the generic seat capabilities the round needs: a per-advisor gate, per-seat fork authorization, a required advisor, an acceptance hook on a required advisor, the advisor's terminal shuttle result on its `SeatResult`, and deferral of the chair's held-turn notice while advisor work is outstanding.
 - `internal/shuttleengine` gains a told hold-notice deferral on `Spec`, the mechanism the chair deferral rides.
-- The two Burler orchestrator stencils become the chair and advisor seat stencils, including the seat directives; the fixer waits with `lyx shuttle await`.
+- The two Burler orchestrator stencils become the chair and advisor seat stencils, carrying Burler's own channel rules in place of the shared seat directives (D8); the fixer waits with `lyx shuttle await`.
 - `lyx burler await-review` is removed, and the run-wide `loom.yaml` key `fix_start` with its `after-review` value is retired.
 - Every caller of the burler engine moves with it: `internal/shedadapters.BurlerProducer` (every review segment, Darn's perch included) and `lyx burler run`.
 - Docs in the same commit: `doc.go` of `burlerengine`, `seatengine`, `shuttleengine` and `burlercli`, `docs/overview.md` where it names the round's wiring or `await-review`, and `tools/sandbox/SANDBOX-BURLER-SUITE.md`.
@@ -55,19 +55,25 @@ Rationale: the board fixes the seat assignment; the existing orchestrators alrea
 
 ### D3 — Review-before-fix stays a Go gate: the required advisor and its acceptance hook
 
-Decision: `seatengine.Seat` gains `Required` and `Accept`, both valid only on an advisor, `Accept` only on a `Required` seat (`Table.Validate` refuses anything else as a loud error naming the seat).
+Decision: `seatengine.Seat` gains `Required` and `Accept`, both valid only on an advisor, `Accept` only on a `Required` seat.
+The per-advisor seat gate is valid only on an advisor, since the chair's gate is the table's.
+`Table.Validate` refuses anything else as a loud error naming the seat.
 When a required advisor's run ends done with its gate passed, the engine calls `Accept` with that terminal shuttle result exactly once, in the advisor's waiting goroutine.
 Burler's `Accept` is today's `reviewReady`: cluster audit, strict parse, then the ready marker write, recording the released fact as the write begins.
-A required advisor that ends in anything but done, whose wait errors, or whose `Accept` errors, ends the step: the engine stops the chair and every other started advisor and returns, with no failure line queued to the chair.
-Bound: only a seat marked `Required` can end the step early, and only through its own end or its own `Accept`; the Discussion seats table marks no seat, so its behavior is unchanged.
+A required advisor that ends in anything but done, ends done with its gate failed, whose wait errors, or whose `Accept` errors, ends the step: the engine stops every started seat, the required advisor itself included, since a timed-out or wait-errored run may still be live and an advisor's pane is kept, and returns, with no failure line queued to the chair.
+A seat it cannot stop there surfaces as `ErrSeatNotStopped` with its way forward.
+Burler's reviewer gate lets the run through on cap, so a Burler round reaches the failed-gate end only through the generic rule.
+Bound: only a seat marked `Required` can end the step early, and only through its own end or its own `Accept`; every way a required advisor can end without `Accept` succeeding ends the step, so the chair never waits on a marker that cannot come; the Discussion seats table marks no seat, so its behavior is unchanged.
 Rationale: PATTERN-review-round requires the fixer to touch nothing before Go has accepted the review and written the marker; a seats advisor's death is otherwise advisory, which would leave the fixer waiting to its timeout.
 
 ### D4 — Burler's failure rules map onto the seat result unchanged
 
-Decision: `seatengine.SeatResult` gains the advisor's terminal `shuttleengine.Result` and its `Accept` error.
+Decision: `seatengine.SeatResult` gains the advisor's terminal `shuttleengine.Result`, its wait error and its `Accept` error.
 `decideRound` stays the one place the round's rules live and reads the seat result:
 
-- the reviewer ended non-done or its wait errored: the round returns the reviewer's outcome with a nil error; an audit or strict-parse error from `Accept` is returned as today;
+- the reviewer ended non-done: the round returns the reviewer's outcome with a nil error;
+- the reviewer's wait errored: the round returns that error wrapped, as today, since a wait error carries no outcome;
+- an audit or strict-parse error from `Accept` is returned as today;
 - the fixer died or timed out while the reviewer ran: the round returns the fixer's outcome;
 - the fixer reached done before the marker was released (the recorded fact, never arrival order): the skipped-handoff error;
 - otherwise the fixer's run decides; a failing fixer gate passes through with Verdict and Findings empty, and a done fixer has the review file compared against the accepted bytes before Verdict and Findings are set.
@@ -79,6 +85,7 @@ Rationale: the board keeps the round's outcome and the Bouncer contract; the rul
 ### D5 — Start order is the seats engine's: chair first; `fix_start` is retired
 
 Decision: the chair (fixer) starts first and the reviewer second, as every seat table does.
+A fresh round removes a stale ready marker before the chair starts, as today's `Run` does before either half: with the chair first, this removal is what keeps the fixer's wait from returning on a prior attempt's marker.
 A chair that fails to start starts no reviewer: the round is `OutcomeDied` with `NotStarted` and `Fix.StartError`.
 A reviewer that fails to start is a required-advisor failure: the chair is stopped and the round is `OutcomeDied` with `NotStarted` and `Review.StartError`.
 The `loom.yaml` key `fix_start` and the `FixStart` run option with its `after-review` value are removed; the template drops the key, and a hub file still carrying it is reconciled as a removed key and loads.
@@ -93,16 +100,19 @@ Rationale: forks read the reviewer's exploration from cache, while seats advisor
 ### D7 — The chair waits on the ready marker with `lyx shuttle await`
 
 Decision: the fixer's chair stencil runs `lyx shuttle await <ready-marker>` with the Bash tool's `timeout` at 300000 and repeats it until `ready: true`, editing nothing before then, as it does today with `await-review`.
+The chair waits inside its turn and never ends its turn to await the reviewer's up line; the up line, if it lands, opens nothing (D8).
 `lyx burler await-review` and `internal/burlercli/await.go` are removed; `burlermarker.Path` still derives the marker path.
 Rationale: the board requires the general capped wait `twill` built; its 250 s default cap keeps every re-run inside the 5-minute cache lifetime, so the chair stays warm exactly as the fixer does today, and a chair that waits inside its turn takes no held turn end.
 
 ### D8 — The seat channel inside a round
 
-Decision: the chair may message the reviewer only after the ready marker exists, and only to ask what a finding means or rests on; an existing marker stands in for the reviewer's up line, which may never land on a chair that waits inside its turn.
-The reviewer sends the chair nothing unprompted, answers only by message and never edits its review once written; the engine's byte comparison after the fixer is done stays the check.
-A reply is advice: the fixer still validates every finding against the code and the fasit, and a dispute still needs cited evidence in the fixer-report.
-These rules live in the Burler seat stencils; the shared seat directives are included unchanged.
-Bound: the channel lets the fixer learn a finding's intent, never change the accepted review or bypass the dispute rules; it opens only after Go accepted the review, so the reviewer's judgment is fixed before the fixer speaks.
+Decision: the chair may message the reviewer only after the ready marker exists, and only to ask what an accepted finding means or rests on; an existing marker stands in for the reviewer's up line, which may never land on a chair that waits inside its turn.
+The reviewer sends the chair nothing unprompted, never asks the chair to wrap up, answers only by message, writes no file after its review, and a reply only explains a finding the accepted review holds.
+A reply is advice: the fixer still validates every finding against the code and the fasit, a dispute still needs cited evidence in the fixer-report, and the fixer neither acts on nor fixes anything a reply raises beyond the accepted review.
+The Burler seat stencils include neither shared seat directive, since its lines contradict these rules: the advisor directive lets the chair ask for a wrap-up and the advisor message the chair unprompted, and the chair directive has the chair end its turn for an up line and read an advisor output as soon as it exists.
+Each Burler seat stencil states its own channel rules instead, and the shared directives' header comments name the Burler seat stencils as the channel wording's other home.
+Bound, Go-enforced: the fixer reaching done before the marker was released is the skipped-handoff error (D4), and the review file is compared against the accepted bytes after the fix, so an edit to it at any time fails the round.
+Bound, stencil-enforced only: the chair sending nothing before the marker, the reviewer sending nothing unprompted, the reviewer writing no file other than its review, and the fixer acting on nothing beyond the accepted review; a breach of these is not caught by Go and is recorded under Open risks.
 Rationale: the seat table gives the channel for free; scoping it after acceptance keeps the review independent.
 
 ### D9 — A required advisor keeps its hold notice
@@ -115,10 +125,15 @@ Rationale: today a reviewer that ends a turn without its review notifies the par
 Decision: `shuttleengine.Spec` gains a told deferral predicate for the held-turn notice.
 For a run that sets it, a held turn end is notified only once the run has stayed held for a fixed settle interval and the predicate then reports no outstanding work; the wait loop re-checks a held, unnotified turn end on its existing poll, and a turn end the run has since moved past is never notified.
 Runs without a predicate notify as today.
-`seatengine` sets the predicate on the chair only: advisor work is outstanding while any started advisor's up line has not landed, or any started advisor's session is mid-turn by shuttle's session-state fold (a turn start with no turn end after it).
+`seatengine` sets the predicate on the chair only: advisor work is outstanding while any started advisor whose run has not ended has an up line that has not landed, or a session that is mid-turn by shuttle's session-state fold (a turn start with no turn end after it).
+An advisor whose run has ended, timed out included, never counts, though shuttle keeps a timed-out run's strand live.
 The seat handle exposes that reading from the advisor's run; no decision reads `@lyx_wait` (PATTERN-wait-mark-display-only).
-Bound: the deferral delays a chair's notice, never drops it: once no advisor is mid-turn and every up line has landed, a chair still held past the settle interval notifies once; an advisor that stays mid-turn defers it at most until that advisor's own deadline, the table timeout.
-The settle interval is one constant in `shuttleengine`, short enough to notify a real stall within a minute and long enough to cover a SendMessage's delivery to an idle advisor.
+Bound: the deferral delays a chair's notice, never drops it, and never past a fixed maximum deferral.
+Once no counted advisor is mid-turn and every counted up line has landed, a chair still held past the settle interval notifies once.
+A chair still held past the maximum deferral notifies once regardless of advisor work, so an advisor wedged mid-turn hides a chair stall for at most that long; the table timeout cannot bound it, since every seat shares it and the chair starts first.
+The settle interval and the maximum deferral are each one constant in `shuttleengine`.
+The settle interval is short enough to notify a real stall within a minute and long enough to cover a SendMessage's delivery to an idle advisor.
+The maximum deferral is long enough for an advisor to answer an ordinary batch and short enough that a wedged advisor's hidden chair stall reaches the parent well before the table timeout.
 Rationale: lyx cannot see Claude Code's inbox, so an "unanswered batch" is read as an advisor that is working on it; the settle interval covers the instant between the chair sending a batch and the advisor starting its turn, and a chair whose advisors are all idle is a real stall.
 
 ### D11 — Resume keeps today's rule
@@ -134,7 +149,7 @@ Rationale: a finished reviewer's run was never live today either, so a resumed r
 - PATTERN-agent-name: role names formed through `agentname` via the seats engine; `burlerengine` owns the `burler` prefix (D2).
 - PATTERN-parent-directive and PATTERN-edit-directive: each seat stencil renders the parent directive and the edit directive exactly once, whether through the Burler stencil or the seat composition.
 - PATTERN-role-skills-typed and PATTERN-spawn-color: skills and the review segment ride the seat specs; no stencil asks to load a skill or set a color.
-- PATTERN-stencil-ownership and PATTERN-producer-pointer-rule: stencils read at call time; the Burler stencils point at the seat directives and never paraphrase them.
+- PATTERN-stencil-ownership and PATTERN-producer-pointer-rule: stencils read at call time; the Burler seat stencils include neither shared seat directive and state Burler's own, narrower channel rules (D8), never a paraphrase of the shared ones.
 - PATTERN-wait-mark-display-only: the hold deferral reads session state, never the wait mark (D10).
 - PATTERN-daemon-wakeups: the deferral re-check rides the wait loop's existing poll; no new unbounded wait.
 - PATTERN-shuttle-provider-seam: the deferral and the session-state reading are provider-neutral; nothing Claude-specific leaves `claudeengine`.
@@ -151,30 +166,40 @@ Rationale: a finished reviewer's run was never live today either, so a resumed r
 - The chair may question the reviewer after acceptance (D8); the board neither asks for nor forbids it.
 - The strand names change to `burler-chair` and `burler-advisor-1`, following the board's "chair" and "advisor-1" (D2).
 - An advisor's mid-turn state is readable from shuttle's session-state fold, including turns a SendMessage starts (D10).
-- The settle interval is a constant, not a config key (D10).
+- The settle interval and the maximum deferral are constants, not config keys (D10).
 
 ## Open risks
 
-- A SendMessage that wakes an idle advisor may not fire the provider's turn-start hook; then an answering advisor reads as idle and the chair's notice fires after the settle interval. The llm-tier smoke or a watched run must confirm the turn-start signal.
+- A SendMessage that wakes an idle advisor may not fire the provider's turn-start hook; then an answering advisor reads as idle and the chair's notice fires after the settle interval. The llm-tier Acceptance criterion on a SendMessage-started turn checks the signal.
 - A fixer mid-round across the deploy calls the removed `lyx burler await-review` and fails; the round then ends on the skipped-handoff error or the timeout, and the row's retry or a re-step recovers. Deploy when no Burler round is in flight to avoid it.
 - The reviewer's pane stays alive (kept) through the fix, so a round holds two panes until it ends.
+- The kept reviewer keeps its edit tools through the fix, and D8's stencil-only rules are all that stop it writing a target file or the fixer-report, or a reply carrying a finding the accepted review lacks; Go catches only an edit to the review file. Such a write lands in the fixer's commits unreviewed.
 - Starting the chair before the reviewer means a reviewer that never comes up costs one started-and-stopped fixer.
-- The fork audit must still be attached to a kept advisor's done result; a shuttle path that skips it for `KeepPane` runs would fail every cluster round loudly.
+
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - chair-notice-deferral-bound-vacuous (class design, severity MEDIUM, open in rounds 2)
+  - required-advisor-not-stopped-on-early-end (class decision, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
 - A round runs as one seat table: the fixer under `burler-chair`, the reviewer under `burler-advisor-1`, with the models, skills, segment, timeout, round number, outputs and gates of D2.
 - The reviewer's review-parse gate re-prompts the reviewer in its own session; an unparseable review after the budget fails at the strict parse in `Accept`.
-- The ready marker exists only after the reviewer's done result passed the cluster audit (cluster rounds) and the strict parse; a stale marker is removed before the round starts.
-- Every failure rule of D4 holds: reviewer died or timed out (chair stopped, reviewer's outcome, nil error); audit or strict-parse error (error, chair stopped); fixer died or timed out while the reviewer runs (reviewer stopped, fixer's outcome); fixer done before release (skipped-handoff error); review changed after the fix (error); success (verdict, findings, gate passthrough, both halves' identities, times and usage).
+- The ready marker exists only after the reviewer's done result passed the cluster audit (cluster rounds) and the strict parse; a stale marker is removed before the chair starts (D5).
+- Every failure rule of D4 holds: reviewer died or timed out (chair and reviewer stopped, reviewer's outcome, nil error); reviewer's wait errored (chair and reviewer stopped, the wait error returned); audit or strict-parse error (error, chair and reviewer stopped); fixer died or timed out while the reviewer runs (reviewer stopped, fixer's outcome); fixer done before release (skipped-handoff error); review changed after the fix (error); success (verdict, findings, gate passthrough, both halves' identities, times and usage).
 - Not-started cases of D5: chair not started starts no reviewer; reviewer not started stops the chair; both report `NotStarted` with the right half's start error.
 - A seat that cannot be stopped returns the not-stopped error with its way forward, and `BurlerProducer` surfaces it.
 - Resume per D11: both seats live attaches and removes a found marker; any other live combination is returned for a fresh round.
 - A cluster round sets fork authorization on the reviewer only and enforces the exact-N fork audit; a solo round authorizes no forks.
 - `Table.Validate` refuses `Required`, `Accept` or a seat gate on the chair, and `Accept` on a non-required advisor.
+- A required advisor that ends done with its seat gate failed ends the step with no `Accept` call: every started seat, that advisor included, is stopped.
 - A Discussion seats table with no required advisor runs as before apart from the chair's hold deferral.
-- Hold deferral: a chair held while an advisor is mid-turn or its up line is pending sends no notice; once the advisors are idle and the chair is still held past the settle interval it sends exactly one; a chair that starts a new turn first sends none for the old turn end; advisors and runs without a predicate notify as before; a required advisor's held turn end notifies the parent.
+- Hold deferral: a chair held while an advisor is mid-turn or its up line is pending sends no notice; once the advisors are idle and the chair is still held past the settle interval it sends exactly one; a chair that starts a new turn first sends none for the old turn end; an advisor whose run has ended, timed out included, defers nothing; a chair held past the maximum deferral while an advisor stays mid-turn sends exactly one; advisors and runs without a predicate notify as before; a required advisor's held turn end notifies the parent.
+- An llm-tier smoke shows an advisor turn started by a chair's SendMessage reads as mid-turn by shuttle's session-state fold.
 - The fixer's stencil names `lyx shuttle await` and no stencil, doc or code names `lyx burler await-review`; the verb is gone from the CLI.
+- Neither Burler seat stencil includes a shared seat directive; the chair stencil opens the channel only once the marker exists and never has the fixer end its turn to await an up line, and the advisor stencil bars unprompted messages and any write after the review (D8).
 - `fix_start` is gone from the template and loader, and a hub `loom.yaml` still holding it reconciles and loads.
 - `BurlerProducer`'s round artifacts and Bouncer hand-off are unchanged for every review segment.
 
