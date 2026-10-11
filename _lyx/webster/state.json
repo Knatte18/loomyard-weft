@@ -325,7 +325,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 10,
   "masterStrand": "20f1a3997484d0ee70d876da16bf69d9",
   "masterSessionId": "175a5055-3107-4812-a3df-358934c9aeb4",
   "batches": {
@@ -363,6 +363,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-parent-review-wait/175a5055-3107-4812-a3df-358934c9aeb4/subagents/agent-ad3a53bf2bd8218b9.jsonl"
       ]
+    },
+    "10": {
+      "slug": "review-refusals-name-status",
+      "cards": [
+        "10-review-refusals-name-status",
+        "11-no-reply-to-writer",
+        "12-gate-recheck-throttle",
+        "13-gate-entry-expiry-probe",
+        "14-parent-review-expiry-probe"
+      ],
+      "cardHashes": {
+        "10-review-refusals-name-status": "82d1a77cd1a229459bc54b6c891a68825ad603f41b5139f586c9ca0c4cad99bf",
+        "11-no-reply-to-writer": "dbcafbc18a09054c73ffb13c124105d89aceabc0124232f586ebd7d04aa51b44",
+        "12-gate-recheck-throttle": "82dc0cb51a2d8d7904a2dd3fd3ee41b488e2af92baffa0e837bfe5411998ab50",
+        "13-gate-entry-expiry-probe": "c852ce1560c43cb4e1477c69bf655f9267a72529f6e35389dbe8aff2eeabc23d",
+        "14-parent-review-expiry-probe": "09ed77afda96d6cd5c17c62e9646c23238dfa98ab24150f481ba2a2fad1fa20f"
+      },
+      "startSha": "2c69b67def57b8ee201d56e91862257ab64113a6",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T18:49:43Z",
+      "sessionId": "175a5055-3107-4812-a3df-358934c9aeb4",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "parent-review-no-pass-at-cap",
