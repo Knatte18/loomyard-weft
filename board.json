@@ -800,39 +800,6 @@
       "status": ""
     },
     {
-      "id": 275,
-      "slug": "pattern-overview-headroom",
-      "title": "PATTERN overview breaks its cap only after merging main",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "loom"
-      ],
-      "issues": [],
-      "priority": "high",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "From `gate-test-scope` (2026-10-10): the `PATTERN.md` overview was under its 16384-byte cap on both the task branch and main, but Publish merged main in and the overview reached 16559 bytes.\n`TestOverview_RealFilePassesCheck` then failed in verify, the run blocked at Publish, and it needed a parent decision plus a goto to Webster-Burler.\nThe same block then hit `daemon-wakeups` and `bolt-and-store` the same day, and `daemon-wakeups` landed at 16337 bytes although a parent decision asked for at most 16200: a target only in prose does not stick.\n\nIdea: give the overview headroom, with the overview check warning at about 95% of the cap, or let a shared size cap breached only by the merge be fixed through the Publish fix route.\n"
-    },
-    {
-      "id": 277,
-      "slug": "tmuxkit-probe-copies",
-      "title": "Fold loomcli and orchcli tmux probe copies onto tmuxkit",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "loom",
-        "orch",
-        "reed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "From `test-suite-weight` Discussion review (2026-10-10, round 3 F2): its D8 moves `reedcli`'s watchdog recognizer and `/proc` probes into `tmuxkit`, but `loomcli` (`smoke_helpers_test.go`) and `orchcli` (`smoke_live_test.go`) keep their own copies.\nA parent decision kept those two copies out of that run's scope.\n\nIdea: fold the `loomcli` and `orchcli` copies onto `tmuxkit`, per `PATTERN-testkit`; `test-suite-weight` landed (b7d4fd0ba), so the shared probes are in `tmuxkit` now.\n"
-    },
-    {
       "id": 283,
       "slug": "reconcile-stale-default",
       "title": "Reconcile keeps an old default below the new floor",
@@ -947,20 +914,6 @@
       "body": "## Seen\n\nIn the #512 incident (2026-10-10) a reviewer probing the CLI ran `lyx fabric unwire` and `lyx board retire-legacy` bare in a task pair; both acted at once, unwiring the pair and deleting legacy board files.\n57243019b closed the route it took (global `--json` never runs a command), but any bare call of these verbs still acts.\n\n## Idea\n\nGive destructive verbs that take no argument (`fabric unwire`, `board retire-legacy`, `board prune`) an explicit confirmation flag, so a bare call prints what it would do and changes nothing."
     },
     {
-      "id": 303,
-      "slug": "gate-gofmt-check",
-      "title": "No gate or test catches gofmt drift",
-      "kind": "note",
-      "labels": [
-        "enhancement"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nOn 2026-10-10 `gofmt -l internal/loomcli/` on main (57243019b) lists `internal/loomcli/bootstrap_test.go` (a trailing blank line), and every test tier passed; the `webster-replan-state` conflict agent noticed it.\nNo test or gate step runs gofmt.\n\n## Idea\n\nAdd a gofmt check (`gofmt -l` over the module must print nothing) to the test suite or the verify gate, and fix the file in the same change."
-    },
-    {
       "id": 306,
       "slug": "plan-refusal-reachability",
       "title": "Plan review does not check that a prescribed refusal is reachable",
@@ -1042,21 +995,6 @@
       "isolated": false,
       "brief": "readOnlyCommands readers (cat, grep -r) accept unquoted globs and arbitrary flags",
       "body": "From the webster-audit-gaps PR-Gate review (PR #528, 2026-10-10): the classifier now splits lyx, git and sed segments into shell words and bounds unquoted globs there, but the `readOnlyCommands` readers (`cat *`, `grep -r`) still accept unquoted globs and arbitrary flags, as before the task.\nAlso, an unquoted glob after `--` is admitted for `git log` and `git diff`; git treats it as a pathspec, but the reason lives only in the code, not in `doc.go`."
-    },
-    {
-      "id": 320,
-      "slug": "test-budget-collision",
-      "title": "Test-budget rows collide silently when two runs raise the same row",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Two branches raising one test-budget row to the same value merge clean but overflow on main",
-      "body": "Seen 2026-10-10: webster-audit-gaps and reed-hygiene each added one cmd/lyx test and each raised the cmd/lyx row in `cmd/lyx/testdata/test-budget.yaml` from 73 to 74.\nThe edits are textually identical, so the merge is clean, but the merged package overflows its budget; the failure only shows when verify runs after merging main (both runs blocked on it once) or, worse, on main after Finalize.\nIdea: the budget row records a delta per branch, or the verify-after-merge failure message names the merged count to set, so the fix is mechanical and the PR-Gate reviewer need not count tests by hand."
     },
     {
       "id": 321,
@@ -1154,6 +1092,23 @@
       "isolated": false,
       "brief": "Every agent a run spawns gets its own model key; first the judge per Bouncer row, then every other role that can only be set in a group or in the built-in recipe",
       "body": "## Seen\n\nThe haiku-roles analysis (`docs/research/haiku-judge.md`, 5459376bb) found that one `judge` key in `loom.yaml` sets the model for all three Bouncer rows and their seed passes; a per-row model exists only as `model`/`effort` in the recipe, which is built into the binary.\n\n## Idea (operator, 2026-10-10)\n\nMost agents a run spawns should take a model of their own in config.\n\n- Give each Bouncer row's judge its own model key in config, so Discussion-Bouncer can stay on Sonnet while Plan-Bouncer and Webster-Bouncer try Haiku 5.5.\n- Give the seed pass (role `bouncer-seed`, writes only `round-1-focus.md` before round 1, never gates) a model key separate from the judge's; the analysis rates it Haiku-safe on every row, so it moves to Haiku 5.5 on all three rows once the key exists.\n- Find every other role in the loom and darn recipes, batten and webster whose model is shared with another role or settable only in the recipe, and give it its own key in the same task.\n- A role survey (2026-10-10) found these without a key of their own:\n  - PR-Rework reuses `loom.yaml` `plan` (`loomengine/rework.go`).\n  - Webster's implementer and verify-fix forks inherit `webster.yaml` `master`.\n  - The Bouncer escalation fork and the fan's lens forks inherit the parent session's model.\n  - `landing.yaml` `describe` and `darn.yaml` `writer` are set hub-wide only, so a trial cannot be scoped to one task pair.\n- Once it lands, the haiku-roles trial runs Haiku 5.5 on the Plan-Bouncer and Webster-Bouncer judges only.\n"
+    },
+    {
+      "id": 327,
+      "slug": "gate-test-hygiene",
+      "title": "Test and gate hygiene: merge-only verify failures, gofmt, tmux probe copies",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "loom",
+        "orch"
+      ],
+      "issues": [],
+      "priority": "high",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "PATTERN overview headroom, test-budget rows that collide after merge, a gofmt check, and the last tmux probe copies onto tmuxkit",
+      "body": "Four test- and gate-hygiene faults, merged from notes on 2026-10-11.\nThe first two block runs at Publish only after main is merged in; together they cost several parent decisions and gotos on 2026-10-10.\n\n## PATTERN overview headroom (was `pattern-overview-headroom`)\n\nFrom `gate-test-scope` (2026-10-10): the `PATTERN.md` overview was under its 16384-byte cap on both the task branch and main, but Publish merged main in and the overview reached 16559 bytes.\n`TestOverview_RealFilePassesCheck` then failed in verify, the run blocked at Publish, and it needed a parent decision plus a goto to Webster-Burler.\nThe same block then hit `daemon-wakeups` and `bolt-and-store` the same day, and `daemon-wakeups` landed at 16337 bytes although a parent decision asked for at most 16200: a target only in prose does not stick.\n\nIdea: give the overview headroom, with the overview check warning at about 95% of the cap, or let a shared size cap breached only by the merge be fixed through the Publish fix route.\n\n## Test-budget rows collide (was `test-budget-collision`)\n\nSeen 2026-10-10: webster-audit-gaps and reed-hygiene each added one cmd/lyx test and each raised the cmd/lyx row in `cmd/lyx/testdata/test-budget.yaml` from 73 to 74.\nThe edits are textually identical, so the merge is clean, but the merged package overflows its budget; the failure only shows when verify runs after merging main (both runs blocked on it once) or, worse, on main after Finalize.\n\nIdea: the budget row records a delta per branch, or the verify-after-merge failure message names the merged count to set, so the fix is mechanical and the PR-Gate reviewer need not count tests by hand.\n\n## No gofmt check (was `gate-gofmt-check`)\n\nOn 2026-10-10 `gofmt -l internal/loomcli/` on main (57243019b) lists `internal/loomcli/bootstrap_test.go` (a trailing blank line), and every test tier passed; the `webster-replan-state` conflict agent noticed it.\nNo test or gate step runs gofmt.\n\nIdea: add a gofmt check (`gofmt -l` over the module must print nothing) to the test suite or the verify gate, and fix the file in the same change.\n\n## tmux probe copies (was `tmuxkit-probe-copies`)\n\nFrom `test-suite-weight` Discussion review (2026-10-10, round 3 F2): its D8 moved `reedcli`'s watchdog recognizer and `/proc` probes into `tmuxkit`, but `loomcli` (`smoke_helpers_test.go`) and `orchcli` (`smoke_live_test.go`) keep their own copies.\n\nIdea: fold the `loomcli` and `orchcli` copies onto `tmuxkit`, per `PATTERN-testkit`.\n"
     }
   ]
 }
