@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=f0ac5c9530f14499327f603c69eb7107ea49966f35a1d007af657878d321d6ae build=1e79825ff968848322198e80471cf827fcd53cea time=2026-10-10T18:51:22Z -->
+<!-- lyx-stencil: sha256=178353902aa58fb7d248be48a0fbd004f99015dc749b28b8addfd960f8a0bdbc build=c00b2e524fb6d3ab53b64a6c901f8a4fcc80c7e3 time=2026-10-11T11:09:36Z -->
 
 # Loom plan-spec — flat card list
 
@@ -258,6 +258,9 @@ A plan carrying at least one `plan:` handle also gains a companion write path on
 Cards are numbered flat across the whole plan — no batch-scoped restart, no `NN.C` compound numbering.
 Numbers run from the overview's `first_card:` (default `1`) upward with no gap, so a rework generation can continue the numbering of the generation it retires.
 The per-card file prefix `NN` (zero-padded) must equal the heading `N`.
+
+A card is inserted or removed with `lyx loom insert-card` or `lyx loom remove-card`, which move every later card by one in file name prefix, heading number, explicit `Commit:` prefix and Card Index number.
+They report lines that name a moved number in prose, and never rewrite them.
 
 The **default commit subject is `N: <name>`** — the card heading's `<name>`;
 there is no separate `<short what>` seed.
