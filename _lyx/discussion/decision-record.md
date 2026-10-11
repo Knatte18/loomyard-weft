@@ -176,6 +176,12 @@ Rationale: Round 3 F3: later boots see the same pid and start_time and are not c
 - A file that runs plugins (tpm, status scripts) adds background CPU to every hub server; reed's two-line status bar replaces the operator's `status-format`, but `run-shell` and `#()` jobs in other options still run.
 - An untargeted session-level command in the file applies to whichever session tmux takes as current, which under a concurrent boot can be another worktree's session; D5's chained guard covers `destroy-unattached` on every reed session, and its session check covers only the sourcing boot's own session against anything else.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/discussion/round-3-review.md; fixer report: _lyx/reviews/discussion/round-3-fixer-report.md.
+  - d4-d5-guard-exit-status-conflated (class design, severity BLOCKING, open in rounds 3)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - With `tmux_conf` empty, a hub server reed starts carries none of a marker the operator's `~/.tmux.conf` would set (the existing hermetic behavior holds).
