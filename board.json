@@ -1055,6 +1055,20 @@
       "isolated": false,
       "brief": "Hundreds of false blocking findings when a plan deletes a method with a common name",
       "body": "## Seen (2026-10-11, `burler-split-budget` Plan-Write)\n\nThe plan gate's `delete-before-reference` check matches a deleted method glyph's member name as a bare word.\nDeleting `probingBurlerRunner.Run` or `shedfake.BurlerRunner.Run` flagged every later card whose edit code held any `.Run(` call, `doc.go` prose included, and `BurlerProducer.Call` drew a match on an unrelated `.Call` in `internal/proc/namedjob_windows.go`.\nAbout 220 blocking findings came from a handful of deletes.\nThe writer moved every deletion into one last card and deleted a test helper type by listing its whole file, which loses the `caller-uncovered` check on those methods.\nPlan-Write ran about 30 minutes and 192k output tokens, much of it on repeated `lyx loom validate-plan` passes.\n\n## Idea\n\nMatch a deleted method by receiver type: count only selector expressions whose receiver resolves to the deleted type when a type load answers, as `caller-uncovered` already does.\nThe plan's natural order (retire the old producer right after the switch) then stays valid.\n"
+    },
+    {
+      "id": 409,
+      "slug": "twb-p2s-tw-1",
+      "title": "twill-plan bench round 2 pair twb-p2s-tw-1",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Bench pair for twill-plan round 2; torn down after the run",
+      "body": "Temporary bench pair for board note twill-plan, round 2. Plan-Write only, from a frozen decision record."
     }
   ]
 }
