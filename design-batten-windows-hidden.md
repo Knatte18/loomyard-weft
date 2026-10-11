@@ -1,6 +1,6 @@
 # Batten windows stay but are hidden from the status bar
 
-`batten-windows-hidden` · Task · enhancement, batten, reed
+`batten-windows-hidden` · Task · enhancement, batten, reed · running · Worktree-Create
 
 ## Seen
 
