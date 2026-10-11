@@ -24,6 +24,8 @@ The session ran autonomously: no operator answered, and every decision below is 
 - A `rework_timeout_min` key: the board asks for model keys only.
 - Overriding a refused CONVERGED to CONTINUE in Go: the next round would get the CONVERGED pass's empty focus file and a ledger Go has just distrusted, and Go would become a second writer of the judge's files.
 - Halting the run on a refused judgment: a single careless judge pass would stop a run that a re-judge can recover; the bounce budget already bounds repeats.
+  The one exception is a round whose budget is already reached, where the refusal's counted Stuck meets Shed's budget-exhausted block at once (D9).
+- Escalating a refusal on a round whose budget is reached, as a CONTINUE there escalates: the refusal has archived the round's judgment, so the escalation would have no ledger to point at and no judged round to settle the parent's decision over without new state; Shed's block and its `goto` way forward recover the run.
 - Feeding the refusal reason into the re-judge prompt: extra state and stencil surface for a backstop that should rarely fire.
 - Checking the ledger-side BLOCKING only, per the board's wording: a judge that omits a BLOCKING finding from its ledger would still pass; the review-side check closes that, and matches the judge's own decision rule.
 - Checking the fixer report's disputes in the guard: the judge reads no fixer report, so the guard would hold the judge to evidence it never saw.
@@ -50,4 +52,5 @@ _No rounds yet._
 - Q7 (resolved, auto-pick): does the lost-key check apply to every verdict or CONVERGED only? Every verdict from round 2, skipped when the previous ledger is malformed; D8.
 - Q8 (resolved, auto-pick): usage shape — same file with lists, or separate files? Same `round-<N>-usage.yaml`, `seed` and `judge` lists, each writer replacing only its part; D10, D11.
 - Q9 (resolved, auto-pick): does `tools/tokencount` change? No; it reads transcripts by role.
+- Q10 (resolved, auto-pick, review round 2): at a reached bounce budget, does a refusal escalate to the parent or meet Shed's budget-exhausted block? Shed's block, with no re-judge; D9.
 - No tool failed and nothing outside the two output files looked broken.
