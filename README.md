@@ -44,9 +44,18 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **Parent-review wait: warm writer cache on reject, wait bound off the boundary, gate hardening**<br>• A late reject resumes the writer on a cold cache, a writer stuck mid-turn outlives the wait bound, and the PR #336 review left gate gaps | [`parent-review-wait`](design-parent-review-wait.md) | loom | `shuttle-startup-ready` | loom, shuttle, orch |
-| 3 | **Tokencount default counts only full loom runs**<br>• With no slugs, tokencount picks the most recent runs, which today were bench pairs that stopped after Discussion; count only full loom runs | [`tokencount-full-runs`](design-tokencount-full-runs.md) | darn | `small-fixes-oct11` | shed |
-| 4 | **Shuttle reads agent state from hooks first, the pane only where no hook exists**<br>• Install SessionStart on every run, end awaitStartup on it, map PermissionRequest and dead readings; keep pane reads only for dialogs, drafts and operator activity | [`shuttle-hook-first`](design-shuttle-hook-first.md) | loom | `shuttle-startup-ready` | shuttle |
+| 2 | **Tokencount default counts only full loom runs**<br>• With no slugs, tokencount picks the most recent runs, which today were bench pairs that stopped after Discussion; count only full loom runs | [`tokencount-full-runs`](design-tokencount-full-runs.md) | darn | `small-fixes-oct11` | shed |
+| 3 | **Shuttle reads agent state from hooks first, the pane only where no hook exists**<br>• Install SessionStart on every run, end awaitStartup on it, map PermissionRequest and dead readings; keep pane reads only for dialogs, drafts and operator activity | [`shuttle-hook-first`](design-shuttle-hook-first.md) | loom | `shuttle-startup-ready` | shuttle |
+
+### Layer B
+
+Starts when every entry it names under After is done.
+
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Parent-review wait: warm writer cache on reject, wait bound off the boundary, gate hardening**<br>• A late reject resumes the writer on a cold cache, a writer stuck mid-turn outlives the wait bound, and the PR #336 review left gate gaps | [`parent-review-wait`](design-parent-review-wait.md) | loom | `shuttle-hook-first` | loom, shuttle, orch |
 
 ## Notes
 

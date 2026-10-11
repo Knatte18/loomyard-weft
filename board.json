@@ -916,7 +916,7 @@
       ],
       "issues": [],
       "depends_on": [
-        "shuttle-startup-ready"
+        "shuttle-hook-first"
       ],
       "isolated": false,
       "brief": "A late reject resumes the writer on a cold cache, a writer stuck mid-turn outlives the wait bound, and the PR #336 review left gate gaps",
