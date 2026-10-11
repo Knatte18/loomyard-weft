@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **Batten notices: no attach clause, pair-relative paths, wait is not an error**<br>• Remove the trailing cd && lyx reed attach from batten notices, and render paths relative to the hub directory. | [`batten-notice-trim`](design-batten-notice-trim.md) | darn | Darn-Write | batten, orch |
+| 2 | **Batten notices: no attach clause, pair-relative paths, wait is not an error**<br>• Remove the trailing cd && lyx reed attach from batten notices, and render paths relative to the hub directory. | [`batten-notice-trim`](design-batten-notice-trim.md) | darn | failed · Darn-Write | batten, orch |
 | 3 | **Tokencount reports wall-clock time per role**<br>• tokencount adds each run's wall-clock time per role and its idle time, so the slowest producer shows | [`run-time-by-role`](design-run-time-by-role.md) | loom | Publish | shed, loom |
 
 ### Ready
