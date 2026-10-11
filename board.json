@@ -34,22 +34,6 @@
       "body": "## Seen\n\nOperator 2026-09-30: take a step back and plan for convergence, not keep accepting more bugs.\nThat day nearly every hub intervention was in same-day new code (#319: approve nil dep, reject reading its file argument as run-id), and both passed tests built on fake deps.\n\n## Idea\n\nLog every hub intervention and every driver repair per run with a class and a cause, so interventions per run and new versus repeat failure classes are visible over time.\nFixing at the source with a test through the real CLI wiring, and hardening-only periods when the rate climbs, are working practice and need no build.\n\nGoal: the outside LLM steps in rarely, and for the task rather than for lyx.\n"
     },
     {
-      "id": 37,
-      "slug": "lyx-mcp",
-      "title": "An MCP server over lyx exposing the verbs agents need",
-      "kind": "note",
-      "labels": [
-        "feature",
-        "shuttle",
-        "stencil"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A few coarse MCP tools over lyx, chosen by measured agent use and exposed per role, so agents see typed schemas instead of guessing CLI shapes",
-      "body": "## Why\n\nAgents misuse or bypass lyx (the hub read `_board/*.json` with jq) because the CLI shape is not discoverable.\nAn MCP tool carries a typed input schema and a description.\n\n## Constraint from the operator (2026-10-01)\n\nNot one tool per verb: MCP entries are heavy.\nOnly the important ones are exposed, and how to pick them is still open.\n\n## Proposed selection\n\n1. **Measure first.** Mine transcripts and logs for which lyx commands agents run, where they fail, and where they read around lyx.\n2. **Few coarse tools.** One tool per area with an `action` enum (the pattern of Claude Code's Artifact tool), e.g. `board`, `run` (status, approve, reject), `webster` (Master only); a handful in total.\n3. **Per-role exposure.** A fork may get none, Master gets `webster`, the hub gets `board` and `run`.\n\n## Shape\n\n- A thin server shipped in the ly plugin; each action calls the same module seam the CLI uses, so behaviour never forks.\n- The CLI stays for humans and scripts.\n- Wins: no shell-quoted JSON payloads, and per-tool permissions (an agent can be denied `accept-audit`).\n\nRelated: `bolt-roadmap-tiers`, `process-naming`.\n\n\n## Status: needs a careful design session first\n\nOperator 2026-10-01: what goes into the MCP must be thought through very carefully; this is not a loom task yet.\nQuestions for that session:\n\n- Which verbs need an MCP tool at all, and which are served well enough by a better `--help` (payload schema and an example per command) and a per-role command card in each stencil, generated from the cobra tree?\n- Is permission gating (an agent denied `accept-audit` or `approve`) the real reason for MCP, since `--help` and cards cannot give it?\n- One tool per module was raised and judged too heavy (long descriptions); what is the cut instead?\n"
-    },
-    {
       "id": 38,
       "slug": "creel",
       "title": "creel: the one way to reach an agent",
