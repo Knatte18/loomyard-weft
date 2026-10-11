@@ -196,6 +196,13 @@ Rationale: a new cross-cutting invariant goes into PATTERN in the same commit (C
   - not-landed-may-have-landed-no-record (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - card10-unexported-constant-from-shuttlecli (class consistency, severity MEDIUM, open in rounds 1)
+  - card6-foreign-box-error-omits-draft (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - With the operator typing in the target pane (a fake attached client with recent activity), a send, clear, compact, reload, color and skill load types nothing and is held with the operator-activity reason; once activity is older than `operator_quiet_s` it goes through.
