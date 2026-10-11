@@ -1,12 +1,12 @@
 {
   "current_producer": "Worktree-Create",
-  "state": "blocked",
-  "error": "push weft branch \"shuttle-startup-ready-weft\" failed: git push -u origin shuttle-startup-ready-weft: exit 1: To https://github.com/Knatte18/loomyard-weft.git  ! [remote rejected]   shuttle-startup-ready-weft -\u003e shuttle-startup-ready-weft (cannot lock ref 'refs/heads/shuttle-startup-ready-weft': reference already exists) error: failed to push some refs to 'https://github.com/Knatte18/loomyard-weft.git'",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Worktree-Create",
     "last": "Worktree-Create → stuck",
-    "wait": "push weft branch \"shuttle-startup-ready-weft\" failed: git push -u origin shuttle-startup-ready-weft: exit 1: To https://github.com/Knatte18/loomyard-weft.git  ! [remote rejected]   shuttle-startup-ready-weft -\u003e shuttle-startup-ready-weft (cannot lock ref 'refs/heads/shuttle-startup-ready-weft': reference already exists) error: failed to push some refs to 'https://github.com/Knatte18/loomyard-weft.git'"
+    "wait": ""
   },
   "history": [
     {
