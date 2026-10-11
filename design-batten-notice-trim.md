@@ -2,8 +2,6 @@
 
 `batten-notice-trim` · Task · enhancement, batten, orch
 
-Depends on: [`pane-inject-safety`](design-pane-inject-safety.md)
-
 ## Seen (operator, 2026-10-11)
 
 A batten notice to the orch ends with `; cd <absolute pair path> && lyx reed attach` (`internal/battenshed/notice.go:150`, `renderNotice`), and its report clause carries the stop report's absolute path.

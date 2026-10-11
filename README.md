@@ -145,11 +145,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 32 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) | loom, stencil |
-
-## Done
-
-Finished, awaiting `lyx board prune --apply`.
-
-| # | Entry | Slug | Labels |
-| --- | --- | --- | --- |
-| 1 | **Pane injection never merges with the operator draft, and batten survives a draft**<br>• Defer and atomically send injected text, guard the Enter, and keep batten alive through a busy driver pane so teardown still runs. | [`pane-inject-safety`](design-pane-inject-safety.md) | shuttle, batten, orch, reed |
