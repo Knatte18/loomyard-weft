@@ -1,7 +1,7 @@
 # Card 4 — per-segment-bouncer-threading
 
 **Create:**
-- `plan:internal/loomengine#BouncerModels` -> `type BouncerModels struct`
+- `internal/loomengine#BouncerModels`
 
 **Edit:**
 - `internal/loomengine#JudgeSettings`

@@ -1,0 +1,14 @@
+status: OK
+head_sha: 067ba1fe90656ca06ef70824f1783f73474f2441
+deviations:
+  - internal/loomengine/rework.go
+  - internal/loomengine/review.go
+  - internal/shedrecipe/recipe.go
+  - internal/shedrecipe/fixture_test.go
+  - internal/shedrecipe/entries_bouncer.go
+  - internal/shedadapters/bouncer.go
+  - internal/shedadapters/bouncer_judge_test.go
+  - internal/shedadapters/bouncer_seed_test.go
+  - internal/shedadapters/bouncer_config_test.go
+  - internal/shedadapters/bouncer_fixture_test.go
+  - internal/loomcli/wiring_test.go

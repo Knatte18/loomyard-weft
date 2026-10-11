@@ -1,7 +1,7 @@
 # Card 2 — rework-model-key
 
 **Create:**
-- `plan:internal/loomengine#ResolveRework` -> `func ResolveRework(cfg Config, reg modelspec.Registry) (burlerengine.ModelChoice, error)`
+- `internal/loomengine#ResolveRework`
 
 **Edit:**
 - `internal/loomengine#ReworkSpec`

@@ -1,7 +1,7 @@
 # Card 3 — bouncer-seed-judge-split
 
 **Create:**
-- `plan:internal/shedadapters#BouncerModels` -> `type BouncerModels struct`
+- `internal/shedadapters#BouncerModels`
 
 **Edit:**
 - `internal/shedadapters#BouncerConfig`
