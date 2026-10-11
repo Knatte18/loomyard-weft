@@ -961,7 +961,7 @@
       "isolated": false,
       "brief": "Remove the trailing cd \u0026\u0026 lyx reed attach from batten notices, and render paths relative to the hub directory.",
       "body": "## Seen (operator, 2026-10-11)\n\nA batten notice to the orch ends with `; cd \u003cabsolute pair path\u003e \u0026\u0026 lyx reed attach` (`internal/battenshed/notice.go`, `renderNotice`), and its `output` and `report` clauses carry absolute paths.\nThe orch knows how to attach to a pair, so the attach clause is noise, and absolute paths repeat the hub prefix in every notice, which lands in an Opus session that re-reads its context each turn.\n\nSeen (operator, 2026-10-05): shed keeps the reason for every halt in `Status.Error`, an awaiting PR-Gate included, and `renderNotice` labels it `error:` whatever the state, for example `child left running; child state awaiting, error: the pull request awaits review; …`.\n\n## Wanted\n\n- Drop the attach clause from every batten notice.\n- Render every path in a notice relative to the task pair, since the slug already names the pair (operator, 2026-10-10), for example `_lyx/shed/\u003cslug\u003e/drive-reports/drive-report-….md`.\n- Label the reason by state: `error:` only for failed and blocked, and `waiting:` (or the bare reason) for awaiting and paused (operator, 2026-10-05).\n- Phrase the condition by what happened, for example `board-config-per-worktree: awaiting at PR-Gate: the pull request awaits review`, not `child left running; child state awaiting`.\n- Update the notice tests and the docs that quote a notice line.\n",
-      "status": "awaiting · PR-Gate"
+      "status": "running · PR-Gate"
     },
     {
       "id": 352,
