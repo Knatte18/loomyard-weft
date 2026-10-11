@@ -194,7 +194,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "068cbcc202bb407af842b08fc4891154",
   "masterSessionId": "f3b81597-e7e0-4486-9f89-437b50808449",
   "batches": {
@@ -235,6 +235,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-glyph-tuning/f3b81597-e7e0-4486-9f89-437b50808449/subagents/agent-a76960d770a100c92.jsonl"
       ]
+    },
+    "5": {
+      "slug": "bind-trace",
+      "cards": [
+        "05-bind-trace",
+        "06-kickstart-pack-switch",
+        "07-pack-stencils-and-render",
+        "08-begin-batch-builds-pack"
+      ],
+      "cardHashes": {
+        "05-bind-trace": "a345f1ca10468c9bee7fdb796d6fd9ba71790cad3ea0fa155c5259c03c7f7f8b",
+        "06-kickstart-pack-switch": "b06c321ea7dd9d65d4e3f59bb81e835a1fd9dbfee13880f8f16848a6cfe376a4",
+        "07-pack-stencils-and-render": "95223d5f5cc8bade21f609431627f48bebd86f0346968c20084813304e99fce3",
+        "08-begin-batch-builds-pack": "7f07eec57f0951942ef8ff0aa988294c6bb696d5c48f09cd5e37953907ca2e49"
+      },
+      "startSha": "987cf43eadbdc928042311a7ece8d2a1eb00d2cc",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T15:18:37Z",
+      "sessionId": "f3b81597-e7e0-4486-9f89-437b50808449",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
