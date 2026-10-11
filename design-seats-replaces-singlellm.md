@@ -25,6 +25,9 @@ Zero advisors with the fan on is today's twill, the hub's current setting.
 ## Required
 
 - The seats producer carries the same gates as the gated single-LLM producer (operator, 2026-10-11): a role that runs gated today stays gated after the move.
+- Seats are named by the recipe that uses them (operator, 2026-10-11): "chair" and "advisor 1" mean nothing for Burler, whose seats are the fixer and the reviewer, and a table with one seat has no chair, only its role (writer, planner and so on).
+  The names reach role names, strand names, prompts and logs; "chair" and "advisor" stay as the engine's internal terms at most.
+  `burler-split-budget` already runs Burler as a reviewer row and a fixer row, each a zero-advisor table, under distinct role names.
 
 ## Bench basis
 
