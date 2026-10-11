@@ -42,6 +42,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- |
 | 1 | **Webster fork used sed -i and an rm on a computed /tmp path, stalling on a permission prompt**<br>• An implementer fork broke the edit directive and hit Claude Code's dangerous-rm prompt | [`webster-fork-shell`](design-webster-fork-shell.md) | webster, stencil |
 | 2 | **Plan gate delete-before-reference matches deleted methods by bare name**<br>• Hundreds of false blocking findings when a plan deletes a method with a common name | [`delete-before-reference-receiver`](design-delete-before-reference-receiver.md) | quarry, loom |
+| 3 | **Plan-review fixes are proposed without running lyx loom validate-plan; fix glyphs name the wrong function** | [`plan-review-validate`](design-plan-review-validate.md) | loom, stencil |
 
 ### Enhancements
 
@@ -143,11 +144,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 30 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) | loom, stencil |
-
-## Done
-
-Finished, awaiting `lyx board prune --apply`.
-
-| # | Entry | Slug | Labels |
-| --- | --- | --- | --- |
-| 1 | **Burler: reviewer row then fixer row, lean fixer, per-perch budget and auto-accept**<br>• Split the Burler round into Burler-Review and Burler-Fix rows, skip the fixer on an empty review, give the fixer only the fix report, and give each perch its own bounce budget and auto-accept flag. | [`burler-split-budget`](design-burler-split-budget.md) | loom, burler |

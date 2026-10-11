@@ -865,24 +865,6 @@
       "body": "Seen at the PR-Gate review of plan-glyph-tuning (PR #559, 2026-10-11): the task built the Webster kick-start pack behind `webster.yaml` `kickstart_pack` (default on) and made it countable, but did not measure it.\nEach begin-batch traces one `webster: kickstart pack` line (on, off or language-none, with resolved and unresolved counts), and each `plan:` handle traces one `webster: handle bind` line.\n\nIdea: repeat the audit count on real loom runs with the pack on and off: grep-for-member calls and whole-file reads per implementer fork.\nThe Burler side of `kick-start-pack` and `enclose-kickstart` wait on this result.\n\nThis is an audit, not a loom run: an orch agent reads the Webster fork transcripts once a few loom runs have run with the pack on (it is on by default since `c279a38ba`), and compares them with the runs before it as the pack-off baseline.\n"
     },
     {
-      "id": 399,
-      "slug": "burler-split-budget",
-      "title": "Burler: reviewer row then fixer row, lean fixer, per-perch budget and auto-accept",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "loom",
-        "burler"
-      ],
-      "issues": [],
-      "priority": "high",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Split the Burler round into Burler-Review and Burler-Fix rows, skip the fixer on an empty review, give the fixer only the fix report, and give each perch its own bounce budget and auto-accept flag.",
-      "body": "Merged from notes `segment-budget-accept` and `burler-chair-late-spawn` (operator, 2026-10-11).\n\n## Seen (2026-10-11)\n\nMeasured over the four newest loom runs (analysis in `.scratch/burler-cost-breakdown.md`, tokencount report `.scratch/token-usage-by-role.md`; both scratch, may be gone):\n\n- Burler plus its Bouncer passes cost about $11.7 per run: reviewer (seat `advisor`) $24.5, fixer (seat `chair`) $18.1, Bouncer $4.2 over the four runs.\n- The Burler round runs as one seat table on `internal/seatengine` (since `7882c2450`): the chair (fixer) spawns first, loads its orientation and waits in `lyx shuttle await` for the advisor (reviewer); 57–61% of the fixer's turn time is that wait.\n  The wait itself is cheap (its cache stayed warm), but because the fixer spawns first, it is paid for even when the review turns out empty.\n- Duplicate orientation is the waste: both seats load the same prompt, explore file (PATTERN overview, rubric, target, fasit), focus file, decision record and plan cards; about 44k of the fixer's ~64k tokens at its wait, $8.36 of its $18.10.\n- In 31 archived rounds over six runs the fixer applied every finding and disputed or deferred none.\n- Webster-Burler's first rounds yielded 0 BLOCKING, 1 MEDIUM, 1 LOW, 3 NIT and 2 empty reviews; its Opus fixer cost more than its Sonnet reviewer even on empty reviews.\n- `loom.yaml` `review_max_bounces` is one budget for every Bouncer review segment (Discussion-Review, Plan-Review, Webster-Review), and a spent budget always escalates to the parent, which answers with `lyx loom circling accept`; nothing accepts on its own.\n\n## Scope\n\n### 1. Reviewer row, then fixer row\n\nThe Burler round becomes two Shed rows instead of one seat table, sequenced by the FSM:\n\n1. Burler-Review: a `MultiLLMProducer` with zero advisors whose chair is the reviewer and writes the review file.\n2. Burler-Fix: a `MultiLLMProducer` with zero advisors whose chair is the fixer, reads the review file and fixes.\n\nEach review segment's Bouncer `OnStuck` points at Burler-Review, Burler-Review goes on to Burler-Fix, and Burler-Fix returns to the Bouncer (`contracts/recipes/loom-recipe.yaml`, `internal/shedadapters`).\nThis keeps `MultiLLMProducer` as the one LLM producer, in line with note `seats-replaces-singlellm`.\nRejected: keeping one seat table and having `internal/seatengine` defer the chair's spawn until the advisor delivers; it adds special code to the seat engine.\nRejected (operator): starting the fixer as a fork of the reviewer; Burler had that before, and the fixer started with the reviewer's whole exploration in its context.\n\n### 2. No fixer on an empty review\n\nWhen the review has no findings, the round skips Burler-Fix and goes straight back to the Bouncer.\n\n### 3. Lean fixer orientation\n\nThe fixer gets a constrained fix report, exact instructions on what to change and where, since the reviewer has done the work (operator): the review file and the targets it names, not the reviewer's explore file (rubric, fasit, PATTERN overview).\n\n### 4. Per-perch budget and auto-accept\n\nEach perch, Discussion, Plan and Webster alike, gets its own bounce budget and an auto-accept flag (operator).\nWith auto-accept on, a spent budget accepts the work as it stands and the run goes on, instead of escalating to the parent.\n`review_max_bounces` and `review_circling_checkpoint` interact today (see their comments in the loom config template); the per-perch keys keep that relation clear.\nDefaults keep today's behaviour; the hub then sets Webster to one round with auto-accept (operator: for Go code the tests in verify carry the weight).\n\n## Settled model choices (operator, 2026-10-11)\n\n- Webster-Burler runs Sonnet reviewer and Sonnet fixer; hub `loom.yaml` already sets `webster_review` and `webster_fix` to `sonnet[medium]`.\n- Discussion and Plan reviewers stay Opus: no Sonnet reviewer there.\n\n## Open\n\n- The fixer can no longer ask the reviewer follow-up questions; check whether the chair uses that today.\n- After one Webster round only verify checks the fixer's changes; accepted for code (operator).\n",
-      "status": "done"
-    },
-    {
       "id": 400,
       "slug": "merge-review",
       "title": "Cold review of the merge from the parent before PR-Gate",
@@ -1156,6 +1138,24 @@
       "brief": "Bench pair for the twill-plan sonnet[high] arm; torn down after the run",
       "body": "Temporary bench pair for board note twill-plan, sonnet[high] arm. Plan-Write only, from a frozen decision record.",
       "status": "running · Discussion-Write"
+    },
+    {
+      "id": 417,
+      "slug": "plan-review-validate",
+      "title": "Plan-review fixes are proposed without running lyx loom validate-plan; fix glyphs name the wrong function",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom",
+        "stencil"
+      ],
+      "issues": [
+        563
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #563](https://github.com/Knatte18/loomyard/issues/563).\n\nA plan-review round proposed a fix whose method Delete glyphs the plan gate refuses (see the `delete-before-reference` text-matching issue).\nFinding that out took two validator runs, after the fixer had already applied it.\nThe rubric says a reviewer proposes only fixes the checks admit, but nothing makes the reviewer verify that.\nA reviewer that runs `lyx loom validate-plan` against its proposed target changes would catch this before the fixer does.\n\nSeparately, another finding's proposed glyphs named the function after or near each cited comment rather than the function that encloses it, so each glyph had to be located again.\n\nExpected: the plan-review prompt directs the reviewer to validate proposed target changes, and to name the enclosing function for glyphs tied to a comment.\n\nProvenance: task `burler-split-budget`; note `burler-plan-r1.md`.\n"
     }
   ]
 }
