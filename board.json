@@ -1069,6 +1069,22 @@
       "isolated": false,
       "brief": "Wake the orch less: an alignment agent in loom reviews against the board, waking the orch only on overlap",
       "body": "## Seen (operator, 2026-10-11)\n\nThe hub orchestrator is now the largest token spender, ahead of Burler and Webster, and frequent distills have not cut it much.\nMeasured over 2026-10-10 and 2026-10-11, orch spend follows its turn count: a distill shrinks the context, but it regrows within the hour.\nPR-Gate and parent-review forks are a small share of the spend, while batten and agent notices drive about 800 orch calls in those two days, so the gain is fewer orch wake-ups.\n\n## Wanted\n\nCut the orch's token spend, chiefly by waking it less often.\n\n## Means: an alignment agent in loom (operator, 2026-10-11)\n\nThe board is the manifest: it shows every run and what it is doing, and every run's discussion record is readable.\nNo separate manifest is kept; a hand-kept one is a chore and goes stale fast.\n\nA cold-start alignment agent runs inside loom at the review points (PR-Gate, parent review), reads the board and the discussion and plan records of the tasks in flight, and checks that the run is aligned with them.\nIts sources need no upkeep: board entries and notes, the in-flight runs' records, and what has landed on `main` since the run's base.\n\n## Points raised in discussion\n\n- The agent cannot see an operator decision that lives only in the orch's chat, so the orch writes every such decision into the board body it concerns.\n- Parent review is also a sync point: when two overlapping tasks run at once, the orch has held both at parent review and written their reviews together so their discussion records agree. A per-run agent sees the overlap but cannot hold the other run. One shape: the agent approves when it finds no overlap with a run in flight and wakes the orch only when it does, so the orch can hold and align both.\n- Open: whether in-flight runs' records need a `lyx` read verb so an agent in one pair reads another pair's records without reaching into its worktree.\n- Open, for the operator: whether an approved PR review merges to `main` (and reaches prod at the next `update-plugins.sh`) on its own, or still waits for a short orch yes.\n\n## Other means discussed\n\n- Cheap models (such as Haiku) for the orch's simple agent jobs, like counting; fresh agents cost about $37 in the two measured days.\n- The `orch: 1h` cache lifetime in `shuttle.yaml` never applied, since a distill does not restart the orch process; a restart applies it, worth only a few dollars over two days.\n- The operator is also weighing running the orch on Sonnet, since most orch turns run `lyx` commands rather than reason deeply; cache reads cost the same on Opus 5.5 and Sonnet 5.5, so it saves about a quarter of the main session's spend.\n"
+    },
+    {
+      "id": 353,
+      "slug": "plan-fix-card-delete",
+      "title": "Plan-fixing agents have no way to delete a card file when a card cut renumbers cards",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [
+        543
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #543](https://github.com/Knatte18/loomyard/issues/543).\n\nIn a fixing-plan round, a review finding cut a card, which renumbered two later cards and so required deleting their old card files.\nThe fixing agent works with Edit and Write only, and neither can delete a file, so the renumbering had no supported route.\n\nWhy abnormal: a plan-fixing round can legitimately require removing files, but the tool set it is given cannot do that, leaving the agent to improvise or leave stale card files behind.\n\nWhat to do: give plan-fixing rounds a supported way to remove or renumber card files (a `lyx` verb, or loom-side handling of renumbering), or have the rubric steer reviewers away from findings that renumber cards.\n\nProvenance: task `twill-discusser`; notes: burler-plan-r1.md\n"
     }
   ]
 }
