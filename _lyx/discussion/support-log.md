@@ -59,7 +59,7 @@ _No rounds yet._
 ## Question ledger
 
 - Q1 (auto-pick): What runs each row? Zero-advisor seat table under the Burler adapter, not `MultiLLMProducer`; rationale D2.
-- Q2 (auto-pick): How is the fixer skipped? The fix row spawns nothing and writes a Go-authored fixer report; rationale D4.
+- Q2 (auto-pick): How is the fixer skipped? The fix row runs its gates, and when they pass spawns nothing and writes a Go-authored fixer report; rationale D4.
 - Q3 (auto-pick): What counts as empty? Zero findings of any severity; `PATTERN-review-round` fixes every severity.
 - Q4 (auto-pick): Does darn's perch split? Yes, one engine; no darn auto-accept.
 - Q5 (auto-pick): What does the lean fixer get? Review, named targets, write surface, commit and dispute rules; not rubric, fasit, PATTERN overview, focus, prior rounds.
