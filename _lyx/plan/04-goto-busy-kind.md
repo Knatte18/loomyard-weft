@@ -1,7 +1,7 @@
 # Card 4 — goto-busy-kind
 
 **Create:**
-- `plan:internal/shedengine#ShedBusyKind` -> `const ShedBusyKind = "shed_busy"`
+- `internal/shedengine#ShedBusyKind`
 
 **Edit:**
 - `internal/shedverbs#gotoCmd`

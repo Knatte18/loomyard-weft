@@ -15,7 +15,7 @@
 - `internal/battenshed#TestNotice_DoneChildNotifiesOnFirstSightAndTheDoneReturnAttemptsAPendingOne`
 
 **Create:**
-- `plan:internal/battenshed#TestNotice_DoneChildSendsNoNotice` -> `func TestNotice_DoneChildSendsNoNotice(t *testing.T)`
+- `internal/battenshed#TestNotice_DoneChildSendsNoNotice`
 
 **Intent:**
 Run-Shed's `done` state-changed notice goes away (D4): a landing that succeeds needs nothing from the orch, and the Land and Worktree-Teardown rows (cards 7 to 9) notice the orch when a landing step fails or a landing readies a task.

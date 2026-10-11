@@ -30,7 +30,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/shedengine#ShedBusyKind`
+- `internal/shedengine#ShedBusyKind`
 - `internal/verifytree#ReadPublishFailure`
 - `internal/loomshed#NamePublish`
 - `plan:internal/battenshed#ClearRunMarkers`

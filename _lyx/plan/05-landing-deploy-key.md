@@ -11,7 +11,7 @@
 - `internal/landingshed#TestLoadConfig_PublishVerify`
 
 **Create:**
-- `plan:internal/landingshed#TestLoadConfig_OptionalStringKeys` -> `func TestLoadConfig_OptionalStringKeys(t *testing.T)`
+- `internal/landingshed#TestLoadConfig_OptionalStringKeys`
 
 **Intent:**
 `landing.yaml` gains the hub-wide `deploy` key of D2, which card 9 has batten's Land row read.

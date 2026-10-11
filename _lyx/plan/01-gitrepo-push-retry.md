@@ -1,11 +1,11 @@
 # Card 1 — gitrepo-push-retry
 
 **Create:**
-- `plan:internal/gitrepo#ErrPushRetriesExhausted` -> `var ErrPushRetriesExhausted error`
-- `plan:internal/gitrepo#retryablePushRefusal` -> `func retryablePushRefusal(err error, ref string) (line string, retryable bool)`
-- `plan:internal/gitrepo#PushWithRetry` -> `func PushWithRetry(push func() error, ref string, sleep func(time.Duration)) error`
-- `plan:internal/gitrepo#pushMaxAttempts` -> `const pushMaxAttempts = 4`
-- `plan:internal/gitrepo#pushBaseBackoff` -> `const pushBaseBackoff = time.Second`
+- `internal/gitrepo#ErrPushRetriesExhausted`
+- `internal/gitrepo#retryablePushRefusal`
+- `internal/gitrepo#PushWithRetry`
+- `internal/gitrepo#pushMaxAttempts`
+- `internal/gitrepo#pushBaseBackoff`
 - `internal/gitrepo/pushretry_test.go`
 - `internal/gitrepo/pushretry_integration_test.go`
 

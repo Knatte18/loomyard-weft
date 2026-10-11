@@ -16,12 +16,12 @@
 - `internal/fabricengine#TestTransientPushRefusal_ClassifiesByTheReasonOnThePushedRefsLine`
 
 **Create:**
-- `plan:internal/fabricengine#unpushedOutcome` -> `func unpushedOutcome(path string, err error) error`
-- `plan:internal/fabricengine#TestUnpushedOutcome_WarnsAndLeavesCommitsForARejectedOrExhaustedPush` -> `func TestUnpushedOutcome_WarnsAndLeavesCommitsForARejectedOrExhaustedPush(t *testing.T)`
+- `internal/fabricengine#unpushedOutcome`
+- `internal/fabricengine#TestUnpushedOutcome_WarnsAndLeavesCommitsForARejectedOrExhaustedPush`
 
 **Uses:**
-- `plan:internal/gitrepo#PushWithRetry`
-- `plan:internal/gitrepo#ErrPushRetriesExhausted`
+- `internal/gitrepo#PushWithRetry`
+- `internal/gitrepo#ErrPushRetriesExhausted`
 
 **Intent:**
 Fabric's own pushes that do not go through `gitrepo`'s primitives take card 1's retry, and fabric's private copy of it goes away (D6).
