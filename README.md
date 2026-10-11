@@ -15,7 +15,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Batten windows stay but are hidden from the status bar** | [`batten-windows-hidden`](design-batten-windows-hidden.md) | darn | Darn-Bouncer | batten, reed |
+| 1 | **Batten windows stay but are hidden from the status bar** | [`batten-windows-hidden`](design-batten-windows-hidden.md) | darn | Darn-Burler | batten, reed |
 
 ### Ready
 
