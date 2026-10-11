@@ -1,12 +1,12 @@
 {
   "runGuid": "649e6fa3e0aee8edd7e28b74d9fe8760",
-  "planFingerprint": "61d822ab36d01e4a4ae5c55f8defbb76f2eee2c1954c575b21ac083f20c2f802",
+  "planFingerprint": "705459433cf6445ddde26bc3ca18b68ac47baadf497a541a6125d64157d97a55",
   "planFileHashes": {
     "00-overview.md": "aa1b8c249f906e2aec1b44bcd671945705f7335e0fae9dc45c37f882899bcfff",
     "01-review-carries-fix.md": "a799aaa0f015ec23d61ab47f61f703099c5317dd6ee5fb49097b3ad4b9027a38",
     "02-burler-halves-engine.md": "93dd8c61b066305c89be4c1b8617e030c0da35e832f91d619173d90ab3aa4708",
     "03-burler-halves-producers.md": "33cd07c980f6159b02c7e824096c4eb4161e70f1821b8a16fbe3b0a1109d4625",
-    "04-split-burler-rows.md": "320cf1585dbc2a1ba978df25365188fc3326e0d95886543cee19beedac986230",
+    "04-split-burler-rows.md": "956c9f86c9a127d726217204b447d7902925015d6c88b5a0b76118e632b3ab03",
     "05-burler-run-halves.md": "48cf031feae8c930d1e2595f976a9493ee51cd52b78e161125ac8b2daf36843a",
     "06-row-name-prose.md": "53d79443c40fc025c18d36b0090b920b94bc0985784598db99343add48226477",
     "07-bouncer-auto-accept.md": "20df305c60c97c9d7556f9df4804ae6d2beb6dcd55d13e35fc5ac0199988234b",
@@ -412,7 +412,7 @@
       }
     }
   ],
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "2c86fa9c079c3fb37dac2b5ffe110dd5",
   "masterSessionId": "0fbd85a5-7f16-469f-9570-80370a462352",
   "batches": {
@@ -456,18 +456,55 @@
         "05-burler-run-halves"
       ],
       "cardHashes": {
-        "04-split-burler-rows": "320cf1585dbc2a1ba978df25365188fc3326e0d95886543cee19beedac986230",
+        "04-split-burler-rows": "956c9f86c9a127d726217204b447d7902925015d6c88b5a0b76118e632b3ab03",
         "05-burler-run-halves": "48cf031feae8c930d1e2595f976a9493ee51cd52b78e161125ac8b2daf36843a"
       },
       "startSha": "9e1f791e7ac401cce377d951705e547f0be7c415",
       "kind": "fork",
       "spawnedAt": "2026-10-11T17:39:44Z",
       "sessionId": "0fbd85a5-7f16-469f-9570-80370a462352",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-split-burler-rows",
+        "status": "done",
+        "head_sha": "66b610f0c20ab46740656dfa45e2b81a5c4a98c4",
+        "deviations": [
+          "internal/loomrecipe/doc.go",
+          "internal/loomshed/interruptpolicy.go",
+          "internal/shedrecipe/config.go",
+          "internal/shedrecipe/paths.go",
+          "internal/shedrecipe/entries_bouncer.go",
+          "internal/burlercli/wiring.go",
+          "internal/shedadapters/burler.go",
+          "internal/shedadapters/burler_test.go",
+          "internal/shedrecipe/entries_gate_test.go",
+          "internal/shedrecipe/registry_test.go",
+          "internal/shedrecipe/conformance_test.go",
+          "internal/shedrecipe/fixture_test.go",
+          "internal/loomrecipe/darnrecipe.go",
+          "internal/loomrecipe/recipe_test.go",
+          "internal/loomcli/smoke_attachprobe_test.go",
+          "internal/loomcli/wiring_darn_test.go",
+          "internal/loomcli/landingdeps_verify_test.go",
+          "internal/burlercli/cli.go",
+          "internal/burlercli/doc.go",
+          "tools/sandbox/SANDBOX-BURLER-SUITE.md"
+        ]
+      },
+      "cardShas": [
+        "66b610f0c20ab46740656dfa45e2b81a5c4a98c4"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-split-budget/0fbd85a5-7f16-469f-9570-80370a462352/subagents/agent-a1ebcf49a81e52040.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-split-budget/0fbd85a5-7f16-469f-9570-80370a462352/subagents/agent-a1ebcf49a81e52040.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-split-budget/0fbd85a5-7f16-469f-9570-80370a462352/subagents/agent-a700753ba62f1574c.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-split-budget/0fbd85a5-7f16-469f-9570-80370a462352/subagents/agent-a700753ba62f1574c.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-split-budget/0fbd85a5-7f16-469f-9570-80370a462352/subagents/agent-a1ebcf49a81e52040.jsonl"
   ]
 }

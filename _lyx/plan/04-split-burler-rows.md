@@ -1,28 +1,28 @@
 # Card 4 — split-burler-rows
 
 **Create:**
-- `plan:internal/shedrecipe#burlerReviewEntry` -> `func burlerReviewEntry(name string, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/shedrecipe#burlerFixEntry` -> `func burlerFixEntry(name string, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/shedrecipe#burlerFixProfile` -> `func burlerFixProfile(cfg Config) (burlerengine.Profile, error)`
-- `plan:internal/shedrecipe#burlerRowModels` -> `func burlerRowModels(name string, env Env) burlerengine.RoundModels`
-- `plan:internal/loomshed#NameDiscussionBurlerReview` -> `const NameDiscussionBurlerReview = "Discussion-Burler-Review"`
-- `plan:internal/loomshed#NameDiscussionBurlerFix` -> `const NameDiscussionBurlerFix = "Discussion-Burler-Fix"`
-- `plan:internal/loomshed#NamePlanBurlerReview` -> `const NamePlanBurlerReview = "Plan-Burler-Review"`
-- `plan:internal/loomshed#NamePlanBurlerFix` -> `const NamePlanBurlerFix = "Plan-Burler-Fix"`
-- `plan:internal/loomshed#NameWebsterBurlerReview` -> `const NameWebsterBurlerReview = "Webster-Burler-Review"`
-- `plan:internal/loomshed#NameWebsterBurlerFix` -> `const NameWebsterBurlerFix = "Webster-Burler-Fix"`
-- `plan:internal/loomshed#NameDarnBurlerReview` -> `const NameDarnBurlerReview = "Darn-Burler-Review"`
-- `plan:internal/loomshed#NameDarnBurlerFix` -> `const NameDarnBurlerFix = "Darn-Burler-Fix"`
-- `plan:internal/loomrecipe#burlerReviewType` -> `var burlerReviewType reflect.Type`
-- `plan:internal/loomrecipe#burlerFixType` -> `var burlerFixType reflect.Type`
-- `plan:internal/loomcli#probingHalfRunner` -> `type probingHalfRunner struct`
-- `plan:internal/loomcli#probingHalfRunner.Review` -> `func (r probingHalfRunner) Review(p burlerengine.Profile, opts burlerengine.RunOpts) (burlerengine.ReviewResult, error)`
-- `plan:internal/loomcli#probingHalfRunner.ProbeReview` -> `func (r probingHalfRunner) ProbeReview(p burlerengine.Profile, opts burlerengine.RunOpts) (burlerengine.LiveHalf, error)`
-- `plan:internal/loomcli#probingHalfRunner.ResumeReview` -> `func (r probingHalfRunner) ResumeReview(p burlerengine.Profile, opts burlerengine.RunOpts, live burlerengine.LiveHalf) (burlerengine.ReviewResult, error)`
-- `plan:internal/loomcli#probingHalfRunner.Fix` -> `func (r probingHalfRunner) Fix(p burlerengine.Profile, opts burlerengine.RunOpts, digest string) (burlerengine.FixResult, error)`
-- `plan:internal/loomcli#probingHalfRunner.ProbeFix` -> `func (r probingHalfRunner) ProbeFix(p burlerengine.Profile, opts burlerengine.RunOpts) (burlerengine.LiveHalf, error)`
-- `plan:internal/loomcli#probingHalfRunner.ResumeFix` -> `func (r probingHalfRunner) ResumeFix(p burlerengine.Profile, opts burlerengine.RunOpts, digest string, live burlerengine.LiveHalf) (burlerengine.FixResult, error)`
-- `plan:internal/loomcli#TestSmokeBurlerReview_AttachesToALiveReviewerInsteadOfRespawning` -> `func TestSmokeBurlerReview_AttachesToALiveReviewerInsteadOfRespawning(t *testing.T)`
+- `internal/shedrecipe#burlerReviewEntry`
+- `internal/shedrecipe#burlerFixEntry`
+- `internal/shedrecipe#burlerFixProfile`
+- `internal/shedrecipe#burlerRowModels`
+- `internal/loomshed#NameDiscussionBurlerReview`
+- `internal/loomshed#NameDiscussionBurlerFix`
+- `internal/loomshed#NamePlanBurlerReview`
+- `internal/loomshed#NamePlanBurlerFix`
+- `internal/loomshed#NameWebsterBurlerReview`
+- `internal/loomshed#NameWebsterBurlerFix`
+- `internal/loomshed#NameDarnBurlerReview`
+- `internal/loomshed#NameDarnBurlerFix`
+- `internal/loomrecipe#burlerReviewType`
+- `internal/loomrecipe#burlerFixType`
+- `internal/loomcli#probingHalfRunner`
+- `internal/loomcli#probingHalfRunner.Review`
+- `internal/loomcli#probingHalfRunner.ProbeReview`
+- `internal/loomcli#probingHalfRunner.ResumeReview`
+- `internal/loomcli#probingHalfRunner.Fix`
+- `internal/loomcli#probingHalfRunner.ProbeFix`
+- `internal/loomcli#probingHalfRunner.ResumeFix`
+- `internal/loomcli#TestSmokeBurlerReview_AttachesToALiveReviewerInsteadOfRespawning`
 - `internal/shedrecipe/entries_burlerhalves_test.go`
 
 **Delete:**

@@ -1,0 +1,23 @@
+status: OK
+head_sha: 66b610f0c20ab46740656dfa45e2b81a5c4a98c4
+deviations:
+  - internal/loomrecipe/doc.go
+  - internal/loomshed/interruptpolicy.go
+  - internal/shedrecipe/config.go
+  - internal/shedrecipe/paths.go
+  - internal/shedrecipe/entries_bouncer.go
+  - internal/burlercli/wiring.go
+  - internal/shedadapters/burler.go
+  - internal/shedadapters/burler_test.go
+  - internal/shedrecipe/entries_gate_test.go
+  - internal/shedrecipe/registry_test.go
+  - internal/shedrecipe/conformance_test.go
+  - internal/shedrecipe/fixture_test.go
+  - internal/loomrecipe/darnrecipe.go
+  - internal/loomrecipe/recipe_test.go
+  - internal/loomcli/smoke_attachprobe_test.go
+  - internal/loomcli/wiring_darn_test.go
+  - internal/loomcli/landingdeps_verify_test.go
+  - internal/burlercli/cli.go
+  - internal/burlercli/doc.go
+  - tools/sandbox/SANDBOX-BURLER-SUITE.md
