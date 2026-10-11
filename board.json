@@ -1051,6 +1051,22 @@
       "isolated": false,
       "brief": "Make read-only sed work without refusals or prompts across lyx-spawned agents, stencils and audits, keeping the no-script-edit rule.",
       "body": "## Idea (operator, 2026-10-11)\n\nMake `sed` work well for agents: reading with `sed` is allowed, and only rewriting files with a script stays banned.\nThe operator has updated `scribe:conversation` (1.1.0): its old \"never use `sed`, even to read\" rule is gone, and the remaining rule is to change files only with Edit or Write.\n\n## Seen (2026-10-11)\n\n- `contracts/stencils/edit/edit-directive.md` (rendered into every spawned role) bans `sed` only as a file-rewriting script; `contracts/stencils/stencils.go` `editRulePhrases` matches \"`sed`\" as one of the rule's phrases.\n- `internal/websterengine` classifies a `sed -n` line or range print as a read, and any other `sed` form as a write.\n- `webster-fork-shell`: a Webster fork used `sed -i` and `rm` on a computed `/tmp` path and stalled on a Claude Code permission prompt.\n- The orch passed \"never sed\" into agent briefs from the old scribe rule.\n\n## Open\n\n- Whether any lyx-spawned role, hook or audit still refuses or prompts on a read-only `sed` (`sed -n`), and whether the Webster classifier should admit more read forms.\n- Whether stencils, the orch role or `CLAUDE.md` carry a stale \"never sed\" wording.\n- Whether a read-only `sed` allow rule belongs in the settings lyx gives spawned agents.\n"
+    },
+    {
+      "id": 421,
+      "slug": "test-tmp-cleanup",
+      "title": "lyx cleans up its own temp files",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "fabric",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Tests and fixtures leave GBs of gitkit, hubforge and smoke-binary temps in /tmp; remove them on exit and sweep leftovers",
+      "body": "## Problem (operator, 2026-10-11)\n\nlyx must clean up its own temporary files while it runs; it may not leave garbage behind.\nOn this machine `/tmp` is a RAM tmpfs, and the leftovers had grown to 8.5 GB, enough to make hibernation fail (kernel `Error -12 creating image`, `Cannot allocate memory`) three times on 2026-10-11 and once the evening before.\n\n## Seen (2026-10-11)\n\nLeftovers in `/tmp`, all older than two hours:\n\n- 220 `loomcli-smoke-lyx-*` directories of about 34 MB each (a built `lyx` binary), about 7.5 GB in all\n- over 20 000 `gitkit-gitconfig-*` files\n- over 2 000 `hubforge-bare-*` directories\n- 171 `gitkit-repo-*` directories\n\nThe orch deleted every one older than two hours by hand; `/tmp` went from 8.5 GB to 1.1 GB.\n\nSources found:\n\n- `internal/gitkit/hermetic.go`: the hermetic git config file from `os.CreateTemp(\"\", \"gitkit-gitconfig-*\")`, once per test binary, never removed.\n- `internal/gitkit/gitkit.go` `buildRepoTemplate` and `internal/hubforge/hub.go` `buildBareTemplate`: once-per-binary fixture templates from `os.MkdirTemp`, never removed.\n- `loomcli-smoke-lyx-*`: a `lyx` binary built for the `internal/loomcli` smoke tests; the creating site was not found by a literal grep.\n- Other `os.MkdirTemp(\"\", ...)` sites to check: `internal/testkit/lyxbin`, `internal/gatecli/prebuild.go` and `cmd/testtiming` (`lyx-prebuilt-`, `lyxbin-`, `ttr-`, `ttt-`, `testtiming-redundancy-`).\n\n## Wanted\n\n- Every temp file or directory lyx or its tests create is removed when the creating process ends, including on test failure and panic; once-per-binary fixtures are removed in `TestMain` after `m.Run`.\n- Prefer a per-run root under one lyx-owned directory, so a killed process's leftovers can be swept by age at the next start.\n- A scan or test that fails a new bare `os.MkdirTemp(\"\", ...)` or `os.CreateTemp(\"\", ...)` without a matching cleanup.\n"
     }
   ]
 }
