@@ -130,6 +130,12 @@ Decision: A process-ending SessionEnd counts only when its line lies past the ev
 
 Rationale: Round-3 Discussion review F1: the read-alive disjunct keys on the session id, so on a same-id resume an earlier launch's SessionEnd plus one transient unproven registry read ends the resumed run died, breaking D7's own bound; the disjunct adds nothing for D7's cases since a process read alive writes its SessionEnd after the first tick.
 
+### Added after Discussion (parent, 2026-10-11): D8: the post-clear reading is a full guard reading
+
+Decision: D8's reading after the clear key and redraw settle is a full guard reading: session ready, no operator activity within operator_quiet_s, and the box empty or the residue reading. The guard bullet's one-fresh-reading clause in pattern/PATTERN-pane-text-injection.md joins the amended places, naming the post-clear reading as the write's guard reading.
+
+Rationale: Round-3 Discussion review F2: the settle after the clear is a new window between the last full guard reading and the paste; an operator who starts typing in it is caught only if the second reading re-checks readiness and activity.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: Claude's hook names, payload fields, source strings, notification types and the stray-character judgment live only in `claudeengine`; `shuttleengine` sees provider-neutral signal kinds, sources and box readings.
