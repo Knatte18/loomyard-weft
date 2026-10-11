@@ -68,7 +68,7 @@ _No rounds yet._
 ## Question ledger
 
 - Ping or fresh session for a late reject? Auto-pick: ping, capped (D1). Resolved.
-- Ping interval and cap? Auto-pick: 4 minutes, 3 per round, constants in `internal/parentreview`, with the count and last-ping time in `delivery.json`. Resolved.
+- Ping interval and cap? Auto-pick: the writer's prompt-cache lifetime less one minute, told through `GateConfig`, and a cap of 3 per round, a constant in `internal/parentreview`, with the count and last-ping time in `delivery.json`. Resolved.
 - Ping before delivery is recorded? Auto-pick: no. Resolved.
 - How does expiry fire mid-turn without a send? Auto-pick: read-only probe plus finalize (D2). Resolved.
 - Throttle period? Auto-pick: 5 seconds (D3). Resolved.
@@ -78,4 +78,4 @@ _No rounds yet._
 - Empty round directories: skip `PrepareRound` without a reviewer, or reuse a requestless round? Auto-pick: reuse, which also covers a spawn that died before its gate (D9). Resolved.
 - Rewrite after reject: review it or escalate at the cap? Auto-pick: both; every rewrite is reviewed and the cap halts (D10). Resolved.
 - Reject cap value? Auto-pick: `attempts: 2`. Resolved.
-- Review scope (the board entry asks to confirm with the operator): auto-pick: keep scope-only (Scope, Out); unconfirmed by the operator, raised to the parent reviewer under Open risks.
+- Review scope (the board entry asks to confirm with the operator)? Decided by the operator after Discussion (2026-10-11): scope-only. Resolved.

@@ -28,7 +28,7 @@ Decision:
 While the latest round's request is open with no verdict and its delivery is recorded, the parent-review gate closure returns pending with a keep-alive line as its `Send` once the keep-alive interval has passed since the latest of the round's delivered-at, last-prompt and last-ping times.
 The interval is told to the gate as a `GateConfig` duration, whose zero turns pings off; the cap of 3 is a constant in `internal/parentreview`.
 `shuttleengine.Engine` gains a provider-neutral method returning how long a session's prompt cache stays warm while idle for a given `Spec` and `Config`; `claudeengine` answers it from the role's resolved prompt-cache TTL, so no cache lifetime is spelled outside it.
-The loom wiring sets the interval to the writer's lifetime less one minute, 4 minutes at the 5m default, as `lyx shuttle await`'s cap sits below it, and to zero when the lifetime reaches the wait bound, so a writer whose role is mapped to `1h` is never pinged.
+The loom wiring sets the interval to the writer's lifetime less one minute, 4 minutes at the 5m default, and to zero when the lifetime reaches the wait bound, so a writer whose role is mapped to `1h` is not pinged at the default 60-minute bound.
 The round's `delivery.json` gains a ping count and a last-ping time, recorded under the round lock when the closure carries a ping, so the clock and the cap survive a driver restart.
 A carried ping counts toward the cap whether or not its send lands.
 The line is a new one-line stencil, `loom-template-parent-review-keepalive.md`, rendered by `internal/loomengine` with the ping's number and told to the gate as a render seam beside `RenderDelivery`; it tells the writer to change nothing, run nothing and end its turn.
@@ -54,19 +54,21 @@ Mapping the discussion role to `1h` through `claude_prompt_cache_ttl_roles` woul
 Decision:
 `shuttleengine.GateEntry` gains an optional expiry probe, a read-only closure reporting whether the entry's wait has run out.
 While the writer is not at an idle boundary, the wait loop calls the probe of every entry that has one on the throttled cadence of D3, whether or not the loop has seen the entry pend, so a loop that attached to a writer stuck mid-turn after a driver restart still reaches it.
-When a probe reports expired, the loop finalizes `OutcomeDone`, and finalize's evaluation runs the entry's `Final` closure, which marks the open request expired and passes with the existing timeout Warn, or reads a verdict that landed meanwhile.
+When a probe reports expired, the loop finalizes `OutcomeDone`, and finalize's evaluation reaches the entry's `Final` closure when every earlier entry passes; `Final` marks the open request expired and passes with the existing timeout Warn, or reads a verdict that landed meanwhile.
 The parent-review wiring sets the probe to "the latest round's request is open, has no verdict and is older than the wait bound"; it reads the round's files without the round lock, since `Final` re-reads them under it.
 The `wait.go` doc that counts finalize call sites names this one; it finalizes a positive outcome, so it needs no `allOutputFilesExist` check.
 
 Bound:
-The probe fires only where the at-boundary gate would itself pass on expiry; it sends nothing, counts nothing and writes nothing.
-Finalize still re-evaluates every entry once, with no re-prompt, and a reject that raced the probe goes through `Final`'s existing terminal path.
-When the mid-turn tree fails the discussion's mechanical entry, the run ends `Stuck`, and Discussion-Write, which has no `on_stuck`, halts it with the request already expired, where a boundary would have re-prompted the writer.
+The probe sends nothing, counts nothing and writes nothing; it reports that the parent-review wait has run out whatever the tree's state.
+Finalize evaluates the entries once in list order, with no re-prompt, and a reject that raced the probe goes through `Final`'s existing terminal path.
+When the mid-turn tree fails the discussion's mechanical entry, finalize stops at that entry and never reaches `parent-review`'s `Final`: the run ends `Stuck` with the request left open and unexpired and no timeout Warn, and Discussion-Write, which has no `on_stuck`, halts it where a boundary would have re-prompted the writer.
+That finalize removes the writer's strand like every `OutcomeDone`, so the next `lyx loom start` is a fresh spawn: the request stays open and unexpired in its round, and the spawn works on the next round, which `PrepareRound` begins, since the gate reads only the latest round.
+A verdict the parent records for the halted round after that start refuses until the gate opens the next round's request, and lands on that request after.
 That is accepted: it is the end the run deadline's finalize already reaches for a writer stuck mid-turn, reached sooner, and a writer that never ends its turn cannot be re-prompted either way.
 
 Rationale:
 Expiry needs no send, so waiting for a turn end held a stuck writer, for example one on a permission prompt for `lyx loom review delivered`, to `discussion_timeout_min` instead of `parent_review_wait_min`.
-The probe keeps `shuttleengine` free of parent-review knowledge, and finalize stays the one place an expired request is marked.
+The probe keeps `shuttleengine` free of parent-review knowledge and marks nothing: only the parent-review closures mark a request expired, at a boundary or in `Final`.
 
 ### D3. Gate re-evaluation without a new arrival runs at most every 5 seconds
 
@@ -155,12 +157,12 @@ The board entry asks for this trade against the orch spend a second round costs.
 
 Decision:
 No smoke test is added.
-The PR #336 live check is met by this run as far as its records reach: its round-1 `delivery.json` must carry a delivered-at stamped by this writer after its SendMessage to `ly:orch`, and the round's `verdict.json` a verdict recorded after that stamp.
-The landing description cites both files and says what they leave open: neither records who ran the verdict verb or which notice prompted it.
+The PR #336 live check is met by this run as far as its records reach: its round-1 `delivery.json` must carry a delivered-at, and the round's `verdict.json` a verdict recorded after that stamp.
+The landing description cites both files and says what they leave open: neither records who stamped the delivery, that a SendMessage to `ly:orch` preceded the stamp, who ran the verdict verb or which notice prompted it.
 
 Rationale:
-Every loom run in this hub with the orch as parent takes the hop, and this run's records show the writer's send and a verdict after it.
-They do not isolate the hop, since batten's own waiting-review note is a second route to the orch; that gap is an Open risk.
+Every loom run in this hub with the orch as parent takes the hop, and this run's records show a delivery stamp and a verdict after it.
+They do not isolate the hop: the `delivered` verb checks no caller and accepts a stamp with no send, and batten's own waiting-review note is a second route to the orch; that gap is an Open risk.
 An llm-tier test of a two-session exchange is expensive to keep for a path production exercises on every run.
 
 ### Added after Discussion (operator, 2026-10-11): Parent review stays scope-only
@@ -168,6 +170,12 @@ An llm-tier test of a two-session exchange is expensive to keep for a path produ
 Decision: Parent review checks the discussion against the board entry's scope and against other board entries only; it does not judge design quality.
 
 Rationale: Discussion-Review and the twill lens forks already judge quality; only the parent sees the board, and a second quality judge could reject what the Bouncer approved.
+
+### Added after Discussion (parent, 2026-10-11): No expiry on resume after a D2 halt
+
+Decision: D2's Bound sentence 'A resume of the halted run marks that request expired ... at its first boundary' is void: the halt finalizes OutcomeDone and removes the writer's strand, so any later start is a fresh spawn; round N's request stays open and unexpired and the new spawn works on round N+1. The plan builds no expiry-on-resume path and pins no test for one. Expiry is marked only by the parent-review closures, at a boundary (closures.gate) or in Final; the probe marks nothing.
+
+Rationale: Round-3 Discussion-Review F1 and F2: finalize in internal/shuttleengine/wait.go cleans up on OutcomeDone with KeepPane false, so no attach reaches gate()'s expiry branch; closures.gate in internal/parentreview/gate.go marks expiry at a boundary, so finalize is not the only place.
 
 ## Constraints
 
@@ -186,25 +194,23 @@ Rationale: Discussion-Review and the twill lens forks already judge quality; onl
 
 - D1's cap rests on an unmeasured reject rate near one in three and reviews mostly under 16 minutes; its one-minute margin under the cache lifetime is the writer's pick.
 - D10's `attempts: 2` is the writer's pick.
-- The scope-only brief (Scope, Out) is kept without the operator confirmation the board entry asked for.
 
 ## Open risks
 
-- For the parent reviewer: the board entry asked to confirm the brief's scope-only judging with the operator; reject this record if a broader parent review is wanted.
 - A ping the writer answers with more than a short reply, or with a tool call, costs more than estimated; the stencil asks for neither.
 - D2 removes the writer's strand mid-turn on expiry; a writer mid-way through a hand-requested discussion edit is cut off, with the halt D2's Bound states when its tree fails the mechanical entry.
-- D11's records do not show which notice the orch acted on, so the hop is not isolated from batten's waiting-review note; reject this record if an isolating check, such as the orch's transcript, is wanted before landing.
+- D11's records do not show who stamped the delivery or which notice the orch acted on, so the hop is not isolated from batten's waiting-review note; reject this record if an isolating check, such as the orch's transcript, is wanted before landing.
 - At the cap the writer never sees the second review's findings; the parent's approve lets the rewrite on as it stands, so the second review's findings must be ones the Discussion-Review perch can carry.
 - Two review rounds per run where one used to suffice raise orch spend on runs whose first review rejects.
 
 ## Acceptance criteria
 
 - With a delivered open request and no verdict, no ping is carried before the interval since the latest delivered-at, last-prompt or last-ping time, one is carried at the interval, the next one interval after that, and none after the third in the round.
-- The interval is 4 minutes for a writer at the 5m TTL, and a writer whose role is mapped to `1h` gets no ping.
+- The interval is 4 minutes for a writer at the 5m TTL, and a writer whose role is mapped to `1h` gets no ping at the default 60-minute bound.
 - After a driver restart the ping clock and count resume from `delivery.json`, so a round never gets more than 3 pings in total.
 - No ping is carried before delivery is recorded, while the reviewer-liveness hold is in force, after a verdict, or after expiry; a ping leaves the round's prompt count and waiting notifies unchanged; a ping whose send fails still counts.
 - Two consecutive pings carry different text, and a failed ping's Warn names no `lyx loom review notify`.
-- A writer that stays mid-turn while a request is pending past the wait bound ends the run within one throttle period, with the request marked expired and the timeout Warn logged: `done` when the tree passes the mechanical entry, `Stuck` when it fails it.
+- A writer that stays mid-turn while a request is pending past the wait bound ends the run within one throttle period: `done` with the request marked expired and the timeout Warn logged when the tree passes the mechanical entry, and `Stuck` with the request left open and no timeout Warn when it fails it.
 - The same holds when the loop attached to a writer already mid-turn after a driver restart, with no boundary seen.
 - A verdict recorded between the probe and finalize is read: an approve passes and a reject takes the terminal path.
 - The probe never fires before the wait bound and never for a request with a verdict.
@@ -217,7 +223,7 @@ Rationale: Discussion-Review and the twill lens forks already judge quality; onl
 - Two fresh spawns with no reviewer leave one round directory, and a fresh spawn after a reject still reuses the reject's round.
 - A `parent-review` element with `pass_on_cap` refuses to build with the way forward.
 - With `attempts: 2`, a first reject re-prompts the writer and the rewrite opens round 2; a second reject halts the run `blocked`, and `lyx loom review approve` lifts it.
-- This run's round-1 `delivery.json` carries the writer's delivered-at, its `verdict.json` a verdict recorded after it, and the landing description cites both with the gap D11 names.
+- This run's round-1 `delivery.json` carries a delivered-at, its `verdict.json` a verdict recorded after it, and the landing description cites both with the gaps D11 names.
 
 ## Notes for the plan writer
 
