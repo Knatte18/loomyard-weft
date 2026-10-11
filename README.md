@@ -95,11 +95,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 1 | **Runs overview pane under the orch**<br>• A minimal pane under the orch listing every run in flight and its shed state; the per-run batten windows stay but the status bar hides them | [`runs-overview`](design-runs-overview.md) | reed, orch, batten |
-| 2 | **Orch loop: one land command and orch start --continue**<br>• The landing steps become one lyx command, and the orch resumes its last conversation after a reboot | [`orch-owns-the-loop`](design-orch-owns-the-loop.md) | batten, orch |
-| 3 | **config: repo-wide default plus per-worktree override**<br>• A repo-wide default layer read from _board with each worktree's own file as an override, the way millhouse's config.local.yaml works | [`config-overlay`](design-config-overlay.md) | config |
-| 4 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | webster |
-| 5 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) | orch, batten |
-| 6 | **Per-task run settings on the board entry**<br>• A board task carries its own run settings, such as review rounds per perch and for darn, which batten applies to the pair at creation. | [`task-run-settings`](design-task-run-settings.md) | board, batten, loom |
+| 2 | **config: repo-wide default plus per-worktree override**<br>• A repo-wide default layer read from _board with each worktree's own file as an override, the way millhouse's config.local.yaml works | [`config-overlay`](design-config-overlay.md) | config |
+| 3 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | webster |
+| 4 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) | orch, batten |
+| 5 | **Per-task run settings on the board entry**<br>• A board task carries its own run settings, such as review rounds per perch and for darn, which batten applies to the pair at creation. | [`task-run-settings`](design-task-run-settings.md) | board, batten, loom |
+| 6 | **Batten lands itself; the orch wakes only for judgement**<br>• Batten runs the landing steps after Finalize and handles notices that name their own action, so the orch is woken only for parent review, unsettled escalations, PR-Gate and unknown halts. | [`orch-wake-policy`](design-orch-wake-policy.md) | batten, orch |
 
 #### Normal priority
 
