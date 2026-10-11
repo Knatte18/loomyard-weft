@@ -1001,25 +1001,6 @@
       "status": "running · Plan-Burler"
     },
     {
-      "id": 347,
-      "slug": "darn-perch",
-      "title": "Darn gets a perch review with a configurable budget",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "loom",
-        "burler",
-        "shed"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "After the darn writer, a Bouncer and Burler perch reviews the diff before Publish; its round budget is set in darn.yaml, and 0 turns it off.",
-      "body": "## Wanted (operator, 2026-10-11)\n\nDarn keeps its one writer: the `Darn` row (`DarnWrite`) still reads the board entry, edits, tests and commits everything itself, as today.\nAfter it, a perch reviews the diff as a safety net before Publish: a Bouncer row whose `on_stuck` points at a Burler-round row, whose own `on_stuck` points back, wired the way the loom recipe wires its review segments (`contracts/recipes/loom-recipe.yaml`, e.g. `Webster-Bouncer` and `Webster-Burler`).\n\n## Budget\n\nThe perch's round budget is set in darn's config (`darn.yaml`, beside the verify budget), so it is easy to change per hub.\nA budget of `0` is valid and means no review: the run goes from `Darn` straight to `Publish`, as today.\nState the chosen default and the key's name in the PR description.\n\n## Notes\n\n- `darn-recipe.yaml` row names are durable on-disk identities pinned against `internal/loomshed` `Name*` constants; adding rows needs matching constants, and an in-flight darn run parked past `Darn` must still resume.\n- PR-Gate keeps bouncing to `Darn` on a rejection.\n- Update the darn recipe's header comment, the darn and loom docs (`doc.go`) and `docs/overview.md` if the execution stack description changes.\n",
-      "status": "done"
-    },
-    {
       "id": 348,
       "slug": "pane-inject-safety",
       "title": "Pane injection never merges with the operator draft, and batten survives a draft",
@@ -1051,9 +1032,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "darn-perch"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "The recipe and its writer row are both named darn; rename the row to Darn-Write like loom's -Write rows.",
       "body": "## Seen (operator, 2026-10-11)\n\n`darn` names both the recipe and its writer row `Darn` (engine `DarnWrite`), which is confusing.\nThe loom recipe avoids this: its rows are named for what they do (`Discussion-Write`, `Plan-Write`, `Webster`), and no row is named `Loom`.\n\n## Wanted\n\nRename the darn writer row from `Darn` to `Darn-Write`, matching the loom `-Write` rows and the engine name `DarnWrite`.\nRow names are durable on-disk identities pinned against `internal/loomshed` `Name*` constants, so rename the constant with the row, and keep an in-flight darn run whose status names the old row resumable.\nUpdate every reference: recipe edges (`PR-Gate`'s `on_stuck`, the perch rows `darn-perch` added), docs, stencils and tests.\n"

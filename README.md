@@ -144,11 +144,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 32 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) | loom, stencil |
-
-## Done
-
-Finished, awaiting `lyx board prune --apply`.
-
-| # | Entry | Slug | Labels |
-| --- | --- | --- | --- |
-| 1 | **Darn gets a perch review with a configurable budget**<br>• After the darn writer, a Bouncer and Burler perch reviews the diff before Publish; its round budget is set in darn.yaml, and 0 turns it off. | [`darn-perch`](design-darn-perch.md) | loom, burler, shed |
