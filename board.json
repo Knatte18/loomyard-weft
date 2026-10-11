@@ -1168,22 +1168,6 @@
       "status": "paused · Discussion-Bouncer"
     },
     {
-      "id": 373,
-      "slug": "chair-wait-held-notice",
-      "title": "Seats chair waiting on its advisor raises held notices to the orch",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "shuttle",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (2026-10-11, chair-blind bench pair twb-seat-lead-1)\n\nA seats chair that sends a batch to its advisor ends its turn to wait for the answer.\nShuttle reads a turn end without output files as held and sends the orch a shuttle notice each time, for example `Batch 1 sent to the advisor; waiting for its answer.`\nOne Discussion raised three such notices in a few minutes; each wakes the orch, which re-reads its context to do nothing.\n\n## Wanted\n\n- A chair with an advisor question outstanding is not held: shuttle knows the chair is waiting on a seat and stays quiet, or the chair waits inside its turn (for example with `lyx shuttle await` on the advisor's answer) instead of ending it.\n- Related: note `fork-wait-noise` covers the same pattern for webster forks."
-    },
-    {
       "id": 374,
       "slug": "twb-seat-blind-1",
       "title": "Webster stability: gate shells, Master self-fix, recovery, Create checks",
