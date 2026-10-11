@@ -301,7 +301,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "d1c39658b55d6ed78e0cdce70c2493f6",
   "masterSessionId": "37436d3e-55ad-4522-86d3-05fdee6ccb1e",
   "batches": {
@@ -359,6 +359,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-multi-llm/37436d3e-55ad-4522-86d3-05fdee6ccb1e/subagents/agent-a304b9be54b06aba7.jsonl"
       ]
+    },
+    "7": {
+      "slug": "retire-fix-start",
+      "cards": [
+        "07-retire-fix-start",
+        "08-burler-seat-table",
+        "09-burler-seat-stencils",
+        "10-remove-await-review",
+        "11-delete-fix-start-type",
+        "12-delete-burler-shuttle"
+      ],
+      "cardHashes": {
+        "07-retire-fix-start": "4181de31ae5e399d78e1392174970dbea5bc23a733cfe1eddcd2ee0903223632",
+        "08-burler-seat-table": "535aea5427b9063b847d650d59298013acce0404709abe2ea930a741ecd6e766",
+        "09-burler-seat-stencils": "e53c1e30c7101739e42105f144b904ab46127e0ee1f26336ffbd1a0fc240dcdd",
+        "10-remove-await-review": "ac2495249e7c1168715674275ec1430e8cff5718aa48f1fa1bee0f855e051e87",
+        "11-delete-fix-start-type": "622d25ed2b495c60b71ec2136912a0abffc5059364cd90b5bbb609ff441ceb7b",
+        "12-delete-burler-shuttle": "96bcf11d4c81375127850da0961106c8559f4018fac6e8cb3bc324ea0354706a"
+      },
+      "startSha": "154d4adf555dae584db69c428a987ded381734ed",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T12:07:06Z",
+      "sessionId": "37436d3e-55ad-4522-86d3-05fdee6ccb1e",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
