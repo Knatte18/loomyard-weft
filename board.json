@@ -801,21 +801,6 @@
       "body": "Seen at pane-inject-safety PR-Gate (PR #548): the one-command set-buffer + paste-buffer + Enter path sends the text in one tmux command, so a text over tmux's command size limit fails the whole send.\n\nIdea: load the buffer in chunks (or from a file with `load-buffer`) before the single paste-and-Enter step, and test a text above the limit."
     },
     {
-      "id": 362,
-      "slug": "paste-submit-live-check",
-      "title": "No live test that a paste followed by Enter submits in Claude Code",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "shuttle"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Seen at pane-inject-safety PR-Gate (PR #548): the paste-then-Enter submit rests on each provider's `PasteSubmits()` answer, and no live test checks that Claude Code takes a bracketed paste followed by Enter as a submit.\n\nIdea: a tmux-tier or llm-tier test that pastes a short prompt into a live session and checks it was submitted, so a Claude Code change that breaks it fails a test instead of a run."
-    },
-    {
       "id": 371,
       "slug": "seats-twill-combined",
       "title": "One seats Discussion producer: advisor count and lens forks as config axes",
