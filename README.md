@@ -148,11 +148,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 32 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) | loom, stencil |
-
-## Done
-
-Finished, awaiting `lyx board prune --apply`.
-
-| # | Entry | Slug | Labels |
-| --- | --- | --- | --- |
-| 1 | **Darn: rename the writer row to Darn-Write, and close the perch gaps**<br>• Rename Darn to Darn-Write; add a Describe row after the perch, take Darn-Burler's verify budget from darn.yaml, and test an exhausted perch budget. | [`darn-write-rename`](design-darn-write-rename.md) | loom, shed |
