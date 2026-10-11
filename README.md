@@ -67,8 +67,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 1 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-twh-2`](design-twb-twh-2.md) | webster, shuttle, stencil, quarry |
-| 2 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-twh-1`](design-twb-twh-1.md) | webster, shuttle, stencil, quarry |
+| 1 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-twh-1`](design-twb-twh-1.md) | webster, shuttle, stencil, quarry |
+| 2 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-twh-2`](design-twb-twh-2.md) | webster, shuttle, stencil, quarry |
 
 #### Normal priority
 
