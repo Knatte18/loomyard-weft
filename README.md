@@ -11,17 +11,11 @@ Concrete and claimable; only a task can run.
 
 Held by a run; its scope is locked until the run ends.
 
-#### High priority
-
-| # | Task | Slug | Recipe | At | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Glyphs end to end: test members as glyphs, traced plan: binds, a switchable Webster kick-start pack**<br>• Plan cards name changed tests as glyphs, record-batch logs each plan: bind, and Go injects resolved glyph spans into each Webster batch fork behind a config switch | [`plan-glyph-tuning`](design-plan-glyph-tuning.md) | loom | Finalize | loom, stencil, webster, quarry |
-
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **Shuttle reads agent state from hooks first, the pane only where no hook exists**<br>• Install SessionStart on every run, end awaitStartup on it, map PermissionRequest and dead readings; keep pane reads only for dialogs, drafts and operator activity | [`shuttle-hook-first`](design-shuttle-hook-first.md) | loom | Webster | shuttle, loom |
+| 1 | **Shuttle reads agent state from hooks first, the pane only where no hook exists**<br>• Install SessionStart on every run, end awaitStartup on it, map PermissionRequest and dead readings; keep pane reads only for dialogs, drafts and operator activity | [`shuttle-hook-first`](design-shuttle-hook-first.md) | loom | Webster | shuttle, loom |
 
 ### Ready
 
@@ -128,3 +122,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 30 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) | loom, stencil |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Labels |
+| --- | --- | --- | --- |
+| 1 | **Glyphs end to end: test members as glyphs, traced plan: binds, a switchable Webster kick-start pack**<br>• Plan cards name changed tests as glyphs, record-batch logs each plan: bind, and Go injects resolved glyph spans into each Webster batch fork behind a config switch | [`plan-glyph-tuning`](design-plan-glyph-tuning.md) | loom, stencil, webster, quarry |
