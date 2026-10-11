@@ -139,7 +139,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 29 | **lyx pause: stop every run at once, safely and on purpose**<br>• A hub-wide pause that interrupts every Claude session with Esc within seconds, unlike the step-boundary pauses, recorded as ordered so no failure or idle path fires | [`lyx-halt`](design-lyx-halt.md) | batten |
 | 30 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | reed, shuttle |
 | 31 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | webster |
-| 32 | **Orch manifest in Bolt, cold reviewer replaces PR-Gate**<br>• The orch keeps a manifest of its context in Bolt; a cold agent reviews PRs from it as a loom row | [`orch-manifest`](design-orch-manifest.md) | orch, loom, board |
+| 32 | **Alignment agent in loom instead of orch at PR-Gate**<br>• A cold agent in loom checks a run against the board and in-flight runs; the orch drops out of the review loop | [`orch-manifest`](design-orch-manifest.md) | orch, loom, board |
 
 #### Low priority
 
