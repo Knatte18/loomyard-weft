@@ -1,6 +1,6 @@
 # Webster stability: gate shells, Master self-fix, recovery, Create checks
 
-`twb-so-oh-1` · Note · bug, webster, shuttle, stencil, quarry
+`twb-so-oh-1` · Note · bug, webster, shuttle, stencil, quarry · running · Loom-Preflight
 
 ## Bench base
 
