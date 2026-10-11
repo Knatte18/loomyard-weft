@@ -916,7 +916,7 @@
       "isolated": false,
       "brief": "Since reed-hygiene (c6dc1fffc) reed servers start with -f /dev/null, so the operator loses prefix, key bindings and escape-time; no reed.yaml key replaces them",
       "body": "",
-      "status": "running · Worktree-Create"
+      "status": "running · Loom-Preflight"
     },
     {
       "id": 329,
