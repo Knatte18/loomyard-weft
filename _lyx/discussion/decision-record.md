@@ -30,7 +30,9 @@ For each hook line it records the hook name, the payload, and its order against 
 It also records Claude's session registry entry for the session when `SessionStart(startup)` lands, after `/exit` and after the kill.
 The captured lines are trimmed into `claudeengine` corpus cases, and every payload-field rule below is tested against them.
 `StopFailure` stays on its reconstructed fixture, since a real API error cannot be provoked on demand.
-If the corpus shows no `SessionStart(startup)` line from the `--settings` file before the first typed turn, D3's `startup` rule and D4 cannot hold: the implementer reports that as a blocker in its batch report and builds neither.
+If the corpus shows that the `--settings` file's `SessionStart(startup)` line does not land on its own, with no turn typed, D4 cannot hold: the implementer reports that as a blocker in its batch report and does not build D4.
+Every other Decision is built either way; D3's `startup` rule moves nothing when no `startup` line lands.
+Under the blocker the Startup criterion and the #549 criterion drop, and every other criterion stands.
 Rationale: the parsers' payload shapes are unverified against a real session, and rules keyed on `source`, `notification_type` or `reason` are only as good as those shapes.
 A rule keyed on the hook name alone does not depend on the corpus.
 
@@ -71,6 +73,8 @@ The pane check stays because the docs do not tie `SessionStart` to the input box
 ### D5. `PermissionRequest` reads asking at once; every `Notification` type is mapped
 
 `buildSettings` installs a recording `PermissionRequest` hook on every run, and the parser maps its line to an ask by the hook name alone.
+The transcript's interrupt marker releases an ask with cause `ask` to `idle-stalled` with cause `interrupt`, as it releases a running turn, so a dialog the operator escapes does not hold sends.
+Bound: an ask holds every send until the next turn signal or an interrupt marker; a granted permission writes neither, so it reads asking for the rest of its turn.
 The `Notification` mapping is a fixed table in `claudeengine`: `permission_prompt`, `elicitation_dialog` and `elicitation_url_dialog` are asks; `idle_prompt` is the idle notice; `agent_needs_input`, `elicitation_response` and every other type yield no signal.
 Rationale: `PermissionRequest` fires when the decision is needed, where `Notification(permission_prompt)` follows about 6 s later and a keystroke defers it.
 `agent_needs_input` is not an ask because the turn-end judgment already reads a waiting interactive run as asking, and an ask would override an `idle-done` reading of a finished run.
@@ -88,22 +92,28 @@ Rationale: neither command starts a turn, so no `UserPromptSubmit` confirms it, 
 - the newest signal is a `SessionEnd` whose reason ends the process, and the registry does not read the process alive;
 - the registry proves the process gone: an entry for the session with a dead pid and no entry that leaves the answer open.
 
-Registry evidence counts only when it is not older than the newest `SessionStart` line: an entry whose process started before that line is stale and leaves the answer unproven.
-Before any `SessionStart` line has landed for a launch, only a `SessionEnd` signals death.
-A dead session then takes the same path as a dead pane: `OutcomeDone` when every output file exists, else the same `OutcomeDied` a dead pane gives, with no new transient marking.
-Bound: an unproven liveness never ends a run, a `SessionEnd` beside a registry entry whose pid is alive with a matching start time does not, and a crashed launch's entry never fails a resumed launch.
+Registry death for a session id counts only once a liveness tick of the same wait has read that id alive; until then a dead registry reading leaves the answer unproven.
+A process-ending `SessionEnd` counts only when its line lies past the events-file size this wait took at its first liveness tick, before that tick's registry read; an earlier `SessionEnd` leaves the answer unproven, whatever the registry later reads for its session id.
 The liveness read uses the session id of the newest signal that names one, so a resumed session's own `SessionStart(resume)` line points the lookup at the live process.
+A dead session then takes the same path as a dead pane: `OutcomeDone` when every output file exists, else the same `OutcomeDied` a dead pane gives, with no new transient marking.
+The fold's settle precedence is unchanged: a process-ending `SessionEnd` reads dead in the fold even while the registry still reads the process alive, so sends are held for a session that announced its end, while the run ends only once the registry stops reading it alive.
+Bound: an unproven liveness never ends a run, and a `SessionEnd` beside a registry entry whose pid is alive with a matching start time does not.
+An earlier launch never fails a resumed launch, since a resumed launch shares the run's events file but its `SessionEnd` lies before this wait's first-tick size, and this wait never read the earlier process alive.
+A `SessionEnd` written before this wait's first tick never counts, even when its process exits after that tick: such a run ends only on registry death or its deadline, as does a wait attached after the death.
 Rationale: reed starts the pane as a login shell that outlives `claude`, so reed's pane liveness never sees a crashed Claude, and the run waits out its deadline today.
 
 ### D8. A lone stray character in an idle box is cleared once, then read as residue
 
 `claudeengine` decides whether a box's text is a stray-character candidate: exactly one character that is neither a letter, a digit nor whitespace, beside the lone `%` rule it already owns.
-When a send's guard reading finds a candidate in an otherwise idle box, and no operator was active within `operator_quiet_s`, shuttle sends the provider's clear-input sequence once, waits the provider's redraw settle, and reads the box again.
+When a send's guard reading finds a candidate in an otherwise idle box, and no operator was active within `operator_quiet_s`, shuttle sends the provider's clear-input sequence once, right after that reading with no wait or other key between them, waits the provider's redraw settle, and takes a second full guard reading: ready, no operator activity within `operator_quiet_s`, and the box read.
+That post-clear reading is the write's guard reading.
 This applies on both readings a send takes: the hook-state reading, and the pane-fallback reading of an unknown state, where the pane reads idle but for the candidate.
-An empty box proceeds; a box that still shows the same lone character reads as screen residue Claude never received, and the send proceeds as for the lone `%`; anything else holds as a draft.
+A not-ready session or operator activity holds the send as the guard does; an empty box proceeds; a box that still shows the same lone character reads as screen residue Claude never received, and the send proceeds as for the lone `%`; anything else holds as a draft.
 Bound: the clear fires only for a candidate, only behind the full guard reading, and at most once per send attempt.
-An operator loses the punctuation character they left for longer than `operator_quiet_s`, plus anything typed on that line between the guard reading and the clear.
-A real character that survives the clear and the settle is submitted at the head of the message.
+An operator loses the punctuation character they left for longer than `operator_quiet_s`, plus anything typed on that line in the latency between the guard reading and the clear.
+A real character that survives the clear and the settle is submitted at the head of the message by the paste-submit's own Enter.
+The post-paste confirm keeps its exact-text reading and takes no residue reading: a box holding the character beside the sent text, when that Enter did not take, fails the send with `ErrSentTextInDraft`, quoting the box and with no key, and records the pending send, as a merge with an operator's draft does today;
+the box then holds later sends as a draft until the operator clears it.
 Every hold for a draft quotes the box text it found, on the pane-fallback reading too, and batten's driver-busy notice to the orch carries that text; `lyx loom resume`'s refusal already carries it and keeps it.
 Rationale: #554's `❯ +` blocked a resume until the operator attached; clearing keeps the delivered text exact in every case but the last bound, where treating the character as empty would always submit it.
 
@@ -114,30 +124,35 @@ A message is every assistant entry sharing one `message.id`, since Claude writes
 It reads nothing older.
 Rationale: an assistant message follows only after every result of the previous one, so older calls are answered; the cost is then bounded by the tail, not the transcript length, on every turn-end activity read of Merriam.
 
+### Added after Discussion (parent, 2026-10-11): D7: SessionEnd counts only past the first-tick events-file size
+
+Decision: A process-ending SessionEnd counts only when its line lies past the events-file size this wait took at its first liveness tick, with the size taken before that tick's registry read; the read-alive disjunct is dropped. Add a Death criterion: an earlier launch's process-ending SessionEnd as the newest signal, after this wait has read the resumed process alive, followed by an unproven registry reading, ends nothing.
+
+Rationale: Round-3 Discussion review F1: the read-alive disjunct keys on the session id, so on a same-id resume an earlier launch's SessionEnd plus one transient unproven registry read ends the resumed run died, breaking D7's own bound; the disjunct adds nothing for D7's cases since a process read alive writes its SessionEnd after the first tick.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: Claude's hook names, payload fields, source strings, notification types and the stray-character judgment live only in `claudeengine`; `shuttleengine` sees provider-neutral signal kinds, sources and box readings.
 - `PATTERN-completion-signal`: the dead-session path of D7 is a new negative answer and consults `allOutputFilesExist` first; the enforcement test's audited sites are updated with it.
-- `PATTERN-pane-text-injection`: D8 changes this entry's background in two places.
-  "Never wipes an operator's draft" gains the bounded exception of D8, with its bound.
+- `PATTERN-pane-text-injection`: D8 changes this entry's background in four places.
+  The lead sentence's "never merges with, submits or wipes an operator's draft" gains D8's bounded exceptions, each held to D8's guard reading, `operator_quiet_s` and one clear per send attempt: the clear wipes a stray-character candidate, and the residue reading merges a real character that survives the clear and the settle with the sent text and lets the paste-submit's Enter submit it.
+  The guard bullet's "One fresh reading takes three facts" gains D8's second reading: after a clear, the post-clear reading takes the same three facts, with the residue reading admitted for the box, and is the write's guard reading.
+  The sentence on the lone `%` gains D8's residue reading: a lone stray-character candidate that persists after one clear and the redraw settle reads as empty, so a real character that survives both is merged into and submitted with the sent text, as an operator's `%` already can be.
+  The residue reading is shuttle's, taken only on the post-clear reading, beside the provider's box reading rather than inside it; the `%` reading stays the provider's and applies at every reading.
   The list of explicit key deliveries outside the rule gains D8's clear into a box holding a stray-character candidate.
-  The `PATTERN.md` line itself, paste-submit only and no Enter into a box not holding exactly the sent text, is unchanged.
+  The `PATTERN.md` line itself, "only reed's paste-submit, behind shuttle's pre-write guard or, for name repair, reed's activity check; no Enter of lyx's own into a box not holding exactly the sent text", is unchanged: the paste-submit's Enter belongs to reed's atomic paste-submit, which the `%` reading already lets merge with a box's character, and the post-paste confirm keeps its exact-text match, so no Enter of lyx's own goes into a box holding the character beside the sent text (D8).
 - `PATTERN-daemon-wakeups`: no new wait; D4 adds one events-file read per startup probe and D7 one registry read per liveness tick, on the existing cadences.
 - `PATTERN-test-speed` and `PATTERN-test-economy`: the capture scenario is `llm`-tier and run through `lyx gate test --tags llm`; the fold, parser, readiness, startup and transcript rules are tested at the lowest tier over the corpus cases and fakes, extending existing tables where they fit.
 - An engine without `SessionSignalParser` behaves exactly as today on every path this task touches.
-- Planned work in `shuttle-color-verified-send` (a launch-line first turn) must keep D3's `startup` bound; D3 already holds for either hook order.
 
 ## Auto-mode assumptions
 
 - The implementer can run the `llm`-tier capture through `lyx gate test --tags llm`, which the agents' raw-go deny allows.
-- A `SessionStart(startup)` line from the `--settings` file lands before the first typed turn; D1 confirms it.
-- Claude removes its registry entry on a normal exit and leaves it on a crash; D1 records both.
 
 ## Open risks
 
 - If the registry entry is not yet written when `SessionStart(startup)` lands, the fold reads unknown with liveness unproven and the color and skill-load sends take the pane fallback, as today; D8 covers a stray character on that path, and D1 records the timing.
-- An ask from `PermissionRequest` stays asking until the next turn signal, so a granted permission mid-turn reads asking for the rest of that turn, as `Notification(permission_prompt)` already does; sends are held either way, and batten or the orch watcher may show the run asking for that span.
-- If `--settings` hooks are not held until trust, D4 still requires the pane's ready reading but loses its proof that the trust gate passed.
+- A granted permission mid-turn reads asking for the rest of that turn, by D5's bound, as `Notification(permission_prompt)` already does; batten or the orch watcher may show the run asking for that span.
 
 ## Acceptance criteria
 
@@ -146,11 +161,11 @@ Rationale: an assistant message follows only after every result of the previous 
 - Fold: `SessionStart(startup)` alone reads `idle-fresh`; `SessionEnd(clear)` then `SessionStart(clear)` reads `idle-fresh`; a `resume` start after a turn start with no turn end reads `idle-fresh`; a `startup` start after an unmatched turn start stays busy; a `compact` start inside a running turn stays busy; an empty or unknown source leaves the state unchanged; a dead or unproven liveness outranks `idle-fresh`.
 - Readiness: `idle-fresh` with an empty box is ready; with a draft, a too-short pane or no box it is held with that reason.
 - The #549 case: a ready pane whose events file holds only `SessionStart(startup)` takes the color and skill-load sends from the hook state, without the pane fallback.
-- Startup: a ready pane with no `SessionStart` line is not started and times out naming the missing line; an unreadable events file times out naming that; a `SessionStart` line with a gate on screen still dismisses the gate and waits for the ready pane; an attached not-yet-started run applies the same rule; an engine without session-start recording starts on the pane alone.
-- `PermissionRequest` reads asking; each `Notification` type maps as D5 states, and an unknown type yields no signal.
+- Startup: a ready pane with no `SessionStart` line is not started and times out naming the missing line; an unreadable events file times out naming that; a `SessionStart` line with a gate on screen still dismisses the gate and waits for the ready pane; an earlier launch's `SessionStart` line with a pane not yet ready is not started; an attached not-yet-started run applies the same rule; an engine without session-start recording starts on the pane alone.
+- `PermissionRequest` reads asking; an interrupt marker past that ask reads `idle-stalled` with cause `interrupt`; each `Notification` type maps as D5 states, and an unknown type yields no signal.
 - `/clear` and `/compact` confirm on a matching `SessionStart` past the pre-send offset, and fall back to the box read when none arrives in the landing window.
-- Death: a process-ending `SessionEnd` with the registry not alive ends the run died, `/exit` included; a registry entry with a gone pid, not older than the newest `SessionStart`, ends it died; with every output file present either ends it done; an unproven liveness and a `SessionEnd` beside a live registry entry end nothing; a stale crashed entry before a resumed launch's `SessionStart(resume)` ends nothing; a dead process before startup is ready fails the start as died.
-- Stray character: a box holding only `+` with no operator activity is cleared and the send goes out with exact text, on the hook reading and on the pane-fallback reading; a lone `+` still on screen after the clear and settle is read as residue and the send goes out; a lone `+` with operator activity, and a two-character box, hold with the text quoted; batten's driver-busy notice quotes the box text.
+- Death: a process-ending `SessionEnd` with the registry not alive ends the run died, `/exit` included; a session the wait read alive whose registry entry then reads a gone pid ends it died; with every output file present either ends it done; an unproven liveness and a `SessionEnd` beside a live registry entry end nothing, while the fold reads that session dead; a crashed launch's dead entry before a resumed launch reads alive ends nothing; an earlier launch's process-ending `SessionEnd` as the newest signal, with the resumed process not yet registered, ends nothing, and after this wait has read the resumed process alive, an unproven registry reading beside that line ends nothing too; a process the wait read alive after its `SessionStart` line that dies before the pane is ready fails the start as died.
+- Stray character: a box holding only `+` with no operator activity is cleared and the send goes out with exact text, on the hook reading and on the pane-fallback reading; a lone `+` still on screen after the clear and settle is read as residue and the send goes out; operator activity in the settle holds the send at the post-clear reading; a residue send whose post-paste box holds `+` beside the sent text fails with `ErrSentTextInDraft`, sends no key and records the pending send; a lone `+` with operator activity, and a two-character box, hold with the text quoted; batten's driver-busy notice quotes the box text.
 - Fork transcript: a parallel batch whose earlier call is pending and whose last call is answered reads pending; a fully answered newest message reads not pending whatever older messages hold; a transcript with no tool use reads not pending.
 
 ## Notes for the plan writer
