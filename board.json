@@ -1047,6 +1047,22 @@
       "isolated": false,
       "brief": "Help says step bootstraps like start, then that it never seeds; name the driverless seed command",
       "body": "## Seen (2026-10-11, discussion bench)\n\n`lyx loom step --help` contradicts itself: `internal/loomcli/cli.go:313` says step bootstraps the worktree's loom task exactly as `lyx loom start` does, and `:329-330` says it never writes a seed and refuses when none exists.\nIt refuses on an unseeded pair and points to `lyx loom start`, which spawns an LLM driver.\nThe bench agent took that route and ended up with an unwanted driver; stepping without a driver needs `lyx shed seed self --recipe loom --driver go --param parent=main` first, which the help does not mention.\n\n## Idea\n\nMake the help say only what step does (refuses without a seed), and name the driverless seed command beside `lyx loom start` in the help and in the refusal text.\n"
+    },
+    {
+      "id": 342,
+      "slug": "seats-chair-wait-notice",
+      "title": "Seats chair planned waits reach the parent as stall notices",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Chair turn ends that wait on advisors send held notices to the parent; suppress them while advisor work is outstanding",
+      "body": "## Seen (2026-10-11, discussion bench)\n\nEvery time a seats chair ends its turn to wait, for an advisor's up line or for an advisor's answers, shuttle sends the parent a \"turn end held, output files missing\" notice (`internal/shuttleengine/hold.go:53`, `notifyHeld`).\nThese waits are planned by the chair stencil, so the notices are false stall alarms; each advisor run in the bench sent the orch three to four of them.\nAdvisors are quiet because `internal/seatengine/prompt.go:160` sets `QuietHold: !isChair`; the chair is not.\nAnswering a notice wakes the chair for a turn, which sends another notice.\n\n## Idea\n\nSuppress the held notice for a chair while any advisor has an unanswered batch or has not yet sent its up line, and keep it for a chair that ends a turn with no advisor work outstanding, which is a real stall.\n"
     }
   ]
 }

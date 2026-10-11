@@ -40,6 +40,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 1 | **loom step help contradicts itself and hides the driverless seed**<br>• Help says step bootstraps like start, then that it never seeds; name the driverless seed command | [`loom-step-help-seed`](design-loom-step-help-seed.md) | loom |
+| 2 | **Seats chair planned waits reach the parent as stall notices**<br>• Chair turn ends that wait on advisors send held notices to the parent; suppress them while advisor work is outstanding | [`seats-chair-wait-notice`](design-seats-chair-wait-notice.md) | shuttle, loom |
 
 ### Enhancements
 
