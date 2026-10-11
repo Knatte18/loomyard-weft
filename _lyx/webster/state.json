@@ -116,7 +116,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "a1bbf7fe069252d119c22d213e1b4777",
   "masterSessionId": "2188b9f7-65bb-4836-8bad-9309e2bc02b2",
   "batches": {
@@ -140,8 +140,26 @@
       "kind": "fork",
       "spawnedAt": "2026-10-11T13:54:56Z",
       "sessionId": "2188b9f7-65bb-4836-8bad-9309e2bc02b2",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "failed",
+      "digest": {
+        "batch": "01-claude-lone-eol-mark",
+        "status": "failed",
+        "head_sha": "6c44c99a4bb0dd58e3bba60d7bffcd5953219014",
+        "reasons": [
+          "batch 01-claude-lone-eol-mark holds cards 1-claude-lone-eol-mark, 2-start-error-on-result, 3-never-ready-pane-tail, 4-startup-probe-cadence, 5-hold-deferral-ten-minutes",
+          "create-not-done/1-claude-lone-eol-mark[blocking]: Create target \"plan:internal/shuttleengine/claudeengine#TestStart_LoneEOLMarkBoxTakesStartupSends\" still does not resolve: looked up \"internal/shuttleengine/claudeengine#TestStart_LoneEOLMarkBoxTakesStartupSends\", quarry answered not_found (the unit exists and the member is missing)"
+        ]
+      },
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-startup-ready/2188b9f7-65bb-4836-8bad-9309e2bc02b2/subagents/agent-a070f4b54d6304967.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-startup-ready/2188b9f7-65bb-4836-8bad-9309e2bc02b2/subagents/agent-a070f4b54d6304967.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-startup-ready/2188b9f7-65bb-4836-8bad-9309e2bc02b2/subagents/agent-a070f4b54d6304967.jsonl"
+  ]
 }
