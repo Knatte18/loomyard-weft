@@ -1,9 +1,9 @@
 # Card 9 — discussion-spec-twill
 
 **Create:**
-- `plan:internal/loomengine#twillFan` -> `const twillFan = "twill-discussion"`
-- `plan:internal/loomengine#twillBlocks` -> `func twillBlocks(layout *lyxcwd.Location, stencilsDir string) (string, string, error)`
-- `plan:internal/loomengine#TestDiscussionSpec_Twill` -> `func TestDiscussionSpec_Twill(t *testing.T)`
+- `internal/loomengine#twillFan`
+- `internal/loomengine#twillBlocks`
+- `internal/loomengine#TestDiscussionSpec_Twill`
 
 **Edit:**
 - `internal/loomengine/discussion.go`
@@ -16,8 +16,8 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/loomengine#DiscussionProducerTwill`
-- `plan:internal/loomengine#DiscussionReadyMarker`
+- `internal/loomengine#DiscussionProducerTwill`
+- `internal/loomengine#DiscussionReadyMarker`
 - `internal/twilldirective#Directive`
 - `internal/twilldirective#WriteScope`
 - `internal/twilldirective#Values`

@@ -1,8 +1,8 @@
 # Card 8 — discussion-ready-marker
 
 **Create:**
-- `plan:internal/loomengine#DiscussionReadyMarker` -> `func DiscussionReadyMarker(l *lyxcwd.Location) string`
-- `plan:internal/loomengine#RemoveDiscussionReadyMarker` -> `func RemoveDiscussionReadyMarker(l *lyxcwd.Location) error`
+- `internal/loomengine#DiscussionReadyMarker`
+- `internal/loomengine#RemoveDiscussionReadyMarker`
 
 **Edit:**
 - `internal/loomengine#TestDiscussionPaths`

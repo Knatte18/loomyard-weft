@@ -1,6 +1,6 @@
 {
   "runGuid": "3c69429c22fa42c39af14884145ac7e6",
-  "planFingerprint": "55c4955bca48422ef4a1ec6ecff250e091adda3c7319a00f4f758e36cb7be9d8",
+  "planFingerprint": "6cd40ab1a8b79e09551525e66d8ebd7346b7d31dcd8e10405f7ccac553dea445",
   "planFileHashes": {
     "00-overview.md": "fb7f723a82618e780c1c41f3cf644941d74633265a5916cd8483e7617dc13567",
     "01-shuttle-await-poll.md": "06f5367499ce009e97a89b63e2c75a5bc26b0804d1d7744c728fc3e9a8fc6185",
@@ -9,10 +9,10 @@
     "04-twill-stencils.md": "cb7969d006fbd78fdd90d74d439a6bca9e7004f2b835b8d3ce7475834122b591",
     "05-twilldirective-package.md": "6ce474f37f61658acd292eb133d9adb8fb4c7fa9726db9389f5edaa4675c1048",
     "06-discussion-template-twill-markers.md": "c42a3b858c7f07269a69b46213aad1f43ee65f36ddc5bd12b07db33e9a17c17f",
-    "07-twill-config-value.md": "c8b24e05b1e1928f8d9f2e57d61fd50d50bc07e85bbba6cb294a13989df24c66",
-    "08-discussion-ready-marker.md": "78a8bfab2ae059a99ac5d732ea02da801e07de0ae8834ae8eaec91904d0aeb3a",
-    "09-discussion-spec-twill.md": "92b55299752f95647fb3b2547859f38b4dd8fec0262422dc5e5fafa1394340e2",
-    "10-discussion-marker-fresh-spawn.md": "cdfc638944e74b90723d08fd306c5836d51f68c2189a385e0c9e8e9aaacd67d0"
+    "07-twill-config-value.md": "e49f5f89e3ab4e6f61bc7dffdcd033b89f6dcc09d1580d922a981f870b52ed67",
+    "08-discussion-ready-marker.md": "7c205749f11208160c94ab30c03b6341973468adf92c086b88587aa5443ef9ed",
+    "09-discussion-spec-twill.md": "1ed342fd468d44404f126e655096fef73b94d95f52eb10c15fe5a650466918dc",
+    "10-discussion-marker-fresh-spawn.md": "64de88f704521083caa24eaf55a92978cedee4fb8722e4575936521b7863b0ea"
   },
   "planOverviewFrameHash": "247de8e6e5be541da8476002d9265538713a5b756573c6ee20abd25843229713",
   "partition": [
@@ -223,7 +223,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "52e875014a597e85c63999b3b57aac7b",
   "masterSessionId": "c16ce497-cd68-4306-9384-3169d04571aa",
   "batches": {
@@ -288,20 +288,44 @@
         "10-discussion-marker-fresh-spawn"
       ],
       "cardHashes": {
-        "07-twill-config-value": "c8b24e05b1e1928f8d9f2e57d61fd50d50bc07e85bbba6cb294a13989df24c66",
-        "08-discussion-ready-marker": "78a8bfab2ae059a99ac5d732ea02da801e07de0ae8834ae8eaec91904d0aeb3a",
-        "09-discussion-spec-twill": "92b55299752f95647fb3b2547859f38b4dd8fec0262422dc5e5fafa1394340e2",
-        "10-discussion-marker-fresh-spawn": "cdfc638944e74b90723d08fd306c5836d51f68c2189a385e0c9e8e9aaacd67d0"
+        "07-twill-config-value": "e49f5f89e3ab4e6f61bc7dffdcd033b89f6dcc09d1580d922a981f870b52ed67",
+        "08-discussion-ready-marker": "7c205749f11208160c94ab30c03b6341973468adf92c086b88587aa5443ef9ed",
+        "09-discussion-spec-twill": "1ed342fd468d44404f126e655096fef73b94d95f52eb10c15fe5a650466918dc",
+        "10-discussion-marker-fresh-spawn": "64de88f704521083caa24eaf55a92978cedee4fb8722e4575936521b7863b0ea"
       },
       "startSha": "40fd8d693c70adee7ace366f79f06f45a49cedb2",
       "kind": "fork",
       "spawnedAt": "2026-10-11T10:47:54Z",
       "sessionId": "c16ce497-cd68-4306-9384-3169d04571aa",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-twill-config-value",
+        "status": "done",
+        "head_sha": "3e3eb0aa14c49b1a263af5a6a6668e475a9d3acd",
+        "deviations": [
+          "internal/loomengine/twill.go",
+          "internal/loomengine/discussion_test.go",
+          "internal/loomengine/discussionpath_test.go",
+          "internal/loomengine/config_test.go",
+          "internal/shedrecipe/recipe.go",
+          "internal/shedrecipe/fixture_test.go",
+          "internal/loomcli/wiring.go"
+        ]
+      },
+      "cardShas": [
+        "3e3eb0aa14c49b1a263af5a6a6668e475a9d3acd"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-twill-discusser/c16ce497-cd68-4306-9384-3169d04571aa/subagents/agent-ae8e605d88a423a22.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-twill-discusser/c16ce497-cd68-4306-9384-3169d04571aa/subagents/agent-ae8e605d88a423a22.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-twill-discusser/c16ce497-cd68-4306-9384-3169d04571aa/subagents/agent-a57cd042aaff2d2dc.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-twill-discusser/c16ce497-cd68-4306-9384-3169d04571aa/subagents/agent-a57cd042aaff2d2dc.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-twill-discusser/c16ce497-cd68-4306-9384-3169d04571aa/subagents/agent-ae8e605d88a423a22.jsonl"
   ]
 }

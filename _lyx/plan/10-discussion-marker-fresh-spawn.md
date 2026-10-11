@@ -11,8 +11,8 @@
 - `internal/battencli/wire_seams_test.go`
 
 **Uses:**
-- `plan:internal/loomengine#DiscussionReadyMarker`
-- `plan:internal/loomengine#RemoveDiscussionReadyMarker`
+- `internal/loomengine#DiscussionReadyMarker`
+- `internal/loomengine#RemoveDiscussionReadyMarker`
 
 **Intent:**
 Make the ready marker never stale (decision record D7): Go removes a marker left by an earlier writer spawn before a fresh spawn, after the attach probe has proved no live writer exists, so an attach to a live writer and a relaunch of a dead one keep it.

@@ -1,7 +1,7 @@
 # Card 7 — twill-config-value
 
 **Create:**
-- `plan:internal/loomengine#DiscussionProducerTwill` -> `const DiscussionProducerTwill = "twill"`
+- `internal/loomengine#DiscussionProducerTwill`
 
 **Edit:**
 - `internal/loomengine/config.go`

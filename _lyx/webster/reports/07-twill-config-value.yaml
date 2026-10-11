@@ -1,0 +1,10 @@
+status: OK
+head_sha: 3e3eb0aa14c49b1a263af5a6a6668e475a9d3acd
+deviations:
+  - internal/loomengine/twill.go
+  - internal/loomengine/discussion_test.go
+  - internal/loomengine/discussionpath_test.go
+  - internal/loomengine/config_test.go
+  - internal/shedrecipe/recipe.go
+  - internal/shedrecipe/fixture_test.go
+  - internal/loomcli/wiring.go
