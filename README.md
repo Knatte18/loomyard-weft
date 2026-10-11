@@ -15,7 +15,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Shuttle start and seat holds: tolerate a stray % at the prompt, probe every second, cap the seat hold deferral**<br>• A ready pane with a stray % fails the producer, awaitStartup sleeps 10 s between checks, and a seat chair hold deferral of 20 min can hide a wedged advisor | [`shuttle-startup-ready`](design-shuttle-startup-ready.md) | loom | Webster-Bouncer | shuttle, batten |
+| 1 | **Shuttle start and seat holds: tolerate a stray % at the prompt, probe every second, cap the seat hold deferral**<br>• A ready pane with a stray % fails the producer, awaitStartup sleeps 10 s between checks, and a seat chair hold deferral of 20 min can hide a wedged advisor | [`shuttle-startup-ready`](design-shuttle-startup-ready.md) | loom | Describe | shuttle, batten |
 
 ### Ready
 
