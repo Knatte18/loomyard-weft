@@ -174,6 +174,12 @@ Decision: Delete D6's clause that the re-launch performs the un-pause lyx loom r
 
 Rationale: lyx loom resume writes no status, it wakes the parked driver; stepLocked short-circuits only StateDone (round-2 F2).
 
+### Added after Discussion (parent, 2026-10-11): An unchanged stop key after an applied attempt is handed on without claiming recurrence
+
+Decision: In D7: an applied attempt whose stop key is unchanged is handed on whether the stop recurred or the re-launch never stepped; the refusal's reason reads 'an applied resume left the stop key unchanged' and never claims recurrence; this costs the parent one wake and never a second re-launch. In D2, add the Publish row's verify-failure record to the list of inputs Go checks.
+
+Rationale: The applied mark is written before the run steps, so a busy refusal or driver death leaves the key unchanged without a step (round-2 F3); D2's Publish-halt exclusion reads that record (F4).
+
 ## Constraints
 
 - PATTERN-stencil-ownership: the arbiter stencil is read at call time through `internal/stencilstore`.
