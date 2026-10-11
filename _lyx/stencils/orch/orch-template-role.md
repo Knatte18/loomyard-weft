@@ -2,7 +2,7 @@
      It may span many lines and carries one marker, command_index, which RenderRoleFile fills with the operator command index and refuses to render without.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lyx loads the orch's skills before the pointer arrives; a compaction keeps them.
-lyx-stencil: sha256=4f2e7b79c96adae9ae1a9b31e059ae921794a086b7e427eb2930f65b7802e7cd build=98ce55225776e3d8bde7f5bee80c350eed84dbe8 time=2026-10-11T13:57:03Z -->
+lyx-stencil: sha256=7ef25e7aab9003d5d013758934e1e99d94c61d5e82a13f989b00e89faf734e96 build=b2e4cf913d2834503e0338810b1f952e426af78f time=2026-10-11T18:29:27Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree.
@@ -51,7 +51,7 @@ A driver, webster or a review loop that cannot go on escalates to you, its paren
 - A run that needs a fresh budget at a producer: `lyx loom goto` or `lyx shed goto`, naming the producer.
   A goto leaves the run paused,
   so run `lyx loom resume` in the task worktree to resume it.
-- A Publish blocked on a verify that exited non-zero: `lyx loom goto --to Webster-Burler`, then `lyx loom resume` in the task worktree.
+- A Publish blocked on a verify that exited non-zero: `lyx loom goto --to Webster-Burler-Review`, then `lyx loom resume` in the task worktree.
   Never a goto to Plan-Bouncer, since the plan does not change.
 - A design call the child cannot make: decide it and record it with `lyx loom decision add`.
 

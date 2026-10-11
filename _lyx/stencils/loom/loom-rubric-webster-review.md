@@ -1,11 +1,11 @@
-<!-- This is the Webster-Review rubric. It is read by both rows of the Webster-Review perch:
+<!-- This is the Webster-Review rubric. It is read by the Bouncer row and the review row of the Webster-Review perch:
      the Webster-Bouncer row interpolates it as bouncer-template-seed.md's and
-     bouncer-template-judge.md's rubric marker value, and the Webster-Burler row interpolates it
-     the same way into internal/burlerengine's own round prompt.
+     bouncer-template-judge.md's rubric marker value, and the Webster-Burler-Review row interpolates it
+     the same way into internal/burlerengine's own review prompt.
      It is a marker VALUE, never a template -- it carries no top-level stencil markers of its own, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=5046d9640245d4e6e2cac22c38c752bb3c409d5b7d2234bafb02c33510f4a6b3 -->
+lyx-stencil: sha256=d0ddb18ff5d98547d5ae831fd14a62a679496fa103f0fab0fe1a9e33604df405 build=b2e4cf913d2834503e0338810b1f952e426af78f time=2026-10-11T18:29:27Z -->
 
 # Webster-Review rubric
 
@@ -59,7 +59,7 @@ Raise each failing test named above as a BLOCKING finding, reading the merge's d
 Do not flag any of the following as a finding:
 
 - **Anything the plan's own gates already check.**
-  The plan's *format* is enforced deterministically by `Plan-Write`'s and `Plan-Burler`'s own gates and is not this gate's subject.
+  The plan's *format* is enforced deterministically by `Plan-Write`'s and `Plan-Burler-Fix`'s own gates and is not this gate's subject.
 - **Findings raised against the plan itself.**
   The plan is the measuring stick and never the subject, exactly as the decision record is for `Plan-Review`.
   A plan-authoring finding cannot be satisfied by changing the diff, which is the only thing this segment can fix.
