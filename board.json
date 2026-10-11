@@ -769,24 +769,6 @@
       "body": "## Seen (operator, 2026-10-11)\n\nThe hub orchestrator is now the largest token spender, ahead of Burler and Webster, and frequent distills have not cut it much.\nMeasured over 2026-10-10 and 2026-10-11, orch spend follows its turn count: a distill shrinks the context, but it regrows within the hour.\nPR-Gate and parent-review forks are a small share of the spend, while batten and agent notices drive about 800 orch calls in those two days, so the gain is fewer orch wake-ups.\n\n## Wanted\n\nCut the orch's token spend, chiefly by waking it less often.\n\n## Means: an alignment agent in loom (operator, 2026-10-11)\n\nThe board is the manifest: it shows every run and what it is doing, and every run's discussion record is readable.\nNo separate manifest is kept; a hand-kept one is a chore and goes stale fast.\n\nA cold-start alignment agent runs inside loom at the review points (PR-Gate, parent review), reads the board and the discussion and plan records of the tasks in flight, and checks that the run is aligned with them.\nIts sources need no upkeep: board entries and notes, the in-flight runs' records, and what has landed on `main` since the run's base.\n\n## Points raised in discussion\n\n- The agent cannot see an operator decision that lives only in the orch's chat, so the orch writes every such decision into the board body it concerns.\n- Parent review is also a sync point: when two overlapping tasks run at once, the orch has held both at parent review and written their reviews together so their discussion records agree. A per-run agent sees the overlap but cannot hold the other run. One shape: the agent approves when it finds no overlap with a run in flight and wakes the orch only when it does, so the orch can hold and align both.\n- Open: whether in-flight runs' records need a `lyx` read verb so an agent in one pair reads another pair's records without reaching into its worktree.\n- Open, for the operator: whether an approved PR review merges to `main` (and reaches prod at the next `update-plugins.sh`) on its own, or still waits for a short orch yes.\n\n## Other means discussed\n\n- Cheap models (such as Haiku) for the orch's simple agent jobs, like counting; fresh agents cost about $37 in the two measured days.\n- The `orch: 1h` cache lifetime in `shuttle.yaml` never applied, since a distill does not restart the orch process; a restart applies it, worth only a few dollars over two days.\n- The operator is also weighing running the orch on Sonnet, since most orch turns run `lyx` commands rather than reason deeply; cache reads cost the same on Opus 5.5 and Sonnet 5.5, so it saves about a quarter of the main session's spend.\n"
     },
     {
-      "id": 356,
-      "slug": "fork-wait-noise",
-      "title": "Webster forks wake Merriam on every gate wait",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "webster",
-        "stencil"
-      ],
-      "issues": [],
-      "priority": "high",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Forks end their turn while a background gate runs, so Merriam gets a finished notice and a wasted turn each time; quick checks and long paths add more",
-      "body": "## Seen (operator, 2026-10-11, pane-inject-safety's Webster run)\n\nMerriam's pane fills with interim notices for one batch fork, each one a Merriam turn that does nothing:\n\n```\n● Agent \"Implement batch 01\" finished · 4m 39s\nThe fork is now on card 4's gate, so the batch is progressing and not done. I'm waiting for its final notification.\n● Agent \"Implement batch 01\" finished · 11m 50s\nThe fork is on card 6's gate, still working through its cards. I'm waiting for its final notification.\n● Agent \"Implement batch 01\" finished · 11m 57s\nThe fork has reached the batch gate. I'm waiting for its final notification.\n● Agent \"Implement batch 01\" finished · 12m 16s\n```\n\nA fork that starts `lyx gate test` as a background Bash call ends its turn while it waits, and Claude Code reports the sub-agent as finished each time it stops with no live background child of its own.\nEvery such notice wakes Merriam, which re-reads its whole context from cache to answer that it is still waiting.\nThe orch sees the same pattern from its own agents.\n\nInside the fork, the background calls carry noise of their own, for example:\n\n```\n● Background command \"cat /tmp/claude-1000/-home-knatte-Code-loomyard-LYXHUB-pane-inject-safety/f9bc3152-…/tasks/bj10g0jpm.output; cd /home/knatte/Code/loomyard-LYXHUB/pane-inject-safety \u0026\u0026 lyx loom lint-comments 2\u003e\u00261 | tail -5; lyx loom lint-pattern 2\u003e\u00261 | tail -8\" completed (exit code 0)\n```\n\n- Quick checks (`lint-comments`, `lint-pattern`, reading a finished task's output file) run as background calls, so each adds a notice and a turn.\n- Commands carry long absolute paths: the task output file under the system temp directory, and `cd \u003cabsolute pair path\u003e` while the fork already works in that pair.\n\nThe interim wakes do not keep Merriam's cache warm in any way it needs: the hub's `shuttle.yaml` gives the `webster` role a one-hour prompt-cache lifetime, so Merriam's cache outlives any batch under an hour without them.\n\n## Wanted\n\n- One notice per batch fork: the fork waits for its gate inside its turn instead of ending it, for example with a capped in-turn wait like `lyx shuttle await` on the gate's result, so Merriam wakes only for the fork's final report.\n- Forks run quick checks in the foreground; only the gate run that can outlast the Bash timeout goes to the background.\n- No `cd` into the pair the fork already works in, and no long absolute paths a relative one would do.\n- Fix it where the fork's directive and the Master template say how to run gates, so every fork and Merriam follow it; check whether the orch's own agent briefs should say the same.\n",
-      "status": "done"
-    },
-    {
       "id": 359,
       "slug": "chair-blind-questions",
       "title": "Discussion chair asks advisors open questions without its options or pick",
@@ -944,7 +926,6 @@
       "issues": [],
       "priority": "high",
       "depends_on": [
-        "fork-wait-noise",
         "small-fixes-oct11"
       ],
       "isolated": false,

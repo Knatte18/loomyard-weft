@@ -2,7 +2,7 @@
 
 `plan-glyph-tuning` · Task · enhancement, loom, stencil, webster, quarry
 
-Depends on: [`fork-wait-noise`](design-fork-wait-noise.md), [`small-fixes-oct11`](design-small-fixes-oct11.md)
+Depends on: [`small-fixes-oct11`](design-small-fixes-oct11.md)
 
 ## Basis
 
