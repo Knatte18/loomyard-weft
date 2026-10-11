@@ -1108,6 +1108,20 @@
       "isolated": false,
       "brief": "Bench pair for the twill-plan sonnet[high] arm; torn down after the run",
       "body": "Temporary bench pair for board note twill-plan, sonnet[high] arm. Plan-Write only, from a frozen decision record."
+    },
+    {
+      "id": 414,
+      "slug": "twb-son-r-1",
+      "title": "twill-plan bench sonnet arm pair twb-son-r-1",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Bench pair for the twill-plan sonnet[high] arm; torn down after the run",
+      "body": "Temporary bench pair for board note twill-plan, sonnet[high] arm. Plan-Write only, from a frozen decision record."
     }
   ]
 }
