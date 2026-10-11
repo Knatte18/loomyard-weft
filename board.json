@@ -988,6 +988,23 @@
       "brief": "Config resolves through a repo default, the worktree file and an untracked local override under .lyx/; a board task carries run settings that batten writes into the pair local override.",
       "body": "Merged from notes `config-overlay` and `task-run-settings` (operator, 2026-10-11).\n\n## Seen\n\n- Every module's config resolves only from `\u003ccwd\u003e/_lyx/config/\u003cmodule\u003e.yaml`, per worktree with no shared default (`fabric.yaml` is the sole exception, anchored at `_board`); the embedded template is used only when the file is absent.\n  A present file that lacks a key gets the Go zero value, not the template's default: after `c279a38ba` added `webster.yaml` `kickstart_pack` (template default `true`), a pair created before `lyx config reconcile --apply` ran with the pack off (2026-10-11).\n- The orch sets `review_max_bounces: 2` by hand in a small task's pair `loom.yaml` right after batten creates the pair, and must first check that the pair exists, since a run can stall at Worktree-Create.\n  Landing then warns that the task branch changed a per-worktree config file, which needs nothing but costs a look each time.\n- The board entry already carries one run setting, `recipe`.\n\n## Scope\n\n### 1. Config layers\n\nFrom `manifest/roadmap.md` Someday: a repo-wide default layer read from `_board`, with each worktree's own file as an override on top, the two-layer overlay Millhouse used with `config.local.yaml`.\n\nOn top of that, a local override layer (operator, 2026-10-11): an untracked file under `.lyx/` per module, holding only the keys it overrides, as Millhouse's `config.local.yaml` did.\n\n### 2. Run settings on the board task\n\nRun settings are part of the task (operator, 2026-10-11): the board entry carries them, and batten applies them to the pair when it creates it, by writing the pair's local override file, so they never show up as a tracked change to `_lyx/config` and landing does not flag them.\nA task may carry any key of any module's config, and overrides only the keys it names (operator).\nTypical use: review rounds per perch (Discussion, Plan and Webster review segments) and darn's review budget for a small task.\nStarting a ready task then needs no hand step, which `orch-split` needs for a mechanical run driver.\n\n## Open\n\n- Whether a key missing from a present file falls back to the layer below and finally to the template's default, which would also close the `kickstart_pack` gap above.\n- How `lyx config reconcile` and the `lyx config` editor show which layer a value comes from.\n",
       "status": "running · Discussion-Burler"
+    },
+    {
+      "id": 405,
+      "slug": "twill-plan",
+      "title": "Twill for Plan-Write: audit and bench",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "stencil"
+      ],
+      "issues": [],
+      "priority": "high",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Bench a self-forking lens review for the plan writer, as twill does for Discussion",
+      "body": "## Idea (operator, 2026-10-11)\n\nAudit and bench a twill producer for Plan-Write: the plan writer reviews its own finished plan through lenses, one fork per lens, before it ends, as twill does for Discussion-Write.\nRun it like the Discussion bench (`docs/research/discussion-bench.md`, `.scratch/twill-bench/results.md`): driverless Plan-Write runs on a fixed base, graded against a reference run's Plan-Review and Webster findings, with wall time and cost from `tools/tokencount`.\n\n## Seen (2026-10-11)\n\n- Twill exists only for Discussion: `discussion_producer: twill` and the `twill-discussion` fan in `burler.yaml`; the twill directive stencil is already host-neutral.\n- Discussion twill lens reviews in `config-layers-run-settings` and `orch-wake-policy` each fixed two BLOCKING findings before parent review.\n- Plan defects today often surface first in Webster, where a fix costs most.\n- The Discussion bench found twill `opus[medium]` the best value: `opus[high]` twill cost 1.31x for no measurable gain, and the misses that remained came from code not read, not from effort.\n  Hub `loom.yaml` runs `plan: opus[high]`, so the Plan bench should run both efforts.\n\n## Open\n\n- Plan lenses: candidates are card coverage of the design, `Edit:` lists against the code, card order and dependencies, tests and the test budget, and PATTERN fit.\n- Whether lens review lets Plan-Review run fewer rounds, as the operator chose for Discussion.\n"
     }
   ]
 }
