@@ -173,6 +173,13 @@ Rationale: Round-3 Discussion review F3: the paraphrase dropped 'of lyx's own' a
   - d8-post-clear-reading-guard-unbounded (class consistency, severity MEDIUM, open in rounds 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - hook-capture-bypasses-corpus-format (class consistency, severity MEDIUM, open in rounds 1)
+  - inputboxclearer-contract-left-false (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - The capture scenario's corpus cases parse to the expected signals for `SessionStart` with each source, `PermissionRequest`, `UserPromptSubmit`, `Stop`, `Notification` and `SessionEnd`, and record the order of `SessionStart(startup)` against the trust gate and the first ready pane.
