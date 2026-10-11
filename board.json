@@ -1082,6 +1082,20 @@
       "isolated": false,
       "brief": "Plan-Write bench pair; temporary",
       "body": "Temporary bench pair for the twill-plan note: Plan-Write only, on a fixed base with a fixed decision record. Removed after the bench."
+    },
+    {
+      "id": 411,
+      "slug": "twb-pl-om-1",
+      "title": "twill-plan bench pair om-1",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Plan-Write bench pair; temporary",
+      "body": "Temporary bench pair for the twill-plan note: Plan-Write only, on a fixed base with a fixed decision record. Removed after the bench."
     }
   ]
 }
