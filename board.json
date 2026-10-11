@@ -885,22 +885,6 @@
       "body": "From the webster-audit-gaps PR-Gate review (PR #528, 2026-10-10): the classifier now splits lyx, git and sed segments into shell words and bounds unquoted globs there, but the `readOnlyCommands` readers (`cat *`, `grep -r`) still accept unquoted globs and arbitrary flags, as before the task.\nAlso, an unquoted glob after `--` is admitted for `git log` and `git diff`; git treats it as a pathspec, but the reason lives only in the code, not in `doc.go`."
     },
     {
-      "id": 323,
-      "slug": "reed-tmux-conf",
-      "title": "reed servers ignore ~/.tmux.conf",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "reed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Since reed-hygiene (c6dc1fffc) reed servers start with -f /dev/null, so the operator loses prefix, key bindings and escape-time; no reed.yaml key replaces them",
-      "body": "",
-      "status": "done"
-    },
-    {
       "id": 329,
       "slug": "weaver",
       "title": "Weaver: a cold-start implementer beside Webster, with model escalation",
