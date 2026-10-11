@@ -15,8 +15,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **TwillDiscusser: a Discussion writer that forks lens reviewers before it writes**<br>• Single-LLM Discussion-Write producer: explore, fork waiting lens forks, write, forks review the record as outsiders; forks keep their cache warm themselves | [`twill-discusser`](design-twill-discusser.md) | loom | Discussion-Burler | loom, stencil |
-| 2 | **Plan gaps: inserting a card, unreachable prescribed refusals**<br>• Give the fixer a sanctioned way to insert or remove a card, and make plan review check that every prescribed refusal is reachable | [`plan-gaps`](design-plan-gaps.md) | loom | Worktree-Create | loom, burler, stencil |
+| 1 | **Burler fixer weighs each finding critically before fixing**<br>• Operator, 2026-10-10: with a separate fixer kept (fix_start parallel), the fixer should be critical of the reviewer's findings, not apply them blindly. Today burler-step-3-fix.md allows a dispute only for a factually false premise; severity, size, cost or rubric disagreement never justify one. Idea: let the fixer also dispute a finding whose proposed change would be wrong or make the code worse, with evidence, and choose its own fix when the reviewer's concrete change is wrong while the premise holds; the judge rules on disputes as today. | `fixer-critical-of-findings` | loom | Worktree-Create | burler, stencil |
+| 2 | **TwillDiscusser: a Discussion writer that forks lens reviewers before it writes**<br>• Single-LLM Discussion-Write producer: explore, fork waiting lens forks, write, forks review the record as outsiders; forks keep their cache warm themselves | [`twill-discusser`](design-twill-discusser.md) | loom | Discussion-Burler | loom, stencil |
+| 3 | **Plan gaps: inserting a card, unreachable prescribed refusals**<br>• Give the fixer a sanctioned way to insert or remove a card, and make plan review check that every prescribed refusal is reachable | [`plan-gaps`](design-plan-gaps.md) | loom | Worktree-Create | loom, burler, stencil |
 
 ### Ready
 
@@ -26,8 +27,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Burler fixer weighs each finding critically before fixing**<br>• Operator, 2026-10-10: with a separate fixer kept (fix_start parallel), the fixer should be critical of the reviewer's findings, not apply them blindly. Today burler-step-3-fix.md allows a dispute only for a factually false premise; severity, size, cost or rubric disagreement never justify one. Idea: let the fixer also dispute a finding whose proposed change would be wrong or make the code worse, with evidence, and choose its own fix when the reviewer's concrete change is wrong while the premise holds; the judge rules on disputes as today. | `fixer-critical-of-findings` | loom |  | burler, stencil |
-| 2 | **reed servers ignore ~/.tmux.conf**<br>• Since reed-hygiene (c6dc1fffc) reed servers start with -f /dev/null, so the operator loses prefix, key bindings and escape-time; no reed.yaml key replaces them | `reed-tmux-conf` | loom |  | reed |
+| 1 | **reed servers ignore ~/.tmux.conf**<br>• Since reed-hygiene (c6dc1fffc) reed servers start with -f /dev/null, so the operator loses prefix, key bindings and escape-time; no reed.yaml key replaces them | `reed-tmux-conf` | loom |  | reed |
 
 ### Layer A
 
