@@ -937,6 +937,20 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nTwo general LLM producers live side by side in `internal/shedadapters`: `SingleLLMProducer` (`singlellm.go`, with a gated variant `NewSingleLLMProducerGated`) and `MultiLLMProducer` (`multillm.go`, on `internal/seatengine`).\nWriters such as Discussion-Write, Plan-Write and Darn-Write run on `SingleLLMProducer`; seats Discussion (`internal/shedrecipe/entries_discussionseats.go`) and, since `7882c2450`, the Burler round run on the seats engine.\n`loom.yaml` `discussion_producer` picks one of `single`, `seats` and `twill`, and `discussion_advisors` already runs the chair alone when the list is empty.\n\n## Idea (operator, 2026-10-11)\n\nSeats is the general producer; the single-LLM producer is the special case.\nEvery `SingleLLMProducer` user becomes a `MultiLLMProducer` with zero advisors, and `SingleLLMProducer` goes.\nThe goal is less code: one LLM producer instead of two.\n\nFor Discussion this gives two config axes in place of `discussion_producer`:\n\n1. How many advisors the chair has. None: the chair decides each question itself, as the single writer does today.\n2. Whether the chair forks itself for lens reviews of its draft, and with which fan (today's `twill-discussion`), as twill does.\n   The chair forks, never an advisor: the forks share the chair's prompt cache.\n\nZero advisors with the fan on is today's twill, the hub's current setting.\n\n## Required\n\n- The seats producer carries the same gates as the gated single-LLM producer (operator, 2026-10-11): a role that runs gated today stays gated after the move.\n\n## Bench basis\n\nRound 4 of the twill bench (2026-10-11) ran the Discussion combination (blind advisor plus chair lens forks): 2.5 / 2.0 repeated / partly repeated reference defects at $7.52, against twill alone at 1.5 / 2.0 for $4.75.\nThe advisor axis added nothing there, so the merged producer keeps it available, not on by default.\n\n## Open\n\nNot yet mapped against the code:\n- what the single-LLM producer does that the seats producer lacks besides gates: `prepareFreshSpawn`, interactive runs (`discussion_interactive`), spec sourcing per role;\n- the overhead the seat table and its hold deferral add to a chair with no advisors.\n"
+    },
+    {
+      "id": 393,
+      "slug": "tokencount-cutoff-skew",
+      "title": "tokencount: guard the slug-reuse cutoff against date skew",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The slug-reuse cutoff is always applied; a tag commit date skewed against transcript timestamps could silently drop sessions.",
+      "body": "Seen at the PR-Gate review of small-fixes-oct11 (PR #556, 2026-10-11): `tools/tokencount` now takes a cutoff from the slug's archive tags and skips main-session transcripts that start before it, with no flag to turn it off.\nA tag whose commit date is skewed against the transcript timestamps could drop sessions silently; the report only says how many it skipped.\n\nIdea: watch for this in the tokencount-full-runs measurements, and if it shows, add a flag to disable the cutoff or a tolerance window."
     }
   ]
 }
