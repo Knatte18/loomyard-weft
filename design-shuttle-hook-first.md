@@ -1,6 +1,6 @@
 # Shuttle reads agent state from hooks first, the pane only where no hook exists
 
-`shuttle-hook-first` · Note · enhancement, shuttle
+`shuttle-hook-first` · Task · enhancement, shuttle
 
 ## Seen (2026-10-11, main at a35c8c2b1)
 
@@ -92,3 +92,11 @@ The pane fallback for an unknown reading stays for an engine without `SessionSig
 - Can `idle_prompt`, which fires after about 60 s of quiet with an untouched box, serve as positive proof of an empty box, or only as the contradiction marker it is now?
 - Should reed's name repair take shuttle's readiness reading, or stay pane-only because reed is provider-blind?
 - Does a resumed session (`Spec.ResumeSessionID`, Attach) write `SessionStart(resume)` with the same `session_id`, so the fold's liveness lookup keeps working?
+
+## Prerequisite folded in: real hook payload fixtures (was note shuttle-hook-payload-corpus)
+
+`shuttle-state` added recording hooks for `UserPromptSubmit`, `StopFailure`, `Notification` and `SessionEnd`, with an `llm`-tier capture scenario that was compiled but never run.
+The payload shapes those hooks parse are unverified against a real session (an Open risk in that task).
+Run the scenario once and commit the captured payloads as fixtures, so the parsers are tested against real shapes.
+
+Do this first in the task: rules keyed on payload fields wait until the captured fixtures confirm the shapes; rules keyed only on hook names do not.
