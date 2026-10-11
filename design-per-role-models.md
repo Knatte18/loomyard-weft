@@ -1,6 +1,6 @@
 # Model keys per judge row, seed and PR-Rework; judge verdict and usage fixes
 
-`per-role-models` · Task · bug, enhancement, config, loom, burler · running · Batchifier
+`per-role-models` · Task · bug, enhancement, config, loom, burler · running · Webster
 
 ## Seen
 
