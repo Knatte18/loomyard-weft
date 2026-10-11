@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -24,6 +24,7 @@ The seats engine first gains the generic capabilities the round needs (a per-adv
 9 — burler-seat-stencils — the orchestrators become seat stencils with Burler's own channel rules and the fixer waits with lyx shuttle await
 10 — remove-await-review — delete lyx burler await-review and its docs
 11 — delete-fix-start-type — delete the FixStart type and its two constants once nothing references them
+12 — delete-burler-shuttle — delete burlerengine's own Shuttle seam and RunnerShuttle once card 8 moved every caller to seatengine's
 
 ## Shared Decisions
 

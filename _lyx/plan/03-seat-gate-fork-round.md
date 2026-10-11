@@ -28,6 +28,10 @@ The input that reaches the refusal is a table whose chair seat carries a gate en
 `Engine.probeSeat` probes an advisor with its seat's `Gate` and the chair with the table's gate, so a gated advisor's run is found as it was started.
 A table that sets none of the new fields runs exactly as before, which keeps the Discussion seats table unchanged.
 
+Bound: `ForkSubagents` only passes through to the seat's `shuttleengine.Spec.ForkSubagents`, so it lets that seat's session spawn in-session forks and nothing more, and a seat that leaves it unset authorizes none.
+The seat engine audits no fork, so the caller that sets the flag owns the fork audit, as Burler's `accept` does with its cluster audit (card 8).
+An advisor's `Gate` adds a check to that advisor's run and lets nothing through that an ungated advisor's run would not.
+
 Tests:
 - `table_test.go`: a `TestTable_Validate` row for the chair's seat gate, and a row accepting an advisor gate and fork authorization on any seat.
 - `prompt_test.go`: `TestSeatPrompts_ValuesPromptsAndSpecs` asserts the spec carries the seat's `ForkSubagents` and the table's `Round`.

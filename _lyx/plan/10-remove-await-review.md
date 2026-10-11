@@ -11,6 +11,9 @@
 - `docs/overview.md`
 - `tools/sandbox/SANDBOX-BURLER-SUITE.md`
 
+**Create:**
+- `internal/burlercli/doc.go`
+
 **Intent:**
 Remove `lyx burler await-review` (decision D7), now that the fixer waits with `lyx shuttle await` (card 9).
 
@@ -22,7 +25,8 @@ The verb's removal is the open risk the record names: a fixer mid-round across t
 
 Tests: `TestAwaitReviewVerb` leaves `internal/burlercli/cli_test.go`; `lyx shuttle await` keeps its own coverage in `internal/shuttlecli`.
 
-Docs: `docs/overview.md`'s burler entry drops the `await-review` clause and names the fixer's wait on `lyx shuttle await`;
+Docs: `internal/burlercli/doc.go`, the package's first module doc, describes the `lyx burler` verbs that remain, `run` (one round as a seat table, the fixer under `burler-chair` and the reviewer under `burler-advisor-1`) and `validate-review`, and says the fixer waits on the ready marker with `lyx shuttle await`; `cli.go`'s file header keeps describing the command tree alone.
+`docs/overview.md`'s burler entry drops the `await-review` clause and names the fixer's wait on `lyx shuttle await`;
 `tools/sandbox/SANDBOX-BURLER-SUITE.md` drops scenario S4 and its intro sentence's S4 clause, so S1-S3 keep the burler module exercised through `lyx burler run` (`PATTERN-sandbox-coverage`).
 
-**ImpactSummary:** Deletes one debug-CLI verb and its test; its only caller was the fixer stencil, already moved off it in card 9.
+**ImpactSummary:** Deletes one debug-CLI verb and its test and gives burlercli a module doc; its only caller was the fixer stencil, already moved off it in card 9.

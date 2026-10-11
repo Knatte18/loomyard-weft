@@ -19,12 +19,6 @@
 - `internal/burlerengine#Engine.join`
 - `internal/burlerengine#awaitReview`
 - `internal/burlerengine#Engine.probeHalf`
-- `internal/burlerengine#Shuttle`
-- `internal/burlerengine#runnerShuttle`
-- `internal/burlerengine#RunnerShuttle`
-- `internal/burlerengine#runnerShuttle.StartGated`
-- `internal/burlerengine#runnerShuttle.ProbeGated`
-- `internal/burlerengine/shuttle_test.go`
 
 **Edit:**
 - `internal/burlerengine#Engine`
@@ -68,8 +62,8 @@ The round's outcome, review files, fixer-report, failure rules and Bouncer contr
 
 **The seam.**
 `New` takes a `seatengine.Shuttle` and builds the engine's `seatengine.Engine` itself from the told geometry: `WorktreeRoot`, `AnchorPath`, `ParentName`, `Shortname` and `Slug` from `Geometry` (card 6) and `StencilsDir` from `stencilsDir`.
-`Engine` holds it behind an unexported field typed by the three methods the round uses (`Run`, `Probe`, `Resume`), which `*seatengine.Engine` satisfies.
-burlerengine's own `Shuttle`, `runnerShuttle` and `RunnerShuttle` are deleted; callers pass `seatengine.RunnerShuttle(runner)` (`wireHub`, `wireStandalone`, `loomCLI.wire`, both smoke tests).
+`Engine` holds it as a `*seatengine.Engine` field in place of its `Shuttle` field; the round's tests drive that real seat engine (shared decision `burler-builds-its-seat-engine`), so no interface stands between them.
+Every caller of `New` passes `seatengine.RunnerShuttle(runner)` (`wireHub`, `wireStandalone`, `loomCLI.wire`, both smoke tests), which leaves burlerengine's own `Shuttle` and `RunnerShuttle` without a caller; card 12 deletes them.
 `Handle` stays, in `shuttle.go`, as the type of `LiveHalf.Handle`; its doc says `seatengine.Handle` and `*shuttleengine.Run` satisfy it.
 
 **The table (D2).**
@@ -97,7 +91,8 @@ A seat stop failure, `seatengine.ErrSeatNotStopped`, is returned wrapped in `Err
 - the reviewer ended the step and its wait errored: that error wrapped as `burler: shuttle run`;
 - the reviewer ended the step with an accept error (audit or strict parse): that error, with the reviewer's outcome and `ForkAudit`;
 - the reviewer ended the step non-done: the reviewer's outcome, nil error;
-- the reviewer ended the step done with its review gate failed, which the seats engine's generic rule alone can produce since the review gate passes on cap: an error naming the review gate, never a verdict;
+- the reviewer ended the step done with its review gate failed: an error naming the review gate, never a verdict.
+  No real reviewer reaches it, since `ReviewGateEntry` is `PassOnCap` and a gate outcome counts no `PassOnCap` entry against `Passed`; `decideRound` still maps every shape the seat result can take, and a fake reviewer whose done result carries `Gate.Passed` false reaches it;
 - the chair's wait errored: that error wrapped as `burler: shuttle run`;
 - the fixer died or timed out (it ended the step): the fixer's outcome, nil error;
 - the fixer reached done while the released flag is false (the recorded fact, never arrival order): the skipped-handoff error with the fixer's outcome;
@@ -108,25 +103,29 @@ Every seat is stopped by the seats engine before it returns, so no half is left 
 **Probe and resume (D11).**
 `ProbeRound` builds the round's table with the same builder (instruction paths a round would be told, never created, since a probe composes no prompt) and runs the seats engine's probe.
 A live chair is `Fix: HalfLive` with its handle, a found advisor `Review: HalfLive` with its handle; a seat not found is `HalfDone` when its output file exists and `HalfGone` otherwise, a done reviewer kept by its pane having been removed by the probe and counting as not live.
+The seats engine's probe stops every live advisor when the chair is not live, so a live reviewer beside a gone fixer is stopped inside `ProbeRound` and reported `HalfDone` or `HalfGone` by its file; `BurlerProducer` then runs a fresh round, the outcome its stop-and-respawn of a lone live reviewer reaches today.
+A probe stop failure, `seatengine.ErrSeatNotStopped`, is returned wrapped in `ErrHalfNotStopped`, as `Run` returns one, so `BurlerProducer` returns it bare and archives nothing.
 `LiveRound` keeps its exported shape and gains an unexported `*seatengine.LiveTable` holding what the probe found, a pointer so the struct stays comparable.
-`Resume` refuses, as today, unless both halves are live, and also when the probed table is absent; it starts nothing, removes a ready marker it finds, runs the seats engine's resume with a fresh acceptance and decides the round as a fresh round does.
-Any other combination is returned to `BurlerProducer`, which stops what is live and runs a fresh round, unchanged.
+`Resume` refuses, as today, unless both halves are live; it also refuses a `LiveRound` whose probed table is absent, which a caller reaches only by building a both-live `LiveRound` by hand instead of taking `ProbeRound`'s answer, as `shedadapters`' fake-runner tests do, and it then starts and stops nothing.
+Otherwise it starts nothing, removes a ready marker it finds, runs the seats engine's resume with a fresh acceptance and decides the round as a fresh round does.
+A live fixer beside a reviewer that is not live is returned to `BurlerProducer`, which stops the fixer and runs a fresh round, unchanged; `BurlerProducer`'s lone-live-reviewer branch stays, unreached by this engine.
 
 `contracts/stencils/stencils.go`'s `roleOpeningStencils` keys the two orchestrators by `burler-advisor-1` and `burler-chair` in place of `burler-review` and `burler-fix`.
-Each touched file's header comment (`engine.go`, `handoff.go`, `resume.go`, `shuttle.go`, `prompt.go`) is rewritten to the seat wiring, and `repairReportBeforeGate`'s doc names `roundTable` as where it is composed.
+Each touched file's header comment (`engine.go`, `handoff.go`, `resume.go`, `prompt.go`) is rewritten to the seat wiring, and `repairReportBeforeGate`'s doc names `roundTable` as where it is composed.
 
 Tests (fakes at the module surface, `PATTERN-test-economy`): `engine_test.go` drives the real seats engine over its package-local scripted fake, now a `seatengine.Shuttle` whose handles also answer `StrandName` (the name the seats engine forms from the geometry's shortname and slug and the spec's role), `Send` (lands every line) and `SessionState`.
 - `TestEngine_Run_SpecConstruction`: the chair starts first, then the reviewer; roles `burler-chair` and `burler-advisor-1`; each seat's model, effort, version, skills, review segment, timeout, round and one output; the chair gated by the wrapped `opts.Gate` and not interactive; the reviewer gated by the review-parse entry alone, keeping its pane, with `QuietHold` false.
 - `TestEngine_Run_ForkSubagentsSpecWiring`: fork authorization on the reviewer exactly when the profile names a fan, never on the chair.
 - `TestEngine_Run_ReviewGateRepairsUnparseableReview`: the review-parse gate re-prompts the reviewer in its own session, and an unparseable review after the budget fails at the strict parse in `accept`.
 - `TestEngine_Run_MarkerLifecycle`: the marker exists only after the reviewer's done result passed the cluster audit and the strict parse, and a stale marker is gone before the chair starts.
-- `TestEngine_Run_RoundFailureRules`: one row per D4 rule above with the stops each implies (reviewer died or timed out: chair and reviewer stopped, reviewer's outcome, nil error; wait error; audit or strict-parse error; fixer died or timed out while the reviewer runs: reviewer stopped, fixer's outcome; fixer done before release; review changed after the fix; success with verdict, findings, gate passthrough, both halves' identities, times and usage), the D5 not-started rows (chair not started starts no reviewer; reviewer not started stops the chair; each with `NotStarted` and the right half's start error), and a seat that cannot be stopped returning `ErrHalfNotStopped` with the way forward.
+- `TestEngine_Run_RoundFailureRules`: one row per D4 rule above with the stops each implies (reviewer died or timed out: chair and reviewer stopped, reviewer's outcome, nil error; wait error; audit or strict-parse error; fixer died or timed out while the reviewer runs: reviewer stopped, fixer's outcome; fixer done before release; review changed after the fix; a fake reviewer done with `Gate.Passed` false: the review-gate error and no verdict; success with verdict, findings, gate passthrough, both halves' identities, times and usage), the D5 not-started rows (chair not started starts no reviewer; reviewer not started stops the chair; each with `NotStarted` and the right half's start error), and a seat that cannot be stopped returning `ErrHalfNotStopped` with the way forward.
 - `TestEngine_Run_ShuttleOutcomes`, `TestEngine_Run_GateOutcomes` and `TestEngine_Run_ClusterAuditPolicy` keep their rows over the seat wiring.
 - `TestEngine_ProbeRound` and `TestEngine_Resume`: probe classification per seat, and resume attaching only with both live, removing a found marker and deciding through the same rules.
+  The probe row "found run with its output file on disk stays live" becomes a live reviewer beside a gone fixer that the probe stops, reported `HalfDone` by its file with no handle, and a probe row whose reviewer stop fails wants `ErrHalfNotStopped`.
+  The resume row "a round without both halves live is refused and nothing is stopped" wants the reviewer stopped by the probe and the refusal, and a new row calls `Resume` with a hand-built both-live `LiveRound` and wants the absent-table refusal with nothing started or stopped.
 - `prompt_test.go` and `template_test.go` call the re-signed `composePrompt`; the orchestrator assertions (among them the fixer's wait line) read the seat prompts `seatengine.Prompts` composes from `roundTable`, and `TestComposePrompt_ParentDirective` asserts the chair names the told parent (or the no-parent variant), the reviewer names the chair, and no instruction file carries either.
 - `burlercli/wiring_test.go`: `diedShuttle` becomes a `seatengine.Shuttle` double on a geometry with a shortname, its handles naming their strands as the seats engine expects; `TestRunCmd` keys the halves by the new roles.
-- `shuttle_test.go` is deleted with `RunnerShuttle`; `seatengine.RunnerShuttle` keeps its own coverage.
 
 Docs: `internal/burlerengine/doc.go` describes the seat table, the acceptance hook, the failure rules over the seat result, the probe and resume, and the `ErrHalfNotStopped` wrap; `docs/overview.md`'s burler entry, module table row (builds on seats) and the "Following one spawn down the stack" steps name the seat table in place of two shuttle runs.
 
-**ImpactSummary:** Rewires burlerengine's round onto seatengine and re-signs New; four wiring call sites move to seatengine.RunnerShuttle; BurlerProducer's seam, LiveRound's exported shape and ErrHalfNotStopped are kept.
+**ImpactSummary:** Rewires burlerengine's round onto seatengine and re-signs New, whose wiring and smoke-test callers move to seatengine.RunnerShuttle; BurlerProducer's seam, LiveRound's exported shape and ErrHalfNotStopped are kept.
