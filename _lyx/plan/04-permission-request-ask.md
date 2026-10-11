@@ -1,8 +1,8 @@
 # Card 4 — PermissionRequest reads asking at once, and every Notification type is mapped
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#notificationElicitationURLDialog` -> `const notificationElicitationURLDialog = "elicitation_url_dialog"`
-- `plan:internal/shuttleengine/claudeengine#notificationSignalKinds` -> `var notificationSignalKinds map[string]shuttleengine.SessionSignalKind`
+- `internal/shuttleengine/claudeengine#notificationElicitationURLDialog`
+- `internal/shuttleengine/claudeengine#notificationSignalKinds`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine#signalFromPayload`

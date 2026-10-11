@@ -1,8 +1,8 @@
 # Card 3 — The idle-fresh fold state a session start sets
 
 **Create:**
-- `plan:internal/shuttleengine#SessionIdleFresh` -> `const SessionIdleFresh SessionStateName = "idle-fresh"`
-- `plan:internal/shuttleengine#SessionCauseSessionStart` -> `const SessionCauseSessionStart = "session-start"`
+- `internal/shuttleengine#SessionIdleFresh`
+- `internal/shuttleengine#SessionCauseSessionStart`
 
 **Edit:**
 - `internal/shuttleengine#SessionSignalSessionStart`
@@ -25,10 +25,10 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/shuttleengine#SessionStartStartup`
-- `plan:internal/shuttleengine#SessionStartResume`
-- `plan:internal/shuttleengine#SessionStartClear`
-- `plan:internal/shuttleengine#SessionStartCompact`
+- `internal/shuttleengine#SessionStartStartup`
+- `internal/shuttleengine#SessionStartResume`
+- `internal/shuttleengine#SessionStartClear`
+- `internal/shuttleengine#SessionStartCompact`
 
 **Intent:**
 D3's fold and readiness half, keyed on the provider-neutral sources card 2 adds.

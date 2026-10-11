@@ -1,12 +1,12 @@
 # Card 2 — Provider-neutral session-start sources
 
 **Create:**
-- `plan:internal/shuttleengine#SessionStartSource` -> `type SessionStartSource string`
-- `plan:internal/shuttleengine#SessionStartStartup` -> `const SessionStartStartup SessionStartSource = "startup"`
-- `plan:internal/shuttleengine#SessionStartResume` -> `const SessionStartResume SessionStartSource = "resume"`
-- `plan:internal/shuttleengine#SessionStartClear` -> `const SessionStartClear SessionStartSource = "clear"`
-- `plan:internal/shuttleengine#SessionStartCompact` -> `const SessionStartCompact SessionStartSource = "compact"`
-- `plan:internal/shuttleengine/claudeengine#sessionStartSource` -> `func sessionStartSource(source string) shuttleengine.SessionStartSource`
+- `internal/shuttleengine#SessionStartSource`
+- `internal/shuttleengine#SessionStartStartup`
+- `internal/shuttleengine#SessionStartResume`
+- `internal/shuttleengine#SessionStartClear`
+- `internal/shuttleengine#SessionStartCompact`
+- `internal/shuttleengine/claudeengine#sessionStartSource`
 
 **Edit:**
 - `internal/shuttleengine#SessionSignal`

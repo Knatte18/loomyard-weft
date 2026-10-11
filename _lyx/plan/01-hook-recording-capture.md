@@ -1,7 +1,7 @@
 # Card 1 — Record SessionStart and PermissionRequest on every run, and capture the hook corpus
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#hookEventPermissionRequest` -> `const hookEventPermissionRequest = "PermissionRequest"`
+- `internal/shuttleengine/claudeengine#hookEventPermissionRequest`
 - `internal/shuttleengine/claudeengine/testdata/corpus/hook-capture/case.yaml`
 - `internal/shuttleengine/claudeengine/testdata/corpus/hook-capture/events.jsonl`
 - `internal/shuttleengine/claudeengine/testdata/corpus/hook-capture/transcript.jsonl`
