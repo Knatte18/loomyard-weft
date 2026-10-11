@@ -24,4 +24,4 @@ Each failing row asserts the exact message.
 `internal/pattern/doc.go`'s format section states the headroom rule: the hard cap `Check` enforces on any tree, the headroom line `Headroom` binds growth to, the cut it names, and that the line binds a branch's own change while a merged tree answers only to the cap.
 The `internal/pattern` row of `cmd/lyx/testdata/test-budget.yaml` rises by one.
 
-**ImpactSummary:** Adds three exported symbols to the pattern leaf and one word to Check's oversize message; the message's only reader is the test asserting it.
+**ImpactSummary:** Adds three exported symbols to the pattern leaf; Check's oversize message gains the bytes over the cap, read by `TestCheck`, by `TestOverview_RealFilePassesCheck`'s failure output and through it by Publish's failure record, and no code parses the message.

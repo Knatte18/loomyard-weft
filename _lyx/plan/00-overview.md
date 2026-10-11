@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -41,12 +41,6 @@ Alongside, a Tier 1 gofmt guard with the tree brought gofmt-clean, and the last 
 - **Decision:** the git and file reads behind the headroom lint live in a new `internal/patternlint`, shaped like `internal/commentlint`, and both the verb and the round gate call its `Lint`.
 - **Rationale:** `internal/pattern` is a leaf that reads no git, and the verb in `loomcli` and the gate in `loomshed` would otherwise each carry the same base-mode logic; one package keeps the parity entry's pair a single function.
 - **Applies to:** cards 3, 4, 6
-
-### Decision: new-tests-where-the-record-counted-none
-
-- **Decision:** the gofmt guard is two top-level tests, the in-memory cases and the scanning guard, and `lint-pattern` has its own integration scenario rather than steps in the comment lint's.
-- **Rationale:** the guard's in-memory cases cannot share the function that carries `//lyx:guard` and does the real scan, which is the shape `testbudget_test.go` already has, and the comment lint's scenario is named and fixtured for the comment verb; the budget rows rise accordingly on each card, in the same commit as the tests.
-- **Applies to:** cards 1, 3
 
 ## Rename mechanic
 
