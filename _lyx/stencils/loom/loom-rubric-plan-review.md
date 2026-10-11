@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- its only markers are the ones ReadRubric fills, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=1393b7e4e632461751f641db222af2cab4b72b254f476c307c37dd10d4e1fdc7 build=c00b2e524fb6d3ab53b64a6c901f8a4fcc80c7e3 time=2026-10-11T11:09:36Z -->
+lyx-stencil: sha256=1145f45b55445c1912a10d691e7bec48656e3c909bda2a22f8a3b76ce1fe7af9 build=3a5a34ac796c9e54a3cf6050e62779ade14a3ff8 time=2026-10-11T14:22:22Z -->
 
 # Plan-Review rubric
 
@@ -104,6 +104,7 @@ Do not flag any of the following as a finding:
 ## Proposed fixes
 
 A finding whose fix adds, drops, moves or pairs targets, or changes a verify command, proposes only a fix that every check in the validation-checks section of `{{.specs_dir}}/loom/loom-plan-spec.md` admits.
+A fix that adds or pairs targets must pass `redundant-package-target` and `redundant-file-target` there, since a file or a package listed beside a member of it on one card is refused, and the spec says what counts and the way forward.
 When the reviewer sees no admissible fix, it still reports the defect and names the check that constrains the fix.
 The `**Fix:**` line is a proposal: the fixer may apply any other fix the checks admit, and when none exists it defers the finding with the constraining check as the reason.
 The rule narrows only which fix shapes a reviewer proposes; no defect becomes unreportable.
