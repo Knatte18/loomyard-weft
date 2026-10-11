@@ -293,6 +293,7 @@
         "config"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "A repo-wide default layer read from _board with each worktree's own file as an override, the way millhouse's config.local.yaml works",
@@ -748,6 +749,7 @@
         "loom"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "Wake the orch less: an alignment agent in loom reviews against the board, waking the orch only on overlap",
@@ -911,6 +913,7 @@
         "batten"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board.",
@@ -943,6 +946,7 @@
         "loom"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "A board task carries its own run settings, such as review rounds per perch and for darn, which batten applies to the pair at creation.",
@@ -958,6 +962,7 @@
         "burler"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "Split the Burler round into two Shed rows, Burler-Review then Burler-Fix, each a zero-advisor MultiLLMProducer, so the fixer no longer spawns first and waits on the reviewer.",
