@@ -349,7 +349,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 12,
   "masterStrand": "a64b9fb2b25a3e277fdf6a93c2078388",
   "masterSessionId": "f9bc3152-93fb-4519-a9b0-e6aaa07dae56",
   "batches": {
@@ -398,6 +398,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pane-inject-safety/f9bc3152-93fb-4519-a9b0-e6aaa07dae56/subagents/agent-ae18c106c6287f9af.jsonl"
       ]
+    },
+    "12": {
+      "slug": "shedrun-driver-busy",
+      "cards": [
+        "12-shedrun-driver-busy",
+        "13-loom-driver-busy-refusal",
+        "14-battenshed-driver-busy-retry",
+        "15-battencli-driver-busy-kind",
+        "16-batten-status-halted-flag",
+        "17-orch-after-landing-stencil"
+      ],
+      "cardHashes": {
+        "12-shedrun-driver-busy": "f5c0e99ba60997f287093d46e9ce02ccf188bf2e50cec190c4bd8b5e9cc9c9e8",
+        "13-loom-driver-busy-refusal": "2bbfa665226082909232c04a8665f1ce0bab8b0461ec6e27c027b36e2921e959",
+        "14-battenshed-driver-busy-retry": "04534f6e1333ea05130e4ebba1d27069e63b4de9610dca5c2a42c35b09c2512a",
+        "15-battencli-driver-busy-kind": "c949aaff1b46292e2861501a5897fc301442ace49ce8b1e3fcb529343a7b568b",
+        "16-batten-status-halted-flag": "433a4d14c8f0962b400cd1662da31607b344a50c1b5c7ee317e0e1b95d7a0142",
+        "17-orch-after-landing-stencil": "7a75e82948eb68324b16e4f7033278922044e589023432e829a96ee093b4d238"
+      },
+      "startSha": "faeedf66295eedc930e3640556a04f9bd1a922c9",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T11:25:51Z",
+      "sessionId": "f9bc3152-93fb-4519-a9b0-e6aaa07dae56",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "shuttle-pending-send",
