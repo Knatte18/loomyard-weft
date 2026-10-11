@@ -16,12 +16,12 @@ review:
 fix:
     model: opus
     effort: medium
-    start: 2026-10-11T16:33:40Z
-    end: 2026-10-11T18:36:44.31389236+02:00
-    wall_seconds: 184.31389236
+    start: 2026-10-11T19:17:17Z
+    end: 2026-10-11T21:18:38.34473032+02:00
+    wall_seconds: 81.34473032
     tokens_known: true
-    fresh_tokens: 75214
-    cache_read_tokens: 928582
+    fresh_tokens: 44624
+    cache_read_tokens: 419392
 judge:
     - model: sonnet
       effort: medium
