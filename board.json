@@ -1005,6 +1005,24 @@
       "isolated": false,
       "brief": "Bench a self-forking lens review for the plan writer, as twill does for Discussion",
       "body": "## Idea (operator, 2026-10-11)\n\nAudit and bench a twill producer for Plan-Write: the plan writer reviews its own finished plan through lenses, one fork per lens, before it ends, as twill does for Discussion-Write.\nRun it like the Discussion bench (`docs/research/discussion-bench.md`, `.scratch/twill-bench/results.md`): driverless Plan-Write runs on a fixed base, graded against a reference run's Plan-Review and Webster findings, with wall time and cost from `tools/tokencount`.\n\n## Seen (2026-10-11)\n\n- Twill exists only for Discussion: `discussion_producer: twill` and the `twill-discussion` fan in `burler.yaml`; the twill directive stencil is already host-neutral.\n- Discussion twill lens reviews in `config-layers-run-settings` and `orch-wake-policy` each fixed two BLOCKING findings before parent review.\n- Plan defects today often surface first in Webster, where a fix costs most.\n- The Discussion bench found twill `opus[medium]` the best value: `opus[high]` twill cost 1.31x for no measurable gain, and the misses that remained came from code not read, not from effort.\n  Hub `loom.yaml` runs `plan: opus[high]`, so the Plan bench should run both efforts.\n\n## Open\n\n- Plan lenses: candidates are card coverage of the design, `Edit:` lists against the code, card order and dependencies, tests and the test budget, and PATTERN fit.\n- Whether lens review lets Plan-Review run fewer rounds, as the operator chose for Discussion.\n"
+    },
+    {
+      "id": 406,
+      "slug": "driver-arbiter",
+      "title": "Driver arbiter: a cold, stronger agent decides when a driver is stuck",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "shed",
+        "orch",
+        "stencil"
+      ],
+      "issues": [],
+      "priority": "high",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A stuck driver spawns a cold arbiter agent instead of waking the orch",
+      "body": "## Seen (2026-10-11)\n\nDrivers escalate to the orch more often than the operator wants (operator, 2026-10-11).\nMuch of what reaches the orch is settled by a fixed rule: a review escalation is accepted unless a finding makes the design wrong, and after round 3 a remaining blocker goes to the operator.\nEvery such wake reads the orch's whole context (see `alignment-agent`).\n\n## Idea (operator, 2026-10-11)\n\nA stuck driver spawns its own cold, stronger agent that decides for it, with its own stencil.\n\n- Spawned on a Stuck or halt whose way forward is unknown, and on a review escalation a perch's auto-accept does not settle.\n- Reads the board entry, the discussion, the latest review rounds and the error, then decides or names the next action.\n- Runs cold on a stronger model than the driver, such as `opus[high]`.\n- Hands on to the orch only when the call needs an operator decision that neither the board entry nor the discussion records, or when it is unsure.\n- Parent review and PR-Gate stay with the orch, since they exist to bring in its context.\n\n## Related\n\n`orch-wake-policy` sets what wakes the orch; this note takes over most of the wakes that remain after it (design calls, unsettled escalations, unknown halts).\n`orch-split` splits the orch into a run driver and a conversational orch.\n\n## Open\n\n- What the arbiter may do itself (goto, resume, accept a finding, edit the record) and what it may only recommend.\n- Its stencil and model key, and a bound on how many times one run may spawn it.\n"
     }
   ]
 }
