@@ -2,7 +2,7 @@
 
 ## Goal
 
-Batten runs the landing routine itself after a child run ends done, and handles the halts whose way forward is mechanical, so the hub orch is woken only for parent review, review escalations a perch does not settle, design calls, PR-Gate and halts whose cause or way forward is unknown.
+Batten runs the landing routine itself after a child run ends done, and handles the halts whose way forward is mechanical, so the hub orch is woken only for parent review, review escalations a perch does not settle, design calls, PR-Gate, a land or teardown failure, halts whose cause or way forward is unknown and, until `orch-split`'s run driver starts ready tasks, a landing that made a task ready.
 The orch's landing routine (pull, deploy, config reconcile, intake, prune, the teardown check, the fabric commit) leaves its per-landing calls, and its `lyx loom start` retry loop after an approval goes away.
 
 ## Scope
@@ -12,7 +12,7 @@ In:
 - A new batten row that lands the run in the prime after Run-Shed returns Done: pull, deploy, prune, and a notice for tasks the landing made ready.
 - The `done` state-changed notice goes away; batten notifies the orch only when a land or teardown step fails, or when the landing left a board task newly ready.
 - An automatic goto and resume for the first Publish verify failure of a batten run; the second wakes the orch.
-- Fabric's bounded push retry covers a remote "cannot lock ref" refusal on every fabric push.
+- Fabric's bounded push retry covers a remote "cannot lock ref" refusal, and a bare "(failed)" refusal beyond Add's two branch pushes, on the plain, never-forced pushes (D6).
 - The orch role stencil, `CLAUDE.md` and the refusal spec move each step to its new owner, and the orch's `lyx loom start` retry loop after an approval is dropped.
 
 Out:
@@ -20,7 +20,7 @@ Out:
 - Starting a newly ready task: note `orch-split` owns the mechanical run driver; this task only tells the orch which tasks a landing made ready (D4).
 - The per-worktree `loom.yaml` landing warning and the hand-set `review_max_bounces`: task `config-layers-run-settings` removes both.
 - Per-perch auto-accept of a spent review budget: task `burler-split-budget`.
-- Any other halt class; only the two the board entry names (Publish verify failure, "cannot lock ref") are automated.
+- Any other halt class: besides the push refusals D6's retry covers, only a Publish verify failure is automated.
 - An alignment check at parent review or PR-Gate: note `alignment-agent`.
 
 ## Decisions
@@ -38,11 +38,13 @@ The prime lock is taken, with the existing bounded wait (`primelockwait.go`), on
 Steps, in order, each idempotent so a resume re-runs the row from the top:
 
 1. Prime check: skip pull and deploy when the child's recorded parent branch is not the prime's checked-out branch; a stacked task that landed into another task branch deploys nothing.
-   A prime with uncommitted tracked changes is waited on, re-checked each poll, for at most ten minutes, then Stuck naming the paths.
+   When the pull will run, a prime with uncommitted tracked changes is waited on, re-checked each poll, for at most ten minutes, then Stuck naming the paths.
+   A landing that skips pull and deploy never waits on the prime's tree.
 2. Pull the prime through fabric's pull.
    A diverged prime, or any pull refusal, is Stuck with fabric's reason.
    Batten only pulls the prime's code branch and never pushes it (PATTERN-push-both-sides).
-3. Deploy: run landing config's `deploy` command (D2) in the prime, when it is non-empty.
+3. Deploy: run landing config's `deploy` command (D2) in the prime, when it is non-empty and the child's parent branch is in landing config's `require_pr_to_base`.
+   A landing into a prime branch outside that list pulls but skips the deploy, logging the reason at Info.
 4. Ready snapshot: read the set of ready tasks (kind `task`, unclaimed, stored `depends_on` empty) and persist it in a marker under the row's scratch directory, unless a marker for this run already holds one.
 5. Prune the board, the same operation as `lyx board prune --apply`.
 6. Read the ready set again; the tasks in it and not in the persisted snapshot are this landing's newly ready tasks (D4).
@@ -60,12 +62,16 @@ Bound: the row runs only after Run-Shed's Done, which batten returns only for a 
 `landing.yaml` gains `deploy`: a shell command batten's Land row runs in the prime after a landing into the prime's branch.
 Empty or absent runs nothing and logs nothing; the template default is empty, so lyx stays repo-generic.
 The hub sets it to `./update-plugins.sh`.
-The key is hub-wide like the rest of `landing.yaml`: read from the board dir, never from a pair, and `lyx config` refuses a write to it from a pair, so a task cannot set what runs in the prime.
+The key is hub-wide like the rest of `landing.yaml`: read from the board dir, never from a pair, and `lyx config` refuses a write to it from a pair, a guard against a mistaken write rather than a determined agent.
 It is the same trust class as `publish_verify`.
+The command executes code from the landed tip (`./update-plugins.sh` runs `go run ./tools/deploy`), which a task can edit, and it may push outward: the hub's deploy moves `prod`.
+It is trusted because a branch in `require_pr_to_base` receives code on its remote only through PR-Gate-reviewed landings or the operator; that review, not the config key, is what keeps task-authored code from reaching the prime unreviewed.
+PR-Gate reviews only a parent branch in `require_pr_to_base` and passes any other with no review, so the deploy runs only for a parent in that list when the Land row runs (D1 step 3).
+The row does not re-check what PR-Gate did: an edit to the list between PR-Gate and Land, made by the orch in its own hub config, can deploy a tip PR-Gate passed unreviewed.
 The command runs with a timeout (Plan picks the value), its output to a log file under the row's scratch directory, its spawn and wait logged through `internal/logger`.
 A non-zero exit, a timeout or a shell that cannot start is Stuck naming the exit, the log path and the way forward.
-Rationale: `update-plugins.sh` exists only in this repository, and a hub-wide key keeps the command out of a task's reach.
-Bound: it runs only from the Land row, only in the prime, only after a pull that left the prime at the landed tip, and only under the land lock.
+Rationale: `update-plugins.sh` exists only in this repository, and a hub-wide key keeps the command line itself out of a task's config.
+Bound: it runs only from the Land row, only in the prime, only for a parent branch in `require_pr_to_base` when the row runs, only after a pull that left the prime at that branch's remote head, and only under the land lock; what it can do is whatever that head's code does.
 
 ### D3. Config reconcile is left to `hubreconcile.Ensure`
 
@@ -79,7 +85,9 @@ Run-Shed's `done` state-changed notice is removed.
 The Land and Worktree-Teardown rows get the same Notify seam the InnerRun row has, with its orch-strand lookup and delivery retries, and queue one notice in exactly these cases:
 
 - A Land step or Worktree-Teardown returns Stuck or a hard error: the notice names the row, the step, the error cut to one line and the way forward (`lyx batten run <slug>` from the prime once the cause is fixed).
-  One notice per failure episode, recorded in a marker under the row's scratch directory so a batten restart never repeats it.
+  One notice per failure episode, recorded in a marker under the row's scratch directory.
+  An episode is one entry of the row from its predecessor's Done or from a halt at that row: a deliberate re-run after a halt (`lyx batten run <slug>`) that fails again starts a new episode and sends a new notice.
+  A batten that died while the row was still running, before it halted, continues the same episode on restart, so it never repeats a notice already queued.
 - The landing made at least one task newly ready (D1 step 6): the notice names the landed slug and the ready slugs, once per run, recorded in the same marker.
 
 A landing that succeeds and readies nothing sends no notice.
@@ -89,30 +97,45 @@ Bound: a notice is informational and never changes a row's outcome.
 
 ### D5. One automatic retry of a Publish verify failure
 
-When the child halts blocked with Publish as its current producer and a Publish failure record that belongs to this halt, batten sends the child to the record's target producer and resumes it, and sends no blocked notice for that halt.
+When the child halts blocked with Publish as its current producer and a Publish failure record that belongs to this halt, batten sends the child to the record's target producer and resumes it, and sends no notice for the halt or for the child's paused state at the target while the retry is unfinished, that is while its marker (below) holds `started` or `goto-done`.
 
-- The record belongs to this halt when its HEAD equals the task worktree's HEAD and it was written at or after the child's blocked state began; any other record is stale and the halt is handled as today.
+- Publish writes the record's write time into it (`written_at`), as it writes the target field, in the RFC 3339 whole-second UTC form shed's history `at` uses, so both compare at one precision.
+  The record belongs to this halt when its HEAD equals the task worktree's HEAD and its write time falls inside the Publish attempt that halted: strictly later than the child's last history entry before that attempt and at or before the halting Publish entry.
+  A record from a verify that failed within the same second as that earlier entry is therefore not retried, which fails safe to the blocked notice.
+  The blocked state's start is never the reference, since Publish writes the record before it returns Stuck.
+  Any other record, including one left at the same HEAD by an earlier Publish halt, is stale and the halt is handled as today.
 - The target producer is a structured field the recipe wiring writes into the Publish failure record (today `Webster-Burler` for loom and `Darn-Write` for darn, the producers `internal/loomcli`'s `failedWayForward` already names), so batten names no recipe's rows.
 - The goto runs the child's goto verb (the `internal/shedverbs` body); the resume goes through the InnerRun Spawn seam the awaiting arm uses, so the child's own bootstrap resumes the run.
 - A goto refused while the child's driver holds the run lock, and a resume refused because the driver has not parked or its pane is busy, are retried at most once per notice probe, the way the awaiting arm retries an approval resume.
+  A busy pane gets the awaiting arm's driver-busy notice.
+  The retrying is capped in time (Plan picks the value), measured from the marker's `started` write so a restart does not reset it: past the cap, batten stops retrying, writes `capped` to the marker and sends the notice for the child's actual state, blocked at Publish or paused at the target, with the last refusal, so a driver that never releases its lock or never parks still wakes the orch.
 - A goto refused for any other reason, such as a target the recipe lacks, is not retried: batten sends the blocked notice with the refusal.
-- A marker under batten's scratch directory records the retry's progress, written before the goto (`started`), after a goto that succeeded (`goto-done`) and after a resume that landed (`resumed`), and is reset only when batten seeds a fresh status.
-  A restart finishes a retry it finds unfinished: `started` with the child still blocked at Publish repeats the goto, and `goto-done` with the child paused at the target resumes it.
+- A marker under batten's scratch directory records the retry's progress, written before the goto (`started`), after a goto that succeeded (`goto-done`), after a resume that landed (`resumed`) and when the cap's notice is queued (`capped`), and is reset only when batten seeds a fresh status.
+  `resumed` and `capped` each end the run's one retry.
+  Every entry of the halted arm, not only one after a restart, finishes a retry it finds unfinished: `started` with the child still blocked at Publish repeats the goto, and `started` or `goto-done` with the child paused at the target resumes it.
+  An unfinished marker with the child in any other state, such as `goto-done` with the child blocked at Publish again after a resume whose `resumed` write was lost, counts as the retry spent.
+  The goto's blocked-to-paused change ends the InnerRun wait, so the paused arm's resume on `goto-done` is the retry's normal path.
 - Each automatic retry is logged at Info and recorded as a batten history entry, so the repair is visible beside the run's other steps.
-- A later Publish verify failure in the same batten run, after `resumed`, halts as today and gets the blocked notice, which says the automatic retry already ran.
+- A later Publish verify failure in the same batten run, once the retry is spent, halts as today and gets the blocked notice, which says the automatic retry already ran.
 
-This changes battenshed's documented rule that batten never spawns or resumes a halted child, for this one case.
-Bound: once per batten run; only for state blocked at Publish; only with a failure record matching the halt, which Publish writes only for a verify that exited non-zero; a record without the target field is not retryable.
+This changes battenshed's documented rule that batten never spawns or resumes a halted child, blocked or paused, for this one case.
+Bound: once per batten run, a capped retry counting as that one; only for state blocked at Publish; only with a failure record written during the halting attempt, which Publish writes only for a verify that exited non-zero; a record without the target field or the write time is not retryable; the goto and resume retries stop at the time cap.
 
 ### D6. "cannot lock ref" joins fabric's push retry
 
-Fabric's bounded push retry (today `pushretry.go`, only around Add's two branch pushes and only for a bare "(failed)" refusal) moves to the push primitives every fabric push runs through: `internal/gitrepo`'s push functions and the archive tag push.
-It retries a remote refusal of either form: a bare "(failed)", or a message holding "cannot lock ref".
+Fabric's bounded push retry (today `pushretry.go`, only around Add's two branch pushes and only for a bare "(failed)" refusal) moves to the plain, never-forced push primitives every fabric push runs through: `internal/gitrepo`'s `Push`, `PushCoalesced` and `PushRebaseFree`, Add's branch pushes and the archive tag push.
+The leased update (`UpdateRemoteBranchLeased`) and both remote-branch deletes do not retry.
+It retries a remote refusal of either form on the pushed ref's own `! [remote rejected]` line: a bare "(failed)", or a reason holding "cannot lock ref".
+That check runs before `rebaseRetryTriggers` and before the mapping to `ErrPushRejected`, so while attempts remain such a refusal never triggers a `pull --rebase` and never surfaces as divergence.
+Once the attempts run out, the last push error is returned as a plain push failure, never as `ErrPushRejected` and never followed by a rebase.
+What each caller then gets: Publish goes Stuck with `push failed: ...` instead of the divergence text, and the coalesced rebase-free path (`pushRebaseFreeLogged` in `internal/fabricengine/coalesce.go`) keeps today's outcome for this refusal, a Warn that leaves the commits unpushed for a later push, so the coalesced push, the `fabric sync` push child and the verbs on them gain no new error.
+To tell it apart, the exhausted error wraps a sentinel of its own, distinct from `ErrPushRejected`.
 The attempt count and backoff stay as they are.
 The retry runs inside whatever lock the caller already holds, and never rebases or forces, so the push-both-sides shape is unchanged (PATTERN-push-both-sides).
 The detached push child of `fabric sync` runs the same primitives and so retries too.
-Rationale: the refusal is a server-side ref-lock race that clears on retry; fixing it at the push keeps the transient mark and its closed class set unchanged (PATTERN-transient-stop).
-Bound: only a remote-rejected push of those two forms is retried; a local "cannot lock ref" and every other rejection fail as today.
+Rationale: the common cause of the refusal is a server-side ref-lock race that clears on retry; fixing it at the push keeps the transient mark and its closed class set unchanged (PATTERN-transient-stop).
+Bound: only a remote-rejected push of those two forms, from the primitives named above, is retried; a local "cannot lock ref" and every other rejection fail as today.
+A permanent remote "cannot lock ref", such as a ref name conflicting with an existing ref, is retried to the attempt cap under the caller's lock before it fails.
 
 ### D7. The approval paths need no orch action
 
@@ -164,13 +187,20 @@ The Publish verify failure line under `## Escalations from a child` says batten 
 - Old-binary batten and loom processes still call `hubreconcile.Ensure` after a deploy, the stamp flip-flop `hubreconcile` already accepts; deploys inside running battens make it more frequent.
 - A batten killed between Run-Shed's Done and the Land row sends nothing until it runs again, where the removed `done` notice used to go at first sight.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 3: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-3-review.md; fixer report: _lyx/reviews/discussion/round-3-fixer-report.md.
+  - d5-capped-retry-no-recorded-end (class design, severity MEDIUM, open in rounds 3)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - A child that ends done is pulled into the prime, deployed and pruned by the Land row, and batten reaches done with no notice sent.
 - A landing into a parent other than the prime's branch skips pull and deploy and still prunes.
+- A landing into a prime branch outside `require_pr_to_base` pulls, skips the deploy with an Info log, and still prunes.
 - An empty or absent `deploy` runs nothing; a set one runs once per landing in the prime.
-- A deploy that exits non-zero or times out halts batten blocked at `Land` with the pair intact and sends one notice naming the step, the log path and `lyx batten run <slug>`; a batten restart sends no second notice for the same episode.
-- A prime with uncommitted tracked changes is waited on and, past the bound, halts `Land` with one notice; a prime that becomes clean within the bound lands.
+- A deploy that exits non-zero or times out halts batten blocked at `Land` with the pair intact and sends one notice naming the step, the log path and `lyx batten run <slug>`; a batten that dies after queuing the notice and before halting sends no second notice on restart, while a `lyx batten run <slug>` after the halt that fails again sends a new one.
+- A prime with uncommitted tracked changes is waited on and, past the bound, halts `Land` with one notice; a prime that becomes clean within the bound lands; a landing that skips the pull does not wait on a dirty prime.
 - Resuming batten after a Land failure re-runs the row; pull, deploy and prune on an already-landed prime succeed.
 - A Worktree-Teardown failure sends one notice.
 - Two Land rows run one after the other, and a Worktree-Create waiting on the prime lock is not held for the length of a deploy.
@@ -179,12 +209,13 @@ The Publish verify failure line under `## Escalations from a child` says batten 
 - When one landing's prune also removes a second, concurrent landing's done entry, the tasks it frees are named in a notice exactly once.
 - An in-flight batten status from before this change reaches `Land` after its Run-Shed Done.
 - A `deploy` write from a pair is refused.
-- A child blocked at Publish with a failure record matching the halt is sent to the record's target producer and resumed once, with no notice; a second such halt in the same batten run sends the blocked notice saying the retry already ran.
-- A child blocked at Publish without a matching record (none, a stale one, or one lacking the target) is not retried and gets the blocked notice.
-- A goto refused while the driver holds the run lock, and a resume refused as not parked, are retried until they land.
+- A child blocked at Publish with a failure record matching the halt is sent to the record's target producer and resumed once, with no notice for the halt or for the paused state at the target, also when the resume waits past the driver's stop-report wait; a second such halt in the same batten run sends the blocked notice saying the retry already ran.
+- A child blocked at Publish without a matching record (none, a stale one including one from an earlier halt at the same HEAD, or one lacking the target or write time) is not retried and gets the blocked notice.
+- A record written in the same whole second as its halting Publish entry is retried; a stale record from an earlier same-HEAD halt, written in the same second as that halt's entry, is not.
+- A goto refused while the driver holds the run lock, and a resume refused as not parked, are retried until they land within the time cap; past the cap batten sends the notice for the child's actual state (blocked at Publish for a refused goto, paused at the target for a refused resume) with the last refusal; a restart does not reset the cap; after that notice and an orch resume, a second Publish verify failure gets the blocked notice and no goto.
 - A goto refused for an unknown target is not retried and sends the blocked notice.
 - A batten that dies after the automatic goto and before the resume resumes the child on restart; one that dies before the goto repeats it.
-- A push refused with a remote "cannot lock ref" or a bare "(failed)" is retried within the existing attempt bound and succeeds when the race clears; a local "cannot lock ref" fails at once.
+- A push refused with a remote "cannot lock ref" or a bare "(failed)" is retried within the existing attempt bound, with no rebase and no `ErrPushRejected` between attempts, and succeeds when the race clears; a local "cannot lock ref" fails at once; the leased update and the deletes are not retried; once attempts run out, Publish goes Stuck with the push failure and the coalesced push Warns and leaves the commits unpushed.
 - After `lyx loom approve` with the driver not yet parked, batten resumes the child with no orch command.
 - The orch role stencil no longer lists pull, deploy, reconcile, prune or the teardown check after a landing, and tells the orch not to run a `lyx loom start` loop after an approval.
 
