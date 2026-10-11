@@ -1,6 +1,6 @@
 # Burler: reviewer row then fixer row, lean fixer, per-perch budget and auto-accept
 
-`burler-split-budget` · Task · enhancement, loom, burler · running · Discussion-Write
+`burler-split-budget` · Task · enhancement, loom, burler · running · Discussion-Bouncer
 
 Merged from notes `segment-budget-accept` and `burler-chair-late-spawn` (operator, 2026-10-11).
 
