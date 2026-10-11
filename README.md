@@ -46,18 +46,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ### Bugs
 
-#### High priority
-
-| # | Note | Slug | Labels |
-| --- | --- | --- | --- |
-| 1 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-tw-om-2`](design-twb-tw-om-2.md) | webster, shuttle, stencil, quarry |
-
 #### Normal priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 2 | **loom step help contradicts itself and hides the driverless seed**<br>• Help says step bootstraps like start, then that it never seeds; name the driverless seed command | [`loom-step-help-seed`](design-loom-step-help-seed.md) | loom |
-| 3 | **clihelp: TestRenderIndex_FormsAndFiltering races on a shared cobra tree (concurrent map writes)** | [`clihelp-index-test-race`](design-clihelp-index-test-race.md) | orch |
+| 1 | **loom step help contradicts itself and hides the driverless seed**<br>• Help says step bootstraps like start, then that it never seeds; name the driverless seed command | [`loom-step-help-seed`](design-loom-step-help-seed.md) | loom |
+| 2 | **clihelp: TestRenderIndex_FormsAndFiltering races on a shared cobra tree (concurrent map writes)** | [`clihelp-index-test-race`](design-clihelp-index-test-race.md) | orch |
 
 ### Enhancements
 
