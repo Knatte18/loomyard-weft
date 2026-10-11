@@ -1,0 +1,8 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/battencli.TestWire_EverySeamFilled
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/battencli
+      tail: '    wire_seams_test.go:94: c.env.RowBouncerModels is nil after wire(); fill it or list it in intentionallyNil with a reason'
+log_path: /home/knatte/Code/loomyard-LYXHUB/per-role-models/.lyx/verify/verify-2.log
