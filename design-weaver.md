@@ -36,3 +36,17 @@ Open against the code:
 - A Shed recipe's rows are fixed, while a plan's batch count is not: either the recipe is generated from the plan, or one batch producer loops over the batch index, as the Burler round loops over rounds.
 - The escalation ladder could be Shed rows: a batch's `OnStuck` points at the same batch on the next model tier, and the last tier's `OnStuck` escalates to Master Weaver.
 - Whether Master Weaver is an LLM at all on the happy path, or only the escalation target, as the hub orchestrator is for loom.
+
+## Idea: batches formed as the run goes (operator, 2026-10-11)
+
+Batches are not fixed up front.
+The run starts from the plan's linear card list, and a batchifier forms the first batches: the cards that can be spawned right now.
+Batches, or single cards, whose glyphs do not overlap are spawned in parallel, each in its own worktree.
+Each time a batch finishes, the batchifier runs again over the remaining cards and forms the next batch or batches.
+The plan is updated as the run goes, since an implementer may have to deviate from it, and the next batchifier pass reads the updated plan.
+
+Open against the code:
+- This answers the fixed-rows question above: the run is a frontier of ready batches, not a fixed row list.
+- Parallel worktrees need a merge back into the task branch after each batch; glyph disjointness rules out textual conflicts but not semantic ones, so the verify gate runs on the merged result.
+- Who writes an implementer's deviation into the plan (the implementer through its report, Go from the report, or Master Weaver), and how the batchifier tells a deviated card's new glyphs from its planned ones.
+- What the existing batcher module (`batcher` config) and Webster's partition and sequencing already give a batchifier.
