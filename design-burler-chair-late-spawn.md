@@ -43,6 +43,8 @@ Operator, 2026-10-11: a fixer forked from the reviewer is what Burler had before
 So the fixer stays a fresh session, with two narrower levers:
 - run no fixer on an empty review (Webster-Burler's opus fixer costs more than its Sonnet reviewer even when the review has no findings);
 - give the fixer a leaner orientation than the reviewer: the review file and the targets it names, not the reviewer's explore file (rubric, fasit, PATTERN overview).
+Operator, 2026-10-11: the fixer is meant to get a constrained fix report, exact instructions on what to change and where, since the reviewer has done most of the work; the measured fixer still loads the reviewer's full orientation, which is the waste to cut.
+Operator, 2026-10-11: for Go code the tests carry Webster-Burler's weight, while a review is mostly useful for prose changes such as stencils; Webster-Burler could run only when, or only on the parts where, the diff changes prose.
 Operator, 2026-10-11: no Sonnet reviewer; Millhouse experience says Sonnet is too weak for this.
 Other levers measured: a Sonnet reviewer for Plan and Discussion (about $1.8 per run, highest quality risk, since every Discussion and Plan BLOCKING finding came from opus) and dropping Webster-Burler (about $1.4 per run); capping rounds is not recommended, since later Discussion rounds catch real BLOCKING findings.
 
