@@ -7,16 +7,6 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running
-
-Held by a run; its scope is locked until the run ends.
-
-#### High priority
-
-| # | Task | Slug | Recipe | At | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Burler runs its round on MultiLLMProducer**<br>• The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review | [`burler-multi-llm`](design-burler-multi-llm.md) | loom | Finalize | burler, shed, stencil |
-
 ### Ready
 
 Waits on nothing open; can start now.
@@ -159,4 +149,5 @@ Finished, awaiting `lyx board prune --apply`.
 
 | # | Entry | Slug | Labels |
 | --- | --- | --- | --- |
-| 1 | **Batten notices: no attach clause, pair-relative paths, wait is not an error**<br>• Remove the trailing cd && lyx reed attach from batten notices, and render paths relative to the hub directory. | [`batten-notice-trim`](design-batten-notice-trim.md) | batten, orch |
+| 1 | **Burler runs its round on MultiLLMProducer**<br>• The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review | [`burler-multi-llm`](design-burler-multi-llm.md) | burler, shed, stencil |
+| 2 | **Batten notices: no attach clause, pair-relative paths, wait is not an error**<br>• Remove the trailing cd && lyx reed attach from batten notices, and render paths relative to the hub directory. | [`batten-notice-trim`](design-batten-notice-trim.md) | batten, orch |
