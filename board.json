@@ -1115,6 +1115,22 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #547](https://github.com/Knatte18/loomyard/issues/547).\n\nSeen: pane-inject-safety's post-merge Publish verify (the tmux-tier module-wide run after merging main) crashed internal/clihelp with `fatal error: concurrent map writes` in `pflag.(*FlagSet).AddFlag`, reached from cobra's `mergePersistentFlags` via `clihelp.visibleLocalFlags` (internal/clihelp/index.go:94) and `indexLines` (index.go:47).\nThe task's diff does not touch clihelp; every other package passed.\n\nLikely cause: `TestRenderIndex_FormsAndFiltering` and its subtests run `t.Parallel()` and walk the same cobra command tree.\n`LocalFlags`/`LocalNonPersistentFlags` lazily merge parent persistent flags into the command's FlagSet, which writes a map, so two parallel walks race.\n\nWorkaround: `lyx loom goto --to Webster-Burler`, then `lyx loom resume`, so the verify reruns.\n\nExpected: each parallel test builds its own command tree, or the flags are merged once before the parallel subtests start, so the test cannot crash."
+    },
+    {
+      "id": 359,
+      "slug": "chair-blind-questions",
+      "title": "Discussion chair asks advisors open questions without its options or pick",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\n`contracts/stencils/loom/loom-template-discussion-chair.md` tells the chair to send each question with its recommended answer and its alternatives to every advisor.\nThe advisor then reads the chair's pick before it studies the question, so its answer is anchored on the chair's options and lean, and it rarely finds an option the chair did not list.\n\n## Idea (operator, 2026-10-11)\n\n- The chair still forms each question with its options and its own recommended answer, but keeps them to itself.\n- It sends the advisors the bare question only, so each advisor explores and answers on its own.\n- The chair then weighs the advisors' answers against its own pick; an answer outside its options counts as a new option.\n- Questions must therefore be open, never leading: a question must not name or hint at the chair's preferred answer.\n\n## Open\n\n- Whether the ledger records the chair's private pick before the advisors answer, so a review can see where an advisor changed the outcome.\n- Whether the advisor stencil (`loom-template-discussion-advisor.md`) needs a line saying it gets no options and should name the alternatives it sees.\n"
     }
   ]
 }
