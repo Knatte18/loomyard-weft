@@ -30,7 +30,7 @@
 - `internal/shuttleengine/claudeengine#Claude.PastePlaceholder`
 
 **Uses:**
-- `plan:internal/shuttleengine#TextPaster`
+- `internal/shuttleengine#TextPaster`
 
 **Intent:**
 Move Claude onto the paste path (decisions D2 and D6), which makes every text lyx types into a Claude pane go through reed's paste-submit behind shuttle's guard, and record that invariant in PATTERN (D12).

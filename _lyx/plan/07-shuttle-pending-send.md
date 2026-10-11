@@ -16,7 +16,7 @@
 - `internal/shuttleengine#Runner.SessionIdle`
 - `internal/shuttleengine#Runner.TypeColor`
 - `internal/shuttleengine#sendVerified`
-- `plan:internal/shuttleengine#pasteVerified`
+- `internal/shuttleengine#pasteVerified`
 - `internal/shuttleengine#TestRun_Send_ConfirmsSubmission`
 - `internal/shuttleengine/rundir_test.go`
 - `internal/shuttleengine/doc.go`

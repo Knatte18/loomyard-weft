@@ -1,10 +1,10 @@
 # Card 1 — reed paste-submit transport op
 
 **Create:**
-- `plan:internal/reedengine#Engine.PasteSubmit` -> `func (e *Engine) PasteSubmit(guid, text string, submit bool) error`
-- `plan:internal/reedengine#Engine.pasteSubmitLocked` -> `func (e *Engine) pasteSubmitLocked(paneID, text string, submit bool) error`
-- `plan:internal/reedengine#pasteSubmitArgv` -> `func pasteSubmitArgv(paneID, buffer, text string, submit bool) []string`
-- `plan:internal/reedengine#injectBufferName` -> `func injectBufferName() (string, error)`
+- `internal/reedengine#Engine.PasteSubmit`
+- `internal/reedengine#Engine.pasteSubmitLocked`
+- `internal/reedengine#pasteSubmitArgv`
+- `internal/reedengine#injectBufferName`
 - `internal/reedengine/paste_integration_test.go`
 
 **Edit:**

@@ -7,7 +7,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/reedengine#Engine.PasteSubmit`
+- `internal/reedengine#Engine.PasteSubmit`
 - `plan:internal/shuttleengine/claudeengine#Claude.PasteSubmits`
 - `plan:internal/shuttleengine/claudeengine#Claude.OwnPastePlaceholder`
 - `plan:internal/shuttleengine/claudeengine#PasteCollapseMinChars`

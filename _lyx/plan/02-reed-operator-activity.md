@@ -1,11 +1,11 @@
 # Card 2 — reed operator-activity query and operator_quiet_s
 
 **Create:**
-- `plan:internal/reedengine#Engine.OperatorActive` -> `func (e *Engine) OperatorActive(guid string) (active bool, quiet time.Duration, err error)`
-- `plan:internal/reedengine#Engine.operatorActiveLocked` -> `func (e *Engine) operatorActiveLocked(paneID string) (active bool, quiet time.Duration, err error)`
-- `plan:internal/reedengine#activeClientOnPane` -> `func activeClientOnPane(clients, paneID string, now time.Time, quiet time.Duration) bool`
-- `plan:internal/reedengine#operatorQuiet` -> `func operatorQuiet(cfg Config) time.Duration`
-- `plan:internal/reedengine#defaultOperatorQuietS` -> `const defaultOperatorQuietS = 5`
+- `internal/reedengine#Engine.OperatorActive`
+- `internal/reedengine#Engine.operatorActiveLocked`
+- `internal/reedengine#activeClientOnPane`
+- `internal/reedengine#operatorQuiet`
+- `internal/reedengine#defaultOperatorQuietS`
 - `internal/reedengine/activity_integration_test.go`
 
 **Edit:**

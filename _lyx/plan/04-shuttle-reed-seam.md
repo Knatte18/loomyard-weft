@@ -8,15 +8,15 @@
 - `internal/testkit/shuttlefake#TestReed_Overrides`
 
 **Create:**
-- `plan:internal/shuttleengine#fakeReed.PasteSubmit` -> `func (m *fakeReed) PasteSubmit(guid, text string, submit bool) error`
-- `plan:internal/shuttleengine#fakeReed.OperatorActive` -> `func (m *fakeReed) OperatorActive(guid string) (bool, time.Duration, error)`
-- `plan:internal/testkit/shuttlefake#PasteSubmitCall` -> `type PasteSubmitCall struct`
-- `plan:internal/testkit/shuttlefake#Reed.PasteSubmit` -> `func (r *Reed) PasteSubmit(guid, text string, submit bool) error`
-- `plan:internal/testkit/shuttlefake#Reed.OperatorActive` -> `func (r *Reed) OperatorActive(guid string) (bool, time.Duration, error)`
+- `internal/shuttleengine#fakeReed.PasteSubmit`
+- `internal/shuttleengine#fakeReed.OperatorActive`
+- `internal/testkit/shuttlefake#PasteSubmitCall`
+- `internal/testkit/shuttlefake#Reed.PasteSubmit`
+- `internal/testkit/shuttlefake#Reed.OperatorActive`
 
 **Uses:**
-- `plan:internal/reedengine#Engine.PasteSubmit`
-- `plan:internal/reedengine#Engine.OperatorActive`
+- `internal/reedengine#Engine.PasteSubmit`
+- `internal/reedengine#Engine.OperatorActive`
 
 **Intent:**
 Widen the seam through which shuttle drives reed, so later cards can paste and ask for operator activity, and give both fakes the two ops (`PATTERN-testkit`: the fakes live in the existing kits).

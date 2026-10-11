@@ -6,8 +6,8 @@
 - `internal/reedengine/doc.go`
 
 **Uses:**
-- `plan:internal/reedengine#Engine.operatorActiveLocked`
-- `plan:internal/reedengine#Engine.pasteSubmitLocked`
+- `internal/reedengine#Engine.operatorActiveLocked`
+- `internal/reedengine#Engine.pasteSubmitLocked`
 - `internal/reedengine#SessionNamer.SessionIdle`
 - `internal/reedengine#SessionNamer.RenameText`
 

@@ -1,15 +1,15 @@
 # Card 6 — shuttle's paste path and the exact-match Enter guard
 
 **Create:**
-- `plan:internal/shuttleengine#TextPaster` -> `type TextPaster interface`
-- `plan:internal/shuttleengine#ErrSentTextInDraft` -> `var ErrSentTextInDraft error`
-- `plan:internal/shuttleengine#pasteVerified` -> `func pasteVerified(sc sendContext, paster TextPaster, reader InputBoxReader, text string) error`
-- `plan:internal/shuttleengine#confirmPasted` -> `func confirmPasted(sc sendContext, paster TextPaster, reader InputBoxReader, text string, sentAt int64, closeAt time.Time) error`
-- `plan:internal/shuttleengine#guardedEnter` -> `func guardedEnter(sc sendContext) (sent bool, err error)`
-- `plan:internal/shuttleengine#tuiReed.PasteSubmit` -> `func (r *tuiReed) PasteSubmit(guid, text string, submit bool) error`
-- `plan:internal/shuttleengine#pasteEngine` -> `type pasteEngine struct`
-- `plan:internal/shuttleengine#pasteEngine.PasteSubmits` -> `func (e *pasteEngine) PasteSubmits() bool`
-- `plan:internal/shuttleengine#pasteEngine.OwnPastePlaceholder` -> `func (e *pasteEngine) OwnPastePlaceholder(boxText, text string) bool`
+- `internal/shuttleengine#TextPaster`
+- `internal/shuttleengine#ErrSentTextInDraft`
+- `internal/shuttleengine#pasteVerified`
+- `internal/shuttleengine#confirmPasted`
+- `internal/shuttleengine#guardedEnter`
+- `internal/shuttleengine#tuiReed.PasteSubmit`
+- `internal/shuttleengine#pasteEngine`
+- `internal/shuttleengine#pasteEngine.PasteSubmits`
+- `internal/shuttleengine#pasteEngine.OwnPastePlaceholder`
 
 **Edit:**
 - `internal/shuttleengine#sendVerified`
@@ -33,7 +33,7 @@
 
 **Uses:**
 - `internal/shuttleengine#ReedOps`
-- `plan:internal/shuttleengine#operatorActivityHold`
+- `internal/shuttleengine#operatorActivityHold`
 
 **Intent:**
 Route a provider that declares the paste path through reed's atomic paste-submit, and send an Enter of lyx's own only into a box holding exactly the sent text (decisions D2, D5, D6).

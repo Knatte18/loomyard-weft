@@ -1,8 +1,8 @@
 # Card 5 — shuttle's pre-write guard: operator activity and an unreadable box
 
 **Create:**
-- `plan:internal/shuttleengine#operatorActivityHold` -> `func operatorActivityHold(reed ReedOps, guid string) string`
-- `plan:internal/shuttleengine#readinessReasonNoInputBox` -> `const readinessReasonNoInputBox = "no input box is on screen; a menu or picker may be open"`
+- `internal/shuttleengine#operatorActivityHold`
+- `internal/shuttleengine#readinessReasonNoInputBox`
 
 **Edit:**
 - `internal/shuttleengine#boxReading`
