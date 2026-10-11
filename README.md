@@ -15,13 +15,13 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Test and gate hygiene: merge-only verify failures, gofmt, tmux probe copies**<br>• PATTERN overview headroom, test-budget rows that collide after merge, a gofmt check, and the last tmux probe copies onto tmuxkit | [`gate-test-hygiene`](design-gate-test-hygiene.md) | loom | Loom-Preflight | loom, orch |
+| 1 | **Test and gate hygiene: merge-only verify failures, gofmt, tmux probe copies**<br>• PATTERN overview headroom, test-budget rows that collide after merge, a gofmt check, and the last tmux probe copies onto tmuxkit | [`gate-test-hygiene`](design-gate-test-hygiene.md) | loom | Discussion-Write | loom, orch |
 
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **Small fixes: darn prompt paths, recipe doc line, stale reconcile default, destructive-verb confirm, index note audience, carry-over on disk**<br>• Six small independent fixes across darn stencil, docs, config reconcile, fabric/board verbs, board help and loom carry-over | [`small-fixes-batch`](design-small-fixes-batch.md) | loom | Loom-Preflight | stencil, batten, config, fabric, board, loom |
+| 2 | **Small fixes: darn prompt paths, recipe doc line, stale reconcile default, destructive-verb confirm, index note audience, carry-over on disk**<br>• Six small independent fixes across darn stencil, docs, config reconcile, fabric/board verbs, board help and loom carry-over | [`small-fixes-batch`](design-small-fixes-batch.md) | loom | Discussion-Write | stencil, batten, config, fabric, board, loom |
 
 ### Ready
 
