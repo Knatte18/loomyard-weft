@@ -2,8 +2,6 @@
 
 `batten-windows-hidden` · Task · enhancement, batten, reed
 
-Depends on: [`batten-notice-trim`](design-batten-notice-trim.md)
-
 ## Seen
 
 `lyx batten run --window` gives each batten run its own window in the prime's reed session, which is where its process lives, and each shows up as a `batten:<slug>` button on status line 1 of the orch's session.

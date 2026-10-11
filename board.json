@@ -736,25 +736,6 @@
       "status": ""
     },
     {
-      "id": 253,
-      "slug": "burler-multi-llm",
-      "title": "Burler runs its round on MultiLLMProducer",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "burler",
-        "shed",
-        "stencil"
-      ],
-      "issues": [],
-      "priority": "high",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review",
-      "body": "## Goal\n\nBurler's review round runs on `MultiLLMProducer` instead of its own two-agent wiring (operator, 2026-10-08).\n\n## Today\n\nBurler's round has run two agents ad hoc since 572ab84e8: `roundHalves` in `internal/burlerengine/engine.go` starts the reviewer and the fixer, and the fixer waits on the review through `lyx burler await-review`.\nThe round wires six stencils (two orchestrator templates, three step files, a focus directive) plus per-segment rubrics through Go code spread over several packages.\n\n## Wanted\n\n- The fixer is the `chair` and the reviewer `advisor-1`, declared in one seat table.\n- The ad hoc wiring (`roundHalves`, `await-review`) goes; the round's outcome, review files and Bouncer contract stay as they are.\n- Fanned rounds (`discussion_fan`, `plan_fan`) keep working; whether a fan's lenses become advisor seats or stay forks of the reviewer is decided in Discussion.\n\n## Required (operator, 2026-10-11)\n\n- **Warm cache.** Today the fixer waits through `lyx burler await-review`, capped under the 5-minute prompt-cache lifetime so every re-run keeps its cache warm (`internal/burlercli/await.go:25`).\n  A seats chair instead ends its turn and waits idle, so a review longer than 5 minutes would wake the fixer on a cold cache every round.\n  The chair keeps its cache warm at least as well as today, using the general capped wait command that `twill-discusser` builds, not a Burler-specific one.\n- **No false stall notices.** Folded in from `seats-chair-wait-notice` below: with the fixer as chair, every Burler round of every run would otherwise send the parent stall notices.\n\n## Seats chair waits reach the parent as stall notices (was `seats-chair-wait-notice`)\n\n### Seen (2026-10-11, discussion bench)\n\nEvery time a seats chair ends its turn to wait, for an advisor's up line or for an advisor's answers, shuttle sends the parent a \"turn end held, output files missing\" notice (`internal/shuttleengine/hold.go:53`, `notifyHeld`).\nThese waits are planned by the chair stencil, so the notices are false stall alarms; each advisor run in the bench sent the orch three to four of them.\nAdvisors are quiet because `internal/seatengine/prompt.go:160` sets `QuietHold: !isChair`; the chair is not.\nAnswering a notice wakes the chair for a turn, which sends another notice.\n\n### Idea\n\nSuppress the held notice for a chair while any advisor has an unanswered batch or has not yet sent its up line, and keep it for a chair that ends a turn with no advisor work outstanding, which is a real stall.\n",
-      "status": "done"
-    },
-    {
       "id": 255,
       "slug": "plan-multi-llm",
       "title": "Plan-Write on MultiLLMProducer: advisors gather facts and check cards",
@@ -946,24 +927,6 @@
       "body": "## Seen (2026-10-11, discussion bench)\n\n`lyx loom step --help` contradicts itself: `internal/loomcli/cli.go:313` says step bootstraps the worktree's loom task exactly as `lyx loom start` does, and `:329-330` says it never writes a seed and refuses when none exists.\nIt refuses on an unseeded pair and points to `lyx loom start`, which spawns an LLM driver.\nThe bench agent took that route and ended up with an unwanted driver; stepping without a driver needs `lyx shed seed self --recipe loom --driver go --param parent=main` first, which the help does not mention.\n\n## Idea\n\nMake the help say only what step does (refuses without a seed), and name the driverless seed command beside `lyx loom start` in the help and in the refusal text.\n"
     },
     {
-      "id": 350,
-      "slug": "batten-notice-trim",
-      "title": "Batten notices: no attach clause, pair-relative paths, wait is not an error",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "batten",
-        "orch"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Remove the trailing cd \u0026\u0026 lyx reed attach from batten notices, and render paths relative to the hub directory.",
-      "body": "## Seen (operator, 2026-10-11)\n\nA batten notice to the orch ends with `; cd \u003cabsolute pair path\u003e \u0026\u0026 lyx reed attach` (`internal/battenshed/notice.go`, `renderNotice`), and its `output` and `report` clauses carry absolute paths.\nThe orch knows how to attach to a pair, so the attach clause is noise, and absolute paths repeat the hub prefix in every notice, which lands in an Opus session that re-reads its context each turn.\n\nSeen (operator, 2026-10-05): shed keeps the reason for every halt in `Status.Error`, an awaiting PR-Gate included, and `renderNotice` labels it `error:` whatever the state, for example `child left running; child state awaiting, error: the pull request awaits review; …`.\n\n## Wanted\n\n- Drop the attach clause from every batten notice.\n- Render every path in a notice relative to the task pair, since the slug already names the pair (operator, 2026-10-10), for example `_lyx/shed/\u003cslug\u003e/drive-reports/drive-report-….md`.\n- Label the reason by state: `error:` only for failed and blocked, and `waiting:` (or the bare reason) for awaiting and paused (operator, 2026-10-05).\n- Phrase the condition by what happened, for example `board-config-per-worktree: awaiting at PR-Gate: the pull request awaits review`, not `child left running; child state awaiting`.\n- Update the notice tests and the docs that quote a notice line.\n",
-      "status": "done"
-    },
-    {
       "id": 352,
       "slug": "orch-token-spend",
       "title": "Cut the orch's token spend",
@@ -1107,9 +1070,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "batten-notice-trim"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\n`lyx batten run --window` gives each batten run its own window in the prime's reed session, which is where its process lives, and each shows up as a `batten:\u003cslug\u003e` button on status line 1 of the orch's session.\nTheir output says nothing useful to the operator.\n\n## Wanted (operator, 2026-10-08)\n\n- The batten windows stay, since the batten process lives there, but they are not visible: they carry a marker the status bar skips, so status line 1 shows no `batten:\u003cslug\u003e` buttons.\n- The runs overview (note `runs-overview`) is where runs are watched; until it exists, `lyx batten status` and each run's own terminal window cover it.\n"
