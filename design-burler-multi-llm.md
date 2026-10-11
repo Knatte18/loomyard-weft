@@ -1,6 +1,6 @@
 # Burler runs its round on MultiLLMProducer
 
-`burler-multi-llm` · Task · enhancement, burler, shed, stencil · running · Plan-Write
+`burler-multi-llm` · Task · enhancement, burler, shed, stencil · running · Plan-Bouncer
 
 ## Goal
 
