@@ -136,6 +136,12 @@ Decision: D8's reading after the clear key and redraw settle is a full guard rea
 
 Rationale: Round-3 Discussion review F2: the settle after the clear is a new window between the last full guard reading and the paste; an operator who starts typing in it is caught only if the second reading re-checks readiness and activity.
 
+### Added after Discussion (parent, 2026-10-11): Constraints: quote the PATTERN.md paste line verbatim
+
+Decision: Quote the PATTERN.md line word for word (no Enter of lyx's own into a box not holding exactly the sent text). The residue reading is taken only after D8's clear, beside the provider's box reading rather than inside it; the paste-submit's Enter belongs to reed's atomic paste the % reading already admits.
+
+Rationale: Round-3 Discussion review F3: the paraphrase dropped 'of lyx's own' and placed the residue reading inside the box-reading definition, contradicting D8's own bound; the PATTERN line itself stays unchanged.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: Claude's hook names, payload fields, source strings, notification types and the stray-character judgment live only in `claudeengine`; `shuttleengine` sees provider-neutral signal kinds, sources and box readings.
