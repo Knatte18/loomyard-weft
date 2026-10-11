@@ -1,11 +1,11 @@
 # Card 3 — lint-pattern-verb
 
 **Create:**
-- `plan:internal/patternlint#Lint` -> `func Lint(worktree, base string) (pattern.Finding, bool, error)`
-- `plan:internal/patternlint#WayForward` -> `const WayForward = "cut the named bytes from PATTERN.md, moving detail into the entries' background files"`
-- `plan:internal/patternlint#readOverview` -> `func readOverview(worktree, revision string) ([]byte, error)`
+- `internal/patternlint#Lint`
+- `internal/patternlint#WayForward`
+- `internal/patternlint#readOverview`
 - `internal/patternlint/doc.go`
-- `plan:internal/loomcli#loomCLI.lintPatternCmd` -> `func (c *loomCLI) lintPatternCmd() *cobra.Command`
+- `internal/loomcli#loomCLI.lintPatternCmd`
 
 **Edit:**
 - `internal/loomcli#Command`
@@ -16,7 +16,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/pattern#Headroom`
+- `internal/pattern#Headroom`
 - `internal/commentlint/diff.go`
 - `internal/loomcli/lintcomments.go`
 

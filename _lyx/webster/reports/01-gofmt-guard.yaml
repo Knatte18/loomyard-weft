@@ -1,0 +1,17 @@
+status: OK
+head_sha: d4a4c0609e45ac7bc434d978443c2b1fd0aea95b
+deviations:
+  - internal/shedverbs/loopwait_test.go
+  - cmd/lyx/gofmt_test.go
+  - internal/pattern/check.go
+  - internal/pattern/check_test.go
+  - internal/pattern/headroom.go
+  - internal/pattern/headroom_test.go
+  - internal/loomcli/cli.go
+  - internal/loomcli/wiring_test.go
+  - internal/loomcli/arm_seed_test.go
+  - internal/loomcli/lintcomments_integration_test.go
+  - internal/websterengine/cardgate.go
+  - internal/websterengine/cardgate_test.go
+  - internal/websterengine/beginbatch_test.go
+  - contracts/stencils/claims_test.go

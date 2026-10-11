@@ -1,10 +1,10 @@
 # Card 2 — pattern-headroom
 
 **Create:**
-- `plan:internal/pattern#HeadroomBytes` -> `const HeadroomBytes = MaxOverviewBytes * 95 / 100`
-- `plan:internal/pattern#KindOverviewHeadroom` -> `const KindOverviewHeadroom = "overview-headroom"`
-- `plan:internal/pattern#Headroom` -> `func Headroom(base, head []byte) (Finding, bool)`
-- `plan:internal/pattern#TestHeadroom` -> `func TestHeadroom(t *testing.T)`
+- `internal/pattern#HeadroomBytes`
+- `internal/pattern#KindOverviewHeadroom`
+- `internal/pattern#Headroom`
+- `internal/pattern#TestHeadroom`
 
 **Edit:**
 - `internal/pattern#Check`

@@ -24,9 +24,9 @@
 - `pattern/PATTERN-test-speed.md`
 
 **Uses:**
-- `plan:internal/patternlint#Lint`
-- `plan:internal/patternlint#WayForward`
-- `plan:internal/loomcli#pairMergeBase`
+- `internal/patternlint#Lint`
+- `internal/patternlint#WayForward`
+- `internal/loomcli#pairMergeBase`
 - `internal/fabricengine#OriginRecordPath`
 
 **Intent:** Run the headroom lint in the Webster-Burler round gate from the task branch's merge base with its recorded parent branch to HEAD, before any test, the second gate site of decision D3, without switching a loom run's gate to the whole-diff form.

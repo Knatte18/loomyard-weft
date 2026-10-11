@@ -1,9 +1,9 @@
 # Card 1 — gofmt-guard
 
 **Create:**
-- `plan:cmd/lyx#gofmtScanFloor` -> `const gofmtScanFloor = 500`
-- `plan:cmd/lyx#gofmtFinding` -> `func gofmtFinding(file string, src []byte) (string, bool)`
-- `plan:cmd/lyx#TestGofmt_ModuleFilesAreFormatted` -> `func TestGofmt_ModuleFilesAreFormatted(t *testing.T)`
+- `cmd/lyx#gofmtScanFloor`
+- `cmd/lyx#gofmtFinding`
+- `cmd/lyx#TestGofmt_ModuleFilesAreFormatted`
 
 **Edit:**
 - `internal/boardcli#Command`
