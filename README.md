@@ -11,30 +11,30 @@ Concrete and claimable; only a task can run.
 
 Held by a run; its scope is locked until the run ends.
 
+#### High priority
+
+| # | Task | Slug | Recipe | At | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Burler runs its round on MultiLLMProducer**<br>• The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review | [`burler-multi-llm`](design-burler-multi-llm.md) | loom | Worktree-Create | burler, shed, stencil |
+
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **reed servers ignore ~/.tmux.conf**<br>• Since reed-hygiene (c6dc1fffc) reed servers start with -f /dev/null, so the operator loses prefix, key bindings and escape-time; no reed.yaml key replaces them | `reed-tmux-conf` | loom | Webster-Burler | reed |
-| 2 | **Plan gaps: inserting a card, unreachable prescribed refusals**<br>• Give the fixer a sanctioned way to insert or remove a card, and make plan review check that every prescribed refusal is reachable | [`plan-gaps`](design-plan-gaps.md) | loom | Publish | loom, burler, stencil |
-| 3 | **Pane injection never merges with the operator draft, and batten survives a draft**<br>• Defer and atomically send injected text, guard the Enter, and keep batten alive through a busy driver pane so teardown still runs. | [`pane-inject-safety`](design-pane-inject-safety.md) | loom | Webster | shuttle, batten, orch, reed |
-| 4 | **Darn: rename the writer row to Darn-Write, and close the perch gaps**<br>• Rename Darn to Darn-Write; add a Describe row after the perch, take Darn-Burler's verify budget from darn.yaml, and test an exhausted perch budget. | [`darn-write-rename`](design-darn-write-rename.md) | darn | Publish | loom, shed |
+| 2 | **reed servers ignore ~/.tmux.conf**<br>• Since reed-hygiene (c6dc1fffc) reed servers start with -f /dev/null, so the operator loses prefix, key bindings and escape-time; no reed.yaml key replaces them | `reed-tmux-conf` | loom | Webster-Burler | reed |
+| 3 | **Plan gaps: inserting a card, unreachable prescribed refusals**<br>• Give the fixer a sanctioned way to insert or remove a card, and make plan review check that every prescribed refusal is reachable | [`plan-gaps`](design-plan-gaps.md) | loom | Publish | loom, burler, stencil |
+| 4 | **Pane injection never merges with the operator draft, and batten survives a draft**<br>• Defer and atomically send injected text, guard the Enter, and keep batten alive through a busy driver pane so teardown still runs. | [`pane-inject-safety`](design-pane-inject-safety.md) | loom | Webster | shuttle, batten, orch, reed |
+| 5 | **Darn: rename the writer row to Darn-Write, and close the perch gaps**<br>• Rename Darn to Darn-Write; add a Describe row after the perch, take Darn-Burler's verify budget from darn.yaml, and test an exhausted perch budget. | [`darn-write-rename`](design-darn-write-rename.md) | darn | Publish | loom, shed |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### High priority
-
-| # | Task | Slug | Recipe | After | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Burler runs its round on MultiLLMProducer**<br>• The fixer becomes the chair and the reviewer advisor-1 in one seat table, replacing roundHalves and await-review | [`burler-multi-llm`](design-burler-multi-llm.md) | loom |  | burler, shed, stencil |
-
 #### Normal priority
 
 | # | Task | Slug | Recipe | After | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **Tokencount reports wall-clock time per role**<br>• tokencount adds each run's wall-clock time per role and its idle time, so the slowest producer shows | [`run-time-by-role`](design-run-time-by-role.md) | loom |  | shed, loom |
+| 1 | **Tokencount reports wall-clock time per role**<br>• tokencount adds each run's wall-clock time per role and its idle time, so the slowest producer shows | [`run-time-by-role`](design-run-time-by-role.md) | loom |  | shed, loom |
 
 ### Layer A
 
