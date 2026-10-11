@@ -1,0 +1,25 @@
+status: OK
+head_sha: f525c80b67f32f13246aff1091cf532f1a1c6690
+deviations:
+  - internal/seatengine/engine.go
+  - internal/seatengine/engine_test.go
+  - internal/seatengine/doc.go
+  - internal/burlerengine/resume.go
+  - internal/burlerengine/handoff.go
+  - internal/burlerengine/prompt.go
+  - internal/burlerengine/shuttle.go
+  - internal/burlerengine/template_test.go
+  - internal/burlercli/wiring.go
+  - internal/burlercli/cli.go
+  - internal/loomcli/wiring.go
+  - internal/loomcli/smoke_attachprobe_test.go
+  - contracts/stencils/stencils.go
+  - contracts/stencils/seat/seat-directive-chair.md
+  - contracts/stencils/seat/seat-directive-advisor.md
+  - internal/loomengine/review.go
+  - internal/shedrecipe/recipe.go
+  - internal/shedrecipe/entries_burler.go
+  - internal/loomcli/wiring.go
+  - internal/burlerengine/profile.go
+  - internal/burlerengine/smoke_round_test.go
+  - internal/burlerengine/smoke_cluster_test.go

@@ -1,10 +1,10 @@
 # Card 8 — burler-seat-table
 
 **Create:**
-- `plan:internal/burlerengine#burlerRolePrefix` -> `const burlerRolePrefix = "burler"`
-- `plan:internal/burlerengine#Profile.roundTable` -> `func (p *Profile) roundTable(opts RunOpts, prompts roundPrompts, accept func(shuttleengine.Result) error) seatengine.Table`
-- `plan:internal/burlerengine#roundAcceptance` -> `type roundAcceptance struct`
-- `plan:internal/burlerengine#roundAcceptance.accept` -> `func (a *roundAcceptance) accept(reviewer shuttleengine.Result) error`
+- `internal/burlerengine#burlerRolePrefix`
+- `internal/burlerengine#Profile.roundTable`
+- `internal/burlerengine#roundAcceptance`
+- `internal/burlerengine#roundAcceptance.accept`
 
 **Delete:**
 - `internal/burlerengine#burlerReviewRole`
