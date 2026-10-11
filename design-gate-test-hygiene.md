@@ -1,6 +1,6 @@
 # Test and gate hygiene: merge-only verify failures, gofmt, tmux probe copies
 
-`gate-test-hygiene` · Task · enhancement, loom, orch · running · Webster-Burler
+`gate-test-hygiene` · Task · enhancement, loom, orch · running · Webster-Bouncer
 
 Four test- and gate-hygiene faults, merged from notes on 2026-10-11.
 The first two block runs at Publish only after main is merged in; together they cost several parent decisions and gotos on 2026-10-10.
