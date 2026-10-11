@@ -2,7 +2,7 @@
      It may span many lines and carries one marker, command_index, which RenderRoleFile fills with the operator command index and refuses to render without.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lyx loads the orch's skills before the pointer arrives; a compaction keeps them.
-lyx-stencil: sha256=421a40638ff6bf48e6c4950decd8a5313e44bdc6f222fe672f4f29796e36773d build=5271f1887cbe8a1dd77b279b389c8c5275b59548 time=2026-10-11T10:32:34Z -->
+lyx-stencil: sha256=5139f358db1e14ef0df30370ce3480cbc42ab8ce4d13827eeff7fa8b7d0ac2e6 build=66f4e711353236a637689da121b500ac49da45e6 time=2026-10-11T11:12:50Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree.
@@ -98,7 +98,7 @@ Never widen the scope through rejects: a reject names a defect in the task's own
 A small defect in that goal is fixed on the task branch; new hardening goes on the board as its own entry.
 Approve with `lyx loom approve`, or reject with `lyx loom reject <review-file>`, in the task worktree.
 Batten reads the decision and resumes the child itself.
-In a darn run the same reject sends the findings to a fresh `Darn` spawn.
+In a darn run the same reject sends the findings to a fresh `Darn-Write` spawn.
 Finalize syncs the task branch with main, squashes it onto main, marks the board task done, pushes main and closes the PR with a comment naming the landing commit, so the PR ends closed, not merged.
 
 ## After landing

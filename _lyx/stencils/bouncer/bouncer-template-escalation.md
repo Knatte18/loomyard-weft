@@ -2,7 +2,7 @@
      Go renders it into the Bouncer run directory (round-<N>-escalation.md) and the parent notice points at it.
      Every marker below is a top-level {{.X}} substitution, and there are no {{if}}/{{range}} conditionals anywhere in this file.
      Go interpolates only paths, round, cause, segment and slug; the wording lives here and nowhere else.
-lyx-stencil: sha256=8b4f3c9fbc8e1ae01ab89f8a791093820524e708587df6da8a5b3039b8d830ac -->
+lyx-stencil: sha256=1669ff076117c9bdc1a0768603dc866138b338eb5d175c4ab70a29f1a56409a0 build=66f4e711353236a637689da121b500ac49da45e6 time=2026-10-11T11:12:50Z -->
 
 # Escalation — review segment `{{.segment}}`, round {{.round}}
 
@@ -29,7 +29,8 @@ The run's worktree is `{{.worktree}}`.
 Settle the question only when you can do it on the materials and the task's own record.
 When you can:
 
-1. Record each design call you make with `lyx loom decision add {{.slug}} --by parent --title … --decision … --rationale …`, run in `{{.worktree}}`.
+1. Record each design call you make with `lyx loom decision add {{.slug}} --by parent --title … --decision … --rationale …`, run in `{{.worktree}}`, when the decision record exists.
+   Without one, name each design call in your report back to your parent session instead.
 2. Record your decision on the segment with exactly one of:
    - `lyx loom circling accept {{.slug}}` ends the segment unconverged on this round.
      The segment passes with its open findings, recorded as unconverged.
