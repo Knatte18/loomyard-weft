@@ -867,7 +867,7 @@
       "isolated": false,
       "brief": "Operator, 2026-10-10: with a separate fixer kept (fix_start parallel), the fixer should be critical of the reviewer's findings, not apply them blindly. Today burler-step-3-fix.md allows a dispute only for a factually false premise; severity, size, cost or rubric disagreement never justify one. Idea: let the fixer also dispute a finding whose proposed change would be wrong or make the code worse, with evidence, and choose its own fix when the reviewer's concrete change is wrong while the premise holds; the judge rules on disputes as today.",
       "body": "",
-      "status": "running · Plan-Bouncer"
+      "status": "running · Batchifier"
     },
     {
       "id": 315,
