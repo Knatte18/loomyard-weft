@@ -1,6 +1,6 @@
 # Shuttle start: tolerate a stray % at the prompt, probe readiness every second
 
-`shuttle-startup-ready` · Task · bug, enhancement, shuttle, batten · running · Worktree-Create
+`shuttle-startup-ready` · Task · bug, enhancement, shuttle, batten · 
 
 # Part 1: stray % after the prompt fails the start (#549)
 

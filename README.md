@@ -17,17 +17,15 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Webster forks wake Merriam on every gate wait**<br>• Forks end their turn while a background gate runs, so Merriam gets a finished notice and a wasted turn each time; quick checks and long paths add more | [`fork-wait-noise`](design-fork-wait-noise.md) | loom | Discussion-Burler | webster, stencil |
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | At | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 2 | **Shuttle start: tolerate a stray % at the prompt, probe readiness every second**<br>• A ready pane with a stray % after the prompt fails the whole producer, and awaitStartup sleeps 10 s between checks on every agent start | [`shuttle-startup-ready`](design-shuttle-startup-ready.md) | loom | Worktree-Create | shuttle, batten |
-
 ### Ready
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Shuttle start: tolerate a stray % at the prompt, probe readiness every second**<br>• A ready pane with a stray % after the prompt fails the whole producer, and awaitStartup sleeps 10 s between checks on every agent start | [`shuttle-startup-ready`](design-shuttle-startup-ready.md) | loom |  | shuttle, batten |
 
 ### Layer A
 
