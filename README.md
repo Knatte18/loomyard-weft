@@ -18,14 +18,17 @@ Held by a run; its scope is locked until the run ends.
 | 1 | **reed servers ignore ~/.tmux.conf**<br>• Since reed-hygiene (c6dc1fffc) reed servers start with -f /dev/null, so the operator loses prefix, key bindings and escape-time; no reed.yaml key replaces them | `reed-tmux-conf` | loom | Plan-Write | reed |
 | 2 | **TwillDiscusser: a Discussion writer that forks lens reviewers before it writes**<br>• Single-LLM Discussion-Write producer: explore, fork waiting lens forks, write, forks review the record as outsiders; forks keep their cache warm themselves | [`twill-discusser`](design-twill-discusser.md) | loom | Plan-Burler | loom, stencil |
 | 3 | **Plan gaps: inserting a card, unreachable prescribed refusals**<br>• Give the fixer a sanctioned way to insert or remove a card, and make plan review check that every prescribed refusal is reachable | [`plan-gaps`](design-plan-gaps.md) | loom | Plan-Burler | loom, burler, stencil |
-| 4 | **Darn gets a perch review with a configurable budget**<br>• After the darn writer, a Bouncer and Burler perch reviews the diff before Publish; its round budget is set in darn.yaml, and 0 turns it off. | [`darn-perch`](design-darn-perch.md) | darn | Finalize | loom, burler, shed |
-| 5 | **Pane injection never merges with the operator draft, and batten survives a draft**<br>• Defer and atomically send injected text, guard the Enter, and keep batten alive through a busy driver pane so teardown still runs. | [`pane-inject-safety`](design-pane-inject-safety.md) | loom | Discussion-Burler | shuttle, batten, orch, reed |
+| 4 | **Pane injection never merges with the operator draft, and batten survives a draft**<br>• Defer and atomically send injected text, guard the Enter, and keep batten alive through a busy driver pane so teardown still runs. | [`pane-inject-safety`](design-pane-inject-safety.md) | loom | Discussion-Burler | shuttle, batten, orch, reed |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Rename the darn writer row to Darn-Write**<br>• The recipe and its writer row are both named darn; rename the row to Darn-Write like loom's -Write rows. | [`darn-write-rename`](design-darn-write-rename.md) | darn |  | loom, shed |
 
 ### Layer A
 
@@ -41,8 +44,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **Rename the darn writer row to Darn-Write**<br>• The recipe and its writer row are both named darn; rename the row to Darn-Write like loom's -Write rows. | [`darn-write-rename`](design-darn-write-rename.md) | darn | `darn-perch` | loom, shed |
-| 3 | **Batten notices drop the attach clause and use hub-relative paths**<br>• Remove the trailing cd && lyx reed attach from batten notices, and render paths relative to the hub directory. | [`batten-notice-trim`](design-batten-notice-trim.md) | darn | `pane-inject-safety` | batten, orch |
+| 2 | **Batten notices drop the attach clause and use hub-relative paths**<br>• Remove the trailing cd && lyx reed attach from batten notices, and render paths relative to the hub directory. | [`batten-notice-trim`](design-batten-notice-trim.md) | darn | `pane-inject-safety` | batten, orch |
 
 ## Notes
 
@@ -142,3 +144,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 32 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) | loom, stencil |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Labels |
+| --- | --- | --- | --- |
+| 1 | **Darn gets a perch review with a configurable budget**<br>• After the darn writer, a Bouncer and Burler perch reviews the diff before Publish; its round budget is set in darn.yaml, and 0 turns it off. | [`darn-perch`](design-darn-perch.md) | loom, burler, shed |
