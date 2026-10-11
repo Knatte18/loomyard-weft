@@ -1,0 +1,382 @@
+{
+  "runGuid": "441e474ad6880346ecc94beac6502632",
+  "planFingerprint": "23556c3c52a5825334c2eff6be712b1d21178d6777e38863f7e01b093f448ad2",
+  "planFileHashes": {
+    "00-overview.md": "3d091cba03d21c3a21ddb1a4c574040205f6a7a957bf97651762f3ffd8da9124",
+    "01-reed-paste-submit.md": "b25cf4aada974ea8f23bb03eb4942081108ea4d2d535dac7b55a27dced19d65c",
+    "02-reed-operator-activity.md": "27cd3723b79ae2b3685088d470217d5fecfd48daa699f2b80e99c145b0ab4b11",
+    "03-reed-name-repair-guard.md": "bb914cbd74f5a31cb63fb6b1a90d2691a170a700b92327b37ce64e8cefd36677",
+    "04-shuttle-reed-seam.md": "3d738afc3079db590d04f2df68c99c15c72ee871f234f51042cff6e0ed61ae48",
+    "05-shuttle-prewrite-guard.md": "8a5f8f2a4a641d70b8c77adaba2d7818895648d933f6d6fb97d3859f9a8319a6",
+    "06-shuttle-paste-path.md": "699ca269d1ba97954b6c7d236e70e09c052664c078bd15c5d1df6d46e0f464d7",
+    "07-shuttle-pending-send.md": "d13cfc3f4ea0c8d840b94e41e4291ca632a402e8664ece08a04b1894737319b0",
+    "08-shuttle-session-commands.md": "b9525c5082455d85dc6763e3e73bacd90527b7a2d7a857fd833e9ac13f4c301f",
+    "09-claude-paste-path.md": "6653e95a726e0db0e9dabaeef24d95c511993124540463545e9d559768756867",
+    "10-claude-paste-live-check.md": "e1f14daf1dcdd329d79c5a213c72f480c288bebfb307b541917aff0bee282d6b",
+    "11-orch-held-typed-steps.md": "04fa98766e7c60b70d3bee1546757626dbd795ca0463ff976fe978fa2c058e12",
+    "12-shedrun-driver-busy.md": "f5c0e99ba60997f287093d46e9ce02ccf188bf2e50cec190c4bd8b5e9cc9c9e8",
+    "13-loom-driver-busy-refusal.md": "2bbfa665226082909232c04a8665f1ce0bab8b0461ec6e27c027b36e2921e959",
+    "14-battenshed-driver-busy-retry.md": "04534f6e1333ea05130e4ebba1d27069e63b4de9610dca5c2a42c35b09c2512a",
+    "15-battencli-driver-busy-kind.md": "c949aaff1b46292e2861501a5897fc301442ace49ce8b1e3fcb529343a7b568b",
+    "16-batten-status-halted-flag.md": "433a4d14c8f0962b400cd1662da31607b344a50c1b5c7ee317e0e1b95d7a0142",
+    "17-orch-after-landing-stencil.md": "7a75e82948eb68324b16e4f7033278922044e589023432e829a96ee093b4d238"
+  },
+  "planOverviewFrameHash": "663b3854c0a3a292495fb9fcb5b30da6930cb93bfd6a58f757f61be01faad67a",
+  "partition": [
+    {
+      "cards": [
+        "01-reed-paste-submit",
+        "02-reed-operator-activity",
+        "03-reed-name-repair-guard",
+        "04-shuttle-reed-seam",
+        "05-shuttle-prewrite-guard",
+        "06-shuttle-paste-path"
+      ],
+      "profile": "cautious",
+      "estimate": 278912,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54604,
+        "read_union": 42844,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 504,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:internal/reedengine/doc.go": 10668,
+              "file:internal/reedengine/io_test.go": 1488,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 84,
+            "written": 25704
+          },
+          {
+            "card": 2,
+            "card_text": 552,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:internal/reedengine/config_test.go": 2688,
+              "file:internal/reedengine/doc.go": 10668,
+              "file:internal/reedengine/io_test.go": 1488,
+              "file:internal/reedengine/template_posix.yaml": 240,
+              "file:internal/reedengine/template_windows.yaml": 240,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 116,
+            "written": 35352
+          },
+          {
+            "card": 3,
+            "card_text": 336,
+            "reads": {
+              "file:internal/reedengine/doc.go": 10668,
+              "file:internal/reedengine/namerepair_test.go": 3168,
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 58,
+            "written": 17736
+          },
+          {
+            "card": 4,
+            "card_text": 408,
+            "reads": {
+              "package:internal/shuttleengine": 2000,
+              "package:internal/testkit/shuttlefake": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/testkit/shuttlefake": 2000
+            },
+            "messages": 79,
+            "written": 24108
+          },
+          {
+            "card": 5,
+            "card_text": 540,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 3468,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 88.5,
+            "written": 27090
+          },
+          {
+            "card": 6,
+            "card_text": 924,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:internal/shuttleengine/doc.go": 3468,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 168.5,
+            "written": 51474
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-shuttle-pending-send",
+        "08-shuttle-session-commands",
+        "09-claude-paste-path",
+        "10-claude-paste-live-check",
+        "11-orch-held-typed-steps"
+      ],
+      "profile": "cautious",
+      "estimate": 312198,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61604,
+        "read_union": 83164,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 624,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 3468,
+              "file:internal/shuttleengine/rundir_test.go": 3744,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 120.5,
+            "written": 36774
+          },
+          {
+            "card": 8,
+            "card_text": 612,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 3468,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 116.5,
+            "written": 35562
+          },
+          {
+            "card": 9,
+            "card_text": 708,
+            "reads": {
+              "file:PATTERN.md": 1284,
+              "file:internal/shuttleengine/claudeengine/doc.go": 1764,
+              "file:internal/shuttleengine/template.yaml": 216,
+              "package:.": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 167,
+            "written": 50808
+          },
+          {
+            "card": 10,
+            "card_text": 348,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttlecli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttlecli": 2000
+            },
+            "messages": 25.5,
+            "written": 7998
+          },
+          {
+            "card": 11,
+            "card_text": 588,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:internal/orchengine/doc.go": 4476,
+              "file:internal/orchengine/watcher_compact_test.go": 7632,
+              "file:internal/orchengine/watcher_test.go": 28080,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 119,
+            "written": 36288
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "12-shedrun-driver-busy",
+        "13-loom-driver-busy-refusal",
+        "14-battenshed-driver-busy-retry",
+        "15-battencli-driver-busy-kind",
+        "16-batten-status-halted-flag",
+        "17-orch-after-landing-stencil"
+      ],
+      "profile": "cautious",
+      "estimate": 256748,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68604,
+        "read_union": 90488,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 300,
+            "reads": {
+              "package:internal/shedrun": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 30,
+            "written": 9300
+          },
+          {
+            "card": 13,
+            "card_text": 588,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4032,
+              "file:internal/loomcli/doc.go": 672,
+              "file:internal/loomcli/driverresume_test.go": 1884,
+              "file:internal/loomcli/resume_test.go": 4344,
+              "file:internal/loomcli/start_driver_test.go": 9120,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 105.5,
+            "written": 32238
+          },
+          {
+            "card": 14,
+            "card_text": 468,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:internal/battenshed/doc.go": 1164,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/battenshed": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 68,
+            "written": 20868
+          },
+          {
+            "card": 15,
+            "card_text": 336,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "tests:internal/battencli": 2000
+            },
+            "messages": 41.5,
+            "written": 12786
+          },
+          {
+            "card": 16,
+            "card_text": 384,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:internal/battencli/lifecycle_integration_test.go": 16608,
+              "file:internal/battencli/run_test.go": 5364,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/battencli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/battencli": 2000
+            },
+            "messages": 57.5,
+            "written": 17634
+          },
+          {
+            "card": 17,
+            "card_text": 180,
+            "reads": {
+              "file:contracts/stencils/claims_test.go": 9384,
+              "file:contracts/stencils/orch/orch-template-role.md": 2040,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/orch": 2000
+            },
+            "messages": 15.5,
+            "written": 4830
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "a64b9fb2b25a3e277fdf6a93c2078388",
+  "masterSessionId": "f9bc3152-93fb-4519-a9b0-e6aaa07dae56",
+  "batches": {
+    "1": {
+      "slug": "reed-paste-submit",
+      "cards": [
+        "01-reed-paste-submit",
+        "02-reed-operator-activity",
+        "03-reed-name-repair-guard",
+        "04-shuttle-reed-seam",
+        "05-shuttle-prewrite-guard",
+        "06-shuttle-paste-path"
+      ],
+      "cardHashes": {
+        "01-reed-paste-submit": "b25cf4aada974ea8f23bb03eb4942081108ea4d2d535dac7b55a27dced19d65c",
+        "02-reed-operator-activity": "27cd3723b79ae2b3685088d470217d5fecfd48daa699f2b80e99c145b0ab4b11",
+        "03-reed-name-repair-guard": "bb914cbd74f5a31cb63fb6b1a90d2691a170a700b92327b37ce64e8cefd36677",
+        "04-shuttle-reed-seam": "3d738afc3079db590d04f2df68c99c15c72ee871f234f51042cff6e0ed61ae48",
+        "05-shuttle-prewrite-guard": "8a5f8f2a4a641d70b8c77adaba2d7818895648d933f6d6fb97d3859f9a8319a6",
+        "06-shuttle-paste-path": "699ca269d1ba97954b6c7d236e70e09c052664c078bd15c5d1df6d46e0f464d7"
+      },
+      "startSha": "a5334fc72ccc820ec08f4e05bfcc329938d750ec",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T11:01:54Z",
+      "sessionId": "f9bc3152-93fb-4519-a9b0-e6aaa07dae56",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
