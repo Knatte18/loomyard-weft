@@ -14,7 +14,10 @@
 - `internal/battenshed/rownotice_test.go`
 - `plan:internal/battencli#battenHistoryLen` -> `func battenHistoryLen(location *lyxcwd.Location, slug string) (int, error)`
 - `plan:internal/battencli#rowNotices` -> `func rowNotices(location *lyxcwd.Location, slug string) battenshed.RowNoticeDeps`
-- `plan:internal/battencli#TestWire_RowNoticesReadBattensOwnHistory` -> `func TestWire_RowNoticesReadBattensOwnHistory(t *testing.T)`
+- `plan:internal/battencli#TestWire_BattenStatusSeamsReadBattensOwnStatus` -> `func TestWire_BattenStatusSeamsReadBattensOwnStatus(t *testing.T)`
+
+**Delete:**
+- `internal/battencli#TestWire_PauseRequestedReadsBattensOwnStatus`
 
 **Edit:**
 - `internal/battenshed#TeardownDeps`
@@ -65,10 +68,11 @@ In `internal/testkit/envkit`, `FullEnv` fills `Teardown.Notices.OrchStrandRecord
 `internal/battenshed/doc.go` gains a paragraph on the row notices: who sends them, the episode rule, the delivery bound and the marker reset at a fresh seed.
 
 Tests:
-`TestWorktreeTeardown_FailureNoticeOncePerEpisode` drives a failing Shutdown three times with a fake Notify and history length: one notice naming `session shutdown` and the way forward, none on a re-entry at the same history length, a new one after the length grows; and none for a cancelled context;
+`TestWorktreeTeardown_FailureNoticeOncePerEpisode` drives a failing Shutdown three times with a fake Notify and history length: one notice naming `session shutdown` and the way forward, none on a re-entry at the same history length, a new one after the length grows, and a new one, with a Warn, when `BattenHistoryLen` errors after a notice was queued; and none for a cancelled context;
 `internal/battenshed/rownotice_test.go` covers `rowNotifier.send`'s missing strand, retry spacing and drop after `noticeMaxAttempts`, and `ClearRunMarkers` removing a marker for every suffix in `runMarkerSuffixes` while leaving another file;
-`TestWire_RowNoticesReadBattensOwnHistory` writes a batten status with a known history and asserts the wired `BattenHistoryLen` answers its length, and 0 with no status;
+`TestWire_PauseRequestedReadsBattensOwnStatus` becomes `TestWire_BattenStatusSeamsReadBattensOwnStatus`, one table over the wired seams that read batten's own status file on the same fixture: its `InnerRun.PauseRequested` rows (absent, flag clear, flag set) stay, and `Teardown.Notices.BattenHistoryLen` rows assert a status with a known history answers its length and an absent status answers 0;
+the old test is deleted rather than extended because its name would no longer describe its rows;
 `TestBattenPreStep_SeedsAbsentStatus` also asserts a pre-existing row-notice marker is gone after the fresh seed.
-The new top-level tests raise the rows of `internal/battenshed` and `internal/battencli` in `cmd/lyx/testdata/test-budget.yaml`.
+The new top-level tests raise `internal/battenshed`'s row in `cmd/lyx/testdata/test-budget.yaml`; `internal/battencli`'s count is unchanged, one test deleted and one created.
 
 **ImpactSummary:** Worktree-Teardown gains an informational failure notice and batten's fresh seed clears one more marker; the teardown's verdicts and its constructor's signature are unchanged.

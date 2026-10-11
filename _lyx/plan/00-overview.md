@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -29,7 +29,9 @@ Batten retries the first Publish verify failure of a run on its own, fabric's bo
 ### Decision: land-row-pause
 
 The Land row has no `on_stuck` (D1), so a producer cannot yield a pause through a self-route the way Run-Shed does.
-A `lyx batten pause` seen during the Land row's land-lock or dirty-prime wait ends the wait with a Stuck that names the pause and `lyx batten run <slug>`, halting batten blocked at Land with no notice; the resume re-runs the row from the top.
+A `lyx batten pause` seen during the Land row's land-lock or dirty-prime wait ends the wait with a Stuck that names the pause, halting batten blocked at Land with no notice.
+Shed clears `pause_requested` only in a persist that records the run paused, at step 3 or in a goto, and a blocked persist leaves it set, so a bare `lyx batten run <slug>` after this halt would record the run paused and not call Land.
+The Stuck therefore names `lyx batten goto <slug> --to Land`, which clears the flag and leaves the run paused at Land, then `lyx batten run <slug>`, which re-runs the row from the top; card 9 admits that goto and pins the sequence through shed.
 
 ### Decision: time-bounds
 

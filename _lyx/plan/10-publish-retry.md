@@ -20,7 +20,6 @@
 - `internal/battenshed#childWait`
 - `internal/battenshed#innerRunProducer.haltedStep`
 - `internal/battenshed#innerRunProducer.noticeCondition`
-- `internal/battenshed#conditionText`
 - `plan:internal/battenshed#runMarkerSuffixes`
 - `internal/battenshed/doc.go`
 - `internal/battencli#battenCLI.wire`
@@ -65,7 +64,7 @@ Measured from the marker's `started` time, so a restart does not reset it, the r
 A goto refused for any other reason, such as a target the recipe lacks, is not retried: the marker becomes `capped` and the blocked notice goes with the refusal.
 
 Notices: `noticeCondition` returns no state-changed finding while the retry is to start or unfinished, that is for a child blocked at Publish the retry is about to take, and for a child paused at the target while the marker holds `started` or `goto-done`, however long the resume waits.
-With the retry spent, `conditionText` adds `automatic Publish verify retry already ran` to a blocked-at-Publish notice, so the orch knows the failure is the second.
+With the retry spent, `noticeCondition` sets the state-changed finding's `text` of a blocked-at-Publish child to `automatic Publish verify retry already ran`, which `conditionText` already renders after the halt text, so the orch knows the failure is the second; `conditionText` itself is unchanged.
 Every other halt keeps today's handling: no spawn, no resume, one Warn per episode.
 
 In `internal/battencli`, `battenCLI.wire` sets `PublishRow` to `loomshed.NamePublish`;
@@ -80,8 +79,8 @@ Bound: once per batten run, a capped retry counting as that one; only for a chil
 
 Tests, in `internal/battenshed/innerrun_publishretry_test.go`, over fake seams and a fake clock:
 a matching record is sent to its target and resumed once, with no notice for the halt or the paused state, also when the resume waits past `noticeReportWait`, and a second Publish halt in the run gets the blocked notice saying the retry already ran;
-a table of records that are not retried and get the blocked notice: none, one at another HEAD, a same-HEAD record from an earlier halt, one written in the same second as the entry before the halting attempt, and ones lacking the target or the write time; and a record in the same second as the halting entry is retried;
-a goto refused as busy and a resume refused as not parked are retried until they land, and past the cap the notice for the child's actual state carries the last refusal, a restart with the marker present does not reset the cap, and a later Publish halt after the cap gets the blocked notice and no goto;
+a table of records that are not retried and get the blocked notice: none, one at another HEAD, a same-HEAD record from an earlier halt, one written in the same second as the entry before the halting attempt, ones lacking the target or the write time, and a `PublishFailure` or `ChildHead` read error, each warned about; and a record in the same second as the halting entry is retried;
+a goto refused as busy, a resume refused as not parked and a resume refused with `ErrChildDriverBusy` are retried until they land, the driver-busy one also sending the awaiting arm's driver-busy notice once, and past the cap the notice for the child's actual state carries the last refusal, a restart with the marker present does not reset the cap, and a later Publish halt after the cap gets the blocked notice and no goto;
 a goto refused for an unknown target is not retried and sends the blocked notice;
 a batten restarted after the goto and before the resume resumes the child, and one restarted after `started` and before the goto repeats it.
 `TestChildSpawnError` gains a row for a `shed_busy` refusal wrapping `ErrChildRunBusy`, and `TestReadChildPublishFailure_MapsTheRecord` writes a record in a task worktree and asserts the mapped fields, and found false for no record.

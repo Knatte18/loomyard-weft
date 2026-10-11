@@ -6,10 +6,12 @@
 - `internal/landingshed/doc.go`
 - `internal/landingshed#TestLoadConfig_TemplateDefaults`
 - `internal/configcli#TestConfigOverRealHub`
-- `cmd/lyx/testdata/test-budget.yaml`
+
+**Delete:**
+- `internal/landingshed#TestLoadConfig_PublishVerify`
 
 **Create:**
-- `plan:internal/landingshed#TestLoadConfig_Deploy` -> `func TestLoadConfig_Deploy(t *testing.T)`
+- `plan:internal/landingshed#TestLoadConfig_OptionalStringKeys` -> `func TestLoadConfig_OptionalStringKeys(t *testing.T)`
 
 **Intent:**
 `landing.yaml` gains the hub-wide `deploy` key of D2, which card 9 has batten's Land row read.
@@ -26,8 +28,8 @@ No guard is added: `configcli`'s existing hub-wide write refusal already covers 
 
 Tests:
 `TestLoadConfig_TemplateDefaults` asserts `cfg.Deploy` is empty;
-the new `TestLoadConfig_Deploy` loads a landing file with `deploy` set and one without it, and asserts the set value and the empty one;
+`TestLoadConfig_PublishVerify`'s key-set and key-absent rows become `TestLoadConfig_OptionalStringKeys`, one table over the optional string landing keys whose rows name the key and read its `Config` field: `publish_verify` and `deploy`, each set and absent, the absent one loading the template's empty value;
+the old test is deleted rather than extended because its name would no longer describe its rows, so `internal/landingshed`'s test count is unchanged;
 `TestConfigOverRealHub`'s hub-wide refusal table gains a row writing `landing` `deploy=./update-plugins.sh` from the task pair, refused naming the prime worktree.
-The new top-level test raises `internal/landingshed`'s row in `cmd/lyx/testdata/test-budget.yaml`.
 
 **ImpactSummary:** one additive landing key with an empty default; existing hubs gain it through hub-wide reconcile, and no landing producer reads it.
