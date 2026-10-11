@@ -1,66 +1,65 @@
 ---
-verdict: BLOCKING
+verdict: APPROVED
 findings:
   - id: F1
-    severity: BLOCKING
-    class: design
-    location: _lyx/discussion/decision-record.md D4 (LocalDenied for reed, Bound line), R3
-    summary: D4 leaves reed.mouse and reed.debug_log open to the local layer, yet both are applied globally to the hub's shared tmux server at its boot, so the bound that a local override never changes a fact shared across pairs is false
-  - id: F2
     severity: MEDIUM
     class: design
-    location: _lyx/discussion/decision-record.md D6, Acceptance criteria (migration walk)
-    summary: D6's strip of keys equal to the layers below is not stated to treat an open map as one unit, and a leaf-wise strip inside an open map changes the resolved value because D1 carries an open map whole from the highest layer
-  - id: F3
+    location: _lyx/discussion/decision-record.md D2 (Its layers merge by D1, so an alias mapping in models merges key by key)
+    summary: D2 merges a models alias key by key across layers, reversing modelspec's whole-entry replacement, so an override inherits a lower layer's defaults it cannot remove and existing alias overrides change what they resolve to
+    fix: In decision-record.md D2, replace the sentence that a models alias mapping merges key by key with a rule that each top-level models alias is carried whole from the highest layer holding it, as D1 carries an open map, so an upper layer's alias entry replaces the lower one outright; extend D1's open-map sentence, or add one beside it, to name models aliases as whole units; in D6, state that a models alias is compared and stripped as one unit, as an open map is; and add an acceptance criterion that a local models alias without a defaults block resolves with no defaults from the layers below.
+  - id: F2
     severity: LOW
-    class: design
-    location: _lyx/discussion/decision-record.md D4 Rationale
-    summary: D4's rationale says the denied per-worktree keys today change only through a tracked file, but reed.shell, reed.tmux, reed.tmux_conf, shuttle.claude and shuttle.run_dir expand env-var markers at load, an existing untracked route
+    class: consistency
+    location: _lyx/discussion/decision-record.md D5 (exempt from the template-lacks refusal) and D8 (is a models alias)
+    summary: D5 and D8 exempt a models alias the template lacks but not a key path under an alias the template holds, so a local or run_settings opus.defaults.version, which modelspec accepts, is refused, against D2's rule that a seed-only module's key set is the operator's
+    fix: In decision-record.md D5, change the models exemption to cover every key path under a top-level alias in the models local file, whether or not the template holds that alias, with the alias block validated by the models loader at load; make D8's validation clause say the same (a key path under any models alias); and widen the acceptance criterion reading A models local file and run_settings accept an alias the template lacks to also accept an entry such as opus.defaults.version under an alias the template holds.
 ---
 
-### [BLOCKING] D4's bound is false for reed.mouse and reed.debug_log
+### [MEDIUM] models aliases merge key by key, reversing modelspec's whole-entry replacement
 
-**Location:** `_lyx/discussion/decision-record.md` D4 (the `LocalDenied` list for reed and the `Bound:` line), and R3, which repeats that D4's lists bound what a pair agent gains to session tuning.
+**Location:** `_lyx/discussion/decision-record.md` D2, and D1's merge rule it applies.
 
-**Issue:** D4 denies reed `shell`, `tmux` and `tmux_conf` and leaves every other reed key open to the untracked local layer.
-Its `Bound:` line says a local override can never change a key that "is a fact shared across pairs".
-Two of reed's open keys are exactly that:
+**Issue:** D2 says a seed-only module's layers merge by D1, "so an alias mapping in `models` merges key by key".
+The models loader today does the opposite on purpose.
+`internal/modelspec/load.go` (`LoadRegistry`) replaces each built-in alias with the file's entry whole, with the comment "Whole-entry replacement ... no field-level merge, so an override can never leak a stale built-in default."
+Under D2 the template becomes a layer below every models file, and D1 says no layer can delete a key from a layer below.
+Two consequences follow, and the record names neither:
 
-- `reed.mouse`: `internal/reedengine/lifecycle.go` `pinBootOptionsLocked` runs `set-option -g mouse <value>` on the boot that spawns the server, and `internal/reedengine/doc.go` ("Mouse boot pin") describes the server as the shared per-hub server.
-  A pair whose `reed up` happens to boot the hub server sets the global mouse mode for every pair on it.
-  The reed doc names `off` as non-neutral: wheel gestures then type arrow keys into the live agent of whichever pane is under the operator.
-- `reed.debug_log`: the template comment says it "takes effect only on the boot that spawns the shared per-hub server", and `lifecycle.go` maps it to tmux's global `-v`/`-vv` flags.
-  At `2`, tmux writes its protocol log, covering every pane's traffic in every pair, into the hub logs dir.
+- An existing models file whose `opus` entry has no `defaults` block resolves today with no defaults; under D2 it picks up the template's `defaults.effort: medium`.
+  D6 then promises that the strip "never changes what a key the worktree file holds resolves to", but D2's merge has already changed it before any strip runs.
+- A local or `run_settings` override `opus: {engine: claude, model: <id>}` keeps every `defaults` key the repo default holds, including a `version` default (a known `Entry.Defaults` key in `modelspec`'s `knownParams`) pinned to a different model.
+  The override has no way to drop it, which is the stale-default leak `modelspec` was written to prevent.
 
-Both are changed from an untracked file that landing never shows (D4's own R3 point), so the record's claim that the denylist keeps cross-pair keys in tracked layers does not hold.
-This is the same enumeration gap round 1 fixed for `shell`/`tmux`/`tmux_conf`, recurring in the method: D4 lists keys by the categories executable, sourced file, guard and run dir, and does not test each open key against its own fourth category, a server-wide or hub-wide effect.
-I checked the other per-worktree templates (logger, orch, webster, loom, batcher, burler, models, the rest of shuttle and reed) and found no further key with a cross-pair effect: logger retention sweeps the worktree's own `LogsDir`, reed `watchdog` is read per worktree, reed `width`/`height` size one session.
+The models alias is an open-ended, operator-owned entry, the same shape of thing D1 already carries whole for an open map.
+D1's open-map rule fits it, and D2's own rationale, that the operator owns the seed-only key set, argues for it.
+The class is `design` because the decision rests on a premise about today's models resolution that the code contradicts.
 
-**Fix:** add `mouse` and `debug_log` to reed's `LocalDenied`, extend D4's reason sentence to name "an option the hub's shared tmux server takes at boot", and add one of them to the `LocalDenied` acceptance criterion's examples.
-State in D4 that the denylist was derived by checking every open key of each per-worktree module against the four categories, so the plan writer applies the same test to any key it touches.
+### [LOW] D5's models exemption stops at the alias name
 
-### [MEDIUM] D6's strip is not stated to preserve resolution across open maps
+**Location:** `_lyx/discussion/decision-record.md` D5 ("an alias in the `models` local file") and D8 ("or is a `models` alias"), and the acceptance criterion "A `models` local file and `run_settings` accept an alias the template lacks."
 
-**Location:** `_lyx/discussion/decision-record.md` D6 (the strip sentence) and the acceptance criterion "The migration walk seeds an absent repo default ... strips keys equal to the layers below".
+**Issue:** The exemption is worded for an alias name.
+A key path under an alias the template does hold, such as `opus.defaults.version`, is neither an alias the template lacks nor under an open map.
+D5's refusal and D8's path check therefore reject it, though `modelspec`'s `knownParams` admits `version` in `Entry.Defaults` and D2 says a seed-only module's key set is the operator's at every layer.
+The acceptance criterion pins only the alias-the-template-lacks case, so the plan writer reads the narrower rule.
+If F1's fix makes each alias a whole unit, this exemption becomes "any alias block", which is the natural wording to adopt alongside it.
 
-**Issue:** D1 merges mappings key by key but carries an open map (`configreg.Module.OpenMaps`) whole from the highest layer that holds it.
-D6 strips "every key whose value equals what the layers below resolve to", without saying at what depth the comparison runs inside an open map.
-A leaf-wise strip changes the resolved config.
-Concrete case: shuttle's open map `claude_prompt_cache_ttl_roles` has the template entries `driver: 1h` and `webster: 1h`.
-A worktree file holding `{driver: 1h, webster: 1h, plan: 1h}` over a repo default holding `{driver: 1h, webster: 1h}` loses `driver` and `webster` to a leaf-wise strip, keeping `{plan: 1h}`.
-D1 then carries `{plan: 1h}` whole, and `driver` and `webster` fall to the `5m` default.
-batcher's `profiles` and loom's open maps have the same exposure.
-The strip's purpose is to make files sparse without changing what any worktree resolves to; the record never states that invariant, and no acceptance criterion pins it.
+## Settled focus questions
 
-**Fix:** state in D6 that an open map is compared and stripped as one unit, kept whole unless it equals the resolved map below, and that the strip never changes a worktree's resolved config.
-Add an acceptance criterion: after the strip, every migrated worktree resolves every module to the same values as before, including a worktree whose open map differs from the default's in one entry.
-
-### [LOW] D4's rationale premise overlooks env-var expansion
-
-**Location:** `_lyx/discussion/decision-record.md` D4, Rationale ("the denied per-worktree keys today change only through a tracked file that landing flags").
-
-**Issue:** the reed and shuttle templates set `tmux`, `shell`, `tmux_conf`, `claude` and `run_dir` through `${env:LYX_...}` markers, and `internal/yamlengine/resolve.go` expands those markers at load.
-An environment variable is an existing untracked route to these keys, so "only through a tracked file" is false as written.
-D4's decision still stands: an env var binds only the process that carries it, while a local file persists in the pair and reaches every later driver and spawn that loads the module.
-
-**Fix:** reword the rationale to rest on persistence: today the denied keys persist in a pair only through a tracked file that landing flags, and an env var binds only the process that sets it.
+- D4's per-worktree bound holds.
+  `reed.shell`, `reed.tmux`, `reed.tmux_conf`, `reed.mouse`, `reed.debug_log`, `shuttle.claude`, `shuttle.run_dir` and every `shuttle.claude_deny_*` key are in `LocalDenied`.
+  D5 refuses them at load, and D8 refuses them at board write.
+  D4 states the bound and the residual: the untracked local file is unseen at landing, which R3 names along with the `.env` route.
+  I tested the keys D4 leaves open against its categories.
+  `webster.verify_gate_attempts` at 0 would switch off the plan-level verify gate, but `websterengine`'s load refuses any value below 1.
+  `darn.verify_attempts` is refused below 1 by `loomrecipe.NewDarn`, and loom's `review_max_bounces` below 1 by `loomrecipe.New`.
+  `logger`'s retention keys sweep only the anchor's own `.lyx/logs`, so they are not a cross-pair fact.
+  No open key I checked switches off a guard.
+- The seed-only rule is stated.
+  D2 says reconcile never rewrites, prunes or migrates a seed-only layer.
+  The reconcile acceptance criterion exempts seed-only modules, and D4 closes `burler`'s local layer entirely.
+  D5 and D8 agree on the exemption for a `models` alias the template lacks, apart from F2.
+- D6 states that a pin equal to the seeded default becomes inherited, and that a later `--layer default` change reaches it.
+  Its bound is the per-worktree `stripped` list, plus the `inherited` list for keys the worktree lacked.
+- D5, D8, the acceptance criteria and R1 and R3 are consistent with D4's current lists.
+  No requirement the plan writer needs lives in `support-log.md` only.
