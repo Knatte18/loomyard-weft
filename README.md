@@ -26,7 +26,11 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Rename the darn writer row to Darn-Write**<br>• The recipe and its writer row are both named darn; rename the row to Darn-Write like loom's -Write rows. | [`darn-write-rename`](design-darn-write-rename.md) | darn |  | loom, shed |
 
 ### Layer A
 
