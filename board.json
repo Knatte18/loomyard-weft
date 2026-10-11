@@ -1056,6 +1056,22 @@
       "isolated": false,
       "brief": "Remove the trailing cd \u0026\u0026 lyx reed attach from batten notices, and render paths relative to the hub directory.",
       "body": "## Seen (operator, 2026-10-11)\n\nA batten notice to the orch ends with `; cd \u003cabsolute pair path\u003e \u0026\u0026 lyx reed attach` (`internal/battenshed/notice.go:150`, `renderNotice`), and its report clause carries the stop report's absolute path.\nThe orch knows how to attach to a pair, so the attach clause is noise, and absolute paths repeat the hub directory every orch already works in.\n\n## Wanted\n\n- Drop the attach clause from every batten notice.\n- Render every path in a notice relative to the hub directory (the directory holding the prime and the task pairs), for example `fixer-critical-of-findings/_lyx/shed/fixer-critical-of-findings/drive-reports/drive-report-….md`.\n- Update the notice tests and the docs that quote a notice line.\n"
+    },
+    {
+      "id": 351,
+      "slug": "run-time-by-role",
+      "title": "Tokencount reports wall-clock time per role",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "shed",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "tokencount adds each run's wall-clock time per role and its idle time, so the slowest producer shows",
+      "body": "## Seen (operator, 2026-10-11)\n\n`tools/tokencount` reports each finished run's tokens and estimated cost per run and per role, but nothing reports where a run's wall-clock time goes.\nThe operator wants to see the time each producer takes and where most of a run's time is spent.\n\n## Wanted\n\n- `tools/tokencount` reports wall-clock time beside tokens: per run and per role, from the transcript lines' timestamps it already reads, with sub-agents under their parent's role as for tokens.\n- Time no session spends working (parent review, PR-Gate, waits for a gate slot, a parked driver) shows as its own line per run, read from whatever the run's shed/loom status records; if the status records no per-phase timestamps, say so in the report and add them.\n- Each role's share of the run's total time, so the slowest producer stands out.\n- Update the package doc and the launchers' report description.\n"
     }
   ]
 }
