@@ -929,6 +929,23 @@
       "isolated": false,
       "brief": "Repeat the audit count (grep-for-member calls and whole-file reads per fork) on real loom runs with kickstart_pack on and off.",
       "body": "Seen at the PR-Gate review of plan-glyph-tuning (PR #559, 2026-10-11): the task built the Webster kick-start pack behind `webster.yaml` `kickstart_pack` (default on) and made it countable, but did not measure it.\nEach begin-batch traces one `webster: kickstart pack` line (on, off or language-none, with resolved and unresolved counts), and each `plan:` handle traces one `webster: handle bind` line.\n\nIdea: repeat the audit count on real loom runs with the pack on and off: grep-for-member calls and whole-file reads per implementer fork.\nThe Burler side of `kick-start-pack` and `enclose-kickstart` wait on this result.\n"
+    },
+    {
+      "id": 398,
+      "slug": "task-run-settings",
+      "title": "Per-task run settings on the board entry",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "board",
+        "batten",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A board task carries its own run settings, such as review rounds per perch and for darn, which batten applies to the pair at creation.",
+      "body": "## Seen (2026-10-11)\n\nThe orch sets `review_max_bounces: 2` by hand in a small task's pair `loom.yaml` right after batten creates the pair, and must first check that the pair exists, since a run can stall at Worktree-Create.\nLanding then warns that the task branch changed a per-worktree config file, which needs nothing but costs a look each time.\nThe board entry already carries one run setting, `recipe`.\n\n## Idea (operator, 2026-10-11)\n\nRun settings such as the number of review rounds per perch (Discussion, Plan and Webster review segments) and for darn's review are part of the task: the board entry carries them, and batten applies them to the pair when it creates it.\nStarting a ready task then needs no hand step, which `orch-split` needs for a mechanical run driver.\n\n## Open\n\n- Which settings a task may carry: a closed list of keys, or any key of the recipe's config module.\n- Where batten applies them, so landing does not flag them as config changes meant for the parent.\n"
     }
   ]
 }
