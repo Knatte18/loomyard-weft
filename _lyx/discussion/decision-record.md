@@ -193,6 +193,14 @@ The Publish verify failure line under `## Escalations from a child` says batten 
   - d5-capped-retry-no-recorded-end (class design, severity MEDIUM, open in rounds 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - land-pause-flag-stays-set-on-resume (class consistency, severity MEDIUM, open in rounds 1, 2)
+  - push-primitive-retry-ordering-untested (class scope, severity MEDIUM, open in rounds 2)
+  - ready-notice-routed-to-investigating-stop (class consistency, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A child that ends done is pulled into the prime, deployed and pruned by the Land row, and batten reaches done with no notice sent.
