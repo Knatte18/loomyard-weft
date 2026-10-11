@@ -1242,6 +1242,36 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\n`lyx batten run --window` gives each batten run its own window in the prime's reed session, which is where its process lives, and each shows up as a `batten:\u003cslug\u003e` button on status line 1 of the orch's session.\nTheir output says nothing useful to the operator.\n\n## Wanted (operator, 2026-10-08)\n\n- The batten windows stay, since the batten process lives there, but they are not visible: they carry a marker the status bar skips, so status line 1 shows no `batten:\u003cslug\u003e` buttons.\n- The runs overview (note `runs-overview`) is where runs are watched; until it exists, `lyx batten status` and each run's own terminal window cover it.\n"
+    },
+    {
+      "id": 368,
+      "slug": "tokencount-crash-gap",
+      "title": "Tokencount counts a crashed turn's gap as working time",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Seen at run-time-by-role PR-Gate (PR #550): a last assistant line with a null `stop_reason`, or a session that crashes mid-turn, never ends its working interval, so the gap to the next transcript line counts as working time.\n\nIdea: close an interval with no turn end at its last line (or cap it), so a crash shows as idle instead of work."
+    },
+    {
+      "id": 369,
+      "slug": "tokencount-slug-reuse",
+      "title": "Tokencount mixes older runs' transcripts into a reused slug",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Seen at run-time-by-role PR-Gate (PR #550): a slug reused across runs pulls older sessions' transcripts into its time, as it already does for tokens.\n\nIdea: bound a run's transcripts by its span (seed start to last history end) so a reused slug counts only its own run."
     }
   ]
 }
