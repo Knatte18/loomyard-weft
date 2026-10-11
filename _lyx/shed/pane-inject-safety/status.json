@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster-Bouncer",
+  "current_producer": "Webster-Burler",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster-Bouncer",
-    "last": "Webster-Burler → bounced to Webster-Bouncer",
+    "now": "Webster-Burler",
+    "last": "Webster-Bouncer → bounced to Webster-Burler",
     "wait": ""
   },
   "history": [
@@ -147,6 +147,12 @@
       "at": "2026-10-11T11:54:28Z",
       "gate_attempts": 0,
       "budget_exempt": true
+    },
+    {
+      "producer": "Webster-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/pane-inject-safety/_lyx/reviews/webster/round-2-bouncer-ledger.md",
+      "at": "2026-10-11T11:55:05Z"
     }
   ],
   "product": {
