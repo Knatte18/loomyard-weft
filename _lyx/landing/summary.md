@@ -5,7 +5,7 @@
 Batten now runs the landing routine after a child run ends done, and handles one class of halt on its own, so the hub orch is woken only for what needs its judgement.
 The orch's per-landing calls (pull, deploy, config reconcile, prune, the teardown check) and its `lyx loom start` loop after an approval go away.
 
-- **Land row.** The batten recipe gains `Land` between Run-Shed and Worktree-Teardown (`internal/battenrecipe`, `internal/battenshed/land.go`, wired in `internal/battencli`).
+- **Land row.** The batten recipe gains `Land` between Run-Shed and Worktree-Teardown (`internal/shedrecipe`, `internal/battenshed/land.go`, wired in `internal/battencli`).
   It pulls the prime, runs the hub's `deploy` command, snapshots the ready tasks, prunes the board and reads the ready set again.
   It has no `on_stuck`, so a failed step halts batten blocked at `Land` with the pair intact; Worktree-Teardown stays the only terminal.
   An in-flight batten status seeded before this change routes into `Land` after its Run-Shed Done.
@@ -46,8 +46,8 @@ The orch's per-landing calls (pull, deploy, config reconcile, prune, the teardow
 - `land-pause-flag-stays-set-on-resume`: confirm that `lyx batten pause` during the land lock wait in `internal/battenshed/land.go` leaves no pause flag set once batten resumes.
 - `push-primitive-retry-ordering-untested`: confirm that the retry check runs before `rebaseRetryTriggers` and the `ErrPushRejected` mapping in each primitive of `internal/gitrepo` (`Push`, `PushCoalesced`, `PushRebaseFree`); the ordering is not pinned by a test for every primitive.
 - `ready-notice-routed-to-investigating-stop`: check that the orch role stencil sends a ready-task notice to starting the named tasks, not to the Investigating-a-stop path.
-- `d5-capped-retry-no-recorded-end`: check that a capped Publish retry in `internal/battenshed/publishretry.go` has a recorded end, so a later halt in the same run is not retried again.
 - Land a real task end to end with a non-empty `deploy` and read the row's log, since no run exercised a real deploy.
 - Old-binary batten and loom processes still call `hubreconcile.Ensure` after a deploy, a stamp flip-flop `hubreconcile` already accepts; deploys inside running battens make it more frequent.
 - A batten killed between Run-Shed's Done and the Land row sends nothing until it runs again.
+- `TestWire_EverySeamFilled` in `internal/loomcli` now lists the batten-only seams (`InnerRun`, `Teardown.Notices`, `Land`) as intentionally nil; confirm each is filled by `internal/battencli`.
 - The `internal/gitrepo` row in `cmd/lyx/testdata/test-budget.yaml` was raised from 41 to 44.
