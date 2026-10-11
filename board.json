@@ -1152,7 +1152,8 @@
       "depends_on": [],
       "isolated": false,
       "brief": "Bench pair for the twill-plan sonnet[high] arm; torn down after the run",
-      "body": "Temporary bench pair for board note twill-plan, sonnet[high] arm. Plan-Write only, from a frozen decision record."
+      "body": "Temporary bench pair for board note twill-plan, sonnet[high] arm. Plan-Write only, from a frozen decision record.",
+      "status": "running · Loom-Preflight"
     }
   ]
 }
