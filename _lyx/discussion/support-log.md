@@ -23,7 +23,7 @@ Autonomous run: no operator answered; every pick below is an auto-pick recorded 
    - scenarios (LOW): a non-boolean value — fixed: D3 and Acceptance criteria.
    - premises (LOW): the pack could read the in-memory plan, older than the plan on disk — fixed: D4 builds from the plan on disk after re-resolution.
    - premises, pattern-fit (LOW): the new stencils need seed registration — fixed: D7.
-   - premises, pattern-fit (LOW): a stale `_lyx` path in the `webster-prefix-fork.md` banner — fixed: Notes for the plan writer.
+   - premises, pattern-fit (LOW): a stale `_lyx` path in the `webster-prefix-fork.md` banner — dropped in round 1: the banner is outside this task's scope.
    - goal-scope (LOW): the Rename and Move old sides, and D9, are unlicensed picks — fixed: listed under Auto-mode assumptions.
    - goal-scope (LOW): the operator's "still read the code" rule was not pinned by any criterion — fixed: added to Acceptance criteria.
    - board-fit (LOW): `weaver` reuses the recovery render — fixed: one line in Scope Out.
