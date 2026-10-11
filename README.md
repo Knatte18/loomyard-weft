@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 | 3 | **TwillDiscusser: a Discussion writer that forks lens reviewers before it writes**<br>• Single-LLM Discussion-Write producer: explore, fork waiting lens forks, write, forks review the record as outsiders; forks keep their cache warm themselves | [`twill-discusser`](design-twill-discusser.md) | loom | Plan-Burler | loom, stencil |
 | 4 | **Plan gaps: inserting a card, unreachable prescribed refusals**<br>• Give the fixer a sanctioned way to insert or remove a card, and make plan review check that every prescribed refusal is reachable | [`plan-gaps`](design-plan-gaps.md) | loom | Plan-Write | loom, burler, stencil |
 | 5 | **Darn gets a perch review with a configurable budget**<br>• After the darn writer, a Bouncer and Burler perch reviews the diff before Publish; its round budget is set in darn.yaml, and 0 turns it off. | [`darn-perch`](design-darn-perch.md) | darn | Darn | loom, burler, shed |
-| 6 | **Pane injection never merges with the operator draft, and batten survives a draft**<br>• Defer and atomically send injected text, guard the Enter, and keep batten alive through a busy driver pane so teardown still runs. | [`pane-inject-safety`](design-pane-inject-safety.md) | loom | Discussion-Write | shuttle, batten, orch, reed |
+| 6 | **Pane injection never merges with the operator draft, and batten survives a draft**<br>• Defer and atomically send injected text, guard the Enter, and keep batten alive through a busy driver pane so teardown still runs. | [`pane-inject-safety`](design-pane-inject-safety.md) | loom | Discussion-Bouncer | shuttle, batten, orch, reed |
 
 ### Ready
 
