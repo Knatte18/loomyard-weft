@@ -17,22 +17,19 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Burler: reviewer row then fixer row, lean fixer, per-perch budget and auto-accept**<br>• Split the Burler round into Burler-Review and Burler-Fix rows, skip the fixer on an empty review, give the fixer only the fix report, and give each perch its own bounce budget and auto-accept flag. | [`burler-split-budget`](design-burler-split-budget.md) | loom | Discussion-Burler | loom, burler |
 | 2 | **Batten lands itself; the orch wakes only for judgement**<br>• Batten runs the landing steps after Finalize and handles notices that name their own action, so the orch is woken only for parent review, unsettled escalations, PR-Gate and unknown halts. | [`orch-wake-policy`](design-orch-wake-policy.md) | loom | Worktree-Create | batten, orch |
+| 3 | **Config layers and per-task run settings**<br>• Config resolves through a repo default, the worktree file and an untracked local override under .lyx/; a board task carries run settings that batten writes into the pair local override. | [`config-layers-run-settings`](design-config-layers-run-settings.md) | loom | Worktree-Create | config, batten, board |
 
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 3 | **Shuttle reads agent state from hooks first, the pane only where no hook exists**<br>• Install SessionStart on every run, end awaitStartup on it, map PermissionRequest and dead readings; keep pane reads only for dialogs, drafts and operator activity | [`shuttle-hook-first`](design-shuttle-hook-first.md) | loom | Webster | shuttle, loom |
+| 4 | **Shuttle reads agent state from hooks first, the pane only where no hook exists**<br>• Install SessionStart on every run, end awaitStartup on it, map PermissionRequest and dead readings; keep pane reads only for dialogs, drafts and operator activity | [`shuttle-hook-first`](design-shuttle-hook-first.md) | loom | Webster | shuttle, loom |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### High priority
-
-| # | Task | Slug | Recipe | After | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Config layers and per-task run settings**<br>• Config resolves through a repo default, the worktree file and an untracked local override under .lyx/; a board task carries run settings that batten writes into the pair local override. | [`config-layers-run-settings`](design-config-layers-run-settings.md) | loom |  | config, batten, board |
+_None._
 
 ### Layer A
 
