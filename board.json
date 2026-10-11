@@ -146,53 +146,6 @@
       "body": "## Why\n\nThe operator works long-term on a branch of their own in its own worktree, not on `main`, which in a large project is not theirs to drive; that worktree is where they want their orch.\nToday every `lyx orch` verb refuses outside the hub's prime (`internal/orchcli/refusal.go`), every batten verb does too (`RefuseUnlessPrime` in `internal/battencli`), and orch keeps its files under the prime's `.lyx/orch/`.\nRun parentage already follows the worktree a pair was created from (`aa67fd1d7`, #341), so a pair created from the operator's worktree would land there; orch and batten are what stand in the way.\n\n## Want\n\n- `lyx orch` and `lyx batten` run from any drivable worktree in the hub, which then acts as that orch's home: pairs branch from its branch and land into it, and orch's scratch, handoffs and reed strand live in that worktree.\n- More than one orch per hub, one per home worktree, without stepping on each other's pairs, board claims or reed sessions.\n\n## Open points\n\n- What \"prime only\" protects today and whether any of it must stay prime-bound (board writes, deploy, `lyx board prune`, the hub workspace).\n- How a home worktree's branch reaches `main` (the operator's own merge, or a landing verb), and whether the board is per hub or per home.\n- What the relevant CONSTRAINTS.md invariants say about prime (batten's prime-anchored status and lock paths, Told-Geometry) and how they change.\n"
     },
     {
-      "id": 53,
-      "slug": "ide-reopen-prime",
-      "title": "Reopen the prime VS Code window with one short command",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "ide"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A snap refresh left the prime window wrong; lyx ide spawn needs the slug and fails from the hub root",
-      "body": "Seen 2026-10-03: a snap auto-refresh of VS Code (rev 257 → 267 at 12:44) left the old instance running; batten's next `code \u003cpair\u003e` call then started a second instance, which restored the prime as a bare folder without the hub workspace's title and colour, and the operator had to close windows by hand.\nReopening the prime correctly takes `lyx ide spawn \u003cprime-name\u003e`, whose folderOpen chain (`reed up`, `reed add --unless-name orch`, `reed attach`) reattaches to the orch without starting a second Claude; a plain `code` on the prime gets the stale mill-managed `.vscode/tasks.json` and attaches nothing.\n`lyx ide spawn` needs the slug and fails from the hub root, so the operator had to cd into the prime.\nIdea: with no argument it opens the worktree it is run in, and from the hub root or another hub directory outside a worktree it opens the prime.\n"
-    },
-    {
-      "id": 54,
-      "slug": "ide-open-verb",
-      "title": "lyx ide open: launch VS Code without writing anything",
-      "kind": "note",
-      "labels": [
-        "feature",
-        "ide",
-        "batten"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "spawn configures and launches at once and overwrites a driven pair's attach chain; add a write-nothing open verb",
-      "body": "Seen 2026-10-03: `lyx ide spawn` configures and launches in one step (title colour, `.vscode/settings.json`, an interactive `tasks.json` rewritten every call, `info/exclude`, the prime's hub workspace file).\nOn a driven pair it replaces batten's attach-only chain with the interactive one, whose `reed add claude` can start a second Claude in that pair, so the orch opened the part-2 pair with plain `code` instead.\nIdea: a `lyx ide open [\u003cslug\u003e]` that only launches and writes nothing — the prime through its existing hub workspace file, a pair through its folder and the `tasks.json` already there — with the same no-argument and hub-root defaults as the reopen note; `spawn` stays the configuring verb.\n"
-    },
-    {
-      "id": 55,
-      "slug": "ide-workspace-pairs",
-      "title": "Pairs as folders in the prime's hub workspace",
-      "kind": "note",
-      "labels": [
-        "feature",
-        "ide",
-        "fabric"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Idea, undecided: fabric adds and removes pairs in the prime workspace's folders; _portals stays",
-      "body": "Idea, undecided (operator, 2026-10-03): keep the prime's hub workspace as the one VS Code window, and have fabric add each pair to its `folders` on `add` and drop it on `remove`/teardown; VS Code picks up workspace-file edits live.\nThe operator rarely reads a pair's files (everything goes through the orch) but looks at plan files and similar now and then, which `_portals` (each pair's `_lyx/`) already covers and is kept for.\nOpen points: per-folder `folderOpen` tasks would run in the prime window (and batten's own pair window would then go), a full pair copy multiplies indexing and search unless only `_lyx/` is added or excludes are set, and the prime must stay the first folder or the extension host restarts.\n"
-    },
-    {
       "id": 62,
       "slug": "fabric-windows",
       "title": "Fabric's Windows path behaviour verified on a Windows host",
@@ -717,25 +670,6 @@
       "body": "## Seen\n\nThe trace files written for each lyx invocation hold only high-level messages, and `_lyx/config/logger.yaml` sets only retention (`trace_retention_count`, `trace_retention_days`).\nThe file log has no configurable level, so after the 2026-10-08 crash the traces could not show what lyx's subcommands did.\nActivity-ranked pruning also left the per-minute invocation counts incomplete.\n\n## Idea\n\n`logger.yaml` gains a `level` key (error, warn, info, debug) for the file trace, independent of the `-v` console verbosity, with info as the default.\nEvery engine logs its decisions and external calls at info or debug, so raising the level makes most of what lyx does traceable without a rebuild.\nThe spawn audit stays always on, whatever the level, because it cannot be turned on after a crash.\n"
     },
     {
-      "id": 251,
-      "slug": "haiku-roles",
-      "title": "Haiku 5.5 for the Bouncer judge: is its ruling simple enough",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "config",
-        "loom",
-        "burler"
-      ],
-      "issues": [],
-      "priority": "low",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The driver already runs on Haiku 5.5; decide per Bouncer row whether the judge ruling is simple enough for Haiku, trial it, and switch only where it holds",
-      "body": "## Seen\n\nThe operator benchmarked Haiku 5.5 on 2026-10-08 (`docs/benchmarks/haiku-5-5.md`): on one fully specified coding task it scored as well as Sonnet and Opus at medium, at a fraction of the cost, but took about twice as long and grew its context to 74–132k.\nThe driver steps one run through `lyx shed step` and answers its waits, and the judge rules on a fixed question per round; neither writes code or long prose.\n\n## Driver switched (operator, 2026-10-08)\n\n`driver` is `haiku[medium]` in `loom.yaml` from 2026-10-08, for runs started after that.\nCompare the driver row of the token report per role, and the hub interventions, against the Sonnet runs before it.\n\n## What the task decides: the judge (operator, 2026-10-10)\n\nSwitching the judge is one config key; the task's work is deciding whether it is sound.\nThe question is whether the judge's job is simple enough for Haiku 5.5: read what each Bouncer row's judge and seed passes receive and must rule on, and judge where a wrong verdict lets a defect through or sends good work back.\n\n- Read the judge stencils and a sample of past verdicts from the usage and review records, and name the rows, if any, whose ruling needs more than Haiku holds.\n- Trial the judge on Haiku on one run and compare against Sonnet runs: verdicts later overturned, extra review rounds, hub interventions and token cost.\n- Switch only the rows where both the reading and the trial hold; the other roles stay as they are.\n\n## Seen in use\n\n- 2026-10-10, `bolt-and-store`: the Haiku 5.5 driver read its prompt, summarized its rules, and ended the turn asking \"Tell me when to start\", although the prompt says it runs autonomously with no operator to ask.\n  The Haiku drivers of `multi-llm-producer` and `daemon-wakeups`, on the same prompt, started stepping at once; a message from the orch got it going.\n  Fixed in 189fd59c8: the driver stencil now says the prompt is the go-ahead and a turn never ends on a question.\n\n## Analysis and decision (operator, 2026-10-10)\n\nThe analysis is in `docs/research/haiku-judge.md` (5459376bb): keep Sonnet on the Discussion-Bouncer judge; trial Haiku 5.5 on the Plan-Bouncer and Webster-Bouncer judges; seed passes are safe for Haiku.\nThe `judge` key sets all three rows at once, so the judge stays on Sonnet for now.\nThe trial waits for the note `per-role-models`, which gives each row's judge its own model key, and then runs Haiku 5.5 on the Plan-Bouncer and Webster-Bouncer judges only.\n\n## Decided: the judge stays on Sonnet (operator, 2026-10-11)\n\nThe analysis showed nothing to gain: the token report per role over six runs (2026-10-10) puts the judge at 2.8% and seed at 1.1% of run weight, against 32% for Burler review and fix and 24% for Webster with its forks.\nThe judge stays on Sonnet and no Haiku judge trial runs; token savings go to Burler and Webster instead.\n`per-role-models` is still wanted on its own merits.\n",
-      "status": ""
-    },
-    {
       "id": 255,
       "slug": "plan-multi-llm",
       "title": "Plan-Write on MultiLLMProducer: advisors gather facts and check cards",
@@ -943,24 +877,6 @@
       "body": "## Seen (operator, 2026-10-11)\n\nThe hub orchestrator is now the largest token spender, ahead of Burler and Webster, and frequent distills have not cut it much.\nMeasured over 2026-10-10 and 2026-10-11, orch spend follows its turn count: a distill shrinks the context, but it regrows within the hour.\nPR-Gate and parent-review forks are a small share of the spend, while batten and agent notices drive about 800 orch calls in those two days, so the gain is fewer orch wake-ups.\n\n## Wanted\n\nCut the orch's token spend, chiefly by waking it less often.\n\n## Means: an alignment agent in loom (operator, 2026-10-11)\n\nThe board is the manifest: it shows every run and what it is doing, and every run's discussion record is readable.\nNo separate manifest is kept; a hand-kept one is a chore and goes stale fast.\n\nA cold-start alignment agent runs inside loom at the review points (PR-Gate, parent review), reads the board and the discussion and plan records of the tasks in flight, and checks that the run is aligned with them.\nIts sources need no upkeep: board entries and notes, the in-flight runs' records, and what has landed on `main` since the run's base.\n\n## Points raised in discussion\n\n- The agent cannot see an operator decision that lives only in the orch's chat, so the orch writes every such decision into the board body it concerns.\n- Parent review is also a sync point: when two overlapping tasks run at once, the orch has held both at parent review and written their reviews together so their discussion records agree. A per-run agent sees the overlap but cannot hold the other run. One shape: the agent approves when it finds no overlap with a run in flight and wakes the orch only when it does, so the orch can hold and align both.\n- Open: whether in-flight runs' records need a `lyx` read verb so an agent in one pair reads another pair's records without reaching into its worktree.\n- Open, for the operator: whether an approved PR review merges to `main` (and reaches prod at the next `update-plugins.sh`) on its own, or still waits for a short orch yes.\n\n## Other means discussed\n\n- Cheap models (such as Haiku) for the orch's simple agent jobs, like counting; fresh agents cost about $37 in the two measured days.\n- The `orch: 1h` cache lifetime in `shuttle.yaml` never applied, since a distill does not restart the orch process; a restart applies it, worth only a few dollars over two days.\n- The operator is also weighing running the orch on Sonnet, since most orch turns run `lyx` commands rather than reason deeply; cache reads cost the same on Opus 5.5 and Sonnet 5.5, so it saves about a quarter of the main session's spend.\n"
     },
     {
-      "id": 353,
-      "slug": "plan-fix-card-delete",
-      "title": "Plan-fixing agents have no way to delete a card file when a card cut renumbers cards",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "loom",
-        "burler"
-      ],
-      "issues": [
-        543
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #543](https://github.com/Knatte18/loomyard/issues/543).\n\nIn a fixing-plan round, a review finding cut a card, which renumbered two later cards and so required deleting their old card files.\nThe fixing agent works with Edit and Write only, and neither can delete a file, so the renumbering had no supported route.\n\nWhy abnormal: a plan-fixing round can legitimately require removing files, but the tool set it is given cannot do that, leaving the agent to improvise or leave stale card files behind.\n\nWhat to do: give plan-fixing rounds a supported way to remove or renumber card files (a `lyx` verb, or loom-side handling of renumbering), or have the rubric steer reviewers away from findings that renumber cards.\n\nProvenance: task `twill-discusser`; notes: burler-plan-r1.md\n"
-    },
-    {
       "id": 354,
       "slug": "plan-rubric-file-target",
       "title": "Plan review rubric gives no warning about the redundant-file-target check",
@@ -1012,21 +928,6 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\n`contracts/stencils/loom/loom-template-discussion-chair.md` tells the chair to send each question with its recommended answer and its alternatives to every advisor.\nThe advisor then reads the chair's pick before it studies the question, so its answer is anchored on the chair's options and lean, and it rarely finds an option the chair did not list.\n\n## Idea (operator, 2026-10-11)\n\n- The chair still forms each question with its options and its own recommended answer, but keeps them to itself.\n- It sends the advisors the bare question only, so each advisor explores and answers on its own.\n- The chair then weighs the advisors' answers against its own pick; an answer outside its options counts as a new option.\n- Questions must therefore be open, never leading: a question must not name or hint at the chair's preferred answer.\n\n## Open\n\n- Whether the ledger records the chair's private pick before the advisors answer, so a review can see where an advisor changed the outcome.\n- Whether the advisor stencil (`loom-template-discussion-advisor.md`) needs a line saying it gets no options and should name the alternatives it sees.\n"
-    },
-    {
-      "id": 360,
-      "slug": "operator-quiet-clock",
-      "title": "Operator-quiet window reads the wall clock, not an injected clock",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "reed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Seen at pane-inject-safety PR-Gate (PR #548): `activeClientOnPane` in reedengine compares client activity against `time.Now()`, so tests of the `operator_quiet_s` window cannot use an injected clock.\n\nIdea: take the clock from the caller, as the rest of the engine does, so the quiet-window edges are testable without sleeping."
     },
     {
       "id": 361,
