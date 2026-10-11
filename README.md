@@ -50,12 +50,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 1 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-twc-2`](design-twb-twc-2.md) | webster, shuttle, stencil, quarry |
-| 2 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-combo-1`](design-twb-combo-1.md) | webster, shuttle, stencil, quarry |
-| 3 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-combo-2`](design-twb-combo-2.md) | webster, shuttle, stencil, quarry |
-| 4 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-twp-1`](design-twb-twp-1.md) | webster, shuttle, stencil, quarry |
-| 5 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-twp-2`](design-twb-twp-2.md) | webster, shuttle, stencil, quarry |
-| 6 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-twc-1`](design-twb-twc-1.md) | webster, shuttle, stencil, quarry |
+| 1 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-combo-1`](design-twb-combo-1.md) | webster, shuttle, stencil, quarry |
+| 2 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-combo-2`](design-twb-combo-2.md) | webster, shuttle, stencil, quarry |
+| 3 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-twp-1`](design-twb-twp-1.md) | webster, shuttle, stencil, quarry |
+| 4 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-twp-2`](design-twb-twp-2.md) | webster, shuttle, stencil, quarry |
+| 5 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-twc-1`](design-twb-twc-1.md) | webster, shuttle, stencil, quarry |
+| 6 | **Webster stability: gate shells, Master self-fix, recovery, Create checks**<br>• Fix the Webster faults outside the audit that stop or mislead runs | [`twb-twc-2`](design-twb-twc-2.md) | webster, shuttle, stencil, quarry |
 
 ### Enhancements
 
