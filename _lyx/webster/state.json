@@ -170,7 +170,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "8022f8a53f5e8c1e1738474ad7b41069",
   "masterSessionId": "e7a0307a-da46-46c9-a0a4-a833cba3bc1f",
   "batches": {
@@ -206,6 +206,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-small-fixes-oct11/e7a0307a-da46-46c9-a0a4-a833cba3bc1f/subagents/agent-afa8f6a8462517b6d.jsonl"
       ]
+    },
+    "4": {
+      "slug": "loom-missing-seed-remedy",
+      "cards": [
+        "04-loom-missing-seed-remedy",
+        "05-loom-disagreeing-seed-way-forward",
+        "06-plan-rubric-redundancy-pointer",
+        "07-batten-notice-state-lead"
+      ],
+      "cardHashes": {
+        "04-loom-missing-seed-remedy": "d5ddf4f4768100ea81250975c0bccb64932f04440ae4bb09c02ab872d5bf8bca",
+        "05-loom-disagreeing-seed-way-forward": "679fdf2b3ff24febf1986ad7b2982865e5eed75abeaca03d11e2f0f9cad3dee4",
+        "06-plan-rubric-redundancy-pointer": "e15989e02205bfacb61e3f023535db0014c4f8119664fcc8fab7f40526ea26ba",
+        "07-batten-notice-state-lead": "d6efaea0fd195d54cefec36d0e3608cf990f90a444a8da8e1443ffc43ccb88ed"
+      },
+      "startSha": "bdd9ebdf42aaf5bf3f46cd33044392683d57803c",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T14:06:43Z",
+      "sessionId": "e7a0307a-da46-46c9-a0a4-a833cba3bc1f",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
