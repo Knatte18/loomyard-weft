@@ -22,7 +22,22 @@ Repeated / partly repeated keys: single `opus[high]` 1 / 1 at $2.67, single `opu
 The lenses found real defects, but the writers rejected the ones that mattered, once on a wrong premise, and both spawned their forks later than the directive says.
 A round 2 is worth it only with changes: forks at the directive's point, a rejected finding must cite a code read, and a second reference task.
 
+## Bench round 2 (2026-10-11)
+
+Changes: the directive spliced into the plan prompt before Step 3 so forks run before the plan is written, a rejected BLOCKING or MEDIUM lens finding must cite a code read, and four lenses tuned from round 1 (`criteria-coverage`, `row-reachability`, `forced-edits`, `test-economy`; `card-structure` and `pattern-fit` dropped as noise).
+Second reference `run-time-by-role` added; spend $28.82; full record in `.scratch/twill-plan-bench/results.md` (Round 2) and `round-2/`.
+Repeated / partly repeated keys, mean of two runs per arm:
+
+| Reference | single `opus[high]` | twill `opus[medium]` |
+|---|---|---|
+| `shuttle-startup-ready` (lenses tuned on it) | 1.0 / 0.5 | 0.5 / 0.5 |
+| `run-time-by-role` | 4.5 / 2.5 | 2.0 / 3.5 |
+
+Twill cost $5.24 per plan against $2.63, about 3.5 minutes more writer time.
+All three changes held: every writer forked before writing, every rejection cited code that checks out, and each closed key traces to a named lens finding.
+Missed by every arm: a check against the wrong parent directory, and test names with a banned PATTERN token (caught only by the verify gate); a `pattern-scans` lens is the candidate.
+The agent recommends building twill for Plan-Write at `opus[medium]` with these four lenses and the cited-rejection rule, then benching whether Plan-Review can run one round.
+
 ## Open
 
-- Plan lenses: candidates are card coverage of the design, `Edit:` lists against the code, card order and dependencies, tests and the test budget, and PATTERN fit.
 - Whether lens review lets Plan-Review run fewer rounds, as the operator chose for Discussion.
