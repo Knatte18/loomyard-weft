@@ -94,6 +94,12 @@ Decision: awaitStartup's pre-ready probe follows the daemon-wakeups backoff rule
 
 Rationale: A ready provider still shows within the first one or two probes because Claude's boot redraws the pane and resets the backoff, so D5's goal of a fast start survives, and the task stays inside the background as written instead of resting on a reading only the record holds.
 
+### Added after Discussion (parent, 2026-10-11): D4's tail scope stated as never-ready with no cause
+
+Decision: The tail goes on awaitStartup's exits where the provider never reached StartupReady and abandonStartup gets no cause; the reed-status retry exits carry a cause and get no tail, and the skill-load death is the example of a nil cause that is not never-ready. When a cause is present nothing is added: busy and unlanded send causes already end with the pane's last lines through withPaneTail, and the remaining causes (reed-status retry exits, the skill-loader lookup, the prompt-offset persist, a raw key or paste delivery error) report a mechanism failure with no screen.
+
+Rationale: Corrects D4's false premise that delivery failures carry no tail, which a plan writer could have encoded as a test, and its trigger sentence, which taken alone would tail the retry exits; the chosen behaviour is unchanged.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: the `%` knowledge lives only in `claudeengine`; `shuttleengine` gains no Claude specifics.
