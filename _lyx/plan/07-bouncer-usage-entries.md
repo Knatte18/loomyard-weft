@@ -1,10 +1,10 @@
 # Card 7 — bouncer-usage-entries
 
 **Create:**
-- `plan:internal/shedadapters#newPassUsage` -> `func newPassUsage(model burlerengine.ModelChoice, result shuttleengine.Result) halfUsage`
-- `plan:internal/shedadapters#Bouncer.recordPass` -> `func (b *Bouncer) recordPass(round int, seed bool, result shuttleengine.Result)`
+- `internal/shedadapters#newPassUsage`
+- `internal/shedadapters#Bouncer.recordPass`
 - `internal/shedadapters/bouncer_usage_test.go`
-- `plan:internal/shedadapters#TestBouncer_UsageRecord` -> `func TestBouncer_UsageRecord(t *testing.T)`
+- `internal/shedadapters#TestBouncer_UsageRecord`
 
 **Edit:**
 - `internal/shedadapters#Bouncer.runSeedSpawn`

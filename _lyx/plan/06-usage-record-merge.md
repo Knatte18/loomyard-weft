@@ -1,8 +1,8 @@
 # Card 6 — usage-record-merge
 
 **Create:**
-- `plan:internal/shedadapters#mergeRoundUsage` -> `func mergeRoundUsage(runDir string, round int, now func() time.Time, apply func(u *roundUsage)) error`
-- `plan:internal/shedadapters#readCompletedRoundUsage` -> `func readCompletedRoundUsage(runDir string, round int) (roundUsage, error)`
+- `internal/shedadapters#mergeRoundUsage`
+- `internal/shedadapters#readCompletedRoundUsage`
 
 **Edit:**
 - `internal/shedadapters#roundUsage`

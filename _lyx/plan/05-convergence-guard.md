@@ -1,9 +1,9 @@
 # Card 5 — convergence-guard
 
 **Create:**
-- `plan:internal/shedadapters#Bouncer.judgmentRefusal` -> `func (b *Bouncer) judgmentRefusal(round int, verdict bouncerVerdict) string`
-- `plan:internal/shedadapters#Bouncer.rejudge` -> `func (b *Bouncer) rejudge(ctx context.Context, round int, cause string) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/shedadapters#TestBouncer_JudgeCall_RefusedJudgment` -> `func TestBouncer_JudgeCall_RefusedJudgment(t *testing.T)`
+- `internal/shedadapters#Bouncer.judgmentRefusal`
+- `internal/shedadapters#Bouncer.rejudge`
+- `internal/shedadapters#TestBouncer_JudgeCall_RefusedJudgment`
 
 **Edit:**
 - `internal/shedadapters#Bouncer.Call`
