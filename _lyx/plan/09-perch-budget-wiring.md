@@ -1,9 +1,9 @@
 # Card 9 — perch-budget-wiring
 
 **Create:**
-- `plan:internal/loomcli#perchMaxBounces` -> `func perchMaxBounces(cfg loomengine.Config) map[string]int`
-- `plan:internal/loomcli#perchAutoAccept` -> `func perchAutoAccept(cfg loomengine.Config) map[string]bool`
-- `plan:internal/loomrecipe#TestEscalation_PerchBudgetOneWithAutoAccept` -> `func TestEscalation_PerchBudgetOneWithAutoAccept(t *testing.T)`
+- `internal/loomcli#perchMaxBounces`
+- `internal/loomcli#perchAutoAccept`
+- `internal/loomrecipe#TestEscalation_PerchBudgetOneWithAutoAccept`
 
 **Edit:**
 - `internal/shedrecipe#Env`

@@ -1,0 +1,12 @@
+status: OK
+head_sha: 314ad550ebc0e2d2a8956fabe2976de7d3c7f175
+deviations:
+  - internal/discussionparser/validate_test.go
+  - internal/loomcli/validate_test.go
+  - internal/loomcli/parity_test.go
+  - internal/shedadapters/bouncer_escalation_test.go
+  - internal/shedadapters/circling.go
+  - internal/loomrecipe/escalation_test.go
+  - internal/loomrecipe/darnrecipe.go
+  - internal/shedrecipe/recipe.go
+  - contracts/recipes/loom-recipe.yaml

@@ -1,9 +1,9 @@
 # Card 7 — bouncer-auto-accept
 
 **Create:**
-- `plan:internal/shedadapters#Bouncer.acceptRound` -> `func (b *Bouncer) acceptRound(round int, ptr shedengine.OutputPointer) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/shedadapters#recordAutoAccept` -> `func recordAutoAccept(runDir string, round int) error`
-- `plan:internal/shedadapters#TestBouncer_AutoAccept` -> `func TestBouncer_AutoAccept(t *testing.T)`
+- `internal/shedadapters#Bouncer.acceptRound`
+- `internal/shedadapters#recordAutoAccept`
+- `internal/shedadapters#TestBouncer_AutoAccept`
 
 **Edit:**
 - `internal/shedadapters#BouncerConfig`
