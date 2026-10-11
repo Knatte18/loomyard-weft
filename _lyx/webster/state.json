@@ -1,0 +1,439 @@
+{
+  "runGuid": "649e6fa3e0aee8edd7e28b74d9fe8760",
+  "planFingerprint": "828db60d1a25e77e0fb6cdcb63f2c51496983c0478416151f0a19868cdebc9f9",
+  "planFileHashes": {
+    "00-overview.md": "aa1b8c249f906e2aec1b44bcd671945705f7335e0fae9dc45c37f882899bcfff",
+    "01-review-carries-fix.md": "10903fe64661ef329a1e68808de4c416358ecf1a89d2a40c5130823c0098eb71",
+    "02-burler-halves-engine.md": "4e30133fa993cc4eeb37f30913ec26c94fcf5d820e26c823da56bac4d9e81bb1",
+    "03-burler-halves-producers.md": "97c33c68b65cd3325a4c7e59389718366f315185b565df1f5dd07e389edda97b",
+    "04-split-burler-rows.md": "320cf1585dbc2a1ba978df25365188fc3326e0d95886543cee19beedac986230",
+    "05-burler-run-halves.md": "48cf031feae8c930d1e2595f976a9493ee51cd52b78e161125ac8b2daf36843a",
+    "06-row-name-prose.md": "53d79443c40fc025c18d36b0090b920b94bc0985784598db99343add48226477",
+    "07-bouncer-auto-accept.md": "20df305c60c97c9d7556f9df4804ae6d2beb6dcd55d13e35fc5ac0199988234b",
+    "08-perch-budget-keys.md": "92b14359c27b8e272aaa3d250e59f45f61090a2873a2a08ab95974b98ddfbec2",
+    "09-perch-budget-wiring.md": "5aa7a311cfe92448af1a5e51fafdce693c7f913ead545da5251ce0cdcb85ab02",
+    "10-retire-burler-round.md": "4959e9a96d129416856e5f5ec8faceba780b04273e8d3ec33c99eb3fdfb135a7"
+  },
+  "planOverviewFrameHash": "54c6ff002692467dd7dd0c1bbb5e3b544bad958485f8fa4f5093352b64d76429",
+  "partition": [
+    {
+      "cards": [
+        "01-review-carries-fix",
+        "02-burler-halves-engine",
+        "03-burler-halves-producers"
+      ],
+      "profile": "cautious",
+      "estimate": 352806,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54532,
+        "read_union": 66392,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 696,
+            "reads": {
+              "file:contracts/stencils/burler/burler-step-2-review.md": 828,
+              "file:contracts/stencils/burler/burler-step-3-fix.md": 648,
+              "file:contracts/stencils/burler/burler-template-fix-orchestrator.md": 600,
+              "file:contracts/stencils/loom/loom-rubric-plan-review.md": 1416,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/burler": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/burlercli": 2000,
+              "package:internal/burlerengine": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/burler": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/burlerengine": 2000
+            },
+            "messages": 131,
+            "written": 39996
+          },
+          {
+            "card": 2,
+            "card_text": 1584,
+            "reads": {
+              "file:PATTERN.md": 1296,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:internal/burlerengine/doc.go": 4380,
+              "file:pattern/PATTERN-review-round.md": 144,
+              "package:.": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/burler": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/burler": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 399,
+            "written": 121284
+          },
+          {
+            "card": 3,
+            "card_text": 1152,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:contracts/specs/refusal-spec.md": 4248,
+              "file:internal/shedadapters/doc.go": 3768,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/testkit/shedfake": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/testkit/shedfake": 2000
+            },
+            "messages": 231.5,
+            "written": 70602
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-split-burler-rows",
+        "05-burler-run-halves"
+      ],
+      "profile": "cautious",
+      "estimate": 384776,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61532,
+        "read_union": 118836,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 1524,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:contracts/recipes/darn-recipe.yaml": 1704,
+              "file:contracts/recipes/loom-recipe.yaml": 4896,
+              "file:contracts/specs/refusal-spec.md": 4248,
+              "file:contracts/stencils/orch/orch-template-role.md": 2064,
+              "file:docs/overview.md": 8400,
+              "file:internal/shedadapters/burler.go": 7344,
+              "file:internal/shedadapters/burler_test.go": 16140,
+              "file:internal/shedrecipe/entries_burler_test.go": 8112,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/recipes": 2000,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedbuild": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/orch": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedbuild": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 598.5,
+            "written": 181074
+          },
+          {
+            "card": 5,
+            "card_text": 384,
+            "reads": {
+              "file:internal/burlercli/doc.go": 156,
+              "file:tools/sandbox/SANDBOX-BURLER-SUITE.md": 2232,
+              "package:internal/burlercli": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 76.5,
+            "written": 23334
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-row-name-prose",
+        "07-bouncer-auto-accept",
+        "08-perch-budget-keys",
+        "09-perch-budget-wiring"
+      ],
+      "profile": "cautious",
+      "estimate": 409504,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68532,
+        "read_union": 139084,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 540,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 7932,
+              "file:contracts/specs/loom-status-spec.md": 2028,
+              "file:contracts/stencils/loom/loom-rubric-darn-review.md": 840,
+              "file:contracts/stencils/loom/loom-rubric-discussion-review.md": 588,
+              "file:contracts/stencils/loom/loom-rubric-plan-review.md": 1416,
+              "file:contracts/stencils/loom/loom-rubric-webster-review.md": 1140,
+              "file:internal/discussionparser/validate.go": 1476,
+              "file:internal/impactset/doc.go": 396,
+              "file:internal/loomrecipe/doc.go": 276,
+              "file:internal/loomrecipe/overlay_seam_guard_test.go": 4488,
+              "file:internal/loomshed/doc.go": 672,
+              "file:internal/loomshed/publishfailure.go": 2256,
+              "file:pattern/PATTERN-comment-line-breaks.md": 324,
+              "file:pattern/PATTERN-gate-self-check-parity.md": 300,
+              "file:pattern/PATTERN-test-speed.md": 1236,
+              "file:pattern/PATTERN-verified-tree.md": 264,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/discussionparser": 2000,
+              "package:internal/impactset": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/planglyph": 2000,
+              "package:internal/shedengine": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/verifytree": 2000,
+              "package:internal/webstercli": 2000,
+              "package:pattern": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/discussionparser": 2000,
+              "tests:internal/impactset": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/shedengine": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/verifytree": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 319,
+            "written": 96240
+          },
+          {
+            "card": 7,
+            "card_text": 564,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:internal/shedadapters/doc.go": 3768,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shedadapters": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 98.5,
+            "written": 30114
+          },
+          {
+            "card": 8,
+            "card_text": 336,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4248,
+              "file:docs/overview.md": 8400,
+              "file:internal/loomengine/template.yaml": 420,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 56.5,
+            "written": 17286
+          },
+          {
+            "card": 9,
+            "card_text": 648,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:contracts/recipes/loom-recipe.yaml": 4896,
+              "file:internal/loomrecipe/doc.go": 276,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/recipes": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 192,
+            "written": 58248
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-retire-burler-round"
+      ],
+      "profile": "cautious",
+      "estimate": 487990,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75532,
+        "read_union": 90036,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 2472,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:contracts/specs/refusal-spec.md": 4248,
+              "file:contracts/stencils/burler/burler-step-1-explore.md": 492,
+              "file:contracts/stencils/burler/burler-step-2-review.md": 828,
+              "file:contracts/stencils/burler/burler-step-3-fix.md": 648,
+              "file:contracts/stencils/burler/burler-template-fix-orchestrator.md": 600,
+              "file:contracts/stencils/burler/burler-template-review-orchestrator.md": 492,
+              "file:contracts/stencils/friction/friction-directive-review-fix.md": 336,
+              "file:contracts/stencils/pattern/pattern-directive-review-fix.md": 240,
+              "file:docs/overview.md": 8400,
+              "file:internal/burlerengine/doc.go": 4380,
+              "file:internal/burlermarker/doc.go": 168,
+              "file:internal/burlermarker/marker.go": 396,
+              "file:internal/burlermarker/marker_test.go": 936,
+              "file:internal/shedadapters/doc.go": 3768,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/burler": 2000,
+              "package:contracts/stencils/friction": 2000,
+              "package:contracts/stencils/pattern": 2000,
+              "package:docs": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/burlerengine_test": 2000,
+              "package:internal/burlermarker": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/testkit/shedfake": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/burler": 2000,
+              "tests:contracts/stencils/friction": 2000,
+              "tests:contracts/stencils/pattern": 2000,
+              "tests:docs": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/burlerengine_test": 2000,
+              "tests:internal/burlermarker": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/testkit/shedfake": 2000
+            },
+            "messages": 1066.5,
+            "written": 322422
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "2c86fa9c079c3fb37dac2b5ffe110dd5",
+  "masterSessionId": "0fbd85a5-7f16-469f-9570-80370a462352",
+  "batches": {
+    "1": {
+      "slug": "review-carries-fix",
+      "cards": [
+        "01-review-carries-fix",
+        "02-burler-halves-engine",
+        "03-burler-halves-producers"
+      ],
+      "cardHashes": {
+        "01-review-carries-fix": "10903fe64661ef329a1e68808de4c416358ecf1a89d2a40c5130823c0098eb71",
+        "02-burler-halves-engine": "4e30133fa993cc4eeb37f30913ec26c94fcf5d820e26c823da56bac4d9e81bb1",
+        "03-burler-halves-producers": "97c33c68b65cd3325a4c7e59389718366f315185b565df1f5dd07e389edda97b"
+      },
+      "startSha": "c279a38bafb5aced5978bceb727ff9c06e756848",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T17:21:16Z",
+      "sessionId": "0fbd85a5-7f16-469f-9570-80370a462352",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
