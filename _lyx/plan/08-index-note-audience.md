@@ -1,8 +1,8 @@
 # Card 8 — index-note-audience
 
 **Create:**
-- `plan:internal/clihelp#IndexNoteAudienceAnnotation` -> `const IndexNoteAudienceAnnotation = "lyx.index-note-audience"`
-- `plan:cmd/lyx#indexNoteProblems` -> `func indexNoteProblems(cmd *cobra.Command) []string`
+- `internal/clihelp#IndexNoteAudienceAnnotation`
+- `cmd/lyx#indexNoteProblems`
 
 **Edit:**
 - `internal/clihelp#IndexNoteAnnotation`

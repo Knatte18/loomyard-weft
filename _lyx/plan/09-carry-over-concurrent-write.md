@@ -1,8 +1,8 @@
 # Card 9 — carry-over-concurrent-write
 
 **Create:**
-- `plan:internal/discussionparser#carryOverHooks` -> `type carryOverHooks struct`
-- `plan:internal/discussionparser#TestWriteCarryOver_DetectsConcurrentWriter` -> `func TestWriteCarryOver_DetectsConcurrentWriter(t *testing.T)`
+- `internal/discussionparser#carryOverHooks`
+- `internal/discussionparser#TestWriteCarryOver_DetectsConcurrentWriter`
 
 **Edit:**
 - `internal/discussionparser#WriteCarryOver`
