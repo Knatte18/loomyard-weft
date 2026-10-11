@@ -1063,6 +1063,23 @@
       "isolated": false,
       "brief": "Chair turn ends that wait on advisors send held notices to the parent; suppress them while advisor work is outstanding",
       "body": "## Seen (2026-10-11, discussion bench)\n\nEvery time a seats chair ends its turn to wait, for an advisor's up line or for an advisor's answers, shuttle sends the parent a \"turn end held, output files missing\" notice (`internal/shuttleengine/hold.go:53`, `notifyHeld`).\nThese waits are planned by the chair stencil, so the notices are false stall alarms; each advisor run in the bench sent the orch three to four of them.\nAdvisors are quiet because `internal/seatengine/prompt.go:160` sets `QuietHold: !isChair`; the chair is not.\nAnswering a notice wakes the chair for a turn, which sends another notice.\n\n## Idea\n\nSuppress the held notice for a chair while any advisor has an unanswered batch or has not yet sent its up line, and keep it for a chair that ends a turn with no advisor work outstanding, which is a real stall.\n"
+    },
+    {
+      "id": 343,
+      "slug": "discussion-lens-fan",
+      "title": "Discussion writer forks lens forks after exploring, before writing",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "stencil"
+      ],
+      "issues": [],
+      "priority": "high",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Burler-style lens fan inside the Discussion writer: one strong model explores, forks per lens for must-settle lists, then writes; bench against solo",
+      "body": "## Seen (2026-10-11)\n\nThe first Discussion bench (`docs/research/discussion-bench.md`, 7d439cf71) found that no seats chair with an advisor wrote a better draft than the same chair alone, and that an Opus or high-effort Sonnet advisor roughly doubled the cost.\nEach advisor is a standalone session at full price that re-reads the code itself; the operator names this as part of the problem.\nEach configuration ran once on one task, so the noise is unmeasured.\n\n## Idea (operator, 2026-10-11)\n\nBring Burler's lens fan into Discussion, inside the writer's own session:\n\n1. The writer, on a strong model such as `opus[medium]`, explores the task and code in full itself.\n2. After exploring and before writing, it forks itself once per lens, the way Burler's fanned reviewer forks its lens forks.\n3. Each lens fork returns a short list of what the decision record must settle in its area: risks, cases to handle and open questions; it proposes no decisions.\n4. The writer writes the decision record with every list in front of it.\n\nGains:\n\n- Every fork runs on the writer's strong model.\n- Every fork inherits the writer's context, so it reads the shared prefix from cache rather than re-reading the code.\n- No seats engine or SendMessage rounds: a writer stencil change and lens texts, which Burler's fan already has.\n\nChoices made with the operator:\n\n- Fork before the draft, not after: forks spawned after the draft inherit it and tend to polish its decisions rather than question them.\n- Lists, not decisions: lists merge by union, while competing decisions from several lenses would need resolving.\n- Left in place: every fork has read the code the way the writer did, the price of the cache hits; only standalone sessions read it independently.\n- Burler's Discussion-Review still reviews the draft after.\n\n## Bench\n\nCompare, three runs each on the same reference task, so the spread is measured too:\n\n- `opus[medium]` writer with the lens fan;\n- `opus[medium]` alone;\n- `opus[high]` alone, the first bench's best draft.\n\nMeasure wall time, price per configuration, the draft against the reference final discussion judged on the merits, and where possible how many Discussion-Review rounds each draft needs.\nThe open question whether Burler's fan findings are worth their cost applies here too.\n"
     }
   ]
 }
