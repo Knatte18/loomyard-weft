@@ -55,7 +55,7 @@
 - **Batten spawns the arbiter** in place of its orch notice: one Go owner of what reaches the orch, serialised with the Publish retry by construction.
   Rejected: the board entry and the operator's budget decision both name the driver as spawner and escalator, and runs no batten watches would get no arbiter.
 - **The arbiter resumes the run itself** with `lyx loom resume`: rejected, since the driver would then be a second party racing the arbiter's resume, and the driver is the loop's owner.
-- **The arbiter only recommends, the driver executes every verb**: rejected, since a Haiku driver would then run `circling accept` or a goto on another agent's say-so with no added check, and the arbiter's records would carry the driver's strand name.
+- **The arbiter only recommends, the driver executes every verb**: rejected, since a Haiku driver would then run `circling accept` on another agent's say-so with no added check, whereas the one move the driver makes on a verdict, its re-launch's goto, is checked in Go against the attempt's recorded state (D6), and the arbiter's records would carry the driver's strand name.
 - **Arbitrate the batten-owned Publish halt too**: rejected, since batten's goto and resume would race the arbiter on the same halt, and the halt's way forward is known.
 - **Eligibility keyed on `parent_notice`**: rejected after lens review, since a later parent-review escalation could then reach the arbiter.
 - **`interrupted` under `handback` eligible**: rejected after lens review, since a live agent may still run and a re-launch would restart it.
