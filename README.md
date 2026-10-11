@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | 1 | **reed servers ignore ~/.tmux.conf**<br>• Since reed-hygiene (c6dc1fffc) reed servers start with -f /dev/null, so the operator loses prefix, key bindings and escape-time; no reed.yaml key replaces them | `reed-tmux-conf` | loom | Plan-Write | reed |
 | 2 | **TwillDiscusser: a Discussion writer that forks lens reviewers before it writes**<br>• Single-LLM Discussion-Write producer: explore, fork waiting lens forks, write, forks review the record as outsiders; forks keep their cache warm themselves | [`twill-discusser`](design-twill-discusser.md) | loom | Plan-Burler | loom, stencil |
 | 3 | **Plan gaps: inserting a card, unreachable prescribed refusals**<br>• Give the fixer a sanctioned way to insert or remove a card, and make plan review check that every prescribed refusal is reachable | [`plan-gaps`](design-plan-gaps.md) | loom | Plan-Burler | loom, burler, stencil |
-| 4 | **Pane injection never merges with the operator draft, and batten survives a draft**<br>• Defer and atomically send injected text, guard the Enter, and keep batten alive through a busy driver pane so teardown still runs. | [`pane-inject-safety`](design-pane-inject-safety.md) | loom | Discussion-Burler | shuttle, batten, orch, reed |
+| 4 | **Pane injection never merges with the operator draft, and batten survives a draft**<br>• Defer and atomically send injected text, guard the Enter, and keep batten alive through a busy driver pane so teardown still runs. | [`pane-inject-safety`](design-pane-inject-safety.md) | loom | Discussion-Bouncer | shuttle, batten, orch, reed |
 
 ### Ready
 
