@@ -1,14 +1,21 @@
 {
-  "current_producer": "Preflight",
+  "current_producer": "Loom-Preflight",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "",
-    "last": "",
+    "now": "Loom-Preflight",
+    "last": "Preflight → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Preflight",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-11T12:32:17Z"
+    }
+  ],
   "product": {
     "slug": "twb-seat-blind-1",
     "parent": "main",
