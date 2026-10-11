@@ -1,6 +1,6 @@
 # Webster forks wake Merriam on every gate wait
 
-`fork-wait-noise` · Task · enhancement, webster, stencil · running · Discussion-Bouncer
+`fork-wait-noise` · Task · enhancement, webster, stencil · running · Discussion-Burler
 
 ## Seen (operator, 2026-10-11, pane-inject-safety's Webster run)
 
