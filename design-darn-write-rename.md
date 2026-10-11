@@ -1,6 +1,6 @@
 # Darn: rename the writer row to Darn-Write, and close the perch gaps
 
-`darn-write-rename` · Task · enhancement, loom, shed · running · PR-Gate
+`darn-write-rename` · Task · enhancement, loom, shed · running · Finalize
 
 ## Seen (operator, 2026-10-11)
 
