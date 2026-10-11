@@ -33,8 +33,8 @@ The analysis is in `docs/research/haiku-judge.md` (5459376bb): keep Sonnet on th
 The `judge` key sets all three rows at once, so the judge stays on Sonnet for now.
 The trial waits for the note `per-role-models`, which gives each row's judge its own model key, and then runs Haiku 5.5 on the Plan-Bouncer and Webster-Bouncer judges only.
 
-## Trial dropped (operator, 2026-10-11)
+## Decided: the judge stays on Sonnet (operator, 2026-10-11)
 
-The token report per role over six runs (2026-10-10) puts the judge at 2.8% and seed at 1.1% of run weight, against 32% for Burler review and fix and 24% for Webster with its forks.
-The Haiku judge trial is not worth running; token savings go to Burler and Webster instead.
+The analysis showed nothing to gain: the token report per role over six runs (2026-10-10) puts the judge at 2.8% and seed at 1.1% of run weight, against 32% for Burler review and fix and 24% for Webster with its forks.
+The judge stays on Sonnet and no Haiku judge trial runs; token savings go to Burler and Webster instead.
 `per-role-models` is still wanted on its own merits.
