@@ -152,6 +152,12 @@ Decision: The local layer and run_settings may not set landing.require_pr_to_bas
 
 Rationale: An untracked file the pair's agents can write, invisible at landing, would otherwise land unreviewed, unapproved code on the shared parent branch, against D4's own bound.
 
+### Added after Discussion (parent, 2026-10-11): D4 rationale: the per-worktree .env is an untracked route
+
+Decision: D4's rationale and R3's bound are corrected: the git-ignored per-worktree .env already binds the env markers of the denied per-worktree keys untracked and persistently in a pair. The deny lists stay, since the local layer must not add a second such route.
+
+Rationale: configengine.load expands markers through envsource.Build(baseDir), which reads <anchor>/.env; the stated premise that those keys persist only through a tracked file is false.
+
 ## Constraints
 
 - `PATTERN-hub-wide-config` changes: `<BoardDir>/_lyx/config/` also holds per-worktree modules' repo defaults, and a hub-wide module also reads the reading worktree's local override, restricted to `LocalKeys`.
