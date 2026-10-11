@@ -69,6 +69,13 @@
       "output": "child awaiting → running at PR-Gate",
       "at": "2026-10-11T17:42:48Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → done at Friction-Reflect",
+      "at": "2026-10-11T17:43:36Z",
+      "budget_exempt": true
     }
   ]
 }
