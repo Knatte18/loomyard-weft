@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster-Bouncer",
+  "current_producer": "Webster-Burler",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster-Bouncer",
-    "last": "Webster → done",
+    "now": "Webster-Burler",
+    "last": "Webster-Bouncer → bounced to Webster-Burler",
     "wait": ""
   },
   "history": [
@@ -114,6 +114,12 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/plan-glyph-tuning/_lyx/webster/summary.md",
       "at": "2026-10-11T15:29:58Z"
+    },
+    {
+      "producer": "Webster-Bouncer",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-11T15:30:24Z"
     }
   ],
   "product": {
