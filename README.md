@@ -25,7 +25,11 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Pane injection never merges with the operator draft, and batten survives a draft**<br>• Defer and atomically send injected text, guard the Enter, and keep batten alive through a busy driver pane so teardown still runs. | [`pane-inject-safety`](design-pane-inject-safety.md) | loom |  | shuttle, batten, orch, reed |
 
 ### Layer A
 
@@ -48,8 +52,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 1 | **loom step help contradicts itself and hides the driverless seed**<br>• Help says step bootstraps like start, then that it never seeds; name the driverless seed command | [`loom-step-help-seed`](design-loom-step-help-seed.md) | loom |
-| 2 | **A draft in the driver pane kills batten, and the pair is never torn down**<br>• A non-idle resume error makes batten fail for good; a manually finished run then skips archive and teardown. | [`batten-draft-teardown`](design-batten-draft-teardown.md) | batten |
-| 3 | **Injected text merges with the operator draft**<br>• The draft guard checks once before about a second of typing; the first Enter is never checked, and slash-command sends press a blind Enter. | [`pane-inject-race`](design-pane-inject-race.md) | shuttle, orch |
 
 ### Enhancements
 
