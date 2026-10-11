@@ -6,7 +6,7 @@
      stencil.FillOptional requires every marker except pattern_directive and friction_directive non-empty, and there are no {{if}}/{{range}} conditionals anywhere in this file. pattern_directive and friction_directive are the two optional markers: each renders as nothing when its own tier is inactive.
      parent_directive is a third optional marker, rendered by internal/parentdirective.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=a35cec96ee62b08dd4f1a2fb321edb6afe7dee2543250b575057d2ff38f60708 -->
+lyx-stencil: sha256=9baf176f7d6d961bb7fdfa96eab29df5e201e54272e10c0f45b78b770170327b build=edb4e6984b258a12e6ac3539bc65483a6f5f4934 time=2026-10-11T10:27:06Z -->
 
 # Rework — turn a rejected pull request's findings into a new plan generation
 
@@ -32,7 +32,7 @@ Apply it exactly as written, except where this prompt says otherwise.
    They are read-only context.
    Never edit, move or delete anything under `{{.prior_plan_dir}}`.
 3. Read the decision record at `{{.decision_record_path}}`.
-   An entry between `<!-- lyx:carry-over … -->` marker lines in `## Open risks` lists review findings whose fix in the record no fresh reviewer has seen.
+   An entry between `<!-- lyx:carry-over … -->` marker lines in `## Open risks` lists review findings the closing round's fixer fixed or disputed, unseen by a fresh reviewer; the entry's fixer report says which.
    Check each one against the code, and never plan an entry as scope.
 4. Read the task's diff against its base with read-only git (`git log`, `git diff`, `git show`).
    Never commit, reset, checkout or otherwise change the repository with git.

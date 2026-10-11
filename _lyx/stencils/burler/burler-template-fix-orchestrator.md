@@ -6,7 +6,7 @@
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but parent_directive non-empty, and parent_directive is rendered by internal/parentdirective, and edit_directive is a required marker rendered unconditionally by internal/editdirective, and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go).
      This file deliberately never repeats the review-file format, which lives in the file review_format_path names, nor the fix-everything body, which lives in instruction 3.
-lyx-stencil: sha256=6337e75c3c99e35e70fdab3fb152f81c3a4f9712cf671a566bbc8176fc7a42aa -->
+lyx-stencil: sha256=de4b3c0ad179288292664a0db58bcd2325c54622369d2d6854c05f65de76e1f6 build=edb4e6984b258a12e6ac3539bc65483a6f5f4934 time=2026-10-11T10:27:06Z -->
 
 # Burler round — fix
 
@@ -25,7 +25,8 @@ A separate reviewer session is writing the review of the target while you orient
    It is read-only and returns at its own cap, so a reply that is not ready yet means: run it again.
 3. **Validate.**
    Read the review at `{{.review_path}}`, whose format is described in `{{.review_format_path}}`.
-   Check each finding against the code and the fasit.
+   Check each finding's premise against the code and the fasit and, separately, the change its `**Fix:**` line proposes.
+   `{{.instruction_3_path}}` says what to do with each result.
 4. **Fix.**
    Read and execute `{{.instruction_3_path}}`: the fix-everything rule, your write surface and the fixer-report.
 

@@ -6,7 +6,7 @@
      stencil.FillOptional requires the three original ones non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
      parent_directive is a third optional marker, rendered by internal/parentdirective.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=111b265f2232d97e094498ad0ab0963f63757608432de6ab638ccae27e2a559f build=5a8be027428082c91c0d3af16eeacb02fed29eea time=2026-10-10T14:47:02Z -->
+lyx-stencil: sha256=61773c6959095ca3727a623cbe7179996bed6232a03a8c692f721b315910377c build=edb4e6984b258a12e6ac3539bc65483a6f5f4934 time=2026-10-11T10:27:06Z -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -23,7 +23,7 @@ Read `{{.decision_record_path}}`.
 This is your **sole** input — never read the support log or the board.
 If the file is missing or empty, STOP and report that rather than inventing scope.
 
-An entry between `<!-- lyx:carry-over … -->` marker lines in `## Open risks` lists review findings whose fix in the record no fresh reviewer has seen.
+An entry between `<!-- lyx:carry-over … -->` marker lines in `## Open risks` lists review findings the closing round's fixer fixed or disputed, unseen by a fresh reviewer; the entry's fixer report says which.
 Check each one against the code while you explore, and never plan an entry as scope.
 
 A scope addition that arrives after the Discussion is a design call the parent records.
