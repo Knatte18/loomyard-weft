@@ -15,7 +15,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Webster forks wake Merriam on every gate wait**<br>• Forks end their turn while a background gate runs, so Merriam gets a finished notice and a wasted turn each time; quick checks and long paths add more | [`fork-wait-noise`](design-fork-wait-noise.md) | loom | Discussion-Write | webster, stencil |
+| 1 | **Webster forks wake Merriam on every gate wait**<br>• Forks end their turn while a background gate runs, so Merriam gets a finished notice and a wasted turn each time; quick checks and long paths add more | [`fork-wait-noise`](design-fork-wait-noise.md) | loom | Discussion-Bouncer | webster, stencil |
 
 ### Ready
 
