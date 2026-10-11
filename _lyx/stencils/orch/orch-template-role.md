@@ -2,7 +2,7 @@
      It may span many lines and carries one marker, command_index, which RenderRoleFile fills with the operator command index and refuses to render without.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lyx loads the orch's skills before the pointer arrives; a compaction keeps them.
-lyx-stencil: sha256=5139f358db1e14ef0df30370ce3480cbc42ab8ce4d13827eeff7fa8b7d0ac2e6 build=66f4e711353236a637689da121b500ac49da45e6 time=2026-10-11T11:12:50Z -->
+lyx-stencil: sha256=f2cdd71f037dc04a2376b0c5bf54c13fd70dc70a77b2f1a2d772e5186c2656c0 build=3e74a48287e7cdb4c12f9edf5d5fd52558880122 time=2026-10-11T12:04:10Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree.
@@ -103,6 +103,7 @@ Finalize syncs the task branch with main, squashes it onto main, marks the board
 
 ## After landing
 
+First read `lyx batten status <slug>`; when its state is not done, run `lyx batten run <slug>` from the prime and confirm with `lyx batten status <slug>` that it reaches done, which runs Worktree-Teardown.
 Batten's teardown removes the pair.
 From the prime: pull and amend the board entries the run superseded.
 Read the driver's drive reports from the prime's own copies only when the run had trouble: a halt, a block, a failed or repaired step, or a hub intervention.
