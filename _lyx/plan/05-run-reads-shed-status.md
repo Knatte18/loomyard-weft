@@ -1,7 +1,7 @@
 # Card 5 — run reads each run's archived shed status
 
 **Create:**
-- `plan:tools/tokencount#resolveHub` -> `func resolveHub(hub, wd, weft string) (string, error)`
+- `tools/tokencount#resolveHub`
 - `tools/tokencount/time_integration_test.go`
 
 **Edit:**
@@ -11,8 +11,8 @@
 
 **Uses:**
 - `tools/tokencount#finishedRuns`
-- `plan:tools/tokencount#readShedRecord`
-- `plan:tools/tokencount#RunTally.useShedRecord`
+- `tools/tokencount#readShedRecord`
+- `tools/tokencount#RunTally.useShedRecord`
 - `tools/tokencount#repositoryFlag`
 - `internal/fabricengine#RecordsWorktree`
 - `internal/gitrepo#New`

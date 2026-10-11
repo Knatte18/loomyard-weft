@@ -1,7 +1,7 @@
 # Card 3 — Archive tags carry their commit and commit date
 
 **Create:**
-- `plan:tools/tokencount#ArchiveTag` -> `type ArchiveTag struct`
+- `tools/tokencount#ArchiveTag`
 
 **Edit:**
 - `tools/tokencount#archivedSlugs` -> `func archivedSlugs(refs string) map[string][]ArchiveTag`

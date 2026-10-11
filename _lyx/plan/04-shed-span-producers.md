@@ -1,14 +1,14 @@
 # Card 4 — A run's span and Producers table from its archived shed status
 
 **Create:**
-- `plan:tools/tokencount#ArchiveTrees` -> `type ArchiveTrees interface`
-- `plan:tools/tokencount#ShedEntry` -> `type ShedEntry struct`
-- `plan:tools/tokencount#ShedRecord` -> `type ShedRecord struct`
-- `plan:tools/tokencount#readShedRecord` -> `func readShedRecord(trees ArchiveTrees, slug string, tags []ArchiveTag) (*ShedRecord, error)`
-- `plan:tools/tokencount#RunTally.useShedRecord` -> `func (run *RunTally) useShedRecord(rec ShedRecord)`
-- `plan:tools/tokencount#ProducerRow` -> `type ProducerRow struct`
-- `plan:tools/tokencount#RunTally.Producers` -> `func (run RunTally) Producers() []ProducerRow`
-- `plan:tools/tokencount#writeProducers` -> `func writeProducers(w io.Writer, rows []ProducerRow, span time.Duration)`
+- `tools/tokencount#ArchiveTrees`
+- `tools/tokencount#ShedEntry`
+- `tools/tokencount#ShedRecord`
+- `tools/tokencount#readShedRecord`
+- `tools/tokencount#RunTally.useShedRecord`
+- `tools/tokencount#ProducerRow`
+- `tools/tokencount#RunTally.Producers`
+- `tools/tokencount#writeProducers`
 
 **Edit:**
 - `tools/tokencount#RunTally`
@@ -17,13 +17,13 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/shedrun#TreeRunFileRels`
-- `plan:internal/shedrun#ParseSeed`
+- `internal/shedrun#TreeRunFileRels`
+- `internal/shedrun#ParseSeed`
 - `internal/shedengine#Status`
 - `internal/shedengine#HistoryEntry`
 - `internal/gitrepo#Repo.FileAtRevision`
 - `internal/gitrepo#ErrPathNotAtRevision`
-- `plan:tools/tokencount#covered`
+- `tools/tokencount#covered`
 
 **Intent:**
 Read a finished run's seed and shed status from its newest archive tag, set the run's span from them, and split the span by history entry into a Producers table (decision record, Decisions 3, 5, 6 and 9).

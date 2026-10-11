@@ -1,13 +1,13 @@
 {
   "runGuid": "e5683edf57a02ec0d9466db8c2957490",
-  "planFingerprint": "5ff45e0cb131123560defcbed5223170366e91704dc58a375e26d3c9d0820f8d",
+  "planFingerprint": "ab8a5020e2d61d6f0581399cc3ac989a90eb24a64f8b9b241ac066d40040ba40",
   "planFileHashes": {
     "00-overview.md": "c1781c9c45e01a2d366746c4793412ec266bbb2b879f4f80e84d8cb354f6f243",
-    "01-shedrun-tree-records.md": "0f3507cfaa2dbb26c22992f5309d40f57f533641ba659b82e53643688c9e6f3d",
-    "02-turn-time-by-role.md": "f44efb2e17d80801449e0b910a3be90e8a741cb8fd5006a87aefd529834545e1",
-    "03-archive-tag-dates.md": "2ed89db644985d8bcb6803b9a8072a3742089688f3fea71aab5e322960490fd4",
-    "04-shed-span-producers.md": "032000025c56aa2be8e11577944fa049ddf9d7f69a4581a0bb037d10d260b82b",
-    "05-run-reads-shed-status.md": "72680e7a4c90873ccc4b918ae2d4ec10dbd1f1246d2cec98de452b2a923a0bc6",
+    "01-shedrun-tree-records.md": "6ed3a866b0211677dbf73aca46c1ef62950aeddc9d0c51c83b234717d631b980",
+    "02-turn-time-by-role.md": "149d0e29d62ced1606d610e7999326fa8c7b62d9e0c28bf1f3e6602df78d89b1",
+    "03-archive-tag-dates.md": "e8c4165a9522e49da7bb7c63f967e2fbeedf657778358a2809f6da5959d886fc",
+    "04-shed-span-producers.md": "2ff3a256d5f078bc11c35b5b75cb98d2007ad28e8406a2f51068c5bb0f4ddb9b",
+    "05-run-reads-shed-status.md": "798ebb404c88a7cf55536941120ea9eb5b83bb8416d7e49022c81aa63c8d5e9a",
     "06-time-docs.md": "dca08a07aacb935ae511f0dc38c8d5b873d044b1162193289ac09efc053787de"
   },
   "planOverviewFrameHash": "d076a1f8876660dfb1b61960cee69d921699fd34b0745e6627737934843d0a5f",
@@ -127,7 +127,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "e29d2cf86b4c29d47c846c249d5d7dfc",
   "masterSessionId": "53d9c43e-3f9d-4b39-bb8d-dc3e51a771b3",
   "batches": {
@@ -142,19 +142,40 @@
         "06-time-docs"
       ],
       "cardHashes": {
-        "01-shedrun-tree-records": "0f3507cfaa2dbb26c22992f5309d40f57f533641ba659b82e53643688c9e6f3d",
-        "02-turn-time-by-role": "f44efb2e17d80801449e0b910a3be90e8a741cb8fd5006a87aefd529834545e1",
-        "03-archive-tag-dates": "2ed89db644985d8bcb6803b9a8072a3742089688f3fea71aab5e322960490fd4",
-        "04-shed-span-producers": "032000025c56aa2be8e11577944fa049ddf9d7f69a4581a0bb037d10d260b82b",
-        "05-run-reads-shed-status": "72680e7a4c90873ccc4b918ae2d4ec10dbd1f1246d2cec98de452b2a923a0bc6",
+        "01-shedrun-tree-records": "6ed3a866b0211677dbf73aca46c1ef62950aeddc9d0c51c83b234717d631b980",
+        "02-turn-time-by-role": "149d0e29d62ced1606d610e7999326fa8c7b62d9e0c28bf1f3e6602df78d89b1",
+        "03-archive-tag-dates": "e8c4165a9522e49da7bb7c63f967e2fbeedf657778358a2809f6da5959d886fc",
+        "04-shed-span-producers": "2ff3a256d5f078bc11c35b5b75cb98d2007ad28e8406a2f51068c5bb0f4ddb9b",
+        "05-run-reads-shed-status": "798ebb404c88a7cf55536941120ea9eb5b83bb8416d7e49022c81aa63c8d5e9a",
         "06-time-docs": "dca08a07aacb935ae511f0dc38c8d5b873d044b1162193289ac09efc053787de"
       },
       "startSha": "c00b2e524fb6d3ab53b64a6c901f8a4fcc80c7e3",
       "kind": "fork",
       "spawnedAt": "2026-10-11T11:53:58Z",
       "sessionId": "53d9c43e-3f9d-4b39-bb8d-dc3e51a771b3",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-shedrun-tree-records",
+        "status": "done",
+        "head_sha": "a903dcd6870d4e22ccc956b9bc756a5aa71a57fe",
+        "deviations": [
+          "tools/tokencount/orch_test.go",
+          "tools/tokencount/shed.go"
+        ]
+      },
+      "cardShas": [
+        "a903dcd6870d4e22ccc956b9bc756a5aa71a57fe"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-time-by-role/53d9c43e-3f9d-4b39-bb8d-dc3e51a771b3/subagents/agent-a01b310c82ed03d3f.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-time-by-role/53d9c43e-3f9d-4b39-bb8d-dc3e51a771b3/subagents/agent-a01b310c82ed03d3f.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-time-by-role/53d9c43e-3f9d-4b39-bb8d-dc3e51a771b3/subagents/agent-a01b310c82ed03d3f.jsonl"
+  ]
 }

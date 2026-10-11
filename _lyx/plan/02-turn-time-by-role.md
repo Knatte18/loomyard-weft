@@ -1,16 +1,16 @@
 # Card 2 — Role tables gain turn time, time share and an idle row
 
 **Create:**
-- `plan:tools/tokencount#Interval` -> `type Interval struct`
-- `plan:tools/tokencount#Interval.Duration` -> `func (i Interval) Duration() time.Duration`
-- `plan:tools/tokencount#unionIntervals` -> `func unionIntervals(set []Interval) []Interval`
-- `plan:tools/tokencount#covered` -> `func covered(set []Interval, window Interval) time.Duration`
-- `plan:tools/tokencount#turnPoint` -> `type turnPoint struct`
-- `plan:tools/tokencount#endsTurn` -> `func endsTurn(l line) bool`
-- `plan:tools/tokencount#workingIntervals` -> `func workingIntervals(points []turnPoint) []Interval`
-- `plan:tools/tokencount#RunTally.RoleTime` -> `func (run RunTally) RoleTime(role string) time.Duration`
-- `plan:tools/tokencount#RunTally.Idle` -> `func (run RunTally) Idle() time.Duration`
-- `plan:tools/tokencount#tableTime` -> `type tableTime struct`
+- `tools/tokencount#Interval`
+- `tools/tokencount#Interval.Duration`
+- `tools/tokencount#unionIntervals`
+- `tools/tokencount#covered`
+- `tools/tokencount#turnPoint`
+- `tools/tokencount#endsTurn`
+- `tools/tokencount#workingIntervals`
+- `tools/tokencount#RunTally.RoleTime`
+- `tools/tokencount#RunTally.Idle`
+- `tools/tokencount#tableTime`
 
 **Edit:**
 - `tools/tokencount#line`

@@ -1,8 +1,8 @@
 # Card 1 — shedrun reads a run's records from a git tree
 
 **Create:**
-- `plan:internal/shedrun#TreeRunFileRels` -> `func TreeRunFileRels(runID string) (seedRel, statusRel string, err error)`
-- `plan:internal/shedrun#ParseSeed` -> `func ParseSeed(data []byte) (Seed, error)`
+- `internal/shedrun#TreeRunFileRels`
+- `internal/shedrun#ParseSeed`
 
 **Edit:**
 - `internal/shedrun#ReadSeed`
