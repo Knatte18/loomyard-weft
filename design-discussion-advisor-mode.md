@@ -19,6 +19,11 @@ One shape: each `discussion_advisors` entry carries a model-spec plus an optiona
 An entry without an area answers every question; an entry with one still sees every batch but answers from its lens.
 This could replace the `all | areas` switch: the per-entry area is the selection.
 
+## Co-chair (operator, 2026-10-11)
+
+An alternative to an advisor: one seat is a co-chair that does its own exploration of the code and the task rather than only answering the chair's batches, so the draft gets a second independent study.
+How the co-chair's findings reach the chair, and who writes the decision record, is open.
+
 ## When (operator, 2026-10-11)
 
 Advisors with different roles is a later enhancement.
