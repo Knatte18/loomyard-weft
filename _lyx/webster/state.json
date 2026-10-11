@@ -1,0 +1,354 @@
+{
+  "runGuid": "07e65081fbbc2ba838ef7daf8e703770",
+  "planFingerprint": "cb92de77e86933e3f8db0f5f4a33f707e59c983f34dbc267b4a6ac5e23b40f58",
+  "planFileHashes": {
+    "00-overview.md": "c6b99305ecb3f50a642c20440f5c1dee36a4a13286711c0a36b2885297e3b344",
+    "01-engine-prompt-cache-lifetime.md": "f513bdd2d99f7e03bd58316b80f36f413ac1c4b9865051fc1ee816c0407f3163",
+    "02-keepalive-stencil.md": "ed26e427cb531f65b7fbfe97254dc55c2218917bda2b3ab2beaf89afc854beea",
+    "03-keepalive-pings.md": "7328e28b2599039f8aa88df6af50dc3692045acde4a44a90fdc3f663095eb7ce",
+    "04-keepalive-wiring.md": "3f97f1235b6160fad8f667604a897df9265772b1f8571879ac81a9c94cf7b77a",
+    "05-parent-review-no-pass-at-cap.md": "f8f3695d4cfb070c3bdd9ddc463b8de2ae990c05ec4eb2d4caac12d0744ad31c",
+    "06-parent-review-last-gate.md": "90c8dc431c531243adcea016ac7ca564ddcdae72898bdac09f43b4e2f082dcd7",
+    "07-prepare-round-reuses-empty.md": "6b43b5755ad4f5e049a9610888f4b8ed5ac2520f8bfed8f8e73a07eeac3c7ace",
+    "08-approve-review-file-refusal.md": "3e81b5a4f9a3c7047cb15fd4d17705addfb3f8a1820fe24fcfc9df5230fe2278",
+    "09-delivered-after-verdict.md": "9360a0f8c1c9053ff6860669bb13961a25142a10d38dc3273bc37c5aa05b08ac",
+    "10-review-refusals-name-status.md": "0757318eba16bff2637e61b901e22bf4b291306b5e4ca4de5154b3e7a4c1a2c0",
+    "11-no-reply-to-writer.md": "dbcafbc18a09054c73ffb13c124105d89aceabc0124232f586ebd7d04aa51b44",
+    "12-gate-recheck-throttle.md": "82dc0cb51a2d8d7904a2dd3fd3ee41b488e2af92baffa0e837bfe5411998ab50",
+    "13-gate-entry-expiry-probe.md": "c852ce1560c43cb4e1477c69bf655f9267a72529f6e35389dbe8aff2eeabc23d",
+    "14-parent-review-expiry-probe.md": "09ed77afda96d6cd5c17c62e9646c23238dfa98ab24150f481ba2a2fad1fa20f"
+  },
+  "planOverviewFrameHash": "b05193f57c37814853b1a403c073a742a3dfd61cacd195126b26e206e310902f",
+  "partition": [
+    {
+      "cards": [
+        "01-engine-prompt-cache-lifetime",
+        "02-keepalive-stencil",
+        "03-keepalive-pings",
+        "04-keepalive-wiring"
+      ],
+      "profile": "cautious",
+      "estimate": 200408,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54496,
+        "read_union": 48016,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 372,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:internal/shuttleengine/claudeengine/doc.go": 2040,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/testkit/shuttlefake": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/testkit/shuttlefake": 2000
+            },
+            "messages": 72.5,
+            "written": 22122
+          },
+          {
+            "card": 2,
+            "card_text": 468,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:contracts/stencils/loom/loom-template-discussion.md": 2256,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 71.5,
+            "written": 21918
+          },
+          {
+            "card": 3,
+            "card_text": 588,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:internal/parentreview/doc.go": 192,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/parentreview": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/parentreview": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 84.5,
+            "written": 25938
+          },
+          {
+            "card": 4,
+            "card_text": 468,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 91.5,
+            "written": 27918
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-parent-review-no-pass-at-cap",
+        "06-parent-review-last-gate",
+        "07-prepare-round-reuses-empty",
+        "08-approve-review-file-refusal",
+        "09-delivered-after-verdict"
+      ],
+      "profile": "cautious",
+      "estimate": 221950,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61496,
+        "read_union": 32972,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 912,
+            "reads": {
+              "file:contracts/recipes/loom-recipe.yaml": 4896,
+              "file:contracts/specs/refusal-spec.md": 4248,
+              "file:contracts/specs/shed-recipe-spec.md": 1404,
+              "file:internal/parentreview/doc.go": 192,
+              "package:contracts/recipes": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/parentreview": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/parentreview": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 190.5,
+            "written": 58062
+          },
+          {
+            "card": 6,
+            "card_text": 324,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4248,
+              "file:contracts/specs/shed-recipe-spec.md": 1404,
+              "package:contracts/specs": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 47.5,
+            "written": 14574
+          },
+          {
+            "card": 7,
+            "card_text": 300,
+            "reads": {
+              "file:contracts/specs/shed-recipe-spec.md": 1404,
+              "package:contracts/specs": 2000,
+              "package:internal/parentreview": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/parentreview": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 43,
+            "written": 13200
+          },
+          {
+            "card": 8,
+            "card_text": 348,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4248,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/parentreview": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/parentreview": 2000
+            },
+            "messages": 71.5,
+            "written": 21798
+          },
+          {
+            "card": 9,
+            "card_text": 348,
+            "reads": {
+              "package:internal/loomcli": 2000,
+              "package:internal/parentreview": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/parentreview": 2000
+            },
+            "messages": 65,
+            "written": 19848
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-review-refusals-name-status",
+        "11-no-reply-to-writer",
+        "12-gate-recheck-throttle",
+        "13-gate-entry-expiry-probe",
+        "14-parent-review-expiry-probe"
+      ],
+      "profile": "cautious",
+      "estimate": 231822,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68496,
+        "read_union": 52296,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 624,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4248,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 154,
+            "written": 46824
+          },
+          {
+            "card": 11,
+            "card_text": 264,
+            "reads": {
+              "file:contracts/stencils/loom/loom-template-parent-review-brief.md": 420,
+              "file:contracts/stencils/orch/orch-template-role.md": 2064,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils/orch": 2000
+            },
+            "messages": 21.5,
+            "written": 6714
+          },
+          {
+            "card": 12,
+            "card_text": 408,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 4056,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 63,
+            "written": 19308
+          },
+          {
+            "card": 13,
+            "card_text": 528,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:internal/shuttleengine/doc.go": 4056,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 51,
+            "written": 15828
+          },
+          {
+            "card": 14,
+            "card_text": 456,
+            "reads": {
+              "file:contracts/specs/shed-recipe-spec.md": 1404,
+              "file:internal/parentreview/doc.go": 192,
+              "package:contracts/specs": 2000,
+              "package:internal/parentreview": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/parentreview": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 73,
+            "written": 22356
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "20f1a3997484d0ee70d876da16bf69d9",
+  "masterSessionId": "175a5055-3107-4812-a3df-358934c9aeb4",
+  "batches": {
+    "1": {
+      "slug": "engine-prompt-cache-lifetime",
+      "cards": [
+        "01-engine-prompt-cache-lifetime",
+        "02-keepalive-stencil",
+        "03-keepalive-pings",
+        "04-keepalive-wiring"
+      ],
+      "cardHashes": {
+        "01-engine-prompt-cache-lifetime": "f513bdd2d99f7e03bd58316b80f36f413ac1c4b9865051fc1ee816c0407f3163",
+        "02-keepalive-stencil": "ed26e427cb531f65b7fbfe97254dc55c2218917bda2b3ab2beaf89afc854beea",
+        "03-keepalive-pings": "7328e28b2599039f8aa88df6af50dc3692045acde4a44a90fdc3f663095eb7ce",
+        "04-keepalive-wiring": "3f97f1235b6160fad8f667604a897df9265772b1f8571879ac81a9c94cf7b77a"
+      },
+      "startSha": "86982fa436e864bbbaf0de93016d63baeef01514",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T18:41:26Z",
+      "sessionId": "175a5055-3107-4812-a3df-358934c9aeb4",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
