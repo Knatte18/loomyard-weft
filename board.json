@@ -1098,7 +1098,8 @@
       "depends_on": [],
       "isolated": false,
       "brief": "Bench pair for twill-plan round 2; torn down after the run",
-      "body": "Temporary bench pair for board note twill-plan, round 2. Plan-Write only, from a frozen decision record."
+      "body": "Temporary bench pair for board note twill-plan, round 2. Plan-Write only, from a frozen decision record.",
+      "status": "running · Loom-Preflight"
     },
     {
       "id": 412,
