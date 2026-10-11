@@ -10,8 +10,8 @@
 - `tools/tokencount/time_integration_test.go`
 
 **Create:**
-- `plan:tools/tokencount#transcriptStart` -> `func transcriptStart(path string) (time.Time, bool, error)`
-- `plan:tools/tokencount#runBound` -> `func runBound(tags []ArchiveTag, inFlight bool) time.Time`
+- `tools/tokencount#transcriptStart`
+- `tools/tokencount#runBound`
 
 **Uses:**
 - `tools/tokencount#finishedRuns`

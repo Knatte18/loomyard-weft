@@ -10,8 +10,8 @@
 - `tools/tokencount/count_test.go`
 
 **Create:**
-- `plan:tools/tokencount#stallCap` -> `const stallCap = 30 * time.Minute`
-- `plan:tools/tokencount#startsTurn` -> `func startsTurn(l line) bool`
+- `tools/tokencount#stallCap`
+- `tools/tokencount#startsTurn`
 
 **Intent:**
 Decision D1.
