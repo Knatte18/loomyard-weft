@@ -24,3 +24,4 @@ Most agents a run spawns should take a model of their own in config.
 
 Webster's implementer and verify-fix forks stay forks and run on `master`'s model; they are out of this task.
 A cold-start implementer with a model of its own is the separate feature `weaver`.
+The same holds for the Bouncer escalation fork and the fan's lens forks: a fork always runs on its parent session's model, so they are out of this task; the lens forks' model is set through the fanned reviewer's own key (`fan_review`).
