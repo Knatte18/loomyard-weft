@@ -183,6 +183,12 @@ Rationale: a finished reviewer's run was never live today either, so a resumed r
   - required-advisor-not-stopped-on-early-end (class decision, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - probe-round-reviewer-only-stop-undecided (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A round runs as one seat table: the fixer under `burler-chair`, the reviewer under `burler-advisor-1`, with the models, skills, segment, timeout, round number, outputs and gates of D2.
