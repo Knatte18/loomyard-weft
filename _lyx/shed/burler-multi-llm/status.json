@@ -1,12 +1,12 @@
 {
   "current_producer": "Worktree-Teardown",
-  "state": "blocked",
-  "error": "worktree removal failed (session shutdown already succeeded): the pair for \"burler-multi-llm\" was left in place because archiving its run records to the remote failed: archiving the pair's records before teardown failed: push archive tag \"archive/burler-multi-llm/2b0630b4f627\" to \"origin\": git push origin refs/tags/archive/burler-multi-llm/2b0630b4f627: exit 1: To https://github.com/Knatte18/loomyard-weft.git  ! [remote rejected]   archive/burler-multi-llm/2b0630b4f627 -\u003e archive/burler-multi-llm/2b0630b4f627 (failed) error: failed to push some refs to 'https://github.com/Knatte18/loomyard-weft.git'; fix the failure named here (most often an unreachable remote), then resume this run with \"lyx batten run burler-multi-llm\"",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Worktree-Teardown",
     "last": "Worktree-Teardown → stuck",
-    "wait": "worktree removal failed (session shutdown already succeeded): the pair for \"burler-multi-llm\" was left in place because archiving its run records to the remote failed: archiving the pair's records before teardown failed: push archive tag \"archive/burler-multi-llm/2b0630b4f627\" to \"origin\": git push origin refs/tags/archive/burler-multi-llm/2b0630b4f627: exit 1: To https://github.com/Knatte18/loomyard-weft.git  ! [remote rejected]   archive/burler-multi-llm/2b0630b4f627 -\u003e archive/burler-multi-llm/2b0630b4f627 (failed) error: failed to push some refs to 'https://github.com/Knatte18/loomyard-weft.git'; fix the failure named here (most often an unreachable remote), then resume this run with \"lyx batten run burler-multi-llm\""
+    "wait": ""
   },
   "history": [
     {
