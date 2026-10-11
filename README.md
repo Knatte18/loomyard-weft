@@ -27,11 +27,7 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | After | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Seat chair hold deferral of 20 min can hide a wedged advisor** | [`seat-hold-deferral-cap`](design-seat-hold-deferral-cap.md) | loom |  | shuttle |
+_None._
 
 ### Layer A
 
@@ -41,7 +37,8 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Parent-review wait: warm writer cache on reject, wait bound off the boundary, gate hardening**<br>• A late reject resumes the writer on a cold cache, a writer stuck mid-turn outlives the wait bound, and the PR #336 review left gate gaps | [`parent-review-wait`](design-parent-review-wait.md) | loom | `shuttle-startup-ready` | loom, shuttle, orch |
+| 1 | **Seat chair hold deferral of 20 min can hide a wedged advisor** | [`seat-hold-deferral-cap`](design-seat-hold-deferral-cap.md) | loom | `shuttle-startup-ready` | shuttle |
+| 2 | **Parent-review wait: warm writer cache on reject, wait bound off the boundary, gate hardening**<br>• A late reject resumes the writer on a cold cache, a writer stuck mid-turn outlives the wait bound, and the PR #336 review left gate gaps | [`parent-review-wait`](design-parent-review-wait.md) | loom | `shuttle-startup-ready` | loom, shuttle, orch |
 
 ## Notes
 
