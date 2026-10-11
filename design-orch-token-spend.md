@@ -1,6 +1,6 @@
-# Alignment agent in loom reviews against the board
+# Cut the orch's token spend
 
-`loom-alignment-agent` · Note · feature, orch, loom, board
+`orch-token-spend` · Note · enhancement, orch, loom
 
 ## Seen (operator, 2026-10-11)
 
@@ -8,7 +8,11 @@ The hub orchestrator is now the largest token spender, ahead of Burler and Webst
 Measured over 2026-10-10 and 2026-10-11, orch spend follows its turn count: a distill shrinks the context, but it regrows within the hour.
 PR-Gate and parent-review forks are a small share of the spend, while batten and agent notices drive about 800 orch calls in those two days, so the gain is fewer orch wake-ups.
 
-## Idea (operator, 2026-10-11)
+## Wanted
+
+Cut the orch's token spend, chiefly by waking it less often.
+
+## Means: an alignment agent in loom (operator, 2026-10-11)
 
 The board is the manifest: it shows every run and what it is doing, and every run's discussion record is readable.
 No separate manifest is kept; a hand-kept one is a chore and goes stale fast.
@@ -22,4 +26,9 @@ Its sources need no upkeep: board entries and notes, the in-flight runs' records
 - Parent review is also a sync point: when two overlapping tasks run at once, the orch has held both at parent review and written their reviews together so their discussion records agree. A per-run agent sees the overlap but cannot hold the other run. One shape: the agent approves when it finds no overlap with a run in flight and wakes the orch only when it does, so the orch can hold and align both.
 - Open: whether in-flight runs' records need a `lyx` read verb so an agent in one pair reads another pair's records without reaching into its worktree.
 - Open, for the operator: whether an approved PR review merges to `main` (and reaches prod at the next `update-plugins.sh`) on its own, or still waits for a short orch yes.
+
+## Other means discussed
+
+- Cheap models (such as Haiku) for the orch's simple agent jobs, like counting; fresh agents cost about $37 in the two measured days.
+- The `orch: 1h` cache lifetime in `shuttle.yaml` never applied, since a distill does not restart the orch process; a restart applies it, worth only a few dollars over two days.
 - The operator is also weighing running the orch on Sonnet, since most orch turns run `lyx` commands rather than reason deeply; cache reads cost the same on Opus 5.5 and Sonnet 5.5, so it saves about a quarter of the main session's spend.
