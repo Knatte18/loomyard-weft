@@ -1,0 +1,256 @@
+{
+  "runGuid": "3c69429c22fa42c39af14884145ac7e6",
+  "planFingerprint": "9e4c1a6d4149606626ec38321772d1e065e27b2dd8e73e86bf58bdcf9506a5b2",
+  "planFileHashes": {
+    "00-overview.md": "fb7f723a82618e780c1c41f3cf644941d74633265a5916cd8483e7617dc13567",
+    "01-shuttle-await-poll.md": "983ba43ebda18b6684d049f4ab11e651aedf4e16740a47feba58db5fb8ace438",
+    "02-shuttle-await-verb.md": "4057fedeaa0dbf7c1d2913099c5aba7df0c50b30b7daf9bc18375d8f50916e57",
+    "03-twill-lenses.md": "8ea218b4e54a5573c58338a8232000279f6d2d7be9c84dbb9ef757ea2fc0fd23",
+    "04-twill-stencils.md": "25eff61d427aaa7b3fdd18d54e0235bf137c33dea85b75af537f331ffd5d58d3",
+    "05-twilldirective-package.md": "1593fe0473d260e2c88d13dc0d7aeb9d90db10181de04b7a85aa27c8e130b7da",
+    "06-discussion-template-twill-markers.md": "4a4f012261096c2ba576a61452c81de367db6d9ab0b20bdf4095993b5bd06284",
+    "07-twill-config-value.md": "c8b24e05b1e1928f8d9f2e57d61fd50d50bc07e85bbba6cb294a13989df24c66",
+    "08-discussion-ready-marker.md": "78a8bfab2ae059a99ac5d732ea02da801e07de0ae8834ae8eaec91904d0aeb3a",
+    "09-discussion-spec-twill.md": "d656f9aa7535759d538028eb5ae8401d358eba254905c3623c0bb90d1acb6ff3",
+    "10-discussion-marker-fresh-spawn.md": "cdfc638944e74b90723d08fd306c5836d51f68c2189a385e0c9e8e9aaacd67d0"
+  },
+  "planOverviewFrameHash": "247de8e6e5be541da8476002d9265538713a5b756573c6ee20abd25843229713",
+  "partition": [
+    {
+      "cards": [
+        "01-shuttle-await-poll",
+        "02-shuttle-await-verb",
+        "03-twill-lenses",
+        "04-twill-stencils",
+        "05-twilldirective-package",
+        "06-discussion-template-twill-markers"
+      ],
+      "profile": "cautious",
+      "estimate": 226812,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54436,
+        "read_union": 71852,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 588,
+            "reads": {
+              "file:docs/overview.md": 8316,
+              "file:internal/shuttleengine/doc.go": 3468,
+              "package:docs": 2000,
+              "package:internal/burlercli": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 80.5,
+            "written": 24738
+          },
+          {
+            "card": 2,
+            "card_text": 516,
+            "reads": {
+              "file:docs/overview.md": 8316,
+              "file:internal/shuttlecli/cli.go": 1584,
+              "file:internal/shuttlecli/cli_test.go": 5772,
+              "package:docs": 2000,
+              "package:internal/shuttlecli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/shuttlecli": 2000
+            },
+            "messages": 39.5,
+            "written": 12366
+          },
+          {
+            "card": 3,
+            "card_text": 276,
+            "reads": {
+              "file:internal/burlerengine/template.yaml": 1836,
+              "package:internal/burlerengine": 2000,
+              "tests:internal/burlerengine": 2000
+            },
+            "messages": 20,
+            "written": 6276
+          },
+          {
+            "card": 4,
+            "card_text": 732,
+            "reads": {
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/twill": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/twill": 2000
+            },
+            "messages": 51.5,
+            "written": 16182
+          },
+          {
+            "card": 5,
+            "card_text": 456,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/twilldirective": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/twilldirective": 2000
+            },
+            "messages": 70,
+            "written": 21456
+          },
+          {
+            "card": 6,
+            "card_text": 456,
+            "reads": {
+              "file:contracts/stencils/loom/loom-template-discussion.md": 2232,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 63.5,
+            "written": 19506
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-twill-config-value",
+        "08-discussion-ready-marker",
+        "09-discussion-spec-twill",
+        "10-discussion-marker-fresh-spawn"
+      ],
+      "profile": "cautious",
+      "estimate": 217876,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61436,
+        "read_union": 76280,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 420,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4020,
+              "file:internal/loomengine/config.go": 7980,
+              "file:internal/loomengine/template.yaml": 336,
+              "package:contracts/specs": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 46.5,
+            "written": 14370
+          },
+          {
+            "card": 8,
+            "card_text": 300,
+            "reads": {
+              "package:internal/loomengine": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 28,
+            "written": 8700
+          },
+          {
+            "card": 9,
+            "card_text": 756,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:contracts/specs/refusal-spec.md": 4020,
+              "file:docs/overview.md": 8316,
+              "file:internal/loomengine/discussion.go": 1092,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 80.5,
+            "written": 24906
+          },
+          {
+            "card": 10,
+            "card_text": 384,
+            "reads": {
+              "file:internal/battencli/wire_seams_test.go": 5004,
+              "file:internal/loomcli/wiring_test.go": 10908,
+              "file:internal/shedrecipe/entries_discussionwrite_test.go": 3144,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 106,
+            "written": 32184
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "52e875014a597e85c63999b3b57aac7b",
+  "masterSessionId": "c16ce497-cd68-4306-9384-3169d04571aa",
+  "batches": {
+    "1": {
+      "slug": "shuttle-await-poll",
+      "cards": [
+        "01-shuttle-await-poll",
+        "02-shuttle-await-verb",
+        "03-twill-lenses",
+        "04-twill-stencils",
+        "05-twilldirective-package",
+        "06-discussion-template-twill-markers"
+      ],
+      "cardHashes": {
+        "01-shuttle-await-poll": "983ba43ebda18b6684d049f4ab11e651aedf4e16740a47feba58db5fb8ace438",
+        "02-shuttle-await-verb": "4057fedeaa0dbf7c1d2913099c5aba7df0c50b30b7daf9bc18375d8f50916e57",
+        "03-twill-lenses": "8ea218b4e54a5573c58338a8232000279f6d2d7be9c84dbb9ef757ea2fc0fd23",
+        "04-twill-stencils": "25eff61d427aaa7b3fdd18d54e0235bf137c33dea85b75af537f331ffd5d58d3",
+        "05-twilldirective-package": "1593fe0473d260e2c88d13dc0d7aeb9d90db10181de04b7a85aa27c8e130b7da",
+        "06-discussion-template-twill-markers": "4a4f012261096c2ba576a61452c81de367db6d9ab0b20bdf4095993b5bd06284"
+      },
+      "startSha": "c97da9f6d1936dae4326601e8a16558bf08956fe",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T10:42:03Z",
+      "sessionId": "c16ce497-cd68-4306-9384-3169d04571aa",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
