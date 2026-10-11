@@ -1,102 +1,70 @@
 ---
-verdict: BLOCKING
+verdict: APPROVED
 findings:
   - id: F1
-    severity: BLOCKING
-    class: design
-    location: _lyx/discussion/decision-record.md:62
-    summary: D4 opens landing's require_pr_to_base, squash and co_authored_by and darn's review_max_bounces to the local layer, so a pair's untracked file can skip PR approval and Darn-Review and reshape the shared parent branch, against D4's own bound
+    severity: MEDIUM
+    class: consistency
+    location: _lyx/discussion/decision-record.md:79
+    summary: loom's discussion_fan and plan_fan pick the lens set a review segment's reviewer is given, which meets D4's own category test, yet loom's LocalDenied lists only parent_review_wait_min
+    fix: In D4 (decision-record.md:79), add `discussion_fan` and `plan_fan` to loom's `LocalDenied` list, and extend the loom sentence at line 81 with the reason, that each picks the lens set a review segment's forks are given, so a local empty value turns a hub-chosen fanned review back to solo untracked. Add `loom.plan_fan` to the LocalDenied examples in the acceptance row at line 229. Leave `discussion_producer` open and say why in the same sentence, that it picks the writer, not a reviewer, if that is the intent.
   - id: F2
-    severity: MEDIUM
-    class: design
-    location: _lyx/discussion/decision-record.md:73
-    summary: D4's rationale and R3 rest on a false premise, since the git-ignored per-worktree .env already binds the env markers of reed.tmux, shell, tmux_conf, mouse, debug_log and shuttle.claude, run_dir untracked and persistently in a pair
-  - id: F3
-    severity: MEDIUM
-    class: design
-    location: _lyx/discussion/decision-record.md:91
-    summary: D6 never says the strip compares unexpanded values, and an env-expanded comparison strips a literal equal to the walk's expansion of a marker below, changing the worktree's resolution in any other environment
-  - id: F4
     severity: LOW
     class: design
-    location: _lyx/discussion/decision-record.md:93
-    summary: D6's claim and the AC that migration leaves every worktree's resolution unchanged miss the keys the seeded default adds under a worktree whose file lacks them, such as a seed-only alias or lens the prime holds
+    location: _lyx/discussion/decision-record.md:218
+    summary: R3 and D4's rationale name the pair's .env as the untracked route to marker-carrying denied keys, but the process environment wins over .env and the hub's shared tmux server hands its boot environment to every pane in every pair
+    fix: In R3 (decision-record.md:218), after the `.env` sentence, add that `envsource.Build` lets the process environment override `.env`, so a `LYX_*` variable in the environment of the process that boots the hub's shared tmux server reaches every later pane of every pair, and that this cross-pair route belongs to the same parent decision (Q12). Mirror the one clause in support-log.md's Q12.
 ---
 
-### [BLOCKING] Hub-wide `LocalKeys` fail D4's own category test
+### [MEDIUM] loom's fan keys meet D4's lens-set category but stay open
 
-**Location:** `_lyx/discussion/decision-record.md:62` (D4's `LocalKeys` lists), against the Bound at line 70 and the Rationale at line 73.
+**Location:** `_lyx/discussion/decision-record.md:79`, with the category test at line 83 and the bound at line 87.
 
-**Issue:** D4 says "the lists come from testing every key of every module against these categories" and bounds the local layer to never "switch off an agent guard or [be] a fact shared across pairs".
-That test was not applied to the hub-wide keys it opens:
+**Issue:** D4's category test closes "the prose or lens set a reviewer is given" to the local layer, and it says it asks what a key's value can do, not what kind of key it is.
+`loom.discussion_fan` and `loom.plan_fan` choose that lens set.
+`internal/loomcli/wiring.go:786-789` hands each fan name to its segment's Bouncer and Burler rows, and `fannedReview` in `internal/loomengine/review.go:151` returns no fan for an empty value.
+A repo default that sets `plan_fan: <fan>` is a hub decision to review plans with a lens fan.
+A local `plan_fan: ""` drops every Plan-Review round in the pair back to a solo review with no tracked trace, and landing shows nothing (R3).
+That is the same untracked-review-weakening D4 closed for `burler.lenses` and `burler.fans` in round 4.
+A fan name can only name a fan from the tracked `burler.yaml`, so the key cannot inject prose, and a solo review is still a full review.
+That makes this a weakening rather than a hollowing, hence MEDIUM, not BLOCKING.
+Still, D4 states one test, and loom's list as written gives a different answer from that test.
+The fix is either to deny the two keys or to narrow the category's wording so it plainly excludes a choice among tracked fans.
+Denying them is the smaller edit and matches the bound's "hollows ... a review".
 
-- `landing.require_pr_to_base`: with `[]` in a pair's `landing.local.yaml`, `Publish.Call` returns Done before any push or GitHub call (`internal/landingshed/publish.go:118`), `PRGate.Call` returns Done with no approval check (`internal/landingshed/prgate.go:56`), and Finalize merges and pushes into the parent branch.
-  It switches off the operator's PR approval gate on a landing into a branch every pair shares.
-- `landing.squash` and `landing.co_authored_by`: they set the merge shape and trailer of the commit Finalize writes on the shared parent branch (`internal/landingshed/finalize.go:194`), a fact shared across pairs.
-- `darn.review_max_bounces`: `0` "runs neither the review nor Describe and goes from Darn-Write straight to Publish" (`internal/darnengine/template.yaml`); loom refuses a budget below 1, darn does not, so the open "budgets" of the Bound include a review switch-off.
+### [LOW] The env-marker route is wider than the pair's `.env`
 
-Combined, a file a pair's agents can write (R3), and that landing does not show, lands unreviewed, unapproved code on `main`.
-D4's own Rationale says hub-wide modules are hub-wide "because a task branch must not change them", yet it opens nearly every landing key.
-Under the rubric's attack-surface rule this is a bypassable guard with a false stated bound.
+**Location:** `_lyx/discussion/decision-record.md:218`, and D4's rationale at line 91.
 
-**Fix:** Re-run D4's category test over every hub-wide key and add a category for a key that gates or shapes a landing into the parent branch.
-Take `require_pr_to_base`, `squash` and `co_authored_by` out of landing's `LocalKeys`, which leaves its model picks and timeouts.
-Either take `review_max_bounces` out of darn's `LocalKeys` or refuse a local value below 1.
-Add acceptance rows naming `landing.require_pr_to_base` and a local `darn.review_max_bounces: 0` among the refused keys.
+**Issue:** D4's rationale and R3 say the pair's git-ignored `.env` already binds the markers of the marker-carrying denied keys.
+That holds: every one of them is per-worktree (reed's five, `shuttle.claude`, `shuttle.run_dir`), and no hub-wide denied key carries a marker in `internal/darnengine/template.yaml` or `internal/landingshed/template.yaml`.
+But `envsource.Build` (`internal/envsource/envsource.go:37-47`) overlays `os.Environ()` on `.env`, with OS values winning.
+`serverSpawnArgv` (`internal/reedengine/lifecycle.go`) starts the hub's shared tmux server from the booting process, and only `LYX_TRACE_ID` is stripped from its environment.
+So a `LYX_SHUTTLE_CLAUDE` or `LYX_REED_SHELL` set in the environment of whichever pair's process boots the server is inherited by every pane of every pair, and through those panes by every `lyx` load there.
+That route crosses pairs, which `.env` does not.
+D4's decision stands: the local layer still must not add a route.
+But R3 and Q12 hand the parent a narrower picture of today's untracked routes than the code shows.
 
-### [MEDIUM] D4's rationale and R3 ignore the per-worktree `.env`
+## Rejected
 
-**Location:** `_lyx/discussion/decision-record.md:73` (D4 Rationale) and `:171` (R3).
-
-**Issue:** The Rationale says the denied per-worktree keys "persist in a pair only through a tracked file that landing flags, since the `${env:...}` markers some of them carry bind only the process that sets the variable".
-That is false.
-`configengine.load` expands markers through `envsource.Build(baseDir)` (`internal/configengine/config.go:168`), which reads `<anchor>/.env` before overlaying the process environment.
-`docs/overview.md` lists `.env` as a git-ignored, per-worktree file.
-So a pair's `.env` already binds `reed.tmux`, `reed.shell`, `reed.tmux_conf`, `reed.mouse`, `reed.debug_log`, `shuttle.claude` and `shuttle.run_dir`, every denied key but the `claude_deny_*` booleans, which carry no marker.
-That file persists in the pair, reaches every later load, is writable by the pair's agents and is invisible at landing, the exact properties the Rationale assigns only to the new local file.
-R3's "D4's lists bound what it gains to session tuning" is false for the same reason: an agent writing `LYX_SHUTTLE_CLAUDE=...` into the pair's `.env` sets the executable.
-The deny lists stay correct, since the local layer should not add a second route; the premise and the stated bound are what fail.
-This premise is the round-2 F3 fix's rewrite, which looked at the process environment and missed `.env`.
-
-**Fix:** Rewrite the Rationale so the deny lists rest on the local layer adding no new untracked route, not on there being none today.
-State in R3 that `.env` stays an untracked route to every marker-carrying denied key, and leave closing it to the parent, or bring it into scope as its own decision.
-
-### [MEDIUM] D6's strip does not fix how markers are compared
-
-**Location:** `_lyx/discussion/decision-record.md:91-93` (D6) and `:188` (acceptance criterion).
-
-**Issue:** D6 strips "every key whose value equals what the layers below resolve to" but does not say whether the comparison is over the raw file text or over values after `${env:...}` expansion.
-Expansion depends on the process environment and on each worktree's own `.env`, so an expanded comparison is environment-dependent.
-Example: the seeded default holds `shell: ${env:LYX_REED_SHELL:-bash}`, a worktree's tracked file holds the literal `shell: /bin/zsh`, and the walk runs with `LYX_REED_SHELL=/bin/zsh` exported in the operator's profile, as the template's own `tmux_conf` comment recommends for that key.
-The values compare equal, the literal is stripped, and any later process without that variable resolves the worktree's shell to `bash`.
-The same holds for a marker in the worktree file against a literal below.
-This breaks the "never changes what a worktree resolves" claim for marker-carrying keys, which include the executables.
-
-**Fix:** State in D6 that the strip compares unexpanded nodes, a marker equal only to the same marker text, and add an acceptance row with a worktree literal that equals the walk's expansion of a marker below and is kept.
-
-### [LOW] Migration adds keys under a worktree whose file lacks them
-
-**Location:** `_lyx/discussion/decision-record.md:93` (D6) and `:188` (acceptance criterion).
-
-**Issue:** D6 claims the strip never changes what a worktree resolves, and the acceptance criterion says every migrated worktree resolves every module "to the same values as before".
-The comparison point "before" is a worktree with no default layer.
-Seeding the default puts every key of the prime's file beneath every worktree, and D1 lets no layer delete a key below.
-A worktree whose file lacks a key the prime's holds, outside the template, therefore resolves to the prime's value after migration.
-The live case is the seed-only modules, which reconcile never fills: a pair that removed the prime's redefined `sonnet` alias from its `models.yaml` resolved the template's alias before, and resolves the prime's after.
-A lens or fan the prime added after the pair forked appears in the pair the same way.
-The strip cannot repair it, since it only removes keys.
-
-**Fix:** Narrow D6's claim and the acceptance criterion to keys the worktree file holds, and state the additive case as a known change.
-Or have the walk report each key the default adds beneath a worktree, beside `stripped`, so the operator can pin it back with `lyx config <module> --set`.
-
-## Focus departures
-
-None of the three directives was departed from; each verdict is stated below for the record.
-
-- Directive 1, every open key of every per-worktree module: no defect among them.
-  reed's `width`, `height`, `collapsed_rows`, `min_full_rows`, `watchdog`, `operator_quiet_s`, `selvage.height_rows` and `segment_colors` act on the pair's own session, through `new-session -x/-y`, its own window hooks and its own resize watch, never a `-g` server option.
-  shuttle's open keys are its own run's timeouts, polls and cache TTLs; `startup_timeout_s` shrinks only this worktree's orphan-sweep age guard, and `run_dir` stays denied.
-  logger's retention keys sweep only `<anchor>/.lyx/logs`; loom, webster, orch, batcher, models and burler are model picks, budgets and timeouts.
-  The directive's question is settled for per-worktree modules, and F1 records the same test failing for hub-wide `LocalKeys`, which D4's Bound also covers.
-- Directive 2: open maps compared as one unit hold, so a worktree whose open map differs in one entry keeps it whole and resolves the same; F3 and F4 record the two cases where resolution still changes.
-- Directive 3: F2.
+- Focus 1, per key: every open key of each per-worktree module was checked against the bound.
+  - reed: `width`, `height`, `collapsed_rows`, `min_full_rows`, `selvage.height_rows`, `segment_colors`, `watchdog` and `operator_quiet_s` act on the pair's own session.
+    `width` and `height` go into `new-session -x/-y` for that session only.
+    `operator_quiet_s` is floored to 5 when not positive (`internal/reedengine/io.go:244`).
+    The server-global `set-option -g` pins use no config value.
+  - shuttle: the open timeouts and poll keys fail or slow the pair's own runs.
+    `startup_timeout_s: 0` zeroes the orphan sweep's age guard, but the sweep is confined to the pair's own run dirs while `run_dir` is denied.
+    The prompt-cache TTL keys are tuning.
+  - loom: `review_max_bounces` below 1 is refused by `loomrecipe.New`.
+    The model keys, timeouts, `review_circling_checkpoint` (which escalates, never passes), `step_idle_timeout_min`, `friction`, `discussion_interactive` and `discussion_producer` are tuning or act on the writer.
+    The exception is the fan keys, raised as F1.
+  - webster: `self_fix_cap`, `master_timeout_min`, `recovery_timeout_min` and `verify_gate_attempts` are refused at 0 or below (`internal/websterengine/config.go:96`), so the verify gate cannot be switched off.
+  - models: `engine` is a closed set and `defaults` keys are limited to `effort` and `version`, so an alias is a model pick.
+  - batcher, orch, logger: batch sizing, the orch session's own tuning (`permission_mode` accepts `bypass` only), and per-anchor trace retention.
+- Focus 2, the D6 strip: no defect.
+  A worktree open map that differs from the default's in one entry is unequal as a unit and kept whole, so it resolves to the worktree's map as before.
+  An equal one is stripped and resolves to the identical default map.
+  Lists and scalars compare as leaves, `models` aliases as units, and burler lens strings as leaves, and each stripped value resolves from an equal value below.
+  The acceptance row at line 237 pins the open-map case.
+- Focus 3, the D4 premises: each stated premise holds against `internal/configengine/config.go:168` and `envsource.Build`.
+  `.env` is read at the loading anchor, and it covers every marker-carrying denied key.
+  The one gap is F2.
