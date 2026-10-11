@@ -168,6 +168,12 @@ Decision: Remove lyx loom goto from the arbiter's mutating verbs (D3); a resume 
 
 Rationale: shedengine Goto clears PauseRequested, PauseBefore and PauseAfter, so an arbiter goto erases a human pause before D6's check can see it; the check must run before anything clears the fields (round-2 F1).
 
+### Added after Discussion (parent, 2026-10-11): A re-launch steps paused and awaiting runs as they stand
+
+Decision: Delete D6's clause that the re-launch performs the un-pause lyx loom resume does; replace it with: a re-launch steps an awaiting or paused run as it stands, since a step short-circuits only a done run and re-calls current_producer. Mark the goto-paused question in the support log's Question ledger resolved by the code, and drop the Notes-for-the-plan-writer sentence asking the Plan to check it.
+
+Rationale: lyx loom resume writes no status, it wakes the parked driver; stepLocked short-circuits only StateDone (round-2 F2).
+
 ## Constraints
 
 - PATTERN-stencil-ownership: the arbiter stencil is read at call time through `internal/stencilstore`.
