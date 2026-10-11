@@ -1033,6 +1033,24 @@
       "isolated": false,
       "brief": "Bench twill Plan-Write on sonnet[medium], and a single Fable plan writer, under the round-2 setup, against the arms already run.",
       "body": "## Idea (operator, 2026-10-11)\n\nRun one more arm of the `twill-plan` bench: twill with the plan writer on `sonnet[medium]`, planned for 2026-10-12.\n\nSecond arm, same setup (operator, 2026-10-11): a single Fable 5.1 plan writer without twill, against twill `opus[medium]`.\nAt list prices Fable costs 2.5x Opus on output and cache writes and 1.25x on cache hits; on the token volume of twill `opus[medium]` it would cost about $9.60 per plan against $4.90, and on that of single `opus[high]` about $5.50-6.50.\nThe question is whether a single Fable writer finds as much as twill `opus[medium]` with fewer turns and no forks.\nTake the Fable model key from the hub's models config; raise the spend cap for this arm accordingly.\n\n## Setup\n\nExactly the round-2 setup of `twill-plan` (directive before Step 3, the four tuned lenses, cited rejections, references `shuttle-startup-ready` and `run-time-by-role`, two runs per reference), graded against the same keys and costed with `tools/tokencount`, so it compares with the four arms already run.\nRecords: `.scratch/twill-plan-bench/results.md`, `results-sonnet.md`, `tokens-*.md`; a fresh agent runs it, spend cap about $20.\n\n## Seen so far\n\n- Twill `sonnet[high]` matched twill `opus[medium]` within spread but cost only 9% less: per plan it used about 1.3x the output and 1.5x the cache reads, from more `validate-plan` passes (one of four first passes succeeded) and more, mostly LOW, fork findings.\n- Two of its 18 rejections kept a key defect; `opus[medium]` kept none.\n- The open question is whether medium effort cuts the token volume enough to pay off, or worsens the judgement and the `validate-plan` retries.\n"
+    },
+    {
+      "id": 420,
+      "slug": "sed-read-ok",
+      "title": "Agents may read with sed; only script rewrites stay banned",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "stencil",
+        "webster",
+        "shuttle"
+      ],
+      "issues": [],
+      "priority": "high",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Make read-only sed work without refusals or prompts across lyx-spawned agents, stencils and audits, keeping the no-script-edit rule.",
+      "body": "## Idea (operator, 2026-10-11)\n\nMake `sed` work well for agents: reading with `sed` is allowed, and only rewriting files with a script stays banned.\nThe operator has updated `scribe:conversation` (1.1.0): its old \"never use `sed`, even to read\" rule is gone, and the remaining rule is to change files only with Edit or Write.\n\n## Seen (2026-10-11)\n\n- `contracts/stencils/edit/edit-directive.md` (rendered into every spawned role) bans `sed` only as a file-rewriting script; `contracts/stencils/stencils.go` `editRulePhrases` matches \"`sed`\" as one of the rule's phrases.\n- `internal/websterengine` classifies a `sed -n` line or range print as a read, and any other `sed` form as a write.\n- `webster-fork-shell`: a Webster fork used `sed -i` and `rm` on a computed `/tmp` path and stalled on a Claude Code permission prompt.\n- The orch passed \"never sed\" into agent briefs from the old scribe rule.\n\n## Open\n\n- Whether any lyx-spawned role, hook or audit still refuses or prompts on a read-only `sed` (`sed -n`), and whether the Webster classifier should admit more read forms.\n- Whether stencils, the orch role or `CLAUDE.md` carry a stale \"never sed\" wording.\n- Whether a read-only `sed` allow rule belongs in the settings lyx gives spawned agents.\n"
     }
   ]
 }
