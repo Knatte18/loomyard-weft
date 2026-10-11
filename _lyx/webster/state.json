@@ -1,0 +1,223 @@
+{
+  "runGuid": "6e24c39aef2ba6bd61e1bfd73123569f",
+  "planFingerprint": "ac49264b51c8fbab30021f3795c3b8844993a91c9ddc9de780bbf4baaf386ac5",
+  "planFileHashes": {
+    "00-overview.md": "0ea87a1939cac30a466f3a4112c6c2c6a8a4d666c8ebfbd8682e3e82cc2c8c36",
+    "01-plan-test-member-rule.md": "554034eda27e7488da836a617a1738f7f8fa01c7d9955920377f22997fa0b829",
+    "02-kickstart-pack-index.md": "503f03e36fef4faf22dcfb9795e681ef1c04867aa05776d964f5dd1c5a9870c2",
+    "03-bind-outcomes.md": "13f4d30a4a597cd21955d5c72517be046f2070883b48ae7d23d100b9c666e183",
+    "04-owned-handles.md": "d6d134a12d85305bc9126f1ba2eff692423f7fcd0d00da99797eb542e463e966",
+    "05-bind-trace.md": "c829be512ea971c163cd349d8cf2aa480e3c62feafd1230850a0d1960d3ad219",
+    "06-kickstart-pack-switch.md": "b06c321ea7dd9d65d4e3f59bb81e835a1fd9dbfee13880f8f16848a6cfe376a4",
+    "07-pack-stencils-and-render.md": "ebe2efd7dc3b4262f2aaef07b199622850fba4839169474339cac4203585ef8e",
+    "08-begin-batch-builds-pack.md": "7f07eec57f0951942ef8ff0aa988294c6bb696d5c48f09cd5e37953907ca2e49"
+  },
+  "planOverviewFrameHash": "0296f58275e38264bd8884a123e4f760d8085940cb6add7f6f40db901aa3bcac",
+  "partition": [
+    {
+      "cards": [
+        "01-plan-test-member-rule",
+        "02-kickstart-pack-index",
+        "03-bind-outcomes",
+        "04-owned-handles"
+      ],
+      "profile": "cautious",
+      "estimate": 188586,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54328,
+        "read_union": 41912,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 372,
+            "reads": {
+              "file:contracts/stencils/loom/loom-rubric-plan-review.md": 1404,
+              "file:contracts/stencils/loom/loom-template-plan.md": 3156,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000
+            },
+            "messages": 21.5,
+            "written": 6822
+          },
+          {
+            "card": 2,
+            "card_text": 996,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:internal/planglyph/doc.go": 1224,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/planglyph": 2000,
+              "package:internal/planindex": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/planindex": 2000
+            },
+            "messages": 77,
+            "written": 24096
+          },
+          {
+            "card": 3,
+            "card_text": 768,
+            "reads": {
+              "package:internal/planglyph": 2000,
+              "package:internal/planindex": 2000,
+              "package:internal/websterengine": 2000,
+              "package:internal/websterengine_test": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/planindex": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:internal/websterengine_test": 2000
+            },
+            "messages": 152.5,
+            "written": 46518
+          },
+          {
+            "card": 4,
+            "card_text": 360,
+            "reads": {
+              "file:internal/planglyph/doc.go": 1224,
+              "package:internal/planglyph": 2000,
+              "package:internal/planparser": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 48.5,
+            "written": 14910
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-bind-trace",
+        "06-kickstart-pack-switch",
+        "07-pack-stencils-and-render",
+        "08-begin-batch-builds-pack"
+      ],
+      "profile": "cautious",
+      "estimate": 235642,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61328,
+        "read_union": 34508,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 1152,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:internal/websterengine/doc.go": 7728,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/websterengine": 2000,
+              "package:internal/websterengine_test": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:internal/websterengine_test": 2000
+            },
+            "messages": 143.5,
+            "written": 44202
+          },
+          {
+            "card": 6,
+            "card_text": 384,
+            "reads": {
+              "file:internal/websterengine/template.yaml": 72,
+              "package:internal/websterengine": 2000,
+              "package:internal/websterengine_test": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:internal/websterengine_test": 2000
+            },
+            "messages": 47.5,
+            "written": 14634
+          },
+          {
+            "card": 7,
+            "card_text": 1224,
+            "reads": {
+              "file:contracts/stencils/webster/webster-body-implementer.md": 1320,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/websterengine": 2000,
+              "package:internal/websterengine_test": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:internal/websterengine_test": 2000
+            },
+            "messages": 173,
+            "written": 53124
+          },
+          {
+            "card": 8,
+            "card_text": 996,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:internal/websterengine/doc.go": 7728,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/websterengine": 2000,
+              "package:internal/websterengine_test": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:internal/websterengine_test": 2000
+            },
+            "messages": 89.5,
+            "written": 27846
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "068cbcc202bb407af842b08fc4891154",
+  "masterSessionId": "f3b81597-e7e0-4486-9f89-437b50808449",
+  "batches": {
+    "1": {
+      "slug": "plan-test-member-rule",
+      "cards": [
+        "01-plan-test-member-rule",
+        "02-kickstart-pack-index",
+        "03-bind-outcomes",
+        "04-owned-handles"
+      ],
+      "cardHashes": {
+        "01-plan-test-member-rule": "554034eda27e7488da836a617a1738f7f8fa01c7d9955920377f22997fa0b829",
+        "02-kickstart-pack-index": "503f03e36fef4faf22dcfb9795e681ef1c04867aa05776d964f5dd1c5a9870c2",
+        "03-bind-outcomes": "13f4d30a4a597cd21955d5c72517be046f2070883b48ae7d23d100b9c666e183",
+        "04-owned-handles": "d6d134a12d85305bc9126f1ba2eff692423f7fcd0d00da99797eb542e463e966"
+      },
+      "startSha": "3a5a34ac796c9e54a3cf6050e62779ade14a3ff8",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T15:14:16Z",
+      "sessionId": "f3b81597-e7e0-4486-9f89-437b50808449",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
