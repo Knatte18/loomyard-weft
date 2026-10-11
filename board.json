@@ -1056,7 +1056,7 @@
       "id": 421,
       "slug": "test-tmp-cleanup",
       "title": "lyx cleans up its own temp files",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "fabric",

@@ -1,6 +1,6 @@
 # lyx cleans up its own temp files
 
-`test-tmp-cleanup` · Note · bug, fabric, loom
+`test-tmp-cleanup` · Task · bug, fabric, loom
 
 ## Problem (operator, 2026-10-11)
 
