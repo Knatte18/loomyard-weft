@@ -11,8 +11,8 @@ Close two gaps in how plans are written and reviewed (board task `plan-gaps`, is
 
 In:
 
-- Two new `lyx loom` verbs, `insert-card` and `remove-card`, that insert or remove one card in the current plan and renumber the cards after it.
-- Their refusals, as rows in `contracts/specs/refusal-spec.md`'s loom section.
+- Two new `lyx loom` verbs, `insert-card` and `remove-card`, that insert or remove one card in the current plan and renumber the cards after it, and a third, `restore-renumber`, that restores the plan directory from the journal an interrupted call leaves.
+- Their refusals, as rows in `contracts/specs/refusal-spec.md`'s loom section, and the loom section's raw-I/O row widened to name `rename`, the plan directory's card and overview files and the renumber journal.
 - One sentence each in the Plan-Write stencil (`loom-template-plan.md`), the PR-Rework stencil (`loom-template-rework.md`) and the Plan-Review rubric's `## Write surface` section, naming the two verbs as the only way to insert or remove a card file.
 - A reachability rule for prescribed refusals: a writer rule in `loom-template-plan.md` and the matching `## Also flag` bullet in `loom-rubric-plan-review.md`.
 - Docs in the same commit: `internal/loomcli`'s `doc.go`, the lyx command index the `ly:cli` skill loads, and the numbering section of `contracts/specs/loom-plan-spec.md` where it says how numbering changes.
@@ -46,18 +46,39 @@ Prose cross-references cannot be rewritten safely (a mention of card 8 may mean 
 **Decision:**
 The verbs are new edges that rename, rewrite and delete files, bounded as follows:
 
-- They touch only the current generation's card files and the Card Index of `00-overview.md` under `planparser.PlanDir`; never `archive-*/`, `round-<N>/prior-generation/`, the overview's frontmatter, or any other overview section.
+- In the plan directory they touch only the current generation's card files and the Card Index of `00-overview.md` under `planparser.PlanDir`; never `archive-*/`, `round-<N>/prior-generation/`, the overview's frontmatter, or any other overview section.
 - They refuse a plan that does not parse, or whose Card Index and card files disagree (the `index-file-mismatch` or `card-numbering` checks), before changing anything, since renumbering from an inconsistent plan compounds the inconsistency.
 - They refuse a position outside `first_card` to last card (remove) or `first_card` to last card plus one (insert).
-- They refuse a position at or before the last card of the last batch webster's run record holds as begun, read the way `loomshed.ValidatePlan` reads it; with no run record, every position is open.
+- They refuse a position at or before the last card of the last begun batch.
+  The begun set is the card ids of every batch record webster's run record holds, terminal or not, not the terminal-done set `websterengine.DoneCards` returns; with no run record, every position is open.
   This matches the frozen-card rule the Plan-Review rubric and `lyx webster rebaseline` already enforce.
+- They hold webster's state-mutation lease (`websterengine.AcquireStateMutation`) from the run-record read through the last apply step, so no begin-batch can record a batch between the bound check and the renumber.
 - `remove-card` refuses to remove the plan's only card, since a cardless plan does not parse.
-- `insert-card` refuses a slug the plan format's slug rule rejects.
+- `insert-card` refuses a slug that is not one or more runs of lowercase ASCII letters and digits joined by single hyphens.
+  The plan format has no slug rule of its own (the Card Index parser takes any non-whitespace run), so this rule is the verb's, and it is what keeps the new file inside `planparser.PlanDir`: a slug holding `/` or `..` never reaches the file name.
+- `insert-card` refuses an `--intent` that is empty, whitespace only or holds a line break, since any of those writes a Card Index line the parser rejects.
 - They never commit, never approve and never set `approved:`; the row's commit seam commits the plan directory as today, deletions included.
 
 Each refusal names its way forward, has its row in `refusal-spec.md`'s loom section and is reached by a test (`PATTERN-refusal-way-forward`).
-The verbs compute every new file name and content in memory first, then apply: moves in descending order for insert and ascending order for remove, so no two files ever claim one number, and the Card Index last.
-A raw I/O failure mid-apply joins the loom section's grouped transient I/O row; its envelope lists the steps already applied, and the plan gate reports the partial state.
+The verbs compute every new file name and content in memory first, and read the pre-call bytes of every file they will rewrite, rename or delete.
+Before the first apply step they write a renumber journal holding those bytes, keyed by file name, and every name the call will create: each name that did not exist before the call, which is every move's destination as well as the new card's file, since a card file's name carries its slug.
+The journal is never tracked, so it lives under `.lyx` at the plan directory's mirrored subpath, its path declared in `internal/lyxdirs` (`PATTERN-durable-vs-ephemeral-state`, `PATTERN-lyxdirs-single-declarer`).
+It is written to a fixed temporary name beside it and renamed into place, so a journal on disk is always complete; a failure writing or renaming the temporary file removes it and joins the grouped raw-I/O row with the plan directory untouched, and a temporary file a kill leaves behind is ignored by every verb and overwritten by the next write.
+They then apply in this order, so no two files ever claim one number: `remove-card` deletes card `N`'s file, then moves the later cards in ascending order; `insert-card` moves the cards from `N` up in descending order, then writes the new card's file; both rewrite the Card Index last and remove the journal as the final step.
+A raw I/O failure mid-apply, the journal's removal included, is reversed from the journal: every journaled created name is removed, move destinations included, and every journaled file is written back under its pre-call name with its pre-call bytes, then the journal is removed, so the directory is left byte-identical to before the call.
+The failure then joins the loom section's grouped transient raw-I/O row, which this task widens to name `rename`, the plan directory's card and overview files and the renumber journal, so its "re-run the refused verb; nothing is mutated" holds.
+A failure of that reversal, or a process killed mid-apply, leaves the journal on disk.
+Both verbs refuse to start while a journal exists, and the reversal-failure halt is its own correctness-halt row; both name the way forward `lyx loom restore-renumber`.
+
+`lyx loom restore-renumber` is a third verb, the journal's only reader, bounded as follows:
+
+- It holds the same state-mutation lease as the other two verbs.
+- It refuses when no journal exists, naming `insert-card` or `remove-card` as the way forward, since there is nothing to restore.
+- It writes and removes only the base names the journal lists, and refuses a journal naming any path that is not a card file name or `00-overview.md` at the top level of `planparser.PlanDir`, so a corrupt journal never reaches `archive-*/`, `round-<N>/prior-generation/` or outside the plan directory.
+- It refuses a journal that does not decode, writing nothing, as a correctness halt of its own row: the atomic write rules out a partial journal, so only an outside edit reaches it, and the way forward is to delete the named journal file and run `lyx loom validate-plan`, whose findings name any card left inconsistent.
+- It removes every journaled created name, move destinations included, and writes back every journaled file's pre-call bytes, then removes the journal.
+  A raw I/O failure partway through has already rewritten some files, so it is not the grouped row's "nothing is mutated" case: it is its own transient row, whose way forward is "re-run `lyx loom restore-renumber`; the journal is kept", and the verb is idempotent.
+- It restores the pre-call state of the files the journal names, discarding any edit made to them since the interrupted call; that is the bound's cost, and it is the only state that matches the run record the begun-card bound was checked against.
 
 **Rationale:**
 Frozen begun cards and the parseable-plan precondition are the two ways a renumber could corrupt run state; refusing both keeps the verbs as safe as a hand edit the gate would catch, and no less.
@@ -66,8 +87,8 @@ Frozen begun cards and the parseable-plan precondition are the two ways a renumb
 
 **Decision:**
 The plan-format rewrite (renumbering file names, headings, Card Index lines and commit prefixes) lives in `internal/planparser`, beside its existing writer `SetApproved`, since `planparser` is the plan's sole parser (`PATTERN-sole-parsers`) and owns the plan directory's paths (`PATTERN-lyxdirs-single-declarer`).
-The two cobra verbs live in `internal/loomcli`, beside `validate-plan`, wired through `internal/cliwire` (`PATTERN-cli-cobra`, `PATTERN-cliwire-sole-wiring`).
-The begun-card bound reads webster's run record through `websterengine`, as `loomshed.ValidatePlan` already does.
+The three cobra verbs live in `internal/loomcli`, beside `validate-plan`, wired through `internal/cliwire` (`PATTERN-cli-cobra`, `PATTERN-cliwire-sole-wiring`).
+The begun-card bound loads webster's run record through `websterengine.LoadState`, as `loomshed.ValidatePlan` already does.
 
 **Rationale:**
 Loom owns the plan artifact's CLI surface (`validate-plan`); `planparser` owns its format.
@@ -85,9 +106,10 @@ The rubric reaches both halves of the Plan-Review round without touching the bur
 ### D5 — Prescribed refusals must be reachable
 
 **Decision:**
-`loom-template-plan.md` gains a writer rule: a card that prescribes a refusal, error return or guard branch names in its `**Intent:**` the input that reaches it after every upstream check passes, and the test that reaches it.
+`loom-template-plan.md` gains a writer rule: a card that prescribes a refusal or guard branch names in its `**Intent:**` the input that reaches it after every upstream check passes, and the test that reaches it.
+A propagated raw I/O error that joins its section's grouped transient row in `refusal-spec.md` is exempt.
 A branch that upstream validation already rules out is not prescribed: it is dropped, or, when it guards an invariant, it is a fail-loud wiring guard in `refusal-spec.md`'s sense, which takes no per-row test.
-`loom-rubric-plan-review.md` gains the matching `## Also flag` bullet: a card prescribing a refusal with no named reaching input or test is a finding, and so is one whose named input an upstream check rejects; the finding names that upstream check.
+`loom-rubric-plan-review.md` gains the matching `## Also flag` bullet, with the same scope and exemption: a card prescribing a refusal or guard branch with no named reaching input or test is a finding, and so is one whose named input an upstream check rejects; the finding names that upstream check.
 A test that calls only the refusal's error constructor does not count as reaching it.
 
 **Rationale:**
@@ -105,6 +127,9 @@ The writer rule and the rubric bullet are paired so the writer/reviewer symmetry
 - `PATTERN-test-economy`, `PATTERN-test-speed`: the verbs' behavior is pinned at their public surface with table-driven tests at the lowest fitting tier; the test-budget file is listed under `Edit:` if a package's top-level test count passes its row.
 - `PATTERN-comment-line-breaks` and the semantic-line-break rule for every `.md` edit.
 - The edit directive is unchanged: content edits stay Edit or Write; the verbs are the only sanctioned file rename and removal in the plan directory.
+- Rebaseline after a renumber needs no webster change, and the verbs keep it that way by changing no overview section but the Card Index, which the overview frame hash excludes (`planparser.OverviewWithoutCardIndex`).
+  Under the loom's Webster row, `autoRebaseline` names every changed card file's number itself.
+  A standalone `lyx webster rebaseline` refuses a changed card file not named with `--card`, and both the new and the vanished old file names count as changed, so it needs every number from `N` to the last card plus one; the envelope's moved-card list gives them.
 
 ## Auto-mode assumptions
 
@@ -112,13 +137,20 @@ The writer rule and the rubric bullet are paired so the writer/reviewer symmetry
 - `insert-card` takes the Card Index intent through a required `--intent` flag, so the overview is complete after the call and only the card body is left to write.
 - The inserted card file holds only its title heading; no field skeleton is written.
 - Prose mentions of moved card numbers are reported, never rewritten.
+- Recovery from an interrupted renumber is a dedicated `lyx loom restore-renumber` verb reading a `.lyx` journal, rather than a hand reversal or an implicit restore inside the next `insert-card` or `remove-card` call.
 - The Webster-Review rubric is left unchanged; plan-time reachability is the fix the board entry asks for.
 - Reachability stays a review judgment; no Go check is added.
 
 ## Open risks
 
-- `lyx webster rebaseline` may need every moved unbegun card named with `--card NN` after an insert during Webster; the envelope's moved-card list gives the numbers, but the plan should confirm how rebaseline treats a renumbered unbegun card.
-- A plan-review reviewer may still miss an unreachable refusal whose upstream rejection lies several packages away; the rule makes the card state its reaching input, which narrows but does not close that gap.
+None.
+
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 3: converged; each finding below was addressed by the round's fixer, and no fresh reviewer has seen the fix.
+  Review: _lyx/reviews/discussion/round-3-review.md; fixer report: _lyx/reviews/discussion/round-3-fixer-report.md.
+  - journal-omits-move-destinations (class design, severity MEDIUM, open in rounds 3)
+  - journal-write-failure-no-outcome (class design, severity MEDIUM, open in rounds 3)
+<!-- /lyx:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
@@ -127,16 +159,20 @@ The writer rule and the rubric bullet are paired so the writer/reviewer symmetry
 - `remove-card` at a middle position deletes the card's file and index line and moves every later card down by one, with the same consistency result.
 - A plan whose `first_card` is above 1 is renumbered within its own range.
 - The envelope lists moved cards, the created or removed file, and prose lines naming a moved card's old number; those prose lines are left unchanged.
-- Each refusal is reached and leaves the plan directory byte-identical: unparseable plan, index/file mismatch, position out of range, position at or before the last begun card per webster's run record, removing the only card, invalid slug.
-- `archive-*/` and `round-<N>/prior-generation/` contents are untouched by both verbs.
-- Each new refusal has its row in `refusal-spec.md`'s loom section with its way forward.
+- Each refusal is reached and leaves the plan directory byte-identical: unparseable plan, index/file mismatch, position out of range, position at or before the last card of the last begun batch, including a batch begun and not yet terminal, removing the only card, invalid slug including one holding `/` or `..`, and empty or multi-line intent.
+- A raw I/O failure injected at the journal's write and at each apply step of each verb, the deletion, the new-file write, a move, the Card Index rewrite and the journal's removal, leaves the plan directory byte-identical, with no moved card's new-number file left beside its old one, and no journal or temporary journal behind.
+- A failure injected into the reversal reaches the correctness-halt refusal naming `lyx loom restore-renumber`, leaves the journal, and both other verbs then refuse naming the same way forward; `restore-renumber` then leaves the plan directory byte-identical to before the interrupted call, including a deleted card's bytes and the moved cards' headings and `Commit:` prefixes, and removes the journal.
+- `restore-renumber` refuses with no journal, a journal that does not decode, and a journal naming a path outside the plan directory's top-level card and overview files, writing nothing; a raw I/O failure injected partway through its writes reaches its own transient refusal naming its re-run, keeps the journal, and the re-run leaves the plan directory byte-identical to before the interrupted call.
+- A begin-batch started while a verb holds the state-mutation lease waits until the verb releases it.
+- `archive-*/` and `round-<N>/prior-generation/` contents are untouched by all three verbs.
+- Each new refusal has its row in `refusal-spec.md`'s loom section with its way forward, and the loom raw-I/O row names `rename`, the plan directory's card and overview files and the renumber journal.
 - The Plan-Write and PR-Rework stencils and the Plan-Review rubric's write surface name the two verbs as the only way to insert or remove a card.
-- The Plan-Write stencil carries the reachability rule and the Plan-Review rubric carries the matching `## Also flag` bullet, including that a constructor-only test does not reach a refusal.
-- `internal/loomcli`'s `doc.go` and the lyx command index describe both verbs.
+- The Plan-Write stencil carries the reachability rule and the Plan-Review rubric carries the matching `## Also flag` bullet, both scoped to refusals and guard branches with the grouped raw-I/O exemption, including that a constructor-only test does not reach a refusal.
+- `internal/loomcli`'s `doc.go` and the lyx command index describe all three verbs.
 
 ## Notes for the plan writer
 
-- `loomshed.ValidatePlan` in `internal/loomshed/gates.go` shows how to read webster's run record (`websterengine.LoadState`, `websterengine.DoneCards`); the begun-card bound wants the begun rather than the done set, matching `lyx webster rebaseline`'s "at or before the last begun batch's last card" rule in `internal/websterengine/rebaseline.go`.
+- `loomshed.ValidatePlan` in `internal/loomshed/gates.go` shows how to load webster's run record; `websterengine.DispatchScope` and `rebaselineBatches` in `internal/websterengine/rebaseline.go` show the begun set read from it.
 - `planparser.SetApproved` is the existing plan writer to sit beside.
 - The `index-file-mismatch` and `card-numbering` checks, and the `first_card` rule, are in `contracts/specs/loom-plan-spec.md`'s validation-checks and numbering sections.
 - The Plan-Burler row's prose and target paths are in `contracts/recipes/loom-recipe.yaml`; the row's target is the whole `_lyx/plan` directory, and `CommitPlan` in `internal/loomcli/wiring.go` commits the whole directory, deletions included.
