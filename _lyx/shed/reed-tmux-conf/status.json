@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Burler",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Burler",
-    "last": "Discussion-Bouncer → bounced to Discussion-Burler",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Burler → bounced to Discussion-Bouncer",
     "wait": ""
   },
   "history": [
@@ -61,6 +61,14 @@
       "outcome": "stuck",
       "output": "/home/knatte/Code/loomyard-LYXHUB/reed-tmux-conf/_lyx/reviews/discussion/round-2-bouncer-ledger.md",
       "at": "2026-10-11T10:14:10Z"
+    },
+    {
+      "producer": "Discussion-Burler",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/reed-tmux-conf/_lyx/reviews/discussion/round-3-review.md",
+      "at": "2026-10-11T10:20:29Z",
+      "gate_attempts": 0,
+      "budget_exempt": true
     }
   ],
   "product": {
