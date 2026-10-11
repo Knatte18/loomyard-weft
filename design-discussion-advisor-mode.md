@@ -18,3 +18,8 @@ The operator also wants to choose which area each advisor studies (2026-10-10), 
 One shape: each `discussion_advisors` entry carries a model-spec plus an optional area, for example `{model: sonnet[high], area: error-handling}`, and the area names a lens text the advisor stencil includes, the way Burler's review fans name lenses (`correctness`, `error-handling`, `test-gaps`).
 An entry without an area answers every question; an entry with one still sees every batch but answers from its lens.
 This could replace the `all | areas` switch: the per-entry area is the selection.
+
+## When (operator, 2026-10-11)
+
+Advisors with different roles is a later enhancement.
+The first DualDW bench runs one advisor at most, answering every batch as a plain assistant.
