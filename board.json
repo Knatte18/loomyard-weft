@@ -1024,6 +1024,21 @@
       "isolated": false,
       "brief": "A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based",
       "body": "## Idea (operator, 2026-10-11)\n\nWebster stays fork-based: its implementer and verify-fix forks start at once with Master's context and run on Master's model.\nWeaver is a second implementer beside it, built on Millhouse's \"Builder\" (skill `mill-go`), that runs a cold-start agent per batch, so each agent can take its own model, and escalates the model when an agent fails.\n\n## Seen (research, 2026-10-11)\n\n- Webster spawns one cold agent today: the recovery strand.\n  When a fork reports `stuck` or writes no report twice, Master runs `lyx webster recover-batch` (`contracts/stencils/webster/webster-template-master.md`), which starts a fresh shuttle/reed strand with a full cold-start prompt (`internal/websterengine/recoverbatch.go`).\n  Its model is `webster.yaml` `recovery` (default `opus[high]`), against `master` at `sonnet[medium]`; that is Webster's only model escalation, and a batch gets at most two recoveries.\n- Builder (`plugins/mill/skills/mill-go-base/SKILL.md` in the Millhouse worktree) is a lean orchestrator that never reads cards or diffs.\n  Per batch it starts a fresh, non-fork agent with a model from config (`roles.implementer.model`), and the agent reads only its batch file and the overview's Shared Decisions.\n  It has no automatic model escalation: a stuck batch gets one fresh retry on the same tier, then a plan edit with a `## Prior failure` note, then a question to the parent.\n- Millhouse's cold starts were slow: each agent read much background and loaded its tools before it began work.\n  Likely further costs visible in the skill: a review loop per batch, finalize replaying every batch's verify in turn, and a state commit on every status change.\n\n## Shape\n\nWeaver is, in effect, Webster's recovery strand used as the normal path.\n\n- From Webster: the Go bracket verbs (begin-batch, record-batch, recover-batch), the report contract and classification, suspect paths, partition and sequencing, the plan-level verify gate and failure ladder, the shuttle/reed spawn path, and `RenderRecoveryPrompt` with `uncommitted_paths` and the failure digest.\n- From Builder: a cold, scoped agent per batch that reads only its cards and Shared Decisions, a model and effort per role per spawn, and a one-shot self-resolve before halting.\n- New in neither: an escalation ladder per failed attempt, for example `sonnet` → `opus` → `opus[high]`, set in config.\n- Open: how to keep cold-start cost down (a kick-start pack per batch, see `kick-start-pack`), and how a run chooses Weaver over Webster (recipe row or config).\n"
+    },
+    {
+      "id": 330,
+      "slug": "seats-chair-first",
+      "title": "Seats: the chair starts first, as the main agent of the producer",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "seatengine starts the advisors first and the chair last; the chair is the main agent of the seats producer and starts first, always",
+      "body": "## Rule (operator, 2026-10-11)\n\nThe chair is the seats producer's main agent: it runs the step, and whoever talks to a producer running seats talks to the chair.\nThe chair starts first, always; the advisors start after it.\n\n## Seen\n\n`seatengine.Engine.Run` starts the advisors in table order and the chair last (`internal/seatengine/doc.go`, \"Running a table fresh\"; `internal/seatengine/engine.go`).\nThe chair already holds the table's gate and is the only interactive seat, so the gate and the operator's channel are the chair's; only the start order is reversed.\n\n## Idea\n\nStart the chair first, then the advisors, and keep every rule that names the chair as the producer's face: its gate, its strand as the address for the run's messages, and its failure ending the step.\nThe chair may send its first batch before an advisor is up; the chair stencil or the engine has to cover that, for example by the engine telling the chair once each advisor is up, the way it already types advisor deaths into the chair.\n"
     }
   ]
 }
