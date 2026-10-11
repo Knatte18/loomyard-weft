@@ -11,6 +11,7 @@ The Claude driver is up within about a second; the rest is a fixed wait.
 - `loom start` returns only after shuttle's `start` (`internal/shuttleengine/run.go`) has passed `awaitStartup` (`internal/shuttleengine/wait.go`), which captures the pane and between checks sleeps `poll_interval_ms × liveness_every_n_polls`, 1000 ms × 10 = 10 s.
   The 10 s cadence is deliberate there, to avoid stray keypresses during trust-prompt dismissal.
 - The same `awaitStartup` gates every shuttle start, so every agent a run spawns (reviewers, fixers, judges, seeds, Webster's Master) likely waits up to 10 s longer than it needs to.
+- Seats (bench pair `dbench-ohsh`, 2026-10-11): the chair went live at 10:44:16 and the advisor at 10:44:32, 16 s later, since the advisors start only after the chair; the chair's own `awaitStartup` wait likely accounts for most of it, and each advisor start adds its own. Not yet traced.
 - The window runs only `lyx reed attach` in the pair (`internal/termwindow/termwindow.go`), which needs the pair's tmux session, up about 0.1 s after the spawn.
 
 ## Idea, ranked by gain
