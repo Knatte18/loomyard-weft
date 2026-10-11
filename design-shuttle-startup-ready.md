@@ -1,6 +1,6 @@
 # Shuttle start and seat holds: tolerate a stray % at the prompt, probe every second, cap the seat hold deferral
 
-`shuttle-startup-ready` · Task · bug, enhancement, shuttle, batten · running · Plan-Bouncer
+`shuttle-startup-ready` · Task · bug, enhancement, shuttle, batten · running · Batchifier
 
 # Part 1: stray % after the prompt fails the start (#549)
 
