@@ -972,6 +972,7 @@
         "webster"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "The glyph audit is done; the plan stencil and rubric should name changed tests as glyphs, and record-batch should log each plan: handle bind",
