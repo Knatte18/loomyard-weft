@@ -27,11 +27,17 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
+_None._
+
+### Layer A
+
+Waits only on Running or Ready entries.
+
 #### Normal priority
 
 | # | Task | Slug | Recipe | After | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Seat chair hold deferral of 20 min can hide a wedged advisor** | [`seat-hold-deferral-cap`](design-seat-hold-deferral-cap.md) | loom |  | shuttle |
+| 1 | **Seat chair hold deferral of 20 min can hide a wedged advisor** | [`seat-hold-deferral-cap`](design-seat-hold-deferral-cap.md) | loom | `shuttle-startup-ready` | shuttle |
 
 ## Notes
 
