@@ -1,6 +1,6 @@
 # Config layers and per-task run settings
 
-`config-layers-run-settings` · Task · feature, config, batten, board · running · Loom-Preflight
+`config-layers-run-settings` · Task · feature, config, batten, board · running · Discussion-Write
 
 Merged from notes `config-overlay` and `task-run-settings` (operator, 2026-10-11).
 
