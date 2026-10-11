@@ -21,7 +21,7 @@
 - `internal/loomcli#TestReviewVerbs_ReviewFileMissingOrEmpty`
 - `internal/loomcli#TestReviewApprove_SupersedesCapRejectOnBlockedRun`
 - `internal/loomcli#TestReviewApprove_SupersedeRefusals`
-- `plan:internal/loomcli#TestParentReviewExchange_RewriteReviewedThenCapRejectHalts`
+- `internal/loomcli#TestParentReviewExchange_RewriteReviewedThenCapRejectHalts`
 
 **Prosa:**
 - `contracts/specs/refusal-spec.md`

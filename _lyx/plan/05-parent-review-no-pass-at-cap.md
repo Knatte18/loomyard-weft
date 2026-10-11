@@ -26,7 +26,7 @@
 - `internal/loomcli#TestParentReviewExchange_RejectThenFixGoesOnToPerch`
 
 **Create:**
-- `plan:internal/loomcli#TestParentReviewExchange_RewriteReviewedThenCapRejectHalts` -> `func TestParentReviewExchange_RewriteReviewedThenCapRejectHalts(t *testing.T)`
+- `internal/loomcli#TestParentReviewExchange_RewriteReviewedThenCapRejectHalts`
 
 **Prosa:**
 - `contracts/specs/shed-recipe-spec.md`
