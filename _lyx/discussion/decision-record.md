@@ -158,6 +158,12 @@ Decision: D4's rationale and R3's bound are corrected: the git-ignored per-workt
 
 Rationale: configengine.load expands markers through envsource.Build(baseDir), which reads <anchor>/.env; the stated premise that those keys persist only through a tracked file is false.
 
+### Added after Discussion (parent, 2026-10-11): D6 strip compares unexpanded values
+
+Decision: D6's migration strip compares each value as written, before ${env:...} expansion, against the layer below's unexpanded value.
+
+Rationale: An env-expanded comparison strips a literal that only equals this environment's expansion of a marker below, changing the worktree's resolution in any other environment.
+
 ## Constraints
 
 - `PATTERN-hub-wide-config` changes: `<BoardDir>/_lyx/config/` also holds per-worktree modules' repo defaults, and a hub-wide module also reads the reading worktree's local override, restricted to `LocalKeys`.
