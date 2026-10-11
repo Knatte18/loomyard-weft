@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn",
+  "current_producer": "Darn-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn",
-    "last": "Preflight → done",
+    "now": "Darn-Bouncer",
+    "last": "Darn → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,13 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-11T10:39:00Z"
+    },
+    {
+      "producer": "Darn",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/darn-write-rename/_lyx/landing/summary.md",
+      "at": "2026-10-11T10:56:46Z",
+      "gate_attempts": 0
     }
   ],
   "product": {
