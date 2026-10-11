@@ -7,7 +7,7 @@ Autonomous run: no operator answered, so each turn below is the writer's own exp
 1. Read the board entry and the related entries `orch-wake-policy`, `alignment-agent`, `orch-split` and `driver-arbiter`; `shuttle-send` is no longer on the board, and the entry already moves mid-turn restart sends there.
 2. Read `internal/parentreview/gate.go` and `doc.go`, the `Wait` loop and `handleGatedBoundary` in `internal/shuttleengine/wait.go`, `GateEntry`, the gate resolver in `internal/shedrecipe/entries_gate.go`, the loom recipe's `parent-review` element (`attempts: 1`, `pass_on_cap: true`, from commit 518dc7400), the review verbs in `internal/loomcli/review.go`, `RecordVerdict` and `PrepareRound` in the store, and the brief, delivery and orch role stencils.
 3. Part 1 (warm cache): picked a gate-carried ping every 4 minutes after delivery, capped at 3 per round, over a fresh session on late reject (see Rejected alternatives).
-   The first draft had no per-round cap; working the cost through showed 15 pings over a 60-minute wait cost more than the cold resume they avoid, so the cap was added.
+   The first draft had no per-round cap; working the cost through showed 14 pings over a 60-minute wait cost more than the cold resume they avoid, so the cap was added.
 4. Wait bound: picked a read-only expiry probe on `GateEntry`, called off the boundary, with finalize marking the request expired.
 5. Live smoke: first closed with the `daemon-wakeups` reject (2026-10-10) as evidence; the lens review showed that evidence does not isolate the writer's hop, so this run's own parent review became the proof (D11).
 6. Rewrite after reject: dropped pass-at-cap for `parent-review` and set `attempts: 2`; with one attempt and no pass-at-cap the first reject halts before the writer sees it.
@@ -48,7 +48,11 @@ Autonomous run: no operator answered, so each turn below is the writer's own exp
 
 - **Fresh writer session on a late reject**, seeded with the decision record, the support log and the findings: loses the writer's exploration, so the rewrite re-explores the code at a cost close to the cold resume it replaces; the respawn path also has to be taught not to re-run the lens review.
 - **The writer waits on its own verdict with capped `lyx shuttle await` calls, as the Burler fixer does**: each re-run costs the same cache read as a ping, and it moves the verdict hand-off from the gate's boundary send into the writer's turn, re-architecting a gate that works.
-- **Uncapped pings until the wait bound**: worst case 15 pings, more than one cold resume.
+- **Uncapped pings until the wait bound**: worst case 14 pings, more than one cold resume.
+- **Mapping the discussion role to a `1h` prompt-cache TTL instead of pinging**: no ping is needed, but every cache write of the writer's session costs about 2 times instead of 1.25 on every run, more than three pings on the runs that need them (D1, Rationale).
+- **A 4-minute interval constant in `internal/parentreview`**: spells a Claude cache lifetime outside `claudeengine` and pings a writer whose role is mapped to `1h` for nothing.
+- **Narrowing D2's probe so it never fires while the mechanical entry fails**: a writer that never ends its turn is held to the run deadline and then finalized over the same tree, so the narrowing only delays the same halt.
+- **Isolating D11's hop with the orch's transcript**: no lyx verb reads it today, so the gap is raised to the parent reviewer instead.
 - **Pings while delivery is unrecorded**: a notice the reviewer never got yields no verdict, so those pings buy nothing.
 - **Evaluating the whole gate closure off the boundary**: its carry path records prompts it could not send mid-turn, spending the delivery budget; a read-only probe avoids that.
 - **Keeping pass-at-cap and notifying the parent when the rewrite passes unreviewed**: still lets an unreviewed rewrite reach Plan, which the board entry rules out.
