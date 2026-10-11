@@ -17,7 +17,7 @@ Most agents a run spawns should take a model of their own in config.
   - PR-Rework reuses `loom.yaml` `plan` (`loomengine/rework.go`).
   - Webster's implementer and verify-fix forks inherit `webster.yaml` `master`.
   - The Bouncer escalation fork and the fan's lens forks inherit the parent session's model.
-  - `landing.yaml` `describe` and `darn.yaml` `writer` are set hub-wide only, so a trial cannot be scoped to one task pair.
+  - `landing.yaml` `describe` and `darn.yaml` `writer` are set hub-wide only; the operator ruled (2026-10-11) that a per-worktree value is not needed for these simple roles, so they are out of this task.
 - Once it lands, the haiku-roles trial runs Haiku 5.5 on the Plan-Bouncer and Webster-Bouncer judges only.
 
 ## Webster stays fork-based (operator, 2026-10-11)
