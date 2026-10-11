@@ -117,3 +117,127 @@ The two open weaknesses are test files and execution-time use.
 a28e79d9c (2026-10-10) made the implementer stencil resolve the card's target and `Uses:` glyphs with one `lyx quarry resolve` call before any grep.
 Once a good number of runs have landed on it, an agent repeats this audit's execution-time count (quarry calls per implementer, grep-for-member calls, whole-file reads) against the zero-use baseline above, and re-checks the plan-side numbers.
 Like the first pass, it is a quick read-only survey by one agent, not a loom run.
+
+## Follow-up findings (2026-10-11)
+
+### Method and limits
+
+- **Which implementer sessions qualify.**
+  a28e79d9c (2026-10-10 12:12 +0200, 10:12Z) changed `contracts/stencils/webster/webster-body-implementer.md`, which the Master's implementer forks read at the start of each batch.
+  A session qualifies when that Read result in its own transcript contains the new "Locate them with one `lyx quarry resolve <glyph>...` call" line; the test is on the transcript, not on the landing date.
+  The first such fork started at 10:13Z, so the stencil took effect within about a minute of the commit.
+- **Population.**
+  The transcripts hold 71 implementer forks (subagent sessions described "Implement batch N") since 2026-10-10 04:00Z.
+  51 of them, in 20 runs, read the new stencil: 34 on 2026-10-10 (10:13Z to 18:27Z) and 17 on 2026-10-11 (08:31Z to 12:07Z).
+  The other 20 forks, in 7 runs (`git-robustness`, `gate-test-scope`, `multi-llm-producer`, `daemon-wakeups`, `bolt-and-store`, `publish-recovery`, and the first three batches of `test-suite-weight`), read the old stencil and serve as a same-method control.
+- **Count method.**
+  Per fork, unique `tool_use` ids: Bash calls whose command contains `lyx quarry`; Bash calls with `grep`/`rg` anywhere in the command (all) and with it as a leading command (not after a pipe); Read calls without `offset`; Bash `cat <file>` of a `.go`, `.md` or `.yaml` file.
+  The batch's own prompt-file Read and the parent's `Agent` launch line are excluded; `Edit`/`Write` are counted apart.
+  "Grep for a member the card names" is approximated by a grep whose pattern holds a Go-style identifier (`func `, `type `, or a CamelCase word); the cards are gone, so the match against the card's own glyphs is not exact.
+- **Comparing with the first audit.**
+  The first audit's baseline (about 3300 calls, 690 `grep`/`rg` over 61 forks, so 11 greps per fork) cannot be reproduced with this counting: the 20-fork old-stencil control counted here gives 44 greps per fork.
+  The first audit evidently counted a narrower set of calls.
+  Every comparison below is therefore new forks against the old-stencil control counted the same way; the zero quarry calls of the baseline holds in both (0 in 20 control forks).
+- **Plan side.**
+  Rebuilt as in the first audit (last `Write` per `_lyx/plan/NN-*.md` card in the run's `ly:<slug>:plan` session, `Edit:` plus `Create:` entries).
+  Reproduction check: `test-suite-weight` (368 targets, 42%, 98 handles, 191 test paths) and `gate-test-scope` (226 targets, 59%) match the first audit exactly.
+- **Limits.**
+  Forks inherit the Master's context, so quarry use may follow the Master's habits as much as the stencil.
+  Plan "rounds" are not comparable with the first audit's: respawns here are Burler-fix sessions, not new `:plan` sessions, and I count `:plan` sessions plus fixer sessions that touched a plan card as a proxy.
+  Plan minutes are the `:plan` session span only.
+  Glyph findings are counted from `lyx loom validate-plan` results only: counting every Bash result that holds a `glyph-*` code, as the first audit did, over-counts because `cat`/`grep` of `internal/planglyph/*.go`, the spec and the stencils quotes the codes (it gave 6 / 11 for `webster-stability` against 0 / 0).
+  Still not observable: `plan:` bind outcomes at record-batch, members edited that no glyph named, and which implementer forks were Burler fixers.
+
+### Per run
+
+Implementer columns count only forks on the new stencil.
+Calls exclude `Edit`/`Write`.
+`Quarry` is forks that called it / calls.
+`Whole reads` are Read without `offset`.
+Plan columns: targets (glyph share), `:plan` sessions, their minutes, glyph findings from `validate-plan` (not-found / other), fixer sessions that touched a card, `plan:` handles, and test paths under `Edit:` / `#Test*` glyphs under `Edit:`.
+
+| Run | Forks | Quarry | Calls | grep/rg | Whole reads | cat file | Targets | Plan sess | Plan min | Findings | Fixers | `plan:` | Test paths / test glyphs |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| burler-multi-llm | 2 | 0 / 0 | 231 | 75 | 29 | 14 | 127 (57%) | 1 | 17 | 0/0 | 1 | 13 | 30 / 0 |
+| cli-surface | 3 | 0 / 0 | 242 | 103 | 1 | 27 | 197 (79%) | 1 | 19 | 0/0 | 0 | 22 | 26 / 7 |
+| discussion-multi-llm | 3 | 0 / 0 | 157 | 74 | 3 | 22 | 130 (82%) | 2 | 30 | 0/0 | 4 | 31 | 7 / 21 |
+| driver-context | 4 | 2 / 3 | 437 | 207 | 32 | 26 | 202 (62%) | 1 | 24 | 0/0 | 4 | 79 | 20 / 0 |
+| fixer-critical-of-findings | 1 | 0 / 0 | 25 | 5 | 6 | 0 | 13 (46%) | 1 | 3 | 0/0 | 1 | 0 | 0 / 2 |
+| gate-test-hygiene | 2 | 2 / 4 | 132 | 63 | 8 | 11 | 83 (65%) | 1 | 14 | 1/0 | 2 | 19 | 2 / 13 |
+| loop-small-bugs | 1 | 1 / 1 | 88 | 30 | 2 | 0 | 47 (91%) | 1 | 10 | 0/0 | 2 | 9 | 0 / 12 |
+| pane-inject-safety | 3 | 1 / 1 | 303 | 133 | 15 | 10 | 175 (76%) | 1 | 13 | 0/0 | 1 | 49 | 14 / 19 |
+| per-role-models | 2 | 1 / 1 | 131 | 48 | 24 | 2 | 58 (93%) | 1 | 13 | 0/0 | 4 | 11 | 0 / 18 |
+| plan-gaps | 1 | 0 / 0 | 79 | 38 | 1 | 8 | 59 (68%) | 1 | 11 | 0/0 | 2 | 38 | 4 / 0 |
+| quick-recipe | 3 | 1 / 1 | 338 | 158 | 35 | 22 | 216 (63%) | 1 | 21 | 0/0 | 2 | 63 | 39 / 0 |
+| reed-hygiene | 3 | 1 / 1 | 156 | 73 | 5 | 6 | 58 (53%) | 1 | 12 | 0/0 | 2 | 15 | 10 / 0 |
+| reed-tmux-conf | 1 | 0 / 0 | 76 | 37 | 0 | 4 | 51 (84%) | 1 | 17 | 0/0 | 1 | 15 | 0 / 10 |
+| run-time-by-role | 1 | 0 / 0 | 53 | 16 | 0 | 7 | 52 (71%) | 1 | 7 | 1/0 | 2 | 22 | 6 / 0 |
+| small-fixes-batch | 2 | 0 / 0 | 145 | 58 | 9 | 7 | 94 (77%) | 1 | 12 | 0/0 | 2 | 10 | 0 / 28 |
+| test-suite-weight | 6 | 1 / 1 | 359 | 102 | 105 | 24 | 368 (42%) | 1 | 28 | 0/1 | 3 | 98 | 191 / 0 |
+| twill-discusser | 2 | 0 / 0 | 107 | 45 | 6 | 10 | 60 (77%) | 1 | 12 | 0/0 | 2 | 22 | 3 / 10 |
+| webster-audit-gaps | 2 | 0 / 0 | 120 | 60 | 1 | 3 | 54 (59%) | 1 | 12 | 0/0 | 2 | 7 | 12 / 0 |
+| webster-replan-state | 6 | 5 / 6 | 528 | 253 | 16 | 19 | 201 (54%) | 1 | 19 | 0/0 | 3 | 20 | 57 / 0 |
+| webster-stability | 3 | 1 / 1 | 209 | 76 | 15 | 11 | 114 (55%) | 1 | 16 | 0/0 | 2 | 12 | 28 / 0 |
+| Total (20 runs) | 51 | 16 / 20 | 3916 | 1654 | 313 | 233 | 2359 (64%) | 21 | 310 | 2 / 1 | 42 | 555 | 449 / 140 |
+| Control, old stencil (20 forks, 7 runs) | 20 | 0 / 0 | 1593 | 890 | 61 | 142 | 763 (64%) | 6 | 73 (ex `gate-test-scope`, paused) | n/a | 17 | 222 | 123 / 1 |
+
+### Answers
+
+- **Which runs qualify.**
+  Twenty runs, 51 forks: `discussion-multi-llm`, `test-suite-weight` (six of its nine forks), `driver-context`, `webster-replan-state`, `cli-surface`, `quick-recipe`, `reed-hygiene`, `webster-audit-gaps`, `loop-small-bugs`, `webster-stability` on 2026-10-10, and `small-fixes-batch`, `gate-test-hygiene`, `per-role-models`, `fixer-critical-of-findings`, `twill-discusser`, `plan-gaps`, `reed-tmux-conf`, `pane-inject-safety`, `run-time-by-role`, `burler-multi-llm` on 2026-10-11.
+  That is a meaningful sample, though the plans of the first ten were written before the stencil changed (the stencil is read at execution, so that does not matter for this count).
+- **Quarry calls per implementer.**
+  Baseline zero; now 20 `lyx quarry resolve` calls in 51 forks, 16 forks (31%) with at least one, 0.4 per fork.
+  Nothing else of quarry is called (no `glyphs`, no `find`).
+  Use fell from 12 of 34 forks on 2026-10-10 to 4 of 17 on 2026-10-11, so it is not growing.
+  Of the 16 users, 13 made the call as their first or second action, as the stencil says; 3 called it late (after 23, 88 and 123 calls, behind a grep) or incidentally.
+  Twelve of the 20 calls chain a `grep` onto the same command line; the other eight are a bare batch of 5 to 15 glyphs, which is the intended form.
+- **Does the glyph being present decide it?**
+  No.
+  The cards held glyphs in 49 of the 51 forks (on average 37 distinct glyphs in view), and 33 of those never called quarry, so most forks skip the instruction while having glyphs to resolve.
+  Forks that used quarry were not smaller or simpler (average 174 calls with edits, against 142 for those that did not).
+- **Grep for members.**
+  Per fork, `grep`/`rg` calls fell from 44.5 (control) to 32.4, and the grep share of non-edit calls from 56% to 42%.
+  Identifier-pattern greps fell from 23.8 to 19.6 per fork.
+  Forks that called quarry grepped as much as the rest (38.5 against 29.7 per fork) because they were larger and chained greps after the resolve, so the fall is not shown to come from quarry use; the task mix also differs between the two groups.
+  Calls that read spans with `sed -n` stayed at 20 per fork (24 in the control), so forks still read by line range they found with `grep -n`.
+- **Whole-file reads.**
+  Read without `offset` rose from 3.0 to 6.1 per fork (4.6 without `test-suite-weight`, whose six forks made 105 of the 313, 101 of them on `.go` files), and Bash `cat <file>` fell from 7.1 to 4.6 per fork.
+  Whole-file reading did not fall.
+- **Plan-side numbers (same 20 runs).**
+  Glyph share is 64% of 2359 targets (1510), the same as the six control plans (64% of 763), against 59% in the first audit's sixteen runs.
+  Per-run shares run from 42% (`test-suite-weight`, 191 test paths) to 93%, and the three highest are the three runs with test members as glyphs.
+  Plan time is 15.5 minutes per run and 0.13 minutes per target, equal to the control (0.14), and one `:plan` session per run except `discussion-multi-llm` (two).
+  Fixer sessions that touched a plan card were 42 over 20 runs (2.1 per run), against 17 over 6 control runs (2.8); this is a proxy for plan rounds and gives no sign of a rise.
+  Glyph findings in the Plan-Write sessions' `validate-plan` runs were three in 20 runs (`gate-test-hygiene` and `run-time-by-role` not-found, `test-suite-weight` ambiguous),; redundancy, caller-coverage and re-sign findings did not show up in those results beyond three loose matches.
+  `plan:` handles: 555 over 20 runs (0 to 98 per run).
+  Writers make about 7 quarry calls in 85 tool calls per `:plan` session, as before.
+- **Does the test-member recommendation show up?**
+  Partly, and without a template change (`loom-template-plan.md` still allows a plain test-file path, and a rubric line was not added).
+  Test paths under `Edit:` are 449 of 1744 entries (26%, the control's 25%), but `#Test*` glyphs under `Edit:` rose from 1 in the control to 140.
+  On 2026-10-10 only three of ten runs have them (`discussion-multi-llm` 21, `loop-small-bugs` 12, `cli-surface` 7; 40 glyphs against 390 paths), and in the 2026-10-11 runs the split is 59 paths to 100 test glyphs; seven of ten runs that day (`small-fixes-batch`, `per-role-models`, `reed-tmux-conf`, `gate-test-hygiene`, `twill-discusser`, `pane-inject-safety`, `fixer-critical-of-findings`) name tests as glyphs, while `burler-multi-llm` (30 paths, 0 glyphs), `plan-gaps` and `run-time-by-role` still use paths.
+  Test fakes and helpers cannot be told from the names, so the glyph count is a floor.
+  New tests as `plan:...#Test*` handles: 24 across 8 runs (`discussion-multi-llm` 8, `gate-test-hygiene` 5, `reed-tmux-conf` 4), against 2 in the first audit.
+  Non-test, non-`doc.go` Go source paths under `Edit:` remain 12 across seven runs (4 in `gate-test-hygiene`, 3 in `reed-hygiene`); the rubric flag still holds.
+
+### Conclusion and tuning
+
+The stencil line moved implementer behaviour a little and not enough: quarry went from none to a third of forks, one call each, and the majority of forks with glyphs in front of them still search by text and read whole files; use did not rise over the second day.
+Grep volume per fork is lower than in the control, but that cannot be tied to quarry, and whole-file reads are up.
+The plan side is steady: 64% glyphs, no extra rounds or minutes, glyph findings rare, and writers now name existing tests as glyphs on their own.
+
+- **Make the resolve a step, not advice.**
+  The line sits inside step 2, between the grammar pointer and the gate list, and 31% of forks follow it.
+  Make it a numbered step of its own ("Before reading or editing any target, run `lyx quarry resolve` with every glyph from the card's `**Edit:**` and `**Uses:**` lists, in one call"), and name the output fields to use (`file`, `start`, `end`) and the follow-up (`sed -n 'START,ENDp' FILE` or a Read with `offset` and `limit`).
+  The 13 forks that did it first used it as intended, so the mechanism works when it happens.
+- **Say what not to do next.**
+  Add "do not `cat` or Read the whole file of a resolved member, and do not grep for it" to that step; whole-file Read per fork doubled and 10 of 20 quarry calls were chained to a grep anyway.
+- **Resolve once per batch.**
+  A fork works a batch of cards but the line says "the card's"; word it as "every card of the batch" so one call covers the batch and the few late or repeated calls disappear.
+- **Skip the `plan:` handles in the call.**
+  The stencil already says they do not resolve; list only the non-`plan:` glyphs in the example so the call does not return not-found noise.
+- **Next measurement.**
+  Re-run this count once the step wording is changed and the stencil is in the binary; compare quarry forks (target above 80% where the card has glyphs), greps and whole-file reads per fork against this follow-up rather than the first audit's baseline.
+- **Plan side, unchanged from the first audit with one update.**
+  The test-member change to `loom-template-plan.md` and the rubric is now partly done by the writers; codify it so `burler-multi-llm`-style plans (30 test paths, 0 glyphs) follow, and keep the rule that a new test is a `plan:` handle.
+  A trace line per `plan:` handle at record-batch (bound, failed, reason) is still open.
