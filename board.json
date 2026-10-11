@@ -800,21 +800,6 @@
       "body": "## Idea (operator, 2026-10-11)\n\nWebster stays fork-based: its implementer and verify-fix forks start at once with Master's context and run on Master's model.\nWeaver is a second implementer beside it, built on Millhouse's \"Builder\" (skill `mill-go`), that runs a cold-start agent per batch, so each agent can take its own model, and escalates the model when an agent fails.\n\n## Seen (research, 2026-10-11)\n\n- Webster spawns one cold agent today: the recovery strand.\n  When a fork reports `stuck` or writes no report twice, Master runs `lyx webster recover-batch` (`contracts/stencils/webster/webster-template-master.md`), which starts a fresh shuttle/reed strand with a full cold-start prompt (`internal/websterengine/recoverbatch.go`).\n  Its model is `webster.yaml` `recovery` (default `opus[high]`), against `master` at `sonnet[medium]`; that is Webster's only model escalation, and a batch gets at most two recoveries.\n- Builder (`plugins/mill/skills/mill-go-base/SKILL.md` in the Millhouse worktree) is a lean orchestrator that never reads cards or diffs.\n  Per batch it starts a fresh, non-fork agent with a model from config (`roles.implementer.model`), and the agent reads only its batch file and the overview's Shared Decisions.\n  It has no automatic model escalation: a stuck batch gets one fresh retry on the same tier, then a plan edit with a `## Prior failure` note, then a question to the parent.\n- Millhouse's cold starts were slow: each agent read much background and loaded its tools before it began work.\n  Likely further costs visible in the skill: a review loop per batch, finalize replaying every batch's verify in turn, and a state commit on every status change.\n\n## Shape\n\nWeaver is, in effect, Webster's recovery strand used as the normal path.\n\n- From Webster: the Go bracket verbs (begin-batch, record-batch, recover-batch), the report contract and classification, suspect paths, partition and sequencing, the plan-level verify gate and failure ladder, the shuttle/reed spawn path, and `RenderRecoveryPrompt` with `uncommitted_paths` and the failure digest.\n- From Builder: a cold, scoped agent per batch that reads only its cards and Shared Decisions, a model and effort per role per spawn, and a one-shot self-resolve before halting.\n- New in neither: an escalation ladder per failed attempt, for example `sonnet` → `opus` → `opus[high]`, set in config.\n- Open: how to keep cold-start cost down (a kick-start pack per batch, see `kick-start-pack`), and how a run chooses Weaver over Webster (recipe row or config).\n"
     },
     {
-      "id": 341,
-      "slug": "loom-step-help-seed",
-      "title": "loom step help contradicts itself and hides the driverless seed",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Help says step bootstraps like start, then that it never seeds; name the driverless seed command",
-      "body": "## Seen (2026-10-11, discussion bench)\n\n`lyx loom step --help` contradicts itself: `internal/loomcli/cli.go:313` says step bootstraps the worktree's loom task exactly as `lyx loom start` does, and `:329-330` says it never writes a seed and refuses when none exists.\nIt refuses on an unseeded pair and points to `lyx loom start`, which spawns an LLM driver.\nThe bench agent took that route and ended up with an unwanted driver; stepping without a driver needs `lyx shed seed self --recipe loom --driver go --param parent=main` first, which the help does not mention.\n\n## Idea\n\nMake the help say only what step does (refuses without a seed), and name the driverless seed command beside `lyx loom start` in the help and in the refusal text.\n"
-    },
-    {
       "id": 352,
       "slug": "orch-token-spend",
       "title": "Cut the orch's token spend",
@@ -829,25 +814,6 @@
       "isolated": false,
       "brief": "Wake the orch less: an alignment agent in loom reviews against the board, waking the orch only on overlap",
       "body": "## Seen (operator, 2026-10-11)\n\nThe hub orchestrator is now the largest token spender, ahead of Burler and Webster, and frequent distills have not cut it much.\nMeasured over 2026-10-10 and 2026-10-11, orch spend follows its turn count: a distill shrinks the context, but it regrows within the hour.\nPR-Gate and parent-review forks are a small share of the spend, while batten and agent notices drive about 800 orch calls in those two days, so the gain is fewer orch wake-ups.\n\n## Wanted\n\nCut the orch's token spend, chiefly by waking it less often.\n\n## Means: an alignment agent in loom (operator, 2026-10-11)\n\nThe board is the manifest: it shows every run and what it is doing, and every run's discussion record is readable.\nNo separate manifest is kept; a hand-kept one is a chore and goes stale fast.\n\nA cold-start alignment agent runs inside loom at the review points (PR-Gate, parent review), reads the board and the discussion and plan records of the tasks in flight, and checks that the run is aligned with them.\nIts sources need no upkeep: board entries and notes, the in-flight runs' records, and what has landed on `main` since the run's base.\n\n## Points raised in discussion\n\n- The agent cannot see an operator decision that lives only in the orch's chat, so the orch writes every such decision into the board body it concerns.\n- Parent review is also a sync point: when two overlapping tasks run at once, the orch has held both at parent review and written their reviews together so their discussion records agree. A per-run agent sees the overlap but cannot hold the other run. One shape: the agent approves when it finds no overlap with a run in flight and wakes the orch only when it does, so the orch can hold and align both.\n- Open: whether in-flight runs' records need a `lyx` read verb so an agent in one pair reads another pair's records without reaching into its worktree.\n- Open, for the operator: whether an approved PR review merges to `main` (and reaches prod at the next `update-plugins.sh`) on its own, or still waits for a short orch yes.\n\n## Other means discussed\n\n- Cheap models (such as Haiku) for the orch's simple agent jobs, like counting; fresh agents cost about $37 in the two measured days.\n- The `orch: 1h` cache lifetime in `shuttle.yaml` never applied, since a distill does not restart the orch process; a restart applies it, worth only a few dollars over two days.\n- The operator is also weighing running the orch on Sonnet, since most orch turns run `lyx` commands rather than reason deeply; cache reads cost the same on Opus 5.5 and Sonnet 5.5, so it saves about a quarter of the main session's spend.\n"
-    },
-    {
-      "id": 354,
-      "slug": "plan-rubric-file-target",
-      "title": "Plan review rubric gives no warning about the redundant-file-target check",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "loom",
-        "burler",
-        "stencil"
-      ],
-      "issues": [
-        542
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #542](https://github.com/Knatte18/loomyard/issues/542).\n\nIn a fixing-plan round, a review finding proposed adding whole-file targets beside member glyphs in the same files.\n`lyx loom validate-plan` refuses that shape with its `redundant-file-target` check, so the proposed fix broke the rubric's \"Proposed fixes\" rule.\nThe reviewer could not see this without running `lyx loom validate-plan` on a trial edit, which cost an extra validate round trip.\nThe fix fell back on the check's own way forward: target the whole file in place of the member.\n\nWhy abnormal: the reviewer rubric tells reviewers how to propose fixes but does not state the `redundant-file-target` constraint, so a rubric-following proposal can still be refused by the gate.\n\nWhat to do: state the `redundant-file-target` rule in the rubric's \"Proposed fixes\" section (a file target and a member glyph in the same file are mutually exclusive), or have the reviewer prompt point at `lyx loom validate-plan` as a pre-check for proposed target changes.\n\nProvenance: task `twill-discusser`; notes: burler-plan-r1.md\n"
     },
     {
       "id": 356,
@@ -915,36 +881,6 @@
       "body": "Seen at pane-inject-safety PR-Gate (PR #548): the paste-then-Enter submit rests on each provider's `PasteSubmits()` answer, and no live test checks that Claude Code takes a bracketed paste followed by Enter as a submit.\n\nIdea: a tmux-tier or llm-tier test that pastes a short prompt into a live session and checks it was submitted, so a Claude Code change that breaks it fails a test instead of a run."
     },
     {
-      "id": 368,
-      "slug": "tokencount-crash-gap",
-      "title": "Tokencount counts a crashed turn's gap as working time",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "shed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Seen at run-time-by-role PR-Gate (PR #550): a last assistant line with a null `stop_reason`, or a session that crashes mid-turn, never ends its working interval, so the gap to the next transcript line counts as working time.\n\nIdea: close an interval with no turn end at its last line (or cap it), so a crash shows as idle instead of work."
-    },
-    {
-      "id": 369,
-      "slug": "tokencount-slug-reuse",
-      "title": "Tokencount mixes older runs' transcripts into a reused slug",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "shed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Seen at run-time-by-role PR-Gate (PR #550): a slug reused across runs pulls older sessions' transcripts into its time, as it already does for tokens.\n\nIdea: bound a run's transcripts by its span (seed start to last history end) so a reused slug counts only its own run."
-    },
-    {
       "id": 371,
       "slug": "seats-twill-combined",
       "title": "One seats Discussion producer: advisor count and lens forks as config axes",
@@ -960,21 +896,6 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\n`loom.yaml` `discussion_producer` takes one of `single`, `seats` and `twill`, so a run gets either a chair with advisors or a writer that forks itself into lens reviews, never both.\nThe chair stencil (`contracts/stencils/loom/loom-template-discussion-chair.md`) carries no twill directive.\nSeats already runs on MultiLLMProducer (`internal/shedrecipe/entries_discussionseats.go`, `internal/shedadapters/multillm.go`), and `discussion_advisors` already runs the chair alone when the list is empty.\n\n## Idea (operator, 2026-10-11)\n\nOne seats Discussion producer on MultiLLMProducer covers single, seats and twill, set by two config axes:\n\n1. How many advisors the chair has, likely kept to one.\n   - None: the chair decides each question itself, as the single writer does today.\n   - One or more: the chair sends every question to the advisor as an open question (note `chair-blind-questions`); the advisor researches and answers with its own reasoning; the chair has already formed its own view and takes the advisor's answer as reflection, but the chair makes every call.\n2. Whether the chair then forks itself for lens reviews of its draft, and how many forks with which lenses (today's `twill-discussion` fan), as twill does.\n   The chair forks, never the advisor: the forks share the chair's prompt cache, and the advisor already brings the outside view.\n   Advisor forks are possible later but not the way to go yet (operator, 2026-10-11).\n\nWith both axes at zero this is today's single writer, so `discussion_producer` could go.\n\n## Open\n\n- Bench the combination against the arms of the twill bench and the chair-blind-questions bench (`.scratch/twill-bench/results.md` holds the earlier arms while it lasts).\n"
-    },
-    {
-      "id": 375,
-      "slug": "notice-custom-state",
-      "title": "Batten notices with their own text no longer name the child state",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "batten"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Seen at batten-notice-trim PR-Gate (PR #551): the notices with their own text (quiet, api-error, driver-dead) lost the `child state X` clause when the condition was rephrased, so they no longer say which state the child is in.\n\nIdea: carry the state in the rephrased condition for these notices too, as `haltText` does for halts."
     },
     {
       "id": 377,
@@ -1199,6 +1120,28 @@
       "isolated": false,
       "brief": "A late reject resumes the writer on a cold cache, a writer stuck mid-turn outlives the wait bound, and the PR #336 review left gate gaps",
       "body": "# Part 1: keep the waiting writer's cache warm\n\n## Seen (2026-10-11)\n\nWhile Discussion-Write's parent-review gate waits, the writer or seats chair and its advisors stay alive and idle (`internal/shuttleengine/wait.go:284-299`, `372-383`; advisors kept by `KeepPane: !isChair`, `internal/seatengine/prompt.go:161`, stopped only in `join`, `internal/seatengine/engine.go:245-252`).\n\n- On approve nobody takes another turn: the writer's strand is removed without a message (`wait.go:385-389`) and advisors are killed (`engine.go:251`), so the cache does not matter.\n- On reject the findings are typed into the same idle session (`wait.go:391-399`, `internal/parentreview/gate.go:165-170`).\n  If the review took more than the 5-minute prompt-cache lifetime, that turn re-reads the whole writer context uncached, which is the expensive case.\n- While delivery is unrecorded, the gate re-sends the delivery prompt up to three times at least a minute apart (`gate.go:20-22`, `190`); each re-send is a writer turn that may land on a cold cache.\n\n## Idea\n\nKeep the waiting writer's cache warm, the way the Burler fixer already does: `lyx burler await` caps each wait below the 5-minute lifetime so every re-run keeps the fixer's cache warm (`internal/burlercli/await.go:25`).\nThe operator suggests a ping injected into the idle writer about every 4 minutes while the gate waits.\n\n- A ping is a small cached turn; it pays off only when a reject is likely, so weigh its cost against the cold re-read on reject.\n- Alternative: on a reject that arrives after the cache has expired, start a fresh session with only the decision record, the support log and the findings instead of resuming the old context.\n- Advisors need no ping: they never take another turn after the chair's record exists.\n\n# Part 2: gate hardening\n\n## Goal\n\nThe parent-review gate holds its promises in the cases the first version left open: the wait bound fires even when the writer never ends its turn, no gate send lands inside a writer turn after a restart, and a live hand-started hub is proven to receive the notice.\n\n## From the PR #336 review (2026-10-02)\n\n- **Live smoke.** The smoke test uses a stub writer that records the typed line, so the SendMessage hop to a real hand-started parent has never run; run it once live.\n- **Wait bound off the boundary.** Expiry is checked only at a writer turn boundary (`internal/shuttleengine/wait.go`, `gateAtBoundary`), so a writer stuck mid-turn (for example on a permission prompt for `lyx loom review delivered` in interactive mode) holds the run until `discussion_timeout_min` instead of `parent_review_wait_min`; expiry needs no send, so evaluate it on every tick.\n- **Mid-turn sends after a restart** moved to task `shuttle-send` (2026-10-08).\n- **Turns the loop cannot see.** A turn started by the parent replying to the writer through SendMessage, or by the operator typing, leaves the loop at a boundary; tell the orch fork not to reply to the writer.\n- **Poll cost.** While pending at a boundary every 500 ms tick re-runs `discussionparser.Validate`, three locked JSON reads and a `MkdirAll`; throttle re-evaluation to a few seconds.\n- **Way-forward from the prime.** The no-open-request refusal names `lyx loom status \u003crun\u003e`, which cannot address the child from the prime; name `lyx batten status` there.\n- **`approve --review` and an empty file.** The refusal spec says it refuses a missing or empty file, the code only a missing one; align them.\n- **Entry order.** `shedrecipe` does not require `parent-review` to be the gate list's last entry; a must-pass entry after it would be `not_reached` at a deadline finalize while the review is pending.\n- **`delivered` after a verdict** can write `delivery.json` after the discussion commit and leave `_lyx` dirty until the next status commit.\n- **Round numbers** grow on every fresh spawn with no reviewer (empty `round-N/`, never committed).\n- **A rewrite after a parent reject goes unreviewed.** In `daemon-wakeups` (2026-10-10) the orch rejected the Discussion once, the parent-review cap was then reached, and the rewrite went on to Plan with no parent review; a rewrite after a reject always gets one more parent review, or reaching the cap escalates instead of passing silently.\n- **Review scope.** The brief says \"Do not re-review the design's internal quality\", narrower than millhouse's `orch-review`; confirm with the operator.\n"
+    },
+    {
+      "id": 386,
+      "slug": "small-fixes-oct11",
+      "title": "Small fixes: tokencount gaps and slug reuse, loom step help, plan rubric file-target rule, batten notice state",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "enhancement",
+        "shed",
+        "loom",
+        "burler",
+        "stencil",
+        "batten"
+      ],
+      "issues": [
+        542
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Five small independent fixes across tools/tokencount, loomcli help, the plan review rubric and batten notices",
+      "body": "# tokencount-crash-gap: Tokencount counts a crashed turn's gap as working time\n\nSeen at run-time-by-role PR-Gate (PR #550): a last assistant line with a null `stop_reason`, or a session that crashes mid-turn, never ends its working interval, so the gap to the next transcript line counts as working time.\n\nIdea: close an interval with no turn end at its last line (or cap it), so a crash shows as idle instead of work.\n# tokencount-slug-reuse: Tokencount mixes older runs' transcripts into a reused slug\n\nSeen at run-time-by-role PR-Gate (PR #550): a slug reused across runs pulls older sessions' transcripts into its time, as it already does for tokens.\n\nIdea: bound a run's transcripts by its span (seed start to last history end) so a reused slug counts only its own run.\n# loom-step-help-seed: loom step help contradicts itself and hides the driverless seed\n\n## Seen (2026-10-11, discussion bench)\n\n`lyx loom step --help` contradicts itself: `internal/loomcli/cli.go:313` says step bootstraps the worktree's loom task exactly as `lyx loom start` does, and `:329-330` says it never writes a seed and refuses when none exists.\nIt refuses on an unseeded pair and points to `lyx loom start`, which spawns an LLM driver.\nThe bench agent took that route and ended up with an unwanted driver; stepping without a driver needs `lyx shed seed self --recipe loom --driver go --param parent=main` first, which the help does not mention.\n\n## Idea\n\nMake the help say only what step does (refuses without a seed), and name the driverless seed command beside `lyx loom start` in the help and in the refusal text.\n\n# plan-rubric-file-target: Plan review rubric gives no warning about the redundant-file-target check\n\nImported from [issue #542](https://github.com/Knatte18/loomyard/issues/542).\n\nIn a fixing-plan round, a review finding proposed adding whole-file targets beside member glyphs in the same files.\n`lyx loom validate-plan` refuses that shape with its `redundant-file-target` check, so the proposed fix broke the rubric's \"Proposed fixes\" rule.\nThe reviewer could not see this without running `lyx loom validate-plan` on a trial edit, which cost an extra validate round trip.\nThe fix fell back on the check's own way forward: target the whole file in place of the member.\n\nWhy abnormal: the reviewer rubric tells reviewers how to propose fixes but does not state the `redundant-file-target` constraint, so a rubric-following proposal can still be refused by the gate.\n\nWhat to do: state the `redundant-file-target` rule in the rubric's \"Proposed fixes\" section (a file target and a member glyph in the same file are mutually exclusive), or have the reviewer prompt point at `lyx loom validate-plan` as a pre-check for proposed target changes.\n\nProvenance: task `twill-discusser`; notes: burler-plan-r1.md\n\n# notice-custom-state: Batten notices with their own text no longer name the child state\n\nSeen at batten-notice-trim PR-Gate (PR #551): the notices with their own text (quiet, api-error, driver-dead) lost the `child state X` clause when the condition was rephrased, so they no longer say which state the child is in.\n\nIdea: carry the state in the rephrased condition for these notices too, as `haltText` does for halts.\n"
     }
   ]
 }
