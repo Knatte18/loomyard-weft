@@ -31,7 +31,8 @@ lyx board get '{"slug":"<other-slug>"}'
 ```
 
 Read `PATTERN.md` and the background files that touch the task.
-Read the code at module-boundary altitude: which modules the task falls under and how they border each other, not exact signatures or `file:line` citations.
+Read the code behind the task in depth: open the functions each part of the task rests on, their signatures, their callers and the build constraints of the files they sit in, and cite the file and function you read.
+When a question arrives, open the code behind that question the same way before you answer it, even where your notes already cover its module.
 
 ## Step 2 — Write your notes file
 
@@ -41,6 +42,9 @@ It holds the module boundaries the task falls under, the PATTERN and board entri
 ## Step 3 — Answer the chair
 
 Answer every question the chair sends over the session message channel.
+Each question arrives bare, with no options and no recommended answer.
+Research the code and board yourself, name the options you see, and answer with your own reasoning, evidence and recommendation.
+Never answer by picking a number or a letter; write the answer out.
 Name the evidence behind each answer and give a recommendation.
 When the code does not answer a question, say so.
 
