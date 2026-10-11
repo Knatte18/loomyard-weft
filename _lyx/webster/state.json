@@ -1,0 +1,113 @@
+{
+  "runGuid": "89aa2807041099aa16c3516ef84d9f65",
+  "planFingerprint": "14e1f3c7633dc563d3f8955ce9b82a492584be71721d8547760faaabd725f8ce",
+  "planFileHashes": {
+    "00-overview.md": "4a634359514f2f8274bc0badcd0d6117232f88ca80eb00474dba7c19c3282ae3",
+    "01-fixer-dispositions.md": "8b72c7581c4bc9d51db2406613762be25f4f81eeb6298df7c79185abd5691042",
+    "02-reviewer-answers-dispute.md": "a1fabb8b2de8ee2aa78b14ffb7bb6adbabb80159eb24372c1f54789c645d6c30",
+    "03-carry-over-fixed-or-disputed.md": "5c897d28742ec823677393be6bb2d73add07d5b3eb40a39897fad803a18520b0"
+  },
+  "planOverviewFrameHash": "781a0c68d8cc4ed09fa6e3311d3248631e849afb02fadefbd21838d42f6ec925",
+  "partition": [
+    {
+      "cards": [
+        "01-fixer-dispositions",
+        "02-reviewer-answers-dispute",
+        "03-carry-over-fixed-or-disputed"
+      ],
+      "profile": "cautious",
+      "estimate": 132392,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54292,
+        "read_union": 46672,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 504,
+            "reads": {
+              "file:contracts/stencils/burler/burler-step-3-fix.md": 480,
+              "file:contracts/stencils/burler/burler-template-fix-orchestrator.md": 456,
+              "file:docs/overview.md": 8316,
+              "file:pattern/PATTERN-review-round.md": 96,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/burler": 2000,
+              "package:docs": 2000,
+              "package:pattern": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/burler": 2000,
+              "tests:docs": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 33.5,
+            "written": 10554
+          },
+          {
+            "card": 2,
+            "card_text": 288,
+            "reads": {
+              "file:contracts/stencils/burler/burler-step-3-fix.md": 480,
+              "file:internal/burlerengine/doc.go": 4104,
+              "package:internal/burlerengine": 2000,
+              "tests:internal/burlerengine": 2000
+            },
+            "messages": 26,
+            "written": 8088
+          },
+          {
+            "card": 3,
+            "card_text": 336,
+            "reads": {
+              "file:contracts/stencils/loom/loom-template-plan.md": 3084,
+              "file:contracts/stencils/loom/loom-template-rework.md": 1008,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/discussionparser": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/discussionparser": 2000
+            },
+            "messages": 41.5,
+            "written": 12786
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "4f1db2b568c95ffb77fc1c656c44d126",
+  "masterSessionId": "d46576ce-2b07-4072-b1ba-208699da1c32",
+  "batches": {
+    "1": {
+      "slug": "fixer-dispositions",
+      "cards": [
+        "01-fixer-dispositions",
+        "02-reviewer-answers-dispute",
+        "03-carry-over-fixed-or-disputed"
+      ],
+      "cardHashes": {
+        "01-fixer-dispositions": "8b72c7581c4bc9d51db2406613762be25f4f81eeb6298df7c79185abd5691042",
+        "02-reviewer-answers-dispute": "a1fabb8b2de8ee2aa78b14ffb7bb6adbabb80159eb24372c1f54789c645d6c30",
+        "03-carry-over-fixed-or-disputed": "5c897d28742ec823677393be6bb2d73add07d5b3eb40a39897fad803a18520b0"
+      },
+      "startSha": "a5334fc72ccc820ec08f4e05bfcc329938d750ec",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T10:16:38Z",
+      "sessionId": "d46576ce-2b07-4072-b1ba-208699da1c32",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
