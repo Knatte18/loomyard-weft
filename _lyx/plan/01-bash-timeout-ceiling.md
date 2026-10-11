@@ -1,9 +1,9 @@
 # Card 1 — Bash timeout ceiling and the gate rule
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#bashMaxTimeoutEnvKey` -> `const bashMaxTimeoutEnvKey = "BASH_MAX_TIMEOUT_MS"`
-- `plan:internal/shuttleengine/claudeengine#bashMaxTimeout` -> `const bashMaxTimeout = time.Hour`
-- `plan:internal/shuttleengine/claudeengine#bashMaxTimeoutMS` -> `var bashMaxTimeoutMS = strconv.FormatInt(bashMaxTimeout.Milliseconds(), 10)`
+- `internal/shuttleengine/claudeengine#bashMaxTimeoutEnvKey`
+- `internal/shuttleengine/claudeengine#bashMaxTimeout`
+- `internal/shuttleengine/claudeengine#bashMaxTimeoutMS`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine#buildLaunchCmd`

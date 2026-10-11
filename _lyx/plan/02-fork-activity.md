@@ -1,8 +1,8 @@
 # Card 2 — A session's forks count as its activity
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#forkActivity` -> `func forkActivity(transcriptPath string, now time.Time) time.Time`
-- `plan:internal/shuttleengine/claudeengine#holdsPendingToolCall` -> `func holdsPendingToolCall(path string) bool`
+- `internal/shuttleengine/claudeengine#forkActivity`
+- `internal/shuttleengine/claudeengine#holdsPendingToolCall`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine#Claude`
@@ -17,7 +17,7 @@
 - `internal/shuttleengine/doc.go`
 
 **Uses:**
-- `plan:internal/shuttleengine/claudeengine#bashMaxTimeout`
+- `internal/shuttleengine/claudeengine#bashMaxTimeout`
 - `internal/shuttleengine/claudeengine#forEachTranscriptLine`
 - `internal/shuttleengine/claudeengine#transcriptLine`
 - `internal/shuttleengine/claudeengine#transcriptBlock`
