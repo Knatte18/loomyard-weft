@@ -1,6 +1,6 @@
 # Seats: the chair starts first and asks its advisors in rounds
 
-`seats-chair-first` · Note · enhancement, loom
+`seats-chair-first` · Task · enhancement, loom
 
 ## Rule (operator, 2026-10-11)
 

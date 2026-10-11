@@ -1029,12 +1029,13 @@
       "id": 330,
       "slug": "seats-chair-first",
       "title": "Seats: the chair starts first and asks its advisors in rounds",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "loom"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "The chair is the main agent of the seats producer: it starts first, and sends question batches one round at a time, each built on the answers to the last",
