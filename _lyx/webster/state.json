@@ -294,7 +294,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "f74ecc642ace577ac46b1d79a1521442",
   "masterSessionId": "1298509d-4f95-4821-a04d-f236737d8974",
   "batches": {
@@ -350,6 +350,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-test-hygiene/1298509d-4f95-4821-a04d-f236737d8974/subagents/agent-a4e4013e9b1d0d6bd.jsonl"
       ]
+    },
+    "6": {
+      "slug": "round-gate-headroom",
+      "cards": [
+        "06-round-gate-headroom",
+        "07-test-budget-message",
+        "08-tmuxkit-proc-probes",
+        "09-proc-reads-through-kit",
+        "10-pattern-overview-trim"
+      ],
+      "cardHashes": {
+        "06-round-gate-headroom": "e05d7a1fa9452147551a74ee3ec101cb8027f121efd9a50d62518134ab3d3679",
+        "07-test-budget-message": "b3f6e3be28ebd3420fdb7eef65b6a47fa7b9a993af63d8b3477d481a92d804fe",
+        "08-tmuxkit-proc-probes": "f91ef974c67a9fef249d9785220e58d62af3b44270f6170a12501cca0845d37d",
+        "09-proc-reads-through-kit": "473c0cdcd2d4be43543a597d58b1678d2f2dbb87fe4a6dcfa5c312aaf732a65e",
+        "10-pattern-overview-trim": "bfc414b792b6b05c1898914e458872dece1b7b31c30898aacd554df71cbdc0b2"
+      },
+      "startSha": "d4a4c0609e45ac7bc434d978443c2b1fd0aea95b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T08:39:28Z",
+      "sessionId": "1298509d-4f95-4821-a04d-f236737d8974",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
