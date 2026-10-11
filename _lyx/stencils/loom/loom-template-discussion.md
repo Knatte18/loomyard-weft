@@ -4,12 +4,15 @@
      and is read from there at call time by composePrompt (internal/loomengine/prompt.go) via internal/stencil.
      loomengine.DiscussionSpec wraps the filled result into a shuttleengine.Spec,
      which shedadapters.SingleLLMProducer drives through the shuttle seam as recipe row 3.
+     The loom-template-discussion-chair stencil includes this one whole, and internal/seatengine fills it through stencil.FillWith as its second filler, from the chair's value map.
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires the four original markers non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
      parent_directive is a third optional marker, rendered by internal/parentdirective.
+     twill_directive and twill_write_scope are two more optional markers, rendered by internal/twilldirective through internal/loomengine;
+     each sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
      The literal `{` / `}` characters around {{.slug}} in the board-read example below are ordinary JSON punctuation, not template syntax — only `{{` begins a template action.
-lyx-stencil: sha256=9503a85ac18244455eb617ba6b3e74e36b9865d8132199fe5b161ac3847dd125 -->
+lyx-stencil: sha256=41d13616f0b7f86164739f48712d743855d9304f46a314bf897ea40ccf206653 build=50cf6a425dbe80a753a35d27747d7ee0b7faea86 time=2026-10-11T11:03:20Z -->
 
 # Discussion — interview, then write the decision record
 
@@ -75,7 +78,7 @@ Apply YAGNI: do not design for a hypothetical requirement nobody asked for.
 ## Step 4 — How to get answers
 
 {{.mode_rules}}
-
+{{.twill_directive}}
 ## Step 5 — Write the two output files
 
 Once the design is settled, write BOTH of the following files.
@@ -160,7 +163,7 @@ You are a **design** agent. The only files you create or modify in this session 
 
 - `{{.decision_record_path}}`
 - `{{.support_log_path}}`
-
+{{.twill_write_scope}}
 Two narrow carve-outs apply, each only when the gate's message asks for it:
 
 - running `lyx loom review delivered` when a delivery prompt asks;
