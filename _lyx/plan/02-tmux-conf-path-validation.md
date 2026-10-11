@@ -1,9 +1,9 @@
 # Card 2 — tmux-conf-path-validation
 
 **Create:**
-- `plan:internal/reedengine#tmuxConfEnv` -> `const tmuxConfEnv = "LYX_REED_TMUX_CONF"`
-- `plan:internal/reedengine#tmuxConfPath` -> `func tmuxConfPath(raw, home string) (string, error)`
-- `plan:internal/reedengine#TestTmuxConfPath` -> `func TestTmuxConfPath(t *testing.T)`
+- `internal/reedengine#tmuxConfEnv`
+- `internal/reedengine#tmuxConfPath`
+- `internal/reedengine#TestTmuxConfPath`
 
 **Edit:**
 - `internal/reedengine#Engine.preflightBootHost` -> `func (e *Engine) preflightBootHost() (shellPath, tmuxConf string, err error)`

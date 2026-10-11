@@ -1,15 +1,15 @@
 # Card 3 — tmux-conf-boot-source-guard
 
 **Create:**
-- `plan:internal/reedengine#tmuxConfClaimedOption` -> `const tmuxConfClaimedOption = "@lyx_tmux_conf_claimed"`
-- `plan:internal/reedengine#reedSessionOption` -> `const reedSessionOption = "@lyx_reed_session"`
-- `plan:internal/reedengine#Engine.serverIdentityLocked` -> `func (e *Engine) serverIdentityLocked() string`
-- `plan:internal/reedengine#bootGuardArgv` -> `func bootGuardArgv(candidate bool, confPath string) []string`
-- `plan:internal/reedengine#Engine.guardBootSessionLocked` -> `func (e *Engine) guardBootSessionLocked(identityBefore, confPath string) error`
-- `plan:internal/reedengine#TestTmuxConfBootGuard` -> `func TestTmuxConfBootGuard(t *testing.T)`
-- `plan:internal/reedengine#newHubEngine` -> `func newHubEngine(t *testing.T, hubDir, worktree string, configure func(cfg *Config)) *Engine`
-- `plan:internal/reedengine#bootOwnServer` -> `func bootOwnServer(t *testing.T, e *Engine) error`
-- `plan:internal/reedengine#TestBoot_TmuxConf` -> `func TestBoot_TmuxConf(t *testing.T)`
+- `internal/reedengine#tmuxConfClaimedOption`
+- `internal/reedengine#reedSessionOption`
+- `internal/reedengine#Engine.serverIdentityLocked`
+- `internal/reedengine#bootGuardArgv`
+- `internal/reedengine#Engine.guardBootSessionLocked`
+- `internal/reedengine#TestTmuxConfBootGuard`
+- `internal/reedengine#newHubEngine`
+- `internal/reedengine#bootOwnServer`
+- `internal/reedengine#TestBoot_TmuxConf`
 
 **Edit:**
 - `internal/reedengine#Engine`
@@ -23,7 +23,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/reedengine#tmuxConfEnv`
+- `internal/reedengine#tmuxConfEnv`
 - `internal/reedengine#exactSessionWindowTarget`
 - `internal/reedengine#Engine.pinBootOptionsLocked`
 - `internal/reedengine#TmuxCmd.hasSession`

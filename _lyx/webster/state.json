@@ -1,12 +1,12 @@
 {
   "runGuid": "95e28fab4f16a7993a8172b183a4bd28",
-  "planFingerprint": "03761cadc21dcbc029d623a92d7fcd78dbce18b3d0a96e77018d29c06e11ef71",
+  "planFingerprint": "7aa7c9609fddaaff8ab7856f078edc8c06679241771675fc60437b6a7ee7383a",
   "planFileHashes": {
     "00-overview.md": "26c13720982b212ab370360b613c922023baa78c9a066d532d5d016867c83993",
     "01-tmux-conf-config-key.md": "dd2e3f5f17e13b1b734898947d381ef2797beea0aecfeff09f9b73a5baf41f13",
-    "02-tmux-conf-path-validation.md": "3940004fd58c8f651aa70a2a5b9265d881f514ff39f3fce6d06d178232764db4",
-    "03-tmux-conf-boot-source-guard.md": "c6de2d108c3643a7468724cea0a96f74e895a1bcceacd25304d2416cf3b791ee",
-    "04-reed-session-filter.md": "63e7c0e0c926b4f118bcc452f86051bdeb5d469b80ed55579d9e8257b48da0a3"
+    "02-tmux-conf-path-validation.md": "4ccbd911fe936ab2c8956800eb13ea88bfdfd61caf2eb9c0e3859e105f90fc7e",
+    "03-tmux-conf-boot-source-guard.md": "31b979152f313efc5623d0bc0f4e300ff9b00c42a580fea68351224d465518d8",
+    "04-reed-session-filter.md": "ee27114158db9d97d12d8405b7634e3a482dadf345ac9d4c7a69c5bf3fb534d5"
   },
   "planOverviewFrameHash": "196d90bb2ab3b7a185a3a7de53a4de763c6303966b337e825141d5449985253e",
   "partition": [
@@ -98,7 +98,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "e2dda65b135461852f4b1da5e640c52d",
   "masterSessionId": "b27257f7-933b-450c-9837-3d98378cd078",
   "batches": {
@@ -112,16 +112,33 @@
       ],
       "cardHashes": {
         "01-tmux-conf-config-key": "dd2e3f5f17e13b1b734898947d381ef2797beea0aecfeff09f9b73a5baf41f13",
-        "02-tmux-conf-path-validation": "3940004fd58c8f651aa70a2a5b9265d881f514ff39f3fce6d06d178232764db4",
-        "03-tmux-conf-boot-source-guard": "c6de2d108c3643a7468724cea0a96f74e895a1bcceacd25304d2416cf3b791ee",
-        "04-reed-session-filter": "63e7c0e0c926b4f118bcc452f86051bdeb5d469b80ed55579d9e8257b48da0a3"
+        "02-tmux-conf-path-validation": "4ccbd911fe936ab2c8956800eb13ea88bfdfd61caf2eb9c0e3859e105f90fc7e",
+        "03-tmux-conf-boot-source-guard": "31b979152f313efc5623d0bc0f4e300ff9b00c42a580fea68351224d465518d8",
+        "04-reed-session-filter": "ee27114158db9d97d12d8405b7634e3a482dadf345ac9d4c7a69c5bf3fb534d5"
       },
       "startSha": "a5334fc72ccc820ec08f4e05bfcc329938d750ec",
       "kind": "fork",
       "spawnedAt": "2026-10-11T10:52:13Z",
       "sessionId": "b27257f7-933b-450c-9837-3d98378cd078",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-tmux-conf-config-key",
+        "status": "done",
+        "head_sha": "b6c255ef3d5193d0fffdf989733fa5663df3ef14"
+      },
+      "cardShas": [
+        "b6c255ef3d5193d0fffdf989733fa5663df3ef14"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-tmux-conf/b27257f7-933b-450c-9837-3d98378cd078/subagents/agent-a8dfdea54de2263fb.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-tmux-conf/b27257f7-933b-450c-9837-3d98378cd078/subagents/agent-a8dfdea54de2263fb.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-tmux-conf/b27257f7-933b-450c-9837-3d98378cd078/subagents/agent-a8dfdea54de2263fb.jsonl"
+  ]
 }

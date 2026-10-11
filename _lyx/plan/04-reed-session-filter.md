@@ -1,8 +1,8 @@
 # Card 4 — reed-session-filter
 
 **Create:**
-- `plan:internal/reedengine#reedSessionFilter` -> `const reedSessionFilter = "#{||:#{!=:#{" + tmuxConfClaimedOption + "},sourced},#{" + reedSessionOption + "}}"`
-- `plan:internal/reedengine#listSessionsArgv` -> `func listSessionsArgv(goos, format string) []string`
+- `internal/reedengine#reedSessionFilter`
+- `internal/reedengine#listSessionsArgv`
 
 **Edit:**
 - `internal/reedengine#ListSessions`
@@ -16,12 +16,12 @@
 - `internal/reedengine#statusFormatSessions`
 - `internal/reedengine#TestListSessions`
 - `internal/reedengine#TestSwitchClientVia_IssuesOnlyTheThreeCommands`
-- `plan:internal/reedengine#TestBoot_TmuxConf`
+- `internal/reedengine#TestBoot_TmuxConf`
 - `internal/reedengine/doc.go`
 
 **Uses:**
-- `plan:internal/reedengine#tmuxConfClaimedOption`
-- `plan:internal/reedengine#reedSessionOption`
+- `internal/reedengine#tmuxConfClaimedOption`
+- `internal/reedengine#reedSessionOption`
 
 **Intent:** Make every reed read that lists, counts or cycles a server's sessions see only the sessions that count as reed's (D8), so a session an operator file creates never keeps the hub server alive and is shown by no reed surface.
 
