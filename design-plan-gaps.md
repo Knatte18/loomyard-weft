@@ -1,6 +1,6 @@
 # Plan gaps: inserting a card, unreachable prescribed refusals
 
-`plan-gaps` · Task · enhancement, loom, burler, stencil · running · Worktree-Create
+`plan-gaps` · Task · enhancement, loom, burler, stencil · running · Loom-Preflight
 
 Two gaps in how plans are written and reviewed, merged into one task (operator, 2026-10-11).
 
