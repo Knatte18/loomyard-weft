@@ -48,6 +48,34 @@
       "output": "child running → awaiting at PR-Gate",
       "at": "2026-10-11T18:30:09Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → paused at Publish",
+      "at": "2026-10-11T18:31:31Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child paused → running at Publish",
+      "at": "2026-10-11T18:31:36Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at PR-Gate",
+      "at": "2026-10-11T18:35:36Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at PR-Gate",
+      "at": "2026-10-11T18:36:24Z",
+      "budget_exempt": true
     }
   ]
 }
