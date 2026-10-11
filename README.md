@@ -7,16 +7,6 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running
-
-Held by a run; its scope is locked until the run ends.
-
-#### Normal priority
-
-| # | Task | Slug | Recipe | At | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Batten windows stay but are hidden from the status bar** | [`batten-windows-hidden`](design-batten-windows-hidden.md) | darn | Finalize | batten, reed |
-
 ### Ready
 
 Waits on nothing open; can start now.
@@ -147,3 +137,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 32 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) | loom, stencil |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Labels |
+| --- | --- | --- | --- |
+| 1 | **Batten windows stay but are hidden from the status bar** | [`batten-windows-hidden`](design-batten-windows-hidden.md) | batten, reed |
