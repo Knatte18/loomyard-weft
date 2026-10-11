@@ -144,11 +144,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 30 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) | loom, stencil |
-
-## Done
-
-Finished, awaiting `lyx board prune --apply`.
-
-| # | Entry | Slug | Labels |
-| --- | --- | --- | --- |
-| 1 | **Batten lands itself; the orch wakes only for judgement**<br>• Batten runs the landing steps after Finalize and handles notices that name their own action, so the orch is woken only for parent review, unsettled escalations, PR-Gate and unknown halts. | [`orch-wake-policy`](design-orch-wake-policy.md) | batten, orch |

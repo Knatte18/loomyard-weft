@@ -899,24 +899,6 @@
       "body": "Split out of note `orch-token-spend` (2026-10-11), whose other means went to `orch-owns-the-loop` (batten lands itself, what wakes the orch), `merge-review`, `orch-split` and `task-run-settings`.\n\n## Seen (operator, 2026-10-11)\n\nThe hub orchestrator is the largest token spender, ahead of Burler and Webster.\nMeasured over 2026-10-10 and 2026-10-11, orch spend follows its call count: every call reads the whole context, a distill shrinks it but it regrows within the hour, and batten and agent notices drove about 800 orch calls in those two days.\nA 1h cache TTL saves only about 1.6% (measured 2026-10-11), since cache reads are 80% of the cache bill.\n\n## Idea: an alignment agent in loom (operator, 2026-10-11)\n\nThe board is the manifest: it shows every run and what it is doing, and every run's discussion record is readable.\nNo separate manifest is kept; a hand-kept one is a chore and goes stale fast.\n\nA cold-start alignment agent runs inside loom at the review points (PR-Gate, parent review), reads the board and the discussion and plan records of the tasks in flight, and checks that the run is aligned with them.\nIts sources need no upkeep: board entries and notes, the in-flight runs' records, and what has landed on `main` since the run's base.\n\n## Points raised in discussion\n\n- The agent cannot see an operator decision that lives only in the orch's chat, so the orch writes every such decision into the board body it concerns.\n- Parent review is also a sync point: when two overlapping tasks run at once, the orch has held both at parent review and written their reviews together so their discussion records agree. A per-run agent sees the overlap but cannot hold the other run. One shape: the agent approves when it finds no overlap with a run in flight and wakes the orch only when it does, so the orch can hold and align both.\n- Open: whether in-flight runs' records need a `lyx` read verb so an agent in one pair reads another pair's records without reaching into its worktree.\n- Open, for the operator: whether an approved PR review merges to `main` (and reaches prod at the next `update-plugins.sh`) on its own, or still waits for a short orch yes.\n- The operator has weighed running the orch on Sonnet, since most orch turns run `lyx` commands; the operator also finds Sonnet generally weaker than Opus.\n"
     },
     {
-      "id": 402,
-      "slug": "orch-wake-policy",
-      "title": "Batten lands itself; the orch wakes only for judgement",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "batten",
-        "orch"
-      ],
-      "issues": [],
-      "priority": "high",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Batten runs the landing steps after Finalize and handles notices that name their own action, so the orch is woken only for parent review, unsettled escalations, PR-Gate and unknown halts.",
-      "body": "Split out of note `orch-owns-the-loop` (2026-10-11); its session-continue part is now note `orch-continue`.\n\n## Seen (2026-10-11)\n\nOrch spend follows its call count, since every call reads the whole context (see `alignment-agent`).\nAfter each landing the orch runs pull, deploy, config reconcile, intake, prune, the batten teardown check and the fabric commit by hand, five to eight calls, and after `lyx loom approve` it runs a `lyx loom start` retry loop.\nMany notices name their own action and need no judgement.\n\n## Idea: batten lands itself (operator, 2026-10-11)\n\nBatten runs the land steps itself after Finalize and wakes the orch only when a step fails, so the `done` notice and the orch's calls per landing go away.\nDeploy (`update-plugins.sh`) is part of it: today only the hub orch runs it after a landing (CLAUDE.md), so the rule moves with the step.\n\n## What wakes the orch (operator agreed, 2026-10-11)\n\nThe orch is woken only for what needs judgement or its context:\n- parent-review requests;\n- review escalations a perch's auto-accept does not settle, and design calls;\n- PR-Gate, for the check against the board goal and the operator's decisions;\n- a halt whose cause or way forward is unknown.\n\nHandled without the orch:\n- a finished run: batten lands it;\n- after `lyx loom approve`: batten resumes the child itself;\n- a halt whose error names its action: a Publish verify failure gets one automatic goto Webster-Burler and resume, and a second failure wakes the orch; a GitHub \"cannot lock ref\" is retried;\n- the per-worktree `loom.yaml` landing warning (gone with `task-run-settings`);\n- starting ready tasks (`orch-split`).\n",
-      "status": "done"
-    },
-    {
       "id": 403,
       "slug": "orch-continue",
       "title": "lyx orch start --continue resumes the last orch session",
