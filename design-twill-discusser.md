@@ -1,6 +1,6 @@
 # TwillDiscusser: a Discussion writer that forks lens reviewers before it writes
 
-`twill-discusser` · Task · enhancement, loom, stencil · running · Webster-Bouncer
+`twill-discusser` · Task · enhancement, loom, stencil · running · Webster-Burler
 
 ## Seen (2026-10-11)
 
