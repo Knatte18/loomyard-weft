@@ -100,6 +100,12 @@ Decision: The tail goes on awaitStartup's exits where the provider never reached
 
 Rationale: Corrects D4's false premise that delivery failures carry no tail, which a plan writer could have encoded as a test, and its trigger sentence, which taken alone would tail the retry exits; the chosen behaviour is unchanged.
 
+### Added after Discussion (parent, 2026-10-11): Any play that sent a key starts the dismissal gap
+
+Decision: D6's gap starts on every startup-gate play that sent at least one key, whether it then failed or not; only an empty sequence or a play whose first key failed leaves the next probe free to dismiss.
+
+Rationale: playInputs returns on the first failing SendKey, so a failed play can leave keys in the pane; starting the gap then keeps the stray-keypress bound D6 exists for at the one-second cadence D5 introduces.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: the `%` knowledge lives only in `claudeengine`; `shuttleengine` gains no Claude specifics.
