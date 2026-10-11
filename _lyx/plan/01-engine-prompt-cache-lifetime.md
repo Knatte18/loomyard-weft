@@ -25,7 +25,7 @@ No cache lifetime is spelled outside the provider (`PATTERN-shuttle-provider-sea
 The two fakes, `fakeEngine` in the shuttleengine tests and `shuttlefake.Engine`, answer zero and no error, so no test-built gate pings.
 
 Tests:
-`TestPromptCacheLifetime`, in `command_test.go` beside the TTL validation, is a table over `ttlConfig`: the 5m default answers five minutes; a role mapped to `1h` answers an hour; an unmapped role and an empty role answer the default; an invalid default answers an error naming `claude_prompt_cache_ttl`.
+`TestPromptCacheLifetime`, in `prepare_test.go` beside the TTL rows and the `ttlConfig` helper, is a table over `ttlConfig` covering what the method adds over the shared resolver, the parse to a duration and the passed-through error: the 5m default answers five minutes; a role mapped to `1h` answers an hour; an invalid default answers an error naming `claude_prompt_cache_ttl`.
 `test-budget.yaml`'s `internal/shuttleengine/claudeengine` row rises by one for it.
 
 **ImpactSummary:** one method on the Engine interface, implemented by Claude and the two test fakes; no existing method or caller changes.

@@ -21,6 +21,7 @@
 - `internal/loomcli#TestReviewVerbs_ReviewFileMissingOrEmpty`
 - `internal/loomcli#TestReviewApprove_SupersedesCapRejectOnBlockedRun`
 - `internal/loomcli#TestReviewApprove_SupersedeRefusals`
+- `plan:internal/loomcli#TestParentReviewExchange_RewriteReviewedThenCapRejectHalts`
 
 **Prosa:**
 - `contracts/specs/refusal-spec.md`
@@ -41,6 +42,9 @@ Each verb takes `statusWay` and passes it to `reviewStoreErr`, and `reviewApprov
 Tests:
 `TestReviewVerbs_NoOpenRequest` runs each verb twice, with `reviewStatusWay("task", true)`, whose message names `lyx batten status task` and `from the prime`, and with `reviewStatusWay("task", false)`, whose message names `lyx loom status` and no `<run>`.
 `TestReviewApprove_SupersedeRefusals` asserts the same pair on its not-blocked and not-at-cap refusals.
+Those calls bypass `reviewState.preRun`'s choice, so `TestParentReviewExchange_RewriteReviewedThenCapRejectHalts`, card 5's integration test, drives it through the real CLI before arrival 1 opens round 1:
+`review notify <slug>` from the prime refuses naming `lyx batten status <slug>` and `from the prime`;
+`review notify` with no slug from the task worktree refuses naming `lyx loom status` and no `lyx batten status`.
 The other listed tests and `reviewVerbCalls` only pass a status way at their call sites.
 
 `refusal-spec.md`'s `review: no open request`, `review: approve over a reject, run not halted` and `review: latest round is not the cap's reject` rows name the status command as: with a slug, `lyx batten status <slug>` run from the prime; with none, in the task worktree, `lyx loom status`.

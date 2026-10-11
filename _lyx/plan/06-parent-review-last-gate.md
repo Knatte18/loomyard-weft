@@ -3,7 +3,8 @@
 **Edit:**
 - `internal/shedrecipe#resolveRowGateSpec`
 - `internal/shedrecipe#resolveGateSpec`
-- `plan:internal/shedrecipe#TestResolveGateSpec_ParentReviewElementRefusals`
+- `internal/shedrecipe#TestResolveGateSpec_Rejections`
+- `internal/shedrecipe#TestResolveGateSpec_ParentReviewResolvesMustPassMayHold`
 
 **Prosa:**
 - `contracts/specs/shed-recipe-spec.md`
@@ -17,9 +18,8 @@ D7: `parent-review` must be the last entry of its gate list, since a must-pass e
 The input that reaches it, after every element resolves, is a row whose `gates` list names `parent-review` and then any other valid gate, which a developer editing the recipe writes.
 `resolveGateSpec`'s doc states the rule beside the one-name-per-list rule.
 
-`TestResolveGateSpec_ParentReviewElementRefusals`, over `parentReviewEnv`, gains two rows:
-`parent-review` then `discussion` refuses naming the row, `"parent-review" must be the last element` and `way forward:`;
-`discussion` then `parent-review` builds two entries with `parent-review` last.
+`TestResolveGateSpec_Rejections` gains a row: `parent-review` then `discussion` refuses naming the row, `"parent-review" must be the last element` and `way forward:`.
+`TestResolveGateSpec_ParentReviewResolvesMustPassMayHold`'s config becomes `discussion` then `parent-review`, and it asserts two entries with `parent-review` last.
 
 `shed-recipe-spec.md`'s gate paragraph adds that `parent-review` must be the last element of its list, else construction fails.
 `refusal-spec.md` gains a loom-section row, `recipe: parent-review not last`: a recipe's `gates` list names another element after `parent-review` when the row builds; correctness halt; move the `parent-review` element to the end of the `gates` list.

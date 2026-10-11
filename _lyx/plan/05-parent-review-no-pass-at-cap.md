@@ -10,6 +10,7 @@
 - `internal/shedrecipe#resolveGateSpec`
 - `internal/shedrecipe#resolveGateEntry`
 - `internal/shedrecipe#resolveParentReviewClosure` -> `func resolveParentReviewClosure(entry string, attempts int, env Env) (shuttleengine.Gate, shuttleengine.Gate, error)`
+- `internal/shedrecipe#TestResolveGateSpec_Rejections`
 - `internal/loomcli#TestDiscussionWriteRow_GateListIsDiscussionThenParentReview`
 - `contracts/recipes/loom-recipe.yaml`
 
@@ -25,7 +26,6 @@
 - `internal/loomcli#TestParentReviewExchange_RejectThenFixGoesOnToPerch`
 
 **Create:**
-- `plan:internal/shedrecipe#TestResolveGateSpec_ParentReviewElementRefusals` -> `func TestResolveGateSpec_ParentReviewElementRefusals(t *testing.T)`
 - `plan:internal/loomcli#TestParentReviewExchange_RewriteReviewedThenCapRejectHalts` -> `func TestParentReviewExchange_RewriteReviewedThenCapRejectHalts(t *testing.T)`
 
 **Prosa:**
@@ -51,8 +51,8 @@ This reverses commit 518dc7400's pass-at-cap mode.
   The input that reaches it is a recipe row whose `parent-review` element carries `pass_on_cap: true` or `pass_on_cap: false`, which a developer editing the recipe writes; every other element's `pass_on_cap` is read as before.
 - `resolveParentReviewClosure` drops its `passOnCap` parameter and the `pr.PassAtCap` assignment; its doc keeps the cap-equals-attempts reasoning and drops the sentence on the Cap-th failure re-prompting once more.
 - `resolveGateSpec`'s doc says `parent-review`'s `attempts` is the reject cap and that `pass_on_cap` is refused on it.
-- `TestResolveGateSpec_ParentReviewElementRefusals` is a table over `parentReviewEnv`: `pass_on_cap: true` and `pass_on_cap: false` each refuse naming the row, `pass_on_cap` and `way forward:`.
-  Card 6 adds its placement rows to the same table.
+- `TestResolveGateSpec_Rejections` builds each row over `parentReviewEnv(t)`, which extends `newTestEnv`, so no existing row changes.
+  It gains rows for `pass_on_cap: true` and `pass_on_cap: false` on a `parent-review` element, each refusing naming the row and `pass_on_cap`, and each also asserting `way forward:`.
 
 `contracts/recipes/loom-recipe.yaml`: the Discussion-Write row's `parent-review` element sets `attempts: 2` with no `pass_on_cap`.
 Its comment says every rewrite after a reject is reviewed as the next round, `attempts` is the reject cap and 0 turns the review off, and the cap's reject halts the run `blocked` until `lyx loom review approve`.

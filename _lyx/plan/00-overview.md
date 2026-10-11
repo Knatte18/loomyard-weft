@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -35,8 +35,8 @@ D11 needs no card: this run's own round-1 `delivery.json` and `verdict.json` are
 ### Decision: test-budget
 
 Every package this plan touches sits at its `cmd/lyx/testdata/test-budget.yaml` row.
-Cards 1, 2, 3, 4, 12 and 13 each raise their package's row by one for the new top-level test they add.
-Card 5 deletes five parentreview tests and swaps one shedrecipe test for another, which leaves room for card 14's parentreview test, and every other new case extends an existing test.
+Cards 1, 2, 3, 4 and 13 each raise their package's row by one for the new top-level test they add.
+Card 5 deletes five parentreview tests, which leaves room for card 14's parentreview test, and one shedrecipe test, and every other new case extends an existing test.
 
 ### Decision: keep-alive-first
 
