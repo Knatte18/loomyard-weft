@@ -58,6 +58,7 @@
 - `internal/burlerengine#reviewReady`
 - `internal/burlerengine#fixScopeRules`
 - `internal/burlerengine#fakeShuttle.scriptFor`
+- `internal/burlerengine#TestProfile_Validate`
 - `internal/burlerengine#TestTemplate_FillsWithAllMarkers`
 - `internal/burlerengine#TestTemplate_OptionalDirectives`
 - `internal/burlerengine/doc.go`
@@ -89,7 +90,7 @@ With zero findings it runs `checkGates` over `opts.Gate`: every entry whose `Att
 When every entry passes, it writes `skippedFixerReport` to `p.FixerReportPath` and returns `OutcomeDone` with `Skipped` set and no session: the report is a normal fixer report with a changes list saying nothing was fixed because the review held no findings and the round's gates passed, and empty `Disputed` and deferred sections.
 When an entry fails, it writes the failing entries' findings, each under its entry name, to a gate-findings file in the fix instruction directory and spawns the fixer with that file as its work.
 The skip lets through only an accepted review with zero findings over a target whose gates pass; the gates still run because a fix gate exhausted in a round leaves its gate-failed edits in the target, and the re-review of that round may find nothing.
-`fixTable` is the role prefix `fixRolePrefix`, `opts.Gate` with every entry wrapped by `repairReportBeforeGate` as the table gate, `opts.Round`, `opts.Timeout`, not interactive, and one chair seat: stencil `burler-template-fixer`, `opts.Fix`'s model choice, input the review file, output the fixer report, `burlerSkills`, never forking.
+`fixTable` is the role prefix `fixRolePrefix`, the review segment color (`segmentcolor.Review`), `opts.Gate` with every entry wrapped by `repairReportBeforeGate` as the table gate, `opts.Round`, `opts.Timeout`, not interactive, and one chair seat: stencil `burler-template-fixer`, `opts.Fix`'s model choice, input the review file, output the fixer report, `burlerSkills`, never forking.
 `concludeFix` maps the seat result as `concludeReview` does for stops, start errors and died or timed-out chairs; a done chair whose gate failed returns its `Gate` with a nil error; a done chair with a passing or absent gate re-checks the review's digest and returns `ErrReviewChanged` on a difference.
 `ProbeFix` and `ResumeFix` mirror the review half over the fixer-report file.
 The fixer is the round's only friction-note writer: `Engine.Fix` resolves `opts.NoteID` to the friction directive as `Engine.Run` does, swallowing a directive error as a warning.
@@ -121,8 +122,9 @@ Its `PATTERN.md` line becomes, under the entry line cap:
 `internal/burlerengine/doc.go` gains a section on the two halves, their role prefixes, the acceptance digest and the empty-review skip.
 
 Tests, over the fake shuttle in `engine_test.go`, whose `scriptFor` also hands the review half's chair role (`burler-review-chair`) the review script:
-`review_test.go` pins the review table's shape (one chair, role `burler-review-chair`, the review gate, the fork flag), an accepted review's digest, verdict and findings, the strict-parse and cluster-audit errors, the died, timed-out and not-started outcomes, a stop failure, and probe and resume.
-`fix_test.go` pins the fix table's shape (one chair, role `burler-fix-chair`, the wrapped gate), a spawn for a review with only a NIT finding, the empty-review skip writing the report with no spawn, a failing gate spawning the fixer with the gate-findings file in its work, a gate closure error spawning nothing, `ErrReviewChanged` before the spawn and after the fixer, a failed fixer gate passing through, probe and resume, and that the fixer's prompt and files hold the review path and the target paths and none of the rubric, fasit, PATTERN directive, focus file or prior rounds.
+`review_test.go` pins the review table's shape (one chair, role `burler-review-chair`, the review segment color, the review gate, the fork flag), an accepted review's digest, verdict and findings, the strict-parse and cluster-audit errors, the died, timed-out and not-started outcomes, a stop failure, and probe and resume.
+`fix_test.go` pins the fix table's shape (one chair, role `burler-fix-chair`, the review segment color, the wrapped gate), a spawn for a review with only a NIT finding, the empty-review skip writing the report with no spawn, a failing gate spawning the fixer with the gate-findings file in its work, a gate closure error spawning nothing, `ErrReviewChanged` before the spawn and after the fixer, a failed fixer gate passing through, probe and resume, and that the fixer's prompt and files hold the review path and the target paths and none of the rubric, fasit, PATTERN directive, focus file or prior rounds.
+`TestProfile_Validate` gains rows driving `validateFix`: an empty fixer-report path, identical review and fixer-report paths, an illegal `FixScope` and a missing target path, each refused, and a profile with no fasit or rubric, accepted.
 The `internal/burlerengine` row of `test-budget.yaml` rises to the package's new count.
 
 **ImpactSummary:** additive within `burlerengine` and the stencil registry; the old round's only behavioral change is that `reviewReady` shares `acceptReview`, and `fixScopeRules` now lists the overlay targets in the old fixer's instruction 3 too.
