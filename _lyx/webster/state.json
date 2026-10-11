@@ -412,7 +412,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "2c86fa9c079c3fb37dac2b5ffe110dd5",
   "masterSessionId": "0fbd85a5-7f16-469f-9570-80370a462352",
   "batches": {
@@ -501,6 +501,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-split-budget/0fbd85a5-7f16-469f-9570-80370a462352/subagents/agent-a1ebcf49a81e52040.jsonl"
       ]
+    },
+    "6": {
+      "slug": "row-name-prose",
+      "cards": [
+        "06-row-name-prose",
+        "07-bouncer-auto-accept",
+        "08-perch-budget-keys",
+        "09-perch-budget-wiring"
+      ],
+      "cardHashes": {
+        "06-row-name-prose": "53d79443c40fc025c18d36b0090b920b94bc0985784598db99343add48226477",
+        "07-bouncer-auto-accept": "20df305c60c97c9d7556f9df4804ae6d2beb6dcd55d13e35fc5ac0199988234b",
+        "08-perch-budget-keys": "92b14359c27b8e272aaa3d250e59f45f61090a2873a2a08ab95974b98ddfbec2",
+        "09-perch-budget-wiring": "5aa7a311cfe92448af1a5e51fafdce693c7f913ead545da5251ce0cdcb85ab02"
+      },
+      "startSha": "66b610f0c20ab46740656dfa45e2b81a5c4a98c4",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T17:55:16Z",
+      "sessionId": "0fbd85a5-7f16-469f-9570-80370a462352",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
