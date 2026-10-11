@@ -1,6 +1,6 @@
 # Batten notices: no attach clause, pair-relative paths, wait is not an error
 
-`batten-notice-trim` · Task · enhancement, batten, orch
+`batten-notice-trim` · Task · enhancement, batten, orch · running · Worktree-Create
 
 ## Seen (operator, 2026-10-11)
 
