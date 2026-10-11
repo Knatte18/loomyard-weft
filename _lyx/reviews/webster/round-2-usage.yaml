@@ -1,0 +1,24 @@
+round: 2
+fan: ""
+review:
+    model: sonnet
+    effort: medium
+    start: 2026-10-11T18:17:53Z
+    end: 2026-10-11T20:18:51.182627509+02:00
+    wall_seconds: 58.182627509
+    tokens_known: true
+    fresh_tokens: 69495
+    cache_read_tokens: 773611
+    forks: 0
+    fork_fresh_tokens: 0
+    fork_cache_read_tokens: 0
+    fork_fresh_share: 0
+fix:
+    model: sonnet
+    effort: medium
+    start: 2026-10-11T18:17:47Z
+    end: 2026-10-11T20:19:41.558191918+02:00
+    wall_seconds: 114.558191918
+    tokens_known: true
+    fresh_tokens: 43856
+    cache_read_tokens: 464995
