@@ -2,8 +2,6 @@
 
 `parent-review-wait` · Task · enhancement, loom, shuttle, orch
 
-Depends on: [`shuttle-hook-first`](design-shuttle-hook-first.md)
-
 # Part 1: keep the waiting writer's cache warm
 
 ## Seen (2026-10-11)
