@@ -1,6 +1,6 @@
 # Plan gaps: inserting a card, unreachable prescribed refusals
 
-`plan-gaps` · Task · enhancement, loom, burler, stencil · running · Webster-Bouncer
+`plan-gaps` · Task · enhancement, loom, burler, stencil · running · Webster-Burler
 
 Two gaps in how plans are written and reviewed, merged into one task (operator, 2026-10-11).
 
