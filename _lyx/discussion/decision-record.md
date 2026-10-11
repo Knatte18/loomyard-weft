@@ -12,7 +12,7 @@ In:
 - The driver stencil's arbiter branch (D6).
 - Batten's notice hold (D10).
 - `lyx loom decision add --by arbiter` (D12).
-- The orch role stencil's escalation and stop sections (D14).
+- The orch role stencil's escalation and stop sections (D13).
 - Runs no batten watches get the arbiter too, since the driver stencil is the same; only the batten notice hold does not apply to them.
 - Docs per CLAUDE.md: `doc.go` of each touched package, the `loom.yaml` template comments, `contracts/specs/refusal-spec.md` rows for the verb's refusals, and `docs/overview.md` if its module or execution-stack table changes.
 
@@ -20,7 +20,7 @@ Out:
 
 - Parent review and PR-Gate: they stay with the orch, since they exist to bring in its context.
 - A `paused` stop, an `awaiting` stop other than a Bouncer escalation (PR-Gate among them), a `busy` or `ownership` error, an `unseeded` error, a no-kind refusal, an `interrupted` stop under `interrupt_policy: handback`, and a `done` stop: none spawns the arbiter.
-- A `blocked` stop at Publish whose verify-failure record names a target, in a batten-watched run: batten's own one-shot Publish retry owns it, and a second failure keeps today's notice to the parent, since the verb cannot tell the first failure from the second.
+- A `blocked` stop at Publish whose verify-failure record names a target, in any run: in a batten-watched run batten's own one-shot Publish retry owns it, and a second failure keeps today's notice to the parent, since the verb cannot tell the first failure from the second; an unwatched run cannot be told from a watched one whose marker is missing (D2), so it keeps today's escalation too.
 - Webster's own recovery strand, and the Bouncer's auto-accept: unchanged.
 - The Go driver (`lyx loom run`): it never invokes the verb.
 
@@ -31,8 +31,10 @@ Out:
 Decision: a new verb, `lyx loom arbiter` (exact name the Plan's), run by the driver as a background job from its own cwd with the run id and the stop envelope's path, spawns the arbiter as a shuttle run in the task pair's reed session, waits for its verdict file, and prints one envelope carrying the verdict.
 Its cobra `audience` keeps it out of the orch's command index, since only the driver runs it.
 The driver stencil stays recipe-blind: the command reaches it through a new marker filled by `internal/loomcli`'s driver prompt, the same way `park_command` does.
-An attempt is keyed to the stop it arbitrates: the run's `current_producer`, `history_length` and `state`.
-A re-run of the verb for the same stop waits on a live arbiter of that attempt, or returns a finished attempt's verdict, and spawns nothing.
+An attempt is keyed to the stop it arbitrates by the stop key: the run's `current_producer`, `history_length` and `state`.
+The verb also records the run's `pause_before` and `pause_after` in the attempt at spawn, for D6's state check.
+An attempt's `resume` verdict is applied when the driver's re-launch consumes it (D6), which writes an applied mark into the attempt directory before it performs the verdict's goto or steps the run.
+A re-run of the verb for the same stop key spawns nothing: it waits on a live arbiter of that attempt, returns a finished attempt's verdict while that verdict is unapplied, and refuses with a hand-on once an applied `resume` attempt holds that key (D7).
 Rationale: the board entry names the driver as the spawner; a Go verb keeps eligibility, budget and the spawn deterministic and testable, and keeps the driver's context small as the loop verb does.
 
 ### D2 — Which stops are eligible
@@ -40,12 +42,15 @@ Rationale: the board entry names the driver as the spawner; a Go verb keeps elig
 Decision: eligible, a closed list:
 
 - `awaiting` at a Bouncer row whose current round carries a Bouncer-written escalation with no circling decision recorded (a spent budget or CIRCLING that the perch's auto-accept did not settle);
-- `blocked`, except the batten-owned Publish halt Scope excludes;
+- `blocked`, except the Publish halt Scope excludes;
 - a `producer`, `bootstrap` or `interrupted` (under `interrupt_policy: reinvoke`) error stop whose repair fork named escalation as its action, and a transient error that failed twice.
 
-Go checks what the status file and envelope carry: the state, the row, the escalation and decision files, `kind`, `transient` and `interrupt_policy`; any stop outside the list is refused with a way forward naming today's hand-back.
+Go checks what the status file and envelope carry: the state, the row, the escalation and decision files, the Publish row's verify-failure record, `kind`, `transient` and `interrupt_policy`; any stop outside the list is refused with a way forward naming today's hand-back.
 Whether the repair fork escalated is not in either file, so that half is a stencil-only bound: the driver stencil runs the verb only after a fork's escalation.
-A batten-watched run is recognised by the pair's watched marker; a stale marker only refuses the arbiter at the Publish halt, which falls back to today's escalation.
+Bound: a driver that runs the verb at a `producer`, `bootstrap` or reinvoke `interrupted` error without a fork escalation skips the fork's diagnosis and the repair cap, and an arbiter `resume` then re-launches the run over them, first moving it back when the verdict names a goto target (D6); this is bounded by the spawn budget (D7), by the applied-attempt refusal that hands on a stop recurring after a `resume` (D1, D7), and by the arbiter having no repair verbs (D3), so the most it adds is one re-launch per budget slot.
+A verdict's goto changes the stop key, so a stop recurring after it escapes the applied-attempt refusal, and the budget alone bounds it.
+The Publish halt whose verify-failure record names a target is refused in every run, watched or not: an absent batten-watched marker is what both an unwatched run and a batten whose `MarkWatched` failed leave, so the verb cannot read a run as positively unwatched, and admitting it on an absent marker would race batten's own goto and resume at that halt.
+The verb therefore never reads the watched marker.
 Rationale: these are the stops whose way forward the driver cannot take and that wake the parent today.
 Eligibility keys on the escalation, never on `parent_notice` alone, so a future parent-review escalation (`parent-review-wait`) cannot reach the arbiter.
 An `interrupted` stop under `handback` stays out because a live agent may still run.
@@ -55,14 +60,14 @@ An `interrupted` stop under `handback` stays out because a live agent may still 
 Decision: the arbiter reads anything read-only and may run exactly these mutating verbs in the task worktree:
 
 - `lyx loom circling accept <slug>` or `lyx loom circling continue <slug>`, at a Bouncer escalation;
-- `lyx loom decision add <slug> --by arbiter …`, to record a design call;
-- `lyx loom goto --to <producer>`, which already refuses a forward goto, a running run and a held run lock.
+- `lyx loom decision add <slug> --by arbiter …`, to record a design call.
 
-It has none of the repair fork's repair verbs: at an error stop it may only judge that a plain re-launch is safe, move the run back, or hand on.
+It never runs `lyx loom goto`: a `resume` verdict may instead name an earlier row as its goto target, which the driver's re-launch performs after its state check (D6).
+It has none of the repair fork's repair verbs: at an error stop it may only judge that a plain re-launch is safe, name a goto target, or hand on.
 A refusal from one of its verbs makes it hand on, quoting the refusal.
-It then writes its verdict, `resume` or `hand-on`, with a reason, the verbs it ran, and for `hand-on` the question it hands on.
-It never resumes the run, never runs `lyx loom approve`, `reject` or `review`, never edits a file other than its verdict, never runs a mutating git command, and never messages any session.
-Bound: the arbiter can end a review segment unconverged, grant one more round, append a dated, labelled decision-record entry, or move a halted run back to an earlier row; each is a record the orch and operator can already make, each is committed, and the run moves only when the driver re-launches the loop.
+It then writes its verdict, `resume` or `hand-on`, with a reason, the verbs it ran, for `resume` the goto target when it names one, and for `hand-on` the question it hands on.
+It never resumes or moves the run, never runs `lyx loom approve`, `reject` or `review`, never edits a file other than its verdict, never runs a mutating git command, and never messages any session.
+Bound: the arbiter can end a review segment unconverged, grant one more round, append a dated, labelled decision-record entry, or name an earlier row for the re-launch to move a halted run back to; each is a record the orch and operator can already make, each is committed, and the run moves only when the driver re-launches the loop, which refuses a forward target as `lyx loom goto` does.
 `circling`'s doc comment, which bounds the unchecked verbs partly by which stencils name them, gains the arbiter stencil beside the Bouncer escalation brief, bounded by D2's Bouncer-escalation eligibility and the verbs' own preconditions.
 Rationale: the board entry leaves the split open; recording-only verbs plus a driver-applied re-launch keep the driver the sole loop owner, so no second process resumes a run concurrently.
 
@@ -84,18 +89,24 @@ Rationale: the board entry's input list; a cold start is what makes a stronger m
 Decision: Go validates the verdict before the verb returns it, and reads it as `hand-on` when it is missing or unparseable, or when a `resume` lacks its precondition:
 
 - at a Bouncer escalation, a circling decision recorded for the round;
-- at a `blocked` stop, a goto recorded since the stop.
+- at a `blocked` stop, the verdict names a goto target the re-launch admits.
 
-An error-stop `resume` needs no recorded verb.
+An error-stop `resume` needs no recorded verb, and may name a goto target.
 The driver then acts:
 
-- `resume`: the driver re-launches the loop at once, and the run must move: over an `awaiting` or `paused` state the arbiter's records left, the re-launch performs the same un-pause `lyx loom resume` does when a bare re-launch would not step it.
+- `resume`: the driver re-launches the loop at once, naming the attempt (flag name the Plan's), and the run must move.
+  The re-launch, in Go and under the run's status lock, consumes the attempt: it refuses an attempt whose verdict is not `resume` or is already applied, then checks that the run is in the state the arbiter left, writes the applied mark (D1), performs the verdict's goto when it names a target, and steps the run.
+  The run is in the state the arbiter left when its stop key is the attempt's, `pause_requested` is unset, and `pause_before` and `pause_after` hold the values the verb recorded in the attempt at spawn.
+  The check runs before the goto, so no goto has yet cleared a pause set during the arbiter.
+  The re-launch's goto is `lyx loom goto`'s backward move, except that it keeps `pause_before` and `pause_after` as they stand, so it removes no pause condition either.
+  Any other state, an orch or operator `goto` or `pause` (plain, `--before` or `--after`) among them, is refused before the goto, and the driver takes the `hand-on` path below with the verdict path; neither the goto nor the step happens, so a `resume` verdict never un-pauses a stop a human set.
+  A re-launch steps an `awaiting` or `paused` run as it stands, since a step short-circuits only a `done` run and re-calls `current_producer`.
   This is a new entry in the stencil's closed re-launch list.
   It reverses, for this one case, the stencil's rule that a `blocked` stop is never repaired, and it is allowed over a spent repair cap; both are bounded by the spawn budget and by D7's same-stop rule.
 - `hand-on`, a refusal for a spent budget, a timeout, or any verb failure: the driver writes its stop report with the arbiter's reason, question and verdict path, parks, and notifies its parent exactly as today, the parent notice relayed verbatim at an awaiting stop.
 
-The stencil's sentence that `goto` is an operator and orchestrator verb the driver never runs stays true for the driver, and names the arbiter as the one other party that may run it.
-On a wake that finds itself unparked with no loop job and an arbiter attempt for the current stop on disk, the driver re-runs the verb, which returns that attempt's verdict (D1).
+The stencil's sentence that `goto` is an operator and orchestrator verb the driver never runs stays true, and names the re-launch's goto of a consumed `resume` attempt as the one move the driver's loop makes on an arbiter's verdict.
+On a wake that finds itself unparked with no loop job and an unapplied arbiter attempt for the current stop key on disk, the driver re-runs the verb, which returns that attempt's verdict (D1).
 Rationale: the escalation path the parent already handles stays the one fallback, so the arbiter can only remove wakes, never lose a stop.
 
 ### D7 — Operator decision: a spawn budget in config, then the parent
@@ -103,12 +114,16 @@ Rationale: the escalation path the parent already handles stays the one fallback
 Decision (operator, via `ly:orch`, 2026-10-11): the number of times one run may spawn the arbiter is a budget set in config, and once it is spent the driver escalates to its parent as the final step.
 The key is `loom.yaml` `arbiter_max_spawns`, default `3` in the template; `0`, which a file lacking the key also reads, turns the arbiter off so every eligible stop escalates as today; a negative value is refused naming the key.
 The count is the number of arbiter attempt records under the run's durable run directory, written when the verb spawns, so a driver or batten restart never resets it.
-A stop that reaches the verb again unchanged after an arbiter `resume` (same row and history length) is refused and handed on, so one recurring stop spends one slot.
+A stop that reaches the verb again with the stop key (D1) of an applied `resume` attempt is refused and handed on, so one recurring stop spends one slot and earns one re-launch.
+This is the case at an error stop, where a producer error that recurs after the re-launch appends no history and leaves the stop key unchanged; the applied mark is what tells it from an unapplied verdict.
+An applied attempt whose stop key is unchanged is handed on whether the stop recurred or the re-launch never stepped, as after a busy refusal of the re-launched loop or a driver that died after writing the mark.
+The refusal's reason states this as "an applied resume left the stop key unchanged" and never claims recurrence.
+This costs the parent one wake and never a second re-launch.
 Rationale: the operator set the shape; three lets a run settle a stop at each review perch while bounding a run that keeps getting stuck.
 
 ### D8 — Model and timeout keys
 
-Decision: `loom.yaml` gains `arbiter` (model-spec, default `opus[high]`, where empty also takes `opus[high]`) and `arbiter_timeout_min` (default `30`, where `0` also takes `30`, floor `1` otherwise).
+Decision: `loom.yaml` gains `arbiter` (model-spec, default `opus[high]`, where empty also takes `opus[high]`) and `arbiter_timeout_min` (default `30`, where `0` also takes `30`; a negative value is refused naming the key, as D7 refuses a negative budget).
 A timed-out arbiter is stopped through shuttle's stop verb and reads as `hand-on` with the cause `timeout`; it has spent its budget slot.
 Rationale: the driver runs `haiku[medium]`; the board entry asks for a stronger model such as `opus[high]`.
 A present `loom.yaml` lacking a key reads its Go zero value (`config-layers-run-settings`), so each zero is given a safe meaning.
@@ -147,6 +162,12 @@ Decision: the orch role stencil's escalation and stop sections say that an escal
 Rationale: the parent acts on the arbiter's question rather than repeating its work.
 `orch-split` may move these sections to a run driver; the arbiter names only "the driver's parent", so it is indifferent to which agent holds that role.
 
+### Added after Discussion (parent, 2026-10-11): The re-launch performs the goto, never the arbiter
+
+Decision: Remove lyx loom goto from the arbiter's mutating verbs (D3); a resume verdict may name a goto target instead. The Go re-launch (D6) performs that goto itself under the status lock as part of consuming the attempt, and refuses it, taking the hand-on path, when pause_requested is set or pause_before/pause_after differs from the value recorded in the attempt at spawn. D6's blocked-stop precondition becomes 'the verdict names a goto target the re-launch admits'. Restate D2's and D3's bounds for the moved goto. Add an acceptance criterion: an orch pause (plain, --before or --after) during a live arbiter whose verdict moves the run back is handed on, and neither the goto nor the re-launch happens. Reword the Open risks bullet to match.
+
+Rationale: shedengine Goto clears PauseRequested, PauseBefore and PauseAfter, so an arbiter goto erases a human pause before D6's check can see it; the check must run before anything clears the fields (round-2 F1).
+
 ## Constraints
 
 - PATTERN-stencil-ownership: the arbiter stencil is read at call time through `internal/stencilstore`.
@@ -169,27 +190,30 @@ Rationale: the parent acts on the arbiter's question rather than repeating its w
 
 ## Auto-mode assumptions
 
-Auto-picks, each with its rationale in its decision: the verb shape (D1), the eligible set (D2), recording-only arbiter powers (D3), key names and defaults (D7, D8), the batten hold (D10), the no-parent directive (D11), unwatched-run coverage and the second-Publish-failure boundary (Scope).
+Auto-picks, each with its rationale in its decision: the verb shape (D1), the eligible set (D2), recording-only arbiter powers with the goto moved into the re-launch (D3, D6), key names and defaults (D7, D8), the batten hold (D10), the no-parent directive (D11), unwatched-run coverage, the second-Publish-failure boundary and the Publish halt's exclusion in every run (Scope, D2), and the re-launch consuming the attempt (D6).
 
 ## Open risks
 
 - The arbiter is on a stronger model than the driver but still an LLM: a wrong `circling accept` lets an unconverged segment pass; its verdict and the record entries it wrote are committed, so a reader can see who decided.
-- An orch or operator action on the run while the arbiter runs (a goto, a pause) is not blocked; the driver's re-launch then steps whatever state the run is in.
+- An orch or operator `goto` or `pause` on the run while the arbiter runs is not blocked, but it is not overridden either: the re-launch checks the run against the attempt's stop key and recorded pause conditions before it performs the verdict's goto or steps the run (D6), and otherwise hands on, so such an action costs the arbiter's settlement of that stop.
 - A driver that dies mid-arbiter and is never revived leaves the verdict unapplied until batten's hold expires and the parent is notified.
 
 ## Acceptance criteria
 
-- Each eligible stop kind of D2 spawns one arbiter, and each excluded stop kind, the batten-owned Publish halt and an awaiting stop with a `parent_notice` but no Bouncer escalation included, is refused with a way forward and spawns nothing.
-- A re-run of the verb for the same stop spawns nothing and returns the live or finished attempt's verdict.
+- Each eligible stop kind of D2 spawns one arbiter, and each excluded stop kind, the target-naming Publish halt in a watched and an unwatched run and an awaiting stop with a `parent_notice` but no Bouncer escalation included, is refused with a way forward and spawns nothing.
+- A re-run of the verb for the same stop key spawns nothing and returns the live or finished unapplied attempt's verdict.
 - With `arbiter_max_spawns` spent, set to `0` or absent from the file, the verb refuses, spawns nothing, and the driver escalates to its parent as today; a negative value is refused naming the key.
-- An absent `arbiter` or `arbiter_timeout_min` resolves to `opus[high]` and 30 minutes.
+- An absent `arbiter` or `arbiter_timeout_min` resolves to `opus[high]` and 30 minutes; a negative `arbiter_timeout_min` is refused naming the key.
 - A stop that recurs unchanged after an arbiter `resume` is handed on without a second spawn.
+- A producer error recurring at the same row after an applied arbiter `resume` is handed on without a second spawn and without a second re-launch.
 - The spawn count survives a driver restart and a batten restart.
 - A valid `resume` verdict leads to a re-launch that moves the run, over an `awaiting`, `paused` or `blocked` state alike; `hand-on`, a missing or unparseable verdict, a `resume` missing its precondition, and a timeout each lead to the park-and-escalate path with the arbiter's reason in the stop report.
 - A timed-out arbiter is stopped through shuttle's stop verb.
-- A driver that wakes unparked with an arbiter attempt on disk for the current stop applies that attempt's verdict without a second spawn.
-- An orch goto during a live arbiter, followed by a `resume` verdict, re-launches over the moved state and spawns no second arbiter.
-- Batten sends no state-changed notice while a live arbiter marker is within its deadline, sends it once past the deadline or after a hand-on, and sends none when a `resume` moved the child on; its strand revive never revives an arbiter strand.
+- A driver that wakes unparked with an unapplied arbiter attempt on disk for the current stop key applies that attempt's verdict without a second spawn.
+- An orch `goto` or an orch `pause` during a live arbiter, followed by a `resume` verdict, is handed on with the verdict path, not un-paused or re-launched, and spawns no second arbiter.
+- An orch `pause`, plain, `--before` or `--after`, during a live arbiter whose `resume` verdict names a goto target is handed on with the verdict path, and neither the goto nor the re-launch happens.
+- An applied `resume` whose re-launch never stepped, such as after a busy refusal, is handed on with the reason that the stop key is unchanged, without a second re-launch.
+- Batten sends no state-changed notice while a live arbiter marker is within its deadline, sends it once past the deadline or after a hand-on, and sends none when a `resume` moved the child on; a marker whose arbiter shuttle run is dead, and a missing marker, hold nothing, and the notice goes as today; its strand revive never revives an arbiter strand.
 - `lyx loom decision add --by arbiter` passes from the run's arbiter strand and is refused from any other caller; `--by parent` and `--by operator` behave as before.
 - The arbiter stencil renders the edit directive and the no-parent directive, names only D3's mutating verbs, and the stencil tests over directives and role skills pass for the new role.
 - The driver stencil stays recipe-blind and every marker is filled for loom and darn runs.
@@ -197,5 +221,5 @@ Auto-picks, each with its rationale in its decision: the verb shape (D1), the el
 ## Notes for the plan writer
 
 - Precedents: `lyx webster recover-batch` spawns a cold strand through shuttle and reed (`internal/websterengine/recoverbatch.go`); `--until-stop`'s live-loop wait shows the "second invocation waits" shape; batten's `stateChangeReady` in `internal/battenshed/notice.go` is where the hold goes.
-- `internal/loomcli/resume.go` notes that a step over an awaiting Bouncer row with a pending circling decision re-calls the Bouncer; check whether a bare re-launch also steps a run a `goto` left `paused`.
+- `internal/loomcli/resume.go` notes that a step over an awaiting Bouncer row with a pending circling decision re-calls the Bouncer.
 - `parent-review-wait` (running) and `orch-split` (note) also edit `contracts/stencils/orch/orch-template-role.md`.

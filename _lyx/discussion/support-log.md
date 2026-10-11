@@ -64,7 +64,13 @@
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1 (BLOCKING): at an error stop D1's attempt key and D7's same-stop rule matched the same case, since a recurring producer error appends no history. Fixed: one stop key named in D1, an applied mark written when the re-launch consumes a `resume` attempt, and D7 refusing an applied attempt's key.
+  D6's un-pause could override a human's `goto` or `pause`. Fixed: the re-launch applies a `resume` only over the state the arbiter's records account for, otherwise hands on; the orch-goto criterion now hands on instead of re-launching.
+  A missing watched marker admitted the arbiter at the batten-owned Publish halt. Fixed: the target-naming Publish halt is refused in every run, since an absent marker cannot be read as unwatched.
+  Also fixed: D2's stencil-only bound states its consequence, the Scope cross-reference, a negative `arbiter_timeout_min` is refused, and the batten hold's release paths are in the criteria.
+- Round 2 (BLOCKING): the arbiter's own goto cleared a human pause set during the arbiter before D6's state check could see it. Fixed: the arbiter no longer runs `goto`; a `resume` verdict names a goto target, which the re-launch performs under the status lock only after checking the stop key and the pause conditions recorded at spawn.
+  D6's un-pause clause rested on a false premise, since `lyx loom resume` writes no status and a step re-calls `current_producer` from `paused` and `awaiting`. Fixed: the clause is gone and the ledger question is resolved by the code.
+  Also fixed: D7 hands on an applied attempt with an unchanged stop key without claiming recurrence, and D2's list of Go inputs names the verify-failure record.
 
 ## Question ledger
 
@@ -72,5 +78,5 @@ _No rounds yet._
 - What the arbiter may do itself versus recommend (board Open)? Resolved, auto-pick: three recording verbs, never resume (D3).
 - Its stencil and model key (board Open)? Resolved, auto-pick: role `arbiter`, key `arbiter` at `opus[high]` (D8, D11).
 - A bound on spawns per run (board Open)? Resolved, operator decision via `ly:orch`: a config budget, then escalation to the parent (D7); key name and default an auto-pick.
-- Does a goto-paused run step on a bare loop re-launch? Resolved in behaviour by D6 (the run must move, with the `loom resume` un-pause when needed); the mechanism is for the Plan to check.
+- Does a goto-paused run step on a bare loop re-launch? Resolved by the code: a step short-circuits only a `done` run and re-calls `current_producer` from `paused` and `awaiting` alike, and `lyx loom resume` writes no status (D6).
 - Zero values of the new keys in pre-existing pairs? Resolved, auto-pick: each zero has a safe meaning (D7, D8).
