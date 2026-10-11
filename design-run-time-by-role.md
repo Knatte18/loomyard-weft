@@ -1,6 +1,6 @@
 # Tokencount reports wall-clock time per role
 
-`run-time-by-role` · Task · feature, shed, loom · running · Publish
+`run-time-by-role` · Task · feature, shed, loom · running · PR-Gate
 
 ## Seen (operator, 2026-10-11)
 
