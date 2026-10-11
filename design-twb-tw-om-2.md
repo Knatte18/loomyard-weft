@@ -1,6 +1,6 @@
 # Webster stability: gate shells, Master self-fix, recovery, Create checks
 
-`twb-tw-om-2` · Note · bug, webster, shuttle, stencil, quarry · paused · Discussion-Bouncer
+`twb-tw-om-2` · Note · bug, webster, shuttle, stencil, quarry
 
 ## Bench base
 
