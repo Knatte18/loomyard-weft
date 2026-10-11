@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Webster-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Batchifier → done",
+    "now": "Webster-Bouncer",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -122,6 +122,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-11T17:20:46Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/burler-split-budget/_lyx/webster/summary.md",
+      "at": "2026-10-11T18:20:09Z"
     }
   ],
   "product": {
