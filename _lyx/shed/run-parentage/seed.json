@@ -1,8 +1,0 @@
-{
-  "recipe": "batten",
-  "driver": "go",
-  "params": {
-    "child_driver": "llm"
-  },
-  "parent": "ly:orch"
-}
