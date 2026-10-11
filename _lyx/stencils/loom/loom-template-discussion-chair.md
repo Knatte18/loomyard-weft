@@ -2,7 +2,7 @@
      internal/seatengine is its only filler, through stencil.FillWith, from the chair's value map.
      It declares no marker of its own; every marker reaches it through the two blocks it includes, each rendered whole from that same map:
      loom-template-discussion, the single writer's prompt, and seat-directive-chair.
-lyx-stencil: sha256=699077bbf9c91f0ede3778d716371624b41323dfa777fbce48ba3901e6b66ecb build=abe2aa50eb0b9ca8fcce7eacfcb6948d41060a33 time=2026-10-10T11:39:56Z -->
+lyx-stencil: sha256=e8c8bb79129fafb6fb066b87ce6469621482fb98b9026510020fd6bd6f97d3ee build=6df79b99d82d826539da6f216be524d984b39aea time=2026-10-11T08:24:01Z -->
 
 {{template "loom-template-discussion"}}
 {{template "seat-directive-chair"}}
@@ -15,8 +15,10 @@ Every step, check and fence above still binds you alone.
 
 - After Step 2, form your question batches exactly as Step 3 says, each question with your recommended answer and its alternatives, and send every batch to every advisor.
   No advisor owns an area, since each may find a different weakness.
+- Ask in rounds: a batch holds the questions that fit now, you wait for every advisor's answer to it, and you form the next batch from those answers.
+  Never send every question at once.
 - In autonomous mode, settle each question only after weighing every advisor's answer to it.
-  An advisor that never started, sent a failure notice or was written off counts as giving no answer, and a pick made with no usable answer stays an auto-pick.
+  An advisor that did not start, sent a failure notice or was written off counts as giving no answer, and a pick made with no usable answer stays an auto-pick.
 - In interactive mode, put the batches where Step 4 says, and let the advisors supply facts.
   The operator's turns reach you alone.
 - Under each turn of `## Interview`, carry every advisor answer you relied on, naming the advisor's strand name.
