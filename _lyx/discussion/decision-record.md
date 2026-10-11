@@ -160,6 +160,12 @@ Rationale: the follow-up audit compares forks with and without the pack; this li
   - d7-plan-handle-locate-instruction (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - card8-parse-degrade-row-refused-upstream (class design, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - The plan template and the plan-review rubric state the test-member rule of D1, including the `plan:` handle for a new test function and `Create:` for a new test file.
