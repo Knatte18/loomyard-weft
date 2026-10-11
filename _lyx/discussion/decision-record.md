@@ -40,18 +40,21 @@ A glyph also puts the test member into the kick-start pack (D4), which a plain p
 
 ### D2 — One trace line per `plan:` handle per terminal pass
 
-Decision: every terminal pass (`postBatchChecks`) that gets past its done-check and delta calls without an error logs, through `internal/logger` at Info, exactly one line per `plan:` handle owned by the batch's cards (Create declarations and handle-shaped Rename new sides, as `BindHandles` counts them).
+Decision: every terminal pass (`postBatchChecks`) logs, through `internal/logger` at Info, exactly one line per `plan:` handle owned by the batch's cards: a card's Create declarations' handles and its handle-shaped Rename new sides.
+That ownership rule moves out of `internal/planglyph` into one exported `internal/planparser` function, which `BindHandles` and `internal/websterengine` both call, so the passes that never reach `BindHandles` (`card-not-done`, `batch-not-done`, `language-none`) list the same handles it binds.
+The pass's not-done refusal is no exception: it logs the lines and then refuses as today.
 Each line carries the batch number, the card number, the handle, the outcome `bound` or `failed`, and for `bound` the glyph it bound to, for `failed` one reason from a closed set:
 
 - `card-not-done` — the done-checks failed this card, so the batch's binding was never attempted;
 - `batch-not-done` — the done-checks failed another card of the batch, which stops binding for the whole batch;
 - `no-delta-match` — no created or renamed symbol in the batch delta has the handle's expected glyph;
 - `sibling-unmatched` — the handle matched, but another handle of the same card did not, so the card's whole set stays unbound;
-- `delta-unavailable` — the batch delta call failed with `planindex.ErrQuarryUnavailable`; this reason replaces the outcome `BindHandles` computes over the empty delta, so no handle gets a second line.
+- `delta-unavailable` — the batch delta call failed with `planindex.ErrQuarryUnavailable`; this reason replaces the outcome `BindHandles` computes over the empty delta, so no handle gets a second line;
+- `language-none` — the plan has `language: none`, under which `BindHandles` binds nothing; this reason replaces `no-delta-match`, `sibling-unmatched` and `delta-unavailable`, and never `card-not-done` or `batch-not-done`.
 
 `internal/websterengine` writes every line, so each carries the batch number.
 `BindHandles` returns its per-handle outcome (bound glyph, `no-delta-match` or `sibling-unmatched`) beside its findings, through a type `planindex` declares, rather than logging it.
-A pass that ends in an error (a `DoneChecks` error, a `Delta` error other than `ErrQuarryUnavailable`, a `BindHandles` error) logs no bind lines: the verb itself fails with that error.
+The only passes that log no bind lines are those that error before or in the `DoneChecks` call (the `Index` lookup included), whose `Delta` call errors with anything other than `ErrQuarryUnavailable`, or whose `BindHandles` call errors: the verb itself fails with that error.
 The log adds no finding, no refusal and no state.
 
 Rationale: the audit could not count binds because nothing recorded them; one line per handle with a closed reason set is countable by grep.
@@ -74,7 +77,8 @@ Decision: the pack is built from the batch's cards, in card order: every ref und
 Only member glyphs are resolved.
 Self glyphs and plain paths are left out: the card already names their file.
 Each resolved entry carries the glyph, quarry's `file`, `start`-`end` lines and `signature` verbatim; a multipart answer lists each declaration.
-Every `plan:`-shaped ref on the batch's cards, under any label, and every member glyph that does not resolve (`not_found`, `ambiguous`, a grammar rejection) is listed under an unresolved heading with its quarry status or reason, never as an error.
+Every member glyph that does not resolve (`not_found`, `ambiguous`, a grammar rejection) is listed under an unresolved heading with its quarry status or reason, never as an error.
+Every `plan:`-shaped ref on the batch's cards, under any label, is listed there too, with the fixed reason that it names a member a card creates and does not resolve yet.
 The pack is built from the plan as it stands on disk after D5's re-resolution, so its handle spellings match the card files the fork reads.
 
 Rationale: the card's target and `Uses:` glyphs are exactly what the fork has to read; listing unresolved refs tells the fork which ones it must find another way without blocking the batch.
@@ -100,12 +104,13 @@ Rationale: the operator ruled the pack out of Merriam's context, which would gro
 
 Decision: the two locate sentences in step 2 of `webster-body-implementer.md` ("Locate them with one `lyx quarry resolve` call…" and the `plan:` handle sentence) move into a stencil fragment rendered through a required marker.
 `RenderForkPrompt` fills it with the quarry fragment (today's text verbatim) when the switch is off, and with the pack fragment when on; `RenderRecoveryPrompt` always fills the quarry fragment.
-The pack fragment tells the fork: the pack below lists, for each card glyph, where it is; open each listed file and read the listed span before editing; do not call `lyx quarry resolve` and do not grep for a listed member; spans are as of the batch's start, so in a file the fork already edited in this batch it finds the member by its listed signature; an unresolved entry is located by reading the card's named files.
+The pack fragment tells the fork: the pack below lists, for each member glyph on the cards, where it is; open each listed file and read the listed span before editing; do not call `lyx quarry resolve` and do not grep for a resolved entry; spans are as of the batch's start, so in a file the fork already edited in this batch it finds the member by its listed signature; a `plan:` entry names a member a card creates and does not resolve yet, so there is nothing to locate; an unresolved member glyph is located with `lyx quarry resolve` or a grep, since a member glyph names a package, not a file.
+The ban therefore bounds only resolved entries, and an unresolved member glyph, up to a whole batch's under D5's degraded pack, keeps today's locate path.
 The pack section itself is a third stencil holding the fixed heading and lead-in, plus a Go-rendered entry list, filled into an optional marker that renders as nothing when off and in the recovery prompt.
 Each new stencil is registered as an embedded seed default in `contracts/stencils`, like every other webster stencil.
 The `contracts/stencils/claims_test.go` row that pins the quarry locate wording follows the text to its new stencil, and the pack fragment gets its own row.
 
-Rationale: an unchanged quarry instruction beside the pack would contradict it; the operator ruled the fork does not call quarry itself, and that it still reads the code the spans point to.
+Rationale: an unchanged quarry instruction beside the pack would contradict it; the operator ruled the fork does not call quarry itself for what the pack already resolved, and that it still reads the code the spans point to.
 
 ### D8 — Batch with no member glyphs
 
@@ -126,7 +131,7 @@ Rationale: the follow-up audit compares forks with and without the pack; this li
 - `PATTERN-stencil-ownership`: every new prompt text is a stencil read through `stencilstore`; Go renders only the entry list.
 - `PATTERN-producer-pointer-rule`: the pack fragment points at `loom-plan-spec.md` for card grammar and does not restate it.
 - `PATTERN-told-geometry`: `BeginBatch` reads the worktree root from its told `Geometry`; no new path derivation.
-- `PATTERN-leaf-packages` and the `planindex` doc: the new `Index` method's types stay expressible with the standard library and `planparser`, so `planindex` keeps its import set.
+- The `planindex` package doc: the new `Index` method's types stay expressible with the standard library and `planparser`, so `planindex` keeps its import set.
 - `PATTERN-config-strictness`: `webster.yaml` stays on `LoadOrTemplate`.
 - `PATTERN-test-speed` and `PATTERN-test-economy`: new coverage is untagged unit tests on the public surfaces (`BeginBatch` with a fake `Index`, `RenderForkPrompt`, `LoadConfig`, `planglyph` against its existing fixtures), extending existing tables where they fit.
 - `PATTERN-comment-line-breaks` and semantic line breaks in every edited `.md`.
@@ -148,13 +153,20 @@ Rationale: the follow-up audit compares forks with and without the pack; this li
 - Defaulting on changes every Webster run's fork prompt at once; a regression in fork behaviour shows up only in the follow-up audit or as failed batches.
 - The with/without audit has no board entry once this task closes, while `kick-start-pack` and `enclose-kickstart` wait on its result; the landing report should name it so the orch files a note for it.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - d2-owned-handles-source-unstated (class design, severity MEDIUM, open in rounds 2)
+  - d7-plan-handle-locate-instruction (class design, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - The plan template and the plan-review rubric state the test-member rule of D1, including the `plan:` handle for a new test function and `Create:` for a new test file.
-- A terminal pass logs one line per owned `plan:` handle with outcome and reason; covered scenarios: all handles bound; a card whose only handle is unmatched logs `no-delta-match`; one handle unmatched so its matched sibling logs `sibling-unmatched`; a batch mixing a done and a not-done card logs `card-not-done` for the failing card's handles and `batch-not-done` for the other's; an `ErrQuarryUnavailable` delta logs `delta-unavailable` once per handle and nothing else; a card with no handles logs nothing; the recover-batch path logs the same lines.
+- A terminal pass logs one line per owned `plan:` handle with outcome and reason; covered scenarios: all handles bound; a card whose only handle is unmatched logs `no-delta-match`; one handle unmatched so its matched sibling logs `sibling-unmatched`; a batch mixing a done and a not-done card logs `card-not-done` for the failing card's handles and `batch-not-done` for the other's; an `ErrQuarryUnavailable` delta logs `delta-unavailable` once per handle and nothing else; a `language: none` plan logs `language-none` per handle; a card with no handles logs nothing; a pass that ends in an `Index` lookup, `DoneChecks`, non-`ErrQuarryUnavailable` `Delta` or `BindHandles` error logs no bind lines; the recover-batch path logs the same lines.
 - With `kickstart_pack: false`, `RenderForkPrompt` output is byte-identical to the pre-change render for the same inputs.
 - With the switch on, the fork prompt carries the pack fragment in step 2 and a pack section listing each member glyph with file, span and signature, deduplicated in card order.
-- The pack fragment tells the fork to open and read each listed span, pinned by its `claims_test.go` row.
+- The pack fragment tells the fork to open and read each listed span, that a `plan:` entry has nothing to locate, and to locate an unresolved member glyph with `lyx quarry resolve` or a grep, pinned by its `claims_test.go` row.
 - An unresolved member glyph, a `plan:` handle and a whole-call resolve error each appear under the unresolved heading, and `begin-batch` still succeeds.
 - A batch with no member glyphs renders the D8 line.
 - A `language: none` plan renders as with the switch off.
@@ -167,6 +179,5 @@ Rationale: the follow-up audit compares forks with and without the pack; this li
 
 - `internal/websterengine/beginbatch.go`'s `BeginBatch` already holds the `Index` (via `Geometry.index`) and calls `RenderForkPrompt`; `internal/websterengine/render.go` composes `webster-prefix-fork` with `webster-body-implementer`.
 - `planglyph.BindHandles` in `internal/planglyph/handle.go` holds the per-handle match loop; `postBatchChecks` in `internal/websterengine/recordbatch.go` returns before binding on not-done cards.
-- The banner comment of `webster-prefix-fork.md` still says the prompts live under `_lyx/webster/prompts/`; they live under `.lyx`.
 - `internal/websterengine/gitfake_test.go` holds the fake `Index`/`Delta` that the new method needs added.
 - New top-level tests may push `internal/websterengine` or `internal/planglyph` past `cmd/lyx/testdata/test-budget.yaml`; a card that does lists it under `Edit:`.
