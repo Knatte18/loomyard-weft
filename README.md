@@ -33,6 +33,14 @@ _None._
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
+### Bugs
+
+#### Normal priority
+
+| # | Note | Slug | Labels |
+| --- | --- | --- | --- |
+| 1 | **loom step help contradicts itself and hides the driverless seed**<br>• Help says step bootstraps like start, then that it never seeds; name the driverless seed command | [`loom-step-help-seed`](design-loom-step-help-seed.md) | loom |
+
 ### Enhancements
 
 #### High priority
