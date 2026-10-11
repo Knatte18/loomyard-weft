@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Burler",
+  "current_producer": "Darn-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Burler",
-    "last": "Darn-Bouncer → bounced to Darn-Burler",
+    "now": "Darn-Bouncer",
+    "last": "Darn-Burler → bounced to Darn-Bouncer",
     "wait": ""
   },
   "history": [
@@ -27,6 +27,14 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-11T10:57:21Z"
+    },
+    {
+      "producer": "Darn-Burler",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/darn-write-rename/_lyx/reviews/darn/round-1-review.md",
+      "at": "2026-10-11T11:03:45Z",
+      "gate_attempts": 0,
+      "budget_exempt": true
     }
   ],
   "product": {
