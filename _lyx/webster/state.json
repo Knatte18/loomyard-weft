@@ -1,0 +1,175 @@
+{
+  "runGuid": "305b757266a0cda99741addb906c264b",
+  "planFingerprint": "0f5c653937e52ca69aa6e2f466746051554c6b52f545a616711a537c4cda1c35",
+  "planFileHashes": {
+    "00-overview.md": "a60f4cbd49f1478e288e9908c427bb8447a7021c04fe451f685e8fe2d93887c3",
+    "01-bash-timeout-ceiling.md": "e624e2efcdac3badbca33e139437c4359b51f71fb2fc2e832cf3ba3070ab35d0",
+    "02-fork-activity.md": "d435ed9e4c0fad8712e3923e803d6dd04f4130588619bb101cecf858c050a74b",
+    "03-webster-fork-bodies.md": "5be5179de69e17d4eeefb17b6f2350d7bf615a9f9cb7bc1ce3270896b8541762",
+    "04-master-interim-notices.md": "3e946f0b3e4ddab1284244ca1fc2879584471b5ac2eb1e4fbd99146fb7411d65",
+    "05-plan-route-foreground.md": "666d36c3e1d16e6f9ae7918756c2b01d9bfd4e09f5b4540636e39cbb448a3e92",
+    "06-orch-gate-rule-brief.md": "8825bf55b3de7294791a4bc2f2aa5b7e5acef6243df7e6e6f06d5ca7306349ec"
+  },
+  "planOverviewFrameHash": "3f43960a7c57ae7ac196273115e9daf4424f674b69e4cfdf649f6fca50a6767d",
+  "partition": [
+    {
+      "cards": [
+        "01-bash-timeout-ceiling",
+        "02-fork-activity",
+        "03-webster-fork-bodies",
+        "04-master-interim-notices",
+        "05-plan-route-foreground",
+        "06-orch-gate-rule-brief"
+      ],
+      "profile": "cautious",
+      "estimate": 280718,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54244,
+        "read_union": 127060,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 600,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/command_test.go": 5952,
+              "file:internal/shuttleengine/claudeengine/doc.go": 1812,
+              "file:internal/shuttleengine/claudeengine/settings_test.go": 7752,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 74.5,
+            "written": 22950
+          },
+          {
+            "card": 2,
+            "card_text": 864,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/activity.go": 876,
+              "file:internal/shuttleengine/claudeengine/activity_test.go": 1080,
+              "file:internal/shuttleengine/claudeengine/doc.go": 1812,
+              "file:internal/shuttleengine/doc.go": 3780,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 109.5,
+            "written": 33714
+          },
+          {
+            "card": 3,
+            "card_text": 528,
+            "reads": {
+              "file:contracts/stencils/claims_test.go": 10152,
+              "file:contracts/stencils/webster/webster-body-implementer.md": 1260,
+              "file:contracts/stencils/webster/webster-body-verify-fix.md": 600,
+              "file:internal/websterengine/doc.go": 7716,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 57,
+            "written": 17628
+          },
+          {
+            "card": 4,
+            "card_text": 384,
+            "reads": {
+              "file:contracts/stencils/claims_test.go": 10152,
+              "file:contracts/stencils/webster/webster-template-master.md": 3000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000
+            },
+            "messages": 15.5,
+            "written": 5034
+          },
+          {
+            "card": 5,
+            "card_text": 372,
+            "reads": {
+              "file:CLAUDE.md": 888,
+              "file:contracts/specs/loom-plan-spec.md": 7932,
+              "file:contracts/stencils/claims_test.go": 10152,
+              "file:contracts/stencils/loom/loom-template-plan.md": 3156,
+              "file:internal/planparser/validate_test.go": 26088,
+              "package:.": 2000,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/planparser": 2000,
+              "tests:.": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 49.5,
+            "written": 15222
+          },
+          {
+            "card": 6,
+            "card_text": 216,
+            "reads": {
+              "file:contracts/stencils/claims_test.go": 10152,
+              "file:contracts/stencils/orch/orch-template-role.md": 2052,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/orch": 2000
+            },
+            "messages": 15.5,
+            "written": 4866
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "433fae21c582914fa70f77ecfdcbef2d",
+  "masterSessionId": "2c004e0c-ccc6-47fd-82a4-c74501f06417",
+  "batches": {
+    "1": {
+      "slug": "bash-timeout-ceiling",
+      "cards": [
+        "01-bash-timeout-ceiling",
+        "02-fork-activity",
+        "03-webster-fork-bodies",
+        "04-master-interim-notices",
+        "05-plan-route-foreground",
+        "06-orch-gate-rule-brief"
+      ],
+      "cardHashes": {
+        "01-bash-timeout-ceiling": "e624e2efcdac3badbca33e139437c4359b51f71fb2fc2e832cf3ba3070ab35d0",
+        "02-fork-activity": "d435ed9e4c0fad8712e3923e803d6dd04f4130588619bb101cecf858c050a74b",
+        "03-webster-fork-bodies": "5be5179de69e17d4eeefb17b6f2350d7bf615a9f9cb7bc1ce3270896b8541762",
+        "04-master-interim-notices": "3e946f0b3e4ddab1284244ca1fc2879584471b5ac2eb1e4fbd99146fb7411d65",
+        "05-plan-route-foreground": "666d36c3e1d16e6f9ae7918756c2b01d9bfd4e09f5b4540636e39cbb448a3e92",
+        "06-orch-gate-rule-brief": "8825bf55b3de7294791a4bc2f2aa5b7e5acef6243df7e6e6f06d5ca7306349ec"
+      },
+      "startSha": "a35c8c2b105693a8d761297ef61e44fba06a5624",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T13:44:05Z",
+      "sessionId": "2c004e0c-ccc6-47fd-82a4-c74501f06417",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
