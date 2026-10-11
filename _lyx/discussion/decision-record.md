@@ -182,6 +182,12 @@ Rationale: Round 3 F3: later boots see the same pid and start_time and are not c
   - d4-d5-guard-exit-status-conflated (class design, severity BLOCKING, open in rounds 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - seen-server-ended-criterion-uncovered (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - With `tmux_conf` empty, a hub server reed starts carries none of a marker the operator's `~/.tmux.conf` would set (the existing hermetic behavior holds).
