@@ -1,7 +1,7 @@
 # Card 3 — A never-ready teardown's error ends with the pane's last lines
 
 **Create:**
-- `plan:internal/shuttleengine#captureTail` -> `func captureTail(capture string) string`
+- `internal/shuttleengine#captureTail`
 
 **Edit:**
 - `internal/shuttleengine#paneTail`

@@ -1,9 +1,9 @@
 # Card 1 — Claude reads a lone `%` in the input box as an empty box
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#shellEOLMark` -> `const shellEOLMark = "%"`
-- `plan:internal/shuttleengine/claudeengine#holdsOnlyEOLMark` -> `func holdsOnlyEOLMark(interior []string) bool`
-- `plan:internal/shuttleengine/claudeengine#TestStart_LoneEOLMarkBoxTakesStartupSends` -> `func TestStart_LoneEOLMarkBoxTakesStartupSends(t *testing.T)`
+- `internal/shuttleengine/claudeengine#shellEOLMark`
+- `internal/shuttleengine/claudeengine#holdsOnlyEOLMark`
+- `internal/shuttleengine/claudeengine#TestStart_LoneEOLMarkBoxTakesStartupSends`
 - `internal/shuttleengine/claudeengine/start_test.go`
 - `internal/shuttleengine/claudeengine/testdata/pane-idle-eol-mark.txt`
 

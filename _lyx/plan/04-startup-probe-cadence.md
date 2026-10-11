@@ -1,8 +1,8 @@
 # Card 4 — The startup probe backs off from one poll interval, and gate dismissals keep their gap
 
 **Create:**
-- `plan:internal/shuttleengine#dismissalGap` -> `func dismissalGap(cfg Config) time.Duration`
-- `plan:internal/shuttleengine#playInputsSent` -> `func playInputsSent(reed ReedOps, guid string, inputs []PaneInput) (int, error)`
+- `internal/shuttleengine#dismissalGap`
+- `internal/shuttleengine#playInputsSent`
 
 **Edit:**
 - `internal/shuttleengine#Run`

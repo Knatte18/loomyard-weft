@@ -1,12 +1,12 @@
 {
   "runGuid": "5178aa682a8cf33f652482414c57e720",
-  "planFingerprint": "28b6dbb1fd36796631c7d03642656f3fdfd89e00fdee4d46ab3cb9d5c056152a",
+  "planFingerprint": "53d68774f85b7b268133e12779f0ace102aa408d7a076abbe57775ea57aafb46",
   "planFileHashes": {
     "00-overview.md": "f5976b9b4734cace1e082e3e991086e603154624ed0cf31170ce07ae122d8556",
-    "01-claude-lone-eol-mark.md": "1550cdbe4405987ac44cddaffcaa4d6d4e051a7948ed542b37e53739e4e1243d",
+    "01-claude-lone-eol-mark.md": "edc17ffe463dee051b3b08b65cdad9e3060fe356e6f38eac67afce0cccdaa3bf",
     "02-start-error-on-result.md": "5e1a2e3cdc680beb73750ed0810327a63cad979542b4f7fd3d0cd2614dfe7d05",
-    "03-never-ready-pane-tail.md": "0e122ee39117154a8f709478b9e922939779ed1e03c41dbe2b4753a315baeda8",
-    "04-startup-probe-cadence.md": "5d47882ab1880b0497dd69c6a55a457bfef666ea216c0c45baaea81e1e7a8558",
+    "03-never-ready-pane-tail.md": "6d760ae7bf9a4737189427009b3ff97f4dd4821cc60c8ea1da33c74da16cb628",
+    "04-startup-probe-cadence.md": "11074c93c05d72cb257998d9f086f5f260e48bb8f26a658260b1531c90e35883",
     "05-hold-deferral-ten-minutes.md": "84ff650046d0346ab8427c09e2e782e473a4ecc4a60d7ded0216a320a98af393"
   },
   "planOverviewFrameHash": "f9b06795f6f914786fc63adc07c195c2bf4b256d51e86b42b6abdd3660436a36",
@@ -116,7 +116,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "a1bbf7fe069252d119c22d213e1b4777",
   "masterSessionId": "2188b9f7-65bb-4836-8bad-9309e2bc02b2",
   "batches": {
@@ -130,17 +130,25 @@
         "05-hold-deferral-ten-minutes"
       ],
       "cardHashes": {
-        "01-claude-lone-eol-mark": "1550cdbe4405987ac44cddaffcaa4d6d4e051a7948ed542b37e53739e4e1243d",
+        "01-claude-lone-eol-mark": "edc17ffe463dee051b3b08b65cdad9e3060fe356e6f38eac67afce0cccdaa3bf",
         "02-start-error-on-result": "5e1a2e3cdc680beb73750ed0810327a63cad979542b4f7fd3d0cd2614dfe7d05",
-        "03-never-ready-pane-tail": "0e122ee39117154a8f709478b9e922939779ed1e03c41dbe2b4753a315baeda8",
-        "04-startup-probe-cadence": "5d47882ab1880b0497dd69c6a55a457bfef666ea216c0c45baaea81e1e7a8558",
+        "03-never-ready-pane-tail": "6d760ae7bf9a4737189427009b3ff97f4dd4821cc60c8ea1da33c74da16cb628",
+        "04-startup-probe-cadence": "11074c93c05d72cb257998d9f086f5f260e48bb8f26a658260b1531c90e35883",
         "05-hold-deferral-ten-minutes": "84ff650046d0346ab8427c09e2e782e473a4ecc4a60d7ded0216a320a98af393"
       },
       "startSha": "a35c8c2b105693a8d761297ef61e44fba06a5624",
       "kind": "recovery",
       "spawnedAt": "2026-10-11T14:01:59Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-claude-lone-eol-mark",
+        "status": "done",
+        "head_sha": "a65eff0c86eaa65cfc38b07f70995ca5d193f7ff"
+      },
+      "cardShas": [
+        "a65eff0c86eaa65cfc38b07f70995ca5d193f7ff"
+      ],
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-startup-ready/2188b9f7-65bb-4836-8bad-9309e2bc02b2/subagents/agent-a070f4b54d6304967.jsonl"
       ],
