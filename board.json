@@ -815,6 +815,7 @@
         "config"
       ],
       "issues": [],
+      "priority": "low",
       "depends_on": [],
       "isolated": false,
       "brief": "Each discussion_advisors entry takes an optional area (a lens, as in review fans); without one the advisor answers every question",
