@@ -983,7 +983,7 @@
       "id": 356,
       "slug": "fork-wait-noise",
       "title": "Webster forks wake Merriam on every gate wait",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "webster",
