@@ -1031,6 +1031,22 @@
       "isolated": false,
       "brief": "A non-idle resume error makes batten fail for good; a manually finished run then skips archive and teardown.",
       "body": "## Seen (2026-10-11, gate-test-hygiene, PR #537)\n\nAfter `lyx loom approve` at PR-Gate, batten's Run-Shed tried to resume the parked driver and failed with `shuttle: the session is not idle ... the input box holds a draft: \"Tok\"`.\n`internal/battenshed/innerrun.go:816` treats any resume error other than `ErrChildNotParked` as fatal, so batten went `failed` and exited.\nThe orch then drove the loom run to done by hand with `lyx loom start`.\nNobody resumed batten, so Worktree-Teardown never ran: the pair, its empty reed session and its weft branch stayed, and no `archive/\u003cslug\u003e/\u003ctip\u003e` tag was pushed.\n`lyx batten run \u003cslug\u003e` afterwards closes it: Run-Shed sees the done child and moves on to Worktree-Teardown.\n\n## Idea\n\n- Retry a \"session not idle / draft\" resume error the way `ErrChildNotParked` is retried, or halt `blocked` with the remedy \"clear the draft, then `lyx batten run \u003cslug\u003e`\".\n- Flag a batten run that is `failed` while its child loom run is `done`, naming `lyx batten run \u003cslug\u003e` as the step that closes it.\n- The orch's after-landing routine checks that `lyx batten status \u003cslug\u003e` is done, and otherwise runs `lyx batten run \u003cslug\u003e`.\n"
+    },
+    {
+      "id": 346,
+      "slug": "pane-inject-race",
+      "title": "Injected text merges with the operator draft",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle",
+        "orch"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The draft guard checks once before about a second of typing; the first Enter is never checked, and slash-command sends press a blind Enter.",
+      "body": "## Seen (2026-10-11, operator)\n\nText lyx injects into a Claude pane (batten notices, resume pointers, driver resume lines, `/clear`, `/compact`, `/reload-plugins`) regularly merges with what the operator is typing, or wipes it.\nThe draft guard checks the input box once, before typing, and the send then spends about a second typing into the pane (Escape, 300 ms sleep, text, settle reads, Enter) with nothing stopping the operator from typing in between.\nThe first Enter of a verified send (`confirmSubmitted`, `internal/shuttleengine/send.go:346`) is never checked against the box, so a merged draft is submitted.\n`boxHoldsSentText` (`internal/shuttleengine/run.go`) only matches the leading 48 characters, so a merged box reads as \"holds the sent text\" and gets further Enters.\n`ClearSession`, `CompactSession` and `ReloadPlugins` (`internal/shuttleengine/session.go`) type the command and a blind Enter on the strength of the caller's earlier probe, so `/clear` can land on an operator draft.\n`judgeReadiness` (`internal/shuttleengine/readiness.go:83`) reads ready when no box is found, so a menu or picker on screen passes the guard, and the leading Escape then closes it.\nThe leading Escape can complete a double-Esc that clears the operator's draft, or interrupt a turn the operator just started.\n\n## Idea\n\n- Read the box right before every Enter and press Enter only when it holds exactly the sent text (or the paste placeholder); otherwise send no Enter and report the send as not landed.\n- Route the slash-command, color and session-rename sequences through that same verified path.\n- Treat an unreadable box as not idle in `judgeReadiness`.\n- Drop the leading Escape from `TypeSequence`, since the box was just proven empty.\n- Defer an injection while the attached client's `#{client_activity}` is under about 5 s old and the target pane is its active pane.\n- Later: an atomic bracketed paste with its Enter in one tmux command list, and file-based notice delivery to the orch through a Stop hook.\n"
     }
   ]
 }
