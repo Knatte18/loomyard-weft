@@ -15,7 +15,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Test and gate hygiene: merge-only verify failures, gofmt, tmux probe copies**<br>• PATTERN overview headroom, test-budget rows that collide after merge, a gofmt check, and the last tmux probe copies onto tmuxkit | [`gate-test-hygiene`](design-gate-test-hygiene.md) | loom | Plan-Bouncer | loom, orch |
+| 1 | **Test and gate hygiene: merge-only verify failures, gofmt, tmux probe copies**<br>• PATTERN overview headroom, test-budget rows that collide after merge, a gofmt check, and the last tmux probe copies onto tmuxkit | [`gate-test-hygiene`](design-gate-test-hygiene.md) | loom | Plan-Burler | loom, orch |
 
 #### Normal priority
 
