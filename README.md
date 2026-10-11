@@ -28,11 +28,7 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | After | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Tokencount default counts only full loom runs**<br>• With no slugs, tokencount picks the most recent runs, which today were bench pairs that stopped after Discussion; count only full loom runs | [`tokencount-full-runs`](design-tokencount-full-runs.md) | darn |  | shed |
+_None._
 
 ### Layer A
 
@@ -43,6 +39,7 @@ Waits only on Running or Ready entries.
 | # | Task | Slug | Recipe | After | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Parent-review wait: warm writer cache on reject, wait bound off the boundary, gate hardening**<br>• A late reject resumes the writer on a cold cache, a writer stuck mid-turn outlives the wait bound, and the PR #336 review left gate gaps | [`parent-review-wait`](design-parent-review-wait.md) | loom | `shuttle-startup-ready` | loom, shuttle, orch |
+| 2 | **Tokencount default counts only full loom runs**<br>• With no slugs, tokencount picks the most recent runs, which today were bench pairs that stopped after Discussion; count only full loom runs | [`tokencount-full-runs`](design-tokencount-full-runs.md) | darn | `small-fixes-oct11` | shed |
 
 ## Notes
 

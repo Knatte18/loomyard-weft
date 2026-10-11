@@ -2,6 +2,8 @@
 
 `tokencount-full-runs` · Task · enhancement, shed
 
+Depends on: [`small-fixes-oct11`](design-small-fixes-oct11.md)
+
 ## Seen (operator, 2026-10-11)
 
 `tools/tokencount` with no slugs counts the most recently active runs (`-last`, default 6).

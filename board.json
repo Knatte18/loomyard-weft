@@ -1044,7 +1044,9 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [],
+      "depends_on": [
+        "small-fixes-oct11"
+      ],
       "isolated": false,
       "brief": "With no slugs, tokencount picks the most recent runs, which today were bench pairs that stopped after Discussion; count only full loom runs",
       "body": "## Seen (operator, 2026-10-11)\n\n`tools/tokencount` with no slugs counts the most recently active runs (`-last`, default 6).\nOn 2026-10-11 that picked only the Discussion bench pairs (`twb-combo-*`, `twb-twc-*`, `twb-twp-*`), which ran Discussion-Write and stopped, so `.scratch/token-usage-by-role.md` showed a Discussion-only role mix and no Plan, Webster or review rows.\n\n## Wanted\n\n- The default selection counts only full loom runs: a run whose loom lifecycle went through to the end (landed, or reached Finalize), never a run stopped partway such as a bench pair or an abandoned run.\n- `-last N` means the N most recent full loom runs.\n- Slugs named on the command line are still counted as given, so a partial run can be inspected on purpose.\n- The report header says which runs were counted and, when the default skipped recent partial runs, says so in one line.\n- Update the package's doc comment and `tokencount.sh` / `tokencount.cmd` comments to match.\n"
