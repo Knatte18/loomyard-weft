@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -28,7 +28,7 @@ The renumber lives in `internal/planparser`, the verbs in `internal/loomcli`, an
 
 ### Decision: raw-io-seam
 
-- **Decision:** the renumber performs every raw file operation through `planparser.RenumberIO`, a struct of four function fields filled from `os` by `OSRenumberIO`; a test fails one named operation on one named file to reach each reversal and restore path.
+- **Decision:** the renumber performs every raw file operation through `planparser.RenumberIO`, a struct of five function fields filled from `os` by `OSRenumberIO`; a test fails one named operation on one named file to reach each reversal and restore path.
 - **Rationale:** the acceptance criteria inject a failure at every apply step, and a struct value passed explicitly keeps the tests parallel, where a package-level seam would not.
 - **Applies to:** cards 2, 3, 4
 
