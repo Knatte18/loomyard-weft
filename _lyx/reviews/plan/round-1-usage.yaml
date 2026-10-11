@@ -31,3 +31,12 @@ seed:
       tokens_known: true
       fresh_tokens: 43850
       cache_read_tokens: 180750
+judge:
+    - model: sonnet
+      effort: medium
+      start: 2026-10-11T17:22:06Z
+      end: 2026-10-11T19:22:32.893963166+02:00
+      wall_seconds: 26.893963166
+      tokens_known: true
+      fresh_tokens: 41924
+      cache_read_tokens: 153124
