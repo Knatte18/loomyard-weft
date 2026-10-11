@@ -1,0 +1,24 @@
+round: 3
+fan: ""
+review:
+    model: opus
+    effort: medium
+    start: 2026-10-11T13:25:19Z
+    end: 2026-10-11T15:28:39.152374995+02:00
+    wall_seconds: 200.152374995
+    tokens_known: true
+    fresh_tokens: 113232
+    cache_read_tokens: 1954766
+    forks: 0
+    fork_fresh_tokens: 0
+    fork_cache_read_tokens: 0
+    fork_fresh_share: 0
+fix:
+    model: opus
+    effort: medium
+    start: 2026-10-11T13:25:04Z
+    end: 2026-10-11T15:29:28.209055126+02:00
+    wall_seconds: 264.209055126
+    tokens_known: true
+    fresh_tokens: 75775
+    cache_read_tokens: 905893
