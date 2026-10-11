@@ -1,49 +1,49 @@
 # Card 2 — burler-halves-engine
 
 **Create:**
-- `plan:internal/burlerengine#reviewRolePrefix` -> `const reviewRolePrefix = "burler-review"`
-- `plan:internal/burlerengine#fixRolePrefix` -> `const fixRolePrefix = "burler-fix"`
-- `plan:internal/burlerengine#ReviewResult` -> `type ReviewResult struct`
-- `plan:internal/burlerengine#FixResult` -> `type FixResult struct`
-- `plan:internal/burlerengine#ErrReviewChanged` -> `var ErrReviewChanged error`
-- `plan:internal/burlerengine#reviewDigest` -> `func reviewDigest(content []byte) string`
-- `plan:internal/burlerengine#acceptReview` -> `func acceptReview(p *Profile, reviewer shuttleengine.Result) (reviewHandoff, error)`
-- `plan:internal/burlerengine#Profile.validateReview` -> `func (p *Profile) validateReview(worktreeRoot string, cfg Config) error`
-- `plan:internal/burlerengine#Profile.validateFix` -> `func (p *Profile) validateFix(worktreeRoot string) error`
-- `plan:internal/burlerengine#Profile.reviewTable` -> `func (p *Profile) reviewTable(opts RunOpts, values map[string]string) seatengine.Table`
-- `plan:internal/burlerengine#Profile.fixTable` -> `func (p *Profile) fixTable(opts RunOpts, values map[string]string) seatengine.Table`
-- `plan:internal/burlerengine#Engine.Review` -> `func (e *Engine) Review(p Profile, opts RunOpts) (ReviewResult, error)`
-- `plan:internal/burlerengine#Engine.ProbeReview` -> `func (e *Engine) ProbeReview(p Profile, opts RunOpts) (LiveHalf, error)`
-- `plan:internal/burlerengine#Engine.ResumeReview` -> `func (e *Engine) ResumeReview(p Profile, opts RunOpts, live LiveHalf) (ReviewResult, error)`
-- `plan:internal/burlerengine#Engine.concludeReview` -> `func (e *Engine) concludeReview(p *Profile, opts RunOpts, seats seatengine.Result, runErr error) (ReviewResult, error)`
-- `plan:internal/burlerengine#Engine.Fix` -> `func (e *Engine) Fix(p Profile, opts RunOpts, digest string) (FixResult, error)`
-- `plan:internal/burlerengine#Engine.ProbeFix` -> `func (e *Engine) ProbeFix(p Profile, opts RunOpts) (LiveHalf, error)`
-- `plan:internal/burlerengine#Engine.ResumeFix` -> `func (e *Engine) ResumeFix(p Profile, opts RunOpts, digest string, live LiveHalf) (FixResult, error)`
-- `plan:internal/burlerengine#Engine.concludeFix` -> `func (e *Engine) concludeFix(p *Profile, opts RunOpts, digest string, seats seatengine.Result, runErr error) (FixResult, error)`
-- `plan:internal/burlerengine#Engine.probeHalf` -> `func (e *Engine) probeHalf(table seatengine.Table, outputPath string) (LiveHalf, error)`
-- `plan:internal/burlerengine#Engine.instructionDir` -> `func (e *Engine) instructionDir(prefix string) (string, error)`
-- `plan:internal/burlerengine#acceptedReview` -> `func acceptedReview(p *Profile, digest string) ([]Finding, error)`
-- `plan:internal/burlerengine#checkGates` -> `func checkGates(gate shuttleengine.GateSpec) (string, error)`
-- `plan:internal/burlerengine#skippedFixerReport` -> `var skippedFixerReport string`
-- `plan:internal/burlerengine#halfPrompt` -> `type halfPrompt struct`
-- `plan:internal/burlerengine#reviewFilePaths` -> `type reviewFilePaths struct`
-- `plan:internal/burlerengine#reviewFilesIn` -> `func reviewFilesIn(dir string) reviewFilePaths`
-- `plan:internal/burlerengine#fixFilePaths` -> `type fixFilePaths struct`
-- `plan:internal/burlerengine#fixFilesIn` -> `func fixFilesIn(dir string) fixFilePaths`
-- `plan:internal/burlerengine#reviewSeatValues` -> `func reviewSeatValues(p *Profile, paths reviewFilePaths) map[string]string`
-- `plan:internal/burlerengine#fixSeatValues` -> `func fixSeatValues(p *Profile, paths fixFilePaths) map[string]string`
-- `plan:internal/burlerengine#composeReviewPrompt` -> `func composeReviewPrompt(stencilsDir string, p *Profile, patternDirective string, paths reviewFilePaths) (halfPrompt, error)`
-- `plan:internal/burlerengine#composeFixPrompt` -> `func composeFixPrompt(stencilsDir string, p *Profile, frictionDirective, work string, paths fixFilePaths) (halfPrompt, error)`
-- `plan:internal/burlerengine#fixWork` -> `func fixWork(reviewPath, gateFindingsPath string) string`
-- `plan:internal/burlerengine#reviewerMarkerValues` -> `func reviewerMarkerValues() map[string]string`
-- `plan:internal/burlerengine#fixerMarkerValues` -> `func fixerMarkerValues() map[string]string`
-- `plan:internal/burlerengine#reviewStepMarkerValues` -> `func reviewStepMarkerValues() map[string]string`
-- `plan:internal/burlerengine#fixStepMarkerValues` -> `func fixStepMarkerValues() map[string]string`
-- `plan:contracts/stencils#BurlerTemplateReviewer` -> `var BurlerTemplateReviewer []byte`
-- `plan:contracts/stencils#BurlerTemplateFixer` -> `var BurlerTemplateFixer []byte`
-- `plan:contracts/stencils#BurlerStepReview` -> `var BurlerStepReview []byte`
-- `plan:contracts/stencils#BurlerReviewFormat` -> `var BurlerReviewFormat []byte`
-- `plan:contracts/stencils#BurlerStepFix` -> `var BurlerStepFix []byte`
+- `internal/burlerengine#reviewRolePrefix`
+- `internal/burlerengine#fixRolePrefix`
+- `internal/burlerengine#ReviewResult`
+- `internal/burlerengine#FixResult`
+- `internal/burlerengine#ErrReviewChanged`
+- `internal/burlerengine#reviewDigest`
+- `internal/burlerengine#acceptReview`
+- `internal/burlerengine#Profile.validateReview`
+- `internal/burlerengine#Profile.validateFix`
+- `internal/burlerengine#Profile.reviewTable`
+- `internal/burlerengine#Profile.fixTable`
+- `internal/burlerengine#Engine.Review`
+- `internal/burlerengine#Engine.ProbeReview`
+- `internal/burlerengine#Engine.ResumeReview`
+- `internal/burlerengine#Engine.concludeReview`
+- `internal/burlerengine#Engine.Fix`
+- `internal/burlerengine#Engine.ProbeFix`
+- `internal/burlerengine#Engine.ResumeFix`
+- `internal/burlerengine#Engine.concludeFix`
+- `internal/burlerengine#Engine.probeHalf`
+- `internal/burlerengine#Engine.instructionDir`
+- `internal/burlerengine#acceptedReview`
+- `internal/burlerengine#checkGates`
+- `internal/burlerengine#skippedFixerReport`
+- `internal/burlerengine#halfPrompt`
+- `internal/burlerengine#reviewFilePaths`
+- `internal/burlerengine#reviewFilesIn`
+- `internal/burlerengine#fixFilePaths`
+- `internal/burlerengine#fixFilesIn`
+- `internal/burlerengine#reviewSeatValues`
+- `internal/burlerengine#fixSeatValues`
+- `internal/burlerengine#composeReviewPrompt`
+- `internal/burlerengine#composeFixPrompt`
+- `internal/burlerengine#fixWork`
+- `internal/burlerengine#reviewerMarkerValues`
+- `internal/burlerengine#fixerMarkerValues`
+- `internal/burlerengine#reviewStepMarkerValues`
+- `internal/burlerengine#fixStepMarkerValues`
+- `contracts/stencils#BurlerTemplateReviewer`
+- `contracts/stencils#BurlerTemplateFixer`
+- `contracts/stencils#BurlerStepReview`
+- `contracts/stencils#BurlerReviewFormat`
+- `contracts/stencils#BurlerStepFix`
 - `contracts/stencils/burler/burler-template-reviewer.md`
 - `contracts/stencils/burler/burler-template-fixer.md`
 - `contracts/stencils/burler/burler-step-review.md`

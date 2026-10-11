@@ -126,7 +126,7 @@
 - `internal/shedadapters/burlerreview_test.go`
 - `internal/shedadapters/doc.go`
 - `internal/burlerengine#Profile`
-- `plan:internal/burlerengine#composeReviewPrompt`
+- `internal/burlerengine#composeReviewPrompt`
 - `internal/burlerengine#halfScript`
 - `internal/burlerengine#fakeShuttle`
 - `internal/burlerengine#fakeShuttle.scriptFor`
@@ -169,7 +169,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/shedadapters#readAcceptance`
+- `internal/shedadapters#readAcceptance`
 
 **Intent:**
 D8 and the retirement half of D1 and D2: card 4 moved every production caller to the split rows and card 5 moved `lyx burler run` to the halves, so the one-row round producer, the two-seat engine round, the reviewer-fixer channel and the ready marker go, with the old row-name constants.

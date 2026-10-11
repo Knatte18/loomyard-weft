@@ -1,33 +1,33 @@
 # Card 3 — burler-halves-producers
 
 **Create:**
-- `plan:internal/shedadapters#BurlerHalfRunner` -> `type BurlerHalfRunner interface`
-- `plan:internal/shedadapters#BurlerHalfDeps` -> `type BurlerHalfDeps struct`
-- `plan:internal/shedadapters#burlerReviewEngineLabel` -> `const burlerReviewEngineLabel = "burler-review"`
-- `plan:internal/shedadapters#burlerFixEngineLabel` -> `const burlerFixEngineLabel = "burler-fix"`
-- `plan:internal/shedadapters#BurlerReviewProducer` -> `type BurlerReviewProducer struct`
-- `plan:internal/shedadapters#NewBurlerReviewProducer` -> `func NewBurlerReviewProducer(name string, deps BurlerHalfDeps, profile burlerengine.Profile, opts burlerengine.RunOpts, runDir string, now func() time.Time) (*BurlerReviewProducer, error)`
-- `plan:internal/shedadapters#BurlerReviewProducer.Call` -> `func (p *BurlerReviewProducer) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/shedadapters#BurlerReviewProducer.roundProfile` -> `func (p *BurlerReviewProducer) roundProfile(round int) burlerengine.Profile`
-- `plan:internal/shedadapters#BurlerReviewProducer.acceptedExit` -> `func (p *BurlerReviewProducer) acceptedExit(ctx context.Context, round int, result burlerengine.ReviewResult, archiveRound func()) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/shedadapters#BurlerReviewProducer.probeLiveReview` -> `func (p *BurlerReviewProducer) probeLiveReview(ctx context.Context, round int, profile burlerengine.Profile, archiveRound func()) (shedengine.Outcome, shedengine.OutputPointer, error, bool)`
-- `plan:internal/shedadapters#BurlerFixProducer` -> `type BurlerFixProducer struct`
-- `plan:internal/shedadapters#NewBurlerFixProducer` -> `func NewBurlerFixProducer(name, reviewRow string, deps BurlerHalfDeps, profile burlerengine.Profile, opts burlerengine.RunOpts, runDir string, now func() time.Time) (*BurlerFixProducer, error)`
-- `plan:internal/shedadapters#BurlerFixProducer.Call` -> `func (p *BurlerFixProducer) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/shedadapters#BurlerFixProducer.fixedExit` -> `func (p *BurlerFixProducer) fixedExit(ctx context.Context, round int, result burlerengine.FixResult, archiveRound func()) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/shedadapters#BurlerFixProducer.probeLiveFix` -> `func (p *BurlerFixProducer) probeLiveFix(ctx context.Context, round int, profile burlerengine.Profile, digest string, archiveRound func()) (shedengine.Outcome, shedengine.OutputPointer, error, bool)`
-- `plan:internal/shedadapters#roundAcceptancePath` -> `func roundAcceptancePath(runDir string, n int) string`
-- `plan:internal/shedadapters#acceptanceHeader` -> `type acceptanceHeader struct`
-- `plan:internal/shedadapters#writeAcceptance` -> `func writeAcceptance(runDir string, n int, digest string) error`
-- `plan:internal/shedadapters#readAcceptance` -> `func readAcceptance(runDir string, n int) (string, bool, error)`
-- `plan:internal/testkit/shedfake#BurlerHalfRunner` -> `type BurlerHalfRunner struct`
-- `plan:internal/testkit/shedfake#BurlerHalfRunner.Review` -> `func (f *BurlerHalfRunner) Review(p burlerengine.Profile, opts burlerengine.RunOpts) (burlerengine.ReviewResult, error)`
-- `plan:internal/testkit/shedfake#BurlerHalfRunner.ProbeReview` -> `func (f *BurlerHalfRunner) ProbeReview(p burlerengine.Profile, opts burlerengine.RunOpts) (burlerengine.LiveHalf, error)`
-- `plan:internal/testkit/shedfake#BurlerHalfRunner.ResumeReview` -> `func (f *BurlerHalfRunner) ResumeReview(p burlerengine.Profile, opts burlerengine.RunOpts, live burlerengine.LiveHalf) (burlerengine.ReviewResult, error)`
-- `plan:internal/testkit/shedfake#BurlerHalfRunner.Fix` -> `func (f *BurlerHalfRunner) Fix(p burlerengine.Profile, opts burlerengine.RunOpts, digest string) (burlerengine.FixResult, error)`
-- `plan:internal/testkit/shedfake#BurlerHalfRunner.ProbeFix` -> `func (f *BurlerHalfRunner) ProbeFix(p burlerengine.Profile, opts burlerengine.RunOpts) (burlerengine.LiveHalf, error)`
-- `plan:internal/testkit/shedfake#BurlerHalfRunner.ResumeFix` -> `func (f *BurlerHalfRunner) ResumeFix(p burlerengine.Profile, opts burlerengine.RunOpts, digest string, live burlerengine.LiveHalf) (burlerengine.FixResult, error)`
-- `plan:internal/testkit/shedfake#TestBurlerHalfRunner_LastEntryRepeats` -> `func TestBurlerHalfRunner_LastEntryRepeats(t *testing.T)`
+- `internal/shedadapters#BurlerHalfRunner`
+- `internal/shedadapters#BurlerHalfDeps`
+- `internal/shedadapters#burlerReviewEngineLabel`
+- `internal/shedadapters#burlerFixEngineLabel`
+- `internal/shedadapters#BurlerReviewProducer`
+- `internal/shedadapters#NewBurlerReviewProducer`
+- `internal/shedadapters#BurlerReviewProducer.Call`
+- `internal/shedadapters#BurlerReviewProducer.roundProfile`
+- `internal/shedadapters#BurlerReviewProducer.acceptedExit`
+- `internal/shedadapters#BurlerReviewProducer.probeLiveReview`
+- `internal/shedadapters#BurlerFixProducer`
+- `internal/shedadapters#NewBurlerFixProducer`
+- `internal/shedadapters#BurlerFixProducer.Call`
+- `internal/shedadapters#BurlerFixProducer.fixedExit`
+- `internal/shedadapters#BurlerFixProducer.probeLiveFix`
+- `internal/shedadapters#roundAcceptancePath`
+- `internal/shedadapters#acceptanceHeader`
+- `internal/shedadapters#writeAcceptance`
+- `internal/shedadapters#readAcceptance`
+- `internal/testkit/shedfake#BurlerHalfRunner`
+- `internal/testkit/shedfake#BurlerHalfRunner.Review`
+- `internal/testkit/shedfake#BurlerHalfRunner.ProbeReview`
+- `internal/testkit/shedfake#BurlerHalfRunner.ResumeReview`
+- `internal/testkit/shedfake#BurlerHalfRunner.Fix`
+- `internal/testkit/shedfake#BurlerHalfRunner.ProbeFix`
+- `internal/testkit/shedfake#BurlerHalfRunner.ResumeFix`
+- `internal/testkit/shedfake#TestBurlerHalfRunner_LastEntryRepeats`
 - `internal/shedadapters/burlerreview_test.go`
 - `internal/shedadapters/burlerfix_test.go`
 
@@ -48,7 +48,7 @@
 - `internal/shedadapters#gateFailedReason`
 - `internal/shedadapters#gateAttemptsPointer`
 - `internal/shedadapters#describeHalf`
-- `plan:internal/burlerengine#ErrReviewChanged`
+- `internal/burlerengine#ErrReviewChanged`
 
 **Intent:**
 D1, D3 and D4 at the Shed adapter: the two producers each half of a review segment's round runs as, added beside `BurlerProducer`, which card 4 stops wiring and card 10 deletes.

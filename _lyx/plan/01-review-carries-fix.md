@@ -1,11 +1,11 @@
 # Card 1 — review-carries-fix
 
 **Create:**
-- `plan:internal/burlerengine#ParseCurrentReview` -> `func ParseCurrentReview(content []byte) (Verdict, []Finding, error)`
-- `plan:internal/burlerengine#proseFindingHeading` -> `var proseFindingHeading *regexp.Regexp`
-- `plan:internal/burlerengine#checkReviewKeys` -> `func checkReviewKeys(header string) error`
-- `plan:internal/burlerengine#checkProseBlocks` -> `func checkProseBlocks(body string, findings []Finding) error`
-- `plan:internal/burlerengine#TestParseCurrentReview` -> `func TestParseCurrentReview(t *testing.T)`
+- `internal/burlerengine#ParseCurrentReview`
+- `internal/burlerengine#proseFindingHeading`
+- `internal/burlerengine#checkReviewKeys`
+- `internal/burlerengine#checkProseBlocks`
+- `internal/burlerengine#TestParseCurrentReview`
 
 **Edit:**
 - `internal/burlerengine#Finding`

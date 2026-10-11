@@ -1,18 +1,18 @@
 {
   "runGuid": "649e6fa3e0aee8edd7e28b74d9fe8760",
-  "planFingerprint": "828db60d1a25e77e0fb6cdcb63f2c51496983c0478416151f0a19868cdebc9f9",
+  "planFingerprint": "61d822ab36d01e4a4ae5c55f8defbb76f2eee2c1954c575b21ac083f20c2f802",
   "planFileHashes": {
     "00-overview.md": "aa1b8c249f906e2aec1b44bcd671945705f7335e0fae9dc45c37f882899bcfff",
-    "01-review-carries-fix.md": "10903fe64661ef329a1e68808de4c416358ecf1a89d2a40c5130823c0098eb71",
-    "02-burler-halves-engine.md": "4e30133fa993cc4eeb37f30913ec26c94fcf5d820e26c823da56bac4d9e81bb1",
-    "03-burler-halves-producers.md": "97c33c68b65cd3325a4c7e59389718366f315185b565df1f5dd07e389edda97b",
+    "01-review-carries-fix.md": "a799aaa0f015ec23d61ab47f61f703099c5317dd6ee5fb49097b3ad4b9027a38",
+    "02-burler-halves-engine.md": "93dd8c61b066305c89be4c1b8617e030c0da35e832f91d619173d90ab3aa4708",
+    "03-burler-halves-producers.md": "33cd07c980f6159b02c7e824096c4eb4161e70f1821b8a16fbe3b0a1109d4625",
     "04-split-burler-rows.md": "320cf1585dbc2a1ba978df25365188fc3326e0d95886543cee19beedac986230",
     "05-burler-run-halves.md": "48cf031feae8c930d1e2595f976a9493ee51cd52b78e161125ac8b2daf36843a",
     "06-row-name-prose.md": "53d79443c40fc025c18d36b0090b920b94bc0985784598db99343add48226477",
     "07-bouncer-auto-accept.md": "20df305c60c97c9d7556f9df4804ae6d2beb6dcd55d13e35fc5ac0199988234b",
     "08-perch-budget-keys.md": "92b14359c27b8e272aaa3d250e59f45f61090a2873a2a08ab95974b98ddfbec2",
     "09-perch-budget-wiring.md": "5aa7a311cfe92448af1a5e51fafdce693c7f913ead545da5251ce0cdcb85ab02",
-    "10-retire-burler-round.md": "4959e9a96d129416856e5f5ec8faceba780b04273e8d3ec33c99eb3fdfb135a7"
+    "10-retire-burler-round.md": "cae5e5f874f4c86e20d6ee7cde9eb03c1d1d7a4511ace3bcb1fb23fad9f43fe4"
   },
   "planOverviewFrameHash": "54c6ff002692467dd7dd0c1bbb5e3b544bad958485f8fa4f5093352b64d76429",
   "partition": [
@@ -412,7 +412,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "2c86fa9c079c3fb37dac2b5ffe110dd5",
   "masterSessionId": "0fbd85a5-7f16-469f-9570-80370a462352",
   "batches": {
@@ -424,16 +424,33 @@
         "03-burler-halves-producers"
       ],
       "cardHashes": {
-        "01-review-carries-fix": "10903fe64661ef329a1e68808de4c416358ecf1a89d2a40c5130823c0098eb71",
-        "02-burler-halves-engine": "4e30133fa993cc4eeb37f30913ec26c94fcf5d820e26c823da56bac4d9e81bb1",
-        "03-burler-halves-producers": "97c33c68b65cd3325a4c7e59389718366f315185b565df1f5dd07e389edda97b"
+        "01-review-carries-fix": "a799aaa0f015ec23d61ab47f61f703099c5317dd6ee5fb49097b3ad4b9027a38",
+        "02-burler-halves-engine": "93dd8c61b066305c89be4c1b8617e030c0da35e832f91d619173d90ab3aa4708",
+        "03-burler-halves-producers": "33cd07c980f6159b02c7e824096c4eb4161e70f1821b8a16fbe3b0a1109d4625"
       },
       "startSha": "c279a38bafb5aced5978bceb727ff9c06e756848",
       "kind": "fork",
       "spawnedAt": "2026-10-11T17:21:16Z",
       "sessionId": "0fbd85a5-7f16-469f-9570-80370a462352",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-review-carries-fix",
+        "status": "done",
+        "head_sha": "9e1f791e7ac401cce377d951705e547f0be7c415"
+      },
+      "cardShas": [
+        "9e1f791e7ac401cce377d951705e547f0be7c415"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-split-budget/0fbd85a5-7f16-469f-9570-80370a462352/subagents/agent-a700753ba62f1574c.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-split-budget/0fbd85a5-7f16-469f-9570-80370a462352/subagents/agent-a700753ba62f1574c.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-burler-split-budget/0fbd85a5-7f16-469f-9570-80370a462352/subagents/agent-a700753ba62f1574c.jsonl"
+  ]
 }
