@@ -23,6 +23,9 @@ The session ran autonomously; every turn below is a self-answered question, grou
 - **D4, key the marker on the child's run identity:** the child's status is exactly what vanished, so it cannot anchor the once-per-run rule.
 - **D5, update values equal to the old template default:** reconcile has no record of past templates, and an operator value equal to an old default is indistinguishable from an untouched one.
 - **D5, a generic floor table in `configsync`:** would declare each floor a second time outside its engine.
+- **D5, leave a null value untouched:** the loader already reads it as 0 and raises it, so the warning the task targets would stay.
+- **D5, rewrite an `${env:...}` marker to the floor:** discards the operator's per-environment indirection.
+- **D6, add bare `fabric unwire` to `FabricReaderVerbs`:** widens the role guard and the read-only allow-list for a probe no sandboxed role needs.
 - **D6, `--yes` or `--confirm`:** a second spelling for the same guard that `fabric prune` and `cleanup` already name `--apply`.
 - **D6, refuse a bare call with an error:** a dry-run report tells the caller what the verb would do, which a refusal does not, and matches the existing idiom.
 - **D7, derive a group note's audiences from its children:** cannot tell which children the note describes; the board group has operator and internal children.
@@ -45,3 +48,5 @@ _No rounds yet._
 - Q7 (resolved, auto-pick): How is a note scoped? One note-audience annotation; no annotation, no note (D7).
 - Q8 (resolved, auto-pick): What does the carry-over check compare? Whole-file bytes, before and after the rename (D8, A5).
 - Q9 (resolved, auto-pick): Does D8 need a refusal-spec row? Yes, loom is bound by `PATTERN-refusal-way-forward`; a new transient row.
+- Q10 (resolved, auto-pick, review round 2): What does a floor hook do with a null or an `${env:...}` value? Raises a null like the loader's 0; leaves an env marker untouched (D5).
+- Q11 (resolved, auto-pick, review round 2): Does bare `fabric unwire` join the fabric reader set? No (D6).
