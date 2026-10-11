@@ -1034,6 +1034,23 @@
       "isolated": false,
       "brief": "A run waiting at PR-Gate whose PR no longer merges with the moved parent goes back to Publish by itself, instead of through the orch.",
       "body": "## Seen (2026-10-11, `orch-wake-policy`)\n\n`burler-split-budget` landed while `orch-wake-policy` waited at PR-Gate with PR #564.\nGitHub then reported #564 `CONFLICTING` against the new `main`: 16 files changed by both tasks.\nThe PR-Gate review fork found no defect but would not approve a conflicting PR, so the orch sent the run back with `lyx loom goto --to Publish` and `lyx loom resume`, where Publish merges the parent and its conflict session resolves the conflicts.\nPublish already resolves parent conflicts; only the parent moving after Publish, while the run waits at PR-Gate, needs a hand step.\n\n## Idea (operator, 2026-10-11)\n\nWhen the parent branch has moved past the PR's base while a run awaits at PR-Gate, and the PR no longer merges cleanly, loom sends the run back to Publish by itself before anyone reviews it, so the PR the reviewer sees is merged with the current parent and verified.\n\n## Open\n\n- Whether to check at PR-Gate entry only, or also when the parent moves during the wait (a landing's ready snapshot could trigger it).\n- Whether a clean but stale base also goes back to Publish, so the verify covers the merged tree.\n- Relation to the `merge-review` note: a merge that Publish redoes may need its review.\n"
+    },
+    {
+      "id": 419,
+      "slug": "twill-plan-sonnet-medium",
+      "title": "Twill-plan bench: sonnet[medium] arm",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "stencil"
+      ],
+      "issues": [],
+      "priority": "high",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Bench twill Plan-Write with the writer on sonnet[medium] under the round-2 setup, to compare with the opus and sonnet[high] arms.",
+      "body": "## Idea (operator, 2026-10-11)\n\nRun one more arm of the `twill-plan` bench: twill with the plan writer on `sonnet[medium]`, planned for 2026-10-12.\n\n## Setup\n\nExactly the round-2 setup of `twill-plan` (directive before Step 3, the four tuned lenses, cited rejections, references `shuttle-startup-ready` and `run-time-by-role`, two runs per reference), graded against the same keys and costed with `tools/tokencount`, so it compares with the four arms already run.\nRecords: `.scratch/twill-plan-bench/results.md`, `results-sonnet.md`, `tokens-*.md`; a fresh agent runs it, spend cap about $20.\n\n## Seen so far\n\n- Twill `sonnet[high]` matched twill `opus[medium]` within spread but cost only 9% less: per plan it used about 1.3x the output and 1.5x the cache reads, from more `validate-plan` passes (one of four first passes succeeded) and more, mostly LOW, fork findings.\n- Two of its 18 rejections kept a key defect; `opus[medium]` kept none.\n- The open question is whether medium effort cuts the token volume enough to pay off, or worsens the judgement and the `validate-plan` retries.\n"
     }
   ]
 }
