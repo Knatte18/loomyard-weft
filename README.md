@@ -31,7 +31,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Batten notices drop the attach clause and use hub-relative paths**<br>• Remove the trailing cd && lyx reed attach from batten notices, and render paths relative to the hub directory. | [`batten-notice-trim`](design-batten-notice-trim.md) | darn |  | batten, orch |
+| 1 | **Batten notices: no attach clause, pair-relative paths, wait is not an error**<br>• Remove the trailing cd && lyx reed attach from batten notices, and render paths relative to the hub directory. | [`batten-notice-trim`](design-batten-notice-trim.md) | darn |  | batten, orch |
 
 ## Notes
 
