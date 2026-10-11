@@ -166,6 +166,13 @@ Rationale: Round-3 Discussion review F3: the paraphrase dropped 'of lyx's own' a
 - If the registry entry is not yet written when `SessionStart(startup)` lands, the fold reads unknown with liveness unproven and the color and skill-load sends take the pane fallback, as today; D8 covers a stray character on that path, and D1 records the timing.
 - A granted permission mid-turn reads asking for the rest of that turn, by D5's bound, as `Notification(permission_prompt)` already does; batten or the orch watcher may show the run asking for that span.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/discussion/round-3-review.md; fixer report: _lyx/reviews/discussion/round-3-fixer-report.md.
+  - d7-session-end-no-launch-boundary (class design, severity MEDIUM, open in rounds 2, 3)
+  - d8-post-clear-reading-guard-unbounded (class consistency, severity MEDIUM, open in rounds 3)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - The capture scenario's corpus cases parse to the expected signals for `SessionStart` with each source, `PermissionRequest`, `UserPromptSubmit`, `Stop`, `Notification` and `SessionEnd`, and record the order of `SessionStart(startup)` against the trust gate and the first ready pane.
