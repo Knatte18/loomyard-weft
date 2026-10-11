@@ -27,19 +27,15 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Model keys per judge row, seed and PR-Rework; judge verdict and usage fixes**<br>• Own model keys for each Bouncer row judge and seed pass and for PR-Rework; Go refuses CONVERGED with an open BLOCKING finding; judge and seed usage recorded | [`per-role-models`](design-per-role-models.md) | loom |  | config, loom, burler |
 
 ## Notes
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-### Bugs
-
-#### Normal priority
-
-| # | Note | Slug | Labels |
-| --- | --- | --- | --- |
-| 1 | **Go accepts a CONVERGED verdict with an open BLOCKING finding**<br>• A Bouncer judge can return CONVERGED while a BLOCKING finding is still open, and a key the judge drops from its ledger is lost silently; check both in Go | [`judge-converged-open-blocking`](design-judge-converged-open-blocking.md) | burler, loom |
 
 ### Enhancements
 
@@ -77,17 +73,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 23 | **Burler fixer weighs each finding critically before fixing**<br>• Operator, 2026-10-10: with a separate fixer kept (fix_start parallel), the fixer should be critical of the reviewer's findings, not apply them blindly. Today burler-step-3-fix.md allows a dispute only for a factually false premise; severity, size, cost or rubric disagreement never justify one. Idea: let the fixer also dispute a finding whose proposed change would be wrong or make the code worse, with evidence, and choose its own fix when the reviewer's concrete change is wrong while the premise holds; the judge rules on disputes as today. | `fixer-critical-of-findings` | burler, stencil |
 | 24 | **Reviewer treats the kick-start pack as its read set, with a budget beyond it**<br>• Fan-lab 2026-10-10: a solo opus[medium] reviewer given a kick-start pack ("read all listed spans first") read the pack and then explored about 20 more tool calls, so the pack came on top of exploration instead of replacing it; neither the prompt nor the ladder card said to stay with the pack. Idea: the prompt says the pack is the read set and is trusted as read; any read beyond it needs a named gap (a caller or spawned process one hop out), within a small tool-call budget, and the reviewer ends with one line per extra read saying why the pack lacked it (the fork rule from fan-master-preread variant D). | `pack-is-the-read-set` | burler, stencil |
 | 25 | **reed servers ignore ~/.tmux.conf**<br>• Since reed-hygiene (c6dc1fffc) reed servers start with -f /dev/null, so the operator loses prefix, key bindings and escape-time; no reed.yaml key replaces them | `reed-tmux-conf` | reed |
-| 26 | **Judge and seed passes are missing from the per-round usage files**<br>• The per-round usage files hold no judge entry, so judge cost can only be read from session transcripts | [`judge-usage-unrecorded`](design-judge-usage-unrecorded.md) | burler, loom |
-| 27 | **Model and effort set per role and per review row**<br>• Every agent a run spawns gets its own model key; first the judge per Bouncer row, then every other role that can only be set in a group or in the built-in recipe | [`per-role-models`](design-per-role-models.md) | config, loom, burler |
 
 #### Low priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 28 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
-| 29 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
-| 30 | **Haiku 5.5 for the Bouncer judge: is its ruling simple enough**<br>• The driver already runs on Haiku 5.5; decide per Bouncer row whether the judge ruling is simple enough for Haiku, trial it, and switch only where it holds | [`haiku-roles`](design-haiku-roles.md) | config, loom, burler |
-| 31 | **Fabric audit: plain readers accept unquoted globs and any flag**<br>• readOnlyCommands readers (cat, grep -r) accept unquoted globs and arbitrary flags | [`audit-reader-globs`](design-audit-reader-globs.md) | webster, fabric |
+| 26 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
+| 27 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
+| 28 | **Haiku 5.5 for the Bouncer judge: is its ruling simple enough**<br>• The driver already runs on Haiku 5.5; decide per Bouncer row whether the judge ruling is simple enough for Haiku, trial it, and switch only where it holds | [`haiku-roles`](design-haiku-roles.md) | config, loom, burler |
+| 29 | **Fabric audit: plain readers accept unquoted globs and any flag**<br>• readOnlyCommands readers (cat, grep -r) accept unquoted globs and arbitrary flags | [`audit-reader-globs`](design-audit-reader-globs.md) | webster, fabric |
 
 ### Features
 

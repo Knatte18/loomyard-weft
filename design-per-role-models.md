@@ -1,6 +1,6 @@
-# Model and effort set per role and per review row
+# Model keys per judge row, seed and PR-Rework; judge verdict and usage fixes
 
-`per-role-models` · Note · enhancement, config, loom, burler
+`per-role-models` · Task · bug, enhancement, config, loom, burler
 
 ## Seen
 
@@ -25,3 +25,15 @@ Most agents a run spawns should take a model of their own in config.
 Webster's implementer and verify-fix forks stay forks and run on `master`'s model; they are out of this task.
 A cold-start implementer with a model of its own is the separate feature `weaver`.
 The same holds for the Bouncer escalation fork and the fan's lens forks: a fork always runs on its parent session's model, so they are out of this task; the lens forks' model is set through the fanned reviewer's own key (`fan_review`).
+
+## Judge: CONVERGED with an open BLOCKING finding (was `judge-converged-open-blocking`)
+
+The haiku-roles analysis (`docs/research/haiku-judge.md`, 5459376bb) found that Go accepts a CONVERGED verdict even when a BLOCKING finding is open, and that the findings carried into the decision record come only from the judge's own ledger.
+
+Idea: refuse CONVERGED in Go while any BLOCKING finding is open, and check that every finding key from the previous ledger is still present, so a weaker judge model cannot drop one silently.
+
+## Judge and seed usage unrecorded (was `judge-usage-unrecorded`)
+
+The haiku-roles analysis had to measure judge and seed cost from session transcripts, since the per-round usage files have no judge entry.
+
+Idea: record judge and seed passes in the usage files like other roles, so the token report per role shows them without reading transcripts.
