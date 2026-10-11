@@ -296,7 +296,7 @@
       "depends_on": [],
       "isolated": false,
       "brief": "A repo-wide default layer read from _board with each worktree's own file as an override, the way millhouse's config.local.yaml works",
-      "body": "From `manifest/roadmap.md` Someday.\nEvery module's config resolves only from `\u003ccwd\u003e/_lyx/config/\u003cmodule\u003e.yaml` today, per-worktree with no shared default (`fabric.yaml` is the sole exception, anchored at `_board`).\nAdd a repo-wide default layer read from `_board`, with each worktree's own file as an override on top: the two-layer overlay millhouse already uses with `config.local.yaml`.\nNot yet designed."
+      "body": "From `manifest/roadmap.md` Someday.\nEvery module's config resolves only from `\u003ccwd\u003e/_lyx/config/\u003cmodule\u003e.yaml` today, per-worktree with no shared default (`fabric.yaml` is the sole exception, anchored at `_board`).\nAdd a repo-wide default layer read from `_board`, with each worktree's own file as an override on top: the two-layer overlay millhouse already uses with `config.local.yaml`.\nNot yet designed.\n\n## Local override layer (operator, 2026-10-11)\n\nA further layer on top: an untracked local config file under `.lyx/` per module, holding only the keys it overrides, as Millhouse's `config.local.yaml` did.\nBatten would write a task's run settings there (`task-run-settings`), so they never show up as a tracked change to `_lyx/config` and landing does not flag them.\n"
     },
     {
       "id": 83,
