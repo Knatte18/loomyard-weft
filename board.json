@@ -1016,6 +1016,21 @@
       "brief": "Give the fixer a sanctioned way to insert or remove a card, and make plan review check that every prescribed refusal is reachable",
       "body": "Two gaps in how plans are written and reviewed, merged into one task (operator, 2026-10-11).\n\n## Inserting or removing a card (was `plan-card-insert`, issue #508)\n\nPlan cards are numbered contiguously and each card file name is tied to its number.\nA Plan-Review fix that needed one new card ahead of card 8 therefore renumbered cards 8 to 19, twelve files.\n\nThe fixer rules allow file changes only through Edit or Write and name no way to rename or remove a file.\nThe fixer rewrote each card under its new name and removed the old files with `rm`, which the rules neither allow nor forbid.\n\nThis is abnormal: a routine plan edit forces a fixer to guess at an unstated rule and do a bulk, error-prone rewrite.\n\nWhat to do, either of:\n\n- add a plan verb that inserts a card and renumbers the rest;\n- state a rule for removing a file inside the fixer's write surface.\n\nProvenance: task `driver-context`; note `burler-plan-r1.md`.\n\n## Unreachable prescribed refusals (was `plan-refusal-reachability`, issue #516)\n\nA plan card prescribed a refusal branch (a zero-batch refusal after an accepted auto-rebaseline) with a fixed signature.\nReview of the implementation flagged that no test reaches the refusal; the fixing agent then found that no plan can reach it, because the plan parser refuses a cardless plan before `Run` forms any batch.\nThe branch was kept and its text pinned with a golden test of the error constructor, which conflicts with the rule against code for impossible states.\n\nThis is abnormal because the plan passed its Plan-Bouncer and Plan-Burler rounds with a prescribed refusal that is unreachable by construction, and the contradiction surfaced only after the code was written.\n\nWhat to do: have plan review (or the plan-time checks) verify that every refusal a card prescribes is reachable from some input that passes upstream validation, or require the card to say how a test reaches it.\n\nProvenance: task `webster-replan-state`, from note `burler-webster-r1.md`.\n",
       "status": "running · Discussion-Burler"
+    },
+    {
+      "id": 345,
+      "slug": "batten-draft-teardown",
+      "title": "A draft in the driver pane kills batten, and the pair is never torn down",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A non-idle resume error makes batten fail for good; a manually finished run then skips archive and teardown.",
+      "body": "## Seen (2026-10-11, gate-test-hygiene, PR #537)\n\nAfter `lyx loom approve` at PR-Gate, batten's Run-Shed tried to resume the parked driver and failed with `shuttle: the session is not idle ... the input box holds a draft: \"Tok\"`.\n`internal/battenshed/innerrun.go:816` treats any resume error other than `ErrChildNotParked` as fatal, so batten went `failed` and exited.\nThe orch then drove the loom run to done by hand with `lyx loom start`.\nNobody resumed batten, so Worktree-Teardown never ran: the pair, its empty reed session and its weft branch stayed, and no `archive/\u003cslug\u003e/\u003ctip\u003e` tag was pushed.\n`lyx batten run \u003cslug\u003e` afterwards closes it: Run-Shed sees the done child and moves on to Worktree-Teardown.\n\n## Idea\n\n- Retry a \"session not idle / draft\" resume error the way `ErrChildNotParked` is retried, or halt `blocked` with the remedy \"clear the draft, then `lyx batten run \u003cslug\u003e`\".\n- Flag a batten run that is `failed` while its child loom run is `done`, naming `lyx batten run \u003cslug\u003e` as the step that closes it.\n- The orch's after-landing routine checks that `lyx batten status \u003cslug\u003e` is done, and otherwise runs `lyx batten run \u003cslug\u003e`.\n"
     }
   ]
 }
