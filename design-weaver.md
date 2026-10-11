@@ -26,3 +26,13 @@ Weaver is, in effect, Webster's recovery strand used as the normal path.
 - From Builder: a cold, scoped agent per batch that reads only its cards and Shared Decisions, a model and effort per role per spawn, and a one-shot self-resolve before halting.
 - New in neither: an escalation ladder per failed attempt, for example `sonnet` → `opus` → `opus[high]`, set in config.
 - Open: how to keep cold-start cost down (a kick-start pack per batch, see `kick-start-pack`), and how a run chooses Weaver over Webster (recipe row or config).
+
+## Idea: Weaver as a Shed run (operator, 2026-10-11)
+
+Loom's driver now does little: most of a loom run is driven mechanically, and the driver acts only when something goes wrong.
+Weaver gets the same split: a Weaver run is a Shed-like run in which each batch is a producer, and a Master Weaver drives it the way a driver drives loom, stepping in only when a batch fails.
+
+Open against the code:
+- A Shed recipe's rows are fixed, while a plan's batch count is not: either the recipe is generated from the plan, or one batch producer loops over the batch index, as the Burler round loops over rounds.
+- The escalation ladder could be Shed rows: a batch's `OnStuck` points at the same batch on the next model tier, and the last tier's `OnStuck` escalates to Master Weaver.
+- Whether Master Weaver is an LLM at all on the happy path, or only the escalation target, as the hub orchestrator is for loom.
