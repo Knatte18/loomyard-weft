@@ -95,10 +95,13 @@ An error-stop `resume` needs no recorded verb, and may name a goto target.
 The driver then acts:
 
 - `resume`: the driver re-launches the loop at once, naming the attempt (flag name the Plan's), and the run must move.
-  The re-launch, in Go and under the run's status lock, consumes the attempt: it refuses an attempt whose verdict is not `resume` or is already applied, then checks that the run is in the state the arbiter left, writes the applied mark (D1), performs the verdict's goto when it names a target, and steps the run.
+  The re-launch, in Go, takes the run lock before it consumes the attempt, so a busy refusal leaves the attempt unapplied.
+  It then consumes the attempt: it refuses an attempt whose verdict is not `resume` or is already applied;
+  then, in one status-file write under one hold of the status lock, it checks that the run is in the state the arbiter left, writes the applied mark (D1), and performs the verdict's goto when it names a target.
+  It steps the run after that hold is released, since the step's own persists take the status lock.
   The run is in the state the arbiter left when its stop key is the attempt's, `pause_requested` is unset, and `pause_before` and `pause_after` hold the values the verb recorded in the attempt at spawn.
   The check runs before the goto, so no goto has yet cleared a pause set during the arbiter.
-  The re-launch's goto is `lyx loom goto`'s backward move, except that it keeps `pause_before` and `pause_after` as they stand, so it removes no pause condition either.
+  The re-launch's goto is `lyx loom goto`'s backward move, except that it keeps `pause_requested`, `pause_before` and `pause_after` as they stand, so it removes no pause.
   Any other state, an orch or operator `goto` or `pause` (plain, `--before` or `--after`) among them, is refused before the goto, and the driver takes the `hand-on` path below with the verdict path; neither the goto nor the step happens, so a `resume` verdict never un-pauses a stop a human set.
   A re-launch steps an `awaiting` or `paused` run as it stands, since a step short-circuits only a `done` run and re-calls `current_producer`.
   This is a new entry in the stencil's closed re-launch list.
@@ -116,7 +119,7 @@ The key is `loom.yaml` `arbiter_max_spawns`, default `3` in the template; `0`, w
 The count is the number of arbiter attempt records under the run's durable run directory, written when the verb spawns, so a driver or batten restart never resets it.
 A stop that reaches the verb again with the stop key (D1) of an applied `resume` attempt is refused and handed on, so one recurring stop spends one slot and earns one re-launch.
 This is the case at an error stop, where a producer error that recurs after the re-launch appends no history and leaves the stop key unchanged; the applied mark is what tells it from an unapplied verdict.
-An applied attempt whose stop key is unchanged is handed on whether the stop recurred or the re-launch never stepped, as after a busy refusal of the re-launched loop or a driver that died after writing the mark.
+An applied attempt whose stop key is unchanged is handed on whether the stop recurred or the re-launch never stepped, as after a driver that died after writing the mark, or a step that failed before its first status write.
 The refusal's reason states this as "an applied resume left the stop key unchanged" and never claims recurrence.
 This costs the parent one wake and never a second re-launch.
 Rationale: the operator set the shape; three lets a run settle a stop at each review perch while bounding a run that keeps getting stuck.
@@ -210,6 +213,12 @@ Auto-picks, each with its rationale in its decision: the verb shape (D1), the el
 - An orch or operator `goto` or `pause` on the run while the arbiter runs is not blocked, but it is not overridden either: the re-launch checks the run against the attempt's stop key and recorded pause conditions before it performs the verdict's goto or steps the run (D6), and otherwise hands on, so such an action costs the arbiter's settlement of that stop.
 - A driver that dies mid-arbiter and is never revived leaves the verdict unapplied until batten's hold expires and the parent is notified.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 3: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-3-review.md; fixer report: _lyx/reviews/discussion/round-3-fixer-report.md.
+  - regoto-gap-erases-plain-pause (class design, severity MEDIUM, open in rounds 3)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - Each eligible stop kind of D2 spawns one arbiter, and each excluded stop kind, the target-naming Publish halt in a watched and an unwatched run and an awaiting stop with a `parent_notice` but no Bouncer escalation included, is refused with a way forward and spawns nothing.
@@ -224,7 +233,8 @@ Auto-picks, each with its rationale in its decision: the verb shape (D1), the el
 - A driver that wakes unparked with an unapplied arbiter attempt on disk for the current stop key applies that attempt's verdict without a second spawn.
 - An orch `goto` or an orch `pause` during a live arbiter, followed by a `resume` verdict, is handed on with the verdict path, not un-paused or re-launched, and spawns no second arbiter.
 - An orch `pause`, plain, `--before` or `--after`, during a live arbiter whose `resume` verdict names a goto target is handed on with the verdict path, and neither the goto nor the re-launch happens.
-- An applied `resume` whose re-launch never stepped, such as after a busy refusal, is handed on with the reason that the stop key is unchanged, without a second re-launch.
+- A plain `pause` that lands after the arbiter's verdict and before the re-launch's step survives the re-launch and pauses the run.
+- An applied `resume` whose re-launch never stepped, such as after the driver died between the applied mark and the step, is handed on with the reason that the stop key is unchanged, without a second re-launch.
 - Batten sends no state-changed notice while a live arbiter marker is within its deadline, sends it once past the deadline or after a hand-on, and sends none when a `resume` moved the child on; a marker whose arbiter shuttle run is dead, and a missing marker, hold nothing, and the notice goes as today; its strand revive never revives an arbiter strand.
 - `lyx loom decision add --by arbiter` passes from the run's arbiter strand and is refused from any other caller; `--by parent` and `--by operator` behave as before.
 - The arbiter stencil renders the edit directive and the no-parent directive, names only D3's mutating verbs, and the stencil tests over directives and role skills pass for the new role.
