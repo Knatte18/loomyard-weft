@@ -1,0 +1,25 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/loomcli.TestWire_EverySeamFilled
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/loomcli
+      tail: |4-
+            wiring_seams_test.go:64: c.env.InnerRun.PublishFailure is nil after wire(); fill it or list it in intentionallyNil with a reason
+            wiring_seams_test.go:64: c.env.InnerRun.ChildHead is nil after wire(); fill it or list it in intentionallyNil with a reason
+            wiring_seams_test.go:64: c.env.InnerRun.Goto is nil after wire(); fill it or list it in intentionallyNil with a reason
+            wiring_seams_test.go:64: c.env.Teardown.Notices.OrchStrandRecorded is nil after wire(); fill it or list it in intentionallyNil with a reason
+            wiring_seams_test.go:64: c.env.Teardown.Notices.BattenHistoryLen is nil after wire(); fill it or list it in intentionallyNil with a reason
+            wiring_seams_test.go:64: c.env.Land.ParentBranch is nil after wire(); fill it or list it in intentionallyNil with a reason
+            wiring_seams_test.go:64: c.env.Land.PrimeBranch is nil after wire(); fill it or list it in intentionallyNil with a reason
+            wiring_seams_test.go:64: c.env.Land.PrimeDirty is nil after wire(); fill it or list it in intentionallyNil with a reason
+            wiring_seams_test.go:64: c.env.Land.Pull is nil after wire(); fill it or list it in intentionallyNil with a reason
+            wiring_seams_test.go:64: c.env.Land.Landing is nil after wire(); fill it or list it in intentionallyNil with a reason
+            wiring_seams_test.go:64: c.env.Land.RunDeploy is nil after wire(); fill it or list it in intentionallyNil with a reason
+            wiring_seams_test.go:64: c.env.Land.ReadyTasks is nil after wire(); fill it or list it in intentionallyNil with a reason
+            wiring_seams_test.go:64: c.env.Land.PruneBoard is nil after wire(); fill it or list it in intentionallyNil with a reason
+            wiring_seams_test.go:64: c.env.Land.LandLock.Acquire is nil after wire(); fill it or list it in intentionallyNil with a reason
+            wiring_seams_test.go:64: c.env.Land.PauseRequested is nil after wire(); fill it or list it in intentionallyNil with a reason
+            wiring_seams_test.go:64: c.env.Land.Notices.OrchStrandRecorded is nil after wire(); fill it or list it in intentionallyNil with a reason
+            wiring_seams_test.go:64: c.env.Land.Notices.BattenHistoryLen is nil after wire(); fill it or list it in intentionallyNil with a reason
+log_path: /home/knatte/Code/loomyard-LYXHUB/orch-wake-policy/.lyx/verify/verify-2.log
