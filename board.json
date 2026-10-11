@@ -1048,6 +1048,48 @@
       "isolated": false,
       "brief": "Bench pair for twill-plan round 3; torn down after the run",
       "body": "Temporary bench pair for board note twill-plan, round 3. Plan-Write only, from a frozen decision record."
+    },
+    {
+      "id": 410,
+      "slug": "twb-p3s-th-2",
+      "title": "twill-plan bench round 3 pair twb-p3s-th-2",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Bench pair for twill-plan round 3; torn down after the run",
+      "body": "Temporary bench pair for board note twill-plan, round 3. Plan-Write only, from a frozen decision record."
+    },
+    {
+      "id": 411,
+      "slug": "twb-p3r-th-1",
+      "title": "twill-plan bench round 3 pair twb-p3r-th-1",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Bench pair for twill-plan round 3; torn down after the run",
+      "body": "Temporary bench pair for board note twill-plan, round 3. Plan-Write only, from a frozen decision record."
+    },
+    {
+      "id": 412,
+      "slug": "twb-p3r-th-2",
+      "title": "twill-plan bench round 3 pair twb-p3r-th-2",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Bench pair for twill-plan round 3; torn down after the run",
+      "body": "Temporary bench pair for board note twill-plan, round 3. Plan-Write only, from a frozen decision record."
     }
   ]
 }
