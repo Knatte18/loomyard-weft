@@ -166,6 +166,14 @@ A recorded decision settles as recorded whatever the flag's current value, and a
   - d9-dispute-ground-removal-unbounded-under-auto-accept (class design, severity MEDIUM, open in rounds 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - card10-prompt-test-helpers-undecided (class consistency, severity MEDIUM, open in rounds 2)
+  - card2-validatefix-refusals-untested (class scope, severity MEDIUM, open in rounds 2)
+  - card4-loomcli-test-budget-row (class consistency, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - Each perch routes Bouncer → review row → fix row → Bouncer, and no row of a Burler pair returns Done.
