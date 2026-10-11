@@ -152,11 +152,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 32 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) | loom, stencil |
-
-## Done
-
-Finished, awaiting `lyx board prune --apply`.
-
-| # | Entry | Slug | Labels |
-| --- | --- | --- | --- |
-| 1 | **Plan gaps: inserting a card, unreachable prescribed refusals**<br>• Give the fixer a sanctioned way to insert or remove a card, and make plan review check that every prescribed refusal is reachable | [`plan-gaps`](design-plan-gaps.md) | loom, burler, stencil |

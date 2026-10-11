@@ -962,27 +962,6 @@
       "body": "## Seen (2026-10-11, discussion bench)\n\n`lyx loom step --help` contradicts itself: `internal/loomcli/cli.go:313` says step bootstraps the worktree's loom task exactly as `lyx loom start` does, and `:329-330` says it never writes a seed and refuses when none exists.\nIt refuses on an unseeded pair and points to `lyx loom start`, which spawns an LLM driver.\nThe bench agent took that route and ended up with an unwanted driver; stepping without a driver needs `lyx shed seed self --recipe loom --driver go --param parent=main` first, which the help does not mention.\n\n## Idea\n\nMake the help say only what step does (refuses without a seed), and name the driverless seed command beside `lyx loom start` in the help and in the refusal text.\n"
     },
     {
-      "id": 344,
-      "slug": "plan-gaps",
-      "title": "Plan gaps: inserting a card, unreachable prescribed refusals",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "loom",
-        "burler",
-        "stencil"
-      ],
-      "issues": [
-        508,
-        516
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Give the fixer a sanctioned way to insert or remove a card, and make plan review check that every prescribed refusal is reachable",
-      "body": "Two gaps in how plans are written and reviewed, merged into one task (operator, 2026-10-11).\n\n## Inserting or removing a card (was `plan-card-insert`, issue #508)\n\nPlan cards are numbered contiguously and each card file name is tied to its number.\nA Plan-Review fix that needed one new card ahead of card 8 therefore renumbered cards 8 to 19, twelve files.\n\nThe fixer rules allow file changes only through Edit or Write and name no way to rename or remove a file.\nThe fixer rewrote each card under its new name and removed the old files with `rm`, which the rules neither allow nor forbid.\n\nThis is abnormal: a routine plan edit forces a fixer to guess at an unstated rule and do a bulk, error-prone rewrite.\n\nWhat to do, either of:\n\n- add a plan verb that inserts a card and renumbers the rest;\n- state a rule for removing a file inside the fixer's write surface.\n\nProvenance: task `driver-context`; note `burler-plan-r1.md`.\n\n## Unreachable prescribed refusals (was `plan-refusal-reachability`, issue #516)\n\nA plan card prescribed a refusal branch (a zero-batch refusal after an accepted auto-rebaseline) with a fixed signature.\nReview of the implementation flagged that no test reaches the refusal; the fixing agent then found that no plan can reach it, because the plan parser refuses a cardless plan before `Run` forms any batch.\nThe branch was kept and its text pinned with a golden test of the error constructor, which conflicts with the rule against code for impossible states.\n\nThis is abnormal because the plan passed its Plan-Bouncer and Plan-Burler rounds with a prescribed refusal that is unreachable by construction, and the contradiction surfaced only after the code was written.\n\nWhat to do: have plan review (or the plan-time checks) verify that every refusal a card prescribes is reachable from some input that passes upstream validation, or require the card to say how a test reaches it.\n\nProvenance: task `webster-replan-state`, from note `burler-webster-r1.md`.\n",
-      "status": "done"
-    },
-    {
       "id": 348,
       "slug": "pane-inject-safety",
       "title": "Pane injection never merges with the operator draft, and batten survives a draft",
