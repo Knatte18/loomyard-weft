@@ -1,0 +1,281 @@
+{
+  "runGuid": "6e91da9b89ca5b8b2b2b9ccec7d19293",
+  "planFingerprint": "7dbabfc534abc6da16b88588cbc5e008f0c26ba52e7dad2d62cde711628797a1",
+  "planFileHashes": {
+    "00-overview.md": "018e7a354c26d355ffb16a5e99bbfe8670a3d8a7ded051c048f77ec685c45dd6",
+    "01-darn-board-get-json.md": "0df9f75898495f6a6761f4508039f44e9cedb57043db623512679b78bea99846",
+    "02-final-summary-spec-rename.md": "7c83fe18cf611d2e60f9df1046be74b3053388aff9cfb1635830df2dd4bdaefb",
+    "03-overview-batten-recipes.md": "ad1f0058738fca727a737ee8150af4c5047e88b1ccb6ed7f0c143e7da6ca16c1",
+    "04-batten-terminal-marker-reset.md": "c2ec77529dcf19c29b2c4b146e1a380a37de64fe33c6dff5a1a6c9b6c31d0118",
+    "05-reconcile-floor-migrate.md": "bdb189daeb240bf063715bc4d8d39ae85247cd6fd0841971cdbe1c0cc5e66c30",
+    "06-fabric-unwire-apply.md": "4ed0ebcad93755650955112dc179393581be09d0da671d08a706446a5dc82d97",
+    "07-board-prune-retire-apply.md": "7903ffbdcd4052e621dd4eb5f4a848636f2ae4afcf6274eaf6a675c064543626",
+    "08-index-note-audience.md": "59b01e70c5d88795f6ecc0af883dc54c861c87983c62391e2c97ed09bb25fa11",
+    "09-carry-over-concurrent-write.md": "6e0867425d3bc94b01305aa12273f00725e605b24468dc9fcc04dc93cc57e487"
+  },
+  "planOverviewFrameHash": "d497d167f6432f10c35d229baa63e048af19144a36194dbfa279ff30950eed8b",
+  "partition": [
+    {
+      "cards": [
+        "01-darn-board-get-json",
+        "02-final-summary-spec-rename",
+        "03-overview-batten-recipes",
+        "04-batten-terminal-marker-reset",
+        "05-reconcile-floor-migrate"
+      ],
+      "profile": "cautious",
+      "estimate": 266866,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54448,
+        "read_union": 98616,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 216,
+            "reads": {
+              "file:contracts/stencils/darn/darn-template-write.md": 792,
+              "file:contracts/stencils/landing/landing-template-describe.md": 624,
+              "file:contracts/stencils/loom/loom-template-discussion.md": 2232,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/darn": 2000,
+              "package:contracts/stencils/landing": 2000,
+              "package:internal/darnengine": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/darn": 2000,
+              "tests:contracts/stencils/landing": 2000,
+              "tests:internal/darnengine": 2000
+            },
+            "messages": 30.5,
+            "written": 9366
+          },
+          {
+            "card": 2,
+            "card_text": 408,
+            "reads": {
+              "file:contracts/specs/final-summary-spec.md": 564,
+              "file:contracts/specs/webster-spec.md": 888,
+              "file:contracts/stencils/darn/darn-template-write.md": 792,
+              "file:contracts/stencils/landing/landing-template-describe.md": 624,
+              "file:docs/overview.md": 8280,
+              "package:cmd/lyx": 2000,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils/darn": 2000,
+              "package:contracts/stencils/landing": 2000,
+              "package:docs": 2000,
+              "package:internal/cliwire": 2000,
+              "package:internal/darnengine": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils/darn": 2000,
+              "tests:contracts/stencils/landing": 2000,
+              "tests:docs": 2000,
+              "tests:internal/cliwire": 2000,
+              "tests:internal/darnengine": 2000
+            },
+            "messages": 102,
+            "written": 31008
+          },
+          {
+            "card": 3,
+            "card_text": 108,
+            "reads": {
+              "file:docs/overview.md": 8280,
+              "package:docs": 2000,
+              "tests:docs": 2000
+            },
+            "messages": 6,
+            "written": 1908
+          },
+          {
+            "card": 4,
+            "card_text": 468,
+            "reads": {
+              "file:docs/overview.md": 8280,
+              "file:internal/battenshed/doc.go": 1152,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 99.5,
+            "written": 30318
+          },
+          {
+            "card": 5,
+            "card_text": 552,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:internal/configcli/doc.go": 432,
+              "file:internal/orchengine/doc.go": 4464,
+              "file:internal/shuttleengine/doc.go": 3456,
+              "file:internal/yamlengine/doc.go": 360,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/configcli": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/configsync": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/orchengine": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/yamlengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/configsync": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/orchengine": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/yamlengine": 2000
+            },
+            "messages": 135.5,
+            "written": 41202
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-fabric-unwire-apply",
+        "07-board-prune-retire-apply",
+        "08-index-note-audience",
+        "09-carry-over-concurrent-write"
+      ],
+      "profile": "cautious",
+      "estimate": 314732,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61448,
+        "read_union": 100572,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 552,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 16800,
+              "file:tools/sandbox/SANDBOX-CORE-SUITE.md": 4104,
+              "file:tools/sandbox/SANDBOX-FABRIC-SUITE.md": 7320,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabriccli_test": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/fabricengine_test": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabriccli_test": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/fabricengine_test": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 214,
+            "written": 64752
+          },
+          {
+            "card": 7,
+            "card_text": 480,
+            "reads": {
+              "file:internal/boardcli/doc.go": 492,
+              "file:plugins/ly/skills/board/SKILL.md": 1548,
+              "package:internal/boardcli": 2000,
+              "package:internal/boardcli_test": 2000,
+              "package:internal/boardengine": 2000,
+              "package:internal/boardengine_test": 2000,
+              "package:plugins/ly/skills/board": 2000,
+              "tests:internal/boardcli": 2000,
+              "tests:internal/boardcli_test": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/boardengine_test": 2000,
+              "tests:plugins/ly/skills/board": 2000
+            },
+            "messages": 122,
+            "written": 37080
+          },
+          {
+            "card": 8,
+            "card_text": 420,
+            "reads": {
+              "file:internal/boardcli/doc.go": 492,
+              "file:internal/clihelp/exec.go": 2868,
+              "package:cmd/lyx": 2000,
+              "package:internal/boardcli": 2000,
+              "package:internal/clihelp": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/boardcli": 2000,
+              "tests:internal/clihelp": 2000
+            },
+            "messages": 118.5,
+            "written": 35970
+          },
+          {
+            "card": 9,
+            "card_text": 360,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:contracts/specs/refusal-spec.md": 4008,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/discussionparser": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/discussionparser": 2000
+            },
+            "messages": 48.5,
+            "written": 14910
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "a259d402af2bc3b366acd2663e000da1",
+  "masterSessionId": "11e57731-7c3e-4237-af9a-772e8cad2455",
+  "batches": {
+    "1": {
+      "slug": "darn-board-get-json",
+      "cards": [
+        "01-darn-board-get-json",
+        "02-final-summary-spec-rename",
+        "03-overview-batten-recipes",
+        "04-batten-terminal-marker-reset",
+        "05-reconcile-floor-migrate"
+      ],
+      "cardHashes": {
+        "01-darn-board-get-json": "0df9f75898495f6a6761f4508039f44e9cedb57043db623512679b78bea99846",
+        "02-final-summary-spec-rename": "7c83fe18cf611d2e60f9df1046be74b3053388aff9cfb1635830df2dd4bdaefb",
+        "03-overview-batten-recipes": "ad1f0058738fca727a737ee8150af4c5047e88b1ccb6ed7f0c143e7da6ca16c1",
+        "04-batten-terminal-marker-reset": "c2ec77529dcf19c29b2c4b146e1a380a37de64fe33c6dff5a1a6c9b6c31d0118",
+        "05-reconcile-floor-migrate": "bdb189daeb240bf063715bc4d8d39ae85247cd6fd0841971cdbe1c0cc5e66c30"
+      },
+      "startSha": "1e79825ff968848322198e80471cf827fcd53cea",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T08:31:12Z",
+      "sessionId": "11e57731-7c3e-4237-af9a-772e8cad2455",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
