@@ -14,9 +14,14 @@ The leading Escape can complete a double-Esc that clears the operator's draft, o
 
 ## Idea
 
-- Read the box right before every Enter and press Enter only when it holds exactly the sent text (or the paste placeholder); otherwise send no Enter and report the send as not landed.
-- Route the slash-command, color and session-rename sequences through that same verified path.
-- Treat an unreadable box as not idle in `judgeReadiness`.
-- Drop the leading Escape from `TypeSequence`, since the box was just proven empty.
-- Defer an injection while the attached client's `#{client_activity}` is under about 5 s old and the target pane is its active pane.
-- Later: an atomic bracketed paste with its Enter in one tmux command list, and file-based notice delivery to the orch through a Stop hook.
+A check that refuses the Enter after the text merged comes too late: the operator's draft is already spoiled.
+So prevent the merge first, and keep the Enter check only as a last guard (operator, 2026-10-11):
+
+1. **Defer while the operator types.** Hold an injection while the attached client's `#{client_activity}` is under a few seconds old and the target pane is its active pane; the injection waits in a queue and is retried, never dropped.
+2. **Send text and Enter atomically.** `load-buffer` + `paste-buffer -p -d` + `send-keys Enter` as one tmux command list, and drop the leading Escape and the 300 ms settle, so the window between check and submit shrinks from about a second to the capture-to-write gap.
+   Needs a live check that Claude Code treats a paste-end followed by Enter as a submit.
+3. **Last guard: check the box right before Enter.** Press Enter only when the box holds exactly the sent text (or the paste placeholder).
+   On a mismatch, send no Enter, never clear or edit the box, and requeue the injection until the box reads empty again (the operator sent or cleared the draft).
+4. Route `/clear`, `/compact`, `/reload-plugins`, color and session-rename through the same path, and treat an unreadable box as not idle in `judgeReadiness`.
+
+Later: file-based notice delivery to the orch through a Stop hook, so fewer notices are typed at all.
