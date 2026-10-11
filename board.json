@@ -1039,6 +1039,22 @@
       "isolated": false,
       "brief": "An implementer fork broke the edit directive and hit Claude Code's dangerous-rm prompt",
       "body": "## Seen (2026-10-11, `shuttle-hook-first`, Webster batch 01)\n\nThe batch 01 implementer fork ran, from Merriam's session:\n\n```\ntmux -L askexp kill-server; rm -rf \"$(cat /tmp/claude-1000/askdir)\" /tmp/claude-1000/askdir; cd internal/shuttlecli \u0026\u0026 sed -i '604s|Write(|Edit(|' smoke_turns_test.go \u0026\u0026 sed -n 603,605p smoke_turns_test.go\n```\n\n- Claude Code stopped it with a permission prompt (\"Dangerous rm operation on statically-unresolvable target\"), which fires in bypass mode too, so the run waited on the operator.\n- The fork edited a test file with `sed -i`, against `contracts/stencils/edit/edit-directive.md` (\"never `sed`\").\n- It kept experiment state in `/tmp` and ran its own tmux server (`-L askexp`); no Webster stencil names a scratch place or forbids a system temp directory.\n\n## Open\n\n- Whether the edit directive reaches Webster implementer forks at all, and if so why the fork ignored it.\n- Whether the implementer stencil should name a scratch place inside the pair and forbid `rm` on a computed path.\n- Detection (operator, 2026-10-11: such a stall must be noticed, it likely sat a while): `shuttle-hook-first` D5 installs a `PermissionRequest` hook that reads the session as asking at once.\n  Open: whether the hook fires for a fork's prompt in Merriam's session, and what turns a run that stays asking past a bound into a notice that reaches the operator.\n"
+    },
+    {
+      "id": 408,
+      "slug": "delete-before-reference-receiver",
+      "title": "Plan gate delete-before-reference matches deleted methods by bare name",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "quarry",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Hundreds of false blocking findings when a plan deletes a method with a common name",
+      "body": "## Seen (2026-10-11, `burler-split-budget` Plan-Write)\n\nThe plan gate's `delete-before-reference` check matches a deleted method glyph's member name as a bare word.\nDeleting `probingBurlerRunner.Run` or `shedfake.BurlerRunner.Run` flagged every later card whose edit code held any `.Run(` call, `doc.go` prose included, and `BurlerProducer.Call` drew a match on an unrelated `.Call` in `internal/proc/namedjob_windows.go`.\nAbout 220 blocking findings came from a handful of deletes.\nThe writer moved every deletion into one last card and deleted a test helper type by listing its whole file, which loses the `caller-uncovered` check on those methods.\nPlan-Write ran about 30 minutes and 192k output tokens, much of it on repeated `lyx loom validate-plan` passes.\n\n## Idea\n\nMatch a deleted method by receiver type: count only selector expressions whose receiver resolves to the deleted type when a type load answers, as `caller-uncovered` already does.\nThe plan's natural order (retire the old producer right after the switch) then stays valid.\n"
     }
   ]
 }

@@ -52,6 +52,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 1 | **Webster fork used sed -i and an rm on a computed /tmp path, stalling on a permission prompt**<br>• An implementer fork broke the edit directive and hit Claude Code's dangerous-rm prompt | [`webster-fork-shell`](design-webster-fork-shell.md) | webster, stencil |
+| 2 | **Plan gate delete-before-reference matches deleted methods by bare name**<br>• Hundreds of false blocking findings when a plan deletes a method with a common name | [`delete-before-reference-receiver`](design-delete-before-reference-receiver.md) | quarry, loom |
 
 ### Enhancements
 
