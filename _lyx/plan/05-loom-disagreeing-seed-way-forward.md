@@ -7,7 +7,7 @@
 - `internal/loomcli/smoke_bootstrapwiring_test.go`
 
 **Create:**
-- `plan:internal/loomcli#disagreeingSeedRefusal` -> `func disagreeingSeedRefusal(seedPath string, existing shedrun.Seed, parent string) error`
+- `internal/loomcli#disagreeingSeedRefusal`
 
 **Uses:**
 - `internal/shedrun#ErrDisagreeingSeed`

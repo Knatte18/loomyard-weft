@@ -1,13 +1,13 @@
 {
   "runGuid": "9bba9d9836b3699450fa09b39869f1ca",
-  "planFingerprint": "6c95fee83818894962dd5973f051103d9e55fd31d957a2bb4f6fb13781fc54d1",
+  "planFingerprint": "e247f0d5200e7531dcf698dfc03be437e163a6dc40d6e3175ac8dbda50e81a4b",
   "planFileHashes": {
     "00-overview.md": "0115507e999c167d4657637c6fe749757d6ca92d327dbdd8da9e87c37ec86b38",
     "01-tokencount-turn-start-and-stall-cap.md": "045a3401f405eb4dcedf723ab4c12ea24fbc1b0d3a24a0570fe2bb377e4ac17a",
     "02-tokencount-run-lower-bound.md": "114a0ed5f28815478fb2bc0873a6345877533726b5639adb2fdebce987a26cb9",
     "03-loom-help-seeding-routes.md": "e1a5e4446419a009c384442d680e3dbff6dadb340dc3eeb67d2cdb8f663b9848",
     "04-loom-missing-seed-remedy.md": "d5ddf4f4768100ea81250975c0bccb64932f04440ae4bb09c02ab872d5bf8bca",
-    "05-loom-disagreeing-seed-way-forward.md": "679fdf2b3ff24febf1986ad7b2982865e5eed75abeaca03d11e2f0f9cad3dee4",
+    "05-loom-disagreeing-seed-way-forward.md": "bc141d565000ae26353771ed662245eb1ba4b0f6c65c518715c11950c95d5e8c",
     "06-plan-rubric-redundancy-pointer.md": "e15989e02205bfacb61e3f023535db0014c4f8119664fcc8fab7f40526ea26ba",
     "07-batten-notice-state-lead.md": "d6efaea0fd195d54cefec36d0e3608cf990f90a444a8da8e1443ffc43ccb88ed"
   },
@@ -170,7 +170,7 @@
       }
     }
   ],
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "8022f8a53f5e8c1e1738474ad7b41069",
   "masterSessionId": "e7a0307a-da46-46c9-a0a4-a833cba3bc1f",
   "batches": {
@@ -217,7 +217,7 @@
       ],
       "cardHashes": {
         "04-loom-missing-seed-remedy": "d5ddf4f4768100ea81250975c0bccb64932f04440ae4bb09c02ab872d5bf8bca",
-        "05-loom-disagreeing-seed-way-forward": "679fdf2b3ff24febf1986ad7b2982865e5eed75abeaca03d11e2f0f9cad3dee4",
+        "05-loom-disagreeing-seed-way-forward": "bc141d565000ae26353771ed662245eb1ba4b0f6c65c518715c11950c95d5e8c",
         "06-plan-rubric-redundancy-pointer": "e15989e02205bfacb61e3f023535db0014c4f8119664fcc8fab7f40526ea26ba",
         "07-batten-notice-state-lead": "d6efaea0fd195d54cefec36d0e3608cf990f90a444a8da8e1443ffc43ccb88ed"
       },
@@ -225,11 +225,26 @@
       "kind": "fork",
       "spawnedAt": "2026-10-11T14:06:43Z",
       "sessionId": "e7a0307a-da46-46c9-a0a4-a833cba3bc1f",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-loom-missing-seed-remedy",
+        "status": "done",
+        "head_sha": "56f77eea626fb9275fded4206cdc6cfe8b30fea4"
+      },
+      "cardShas": [
+        "56f77eea626fb9275fded4206cdc6cfe8b30fea4"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-small-fixes-oct11/e7a0307a-da46-46c9-a0a4-a833cba3bc1f/subagents/agent-a5254b2d30445d847.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-small-fixes-oct11/e7a0307a-da46-46c9-a0a4-a833cba3bc1f/subagents/agent-a5254b2d30445d847.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-small-fixes-oct11/e7a0307a-da46-46c9-a0a4-a833cba3bc1f/subagents/agent-afa8f6a8462517b6d.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-small-fixes-oct11/e7a0307a-da46-46c9-a0a4-a833cba3bc1f/subagents/agent-afa8f6a8462517b6d.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-small-fixes-oct11/e7a0307a-da46-46c9-a0a4-a833cba3bc1f/subagents/agent-a5254b2d30445d847.jsonl"
   ]
 }
