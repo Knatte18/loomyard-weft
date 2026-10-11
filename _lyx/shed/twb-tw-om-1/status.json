@@ -1,14 +1,21 @@
 {
   "current_producer": "Preflight",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "preconditions not met: worktree-clean: uncommitted state changes under `_lyx`: M _lyx/config/loom.yaml; way forward: commit or stash the code changes with git, and commit the _lyx changes with `lyx fabric commit`, then re-step; a session lyx refuses the verb from reports status: FAILED and the orch runs it",
   "pause_requested": false,
   "activity": {
-    "now": "",
-    "last": "",
-    "wait": ""
+    "now": "Preflight",
+    "last": "Preflight → stuck",
+    "wait": "preconditions not met: worktree-clean: uncommitted state changes under `_lyx`: M _lyx/config/loom.yaml; way forward: commit or stash the code changes with git, and commit the _lyx changes with `lyx fabric commit`, then re-step; a session lyx refuses the verb from reports status: FAILED and the orch runs it"
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Preflight",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-11T11:09:34Z"
+    }
+  ],
   "product": {
     "slug": "twb-tw-om-1",
     "parent": "main",
