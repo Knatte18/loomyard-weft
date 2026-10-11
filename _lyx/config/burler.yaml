@@ -80,6 +80,19 @@ lenses:
     change should have updated but didn't, stale references to removed or
     renamed symbols, and examples that would no longer compile or run as
     written. Report anything else you notice too — emphasis, never exclusion.
+  premises: |
+    Focus on the record's premises. List every factual claim the record and
+    the support log make about today's code, config or behaviour: what a
+    function returns or decides, which inputs or sessions a reader covers,
+    what a rule or constraint implies, what a set of paths includes. Open the
+    code behind every such claim, and one hop past what the record cites, such
+    as the caller, the config key or the spawned process a cited piece leans
+    on. Only a verbatim read of that code already in your context counts as
+    opened; a summary or the record's own wording does not. Batch several
+    reads into one tool call to stay inside your call bound. Confirm or refute
+    each claim, citing the file and function you opened, and report a claim
+    you could not open as unverified. Report anything else you notice too —
+    emphasis, never exclusion.
 
 fans:
   standard:
