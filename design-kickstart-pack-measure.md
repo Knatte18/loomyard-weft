@@ -7,3 +7,5 @@ Each begin-batch traces one `webster: kickstart pack` line (on, off or language-
 
 Idea: repeat the audit count on real loom runs with the pack on and off: grep-for-member calls and whole-file reads per implementer fork.
 The Burler side of `kick-start-pack` and `enclose-kickstart` wait on this result.
+
+This is an audit, not a loom run: an orch agent reads the Webster fork transcripts once a few loom runs have run with the pack on (it is on by default since `c279a38ba`), and compares them with the runs before it as the pack-off baseline.
