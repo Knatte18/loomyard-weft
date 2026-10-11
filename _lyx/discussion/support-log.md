@@ -29,6 +29,11 @@ Autonomous mode: no operator answered; every turn below is a self-pick made afte
 - **Fail closed when the operator-activity query errors.** A tmux that cannot answer `list-clients` would stall every injection on the hub; the empty-box and Enter guards still protect the draft.
 - **Clear the box with C-u on any mismatch so the send can retry.** The board forbids editing the operator's box; clearing stays limited to an exact match of this send's own text.
 - **Move name repair into shuttle by changing the `SessionNamer` seam to a rename call.** The per-hub watchdog covers every worktree, while a shuttle `Runner` is bound to one worktree's run records; reed's own primitives reach the same guards with less coupling.
+- **Surface sent text left in the operator's draft as a non-retried error naming the pane.** Every retrying caller (the watcher, batten, seat notices) would stop at it and need a human; the pending-send record in D5 lets the existing retries run without typing the text twice.
+- **Key the pending-send record per strand, whatever the text.** A different text sent next (a second notice) would be dropped as landed when the first one's turn started; fixing the resume line's report path per park (D8) gives the one caller whose text changed between attempts the same text instead.
+- **Stop the watcher and seat notices from retrying a not-landed send.** Both would need a human for a menu the operator closes on their own; the pending-send record covers the outcome for every turn-starting text, and a repeated slash command is harmless (R8).
+- **Hold the activity check over the whole submit window before a placeholder Enter.** The window is `submit_confirm_timeout_s` long, so an operator's keystroke anywhere in it would hold the Enter until the send fails; the collapse-length and line-count match narrow the acceptance instead, and the residual is R3.
+- **Have shuttle's `Start` wait or retry indefinitely on a held delivery.** `Start` would have to hand back a half-started run or block its caller without a bound; a died start after `send_ready_timeout_s` keeps today's contract.
 - **A 3 s quiet window.** Ordinary thinking pauses mid-sentence exceed it; 5 s costs little on injections that already wait for idleness.
 
 ## Review rounds
@@ -49,3 +54,8 @@ _No rounds yet._
 - Q10 (resolved, auto-pick): `Runner.Interrupt`, `Runner.Inject`, `ModelSwitchSequence` in scope? No; explicit key deliveries that bypass idleness on purpose, and `ModelSwitchSequence` has no production caller.
 - Q11 (open, for the plan): `set-buffer` or `load-buffer` to fill the named buffer (D2).
 - Q12 (open, for the operator): run the `llm`-tier live check; agents in this run may not run `llm`-tier tests, so D5's fallback covers the result until then.
+- Q13 (resolved, auto-pick): Sent text left beside the operator's text in the box? Its own sentinel wrapping `ErrSessionBusy`, plus a pending-send record that dedupes the retry by a turn start past the send's offset (D5); a not-landed send after a no-box window records one too.
+- Q14 (resolved, auto-pick): A held `Start` delivery? Stays a died start after `send_ready_timeout_s`; a foreign-box failure dies at once (D7, R7).
+- Q16 (resolved, auto-pick): How does the pending-send record match a resume line whose report path is fresh on every attempt? The report path is fixed once per park and reused on every rerun (D8).
+- Q17 (resolved, auto-pick): Does the probe's pass clear a send hold in `State.Stuck`? No; a send hold has its own marker, cleared only by a passing send (D7).
+- Q15 (resolved, auto-pick): Does the batten orch notice quote the draft? No; slug, stall and remedy only (D9).
