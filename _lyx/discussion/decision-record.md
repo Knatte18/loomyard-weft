@@ -203,6 +203,12 @@ Rationale: Round-3 Discussion-Review F1 and F2: finalize in internal/shuttleengi
 - At the cap the writer never sees the second review's findings; the parent's approve lets the rewrite on as it stands, so the second review's findings must be ones the Discussion-Review perch can carry.
 - Two review rounds per run where one used to suffice raise orch spend on runs whose first review rejects.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/discussion/round-3-review.md; fixer report: _lyx/reviews/discussion/round-3-fixer-report.md.
+  - d2-bound-overstates-probe-reach (class design, severity MEDIUM, open in rounds 1, 2, 3)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - With a delivered open request and no verdict, no ping is carried before the interval since the latest delivered-at, last-prompt or last-ping time, one is carried at the interval, the next one interval after that, and none after the third in the round.
