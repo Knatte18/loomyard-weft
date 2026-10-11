@@ -15,7 +15,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Burler: reviewer row then fixer row, lean fixer, per-perch budget and auto-accept**<br>• Split the Burler round into Burler-Review and Burler-Fix rows, skip the fixer on an empty review, give the fixer only the fix report, and give each perch its own bounce budget and auto-accept flag. | [`burler-split-budget`](design-burler-split-budget.md) | loom | Loom-Preflight | loom, burler |
+| 1 | **Burler: reviewer row then fixer row, lean fixer, per-perch budget and auto-accept**<br>• Split the Burler round into Burler-Review and Burler-Fix rows, skip the fixer on an empty review, give the fixer only the fix report, and give each perch its own bounce budget and auto-accept flag. | [`burler-split-budget`](design-burler-split-budget.md) | loom | Discussion-Write | loom, burler |
 
 #### Normal priority
 
