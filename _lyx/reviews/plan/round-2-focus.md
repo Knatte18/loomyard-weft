@@ -1,0 +1,12 @@
+---
+round: 2
+focus:
+  - "Refusal rows: `contracts/specs/refusal-spec.md` holds, in its `## loom` section, the row `config: unknown discussion_producer` (condition: neither `single` nor `seats`) beside the `config: unknown fan` and `config: burler.yaml unreadable` rows. Settle whether the plan edits that row where the config refusal in `internal/loomengine/config.go` is reworded to name `twill`, and whether the new twill fan-resolution refusal (unreadable `burler.yaml` or unresolvable `twill-discussion`) lands with its own row in the same plan, as `PATTERN-refusal-way-forward` requires for loom."
+  - "Docs constraint: the decision record's last Constraint names the `loomengine` and `shuttlecli` doc.go, the directive package's doc.go, the loom template comment and `docs/overview.md`. `internal/shuttlecli/cli.go` keeps its verb list in its file header and `internal/loomengine` has no `doc.go`. Settle whether some card targets a package-level doc for each of `loomengine`, `shuttlecli` and, for the shared await poll, `shuttleengine`, and whether the new `await` verb appears in the shuttlecli header's verb list."
+  - "Marker rendering: `stencil.FillWith` in `internal/stencil/stencil.go` renders an empty optional marker as an empty string and keeps the newline after it. Settle whether the plan's template card places each twill marker so that the `single` and chair prompts render byte-identically to today's, and whether a test pins that claim rather than only the absence of twill text."
+  - "Attack surface: for the card that lets the twill spec authorize fork subagents, settle whether its `**Intent:**` states what the hook lets through under `claude_deny_agent_tool` false and true, whether a fork may spawn a fork, and which existing guard stays, per the decision record's fork-authorization decision."
+  - "Test economy: for each new top-level test the plan adds in the `loomengine`, `shuttlecli` and `loomcli` packages, settle whether an existing test already covers the behavior at that public surface (for example the field-mapping, refusal and positional-argument tables in the existing tests of those packages), and whether a budget raise in `cmd/lyx/testdata/test-budget.yaml` is avoidable."
+  - "Constants and card cuts: settle whether the 250-second await cap is declared once for both the review-await and the shuttle-await verb, and whether public accessors reused across packages are carved into a card that precedes their consumers."
+---
+
+Entries name where to look and the question to settle, and cap nothing.
