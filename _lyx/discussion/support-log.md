@@ -26,6 +26,9 @@ Autonomous mode: no operator answered; every pick below is an auto-pick recorded
 - A guard banning `/proc` reads outside the kit: not asked for; one grep in acceptance covers this task.
 - Leaving `reedcli`'s copies: they are the same duplicated parent-pid parser as `loomcli`'s, which the kit rule covers.
 - Folding the headroom lint into `lint-comments`: the verb's name would no longer say what it checks.
+- Running the round gate's headroom lint from the comment lint's base: in a loom run that is the plan verify's last recorded pass, so it never sees the cards' growth and, after a Publish merge-in, counts main's growth as the branch's.
+- Failing any growth until the head is at or under the line, so a branch above an over-the-line base restores headroom: it makes a branch cut wording the parent brought in, the cost the growth-only rule exists to avoid.
+- Switching a loom run's round gate to the whole-diff form to get a merge base: it would also replace the round's impacted-set command with the full verify.
 
 ## Review rounds
 
@@ -33,12 +36,12 @@ _No rounds yet._
 
 ## Question ledger
 
-- Q1 (auto-pick, resolved): how to give the overview headroom that sticks? A headroom line at 95% of the cap, enforced on growth only by a diff-scoped lint at both comment-lint sites; hard cap unchanged in `go test`.
+- Q1 (auto-pick, resolved): how to give the overview headroom that sticks? A headroom line at 95% of the cap, enforced on growth only by a diff-scoped lint at the card gate and at the round gate from the branch's merge base with its parent; hard cap unchanged in `go test`.
 - Q2 (auto-pick, resolved): should Publish route a merge-only verify failure automatically? No; keep the existing manual way forward, make the fixes mechanical.
 - Q3 (auto-pick, resolved): trim target for the overview? At most 15000 bytes, moving detail to background files, dropping no rule.
 - Q4 (auto-pick, resolved): test budget fix? Message names the value to set; format unchanged.
 - Q5 (auto-pick, resolved): where does the gofmt check live? Tier 1 guard in `cmd/lyx` via `go/format`, skipping `testdata`, failure naming file and line.
 - Q6 (auto-pick, resolved): PATTERN entry for gofmt? No.
-- Q7 (auto-pick, resolved): include `reedcli`'s `/proc` readers? Yes, same copy class.
+- Q7 (auto-pick, resolved): include `reedcli`'s `/proc` readers? Yes, same copy class; round 1 added the `pairteardown`, `shedverbs` and `gatecli` zombie checks on the same ground.
 - Q8 (auto-pick, resolved): name of the new verb? `lyx loom lint-pattern`, mirroring `lint-comments`'s base flag and envelope.
-- Q9 (resolved, fact): the board's gofmt example `internal/loomcli/bootstrap_test.go` is already clean; six other files are flagged today, recomputed at implementation.
+- Q9 (resolved, fact): the board's gofmt example `internal/loomcli/bootstrap_test.go` is already clean; `gofmt -l .` flagged `internal/boardcli/cli.go`, `internal/fabricengine/pull.go`, `internal/pattern/doc.go`, `internal/reedengine/lifecycle_test.go`, `internal/shedverbs/loopwait_test.go` and `internal/shell/posix.go` at discussion time, recomputed at implementation.
