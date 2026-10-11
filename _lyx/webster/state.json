@@ -1,0 +1,197 @@
+{
+  "runGuid": "9bba9d9836b3699450fa09b39869f1ca",
+  "planFingerprint": "b7cdd18886305ec418ef9ca226eb64d5e323d55ffb1ccbdc4dad012e2a471049",
+  "planFileHashes": {
+    "00-overview.md": "0115507e999c167d4657637c6fe749757d6ca92d327dbdd8da9e87c37ec86b38",
+    "01-tokencount-turn-start-and-stall-cap.md": "aa12c247328bd161765cd5802c871105e4f9465c067ee58bf968284b1b24a048",
+    "02-tokencount-run-lower-bound.md": "556acf30e3e025ceca4cc25d66ce473b6a1ea5cdc075cb4e87fffd3cf1fb2cb0",
+    "03-loom-help-seeding-routes.md": "e1a5e4446419a009c384442d680e3dbff6dadb340dc3eeb67d2cdb8f663b9848",
+    "04-loom-missing-seed-remedy.md": "d5ddf4f4768100ea81250975c0bccb64932f04440ae4bb09c02ab872d5bf8bca",
+    "05-loom-disagreeing-seed-way-forward.md": "679fdf2b3ff24febf1986ad7b2982865e5eed75abeaca03d11e2f0f9cad3dee4",
+    "06-plan-rubric-redundancy-pointer.md": "e15989e02205bfacb61e3f023535db0014c4f8119664fcc8fab7f40526ea26ba",
+    "07-batten-notice-state-lead.md": "d6efaea0fd195d54cefec36d0e3608cf990f90a444a8da8e1443ffc43ccb88ed"
+  },
+  "planOverviewFrameHash": "e6e4638fcb561f3c79ee30d4aede241c28df39194e7f6588654de6059aa2c153",
+  "partition": [
+    {
+      "cards": [
+        "01-tokencount-turn-start-and-stall-cap",
+        "02-tokencount-run-lower-bound",
+        "03-loom-help-seeding-routes"
+      ],
+      "profile": "cautious",
+      "estimate": 156542,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54328,
+        "read_union": 46768,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 600,
+            "reads": {
+              "file:tools/tokencount/count_test.go": 7884,
+              "file:tools/tokencount/main.go": 3456,
+              "package:tools/tokencount": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 58,
+            "written": 18000
+          },
+          {
+            "card": 2,
+            "card_text": 636,
+            "reads": {
+              "file:tools/tokencount/count_test.go": 7884,
+              "file:tools/tokencount/main.go": 3456,
+              "file:tools/tokencount/orch_test.go": 2508,
+              "file:tools/tokencount/time_integration_test.go": 1320,
+              "package:tools/tokencount": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 64,
+            "written": 19836
+          },
+          {
+            "card": 3,
+            "card_text": 360,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:docs/overview.md": 8388,
+              "file:internal/loomcli/cli_test.go": 3984,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 57.5,
+            "written": 17610
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-loom-missing-seed-remedy",
+        "05-loom-disagreeing-seed-way-forward",
+        "06-plan-rubric-redundancy-pointer",
+        "07-batten-notice-state-lead"
+      ],
+      "profile": "cautious",
+      "estimate": 181162,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61328,
+        "read_union": 61928,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 540,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4212,
+              "file:internal/loomcli/arm_seed_test.go": 2004,
+              "file:internal/loomcli/cli_test.go": 3984,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 68,
+            "written": 20940
+          },
+          {
+            "card": 5,
+            "card_text": 516,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4212,
+              "file:internal/loomcli/smoke_bootstrapwiring_test.go": 1596,
+              "file:internal/loomcli/smoke_prebootstrap_integration_test.go": 3756,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 70,
+            "written": 21516
+          },
+          {
+            "card": 6,
+            "card_text": 228,
+            "reads": {
+              "file:contracts/stencils/claims_test.go": 10152,
+              "file:contracts/stencils/loom/loom-rubric-plan-review.md": 1392,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000
+            },
+            "messages": 15.5,
+            "written": 4878
+          },
+          {
+            "card": 7,
+            "card_text": 372,
+            "reads": {
+              "file:internal/battenshed/doc.go": 1224,
+              "file:internal/battenshed/notice_test.go": 11952,
+              "package:internal/battenshed": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 34,
+            "written": 10572
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "8022f8a53f5e8c1e1738474ad7b41069",
+  "masterSessionId": "e7a0307a-da46-46c9-a0a4-a833cba3bc1f",
+  "batches": {
+    "1": {
+      "slug": "tokencount-turn-start-and-stall-cap",
+      "cards": [
+        "01-tokencount-turn-start-and-stall-cap",
+        "02-tokencount-run-lower-bound",
+        "03-loom-help-seeding-routes"
+      ],
+      "cardHashes": {
+        "01-tokencount-turn-start-and-stall-cap": "aa12c247328bd161765cd5802c871105e4f9465c067ee58bf968284b1b24a048",
+        "02-tokencount-run-lower-bound": "556acf30e3e025ceca4cc25d66ce473b6a1ea5cdc075cb4e87fffd3cf1fb2cb0",
+        "03-loom-help-seeding-routes": "e1a5e4446419a009c384442d680e3dbff6dadb340dc3eeb67d2cdb8f663b9848"
+      },
+      "startSha": "a35c8c2b105693a8d761297ef61e44fba06a5624",
+      "kind": "fork",
+      "spawnedAt": "2026-10-11T14:02:41Z",
+      "sessionId": "e7a0307a-da46-46c9-a0a4-a833cba3bc1f",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
