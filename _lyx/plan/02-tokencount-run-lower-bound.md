@@ -4,7 +4,7 @@
 - `tools/tokencount#CountRun` -> `func CountRun(dir, slug string, bound time.Time) (RunTally, error)`
 - `tools/tokencount#RunTally`
 - `tools/tokencount#Report.WriteMarkdown`
-- `tools/tokencount#run`
+- `tools/tokencount/main.go`
 - `tools/tokencount/count_test.go`
 - `tools/tokencount/orch_test.go`
 - `tools/tokencount/time_integration_test.go`

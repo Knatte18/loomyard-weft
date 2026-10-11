@@ -4,6 +4,8 @@
 - `internal/loomcli#loomVerbTexts`
 - `internal/loomcli/cli_test.go`
 - `cmd/lyx/testdata/test-budget.yaml`
+
+**Prosa:**
 - `docs/overview.md`
 
 **Intent:**

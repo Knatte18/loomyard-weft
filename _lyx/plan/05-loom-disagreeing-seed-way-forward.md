@@ -4,6 +4,7 @@
 - `internal/loomcli#loomCLI.seedAndCommitBootstrap`
 - `contracts/specs/refusal-spec.md`
 - `internal/loomcli/smoke_prebootstrap_integration_test.go`
+- `internal/loomcli/smoke_bootstrapwiring_test.go`
 
 **Create:**
 - `plan:internal/loomcli#disagreeingSeedRefusal` -> `func disagreeingSeedRefusal(seedPath string, existing shedrun.Seed, parent string) error`
@@ -31,9 +32,11 @@ The re-seed must still agree with the recorded parent, which the next bootstrap 
 In the same commit (`PATTERN-refusal-way-forward`), the loom section of `contracts/specs/refusal-spec.md` gains a `start/step: seed disagrees` row: trigger, the bootstrap of `lyx loom start` or `lyx loom step` finds the run already seeded with values other than the recorded parent's seed; class correctness halt; way forward quoting the new clause with `<seed path>`, `<recipe>`, `<driver>` and `<recorded parent>` placeholders.
 
 Coverage extends `TestLoomFailedReedUpRefuses` in `smoke_prebootstrap_integration_test.go`, with no new top-level test: a `wrong-parent seed` subtest builds `newBadReedUpFixture` with a seed function writing a go-driver loom seed whose `parent` param is not the recorded parent.
-Its first `lyx loom step` exits 1 with envelope kind `unseeded`, and its error holds `rm ` followed by the seed's path, `lyx shed seed self --recipe loom --driver go --param parent=` followed by the recorded parent, and not `keep the existing seed`.
-The subtest then follows the way forward: it removes the seed file, runs the built binary's `lyx shed seed self --recipe loom --driver go --param parent=<recorded parent>`, and runs `lyx loom step` again, which now passes its seed stage and refuses with kind `bootstrap` at reed Up, the fixture's bad reed config, the same refusal the `go driver` subtest pins.
-Driving a producer past reed Up needs a tmux server; `TestSmokeStepBootstrapWiring` already drives one over an agreeing go-driver seed.
+Its `lyx loom step` exits 1 with envelope kind `unseeded`, and its error holds `rm ` followed by the seed's path, `lyx shed seed self --recipe loom --driver go --param parent=` followed by the recorded parent, and not `keep the existing seed`.
+
+Following the way forward to a driven producer needs a tmux server, so it extends `TestSmokeStepBootstrapWiring` in `smoke_bootstrapwiring_test.go`, the tmux tier Publish runs, with no new top-level test: a `wrong-parent seed is cleared and re-seeded` subtest, after the existing three, builds its own `newWiredPairFixture` with `registerBootstrapTeardown` and writes a go-driver loom seed whose `parent` param is not the recorded parent.
+Its first `lyx loom step` fails; the subtest then removes the seed file, runs the built binary's `lyx shed seed self --recipe loom --driver go --param parent=<recorded parent>`, and runs `lyx loom step` again, which succeeds and dispatches Preflight, the pure-Go row the test's first subtest drives.
+The test's doc comment gains the wrong-parent pair beside the one go-seeded pair it already names.
 
 **ImpactSummary:** `seedAndCommitBootstrap` is shared by `lyx loom start` and `lyx loom step`; only its disagreeing-seed refusal's text changes, the stage and the sentinel it wraps stay, and `lyx shed seed`'s own refusal is untouched.
 
