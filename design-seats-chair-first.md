@@ -15,7 +15,7 @@ The chair asks in rounds: it sends a batch of the questions that fit now, waits 
 The chair already holds the table's gate and is the only interactive seat, so the gate and the operator's channel are the chair's; only the start order is reversed.
 
 The chair stencil (`contracts/stencils/loom/loom-template-discussion-chair.md`) says to form question batches "exactly as Step 3 says" and send every batch to every advisor, and to settle each question only after weighing every answer.
-Step 3 of `loom-template-discussion.md` asks for "focused batches" but sets no size, and neither stencil says to wait for a batch's answers before forming the next from them, so nothing stops a chair sending all its questions in one go.
+Step 3 of `loom-template-discussion.md` asks for "focused batches", which is right, but neither stencil says to wait for a batch's answers before forming the next from them, so nothing stops a chair sending all its questions in one go.
 
 ## Idea
 
