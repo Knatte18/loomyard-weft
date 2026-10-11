@@ -40,6 +40,16 @@ Nothing outside can inject a ping into a fork, so each fork keeps its own cache 
 
 This needs a general wait command (wait for a file, with a cap), since `lyx burler await` is built for the fixer; the same command serves the writer waiting on parent review (`parent-review-cold-cache`).
 
+## Scope of this task
+
+Build the `twill` producer, its stencil and lens texts, the general capped wait command, the config wiring and the docs.
+The bench below runs after landing, from the prime, as its own job.
+
+## Later: Plan
+
+The same pattern fits the Plan writer, whose review findings are often enumerable (a test missing from a card's `Edit:` list, fixtures not enumerated) and whose exploration is larger, so forks save more; it comes after `TwillDiscusser` has been benched (operator, 2026-10-11).
+Keep the fork-wait-review stencil part and the wait command reusable for that.
+
 ## Bench
 
 Compare, three runs each on the same reference task, so the spread is measured too:
