@@ -77,6 +77,7 @@
         "orch"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "The landing steps become one lyx command, and the orch resumes its last conversation after a reboot",
