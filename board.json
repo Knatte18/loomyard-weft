@@ -980,7 +980,7 @@
       "id": 376,
       "slug": "seat-hold-deferral-cap",
       "title": "Seat chair hold deferral of 20 min can hide a wedged advisor",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "shuttle"
