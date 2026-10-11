@@ -6,7 +6,7 @@
      stencil.FillOptional requires the three original ones non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
      parent_directive is a third optional marker, rendered by internal/parentdirective.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=61773c6959095ca3727a623cbe7179996bed6232a03a8c692f721b315910377c build=edb4e6984b258a12e6ac3539bc65483a6f5f4934 time=2026-10-11T10:27:06Z -->
+lyx-stencil: sha256=d55d9d5a6216e28eb3285be99cd10ed35cf85a51b8bae679114e9bd3630da2d5 build=c00b2e524fb6d3ab53b64a6c901f8a4fcc80c7e3 time=2026-10-11T11:09:36Z -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -84,6 +84,7 @@ A card that prescribes an addition to a `PATTERN.md` entry line leaves the line 
 
 `00-overview.md` + one `NN-<card-slug>.md` per card. `NN` is zero-padded and equals the card's flat heading number `N`;
 cards run `1..M` with no gaps.
+Insert or remove a card only with `lyx loom insert-card` or `lyx loom remove-card`, which renumber the later cards and whose `--help` says what they do, never by renaming, rewriting under a new name or deleting a card file by hand.
 
 ### `00-overview.md`
 
@@ -162,6 +163,11 @@ A `**Custom:**` group may not be combined with a group of a different type.
 
 A card that introduces a new verb, flag, escape hatch or routing edge, or removes, downgrades or makes bypassable a guard, states in its `**Intent:**` what the change can now skip or let through and what bounds it.
 Plan-Review flags one left unbounded.
+
+A card that prescribes a refusal or guard branch names in its `**Intent:**` the input that reaches it after every upstream check passes, and the test that reaches it.
+A propagated raw I/O error that joins its section's grouped transient row in `refusal-spec.md` is exempt.
+A branch that upstream validation already rules out is not prescribed: drop it, or, when it guards an invariant, write it as a fail-loud wiring guard in `refusal-spec.md`'s sense, which takes no per-row test.
+A test that calls only the refusal's error constructor does not reach it.
 
 A field with no content is omitted entirely — never write a `none` sentinel on any field.
 

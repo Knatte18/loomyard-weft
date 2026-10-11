@@ -6,7 +6,7 @@
      stencil.FillOptional requires every marker except pattern_directive and friction_directive non-empty, and there are no {{if}}/{{range}} conditionals anywhere in this file. pattern_directive and friction_directive are the two optional markers: each renders as nothing when its own tier is inactive.
      parent_directive is a third optional marker, rendered by internal/parentdirective.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=9baf176f7d6d961bb7fdfa96eab29df5e201e54272e10c0f45b78b770170327b build=edb4e6984b258a12e6ac3539bc65483a6f5f4934 time=2026-10-11T10:27:06Z -->
+lyx-stencil: sha256=3223934457fe2d90a4c9c6dcd64979b62131d2dd754c50ecf2b70fca4ac3be05 build=c00b2e524fb6d3ab53b64a6c901f8a4fcc80c7e3 time=2026-10-11T11:09:36Z -->
 
 # Rework — turn a rejected pull request's findings into a new plan generation
 
@@ -49,6 +49,7 @@ Write a complete plan into it.
   {{.first_card}} is one past the highest card of the retired generation, so take it as given.
 - Carry forward from the retired overview whatever task framing, `## Shared Decisions`, `## Rename mechanic` and `## verify:` content still holds, and drop or revise what the findings overturn.
 - Write one card file per new card, numbered from {{.first_card}}.
+  Insert or remove a card of the new generation only with `lyx loom insert-card` or `lyx loom remove-card`, which renumber the later cards and whose `--help` says what they do, never by renaming, rewriting under a new name or deleting a card file by hand.
   Never copy a retired card: every card that was built is already in the code, so a new card describes only work that remains.
 - Cover every finding with at least one new card.
   Several findings may share one card.

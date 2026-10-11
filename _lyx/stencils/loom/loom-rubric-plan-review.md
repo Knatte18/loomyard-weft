@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- its only markers are the ones ReadRubric fills, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=1d14bdec548547f594073c05c6ba85d8a1ad28fcf0edcb5bf62ba50052fd7e1d build=5a8be027428082c91c0d3af16eeacb02fed29eea time=2026-10-10T14:47:02Z -->
+lyx-stencil: sha256=1393b7e4e632461751f641db222af2cab4b72b254f476c307c37dd10d4e1fdc7 build=c00b2e524fb6d3ab53b64a6c901f8a4fcc80c7e3 time=2026-10-11T11:09:36Z -->
 
 # Plan-Review rubric
 
@@ -31,6 +31,7 @@ It appears in neither the artifact list nor the answer key, and it must not be r
 `none` means webster has begun no batch, and no card is frozen.
 Otherwise a done card is frozen: a fix never edits its file.
 A fix to its work is a follow-up card placed after the last begun batch, with its Card Index line in `00-overview.md`, in the format `{{.specs_dir}}/loom/loom-plan-spec.md` defines.
+A fix inserts or removes a card only with `lyx loom insert-card` or `lyx loom remove-card`, which renumber the later cards and whose `--help` says what they do, never by renaming, rewriting under a new name or deleting a card file by hand.
 
 ## Do not flag
 
@@ -91,6 +92,11 @@ Do not flag any of the following as a finding:
 - **The attack-surface question.**
   For every new verb, flag, escape hatch or routing edge, and every guard that is removed, downgraded or bypassable, the card that introduces the change states in its `**Intent:**` what it can now skip or let through and what bounds it.
   A card that introduces one with no stated bound is a finding.
+- **Reachability of a prescribed refusal.**
+  A card that prescribes a refusal or guard branch with no named input that reaches it, or no named test that reaches it, is a finding.
+  So is one whose named input an upstream check rejects; the finding names that upstream check.
+  A propagated raw I/O error that joins its section's grouped transient row in `refusal-spec.md` is exempt, and so is a fail-loud wiring guard in that file's sense, which takes no per-row test.
+  A test that calls only the refusal's error constructor does not reach the refusal.
 - **The writer/reviewer symmetry note.**
   The plan writer's own stencil is `{{.stencils_dir}}/loom/loom-template-plan.md`.
   Whatever it says not to write, this rubric must not flag as missing.
