@@ -1,6 +1,6 @@
 # reed: runs overview pane above the orch, gate checklist, Selvage by key, run windows close
 
-`runs-overview` · Task · feature, reed, orch, batten · running · Loom-Preflight
+`runs-overview` · Task · feature, reed, orch, batten · running · Discussion-Write
 
 One place for the operator to see every run in the hub and the state it is in.
 `lyx shed status [run-id]` is per run and `lyx orch status` covers only the orchestrator, so today the hub polls each run separately and the operator sees run events only through the orch's chat.
