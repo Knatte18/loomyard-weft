@@ -168,6 +168,12 @@ Decision: Accept the round-2 fix: D5's severity rule ends at the closing parenth
 
 Rationale: Verified in the record (D3 line 62, D5, criterion): the value now reads as a noun phrase in D4's slot and a test can pin the line byte for byte; the round-2 LOW findings F2 and F3 are fixed too, so the open ledger keys are closed in the record.
 
+### Added after Discussion (parent, 2026-10-12): D11 lands after deploy, outside the cards
+
+Decision: D11 (plan_producer=twill, plan=opus[medium] in the hub's loom config) is not a plan card. After this task lands and deploys, the orch runs lyx config loom --set plan_producer=twill --set 'plan=opus[medium]' in the hub's parent worktree, which commits through fabric sync.
+
+Rationale: _lyx/config/loom.yaml sits on the records side; no card commit covers it, Webster treats writes under _lyx as outside the tracked tree, and the prod binary refuses the key until the new binary is deployed.
+
 ## Constraints
 
 - `PATTERN-stencil-ownership`: the directive and the plan template are read at call time from the told stencils directory.
