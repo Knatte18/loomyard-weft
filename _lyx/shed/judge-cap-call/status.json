@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Bouncer",
+  "current_producer": "Discussion-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Bouncer",
-    "last": "Discussion-Bouncer → awaiting",
+    "now": "Discussion-Burler-Review",
+    "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -75,6 +75,13 @@
       "outcome": "awaiting",
       "output": "/home/knatte/Code/loomyard-LYXHUB/judge-cap-call/_lyx/reviews/discussion/round-2-bouncer-ledger.md",
       "at": "2026-10-12T18:25:27Z"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/judge-cap-call/_lyx/reviews/discussion/round-2-bouncer-ledger.md",
+      "at": "2026-10-12T18:26:33Z",
+      "budget_exempt": true
     }
   ],
   "product": {
