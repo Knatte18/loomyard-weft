@@ -1,12 +1,12 @@
 {
   "current_producer": "Plan-Write",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "shedverbs: step Plan-Write interrupted (watchdog); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lyx shed step driver-arbiter --until-stop",
   "pause_requested": false,
   "activity": {
     "now": "Plan-Write",
     "last": "Discussion-Bouncer → done",
-    "wait": ""
+    "wait": "shedverbs: step Plan-Write interrupted (watchdog); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lyx shed step driver-arbiter --until-stop"
   },
   "history": [
     {
