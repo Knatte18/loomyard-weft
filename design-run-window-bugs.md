@@ -102,3 +102,11 @@ This is abnormal because the rule and the tooling conflict: formatting-only fixe
 What to do: provide a `lyx` formatting verb (or gate step) that agents may run, or state in the agent prompt that `gofmt -w` on a single file is allowed.
 
 Provenance: task `merge-review`; notes 18-merge-in-row.md.
+
+## Teardown races a reed lock
+
+2026-10-12 17:01, `operator-followups` Worktree-Teardown: `git worktree remove` failed with "Directory not empty".
+After removal had begun, something recreated `.lyx/reed.lock` and `.lyx/reed.json.lock` (both empty, same second) in the pair, so the removal could not finish.
+The likely writer is a reed process still bound to the pair: the run window's `lyx reed attach`, or a status or resize hook firing as the session closed.
+The orch removed the two empty lock files and re-ran `lyx batten run operator-followups`, which finished the teardown.
+What to fix: teardown waits for, or kills, every reed process bound to the pair before it removes the tree, or reed refuses to create its lock files in a pair that is being torn down.
