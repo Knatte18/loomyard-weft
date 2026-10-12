@@ -691,7 +691,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 19,
   "masterStrand": "1eb52434bb50dc6bc4414b28acb6018a",
   "masterSessionId": "d11aa544-37b6-416d-a69c-8a37b5df69b6",
   "batches": {
@@ -779,6 +779,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-a9d111d44d222b912.jsonl"
       ]
+    },
+    "19": {
+      "slug": "watchdog-awake",
+      "cards": [
+        "19-watchdog-awake",
+        "20-watchdog-kill-record",
+        "21-orch-pause",
+        "22-pause-engine",
+        "23-pause-cli"
+      ],
+      "cardHashes": {
+        "19-watchdog-awake": "9932763fd9d8f73fa4bf057cca65215f066aa9258fde6ccaf7b24c0a67cb056c",
+        "20-watchdog-kill-record": "150444bc84ec2b7ba8db2d292b0488fe3afc5ae3601fdf9bfd61418edbc21bd3",
+        "21-orch-pause": "0d97544d5c32e5f1cbd971dda67764ae9cfc3835545fb3e31468bf1ee9d8ee84",
+        "22-pause-engine": "cd99c8a82361b31452724ea1e2a920328c8166f5dc705ebbb31c4d9c780241f1",
+        "23-pause-cli": "e1f73f3aeea701f927ae49cebaa077b0cca4db66efa54865dfa1bdaedf1c8122"
+      },
+      "startSha": "ba9ad9d746fb794e3cc3e806a0dd8b253f2567a9",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T12:44:25Z",
+      "sessionId": "d11aa544-37b6-416d-a69c-8a37b5df69b6",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "parentlock-covered",
