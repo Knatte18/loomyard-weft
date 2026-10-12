@@ -1,0 +1,352 @@
+{
+  "runGuid": "76f126c768c165f9a4c3b2a65db5ca1b",
+  "planFingerprint": "7bec1f595aad54cfcbfa4e483ea7215ea46bf0fed51e69fcc04f0d774a8875b8",
+  "planFileHashes": {
+    "00-overview.md": "8ea6e4fad3b3b273a1b5ffa37aa2a54b5f58d1a3ebf47b2fadf9e0a81dc31615",
+    "01-board-encoding-pin.md": "3df309a27433d335be694b6e5fd6e9633937661623ec8539c0b7e9d5836c6443",
+    "02-state-tolerant-read.md": "16139b30048b87c10616cd0bfb0e6dc02b29edbcdda2cd6bffc9a38d5a0af39f",
+    "03-state-keep-unknown.md": "4a08a5b9e6f733c07de6ca9ce3eb0c3147fc0753b68f0d29ea248c3afcd357df",
+    "04-state-rename.md": "b96af428503899ddd1666ec66492cb4cea135815caaf0e04494f93ee9883d7d5",
+    "05-shedrun-seed-tolerant.md": "11aa6f4d1b4c5611dec41680e3019ce50eda3dcc2b24ea3f4a0f8b51bb6c8b1b",
+    "06-batten-cleanup-tolerant.md": "7a3cd8e091ec0911b2fa24efa016887c8cbfb127c590d2b8e538a4272758251c",
+    "07-pattern-tolerant-records.md": "f1a623cb8975302fed4e2a124f143a686c861d7bf890ecd0fbb116cf297fa01f",
+    "08-gate-busy-quit-key.md": "ca58068a5ed3f7f452dc33dac423568e579fe88240c28cf2b128660381524b8e",
+    "09-proc-tree-cpu.md": "b9ccf820a5665fa9288bff8d76ab5c2c5bd65d0b3fd334e19f993b3a6e210c18",
+    "10-gateslot-watchdog-line.md": "ea1043fdc1786d464ac1c04d493b2772ba75635384d8600231e99c7f28663cba",
+    "11-gate-test-watchdog.md": "7020388b24f5dd70240d38ad4d4b9e77367ac736421e387f6a9bd1bba9dbab50",
+    "12-webster-hang-gate.md": "886825022ffd58b0031defea1d06878cb4d162f4cc228ba1121b88f5d25c50eb",
+    "13-loom-watchdog-halt.md": "7e4727c37a1e6a58c381fa362880716d3c62858f71ca4f2609eaed933d12fe45",
+    "14-landing-watchdog-halt.md": "5aea4bb1942545a86090211534906d74d97a0704b5cb2349f29c0f7782db7534"
+  },
+  "planOverviewFrameHash": "60254a0a732690bbf11a2680b62b67c34c74be55f84fd5390c865cb98212eaf3",
+  "partition": [
+    {
+      "cards": [
+        "01-board-encoding-pin",
+        "02-state-tolerant-read",
+        "03-state-keep-unknown",
+        "04-state-rename",
+        "05-shedrun-seed-tolerant"
+      ],
+      "profile": "cautious",
+      "estimate": 193712,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54544,
+        "read_union": 46900,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 228,
+            "reads": {
+              "package:internal/boardengine_test": 2000,
+              "tests:internal/boardengine_test": 2000
+            },
+            "messages": 6,
+            "written": 2028
+          },
+          {
+            "card": 2,
+            "card_text": 528,
+            "reads": {
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedengine": 2000,
+              "package:internal/state": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedengine": 2000,
+              "tests:internal/state": 2000
+            },
+            "messages": 142.5,
+            "written": 43278
+          },
+          {
+            "card": 3,
+            "card_text": 768,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1680,
+              "file:internal/state/doc.go": 396,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shedengine": 2000,
+              "package:internal/state": 2000,
+              "package:internal/state_test": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shedengine": 2000,
+              "tests:internal/state": 2000,
+              "tests:internal/state_test": 2000
+            },
+            "messages": 74,
+            "written": 22968
+          },
+          {
+            "card": 4,
+            "card_text": 348,
+            "reads": {
+              "file:contracts/specs/loom-status-spec.md": 2076,
+              "package:contracts/specs": 2000,
+              "package:internal/state": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/state": 2000
+            },
+            "messages": 27,
+            "written": 8448
+          },
+          {
+            "card": 5,
+            "card_text": 396,
+            "reads": {
+              "file:internal/shedrun/doc.go": 480,
+              "package:internal/shedrun": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 50.5,
+            "written": 15546
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-batten-cleanup-tolerant",
+        "07-pattern-tolerant-records",
+        "08-gate-busy-quit-key",
+        "09-proc-tree-cpu",
+        "10-gateslot-watchdog-line"
+      ],
+      "profile": "cautious",
+      "estimate": 204834,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61544,
+        "read_union": 52816,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 204,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "tests:internal/battencli": 2000
+            },
+            "messages": 26,
+            "written": 8004
+          },
+          {
+            "card": 7,
+            "card_text": 636,
+            "reads": {
+              "file:PATTERN.md": 1332,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1680,
+              "package:.": 2000,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/loomshed": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 76.5,
+            "written": 23586
+          },
+          {
+            "card": 8,
+            "card_text": 444,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4872,
+              "file:internal/gateslot/doc.go": 384,
+              "file:internal/gateslot/template.yaml": 36,
+              "package:contracts/specs": 2000,
+              "package:internal/gateslot": 2000,
+              "package:internal/hubgeom": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/hubgeom": 2000
+            },
+            "messages": 78.5,
+            "written": 23994
+          },
+          {
+            "card": 9,
+            "card_text": 444,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1680,
+              "file:internal/proc/proc_linux.go": 936,
+              "file:internal/proc/proc_linux_test.go": 672,
+              "file:internal/proc/proc_windows.go": 780,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/proc": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/proc": 2000
+            },
+            "messages": 63.5,
+            "written": 19494
+          },
+          {
+            "card": 10,
+            "card_text": 396,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1680,
+              "file:internal/gateslot/doc.go": 384,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/gateslot": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/gateslot": 2000
+            },
+            "messages": 50,
+            "written": 15396
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "11-gate-test-watchdog",
+        "12-webster-hang-gate",
+        "13-loom-watchdog-halt",
+        "14-landing-watchdog-halt"
+      ],
+      "profile": "cautious",
+      "estimate": 258324,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68544,
+        "read_union": 66144,
+        "cards": [
+          {
+            "card": 11,
+            "card_text": 1224,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1680,
+              "file:docs/overview.md": 8724,
+              "file:internal/gatecli/doc.go": 648,
+              "file:pattern/PATTERN-daemon-wakeups.md": 540,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/gatecli": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 178.5,
+            "written": 54774
+          },
+          {
+            "card": 12,
+            "card_text": 972,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4872,
+              "file:internal/websterengine/doc.go": 8328,
+              "package:contracts/specs": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 132.5,
+            "written": 40722
+          },
+          {
+            "card": 13,
+            "card_text": 408,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4872,
+              "file:internal/loomshed/doc.go": 684,
+              "package:contracts/specs": 2000,
+              "package:internal/loomshed": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomshed": 2000
+            },
+            "messages": 48.5,
+            "written": 14958
+          },
+          {
+            "card": 14,
+            "card_text": 432,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4872,
+              "file:internal/landingshed/doc.go": 1632,
+              "package:contracts/specs": 2000,
+              "package:internal/landingshed": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 42.5,
+            "written": 13182
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "ee46b2e92668b2497d9bd352600e7d0a",
+  "masterSessionId": "d00e9340-cdfe-419b-a2d7-fd26fe1b4f19",
+  "batches": {
+    "1": {
+      "slug": "board-encoding-pin",
+      "cards": [
+        "01-board-encoding-pin",
+        "02-state-tolerant-read",
+        "03-state-keep-unknown",
+        "04-state-rename",
+        "05-shedrun-seed-tolerant"
+      ],
+      "cardHashes": {
+        "01-board-encoding-pin": "3df309a27433d335be694b6e5fd6e9633937661623ec8539c0b7e9d5836c6443",
+        "02-state-tolerant-read": "16139b30048b87c10616cd0bfb0e6dc02b29edbcdda2cd6bffc9a38d5a0af39f",
+        "03-state-keep-unknown": "4a08a5b9e6f733c07de6ca9ce3eb0c3147fc0753b68f0d29ea248c3afcd357df",
+        "04-state-rename": "b96af428503899ddd1666ec66492cb4cea135815caaf0e04494f93ee9883d7d5",
+        "05-shedrun-seed-tolerant": "11aa6f4d1b4c5611dec41680e3019ce50eda3dcc2b24ea3f4a0f8b51bb6c8b1b"
+      },
+      "startSha": "1135939906fcdddd4cfdcf1bd7b46ad7ace09268",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T12:29:27Z",
+      "sessionId": "d00e9340-cdfe-419b-a2d7-fd26fe1b4f19",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
