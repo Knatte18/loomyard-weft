@@ -1,6 +1,6 @@
 # reed: a strand in its own tmux window
 
-`reed-multi-window` · Note · feature, reed
+`reed-multi-window` · Task · feature, reed, shuttle
 
 Own-window strand anchoring: a `display` anchor that spawns a strand into its own switchable tmux window instead of a pane.
 Operator 2026-10-12: wanted at some point, not now.
@@ -29,3 +29,17 @@ Stack them in depth instead: one tmux window per strand, behaving like tabs with
 ## Related
 
 - `internal/reedengine/window.go` (since a35c8c2b1): reed already opens detached, named, hidden tmux windows in a worktree's session running a `lyx` command; such a window is not a strand, so strand-per-window anchoring is still open.
+
+## Was `extra-agent-strand`
+
+The operator wants extra Claude strands beside the orch in the prime, such as one for exploring the repo, added by the orch on request (operator, 2026-10-06).
+
+Tried 2026-10-06: `lyx reed add --name explore --cmd claude` runs a bare `claude`, so the pane title is `ly:explore` but the Claude session gets no `--name`, and reed records no session id, so the watchdog's session-name repair (`internal/reedengine/namerepair.go`) skips it.
+
+Every agent in lyx runs through shuttle (operator), so this needs a shuttle engine extension: open a named LLM session in a strand with no turn and no prompt, started with the strand name and its session id recorded, so the watchdog keeps the name across a compact.
+The verb is not in reed, which shuttle depends on.
+Shuttle now has a CLI of its own (`internal/shuttlecli`: `run`, `send`, `await`, `interrupt`, `state`), so the verb could live there.
+
+Open: where such a strand goes in the reed layout relative to the orch, and how several share the space.
+
+With strands in their own windows, an extra agent strand gets its own window; this answers its layout question.
