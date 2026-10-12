@@ -103,6 +103,12 @@ Bound: the retry adds at most one second to one `newRun`, reached while any proc
   - d1-byte-for-byte-unattainable (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - kept-value-scanner-untested-on-escapes (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - A board.json whose entry carries an unknown scalar key and an unknown nested-object key, and whose top level carries an unknown key, keeps all three with equal JSON values after each of: set-status, an upsert of a known field, a batch upsert, promote, prune and set-deps.
