@@ -861,7 +861,8 @@
       "depends_on": [],
       "isolated": false,
       "brief": "After twill-plan lands: measure a lower plan_max_bounces, and cover the parent-directory miss every bench arm shared",
-      "body": "## Seen (2026-10-12, from `twill-plan`)\n\nTwo items stay open once the `twill-plan` task lands, outside its scope:\n\n- Whether lens review lets Plan-Review run fewer rounds, as the operator chose for Discussion: once twill runs for Plan-Write, measure runs with a lower `plan_max_bounces`.\n  The operator hopes twill lets Plan-Review skip one round on average, which would pay for its cost (about $5 per plan against $2.6 for a single `opus[high]` writer).\n- A miss every twill-plan bench arm shared: a check against the wrong parent directory; no lens or check covers it yet.\n  Records in `.scratch/twill-plan-bench/` in the hub prime.\n"
+      "body": "## Seen (2026-10-12, from `twill-plan`)\n\nTwo items stay open once the `twill-plan` task lands, outside its scope:\n\n- Whether lens review lets Plan-Review run fewer rounds, as the operator chose for Discussion: once twill runs for Plan-Write, measure runs with a lower `plan_max_bounces`.\n  The operator hopes twill lets Plan-Review skip one round on average, which would pay for its cost (about $5 per plan against $2.6 for a single `opus[high]` writer).\n  The count of review rounds per segment moved into task `convergence-plan` (2026-10-12), whose report answers this.\n- A miss every twill-plan bench arm shared: a check against the wrong parent directory; no lens or check covers it yet.\n  Records in `.scratch/twill-plan-bench/` in the hub prime.\n",
+      "revised": "2026-10-12T10:40:11Z"
     },
     {
       "id": 424,
