@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 ---
 
 # Plan: merge-review
@@ -27,15 +27,16 @@ After the flip it makes Publish, PR-Gate and Finalize hold the lock and reroute 
 14 — bouncer-blocking-and-merge-note — BLOCKING-aware auto-accept and the merge_review rubric marker
 15 — loom-merge-config — loom.yaml's merge perch keys
 16 — recipe-merge-seams — the Bouncer and Burler entries' merge keys and their wired seams
-17 — merge-in-row — Merge-In and the Merge-Review perch in the recipes; Publish loses its merge-in
-18 — merge-review-off-switch — skip_merge_review routes Merge-In straight to Publish
-19 — guarded-landing-rows — Publish, PR-Gate and Finalize hold the lock and reroute on a moved parent
-20 — loop-lock-hooks — the loop releases or hands off its lock at exit and on an idle bound
-21 — status-lock-wait — a lock wait reads as waiting in lyx loom status
-22 — batten-retry-rows — batten's verify retry follows the failing row; a lock wait is a live wait
-23 — batten-lock-backstop — batten holds a PR-Gate lock, backstops a stalled loop and resumes on a moved base
-24 — batten-lock-verbs — lyx batten lock list and lock release
-25 — orch-stencil-pr-gate — the orch's PR-Gate fork judges goal and decisions
+17 — merge-review-rubric — the loom-rubric-merge-review stencil the Merge-Review perch runs
+18 — merge-in-row — Merge-In and the Merge-Review perch in the recipes; Publish loses its merge-in
+19 — merge-review-off-switch — skip_merge_review routes Merge-In straight to Publish
+20 — guarded-landing-rows — Publish, PR-Gate and Finalize hold the lock and reroute on a moved parent
+21 — loop-lock-hooks — the loop releases or hands off its lock at exit and on an idle bound
+22 — status-lock-wait — a lock wait reads as waiting in lyx loom status
+23 — batten-retry-rows — batten's verify retry follows the failing row; a lock wait is a live wait
+24 — batten-lock-backstop — batten holds a PR-Gate lock, backstops a stalled loop and resumes on a moved base
+25 — batten-lock-verbs — lyx batten lock list and lock release
+26 — orch-stencil-pr-gate — the orch's PR-Gate fork judges goal and decisions
 
 ## Shared Decisions
 

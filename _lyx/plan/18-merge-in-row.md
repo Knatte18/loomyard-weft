@@ -1,4 +1,4 @@
-# Card 17 — merge-in-row
+# Card 18 — merge-in-row
 
 **Create:**
 - `plan:internal/loomshed#NameMergeIn` -> `const NameMergeIn = "Merge-In"`
@@ -6,8 +6,6 @@
 - `plan:internal/loomshed#NameMergeBurlerReview` -> `const NameMergeBurlerReview = "Merge-Burler-Review"`
 - `plan:internal/loomshed#NameMergeBurlerFix` -> `const NameMergeBurlerFix = "Merge-Burler-Fix"`
 - `plan:internal/shedrecipe#mergeInEntry` -> `func mergeInEntry(name string, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `contracts/stencils/loom/loom-rubric-merge-review.md`
-- `plan:contracts/stencils#LoomRubricMergeReview` -> `var LoomRubricMergeReview []byte`
 
 **Edit:**
 - `contracts/recipes/loom-recipe.yaml`
@@ -52,9 +50,6 @@
 - `internal/loomrecipe#reviewSegmentBouncers`
 - `internal/loomrecipe#TestNewDarn_Routing`
 - `internal/loomrecipe#TestDarnRouting`
-- `contracts/stencils#entries`
-- `contracts/stencils#rubricMarkerAllowlist`
-- `contracts/stencils#TestLoomRubrics`
 - `contracts/specs/refusal-spec.md`
 
 **Rename:**
@@ -67,6 +62,7 @@
 **Uses:**
 - `plan:internal/landingshed#NewMergeIn`
 - `plan:internal/landingshed#ReadMergeRecord`
+- `plan:contracts/stencils#LoomRubricMergeReview`
 
 **Intent:**
 Put Merge-In and the Merge-Review perch into the recipes and take the merge-in out of Publish (D1, D2).
@@ -80,7 +76,7 @@ Loom's order becomes `Webster-Bouncer → Describe → Merge-In → Merge-Bounce
   Its fasit is the decision record, with instructions to read `PATTERN.md` and the `pattern/` files the merge section names.
   It runs `rubric_stencil: loom-rubric-merge-review`, `fix-scope: source` and `tool-use: true`, with no cluster fan.
   The fix row has `review_row: Merge-Burler-Review`, the `verify` gate with 3 attempts and `fix-scope: source`.
-- `Publish`, `PR-Gate` and `Finalize` declare `on_reroute: Merge-In`; card 19 makes them use it.
+- `Publish`, `PR-Gate` and `Finalize` declare `on_reroute: Merge-In`; card 20 makes them use it.
 Darn's order becomes `… → Describe → Merge-In → Publish → PR-Gate → Finalize`, with no merge perch: its `Merge-In` hands straight to `Publish`, and its three landing rows declare `on_reroute: Merge-In`.
 `applyDarnReviewBudget` routes a 0 budget's `Darn-Write` Done to `Merge-In` instead of `Publish`, so the merge-in still runs under the lock.
 Both recipe headers explain the new rows, and that a run parked on a row whose name or edges changed is restarted, not migrated.
@@ -98,18 +94,12 @@ Wiring:
 Publish keeps `publish_verify`, the push and the pull request, and stays a no-op for a parent outside `require_pr_to_base`.
 - It no longer commits the status file, clears a parked merge-in, merges the parent or runs the plan verify.
 - `Publish` loses its resolver and pre-merge fields, and `NewPublish` stops building the resolver and no longer requires `OpenFabric`.
-  `Publish.Call` no longer calls `noteMergeCommit`, which card 19 deletes.
+  `Publish.Call` no longer calls `noteMergeCommit`, which card 20 deletes.
 - Its failure record takes `merge_commit` from the merge record.
 - It removes the record after `publish_verify` passes, or at once when no `publish_verify` is set.
 Merge-In removes it after its plan verify passes.
 The failure record therefore names `Merge-In` for the plan verify and `Publish` for `publish_verify`.
 
-The rubric stencil `loom-rubric-merge-review` asks the reviewer to judge only the interaction (D2).
-- Invariants the parent's commits added or changed are judged against the task's code, and the task's code against the parent's new code.
-- The subject is the `{{.merge_review}}` note: the two ranges, the merge commit and the overlap, or the fallback naming the latest merge-in.
-- The fasit is `PATTERN.md`, the overlap's `pattern/` files and the decision record.
-- Do-not-flag excludes anything the Webster review already judged on the task's own range.
-It is registered in `entries`, `rubricMarkerAllowlist` admits `merge_review`, and `TestLoomRubrics` gains its row.
 `landingshed/doc.go` moves the merge-in, the clean checks, the conflict session and the plan verify from Publish's paragraphs to a Merge-In paragraph.
 `refusal-spec.md` renames the landing rows Publish shared with Finalize to Merge-In and Finalize, splits `Publish: verify failed` into Merge-In's plan verify and Publish's `publish_verify`, and names Merge-In in the start/resume rows.
 
@@ -122,6 +112,6 @@ Tests:
   `TestPreMerge_ClearsOwnParkedMergeIn` runs its Publish cases against Merge-In.
 - The mid-merge start test names Merge-In.
 
-**ImpactSummary:** Publish loses its merge-in and plan verify, and both recipes gain the Merge-In row with loom's Merge-Review perch; the recipe, wiring, registry, stencil and landing tests are updated to the new row order.
+**ImpactSummary:** Publish loses its merge-in and plan verify, and both recipes gain the Merge-In row with loom's Merge-Review perch; the recipe, wiring, registry and landing tests are updated to the new row order.
 
-**Commit:** 17: loom, darn: Merge-In row and the Merge-Review perch ahead of Publish
+**Commit:** 18: loom, darn: Merge-In row and the Merge-Review perch ahead of Publish

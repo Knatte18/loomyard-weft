@@ -1,4 +1,4 @@
-# Card 24 — batten-lock-verbs
+# Card 25 — batten-lock-verbs
 
 **Create:**
 - `plan:internal/battencli#lockCommand` -> `func lockCommand() *cobra.Command`
@@ -33,4 +33,4 @@ Bound: a release frees the record only and never stops a run; the released run r
 
 **ImpactSummary:** a new `lyx batten lock` verb group; the existing batten verbs and their pre-run are unchanged except for skipping the new subtree.
 
-**Commit:** 24: batten: lock list and lock release verbs
+**Commit:** 25: batten: lock list and lock release verbs

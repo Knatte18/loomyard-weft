@@ -31,7 +31,7 @@ Teach the Bouncer and Burler entries the keys the Merge-Review rows will carry, 
 - `SkipMergeReview func() (bool, error)`, the merge skip seam (D6);
 - `ApproveMergeReview func() error`, which records the last finished review (D6);
 - `MergeReview func() string`, the rubric's `merge_review` note;
-- `MergeReviewOff bool`, `loom.yaml`'s `skip_merge_review`, which card 17's builder reads.
+- `MergeReviewOff bool`, `loom.yaml`'s `skip_merge_review`, which card 19's `New` reads.
 
 `bouncerEntry` changes:
 - `skip_seam` accepts `merge-overlap`, resolved to `SkipMergeReview` under `requireSeam`, beside `rework-exempt`.

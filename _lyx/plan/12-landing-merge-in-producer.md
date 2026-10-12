@@ -22,11 +22,12 @@
 - `plan:internal/landingshed#WriteMergeRecord`
 - `plan:internal/landingshed#ReadReviewedTip`
 - `plan:internal/fabricengine#Fabric.FastForwardPair`
+- `plan:internal/fabricengine#FastForwardResult`
 - `internal/landingshed#preMerge.clear`
 - `internal/landingshed#verifyGate.check`
 
 **Intent:**
-Add the `Merge-In` producer (D1) as a constructed but not yet listed producer; card 17 puts it into the recipes.
+Add the `Merge-In` producer (D1) as a constructed but not yet listed producer; card 18 puts it into the recipes.
 Its steps, in order:
 
 1. `CommitStatus` as Publish does today.
@@ -37,11 +38,13 @@ Its steps, in order:
    - `ParentNoUpstream` and `ParentEqual` return the local tip.
    - `ParentAhead` and `ParentDiverged` are Stuck before any pull runs: `the local parent branch "<branch>" is ahead of its upstream` (or `has diverged from its upstream`) `; way forward: push or reconcile "<branch>" in its own pair, then run "lyx loom resume"`.
      Merge-In never pushes or rewrites the parent.
-   - `ParentBehind` opens the parent pair through `OpenParentFabric` and calls `FastForwardPair` through the narrow `parentPuller` seam, mirroring Finalize's `parentMerger`.
+   - `ParentBehind` opens the parent pair through `OpenParentFabric` and calls `FastForwardPair(fabricengine.SyncOptions{SkipPush: m.deps.PushSkipped})` through the narrow `parentPuller` seam, mirroring Finalize's `parentMerger` and the sync options its `PushBranch` call passes.
+     `parentPuller` declares `FastForwardPair(opts fabricengine.SyncOptions) (fabricengine.FastForwardResult, error)`, and `syncParent` reads the outcome from `FastForwardResult.Refusal`, an empty one meaning the pair moved.
    - An open failure is Stuck: `no live pair for parent branch "<branch>": <cause>; way forward: re-create the parent pair, then run "lyx loom resume"`.
    - `FastForwardDirty` is Stuck: `the parent pair of "<branch>" has uncommitted changes; way forward: commit or stash them in the parent pair, then run "lyx loom resume"`.
    - `FastForwardMergeInProgress` is Stuck: `a merge is in progress in the parent pair of "<branch>"; way forward: finish or abort that merge in the parent pair, then run "lyx loom resume"`.
-   - After a fast-forward it returns the upstream tip.
+   - `FastForwardNotFastForward` is Stuck: `the upstream of "<branch>" is no longer a fast-forward of the parent pair; way forward: reconcile "<branch>" with its upstream in its own pair, then run "lyx loom resume"`.
+   - After a fast-forward it returns `FastForwardResult.NewHead`, the tip the pair was moved to, which can be newer than the `Upstream` that `ReadParentTips(true)` read.
    Bound: the fast-forward runs only under the lock, only from the behind state, and only moves the parent pair to its upstream tip, so it never touches local commits and cannot race another run's Finalize, which merges into the same worktree under the same lock.
 4. It reads the task head before the merge (`TaskHead`), the parent tip last merged into the task (`MergeBase(parentBranch)`) and the parent tip the last finished merge review reached.
    That last tip is `ReadReviewedTip(MergeReviewedPath)`, else the earlier merge record's `reviewed_tip`, else that merge base, the fork point.
@@ -58,14 +61,14 @@ Every Stuck goes through the usual cancellation check, and the lock's paused and
 
 `mergein_test.go` drives `Call` with a fake resolver, gate, tip reads and parent puller, and a real `parentlock.Store` in a temporary directory:
 - `CommitStatus` runs before the lock and the merge;
-- a lock held by another run makes the call wait, then proceed;
-- each `syncParent` state: equal, no upstream, the push skip with a moved upstream ignored, behind with the fast-forward recorded, ahead, diverged, no parent pair, dirty parent pair and merge in progress; the last five are Stuck with their way forward and no merge run;
+- the lock is held before `syncParent` runs;
+- each `syncParent` state: equal, no upstream, the push skip with a moved upstream ignored, behind with the fast-forward recorded, where the fake puller returns a `NewHead` that differs from the fake `ReadParentTips` upstream and the merge record's `merged_tip` equals that `NewHead`, ahead, diverged, no parent pair, dirty parent pair, merge in progress and an upstream no longer a fast-forward; the last six are Stuck with their way forward and no merge run;
 - the merge record's fields for a fresh merge, an up-to-date merge and a second merge whose `task_base` is the first merge's tip, so earlier merged parent changes never count as the task's;
 - a failed plan verify writes the failure record with row `Merge-In`;
 - an undecodable lock record is a halting Stuck naming `lyx batten lock release`;
 - `NewMergeIn`'s refusals.
 
-`refusal-spec.md`'s loom section gains a row for each of Merge-In's five parent-sync Stucks and for the lock's paused and unreadable halts, and the doc gains a Merge-In paragraph.
+`refusal-spec.md`'s loom section gains a row for each of Merge-In's parent-sync Stucks and for the lock's paused and unreadable halts, and the doc gains a Merge-In paragraph.
 
 **ImpactSummary:** a new landing producer no recipe lists yet; nothing existing changes behaviour.
 

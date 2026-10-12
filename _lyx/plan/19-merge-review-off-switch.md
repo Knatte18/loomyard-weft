@@ -1,4 +1,4 @@
-# Card 18 — merge-review-off-switch
+# Card 19 — merge-review-off-switch
 
 **Create:**
 - `plan:internal/loomrecipe#applyMergeReviewOff` -> `func applyMergeReviewOff(producers []shedengine.ProducerDef, off bool)`
@@ -30,4 +30,4 @@ Every test caller of `Routing` passes false.
 
 **ImpactSummary:** `Routing` and `loomCLI.reviewBudget` are re-signed with every caller on this card; nothing changes while `skip_merge_review` stays false.
 
-**Commit:** 18: loom: skip_merge_review routes Merge-In straight to Publish
+**Commit:** 19: loom: skip_merge_review routes Merge-In straight to Publish

@@ -1,4 +1,4 @@
-# Card 22 — batten-retry-rows
+# Card 23 — batten-retry-rows
 
 **Edit:**
 - `internal/battenshed#InnerRunDeps`
@@ -40,4 +40,4 @@ Its test gains both rows.
 
 **ImpactSummary:** batten's retry follows the plan verify to Merge-In and its quiet notice respects a lock wait; `recordMatchesHalt` is re-signed with its one caller.
 
-**Commit:** 22: batten: the verify retry follows the failing row, and a lock wait is a live wait
+**Commit:** 23: batten: the verify retry follows the failing row, and a lock wait is a live wait

@@ -1,4 +1,4 @@
-# Card 19 — guarded-landing-rows
+# Card 20 — guarded-landing-rows
 
 **Create:**
 - `internal/landingshed/guardedrows_test.go`
@@ -60,18 +60,18 @@ A zero guard, as a struct-literal test builds, takes no lock and reads no tips, 
 ```
 
 `landingshed/doc.go` documents the lock and the reroute at each row.
-`Publish.noteMergeCommit`, unused since card 17, is deleted.
+`Publish.noteMergeCommit`, unused since card 18, is deleted.
 `newTestDeps` and `newPRGateFixture` fill a temporary lock store and tip reads equal to a written merge record, so the existing producer tests run unchanged in substance, and the two refusal tests gain the new rows.
 `TestFinalize_MergeInRequiredRetry` gains the moved-again case.
 
 `guardedrows_test.go` drives the three rows with fake tips and a real temporary store:
-- Publish reroutes on a moved upstream and on a local commit;
+- Publish reroutes on a moved upstream;
 - PR-Gate reroutes before any GitHub call, and its rejection releases the lock;
 - Finalize reroutes on a moved parent, lands with no reroute when the parent holds the work, and retries or reroutes after merge-in-required as the second read decides;
 - Finalize's Done leaves no record;
-- a moved parent at each row returns a reroute Stuck, which spends no bounce budget, so a fourth reroute is the engine's cap halt (card 3);
+- a moved parent at each row returns a reroute Stuck, which spends no bounce budget;
 - a pause during a lock wait halts the row blocked with its way forward.
 
 **ImpactSummary:** the three landing rows now take the lock and reroute on a moved parent; their constructors gain three refusals, and the shared fixtures fill the lock seams.
 
-**Commit:** 19: landing: Publish, PR-Gate and Finalize hold the parent lock and reroute on a moved parent
+**Commit:** 20: landing: Publish, PR-Gate and Finalize hold the parent lock and reroute on a moved parent

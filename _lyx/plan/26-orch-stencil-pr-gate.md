@@ -1,4 +1,4 @@
-# Card 25 — orch-stencil-pr-gate
+# Card 26 — orch-stencil-pr-gate
 
 **Edit:**
 - `contracts/stencils#wordingClaims`
@@ -20,4 +20,4 @@ The stale lines change:
 
 **ImpactSummary:** the orch stencil's PR-Gate and escalation text and its pinned claims; no code path changes.
 
-**Commit:** 25: orch: PR-Gate fork judges goal and decisions; stale landing lines updated
+**Commit:** 26: orch: PR-Gate fork judges goal and decisions; stale landing lines updated

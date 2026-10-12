@@ -1,4 +1,4 @@
-# Card 20 — loop-lock-hooks
+# Card 21 — loop-lock-hooks
 
 **Create:**
 - `plan:internal/loomcli#runLockIdentity` -> `func runLockIdentity(loc *lyxcwd.Location, runID string) parentlock.Owner`
@@ -52,4 +52,4 @@ The hooks use the store at `parentlock.Dir(fabricengine.BoardDir(hub))`, `self` 
 
 **ImpactSummary:** loom and darn loops now release or hand off their parent lock at exit and release it on an idle bound; `loopLockOwner` shares the new run identity, and specFor's other fields are unchanged.
 
-**Commit:** 20: loom: the loop releases or hands off its parent lock at exit and on an idle bound
+**Commit:** 21: loom: the loop releases or hands off its parent lock at exit and on an idle bound

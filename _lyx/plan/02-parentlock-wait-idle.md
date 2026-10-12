@@ -19,6 +19,8 @@
 **Edit:**
 - `internal/parentlock/doc.go`
 - `cmd/lyx/testdata/test-budget.yaml`
+- `cmd/lyx#unboundedWaitFiles`
+- `pattern/PATTERN-daemon-wakeups.md`
 
 **Uses:**
 - `plan:internal/parentlock#Store.TryAcquire`
@@ -27,6 +29,8 @@
 Add the queue wait, the wait record and the idle rule the rows, the loop and batten share (D5, D7, D12).
 
 `Store.Acquire(ctx, branch, owner, w)` loops `TryAcquire` until granted, waiting with no time limit in the queue, polling from one second doubling to thirty while the holder is unchanged and back to one second when it changes (`PATTERN-daemon-wakeups`).
+`Store.Acquire` lives in `internal/parentlock/acquire.go`, which `unboundedWaitFiles` gains, so the guard's sub-second scan covers this wait.
+`PATTERN-daemon-wakeups.md`'s What counts list gains the parent lock wait in `internal/parentlock/acquire.go`, which polls from one second doubling to thirty.
 `Waiter` carries three told seams, each nil-is-absent:
 - `OnWait func(holder Record)` is called once when the wait starts and again whenever the holder changes, so the caller writes its wait record and its wait mark;
 - `Paused func() bool` is read before every sleep, and true returns `ErrPaused` with the caller's ticket removed;

@@ -1,4 +1,4 @@
-# Card 23 — batten-lock-backstop
+# Card 24 — batten-lock-backstop
 
 **Create:**
 - `plan:internal/battenshed#ChildParentLock` -> `type ChildParentLock struct`
@@ -75,4 +75,4 @@ In battencli, `childParentLock` builds the seams:
 
 **ImpactSummary:** batten's InnerRun wait gains a probe-cadence lock step and a stale-base resume, both off while `ParentLock` is nil; batten's wiring and the seam lists follow.
 
-**Commit:** 23: batten: hold a PR-Gate lock, backstop a stalled loop, resume on a moved base
+**Commit:** 24: batten: hold a PR-Gate lock, backstop a stalled loop, resume on a moved base
