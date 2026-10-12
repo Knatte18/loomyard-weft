@@ -291,7 +291,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "862938762b0bd632ef202653254e8647",
   "masterSessionId": "0e9aa514-65af-4e0c-bc99-9aab28aced2a",
   "batches": {
@@ -327,6 +327,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-multi-window/0e9aa514-65af-4e0c-bc99-9aab28aced2a/subagents/agent-a1f87614cfa13dbc2.jsonl"
       ]
+    },
+    "4": {
+      "slug": "reed-own-window-launch",
+      "cards": [
+        "04-reed-own-window-launch",
+        "05-reed-window-groups",
+        "06-reed-own-window-remove",
+        "07-reed-own-window-bar"
+      ],
+      "cardHashes": {
+        "04-reed-own-window-launch": "b370ea1e591ea63662779b4b68591ff802bb2f9451c137080a0032981cd8156d",
+        "05-reed-window-groups": "138750dea291c10035015cdd29696665bc1583534b3d5a59944821d6e38cf807",
+        "06-reed-own-window-remove": "2b08c7628dfe99876dcc7b1d8b1a1cef669004284872e9af685caeb01a260e42",
+        "07-reed-own-window-bar": "22e19313deeddf48e9cc5920b4359120421ef25ede940fcf07fb86681beb8788"
+      },
+      "startSha": "7e6f73f16c5c8520c3c9d919508e347f5afad0f3",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T18:34:35Z",
+      "sessionId": "0e9aa514-65af-4e0c-bc99-9aab28aced2a",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
