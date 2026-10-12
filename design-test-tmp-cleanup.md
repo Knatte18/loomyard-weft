@@ -1,6 +1,6 @@
 # lyx cleans up after itself: temp files and one cleanup command
 
-`test-tmp-cleanup` · Task · bug, fabric, loom, batten, board · running · Worktree-Create
+`test-tmp-cleanup` · Task · bug, fabric, loom, batten, board · running · Loom-Preflight
 
 ## Problem (operator, 2026-10-11)
 
