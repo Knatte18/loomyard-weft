@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Burler-Review",
+  "current_producer": "Darn-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Burler-Review",
-    "last": "Darn-Bouncer → bounced to Darn-Burler-Review",
+    "now": "Darn-Burler-Fix",
+    "last": "Darn-Burler-Review → bounced to Darn-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -27,6 +27,13 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-12T07:31:34Z"
+    },
+    {
+      "producer": "Darn-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/board-entry-age/_lyx/reviews/darn/round-1-review.md",
+      "at": "2026-10-12T07:33:11Z",
+      "budget_exempt": true
     }
   ],
   "product": {
