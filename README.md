@@ -35,7 +35,8 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Convergence report: count orch wakes, driver repairs and fresh-code fixes from existing records**<br>• A lyx report verb that counts, per run and per week, what woke the orch and what the driver repaired, from records that already exist | [`convergence-plan`](design-convergence-plan.md) | loom |  |  | 10m | orch, shed |
+| 1 | **Convergence report: count orch wakes, driver repairs and fresh-code fixes from existing records**<br>• A lyx report verb that counts, per run and per week, what woke the orch and what the driver repaired, from records that already exist | [`convergence-plan`](design-convergence-plan.md) | loom |  |  | 11m | orch, shed |
+| 2 | **Webster kick-start pack: read the card's spans in one turn, per-card packs**<br>• Forks read listed spans whole and spread out; adopt the bench wording, per-card packs, span-only FRESH-READ and one-line var entries | [`webster-pack-read-set`](design-webster-pack-read-set.md) | loom |  | 0m | 0m | webster, stencil |
 
 ## Notes
 
@@ -65,7 +66,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 16 | **tokencount: guard the slug-reuse cutoff against date skew**<br>• The slug-reuse cutoff is always applied; a tag commit date skewed against transcript timestamps could silently drop sessions. | [`tokencount-cutoff-skew`](design-tokencount-cutoff-skew.md) |  |  |  |
 | 17 | **Sweep tests that rely on a closed listener socket file**<br>• A forked child of a parallel test can inherit a closed listener fd and keep a stale socket answering; sweep other tests for the same race. | [`reed-socket-test-fd-sweep`](design-reed-socket-test-fd-sweep.md) |  |  | reed |
 | 18 | **End the seat hold deferral when the advisor itself is held or dead**<br>• The hold notice deferral only got a shorter cap (10 min); ending it as soon as the advisor is held or dead is not built. | [`hold-deferral-end-on-held`](design-hold-deferral-end-on-held.md) |  |  | shuttle |
-| 19 | **Measure the Webster kick-start pack with and without**<br>• Repeat the audit count (grep-for-member calls and whole-file reads per fork) on real loom runs with kickstart_pack on and off. | [`kickstart-pack-measure`](design-kickstart-pack-measure.md) |  | 9m | webster |
+| 19 | **Measure the Webster kick-start pack with and without**<br>• Repeat the audit count (grep-for-member calls and whole-file reads per fork) on real loom runs with kickstart_pack on and off. | [`kickstart-pack-measure`](design-kickstart-pack-measure.md) |  | 10m | webster |
 | 20 | **Twill for Plan: measure fewer Plan-Review rounds; wrong-parent-dir miss**<br>• After twill-plan lands: measure a lower plan_max_bounces, and cover the parent-directory miss every bench arm shared | [`twill-plan-followups`](design-twill-plan-followups.md) |  |  | loom |
 | 21 | **Go-driven shed with a cold LLM watcher at every level**<br>• A Go loop always steps the run; an LLM watcher is spawned only when the loop stops on something it cannot pass, the same at loom and hub level | [`go-driven-shed`](design-go-driven-shed.md) | 7m | 7m | shed, batten, loom, orch |
 
