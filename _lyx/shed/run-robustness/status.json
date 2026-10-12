@@ -1,12 +1,13 @@
 {
   "current_producer": "PR-Gate",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "alignment report /home/knatte/Code/loomyard-LYXHUB/run-robustness/_lyx/shed/run-robustness/alignment/pr-gate/attempt-1/report-739d24a403c3409f.md did not settle this pull request - Peer convergence-plan overlaps this run. (1) It decides the opposite of D4: its D5 and acceptance criteria keep shedrun.ParseSeed and ReadSeed strict (\"shedrun.ReadSeed still rejects it\"), and it adds a duplicate ParseSeedTolerant in internal/shedrun/seed.go and assertions in TestSeed_LegacyParentKey in seed_test.go, which this run rewrites. (2) In internal/alignment/records.go this run removes the encoding/json import, while convergence-plan's new ParseAttemptDir calls json.Unmarshal, so a textual merge of both does not compile. (3) Both change internal/loomcli/halt.go, internal/loomcli/landingdeps.go and internal/boardengine/store_test.go. (4) Both rewrite the PATTERN-pane-text-injection index line in PATTERN.md differently, and both edit pattern/PATTERN-leaf-packages.md. Which run lands first? Should convergence-plan then drop ParseSeedTolerant and its strict-ReadSeed criterion in favour of D4's tolerant ParseSeed?; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/591",
+  "parent_notice": "alignment report /home/knatte/Code/loomyard-LYXHUB/run-robustness/_lyx/shed/run-robustness/alignment/pr-gate/attempt-1/report-739d24a403c3409f.md did not settle this pull request - Peer convergence-plan overlaps this run. (1) It decides the opposite of D4: its D5 and acceptance criteria keep shedrun.ParseSeed and ReadSeed strict (\"shedrun.ReadSeed still rejects it\"), and it adds a duplicate ParseSeedTolerant in internal/shedrun/seed.go and assertions in TestSeed_LegacyParentKey in seed_test.go, which this run rewrites. (2) In internal/alignment/records.go this run removes the encoding/json import, while convergence-plan's new ParseAttemptDir calls json.Unmarshal, so a textual merge of both does not compile. (3) Both change internal/loomcli/halt.go, internal/loomcli/landingdeps.go and internal/boardengine/store_test.go. (4) Both rewrite the PATTERN-pane-text-injection index line in PATTERN.md differently, and both edit pattern/PATTERN-leaf-packages.md. Which run lands first? Should convergence-plan then drop ParseSeedTolerant and its strict-ReadSeed criterion in favour of D4's tolerant ParseSeed?",
   "pause_requested": false,
   "activity": {
     "now": "PR-Gate",
-    "last": "PR-Align → done",
-    "wait": ""
+    "last": "PR-Gate → awaiting",
+    "wait": "alignment report /home/knatte/Code/loomyard-LYXHUB/run-robustness/_lyx/shed/run-robustness/alignment/pr-gate/attempt-1/report-739d24a403c3409f.md did not settle this pull request - Peer convergence-plan overlaps this run. (1) It decides the opposite of D4: its D5 and acceptance criteria keep shedrun.ParseSeed and ReadSeed strict (\"shedrun.ReadSeed still rejects it\"), and it adds a duplicate ParseSeedTolerant in internal/shedrun/seed.go and assertions in TestSeed_LegacyParentKey in seed_test.go, which this run rewrites. (2) In internal/alignment/records.go this run removes the encoding/json import, while convergence-plan's new ParseAttemptDir calls json.Unmarshal, so a textual merge of both does not compile. (3) Both change internal/loomcli/halt.go, internal/loomcli/landingdeps.go and internal/boardengine/store_test.go. (4) Both rewrite the PATTERN-pane-text-injection index line in PATTERN.md differently, and both edit pattern/PATTERN-leaf-packages.md. Which run lands first? Should convergence-plan then drop ParseSeedTolerant and its strict-ReadSeed criterion in favour of D4's tolerant ParseSeed?; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/591"
   },
   "history": [
     {
@@ -361,6 +362,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-12T14:01:23Z"
+    },
+    {
+      "producer": "PR-Gate",
+      "outcome": "awaiting",
+      "output": "",
+      "at": "2026-10-12T14:01:36Z"
     }
   ],
   "product": {
