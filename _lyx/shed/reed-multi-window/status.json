@@ -1,12 +1,12 @@
 {
-  "current_producer": "Merge-In",
-  "state": "blocked",
-  "error": "verify failed after merging parent branch \"main\" (exit code 1); output: /home/knatte/Code/loomyard-LYXHUB/reed-multi-window/.lyx/verify/verify-3.log; way forward: run \"lyx loom goto --to Webster-Burler-Review\", then \"lyx loom resume\", in the task worktree; the Webster-Review round reads the Publish failure record and its gate runs the failing tests",
+  "current_producer": "Webster-Burler-Review",
+  "state": "paused",
+  "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Merge-In",
-    "last": "Merge-In → stuck",
-    "wait": "verify failed after merging parent branch \"main\" (exit code 1); output: /home/knatte/Code/loomyard-LYXHUB/reed-multi-window/.lyx/verify/verify-3.log; way forward: run \"lyx loom goto --to Webster-Burler-Review\", then \"lyx loom resume\", in the task worktree; the Webster-Review round reads the Publish failure record and its gate runs the failing tests"
+    "now": "Webster-Burler-Review",
+    "last": "Webster-Burler-Review → goto",
+    "wait": ""
   },
   "history": [
     {
@@ -188,6 +188,12 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-12T19:03:53Z"
+    },
+    {
+      "producer": "Webster-Burler-Review",
+      "outcome": "goto",
+      "output": "",
+      "at": "2026-10-12T19:04:25Z"
     }
   ],
   "product": {
