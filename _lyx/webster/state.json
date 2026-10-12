@@ -1,18 +1,18 @@
 {
   "runGuid": "65604a39a016d3d7fcac6490d4b07bfe",
-  "planFingerprint": "778d3d03052e6c2cfb885b099c079d491a1cbe8e54b643fa80015bacbd1e22e6",
+  "planFingerprint": "4c1a3dbdec9648131900ae989a4ca179ed4b4f89932b84d149b5069bd9cf4965",
   "planFileHashes": {
     "00-overview.md": "13e626b233a542e106ca7d03bb292b315dc4e07442cdb1a9bf36b937bba9ed04",
-    "01-loom-alignment-config.md": "129150b7089a65677d5a3438e55b44a36364a5bc6f01f6750f05780f2ae5722f",
-    "02-fabric-commit-log.md": "8122d143975c464bcb3db78b9a8d1d866fb42243ee8eebd5cebaf40648fdc156",
-    "03-loom-peers.md": "fb9596920f8d6f265935cadf5602c0b06a3686072cef731bed3fb3875ad78de2",
-    "04-shedrun-alignment-paths.md": "319c0c5c8d654e5a890ce49532673909ace5d241c18580dd817fc03681474a5f",
-    "05-alignment-records.md": "052c897cd906eb6045746a2bb9f0cf1806e180e0284f575ee3b3640598b8ba79",
-    "06-alignment-session.md": "cfcafe36223505fe1e574c99f1c1803ac5a03c1c9229163f1ad28cefe063808c",
+    "01-loom-alignment-config.md": "628d9cd93d7cc1867254f30eb80d51e2cfa96290c2358152283b2ad21f7b3184",
+    "02-fabric-commit-log.md": "8f62bebcae9b6cd7ead0a53bffef4a6ccf76a6eb6b51916bd27b8e621247c691",
+    "03-loom-peers.md": "66fcb4b59cd940146c133947dc2fd6ff2db0c05aec7aad32851c9db11c724f56",
+    "04-shedrun-alignment-paths.md": "b0ab3aef14ea1fed4b3d04c3c03805d0af143ab4dff133734e5e055eb37f9991",
+    "05-alignment-records.md": "1c6d2a960ab4b3086bbcc1ea8ccf01737cb894df4dec8933df286a2441336ad9",
+    "06-alignment-session.md": "1f7735c0a8628d38589d80d60bcbe15cafacb94b09537c89b21b2c1f8dcbaf83",
     "07-parent-review-gate-alignment.md": "26e07fc19e50e87b766445cd2b371267cb846085de9de37dc3f42d06eca43033",
-    "08-parent-review-alignment-wiring.md": "9bc16f94a257012d527d89f2bb394c905c49d9e24bdcea66365eda56fb7dd53d",
+    "08-parent-review-alignment-wiring.md": "2b013ed05ab945e23727c7392d1082e36db7132f4623b423a1fbd905585eaf0b",
     "09-shared-approval-write.md": "c7e1ce690b623ced43fbfe790b8f85c515ce9cb1cd30b141d8565c7c452df045",
-    "10-pr-align-producer.md": "5b2448dedad36335c73e22545d1fb9f033c066be42b2319f4a7ae0cd70fba8a2",
+    "10-pr-align-producer.md": "950071326f29cdf103a0e9d7f89e0538f35976ac58cdbe8a94c2f2c2183e5aa5",
     "11-pr-align-row.md": "68140916b1877e06569d1397e5c55925c15758db51a66da3a3ce6816c65cd06e",
     "12-orch-stencil-alignment.md": "8c61f2c78f498b302e57ff3c4f659f6fe60d33d5a49e02b2aff40e7734015c39"
   },
@@ -280,7 +280,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "75a07f4ee743983521af8f8e055dfb52",
   "masterSessionId": "2b565459-bf2c-474b-bc4c-292b3d6a10b6",
   "batches": {
@@ -295,19 +295,36 @@
         "06-alignment-session"
       ],
       "cardHashes": {
-        "01-loom-alignment-config": "129150b7089a65677d5a3438e55b44a36364a5bc6f01f6750f05780f2ae5722f",
-        "02-fabric-commit-log": "8122d143975c464bcb3db78b9a8d1d866fb42243ee8eebd5cebaf40648fdc156",
-        "03-loom-peers": "fb9596920f8d6f265935cadf5602c0b06a3686072cef731bed3fb3875ad78de2",
-        "04-shedrun-alignment-paths": "319c0c5c8d654e5a890ce49532673909ace5d241c18580dd817fc03681474a5f",
-        "05-alignment-records": "052c897cd906eb6045746a2bb9f0cf1806e180e0284f575ee3b3640598b8ba79",
-        "06-alignment-session": "cfcafe36223505fe1e574c99f1c1803ac5a03c1c9229163f1ad28cefe063808c"
+        "01-loom-alignment-config": "628d9cd93d7cc1867254f30eb80d51e2cfa96290c2358152283b2ad21f7b3184",
+        "02-fabric-commit-log": "8f62bebcae9b6cd7ead0a53bffef4a6ccf76a6eb6b51916bd27b8e621247c691",
+        "03-loom-peers": "66fcb4b59cd940146c133947dc2fd6ff2db0c05aec7aad32851c9db11c724f56",
+        "04-shedrun-alignment-paths": "b0ab3aef14ea1fed4b3d04c3c03805d0af143ab4dff133734e5e055eb37f9991",
+        "05-alignment-records": "1c6d2a960ab4b3086bbcc1ea8ccf01737cb894df4dec8933df286a2441336ad9",
+        "06-alignment-session": "1f7735c0a8628d38589d80d60bcbe15cafacb94b09537c89b21b2c1f8dcbaf83"
       },
       "startSha": "314816cde00092577fd3e2caa5083b5763837b63",
       "kind": "fork",
       "spawnedAt": "2026-10-12T11:15:49Z",
       "sessionId": "2b565459-bf2c-474b-bc4c-292b3d6a10b6",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-loom-alignment-config",
+        "status": "done",
+        "head_sha": "70027516ca17829e2c0b9db98d8cbed132993458"
+      },
+      "cardShas": [
+        "70027516ca17829e2c0b9db98d8cbed132993458"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-alignment-agent/2b565459-bf2c-474b-bc4c-292b3d6a10b6/subagents/agent-a08e455ba58d42167.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-alignment-agent/2b565459-bf2c-474b-bc4c-292b3d6a10b6/subagents/agent-a08e455ba58d42167.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-alignment-agent/2b565459-bf2c-474b-bc4c-292b3d6a10b6/subagents/agent-a08e455ba58d42167.jsonl"
+  ]
 }

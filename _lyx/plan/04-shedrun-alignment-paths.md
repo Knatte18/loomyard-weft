@@ -1,8 +1,8 @@
 # Card 4 — shedrun-alignment-paths
 
 **Create:**
-- `plan:internal/shedrun#AlignmentDir` -> `func AlignmentDir(l *lyxcwd.Location, runID, point string) string`
-- `plan:internal/shedrun#AlignmentRel` -> `func AlignmentRel(l *lyxcwd.Location, runID string) string`
+- `internal/shedrun#AlignmentDir`
+- `internal/shedrun#AlignmentRel`
 
 **Edit:**
 - `internal/shedrun#TestPathConstructors`

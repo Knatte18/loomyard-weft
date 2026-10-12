@@ -14,9 +14,9 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/loomengine#AlignmentSettings` -> `type AlignmentSettings struct`
-- `plan:internal/loomengine#ResolveAlignment` -> `func ResolveAlignment(cfg Config, reg modelspec.Registry) (AlignmentSettings, error)`
-- `plan:internal/loomengine#TestResolveAlignment` -> `func TestResolveAlignment(t *testing.T)`
+- `internal/loomengine#AlignmentSettings`
+- `internal/loomengine#ResolveAlignment`
+- `internal/loomengine#TestResolveAlignment`
 
 **Intent:**
 Add D7's four `loom.yaml` keys, classified for the config layers, and the one cross-key check.

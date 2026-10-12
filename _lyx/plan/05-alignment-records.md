@@ -7,36 +7,36 @@
 - `internal/alignment/records_test.go`
 - `internal/alignment/prompt_test.go`
 - `contracts/stencils/loom/loom-template-alignment.md`
-- `plan:internal/alignment#Role` -> `const Role = "alignment"`
-- `plan:internal/alignment#Point` -> `type Point string`
-- `plan:internal/alignment#PointParentReview` -> `const PointParentReview Point = "parent-review"`
-- `plan:internal/alignment#PointPRGate` -> `const PointPRGate Point = "pr-gate"`
-- `plan:internal/alignment#VerdictApprove` -> `const VerdictApprove = "approve"`
-- `plan:internal/alignment#VerdictReject` -> `const VerdictReject = "reject"`
-- `plan:internal/alignment#VerdictEscalate` -> `const VerdictEscalate = "escalate"`
-- `plan:internal/alignment#Attempt` -> `type Attempt struct`
-- `plan:internal/alignment#Attempt.VerdictPath` -> `func (a Attempt) VerdictPath() string`
-- `plan:internal/alignment#Attempt.ReportPath` -> `func (a Attempt) ReportPath() string`
-- `plan:internal/alignment#Attempt.PromptPath` -> `func (a Attempt) PromptPath() string`
-- `plan:internal/alignment#WriteAttempt` -> `func WriteAttempt(a Attempt) error`
-- `plan:internal/alignment#ReadAttempt` -> `func ReadAttempt(dir string) (Attempt, error)`
-- `plan:internal/alignment#ListAttempts` -> `func ListAttempts(root string) ([]Attempt, error)`
-- `plan:internal/alignment#Verdict` -> `type Verdict struct`
-- `plan:internal/alignment#ReadVerdict` -> `func ReadVerdict(a Attempt) (Verdict, bool, error)`
-- `plan:internal/alignment#Snapshot` -> `func Snapshot(decisionRecord []byte, notes []string) string`
-- `plan:internal/alignment#Settings` -> `type Settings struct`
-- `plan:internal/alignment#PromptInput` -> `type PromptInput struct`
-- `plan:internal/alignment#Prompt` -> `func Prompt(stencilsDir string, in PromptInput) (string, error)`
-- `plan:internal/alignment#Spec` -> `func Spec(prompt string, a Attempt, s Settings) shuttleengine.Spec`
-- `plan:internal/alignment#TestReadVerdict` -> `func TestReadVerdict(t *testing.T)`
-- `plan:internal/alignment#TestAttempts` -> `func TestAttempts(t *testing.T)`
-- `plan:internal/alignment#TestSnapshot` -> `func TestSnapshot(t *testing.T)`
-- `plan:internal/alignment#TestPrompt` -> `func TestPrompt(t *testing.T)`
-- `plan:internal/alignment#TestSpec` -> `func TestSpec(t *testing.T)`
-- `plan:internal/alignment#TestToldGeometryInvariant_AllowlistOnly` -> `func TestToldGeometryInvariant_AllowlistOnly(t *testing.T)`
-- `plan:internal/alignment#alignmentAllowedImports` -> `var alignmentAllowedImports []string`
-- `plan:internal/alignment#TestMain` -> `func TestMain(m *testing.M)`
-- `plan:contracts/stencils#LoomTemplateAlignment` -> `var LoomTemplateAlignment []byte`
+- `internal/alignment#Role`
+- `internal/alignment#Point`
+- `internal/alignment#PointParentReview`
+- `internal/alignment#PointPRGate`
+- `internal/alignment#VerdictApprove`
+- `internal/alignment#VerdictReject`
+- `internal/alignment#VerdictEscalate`
+- `internal/alignment#Attempt`
+- `internal/alignment#Attempt.VerdictPath`
+- `internal/alignment#Attempt.ReportPath`
+- `internal/alignment#Attempt.PromptPath`
+- `internal/alignment#WriteAttempt`
+- `internal/alignment#ReadAttempt`
+- `internal/alignment#ListAttempts`
+- `internal/alignment#Verdict`
+- `internal/alignment#ReadVerdict`
+- `internal/alignment#Snapshot`
+- `internal/alignment#Settings`
+- `internal/alignment#PromptInput`
+- `internal/alignment#Prompt`
+- `internal/alignment#Spec`
+- `internal/alignment#TestReadVerdict`
+- `internal/alignment#TestAttempts`
+- `internal/alignment#TestSnapshot`
+- `internal/alignment#TestPrompt`
+- `internal/alignment#TestSpec`
+- `internal/alignment#TestToldGeometryInvariant_AllowlistOnly`
+- `internal/alignment#alignmentAllowedImports`
+- `internal/alignment#TestMain`
+- `contracts/stencils#LoomTemplateAlignment`
 
 **Edit:**
 - `contracts/stencils#entries`

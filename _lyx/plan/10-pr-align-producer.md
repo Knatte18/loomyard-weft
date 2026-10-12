@@ -33,11 +33,11 @@
 **Uses:**
 - `plan:internal/landingshed#RecordApproval`
 - `plan:internal/landingshed#RecordRejection`
-- `plan:internal/alignment#Session.Begin`
+- `internal/alignment#Session.Begin`
 - `plan:internal/loomcli#alignmentSettings`
 - `plan:internal/loomcli#alignmentSnapshot`
 - `plan:internal/loomcli#hubBoardTasks`
-- `plan:internal/shedrun#AlignmentDir`
+- `internal/shedrun#AlignmentDir`
 
 **Intent:**
 Add D5's `PR-Align` producer, which spawns the alignment agent at PR-Gate and applies its verdict, and make `PR-Gate` name an escalation in its awaiting notice.

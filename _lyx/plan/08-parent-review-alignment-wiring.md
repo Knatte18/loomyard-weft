@@ -25,12 +25,12 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/alignment#Session.Begin`
-- `plan:internal/alignment#Session.Poll`
-- `plan:internal/alignment#Session.Close`
+- `internal/alignment#Session.Begin`
+- `internal/alignment#Session.Poll`
+- `internal/alignment#Session.Close`
 - `plan:internal/parentreview#Aligner`
-- `plan:internal/shedrun#AlignmentDir`
-- `plan:internal/shedrun#AlignmentRel`
+- `internal/shedrun#AlignmentDir`
+- `internal/shedrun#AlignmentRel`
 
 **Intent:**
 Wire card 7's `Aligner` to card 6's session for a loom run, and make the fallback brief name the alignment report or why no verdict came (D4).

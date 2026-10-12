@@ -2,16 +2,16 @@
 
 **Create:**
 - `internal/loomcli/peers_test.go`
-- `plan:internal/loomcli#peerLine` -> `type peerLine struct`
-- `plan:internal/loomcli#peersDeps` -> `type peersDeps struct`
-- `plan:internal/loomcli#peersVerb` -> `func peersVerb(out io.Writer, deps peersDeps) int`
-- `plan:internal/loomcli#peersShowVerb` -> `func peersShowVerb(out io.Writer, deps peersDeps, slug, record string) int`
-- `plan:internal/loomcli#hubPeersDeps` -> `func hubPeersDeps(location *lyxcwd.Location) peersDeps`
-- `plan:internal/loomcli#loomCLI.peersCmd` -> `func (c *loomCLI) peersCmd() *cobra.Command`
-- `plan:internal/loomcli#TestPeersVerb` -> `func TestPeersVerb(t *testing.T)`
-- `plan:internal/loomcli#TestPeersShowVerb` -> `func TestPeersShowVerb(t *testing.T)`
+- `internal/loomcli#peerLine`
+- `internal/loomcli#peersDeps`
+- `internal/loomcli#peersVerb`
+- `internal/loomcli#peersShowVerb`
+- `internal/loomcli#hubPeersDeps`
+- `internal/loomcli#loomCLI.peersCmd`
+- `internal/loomcli#TestPeersVerb`
+- `internal/loomcli#TestPeersShowVerb`
 - `internal/loomcli/peers_integration_test.go`
-- `plan:internal/loomcli#TestHubPeersDeps_OverRealHub` -> `func TestHubPeersDeps_OverRealHub(t *testing.T)`
+- `internal/loomcli#TestHubPeersDeps_OverRealHub`
 
 **Edit:**
 - `internal/loomcli#inReviewGroup`
@@ -22,7 +22,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/fabricengine#Fabric.CommitLog`
+- `internal/fabricengine#Fabric.CommitLog`
 
 **Intent:**
 Add D6's read-only verb, so an agent in one pair can read the other in-flight runs' records and the parent's landed commits without forming another worktree's path itself.

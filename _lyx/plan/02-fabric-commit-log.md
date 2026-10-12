@@ -1,8 +1,8 @@
 # Card 2 — fabric-commit-log
 
 **Create:**
-- `plan:internal/fabricengine#Fabric.CommitLog` -> `func (f *Fabric) CommitLog(from, to string) ([]string, error)`
-- `plan:internal/fabricengine_test#TestCommitLog_ListsTheRangeNewestFirst` -> `func TestCommitLog_ListsTheRangeNewestFirst(t *testing.T)`
+- `internal/fabricengine#Fabric.CommitLog`
+- `internal/fabricengine_test#TestCommitLog_ListsTheRangeNewestFirst`
 
 **Edit:**
 - `cmd/lyx/testdata/test-budget.yaml`

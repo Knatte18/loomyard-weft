@@ -2,27 +2,27 @@
 
 **Create:**
 - `internal/alignment/session_test.go`
-- `plan:internal/alignment#Shuttle` -> `type Shuttle interface`
-- `plan:internal/alignment#Run` -> `type Run interface`
-- `plan:internal/alignment#RunnerShuttle` -> `func RunnerShuttle(r *shuttleengine.Runner) Shuttle`
-- `plan:internal/alignment#SessionConfig` -> `type SessionConfig struct`
-- `plan:internal/alignment#Session` -> `type Session struct`
-- `plan:internal/alignment#NewSession` -> `func NewSession(cfg SessionConfig) *Session`
-- `plan:internal/alignment#SpawnInput` -> `type SpawnInput struct`
-- `plan:internal/alignment#Outcome` -> `type Outcome struct`
-- `plan:internal/alignment#CauseTimeout` -> `const CauseTimeout = "timeout"`
-- `plan:internal/alignment#CauseDied` -> `const CauseDied = "died"`
-- `plan:internal/alignment#CauseMissing` -> `const CauseMissing = "missing"`
-- `plan:internal/alignment#CauseInvalid` -> `const CauseInvalid = "invalid"`
-- `plan:internal/alignment#CauseClosed` -> `const CauseClosed = "closed"`
-- `plan:internal/alignment#Session.Begin` -> `func (s *Session) Begin(in SpawnInput) (Attempt, error)`
-- `plan:internal/alignment#Session.Poll` -> `func (s *Session) Poll(a Attempt) (Outcome, error)`
-- `plan:internal/alignment#Session.Close` -> `func (s *Session) Close(a Attempt, reason string) error`
-- `plan:internal/alignment#Session.MarkApplied` -> `func (s *Session) MarkApplied(a Attempt, applied string, notified bool) error`
-- `plan:internal/alignment#Session.Attempts` -> `func (s *Session) Attempts() ([]Attempt, error)`
-- `plan:internal/alignment#Session.watchDone` -> `func (s *Session) watchDone(number int) <-chan struct{}`
-- `plan:internal/alignment#fakeShuttle` -> `type fakeShuttle struct`
-- `plan:internal/alignment#TestSession` -> `func TestSession(t *testing.T)`
+- `internal/alignment#Shuttle`
+- `internal/alignment#Run`
+- `internal/alignment#RunnerShuttle`
+- `internal/alignment#SessionConfig`
+- `internal/alignment#Session`
+- `internal/alignment#NewSession`
+- `internal/alignment#SpawnInput`
+- `internal/alignment#Outcome`
+- `internal/alignment#CauseTimeout`
+- `internal/alignment#CauseDied`
+- `internal/alignment#CauseMissing`
+- `internal/alignment#CauseInvalid`
+- `internal/alignment#CauseClosed`
+- `internal/alignment#Session.Begin`
+- `internal/alignment#Session.Poll`
+- `internal/alignment#Session.Close`
+- `internal/alignment#Session.MarkApplied`
+- `internal/alignment#Session.Attempts`
+- `internal/alignment#Session.watchDone`
+- `internal/alignment#fakeShuttle`
+- `internal/alignment#TestSession`
 
 **Edit:**
 - `internal/alignment/doc.go`
