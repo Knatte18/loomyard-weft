@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-12 08:39 UTC; every age below is as of then.
+Rendered 2026-10-12 08:42 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Merge review perch and a parent merge lock that survives sleep and crashes**<br>• When the parent moved while a task ran, loom has a cold-start agent review the result of merging the parent in, since no earlier review saw that interaction. | [`merge-review`](design-merge-review.md) | loom | Webster |  |  | loom, burler, batten, shed |
 | 2 | **Config layers and per-task run settings**<br>• Config resolves through a repo default, the worktree file and an untracked local override under .lyx/; a board task carries run settings that batten writes into the pair local override. | [`config-layers-run-settings`](design-config-layers-run-settings.md) | loom | Webster |  |  | config, batten, board |
-| 3 | **Agent shell hygiene: read-only sed allowed, no scripted edits or /tmp rm in Webster forks**<br>• Make read-only sed work without refusals or prompts across lyx-spawned agents, stencils and audits, keeping the no-script-edit rule. | [`sed-read-ok`](design-sed-read-ok.md) | loom | Publish |  |  | stencil, webster, shuttle |
+| 3 | **Agent shell hygiene: read-only sed allowed, no scripted edits or /tmp rm in Webster forks**<br>• Make read-only sed work without refusals or prompts across lyx-spawned agents, stencils and audits, keeping the no-script-edit rule. | [`sed-read-ok`](design-sed-read-ok.md) | loom | PR-Gate |  |  | stencil, webster, shuttle |
 | 4 | **lyx cleans up after itself: temp files and one cleanup command**<br>• Tests and fixtures leave GBs of temps in /tmp; remove them on exit, sweep leftovers, and add lyx cleanup running every module cleanup | [`test-tmp-cleanup`](design-test-tmp-cleanup.md) | loom | Webster-Burler-Fix |  |  | fabric, loom, batten, board |
 
 ### Ready
@@ -75,7 +75,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 20 | **End the seat hold deferral when the advisor itself is held or dead**<br>• The hold notice deferral only got a shorter cap (10 min); ending it as soon as the advisor is held or dead is not built. | [`hold-deferral-end-on-held`](design-hold-deferral-end-on-held.md) |  |  | shuttle |
 | 21 | **Measure the Webster kick-start pack with and without**<br>• Repeat the audit count (grep-for-member calls and whole-file reads per fork) on real loom runs with kickstart_pack on and off. | [`kickstart-pack-measure`](design-kickstart-pack-measure.md) |  |  | webster |
 | 22 | **Twill for Plan: measure fewer Plan-Review rounds; wrong-parent-dir miss**<br>• After twill-plan lands: measure a lower plan_max_bounces, and cover the parent-directory miss every bench arm shared | [`twill-plan-followups`](design-twill-plan-followups.md) |  |  | loom |
-| 23 | **A run window closes itself when its run ends**<br>• The Konsole window batten opens per run stays open as a shell after teardown; it should close when the run is done | [`run-window-close`](design-run-window-close.md) | 4m | 4m | batten |
+| 23 | **A run window closes itself when its run ends**<br>• The Konsole window batten opens per run stays open as a shell after teardown; it should close when the run is done | [`run-window-close`](design-run-window-close.md) | 7m | 7m | batten |
 
 #### Low priority
 
