@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The design covers all four bugs in the board entry's body (gate paths via D1, D3 and D4; lyxtemp via D6's reproduction check; the Merge-In halt via D5; the CLI tree via D7) and does no work that belongs to another entry.
+  Peers convergence-plan and operator-followups share only bookkeeping text with this run: different PATTERN.md index lines, different docs/overview.md paragraphs, and different sections of pattern/PATTERN-cli-cobra.md.
+  They share no Go package and contradict no decision; D5 keeps the leading-clause reason form that convergence-plan's D7 classes by.
+question: ""
+superseded: []
