@@ -1,0 +1,7 @@
+{
+  "attempt": "",
+  "strand": "",
+  "spawned_at": "0001-01-01T00:00:00Z",
+  "state": "fallback",
+  "reason": "alignment: start the agent: shuttle: start: shuttle: the provider never became ready — run dir /home/knatte/Code/loomyard-LYXHUB/operator-followups/.lyx/shuttle/046ccb7c546a914f4bf3b319377064ee, strand \"cf3ca6d8e862231bc6842f7cd0520ce0\", outcome \"died\"; the last pane capture was saved to startup-capture.txt; the strand was removed. The pane's last lines:\n"
+}
