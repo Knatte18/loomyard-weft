@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-12 10:17 UTC; every age below is as of then.
+Rendered 2026-10-12 10:18 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -30,20 +30,15 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Board writers keep unknown fields; lyx cleanup follow-ups**<br>• An old lyx process drops board fields it does not know; plus the open items from the lyx cleanup PR | [`board-field-drop`](design-board-field-drop.md) | loom |  |  | 0m | board, batten |
 
 ## Notes
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-### Bugs
-
-#### Normal priority
-
-| # | Note | Slug | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **An old lyx process drops board fields it does not know**<br>• A run started before a deploy rewrites board.json with its old struct and loses newly added fields such as created and revised | [`board-field-drop`](design-board-field-drop.md) |  |  | board, batten |
-| 2 | **lyx cleanup follow-ups: concurrent sweep flake, missing refusal tests, testtiming doc**<br>• A concurrent-sweep test failed once; two cleanup refusals have no test; a doc arrow is missing | [`lyx-cleanup-followups`](design-lyx-cleanup-followups.md) |  |  | batten |
 
 ### Enhancements
 
