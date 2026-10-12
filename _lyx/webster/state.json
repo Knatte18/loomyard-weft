@@ -1,6 +1,6 @@
 {
   "runGuid": "22ea0df5c129abd9d73f61b59d34fc82",
-  "planFingerprint": "55d3dec582ff08c12a9dbcd2e0cf218a68e02106ce38642dc30ce0ed68125ae1",
+  "planFingerprint": "8a6808d7b70f62e39d417cabf6f37271d8c8495801b0d20a946a31e5f2269ab5",
   "planFileHashes": {
     "00-overview.md": "72147cc25afde0962f8e8edd488864775e9a755dbab99e2f1fc0bffc64d5fa76",
     "01-lyxtemp-package.md": "27e51668098b68022d945e529ed1e9a90fc4d62ec5e7037d9fc9ae32ef0f0dcd",
@@ -17,12 +17,12 @@
     "12-bare-temp-scan.md": "7e61992b449cb36bc44e4e081b94bf6624635eba87826d7365eb8cca0cbfc1ee",
     "13-logger-sweep-dry-run.md": "a7d876736dec61449ab624f6f3e36448e1cc3f8e7e1e959b8b8c9df86bbf9a18",
     "14-shedrun-cleanup-paths.md": "a1d6c7dc1fdc5fc814042ff3219fe5ab7c2a0409e5aa007f619ff8679cff824a",
-    "15-fsx-newest-modtime.md": "b01ba039d52680d6ff7389ab06270c17e4d659bb189c7f7a8d27739686b77598",
-    "16-batten-cleanup.md": "d7d7d2a0a127661d977c7ec6ac6499820403b4a9c5f5bf9314eaa154caa83ddf",
-    "17-batten-done-refusal.md": "25119cf92774a56b3e4bc13bb37e8d5bfa12de383d359d112d5177f5a6ea14e4",
-    "18-orch-cleanup.md": "dd454a7d97b22570f704f6ecff51491f712430aa25b90e5c3045071ec7a86968",
-    "19-cleanup-scratch-segment.md": "cf2406aa421a530a3ea20e6ecc6ef4a5824c9995caba781a6ccd00860c07a216",
-    "20-cleanup-verb.md": "a3f7916cacb10356c5af4dca66aedf68f82a1e3dd612ac31a691dad30a6ccced"
+    "15-fsx-newest-modtime.md": "8979939660b4765eb778ff0eb3eb75300d6ed017b51f0ec1eda1cfb39a049f0f",
+    "16-batten-cleanup.md": "f9061a11980d2d820f24d261a8b5cebe6948e151d8cd3db7a819853cb7dd9db6",
+    "17-batten-done-refusal.md": "69d573d7da3f3e03f9651ff84bb1e95719a3dbbaeac069b8bba6615ea88b375f",
+    "18-orch-cleanup.md": "69f1ddf731fbb5b7d47158ec7f2b711e1606c9677ab083c99317a80f4e00c463",
+    "19-cleanup-scratch-segment.md": "b3a030c07fc66fefedd3a3319f237192d099d9949c23eeea955a6ecc07d938d6",
+    "20-cleanup-verb.md": "0689ae80495a8406b7ef46e5e4e411267417ec1111b984a34e0d7b9d013b78ee"
   },
   "planOverviewFrameHash": "8c53b83f7cb750d785936c6a9ce22e828d40e95220670da02f0c64f06490da25",
   "partition": [
@@ -620,7 +620,7 @@
       }
     }
   ],
-  "currentBatch": 15,
+  "currentBatch": 0,
   "masterStrand": "c1cb6ab2c3bcd58bf2f520882e5f5c75",
   "masterSessionId": "18d53add-ca9f-4785-b9e7-5c53e806b7e3",
   "batches": {
@@ -680,19 +680,33 @@
         "20-cleanup-verb"
       ],
       "cardHashes": {
-        "15-fsx-newest-modtime": "b01ba039d52680d6ff7389ab06270c17e4d659bb189c7f7a8d27739686b77598",
-        "16-batten-cleanup": "d7d7d2a0a127661d977c7ec6ac6499820403b4a9c5f5bf9314eaa154caa83ddf",
-        "17-batten-done-refusal": "25119cf92774a56b3e4bc13bb37e8d5bfa12de383d359d112d5177f5a6ea14e4",
-        "18-orch-cleanup": "dd454a7d97b22570f704f6ecff51491f712430aa25b90e5c3045071ec7a86968",
-        "19-cleanup-scratch-segment": "cf2406aa421a530a3ea20e6ecc6ef4a5824c9995caba781a6ccd00860c07a216",
-        "20-cleanup-verb": "a3f7916cacb10356c5af4dca66aedf68f82a1e3dd612ac31a691dad30a6ccced"
+        "15-fsx-newest-modtime": "8979939660b4765eb778ff0eb3eb75300d6ed017b51f0ec1eda1cfb39a049f0f",
+        "16-batten-cleanup": "f9061a11980d2d820f24d261a8b5cebe6948e151d8cd3db7a819853cb7dd9db6",
+        "17-batten-done-refusal": "69d573d7da3f3e03f9651ff84bb1e95719a3dbbaeac069b8bba6615ea88b375f",
+        "18-orch-cleanup": "69f1ddf731fbb5b7d47158ec7f2b711e1606c9677ab083c99317a80f4e00c463",
+        "19-cleanup-scratch-segment": "b3a030c07fc66fefedd3a3319f237192d099d9949c23eeea955a6ecc07d938d6",
+        "20-cleanup-verb": "0689ae80495a8406b7ef46e5e4e411267417ec1111b984a34e0d7b9d013b78ee"
       },
       "startSha": "60f54140196a6ca4e5f7e70216a939368a115b97",
       "kind": "fork",
       "spawnedAt": "2026-10-12T08:20:22Z",
       "sessionId": "18d53add-ca9f-4785-b9e7-5c53e806b7e3",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "15-fsx-newest-modtime",
+        "status": "done",
+        "head_sha": "1c0be248ccd876de71f66d7585cd418a502e7942"
+      },
+      "cardShas": [
+        "1c0be248ccd876de71f66d7585cd418a502e7942"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tmp-cleanup/18d53add-ca9f-4785-b9e7-5c53e806b7e3/subagents/agent-a768e461c07bc29ff.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tmp-cleanup/18d53add-ca9f-4785-b9e7-5c53e806b7e3/subagents/agent-a768e461c07bc29ff.jsonl"
+      ]
     },
     "6": {
       "slug": "testtiming-run-directory",
@@ -798,6 +812,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tmp-cleanup/18d53add-ca9f-4785-b9e7-5c53e806b7e3/subagents/agent-a8df31cb92e70ff52.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tmp-cleanup/18d53add-ca9f-4785-b9e7-5c53e806b7e3/subagents/agent-a169dce3bd644b4f5.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tmp-cleanup/18d53add-ca9f-4785-b9e7-5c53e806b7e3/subagents/agent-ab33bd1358a8ada92.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tmp-cleanup/18d53add-ca9f-4785-b9e7-5c53e806b7e3/subagents/agent-a7f551bbc256ce173.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tmp-cleanup/18d53add-ca9f-4785-b9e7-5c53e806b7e3/subagents/agent-a7f551bbc256ce173.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tmp-cleanup/18d53add-ca9f-4785-b9e7-5c53e806b7e3/subagents/agent-a768e461c07bc29ff.jsonl"
   ]
 }

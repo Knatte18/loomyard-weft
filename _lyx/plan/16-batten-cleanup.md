@@ -2,15 +2,15 @@
 
 **Create:**
 - `internal/battencli/cleanup.go`
-- `plan:internal/battencli#CleanupReport` -> `type CleanupReport struct`
-- `plan:internal/battencli#CleanupSkip` -> `type CleanupSkip struct`
-- `plan:internal/battencli#cleanupDeps` -> `type cleanupDeps struct`
-- `plan:internal/battencli#fabricCleanupDeps` -> `func fabricCleanupDeps(location *lyxcwd.Location) cleanupDeps`
-- `plan:internal/battencli#Cleanup` -> `func Cleanup(location *lyxcwd.Location, apply bool) (CleanupReport, error)`
-- `plan:internal/battencli#cleanup` -> `func cleanup(location *lyxcwd.Location, apply bool, deps cleanupDeps) (CleanupReport, error)`
-- `plan:internal/battencli#emptyScratch` -> `func emptyScratch(dir string, apply bool) error`
-- `plan:internal/battencli#orphanScratchAge` -> `const orphanScratchAge = 24 * time.Hour`
-- `plan:internal/battencli#battenCLI.cleanupCmd` -> `func (c *battenCLI) cleanupCmd() *cobra.Command`
+- `internal/battencli#CleanupReport`
+- `internal/battencli#CleanupSkip`
+- `internal/battencli#cleanupDeps`
+- `internal/battencli#fabricCleanupDeps`
+- `internal/battencli#Cleanup`
+- `internal/battencli#cleanup`
+- `internal/battencli#emptyScratch`
+- `internal/battencli#orphanScratchAge`
+- `internal/battencli#battenCLI.cleanupCmd`
 - `internal/battencli/cleanup_test.go`
 - `internal/battencli/cleanup_integration_test.go`
 
@@ -24,7 +24,7 @@
 - `internal/shedrun#RunsRoot`
 - `internal/shedrun#ScratchRoot`
 - `internal/shedrun#RunDirRel`
-- `plan:internal/fsx#NewestModTime`
+- `internal/fsx#NewestModTime`
 - `internal/shedrun#RunDir`
 - `internal/shedrun#ScratchDir`
 - `internal/shedrun#StatusRel`

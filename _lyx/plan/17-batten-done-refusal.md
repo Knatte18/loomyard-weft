@@ -7,7 +7,7 @@
 - `internal/battencli#TestBattenPreStep_RefusalKinds`
 
 **Uses:**
-- `plan:internal/battencli#battenCLI.cleanupCmd`
+- `internal/battencli#battenCLI.cleanupCmd`
 
 **Intent:**
 The done-slug refusal names `lyx batten cleanup --apply` for the run directory instead of telling the operator to delete it as a change on the pair's fabric sibling, and keeps its advice on the leftover task branch (D9).

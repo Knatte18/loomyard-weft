@@ -2,7 +2,7 @@
 
 **Create:**
 - `internal/fsx/newest.go`
-- `plan:internal/fsx#NewestModTime` -> `func NewestModTime(path string) (time.Time, error)`
+- `internal/fsx#NewestModTime`
 - `internal/fsx/newest_test.go`
 
 **Edit:**

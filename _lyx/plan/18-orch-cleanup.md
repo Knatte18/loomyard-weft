@@ -2,13 +2,13 @@
 
 **Create:**
 - `internal/orchengine/cleanup.go`
-- `plan:internal/orchengine#HandoffCleanup` -> `type HandoffCleanup struct`
-- `plan:internal/orchengine#CleanupHandoffs` -> `func CleanupHandoffs(p Paths, apply bool) (HandoffCleanup, error)`
-- `plan:internal/orchengine#cleanupHandoffs` -> `func cleanupHandoffs(p Paths, apply bool, beforeRemove func()) (HandoffCleanup, error)`
+- `internal/orchengine#HandoffCleanup`
+- `internal/orchengine#CleanupHandoffs`
+- `internal/orchengine#cleanupHandoffs`
 - `internal/orchengine/cleanup_test.go`
 - `internal/orchcli/cleanup.go`
-- `plan:internal/orchcli#orchCLI.cleanupCmd` -> `func (c *orchCLI) cleanupCmd() *cobra.Command`
-- `plan:internal/orchcli#TestCleanup_Envelope` -> `func TestCleanup_Envelope(t *testing.T)`
+- `internal/orchcli#orchCLI.cleanupCmd`
+- `internal/orchcli#TestCleanup_Envelope`
 
 **Edit:**
 - `internal/orchcli#Command`

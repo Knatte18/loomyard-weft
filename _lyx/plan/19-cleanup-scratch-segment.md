@@ -3,9 +3,9 @@
 **Create:**
 - `internal/cleanupcli/doc.go`
 - `internal/cleanupcli/scratch.go`
-- `plan:internal/cleanupcli#scratchDirName` -> `const scratchDirName = ".scratch"`
-- `plan:internal/cleanupcli#scratchMaxAge` -> `const scratchMaxAge = 14 * 24 * time.Hour`
-- `plan:internal/cleanupcli#scratchSegment` -> `func scratchSegment(dir string, readBoard func() ([]boardengine.Task, error), now time.Time, apply bool) ([]string, error)`
+- `internal/cleanupcli#scratchDirName`
+- `internal/cleanupcli#scratchMaxAge`
+- `internal/cleanupcli#scratchSegment`
 - `internal/cleanupcli/scratch_test.go`
 - `internal/cleanupcli/testmain_test.go`
 
@@ -13,7 +13,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/fsx#NewestModTime`
+- `internal/fsx#NewestModTime`
 - `internal/boardengine#Task`
 - `internal/boardengine#Board.ListTasksFull`
 

@@ -3,13 +3,13 @@
 **Create:**
 - `internal/cleanupcli/cli.go`
 - `internal/cleanupcli/segments.go`
-- `plan:internal/cleanupcli#Command` -> `func Command() *cobra.Command`
-- `plan:internal/cleanupcli#RunCLI` -> `func RunCLI(out io.Writer, args []string) int`
-- `plan:internal/cleanupcli#RunCLIIn` -> `func RunCLIIn(cwd string, out io.Writer, args []string) int`
-- `plan:internal/cleanupcli#segment` -> `type segment struct`
-- `plan:internal/cleanupcli#segmentResult` -> `type segmentResult struct`
-- `plan:internal/cleanupcli#runSegments` -> `func runSegments(segments []segment, apply bool) ([]segmentResult, bool)`
-- `plan:internal/cleanupcli#primeSegments` -> `func primeSegments(location *lyxcwd.Location) []segment`
+- `internal/cleanupcli#Command`
+- `internal/cleanupcli#RunCLI`
+- `internal/cleanupcli#RunCLIIn`
+- `internal/cleanupcli#segment`
+- `internal/cleanupcli#segmentResult`
+- `internal/cleanupcli#runSegments`
+- `internal/cleanupcli#primeSegments`
 - `internal/cleanupcli/cli_test.go`
 - `internal/cleanupcli/cleanup_integration_test.go`
 
@@ -23,9 +23,9 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/battencli#Cleanup`
-- `plan:internal/orchengine#CleanupHandoffs`
-- `plan:internal/cleanupcli#scratchSegment`
+- `internal/battencli#Cleanup`
+- `internal/orchengine#CleanupHandoffs`
+- `internal/cleanupcli#scratchSegment`
 - `internal/logger#SweepDir`
 - `internal/logger#LogsDirAt`
 - `internal/loggerconfig#LoadOrDefault`
