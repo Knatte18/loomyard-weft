@@ -26,7 +26,8 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **lyx cleans up after itself: temp files and one cleanup command**<br>• Tests and fixtures leave GBs of temps in /tmp; remove them on exit, sweep leftovers, and add lyx cleanup running every module cleanup | [`test-tmp-cleanup`](design-test-tmp-cleanup.md) | loom |  | fabric, loom, batten, board |
+| 1 | **Merge review after Publish under a parent merge lock**<br>• When the parent moved while a task ran, loom has a cold-start agent review the result of merging the parent in, since no earlier review saw that interaction. | [`merge-review`](design-merge-review.md) | loom |  | loom, burler, batten |
+| 2 | **lyx cleans up after itself: temp files and one cleanup command**<br>• Tests and fixtures leave GBs of temps in /tmp; remove them on exit, sweep leftovers, and add lyx cleanup running every module cleanup | [`test-tmp-cleanup`](design-test-tmp-cleanup.md) | loom |  | fabric, loom, batten, board |
 
 ### Layer A
 
@@ -57,51 +58,49 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 1 | **Cold review of the merge from the parent before PR-Gate**<br>• When the parent moved while a task ran, loom has a cold-start agent review the result of merging the parent in, since no earlier review saw that interaction. | [`merge-review`](design-merge-review.md) | loom, burler |
-| 2 | **Alignment agent in loom checks a run against the board and runs in flight**<br>• A cold-start agent at parent review and PR-Gate reads the board and in-flight runs records and checks alignment, waking the orch only on an overlap. | [`alignment-agent`](design-alignment-agent.md) | orch, loom |
-| 3 | **Twill for Plan-Write: audit and bench**<br>• Bench a self-forking lens review for the plan writer, as twill does for Discussion | [`twill-plan`](design-twill-plan.md) | loom, stencil |
-| 4 | **Twill-plan bench: sonnet[medium] twill and single Fable arms**<br>• Bench twill Plan-Write on sonnet[medium], and a single Fable plan writer, under the round-2 setup, against the arms already run. | [`twill-plan-sonnet-medium`](design-twill-plan-sonnet-medium.md) | loom, stencil |
+| 1 | **Alignment agent in loom checks a run against the board and runs in flight**<br>• A cold-start agent at parent review and PR-Gate reads the board and in-flight runs records and checks alignment, waking the orch only on an overlap. | [`alignment-agent`](design-alignment-agent.md) | orch, loom |
+| 2 | **Twill for Plan-Write: audit and bench**<br>• Bench a self-forking lens review for the plan writer, as twill does for Discussion | [`twill-plan`](design-twill-plan.md) | loom, stencil |
+| 3 | **Twill-plan bench: sonnet[medium] twill and single Fable arms**<br>• Bench twill Plan-Write on sonnet[medium], and a single Fable plan writer, under the round-2 setup, against the arms already run. | [`twill-plan-sonnet-medium`](design-twill-plan-sonnet-medium.md) | loom, stencil |
 
 #### Normal priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 5 | **twill-plan bench sonnet-medium arm pair twb-sm-s-1**<br>• Bench pair for the twill-plan sonnet[medium] arm; torn down after the run | [`twb-sm-s-1`](design-twb-sm-s-1.md) |  |
-| 6 | **twill-plan bench sonnet-medium arm pair twb-sm-r-1**<br>• Bench pair for the twill-plan sonnet[medium] arm; torn down after the run | [`twb-sm-r-1`](design-twb-sm-r-1.md) |  |
-| 7 | **twill-plan bench Fable arm pair twb-fab-s-1**<br>• Bench pair for the twill-plan single Fable arm; torn down after the run | [`twb-fab-s-1`](design-twb-fab-s-1.md) |  |
-| 8 | **twill-plan bench Fable arm pair twb-fab-r-1**<br>• Bench pair for the twill-plan single Fable arm; torn down after the run | [`twb-fab-r-1`](design-twb-fab-r-1.md) |  |
-| 9 | **Convergence: log hub interventions and driver repairs per run by class**<br>• Record every hub intervention and driver repair with a class and cause, so interventions per run and repeat failure classes are visible | [`convergence-plan`](design-convergence-plan.md) | orch, shed |
-| 10 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | fabric, loom |
-| 11 | **shedrecipe: capability declaration instead of manual seam-threading**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | shed |
-| 12 | **lyx seeds the prime VS Code setup: title, orch start task, keybindings**<br>• LY: prime/LY: <slug> titles, prime opens with reed up+attach only, orch start and open board as tasks with lyx keybindings, no launch.json | [`ide-prime-setup`](design-ide-prime-setup.md) | ide, orch |
-| 13 | **Discussion stage has no sanctioned path to land a repository edit ahead of Plan**<br>• Discussion has no sanctioned path to commit a PATTERN edit ahead of Plan | [`discussion-lands-invariant`](design-discussion-lands-invariant.md) | loom |
-| 14 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | shed |
-| 15 | **Kick-start packs from tool locations through quarry Enclose**<br>• Turn file:line locations from verify failures, lint and audits into member glyphs with quarry enclose, then into a kick-start pack | [`enclose-kickstart`](design-enclose-kickstart.md) | quarry |
-| 16 | **Shuttle: the launch line carries the first turn**<br>• /color already goes through the verified send; the skill-load message or the prompt should ride the launch line so only later turns are typed | [`shuttle-color-verified-send`](design-shuttle-color-verified-send.md) | shuttle |
-| 17 | **reed: strands state their size; parallel agents share the window evenly**<br>• Replace the one collapse-all-but-the-newest rule with per-strand sizing: content-sized panes like the runs overview, and parallel agents that share space evenly | [`reed-layout-shares`](design-reed-layout-shares.md) | reed |
-| 18 | **Config-driven file log level**<br>• logger.yaml gains a level key for the file trace, independent of -v, so a crash can be traced without a rebuild | [`logger-file-level`](design-logger-file-level.md) | config |
-| 19 | **One owner for child-process lifetime in internal/proc**<br>• Fold lyx gate test's process-group, Pdeathsig and job-object setup into internal/proc beside ConfigureGroupKill | [`proc-child-lifetime`](design-proc-child-lifetime.md) |  |
-| 20 | **Lens fan: master pre-reads the cited code before forking, forks get a read budget**<br>• Make the lens fan work as designed: the master reads the cited code (and judges nothing) before forking, each fork has a tool-call budget, and Discussion and Plan use their own fans | [`fan-master-preread`](design-fan-master-preread.md) | burler, stencil |
-| 21 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` |  |
-| 22 | **Discussion chair asks advisors open questions without its options or pick** | [`chair-blind-questions`](design-chair-blind-questions.md) | loom, stencil |
-| 23 | **A paste over tmux message size fails whole, with no chunking** | [`paste-size-limit`](design-paste-size-limit.md) | shuttle, reed |
-| 24 | **Discussion premises cite the glyph they rest on; the gate resolves them** | [`discussion-premise-cites`](design-discussion-premise-cites.md) | loom, quarry, stencil |
-| 25 | **Seats replaces SingleLLMProducer: every LLM producer is a MultiLLMProducer, zero advisors by default** | [`seats-replaces-singlellm`](design-seats-replaces-singlellm.md) | loom |
-| 26 | **tokencount: guard the slug-reuse cutoff against date skew**<br>• The slug-reuse cutoff is always applied; a tag commit date skewed against transcript timestamps could silently drop sessions. | [`tokencount-cutoff-skew`](design-tokencount-cutoff-skew.md) |  |
-| 27 | **Sweep tests that rely on a closed listener socket file**<br>• A forked child of a parallel test can inherit a closed listener fd and keep a stale socket answering; sweep other tests for the same race. | [`reed-socket-test-fd-sweep`](design-reed-socket-test-fd-sweep.md) | reed |
-| 28 | **End the seat hold deferral when the advisor itself is held or dead**<br>• The hold notice deferral only got a shorter cap (10 min); ending it as soon as the advisor is held or dead is not built. | [`hold-deferral-end-on-held`](design-hold-deferral-end-on-held.md) | shuttle |
-| 29 | **Measure the Webster kick-start pack with and without**<br>• Repeat the audit count (grep-for-member calls and whole-file reads per fork) on real loom runs with kickstart_pack on and off. | [`kickstart-pack-measure`](design-kickstart-pack-measure.md) | webster |
-| 30 | **PR-Gate sends a run back to Publish when the parent moved and the PR conflicts**<br>• A run waiting at PR-Gate whose PR no longer merges with the moved parent goes back to Publish by itself, instead of through the orch. | [`prgate-stale-base`](design-prgate-stale-base.md) | loom |
+| 4 | **twill-plan bench sonnet-medium arm pair twb-sm-s-1**<br>• Bench pair for the twill-plan sonnet[medium] arm; torn down after the run | [`twb-sm-s-1`](design-twb-sm-s-1.md) |  |
+| 5 | **twill-plan bench sonnet-medium arm pair twb-sm-r-1**<br>• Bench pair for the twill-plan sonnet[medium] arm; torn down after the run | [`twb-sm-r-1`](design-twb-sm-r-1.md) |  |
+| 6 | **twill-plan bench Fable arm pair twb-fab-s-1**<br>• Bench pair for the twill-plan single Fable arm; torn down after the run | [`twb-fab-s-1`](design-twb-fab-s-1.md) |  |
+| 7 | **twill-plan bench Fable arm pair twb-fab-r-1**<br>• Bench pair for the twill-plan single Fable arm; torn down after the run | [`twb-fab-r-1`](design-twb-fab-r-1.md) |  |
+| 8 | **Convergence: log hub interventions and driver repairs per run by class**<br>• Record every hub intervention and driver repair with a class and cause, so interventions per run and repeat failure classes are visible | [`convergence-plan`](design-convergence-plan.md) | orch, shed |
+| 9 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | fabric, loom |
+| 10 | **shedrecipe: capability declaration instead of manual seam-threading**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | shed |
+| 11 | **lyx seeds the prime VS Code setup: title, orch start task, keybindings**<br>• LY: prime/LY: <slug> titles, prime opens with reed up+attach only, orch start and open board as tasks with lyx keybindings, no launch.json | [`ide-prime-setup`](design-ide-prime-setup.md) | ide, orch |
+| 12 | **Discussion stage has no sanctioned path to land a repository edit ahead of Plan**<br>• Discussion has no sanctioned path to commit a PATTERN edit ahead of Plan | [`discussion-lands-invariant`](design-discussion-lands-invariant.md) | loom |
+| 13 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | shed |
+| 14 | **Kick-start packs from tool locations through quarry Enclose**<br>• Turn file:line locations from verify failures, lint and audits into member glyphs with quarry enclose, then into a kick-start pack | [`enclose-kickstart`](design-enclose-kickstart.md) | quarry |
+| 15 | **Shuttle: the launch line carries the first turn**<br>• /color already goes through the verified send; the skill-load message or the prompt should ride the launch line so only later turns are typed | [`shuttle-color-verified-send`](design-shuttle-color-verified-send.md) | shuttle |
+| 16 | **reed: strands state their size; parallel agents share the window evenly**<br>• Replace the one collapse-all-but-the-newest rule with per-strand sizing: content-sized panes like the runs overview, and parallel agents that share space evenly | [`reed-layout-shares`](design-reed-layout-shares.md) | reed |
+| 17 | **Config-driven file log level**<br>• logger.yaml gains a level key for the file trace, independent of -v, so a crash can be traced without a rebuild | [`logger-file-level`](design-logger-file-level.md) | config |
+| 18 | **One owner for child-process lifetime in internal/proc**<br>• Fold lyx gate test's process-group, Pdeathsig and job-object setup into internal/proc beside ConfigureGroupKill | [`proc-child-lifetime`](design-proc-child-lifetime.md) |  |
+| 19 | **Lens fan: master pre-reads the cited code before forking, forks get a read budget**<br>• Make the lens fan work as designed: the master reads the cited code (and judges nothing) before forking, each fork has a tool-call budget, and Discussion and Plan use their own fans | [`fan-master-preread`](design-fan-master-preread.md) | burler, stencil |
+| 20 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` |  |
+| 21 | **Discussion chair asks advisors open questions without its options or pick** | [`chair-blind-questions`](design-chair-blind-questions.md) | loom, stencil |
+| 22 | **A paste over tmux message size fails whole, with no chunking** | [`paste-size-limit`](design-paste-size-limit.md) | shuttle, reed |
+| 23 | **Discussion premises cite the glyph they rest on; the gate resolves them** | [`discussion-premise-cites`](design-discussion-premise-cites.md) | loom, quarry, stencil |
+| 24 | **Seats replaces SingleLLMProducer: every LLM producer is a MultiLLMProducer, zero advisors by default** | [`seats-replaces-singlellm`](design-seats-replaces-singlellm.md) | loom |
+| 25 | **tokencount: guard the slug-reuse cutoff against date skew**<br>• The slug-reuse cutoff is always applied; a tag commit date skewed against transcript timestamps could silently drop sessions. | [`tokencount-cutoff-skew`](design-tokencount-cutoff-skew.md) |  |
+| 26 | **Sweep tests that rely on a closed listener socket file**<br>• A forked child of a parallel test can inherit a closed listener fd and keep a stale socket answering; sweep other tests for the same race. | [`reed-socket-test-fd-sweep`](design-reed-socket-test-fd-sweep.md) | reed |
+| 27 | **End the seat hold deferral when the advisor itself is held or dead**<br>• The hold notice deferral only got a shorter cap (10 min); ending it as soon as the advisor is held or dead is not built. | [`hold-deferral-end-on-held`](design-hold-deferral-end-on-held.md) | shuttle |
+| 28 | **Measure the Webster kick-start pack with and without**<br>• Repeat the audit count (grep-for-member calls and whole-file reads per fork) on real loom runs with kickstart_pack on and off. | [`kickstart-pack-measure`](design-kickstart-pack-measure.md) | webster |
 
 #### Low priority
 
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
-| 31 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
-| 32 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
-| 33 | **Bench the chair-and-advisors Discussion against the solo writer before switching it on**<br>• Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on | [`discussion-multi-llm-bench`](design-discussion-multi-llm-bench.md) | loom, stencil |
-| 34 | **Discussion advisors: operator-named areas per advisor on top of the landed all-advisors default**<br>• Each discussion_advisors entry takes an optional area (a lens, as in review fans); without one the advisor answers every question | [`discussion-advisor-mode`](design-discussion-advisor-mode.md) | loom, stencil, config |
-| 35 | **Fabric audit: plain readers accept unquoted globs and any flag**<br>• readOnlyCommands readers (cat, grep -r) accept unquoted globs and arbitrary flags | [`audit-reader-globs`](design-audit-reader-globs.md) | webster, fabric |
+| 29 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | fabric |
+| 30 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | ide, fabric |
+| 31 | **Bench the chair-and-advisors Discussion against the solo writer before switching it on**<br>• Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on | [`discussion-multi-llm-bench`](design-discussion-multi-llm-bench.md) | loom, stencil |
+| 32 | **Discussion advisors: operator-named areas per advisor on top of the landed all-advisors default**<br>• Each discussion_advisors entry takes an optional area (a lens, as in review fans); without one the advisor answers every question | [`discussion-advisor-mode`](design-discussion-advisor-mode.md) | loom, stencil, config |
+| 33 | **Fabric audit: plain readers accept unquoted globs and any flag**<br>• readOnlyCommands readers (cat, grep -r) accept unquoted globs and arbitrary flags | [`audit-reader-globs`](design-audit-reader-globs.md) | webster, fabric |
 
 ### Features
 
