@@ -1,0 +1,18 @@
+verdict: resume
+reason: >-
+  Discussion-Bouncer stopped at round 3 because its budget ran out (cause budget), and the judge called the round CIRCLING on F1 and F2.
+  F1 (BLOCKING, design) was the hard-cap way forward, which never reached the running task worktree.
+  The round-3 fixer rewrote D3, D5 and D9 to give one route per config layer, and I checked that rewrite against the code.
+  A loom run_settings value has run-settings category none in loomengine's spec, so the local layer may hold it, and `lyx config loom --layer local --set` in the task worktree reaches that worktree's own stack.
+  A tracked value is written to the task worktree's own file, and a hub default is written to the board-dir file through `--layer default`, which every worktree stacks.
+  The fixer skipped the proposed darn local-layer route, and that was right: darnengine classifies `review_max_bounces` as CategoryGuard, which the local layer refuses, and darn is hub-wide, so `lyx config darn --set` from the prime is the only route.
+  With the fix in place, no blocker remains after round 3.
+  One wording gap was left: setModule's hub write guard refuses every `--layer default` write from a task session or a non-prime worktree, but D3's hub-default route did not say to run it from the prime.
+  That gap is mechanical, and I recorded it as an arbiter decision so the plan writer words the refusal correctly.
+  F2 now states D2's Bound accurately: no later review on Merge-Review or Darn-Review, and PR-Gate lands with no human read by default.
+  That residual risk is now in Open risks, and it follows from the operator's settled rule that mechanical findings are accepted at the cap, so the F2 fix does not change the design.
+  F3 (missing auto-accept qualifiers) and F4 (an overstated guarantee) were consistency fixes, applied as the review prescribed them.
+  Under the fixed rule, no remaining finding makes the design wrong, so the segment is accepted unconverged.
+verbs:
+  - lyx loom decision add judge-cap-call --by arbiter --title "Hub-default hard-cap route runs from the prime" --decision … --rationale …
+  - lyx loom circling accept judge-cap-call

@@ -1,0 +1,15 @@
+{
+  "number": 2,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 14,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-10-12T20:33:48.727626855+02:00",
+  "deadline": "2026-10-12T21:03:48.727626855+02:00",
+  "strand_guid": "7b733d3348a823459021b370bca3e544",
+  "envelope_path": "/home/knatte/Code/loomyard-LYXHUB/judge-cap-call/.lyx/shed/judge-cap-call/steps/7bed5db4f4b757ab.json",
+  "report_path": "/home/knatte/Code/loomyard-LYXHUB/judge-cap-call/_lyx/shed/judge-cap-call/drive-reports/drive-report-20261012-200231-ea87.md"
+}
