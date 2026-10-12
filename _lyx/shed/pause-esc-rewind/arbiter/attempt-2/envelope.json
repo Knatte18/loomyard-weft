@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Review escalation at Plan-Bouncer round 2, cause budget. The driver's report path is absent, so the decision rests on the round's review, ledger, verdict and fixer report, and on the cards themselves. All six round-1 keys are resolved. The round-2 fixer report applies all four findings and disputes or defers none, and I checked each fix against the current cards. F1 (BLOCKING): card 8's TestShuttlePairReadings now drives shuttlePair.Busy and shuttlePair.Background over a seeded temp run directory, with readTurn reached only through them, so the claim that a Busy reading Name == SessionBusy fails the busy/background row is now true. The fixer departs from the fix key in one detail: it adds a test-local signalEngine to the Create list. The departure is justified, since only claudeengine.Claude implements shuttleengine.SessionSignalParser, so neither shuttlefake.Engine nor any pausecli type can yield scripted signals. F2 (MEDIUM): card 8's interrupt step now runs in three passes with one settle each, keeps the claim before each key, re-signs interruptSession, and the TestPause row with sessions a and b pins exactly 4 s elapsed. F3 (LOW): card 5 lists both told-path tests under Edit and switches them to a lone C-u. F4 (NIT): card 5's sentence no longer carries a count. No open finding makes the design wrong, so under the fixed rule the segment is accepted unconverged at round 2.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling accept pause-esc-rewind"
+  ],
+  "cause": "",
+  "attempt": 2,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/pause-esc-rewind/_lyx/shed/pause-esc-rewind/arbiter/attempt-2",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/pause-esc-rewind/_lyx/shed/pause-esc-rewind/arbiter/attempt-2/verdict.yaml",
+  "relaunch": "lyx shed step pause-esc-rewind --until-stop --arbiter-attempt 2"
+}

@@ -1,13 +1,12 @@
 {
   "current_producer": "Plan-Bouncer",
-  "state": "awaiting",
-  "error": "bouncer Plan-Bouncer: round 2 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYXHUB/pause-esc-rewind/_lyx/reviews/plan/round-2-escalation.md; decide with `lyx loom circling accept pause-esc-rewind` or `lyx loom circling continue pause-esc-rewind`, then run `lyx loom resume` in the task worktree to resume",
-  "parent_notice": "Review segment of task `pause-esc-rewind` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/pause-esc-rewind/_lyx/reviews/plan/round-2-escalation.md` with a one-shot fork.",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Plan-Bouncer",
     "last": "Plan-Bouncer → awaiting",
-    "wait": "bouncer Plan-Bouncer: round 2 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYXHUB/pause-esc-rewind/_lyx/reviews/plan/round-2-escalation.md; decide with `lyx loom circling accept pause-esc-rewind` or `lyx loom circling continue pause-esc-rewind`, then run `lyx loom resume` in the task worktree to resume"
+    "wait": ""
   },
   "history": [
     {
