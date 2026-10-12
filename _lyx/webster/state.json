@@ -600,7 +600,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 18,
   "masterStrand": "ded089cc5ffb8858e688d5fdd6b216fd",
   "masterSessionId": "a851bafe-4025-44c5-a927-72b06f2466d6",
   "batches": {
@@ -694,6 +694,25 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-merge-review/a851bafe-4025-44c5-a927-72b06f2466d6/subagents/agent-a7ee766dd6bee97f9.jsonl"
       ]
+    },
+    "18": {
+      "slug": "merge-in-row",
+      "cards": [
+        "18-merge-in-row",
+        "19-merge-review-off-switch",
+        "20-guarded-landing-rows"
+      ],
+      "cardHashes": {
+        "18-merge-in-row": "d5f566297ab1b4b2842b93a54595c0d2f0523f9fc4c7d964f64a42e9a171f55a",
+        "19-merge-review-off-switch": "9ca7d3e2c9f90806315cce863ef2d0d80c35a9ddb495f298075326b2eb6e16a3",
+        "20-guarded-landing-rows": "3d0a5b0f1c51d0c1c2dc99dd212662353e6e23663639d05b49d1f4a30dc39735"
+      },
+      "startSha": "428f4dbac0a93e1c4ae085ac9bbd4650a6b9838d",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T08:54:52Z",
+      "sessionId": "a851bafe-4025-44c5-a927-72b06f2466d6",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "fabric-parent-reads",
