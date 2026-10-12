@@ -27,6 +27,7 @@
 - `plan:internal/reedengine#windowSplitLayout`
 - `plan:internal/reedengine#Engine.openOwnWindowLocked`
 - `plan:internal/reedengine#windowPane`
+- `plan:internal/reedengine#TmuxCmd.listWindowPanes`
 - `plan:internal/reedengine#isOwnWindow`
 - `internal/reedengine#validateSplitCreatedNewPane`
 - `internal/reedengine#strandLabel`
@@ -51,10 +52,11 @@ Its doc comment says the record is reed's own, written by the group's first stra
 
 `groupLiveCount(strands, group, self, windows)` counts the strands of `group` other than `self` (by guid) whose binding names a listed pane, alive or dead, since a dead pane still occupies the shared window; and returns the id of the window whose `Group` is `group` and that carries `Own`, found by the `@lyx_group` window option and never by name, empty when none is listed.
 
-`launchStrandLocked`'s own-window branch, after card 4's dead-pane kill:
+`launchStrandLocked`'s own-window branch:
 
 - For `d.Window` empty it calls `openOwnWindowLocked(s, strandLabel(s.Name), "")` as before.
-- Otherwise it calls `planOwnWindowPlacement(st.WindowGroups, s.Display, e.cfg.WindowShareMax, count, window)` with `groupLiveCount(st.Strands, s.Display.Window, s.GUID, windows)`.
+- Otherwise, before `groupLiveCount`, it re-lists the session's panes through `tmux.listWindowPanes(e.SessionName())` into `windows`, after any head reconcile that ended an own window, which card 3 keeps out of `killed`; so the placement and `joinGroupWindowLocked` read the current windows, never a group window or a pane that has gone.
+- It then calls `planOwnWindowPlacement(st.WindowGroups, s.Display, e.cfg.WindowShareMax, count, window)` with `groupLiveCount(st.Strands, s.Display.Window, s.GUID, windows)`.
   A refusal returns before anything is created, so `addStrandLocked` drops the record and its launch script as for any failed launch, and the refusal reaches the add's caller.
 - It stores the returned record in `st.WindowGroups` (creating the map), which the add's `SaveState` persists.
 - `placeApart`: `openOwnWindowLocked(s, strandLabel(s.Name), "")`, a window named by the strand's role.
@@ -94,6 +96,8 @@ Tests:
   - `OverflowGetsAWindowOfItsOwn`: a third strand of the full `pair` group lands in a window of its own, and `pair`'s window keeps its two panes.
   - `ShareMaxEditBetweenJoinsDoesNotMoveTheSecondJoiner`: the first strand of group `late` joins with the cap at 2, the cap is set to 0, and the second still joins `late`'s window.
   - `SizeMismatchIsRefused`: a strand declaring size 3 for `pair` fails naming both sizes, and no window or pane is added.
+  - `RelaunchOfADeadGroupMemberRejoinsItsWindow`: the first strand of a live group of two goes dead and `Resume` relaunches it into the group window beside its live partner, and its old dead pane stays in that window, unbound and never killed.
+    With its partner removed first, the group window stays, since the dead pane is still bound until the relaunch, and the relaunch joins it beside that pane; a later `RemoveStrand` of the relaunched strand then ends the window, the unbound dead pane with it.
 - `cmd/lyx/testdata/test-budget.yaml`: raise `internal/reedengine` by two, for `TestPlanOwnWindowPlacement` and `TestJoinGroupWindowLocked_RefusesASilentlyReusedPane`.
 
 **ImpactSummary:** Adds one persisted `ReedState` field, a pure placement plan and the group branch of the own-window launch; window 0 strands and ungrouped own-window strands take the same path as after card 4.

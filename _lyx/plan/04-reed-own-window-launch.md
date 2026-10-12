@@ -43,8 +43,9 @@ Groups (D2) arrive in card 5, so in this card every own-window strand gets a win
 
 - The reconcile at its head is unchanged (card 3).
 - For an own-window display it does not plan a split in window 0.
-  When `s.PaneID` names a listed pane (a relaunch by `Resume` or `--if-absent` of a strand still bound to its dead own-window pane), that pane is killed first, so no unbound corpse is left in an own window.
-  It then calls `openOwnWindowLocked(s, strandLabel(s.Name), "")`.
+  It calls `openOwnWindowLocked(s, strandLabel(s.Name), "")`.
+  A relaunch by `Resume` or `--if-absent` of a strand still bound to its dead own-window pane kills nothing, since D6 lets reed kill an own-window pane only on its strand's removal.
+  The launch rebinds the strand to its new pane, so the old dead pane is left unbound, and card 3's reconcile ends its window, after D5's client select, once none of that window's panes is bound.
 - Every other display splits in window 0 exactly as today.
 - Both branches then share the existing tail: the title lock, `setStrandPaneOptionsLocked` (`@strand`, `@strand_color`), the pane-binary prelude with `LYX_STRAND_NAME` and `LYX_PARENT`, the launch script and the guarded send-keys, so `PATTERN-pane-binary-resolution` and `PATTERN-agent-name` hold for own windows by construction.
 - Its doc comment says the launch either splits window 0 or opens an own window, and that both run the same tail.
@@ -73,12 +74,13 @@ Card 6 adds the move of a viewer to window 0 and the group relayout.
 
 `reedCLI.addCmd` accepts `--anchor own-window`: the switch admits it, the deferral message goes, the invalid-anchor message and the flag's help list `below-parent|hidden|own-window`, and the comment above the switch says the CLI vocabulary is below-parent, hidden and own-window.
 
-`internal/reedengine/doc.go` gains an "Own windows" paragraph: an `own-window` strand gets a detached window named by its role, opened through the launch chokepoint, carrying `@lyx_own`, `@strand_color` and `@lyx_unseen`; it never takes focus; its dead pane stays until the strand is removed; Resume reopens it detached; and `UpdateStrand` refuses a move into or out of it.
+`internal/reedengine/doc.go` gains an "Own windows" paragraph: an `own-window` strand gets a detached window named by its role, opened through the launch chokepoint, carrying `@lyx_own`, `@strand_color` and `@lyx_unseen`; it never takes focus; its dead pane stays until the strand is removed, or, once a relaunch leaves it unbound, until its window holds no bound pane; Resume reopens it detached; and `UpdateStrand` refuses a move into or out of it.
 `docs/overview.md`'s reed bullet says a strand may also live in a detached window of its own (`--anchor own-window`).
 
 Tests:
 
 - `TestAddStrandLocked` drops the `OwnWindowAnchor` rejection row, adds `OwnWindowNegativeWindowSize` (`own-window`, `WindowSize: -1`) to the rejected rows, and its doc comment drops "the deferred own-window anchor".
+  It gains a fake-tmux subtest, `OwnWindowEmptyNewWindowAnswerIsRefused`, on its own engine and `installFakeTmux`: `new-window` answers an empty line for an own-window add, the add returns the error, and no strand is recorded.
 - `TestUpdateStrandLocked` replaces `OwnWindowAnchorRejected` with rows, each rejected with the display unchanged and the error containing `way forward: lyx reed remove`: `BelowParentToOwnWindowRejected`, `OwnWindowToBelowParentRejected`, `HiddenToOwnWindowRejected`, `OwnWindowGroupChangeRejected` and `OwnWindowSizeChangeRejected`; and `OwnWindowFocusOnlyChangeAccepted` (same group and size, `Focus` toggled) is accepted.
   Its doc comment names the window-move refusal.
 - New `TestOwnWindow_RealTmux` in a new file `internal/reedengine/ownwindow_integration_test.go` (`//go:build tmux`, package `reedengine`, with a file comment), one cold session from `newColdScratchEngine` serving ordered subtests:

@@ -34,6 +34,7 @@ In `internal/shuttleengine/claudeengine/command.go`:
   It passes no prompt, no `--settings` (the session takes the worktree's own settings), no permission flag (an interactive session prompts as the operator's would) and no environment assignment, so each line is one pipeline that `OrElse` may join.
 - `Claude.OpenLaunch(spec, cfg)` validates the effort and resolves `spec.Model` and `spec.Version` into a model id before anything else, mints a session id, and returns `Launch{Cmd: fresh, ResumeCmd: sh.OrElse(resumeLine, fresh), SessionID: id}`.
   The resume line falls back to a fresh start under the same id because Claude Code keeps no transcript for a session that never took a turn, so `--resume` fails there and the session must start again under the same name and id.
+  Bound: the fresh line runs whenever the resume line exits nonzero, including a resumed session that ends nonzero after a working life; a fresh start under a session id whose transcript exists fails at once, and the chain then goes on to the exit marker and the self-removal, so the fallback never starts a second live session over a recorded one.
   `RecordsSessionStarts` stays false, since nothing waits on an events file.
 - A compile-time assertion that `*Claude` satisfies `shuttleengine.SessionOpener` sits beside the method.
 

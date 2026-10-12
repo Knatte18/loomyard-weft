@@ -72,6 +72,7 @@ Bound: one interactive session per call, in the caller's own worktree under its 
 
 `internal/shuttleengine/doc.go` gains an "Opened sessions" paragraph on `Runner.Open`, its chain, the marker, the pause refusal and the absence of a run record.
 `docs/overview.md`'s shuttle bullet appears twice on one physical line, the second copy fused onto the first after "documentation."; the card drops the older first copy (the one without the 60-second dialog notice and the `sed`/`rm` guardrails), so one bullet remains, and that bullet lists `lyx shuttle run|open|interrupt|send|state` and adds one sentence: `open` starts a named session with no turn in its own window, which closes when the session exits.
+The bullet that gives `reed`, `shuttle` and `loom` each a user-facing CLI changes `lyx shuttle run|interrupt|send|state|await` to `lyx shuttle run|open|interrupt|send|state|await`.
 
 Tests:
 

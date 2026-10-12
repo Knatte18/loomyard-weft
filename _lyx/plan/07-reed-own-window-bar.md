@@ -7,11 +7,14 @@
 - `plan:internal/reedengine#unseenClearHookCommand` -> `const unseenClearHookCommand = "set-option -w -u @lyx_unseen"`
 
 **Edit:**
-- `internal/reedengine#statusFormatButtons`
+- `internal/reedengine/bar.go`
 - `internal/reedengine#Engine.pinGeometryOptionsLocked`
 - `internal/reedengine/doc.go`
 - `internal/reedengine#TestBar_LineOneButtonsFollowTheWindowZoomAndWaitMarks`
 - `internal/reedengine#TestPinBootOptionsLocked_InstallsTheSignalEntry`
+- `internal/reedengine#TestPinGeometryOptionsLocked`
+- `internal/reedengine#TestAttachArgv_EveryOtherDegradedPathYieldsBareArgv`
+- `internal/reedengine#TestAttachArgv_PreflightOnAKnownGoodSession`
 
 **Uses:**
 - `plan:internal/reedengine#unseenWindowOption`
@@ -46,6 +49,11 @@ Tests:
 - `TestBar_LineOneButtonsFollowTheWindowZoomAndWaitMarks` gains a step: an own-window strand added in the review segment gives line 1 a `range=window|<index>` button labelled with the window's name in `colour208` with `underscore`; a wait mark set on its strand shows on that button; after `select-window` to it, the expanded line shows it lit and the window's `@lyx_unseen` reads empty; after selecting the strands' window again, the button is unlit without `underscore`.
   The existing assertion that the `@lyx_hidden` window gets no button still holds with the own window present.
 - `TestPinBootOptionsLocked_InstallsTheSignalEntry` filters its `set-hook` list to the `window-resized` hook name, so the resize-hook assertions stay exact, and asserts in both steps one `set-hook -t =<session> session-window-changed` call carrying `unseenClearHookCommand`.
+- `TestPinGeometryOptionsLocked`: `WatchdogOnPinsGeometryOptionsOnly` asserts that no `set-hook` call names `windowResizedHookName`, and one `session-window-changed` call carrying `unseenClearHookCommand`, in place of no `set-hook` call at all, and its comment says the function installs no resize hook;
+  `SetHookErrorIsNonFatalWhenWatchdogOff` wants two `set-hook` calls, the unseen-clear pin and the resize-hook unset, both still attempted while each errors.
+- `TestAttachArgv_EveryOtherDegradedPathYieldsBareArgv` replaces `fake.mustNotCall("set-hook")` with an assertion that no `set-hook` call names `windowResizedHookName`, since the degraded rows past the pin still issue the unseen-clear hook.
+  Its doc comment changes from "issue no set-hook call at all" to "install no resize-pin hook".
+- `TestAttachArgv_PreflightOnAKnownGoodSession` filters the `set-hook` calls to those naming `windowResizedHookName` before the first-index and `-u` checks, and asserts exactly one `session-window-changed` call carrying `unseenClearHookCommand`.
 
 **ImpactSummary:** Display-only change to bar.go's formats plus one non-fatal session hook in the shared pin path that boot and attach run; no Go decision reads the new options.
 

@@ -1,12 +1,11 @@
 # Card 1 — render accepts the own-window display and its group fields
 
 **Edit:**
-- `internal/reedengine/render#Display`
-- `internal/reedengine/render#Anchor`
-- `internal/reedengine/render#AnchorOwnWindow`
+- `internal/reedengine/render/types.go`
 - `internal/reedengine/render#ValidateDisplay`
 - `internal/reedengine/render#partitionByAnchor`
 - `internal/reedengine/render#TestFixedHeightPinsMatchesRulesPlacedHeights`
+- `internal/reedengine#TestAttachArgv_EveryOtherDegradedPathYieldsBareArgv`
 
 **Intent:**
 D1 and D2's add-time refusal, at the render layer: `own-window` stops being a reserved, refused anchor and becomes a declared placement that window 0's layout never places.
@@ -38,6 +37,10 @@ D1 and D2's add-time refusal, at the render layer: `own-window` stops being a re
 
 `TestPartitionByAnchor`'s existing `OwnWindowNotPlaced` row already pins that an own-window strand is not placed and needs no change.
 
-**ImpactSummary:** Render-only: `ValidateDisplay` has two callers, `planCells` and reedengine's `validateDisplay`, which keeps refusing own-window until card 4; one pins row changes meaning and one is added.
+`internal/reedengine#TestAttachArgv_EveryOtherDegradedPathYieldsBareArgv`'s row `PlanError_DeferredAnchorRejected` reaches the plan-error exit through an own-window strand, which `Rules` now accepts, so the attach pre-flight would plan an empty-cell layout and install the resize hook.
+The row becomes `PlanError_TopAnchorWithoutContentSizeRejected`, with the strand `{GUID: "a", PaneID: "%1", Display: render.Display{Anchor: render.AnchorTop, Size: render.Size{Kind: render.SizePositional}}}`, which `ValidateDisplay` still refuses, so the row keeps pinning the plan-error path.
+That an own-window strand is never placed is pinned by card 3's `TestAnyPlacedStrand` row.
+
+**ImpactSummary:** Render plus one reedengine test row: `ValidateDisplay` has two callers, `planCells` and reedengine's `validateDisplay`, which keeps refusing own-window until card 4; one pins row changes meaning and one is added, and the attach plan-error row moves to a display render still refuses.
 
 **Commit:** 1: Render accepts the own-window display with its window group fields
