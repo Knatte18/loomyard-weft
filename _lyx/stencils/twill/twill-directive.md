@@ -1,12 +1,12 @@
 <!-- This is the twill directive: the host-neutral block that has a writer review its own finished record through lenses, one fork per lens, before it ends.
      internal/twilldirective renders it, and the spawning module hands that renderer every host value, so this block names no file, step, verb or section of any one host.
-     It declares eight required markers:
-     {{.reviewed_files}}, {{.ready_marker}}, {{.rubric_path}}, {{.lens_list}}, {{.format_step}}, {{.self_check_step}}, {{.self_check_command}} and {{.disposition_place}}.
-lyx-stencil: sha256=edc844266844f5344b968622b127d6f05c6e9506c32224c004e589e42da524c7 build=50cf6a425dbe80a753a35d27747d7ee0b7faea86 time=2026-10-11T11:03:20Z -->
+     It declares these required markers:
+     {{.reviewed_files}}, {{.ready_marker}}, {{.rubric_path}}, {{.lens_list}}, {{.format_step}}, {{.self_check_step}}, {{.self_check_command}}, {{.disposition_place}}, {{.spawn_point}}, {{.rejection_rule}} and {{.severity_rule}}.
+lyx-stencil: sha256=6356c266e78d65b1927d820a4f0c4597cd2d2181b551f5b3baa909f076c8eb37 build=7931932b7ccb132a2d46070d0d2acfec4571f89a time=2026-10-12T08:20:15Z -->
 
 ## Lens review by forks
 
-When the design is settled and before you write any output file, run this procedure once:
+{{.spawn_point}}
 
 1. Read the rubric at `{{.rubric_path}}`, so every fork you spawn inherits it.
 2. Spawn every lens below in one message through the Agent tool with `subagent_type: "fork"`, one fork per lens, and never pass a `name`.
@@ -16,7 +16,7 @@ When the design is settled and before you write any output file, run this proced
    The forks wait for that file and review nothing before it exists.
 5. Wait for every fork to return; ending your turn while forks are outstanding is allowed.
 6. Judge every finding with the same skepticism, and merge duplicates across lenses.
-   Fix the record, or reject the finding with a one-line reason.
+   {{.rejection_rule}}
 7. Record the lens review at `{{.disposition_place}}`: one line per finding, with its lens and whether it was fixed or rejected and why.
    Name a fork that returned no report.
 8. Run `{{.self_check_command}}` again until it passes, then end your turn.
@@ -39,11 +39,11 @@ Copy these lines verbatim into every fork's prompt, ahead of its lens text.
   On `ready: false`, run the same command again in a turn that does nothing else.
   Read nothing, judge nothing and write no note before `ready: true`.
 - Give up after the wait has reported `ready: false` 15 times in a row, and return the one-line report "no record to review".
-- After `ready: true`, read the files under `{{.reviewed_files}}` and review them through your lens as an outsider.
+- After `ready: true`, read {{.reviewed_files}} and review them through your lens as an outsider.
 - Your context already holds the writer's exploration and the rubric, so never re-read what your context shows.
   Make at most 6 further tool calls, each for something your lens needs that your context lacks.
   End your report with one line per such call, saying what you read and why your context lacked it.
 - You are read-only: never write, edit or delete a file, run no git command, and never call the Agent tool.
-- Return your findings only as your final message, each with a severity (`BLOCKING`, `MEDIUM` or `LOW`), the section or decision it concerns, a one-line summary and the evidence.
+- Return your findings only as your final message, each with {{.severity_rule}}, the section or decision it concerns, a one-line summary and the evidence.
 
 A fork never calls the Agent tool, so the writer is the only session that spawns.
