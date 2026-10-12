@@ -1,0 +1,16 @@
+status: OK
+head_sha: 7aee839a9b0c64661821d5fc6c49574cc70b0e15
+deviations:
+  - internal/loomcli/pausehold.go
+  - internal/loomcli/arbiterconsume.go
+  - internal/loomcli/cli_test.go
+  - internal/loomcli/step_test.go
+  - internal/loomcli/landingdeps_test.go
+  - internal/battencli/pausehold_test.go
+  - internal/shedverbs/goto.go
+  - internal/shedverbs/pause.go
+  - internal/shedverbs/pause_test.go
+  - internal/shedengine/rename.go
+  - internal/shedcli/parity_test.go
+  - internal/landingshed/deps.go
+  - tools/sandbox/SANDBOX-CORE-SUITE.md

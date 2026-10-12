@@ -1,8 +1,8 @@
 # Card 25 — loom-bare-pause-refusal
 
 **Create:**
-- `plan:internal/loomcli#loomCLI.loomBarePause` -> `func (c *loomCLI) loomBarePause(st shedengine.Status) error`
-- `plan:internal/loomcli#TestPauseCmd_BareLoomPauseRefusesNamingBothWaysForward` -> `func TestPauseCmd_BareLoomPauseRefusesNamingBothWaysForward(t *testing.T)`
+- `internal/loomcli#loomCLI.loomBarePause`
+- `internal/loomcli#TestPauseCmd_BareLoomPauseRefusesNamingBothWaysForward`
 
 **Edit:**
 - `internal/shedverbs#Hooks`

@@ -1,7 +1,7 @@
 # Card 24 — status-paused-since
 
 **Create:**
-- `plan:internal/battencli#TestBattenStatus_CarriesPausedSinceForACoveredSlug` -> `func TestBattenStatus_CarriesPausedSinceForACoveredSlug(t *testing.T)`
+- `internal/battencli#TestBattenStatus_CarriesPausedSinceForACoveredSlug`
 
 **Edit:**
 - `internal/loomcli#loomCLI.loomStatusExtras`

@@ -1,7 +1,7 @@
 # Card 27 — lock-wait-pause-after
 
 **Create:**
-- `plan:internal/loomcli#TestParentLockDeps_PauseAfterTheWaitingRowEndsTheWait` -> `func TestParentLockDeps_PauseAfterTheWaitingRowEndsTheWait(t *testing.T)`
+- `internal/loomcli#TestParentLockDeps_PauseAfterTheWaitingRowEndsTheWait`
 
 **Edit:**
 - `internal/loomcli#parentLockDeps`

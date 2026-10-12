@@ -1,7 +1,7 @@
 # Card 26 — shed-pause-way-forward
 
 **Create:**
-- `plan:internal/shedengine#pauseCommandFor` -> `func pauseCommandFor(told, runID, producer string) string`
+- `internal/shedengine#pauseCommandFor`
 
 **Edit:**
 - `internal/shedengine#Shed`
