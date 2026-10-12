@@ -240,6 +240,14 @@ Rationale: D6 compares unexpanded values in both directions; the reverse case is
   - d4-bound-false-for-per-worktree-modules (class design, severity BLOCKING, open in rounds 1, 2, 3, 4)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 5: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/plan/round-5-review.md; fixer report: _lyx/reviews/plan/round-5-fixer-report.md.
+  - clone-output-tests-unplanned-after-card-15 (class design, severity BLOCKING, open in rounds 4, 5)
+  - hubreconcile-test-edits-not-member-glyphs (class consistency, severity MEDIUM, open in rounds 5)
+  - reseed-case-collides-with-newstalehub-migration (class consistency, severity MEDIUM, open in rounds 5)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A key absent from every file layer resolves to the template default, and a key present in several layers resolves to the highest one, at every mapping depth.
