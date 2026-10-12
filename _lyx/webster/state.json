@@ -1,0 +1,175 @@
+{
+  "runGuid": "7b165deca165ace33293ab2c9681cb40",
+  "planFingerprint": "14473916387f20791b23a229dc779ef81aaf0fb3b432b83a9f44bd9081ebf2c9",
+  "planFileHashes": {
+    "00-overview.md": "b67bb07d147d4b60e6a100d765e4f49d77545314042185d78b3468b4c3692e9b",
+    "01-shared-reference-delete-order.md": "f83ff5f09ac5856a92ed5b40e6960709ee3d8140aa084788435a07396f5b2119",
+    "02-webster-blocking-delete-references.md": "a401154c10195b7516fefea6a155bf3c1f1d9c1aa0202f6c3eacb92aa6833a52",
+    "03-plan-overlay-reader.md": "56d1e1bd667069b50af487bfbc96b8386b31e93bad901fcbe6cb143d11100cb6",
+    "04-overlay-through-checks.md": "ab699a16e6a8246cf009f0eecabfcf27de383ee95b21d81596cce4a980ee6683",
+    "05-validate-plan-overlay-flag.md": "506799f9fa6959a2a1935567c7ea5f38e173b890e760613466a2c209d95ffad7",
+    "06-plan-review-rubric-overlay.md": "ba433ad3c40f049207e35e54e03dc6d801b2e7e38c76a3e30fbff88bb571b388"
+  },
+  "planOverviewFrameHash": "3199f37f9c563d99d79ed1e2e5d55455b86a004f60f3f3a6a695e5186aeea8eb",
+  "partition": [
+    {
+      "cards": [
+        "01-shared-reference-delete-order",
+        "02-webster-blocking-delete-references",
+        "03-plan-overlay-reader",
+        "04-overlay-through-checks",
+        "05-validate-plan-overlay-flag",
+        "06-plan-review-rubric-overlay"
+      ],
+      "profile": "cautious",
+      "estimate": 336558,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54256,
+        "read_union": 96296,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 1128,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 8040,
+              "file:internal/planglyph/doc.go": 1272,
+              "package:contracts/specs": 2000,
+              "package:internal/planglyph": 2000,
+              "package:internal/planindex": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/planindex": 2000
+            },
+            "messages": 154.5,
+            "written": 47478
+          },
+          {
+            "card": 2,
+            "card_text": 336,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4548,
+              "file:internal/websterengine/doc.go": 8196,
+              "package:contracts/specs": 2000,
+              "package:internal/websterengine": 2000,
+              "package:internal/websterengine_test": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:internal/websterengine_test": 2000
+            },
+            "messages": 66,
+            "written": 20136
+          },
+          {
+            "card": 3,
+            "card_text": 564,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:internal/planparser/doc.go": 1692,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/planparser": 2000,
+              "package:internal/planparser_test": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/planparser": 2000,
+              "tests:internal/planparser_test": 2000
+            },
+            "messages": 124,
+            "written": 37764
+          },
+          {
+            "card": 4,
+            "card_text": 432,
+            "reads": {
+              "package:internal/loomshed": 2000,
+              "package:internal/planglyph": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 141,
+            "written": 42732
+          },
+          {
+            "card": 5,
+            "card_text": 672,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:contracts/specs/refusal-spec.md": 4548,
+              "file:docs/overview.md": 8484,
+              "file:internal/loomcli/doc.go": 1260,
+              "file:pattern/PATTERN-gate-self-check-parity.md": 300,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 107.5,
+            "written": 32922
+          },
+          {
+            "card": 6,
+            "card_text": 324,
+            "reads": {
+              "file:contracts/stencils/loom/loom-rubric-plan-review.md": 1416,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000
+            },
+            "messages": 15.5,
+            "written": 4974
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "22036a0577229eafe578d6ebe0e5b495",
+  "masterSessionId": "487e787a-5ed6-48e3-9efe-23da34e31fde",
+  "batches": {
+    "1": {
+      "slug": "shared-reference-delete-order",
+      "cards": [
+        "01-shared-reference-delete-order",
+        "02-webster-blocking-delete-references",
+        "03-plan-overlay-reader",
+        "04-overlay-through-checks",
+        "05-validate-plan-overlay-flag",
+        "06-plan-review-rubric-overlay"
+      ],
+      "cardHashes": {
+        "01-shared-reference-delete-order": "f83ff5f09ac5856a92ed5b40e6960709ee3d8140aa084788435a07396f5b2119",
+        "02-webster-blocking-delete-references": "a401154c10195b7516fefea6a155bf3c1f1d9c1aa0202f6c3eacb92aa6833a52",
+        "03-plan-overlay-reader": "56d1e1bd667069b50af487bfbc96b8386b31e93bad901fcbe6cb143d11100cb6",
+        "04-overlay-through-checks": "ab699a16e6a8246cf009f0eecabfcf27de383ee95b21d81596cce4a980ee6683",
+        "05-validate-plan-overlay-flag": "506799f9fa6959a2a1935567c7ea5f38e173b890e760613466a2c209d95ffad7",
+        "06-plan-review-rubric-overlay": "ba433ad3c40f049207e35e54e03dc6d801b2e7e38c76a3e30fbff88bb571b388"
+      },
+      "startSha": "d22189d8445ff39234f2eea29ee9741cf2f8224a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T09:39:13Z",
+      "sessionId": "487e787a-5ed6-48e3-9efe-23da34e31fde",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
