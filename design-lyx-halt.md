@@ -32,3 +32,7 @@ The operator hibernated the PC overnight with `driver-arbiter` in Plan-Write.
 On wake the plan writer's turn had ended with `API Error: Connection lost mid-response` (shuttle state `idle-stalled`, cause `api-error`, detail `server_error`), and the pane showed the turn as having run for 10h 51m.
 Someone typed `fortsett` into the pane to resume it; the driver then spawned a fork to diagnose an interrupted stop and restarted `lyx shed step --until-stop`.
 Batten then sent a `[batten notice]` reporting agents idle for almost 11 hours, counting the sleep.
+
+In the same sleep, `config-layers-run-settings`'s Discussion-Burler-Fix lost its task prompt: the fix chair had answered only the skill-load preamble when a `tmux has-session` call hung for 10h45m and the watchdog killed it.
+The driver's relaunch logged `burler: resuming a live fix` and reattached to the live strand as if the prompt had been delivered, so the chair sat held with no task until the orch sent it the path of its `prompt.md`.
+A resume of a live strand should check that the task prompt, not only the preamble, reached the session.
