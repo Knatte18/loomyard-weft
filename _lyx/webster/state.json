@@ -1,13 +1,13 @@
 {
   "runGuid": "7b165deca165ace33293ab2c9681cb40",
-  "planFingerprint": "14473916387f20791b23a229dc779ef81aaf0fb3b432b83a9f44bd9081ebf2c9",
+  "planFingerprint": "a1389d4c05b8d18b3591aa5239c0435bfca810c9cd52e06a8e54607fbabeddc8",
   "planFileHashes": {
     "00-overview.md": "b67bb07d147d4b60e6a100d765e4f49d77545314042185d78b3468b4c3692e9b",
-    "01-shared-reference-delete-order.md": "f83ff5f09ac5856a92ed5b40e6960709ee3d8140aa084788435a07396f5b2119",
+    "01-shared-reference-delete-order.md": "40891702f1e8c90cdb59345433bf2f5f1100803af2246c36d07f4fc15ba8aa78",
     "02-webster-blocking-delete-references.md": "a401154c10195b7516fefea6a155bf3c1f1d9c1aa0202f6c3eacb92aa6833a52",
-    "03-plan-overlay-reader.md": "56d1e1bd667069b50af487bfbc96b8386b31e93bad901fcbe6cb143d11100cb6",
-    "04-overlay-through-checks.md": "ab699a16e6a8246cf009f0eecabfcf27de383ee95b21d81596cce4a980ee6683",
-    "05-validate-plan-overlay-flag.md": "506799f9fa6959a2a1935567c7ea5f38e173b890e760613466a2c209d95ffad7",
+    "03-plan-overlay-reader.md": "bf6f187426801b6b1ec0fbbc3cdf8e15c59bc3d0f41a2317a2755d49c0b5fe5e",
+    "04-overlay-through-checks.md": "6e6bb8dd4463cb40e5a52dd817ce4cd143541e8f5e706b114ef8bbe56a27730e",
+    "05-validate-plan-overlay-flag.md": "43e3c4cd6159f41662f86de9ba74f02effaaf3a58438eec04b171d0cbe952efa",
     "06-plan-review-rubric-overlay.md": "ba433ad3c40f049207e35e54e03dc6d801b2e7e38c76a3e30fbff88bb571b388"
   },
   "planOverviewFrameHash": "3199f37f9c563d99d79ed1e2e5d55455b86a004f60f3f3a6a695e5186aeea8eb",
@@ -142,7 +142,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "22036a0577229eafe578d6ebe0e5b495",
   "masterSessionId": "487e787a-5ed6-48e3-9efe-23da34e31fde",
   "batches": {
@@ -157,19 +157,39 @@
         "06-plan-review-rubric-overlay"
       ],
       "cardHashes": {
-        "01-shared-reference-delete-order": "f83ff5f09ac5856a92ed5b40e6960709ee3d8140aa084788435a07396f5b2119",
+        "01-shared-reference-delete-order": "40891702f1e8c90cdb59345433bf2f5f1100803af2246c36d07f4fc15ba8aa78",
         "02-webster-blocking-delete-references": "a401154c10195b7516fefea6a155bf3c1f1d9c1aa0202f6c3eacb92aa6833a52",
-        "03-plan-overlay-reader": "56d1e1bd667069b50af487bfbc96b8386b31e93bad901fcbe6cb143d11100cb6",
-        "04-overlay-through-checks": "ab699a16e6a8246cf009f0eecabfcf27de383ee95b21d81596cce4a980ee6683",
-        "05-validate-plan-overlay-flag": "506799f9fa6959a2a1935567c7ea5f38e173b890e760613466a2c209d95ffad7",
+        "03-plan-overlay-reader": "bf6f187426801b6b1ec0fbbc3cdf8e15c59bc3d0f41a2317a2755d49c0b5fe5e",
+        "04-overlay-through-checks": "6e6bb8dd4463cb40e5a52dd817ce4cd143541e8f5e706b114ef8bbe56a27730e",
+        "05-validate-plan-overlay-flag": "43e3c4cd6159f41662f86de9ba74f02effaaf3a58438eec04b171d0cbe952efa",
         "06-plan-review-rubric-overlay": "ba433ad3c40f049207e35e54e03dc6d801b2e7e38c76a3e30fbff88bb571b388"
       },
       "startSha": "d22189d8445ff39234f2eea29ee9741cf2f8224a",
       "kind": "fork",
       "spawnedAt": "2026-10-12T09:39:13Z",
       "sessionId": "487e787a-5ed6-48e3-9efe-23da34e31fde",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-shared-reference-delete-order",
+        "status": "done",
+        "head_sha": "5acf01885d27bd745dc5e046c4d2a154af91e437",
+        "deviations": [
+          "internal/planparser/parse.go"
+        ]
+      },
+      "cardShas": [
+        "5acf01885d27bd745dc5e046c4d2a154af91e437"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-gate-fixes/487e787a-5ed6-48e3-9efe-23da34e31fde/subagents/agent-a37a4e85c1200e96b.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-gate-fixes/487e787a-5ed6-48e3-9efe-23da34e31fde/subagents/agent-a37a4e85c1200e96b.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-gate-fixes/487e787a-5ed6-48e3-9efe-23da34e31fde/subagents/agent-a37a4e85c1200e96b.jsonl"
+  ]
 }

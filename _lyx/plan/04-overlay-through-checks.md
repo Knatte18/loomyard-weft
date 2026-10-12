@@ -1,7 +1,7 @@
 # Card 4 — overlay-through-checks
 
 **Create:**
-- `plan:internal/websterengine#cardHashesFrom` -> `func cardHashesFrom(b batcher.Batch, read func(name string) ([]byte, error)) (map[string]string, error)`
+- `internal/websterengine#cardHashesFrom`
 
 **Edit:**
 - `internal/planglyph#CanonicalizeHandles` -> `func CanonicalizeHandles(plan *planparser.Plan, worktreeRoot string, results []quarry.ResolveResult) ([]Finding, bool, error)`

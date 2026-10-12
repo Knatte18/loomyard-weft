@@ -1,12 +1,12 @@
 # Card 5 — validate-plan-overlay-flag
 
 **Create:**
-- `plan:internal/loomcli#readOverlay` -> `func readOverlay(in io.Reader) (map[string]string, error)`
-- `plan:internal/loomcli#inputIsTerminal` -> `func inputIsTerminal(in io.Reader) bool`
-- `plan:internal/loomcli#errOverlayNoInput` -> `var errOverlayNoInput error`
-- `plan:internal/loomcli#errOverlayMalformed` -> `var errOverlayMalformed error`
-- `plan:internal/loomcli#overlayRefusal` -> `func overlayRefusal(err error) string`
-- `plan:internal/loomcli#TestValidatePlanCmd_Overlay` -> `func TestValidatePlanCmd_Overlay(t *testing.T)`
+- `internal/loomcli#readOverlay`
+- `internal/loomcli#inputIsTerminal`
+- `internal/loomcli#errOverlayNoInput`
+- `internal/loomcli#errOverlayMalformed`
+- `internal/loomcli#overlayRefusal`
+- `internal/loomcli#TestValidatePlanCmd_Overlay`
 
 **Edit:**
 - `internal/loomcli#loomCLI.validatePlanCmd`

@@ -1,13 +1,13 @@
 # Card 1 — shared-reference-delete-order
 
 **Create:**
-- `plan:internal/planglyph#memberReferences` -> `func memberReferences(plan *planparser.Plan, worktreeRoot string, subjects []coverageSubject, candidates []string, loader typesLoader) (resolved, nameOnly []map[string][]int, err error)`
-- `plan:internal/planglyph#deleteOrderFindings` -> `func deleteOrderFindings(subjects []coverageSubject, resolved, nameOnly []map[string][]int, regions []editRegion) []Finding`
-- `plan:internal/planglyph#laterImportFindings` -> `func laterImportFindings(lang glyph.Language, deleting []planparser.Card, regions []editRegion, worktreeRoot string) ([]Finding, error)`
-- `plan:internal/planglyph#ignoredByGoTool` -> `func ignoredByGoTool(dirName string) bool`
-- `plan:internal/planglyph#dispatchFindings` -> `func dispatchFindings(plan *planparser.Plan, worktreeRoot string, completed, forthcoming []planparser.Card) ([]Finding, error)`
-- `plan:internal/planglyph#countingTypesLoader` -> `type countingTypesLoader struct`
-- `plan:internal/planglyph#countingTypesLoader.load` -> `func (l *countingTypesLoader) load(root string, dirs []string) ([]*packages.Package, error)`
+- `internal/planglyph#memberReferences`
+- `internal/planglyph#deleteOrderFindings`
+- `internal/planglyph#laterImportFindings`
+- `internal/planglyph#ignoredByGoTool`
+- `internal/planglyph#dispatchFindings`
+- `internal/planglyph#countingTypesLoader`
+- `internal/planglyph#countingTypesLoader.load`
 
 **Edit:**
 - `internal/planglyph#LaterDeleteReferences`

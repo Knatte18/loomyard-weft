@@ -1,18 +1,18 @@
 # Card 3 — plan-overlay-reader
 
 **Create:**
-- `plan:internal/planparser#Overlay` -> `type Overlay struct`
-- `plan:internal/planparser#NewOverlay` -> `func NewOverlay(planDir string, files map[string]string) (*Overlay, error)`
-- `plan:internal/planparser#Overlay.Parse` -> `func (o *Overlay) Parse() (*Plan, error)`
-- `plan:internal/planparser#Overlay.readFile` -> `func (o *Overlay) readFile(name string) ([]byte, error)`
-- `plan:internal/planparser#Overlay.writeFile` -> `func (o *Overlay) writeFile(name string, data []byte) error`
-- `plan:internal/planparser#ErrOverlayName` -> `var ErrOverlayName error`
-- `plan:internal/planparser#ErrOverlayFileMissing` -> `var ErrOverlayFileMissing error`
-- `plan:internal/planparser#Plan.ReadFile` -> `func (p *Plan) ReadFile(name string) ([]byte, error)`
-- `plan:internal/planparser#Plan.RewriteRefs` -> `func (p *Plan) RewriteRefs(subs map[string]string) error`
-- `plan:internal/planparser#Plan.Reparse` -> `func (p *Plan) Reparse() (*Plan, error)`
-- `plan:internal/planparser#rewriteRefsIn` -> `func rewriteRefsIn(planDir string, subs map[string]string, read func(name string) ([]byte, error), write func(name string, data []byte) error) error`
-- `plan:internal/planparser_test#TestOverlay` -> `func TestOverlay(t *testing.T)`
+- `internal/planparser#Overlay`
+- `internal/planparser#NewOverlay`
+- `internal/planparser#Overlay.Parse`
+- `internal/planparser#Overlay.readFile`
+- `internal/planparser#Overlay.writeFile`
+- `internal/planparser#ErrOverlayName`
+- `internal/planparser#ErrOverlayFileMissing`
+- `internal/planparser#Plan.ReadFile`
+- `internal/planparser#Plan.RewriteRefs`
+- `internal/planparser#Plan.Reparse`
+- `internal/planparser#rewriteRefsIn`
+- `internal/planparser_test#TestOverlay`
 
 **Edit:**
 - `internal/planparser#Plan`
