@@ -7,7 +7,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/githubclient#TestAuthRT_WaitsWhileAPauseCoversTheProcess` -> `func TestAuthRT_WaitsWhileAPauseCoversTheProcess(t *testing.T)`
+- `internal/githubclient#TestAuthRT_WaitsWhileAPauseCoversTheProcess`
 
 **Intent:**
 Hold every GitHub call while a pause covers the calling process (D4), inside `internal/githubclient` as `PATTERN-github-auth` and the decision's constraint require.

@@ -1,9 +1,9 @@
 # Card 4 — pause-geometry
 
 **Create:**
-- `plan:internal/hubgeom#PauseGeometry` -> `func PauseGeometry(l *lyxcwd.Location) (pauserecord.Geometry, error)`
-- `plan:internal/hubgeom#pauseGeometry` -> `func pauseGeometry(l *lyxcwd.Location, prime bool) pauserecord.Geometry`
-- `plan:internal/standalonegeom#PauseGeometry` -> `func PauseGeometry(stateDir string) pauserecord.Geometry`
+- `internal/hubgeom#PauseGeometry`
+- `internal/hubgeom#pauseGeometry`
+- `internal/standalonegeom#PauseGeometry`
 
 **Edit:**
 - `internal/hubgeom#TestReedGeometry`

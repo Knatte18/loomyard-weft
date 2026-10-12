@@ -1,26 +1,26 @@
 # Card 1 — pause-record
 
 **Create:**
-- `plan:internal/lyxdirs#PauseDirName` -> `const PauseDirName = "pause"`
+- `internal/lyxdirs#PauseDirName`
 - `internal/pauserecord/doc.go`
-- `plan:internal/pauserecord#RecordFileName` -> `const RecordFileName = "record.json"`
-- `plan:internal/pauserecord#ScopeHub` -> `const ScopeHub = "hub"`
-- `plan:internal/pauserecord#Retention` -> `const Retention = 7 * 24 * time.Hour`
-- `plan:internal/pauserecord#ResumeLine` -> `const ResumeLine = "[lyx] A pause interrupted your last turn and is now over. Carry on where you stopped: rerun the tool call or fork the pause cut. If nothing was cut, end your turn."`
-- `plan:internal/pauserecord#Geometry` -> `type Geometry struct`
-- `plan:internal/pauserecord#Session` -> `type Session struct`
-- `plan:internal/pauserecord#Entry` -> `type Entry struct`
-- `plan:internal/pauserecord#Record` -> `type Record struct`
-- `plan:internal/pauserecord#Interval` -> `type Interval struct`
-- `plan:internal/pauserecord#Coverage` -> `type Coverage struct`
-- `plan:internal/pauserecord#Read` -> `func Read(path string) (Record, error)`
-- `plan:internal/pauserecord#Update` -> `func Update(path string, now time.Time, mutate func(*Record) error) (Record, error)`
-- `plan:internal/pauserecord#Record.Covering` -> `func (r Record) Covering(slug string) (Entry, bool)`
-- `plan:internal/pauserecord#Record.Owner` -> `func (r Record) Owner(guid string) (Entry, bool)`
-- `plan:internal/pauserecord#Record.CoverageOf` -> `func (r Record) CoverageOf(slug string, now time.Time) Coverage`
-- `plan:internal/pauserecord#ReadCoverage` -> `func ReadCoverage(path, slug string, now time.Time) (Coverage, error)`
-- `plan:internal/pauserecord#Excluded` -> `func Excluded(intervals []Interval, from, to time.Time) time.Duration`
-- `plan:internal/pauserecord#CoveredError` -> `func CoveredError(e Entry, slug, retry string) error`
+- `internal/pauserecord#RecordFileName`
+- `internal/pauserecord#ScopeHub`
+- `internal/pauserecord#Retention`
+- `internal/pauserecord#ResumeLine`
+- `internal/pauserecord#Geometry`
+- `internal/pauserecord#Session`
+- `internal/pauserecord#Entry`
+- `internal/pauserecord#Record`
+- `internal/pauserecord#Interval`
+- `internal/pauserecord#Coverage`
+- `internal/pauserecord#Read`
+- `internal/pauserecord#Update`
+- `internal/pauserecord#Record.Covering`
+- `internal/pauserecord#Record.Owner`
+- `internal/pauserecord#Record.CoverageOf`
+- `internal/pauserecord#ReadCoverage`
+- `internal/pauserecord#Excluded`
+- `internal/pauserecord#CoveredError`
 - `internal/pauserecord/record_test.go`
 - `internal/pauserecord/leaf_enforcement_test.go`
 - `internal/pauserecord/testmain_test.go`

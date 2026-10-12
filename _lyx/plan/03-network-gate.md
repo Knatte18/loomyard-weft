@@ -1,15 +1,15 @@
 # Card 3 — network-gate
 
 **Create:**
-- `plan:internal/pauserecord#Waiter` -> `type Waiter struct`
-- `plan:internal/pauserecord#WaitUncovered` -> `func WaitUncovered(ctx context.Context, path, slug string, w Waiter) error`
-- `plan:internal/pauserecord#NetOp` -> `type NetOp struct`
-- `plan:internal/pauserecord#NetDir` -> `func NetDir(recordPath string) string`
-- `plan:internal/pauserecord#ListNetOps` -> `func ListNetOps(recordPath string, alive func(pid int, startTime string) bool) ([]NetOp, error)`
-- `plan:internal/pauserecord#Gate` -> `type Gate struct`
-- `plan:internal/pauserecord#InstallGate` -> `func InstallGate(g Gate) (restore func())`
-- `plan:internal/pauserecord#SetGateSlug` -> `func SetGateSlug(slug string)`
-- `plan:internal/pauserecord#Network` -> `func Network(op string) (done func())`
+- `internal/pauserecord#Waiter`
+- `internal/pauserecord#WaitUncovered`
+- `internal/pauserecord#NetOp`
+- `internal/pauserecord#NetDir`
+- `internal/pauserecord#ListNetOps`
+- `internal/pauserecord#Gate`
+- `internal/pauserecord#InstallGate`
+- `internal/pauserecord#SetGateSlug`
+- `internal/pauserecord#Network`
 - `internal/pauserecord/hold_test.go`
 
 **Edit:**

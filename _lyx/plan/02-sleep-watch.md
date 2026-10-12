@@ -1,12 +1,12 @@
 # Card 2 — sleep-watch
 
 **Create:**
-- `plan:internal/pauserecord#SleepTolerance` -> `const SleepTolerance = time.Minute`
-- `plan:internal/pauserecord#SleepWatch` -> `type SleepWatch struct`
-- `plan:internal/pauserecord#SleepWatch.Observe` -> `func (s *SleepWatch) Observe(wall time.Time, awake time.Duration)`
-- `plan:internal/pauserecord#SleepWatch.Sleeps` -> `func (s *SleepWatch) Sleeps() []Interval`
-- `plan:internal/pauserecord#AwakeSince` -> `func AwakeSince(at, now time.Time, excluded ...[]Interval) time.Duration`
-- `plan:internal/pauserecord#MonotonicAwake` -> `func MonotonicAwake() func() time.Duration`
+- `internal/pauserecord#SleepTolerance`
+- `internal/pauserecord#SleepWatch`
+- `internal/pauserecord#SleepWatch.Observe`
+- `internal/pauserecord#SleepWatch.Sleeps`
+- `internal/pauserecord#AwakeSince`
+- `internal/pauserecord#MonotonicAwake`
 - `internal/pauserecord/sleep_test.go`
 
 **Edit:**
