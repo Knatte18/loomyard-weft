@@ -1,11 +1,11 @@
 # Card 3 — pack-on-read-texts
 
 **Create:**
-- `plan:internal/websterengine#renderReadRules` -> `func renderReadRules(stencilsDir string, packOn bool) (cardRead, freshRead string, err error)`
-- `plan:contracts/stencils#WebsterFragmentCardReadPlain` -> `var WebsterFragmentCardReadPlain []byte`
-- `plan:contracts/stencils#WebsterFragmentCardReadPack` -> `var WebsterFragmentCardReadPack []byte`
-- `plan:contracts/stencils#WebsterFragmentFreshReadPlain` -> `var WebsterFragmentFreshReadPlain []byte`
-- `plan:contracts/stencils#WebsterFragmentFreshReadPack` -> `var WebsterFragmentFreshReadPack []byte`
+- `internal/websterengine#renderReadRules`
+- `contracts/stencils#WebsterFragmentCardReadPlain`
+- `contracts/stencils#WebsterFragmentCardReadPack`
+- `contracts/stencils#WebsterFragmentFreshReadPlain`
+- `contracts/stencils#WebsterFragmentFreshReadPack`
 - `contracts/stencils/webster/webster-fragment-card-read-plain.md`
 - `contracts/stencils/webster/webster-fragment-card-read-pack.md`
 - `contracts/stencils/webster/webster-fragment-fresh-read-plain.md`

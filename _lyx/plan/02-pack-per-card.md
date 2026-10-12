@@ -1,12 +1,12 @@
 # Card 2 — pack-per-card
 
 **Create:**
-- `plan:internal/planindex#CardPack` -> `type CardPack struct`
-- `plan:internal/planglyph#kickstartPack` -> `func kickstartPack(plan *planparser.Plan, cards []planparser.Card, resolve func(targets []string) ([]quarry.ResolveResult, error)) ([]planindex.CardPack, error)`
-- `plan:internal/websterengine#cardPointerPath` -> `func cardPointerPath(c planparser.Card, planDirDisplay string) string`
-- `plan:internal/websterengine#renderCardPack` -> `func renderCardPack(stencilsDir, cardPath string, pack planindex.Pack) (string, error)`
-- `plan:contracts/stencils#WebsterFragmentPackCard` -> `var WebsterFragmentPackCard []byte`
-- `plan:contracts/stencils#WebsterFragmentPackUnresolved` -> `var WebsterFragmentPackUnresolved []byte`
+- `internal/planindex#CardPack`
+- `internal/planglyph#kickstartPack`
+- `internal/websterengine#cardPointerPath`
+- `internal/websterengine#renderCardPack`
+- `contracts/stencils#WebsterFragmentPackCard`
+- `contracts/stencils#WebsterFragmentPackUnresolved`
 - `contracts/stencils/webster/webster-fragment-pack-card.md`
 - `contracts/stencils/webster/webster-fragment-pack-unresolved.md`
 
