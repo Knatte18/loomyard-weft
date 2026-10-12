@@ -1,6 +1,6 @@
 # Kick-start pack: read every card's spans in the first turn
 
-`kickstart-read-all-first` · Task · enhancement, webster, stencil · running · Publish
+`kickstart-read-all-first` · Task · enhancement, webster, stencil · running · PR-Align
 
 The operator's intent for the kick-start pack was that the implementer fork reads everything in its first turn: every card file and every listed span for every card of the batch, all in parallel, before any edit.
 
