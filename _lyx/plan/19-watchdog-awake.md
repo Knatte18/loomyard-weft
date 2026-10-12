@@ -13,6 +13,7 @@
 - `internal/loomcli#loopSpecFor`
 - `internal/loomcli#TestSpecFor_FillsRunIdentityForSelf`
 - `internal/shedverbs/doc.go`
+- `internal/shedverbs#shedverbsAllowedImports`
 
 **Intent:**
 Make the shed loop's step watchdog measure idle in awake, unpaused time and never kill while a pause covers the run (D5, D9).
@@ -23,6 +24,7 @@ Its reading today is wall time since the newest trace-file mtime or agent activi
   While covered it judges nothing and keeps waking on its backoff.
   Otherwise the idle time is `pauserecord.AwakeSince(newest, now, sleeps, coverage.Intervals)`, and the child is killed only when that reaches the window; the wake schedule keeps the one-second floor and one-minute ceiling.
 - `waitForChild` hands both seams to the watch.
+- `shedverbsAllowedImports` gains `github.com/Knatte18/loomyard/internal/pauserecord`.
 - loom's `loopSpecFor` sets `Pause` to a read of `pauserecord.ReadCoverage` at `hubgeom.PauseGeometry(loc)`'s record path for the run's slug, and leaves `Awake` nil.
 
 Bound: the watchdog still kills a child idle for its window of awake, unpaused time; a pause or a sleep only delays the kill.

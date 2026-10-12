@@ -40,7 +40,7 @@ Point the shed-busy and goto refusals at the pause each recipe still has (D8): `
 - `Goto`'s running-run refusal names `pauseCommandFor(req.PauseWayForward, runID, st.CurrentProducer)` with the run's real current producer, then `lyx shed step`, then goto again.
 - Batten tells `"lyx batten pause <slug>"` through `battenCLI.wire`'s `ShedPaths` and `battenCLI.specFor`'s `Spec`; loom tells nothing and takes the `--after` default.
 - `pairteardown`'s busy refusal for a live loop names `lyx shed pause <slug> --after <current_producer>`.
-- `consumeArbiterAttempt` no longer refuses on `pause_requested`: a loom run can no longer have one requested; a moved stop key or changed pause conditions still refuse.
+- `consumeArbiterAttempt` no longer refuses on `pause_requested`: a `pause_requested` left by an older binary is no longer refused here; Relaunch carries it through (shedengine keeps `pause_requested` on a re-launch) and the shed honours it at the next producer boundary, so the consumed attempt still halts there; a moved stop key or changed pause conditions still refuse.
 
 `refusal-spec.md`'s `shed busy` and `goto on a running run` rows name the recipe's pause (`lyx shed pause <run-id> --after <current_producer>` for a loom run, `lyx batten pause <slug>` for a batten run), and the arbiter-attempt row drops "a requested pause".
 

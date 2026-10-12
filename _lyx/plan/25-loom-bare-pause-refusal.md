@@ -8,6 +8,7 @@
 - `internal/shedverbs#Hooks`
 - `internal/shedverbs#pauseCmd`
 - `internal/shedverbs#TestPauseCmd_Conditions`
+- `internal/shedverbs/doc.go`
 - `internal/loomcli#loomCLI.specFor`
 - `internal/loomcli#loomVerbTexts`
 - `internal/loomcli#loomCLI.loomPreStepUnmarked`
@@ -27,6 +28,7 @@
 Retire the bare boundary pause for a loom run (D8): `lyx loom pause` with no flag, and `lyx shed pause` against a loom run, refuse with both ways forward, while `--before`, `--after` and `--clear` work as before and `lyx batten pause` keeps its bare request.
 
 - `Hooks` gains `BarePause func(st shedengine.Status) error`; `pauseCmd`, after its absent-file check, returns the hook's error for a flagless pause when the hook is set and writes nothing, and sets `pause_requested` as today when it is nil. A status file carrying `pause_requested` still loads, and batten, which sets no hook, is unchanged.
+  `doc.go`'s pause sentence now reads that a flagless pause sets `pause_requested` unless the spec's `BarePause` hook refuses it, which loom's does.
 - loom's `specFor` sets `Hooks.BarePause` to `loomBarePause`, which refuses with `loom: a bare pause no longer stops a loom run; way forward: run "lyx pause <slug>" to stop its agents now, or "lyx loom pause --after <current_producer>" to halt it at its next producer boundary`, filling the pair's slug, the status's current producer and the run-id when it is not `self`.
   `lyx shed pause` against a loom run arms loom's own spec, so it refuses the same way and the shed parity check holds.
 - `loomPreStepUnmarked`'s busy refusal names `lyx loom pause --after <current_producer>` in place of the bare pause.

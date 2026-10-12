@@ -25,4 +25,4 @@ The orch's runner is not told one: `lyx orch start` is the operator's own sessio
 Tests: `TestWire_DefaultConfig` asserts `c.runner.PauseGeometry()` equals `hubgeom.PauseGeometry(location)`'s answer; `TestWire_ModeHubSelectsHubMode` asserts the same for webster's hub runner, and `TestWire_StandaloneMode` asserts the standalone runner's record path lies under the derived state directory with an empty slug.
 The held start itself is pinned at the runner by card 8's `TestRunner_Start_WaitsWhileAPauseCoversItsPair`.
 
-**ImpactSummary:** One told value after each runner construction in six wiring functions; no signature changes and no new behaviour beyond card 8's held start.
+**ImpactSummary:** One told value after each runner construction in seven wiring sites (six wire functions and shuttle's `Command` pre-run); no signature changes and no new behaviour beyond card 8's held start.

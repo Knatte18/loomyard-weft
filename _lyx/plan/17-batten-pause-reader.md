@@ -2,6 +2,7 @@
 
 **Create:**
 - `plan:internal/battenshed#innerRunProducer.coverage` -> `func (p *innerRunProducer) coverage(w *childWait) pauserecord.Coverage`
+- `plan:internal/battencli#TestWire_PointsTheNetworkGateAtItsSlug` -> `func TestWire_PointsTheNetworkGateAtItsSlug(t *testing.T)`
 
 **Edit:**
 - `internal/battenshed#InnerRunDeps`
@@ -23,12 +24,14 @@
 - `internal/battenshed#TestNotice_StateChangeNotifiesOncePerEpisode`
 - `internal/battenshed#TestInnerRun_ParentLockReleasesAStalledLoopsRecord`
 - `internal/battenshed/doc.go`
+- `cmd/lyx/testdata/test-budget.yaml`
 
 **Intent:**
 Make batten's InnerRun read the pause record (D5): no quiet, api-error or driver-dead notice for a covered run, idle clocks that subtract every paused interval, no idle release of a covered holder's parent lock, and no spawn, resume or revive of a covered child, while a state-changed notice still goes for a run that halts.
 
 - `InnerRunDeps` gains `Pause func() (pauserecord.Coverage, error)`; `NewInnerRun` resolves nil to never covered.
   `battenCLI.wire` fills it with `pauserecord.ReadCoverage` at the prime's `hubgeom.PauseGeometry` record path for the slug, and `envkit.nilLegal` lists `InnerRun.Pause`, since the recipe kit's full env leaves it nil.
+  `battenCLI.wire` also calls `pauserecord.SetGateSlug(slug)`, so batten's own remote git and GitHub calls for the slug, made in the prime by rows such as `Worktree-Create` and `Land`, wait under its per-run entry.
 - `coverage(w)` reads the seam once per check into `w.pause`; an error reads uncovered, warned once per distinct message, as the pause flag's read is.
 - `check`, under a covered reading, still runs `checkChild` (a state change still ends the wait) and the notice step, reports `held by the pause of <scope> since <paused_at>` as the wait reason, and skips the arm's step, so no resume spawn, stale-base resume, Publish retry or driver revive runs while covered; batten's own `pause_requested` is still honoured.
 - `Call`'s first spawn, for a fresh or unconfirmed child, waits while the slug is covered, reporting the same reason and re-reading coverage each poll interval, so a covered child is never started and a `lyx loom start` refusal (card 15) never reaches the row as a hard error.
@@ -43,6 +46,8 @@ Tests (harness gains a `pause` coverage field fed through `InnerRunDeps.Pause`):
 - `TestNotice_APIErrorStall` and `TestNotice_DeadDriverWhileRunning` each gain a covered row that sends nothing.
 - `TestNotice_StateChangeNotifiesOncePerEpisode` gains a covered row whose child halts: the state-changed notice still goes once.
 - `TestInnerRun_ParentLockReleasesAStalledLoopsRecord` gains a row whose agents wait past the bound under a live entry: the record is kept, and after the resume it is released only once the bound passes again.
-`doc.go` names the pause reader beside the notices and the lock step.
+- `TestWire_PointsTheNetworkGateAtItsSlug`, not parallel since the gate is process-wide, installs a `pauserecord.Gate` with an empty slug over a temp record holding a live entry for the slug, with a `Sleep` that records its call and returns an error, wires a `battenCLI` for that slug as `wiredPrime` does, calls `pauserecord.Network` and asserts `Sleep` was called; it restores the gate on cleanup.
+
+`doc.go` names the pause reader beside the notices and the lock step; the battencli budget row grows by one.
 
 **ImpactSummary:** battenshed's InnerRun gains a told pause seam read once per check; batten's wire fills it and the envkit nil list names it, with no change while no entry covers the slug.

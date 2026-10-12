@@ -13,6 +13,7 @@
 - `internal/battenshed#InnerRunDeps`
 - `internal/battenshed#TestNotice_QuietOnlyForRunningChildWithLiveDriver`
 - `internal/battenshed/doc.go`
+- `internal/battenshed#battenshedAllowedImports`
 
 **Intent:**
 Move batten's awake-versus-wall sleep detection onto the shared `pauserecord.SleepWatch` (D9) and fix why the 2026-10-12 quiet notice counted almost eleven hours of a suspend.
@@ -26,6 +27,7 @@ Fix: `childWait` replaces `clocksSeen`, `prevWallNanos`, `prevAwake`, `asleep` a
 `judgeAgents` calls both with the new signatures, passing nil paused intervals until card 17 passes the coverage's; its returned stamp still keys the notice episode.
 `sleepGap`, `sleepGapTolerance` and `TestSleepGap` go: their rule lives in `pauserecord`, and card 2 carries the test rows.
 `InnerRunDeps.Awake`'s doc and `doc.go`'s idle-clock sentence describe the interval rule.
+`battenshedAllowedImports` gains `github.com/Knatte18/loomyard/internal/pauserecord`.
 
 Test: `TestNotice_QuietOnlyForRunningChildWithLiveDriver` gains the subtest `AnActivityWrittenJustBeforeTheSleepKeepsTheGap`: at the second check's sleep the run's newest activity moves to the clock's now, then the harness suspends three hours, and the quiet window passes after the wake; exactly one quiet notice goes, reporting 45m and not 3h45m.
 It fails on today's code, which drops the gap with the moved stamp; the existing sleep subtests, including `AMovedNewestActivityDropsTheGapObservedWithIt`, whose activity lies after the wake, keep passing.
