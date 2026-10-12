@@ -923,25 +923,6 @@
       "status": "running · Plan-Write"
     },
     {
-      "id": 406,
-      "slug": "driver-arbiter",
-      "title": "Driver arbiter: a cold, stronger agent decides when a driver is stuck",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "shed",
-        "orch",
-        "stencil"
-      ],
-      "issues": [],
-      "priority": "high",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A stuck driver spawns a cold arbiter agent instead of waking the orch",
-      "body": "## Seen (2026-10-11)\n\nDrivers escalate to the orch more often than the operator wants (operator, 2026-10-11).\nMuch of what reaches the orch is settled by a fixed rule: a review escalation is accepted unless a finding makes the design wrong, and after round 3 a remaining blocker goes to the operator.\nEvery such wake reads the orch's whole context (see `alignment-agent`).\n\n## Idea (operator, 2026-10-11)\n\nA stuck driver spawns its own cold, stronger agent that decides for it, with its own stencil.\n\n- Spawned on a Stuck or halt whose way forward is unknown, and on a review escalation a perch's auto-accept does not settle.\n- Reads the board entry, the discussion, the latest review rounds and the error, then decides or names the next action.\n- Runs cold on a stronger model than the driver, such as `opus[high]`.\n- Hands on to the orch only when the call needs an operator decision that neither the board entry nor the discussion records, or when it is unsure.\n- Parent review and PR-Gate stay with the orch, since they exist to bring in its context.\n\n## Related\n\n`orch-wake-policy` sets what wakes the orch; this note takes over most of the wakes that remain after it (design calls, unsettled escalations, unknown halts).\n`orch-split` splits the orch into a run driver and a conversational orch.\n\n## Open\n\n- What the arbiter may do itself (goto, resume, accept a finding, edit the record) and what it may only recommend.\n- Its stencil and model key, and a bound on how many times one run may spawn it.\n",
-      "status": "done"
-    },
-    {
       "id": 408,
       "slug": "delete-before-reference-receiver",
       "title": "Plan gate delete-before-reference matches deleted methods by bare name",
@@ -991,9 +972,7 @@
       ],
       "issues": [],
       "priority": "high",
-      "depends_on": [
-        "driver-arbiter"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Make read-only sed work without refusals or prompts across lyx-spawned agents, stencils and audits, keeping the no-script-edit rule.",
       "body": "## Idea (operator, 2026-10-11)\n\nMake `sed` work well for agents: reading with `sed` is allowed, and only rewriting files with a script stays banned.\nThe operator has updated `scribe:conversation` (1.1.0): its old \"never use `sed`, even to read\" rule is gone, and the remaining rule is to change files only with Edit or Write.\n\n## Seen (2026-10-11)\n\n- `contracts/stencils/edit/edit-directive.md` (rendered into every spawned role) bans `sed` only as a file-rewriting script; `contracts/stencils/stencils.go` `editRulePhrases` matches \"`sed`\" as one of the rule's phrases.\n- `internal/websterengine` classifies a `sed -n` line or range print as a read, and any other `sed` form as a write.\n- `webster-fork-shell`: a Webster fork used `sed -i` and `rm` on a computed `/tmp` path and stalled on a Claude Code permission prompt.\n- The orch passed \"never sed\" into agent briefs from the old scribe rule.\n\n## Open\n\n- Whether any lyx-spawned role, hook or audit still refuses or prompts on a read-only `sed` (`sed -n`), and whether the Webster classifier should admit more read forms.\n- Whether stencils, the orch role or `CLAUDE.md` carry a stale \"never sed\" wording.\n- Whether a read-only `sed` allow rule belongs in the settings lyx gives spawned agents.\n\n## Merged: `webster-fork-shell` (2026-10-11, bundled 2026-10-12)\n\nSeen in `shuttle-hook-first`, Webster batch 01: the implementer fork ran, from Merriam's session:\n\n```\ntmux -L askexp kill-server; rm -rf \"$(cat /tmp/claude-1000/askdir)\" /tmp/claude-1000/askdir; cd internal/shuttlecli \u0026\u0026 sed -i '604s|Write(|Edit(|' smoke_turns_test.go \u0026\u0026 sed -n 603,605p smoke_turns_test.go\n```\n\n- Claude Code stopped it with a permission prompt (\"Dangerous rm operation on statically-unresolvable target\"), which fires in bypass mode too, so the run waited on the operator.\n- The fork edited a test file with `sed -i`, against `contracts/stencils/edit/edit-directive.md`.\n- It kept experiment state in `/tmp` and ran its own tmux server (`-L askexp`); no Webster stencil names a scratch place or forbids a system temp directory.\n\nOpen:\n\n- Whether the edit directive reaches Webster implementer forks at all, and if so why the fork ignored it.\n- Whether the implementer stencil should name a scratch place inside the pair and forbid `rm` on a computed path.\n- Detection (operator, 2026-10-11: such a stall must be noticed, it likely sat a while): `shuttle-hook-first` D5 installs a `PermissionRequest` hook that reads the session as asking at once.\n  Whether the hook fires for a fork's prompt in Merriam's session, and what turns a run that stays asking past a bound into a notice that reaches the operator.\n"
