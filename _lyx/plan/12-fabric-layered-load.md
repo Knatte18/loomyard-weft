@@ -1,7 +1,7 @@
 # Card 12 — fabric layered load
 
 **Create:**
-- `plan:internal/fabricengine#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
+- `internal/fabricengine#ConfigSpec`
 
 **Edit:**
 - `internal/fabricengine#LoadConfig` -> `func LoadConfig(dirs configengine.Dirs) (Config, error)`

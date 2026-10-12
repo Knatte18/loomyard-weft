@@ -1,8 +1,8 @@
 # Card 11 — gate and board layered load
 
 **Create:**
-- `plan:internal/gateslot#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
-- `plan:internal/boardengine#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
+- `internal/gateslot#ConfigSpec`
+- `internal/boardengine#ConfigSpec`
 
 **Edit:**
 - `internal/gateslot#LoadConfig` -> `func LoadConfig(dirs configengine.Dirs) (Config, error)`

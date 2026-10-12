@@ -1,8 +1,8 @@
 # Card 10 — darn and landing layered load
 
 **Create:**
-- `plan:internal/darnengine#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
-- `plan:internal/landingshed#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
+- `internal/darnengine#ConfigSpec`
+- `internal/landingshed#ConfigSpec`
 
 **Edit:**
 - `internal/darnengine#LoadConfig` -> `func LoadConfig(dirs configengine.Dirs, module string) (Config, error)`

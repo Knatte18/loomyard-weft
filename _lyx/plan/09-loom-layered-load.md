@@ -1,7 +1,7 @@
 # Card 9 — loom layered load
 
 **Create:**
-- `plan:internal/loomengine#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
+- `internal/loomengine#ConfigSpec`
 
 **Edit:**
 - `internal/loomengine#LoadConfig` -> `func LoadConfig(dirs configengine.Dirs, module string) (Config, error)`
