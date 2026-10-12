@@ -26,7 +26,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 3 | **lyx pause: stop every run at once, safely and on purpose**<br>• A hub-wide pause that interrupts every Claude session with Esc within seconds, unlike the step-boundary pauses, recorded as ordered so no failure or idle path fires | [`lyx-halt`](design-lyx-halt.md) | loom | Discussion-Burler-Fix |  |  | batten, shuttle |
 | 4 | **Board writers keep unknown fields; lyx cleanup follow-ups**<br>• An old lyx process drops board fields it does not know; plus the open items from the lyx cleanup PR | [`board-field-drop`](design-board-field-drop.md) | loom | Webster |  | 47m | board, batten |
-| 5 | **Webster kick-start pack: read the card's spans in one turn, per-card packs**<br>• Forks read listed spans whole and spread out; adopt the bench wording, per-card packs, span-only FRESH-READ and one-line var entries | [`webster-pack-read-set`](design-webster-pack-read-set.md) | loom | Plan-Burler-Review | 26m | 26m | webster, stencil |
+| 5 | **Webster kick-start pack: read the card's spans in one turn, per-card packs**<br>• Forks read listed spans whole and spread out; adopt the bench wording, per-card packs, span-only FRESH-READ and one-line var entries | [`webster-pack-read-set`](design-webster-pack-read-set.md) | loom | Plan-Burler-Review | 27m | 27m | webster, stencil |
 
 ### Ready
 
@@ -75,16 +75,17 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 19 | **Measure the Webster kick-start pack with and without**<br>• Repeat the audit count (grep-for-member calls and whole-file reads per fork) on real loom runs with kickstart_pack on and off. | [`kickstart-pack-measure`](design-kickstart-pack-measure.md) |  | 37m | webster |
 | 20 | **Twill for Plan: measure fewer Plan-Review rounds; wrong-parent-dir miss**<br>• After twill-plan lands: measure a lower plan_max_bounces, and cover the parent-directory miss every bench arm shared | [`twill-plan-followups`](design-twill-plan-followups.md) |  | 25m | loom |
 | 21 | **Go-driven shed with a cold LLM watcher at every level**<br>• A Go loop always steps the run; an LLM watcher is spawned only when the loop stops on something it cannot pass, the same at loom and hub level | [`go-driven-shed`](design-go-driven-shed.md) | 34m | 34m | shed, batten, loom, orch |
+| 22 | **Runs overview shows a paused run as paused**<br>• The runs overview reads lyx-halt's paused_since so a paused run does not show as running. | [`runs-overview-paused`](design-runs-overview-paused.md) | 0m | 0m | reed, batten |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 22 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) |  |  | fabric |
-| 23 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) |  |  | ide, fabric |
-| 24 | **Bench the chair-and-advisors Discussion against the solo writer before switching it on**<br>• Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on | [`discussion-multi-llm-bench`](design-discussion-multi-llm-bench.md) |  |  | loom, stencil |
-| 25 | **Discussion advisors: operator-named areas per advisor on top of the landed all-advisors default**<br>• Each discussion_advisors entry takes an optional area (a lens, as in review fans); without one the advisor answers every question | [`discussion-advisor-mode`](design-discussion-advisor-mode.md) |  |  | loom, stencil, config |
-| 26 | **Fabric audit: plain readers accept unquoted globs and any flag**<br>• readOnlyCommands readers (cat, grep -r) accept unquoted globs and arbitrary flags | [`audit-reader-globs`](design-audit-reader-globs.md) |  |  | webster, fabric |
+| 23 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) |  |  | fabric |
+| 24 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) |  |  | ide, fabric |
+| 25 | **Bench the chair-and-advisors Discussion against the solo writer before switching it on**<br>• Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on | [`discussion-multi-llm-bench`](design-discussion-multi-llm-bench.md) |  |  | loom, stencil |
+| 26 | **Discussion advisors: operator-named areas per advisor on top of the landed all-advisors default**<br>• Each discussion_advisors entry takes an optional area (a lens, as in review fans); without one the advisor answers every question | [`discussion-advisor-mode`](design-discussion-advisor-mode.md) |  |  | loom, stencil, config |
+| 27 | **Fabric audit: plain readers accept unquoted globs and any flag**<br>• readOnlyCommands readers (cat, grep -r) accept unquoted globs and arbitrary flags | [`audit-reader-globs`](design-audit-reader-globs.md) |  |  | webster, fabric |
 
 ### Features
 
