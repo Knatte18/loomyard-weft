@@ -1,0 +1,102 @@
+{
+  "runGuid": "31aa93aa50c4abfee6245e4053e089b2",
+  "planFingerprint": "d11428a84ced3764649ae30b4fb9237efecf5fa1ab6fdf4a7cfdfc3bc5d5b9c4",
+  "planFileHashes": {
+    "00-overview.md": "58fc931a7224acbd1b4ac2a2239a47efc3db9a67cbfd81ff95476cf730c14b8b",
+    "01-board-unknown-keys.md": "c79bf3a02389ccb129c748ebe405075af4ed6adcc8d97260e710b38b9bfd1654",
+    "02-board-cli-kept-keys.md": "3021eab95df88ffb3921c8ad7a71e9946798b7e2c2be6f933d1efd649ecce324",
+    "03-sweep-retry-budget.md": "3c7fc7401a1045aa986319f06cf5ea0b8837888eca549f42ae99164e257e0656"
+  },
+  "planOverviewFrameHash": "2181cb4129709c4821003768044e107139ff51298c5836cceae6a8645aca9489",
+  "partition": [
+    {
+      "cards": [
+        "01-board-unknown-keys",
+        "02-board-cli-kept-keys",
+        "03-sweep-retry-budget"
+      ],
+      "profile": "cautious",
+      "estimate": 159474,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54280,
+        "read_union": 24884,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 1140,
+            "reads": {
+              "file:internal/boardengine/doc.go": 1788,
+              "package:internal/boardengine": 2000,
+              "package:internal/boardengine_test": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/boardengine_test": 2000
+            },
+            "messages": 157.5,
+            "written": 48390
+          },
+          {
+            "card": 2,
+            "card_text": 348,
+            "reads": {
+              "file:internal/boardcli/doc.go": 684,
+              "package:internal/boardcli": 2000,
+              "package:internal/boardcli_test": 2000,
+              "tests:internal/boardcli": 2000,
+              "tests:internal/boardcli_test": 2000
+            },
+            "messages": 22.5,
+            "written": 7098
+          },
+          {
+            "card": 3,
+            "card_text": 672,
+            "reads": {
+              "file:internal/lyxtemp/doc.go": 252,
+              "package:internal/lyxtemp": 2000,
+              "tests:internal/lyxtemp": 2000
+            },
+            "messages": 80.5,
+            "written": 24822
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "fb877b1745e0663e4d5c045660575c38",
+  "masterSessionId": "f1edc0ea-90a3-466b-9eb2-02862fa760f5",
+  "batches": {
+    "1": {
+      "slug": "board-unknown-keys",
+      "cards": [
+        "01-board-unknown-keys",
+        "02-board-cli-kept-keys",
+        "03-sweep-retry-budget"
+      ],
+      "cardHashes": {
+        "01-board-unknown-keys": "c79bf3a02389ccb129c748ebe405075af4ed6adcc8d97260e710b38b9bfd1654",
+        "02-board-cli-kept-keys": "3021eab95df88ffb3921c8ad7a71e9946798b7e2c2be6f933d1efd649ecce324",
+        "03-sweep-retry-budget": "3c7fc7401a1045aa986319f06cf5ea0b8837888eca549f42ae99164e257e0656"
+      },
+      "startSha": "314816cde00092577fd3e2caa5083b5763837b63",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T10:55:13Z",
+      "sessionId": "f1edc0ea-90a3-466b-9eb2-02862fa760f5",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
