@@ -1,7 +1,7 @@
 # Card 6 — removing an own-window strand moves its viewer to window 0 and relays out a shared window
 
 **Create:**
-- `plan:internal/reedengine#Engine.relayoutSharedWindowsLocked` -> `func (e *Engine) relayoutSharedWindowsLocked(windows []string) string`
+- `internal/reedengine#Engine.relayoutSharedWindowsLocked`
 
 **Edit:**
 - `internal/reedengine#Removed`
@@ -10,7 +10,7 @@
 - `internal/reedengine#Engine.ReplaceStrand`
 - `internal/reedcli#reedCLI.removeCmd`
 - `internal/reedengine/doc.go`
-- `plan:internal/reedengine#TestOwnWindow_RealTmux`
+- `internal/reedengine#TestOwnWindow_RealTmux`
 
 **Uses:**
 - `internal/reedengine#Engine.selectStrandsWindowIfCurrentLocked`

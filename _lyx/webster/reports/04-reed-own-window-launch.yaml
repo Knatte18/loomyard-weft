@@ -1,0 +1,12 @@
+status: OK
+head_sha: bd21acd2f057c4b46a89892cb0f4dda7c008cdc1
+deviations:
+  - internal/reedengine/panebin_enforcement_test.go
+  - internal/reedengine/faketmux_test.go
+  - internal/reedengine/windowsize.go
+  - internal/reedengine/lifecycle.go
+  - internal/reedengine/replace.go
+  - internal/reedengine/state.go
+  - internal/reedengine/ownwindow.go
+  - internal/reedengine/ownwindow_test.go
+  - internal/reedcli/remove.go

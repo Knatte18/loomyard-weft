@@ -1,10 +1,10 @@
 # Card 4 — reed opens an own-window strand in a detached window of its own
 
 **Create:**
-- `plan:internal/reedengine#unseenWindowOption` -> `const unseenWindowOption = "@lyx_unseen"`
-- `plan:internal/reedengine#Engine.openOwnWindowLocked` -> `func (e *Engine) openOwnWindowLocked(s *Strand, name, group string) (string, error)`
-- `plan:internal/reedengine#refuseWindowMove` -> `func refuseWindowMove(name string, current, next render.Display) error`
-- `plan:internal/reedengine#TestOwnWindow_RealTmux` -> `func TestOwnWindow_RealTmux(t *testing.T)`
+- `internal/reedengine#unseenWindowOption`
+- `internal/reedengine#Engine.openOwnWindowLocked`
+- `internal/reedengine#refuseWindowMove`
+- `internal/reedengine#TestOwnWindow_RealTmux`
 
 **Edit:**
 - `internal/reedengine#validateDisplay`

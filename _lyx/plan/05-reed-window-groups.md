@@ -1,17 +1,17 @@
 # Card 5 — reed shares one window per declared group up to window_share_max
 
 **Create:**
-- `plan:internal/reedengine#WindowGroup` -> `type WindowGroup struct`
-- `plan:internal/reedengine#ownWindowPlacement` -> `type ownWindowPlacement int`
-- `plan:internal/reedengine#placeApart` -> `const placeApart ownWindowPlacement = iota`
-- `plan:internal/reedengine#placeNewShared` -> `const placeNewShared ownWindowPlacement = 1`
-- `plan:internal/reedengine#placeJoinShared` -> `const placeJoinShared ownWindowPlacement = 2`
-- `plan:internal/reedengine#planOwnWindowPlacement` -> `func planOwnWindowPlacement(groups map[string]WindowGroup, d render.Display, shareMax, liveCount int, groupWindow string) (ownWindowPlacement, WindowGroup, error)`
-- `plan:internal/reedengine#groupLiveCount` -> `func groupLiveCount(strands []Strand, group, self string, windows []windowPane) (count int, groupWindow string)`
-- `plan:internal/reedengine#pruneWindowGroups` -> `func pruneWindowGroups(st *ReedState)`
-- `plan:internal/reedengine#Engine.joinGroupWindowLocked` -> `func (e *Engine) joinGroupWindowLocked(groupWindow string, windows []windowPane, splitFlag string) (string, error)`
-- `plan:internal/reedengine#TestPlanOwnWindowPlacement` -> `func TestPlanOwnWindowPlacement(t *testing.T)`
-- `plan:internal/reedengine#TestJoinGroupWindowLocked_RefusesASilentlyReusedPane` -> `func TestJoinGroupWindowLocked_RefusesASilentlyReusedPane(t *testing.T)`
+- `internal/reedengine#WindowGroup`
+- `internal/reedengine#ownWindowPlacement`
+- `internal/reedengine#placeApart`
+- `internal/reedengine#placeNewShared`
+- `internal/reedengine#placeJoinShared`
+- `internal/reedengine#planOwnWindowPlacement`
+- `internal/reedengine#groupLiveCount`
+- `internal/reedengine#pruneWindowGroups`
+- `internal/reedengine#Engine.joinGroupWindowLocked`
+- `internal/reedengine#TestPlanOwnWindowPlacement`
+- `internal/reedengine#TestJoinGroupWindowLocked_RefusesASilentlyReusedPane`
 
 **Edit:**
 - `internal/reedengine#ReedState`
@@ -20,12 +20,12 @@
 - `internal/reedengine#dropStrands`
 - `internal/reedengine/doc.go`
 - `internal/reedengine#TestRemoveStrandLocked`
-- `plan:internal/reedengine#TestOwnWindow_RealTmux`
+- `internal/reedengine#TestOwnWindow_RealTmux`
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
 - `internal/reedengine#windowSplitLayout`
-- `plan:internal/reedengine#Engine.openOwnWindowLocked`
+- `internal/reedengine#Engine.openOwnWindowLocked`
 - `internal/reedengine#windowPane`
 - `internal/reedengine#TmuxCmd.listWindowPanes`
 - `internal/reedengine#isOwnWindow`

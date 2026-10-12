@@ -1,10 +1,10 @@
 # Card 7 — the status bar gives each own window a colored button marked unseen until selected
 
 **Create:**
-- `plan:internal/reedengine#ownWindowButtonFormat` -> `const ownWindowButtonFormat = ""`
-- `plan:internal/reedengine#windowWaitFormat` -> `const windowWaitFormat = ""`
-- `plan:internal/reedengine#unseenClearHookName` -> `const unseenClearHookName = "session-window-changed"`
-- `plan:internal/reedengine#unseenClearHookCommand` -> `const unseenClearHookCommand = "set-option -w -u @lyx_unseen"`
+- `internal/reedengine#ownWindowButtonFormat`
+- `internal/reedengine#windowWaitFormat`
+- `internal/reedengine#unseenClearHookName`
+- `internal/reedengine#unseenClearHookCommand`
 
 **Edit:**
 - `internal/reedengine/bar.go`
@@ -17,7 +17,7 @@
 - `internal/reedengine#TestAttachArgv_PreflightOnAKnownGoodSession`
 
 **Uses:**
-- `plan:internal/reedengine#unseenWindowOption`
+- `internal/reedengine#unseenWindowOption`
 - `internal/reedengine#ownWindowOption`
 - `internal/reedengine#Engine.AttachArgv`
 
