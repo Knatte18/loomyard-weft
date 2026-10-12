@@ -600,7 +600,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 21,
   "masterStrand": "ded089cc5ffb8858e688d5fdd6b216fd",
   "masterSessionId": "a851bafe-4025-44c5-a927-72b06f2466d6",
   "batches": {
@@ -744,6 +744,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-merge-review/a851bafe-4025-44c5-a927-72b06f2466d6/subagents/agent-a35516676d8b7a2ba.jsonl"
       ]
+    },
+    "21": {
+      "slug": "loop-lock-hooks",
+      "cards": [
+        "21-loop-lock-hooks",
+        "22-status-lock-wait",
+        "23-batten-retry-rows",
+        "24-batten-lock-backstop",
+        "25-batten-lock-verbs",
+        "26-orch-stencil-pr-gate"
+      ],
+      "cardHashes": {
+        "21-loop-lock-hooks": "d1497a4f72dbe1287145ccbd54b985620d87c72f42075fd8316e135ab4613033",
+        "22-status-lock-wait": "6e18a53ea762dc7124236d95111e7be4e915863173f4c2754dabaf89d43bd260",
+        "23-batten-retry-rows": "7e08f3447fa15bfe1b4b4f16c91cad6f7537d941b1de7f5f3212910168d5c364",
+        "24-batten-lock-backstop": "53c96704aafc9501d29cec79a441b2cf08ded85702c89722796235874ed2b179",
+        "25-batten-lock-verbs": "e915718a24cfd609e0c46d076f25d15993c7174c08703e5345b6c3c9b0f326b5",
+        "26-orch-stencil-pr-gate": "4da44660b868408da6566697015e22c8532bd3289ffe21fbf09ed8022cc5bd14"
+      },
+      "startSha": "4c20273ede703bb769c0e2de631e21793a9801c9",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T09:15:59Z",
+      "sessionId": "a851bafe-4025-44c5-a927-72b06f2466d6",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "fabric-parent-reads",
