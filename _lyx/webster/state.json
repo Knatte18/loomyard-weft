@@ -1,6 +1,6 @@
 {
   "runGuid": "65604a39a016d3d7fcac6490d4b07bfe",
-  "planFingerprint": "4c1a3dbdec9648131900ae989a4ca179ed4b4f89932b84d149b5069bd9cf4965",
+  "planFingerprint": "1332a030c2dff1624afb0659df49edfd58e93afb59edd1e384d36b0992ff911f",
   "planFileHashes": {
     "00-overview.md": "13e626b233a542e106ca7d03bb292b315dc4e07442cdb1a9bf36b937bba9ed04",
     "01-loom-alignment-config.md": "628d9cd93d7cc1867254f30eb80d51e2cfa96290c2358152283b2ad21f7b3184",
@@ -9,11 +9,11 @@
     "04-shedrun-alignment-paths.md": "b0ab3aef14ea1fed4b3d04c3c03805d0af143ab4dff133734e5e055eb37f9991",
     "05-alignment-records.md": "1c6d2a960ab4b3086bbcc1ea8ccf01737cb894df4dec8933df286a2441336ad9",
     "06-alignment-session.md": "1f7735c0a8628d38589d80d60bcbe15cafacb94b09537c89b21b2c1f8dcbaf83",
-    "07-parent-review-gate-alignment.md": "26e07fc19e50e87b766445cd2b371267cb846085de9de37dc3f42d06eca43033",
-    "08-parent-review-alignment-wiring.md": "2b013ed05ab945e23727c7392d1082e36db7132f4623b423a1fbd905585eaf0b",
-    "09-shared-approval-write.md": "c7e1ce690b623ced43fbfe790b8f85c515ce9cb1cd30b141d8565c7c452df045",
-    "10-pr-align-producer.md": "950071326f29cdf103a0e9d7f89e0538f35976ac58cdbe8a94c2f2c2183e5aa5",
-    "11-pr-align-row.md": "68140916b1877e06569d1397e5c55925c15758db51a66da3a3ce6816c65cd06e",
+    "07-parent-review-gate-alignment.md": "382c00e553e74f44aae5fbd7316619fdbff244f1e50cec64ed9449447bf1c663",
+    "08-parent-review-alignment-wiring.md": "cda8c5432d5e5f3c626d3960c5d3cddd6e7cbc89436a36dc26c6187db19d1fb2",
+    "09-shared-approval-write.md": "8f8ca890f7bce29a08363668e256d2aab5330c2b614868ae989e9ea41c4ccd62",
+    "10-pr-align-producer.md": "0ca1e68081bdf80e50da76936b60fa47cef4fa06cc4e46ad37226ecce0867088",
+    "11-pr-align-row.md": "432ca8a9185361dda406dd248a9be594d4ff051456ddf6cdb18334b9d54b5eb3",
     "12-orch-stencil-alignment.md": "8c61f2c78f498b302e57ff3c4f659f6fe60d33d5a49e02b2aff40e7734015c39"
   },
   "planOverviewFrameHash": "120af4eaf456f3e075358e55135845c5911b3136ecd27dcc57976cf4143cbdd4",
@@ -280,7 +280,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "75a07f4ee743983521af8f8e055dfb52",
   "masterSessionId": "2b565459-bf2c-474b-bc4c-292b3d6a10b6",
   "batches": {
@@ -334,22 +334,40 @@
         "12-orch-stencil-alignment"
       ],
       "cardHashes": {
-        "07-parent-review-gate-alignment": "26e07fc19e50e87b766445cd2b371267cb846085de9de37dc3f42d06eca43033",
-        "08-parent-review-alignment-wiring": "2b013ed05ab945e23727c7392d1082e36db7132f4623b423a1fbd905585eaf0b",
-        "09-shared-approval-write": "c7e1ce690b623ced43fbfe790b8f85c515ce9cb1cd30b141d8565c7c452df045",
-        "10-pr-align-producer": "950071326f29cdf103a0e9d7f89e0538f35976ac58cdbe8a94c2f2c2183e5aa5",
-        "11-pr-align-row": "68140916b1877e06569d1397e5c55925c15758db51a66da3a3ce6816c65cd06e",
+        "07-parent-review-gate-alignment": "382c00e553e74f44aae5fbd7316619fdbff244f1e50cec64ed9449447bf1c663",
+        "08-parent-review-alignment-wiring": "cda8c5432d5e5f3c626d3960c5d3cddd6e7cbc89436a36dc26c6187db19d1fb2",
+        "09-shared-approval-write": "8f8ca890f7bce29a08363668e256d2aab5330c2b614868ae989e9ea41c4ccd62",
+        "10-pr-align-producer": "0ca1e68081bdf80e50da76936b60fa47cef4fa06cc4e46ad37226ecce0867088",
+        "11-pr-align-row": "432ca8a9185361dda406dd248a9be594d4ff051456ddf6cdb18334b9d54b5eb3",
         "12-orch-stencil-alignment": "8c61f2c78f498b302e57ff3c4f659f6fe60d33d5a49e02b2aff40e7734015c39"
       },
       "startSha": "70027516ca17829e2c0b9db98d8cbed132993458",
       "kind": "fork",
       "spawnedAt": "2026-10-12T11:30:12Z",
       "sessionId": "2b565459-bf2c-474b-bc4c-292b3d6a10b6",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-parent-review-gate-alignment",
+        "status": "done",
+        "head_sha": "f1ce7696fdaa47f86adb88088d066665c2c5d77e",
+        "deviations": [
+          "internal/loomcli/parentreview_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "f1ce7696fdaa47f86adb88088d066665c2c5d77e"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-alignment-agent/2b565459-bf2c-474b-bc4c-292b3d6a10b6/subagents/agent-a4a00e623aa489e49.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-alignment-agent/2b565459-bf2c-474b-bc4c-292b3d6a10b6/subagents/agent-a4a00e623aa489e49.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-alignment-agent/2b565459-bf2c-474b-bc4c-292b3d6a10b6/subagents/agent-a08e455ba58d42167.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-alignment-agent/2b565459-bf2c-474b-bc4c-292b3d6a10b6/subagents/agent-a08e455ba58d42167.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-alignment-agent/2b565459-bf2c-474b-bc4c-292b3d6a10b6/subagents/agent-a4a00e623aa489e49.jsonl"
   ]
 }

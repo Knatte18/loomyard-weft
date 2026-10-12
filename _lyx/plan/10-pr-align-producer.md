@@ -2,20 +2,20 @@
 
 **Create:**
 - `internal/landingshed/pralign_test.go`
-- `plan:internal/landingshed#AlignmentDeps` -> `type AlignmentDeps struct`
-- `plan:internal/landingshed#AlignmentConfig` -> `type AlignmentConfig struct`
-- `plan:internal/landingshed#AlignmentSession` -> `type AlignmentSession interface`
-- `plan:internal/landingshed#AlignmentNote` -> `type AlignmentNote struct`
-- `plan:internal/landingshed#WriteAlignmentNote` -> `func WriteAlignmentNote(path string, n AlignmentNote) error`
-- `plan:internal/landingshed#ReadAlignmentNote` -> `func ReadAlignmentNote(path string) (AlignmentNote, bool, error)`
-- `plan:internal/landingshed#prAlignName` -> `const prAlignName = "PR-Align"`
-- `plan:internal/landingshed#PRAlign` -> `type PRAlign struct`
-- `plan:internal/landingshed#NewPRAlign` -> `func NewPRAlign(deps Deps) (*PRAlign, error)`
-- `plan:internal/landingshed#PRAlign.Call` -> `func (p *PRAlign) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/landingshed#fakeAlignmentSession` -> `type fakeAlignmentSession struct`
-- `plan:internal/landingshed#TestPRAlign` -> `func TestPRAlign(t *testing.T)`
-- `plan:internal/loomcli#landingAlignmentDeps` -> `func landingAlignmentDeps(l *lyxcwd.Location, stencilsDir string, registry modelspec.Registry, runner *shuttleengine.Runner) landingshed.AlignmentDeps`
-- `plan:internal/loomcli#TestLandingAlignmentDeps_Config` -> `func TestLandingAlignmentDeps_Config(t *testing.T)`
+- `internal/landingshed#AlignmentDeps`
+- `internal/landingshed#AlignmentConfig`
+- `internal/landingshed#AlignmentSession`
+- `internal/landingshed#AlignmentNote`
+- `internal/landingshed#WriteAlignmentNote`
+- `internal/landingshed#ReadAlignmentNote`
+- `internal/landingshed#prAlignName`
+- `internal/landingshed#PRAlign`
+- `internal/landingshed#NewPRAlign`
+- `internal/landingshed#PRAlign.Call`
+- `internal/landingshed#fakeAlignmentSession`
+- `internal/landingshed#TestPRAlign`
+- `internal/loomcli#landingAlignmentDeps`
+- `internal/loomcli#TestLandingAlignmentDeps_Config`
 
 **Edit:**
 - `internal/landingshed#Deps`
@@ -31,12 +31,12 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/landingshed#RecordApproval`
-- `plan:internal/landingshed#RecordRejection`
+- `internal/landingshed#RecordApproval`
+- `internal/landingshed#RecordRejection`
 - `internal/alignment#Session.Begin`
-- `plan:internal/loomcli#alignmentSettings`
-- `plan:internal/loomcli#alignmentSnapshot`
-- `plan:internal/loomcli#hubBoardTasks`
+- `internal/loomcli#alignmentSettings`
+- `internal/loomcli#alignmentSnapshot`
+- `internal/loomcli#hubBoardTasks`
 - `internal/shedrun#AlignmentDir`
 
 **Intent:**

@@ -1,8 +1,8 @@
 # Card 9 — shared-approval-write
 
 **Create:**
-- `plan:internal/landingshed#RecordApproval` -> `func RecordApproval(approvalPath, rejectionPath string, a Approval) error`
-- `plan:internal/landingshed#RecordRejection` -> `func RecordRejection(approvalPath, rejectionPath string, r Rejection) error`
+- `internal/landingshed#RecordApproval`
+- `internal/landingshed#RecordRejection`
 
 **Edit:**
 - `internal/landingshed#TestApproval_RoundTripAndOverwrite`

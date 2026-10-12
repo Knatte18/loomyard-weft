@@ -1,9 +1,9 @@
 # Card 11 — pr-align-row
 
 **Create:**
-- `plan:internal/loomshed#NamePRAlign` -> `const NamePRAlign = "PR-Align"`
-- `plan:internal/shedrecipe#prAlignEntry` -> `func prAlignEntry(_ string, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/shedrecipe#armPRAlign` -> `func armPRAlign(deps *landingshed.Deps)`
+- `internal/loomshed#NamePRAlign`
+- `internal/shedrecipe#prAlignEntry`
+- `internal/shedrecipe#armPRAlign`
 
 **Edit:**
 - `contracts/recipes/loom-recipe.yaml`
@@ -18,7 +18,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/landingshed#NewPRAlign`
+- `internal/landingshed#NewPRAlign`
 
 **Intent:**
 Put card 10's producer into loom's producer graph as D5's `PR-Align` row between `Publish` and `PR-Gate`; darn's recipe is not touched.

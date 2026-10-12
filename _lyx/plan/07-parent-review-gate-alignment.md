@@ -1,22 +1,22 @@
 # Card 7 — parent-review-gate-alignment
 
 **Create:**
-- `plan:internal/parentreview#Aligner` -> `type Aligner interface`
-- `plan:internal/parentreview#Alignment` -> `type Alignment struct`
-- `plan:internal/parentreview#AlignmentPoll` -> `type AlignmentPoll struct`
-- `plan:internal/parentreview#AlignmentRunning` -> `const AlignmentRunning = "running"`
-- `plan:internal/parentreview#AlignmentApplied` -> `const AlignmentApplied = "applied"`
-- `plan:internal/parentreview#AlignmentFallback` -> `const AlignmentFallback = "fallback"`
-- `plan:internal/parentreview#AlignmentStopped` -> `const AlignmentStopped = "stopped"`
-- `plan:internal/parentreview#alignmentFile` -> `const alignmentFile = "alignment.json"`
-- `plan:internal/parentreview#Store.RecordAlignment` -> `func (s Store) RecordAlignment(a Alignment) error`
-- `plan:internal/parentreview#Store.SettleAlignment` -> `func (s Store) SettleAlignment(state, report, reason string) error`
-- `plan:internal/parentreview#Store.WriteBrief` -> `func (s Store) WriteBrief(brief string) error`
-- `plan:internal/parentreview#closures.spawnAlignment` -> `func (c *closures) spawnAlignment(r Round) (shuttleengine.GateResult, error)`
-- `plan:internal/parentreview#closures.pollAlignment` -> `func (c *closures) pollAlignment(r Round) (shuttleengine.GateResult, bool, error)`
-- `plan:internal/parentreview#closures.closeAlignment` -> `func (c *closures) closeAlignment(r Round, state, reason string) error`
-- `plan:internal/parentreview#fakeAligner` -> `type fakeAligner struct`
-- `plan:internal/parentreview#TestGate_Alignment` -> `func TestGate_Alignment(t *testing.T)`
+- `internal/parentreview#Aligner`
+- `internal/parentreview#Alignment`
+- `internal/parentreview#AlignmentPoll`
+- `internal/parentreview#AlignmentRunning`
+- `internal/parentreview#AlignmentApplied`
+- `internal/parentreview#AlignmentFallback`
+- `internal/parentreview#AlignmentStopped`
+- `internal/parentreview#alignmentFile`
+- `internal/parentreview#Store.RecordAlignment`
+- `internal/parentreview#Store.SettleAlignment`
+- `internal/parentreview#Store.WriteBrief`
+- `internal/parentreview#closures.spawnAlignment`
+- `internal/parentreview#closures.pollAlignment`
+- `internal/parentreview#closures.closeAlignment`
+- `internal/parentreview#fakeAligner`
+- `internal/parentreview#TestGate_Alignment`
 
 **Edit:**
 - `internal/parentreview#GateConfig`

@@ -2,16 +2,16 @@
 
 **Create:**
 - `internal/loomcli/alignmentwiring_test.go`
-- `plan:internal/loomcli#parentReviewAligner` -> `type parentReviewAligner struct`
-- `plan:internal/loomcli#parentReviewAligner.Spawn` -> `func (p *parentReviewAligner) Spawn(round int) (parentreview.Alignment, error)`
-- `plan:internal/loomcli#parentReviewAligner.Poll` -> `func (p *parentReviewAligner) Poll(a parentreview.Alignment) (parentreview.AlignmentPoll, error)`
-- `plan:internal/loomcli#parentReviewAligner.Close` -> `func (p *parentReviewAligner) Close(a parentreview.Alignment, reason string) error`
-- `plan:internal/loomcli#newParentReviewAligner` -> `func newParentReviewAligner(location *lyxcwd.Location, runID string, cfg loomengine.Config, registry modelspec.Registry, stencilsDir string, shuttle alignment.Shuttle, notes func() ([]boardengine.Task, error)) (parentreview.Aligner, error)`
-- `plan:internal/loomcli#hubBoardTasks` -> `func hubBoardTasks(location *lyxcwd.Location) func() ([]boardengine.Task, error)`
-- `plan:internal/loomcli#alignmentOff` -> `func alignmentOff(location *lyxcwd.Location, cfg loomengine.Config) bool`
-- `plan:internal/loomcli#alignmentSettings` -> `func alignmentSettings(cfg loomengine.Config, registry modelspec.Registry) (alignment.Settings, error)`
-- `plan:internal/loomcli#alignmentSnapshot` -> `func alignmentSnapshot(decisionRecord, slug string, notes func() ([]boardengine.Task, error)) func() (string, error)`
-- `plan:internal/loomcli#TestParentReviewAligner` -> `func TestParentReviewAligner(t *testing.T)`
+- `internal/loomcli#parentReviewAligner`
+- `internal/loomcli#parentReviewAligner.Spawn`
+- `internal/loomcli#parentReviewAligner.Poll`
+- `internal/loomcli#parentReviewAligner.Close`
+- `internal/loomcli#newParentReviewAligner`
+- `internal/loomcli#hubBoardTasks`
+- `internal/loomcli#alignmentOff`
+- `internal/loomcli#alignmentSettings`
+- `internal/loomcli#alignmentSnapshot`
+- `internal/loomcli#TestParentReviewAligner`
 
 **Edit:**
 - `internal/loomengine#ParentReviewBrief` -> `func ParentReviewBrief(stencilsDir, slug, decisionRecordPath, supportLogPath, alignmentReport, alignmentReason string) (string, error)`
@@ -28,7 +28,7 @@
 - `internal/alignment#Session.Begin`
 - `internal/alignment#Session.Poll`
 - `internal/alignment#Session.Close`
-- `plan:internal/parentreview#Aligner`
+- `internal/parentreview#Aligner`
 - `internal/shedrun#AlignmentDir`
 - `internal/shedrun#AlignmentRel`
 
