@@ -1,11 +1,11 @@
 {
   "current_producer": "Worktree-Teardown",
-  "state": "running",
+  "state": "done",
   "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Worktree-Teardown",
-    "last": "Worktree-Teardown → stuck",
+    "last": "Worktree-Teardown → done",
     "wait": ""
   },
   "history": [
@@ -101,6 +101,12 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-12T15:01:36Z"
+    },
+    {
+      "producer": "Worktree-Teardown",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-12T15:02:20Z"
     }
   ]
 }
