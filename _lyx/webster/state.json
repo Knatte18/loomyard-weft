@@ -321,7 +321,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "ee46b2e92668b2497d9bd352600e7d0a",
   "masterSessionId": "d00e9340-cdfe-419b-a2d7-fd26fe1b4f19",
   "batches": {
@@ -404,6 +404,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-robustness/d00e9340-cdfe-419b-a2d7-fd26fe1b4f19/subagents/agent-a29419e873e5ef5d0.jsonl"
       ]
+    },
+    "6": {
+      "slug": "batten-cleanup-tolerant",
+      "cards": [
+        "06-batten-cleanup-tolerant",
+        "07-pattern-tolerant-records",
+        "08-gate-busy-quit-key",
+        "09-proc-tree-cpu",
+        "10-gateslot-watchdog-line"
+      ],
+      "cardHashes": {
+        "06-batten-cleanup-tolerant": "7a3cd8e091ec0911b2fa24efa016887c8cbfb127c590d2b8e538a4272758251c",
+        "07-pattern-tolerant-records": "f1a623cb8975302fed4e2a124f143a686c861d7bf890ecd0fbb116cf297fa01f",
+        "08-gate-busy-quit-key": "ca58068a5ed3f7f452dc33dac423568e579fe88240c28cf2b128660381524b8e",
+        "09-proc-tree-cpu": "b9ccf820a5665fa9288bff8d76ab5c2c5bd65d0b3fd334e19f993b3a6e210c18",
+        "10-gateslot-watchdog-line": "ea1043fdc1786d464ac1c04d493b2772ba75635384d8600231e99c7f28663cba"
+      },
+      "startSha": "6f6270e0560bd218a29d77c3845c56e8e466600f",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T12:39:56Z",
+      "sessionId": "d00e9340-cdfe-419b-a2d7-fd26fe1b4f19",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
