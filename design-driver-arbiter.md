@@ -1,6 +1,6 @@
 # Driver arbiter: a cold, stronger agent decides when a driver is stuck
 
-`driver-arbiter` · Task · feature, shed, orch, stencil · running · Plan-Burler-Fix
+`driver-arbiter` · Task · feature, shed, orch, stencil · running · Plan-Bouncer
 
 ## Seen (2026-10-11)
 
