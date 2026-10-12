@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -10,21 +10,22 @@ A cold-start alignment agent, spawned by Go, replaces the orch wake at loom's pa
 It reads the board, the other in-flight runs' records through a new `lyx loom peers` verb and the parent's landed commits.
 It settles the review itself (approve, or reject on a scope deviation) unless it finds a substantive overlap or a question it cannot settle, which it escalates to the run's parent.
 Go applies its verdict through the stores the existing verbs write, and every failure falls back to today's path.
-The cards add the config keys, the peers verb, the `internal/alignment` package and its session, the parent-review gate and its wiring, the shared approval write, the `PR-Align` producer and row, and the orch stencil.
+The cards add the config keys, the peers verb, the alignment record paths, the `internal/alignment` package and its session, the parent-review gate and its wiring, the shared approval write, the `PR-Align` producer and row, and the orch stencil.
 
 ## Card Index
 
 1 — loom-alignment-config — loom.yaml's four alignment keys, their layer classes, the timeout-below-wait check and ResolveAlignment
 2 — fabric-commit-log — Fabric.CommitLog lists a range's commits as short SHA and subject
 3 — loom-peers — `lyx loom peers` and `peers show` read the in-flight runs' records and the parent's commits
-4 — alignment-records — internal/alignment: role, points, verdict schema, attempts, prompt, spec, snapshot, and its stencil
-5 — alignment-session — alignment.Session spawns once per key, polls without blocking, closes and marks applied
-6 — parent-review-gate-alignment — the parent-review gate spawns the agent first, applies its verdict and falls back to delivery
-7 — parent-review-alignment-wiring — loom wires the gate's Aligner, the decision snapshot and the brief's alignment section
-8 — shared-approval-write — RecordApproval and RecordRejection become the one write path the verbs use
-9 — pr-align-producer — the PR-Align producer applies the agent's verdict, and PR-Gate names an escalation in its notice
-10 — pr-align-row — loom's recipe runs PR-Align between Publish and PR-Gate
-11 — orch-stencil-alignment — the orch role and CLAUDE.md for escalation-only reviews and recorded decisions
+4 — shedrun-alignment-paths — shedrun.AlignmentDir and AlignmentRel declare where the alignment records live
+5 — alignment-records — internal/alignment: role, points, verdict schema, attempts, prompt, spec, snapshot, and its stencil
+6 — alignment-session — alignment.Session spawns once per key, polls without blocking, closes and marks applied
+7 — parent-review-gate-alignment — the parent-review gate spawns the agent first, applies its verdict and falls back to delivery
+8 — parent-review-alignment-wiring — loom wires the gate's Aligner, the decision snapshot and the brief's alignment section
+9 — shared-approval-write — RecordApproval and RecordRejection become the one write path the verbs use
+10 — pr-align-producer — the PR-Align producer applies the agent's verdict, and PR-Gate names an escalation in its notice
+11 — pr-align-row — loom's recipe runs PR-Align between Publish and PR-Gate
+12 — orch-stencil-alignment — the orch role and CLAUDE.md for escalation-only reviews and recorded decisions
 
 ## Shared Decisions
 

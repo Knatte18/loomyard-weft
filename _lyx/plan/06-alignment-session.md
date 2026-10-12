@@ -1,4 +1,4 @@
-# Card 5 — alignment-session
+# Card 6 — alignment-session
 
 **Create:**
 - `internal/alignment/session_test.go`
@@ -71,8 +71,13 @@ A stop or close is logged through `internal/logger` (`PATTERN-spawn-observabilit
 - An invalid verdict, an `escalate` with no question, gives `CauseInvalid`.
 - `Close` on a live attempt stops its strand once, and a verdict written afterwards polls as `CauseClosed`.
 - A fresh `Session` over the same root, standing in for a restart, probes once: a found run is pending, and no run gives `CauseDied`.
+- A `Start` that fails makes `Begin` return its error, leaves `attempt.json` `Closed` with that error as `ClosedReason`, and a second `Begin` with the same key starts nothing.
+- A failed strand record, made by a `fakeShuttle` `Start` hook that replaces the attempt directory with a plain file, makes `Begin` return the error and stops the strand once.
+- A run released with a shuttle timeout result gives `CauseTimeout` through the watch, before the deadline, and a run whose `Wait` returns an error gives `CauseDied`.
+- A `StopStrand` that fails makes `Close` return its error, and the attempt is not marked closed.
+- A second `Close` on a closed attempt stops nothing and leaves `ClosedReason` unchanged.
 - `MarkApplied` round-trips through `Attempts`.
 
 `doc.go` describes the lifecycle, and `test-budget.yaml` raises `internal/alignment` to 7.
 
-**ImpactSummary:** Adds the session type to the card-4 package; no existing package calls it until cards 7 and 9.
+**ImpactSummary:** Adds the session type to the card-5 package; no existing package calls it until cards 8 and 10.

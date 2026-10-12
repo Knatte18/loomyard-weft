@@ -1,4 +1,4 @@
-# Card 10 — pr-align-row
+# Card 11 — pr-align-row
 
 **Create:**
 - `plan:internal/loomshed#NamePRAlign` -> `const NamePRAlign = "PR-Align"`
@@ -21,7 +21,7 @@
 - `plan:internal/landingshed#NewPRAlign`
 
 **Intent:**
-Put card 9's producer into loom's producer graph as D5's `PR-Align` row between `Publish` and `PR-Gate`; darn's recipe is not touched.
+Put card 10's producer into loom's producer graph as D5's `PR-Align` row between `Publish` and `PR-Gate`; darn's recipe is not touched.
 
 `loom-recipe.yaml`:
 - `Publish`'s `on_done` becomes `PR-Align`.
@@ -40,7 +40,7 @@ Tests:
 - `wantProducerTable` gains the `{NamePRAlign, "PRAlign", *landingshed.PRAlign}` row between `Publish` and `PR-Gate`.
 - `TestRecipe_PublishRoutesThroughPRGate` asserts `Publish` hands to `PR-Align`, and `PR-Align` hands to `PR-Gate` with no `OnStuck` and no segment. Its doc comment says so.
 - The darn recipe is unchanged, and `TestNewDarn_RowsMatchTheDarnTable` already pins its exact row list, so the acceptance criterion that darn has no `PR-Align` row holds under an existing test.
-- `envkit.FullEnv` already fills the `Alignment` seams (card 9), so `loomrecipe`'s built recipe constructs the row.
+- `envkit.FullEnv` already fills the `Alignment` seams (card 10), so `loomrecipe`'s built recipe constructs the row.
 
 `internal/loomrecipe/doc.go` and `docs/overview.md`'s landing-tail line read `Describe → Merge-In → Merge-Review → Publish → PR-Align → PR-Gate → Finalize`.
 The `landingshed` module-table line names the four producers, and darn's tail line stays as it is.

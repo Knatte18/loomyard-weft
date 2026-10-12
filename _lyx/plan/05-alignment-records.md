@@ -1,4 +1,4 @@
-# Card 4 — alignment-records
+# Card 5 — alignment-records
 
 **Create:**
 - `internal/alignment/doc.go`
@@ -36,14 +36,9 @@
 - `plan:internal/alignment#TestToldGeometryInvariant_AllowlistOnly` -> `func TestToldGeometryInvariant_AllowlistOnly(t *testing.T)`
 - `plan:internal/alignment#alignmentAllowedImports` -> `var alignmentAllowedImports []string`
 - `plan:internal/alignment#TestMain` -> `func TestMain(m *testing.M)`
-- `plan:internal/shedrun#AlignmentDir` -> `func AlignmentDir(l *lyxcwd.Location, runID, point string) string`
-- `plan:internal/shedrun#AlignmentRel` -> `func AlignmentRel(l *lyxcwd.Location, runID string) string`
 - `plan:contracts/stencils#LoomTemplateAlignment` -> `var LoomTemplateAlignment []byte`
 
 **Edit:**
-- `internal/shedrun#TestPathConstructors`
-- `internal/shedrun#TestDriveReportsRel`
-- `internal/shedrun/doc.go`
 - `contracts/stencils#entries`
 - `contracts/stencils#roleOpeningStencils`
 - `contracts/stencils#wordingClaims`
@@ -51,7 +46,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Intent:**
-Create D1's told-geometry package `internal/alignment` with everything about the alignment agent except its lifecycle (card 5): the role, the two points, the verdict schema and its validation, the attempt records, the prompt and launch spec, and the decision snapshot.
+Create D1's told-geometry package `internal/alignment` with everything about the alignment agent except its lifecycle (card 6): the role, the two points, the verdict schema and its validation, the attempt records, the prompt and launch spec, and the decision snapshot.
 It imports the standard library, `internal/shuttleengine`, `internal/segmentcolor`, `internal/stencil`, `internal/stencilstore`, `internal/parentdirective`, `internal/editdirective`, `internal/logger` and `gopkg.in/yaml.v3`, never `internal/lyxcwd` (`PATTERN-told-geometry`).
 `seam_enforcement_test.go` pins that set through `scankit.AssertImportAllowlistNoStale`, as `internal/landingshed`'s does, and `testmain_test.go` runs the package under `tmuxkit.Main`.
 
@@ -74,7 +69,8 @@ Prompt and spec (`prompt.go`):
 The stencil `loom-template-alignment.md` is the agent's whole procedure for both points, selected by the `{{.point}}` marker, which says which of its two read lists and judge lists applies:
 - Read: at `parent-review` the brief, the run's discussion, the board (`lyx board list`, `lyx board get`) and `lyx loom peers`. At `pr-gate` the decision record, the plan and the diff against the parent branch, the board and `lyx loom peers`. Read-only git is allowed.
 - Judge: at `parent-review` today's scope check against the board entry's goal and Done-when, no more and no less, with no duplication or contradiction of another entry. At `pr-gate` today's PR-Gate fork check, the run against its board goal and the operator's recorded decisions, with the carried-over `Merge-Review` open risks. Both add the overlap check: every other run `lyx loom peers` lists, plus the parent's commits.
-- Escalate on a substantive overlap: a shared Go package or code file, a decision contradicting or duplicating one in a peer's record or board entry, or a change to the same PATTERN entry. Also escalate on a question needing an operator decision the board does not record, naming that question and the record or entry that leaves it open.
+- Escalate on a substantive overlap: a shared Go package or code file, a decision contradicting or duplicating one in a peer's record or board entry, or a change to the same PATTERN entry. Also escalate on a question needing an operator decision the board does not record.
+- Every escalate fills `question`: for a substantive overlap it names the peer and what overlaps, and for an operator question it names the question and the record or entry that leaves it open.
 - A shared bookkeeping file only (`cmd/lyx/testdata/test-budget.yaml`, a module-table line in the overview doc, a new PATTERN index line) is named in the report and does not escalate.
 - Otherwise approve, or reject on a scope deviation. An approve at `pr-gate` lists the board slugs the run supersedes under `superseded`.
 - It writes exactly the report, in the format `{{.review_format_path}}` defines (a report with no findings on an approve), then the verdict file last.
@@ -85,13 +81,8 @@ The stencil `loom-template-alignment.md` is the agent's whole procedure for both
 - `roleOpeningStencils` maps `alignment` to it, so `parentdirective_test.go` enforces both directive markers.
 - `wordingClaims` gains its row. `wantAll`: `lyx loom peers`, `lyx board list`, `{{.verdict_path}}`, `{{.report_path}}`, `escalate`, `question`, `superseded` and `test-budget.yaml`. `wantNone`, since the agent moves nothing and messages no session: `SendMessage`, `lyx loom approve`, `lyx loom reject`, `lyx loom review`, `lyx loom decision`, `lyx loom goto`, `lyx loom resume` and `lyx board upsert`.
 
-`shedrun` declares where the records live (`PATTERN-shed-run-directory`), beside the arbiter's:
-- `AlignmentDir(l, runID, point)` is `RunDir(l, runID)/alignment/<point>`, under `_lyx`, so the records are durable (`PATTERN-durable-vs-ephemeral-state`).
-- `AlignmentRel(l, runID)` is the anchor-relative `alignment` directory, for the status commit's pathspec in card 7.
-- `TestPathConstructors` and `TestDriveReportsRel` gain their rows, and `doc.go` names the new paths beside the arbiter's.
-
 Tests:
-- `TestReadVerdict` has one row per acceptance and per refusal above.
+- `TestReadVerdict` has one row per acceptance and per refusal above, and its acceptance rows include an overlap `escalate` with a filled `question`.
 - `TestAttempts` covers the write/read round trip with `Dir` and the token paths, `ListAttempts`' ordering, an absent root, a skipped directory without `attempt.json`, and an unparseable record.
 - `TestSnapshot` covers equality for equal input and a change for each altered, added or removed input.
 - `TestPrompt` runs over a stencils dir seeded with `stencilkit.SeedInto`. It checks that both points render every marker, that no `{{` is left, that the point's paths and `none` fills are named, and that both directives are present.
@@ -100,4 +91,4 @@ Tests:
 `docs/overview.md`'s module table gains `internal/alignment`, and `doc.go` describes the package.
 `test-budget.yaml` gains `internal/alignment: 6`.
 
-**ImpactSummary:** A new package, a new stencil and two new `shedrun` path functions; the stencil registry and claims tables gain one row each, and nothing existing changes behavior.
+**ImpactSummary:** A new package and a new stencil; the stencil registry and claims tables gain one row each, and nothing existing changes behavior.

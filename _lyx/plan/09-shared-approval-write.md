@@ -1,4 +1,4 @@
-# Card 8 — shared-approval-write
+# Card 9 — shared-approval-write
 
 **Create:**
 - `plan:internal/landingshed#RecordApproval` -> `func RecordApproval(approvalPath, rejectionPath string, a Approval) error`
@@ -22,7 +22,7 @@
 - `internal/loomcli#TestRejectVerb_Success`
 
 **Intent:**
-Make the approval and rejection write one shared path, so card 9's `PR-Align` applies an agent verdict through the same code `lyx loom approve` and `lyx loom reject` run, never a copy (D5).
+Make the approval and rejection write one shared path, so card 10's `PR-Align` applies an agent verdict through the same code `lyx loom approve` and `lyx loom reject` run, never a copy (D5).
 
 `RecordApproval` removes the rejection record at `rejectionPath` through `RemoveRecord`, then writes `a` through `WriteApproval`, so the latest decision wins.
 A failed removal writes no approval and returns the removal's error.

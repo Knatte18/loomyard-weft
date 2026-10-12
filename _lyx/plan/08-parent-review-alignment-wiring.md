@@ -1,4 +1,4 @@
-# Card 7 — parent-review-alignment-wiring
+# Card 8 — parent-review-alignment-wiring
 
 **Create:**
 - `internal/loomcli/alignmentwiring_test.go`
@@ -29,9 +29,11 @@
 - `plan:internal/alignment#Session.Poll`
 - `plan:internal/alignment#Session.Close`
 - `plan:internal/parentreview#Aligner`
+- `plan:internal/shedrun#AlignmentDir`
+- `plan:internal/shedrun#AlignmentRel`
 
 **Intent:**
-Wire card 6's `Aligner` to card 5's session for a loom run, and make the fallback brief name the alignment report or why no verdict came (D4).
+Wire card 7's `Aligner` to card 6's session for a loom run, and make the fallback brief name the alignment report or why no verdict came (D4).
 
 The brief:
 - `loom-template-parent-review-brief.md` gains an alignment section with two top-level markers, `{{.alignment_report}}` and `{{.alignment_reason}}`. It says that when the report is not `none`, the alignment agent's report is to be read first, and that the reason says why the agent did not settle the review. Both read `none` when no agent ran. The leading comment lists the new markers.

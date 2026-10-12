@@ -1,4 +1,4 @@
-# Card 11 — orch-stencil-alignment
+# Card 12 — orch-stencil-alignment
 
 **Edit:**
 - `contracts/stencils/orch/orch-template-role.md`
@@ -25,6 +25,8 @@ Make D8's orch role changes and D5's production paragraph change, so the orch kn
 - `lands with no orch turn` and `superseded` in `## PR-Gate`.
 - `lyx loom decision add <slug> --by parent` and `kind note` in `## The board`.
 - `after any landing` in `## After landing`.
+
+The claim forbidding `alignment-agent` (`contracts/stencils/claims_test.go`, in the same row) keeps its `mustNot`, and its why is rewritten to say that the stencil names the alignment agent in prose and never by its board-note slug.
 
 Each claim carries its reason, and the existing claims keep passing.
 The `## PR-Gate` claim on `judges the run against its own board goal and the operator's recorded decisions` stays, since the fork still runs on an escalation.

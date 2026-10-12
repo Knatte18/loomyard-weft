@@ -1,4 +1,4 @@
-# Card 6 — parent-review-gate-alignment
+# Card 7 — parent-review-gate-alignment
 
 **Create:**
 - `plan:internal/parentreview#Aligner` -> `type Aligner interface`
@@ -31,7 +31,7 @@
 
 **Intent:**
 Make D4's gate spawn the alignment agent before any delivery to the run's parent, apply its verdict through the store, and fall back to today's delivery on everything else.
-`internal/parentreview` keeps its import set (D1): the agent is reached through the new `Aligner` seam, which card 7 implements over `internal/alignment`.
+`internal/parentreview` keeps its import set (D1): the agent is reached through the new `Aligner` seam, which card 8 implements over `internal/alignment`.
 
 The seam and record:
 - `Aligner` has three methods: `Spawn(round int) (Alignment, error)`, which starts the agent for a round and is idempotent per round on the implementation's side; `Poll(a Alignment) (AlignmentPoll, error)`, which never blocks; and `Close(a Alignment, reason string) error`, which stops a live agent and closes its attempt.
@@ -49,14 +49,17 @@ The store methods, each under the latest round's lock:
 - `RenderAlignmentBrief func(report, reason string) (string, error)`: the reviewer brief after a fallback, naming the alignment report or why no verdict came.
 
 With `Aligner` set, the gate runs in this order:
-1. **Open.** `open` writes the request and brief as today, then calls `spawnAlignment` instead of carrying a prompt. The same happens on a later evaluation when the round has an open request, no alignment record, no prompt carried and no delivery. `spawnAlignment` calls `Aligner.Spawn` and records the result as `running` under the round lock, then returns pending with no prompt. This runs before the liveness hold and before `noReviewer`, so the agent spawns with the orch not live or absent (D4). The round's record means a driver restart re-reads it and never spawns again.
+1. **Open.** `open` writes the request and brief as today, then calls `spawnAlignment` instead of carrying a prompt. The same happens on a later evaluation when the round has an open request, no alignment record, no prompt carried and no delivery. `spawnAlignment` calls `Aligner.Spawn` and records the result as `running` under the round lock, then returns pending with no prompt. An `Aligner.Spawn` error is never returned: it is logged and recorded through `RecordAlignment` as an `Alignment` in state `fallback` with the error text as `Reason`, the brief is rewritten through `RenderAlignmentBrief` and `WriteBrief`, and the same evaluation continues into today's delivery path (step 4), so a reed or tmux spawn failure ends in today's path as every other failure does. This runs before the liveness hold and before `noReviewer`, so the agent spawns with the orch not live or absent (D4). The round's record means a driver restart re-reads it and never spawns again.
 2. **Parent verdict or expiry.** On a round whose alignment is `running`, a verdict recorded by the parent's verbs, or the round reaching `WaitBound`, first runs `closeAlignment` with `stopped` and the reason. That calls `Aligner.Close` and then `SettleAlignment`, so the parent's verdict stands and the agent's verdict is dropped. The existing verdict and expiry logic then runs unchanged.
 3. **Poll.** While the record is `running`, `pollAlignment` polls on every evaluation (the gate's existing re-evaluation cadence):
    - Pending: carry a due keep-alive ping, or nothing.
    - `approve`: `RecordVerdict(approve, report)`, the plain record and never the cap-reject supersede path. Then settle `applied`, close, and pass.
    - `reject`: `RecordVerdict(reject, report)`, settle `applied`, close and evaluate again. The existing consume, re-prompt and cap logic then applies unchanged, so a second reject at `attempts: 2` halts the run `blocked`.
    - A `RecordVerdict` refused with `ErrVerdictRecorded` means the parent's verdict landed first: close the alignment and evaluate again, so the parent's verdict is read.
-   - `escalate`, or `Done` with no verdict (timeout, died, missing, invalid, or the card-7 snapshot check): close with `fallback`, the report and the reason. Then write the brief through `RenderAlignmentBrief(report, reason)` and `WriteBrief`, and continue into today's delivery path in the same evaluation.
+   - `escalate`, or `Done` with no verdict (timeout, died, missing, invalid, or the card-8 snapshot check): close with `fallback`, the report and the reason. Then write the brief through `RenderAlignmentBrief(report, reason)` and `WriteBrief`, and continue into today's delivery path in the same evaluation.
+   - An `Aligner.Poll` error is never returned: it is treated as a `Done` poll with no verdict and the error text as its reason, so it closes with `fallback`, rewrites the brief and continues into delivery.
+
+   `closeAlignment` never returns an `Aligner.Close` error, on a fallback, a parent verdict, expiry or `final` alike: the error is logged and the record is still settled through `SettleAlignment`, so it is never polled again and a verdict the agent writes afterwards is never applied.
 4. **Today's delivery.** A record in `fallback`, `applied` or `stopped` is never polled again, so a verdict the agent writes after the fallback is never applied. The round runs today's delivery logic, where `noReviewer` (now checked here when `Aligner` is set), the liveness hold, the notify switch, the prompt throttle and the cap govern only this fallback.
 
 A `lyx loom review notify` while the agent runs adds a waiting notify as today, and the gate carries nothing while the record is `running`. The notify is therefore held until the agent ends, then counts in the fallback's notify switch.
@@ -70,10 +73,13 @@ With `Aligner` nil, `final` keeps its existing order.
 
 `TestGate_Alignment` is one table test over `fakeAligner`, which counts spawns, polls and closes, returns scripted poll results, and can record a parent verdict into the store from inside `Poll` for the race row. Rows:
 - The first evaluation spawns once and carries no prompt or delivery, with `ReviewerLive` false and with an empty `Reviewer` alike.
+- A `Spawn` that returns an error gives no gate error: the evaluation carries the delivery prompt, `brief.md` names the error, and a later evaluation never calls `Spawn` or `Poll` again.
 - An approve passes, `verdict.json` is `approve`, `review.md` is the report's copy, the record is `applied`, `Close` ran once and no prompt was ever carried.
 - A reject comes back as the findings result and is consumed. With `Cap` 2, a second round's agent reject fails terminally with the cap's way out.
 - An escalate rewrites `brief.md` through `RenderAlignmentBrief` with the report, and the next evaluation carries the delivery prompt.
 - A `Done` poll with only a reason (timeout) writes a brief naming the reason, and delivery follows.
+- A `Poll` that errors gives no gate error, writes a brief naming the error and carries the delivery prompt.
+- A `Close` that errors on a fallback still settles the record, and delivery follows.
 - A parent `RecordVerdict(approve)` while the record is `running` closes the agent with `stopped` and passes. The race row, where the parent's verdict lands inside `Poll` before the agent's approve, keeps the parent's verdict.
 - An `AddNotify` while `running` is not carried, and after the fallback it is carried as a notify prompt.
 - Fresh closures over the same store, standing in for a restart, never call `Spawn` again and apply the next polled approve.
@@ -85,4 +91,4 @@ With `Aligner` nil, `final` keeps its existing order.
 `doc.go` gains `alignment.json` in the round file list, plus a paragraph on the alignment order and its fallback.
 `internal/parentreview`'s budget row has room for the one new test.
 
-**ImpactSummary:** The gate's closures, `pingDue` and `Store.load` change inside `internal/parentreview`, plus two `envkit` nil-legal entries; with `Aligner` nil every existing caller and test sees today's behavior, and only card 7 sets it.
+**ImpactSummary:** The gate's closures, `pingDue` and `Store.load` change inside `internal/parentreview`, plus two `envkit` nil-legal entries; with `Aligner` nil every existing caller and test sees today's behavior, and only card 8 sets it.
