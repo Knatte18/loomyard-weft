@@ -92,3 +92,10 @@ This note answers that open point for the arbiter: the hard cap and a returning 
 
 The operator's view (2026-10-12), to think about later: a batten stop such as a Worktree-Teardown failure could be settled by an arbiter-like LLM instead of the orch.
 Example: `operator-followups` teardown failed because reed recreated two empty lock files in the pair during removal; the fix was to delete them and re-run `lyx batten run <slug>` (finding recorded in `run-window-bugs`).
+
+## Operator's thinking: a general helper (2026-10-12, open)
+
+The arbiter is not loom-specific at heart: a cold agent given a stop, an instruction and a set of allowed actions, answering with a verdict.
+Today only its verb (`lyx loom arbiter`), its stencil wording and its eligibility list tie it to loom.
+The operator sees it becoming a general "we do not know what to do here, something is wrong, call a general helper" for any shed run, batten included, and is still thinking about it.
+Open: today it only judges and the driver acts; a helper that fixes things (deleting stray lock files, say) must act itself, bounded by the allowed actions in its instruction.
