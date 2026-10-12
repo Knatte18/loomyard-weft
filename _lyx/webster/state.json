@@ -1,0 +1,167 @@
+{
+  "runGuid": "4d1e13bee778835f01c9478efa610f49",
+  "planFingerprint": "318348075df7a9b691e9888f19708165f651b042fe17971cce4efa80ab7579cd",
+  "planFileHashes": {
+    "00-overview.md": "95d484f046c409281515b43690a59f232e1e7e44595f43a065adce52a2b8cf4c",
+    "01-external-test-unit-dir.md": "c5cd5628b3eadc532f66ec33d9d44683396fc567ba3350a81cd646558d69c6e3",
+    "02-verify-package-missing.md": "a4710be5aaea0e602a771251919b3bc569b8cdde57b7cc1c3b8d932f4e93fa4c",
+    "03-gate-test-package-dirs.md": "0b11148c3adff7ddaba4eb7cbec1d3ffa90c3d70c112cc5bf032b56b8df1dfcd",
+    "04-loop-status-stop.md": "9ee6384fe5419c5deee4360caeec79f6cda1df575cefddca8a9573d00b0d9bb6",
+    "05-cli-runnable-group-rule.md": "654fbda581804d4b544b19b0dfb8d08daebd502eedbd44dd81e6f276012f1d13"
+  },
+  "planOverviewFrameHash": "42d9348147da0b7688a35487837177abe8fa8864c6c66c3fbdfaa66b3c9da249",
+  "partition": [
+    {
+      "cards": [
+        "01-external-test-unit-dir",
+        "02-verify-package-missing",
+        "03-gate-test-package-dirs",
+        "04-loop-status-stop",
+        "05-cli-runnable-group-rule"
+      ],
+      "profile": "cautious",
+      "estimate": 283852,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54508,
+        "read_union": 113664,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 588,
+            "reads": {
+              "file:PATTERN.md": 1344,
+              "file:contracts/specs/loom-plan-spec.md": 8100,
+              "file:internal/batcher/estimate_test.go": 3072,
+              "file:internal/planparser/doc.go": 1716,
+              "file:internal/planparser/targetdirs_test.go": 1656,
+              "file:pattern/PATTERN-glyph-conversion-chokepoint.md": 96,
+              "package:.": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/batcher": 2000,
+              "package:internal/planparser": 2000,
+              "package:internal/websterengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/batcher": 2000,
+              "tests:internal/planparser": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 109.5,
+            "written": 33438
+          },
+          {
+            "card": 2,
+            "card_text": 1116,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1728,
+              "file:contracts/specs/loom-plan-spec.md": 8100,
+              "file:internal/planparser/doc.go": 1716,
+              "file:internal/planparser/validate_test.go": 26316,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/planparser": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 84,
+            "written": 26316
+          },
+          {
+            "card": 3,
+            "card_text": 528,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5184,
+              "file:internal/gatecli/doc.go": 816,
+              "package:contracts/specs": 2000,
+              "package:internal/gatecli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/gatecli": 2000
+            },
+            "messages": 39,
+            "written": 12228
+          },
+          {
+            "card": 4,
+            "card_text": 972,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5184,
+              "file:internal/shedverbs/doc.go": 1200,
+              "file:pattern/PATTERN-failure-stop-visible.md": 168,
+              "package:contracts/specs": 2000,
+              "package:internal/shedengine": 2000,
+              "package:internal/shedverbs": 2000,
+              "package:pattern": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/shedengine": 2000,
+              "tests:internal/shedverbs": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 123.5,
+            "written": 38022
+          },
+          {
+            "card": 5,
+            "card_text": 276,
+            "reads": {
+              "file:contracts/stencils/loom/loom-rubric-plan-review.md": 1572,
+              "file:docs/overview.md": 8832,
+              "file:pattern/PATTERN-cli-cobra.md": 384,
+              "package:contracts/stencils/loom": 2000,
+              "package:docs": 2000,
+              "package:pattern": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:docs": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 18,
+            "written": 5676
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "ac002a5141edfa194c8b4945b47f4933",
+  "masterSessionId": "cdb0fbb6-2e4b-4c46-87d2-9f4f072ff2e7",
+  "batches": {
+    "1": {
+      "slug": "external-test-unit-dir",
+      "cards": [
+        "01-external-test-unit-dir",
+        "02-verify-package-missing",
+        "03-gate-test-package-dirs",
+        "04-loop-status-stop",
+        "05-cli-runnable-group-rule"
+      ],
+      "cardHashes": {
+        "01-external-test-unit-dir": "c5cd5628b3eadc532f66ec33d9d44683396fc567ba3350a81cd646558d69c6e3",
+        "02-verify-package-missing": "a4710be5aaea0e602a771251919b3bc569b8cdde57b7cc1c3b8d932f4e93fa4c",
+        "03-gate-test-package-dirs": "0b11148c3adff7ddaba4eb7cbec1d3ffa90c3d70c112cc5bf032b56b8df1dfcd",
+        "04-loop-status-stop": "9ee6384fe5419c5deee4360caeec79f6cda1df575cefddca8a9573d00b0d9bb6",
+        "05-cli-runnable-group-rule": "654fbda581804d4b544b19b0dfb8d08daebd502eedbd44dd81e6f276012f1d13"
+      },
+      "startSha": "e5b56fe913e05d1ea5054012d1f8bac96cedc47b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T14:54:34Z",
+      "sessionId": "cdb0fbb6-2e4b-4c46-87d2-9f4f072ff2e7",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
