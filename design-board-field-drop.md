@@ -1,6 +1,6 @@
 # Board writers keep unknown fields; lyx cleanup follow-ups
 
-`board-field-drop` · Task · bug, board, batten · awaiting · PR-Gate
+`board-field-drop` · Task · bug, board, batten · running · PR-Gate
 
 Two small bug items, bundled (operator, 2026-10-12).
 
