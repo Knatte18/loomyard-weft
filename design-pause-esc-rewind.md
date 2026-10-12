@@ -1,6 +1,6 @@
 # lyx pause leaves idle drivers in the rewind picker
 
-`pause-esc-rewind` · Task · bug, reed, shuttle · running · Discussion-Bouncer
+`pause-esc-rewind` · Task · bug, reed, shuttle · awaiting · Discussion-Bouncer
 
 First live test of `lyx pause` (hub scope, 2026-10-12 17:07, grace 10 s).
 Both run drivers (`ly:cleanup-1012:driver`, `ly:intake-bugs-1012:driver`) were reported `still_busy` and are recorded as interrupted sessions.
