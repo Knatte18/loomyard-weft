@@ -779,6 +779,24 @@
       "body": "Batten sends a notice at a landing only when the landing makes another task ready (`landed; newly ready: ...`, `internal/battenshed/land.go`, once per batten run).\nA plain landing sends nothing, so the orch does not learn of it: on 2026-10-12 `intake-bugs-1012` (19:09) and `cleanup-1012` (19:19) landed through the alignment agent's PR approve with no notice, and the orch reported them as still running until the operator pointed it out.\nWith the alignment agent landing tasks without an orch turn, the landing notice is the orch's only signal to check the Land row, prod and the board intake.\n\n## What to fix\n\nEvery landing sends `\u003cslug\u003e: landed` (with `newly ready: ...` appended when it applies), and a failed Land row still sends its failure notice as today.\n",
       "created": "2026-10-12T17:30:59Z",
       "revised": "2026-10-12T17:30:59Z"
+    },
+    {
+      "id": 449,
+      "slug": "go-driver-assistant",
+      "title": "Go driver per task, with a cold assistant and the arbiter behind it",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "loom",
+        "shed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Go steps the run and settles mechanical stops; a cheap assistant spawns only at stops no rule settles and may escalate to the arbiter; LLM driver stays as an option.",
+      "body": "Make the Go driver (`shedrun.DriverGo`) a full alternative to the LLM loom driver: Go steps the run and settles the mechanical stops, a cold assistant is spawned only at a stop Go cannot settle, and the arbiter only when the assistant says it is needed.\nThe LLM driver stays as an option; the choice is per task, so the Go driver can be tested on a few tasks first.\n\n## Evidence (agent count, 2026-10-12)\n\n98 runs landed 2026-10-05..12 plus 3 in flight, 392 driver stops, 3.9 per run (3.1 in the newest 50):\n\n- plain relaunch 12 %; mechanical fix a Go rule could do 52 % (relaunch after a parent decision, re-invoke under `reinvoke`, re-step on a binary change, transient retry);\n- repair that needed an LLM: 0 %. No driver ever edited a file or fixed git; the action was always re-invoke or hand back;\n- arbiter called 5 % (11 real attempts, all `resume`; 8 more calls refused as ineligible);\n- relayed to the orch 22 % (mostly Bouncer escalations before the arbiter existed, and blocked Publish/Finalize stops whose envelope already named `goto Webster-Burler`);\n- other 10 % (holds and pauses, mapping a segment name to a row, 9 `paused` stops with an empty reason that look like a shed bug).\n\nDrivers lived 370 h, 93 % idle; in the current `--until-stop` design a driver is active about 3.5 minutes per run.\nFull report kept in the orch session; rerun the count from the drive reports if needed.\n\n## Design (operator, 2026-10-12)\n\nThree tiers:\n\n1. **Go driver**: steps the run with `lyx shed step --until-stop` itself and settles by rule: relaunch after a recorded parent decision, re-invoke under `reinvoke` within the repair cap, re-step on a binary change, run an envelope-named goto (capped per run), check the arbiter's eligibility before any spawn, post `parent_notice` stops to the parent.\n2. **Assistant**: a cold, cheap agent (default `haiku`, configurable) spawned only at a stop no rule settles (interrupted, failed producer, unexplained stop). It reads the stop envelope, the stop report and the logs, and answers with a verdict: resume, goto, hand back to the parent, or escalate to the arbiter. It escalates when it cannot tell the cause, or judges the stop needs something stronger.\n   Today's LLM driver is in effect this middle tier, but it lives for the whole run; the assistant lives only for one stop.\n3. **Arbiter** (`opus[high]`): spawned by the Go driver for a Bouncer escalation it may take, or by the assistant's escalation. Unchanged otherwise.\n\nAnything needing a parent choice still goes to the orch.\n\n## Scope\n\n- A per-task choice between the LLM and the Go driver through `run_settings`; the default stays the LLM driver.\n- The Go driver's rules above and the assistant (model-spec, timeout, spawn budget in loom config, verdict format alike the arbiter's).\n- Fix or report the empty-reason `paused` stop if it shows up in the Go path.\n\n## Related\n\nThe notes `arbiter-when` (which stops spawn the arbiter), `judge-cap-call` (the judge settles the soft review cap) and `orch-split` (the same Go-loop-plus-cold-helper pattern at the repo level).\n",
+      "created": "2026-10-12T17:43:28Z",
+      "revised": "2026-10-12T17:43:28Z"
     }
   ]
 }

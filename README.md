@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-12 17:31 UTC; every age below is as of then.
+Rendered 2026-10-12 17:43 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -24,7 +24,11 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Go driver per task, with a cold assistant and the arbiter behind it**<br>• Go steps the run and settles mechanical stops; a cheap assistant spawns only at stops no rule settles and may escalate to the arbiter; LLM driver stays as an option. | [`go-driver-assistant`](design-go-driver-assistant.md) | loom |  | 0m | 0m | loom, shed |
 
 ### Layer A
 
@@ -48,7 +52,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Arbiter relaunch refused when the run already moved to the verdict row**<br>• A resume whose goto matches the row the run already stands on is refused as moved and parks the run. | [`arbiter-relaunch-moved`](design-arbiter-relaunch-moved.md) | 2h | 2h | loom, shed |
 | 2 | **Plan does not surface tests that pin a method set a card extends** | [`plan-pinned-tests`](design-plan-pinned-tests.md) | 2h | 2h | loom |
-| 3 | **Batten sends no notice for a landing that readies nothing**<br>• A plain landing is silent, so the orch misses landings the alignment agent approved. | [`batten-land-notice`](design-batten-land-notice.md) | 0m | 0m | batten |
+| 3 | **Batten sends no notice for a landing that readies nothing**<br>• A plain landing is silent, so the orch misses landings the alignment agent approved. | [`batten-land-notice`](design-batten-land-notice.md) | 12m | 12m | batten |
 
 ### Enhancements
 
@@ -65,8 +69,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 7 | **Discussion premises cite the glyph they rest on; the gate resolves them** | [`discussion-premise-cites`](design-discussion-premise-cites.md) | 1d | 1d | loom, quarry, stencil |
 | 8 | **Seats replaces SingleLLMProducer: every LLM producer is a MultiLLMProducer, zero advisors by default** | [`seats-replaces-singlellm`](design-seats-replaces-singlellm.md) | 1d | 3h | loom |
 | 9 | **Measure the Webster kick-start pack with and without**<br>• Repeat the audit count (grep-for-member calls and whole-file reads per fork) on real loom runs with kickstart_pack on and off. | [`kickstart-pack-measure`](design-kickstart-pack-measure.md) | 1d | 1d | webster, burler, quarry |
-| 10 | **Twill for Plan: measure fewer Plan-Review rounds; wrong-parent-dir miss**<br>• After twill-plan lands: measure a lower plan_max_bounces, and cover the parent-directory miss every bench arm shared | [`twill-plan-followups`](design-twill-plan-followups.md) | 10h | 6h | loom |
-| 11 | **Judge settles the review budget cap; arbiter only for stuck runs**<br>• At a spent review budget the judge tags findings mechanical or design-wrong and continues or accepts itself, instead of spawning the arbiter. | [`judge-cap-call`](design-judge-cap-call.md) | 2h | 2h | loom, burler |
+| 10 | **Twill for Plan: measure fewer Plan-Review rounds; wrong-parent-dir miss**<br>• After twill-plan lands: measure a lower plan_max_bounces, and cover the parent-directory miss every bench arm shared | [`twill-plan-followups`](design-twill-plan-followups.md) | 10h | 7h | loom |
+| 11 | **Judge settles the review budget cap; arbiter only for stuck runs**<br>• At a spent review budget the judge tags findings mechanical or design-wrong and continues or accepts itself, instead of spawning the arbiter. | [`judge-cap-call`](design-judge-cap-call.md) | 3h | 3h | loom, burler |
 | 12 | **Arbiter spawns only on stops that need it**<br>• Five arbiter spawns on 2026-10-12, none needed: narrow the triggers to the hard review cap, circling, and blocked or error stops with no computed way forward. | [`arbiter-when`](design-arbiter-when.md) | 2h | 2h | loom, shed |
 | 13 | **Alignment agent settles landing order itself; escalates only on design conflict**<br>• Apply furthest-along-lands-first in the alignment agent and wake the orch only when two runs designs conflict. | [`alignment-landing-order`](design-alignment-landing-order.md) | 2h | 2h | orch, loom |
 | 14 | **lyx report timing: phase minutes, parent waits and agent spawns from run records**<br>• A mechanical per-run and per-day time report beside lyx report convergence, including stops by who settled them. | [`report-timing`](design-report-timing.md) | 2h | 2h | shed, orch |
