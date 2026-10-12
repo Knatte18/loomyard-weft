@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 | 1 | **Convergence report: count orch wakes, driver repairs and fresh-code fixes from existing records**<br>• A lyx report verb that counts, per run and per week, what woke the orch and what the driver repaired, from records that already exist | [`convergence-plan`](design-convergence-plan.md) | loom | Discussion-Burler-Fix |  | 1h | orch, shed |
 | 2 | **lyx pause: stop every run at once, safely and on purpose**<br>• A hub-wide pause that interrupts every Claude session with Esc within seconds, unlike the step-boundary pauses, recorded as ordered so no failure or idle path fires | [`lyx-halt`](design-lyx-halt.md) | loom | Webster |  |  | batten, shuttle |
 | 3 | **Run records tolerate newer binaries; a hung verify step is not re-run**<br>• Readers and writers of run records keep unknown fields; a verify gate stops a hung step early and never re-runs it unfixed. | [`run-robustness`](design-run-robustness.md) | loom | Webster | 1h | 1h | batten, shed, webster |
-| 4 | **Kick-start pack: read every card's spans in the first turn**<br>• Implementer fork reads all cards and spans in one first turn, before any edit; drop the whole-file rule | [`kickstart-read-all-first`](design-kickstart-read-all-first.md) | loom | Loom-Preflight | 48m | 47m | webster, stencil |
+| 4 | **Kick-start pack: read every card's spans in the first turn**<br>• Implementer fork reads all cards and spans in one first turn, before any edit; drop the whole-file rule | [`kickstart-read-all-first`](design-kickstart-read-all-first.md) | loom | Discussion-Write | 48m | 47m | webster, stencil |
 
 ### Ready
 
@@ -37,7 +37,7 @@ Waits only on Running or Ready entries.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Paused runs in the overview, hold-notice end, chunked paste, operator shortcuts**<br>• Four small follow-ups: the runs overview shows pauses, the hold-notice deferral ends on a held advisor, long pastes are chunked, and shortcuts are built into lyx. | [`operator-followups`](design-operator-followups.md) | loom | `lyx-halt` | 1h | 1h | reed, shuttle, batten, orch |
-| 2 | **Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status**<br>• Three intake bugs: validate gate-step package paths at plan time, fix the flaky concurrent-sweep test, and make a producer exit without status diagnosable. | [`intake-bugs-1012`](design-intake-bugs-1012.md) | loom | `run-robustness` | 57m | 28m | loom, webster, shed |
+| 2 | **Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status**<br>• Three intake bugs: validate gate-step package paths at plan time, fix the flaky concurrent-sweep test, and make a producer exit without status diagnosable. | [`intake-bugs-1012`](design-intake-bugs-1012.md) | loom | `run-robustness` | 58m | 28m | loom, webster, shed |
 
 ## Notes
 
