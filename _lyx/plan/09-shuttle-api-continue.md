@@ -1,8 +1,8 @@
 # Card 9 — shuttle-api-continue
 
 **Create:**
-- `plan:internal/shuttleengine#apiErrorContinueLine` -> `const apiErrorContinueLine = "[lyx] Your last turn ended on an API error while the machine slept; it is awake again. Carry on with your task where you stopped."`
-- `plan:internal/shuttleengine#Run.continueAPIErrorStall` -> `func (run *Run) continueAPIErrorStall(held *heldTurnEnd) bool`
+- `internal/shuttleengine#apiErrorContinueLine`
+- `internal/shuttleengine#Run.continueAPIErrorStall`
 
 **Edit:**
 - `internal/shuttleengine#RunState`

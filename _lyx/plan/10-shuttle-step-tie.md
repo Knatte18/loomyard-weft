@@ -1,11 +1,11 @@
 # Card 10 — shuttle-step-tie
 
 **Create:**
-- `plan:internal/shuttleengine#StepTie` -> `type StepTie struct`
-- `plan:internal/shuttleengine#StepStopReport` -> `type StepStopReport struct`
-- `plan:internal/shuttleengine#Runner.SetStepTie` -> `func (r *Runner) SetStepTie(tie StepTie)`
-- `plan:internal/shuttleengine#Runner.StopStepRuns` -> `func (r *Runner) StopStepRuns(tie StepTie) (StepStopReport, error)`
-- `plan:internal/shuttleengine#TestRunner_StopStepRuns_StopsOnlyTheKilledStepsLiveRuns` -> `func TestRunner_StopStepRuns_StopsOnlyTheKilledStepsLiveRuns(t *testing.T)`
+- `internal/shuttleengine#StepTie`
+- `internal/shuttleengine#StepStopReport`
+- `internal/shuttleengine#Runner.SetStepTie`
+- `internal/shuttleengine#Runner.StopStepRuns`
+- `internal/shuttleengine#TestRunner_StopStepRuns_StopsOnlyTheKilledStepsLiveRuns`
 
 **Edit:**
 - `internal/shuttleengine#RunState`

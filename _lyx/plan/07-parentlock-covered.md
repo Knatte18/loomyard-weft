@@ -8,7 +8,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/parentlock#TestTryAcquire_CoveredRunYieldsItsTurnAndKeepsItsTicket` -> `func TestTryAcquire_CoveredRunYieldsItsTurnAndKeepsItsTicket(t *testing.T)`
+- `internal/parentlock#TestTryAcquire_CoveredRunYieldsItsTurnAndKeepsItsTicket`
 
 **Intent:**
 Make a covered run yield the parent lock queue (D4): it keeps its ticket and its place, is never granted while covered, and an uncovered run behind it is granted a free record as if it were absent.

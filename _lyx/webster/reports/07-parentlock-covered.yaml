@@ -1,0 +1,11 @@
+status: OK
+head_sha: b059edf460740d5bb6069cdd88097e2e6dae87be
+deviations:
+  - internal/shuttleengine/stepstop.go
+  - internal/shuttleengine/hold.go
+  - internal/shuttleengine/fixture_test.go
+  - internal/shuttleengine/hold_test.go
+  - internal/shuttleengine/run_test.go
+  - internal/shuttleengine/stop_test.go
+  - internal/shuttleengine/rundir.go
+  - internal/loomcli/landingdeps.go

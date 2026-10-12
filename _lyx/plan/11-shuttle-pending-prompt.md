@@ -1,9 +1,9 @@
 # Card 11 — shuttle-pending-prompt
 
 **Create:**
-- `plan:internal/shuttleengine#Run.DeliverPendingPrompt` -> `func (run *Run) DeliverPendingPrompt() (bool, error)`
-- `plan:internal/shuttleengine#TestRun_DeliverPendingPrompt_SendsOnlyAPromptWhoseTurnNeverStarted` -> `func TestRun_DeliverPendingPrompt_SendsOnlyAPromptWhoseTurnNeverStarted(t *testing.T)`
-- `plan:internal/burlerengine#promptDeliverer` -> `type promptDeliverer interface`
+- `internal/shuttleengine#Run.DeliverPendingPrompt`
+- `internal/shuttleengine#TestRun_DeliverPendingPrompt_SendsOnlyAPromptWhoseTurnNeverStarted`
+- `internal/burlerengine#promptDeliverer`
 
 **Edit:**
 - `internal/shuttleengine#RunState`

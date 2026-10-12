@@ -1,13 +1,13 @@
 # Card 8 — shuttle-pause
 
 **Create:**
-- `plan:internal/shuttleengine#AwakeClock` -> `type AwakeClock interface`
-- `plan:internal/shuttleengine#realClock.Awake` -> `func (realClock) Awake() time.Duration`
-- `plan:internal/shuttleengine#Runner.SetPause` -> `func (r *Runner) SetPause(geom pauserecord.Geometry)`
-- `plan:internal/shuttleengine#Runner.PauseGeometry` -> `func (r *Runner) PauseGeometry() pauserecord.Geometry`
-- `plan:internal/shuttleengine#Run.observePause` -> `func (run *Run) observePause()`
-- `plan:internal/shuttleengine#TestRunner_Start_WaitsWhileAPauseCoversItsPair` -> `func TestRunner_Start_WaitsWhileAPauseCoversItsPair(t *testing.T)`
-- `plan:internal/shuttleengine#TestRun_Wait_DeadlineExcludesSleptAndPausedTime` -> `func TestRun_Wait_DeadlineExcludesSleptAndPausedTime(t *testing.T)`
+- `internal/shuttleengine#AwakeClock`
+- `internal/shuttleengine#realClock.Awake`
+- `internal/shuttleengine#Runner.SetPause`
+- `internal/shuttleengine#Runner.PauseGeometry`
+- `internal/shuttleengine#Run.observePause`
+- `internal/shuttleengine#TestRunner_Start_WaitsWhileAPauseCoversItsPair`
+- `internal/shuttleengine#TestRun_Wait_DeadlineExcludesSleptAndPausedTime`
 
 **Edit:**
 - `internal/shuttleengine#Runner`

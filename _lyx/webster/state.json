@@ -1,6 +1,6 @@
 {
   "runGuid": "3bb889d42e5749ee0b48effeda89947c",
-  "planFingerprint": "098df4efb46ad89e9b3eef1cec53f740d171b5037ac41e6c41afe7097b1a7c4c",
+  "planFingerprint": "df1915db0dd11d7997ca2a4912fcab32b2f808b80f6944b44932e69a733fda9a",
   "planFileHashes": {
     "00-overview.md": "d71cea8e9dc89b18d973c253036ba8f5f3dd3511c99e40f46ed5b6dc35930996",
     "01-pause-record.md": "7af60106e3900a7e1ed23c567fba49261ae55dd2c939fd740eac23b83d0cc347",
@@ -9,11 +9,11 @@
     "04-pause-geometry.md": "f7ead47137d16a45b08a79b8f5e5d87459e9d8f601efe9a06adce6e5ac61cee4",
     "05-gitexec-network-hold.md": "6073c6ddba34900cf42da2cdc4c8f04824b8cdb3760cf7bf2a4db4f220dd2950",
     "06-github-network-hold.md": "389d749d3d5bef1146a811739ed642622058075774c968e995145218a794934b",
-    "07-parentlock-covered.md": "fca108e0f3d6b6c23a07b739e3421fcf3e2301265b6fec8f7a2fcb14583ff2a8",
-    "08-shuttle-pause.md": "9b3f96f7a6b518f8b365665ee5ffbb34ca225e5ce1f9af5e2accc1fdf96934ed",
-    "09-shuttle-api-continue.md": "137d2166f06f39c6a7801cbba99dd9e7ab824a4a4a18b5e26b62fdf1d8454040",
-    "10-shuttle-step-tie.md": "77ec9c936f3f531726a8c2e6a4616f7fc80b20b30a630a561781f172b49ef9c2",
-    "11-shuttle-pending-prompt.md": "737c8fb2013d37e1a77e210caf3fa429011fa9c318988004f4d9ebed0de9cafe",
+    "07-parentlock-covered.md": "bbaf5be2aba09203fcb156e2ac6e3c6cc120d7b7035a39e5ca9b9bbcf2b1395e",
+    "08-shuttle-pause.md": "f61a0c7fa49dc1dd7741f8b505b9e50b1c21367734be5ec944b289b5cb9da831",
+    "09-shuttle-api-continue.md": "c7428d78ed34214390260e7300a05a1af17ebc284108252a4abe01282ab56a6c",
+    "10-shuttle-step-tie.md": "22b302aca0636274c2559baf6e3f0fa97a6583caf8e6941335350d529aa8ecdd",
+    "11-shuttle-pending-prompt.md": "7036107c2144883ae82c7363dc5b306db3fc9a356f154c76eb4cb29c47d1de84",
     "12-runner-pause-wiring.md": "b422601ac2983b282476d518ef0e373d3ed1dd09b3f161d5b5902afe59f42309",
     "13-shuttle-send-refusal.md": "074a0f4732efdc466f94ee910099ef32ea34490bd73f24f725d6e62c60bee1c3",
     "14-reed-resume-hold.md": "5ca89f17831b42650dba995fe3a43e31b30fd41199dc1068e5659281d7f96fa8",
@@ -691,7 +691,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "1eb52434bb50dc6bc4414b28acb6018a",
   "masterSessionId": "d11aa544-37b6-416d-a69c-8a37b5df69b6",
   "batches": {
@@ -745,22 +745,47 @@
         "12-runner-pause-wiring"
       ],
       "cardHashes": {
-        "07-parentlock-covered": "fca108e0f3d6b6c23a07b739e3421fcf3e2301265b6fec8f7a2fcb14583ff2a8",
-        "08-shuttle-pause": "9b3f96f7a6b518f8b365665ee5ffbb34ca225e5ce1f9af5e2accc1fdf96934ed",
-        "09-shuttle-api-continue": "137d2166f06f39c6a7801cbba99dd9e7ab824a4a4a18b5e26b62fdf1d8454040",
-        "10-shuttle-step-tie": "77ec9c936f3f531726a8c2e6a4616f7fc80b20b30a630a561781f172b49ef9c2",
-        "11-shuttle-pending-prompt": "737c8fb2013d37e1a77e210caf3fa429011fa9c318988004f4d9ebed0de9cafe",
+        "07-parentlock-covered": "bbaf5be2aba09203fcb156e2ac6e3c6cc120d7b7035a39e5ca9b9bbcf2b1395e",
+        "08-shuttle-pause": "f61a0c7fa49dc1dd7741f8b505b9e50b1c21367734be5ec944b289b5cb9da831",
+        "09-shuttle-api-continue": "c7428d78ed34214390260e7300a05a1af17ebc284108252a4abe01282ab56a6c",
+        "10-shuttle-step-tie": "22b302aca0636274c2559baf6e3f0fa97a6583caf8e6941335350d529aa8ecdd",
+        "11-shuttle-pending-prompt": "7036107c2144883ae82c7363dc5b306db3fc9a356f154c76eb4cb29c47d1de84",
         "12-runner-pause-wiring": "b422601ac2983b282476d518ef0e373d3ed1dd09b3f161d5b5902afe59f42309"
       },
       "startSha": "e3270c0861f6026f307f216b3fe06bbd6ff61f41",
       "kind": "fork",
       "spawnedAt": "2026-10-12T12:20:45Z",
       "sessionId": "d11aa544-37b6-416d-a69c-8a37b5df69b6",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-parentlock-covered",
+        "status": "done",
+        "head_sha": "b059edf460740d5bb6069cdd88097e2e6dae87be",
+        "deviations": [
+          "internal/shuttleengine/stepstop.go",
+          "internal/shuttleengine/hold.go",
+          "internal/shuttleengine/fixture_test.go",
+          "internal/shuttleengine/hold_test.go",
+          "internal/shuttleengine/run_test.go",
+          "internal/shuttleengine/stop_test.go",
+          "internal/shuttleengine/rundir.go",
+          "internal/loomcli/landingdeps.go"
+        ]
+      },
+      "cardShas": [
+        "b059edf460740d5bb6069cdd88097e2e6dae87be"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-a7593c586fbfabccf.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-a7593c586fbfabccf.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-af64589d3fe8fe725.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-af64589d3fe8fe725.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-a7593c586fbfabccf.jsonl"
   ]
 }
