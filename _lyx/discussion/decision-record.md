@@ -194,6 +194,12 @@ A decision outside both is invisible to the agent.
   - snapshot-read-failure-no-outcome (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - closeAlignment-nil-aligner-running-record (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - Parent review with no peer and an in-scope discussion: the round records an approve from the agent, and no delivery prompt is typed and no message reaches the orch.
