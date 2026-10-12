@@ -9,10 +9,15 @@
 **Edit:**
 - `PATTERN.md`
 - `cmd/lyx/testdata/test-budget.yaml`
+- `internal/loomshed#writeRoundRecord`
 
 **Intent:**
 D9: a PATTERN entry pins that no reader of a Go-written JSON record refuses an unknown key, and that a rewrite keeps them.
 Cards 2, 5 and 6 removed every production `DisallowUnknownFields` call, so the scan this card adds is green on landing.
+
+One production rewrite outside `internal/state` would make the entry false on landing: `internal/loomshed`'s rework round `record.json`, which `finishRound` reads through `readRoundRecord` and rewrites with its class through `writeRoundRecord`, a raw `json.MarshalIndent` and temp-file rename that drops a newer binary's keys.
+`writeRoundRecord` now writes through `state.WriteJSON` with the lock path `recordPath + ".lock"`, which keeps unknown keys by D2 and still replaces the file atomically; records git already excludes `*.lock`, so the lock file never reaches a commit.
+The existing `prrework` tests keep pinning the record's content, so no new test is needed.
 
 `PATTERN.md` gains this line, under `## Shed and loom` after `PATTERN-shed-run-directory`:
 
@@ -40,7 +45,7 @@ The test first runs it over two in-memory sources, one with a `json.NewDecoder(r
 It then walks every production `.go` file of the module through `scankit.Walk`, requires a scan floor, and fails naming each finding with the way forward: decode tolerantly, and rewrite through `internal/state`.
 `cmd/lyx`'s budget row rises from 78 to 79.
 
-**ImpactSummary:** the overview gains one entry and four shorter ones, under its size at the merge base; one new scan test in `cmd/lyx`.
+**ImpactSummary:** the overview gains one entry and four shorter ones, under its size at the merge base; one new scan test in `cmd/lyx`; `loomshed`'s rework round record is rewritten through `internal/state`.
 
 **Commit:** 7: PATTERN-tolerant-records and its scan
 

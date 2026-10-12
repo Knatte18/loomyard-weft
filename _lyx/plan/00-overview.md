@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -21,10 +21,11 @@ The plan runs against the tree with `board-field-drop` merged, so `board.json`'s
 7 — pattern-tolerant-records — PATTERN-tolerant-records, its background and its scan, under the headroom line
 8 — gate-busy-quit-key — busy_quit_sec in the hub-wide gate config and Limits
 9 — proc-tree-cpu — proc samples a process tree's CPU time and walks ancestry, Linux only
-10 — gate-test-watchdog — lyx gate test SIGQUITs a CPU-busy Go test binary
-11 — webster-hang-gate — webster's verify gate skips the rerun after a hang and names it
-12 — loom-watchdog-halt — loom's verify gate names a watchdog quit and busy_quit_sec
-13 — landing-watchdog-halt — the landing verify gate names a watchdog quit and busy_quit_sec
+10 — gateslot-watchdog-line — gateslot renders and finds the CPU watchdog's quit line and names its way forward
+11 — gate-test-watchdog — lyx gate test SIGQUITs a CPU-busy Go test binary
+12 — webster-hang-gate — webster's verify gate skips the rerun after a hang and names it
+13 — loom-watchdog-halt — loom's verify gate names a watchdog quit and busy_quit_sec
+14 — landing-watchdog-halt — the landing verify gate names a watchdog quit and busy_quit_sec
 
 ## Shared Decisions
 

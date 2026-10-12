@@ -1,12 +1,8 @@
-# Card 10 — lyx gate test quits a Go test binary that keeps a core busy
+# Card 11 — lyx gate test quits a Go test binary that keeps a core busy
 
 **Create:**
 - `internal/gatecli/watchdog.go`
 - `internal/gatecli/watchdog_test.go`
-- `internal/gateslot/watchdogline.go`
-- `plan:internal/gateslot#WatchdogLine` -> `func WatchdogLine(binary string, pid int, window time.Duration) string`
-- `plan:internal/gateslot#FindWatchdogQuit` -> `func FindWatchdogQuit(log string) (window string, ok bool)`
-- `plan:internal/gateslot#BusyQuitWayForward` -> `const BusyQuitWayForward = "raise busy_quit_sec in the hub's gate.yaml through \"lyx config gate\" from the prime"`
 - `plan:internal/gatecli#enclosingGateEnv` -> `const enclosingGateEnv = "LYX_GATE_TEST_PID"`
 - `plan:internal/gatecli#defaultSamplePeriod` -> `const defaultSamplePeriod = 5 * time.Second`
 - `plan:internal/gatecli#watchdog` -> `type watchdog struct`
@@ -35,14 +31,12 @@
 **Uses:**
 - `plan:internal/proc#TreeCPU`
 - `plan:internal/proc#IsAncestor`
+- `plan:internal/gateslot#WatchdogLine`
+- `plan:internal/gateslot#FindWatchdogQuit`
+- `plan:internal/gateslot#BusyQuitWayForward`
 
 **Intent:**
 D7 and D8: while go test runs, `lyx gate test` samples its child tree, and a `.test` binary that keeps at least 90 percent of one core busy for `busy_quit_sec` gets one SIGQUIT, so the Go runtime prints every goroutine's stack and go test reports the package failed long before its own `-timeout`.
-
-`internal/gateslot/watchdogline.go` holds the line every verify gate reads (cards 11 to 13), beside the config key it names:
-- `WatchdogLine` renders `lyx gate test: CPU watchdog: <binary> (pid <pid>) kept a CPU core busy for <window>; sent SIGQUIT, so its goroutine stacks follow in the output`, the window in `time.Duration`'s own form.
-- `FindWatchdogQuit` finds the first such line anywhere in a log and returns its window text.
-- `BusyQuitWayForward` is the shared way forward a halt names after a watchdog quit.
 
 `internal/gatecli/watchdog.go`:
 - `watchdog` holds the window, the sample period, the sampler (`proc.TreeCPU` in production), the signaller (SIGQUIT to a pid through `os.FindProcess`), the clock (`now` and `after`, `time.Now` and `time.After` in production) and the writer the line goes to (the verb's stderr).
@@ -54,7 +48,8 @@ D7 and D8: while go test runs, `lyx gate test` samples its child tree, and a `.t
   A sampler failure is logged and the next period samples again; `errors.ErrUnsupported`, which `proc.TreeCPU` returns off Linux (D8), is logged once as "no CPU watchdog applies on this platform" and ends `run`.
   It returns when `ctx` ends.
 - `watchdogApplies` decides before go test starts, returning the reason it logs: no watchdog when the window is 0; none when the go test flags after `--` carry `-bench` or `-fuzz` (either dash count, with or without `=value`), since those keep a core busy by intent; none when `enclosing`, the inherited value of `enclosingGateEnv`, parses as a pid that `isAncestor` reports as an ancestor, since an outer `lyx gate test`'s watchdog already sees this run's test binaries.
-  An empty, unparsable or non-ancestor value is ignored, such as one a tmux server a test started carried into its panes after leaving the outer run's tree, or one set by hand.
+  An empty, unparsable or non-ancestor value is ignored, such as one a tmux server a test started carried into its panes after leaving the outer run's tree.
+  Any value naming a live ancestor skips the watchdog, a hand-set one naming the invoking shell or pid 1 included.
   An inherited slot does not turn the watchdog off: `verifytree.Verify` holds a slot and passes it to a verify command that calls `lyx gate test`, which is the outermost gate run there.
 
 Wiring:
@@ -64,10 +59,12 @@ Wiring:
   After `runTiedChild` returns, it cancels the watchdog's context and waits for the goroutine to end.
 - `runTiedChild` calls `started` with the child's pid after `proc.StartTied` returns and before `Wait`; a nil `started` is skipped.
 - `newCommand` takes the sample period into `testRequest`, which gains a `samplePeriod` field; `Command` passes `defaultSamplePeriod`.
+- `testRequest` also gains a `stderr io.Writer` field, which `newCommand`'s RunE fills from `cmd.ErrOrStderr()`; `runTest` hands `request.stderr` to the watchdog as its writer.
+  `runTest` gains no parameter, so its signature is unchanged and an in-process `RunCLI` capture sees the line.
 
 Bound: the watchdog signals only `.test` processes in the verb's own child tree, once each, and covers only verify commands that run through `lyx gate test`.
 A CPU-bound package that is healthy but busy past the window is quit and fails, and the operator raises the key.
-A run carrying `-bench` or `-fuzz`, a run under a live enclosing `lyx gate test`, and a non-Go hub's verify are bounded only by go test's own `-timeout` or the verify timeout, as before.
+A run carrying `-bench` or `-fuzz`, a run under a live enclosing `lyx gate test`, a run whose inherited variable names a live ancestor, and a non-Go hub's verify are bounded only by go test's own `-timeout` or the verify timeout, as before.
 `PATTERN-daemon-wakeups`: `run` wakes once per period, 5 seconds in production, and spawns nothing, so `internal/gatecli/watchdog.go` joins `cmd/lyx`'s `unboundedWaitFiles`.
 `PATTERN-gate-slot`: the watchdog runs inside the held or inherited slot and changes no slot handling.
 `PATTERN-spawn-observability`: the SIGQUIT and the sampler's start and failure are logged.
@@ -80,6 +77,7 @@ Tests in `watchdog_test.go`, untagged, with an injected sampler scripted per sam
   - busy, idle, busy samples restart the window, so no signal comes until two busy samples follow the idle one;
   - a `.test` binary whose path base is longer than 15 characters is signalled;
   - a busy process whose path does not end in `.test` is never signalled;
+  - a sampler returning a plain error on its first call and then busy samples of a `.test` process for the whole window keeps sampling, signals that process exactly once and logs the sampler failure in the buffer of `logcapture.CaptureVerbose`;
   - a sampler returning `errors.ErrUnsupported` is called once, signals nothing, and `run` returns with one "no CPU watchdog applies" line in the buffer of `logcapture.CaptureVerbose`, since the line is logged at Info.
   `TestWatchdog` carries no `t.Parallel` and runs its rows in sequence, because the capture swaps the process-global logger; a top-level test without `t.Parallel` finishes before the package's parallel tests resume, so no other test logs into the capture.
 - `TestWatchdogApplies` rows: a window of 0; `-bench=.`, `-test.bench`, `-fuzz=FuzzX` in the flags; a variable naming a pid the injected `isAncestor` calls an ancestor, all off; a variable naming a pid that is not an ancestor, an empty variable and an unparsable one, all on.
@@ -101,4 +99,4 @@ Tests in `watchdog_test.go`, untagged, with an injected sampler scripted per sam
 
 **ImpactSummary:** `runTiedChild` and `newCommand` are re-signed with their callers in `run.go`, `cli.go` and the integration helper; every `lyx gate test` now runs a sampler goroutine beside go test unless it is off, benchmarking, fuzzing or nested.
 
-**Commit:** 10: lyx gate test quits a CPU-busy Go test binary with SIGQUIT
+**Commit:** 11: lyx gate test quits a CPU-busy Go test binary with SIGQUIT

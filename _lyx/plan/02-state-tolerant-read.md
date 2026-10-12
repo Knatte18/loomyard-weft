@@ -5,8 +5,11 @@
 - `internal/state#ErrDecode`
 - `internal/state#TestReadJSONStrict`
 - `internal/loomshed#Seed`
+- `internal/loomshed#TestSeed_RefusesUndecodableFileAsExists`
 - `internal/loomengine#VerifySeedOwnership`
+- `internal/loomengine#CheckSeed`
 - `internal/loomcli#poisonStatusFile`
+- `internal/loomcli#poisonStatusFileMalformed`
 - `internal/loomcli#TestSmokeRunStandalone`
 - `internal/loomcli#TestSmokeBootstrapLifecycle`
 - `internal/shedengine#TestRun_UnknownTopLevelKeyBeforeRead`
@@ -26,6 +29,9 @@ Tests:
 Comments the change makes wrong:
 - `loomshed.Seed`'s comment on the decode-failure branch names "an unknown top-level field" as undecodable and says the driver's read gate rejects that shape; it now names malformed JSON alone.
 - `loomengine.VerifySeedOwnership`'s doc lists "malformed JSON or an unknown field" as a decode failure; it now names malformed JSON alone.
+- `loomengine.CheckSeed`'s inline comment on its decode-failure branch, "A decode failure (malformed JSON or an unknown field)", names malformed JSON alone, and its doc's "step 1's identical strict read" drops "strict".
+- `poisonStatusFileMalformed`'s doc, which contrasts malformed JSON with "the unknown-field shape poisonStatusFile writes", contrasts it with the unrecognised-state shape instead.
+- `TestSeed_RefusesUndecodableFileAsExists`'s doc drops "or an unknown top-level field" from what cannot be decoded, and its row named "unknown top-level field" is renamed to say it is a decodable file Seed still refuses as existing.
 
 The tmux-tier smoke rig `poisonStatusFile` relies on the strict read rejecting an unknown key, so it would no longer fail the driver's read gate.
 It instead rewrites the seeded status file's `state` to an unrecognised value (`"poisoned"`), the shape `internal/shedengine#TestRun_UnrecognisedState` pins `Shed.Run` refusing before any producer runs or any persist happens.

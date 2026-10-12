@@ -1,4 +1,4 @@
-# Card 11 — The webster verify gate never re-runs a hung step and names the hang
+# Card 12 — The webster verify gate never re-runs a hung step and names the hang
 
 **Create:**
 - `internal/websterengine/verifyhang.go`
@@ -37,8 +37,12 @@ D5 and D6 in webster's plan-level verify gate.
 - otherwise an exit code of 128 or above, or an exit code of -1 with an empty `Detail`, which `verifyrun` returns for a shell killed by a signal, matches `exit code <n>`, with no stacks.
 The markers are checked first, in that order, so a hang a marker names reads by its marker.
 The watchdog line comes first because a watchdog quit's log always also holds the runtime's `SIGQUIT: quit` header, which the watchdog's own SIGQUIT causes.
-`res.TimedOut` keeps its own path, `failTimedOut`, unchanged.
+`res.TimedOut` keeps its own path, `failTimedOut`.
 A shell that could not start (-1 with a `Detail`) and an ordinary non-zero exit below 128 are no hang.
+
+Bound: the markers are matched as text anywhere in the log, so a test that prints one, or a test binary the OOM killer ends, also reads as a hang.
+Any exit code of 128 or above reads as a hang whatever caused it, such as git's fatal 128 or a tool's 255 in a hub's verify command.
+All a match can skip is the one rerun, and a flaky failure in the same run reaches the fixer without its retry.
 
 The gate closure in `newVerifyGate`, after the first failed run and before the rerun, reads the log once and asks `classifyHang`; a hang fails the gate at once through `fail`, with the report naming it, so the re-prompt goes to the fixer and spends one attempt, never `notes.addFlaky`.
 After a rerun that fails, the same check runs on the rerun's result and log, so an ordinary first failure whose rerun hangs reports the hang.
@@ -51,8 +55,10 @@ A hang report also carries the failing identities the log parses to, the log pat
 `renderVerifyGateFindings` gains a hang branch ahead of the failing-identities one: the step was not re-run, because it hung; when `HangStacks` is set it says the step hung and its goroutine stacks are in the log, and otherwise that it was killed or exited with the matched code and names it.
 For a watchdog quit it also names the window and says that a package that is CPU-bound but healthy needs `gateslot.BusyQuitWayForward`, which is the operator's to do, not the fixer's.
 Then it gives the matched marker or code, the failing identities, the log path and the tail.
+Its timed-out sentence, "The verify command did not finish within %s and was killed.", adds that the step was not re-run.
 
 `verifyGateStuckReason` gains the hang case: `the verify command hung (<matched>) and was not re-run; its goroutine stacks are in <log>` with stacks, or `the verify command was killed or exited with <matched> and was not re-run, see <log>` without.
+Its timed-out case, `the verify command did not finish within <timeout> and was killed`, becomes `the verify command did not finish within <timeout>, was killed and was not re-run, see <log>`.
 After a watchdog quit it appends `; the gate test's CPU watchdog quit a test binary busy for <window>: if that package is CPU-bound but healthy, ` followed by `gateslot.BusyQuitWayForward`, `, then ` and the told `reentry` step.
 
 Tests:
@@ -61,15 +67,15 @@ Tests:
   Each asserts one verify call, a non-terminal failure, `report.Hang` naming the marker or code, `HangStacks` as above, `WatchdogWindow` `2m0s` on the watchdog row, the failing identity the log parses to, an empty `notes.Flaky()`, and findings saying the step was not re-run.
   A rerun row: an ordinary first failure whose rerun log carries `SIGQUIT: quit` makes two verify calls and reports the hang with the rerun's log path.
   The existing `TestVerifyGate_FlakyFailurePassesOnRerunWithNote` and `TestVerifyGate_FailedEvaluationWritesReport` keep pinning the ordinary two-run path.
-- `TestVerifyGateStuckReason_HungReportNamesTheHang` replaces `TestVerifyGateStuckReason_TimedOutReportNamesTheTimeoutAndLog`, a table keeping its exact timeout row.
+- `TestVerifyGateStuckReason_HungReportNamesTheHang` replaces `TestVerifyGateStuckReason_TimedOutReportNamesTheTimeoutAndLog`, a table whose exact timeout row also wants "not re-run".
   It adds: a `SIGQUIT: quit` report naming the hang, the stacks and the log; a watchdog report, written as the gate writes one after a real quit, naming the window, `busy_quit_sec` and `"lyx config gate" from the prime`; and an `exit code 137` report naming the code and holding no "stacks".
-- `TestRenderVerifyGateFindings` adds a watchdog hang report and an exit-code hang report, asserting "not re-run", the window and `busy_quit_sec` on the first, the code and no "stacks" on the second.
+- `TestRenderVerifyGateFindings` adds a watchdog hang report, an exit-code hang report and a timed-out report, asserting "not re-run" on each, the window and `busy_quit_sec` on the first, and the code and no "stacks" on the second.
 - `TestVerifyGateReport_RoundTrip`'s `want` sets the three new fields.
 The `internal/websterengine` budget row stays, two tests replacing two.
 
 `contracts/specs/refusal-spec.md`'s "verify gate exhausted" row gains the hang case (`PATTERN-refusal-way-forward`): a hung step, named by its marker or exit code, is not re-run and its reason says so; after a watchdog quit the way forward is to raise `busy_quit_sec` through `lyx config gate` from the prime for a package that is CPU-bound but healthy, then re-step the Webster row.
-`websterengine`'s package doc, in the verify gate section that says a timed-out run is never rerun, states D5's hang set and D6's report.
+`websterengine`'s package doc, in the verify gate section that says a timed-out run is never rerun, states D5's hang set, the bound above on what a false match skips, and D6's report.
 
 **ImpactSummary:** the webster gate closure skips its rerun for a hung result; the report gains three fields, and the findings and stuck reason a new branch; only this package reads them.
 
-**Commit:** 11: webster verify gate does not re-run a hung step
+**Commit:** 12: webster verify gate does not re-run a hung step

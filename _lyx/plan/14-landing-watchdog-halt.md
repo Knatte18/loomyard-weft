@@ -1,4 +1,4 @@
-# Card 13 — The landing verify gate names a watchdog quit and its way forward
+# Card 14 — The landing verify gate names a watchdog quit and its way forward
 
 **Edit:**
 - `internal/landingshed#verifyGate.verdict`
@@ -25,8 +25,12 @@ One row, "failed after a watchdog quit names the window and busy_quit_sec", sets
 It wants `exit code 1`, `2m0s`, `busy_quit_sec`, `"lyx config gate" from the prime` and the temp log's path in the reason.
 
 `contracts/specs/refusal-spec.md`'s rows "Merge-In: verify failed" and "Publish: verify failed" gain the case: a failure whose log carries the watchdog line names the window, and raising `busy_quit_sec` through `lyx config gate` from the prime is the way forward for a package that is CPU-bound but healthy (`PATTERN-refusal-way-forward`).
+Finalize's plan verify reaches the same `verdict` but has no row today, so a new row "Finalize: verify failed" goes in the landing rows after "Publish: verify failed".
+Its trigger is Finalize's plan verify, run after its catch-up merge-in, exiting non-zero; its class is correctness halt.
+Its way forward is the told way forward when the failure record was written, and otherwise fixing forward on the task branch, then "lyx loom resume"; it carries the same watchdog case, the window and raising `busy_quit_sec` through `lyx config gate` from the prime for a package that is CPU-bound but healthy.
+The row stays separate from "Merge-In: verify failed" because that row's way forward names the Webster and Darn gotos, which Finalize's reason does not tell.
 `landingshed`'s package doc, where it describes the Stuck reason of a failed verify, says the same.
 
 **ImpactSummary:** one unexported verdict in `internal/landingshed`, shared by the plan verify and `publish_verify` of all three landing producers; a log without the watchdog line gives the same reason as today.
 
-**Commit:** 13: landing verify gate names a watchdog quit
+**Commit:** 14: landing verify gate names a watchdog quit

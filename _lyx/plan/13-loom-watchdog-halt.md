@@ -1,4 +1,4 @@
-# Card 12 — The loom verify gate names a watchdog quit and its way forward
+# Card 13 — The loom verify gate names a watchdog quit and its way forward
 
 **Edit:**
 - `internal/loomshed#verifyFailureFindings`
@@ -31,4 +31,4 @@ That row wants the exit-code sentence, `2m0s`, `busy_quit_sec` and `"lyx config 
 
 **ImpactSummary:** one findings renderer in `internal/loomshed`, reached by the round and whole-diff verify gates of the Webster-Burler-Fix and Darn rows; a log without the watchdog line renders unchanged.
 
-**Commit:** 12: loom verify gate names a watchdog quit
+**Commit:** 13: loom verify gate names a watchdog quit
