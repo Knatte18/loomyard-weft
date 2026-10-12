@@ -1,6 +1,6 @@
 # Plan card spec contradicts CLI tree invariants for a runnable group with an audience
 
-`plan-cli-tree-check` · Note · bug
+`plan-cli-tree-check` · Note · bug, loom
 
 Imported from [issue #588](https://github.com/Knatte18/loomyard/issues/588).
 
