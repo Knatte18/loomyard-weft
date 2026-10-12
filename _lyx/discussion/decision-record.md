@@ -185,6 +185,12 @@ Decision: loom.discussion_producer joins loom's LocalDenied: twill makes the Dis
 
 Rationale: Round 4's review tested every template key and found only this one misplaced; the recurring D4 finding came from enumerating the lists instead of deriving them, which a per-key derivation in Plan and a pinning test end.
 
+### Added after Discussion (parent, 2026-10-12): D1: markers expand once, after the merge
+
+Decision: Layers merge unexpanded; the merged document is expanded once through envsource.Build of the reading worktree's anchor for a per-worktree module and of the board dir for a hub-wide module. No layer is expanded against its own directory's .env. An acceptance row pins that a ${env:...} marker the worktree file inherits from the repo default expands against the reading worktree's .env.
+
+Rationale: D6's claim that the strip never changes a held key's resolution holds only under single post-merge expansion; it matches today's one-expansion load and keeps per-worktree .env bindings such as LYX_SHUTTLE_CLAUDE working after migration.
+
 ## Constraints
 
 - `PATTERN-hub-wide-config` changes: `<BoardDir>/_lyx/config/` also holds per-worktree modules' repo defaults, and a hub-wide module also reads the reading worktree's local override, restricted to `LocalKeys`.
