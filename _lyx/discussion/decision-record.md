@@ -127,6 +127,12 @@ The scan covers only `encoding/json`'s `DisallowUnknownFields`; `yaml.v3`'s `Kno
 The line fits under the overview's headroom line that `internal/patternlint` checks.
 Rationale: the failure class recurs with every landing that adds a field, so the rule must survive future readers.
 
+### Added after Discussion (parent, 2026-10-12): Plan against main with board-field-drop
+
+Decision: The parent merged main (now at 113593990, which contains 78e31aa06) into run-robustness during Plan-Write. The plan pins board.json's encoding against the merged tree directly.
+
+Rationale: D2 and the acceptance criterion rely on 78e31aa06's storeFile Marshaler; merging now lets cards name glyphs that exist.
+
 ## Constraints
 
 - `PATTERN-shed-run-directory`: `shedrun` stays the sole declarer of run-directory paths and `Seed`; D4 changes only its decode.
