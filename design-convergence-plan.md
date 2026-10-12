@@ -2,7 +2,7 @@
 
 `convergence-plan` · Task · enhancement, orch, shed
 
-Depends on: [`alignment-agent`](design-alignment-agent.md), [`runs-overview`](design-runs-overview.md)
+Depends on: [`alignment-agent`](design-alignment-agent.md)
 
 ## Seen
 
