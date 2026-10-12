@@ -5,7 +5,7 @@
 Give the operator one ordered, intentional pause that makes the hub safe to suspend within seconds.
 `lyx pause` interrupts every running Claude session with Esc after a short grace, holds every path that would start agent or network work, and is recorded so that no failure, idle or crash path fires for it.
 `lyx resume` lifts it and lets each interrupted session take up its turn where it stood.
-The loom and webster step-boundary pause goes, and an unplanned sleep stops counting as idle time or killing work on wake.
+The bare loom and webster boundary pause goes, and an unplanned sleep stops counting as idle time or killing work on wake.
 
 ## Scope
 
@@ -35,7 +35,9 @@ A new CLI module `pause` owns `lyx pause [<slug>]`; `lyx resume [<slug>]` is mou
 Both are operator-audience, run from any worktree of the hub, and resolve the hub through `internal/cliwire`.
 `lyx pause --status` prints the live entries and changes nothing.
 `PATTERN-shed-verb-set` does not apply: these are hub verbs, not shed verbs.
-Any caller may run them, agents included; the audience annotation is the only gate, the same as `lyx batten pause` today.
+The orch and an `EXTERNAL` caller may run them with or without a slug.
+An agent, a caller whose `LYX_STRAND_NAME` names a shuttle-run strand of a pair, may run `lyx pause <slug>` and `lyx resume <slug>` only for its own pair's slug; a hub-wide `lyx pause` or `lyx resume` from it, or either naming another pair's slug, refuses, naming the way forward of asking its parent session, which runs `lyx pause` or `lyx resume` for it.
+Caller identity is read from the strand-name environment variable, and the agents' settings deny any command naming it, so an agent cannot clear it to read as `EXTERNAL`; the check guards against a mistaken call, not a determined agent.
 Input:
 
 - A slug with no pair in the hub refuses, listing the slugs that have one; a slug whose pair has no running run is accepted and covers whatever starts there.
@@ -64,10 +66,10 @@ Rationale: one durable fact read by many modules; it survives a reboot, so a sus
 
 `lyx pause` runs, in order:
 
-1. Write the entry. From here every reader in D5 treats the covered runs as ordered-paused.
+1. Write the entry, with its grace end. From here every reader in D5 treats the covered runs as ordered-paused.
 2. Grace: wait until every in-flight network operation (D4) has finished and every covered agent session reads idle, or until the grace has passed.
 3. Interrupt, per covered session that reads busy: under the record lock, check that the entry is still live and that no live entry already owns the session, record the session in the entry, release the lock, then play shuttle's interrupt choreography (`Runner.Interrupt`). Read the state once more and interrupt once more if still busy.
-4. Report: sessions interrupted, already idle, still busy after the retry, and refused by `Runner.Interrupt`'s pane check; network operations still in flight; covered runs whose current producer is a Go producer.
+4. Report: sessions interrupted, already idle, still busy after the retry, and refused by `Runner.Interrupt`'s pane check; network operations still in flight, naming those under a parent lock (D4); each parent branch a covered run holds and the runs queued behind it (D5); each covered run waiting in a parent lock's queue and the runs queued behind it (D4); covered runs whose current producer is a Go producer; and, under a hub entry, the orch's case: delegated to a live orch watcher, or not interrupted because no watcher is live (D7).
 
 A resume that removes the entry during steps 2 or 3 stops step 3 at the next session: no Esc goes after the entry is gone, and the report says the pause was resumed during its grace.
 A session is recorded before its Esc, so a pause killed between the two leaves a recorded session that may not have been interrupted; D6 bounds what that costs.
@@ -92,11 +94,15 @@ While a live entry covers a run, each path below waits or refuses:
 | `lyx orch start` | not held: it is the operator's own session, and an orch started under a hub entry is not interrupted |
 
 Reed's server revive relaunches no strand, so it needs no hold.
-A hub entry holds every network operation; a per-run entry holds those run on behalf of that pair, except one whose caller holds a parent lock (`internal/parentlock`), so a per-run pause never freezes other runs through a shared lock.
+A hub entry holds every network operation; a per-run entry holds those run on behalf of that pair, except one whose caller holds a parent lock (`internal/parentlock`).
+A covered run is never granted the parent lock while covered: its lock wait keeps waiting until the resume, and the pause alone never ends it with an `ErrPaused` halt (a `--after` naming the waiting row still does, D8), so the exception reaches only a run that already held the lock when the entry was written.
+A covered waiter yields its turn: it keeps its ticket and its place in the queue, but a free record goes to the oldest live ticket whose run no entry covers, so an uncovered run queued behind a covered waiter is granted as if the covered one were absent; each ticket names its run's slug so the grant can read coverage, and a covered waiter still first in the queue at the resume is granted next.
+It lets through that holding run's remote calls of its current landing row, and D3 step 4 and `lyx pause --status` name each as a network operation in flight under a parent lock.
+The exception keeps a held network call of the holder's current row from extending its hold on the lock; other runs still wait behind a covered holder until the resume (D5).
 Each network operation in flight has a marker under the record's directory that it removes on finish, so D3's grace can wait for it; a marker whose pid is dead is ignored and removed.
 Every wait wakes under `PATTERN-daemon-wakeups` and has no deadline of its own.
+A call held at entry prints one line to its stderr, or to its log when it has no terminal, naming the pause it waits on and `lyx resume` as the way forward, once when its wait starts, so an operator's own `lyx board` write or `lyx selfreport create` under a hub entry does not hang silently.
 Bound: these are waits at entry points and refusals that name `lyx resume`; none fails work, the worst case is a run waiting until `lyx resume`, and `lyx pause --status` names what waits.
-`lyx shuttle interrupt` is not refused: an interrupt during a pause is harmless.
 A `SendMessage` into a covered session is not held; lyx's own senders do not send while paused (D5, D7).
 Rationale: local Go work survives a suspend, while a network call cut by one hung batten for 2.5 hours (#458) and an agent turn is what an API error ends.
 
@@ -107,7 +113,7 @@ Each reader below treats a covered interval as neither idle time nor a failure:
 - Batten's InnerRun notices: no quiet, api-error or driver-dead notice for a covered run, and the idle clocks subtract every paused interval. A state-changed notice still goes, since a halt during a pause is a real halt of a Go producer.
 - Shuttle's Wait: no hold notice and no dialog notice for a covered run, and the deadline excludes paused intervals (and slept time, D9).
 - The shed loop's step watchdog: no kill while covered, and paused time is not idle time.
-- The parent lock's idle release.
+- The parent lock's idle release: paused time is not idle time for a covered holder, so the lock stays held until the resume, and other runs' lock-taking rows wait in the queue as for any live holder. `lyx pause --status` and D3 step 4 name each parent branch a covered run holds and the runs queued behind it, and each covered run waiting in a parent lock's queue and the runs queued behind it, which D4's yielded turn lets past.
 - The orch watcher: under a live hub entry it holds its notice queue and starts no context cycle, and delivers the held notices after the resume.
 - Burler and seat rounds and the loom driver's interrupted-stop diagnosis need no change of their own: their agents are shuttle runs, so they are held by Wait, and no step is interrupted, so no interrupted stop is written.
 
@@ -133,7 +139,10 @@ Rationale: an interrupted Claude turn ends at the prompt, and in-process forks a
 ### D7 — The orch session
 
 Under a hub entry the orch is covered, and only the orch watcher touches it (`PATTERN-orch-pane-single-writer`).
-On its existing tick the watcher reads the record: on a new live hub entry it plays the interrupt choreography into a busy orch, at most twice, after checking the entry is live and recording the orch in it, the order D3 uses; on that entry's resume it queues the resume line as a notice, delivered idle-gated.
+On its existing tick the watcher reads the record.
+On a new live hub entry it ends the orch's grace by the rule D3 step 2 states: early once the orch reads idle and no network operation marker of the orch's is open, which leaves nothing to interrupt, and otherwise at the grace end D3 step 1 records in the entry.
+At that grace end it plays the interrupt choreography into a busy orch, at most twice, after checking the entry is live and recording the orch in it, the order D3 uses.
+On that entry's resume, when the entry owns the orch, it queues the resume line as a notice, delivered idle-gated; an orch the entry does not own, idle at pause time or the caller, gets none.
 When the entry's caller is the orch, the watcher does not interrupt it.
 `PATTERN-orch-pane-single-writer` changes in the same commit to: only the orch watcher types into the orch session, idle-gated, except the interrupt a hub pause asks for.
 Rationale: the orch makes network calls and runs landings, so a suspend-safe hub includes it, and routing it through the watcher keeps one writer.
@@ -143,11 +152,11 @@ Rationale: the orch makes network calls and runs landings, so a suspend-safe hub
 - `lyx loom pause` with no flag refuses, naming `lyx pause <slug>` to stop the agents and `lyx loom pause --after <current_producer>` to halt at the next boundary; `lyx shed pause` against a loom run does the same. `--before`, `--after` and `--clear` stay.
 - `lyx webster pause` and webster's pause flag go, with the refusal-spec row "Webster row paused out of band".
 - `lyx batten pause` stays as it is, `pause_requested` stays in `shedengine` for it, and batten's `PauseRequested` seam stays: it ends batten's own wait within one check, mid-row, which the orch's hold-then-goto (`lyx batten pause <slug>`, then `lyx batten goto`) needs and which no flag form gives.
-- landingshed's `PauseRequested` seam reads loom's `pause_requested`, which nothing sets after this task, so it goes with the refusal-spec row "parent lock wait paused"; a loom row waiting in the parent lock's queue then waits until the lock frees or its holder's idle release frees it.
+- landingshed's `PauseRequested` seam reads the run's `pause_after` naming the waiting row instead of `pause_requested`, so `lyx loom pause --after <row>` ends a lock wait with the existing halt; `--after` thus no longer means only a halt after the named row finishes: naming a row waiting for the parent lock, it ends that wait mid-row; the refusal-spec row "parent lock wait paused" stays, its trigger reworded to that condition.
 - The loom ways forward that named the bare pause (shed busy, goto on a running run) name `pause --after <current_producer>` for a loom run; for a batten run they keep `lyx batten pause`. The arbiter-attempt refusal drops its "a requested pause" clause for loom.
 - The orch stencil's "pause both after Plan-Write (`lyx loom pause` while Plan-Write runs)" becomes `lyx loom pause --after Plan-Write`, a boundary halt a goto can move.
 
-Bound: no mid-row halt for a loom run remains; the agents of a loom run are stopped mid-turn by `lyx pause <slug>`, and a loom run halts for a goto at its next boundary through `--after`.
+Bound: the only mid-row halt left for a loom run is a parent lock wait ended by `--after` naming the waiting row; the agents of a loom run are stopped mid-turn by `lyx pause <slug>`, and a loom run halts for a goto at its next boundary through `--after`.
 Rationale: the operator's complaint was that the boundary pause lets an agent turn run on; that is loom's and webster's pause, whose use `lyx pause` and `--after` now cover, while batten's pause stops a Go wait, not agent work, and has a use nothing else covers.
 
 ### D9 — Unplanned sleep
@@ -156,10 +165,10 @@ Rationale: the operator's complaint was that the boundary pause lets an agent tu
 - The shed loop watchdog measures idle in awake time: its idle reading today is the wall-clock time since the newest trace-file mtime or agent activity, so a wake after a sleep longer than its window kills at once.
 - Shuttle's deadline is measured in awake time, so a night's sleep does not time a run out on wake.
 - Batten's quiet and api-error notices after a detected sleep count awake time only; the plan checks why the 2026-10-12 notice counted almost eleven hours despite the existing subtraction, and fixes the cause.
-- Shuttle's Wait: when the newest turn end is an API-error stall and a sleep of at least one minute was detected during that turn, it paste-submits one fixed continue line, once per turn; a second API-error stall on the same turn is held and notified as today. It never fires for a covered run.
+- Shuttle's Wait: when the newest turn end is an API-error stall and a sleep of at least one minute was detected during that turn, it types one fixed continue line through shuttle's guarded paste-submit (`PATTERN-pane-text-injection`), once per turn, and when the guard refuses the write nothing goes and the stall is held and notified as today; a second API-error stall on the same turn is held and notified as today. It never fires for a covered run.
 - Burler's live-fix resume (`burler: resuming a live fix`) attaches to a live strand only after reading that the task prompt's turn started in it; when only the skill-load preamble did, it delivers the task prompt first.
 
-Bound: the automatic continue fires only on an API-error cause, only across a detected sleep, at most once per turn.
+Bound: the automatic continue fires only on an API-error cause, only across a detected sleep, at most once per turn, and only through the guarded paste-submit, sending nothing when it refuses.
 Rationale: the board's seen case is an API error across a sleep, a watchdog kill on wake and a fix chair left without its task.
 
 ### D10 — Issue #567: a watchdog kill names itself
@@ -168,12 +177,15 @@ Rationale: the board's seen case is an API error across a sleep, a watchdog kill
 - The kill ends the step's process group, but its agents live in reed panes outside it, so their `run.json` stays `running`. After a watchdog kill the arming module (`loomcli`'s loop arming, not the generic `shedverbs`) stops every live shuttle run of the killed step through shuttle's stop verb (`PATTERN-shuttle-stop`), which records `stopped` and removes the strand.
 - So the step's next relaunch starts its agent fresh; D9's live-fix reattach applies only to a live strand left by a death other than a watchdog kill.
 
+The shuttle run record (`run.json`) gains a field naming the shed run directory and step that started it, written by shuttle's Start from what the step hands its producer, empty for a run no step started, and read by the arming module to find the killed step's runs.
+Bound: the stop takes only shuttle runs whose record names the killed step, never the loom driver's strand, the orch or a run of another step; the driver's strand and the orch are started by no step, so their records carry no step, and another step's runs name that step.
+A live run whose record names no step, such as one an older binary wrote, is left and named in the halt note.
 Rationale: the issue asks for these, and a kill that leaves a live agent behind is what made the relaunch reattach to a strand without its task.
 
 ## Constraints
 
 - `PATTERN-no-denied-recovery`: no way forward names a command the agents' settings deny; the plan checks `lyx resume`, `lyx pause` and `lyx loom pause --after` against them.
-- `PATTERN-refusal-way-forward`: every new refusal (bare loom pause, `lyx shuttle send`, `lyx loom start`, `lyx batten run` and `lyx loom resume` under a pause, per-run resume under a hub entry, a bad slug, a bad grace) lands its row in `contracts/specs/refusal-spec.md` with a test, and the rows D8 changes or removes are rewritten in the same commit.
+- `PATTERN-refusal-way-forward`: every new refusal (bare loom pause, `lyx shuttle send`, `lyx loom start`, `lyx batten run` and `lyx loom resume` under a pause, per-run resume under a hub entry, a bad slug, a bad grace, a hub-wide pause or resume or another pair's slug from an agent, whose way forward is asking its parent session) lands its row in `contracts/specs/refusal-spec.md` with a test, and the rows D8 changes or removes are rewritten in the same commit.
 - `PATTERN-fabric-git` and `PATTERN-github-auth`: the network holds sit inside `fabricengine` and `githubclient`, not at their callers.
 - `PATTERN-daemon-wakeups` for every wait the pause adds.
 - `PATTERN-sandbox-coverage`: the new module is exercised by the sandbox suite or excluded with a reason.
@@ -195,7 +207,16 @@ Rationale: the issue asks for these, and a kill that leaves a live agent behind 
 
 - The creel task will move `lyx shuttle send`, the orch watcher's typing and `PATTERN-orch-pane-single-writer` behind creel; creel's delivery must then honour pause coverage, holding injects and reminders for a covered receiver, or a creel inject wakes a frozen agent. The creel entry does not say so yet.
 - `runs-overview` (in flight) shows one line per run with its state; a covered run reads `running` with a growing age unless the overview reads `paused_since` (D5).
-- A hub-wide pause left on silences every notice; `lyx pause --status` and `paused_since` are its only signals.
+- A hub-wide pause the operator or the orch leaves on silences every notice; `lyx pause --status` and `paused_since` are its only signals.
+
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - agent-refusal-sends-agent-to-operator (class decision, severity MEDIUM, open in rounds 2)
+  - covered-waiter-blocks-parent-lock-queue (class design, severity MEDIUM, open in rounds 2)
+  - d10-shuttle-tie-names-absent-field (class design, severity MEDIUM, open in rounds 2)
+  - d7-drops-grace-for-busy-orch (class consistency, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
@@ -210,19 +231,24 @@ Pause and resume:
 - A record survives a restart and a reboot: after a reboot under a live entry, `lyx reed resume` leaves the covered pair's strands down and `lyx batten run` on it refuses.
 - Concurrent pauses and resumes leave a well-formed record and no Esc after an entry's resume.
 - Invalid input: an unknown slug and a grace outside 0 to 60 refuse with their ways forward; resuming nothing is a no-op success.
+- Caller: a hub-wide `lyx pause` or `lyx resume` from an agent strand, and either naming another pair's slug from one, refuse with the way forward of asking its parent session; the orch's hub-wide pause succeeds, and an agent's pause of its own slug succeeds.
 
 Holds and readers:
 
 - Under a covered run: a shuttle run start, a fabric push or fetch and a GitHub call wait and proceed after the resume, a started run's deadline counting from its start; `lyx loom start`, `lyx batten run`, `lyx loom resume` and `lyx shuttle send` refuse; batten's driver revive skips the pair.
-- Under a per-run entry, a network operation whose caller holds a parent lock is not held.
+- Under a per-run entry, a network operation whose caller holds a parent lock is not held, and the pause report and `lyx pause --status` name it.
+- A covered run waiting in the parent lock's queue is not granted the lock until the resume; under a per-run entry an uncovered run queued behind it is granted a free lock while the covered run keeps its place, and the pause report and `lyx pause --status` name the covered waiter and the runs behind it.
+- A call held at entry under a hub entry, such as an operator's `lyx board` write, prints one line naming the pause and `lyx resume` when its wait starts, and no more while it waits.
+- A covered run holding the parent lock keeps it through the pause with no idle release; another run's lock-taking row queues behind it until the resume, and the pause report and `lyx pause --status` name the held branch and the queued run.
 - While paused: no batten quiet, api-error or driver-dead notice, no shuttle hold or dialog notice, no step watchdog kill and no orch-watcher delivery or cycle, however long the pause lasts; a state-changed notice still goes for a run that halts.
 - After resume: idle clocks and the shuttle deadline exclude the paused interval, and a run idle for its window after the resume is noticed as before.
-- The orch: under a hub entry a busy orch is interrupted by the watcher and gets the resume line as a notice; an orch that ran `lyx pause` is not interrupted.
+- The orch: under a hub entry a busy orch, including one running a local command with no network operation open, is interrupted by the watcher only at the entry's recorded grace end, an orch that reads idle with no network operation of its own open is not interrupted, and an interrupted orch gets the resume line as a notice; an orch that ran `lyx pause` is not interrupted; an orch idle at pause time, or that ran `lyx pause`, gets no resume line; the pause report says whether the orch was delegated to a live watcher or not interrupted because no watcher is live.
 
 Boundary pause:
 
-- A bare `lyx loom pause`, and a bare `lyx shed pause` against a loom run, refuse with both ways forward; `--before`, `--after` and `--clear` work as before; `lyx batten pause` ends batten's wait within one check as before; a status file carrying `pause_requested` still loads.
+- A bare `lyx loom pause`, and a bare `lyx shed pause` against a loom run, refuse with both ways forward; `--before` and `--clear` work as before, and `--after` works as before except that, naming a row waiting for the parent lock, it ends that wait with the halt of D8; `lyx batten pause` ends batten's wait within one check as before; a status file carrying `pause_requested` still loads.
 - Goto and shed-busy refusals name `pause --after <current_producer>` for a loom run and `lyx batten pause` for a batten run.
+- A loom row waiting in the parent lock's queue halts on `lyx loom pause --after` naming it, and `lyx loom goto` then moves the run.
 
 Sleep and #567:
 
@@ -230,7 +256,7 @@ Sleep and #567:
 - A batten quiet notice after a sleep counts awake time only.
 - An API-error stall across a detected sleep gets one continue line; a second on the same turn is held and notified.
 - Burler's live-fix resume of a strand holding only the skill-load preamble delivers the task prompt.
-- A watchdog kill's halt note and trace name the watchdog, window, last activity and idle time, and the killed step's shuttle runs read `stopped`.
+- A watchdog kill's halt note and trace name the watchdog, window, last activity and idle time, and the shuttle runs whose record names the killed step read `stopped`; the loom driver's strand and runs of other steps stay live.
 
 ## Notes for the plan writer
 
