@@ -9,3 +9,17 @@ Idea: repeat the audit count on real loom runs with the pack on and off: grep-fo
 The Burler side of `kick-start-pack` and `enclose-kickstart` wait on this result.
 
 This is an audit, not a loom run: an orch agent reads the Webster fork transcripts once a few loom runs have run with the pack on (it is on by default since `c279a38ba`), and compares them with the runs before it as the pack-off baseline.
+
+## Result (audit, 2026-10-12)
+
+Pack on: 35 implementer forks over 11 runs (150 cards); pack off: 113 forks over 43 runs (508 cards), 2026-10-08 to 2026-10-11; all on Sonnet.
+Raw table and scripts: `.scratch/kickstart-measure/` in the hub prime.
+
+- No measurable gain: calls before the first edit (median 6 on, 7 off), exploration calls per card (5.8 on, 5.9 off), turns and tokens are all within noise.
+- The one consistent signal is about 20% fewer whole-file reads and greps, offset by more partial reads: pack spans replace whole-file reads rather than cutting exploration.
+- Forks never used quarry lookups either way.
+- Main confounder: forks inherit the Master's orientation, so a fork explores only about 6 calls before its first edit; most exploration is in the Master, which the pack does not reach.
+  Pack quality also varies widely (1 to 144 resolved entries, up to 41 unresolved).
+
+Verdict: the evidence does not justify building the Burler side yet.
+The cheap next step, if wanted, is a controlled test: `kickstart_pack: false` for a few comparable runs.
