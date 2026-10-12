@@ -1,61 +1,71 @@
-# reed: runs overview, gate checklist, Selvage in cycle, run windows close
+# reed: runs overview pane, gate checklist, Selvage keys, run window close
+The prime's reed session gains a `runs` strand above the orch that lists every batten run in flight with its loom stage.
+Every task pair's `loom-status` strand becomes a gate checklist of the run's recipe rows.
+Selvage joins the Alt+Up/Alt+Down cycle, and the `lyx batten run --window` terminal window closes when its run ends.
+Before this, the operator polled each run separately and saw run events only through the orch's chat.
 
-The operator gets one place in the prime's reed session that shows every run in flight and its loom stage, without polling each run or reading the orch's chat.
-Each task pair gets a gate checklist pane, Selvage joins the Alt+arrow cycle, and the `lyx batten run --window` terminal window closes when its run ends.
+No board issue is attached to this task, so there is no `Closes` line.
 
 ## What changes
 
-- **Runs strand.**
-  `lyx orch start` ensures a `runs` strand directly above the orch, running the new hidden `lyx batten overview` verb.
-  It shows one line per run in flight: slug, batten state, loom stage, time in stage, run age and the pair's reed session name.
-  A run leaves the list when it reaches `done` or its pair is gone.
-  The pane reads status files without the status lock and redraws only when a line changes.
-  `lyx orch stop` leaves the strand.
-- **Strand sizing in reed.**
-  `render.Display` gains an optional size declaration persisted in reed.json: a `top` anchor, a content kind and a sharing kind.
-  A strand that declares nothing lays out exactly as before, and strands persisted by an older lyx stay positional.
-  A content strand reports its line count through the new `Engine.SetContentRows`, which refuses an unknown strand, a strand without content sizing, a foreign pane id and a count below 1.
-  The new `internal/statuspane` package holds the shared pane loop, frame fitting and report.
-- **Seat tables.**
-  The seats engine declares the chair and advisors as sharing strands, so side-by-side agents get equal heights.
+- **Runs overview.**
+  `lyx batten overview` is a new hidden pane verb that redraws one line per run in flight: slug, batten state, loom stage, time in that stage, run age and the pair's reed session name.
+  `lyx orch start` ensures it in a strand named `runs` before the orch strand, and replaces a dead `runs` strand or one launched by another lyx build.
+  `lyx orch stop` leaves it.
+  A run shows until its batten state is `done` or its pair is gone.
+  Halted and failed runs with a pair still show.
+  With no run in flight the pane shows `no runs in flight`.
 - **Gate checklist.**
-  A hidden `lyx loom` verb renders the run's recipe rows as a checklist in the existing `loom-status` strand, now kept on both child drivers.
-  It shows the state line, then per row a box, the time spent summed over visits and the visit count above one.
+  A new hidden `lyx loom` pane verb runs in the existing `loom-status` strand and shows the state line plus one line per recipe row in recipe order: a box, the row name, the time summed over its visits, and the visit count above one.
+  The strand now stays on llm-driven runs too, which previously removed it.
+- **Strand sizing in reed.**
+  `render.Display` carries an optional size declaration persisted in reed.json, and the anchor vocabulary gains `top`.
+  The kinds are positional (today's rule, still the default), content (height follows the pane's line count) and sharing (an even split of the rows the fixed panes leave).
+  A strand persisted by an older lyx lays out positionally, and a window of positional strands lays out as before.
+- **Content strands report their line count.**
+  `reedengine.Engine.SetContentRows` takes a strand name, a pane id and a count, and re-applies the layout under the zoom bracket.
+  It refuses an unknown strand, a strand without content sizing, a pane id other than the recorded one, and a count below 1, so a hand-run `lyx batten overview` resizes nothing.
+- **Seat tables.**
+  The seats engine declares its chair and advisor strands as sharing, so side-by-side agents get equal heights.
 - **Hub notice log.**
-  Batten appends every notice it composes once per process to a hub log under the prime's `.lyx`, with UTC time, text and the run's attach command.
-  The path comes through `internal/lyxdirs` and `internal/shedrun`, resolved in `battencli` and told to `battenshed`.
-  A failed append is logged and never changes the notice.
-  `lyx batten` help names the path.
-- **Selvage in the cycle.**
-  Alt+Up and Alt+Down step through the strand panes and Selvage as one wrapping cycle, and Alt+z zooms Selvage.
-  Selvage is found through a display-only pane marker that no Go decision reads.
-- **Run window.**
-  The terminal window ends on a 0 attach.
-  On any other status it prints the status, waits up to 30 seconds for the pair directory to disappear, and otherwise keeps a shell.
+  Each batten process appends every notice it composes once, at its first delivery attempt, to one hub log under the prime's `.lyx`: UTC time, text and the run's attach command.
+  `lyx batten`'s help names the path.
+- **Selvage keys.**
+  Alt+Up and Alt+Down cycle through the strand panes and Selvage in physical order, wrapping, keeping the zoom.
+  Alt+z zooms and unzooms Selvage.
+  A hidden batten window's pane stays outside both.
+- **Run window close.**
+  The window ends on an attach that exits 0.
+  On any other status it prints the status and waits up to 30 seconds for the pair directory to disappear, then keeps an interactive shell.
+  Konsole and Windows Terminal under WSL share the one line, built through `internal/shell`.
 
-## Design decisions to know
+The loom build identity and sidecar move from `loomcli` into the new `internal/statuspane` package, which also holds the pane loop, frame fitting, the content-rows report and the status cache shared by both pane verbs.
+Docs for `reedengine`, `render`, `orchengine`, `battenshed`, `loomcli`, `seatengine` and `termwindow`, and `PATTERN-daemon-wakeups`, are updated.
 
-- Content height is `min(content rows, max(min rows, floor(share × free height)))`.
-  The runs strand uses a third share with 3 rows minimum, the checklist a quarter share with 3 rows minimum.
-  The constants are in code, not reed.yaml.
-- While any sharing strand is live, positional strands collapse; with none live, the bottom-most positional strand expands as before.
-- A `top` anchor with a positional or sharing kind is refused by Rules.
-- Window-resized pins now cover every content strand as they cover Selvage.
-- A lone top status strand is pinned at the full box height, not its content height.
-- The overview's hidden-runs summary counts every run not shown.
-- The overview's attach command moved to the notice log.
-- The checklist now shows on llm-driven runs, at the quarter share.
-- `statuspane` took over loom's build identity and sidecar, so `statusbuild.go` is gone from `loomcli`.
-- Docs updated: `reedengine`, `render`, `orchengine`, `battenshed`, `loomcli`, `termwindow`, `seatengine`, `docs/overview.md` and `PATTERN-daemon-wakeups`.
+## Design decisions
+
+- Size math lives in `render`'s policy layer, which stays a pure leaf.
+  Shares and minimums are constants in code, not reed.yaml keys: `runs` takes a third of the free height with at least 3 rows, the checklist a quarter with at least 3 rows.
+- A top-anchored positional or sharing strand is refused by `render`'s rules, as `own-window` is.
+- While a sharing strand is live, positional strands collapse; with none live, the bottom-most positional strand expands as today.
+- The overview and checklist read status files without the run's status lock, relying on `internal/state` writing them atomically.
+  A file that fails to read on one poll keeps its previous line, and on two polls shows `status unreadable`.
+- A checklist row's time is wall time between history stamps, so it includes halts and waits before the call that ends the visit; a `goto` entry adds no time and starts the next visit.
+- The notice log append is keyed on nothing persisted, so a notice held back or dropped and composed again by a restarted batten is logged again.
+  The log is never rotated.
+- Selvage is found by a display-only pane marker that no Go decision reads; it still gets no `@strand` or `@strand_color`.
+- Two departures from the plan wording: a lone top status strand is pinned at the full box height rather than its content height, and the overview's hidden-runs line counts every run not shown (`… 2 more runs not shown`).
 
 ## To check by hand
 
-- Run the `tmux`-tier tests: the new `reedengine` test and the other `tmux`-tier edits were compile-checked only.
-- Verify on the installed tmux that a session killed while attached ends the client with status 0, and that a server shutdown ends it non-zero.
-  With `detach-on-destroy off` in an operator `tmux_conf`, the run window moves onto another session and stays open.
-- Check the overview's behaviour when a run's seed is undecodable: the spec does not settle whether such a run shows as in flight, so the plan's choice in `internal/battencli/overview.go` needs a look.
-- Check the checklist's per-row time, which is wall time between history stamps and includes halt and wait time before the call that ends a visit.
-  The wait before a `goto` entry is dropped.
-- Check that a notice held back or dropped is logged again when a restarted batten composes it again, since the append is keyed on nothing persisted.
-- The plan-level integration suite failed once on `internal/lyxtemp.TestSweep/two_concurrent_sweeps_both_succeed`, which passed on rerun; it is flaky and not attributed to this change.
-- Look at the strand window on a small laptop screen: seat agents sharing rows may be cramped.
+- Run `lyx orch start` with two runs in flight and confirm the `runs` strand sits above the orch with two lines, grows and shrinks as runs start and land, and keeps a zoomed orch or zoomed Selvage zoomed.
+- Run `lyx gate test --tags tmux` for `internal/reedengine` and `internal/termwindow`: the `tmux`-tier edits, including the new `reedengine` test, were only compile-checked.
+- Close a run window after a normal landing on Konsole and on Windows Terminal under WSL.
+  A non-zero attach status should wait for the worktree removal; the code expects a killed session to end the client with 0 and a server shutdown with non-zero, which was not measured on the installed tmux.
+- An operator `tmux_conf` with `detach-on-destroy off` moves the window's client to another session when the pair session ends, so the window stays open.
+- Seat agents sharing rows on a small screen may be cramped.
+- The window-resized hook array gains one pin per content strand; the resize behaviour measured for Selvage is assumed to hold for more pinned panes.
+- A status file that fails to decode while the run's seed is undecodable: the plan review left open what the overview shows for such a run.
+  Check that it appears last, ordered by slug, and renders without hiding the other lines.
+- The checklist's wall-time attribution across a halt (the wait before a resume counts in the row; the wait before a `goto` does not) is a design choice to confirm against real halted runs.
+- The plan-level integration suite failed once on `github.com/Knatte18/loomyard/internal/lyxtemp.TestSweep/two_concurrent_sweeps_both_succeed`, which passed on rerun and was not attributed to this change.
