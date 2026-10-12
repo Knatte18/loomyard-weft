@@ -1,6 +1,6 @@
 # Plan accepted a gate step naming a nonexistent external-test package path
 
-`plan-gate-external-test-paths` · Note · bug
+`plan-gate-external-test-paths` · Note · bug, loom, webster
 
 Imported from [issue #571](https://github.com/Knatte18/loomyard/issues/571).
 
