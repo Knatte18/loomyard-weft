@@ -272,7 +272,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "63b730dbfb4ffb968d127be96e00179f",
   "masterSessionId": "aed52dbd-eeed-449f-8613-1e669e8caaf9",
   "batches": {
@@ -318,6 +318,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-runs-overview/aed52dbd-eeed-449f-8613-1e669e8caaf9/subagents/agent-a09424441933e48c8.jsonl"
       ]
+    },
+    "7": {
+      "slug": "loom-checklist",
+      "cards": [
+        "07-loom-checklist",
+        "08-batten-notice-log",
+        "09-batten-overview",
+        "10-orch-runs-strand",
+        "11-seat-sharing",
+        "12-run-window-close"
+      ],
+      "cardHashes": {
+        "07-loom-checklist": "749908cf93849072c2acf576fb13539e3a0a0da4f6c24bcadf80f7f424dc5c60",
+        "08-batten-notice-log": "f072452936a25165308513d5a872771fe59e62ac009fd60940818e10df41aa6c",
+        "09-batten-overview": "45edc6003db1d7c1d0d438b37d960f0db2939dce5742d4d471b5f520ad7761c1",
+        "10-orch-runs-strand": "ac9dc610d9d378b84b056b9f33ffc2279c0c2464f8feebb177418ae585888399",
+        "11-seat-sharing": "df4b4b2a7b8e0cc9230df37753350fcaf75859021933bb278e656dac1ab5f51a",
+        "12-run-window-close": "b370faadb6c70bbe834ca72825f0ab400f0d5a6c20a55cad22344d348ca8b8cb"
+      },
+      "startSha": "4a31fd0f06004f5feb999751c6abaeba0b37e389",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T10:39:56Z",
+      "sessionId": "aed52dbd-eeed-449f-8613-1e669e8caaf9",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
