@@ -25,7 +25,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 4 | **Plan gate: receiver-typed delete-before-reference; plan review validates its fixes**<br>• Bare-name method matching floods plans with false blocking findings, and plan-review proposes fixes the gate refuses | [`plan-gate-fixes`](design-plan-gate-fixes.md) | loom | Plan-Burler-Review |  |  | loom, quarry, stencil |
+| 4 | **Plan gate: receiver-typed delete-before-reference; plan review validates its fixes**<br>• Bare-name method matching floods plans with false blocking findings, and plan-review proposes fixes the gate refuses | [`plan-gate-fixes`](design-plan-gate-fixes.md) | loom | Plan-Burler-Fix |  |  | loom, quarry, stencil |
 
 ### Ready
 
@@ -41,7 +41,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Alignment agent in loom checks a run against the board and runs in flight**<br>• A cold-start agent at parent review and PR-Gate reads the board and in-flight runs records and checks alignment, waking the orch only on an overlap. | [`alignment-agent`](design-alignment-agent.md) | loom | `merge-review` |  | 26m | orch, loom |
+| 1 | **Alignment agent in loom checks a run against the board and runs in flight**<br>• A cold-start agent at parent review and PR-Gate reads the board and in-flight runs records and checks alignment, waking the orch only on an overlap. | [`alignment-agent`](design-alignment-agent.md) | loom | `merge-review` |  | 27m | orch, loom |
 
 ## Notes
 
