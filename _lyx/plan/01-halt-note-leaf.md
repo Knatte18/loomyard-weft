@@ -1,12 +1,12 @@
 # Card 1 — halt-note-leaf
 
 **Create:**
-- `plan:internal/haltnote#NoteID` -> `const NoteID = "loom-halt"`
-- `plan:internal/haltnote#Note` -> `type Note struct`
-- `plan:internal/haltnote#Row` -> `type Row struct`
-- `plan:internal/haltnote#Render` -> `func Render(n Note) []byte`
-- `plan:internal/haltnote#Parse` -> `func Parse(data []byte) (Note, error)`
-- `plan:internal/haltnote#IsNoteName` -> `func IsNoteName(name string) bool`
+- `internal/haltnote#NoteID`
+- `internal/haltnote#Note`
+- `internal/haltnote#Row`
+- `internal/haltnote#Render`
+- `internal/haltnote#Parse`
+- `internal/haltnote#IsNoteName`
 - `//internal/haltnote/doc.go`
 - `//internal/haltnote/haltnote_test.go`
 - `//internal/haltnote/leaf_enforcement_test.go`

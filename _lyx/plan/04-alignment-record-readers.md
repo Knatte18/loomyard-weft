@@ -1,10 +1,10 @@
 # Card 4 — alignment-record-readers
 
 **Create:**
-- `plan:internal/alignment#ParseAttemptDir` -> `func ParseAttemptDir(files map[string][]byte) (Attempt, *Verdict, error)`
-- `plan:internal/parentreview#RoundNumber` -> `func RoundNumber(dirName string) (int, bool)`
-- `plan:internal/parentreview#ParseRoundDir` -> `func ParseRoundDir(number int, files map[string][]byte) (Round, error)`
-- `plan:internal/parentreview#TestParseRoundDir` -> `func TestParseRoundDir(t *testing.T)`
+- `internal/alignment#ParseAttemptDir`
+- `internal/parentreview#RoundNumber`
+- `internal/parentreview#ParseRoundDir`
+- `internal/parentreview#TestParseRoundDir`
 
 **Edit:**
 - `internal/alignment#TestAttempts`

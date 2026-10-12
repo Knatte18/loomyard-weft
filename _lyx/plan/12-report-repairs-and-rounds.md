@@ -12,11 +12,11 @@
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/loomengine#ParseArbiterAttemptDir`
-- `plan:internal/discussionparser#ParseAddedDecisions`
-- `plan:internal/shedadapters#ReviewRounds`
-- `plan:internal/shedadapters#ArchivedRunDirSegment`
-- `plan:internal/parentreview#ParseRoundDir`
+- `internal/loomengine#ParseArbiterAttemptDir`
+- `internal/discussionparser#ParseAddedDecisions`
+- `internal/shedadapters#ReviewRounds`
+- `internal/shedadapters#ArchivedRunDirSegment`
+- `internal/parentreview#ParseRoundDir`
 - `internal/loomengine#DiscussionDecisionRecordRel`
 - `internal/loomengine#LoomReviewsDirRel`
 - `internal/loomengine#LoomParentReviewDirRel`

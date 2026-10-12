@@ -1,15 +1,15 @@
 # Card 5 — review-round-and-decision-readers
 
 **Create:**
-- `plan:internal/shedadapters#RoundOutcomeAccepted` -> `const RoundOutcomeAccepted = "accepted"`
-- `plan:internal/shedadapters#RoundOutcomeEscalated` -> `const RoundOutcomeEscalated = "escalated"`
-- `plan:internal/shedadapters#RoundOutcomeCirclingDecided` -> `const RoundOutcomeCirclingDecided = "circling-decided"`
-- `plan:internal/shedadapters#RoundSummary` -> `type RoundSummary struct`
-- `plan:internal/shedadapters#ReviewRounds` -> `func ReviewRounds(names []string) RoundSummary`
-- `plan:internal/shedadapters#TestReviewRounds` -> `func TestReviewRounds(t *testing.T)`
-- `plan:internal/shedadapters#ArchivedRunDirSegment` -> `func ArchivedRunDirSegment(dirName string) (string, bool)`
-- `plan:internal/discussionparser#ParseAddedDecisions` -> `func ParseAddedDecisions(record []byte) ([]AddedDecision, error)`
-- `plan:internal/discussionparser#TestParseAddedDecisions` -> `func TestParseAddedDecisions(t *testing.T)`
+- `internal/shedadapters#RoundOutcomeAccepted`
+- `internal/shedadapters#RoundOutcomeEscalated`
+- `internal/shedadapters#RoundOutcomeCirclingDecided`
+- `internal/shedadapters#RoundSummary`
+- `internal/shedadapters#ReviewRounds`
+- `internal/shedadapters#TestReviewRounds`
+- `internal/shedadapters#ArchivedRunDirSegment`
+- `internal/discussionparser#ParseAddedDecisions`
+- `internal/discussionparser#TestParseAddedDecisions`
 
 **Edit:**
 - `internal/discussionparser#TestAppendDecision_AppendsAtEndOfDecisionsSection`

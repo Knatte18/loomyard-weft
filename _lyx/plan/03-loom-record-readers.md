@@ -1,12 +1,12 @@
 # Card 3 — loom-record-readers
 
 **Create:**
-- `plan:internal/loomengine#LoomFrictionDirRel` -> `func LoomFrictionDirRel() string`
-- `plan:internal/loomengine#IsLoomFrictionArchive` -> `func IsLoomFrictionArchive(name string) bool`
-- `plan:internal/loomengine#ArbiterRecord` -> `type ArbiterRecord struct`
-- `plan:internal/loomengine#ParseArbiterAttemptDir` -> `func ParseArbiterAttemptDir(files map[string][]byte) (ArbiterRecord, error)`
-- `plan:internal/loomengine#LandingCheckpointSubject` -> `func LandingCheckpointSubject(slug string) string`
-- `plan:internal/loomengine#LandingCheckpointSlug` -> `func LandingCheckpointSlug(subject string) (string, bool)`
+- `internal/loomengine#LoomFrictionDirRel`
+- `internal/loomengine#IsLoomFrictionArchive`
+- `internal/loomengine#ArbiterRecord`
+- `internal/loomengine#ParseArbiterAttemptDir`
+- `internal/loomengine#LandingCheckpointSubject`
+- `internal/loomengine#LandingCheckpointSlug`
 
 **Edit:**
 - `internal/loomcli#parentRecordsCommitter`

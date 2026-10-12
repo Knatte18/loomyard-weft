@@ -26,9 +26,9 @@
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/shedrun#ParseSeedTolerant`
-- `plan:internal/shedrun#TreeRunRels`
-- `plan:internal/shedengine#ParseStatusTolerant`
+- `internal/shedrun#ParseSeedTolerant`
+- `internal/shedrun#TreeRunRels`
+- `internal/shedengine#ParseStatusTolerant`
 - `plan:internal/fabricengine#ArchiveTagSlug`
 - `plan:internal/fabricengine#ArchiveTagPrefix`
 - `plan:internal/gitrepo#Repo.Log`

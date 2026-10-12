@@ -16,15 +16,15 @@
 **Uses:**
 - `plan:internal/battenshed#ClassifyRecords`
 - `plan:internal/battenshed#NoticeRules`
-- `plan:internal/haltnote#Parse`
-- `plan:internal/haltnote#IsNoteName`
-- `plan:internal/loomengine#LoomFrictionDirRel`
-- `plan:internal/loomengine#IsLoomFrictionArchive`
-- `plan:internal/alignment#ParseAttemptDir`
-- `plan:internal/parentreview#ParseRoundDir`
-- `plan:internal/parentreview#RoundNumber`
-- `plan:internal/shedadapters#ReviewRounds`
-- `plan:internal/shedadapters#ArchivedRunDirSegment`
+- `internal/haltnote#Parse`
+- `internal/haltnote#IsNoteName`
+- `internal/loomengine#LoomFrictionDirRel`
+- `internal/loomengine#IsLoomFrictionArchive`
+- `internal/alignment#ParseAttemptDir`
+- `internal/parentreview#ParseRoundDir`
+- `internal/parentreview#RoundNumber`
+- `internal/shedadapters#ReviewRounds`
+- `internal/shedadapters#ArchivedRunDirSegment`
 - `internal/loomrecipe#BouncerRunSubdir`
 - `internal/loomengine#LoomParentReviewDirRel`
 - `internal/loomengine#LoomReviewsDirRel`

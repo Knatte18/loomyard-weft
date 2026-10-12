@@ -13,7 +13,7 @@
 
 **Uses:**
 - `plan:internal/fabricengine#TaskCommitOf`
-- `plan:internal/loomengine#LandingCheckpointSlug`
+- `internal/loomengine#LandingCheckpointSlug`
 - `plan:internal/boardengine#ParseBoardTasks`
 - `plan:internal/boardengine#BoardFileRel`
 - `plan:internal/gitrepo#Repo.PreImageLines`

@@ -1,10 +1,10 @@
 # Card 2 — shed-record-parsers
 
 **Create:**
-- `plan:internal/shedrun#ParseSeedTolerant` -> `func ParseSeedTolerant(data []byte) (Seed, error)`
-- `plan:internal/shedrun#RunTreeRels` -> `type RunTreeRels struct`
-- `plan:internal/shedrun#TreeRunRels` -> `func TreeRunRels(runID string) (RunTreeRels, error)`
-- `plan:internal/shedengine#ParseStatusTolerant` -> `func ParseStatusTolerant(data []byte) (Status, error)`
+- `internal/shedrun#ParseSeedTolerant`
+- `internal/shedrun#RunTreeRels`
+- `internal/shedrun#TreeRunRels`
+- `internal/shedengine#ParseStatusTolerant`
 
 **Edit:**
 - `internal/shedrun#TestSeed_LegacyParentKey`
