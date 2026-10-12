@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Discussion-Bouncer stopped at round 2 because its review budget ran out (cause: budget), not because it was circling. The round-2 fixer applied all four findings exactly as the review proposed and disputed or deferred none. The decision record now has every fix: F1, D6 gives the busy_quit_sec way forward to the loom and landing verify gates, with their refusal-spec rows, Scope lines and an acceptance criterion; F2, D7's variable carries the enclosing pid and counts only when that pid is a live ancestor; F3, the integration criterion strips the variable and asserts the inner 1-second window; F4, the single-spinner boundary moves to a 92 percent injected-sampler criterion, the integration test spins at least two goroutines, and the margin rationale is stated. No open finding makes the design wrong. Extending D6 to loomshed and landingshed follows from the board entry's own watchdog want and PATTERN-refusal-way-forward, so it does not widen the task's scope. Under the fixed rule (accept unless a finding makes the design wrong), the segment is accepted unconverged on round 2. No new design call was made, so no decision was added.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling accept run-robustness"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/run-robustness/_lyx/shed/run-robustness/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/run-robustness/_lyx/shed/run-robustness/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lyx shed step run-robustness --until-stop --arbiter-attempt 1"
+}
