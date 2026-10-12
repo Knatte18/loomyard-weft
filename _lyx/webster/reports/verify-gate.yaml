@@ -1,0 +1,39 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/websterengine.TestLoadState_UnusualFiles/legacy_integration_records_still_load
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/websterengine
+      tail: |4-
+                state_test.go:217: saved state.json = {
+                      "runGuid": "g",
+                      "planFingerprint": "",
+                      "currentBatch": 0,
+                      "masterStrand": "master-strand-1",
+                      "batches": {
+                        "-1": {
+                          "slug": "",
+                          "startSha": "",
+                          "kind": "",
+                          "spawnedAt": "",
+                          "terminal": true,
+                          "status": "stuck"
+                        },
+                        "1": {
+                          "slug": "alpha",
+                          "startSha": "",
+                          "kind": "fork",
+                          "spawnedAt": "",
+                          "terminal": true,
+                          "status": "done"
+                        }
+                      },
+                      "assertedModel": "opus",
+                      "integrationFix": {
+                        "preFixHead": "abc",
+                        "strandGuid": "fix-strand",
+                        "spawnedAt": "2026-01-01T00:00:00Z",
+                        "result": "failed"
+                      }
+                    }; want no assertedModel key
+log_path: /home/knatte/Code/loomyard-LYXHUB/run-robustness/.lyx/verify/verify-2.log
