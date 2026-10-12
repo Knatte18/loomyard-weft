@@ -21,3 +21,20 @@ Records: `.scratch/twill-plan-bench/results.md`, `results-sonnet.md`, `tokens-*.
 - Twill `sonnet[high]` matched twill `opus[medium]` within spread but cost only 9% less: per plan it used about 1.3x the output and 1.5x the cache reads, from more `validate-plan` passes (one of four first passes succeeded) and more, mostly LOW, fork findings.
 - Two of its 18 rejections kept a key defect; `opus[medium]` kept none.
 - The open question is whether medium effort cuts the token volume enough to pay off, or worsens the judgement and the `validate-plan` retries.
+
+## Bench: sonnet[medium] twill and single Fable
+
+Run 2026-10-12 on round 2's setup, two runs per reference per arm; records in `.scratch/twill-plan-bench/results-sonnet-medium-fable.md` and `tokens-sonnet-medium-fable.md`.
+
+| Arm | Ref 1 R / P | Ref 2 R / P | Cost per plan | Writer time |
+|---|---|---|---|---|
+| twill `opus[medium]` (round 2) | 0.5 / 0.5 | 2.0 / 3.5 | $5.24 | 10m10s |
+| single `opus[high]` (round 2) | 1.0 / 0.5 | 4.5 / 2.5 | $2.63 | 6m49s |
+| twill `sonnet[medium]` | 2.0 / 1.0 | 2.5 / 4.0 | $2.99 | 7m25s |
+| single `fable[high]` | 3.5 / 0.5 | 4.0 / 3.0 | $5.67 | 10m8s |
+
+- Medium effort pays off on cost: `sonnet[medium]` twill costs 43% less than twill `opus[medium]`, but repeats more key defects on both references, and four of its 21 rejections kept a key defect.
+- Single Fable lands at single `opus[high]` quality on reference 2 and below it on reference 1 (no start-level test in either plan), for 8% more than twill `opus[medium]`: fewer turns (18-21 messages) with half the cache reads, but no more findings.
+- Recommendation: keep twill `opus[medium]` for Plan-Write; neither arm reaches its quality.
+  An `opus[medium]` writer with `sonnet[medium]` forks is the untested cheaper variant.
+- Spend: $11.98 sonnet arm, $22.66 Fable arm; all eight pairs and notes torn down.
