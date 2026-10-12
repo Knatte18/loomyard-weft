@@ -405,22 +405,6 @@
       "body": "Imported from [issue #385](https://github.com/Knatte18/loomyard/issues/385).\n\nDuring the Discussion stage of a loom task, the parent (`ly:orch`) relayed an operator request to edit `PATTERN.md` and `pattern/` directly in the task worktree, so the review rounds would read the revised rules.\n\nThe Discussion launch prompt allows only the two discussion files and no git.\nAn uncommitted repository edit would leave the tree dirty for the `PATTERN-verified-tree` check.\nIt took an extra round trip to get the operator's explicit instruction and a named committer (the driver) before the edit could be made.\n\nDiscussion has no sanctioned path for \"land this invariant now, ahead of Plan\".\nIf this should be supported, the Discussion launch prompt or the parent-review flow needs a carve-out that names who commits such an edit, instead of leaving it to an ad-hoc message exchange.\n\nProvenance: task `test-writing-rules`, note `Discussion-Write.md`.\n"
     },
     {
-      "id": 143,
-      "slug": "operator-shortcuts",
-      "title": "Shortcut commands built into lyx from one committed file",
-      "kind": "note",
-      "labels": [
-        "feature",
-        "orch",
-        "reed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "An embedded shortcut file, git-alias style: attach for reed attach, and one shortcut that starts the orch and attaches in the prime",
-      "body": "Idea (operator, 2026-10-06): top-level shortcuts for the lyx commands the operator types most, declared in one simple file in this repo rather than as Go commands.\n\nExamples:\n\n- `attach` expands to `reed attach`.\n- One shortcut for the prime runs `orch start`, then `reed attach`; the orch always runs in the prime.\n  Name open: `spawn` was floated; `up` would read like `reed up`.\n  It fits the decision recorded in task `bugfix-sessions` that start verbs never attach: the shortcut is where both happen, by naming `reed attach` explicitly.\n\n## Shape (operator, 2026-10-06)\n\n- The shortcuts are part of the deployed `lyx` binary, the same on every hub and repo: a committed file in the loomyard repo, embedded at build time (`go:embed`), never runtime config.\n  No hub, repo or user can add or change one; changing a shortcut is a commit here and a deploy.\n- The file maps a shortcut name to one lyx argv, or to a list of argvs run in order that stops at the first failure.\n  Only lyx commands, never a shell string.\n- At root construction lyx adds one cobra command per shortcut, in its own help group, whose `Short` names the expansion; running it re-dispatches the expanded args through the same root, so flags, envelopes and exit codes are the real command's.\n  Extra args after the shortcut append to the last argv.\n- A test fails when a shortcut names an existing command or another shortcut, or expands to a command that does not exist, so a broken file never builds into a binary that passes CI.\n\n## Open\n\n- Whether a shortcut may carry flags of its own or only append args.\n\nMore shortcuts get added here as the operator notices them.\nRelated notes: `ide-prime-setup` (a VS Code task that starts the orch) and `ide-reopen-prime` (reopen the prime window with one command).\n"
-    },
-    {
       "id": 150,
       "slug": "extra-agent-strand",
       "title": "Open an extra named agent strand through shuttle",
@@ -694,22 +678,6 @@
       "body": "## Seen\n\n`contracts/stencils/loom/loom-template-discussion-chair.md` tells the chair to send each question with its recommended answer and its alternatives to every advisor.\nThe advisor then reads the chair's pick before it studies the question, so its answer is anchored on the chair's options and lean, and it rarely finds an option the chair did not list.\n\n## Idea (operator, 2026-10-11)\n\n- The chair still forms each question with its options and its own recommended answer, but keeps them to itself.\n- It sends the advisors the bare question only, so each advisor explores and answers on its own.\n- The chair then weighs the advisors' answers against its own pick; an answer outside its options counts as a new option.\n- Questions must therefore be open, never leading: a question must not name or hint at the chair's preferred answer.\n\n## Open\n\n- Whether the ledger records the chair's private pick before the advisors answer, so a review can see where an advisor changed the outcome.\n- Whether the advisor stencil (`loom-template-discussion-advisor.md`) needs a line saying it gets no options and should name the alternatives it sees.\n"
     },
     {
-      "id": 361,
-      "slug": "paste-size-limit",
-      "title": "A paste over tmux message size fails whole, with no chunking",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "shuttle",
-        "reed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Seen at pane-inject-safety PR-Gate (PR #548): the one-command set-buffer + paste-buffer + Enter path sends the text in one tmux command, so a text over tmux's command size limit fails the whole send.\n\nIdea: load the buffer in chunks (or from a file with `load-buffer`) before the single paste-and-Enter step, and test a text above the limit."
-    },
-    {
       "id": 377,
       "slug": "discussion-premise-cites",
       "title": "Discussion premises cite the glyph they rest on; the gate resolves them",
@@ -769,21 +737,6 @@
       "isolated": false,
       "brief": "A forked child of a parallel test can inherit a closed listener fd and keep a stale socket answering; sweep other tests for the same race.",
       "body": "Seen in shuttle-startup-ready (PR #557, 2026-10-11): `TestRemoveStaleSocket` in `internal/reedengine` failed at Publish verify because a parallel test's forked child inherited the closed listener's fd, so the \"stale\" socket still answered.\nCommit `ea4e53819` fixed `TestRemoveStaleSocket` and `TestRemoveSocketFileOnceGone` by building the stale socket from a datagram socket that never listens (`bindStaleUnixSocket`).\n\nIdea: sweep other tests that build a stale socket by closing a listener and move them to `bindStaleUnixSocket`."
-    },
-    {
-      "id": 395,
-      "slug": "hold-deferral-end-on-held",
-      "title": "End the seat hold deferral when the advisor itself is held or dead",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "shuttle"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The hold notice deferral only got a shorter cap (10 min); ending it as soon as the advisor is held or dead is not built.",
-      "body": "Seen in shuttle-startup-ready (PR #557, 2026-10-11): Part 3 shortened `holdNoticeMaxDeferral` from 20 to 10 minutes (`hold.go`).\nThe alternative from the same idea was not built: end the deferral as soon as the advisor the chair waits on is itself held or dead, instead of waiting out the cap."
     },
     {
       "id": 396,
@@ -935,24 +888,6 @@
       }
     },
     {
-      "id": 429,
-      "slug": "runs-overview-paused",
-      "title": "Runs overview shows a paused run as paused",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "reed",
-        "batten"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The runs overview reads lyx-halt's paused_since so a paused run does not show as running.",
-      "body": "## Seen (2026-10-12, from `lyx-halt`'s parent review)\n\n`lyx-halt` adds a pause, hub-wide or per run, recorded with a `paused_since` time.\nThe runs overview pane from `runs-overview` reads run states without it, so a paused run shows as running.\nBoth tasks were in flight when this was found, and `runs-overview`'s entry was claimed, so this note carries the gap.\n\n## Want\n\nThe runs overview shows a paused run as paused, with the time since it was paused, reading `lyx-halt`'s record.\nWhichever of the two tasks lands second does this, or it becomes a small task after both land.\n",
-      "created": "2026-10-12T11:05:54Z",
-      "revised": "2026-10-12T11:05:54Z"
-    },
-    {
       "id": 430,
       "slug": "dotnet-scoped-verify",
       "title": "Scoped build and test for C# hubs on Windows",
@@ -995,6 +930,27 @@
           "review_max_bounces": 2
         }
       }
+    },
+    {
+      "id": 432,
+      "slug": "operator-followups",
+      "title": "Paused runs in the overview, hold-notice end, chunked paste, operator shortcuts",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "feature",
+        "reed",
+        "shuttle",
+        "batten",
+        "orch"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Four small follow-ups: the runs overview shows pauses, the hold-notice deferral ends on a held advisor, long pastes are chunked, and shortcuts are built into lyx.",
+      "body": "Four small follow-ups, bundled as one task (operator, 2026-10-12).\n\n## Runs overview shows a paused run as paused (was `runs-overview-paused`)\n\n### Seen (2026-10-12, from `lyx-halt`'s parent review)\n\n`lyx-halt` adds a pause, hub-wide or per run, recorded with a `paused_since` time.\nThe runs overview pane from `runs-overview` reads run states without it, so a paused run shows as running.\n\n### Want\n\nThe runs overview shows a paused run as paused, with the time since it was paused, reading `lyx-halt`'s record.\n\n## End the hold-notice deferral when the advisor is held or dead (was `hold-deferral-end-on-held`)\n\nSeen in `shuttle-startup-ready` (PR #557, 2026-10-11): Part 3 shortened `holdNoticeMaxDeferral` from 20 to 10 minutes (`hold.go`).\nThe alternative from the same idea was not built: end the deferral as soon as the advisor the chair waits on is itself held or dead, instead of waiting out the cap.\n\n## A paste over tmux's message size fails whole (was `paste-size-limit`)\n\nSeen at `pane-inject-safety` PR-Gate (PR #548): the one-command set-buffer + paste-buffer + Enter path sends the text in one tmux command, so a text over tmux's command size limit fails the whole send.\n\nIdea: load the buffer in chunks (or from a file with `load-buffer`) before the single paste-and-Enter step, and test a text above the limit.\n\n## Operator shortcuts built into lyx (was `operator-shortcuts`)\n\nIdea (operator, 2026-10-06): top-level shortcuts for the lyx commands the operator types most, declared in one simple file in this repo rather than as Go commands.\nThe operator now watches runs in Konsole windows that `lyx batten run --window` opens, not in a VS Code terminal (2026-10-12); the shortcuts are still wanted.\n\nExamples:\n\n- `attach` expands to `reed attach`.\n- One shortcut for the prime runs `orch start`, then `reed attach`; the orch always runs in the prime.\n  Name open: `spawn` was floated; `up` would read like `reed up`.\n  It fits the decision recorded in task `bugfix-sessions` that start verbs never attach: the shortcut is where both happen, by naming `reed attach` explicitly.\n\n### Shape (operator, 2026-10-06)\n\n- The shortcuts are part of the deployed `lyx` binary, the same on every hub and repo: a committed file in the loomyard repo, embedded at build time (`go:embed`), never runtime config.\n  No hub, repo or user can add or change one; changing a shortcut is a commit here and a deploy.\n- The file maps a shortcut name to one lyx argv, or to a list of argvs run in order that stops at the first failure.\n  Only lyx commands, never a shell string.\n- At root construction lyx adds one cobra command per shortcut, in its own help group, whose `Short` names the expansion; running it re-dispatches the expanded args through the same root, so flags, envelopes and exit codes are the real command's.\n  Extra args after the shortcut append to the last argv.\n- A test fails when a shortcut names an existing command or another shortcut, or expands to a command that does not exist, so a broken file never builds into a binary that passes CI.\n\n### Open\n\n- Whether a shortcut may carry flags of its own or only append args.\n\nRelated notes: `ide-prime-setup` (a VS Code task that starts the orch) and `ide-reopen-prime` (reopen the prime window with one command).\n",
+      "created": "2026-10-12T11:05:54Z",
+      "revised": "2026-10-12T11:26:48Z"
     }
   ]
 }
