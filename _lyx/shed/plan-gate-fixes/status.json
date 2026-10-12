@@ -1,11 +1,11 @@
 {
-  "current_producer": "Publish",
+  "current_producer": "PR-Gate",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Publish",
-    "last": "Merge-Bouncer → done",
+    "now": "PR-Gate",
+    "last": "Publish → done",
     "wait": ""
   },
   "history": [
@@ -200,6 +200,12 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/plan-gate-fixes/_lyx/reviews/merge/round-1-bouncer-ledger.md",
       "at": "2026-10-12T10:14:49Z"
+    },
+    {
+      "producer": "Publish",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-12T10:16:23Z"
     }
   ],
   "product": {
