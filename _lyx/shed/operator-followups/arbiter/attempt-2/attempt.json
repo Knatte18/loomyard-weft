@@ -1,0 +1,15 @@
+{
+  "number": 2,
+  "stop_key": {
+    "current_producer": "Merge-In",
+    "history_length": 24,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-10-12T16:45:00.031780398+02:00",
+  "deadline": "2026-10-12T17:15:00.031780398+02:00",
+  "strand_guid": "aa7a0ebc0f752bf202ad2c0714fc76b5",
+  "envelope_path": "/home/knatte/Code/loomyard-LYXHUB/operator-followups/.lyx/shed/operator-followups/steps/a1a080e1b2a50b05.json",
+  "report_path": "/home/knatte/Code/loomyard-LYXHUB/operator-followups/_lyx/shed/operator-followups/drive-reports/drive-report-20261012-154429-2231.md"
+}

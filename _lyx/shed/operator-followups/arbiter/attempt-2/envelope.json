@@ -1,0 +1,12 @@
+{
+  "verdict": "resume",
+  "reason": "Merge-In stopped blocked because verify failed after merging main (verify-3.log), with two failures, both where the task's own changes meet main's. TestOverviewSource_ReadsThePrimesRunsFromDisk in internal/battencli fails on column padding and a run named future-key, which comes from main's e5b56fe91 (run records tolerate newer binaries) meeting the task's own overview.go change from step 1 (a pause-covered run shows as paused). TestTestBudget_PackagesStayWithinBudget fails because cmd/lyx now has 80 top-level tests against a budget of 79: the task's shortcuts_test.go plus main's additions. Fixing both means reconciling the task's overview change and its budget row with main, which stays inside the task's scope and needs no operator decision. The stop names the way forward itself, a goto to Webster-Burler-Review, whose round reads the Publish failure record and whose gate runs the failing tests. That row comes before Merge-In, the current row. lyx board get operator-followups returned an invalid-json error, so the board entry was not read, but the call does not depend on it.",
+  "question": "",
+  "goto": "Webster-Burler-Review",
+  "verbs": [],
+  "cause": "",
+  "attempt": 2,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/operator-followups/_lyx/shed/operator-followups/arbiter/attempt-2",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/operator-followups/_lyx/shed/operator-followups/arbiter/attempt-2/verdict.yaml",
+  "relaunch": "lyx shed step operator-followups --until-stop --arbiter-attempt 2"
+}
