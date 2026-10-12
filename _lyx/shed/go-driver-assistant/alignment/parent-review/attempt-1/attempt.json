@@ -1,0 +1,16 @@
+{
+  "number": 1,
+  "key": "round-1",
+  "point": "parent-review",
+  "token": "7157d1955720e6cd",
+  "spawned_at": "2026-10-12T20:08:43.947003741+02:00",
+  "deadline": "2026-10-12T20:28:43.947003741+02:00",
+  "strand_guid": "fe966b15a8b692eb2934765aa64168d3",
+  "snapshot": "6945454dd4da18f7977e7dd7a5848000207df0d0c90163927ac93d2bde56eea5",
+  "pr_number": 0,
+  "head_sha": "",
+  "closed": true,
+  "closed_reason": "1. orch-split records the operator's decision of 2026-10-12 that a run's driver receives every instruction for the run. This run's D15 (auto-pick Q11) instead has the orch address a go-driven run only through lyx loom and lyx shed verbs, with no receiver, until a later task adds one. Do you accept that departure? 2. judge-cap-call (Discussion-Write) and this run both change contracts/stencils/loom/loom-template-arbiter.md. There judge-cap-call D7 rewrites the review rule, and this run's D14 adds a case-brief marker and the check-the-facts text. Both also add loom config keys in internal/loomengine and rewrite the Arbiter section of internal/loomcli/doc.go. Which run lands first, so the other rebases onto it?",
+  "applied": "",
+  "notified": false
+}

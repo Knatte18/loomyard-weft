@@ -1,0 +1,15 @@
+verdict: escalate
+reason: >-
+  The design covers every goal and scope point of the go-driver-assistant board entry, and both of its narrowings are stated with a rationale.
+  It escalates on two counts.
+  D15, an auto-pick, departs from the message routing the operator settled in orch-split.
+  The run also shares files with the in-flight run judge-cap-call: the arbiter stencil, internal/loomengine config and internal/loomcli/doc.go.
+question: >-
+  1. orch-split records the operator's decision of 2026-10-12 that a run's driver receives every instruction for the run.
+  This run's D15 (auto-pick Q11) instead has the orch address a go-driven run only through lyx loom and lyx shed verbs, with no receiver, until a later task adds one.
+  Do you accept that departure?
+  2. judge-cap-call (Discussion-Write) and this run both change contracts/stencils/loom/loom-template-arbiter.md.
+  There judge-cap-call D7 rewrites the review rule, and this run's D14 adds a case-brief marker and the check-the-facts text.
+  Both also add loom config keys in internal/loomengine and rewrite the Arbiter section of internal/loomcli/doc.go.
+  Which run lands first, so the other rebases onto it?
+superseded: []
