@@ -1,0 +1,16 @@
+{
+  "number": 1,
+  "key": "round-1",
+  "point": "parent-review",
+  "token": "fa1aea91a98d0847",
+  "spawned_at": "2026-10-12T16:33:34.176078085+02:00",
+  "deadline": "2026-10-12T16:53:34.176078085+02:00",
+  "strand_guid": "98016176c502c2ffb995b783901e1e01",
+  "snapshot": "40ba79b483cc673ec6247603fd47182997ed1a79400786f8b65886df9fba1e35",
+  "pr_number": 0,
+  "head_sha": "",
+  "closed": true,
+  "closed_reason": "Overlap with convergence-plan (at Publish) in the Go package internal/fabricengine: convergence-plan adds ArchiveTagPrefix, ArchiveTagSlug and TaskCommitOf in archive.go, trailer.go, cleanupremotewarp.go, remoteleftover.go and their tests, including a new archivetag_test.go; cleanup-1012 changes refscanner.go, refscanner_test.go and doc.go in the same package. The files are disjoint and the concerns unrelated. May cleanup-1012 pass parent-review and land independently of convergence-plan?",
+  "applied": "",
+  "notified": false
+}

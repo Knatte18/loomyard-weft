@@ -1,0 +1,11 @@
+verdict: escalate
+reason: >-
+  The design matches the board entry's three sections with no scope deviation and duplicates no other entry,
+  but the run changes the Go package internal/fabricengine (refscanner.go, refscanner_test.go, doc.go),
+  which the in-flight peer convergence-plan also changes, and a package both runs change is an overlap that escalates.
+question: >-
+  Overlap with convergence-plan (at Publish) in the Go package internal/fabricengine:
+  convergence-plan adds ArchiveTagPrefix, ArchiveTagSlug and TaskCommitOf in archive.go, trailer.go, cleanupremotewarp.go, remoteleftover.go and their tests, including a new archivetag_test.go;
+  cleanup-1012 changes refscanner.go, refscanner_test.go and doc.go in the same package.
+  The files are disjoint and the concerns unrelated.
+  May cleanup-1012 pass parent-review and land independently of convergence-plan?
