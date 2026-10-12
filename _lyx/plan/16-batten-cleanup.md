@@ -28,6 +28,7 @@
 - `internal/shedrun#RunDir`
 - `internal/shedrun#ScratchDir`
 - `internal/shedrun#StatusRel`
+- `internal/shedrun#SeedRel`
 - `internal/shedrun#RunLock`
 - `internal/shedrun#StatusLock`
 - `internal/battencli#RefuseUnlessPrime`
@@ -57,6 +58,7 @@ For each slug, in order:
      Running, paused, blocked, awaiting and failed are skipped and reported with their state, and an undecodable status is skipped and reported with the decode error.
    - absent (a not-exist error only) but tracked: when `Committed(shedrun.StatusRel)` finds a status at the records HEAD that decodes to `done`, the slug is a candidate whose removal is already on disk, and `--apply` only makes the commit, so an apply interrupted between removal and commit is finished by the next run.
      A committed status that is not done, or does not decode, skips the slug with that reason, leaves the deletion uncommitted, and its scratch is never emptied by the orphan rule.
+   - absent on disk, with `Committed` finding `shedrun.SeedRel` but not `shedrun.StatusRel`: the slug is skipped and reported with the reason "tracked run directory with no committed status", its deletion is left uncommitted and its scratch is never emptied by the orphan rule.
    - absent on disk and absent at the records HEAD (`Committed` finds neither `shedrun.StatusRel` nor `shedrun.SeedRel`): an orphan, see below.
    - any other stat error skips the slug and is reported.
 4. A candidate's scratch directory (`shedrun.ScratchDir`) is emptied by `emptyScratch` after its commit, still under both locks, then both locks are released.
@@ -76,9 +78,10 @@ The verb: `cleanupCmd` builds `cleanup` with `Use: "cleanup"`, a lower-case `Sho
 
 Tests:
 `cleanup_test.go`, untagged, builds the location with `locationkit` over `t.TempDir()` and drives `cleanup` with stub deps.
-One table covers: a done slug removed, committed with its `RunDirRel` and scratch emptied beside surviving lock files; each non-done state, a held run lock (the test holds it), an undecodable status and a reserved name skipped with reasons; a tracked-but-deleted done slug committed with nothing left to remove; a tracked-but-deleted not-done slug skipped with no commit and its scratch kept; an aged orphan emptied and a fresh one kept; a run directory whose stat fails with a permission error skipped (the row skips on Windows and as root); a dry run that changes nothing and lists exactly what the apply row removes; and a push failure reported with the commit made.
+One table covers: a done slug removed, committed with its `RunDirRel` and scratch emptied beside surviving lock files; each non-done state, a held run lock (the test holds it), an undecodable status and a reserved name skipped with reasons; a tracked-but-deleted done slug committed with nothing left to remove; a tracked-but-deleted not-done slug skipped with no commit and its scratch kept; a deleted slug whose seed is committed but whose status is not skipped as a tracked run directory with no committed status, with no commit and its aged scratch kept; an aged orphan emptied and a fresh one kept; a run directory whose stat fails with a permission error skipped (the row skips on Windows and as root); a dry run that changes nothing and lists exactly what the apply row removes; and a push failure reported with the commit made.
 A second test's `Commit` stub asserts the status lock is held (`TryAcquireWriteLock` fails) and that the lock file is `os.SameFile` as before the run; after `cleanup` returns, a `battenCLI` armed for the slug reports `checkRunStatus` found false with no error, so `lyx batten run <slug>` no longer refuses on a done status.
-`cleanup_integration_test.go` (`//go:build integration`) builds a prime with `hubforge`, commits and pushes a done run directory through `fabricengine`, runs `RunCLIIn(prime, out, "cleanup")` and asserts nothing changed and the dry run's lists, then `"cleanup", "--apply"` and asserts the run directory is gone on disk, absent at the records HEAD and the deletion pushed, and that the slug's lock files survive.
+`cleanup_integration_test.go` (`//go:build integration`) builds a prime with `hubforge` and a task pair (`hubforge.AddPair`), commits and pushes a done run directory through `fabricengine`, runs `RunCLIIn(<task pair worktree>, out, "cleanup", "--apply")` and asserts an error envelope naming the prime worktree, with the done run directory still present on disk and at the records HEAD, so `Cleanup`'s prime refusal is reached by the verb itself.
+It then runs `RunCLIIn(prime, out, "cleanup")` and asserts nothing changed and the dry run's lists, then `"cleanup", "--apply"` and asserts the run directory is gone on disk, absent at the records HEAD and the deletion pushed, and that the slug's lock files survive.
 `cmd/lyx/testdata/test-budget.yaml`'s `internal/battencli` row grows by the new top-level tests.
 `docs/overview.md`'s batten bullet names `lyx batten cleanup [--apply]`.
 

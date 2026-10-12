@@ -40,6 +40,7 @@ The next start's sweep removes that directory once its lock is free, since `lyxt
 `kitBase` is deleted: its inherited-directory detection now lives in `lyxtemp`'s `resolveRootPath`, which places a re-executed helper's run directory beside its parent's.
 Its two callers, `Main` and `TestSetEnv`, are on this card; `TestSetEnv` drops its `kitBase` assertions and keeps the ones on the variables `setEnv` writes.
 Test sites that need a short directory of their own call `lyxtemp.MkdirTemp(dirPrefix)` instead of `os.MkdirTemp("", dirPrefix)`, the same depth as before since the old form already landed in `Main`'s directory: `TestListSockets_OwnDirectoryOnly`, `TestRemoveDeadSocket`, `TestCheckSockets`, `TestSweep_KillsServersAndPaneTreesUnderItsDirectoryOnly` and `TestAfterRun_LeftoverProcesses`, which also passes a `remove` that deletes its directory and keeps asserting the directory is gone after `afterRun`.
+`TestCheckSockets`' "afterRun reads the sockets before the sweep removes them" subtest passes a `remove` that deletes its directory.
 
 `TestAfterRun_ReportsFailedRemovalKeepingTheCode`, untagged in `tmuxkit_test.go`, calls `afterRun` over an empty directory with a no-op sweep and a `remove` returning an error, for codes 0 and 1, and asserts the returned code equals the input and `w` names the directory and the error; it covers the "removal a lingering child blocks is reported and leaves the exit code unchanged" criterion without a real child.
 
@@ -47,4 +48,4 @@ Docs in this commit: the package comment above `package tmuxkit` in `tmuxkit.go`
 `pattern/PATTERN-test-isolation.md`'s "Private temp directory and leftovers" section says the same, names `internal/lyxtemp`, and replaces "Main creates its directory beside it" with the temp package's beside-the-parent rule.
 `cmd/lyx/testdata/test-budget.yaml`'s `internal/testkit/tmuxkit` row grows by the one new top-level test.
 
-**ImpactSummary:** Every test binary under tmuxkit.Main now runs in and removes a lyxtemp run directory; afterRun's two callers are on this card.
+**ImpactSummary:** Every test binary under tmuxkit.Main now runs in and removes a lyxtemp run directory; afterRun's three callers are on this card (Main, TestAfterRun_LeftoverProcesses and TestCheckSockets' afterRun subtest).

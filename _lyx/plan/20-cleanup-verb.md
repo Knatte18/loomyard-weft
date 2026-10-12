@@ -33,10 +33,9 @@
 - `plan:internal/lyxtemp#Root.Sweep`
 - `internal/battencli#RefuseUnlessPrime`
 - `internal/orchcli#PrimePaths`
-- `internal/boardengine#LoadConfig`
+- `internal/boardengine#OpenHub`
 - `internal/boardengine#Board.Prune`
 - `internal/boardengine#Board.ListTasksFull`
-- `internal/fabricengine#BoardDir`
 
 **Intent:**
 Add `lyx cleanup [--apply]`, a top-level cobra module under the root in `cmd/lyx/main.go` that only calls each owning module's cleanup function in-process, so no module learns another's state (D7).
@@ -47,9 +46,9 @@ No `refusal-spec.md` row is added: batten and the cleanup module are not bound b
 `primeSegments(location)` returns the segments in this order, each a closure over its owner's function:
 
 1. `batten`: `battencli.Cleanup(location, apply)`.
-2. `board`: `lyx board prune`'s behavior, `boardengine.LoadConfig(fabricengine.BoardDir(location.HubPath), "board")` with `boardengine.ApplySkipEnv` and the board directory as `Path`, as `boardcli`'s pre-run builds it, then `Board.Prune(apply)`.
+2. `board`: `lyx board prune`'s behavior, the hub board from `boardengine.OpenHub(location.HubPath)`, then `Board.Prune(apply)`.
 3. `orch`: `orchengine.CleanupHandoffs(orchcli.PrimePaths(location), apply)`, which removes nothing outside the idle phase.
-4. `scratch`: `scratchSegment` over `<prime worktree>/.scratch` with the board's `ListTasksFull` as its read and `time.Now()`.
+4. `scratch`: `scratchSegment` over `<prime worktree>/.scratch` with the same `OpenHub` board's `ListTasksFull` as its read and `time.Now()`.
 5. `logs`: for the prime's anchor and `_board`'s directory, `logger.SweepDir(logger.LogsDirAt(anchor), loggerconfig.LoadOrDefault(anchor), apply)`, the bounds the exit sweep picks.
 6. `temp`: `lyxtemp.ProcessRoot()` and its `Sweep(apply)`; the segment fails when the root fails its checks or the sweep reports a failure, and lists both its candidates and its failures.
 
@@ -61,7 +60,7 @@ It does not call `lyx fabric prune` or `lyx fabric cleanup` (D8).
 
 Tests:
 `cli_test.go`, untagged, covers `runSegments` with fake segments (order kept, a failing segment reported while the later ones still run, ok false), and `primeSegments` over a `locationkit` location under `t.TempDir()`: the segment names in order, and the `orch` segment over a seeded non-idle state with old handoffs removing nothing under `--apply`, as `lyx orch cleanup` does.
-`cleanup_integration_test.go` (`//go:build integration`) builds a hub with `hubforge` and a task pair, seeds the prime with a done batten run directory, an old `.scratch/` child, old handoffs beside the one `LastHandoff` names and a done board task, then asserts: a dry run lists every segment and changes nothing; `--apply` removes each seeded leftover; and the verb run in the task pair refuses naming the prime worktree.
+`cleanup_integration_test.go` (`//go:build integration`) builds a hub with `hubforge` and a task pair, seeds the prime with a done batten run directory, an old `.scratch/` child, old handoffs beside the one `LastHandoff` names and a done board task, writes the prime's `logger.yaml` with a short `trace_retention_days` bound and seeds one trace group in the prime's logs directory older than that bound and younger than the default, then asserts: a dry run lists every segment, that trace group under the `logs` segment, and changes nothing; `--apply` removes each seeded leftover, that trace group included; and the verb run in the task pair refuses naming the prime worktree.
 
 Wiring and docs in this commit: `cmd/lyx`'s `newRoot` adds `cleanupcli.Command()` and its `Long` names `cleanup` among the available modules;
 `cmd/lyx/seamsignature_test.go` pins `cleanupcli.RunCLI` and `cleanupcli.RunCLIIn`, and its header stops pinning a count of seams;

@@ -4,8 +4,8 @@
 - `cmd/testtiming#prebuildLyx`
 - `cmd/testtiming#runRedundancy`
 - `cmd/testtiming#runResources`
-- `cmd/testtiming#measurePackageResources`
-- `cmd/testtiming#leftoverProcesses`
+- `cmd/testtiming#measurePackageResources` -> `func measurePackageResources(tags, importPath string, env []string, parallel int) (resourceRow, error)`
+- `cmd/testtiming#leftoverProcesses` -> `func leftoverProcesses(marker string) []string`
 - `cmd/testtiming#main`
 - `cmd/testtiming#TestPrebuildLyx`
 
