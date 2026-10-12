@@ -1,12 +1,12 @@
 {
   "current_producer": "Land",
-  "state": "blocked",
-  "error": "pull failed: fabricengine: warp remote diverged and local warp has unpushed commits; aborting, no changes",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Land",
     "last": "Land → stuck",
-    "wait": "pull failed: fabricengine: warp remote diverged and local warp has unpushed commits; aborting, no changes"
+    "wait": ""
   },
   "history": [
     {
