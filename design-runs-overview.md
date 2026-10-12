@@ -1,6 +1,6 @@
-# reed: runs overview pane above the orch, strand sizing, Selvage by key
+# reed: runs overview pane above the orch, gate checklist, Selvage by key, run windows close
 
-`runs-overview` · Note · feature, reed, orch, batten
+`runs-overview` · Task · feature, reed, orch, batten
 
 One place for the operator to see every run in the hub and the state it is in.
 `lyx shed status [run-id]` is per run and `lyx orch status` covers only the orchestrator, so today the hub polls each run separately and the operator sees run events only through the orch's chat.
@@ -69,6 +69,27 @@ In every reed session, Selvage is reachable like a strand: a free terminal tied 
 - Alt+Up and Alt+Down include Selvage in their cycle, keeping the zoom, so stepping onto it while zoomed shows it full screen.
 - Alt+z zooms and unzooms Selvage like a strand pane.
 - Open, for later (operator): whether Alt+Up and Alt+Down should ever step between windows rather than panes.
+
+## Gate checklist pane (merged from `gate-checklist-pane`)
+
+Idea (operator, 2026-10-07): a full list of a run's gates, shown as a checklist with a tick box per gate and how long each ran or has run so far.
+It holds too much for a status line or a pane border, so it likely needs a pane of its own in the run's reed session.
+It reads the same per-run shed state as the overview lines.
+
+## Run window closes when its run ends (merged from `run-window-close`)
+
+Seen (2026-10-12):
+`lyx batten run <slug> --window` opens one Konsole window per run that runs `lyx reed attach` in the pair (`internal/termwindow/termwindow.go`).
+`attachLine` chains `exec bash` after the attach on purpose, so the window stays open as a shell once the attach returns.
+At Worktree-Teardown the pair and its reed session go away, the attach returns, and the operator is left with an open shell in a deleted directory, one window per finished run.
+
+Want (operator, 2026-10-12): when batten is done with a run, the same window closes.
+
+Open:
+
+- Close only on a clean end (the run landed or was torn down), and keep the shell when the attach fails or returns early, so an error stays readable.
+- Whether a detach by the operator, the attach returning while the run lives, also closes the window.
+- The WSL launcher (Windows Terminal) should behave the same.
 
 ## Related entries
 
