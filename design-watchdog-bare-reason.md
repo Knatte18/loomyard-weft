@@ -1,6 +1,6 @@
 # Loom halts a producer as failed with a bare 'watchdog' reason and no trace record of the kill
 
-`watchdog-bare-reason` · Note · bug
+`watchdog-bare-reason` · Note · bug, loom, shed
 
 Imported from [issue #566](https://github.com/Knatte18/loomyard/issues/566).
 

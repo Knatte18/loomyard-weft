@@ -1,6 +1,6 @@
 # loom run halted failed at Merge-In with status-missing, no history and no trace file
 
-`merge-in-status-missing` · Note · bug
+`merge-in-status-missing` · Note · bug, loom, shed
 
 Imported from [issue #581](https://github.com/Knatte18/loomyard/issues/581).
 

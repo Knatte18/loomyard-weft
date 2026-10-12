@@ -1,6 +1,6 @@
 # No sanctioned Go formatter verb for agents that may not run rewrite scripts
 
-`agent-gofmt-verb` · Note · bug
+`agent-gofmt-verb` · Note · enhancement, shuttle
 
 Imported from [issue #578](https://github.com/Knatte18/loomyard/issues/578).
 
