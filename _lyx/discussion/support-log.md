@@ -81,7 +81,7 @@ _No rounds yet._
 - Q1 (auto-pick, resolved): Which review points? Both parent review and PR-Gate, as the board entry names.
 - Q2 (auto-pick, resolved): darn too? No; loom only, since the board says "in loom" and darn's PR-Gate is the operator's review point.
 - Q3 (auto-pick, resolved): Who applies the verdict? Go, from a verdict file tied to the spawn and, at PR-Gate, to the head and pull request number.
-- Q4 (auto-pick, resolved): What escalates? A substantive overlap with a run in flight, a needed operator decision, or uncertainty; a bookkeeping-file overlap is reported but does not escalate.
+- Q4 (auto-pick, resolved): What escalates? A substantive overlap with a run in flight, a needed operator decision, or a named question it cannot settle, an escalation without one being invalid; a bookkeeping-file overlap is reported but does not escalate.
 - Q5 (auto-pick, resolved): May the agent reject? Yes, on a scope deviation; at PR-Gate once per run, then it escalates.
 - Q6 (auto-pick, resolved): Where at PR-Gate? A new `PR-Align` row between `Publish` and `PR-Gate`.
 - Q7 (auto-pick, resolved; board open question): Does an agent-approved PR land without an orch yes? Yes, per the operator's 2026-10-12 comment that most traffic should stay inside loom.
