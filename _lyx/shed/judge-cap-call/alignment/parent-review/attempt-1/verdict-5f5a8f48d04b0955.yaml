@@ -1,0 +1,12 @@
+verdict: approve
+reason: >-
+  The design covers every point of the judge-cap-call entry: the judge's mechanical or design-wrong tag,
+  the soft-cap accept-or-continue rule, circling on a returning blocker, and a per-perch hard cap that
+  defaults to 4 and is never passed, with hard-cap stops reaching the arbiter through the existing escalation.
+  It contradicts no other entry, and it leaves arbiter eligibility to arbiter-when.
+  Its file overlap with go-driver-assistant (arbiter stencil, loom config, loomcli/doc.go, orch role stencil, refusal-spec)
+  is already settled by the parent's recorded decision in that run: go-driver-assistant lands first,
+  judge-cap-call takes its changes at Merge-In, and the designs do not conflict.
+  No overlap with pause-esc-rewind or reed-multi-window, and no landed parent commits.
+question: ""
+superseded: []
