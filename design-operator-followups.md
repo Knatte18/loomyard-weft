@@ -55,3 +55,8 @@ Examples:
 - Whether a shortcut may carry flags of its own or only append args.
 
 Related notes: `ide-prime-setup` (a VS Code task that starts the orch) and `ide-reopen-prime` (reopen the prime window with one command).
+
+## Loom status pane takes too many rows
+
+Operator 2026-10-12: the loom status pane in the run window has the right format but takes too many rows; make it shorter.
+It holds about 10 rows of a 44-row window, which also squeezes the agent panes below it (see note `shuttle-ready-blank-pane`).
