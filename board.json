@@ -950,6 +950,23 @@
       "status": "running · Discussion-Burler-Review",
       "created": "2026-10-12T08:52:47Z",
       "revised": "2026-10-12T08:52:47Z"
+    },
+    {
+      "id": 427,
+      "slug": "lyx-cleanup-followups",
+      "title": "lyx cleanup follow-ups: concurrent sweep flake, missing refusal tests, testtiming doc",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A concurrent-sweep test failed once; two cleanup refusals have no test; a doc arrow is missing",
+      "body": "## Seen (2026-10-12, PR #574 of `test-tmp-cleanup`)\n\nThe PR's own \"To check\" list left these open after the task landed:\n\n- `TestSweep/two_concurrent_sweeps_both_succeed` in `internal/lyxtemp` failed once and passed on rerun: review the concurrent-sweep path for a race, then fix the code or the test.\n- `lyx cleanup` refuses outside the prime, but no test pins the refusal.\n- `lyx batten cleanup` skips and reports a deleted run directory without a `status.json` instead of committing it, but no test pins that.\n- The `testtiming` doc lacks the resign arrow.\n\n## Idea\n\nFix the race if there is one, and add the missing tests and the doc arrow in the same change.\nSmall: a candidate for a bundle with other test or cleanup work.\n",
+      "created": "2026-10-12T09:05:01Z",
+      "revised": "2026-10-12T09:05:01Z"
     }
   ]
 }

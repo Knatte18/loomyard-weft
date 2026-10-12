@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-12 09:04 UTC; every age below is as of then.
+Rendered 2026-10-12 09:05 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -25,7 +25,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 4 | **Plan gate: receiver-typed delete-before-reference; plan review validates its fixes**<br>• Bare-name method matching floods plans with false blocking findings, and plan-review proposes fixes the gate refuses | [`plan-gate-fixes`](design-plan-gate-fixes.md) | loom | Discussion-Burler-Review | 11m | 11m | loom, quarry, stencil |
+| 4 | **Plan gate: receiver-typed delete-before-reference; plan review validates its fixes**<br>• Bare-name method matching floods plans with false blocking findings, and plan-review proposes fixes the gate refuses | [`plan-gate-fixes`](design-plan-gate-fixes.md) | loom | Discussion-Burler-Review | 12m | 12m | loom, quarry, stencil |
 
 ### Ready
 
@@ -44,6 +44,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **An old lyx process drops board fields it does not know**<br>• A run started before a deploy rewrites board.json with its old struct and loses newly added fields such as created and revised | [`board-field-drop`](design-board-field-drop.md) |  |  | board, batten |
+| 2 | **lyx cleanup follow-ups: concurrent sweep flake, missing refusal tests, testtiming doc**<br>• A concurrent-sweep test failed once; two cleanup refusals have no test; a doc arrow is missing | [`lyx-cleanup-followups`](design-lyx-cleanup-followups.md) | 0m | 0m | batten |
 
 ### Enhancements
 
