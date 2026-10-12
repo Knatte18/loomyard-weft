@@ -1,0 +1,15 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 10,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-10-12T20:26:08.843724078+02:00",
+  "deadline": "2026-10-12T20:56:08.843724078+02:00",
+  "strand_guid": "b2741ff58de93ad13472f778340bf9cd",
+  "envelope_path": "/home/knatte/Code/loomyard-LYXHUB/go-driver-assistant/.lyx/shed/go-driver-assistant/steps/c3b2c1879bc3447c.json",
+  "report_path": "/home/knatte/Code/loomyard-LYXHUB/go-driver-assistant/_lyx/shed/go-driver-assistant/drive-reports/drive-report-20261012-195527-7c67.md"
+}

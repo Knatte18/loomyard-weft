@@ -1,0 +1,13 @@
+verdict: resume
+reason: >-
+  Discussion-Bouncer escalated at round 2 on budget.
+  The round-2 fixer report fixes all seven findings as proposed, with none disputed or deferred, and the decision record carries each fix:
+  D13 and D12 (F1, option a: StepResult.Reason on the bare and cancelled pauses, goto classified by its OutcomeGoto history entry),
+  D4 (F2, retry counted in two places, each read by the other actor), D7 (F3 ordering, F4 HEAD/branch/content-hash comparison, F6 goto bound),
+  D3/D5 (F5, on-disk build instead of binary_changed) and Q10 (F7).
+  Spot checks against the code hold: shedengine.HistoryEntry carries no actor field, so D7's "attribution is not decidable" premise is true.
+  The F6 bound still lets the tackler take the Finalize case D4 names, because Finalize's reason-text way forward (landingshed/parentguard.go:87) is a goto to the halting row itself.
+  The Webster-Burler-Review goto appears only when a failure record was written, and D4's rule takes that case.
+  No open finding makes the design wrong, so the rule is accept.
+verbs:
+  - lyx loom circling accept go-driver-assistant
