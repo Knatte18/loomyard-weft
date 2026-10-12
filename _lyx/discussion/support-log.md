@@ -5,14 +5,15 @@ Autonomous session: no operator answered, so every turn below is the writer's ow
 1. Read the board entry `webster-pack-read-set` and the related entries `kickstart-pack-measure`, `kick-start-pack`, `enclose-kickstart` and `weaver`.
    The board's Want fixes four changes: bench wording, span-only FRESH-READ, per-card packs, one-line `var`/`const`; the operator ruled out inlining source and ruled in reading beyond the pack.
 2. Read the pack code (`planglyph/pack.go`, `planindex` pack types, `websterengine/render.go`, `beginbatch.go`'s `buildKickstartPack`) and the webster stencils, and the bench card `07-e1-pack.md` in the quarry worktree.
-3. Checked quarry v0.2.1: `Symbol.Kind` distinguishes `var` and `const`; `Signature` is verbatim and untruncated; grouped specs carry the spec's own text, so a first line names the member.
+3. Checked quarry v0.2.1: `Symbol.Kind` distinguishes `var` and `const`; `Signature` is verbatim and untruncated; a grouped spec's signature is its keyword prepended to the spec's own text, so in both forms the first line reads `var name …` or `const name …`.
 4. Settled per-card grouping with one resolve call (D1, D2), the bench wording per card (D3), FRESH-READ split by pack mode to keep the pack-off baseline byte-identical (D4), truncation in `planglyph` (D5) and unchanged log counts (D6).
 5. Lens review: six forks, all returned.
    - goal-scope MEDIUM, step 1 reads the card file in its own turn, so the per-card read splits into two turns: fixed, step 1 becomes a pack-mode marker (D3).
-   - goal-scope LOW, the measurement has no owner: fixed, Scope Out says queuing it is the operator's call.
+   - goal-scope LOW, the measurement has no owner: settled, queuing it is the operator's call.
    - goal-scope LOW, a null result's meaning is unanswered: rejected, the board fixes the Master out, and the measurement's verdict is the operator's.
    - board-fit MEDIUM, a per-card `Pack` ties the type to cards against `enclose-kickstart`: fixed, `Pack` stays card-agnostic behind a per-card wrapper (D1).
-   - board-fit MEDIUM, old pack-on counts are not a baseline: fixed in Scope Out.
+   - board-fit MEDIUM, old pack-on counts are not a baseline: settled, not a requirement of this task.
+     The measurement's pack-on counts so far used the old pack, so the after-measurement counts only pack-on runs begun after this lands; queuing it is the operator's call.
    - board-fit LOW, same type concern for the Burler side: fixed by the same D1 change.
    - board-fit LOW, `weaver` unnamed as a consumer: rejected, no dependency either way.
    - pattern-fit MEDIUM, `PATTERN-leaf-packages` does not cover `planindex`: fixed, the constraint cites `planindex`'s own contract.
