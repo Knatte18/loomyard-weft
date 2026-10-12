@@ -13,3 +13,9 @@ Because pack offsets are computed at begin-batch, a later card's spans can be st
 - Drop the whole-file rule for files an earlier card edited: offsets are all valid in the first turn, and later edits use the Edit tool's text matching, which does not depend on line numbers.
 - The pack stays grouped per card in the prompt so the fork knows which span serves which card; only the read timing changes.
 - The fork still reads further (callers, whole files) whenever a card needs it.
+
+## Alternative (operator)
+
+Resolve the pack fresh with quarry before each card, top down, instead of once at begin-batch.
+Each card's spans then match the file as earlier cards left it, so per-card reads stay valid and the whole-file rule can go too.
+This keeps the first turn's context small, at the cost of one quarry call per card.
