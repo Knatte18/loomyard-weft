@@ -1,6 +1,6 @@
 # reed: a strand in its own tmux window
 
-`reed-multi-window` · Task · feature, reed, shuttle
+`reed-multi-window` · Task · feature, reed, shuttle · running · Worktree-Create
 
 Own-window strand anchoring: a `display` anchor that spawns a strand into its own switchable tmux window instead of a pane.
 Operator 2026-10-12: wanted at some point, not now.

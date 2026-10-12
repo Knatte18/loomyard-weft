@@ -17,8 +17,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status**<br>• Three intake bugs: validate gate-step package paths at plan time, fix the flaky concurrent-sweep test, and make a producer exit without status diagnosable. | [`intake-bugs-1012`](design-intake-bugs-1012.md) | loom | Merge-Bouncer | 5h | 3h | loom, webster, shed |
-| 2 | **Small cleanups: tokencount cutoff skew, audit reader globs, duplicate weft carve-out**<br>• Guard the tokencount cutoff against tag skew, bound audit reader globs and document the git pathspec case, and drop one of two duplicate loomyard-weft carve-outs. | [`cleanup-1012`](design-cleanup-1012.md) | loom | Merge-In | 2d | 2h | fabric |
+| 1 | **reed: a strand in its own tmux window**<br>• Three related ideas for reed beyond one pane per strand and one window per worktree | [`reed-multi-window`](design-reed-multi-window.md) | loom | Worktree-Create | 8d | 2h | reed, shuttle |
+| 2 | **Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status**<br>• Three intake bugs: validate gate-step package paths at plan time, fix the flaky concurrent-sweep test, and make a producer exit without status diagnosable. | [`intake-bugs-1012`](design-intake-bugs-1012.md) | loom | Merge-Bouncer | 5h | 3h | loom, webster, shed |
+| 3 | **Small cleanups: tokencount cutoff skew, audit reader globs, duplicate weft carve-out**<br>• Guard the tokencount cutoff against tag skew, bound audit reader globs and document the git pathspec case, and drop one of two duplicate loomyard-weft carve-outs. | [`cleanup-1012`](design-cleanup-1012.md) | loom | Merge-In | 2d | 2h | fabric |
 
 ### Ready
 
@@ -28,8 +29,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **reed: a strand in its own tmux window**<br>• Three related ideas for reed beyond one pane per strand and one window per worktree | [`reed-multi-window`](design-reed-multi-window.md) | loom |  | 8d | 2h | reed, shuttle |
-| 2 | **lyx pause leaves idle drivers in the rewind picker**<br>• The pause Esc opened Claude Code rewind picker in both idle run drivers; resume then types into the picker. | [`pause-esc-rewind`](design-pause-esc-rewind.md) | loom |  | 1h | 1h | reed, shuttle |
+| 1 | **lyx pause leaves idle drivers in the rewind picker**<br>• The pause Esc opened Claude Code rewind picker in both idle run drivers; resume then types into the picker. | [`pause-esc-rewind`](design-pause-esc-rewind.md) | loom |  | 1h | 1h | reed, shuttle |
 
 ### Layer A
 
