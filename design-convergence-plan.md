@@ -2,6 +2,8 @@
 
 `convergence-plan` · Task · enhancement, orch, shed
 
+Depends on: [`alignment-agent`](design-alignment-agent.md), [`runs-overview`](design-runs-overview.md)
+
 ## Seen
 
 Operator 2026-09-30: take a step back and plan for convergence, not keep accepting more bugs.
