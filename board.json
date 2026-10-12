@@ -493,23 +493,6 @@
       "body": "## Seen\n\nThe trace files written for each lyx invocation hold only high-level messages, and `_lyx/config/logger.yaml` sets only retention (`trace_retention_count`, `trace_retention_days`).\nThe file log has no configurable level, so after the 2026-10-08 crash the traces could not show what lyx's subcommands did.\nActivity-ranked pruning also left the per-minute invocation counts incomplete.\n\n## Idea\n\n`logger.yaml` gains a `level` key (error, warn, info, debug) for the file trace, independent of the `-v` console verbosity, with info as the default.\nEvery engine logs its decisions and external calls at info or debug, so raising the level makes most of what lyx does traceable without a rebuild.\nThe spawn audit stays always on, whatever the level, because it cannot be turned on after a crash.\n"
     },
     {
-      "id": 255,
-      "slug": "plan-multi-llm",
-      "title": "Plan-Write on MultiLLMProducer: advisors gather facts and check cards",
-      "kind": "note",
-      "labels": [
-        "feature",
-        "loom",
-        "stencil"
-      ],
-      "issues": [],
-      "priority": "low",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written",
-      "body": "## Seen\n\nPlan gate rejects and Plan-Review rounds come mostly from facts the planner got wrong or missed: an uncovered caller, a verify line in the wrong module, a nested fixture module, a card over its test budget.\nPlan is one document that must hang together, so two agents writing it at once would conflict.\n\n## Idea\n\nPlan-Write runs on `MultiLLMProducer` (task `multi-llm-producer`), the planner as the `chair`, with advisors doing work the chair would otherwise do itself:\n\n1. A code-reading advisor maps, for each package the plan touches, its callers, tests, nested modules and verify commands, and answers the chair's questions from that map.\n2. A card-checking advisor reads each card as the chair finishes it and checks its scope, `Edit:` list, verify lines and test budget, so the chair fixes it while its context is fresh rather than in a later review round.\n\nA third shape, advisors writing the cards of their own batch from the chair's overview, is faster on large tasks but makes the cards hard to keep consistent; left out unless the first two fall short.\n\n## When\n\nOperator, 2026-10-08: later, after `discussion-multi-llm`.\nPlan runs on `fable[high]` as a single agent from 2026-10-08; this is the next step if that does not reduce plan gate rejects and Plan-Review rounds.\n"
-    },
-    {
       "id": 264,
       "slug": "proc-child-lifetime",
       "title": "One owner for child-process lifetime in internal/proc",
