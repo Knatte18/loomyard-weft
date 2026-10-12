@@ -25,7 +25,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 6 | **Board entries carry created and revised dates; views show age**<br>• Entries carry created and updated dates; list and README show age and can sort by it, so long-lying entries stand out | [`board-entry-age`](design-board-entry-age.md) | darn | Worktree-Create | board |
+| 6 | **Board entries carry created and revised dates; views show age**<br>• Entries carry created and updated dates; list and README show age and can sort by it, so long-lying entries stand out | [`board-entry-age`](design-board-entry-age.md) | darn | Darn-Write | board |
 
 ### Ready
 
