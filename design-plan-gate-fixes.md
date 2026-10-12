@@ -1,6 +1,6 @@
 # Plan gate: receiver-typed delete-before-reference; plan review validates its fixes
 
-`plan-gate-fixes` · Task · bug, loom, quarry, stencil · running · Plan-Write
+`plan-gate-fixes` · Task · bug, loom, quarry, stencil · running · Plan-Bouncer
 
 Two Plan-stage bugs from task `burler-split-budget` that cost Plan-Write time and Plan-Review rounds.
 
