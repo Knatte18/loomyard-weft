@@ -1,7 +1,7 @@
 # Card 7 — `lyx shuttle interrupt` and `send` report the guards' failures
 
 **Create:**
-- `plan:internal/shuttlecli#TestInterruptAndSendCmd_FailWithTheGuardsMessage` -> `func TestInterruptAndSendCmd_FailWithTheGuardsMessage(t *testing.T)`
+- `internal/shuttlecli#TestInterruptAndSendCmd_FailWithTheGuardsMessage`
 
 **Edit:**
 - `cmd/lyx/testdata/test-budget.yaml`

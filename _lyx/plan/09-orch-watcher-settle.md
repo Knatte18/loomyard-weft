@@ -1,9 +1,9 @@
 # Card 9 — the orch watcher's hub-pause retry waits the settle across ticks and goes through the guard
 
 **Create:**
-- `plan:internal/orchengine#Watcher.pauseInterrupt` -> `func (w *Watcher) pauseInterrupt(st State) (sent bool)`
-- `plan:internal/orchengine#fakeSession.InterruptSettle` -> `func (f *fakeSession) InterruptSettle() time.Duration`
-- `plan:internal/orchcli#runnerSession.InterruptSettle` -> `func (s runnerSession) InterruptSettle() time.Duration`
+- `internal/orchengine#Watcher.pauseInterrupt`
+- `internal/orchengine#fakeSession.InterruptSettle`
+- `internal/orchcli#runnerSession.InterruptSettle`
 
 **Delete:**
 - `internal/orchengine#maxPauseInterrupts`

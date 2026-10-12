@@ -1,18 +1,18 @@
 # Card 8 — the pause interrupts only a running turn, settles before a guarded retry, and reports plainly
 
 **Create:**
-- `plan:internal/pauseengine#BackgroundSession` -> `type BackgroundSession struct`
-- `plan:internal/pauseengine#fakePair.Background` -> `func (p *fakePair) Background(guid string) ([]string, bool, error)`
-- `plan:internal/pauseengine#fakePair.PaneRunningTurn` -> `func (p *fakePair) PaneRunningTurn(guid string) (bool, error)`
-- `plan:internal/pauseengine#fakePair.InterruptSettle` -> `func (p *fakePair) InterruptSettle() time.Duration`
-- `plan:internal/pausecli#shuttlePair.state` -> `func (p shuttlePair) state(guid string) (shuttleengine.SessionState, error)`
-- `plan:internal/pausecli#readTurn` -> `func readTurn(state shuttleengine.SessionState) (running bool, labels []string, background bool)`
-- `plan:internal/pausecli#TestShuttlePairReadings` -> `func TestShuttlePairReadings(t *testing.T)`
-- `plan:internal/pausecli#signalEngine` -> `type signalEngine struct`
-- `plan:internal/pausecli#signalEngine.ParseSessionSignals` -> `func (e *signalEngine) ParseSessionSignals(data []byte) ([]shuttleengine.SessionSignal, int)`
-- `plan:internal/pausecli#shuttlePair.Background` -> `func (p shuttlePair) Background(guid string) ([]string, bool, error)`
-- `plan:internal/pausecli#shuttlePair.PaneRunningTurn` -> `func (p shuttlePair) PaneRunningTurn(guid string) (bool, error)`
-- `plan:internal/pausecli#shuttlePair.InterruptSettle` -> `func (p shuttlePair) InterruptSettle() time.Duration`
+- `internal/pauseengine#BackgroundSession`
+- `internal/pauseengine#fakePair.Background`
+- `internal/pauseengine#fakePair.PaneRunningTurn`
+- `internal/pauseengine#fakePair.InterruptSettle`
+- `internal/pausecli#shuttlePair.state`
+- `internal/pausecli#readTurn`
+- `internal/pausecli#TestShuttlePairReadings`
+- `internal/pausecli#signalEngine`
+- `internal/pausecli#signalEngine.ParseSessionSignals`
+- `internal/pausecli#shuttlePair.Background`
+- `internal/pausecli#shuttlePair.PaneRunningTurn`
+- `internal/pausecli#shuttlePair.InterruptSettle`
 - `internal/pausecli/deps_test.go`
 
 **Edit:**
@@ -39,7 +39,7 @@
 - `internal/shuttleengine#SessionState.RunningTurn`
 - `internal/shuttleengine#ErrNoRunningTurn`
 - `internal/shuttleengine#ErrRewindPickerOpen`
-- `plan:internal/shuttleengine#SessionBusyError`
+- `internal/shuttleengine#SessionBusyError`
 - `internal/shuttleengine#Runner.PaneRunningTurn`
 - `internal/shuttleengine#Runner.InterruptSettle`
 

@@ -1,9 +1,9 @@
 # Card 6 — a held send carries its readiness reason apart from the pane tail
 
 **Create:**
-- `plan:internal/shuttleengine#SessionBusyError` -> `type SessionBusyError struct`
-- `plan:internal/shuttleengine#SessionBusyError.Error` -> `func (e *SessionBusyError) Error() string`
-- `plan:internal/shuttleengine#SessionBusyError.Unwrap` -> `func (e *SessionBusyError) Unwrap() error`
+- `internal/shuttleengine#SessionBusyError`
+- `internal/shuttleengine#SessionBusyError.Error`
+- `internal/shuttleengine#SessionBusyError.Unwrap`
 
 **Edit:**
 - `internal/shuttleengine#awaitIdleSession`
