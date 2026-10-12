@@ -38,7 +38,9 @@ Out:
 `loom.yaml` gains `plan_producer`, accepting `single` and `twill`; an empty or absent value reads as `single`.
 Any other value fails config load with an error naming both values, and the refusal spec gains its row.
 The embedded template defaults to `single`, so a hub that does not opt in renders today's plan prompt byte for byte.
-Rationale: mirrors `discussion_producer`, the selection the board asks for; reading empty as `single` keeps a `loom.yaml` written before the key loading, since a present file lacking a key yields the zero value.
+Rationale: a selection key like `discussion_producer`, which the board asks for.
+An absent key takes the template's `single` through `configengine`'s in-memory fill of a present file's missing template keys;
+an explicit empty value reads as `single`, unlike `discussion_producer`, which refuses it.
 
 ### D2 — Twill is a spec variant of the single writer
 
@@ -46,6 +48,7 @@ Under `twill`, `PlanSpec` renders the directive into a new optional marker of `l
 The row, gates, output file (`00-overview.md`), timeout, resume identity and plan-directory rotation stay `single`'s.
 Fork authorization follows Discussion's: with `claude_deny_agent_tool` true the Agent hook admits only `subagent_type: "fork"`; with it false no Agent hook is installed, as for `single`.
 Bound: forks run on the writer's model, read-only and without the Agent tool by stencil; the plan gates bound what lands in the plan.
+A fork giving up after 15 empty waits of up to five minutes each, against this repository's 120-minute plan timeout, leaves the plan without its lens review, recorded in `lens-review.md`; the Plan-Review segment and the plan gates still run on it.
 Rationale: Discussion twill showed the variant needs no new engine; Plan-Write is gated, so its run already waits on outstanding forks before counting an arrival.
 
 ### D3 — Fork spawn before any plan file
@@ -55,7 +58,8 @@ The Plan host's spawn point says:
 
 - this lens review is the one review step the writer runs on its own plan, overriding the template's "no review logic of your own" for this procedure;
 - once Step 2's reading is done, read the rubric, state the cards to be written in a text reply, one line each (number, slug, the decisions it carries), and spawn the forks in the same turn;
-- write no file under the plan directory before the Agent call.
+- write no file under the plan directory before the Agent call;
+- add to every fork's prompt, after the boilerplate and before its lens text, the line "Report defects only, never a passed check. Give each finding's evidence as the `path:line` or glyph read."
 
 Rationale: round 1's writers spawned late; round 2's splice and guard made every writer spawn on time.
 The template's opening sentence stays, so `single`'s prompt keeps its bytes.
@@ -68,6 +72,7 @@ It gains three required host values:
 - the spawn point, the text opening the procedure (Discussion: today's "When the design is settled and before you write any output file, run this procedure once:");
 - the rejection rule in step 6 (Discussion: today's "Fix the record, or reject the finding with a one-line reason.");
 - the severity rule in the fork boilerplate's last line (Discussion: today's "a severity (`BLOCKING`, `MEDIUM` or `LOW`)").
+  The marker replaces only that parenthesised phrase, so Discussion keeps its bytes, and every host's value reads as a noun phrase in that slot: "each with <value>, the section or decision it concerns, …".
 
 The reviewed files become one host-rendered phrase instead of a bullet list rendered inside backticks, which today breaks the boilerplate's "read the files under …" line.
 Discussion's rendered prompt changes only on that line.
@@ -79,9 +84,11 @@ One stencil keeps the two hosts' procedures from drifting.
 - Reviewed: the plan under the plan directory, `00-overview.md` and every card file its Card Index names.
 - Rubric: `loom-rubric-plan-review`.
 - Rejection rule: fix the plan, or reject the finding; a rejection of a BLOCKING or MEDIUM finding cites the code read to reject it, a `path:line` or glyph opened in this session and what it shows against the finding; such a finding the writer cannot refute from code it has read is fixed; keeping a waiver, a deferral or an unplanned test against such a finding is a rejection and needs the same citation; a LOW finding is rejected with a one-line reason.
-- Severity rule: report defects only, never a passed check; `BLOCKING` when the plan as written fails its verify or ships a wrong behavior, `MEDIUM` when a decision, criterion or branch goes unreached or untested, `LOW` otherwise; evidence is the `path:line` or glyph read.
+- Severity rule: a severity (`BLOCKING` when the plan as written fails its verify or ships a wrong behavior, `MEDIUM` when a decision, criterion or branch goes unreached or untested, `LOW` otherwise).
 - Format step: Step 3 and Step 4; self-check step: Step 5; self-check command: `lyx loom validate-plan`.
 - Disposition place: the lens-review file (D7).
+
+The rejection and severity rules, and the line D3 adds to every fork's prompt, are rendered as written here, since the bench file they come from is unreadable to the plan writer.
 
 The Plan template renders no write-scope paragraph: it has no write-scope section to widen, and the directive's own step 4 tells the writer to create the marker and its parent directory.
 Rationale: the round-2 bench text, which the build decision adopts; the board scopes the citation rule to BLOCKING and MEDIUM.
@@ -116,7 +123,9 @@ The embedded `burler.yaml` template gains four lenses with these texts and a fan
 - `forced-edits`: Focus on what each change forces outside the members a card names: for every member a card changes, find its callers, the tests that assert its output or wording, and the comments, doc files and stated reasons (such as a `//testtiming:keep` reason) that describe it, and report each one the change makes wrong that no card lists. Check that each `Create` handle's package is the package clause of the file the Intent puts it in, an external `_test` package included, and that each listed glyph is the one `lyx quarry` gives. Apply the Plan-Review rubric's "Member glyphs on an `Edit` card" and "The re-sign arrow". Report anything else you notice too — emphasis, never exclusion.
 - `test-economy`: Focus on test economy: for every new top-level test and every new row, open the test file it lands in and the existing tests of the same function, and report a new top-level test that should be a row of an existing test, a row that repeats a behavior an existing test already reaches, and a new top-level test that its package's row in `cmd/lyx/testdata/test-budget.yaml` does not budget. Apply the Plan-Review rubric's "Test economy". Report anything else you notice too — emphasis, never exclusion.
 
+The lens texts are rendered as written here, since the bench file they come from is unreadable to the plan writer.
 The fan name is fixed in `internal/loomengine`; redefining it in a worktree's `burler.yaml` changes the lenses.
+Bound: a redefined fan changes only the lens texts the forks review through; the fan resolver refuses an empty fan, one past its maximum size and one naming an undefined lens, and the forks stay read-only per D2.
 An unreadable `burler.yaml` or an unresolvable `twill-plan` fails the Plan-Write spawn with an error naming the fan, `burler.yaml` and the way forward, each with a refusal-spec row.
 Discussion's fan-resolution code is shared, parameterised by fan and row name.
 Rationale: same seam as `twill-discussion`; the board fixes the lens set.
@@ -153,6 +162,12 @@ Rationale: production code cannot import a test file or a `testkit` kit, and one
 The tracked `_lyx/config/loom.yaml` sets `plan_producer: twill` and `plan: opus[medium]`.
 Rationale: the operator's build decision.
 
+### Added after Discussion (parent, 2026-10-12): Plan severity rule fits D4's slot
+
+Decision: Accept the round-2 fix: D5's severity rule ends at the closing parenthesis, the evidence definition lives in D3's per-fork line, and the acceptance criterion pins the exact rendered boilerplate line.
+
+Rationale: Verified in the record (D3 line 62, D5, criterion): the value now reads as a noun phrase in D4's slot and a test can pin the line byte for byte; the round-2 LOW findings F2 and F3 are fixed too, so the open ledger keys are closed in the record.
+
 ## Constraints
 
 - `PATTERN-stencil-ownership`: the directive and the plan template are read at call time from the told stencils directory.
@@ -180,7 +195,6 @@ Rationale: the operator's build decision.
 - `config-layers-run-settings` is in flight and changes how `_lyx/config/*.yaml` layers resolve; D1's new key and D11's edit to the tracked `loom.yaml` may need rebasing onto its layer model.
 - `seats-replaces-singlellm` and `plan-multi-llm` both move Plan-Write off the single producer; each then carries `plan_producer: twill`, the ready marker and the lens-review file over to its own producer.
 - Landing warns when a task branch changes a per-worktree config file; D11 triggers that warning once, by intent.
-- A fork gives up after 15 empty waits, about an hour; a writer whose plan and self-check loop runs past that gets "no record to review" from every fork and lands an unreviewed plan, recorded only in `lens-review.md`.
 - D9's test-prefix heuristic misses a helper without a test prefix declared in a `_test.go` file outside `internal/`.
 
 ## Acceptance criteria
@@ -188,13 +202,14 @@ Rationale: the operator's build decision.
 - `plan_producer: twill` loads; an empty or absent key loads as `single`; an unknown value fails with an error naming `single` and `twill`.
 - With `single`, the Plan-Write prompt is byte-identical to today's and the spec has `ForkSubagents` false.
 - With `twill`, the prompt carries the directive after Step 2 and before Step 3 with the four `twill-plan` lenses in order, the plan rubric path, the ready marker, the plan host's spawn point, rejection rule and severity rule, and the spec has `ForkSubagents` true.
+- The twill Plan prompt's fork boilerplate last line reads exactly "Return your findings only as your final message, each with a severity (`BLOCKING` when the plan as written fails its verify or ships a wrong behavior, `MEDIUM` when a decision, criterion or branch goes unreached or untested, `LOW` otherwise), the section or decision it concerns, a one-line summary and the evidence."
 - The Discussion twill prompt differs from today's only on the reviewed-files line, which now names both discussion files as readable paths.
 - A missing host value or an empty lens list fails the directive render with an error naming the marker.
 - An unreadable `burler.yaml` and an unresolvable `twill-plan` each fail the Plan-Write spawn with the refusal-spec text.
 - A stale plan ready marker is removed before a fresh Plan-Write spawn, including one whose plan directory holds no stale files; it is kept when attaching to a live writer and when relaunching a dead one.
 - `lens-review.md` in the plan directory raises no `index-file-mismatch`, changes no webster plan fingerprint, is not named in the prior-plan block, and is committed and rotated with the plan.
-- `fabric-vocabulary-name` refuses: a `Create` handle `Test…` with a side token in a package outside `internal/`; a member with a side token and no test prefix under `internal/`; a configsync member with a side token; a `Rename` `New` handle with a side token; a host-geometry identifier under `internal/`, including as a method's last segment.
-- It passes: a side token in an owner-set package other than configsync; a member without a test prefix outside `internal/` and the doc roots; a name with no token; a handle that fails to parse, with no second finding.
+- `fabric-vocabulary-name` refuses: a `Create` handle `Test…` with a side token in a package outside `internal/`; a member with a side token and no test prefix under `internal/`; a member with a side token and no test prefix in a package under a doc root such as `cmd/`; a configsync member with a side token; a `Rename` `New` handle with a side token; a host-geometry identifier under `internal/`, including as a method's last segment; a host-geometry identifier under `cmd/`; a `Type.Method` member under `internal/` whose type segment alone carries a side token.
+- It passes: a side token in an owner-set package other than configsync; a member without a test prefix outside `internal/` and the doc roots; a host-geometry identifier in a package outside `internal/` and `cmd/`, such as one under `tools/`; a name with no token; a handle that fails to parse, with no second finding.
 - `TestEnforcement_FabricVocabulary` and its fixtures pass unchanged in behavior, calling the moved predicates.
 - The embedded burler template resolves `twill-plan` to the four lenses.
 
