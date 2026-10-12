@@ -233,6 +233,13 @@ Rationale: D6 compares unexpanded values in both directions; the reverse case is
 - R5: `burler-split-budget` (running) adds per-perch loom keys; a run setting naming one validates only once that task lands, and the hub-level per-perch values it plans go into the repo default via `lyx config loom --layer default` if this task lands first.
 - R6: `orch-wake-policy` (running) also changes batten and moves the post-landing config reconcile into batten; whichever lands second rebases its batten changes onto the other.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 4: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/discussion/round-4-review.md; fixer report: _lyx/reviews/discussion/round-4-fixer-report.md.
+  - d1-env-expansion-across-layers-undecided (class decision, severity MEDIUM, open in rounds 4)
+  - d4-bound-false-for-per-worktree-modules (class design, severity BLOCKING, open in rounds 1, 2, 3, 4)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - A key absent from every file layer resolves to the template default, and a key present in several layers resolves to the highest one, at every mapping depth.
