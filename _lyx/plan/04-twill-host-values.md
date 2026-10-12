@@ -14,7 +14,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/twilldirective#TestDirective_MissingValueNamesTheMarker` -> `func TestDirective_MissingValueNamesTheMarker(t *testing.T)`
+- `internal/twilldirective#TestDirective_MissingValueNamesTheMarker`
 
 **Intent:**
 D4: the shared directive stencil gains the three host values Plan needs, and the reviewed files become one host-rendered phrase.

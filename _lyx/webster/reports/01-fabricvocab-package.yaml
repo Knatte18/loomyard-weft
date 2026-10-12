@@ -1,0 +1,8 @@
+status: OK
+head_sha: f1d4d69f75f5e41a706fe7c347810d95065424f0
+deviations:
+  - contracts/specs/loom-plan-spec.md
+  - internal/loomcli/validate.go
+  - internal/planglyph/doc.go
+  - internal/twilldirective/doc.go
+  - internal/planparser/doc.go

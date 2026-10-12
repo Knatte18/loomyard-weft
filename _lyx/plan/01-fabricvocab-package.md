@@ -4,22 +4,22 @@
 - `internal/fabricvocab/fabricvocab.go`
 - `internal/fabricvocab/doc.go`
 - `internal/fabricvocab/leaf_enforcement_test.go`
-- `plan:internal/fabricvocab#ConfigsyncOwnerDir` -> `const ConfigsyncOwnerDir = "internal/configsync"`
-- `plan:internal/fabricvocab#owners` -> `var owners map[string]bool`
-- `plan:internal/fabricvocab#docRoots` -> `var docRoots map[string]bool`
-- `plan:internal/fabricvocab#hostGeometryIdentifiers` -> `var hostGeometryIdentifiers map[string]bool`
-- `plan:internal/fabricvocab#sideTokens` -> `var sideTokens []string`
-- `plan:internal/fabricvocab#packageNamePattern` -> `var packageNamePattern *regexp.Regexp`
-- `plan:internal/fabricvocab#SideTokens` -> `func SideTokens() []string`
-- `plan:internal/fabricvocab#BareToken` -> `func BareToken(s string) bool`
-- `plan:internal/fabricvocab#BareTokenIn` -> `func BareTokenIn(s string, stripPackageName bool) bool`
-- `plan:internal/fabricvocab#IsHostGeometryIdentifier` -> `func IsHostGeometryIdentifier(name string) bool`
-- `plan:internal/fabricvocab#IsOwner` -> `func IsOwner(dir string) bool`
-- `plan:internal/fabricvocab#SkipsBareCheck` -> `func SkipsBareCheck(dir string) bool`
-- `plan:internal/fabricvocab#FailsBareCheck` -> `func FailsBareCheck(dir string, bareIdent, bareLiteralOrComment bool) bool`
-- `plan:internal/fabricvocab#IsDocRoot` -> `func IsDocRoot(first string) bool`
-- `plan:internal/fabricvocab#allowedImports` -> `var allowedImports []string`
-- `plan:internal/fabricvocab#TestLeafInvariant_AllowlistOnly` -> `func TestLeafInvariant_AllowlistOnly(t *testing.T)`
+- `internal/fabricvocab#ConfigsyncOwnerDir`
+- `internal/fabricvocab#owners`
+- `internal/fabricvocab#docRoots`
+- `internal/fabricvocab#hostGeometryIdentifiers`
+- `internal/fabricvocab#sideTokens`
+- `internal/fabricvocab#packageNamePattern`
+- `internal/fabricvocab#SideTokens`
+- `internal/fabricvocab#BareToken`
+- `internal/fabricvocab#BareTokenIn`
+- `internal/fabricvocab#IsHostGeometryIdentifier`
+- `internal/fabricvocab#IsOwner`
+- `internal/fabricvocab#SkipsBareCheck`
+- `internal/fabricvocab#FailsBareCheck`
+- `internal/fabricvocab#IsDocRoot`
+- `internal/fabricvocab#allowedImports`
+- `internal/fabricvocab#TestLeafInvariant_AllowlistOnly`
 
 **Edit:**
 - `internal/lyxcwd#fabricVocabularyFailures`

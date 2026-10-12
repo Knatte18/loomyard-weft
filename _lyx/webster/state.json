@@ -1,12 +1,12 @@
 {
   "runGuid": "c7b455e8442fcba6137642d71e9a8271",
-  "planFingerprint": "34f9a7d2456b21cb18d2f33d8202ce956fe8ea5b6aa7d7e398b62aa1e158c048",
+  "planFingerprint": "4fcfa2296f8e94979be8c9f779cac7d62422756807b984137aba80a2a3671a17",
   "planFileHashes": {
     "00-overview.md": "36cec980ef521ee8c547ec9a0522867f9224b2c3c9ac30c484d033228a364500",
-    "01-fabricvocab-package.md": "4ed0750f0b9e7424cce29be2b91e8e049e3cd556649d4027669bb22d8c6a1ba8",
-    "02-vocabulary-name-check.md": "bbdfdfa94599e8094d9260ebb9c817cab8d3789dce0b287fb347ce8fba35d01d",
-    "03-index-runs-vocabulary-check.md": "3e6d7c9bde79084eb2473919300ab2881a4fea3d3f64a3917e1c31e6c2750871",
-    "04-twill-host-values.md": "4175f661709c49e1d2cad96ffd65b1e69449b23945b8af1b53c3ca30930280d7",
+    "01-fabricvocab-package.md": "64ec771b75d25b45aaf86aedefa16b2ec2372493ed79f0eeac90b5ee98933cb1",
+    "02-vocabulary-name-check.md": "d0cf0d219a467a6414678e9e06c676fa1ed1ef73a2f5853ad3a6aa3972374c8e",
+    "03-index-runs-vocabulary-check.md": "b3ab215072161e0cc2fd71a410a156e654d3a1bebecc56014aed4211dd007b3e",
+    "04-twill-host-values.md": "3514b77216d6bca017fc7f130d07316fb76b43daa657847196d84c014a2beca5",
     "05-twill-plan-fan.md": "5d7bf1de1c5c419a34d9d92b9675ae4df4fe4e86530606b47c19255e06eeea02",
     "06-plan-producer-key.md": "919a25b1424bdbdbabc749b9931afccac719bde10b404ceac8a87d738ff8e538",
     "07-plan-ready-marker.md": "4d7061bd8bb309bf63e72ae9901d3b6a8723aecd67c9154968b60f6d5c80abf1",
@@ -236,7 +236,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "ac38adbc80b16731d80a8431fb6dd64c",
   "masterSessionId": "21ed30b2-e51b-4778-98e7-90a8daf3e96a",
   "batches": {
@@ -250,18 +250,42 @@
         "05-twill-plan-fan"
       ],
       "cardHashes": {
-        "01-fabricvocab-package": "4ed0750f0b9e7424cce29be2b91e8e049e3cd556649d4027669bb22d8c6a1ba8",
-        "02-vocabulary-name-check": "bbdfdfa94599e8094d9260ebb9c817cab8d3789dce0b287fb347ce8fba35d01d",
-        "03-index-runs-vocabulary-check": "3e6d7c9bde79084eb2473919300ab2881a4fea3d3f64a3917e1c31e6c2750871",
-        "04-twill-host-values": "4175f661709c49e1d2cad96ffd65b1e69449b23945b8af1b53c3ca30930280d7",
+        "01-fabricvocab-package": "64ec771b75d25b45aaf86aedefa16b2ec2372493ed79f0eeac90b5ee98933cb1",
+        "02-vocabulary-name-check": "d0cf0d219a467a6414678e9e06c676fa1ed1ef73a2f5853ad3a6aa3972374c8e",
+        "03-index-runs-vocabulary-check": "b3ab215072161e0cc2fd71a410a156e654d3a1bebecc56014aed4211dd007b3e",
+        "04-twill-host-values": "3514b77216d6bca017fc7f130d07316fb76b43daa657847196d84c014a2beca5",
         "05-twill-plan-fan": "5d7bf1de1c5c419a34d9d92b9675ae4df4fe4e86530606b47c19255e06eeea02"
       },
       "startSha": "414d8b713a9cb4a85bd49c3a8e9b733cfb38e7b5",
       "kind": "fork",
       "spawnedAt": "2026-10-12T07:52:47Z",
       "sessionId": "21ed30b2-e51b-4778-98e7-90a8daf3e96a",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-fabricvocab-package",
+        "status": "done",
+        "head_sha": "f1d4d69f75f5e41a706fe7c347810d95065424f0",
+        "deviations": [
+          "contracts/specs/loom-plan-spec.md",
+          "internal/loomcli/validate.go",
+          "internal/planglyph/doc.go",
+          "internal/twilldirective/doc.go",
+          "internal/planparser/doc.go"
+        ]
+      },
+      "cardShas": [
+        "f1d4d69f75f5e41a706fe7c347810d95065424f0"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-twill-plan/21ed30b2-e51b-4778-98e7-90a8daf3e96a/subagents/agent-a1dd06a5350ffee08.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-twill-plan/21ed30b2-e51b-4778-98e7-90a8daf3e96a/subagents/agent-a1dd06a5350ffee08.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-twill-plan/21ed30b2-e51b-4778-98e7-90a8daf3e96a/subagents/agent-a1dd06a5350ffee08.jsonl"
+  ]
 }

@@ -3,10 +3,10 @@
 **Create:**
 - `internal/planparser/vocabname.go`
 - `internal/planparser/vocabname_test.go`
-- `plan:internal/planparser#fabricVocabularyNameCheck` -> `const fabricVocabularyNameCheck = "fabric-vocabulary-name"`
-- `plan:internal/planparser#CheckFabricVocabularyName` -> `func CheckFabricVocabularyName(plan *Plan) []ValidationError`
-- `plan:internal/planparser#hasTestPrefix` -> `func hasTestPrefix(name string) bool`
-- `plan:internal/planparser_test#TestCheckFabricVocabularyName` -> `func TestCheckFabricVocabularyName(t *testing.T)`
+- `internal/planparser#fabricVocabularyNameCheck`
+- `internal/planparser#CheckFabricVocabularyName`
+- `internal/planparser#hasTestPrefix`
+- `internal/planparser_test#TestCheckFabricVocabularyName`
 
 **Edit:**
 - `internal/planparser/doc.go`
@@ -18,11 +18,11 @@
 - `internal/planparser#HandleIdentifier`
 - `internal/planparser#OwnedHandles`
 - `internal/planparser#cardID`
-- `plan:internal/fabricvocab#BareToken`
-- `plan:internal/fabricvocab#SkipsBareCheck`
-- `plan:internal/fabricvocab#IsDocRoot`
-- `plan:internal/fabricvocab#IsHostGeometryIdentifier`
-- `plan:internal/fabricvocab#SideTokens`
+- `internal/fabricvocab#BareToken`
+- `internal/fabricvocab#SkipsBareCheck`
+- `internal/fabricvocab#IsDocRoot`
+- `internal/fabricvocab#IsHostGeometryIdentifier`
+- `internal/fabricvocab#SideTokens`
 
 **Intent:**
 D9: a `planparser` function that refuses a name a plan declares which the fabric-vocabulary scan would refuse once it lands.

@@ -11,13 +11,13 @@
 
 **Create:**
 - `internal/planglyph/index_test.go`
-- `plan:internal/planglyph#noFabricReference` -> `type noFabricReference struct`
-- `plan:internal/planglyph#noFabricReference.MatchPath` -> `func (noFabricReference) MatchPath(cmd string) (string, bool)`
-- `plan:internal/planglyph#noFabricReference.MatchSpelling` -> `func (noFabricReference) MatchSpelling(cmd string) (string, bool)`
-- `plan:internal/planglyph#TestIndex_AppendsFabricVocabularyName` -> `func TestIndex_AppendsFabricVocabularyName(t *testing.T)`
+- `internal/planglyph#noFabricReference`
+- `internal/planglyph#noFabricReference.MatchPath`
+- `internal/planglyph#noFabricReference.MatchSpelling`
+- `internal/planglyph#TestIndex_AppendsFabricVocabularyName`
 
 **Uses:**
-- `plan:internal/planparser#CheckFabricVocabularyName`
+- `internal/planparser#CheckFabricVocabularyName`
 - `internal/planglyph#cardIDSet`
 - `internal/planglyph#minimalPlan`
 
