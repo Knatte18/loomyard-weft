@@ -13,6 +13,15 @@ review:
     fork_fresh_tokens: 0
     fork_cache_read_tokens: 0
     fork_fresh_share: 0
+fix:
+    model: opus
+    effort: medium
+    start: 2026-10-12T11:03:44Z
+    end: 2026-10-12T13:06:16.558850604+02:00
+    wall_seconds: 152.558850604
+    tokens_known: true
+    fresh_tokens: 94881
+    cache_read_tokens: 1363899
 seed:
     - model: sonnet
       effort: medium
