@@ -1,9 +1,9 @@
 # Card 7 — plan-ready-marker
 
 **Create:**
-- `plan:internal/loomengine#PlanReadyMarker` -> `func PlanReadyMarker(l *lyxcwd.Location) string`
-- `plan:internal/loomengine#RemovePlanReadyMarker` -> `func RemovePlanReadyMarker(l *lyxcwd.Location) error`
-- `plan:internal/shedrecipe#TestPlanWriteEntry_PreparePlanSpawn` -> `func TestPlanWriteEntry_PreparePlanSpawn(t *testing.T)`
+- `internal/loomengine#PlanReadyMarker`
+- `internal/loomengine#RemovePlanReadyMarker`
+- `internal/shedrecipe#TestPlanWriteEntry_PreparePlanSpawn`
 
 **Edit:**
 - `internal/loomengine#TestDiscussionPaths`

@@ -1,6 +1,6 @@
 {
   "runGuid": "c7b455e8442fcba6137642d71e9a8271",
-  "planFingerprint": "4fcfa2296f8e94979be8c9f779cac7d62422756807b984137aba80a2a3671a17",
+  "planFingerprint": "94100f1bfc5a1814e7ccb568410b12bce51eeeece0cc7c1e9d4d8bc30bf85531",
   "planFileHashes": {
     "00-overview.md": "36cec980ef521ee8c547ec9a0522867f9224b2c3c9ac30c484d033228a364500",
     "01-fabricvocab-package.md": "64ec771b75d25b45aaf86aedefa16b2ec2372493ed79f0eeac90b5ee98933cb1",
@@ -8,10 +8,10 @@
     "03-index-runs-vocabulary-check.md": "b3ab215072161e0cc2fd71a410a156e654d3a1bebecc56014aed4211dd007b3e",
     "04-twill-host-values.md": "3514b77216d6bca017fc7f130d07316fb76b43daa657847196d84c014a2beca5",
     "05-twill-plan-fan.md": "5d7bf1de1c5c419a34d9d92b9675ae4df4fe4e86530606b47c19255e06eeea02",
-    "06-plan-producer-key.md": "919a25b1424bdbdbabc749b9931afccac719bde10b404ceac8a87d738ff8e538",
-    "07-plan-ready-marker.md": "4d7061bd8bb309bf63e72ae9901d3b6a8723aecd67c9154968b60f6d5c80abf1",
-    "08-lens-review-file.md": "147cf8ada391520e6608b8663f0abc2d74295fd06ecd71081f1ad991495c9412",
-    "09-plan-twill-directive.md": "ccef096545980a402d72295e47537eed963c5e045f89eb3ef95a36d80d7e6a60"
+    "06-plan-producer-key.md": "8cd02eab92b6dbeebfc135ed7019e32a33399449884c4de7ff1be64bfb30c2eb",
+    "07-plan-ready-marker.md": "edab178529016e0c79cc1a654dc97325442692c0e390d2d4287a7abf3b30926e",
+    "08-lens-review-file.md": "91e3e32011eb90b3482ffebab5a4b844562e5ec99d4b5e5967043580a6948dfb",
+    "09-plan-twill-directive.md": "387eef939373dc83321c2da4207bde86256bbfe849cb7f23410774d281f38785"
   },
   "planOverviewFrameHash": "42ca0f928e5da494179223380e16ef8caf96d4cde02cae5c153a89e3ad28d479",
   "partition": [
@@ -236,7 +236,7 @@
       }
     }
   ],
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "ac38adbc80b16731d80a8431fb6dd64c",
   "masterSessionId": "21ed30b2-e51b-4778-98e7-90a8daf3e96a",
   "batches": {
@@ -293,20 +293,35 @@
         "09-plan-twill-directive"
       ],
       "cardHashes": {
-        "06-plan-producer-key": "919a25b1424bdbdbabc749b9931afccac719bde10b404ceac8a87d738ff8e538",
-        "07-plan-ready-marker": "4d7061bd8bb309bf63e72ae9901d3b6a8723aecd67c9154968b60f6d5c80abf1",
-        "08-lens-review-file": "147cf8ada391520e6608b8663f0abc2d74295fd06ecd71081f1ad991495c9412",
-        "09-plan-twill-directive": "ccef096545980a402d72295e47537eed963c5e045f89eb3ef95a36d80d7e6a60"
+        "06-plan-producer-key": "8cd02eab92b6dbeebfc135ed7019e32a33399449884c4de7ff1be64bfb30c2eb",
+        "07-plan-ready-marker": "edab178529016e0c79cc1a654dc97325442692c0e390d2d4287a7abf3b30926e",
+        "08-lens-review-file": "91e3e32011eb90b3482ffebab5a4b844562e5ec99d4b5e5967043580a6948dfb",
+        "09-plan-twill-directive": "387eef939373dc83321c2da4207bde86256bbfe849cb7f23410774d281f38785"
       },
       "startSha": "f1d4d69f75f5e41a706fe7c347810d95065424f0",
       "kind": "fork",
       "spawnedAt": "2026-10-12T07:58:42Z",
       "sessionId": "21ed30b2-e51b-4778-98e7-90a8daf3e96a",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-plan-producer-key",
+        "status": "done",
+        "head_sha": "404444985e7348d6df205b41254030820309b29c"
+      },
+      "cardShas": [
+        "404444985e7348d6df205b41254030820309b29c"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-twill-plan/21ed30b2-e51b-4778-98e7-90a8daf3e96a/subagents/agent-a54ec56ac92e941fa.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-twill-plan/21ed30b2-e51b-4778-98e7-90a8daf3e96a/subagents/agent-a54ec56ac92e941fa.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-twill-plan/21ed30b2-e51b-4778-98e7-90a8daf3e96a/subagents/agent-a1dd06a5350ffee08.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-twill-plan/21ed30b2-e51b-4778-98e7-90a8daf3e96a/subagents/agent-a1dd06a5350ffee08.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-twill-plan/21ed30b2-e51b-4778-98e7-90a8daf3e96a/subagents/agent-a54ec56ac92e941fa.jsonl"
   ]
 }

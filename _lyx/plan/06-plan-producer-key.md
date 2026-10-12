@@ -1,8 +1,8 @@
 # Card 6 — plan-producer-key
 
 **Create:**
-- `plan:internal/loomengine#PlanProducerSingle` -> `const PlanProducerSingle = "single"`
-- `plan:internal/loomengine#PlanProducerTwill` -> `const PlanProducerTwill = "twill"`
+- `internal/loomengine#PlanProducerSingle`
+- `internal/loomengine#PlanProducerTwill`
 
 **Edit:**
 - `internal/loomengine#Config`

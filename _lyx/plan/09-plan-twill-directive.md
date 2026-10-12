@@ -1,13 +1,13 @@
 # Card 9 — plan-twill-directive
 
 **Create:**
-- `plan:internal/loomengine#twillPlanFan` -> `const twillPlanFan = "twill-plan"`
-- `plan:internal/loomengine#planTwillSpawnPoint` -> `const planTwillSpawnPoint = ""`
-- `plan:internal/loomengine#planTwillRejectionRule` -> `const planTwillRejectionRule = ""`
-- `plan:internal/loomengine#planTwillSeverityRule` -> `const planTwillSeverityRule = ""`
-- `plan:internal/loomengine#twillLenses` -> `func twillLenses(layout *lyxcwd.Location, fan, row string) ([]twilldirective.Lens, error)`
-- `plan:internal/loomengine#planTwillDirective` -> `func planTwillDirective(layout *lyxcwd.Location, stencilsDir string) (string, error)`
-- `plan:internal/loomengine#TestPlanSpec_Twill` -> `func TestPlanSpec_Twill(t *testing.T)`
+- `internal/loomengine#twillPlanFan`
+- `internal/loomengine#planTwillSpawnPoint`
+- `internal/loomengine#planTwillRejectionRule`
+- `internal/loomengine#planTwillSeverityRule`
+- `internal/loomengine#twillLenses`
+- `internal/loomengine#planTwillDirective`
+- `internal/loomengine#TestPlanSpec_Twill`
 
 **Edit:**
 - `internal/loomengine#twillBlocks`
@@ -23,9 +23,9 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/loomengine#PlanReadyMarker`
-- `plan:internal/loomengine#PlanProducerTwill`
-- `plan:internal/planparser#LensReviewFileName`
+- `internal/loomengine#PlanReadyMarker`
+- `internal/loomengine#PlanProducerTwill`
+- `internal/planparser#LensReviewFileName`
 - `internal/loomengine#setOffParagraph`
 - `internal/loomengine#writeBurlerYAML`
 - `internal/loomengine#lensNames`

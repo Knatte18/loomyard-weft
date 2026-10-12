@@ -1,7 +1,7 @@
 # Card 8 — lens-review-file
 
 **Create:**
-- `plan:internal/planparser#LensReviewFileName` -> `const LensReviewFileName = "lens-review.md"`
+- `internal/planparser#LensReviewFileName`
 
 **Edit:**
 - `internal/planparser#knownNonCardFiles`
