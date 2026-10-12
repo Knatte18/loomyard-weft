@@ -1,0 +1,267 @@
+{
+  "runGuid": "c7b455e8442fcba6137642d71e9a8271",
+  "planFingerprint": "34f9a7d2456b21cb18d2f33d8202ce956fe8ea5b6aa7d7e398b62aa1e158c048",
+  "planFileHashes": {
+    "00-overview.md": "36cec980ef521ee8c547ec9a0522867f9224b2c3c9ac30c484d033228a364500",
+    "01-fabricvocab-package.md": "4ed0750f0b9e7424cce29be2b91e8e049e3cd556649d4027669bb22d8c6a1ba8",
+    "02-vocabulary-name-check.md": "bbdfdfa94599e8094d9260ebb9c817cab8d3789dce0b287fb347ce8fba35d01d",
+    "03-index-runs-vocabulary-check.md": "3e6d7c9bde79084eb2473919300ab2881a4fea3d3f64a3917e1c31e6c2750871",
+    "04-twill-host-values.md": "4175f661709c49e1d2cad96ffd65b1e69449b23945b8af1b53c3ca30930280d7",
+    "05-twill-plan-fan.md": "5d7bf1de1c5c419a34d9d92b9675ae4df4fe4e86530606b47c19255e06eeea02",
+    "06-plan-producer-key.md": "919a25b1424bdbdbabc749b9931afccac719bde10b404ceac8a87d738ff8e538",
+    "07-plan-ready-marker.md": "4d7061bd8bb309bf63e72ae9901d3b6a8723aecd67c9154968b60f6d5c80abf1",
+    "08-lens-review-file.md": "147cf8ada391520e6608b8663f0abc2d74295fd06ecd71081f1ad991495c9412",
+    "09-plan-twill-directive.md": "ccef096545980a402d72295e47537eed963c5e045f89eb3ef95a36d80d7e6a60"
+  },
+  "planOverviewFrameHash": "42ca0f928e5da494179223380e16ef8caf96d4cde02cae5c153a89e3ad28d479",
+  "partition": [
+    {
+      "cards": [
+        "01-fabricvocab-package",
+        "02-vocabulary-name-check",
+        "03-index-runs-vocabulary-check",
+        "04-twill-host-values",
+        "05-twill-plan-fan"
+      ],
+      "profile": "cautious",
+      "estimate": 287796,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54292,
+        "read_union": 75128,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 900,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:pattern/PATTERN-fabric-vocabulary.md": 228,
+              "file:pattern/PATTERN-leaf-packages.md": 600,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/fabricvocab": 2000,
+              "package:internal/lyxcwd": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/fabricvocab": 2000,
+              "tests:internal/lyxcwd": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 216.5,
+            "written": 65850
+          },
+          {
+            "card": 2,
+            "card_text": 672,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:internal/planparser/doc.go": 1668,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/planparser": 2000,
+              "package:internal/planparser_test": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/planparser": 2000,
+              "tests:internal/planparser_test": 2000
+            },
+            "messages": 77.5,
+            "written": 23922
+          },
+          {
+            "card": 3,
+            "card_text": 516,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:contracts/specs/loom-plan-spec.md": 7932,
+              "file:internal/planglyph/doc.go": 1236,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/planglyph": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/planglyph": 2000
+            },
+            "messages": 121.5,
+            "written": 36966
+          },
+          {
+            "card": 4,
+            "card_text": 576,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:contracts/stencils/twill/twill-directive.md": 576,
+              "file:internal/twilldirective/doc.go": 252,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/twill": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/twilldirective": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/twill": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/twilldirective": 2000
+            },
+            "messages": 84,
+            "written": 25776
+          },
+          {
+            "card": 5,
+            "card_text": 312,
+            "reads": {
+              "file:internal/burlerengine/template.yaml": 2040,
+              "package:internal/burlerengine": 2000,
+              "tests:internal/burlerengine": 2000
+            },
+            "messages": 18.5,
+            "written": 5862
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-plan-producer-key",
+        "07-plan-ready-marker",
+        "08-lens-review-file",
+        "09-plan-twill-directive"
+      ],
+      "profile": "cautious",
+      "estimate": 276964,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61292,
+        "read_union": 76916,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 468,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4284,
+              "file:docs/overview.md": 8460,
+              "file:internal/loomengine/template.yaml": 492,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 68.5,
+            "written": 21018
+          },
+          {
+            "card": 7,
+            "card_text": 708,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 144,
+            "written": 43908
+          },
+          {
+            "card": 8,
+            "card_text": 492,
+            "reads": {
+              "package:internal/loomshed": 2000,
+              "package:internal/planparser": 2000,
+              "package:internal/planparser_test": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/planparser": 2000,
+              "tests:internal/planparser_test": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 104.5,
+            "written": 31842
+          },
+          {
+            "card": 9,
+            "card_text": 1188,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:contracts/specs/refusal-spec.md": 4284,
+              "file:contracts/stencils/loom/loom-template-plan.md": 3204,
+              "file:docs/overview.md": 8460,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:docs": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 136,
+            "written": 41988
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "ac38adbc80b16731d80a8431fb6dd64c",
+  "masterSessionId": "21ed30b2-e51b-4778-98e7-90a8daf3e96a",
+  "batches": {
+    "1": {
+      "slug": "fabricvocab-package",
+      "cards": [
+        "01-fabricvocab-package",
+        "02-vocabulary-name-check",
+        "03-index-runs-vocabulary-check",
+        "04-twill-host-values",
+        "05-twill-plan-fan"
+      ],
+      "cardHashes": {
+        "01-fabricvocab-package": "4ed0750f0b9e7424cce29be2b91e8e049e3cd556649d4027669bb22d8c6a1ba8",
+        "02-vocabulary-name-check": "bbdfdfa94599e8094d9260ebb9c817cab8d3789dce0b287fb347ce8fba35d01d",
+        "03-index-runs-vocabulary-check": "3e6d7c9bde79084eb2473919300ab2881a4fea3d3f64a3917e1c31e6c2750871",
+        "04-twill-host-values": "4175f661709c49e1d2cad96ffd65b1e69449b23945b8af1b53c3ca30930280d7",
+        "05-twill-plan-fan": "5d7bf1de1c5c419a34d9d92b9675ae4df4fe4e86530606b47c19255e06eeea02"
+      },
+      "startSha": "414d8b713a9cb4a85bd49c3a8e9b733cfb38e7b5",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T07:52:47Z",
+      "sessionId": "21ed30b2-e51b-4778-98e7-90a8daf3e96a",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
