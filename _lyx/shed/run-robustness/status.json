@@ -1,13 +1,12 @@
 {
   "current_producer": "Merge-Bouncer",
-  "state": "awaiting",
-  "error": "bouncer Merge-Bouncer: round 1 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYXHUB/run-robustness/_lyx/reviews/merge/round-1-escalation.md; decide with `lyx loom circling accept run-robustness` or `lyx loom circling continue run-robustness`, then run `lyx loom resume` in the task worktree to resume",
-  "parent_notice": "Review segment of task `run-robustness` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/run-robustness/_lyx/reviews/merge/round-1-escalation.md` with a one-shot fork.",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Merge-Bouncer",
     "last": "Merge-Bouncer → awaiting",
-    "wait": "bouncer Merge-Bouncer: round 1 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYXHUB/run-robustness/_lyx/reviews/merge/round-1-escalation.md; decide with `lyx loom circling accept run-robustness` or `lyx loom circling continue run-robustness`, then run `lyx loom resume` in the task worktree to resume"
+    "wait": ""
   },
   "history": [
     {
