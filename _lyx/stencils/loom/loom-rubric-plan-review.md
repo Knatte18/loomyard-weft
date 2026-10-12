@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- its only markers are the ones ReadRubric fills, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=b3642e62ecd674b3987db4a4886199dc4a326a60420e2586431d08d431190423 build=b2e4cf913d2834503e0338810b1f952e426af78f time=2026-10-11T18:29:27Z -->
+lyx-stencil: sha256=aef23bfd977cd4fc96d7efd6bc0f6390e6a17781ff33d2ff2923b07a220f1326 build=7b17ddfac785b47adc0e76d70703118c4dd439a3 time=2026-10-12T10:25:10Z -->
 
 # Plan-Review rubric
 
@@ -109,6 +109,19 @@ A fix that adds or pairs targets must pass `redundant-package-target` and `redun
 When the reviewer sees no admissible fix, it still reports the defect and names the check that constrains the fix.
 A finding's `fix` key is a proposal: the fixer may apply any other fix the checks admit, and when none exists it defers the finding with the constraining check as the reason.
 The rule narrows only which fix shapes a reviewer proposes; no defect becomes unreportable.
+
+Before writing a finding whose `fix` adds, drops, moves or pairs targets, or changes a verify command, the agent writing the review file checks the fixes against the plan gate with `lyx loom validate-plan --overlay`, which checks proposed plan file contents in memory and writes no file.
+`lyx loom validate-plan --help` shows the stdin format; this rubric does not restate it.
+It first runs `validate-plan --overlay` with `{}` as a baseline, never the flag-less run, so that no run writes a file.
+It then runs it once with every such fix applied together, with its Bash timeout raised to cover a type load, and proposes no fix whose run reports a blocking finding the baseline does not.
+When the combined run reports a new blocking finding, it re-runs with each fix overlaid alone.
+A fix whose solo run reports a new blocking finding is withheld, and its defect is reported with the constraining check named, as above for a defect with no admissible fix.
+A new blocking finding of the combined run that no solo run reproduces is a joint conflict: the fixes that finding names by card are withheld, and their defects are reported together the same way.
+A fix that inserts, removes or renumbers cards is not overlaid, since it goes through `insert-card` and `remove-card`.
+The directive binds writing a finding's `fix`, not a Bouncer row's focus file.
+
+A finding whose proposed glyph stands for a comment or a line it cites names the function or method whose body encloses that line, confirmed with `lyx quarry resolve` that the line lies inside the glyph's span, never the member after or near it.
+When no member span holds the line, as for a free-standing comment between declarations, it names the file's self glyph.
 
 ## Finding class
 
