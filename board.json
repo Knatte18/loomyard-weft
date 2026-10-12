@@ -995,6 +995,23 @@
       "isolated": false,
       "brief": "A run started before a deploy rewrites board.json with its old struct and loses newly added fields such as created and revised",
       "body": "## Seen (2026-10-12)\n\n`board-entry-age` landed and deployed new entry fields (`created`, `revised`), and a backfill wrote them for every entry.\nWithin minutes a status write from a run dropped every date: board commit `5e5402f5` in the board repo rewrote `board.json` without the new fields, and the same happened again after a second backfill.\nThe writers were long-lived `lyx batten run` and `lyx shed step --until-stop` processes started before the deploy: the old binary decodes an entry into its own struct, so a field it does not know is lost when it writes the board back.\n\n## Why it matters\n\nAny deploy that adds a board field loses that field's data while a run started before the deploy is still writing status, and runs live for hours.\nThe same holds for any other record file a long-lived process rewrites whole.\n\n## Idea\n\n- A board writer keeps fields it does not know: it decodes entries so unknown keys survive a rewrite, or a status write patches only `status` instead of rewriting the entry.\n- Or a writer refuses to write a board whose schema is newer than it knows, naming the restart it needs.\n"
+    },
+    {
+      "id": 425,
+      "slug": "run-window-close",
+      "title": "A run window closes itself when its run ends",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The Konsole window batten opens per run stays open as a shell after teardown; it should close when the run is done",
+      "body": "## Seen (2026-10-12)\n\n`lyx batten run \u003cslug\u003e --window` opens one Konsole window per run that runs `lyx reed attach` in the pair (`internal/termwindow/termwindow.go`).\n`attachLine` chains `exec bash` after the attach on purpose, so the window stays open as a shell once the attach returns.\nAt Worktree-Teardown the pair and its reed session go away, the attach returns, and the operator is left with an open shell in a deleted directory, one window per finished run.\n\n## Want (operator, 2026-10-12)\n\nWhen batten is done with a run, the same window closes.\n\n## Open\n\n- Close only on a clean end (the run landed or was torn down), and keep the shell when the attach fails or returns early, so an error stays readable.\n- Whether a detach by the operator, the attach returning while the run lives, also closes the window.\n- The WSL launcher (Windows Terminal) should behave the same.\n",
+      "created": "2026-10-12T08:35:02Z",
+      "revised": "2026-10-12T08:35:02Z"
     }
   ]
 }
