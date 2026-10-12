@@ -178,6 +178,12 @@ Rationale: board's "stale drafts"; 14 days matches logger's default retention ag
   - tracked-run-dir-seed-without-status (class scope, severity MEDIUM, open in rounds 1)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - orch-dry-run-creates-state-lock (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - A run directory is created under the root with its lock held; normal close removes it.
