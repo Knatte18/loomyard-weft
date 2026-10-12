@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-12 09:10 UTC; every age below is as of then.
+Rendered 2026-10-12 09:11 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -25,7 +25,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 4 | **Plan gate: receiver-typed delete-before-reference; plan review validates its fixes**<br>• Bare-name method matching floods plans with false blocking findings, and plan-review proposes fixes the gate refuses | [`plan-gate-fixes`](design-plan-gate-fixes.md) | loom | Discussion-Burler-Review |  |  | loom, quarry, stencil |
+| 4 | **Plan gate: receiver-typed delete-before-reference; plan review validates its fixes**<br>• Bare-name method matching floods plans with false blocking findings, and plan-review proposes fixes the gate refuses | [`plan-gate-fixes`](design-plan-gate-fixes.md) | loom | Discussion-Burler-Fix |  |  | loom, quarry, stencil |
 
 ### Ready
 
@@ -41,7 +41,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Alignment agent in loom checks a run against the board and runs in flight**<br>• A cold-start agent at parent review and PR-Gate reads the board and in-flight runs records and checks alignment, waking the orch only on an overlap. | [`alignment-agent`](design-alignment-agent.md) | loom | `merge-review` |  | 0m | orch, loom |
+| 1 | **Alignment agent in loom checks a run against the board and runs in flight**<br>• A cold-start agent at parent review and PR-Gate reads the board and in-flight runs records and checks alignment, waking the orch only on an overlap. | [`alignment-agent`](design-alignment-agent.md) | loom | `merge-review` |  | 1m | orch, loom |
 
 ## Notes
 
