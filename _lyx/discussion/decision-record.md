@@ -205,13 +205,6 @@ Rationale: Two parsers for one record would contradict PATTERN-tolerant-records,
   - time-join-reused-slug-window (class decision, severity MEDIUM, open in rounds 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
-<!-- lyx:carry-over Plan-Review -->
-- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
-  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
-  - review-archive-siblings-counted-as-segments (class scope, severity MEDIUM, open in rounds 1)
-  - weekly-aggregates-omit-repairs-and-llm-steps (class scope, severity MEDIUM, open in rounds 1)
-<!-- /lyx:carry-over Plan-Review -->
-
 ## Acceptance criteria
 
 - A full loom run fixture holding every source (batten state changes, halt notes, arbiter attempts, drive reports, alignment attempts, parent-review rounds, review rounds per segment, parent decisions) yields the expected count for each; it checks counts only, and each classification rule has its own criterion below.
