@@ -10,8 +10,8 @@
 - `internal/shuttlecli#shuttleCLI.interruptCmd`
 - `internal/shuttlecli#shuttleCLI.sendCmd`
 - `internal/testkit/shuttlefake#Engine`
-- `plan:internal/shuttleengine#ErrNoRunningTurn`
-- `plan:internal/shuttleengine#ErrRewindPickerOpen`
+- `internal/shuttleengine#ErrNoRunningTurn`
+- `internal/shuttleengine#ErrRewindPickerOpen`
 
 **Intent:**
 D3 and D8 at the CLI: `lyx shuttle interrupt` on a session with no running turn now fails instead of sending a key, and both verbs fail with the picker error's message when they find the rewind picker open.

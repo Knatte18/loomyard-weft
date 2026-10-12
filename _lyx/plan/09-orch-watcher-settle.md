@@ -20,9 +20,9 @@
 - `internal/orchcli#runnerSession.Interrupt`
 
 **Uses:**
-- `plan:internal/shuttleengine#ErrNoRunningTurn`
-- `plan:internal/shuttleengine#ErrRewindPickerOpen`
-- `plan:internal/shuttleengine#Runner.InterruptSettle`
+- `internal/shuttleengine#ErrNoRunningTurn`
+- `internal/shuttleengine#ErrRewindPickerOpen`
+- `internal/shuttleengine#Runner.InterruptSettle`
 
 **Intent:**
 D3's watcher log, D4's watcher half and D8's orch surface.

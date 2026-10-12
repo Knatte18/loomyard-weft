@@ -1,14 +1,14 @@
 # Card 2 — pane readings: running turn, rewind picker and interrupt settle
 
 **Create:**
-- `plan:internal/shuttleengine#InterruptGuard` -> `type InterruptGuard interface`
-- `plan:internal/shuttleengine#RewindPickerReader` -> `type RewindPickerReader interface`
-- `plan:internal/shuttleengine/claudeengine#interruptSettle` -> `const interruptSettle = 2 * time.Second`
-- `plan:internal/shuttleengine/claudeengine#rewindPickerNeedle` -> `const rewindPickerNeedle = "restorethecodeand/orconversationtothepointbefore"`
-- `plan:internal/shuttleengine/claudeengine#Claude.RunningTurn` -> `func (c *Claude) RunningTurn(capture string) bool`
-- `plan:internal/shuttleengine/claudeengine#Claude.RewindPicker` -> `func (c *Claude) RewindPicker(capture string) bool`
-- `plan:internal/shuttleengine/claudeengine#Claude.InterruptSettle` -> `func (c *Claude) InterruptSettle() time.Duration`
-- `plan:internal/shuttleengine/claudeengine#TestInterruptGuardReadings` -> `func TestInterruptGuardReadings(t *testing.T)`
+- `internal/shuttleengine#InterruptGuard`
+- `internal/shuttleengine#RewindPickerReader`
+- `internal/shuttleengine/claudeengine#interruptSettle`
+- `internal/shuttleengine/claudeengine#rewindPickerNeedle`
+- `internal/shuttleengine/claudeengine#Claude.RunningTurn`
+- `internal/shuttleengine/claudeengine#Claude.RewindPicker`
+- `internal/shuttleengine/claudeengine#Claude.InterruptSettle`
+- `internal/shuttleengine/claudeengine#TestInterruptGuardReadings`
 - `internal/shuttleengine/claudeengine/testdata/pane-rewind-picker.txt`
 
 **Edit:**

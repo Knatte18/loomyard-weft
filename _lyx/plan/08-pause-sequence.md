@@ -36,12 +36,12 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/shuttleengine#SessionState.RunningTurn`
-- `plan:internal/shuttleengine#ErrNoRunningTurn`
-- `plan:internal/shuttleengine#ErrRewindPickerOpen`
+- `internal/shuttleengine#SessionState.RunningTurn`
+- `internal/shuttleengine#ErrNoRunningTurn`
+- `internal/shuttleengine#ErrRewindPickerOpen`
 - `plan:internal/shuttleengine#SessionBusyError`
-- `plan:internal/shuttleengine#Runner.PaneRunningTurn`
-- `plan:internal/shuttleengine#Runner.InterruptSettle`
+- `internal/shuttleengine#Runner.PaneRunningTurn`
+- `internal/shuttleengine#Runner.InterruptSettle`
 
 **Intent:**
 D1, D2, D4 (pause engine), D5, D6 and D8's pause and resume surfaces.

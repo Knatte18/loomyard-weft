@@ -1,0 +1,9 @@
+status: OK
+head_sha: 2e174f6954392a9a5b46a4a69d7402fead52f16e
+deviations:
+  - internal/shuttleengine/interruptguard.go
+  - internal/shuttleengine/send.go
+  - internal/shuttleengine/engine.go
+  - internal/shuttleengine/fakes_test.go
+  - internal/shuttleengine/run_inject_test.go
+  - pattern/PATTERN-guarded-interrupt.md

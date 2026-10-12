@@ -1,19 +1,19 @@
 # Card 4 — guarded interrupt and guarded rewind-picker close in shuttle
 
 **Create:**
-- `plan:internal/shuttleengine#ErrNoRunningTurn` -> `var ErrNoRunningTurn = errors.New("shuttle: the pane shows no running turn, so there is nothing to interrupt; way forward: \"lyx shuttle send <guid> <text>\" gives the agent a turn")`
-- `plan:internal/shuttleengine#ErrRewindPickerOpen` -> `var ErrRewindPickerOpen = errors.New("shuttle: the rewind picker was open in the pane")`
-- `plan:internal/shuttleengine#guardedInterrupt` -> `func guardedInterrupt(reed ReedOps, engine Engine, clock Clock, guid string) error`
-- `plan:internal/shuttleengine#closeRewindPicker` -> `func closeRewindPicker(reed ReedOps, engine Engine, clock Clock, guid, capture string) error`
-- `plan:internal/shuttleengine#Runner.InterruptSettle` -> `func (r *Runner) InterruptSettle() time.Duration`
-- `plan:internal/shuttleengine#Runner.PaneRunningTurn` -> `func (r *Runner) PaneRunningTurn(guid string) (bool, error)`
-- `plan:internal/shuttleengine#fakeEngine.RunningTurn` -> `func (e *fakeEngine) RunningTurn(capture string) bool`
-- `plan:internal/shuttleengine#fakeEngine.InterruptSettle` -> `func (e *fakeEngine) InterruptSettle() time.Duration`
-- `plan:internal/shuttleengine#pickerEngine` -> `type pickerEngine struct`
-- `plan:internal/shuttleengine#pickerEngine.RewindPicker` -> `func (e *pickerEngine) RewindPicker(capture string) bool`
-- `plan:internal/shuttleengine#pickerOnlyEngine` -> `type pickerOnlyEngine struct`
-- `plan:internal/shuttleengine#pickerOnlyEngine.RewindPicker` -> `func (e *pickerOnlyEngine) RewindPicker(capture string) bool`
-- `plan:internal/shuttleengine#TestGuardedPickerClose` -> `func TestGuardedPickerClose(t *testing.T)`
+- `internal/shuttleengine#ErrNoRunningTurn`
+- `internal/shuttleengine#ErrRewindPickerOpen`
+- `internal/shuttleengine#guardedInterrupt`
+- `internal/shuttleengine#closeRewindPicker`
+- `internal/shuttleengine#Runner.InterruptSettle`
+- `internal/shuttleengine#Runner.PaneRunningTurn`
+- `internal/shuttleengine#fakeEngine.RunningTurn`
+- `internal/shuttleengine#fakeEngine.InterruptSettle`
+- `internal/shuttleengine#pickerEngine`
+- `internal/shuttleengine#pickerEngine.RewindPicker`
+- `internal/shuttleengine#pickerOnlyEngine`
+- `internal/shuttleengine#pickerOnlyEngine.RewindPicker`
+- `internal/shuttleengine#TestGuardedPickerClose`
 
 **Edit:**
 - `internal/shuttleengine#Runner.Interrupt`
@@ -28,8 +28,8 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/shuttleengine#InterruptGuard`
-- `plan:internal/shuttleengine#RewindPickerReader`
+- `internal/shuttleengine#InterruptGuard`
+- `internal/shuttleengine#RewindPickerReader`
 - `internal/shuttleengine#requireReadyAgentPane`
 - `internal/shuttleengine#readinessEngine`
 - `internal/shuttleengine#newFixture`

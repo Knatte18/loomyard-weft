@@ -1,17 +1,17 @@
 {
   "runGuid": "70607c2e99d1b79bed7915a7af83c456",
-  "planFingerprint": "14b59d3319e0790306ec735259e8bc74c20936b67ff8ea0562bb5378ac441b1d",
+  "planFingerprint": "09b1116309305376c563a18d579031c438f8c62d7f5fde194e809612a73855a1",
   "planFileHashes": {
     "00-overview.md": "f76cbd0a09bc6efe3ae39e2983a09482a3aa3eb22b8792a69f044dfa57321e46",
-    "01-running-turn-predicate.md": "3b5cf181191f4eb32af20d024f33c630355a4bf83fb520c25faeeaba5c280051",
-    "02-pane-readings.md": "fb172bb8a5fd4abecbae0ee3fa7145eebab5feb8be3eacd2a4477f06e65a1dac",
-    "03-shuttlefake-guard.md": "984a72d55a46fc8edd67325f02b2101010d8f8916dda47439173e504ea124239",
-    "04-guarded-interrupt.md": "b08ff4d477a23c3ada7db79d31396c14bbeba8f706fc9a70de10dcbadf224476",
-    "05-inject-refusal-and-pattern.md": "7292636d65e86d9ed69a92d6a86a36f79f942961972c3fc085382272ad8fbd11",
+    "01-running-turn-predicate.md": "337134a8b5e2a1c2920a978a004539ca77e245fb65e3f6ff4dd7a1f01d01d1b5",
+    "02-pane-readings.md": "e31aca4ca499a5b99bb93b486471e8370dead1c3221a38e6455abe7fa810bf2a",
+    "03-shuttlefake-guard.md": "4ae6967c20324686b91796b06bc6260053ab76a7f1b3564ef2138b93a4b92723",
+    "04-guarded-interrupt.md": "9afbf6dec3e7aca5a25301c8c2f20808ea02afa809a5c403e29346de3a68d069",
+    "05-inject-refusal-and-pattern.md": "54f6525e3a91e4cad18e575153c03d64f4857e13bf294b7e5581b563d41a4571",
     "06-session-busy-reason.md": "b1c68273b782481ac264e127f6e7fcaa52204b8490e6f5483759421456c3531f",
-    "07-shuttle-cli-guard.md": "6f90dc487b9562a7880fcb130f555999831a2e3534d94155bac6797a842cab00",
-    "08-pause-sequence.md": "bca0ca4de2bede8dd18f81485d04bd8f2f38d59ef44806d84acc4bc9b3fe9d95",
-    "09-orch-watcher-settle.md": "d6c65bed144b9c8911d89b26f8eb7058429244d7b33c99bc1781be353000e3ea"
+    "07-shuttle-cli-guard.md": "c057f56a7910c1b3ae42f365150c9825ef35bb3e636b202f6610dc148f3160dd",
+    "08-pause-sequence.md": "2682c22dbd00baf1efdde7ba947e952c1d89c4af5c950f4c3e4cd7eccdb30a88",
+    "09-orch-watcher-settle.md": "68aa169be4fac322fac765ce550490d3e9d488f50170aeadc5f3053b83a7bd02"
   },
   "planOverviewFrameHash": "19baa7c59bd87a2a725c1cd097ba9e42afe80a9c29dcae5a42df1caba81be398",
   "partition": [
@@ -203,7 +203,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "aef7df2e985ab7e9c88a93b013a62140",
   "masterSessionId": "ac698ea6-0953-47db-98cb-c235ebcdc41a",
   "batches": {
@@ -217,18 +217,43 @@
         "05-inject-refusal-and-pattern"
       ],
       "cardHashes": {
-        "01-running-turn-predicate": "3b5cf181191f4eb32af20d024f33c630355a4bf83fb520c25faeeaba5c280051",
-        "02-pane-readings": "fb172bb8a5fd4abecbae0ee3fa7145eebab5feb8be3eacd2a4477f06e65a1dac",
-        "03-shuttlefake-guard": "984a72d55a46fc8edd67325f02b2101010d8f8916dda47439173e504ea124239",
-        "04-guarded-interrupt": "b08ff4d477a23c3ada7db79d31396c14bbeba8f706fc9a70de10dcbadf224476",
-        "05-inject-refusal-and-pattern": "7292636d65e86d9ed69a92d6a86a36f79f942961972c3fc085382272ad8fbd11"
+        "01-running-turn-predicate": "337134a8b5e2a1c2920a978a004539ca77e245fb65e3f6ff4dd7a1f01d01d1b5",
+        "02-pane-readings": "e31aca4ca499a5b99bb93b486471e8370dead1c3221a38e6455abe7fa810bf2a",
+        "03-shuttlefake-guard": "4ae6967c20324686b91796b06bc6260053ab76a7f1b3564ef2138b93a4b92723",
+        "04-guarded-interrupt": "9afbf6dec3e7aca5a25301c8c2f20808ea02afa809a5c403e29346de3a68d069",
+        "05-inject-refusal-and-pattern": "54f6525e3a91e4cad18e575153c03d64f4857e13bf294b7e5581b563d41a4571"
       },
       "startSha": "22b4aff8a2031328dec3d3e24ac6037af5a27cbe",
       "kind": "fork",
       "spawnedAt": "2026-10-12T18:18:21Z",
       "sessionId": "ac698ea6-0953-47db-98cb-c235ebcdc41a",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-running-turn-predicate",
+        "status": "done",
+        "head_sha": "2e174f6954392a9a5b46a4a69d7402fead52f16e",
+        "deviations": [
+          "internal/shuttleengine/interruptguard.go",
+          "internal/shuttleengine/send.go",
+          "internal/shuttleengine/engine.go",
+          "internal/shuttleengine/fakes_test.go",
+          "internal/shuttleengine/run_inject_test.go",
+          "pattern/PATTERN-guarded-interrupt.md"
+        ]
+      },
+      "cardShas": [
+        "2e174f6954392a9a5b46a4a69d7402fead52f16e"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pause-esc-rewind/ac698ea6-0953-47db-98cb-c235ebcdc41a/subagents/agent-ae46cb72daaf39233.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pause-esc-rewind/ac698ea6-0953-47db-98cb-c235ebcdc41a/subagents/agent-ae46cb72daaf39233.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pause-esc-rewind/ac698ea6-0953-47db-98cb-c235ebcdc41a/subagents/agent-ae46cb72daaf39233.jsonl"
+  ]
 }

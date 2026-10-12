@@ -1,7 +1,7 @@
 # Card 5 — Inject refuses the interrupt key; the guarded-interrupt PATTERN entry
 
 **Create:**
-- `plan:internal/shuttleengine#TestRunner_Inject_RefusesAnyInterruptKey` -> `func TestRunner_Inject_RefusesAnyInterruptKey(t *testing.T)`
+- `internal/shuttleengine#TestRunner_Inject_RefusesAnyInterruptKey`
 - `pattern/PATTERN-guarded-interrupt.md`
 
 **Edit:**

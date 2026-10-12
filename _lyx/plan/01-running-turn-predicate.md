@@ -1,7 +1,7 @@
 # Card 1 — running-turn predicate on the session state
 
 **Create:**
-- `plan:internal/shuttleengine#SessionState.RunningTurn` -> `func (s SessionState) RunningTurn() bool`
+- `internal/shuttleengine#SessionState.RunningTurn`
 
 **Edit:**
 - `internal/shuttleengine#judgeReadiness`

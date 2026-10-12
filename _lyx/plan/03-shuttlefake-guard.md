@@ -1,9 +1,9 @@
 # Card 3 — shuttlefake implements the pane-reading capabilities
 
 **Create:**
-- `plan:internal/testkit/shuttlefake#Engine.RunningTurn` -> `func (e *Engine) RunningTurn(capture string) bool`
-- `plan:internal/testkit/shuttlefake#Engine.RewindPicker` -> `func (e *Engine) RewindPicker(capture string) bool`
-- `plan:internal/testkit/shuttlefake#Engine.InterruptSettle` -> `func (e *Engine) InterruptSettle() time.Duration`
+- `internal/testkit/shuttlefake#Engine.RunningTurn`
+- `internal/testkit/shuttlefake#Engine.RewindPicker`
+- `internal/testkit/shuttlefake#Engine.InterruptSettle`
 
 **Edit:**
 - `internal/testkit/shuttlefake#Engine`
