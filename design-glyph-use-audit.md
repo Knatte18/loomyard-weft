@@ -1,11 +1,20 @@
-# Audit glyph use in Plan and Webster from transcripts
+# Audit glyph use in Webster, the kick-start pack first
 
-`glyph-use-audit` · Note · enhancement, loom, webster
+`glyph-use-audit` · Note · enhancement, webster
 
 ## Idea (operator, 2026-10-12)
 
 Glyph use is probably not fully in place yet.
-Analyse transcripts to see whether glyphs are used as intended: first the Plan steps (plan writer, twill forks, plan gate, Plan-Review), then Webster (Merriam, implementer forks, the scope guard), on a smaller task.
+Analyse transcripts of a smaller task to see whether Webster uses glyphs as intended, above all the kick-start pack.
+
+Plan's glyphs can be taken as sound for now (operator, 2026-10-12): the plan writer runs `lyx loom validate-plan` itself before it ends (step 5 of the plan stencil), the twill lens `forced-edits` checks each listed glyph against `lyx quarry`, and with twill a failed self-check cost one turn in three of six runs.
+
+## What to check in Webster
+
+- The kick-start pack (`internal/websterengine/doc.go`, "the kick-start pack"): how many refs resolved and how many did not (the `webster: kickstart pack` Info line per begin-batch), and why the unresolved ones failed.
+- Whether the implementer fork reads the listed spans in its first turn as FRESH-READ says, or re-reads whole files, greps or runs `lyx quarry` for members the pack already resolved.
+- Whether a fork edits outside the listed spans, and whether that work rests on stale reads.
+- The `deviations` a fork reports against what `ScopeGuard` finds (`webster-deviations-list`).
 
 ## Seen
 
