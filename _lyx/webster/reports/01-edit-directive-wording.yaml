@@ -1,0 +1,4 @@
+status: OK
+head_sha: 1affeed47c9dacac878503a467f9f293c39f0cc3
+deviations:
+  - internal/fabricengine/dotlyxjunction_integration_test.go

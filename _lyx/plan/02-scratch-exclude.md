@@ -1,8 +1,8 @@
 # Card 2 — scratch-exclude
 
 **Create:**
-- `plan:internal/fabricengine#scratchDirName` -> `const scratchDirName = ".scratch"`
-- `plan:internal/fabricengine#seedScratchExclude` -> `func seedScratchExclude(rec *Mutations, worktreeDir string) error`
+- `internal/fabricengine#scratchDirName`
+- `internal/fabricengine#seedScratchExclude`
 
 **Edit:**
 - `internal/fabricengine#WireJunctionsWith`

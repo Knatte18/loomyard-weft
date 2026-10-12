@@ -1,10 +1,10 @@
 # Card 3 — in-place-edit-deny
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#steerInPlaceEditDeny` -> `const steerInPlaceEditDeny = "scripted in-place edits are refused here under the edit directive in your prompt; reading with sed -n is fine"`
-- `plan:internal/shuttleengine/claudeengine#noticeInPlaceEditDeny` -> `const noticeInPlaceEditDeny = steerInPlaceEditDeny + "."`
-- `plan:internal/shuttleengine/claudeengine#inPlaceEditCommandPattern` -> `const inPlaceEditCommandPattern = commandPositionPattern`
-- `plan:internal/shuttleengine/claudeengine#TestInPlaceEditDenyHook_DeniesInPlaceScriptEditsOnly` -> `func TestInPlaceEditDenyHook_DeniesInPlaceScriptEditsOnly(t *testing.T)`
+- `internal/shuttleengine/claudeengine#steerInPlaceEditDeny`
+- `internal/shuttleengine/claudeengine#noticeInPlaceEditDeny`
+- `internal/shuttleengine/claudeengine#inPlaceEditCommandPattern`
+- `internal/shuttleengine/claudeengine#TestInPlaceEditDenyHook_DeniesInPlaceScriptEditsOnly`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine#standingDenies`

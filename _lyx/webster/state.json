@@ -1,12 +1,12 @@
 {
   "runGuid": "be66bb99f127670826b63a3427ae3f02",
-  "planFingerprint": "a9f3118bceaf4f712faa77fc70c7e14a1af6801e2e151cf62d23680ac80ed2e0",
+  "planFingerprint": "95d774d2f745b4dca273a0345dd8cfbc3302fd1ea8d75fea4e58bb45c2598c34",
   "planFileHashes": {
     "00-overview.md": "1d161a0f2db99b3251e971ecf691933128ffde5095c1913ee2ea93eca605d051",
     "01-edit-directive-wording.md": "c75ece21c3a3d96169a9f6f387f0e137f3e27acad18c6f0cb8d373d441748593",
-    "02-scratch-exclude.md": "8aeb7121d0efb77eeb0f07c506d7ae14747c5178d7b82ed66ff54d1e212048ab",
-    "03-in-place-edit-deny.md": "496b4fcb5e6e020be369b4903923661fd93a5b808d36965720c5cfc646383035",
-    "04-computed-rm-deny.md": "3ade3ad0c18ded004b7c810b3dee6b3ffd12619ee765c5edb5a908fa19e252e1",
+    "02-scratch-exclude.md": "7b99d9fd7f47d7f80f7d2f12c3c21e0bbe11f1d6c26ac77c69938276cf02baf4",
+    "03-in-place-edit-deny.md": "30167f715d9f8e8f81c0c57644dabd7bcebc86d2f6b19c444a668f79f5953fdf",
+    "04-computed-rm-deny.md": "6a365887c8aede482f8fbf1c372a7412f65354b0f62aae787ba4b73c74ca0e10",
     "05-no-denied-recovery-forms.md": "66caed9357f878ee466d7bb9106d7d2e7cf6c8374f5f06642d71b63b6c704593",
     "06-sed-print-classifier.md": "19236dab10ab33e979483fdf084ffb912d33459843ae80173277b76bac86c20f",
     "07-dialog-notice.md": "39753a29e25c79ed0bcb3f95c356b39cc42bd1dfc1e941510407e7f3250d9c4e",
@@ -199,7 +199,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "160c92c639ab5332105bb24adff15d69",
   "masterSessionId": "9d5b6e7e-2b3d-4347-b78c-819701d0db0b",
   "batches": {
@@ -214,17 +214,37 @@
       ],
       "cardHashes": {
         "01-edit-directive-wording": "c75ece21c3a3d96169a9f6f387f0e137f3e27acad18c6f0cb8d373d441748593",
-        "02-scratch-exclude": "8aeb7121d0efb77eeb0f07c506d7ae14747c5178d7b82ed66ff54d1e212048ab",
-        "03-in-place-edit-deny": "496b4fcb5e6e020be369b4903923661fd93a5b808d36965720c5cfc646383035",
-        "04-computed-rm-deny": "3ade3ad0c18ded004b7c810b3dee6b3ffd12619ee765c5edb5a908fa19e252e1",
+        "02-scratch-exclude": "7b99d9fd7f47d7f80f7d2f12c3c21e0bbe11f1d6c26ac77c69938276cf02baf4",
+        "03-in-place-edit-deny": "30167f715d9f8e8f81c0c57644dabd7bcebc86d2f6b19c444a668f79f5953fdf",
+        "04-computed-rm-deny": "6a365887c8aede482f8fbf1c372a7412f65354b0f62aae787ba4b73c74ca0e10",
         "05-no-denied-recovery-forms": "66caed9357f878ee466d7bb9106d7d2e7cf6c8374f5f06642d71b63b6c704593"
       },
       "startSha": "694f68f90b1ec5f4a1a8cd003683916244bd983b",
       "kind": "fork",
       "spawnedAt": "2026-10-12T08:14:53Z",
       "sessionId": "9d5b6e7e-2b3d-4347-b78c-819701d0db0b",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-edit-directive-wording",
+        "status": "done",
+        "head_sha": "1affeed47c9dacac878503a467f9f293c39f0cc3",
+        "deviations": [
+          "internal/fabricengine/dotlyxjunction_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "1affeed47c9dacac878503a467f9f293c39f0cc3"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-sed-read-ok/9d5b6e7e-2b3d-4347-b78c-819701d0db0b/subagents/agent-a9b538e04c67108b1.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-sed-read-ok/9d5b6e7e-2b3d-4347-b78c-819701d0db0b/subagents/agent-a9b538e04c67108b1.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-sed-read-ok/9d5b6e7e-2b3d-4347-b78c-819701d0db0b/subagents/agent-a9b538e04c67108b1.jsonl"
+  ]
 }

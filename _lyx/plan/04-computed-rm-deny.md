@@ -1,11 +1,11 @@
 # Card 4 — computed-rm-deny
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#steerComputedRmDeny` -> `const steerComputedRmDeny = "rm on a computed path, one built from a variable or a command substitution, is refused here because it raises a permission prompt that stalls the run; remove a file by its literal path"`
-- `plan:internal/shuttleengine/claudeengine#noticeComputedRmDeny` -> `const noticeComputedRmDeny = steerComputedRmDeny + "."`
-- `plan:internal/shuttleengine/claudeengine#rmCommandPattern` -> `const rmCommandPattern = commandPositionPattern`
-- `plan:internal/shuttleengine/claudeengine#shellExpansionPattern` -> `const shellExpansionPattern = "[$][A-Za-z0-9_{@*(]"`
-- `plan:internal/shuttleengine/claudeengine#TestComputedRmDenyHook_DeniesRmOnComputedPathsOnly` -> `func TestComputedRmDenyHook_DeniesRmOnComputedPathsOnly(t *testing.T)`
+- `internal/shuttleengine/claudeengine#steerComputedRmDeny`
+- `internal/shuttleengine/claudeengine#noticeComputedRmDeny`
+- `internal/shuttleengine/claudeengine#rmCommandPattern`
+- `internal/shuttleengine/claudeengine#shellExpansionPattern`
+- `internal/shuttleengine/claudeengine#TestComputedRmDenyHook_DeniesRmOnComputedPathsOnly`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine#standingDenies`
