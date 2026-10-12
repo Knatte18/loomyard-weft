@@ -55,6 +55,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Plan accepted a gate step naming a nonexistent external-test package path** | [`plan-gate-external-test-paths`](design-plan-gate-external-test-paths.md) | 0m | 0m |  |
+| 2 | **Flaky lyxtemp TestSweep/two_concurrent_sweeps_both_succeed fails first verify run** | [`lyxtemp-sweep-flaky`](design-lyxtemp-sweep-flaky.md) | 0m | 0m |  |
+| 3 | **loom run halted failed at Merge-In with status-missing, no history and no trace file** | [`merge-in-status-missing`](design-merge-in-status-missing.md) | 0m | 0m |  |
+| 4 | **No sanctioned Go formatter verb for agents that may not run rewrite scripts** | [`agent-gofmt-verb`](design-agent-gofmt-verb.md) | 0m | 0m |  |
 
 ### Enhancements
 

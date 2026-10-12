@@ -33,3 +33,18 @@ A card's gate line should be checked when the plan is written or reviewed, or `l
 What to do: validate gate-line package paths against existing directories in plan validation, and/or make `lyx gate test` name the missing directory in its setup-failure output.
 
 Provenance: task `merge-review`; notes 18-merge-in-row.md.
+
+
+## From issue #580
+
+Imported from [issue #580](https://github.com/Knatte18/loomyard/issues/580).
+
+Several card gate steps and the batch gate listed an external test package (an `_xtest`-style `<pkg>_test` name) as a directory argument to `lyx gate test`.
+Such a name is not a directory, so each of those steps exited 1 with `directory not found` and `[setup failed]`, while the real packages passed.
+
+This is abnormal because the gate step is defined by the plan, and the plan was accepted with a step that can never succeed.
+The agent had to recognise the setup failure as a gate-definition flaw rather than a card failure.
+
+What to do: have plan validation (`validate-plan`) reject a `lyx gate test` step whose package argument does not resolve to an existing directory, or have `lyx gate test` map an external test package name to its directory; the Plan-Review rubric could also name this check.
+
+Provenance: task `plan-gate-fixes`; notes: `01-shared-reference-delete-order.md`.
