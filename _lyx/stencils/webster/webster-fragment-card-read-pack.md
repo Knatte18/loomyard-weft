@@ -2,11 +2,7 @@
      RenderForkPrompt reads it through stencilstore when begin-batch built a kick-start pack;
      the text, with this banner and the trailing newline stripped, fills the required card_read marker of webster-body-implementer, after the step's number.
      It carries no marker.
-lyx-stencil: sha256=34b9820b1e7fa4c71c9af94ca169769b2a66cc4262fbb7d972b79e1840ffcfb7 build=1135939906fcdddd4cfdcf1bd7b46ad7ace09268 time=2026-10-12T11:39:01Z -->
+lyx-stencil: sha256=444b530264ab0a7a62cbcd6c35e0df0dcd2d5a1e2e9f28220615e48d9635d4cd build=793c6a8ee30725b93c4bd6b701dde467888b7a21 time=2026-10-12T13:09:13Z -->
 
-At the start of each card, read the card file and every span the kick-start pack below lists under that card's heading, in parallel, in one turn, before doing anything else.
-   Read each span with the Read tool's `offset` at its start line and a `limit` reaching its end line.
-   A span in a file an earlier card of this batch edited is not read by offset: read that file whole in the same turn, and find the member in it by the member name its glyph names, with the listed signature only a cross-check, since an earlier card may have re-signed it.
-   The card file is the first of these reads.
-   It is your whole instruction for that card.
+The card file, which your first turn read, is your whole instruction for that card.
    If its `**Intent:**` field is empty, fall back to that card's one-line intent from the Card Index in `_lyx/plan/00-overview.md`, matched by the same NN/slug.
