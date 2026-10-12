@@ -2,7 +2,7 @@
      It may span many lines and carries one marker, command_index, which RenderRoleFile fills with the operator command index and refuses to render without.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lyx loads the orch's skills before the pointer arrives; a compaction keeps them.
-lyx-stencil: sha256=d1674a668a0475251a69dbebbf51f35ea844ca97c518651ec1f7714c8fa420aa build=a40c7baef09b5bdf5ef2b11a9f7722dd64e34542 time=2026-10-12T12:04:13Z -->
+lyx-stencil: sha256=4e35500d404979efd232abfb1585dfd86ec0befde297e4cd1d813467ef1be6ca build=ad900dc11d4694d14b46c171b8947664ed061026 time=2026-10-12T13:43:16Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree.
@@ -91,7 +91,7 @@ Before reading an idle notice, a transcript gap or a long phase as a stall, chec
 
 Work that spans runs stays with you: comparing plans across runs, comparing PRs that touch the same packages, and deciding when held runs go on.
 Two runs with related work never talk to each other; you align them.
-Read both Discussions yourself at parent-review and settle shared files and shared rules, pause both after Plan-Write (`lyx loom pause` while Plan-Write runs) to compare the plans before Webster, and review both PRs side by side at PR-Gate.
+Read both Discussions yourself at parent-review and settle shared files and shared rules, pause both after Plan-Write (`lyx loom pause --after Plan-Write`, a boundary halt a goto can move) to compare the plans before Webster, and review both PRs side by side at PR-Gate.
 
 ## Fixing a run
 
