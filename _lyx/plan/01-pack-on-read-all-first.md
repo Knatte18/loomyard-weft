@@ -49,8 +49,13 @@ The card file, which your first turn read, is your whole instruction for that ca
 The parallel-read, `offset`/`limit`, whole-file and member-name sentences go.
 
 `webster-fragment-locate-pack.md` (Decision 5).
-The first line becomes `   The kick-start pack below lists, under each card's path, where each member glyph on that card is, and your first turn read every listed span.`
-The "Spans are as of the batch's start …" line becomes `   Every line number you obtained before your first edit, the pack's listed lines and the lines a `lyx quarry resolve` call or grep returned while locating an unresolved glyph, describes the tree before any edit, so after an edit locate code by its text and never read by any such line.`
+The first line and the "Spans are as of the batch's start …" line become, in that order, exactly these two lines, each with its 3-space indent:
+
+```text
+   The kick-start pack below lists, under each card's path, where each member glyph on that card is, and your first turn read every listed span.
+   Every line number you obtained before your first edit, the pack's listed lines and the lines a `lyx quarry resolve` call or grep returned while locating an unresolved glyph, describes the tree before any edit, so after an edit locate code by its text and never read by any such line.
+```
+
 The "Do not call `lyx quarry resolve` …", "The pack is a kick-start …", `plan:`, unresolved-glyph and card-grammar (`{{.specs_dir}}`) lines stay byte-identical, so the fragment keeps pointing at `loom-plan-spec.md` and restates no grammar (`PATTERN-producer-pointer-rule`).
 
 `contracts/stencils#wordingClaims` rows:
@@ -62,10 +67,10 @@ The "Do not call `lyx quarry resolve` …", "The pack is a kick-start …", `pla
   The resolved-entry, kick-start, `plan:`, unresolved-glyph and `{{.specs_dir}}` claims stay.
 
 `internal/websterengine_test#TestRenderPrompts` rows, each extended rather than added:
-- "fork with a resolved multipart pack lists each declaration and locates by the pack": `contains` drops "in parallel, in one turn, before doing anything else", "not the whole files that hold them" and "find the member by its glyph's member name", and gains the full new locate first line (the rendered line, 3-space indent included, so the stale "step 1 read the card's listed spans" tail cannot survive), "describes the tree before any edit, so after an edit locate code by its text", "Your first turn, before any edit, reads in parallel every card file" and "1. The card file, which your first turn read, is your whole instruction for that card.\n   If its `**Intent:**` field is empty".
+- "fork with a resolved multipart pack lists each declaration and locates by the pack": `contains` drops "in parallel, in one turn, before doing anything else", "not the whole files that hold them", "find the member by its glyph's member name" and the prefix "The kick-start pack below lists, under each card's path, where each member glyph on that card is", which the new first line holds, and gains the full new locate first line (the rendered line, 3-space indent included, so the stale "step 1 read the card's listed spans" tail cannot survive), "describes the tree before any edit, so after an edit locate code by its text" and "1. The card file, which your first turn read, is your whole instruction for that card.\n   If its `**Intent:**` field is empty".
   "that no listed span covers" and "read further code, callers or whole files whenever the card needs it" stay.
   `notContains` gains "step 1 read the card's listed spans", "find the member by its glyph's member name", "read that file whole" and "is that card's fresh read".
-  `inOrder` gains, ahead of its card-pointer bullets, "## The FRESH-READ rule" then "Your first turn, before any edit", so the first-turn rule sits before the per-card loop.
+  `inOrder` gains, ahead of its card-pointer bullets, "## The FRESH-READ rule" then "Your first turn, before any edit, reads in parallel every card file", which also pins its presence, so the first-turn rule sits before the per-card loop.
 - "fork with a card naming no member glyph renders the empty line" and "fork with a card whose member glyphs none resolved renders none then its unresolved list": each gains "Your first turn, before any edit, reads in parallel every card file" in `contains`, so every card file is still read in the first turn when no member glyph resolves or none is named.
 - The nil-pack fork and recovery rows stay unchanged: their byte-identity check against `writePrePackBody` and `prePackFreshRead` is the pack-off and recovery guard, and it must pass without edit.
 
@@ -73,7 +78,7 @@ The "Do not call `lyx quarry resolve` …", "The pack is a kick-start …", `pla
 The switch-off and language-none cases keep `packFirstTurn` in `wantNotPrompt`.
 
 `internal/websterengine/doc.go`, section "the kick-start pack": the sentence "With a pack it takes the pack fragment, which sends the fork to the listed spans …" says the pack fragment says the fork's first turn read the listed spans, that every line number obtained before the first edit holds before any edit only, and keeps the quarry or grep path for an unresolved member glyph.
-The three sentences from "With a pack, step 1 reads the card file and its listed spans …" through "What bounds that is the member-name rule …" are replaced by: with a pack, FRESH-READ has the fork read every card file and every listed span in its first turn, in parallel, then the target and `Uses:` files no span covers and the located unresolved glyphs' files, all before any edit, and step 1 only names the card file as the card's instruction.
+The four sentences from "With a pack, step 1 reads the card file and its listed spans …" through "What bounds that is the member-name rule …" are replaced by: with a pack, FRESH-READ has the fork read every card file and every listed span in its first turn, in parallel, then the target and `Uses:` files no span covers and the located unresolved glyphs' files, all before any edit, and step 1 only names the card file as the card's instruction.
 State Decision 4's bound in place of the member-name rule: what can now get through is anything read before the first edit and changed since by an earlier card's edit or a self-fix; an Edit whose `old_string` no longer matches fails loudly, the Edit-only rule keeps a Write built from a pre-edit read from dropping an earlier edit, and the card and batch gates, which run every card's tests, catch reasoning over stale content.
 One sentence per line (`PATTERN-comment-line-breaks`).
 The `doc.go` criterion is prose no test reads, so review checks it.
