@@ -36,3 +36,32 @@ Batten then sent a `[batten notice]` reporting agents idle for almost 11 hours, 
 In the same sleep, `config-layers-run-settings`'s Discussion-Burler-Fix lost its task prompt: the fix chair had answered only the skill-load preamble when a `tmux has-session` call hung for 10h45m and the watchdog killed it.
 The driver's relaunch logged `burler: resuming a live fix` and reattached to the live strand as if the prompt had been delivered, so the chair sat held with no task until the orch sent it the path of its `prompt.md`.
 A resume of a live strand should check that the task prompt, not only the preamble, reached the session.
+
+
+## From issue #567
+
+Imported from [issue #567](https://github.com/Knatte18/loomyard/issues/567).
+
+## What happened
+
+A loom run halted `failed` at `Discussion-Burler-Fix` with anomaly `producer-hard-failure`.
+The halt note's reason is the single word `watchdog`.
+
+The fix-chair shuttle run (`role=burler-fix-chair`, round 3) started at 2026-10-11T19:22:54Z.
+Its `events.jsonl` holds only `SessionStart` and `UserPromptSubmit` stamps from 19:22:55Z and 19:22:56Z, then a `Stop` stamp at 2026-10-12T06:12:00Z, with no hook event in between.
+The halt note was written at about 06:08Z, so the producer sat without any recorded activity for roughly eleven hours before the watchdog fired.
+
+## Why it is abnormal
+
+- The watchdog did not bound the stall in a useful time; the run held the loom for a night.
+- The halt note does not say which watchdog fired, what threshold it applied or when the last activity was seen.
+- The trace file for the step ends at the `shuttle: run started` line, so it records no watchdog decision either.
+- After the halt, the shuttle run's `run.json` still reads `"outcome": "running"`.
+
+## What to do
+
+- Check which watchdog applies to a non-interactive `burler-fix-chair` shuttle run and why it took about eleven hours to trip.
+- Have the halt note and the trace name the watchdog, its threshold and the last-activity time.
+- Have the shuttle run's `run.json` outcome reflect the kill.
+
+Provenance: task `config-layers-run-settings`, from note `loom-halt.md`.
