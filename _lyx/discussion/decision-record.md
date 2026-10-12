@@ -166,6 +166,12 @@ Decision: the JSON envelope carries the selection (refs, `--since`, `--fresh-day
 `--format markdown` renders the same data as one section per board question: wakes per run by week and kind; stop and failure classes by week with the number of runs each recurred in; landings by kind and the fix and `unmapped` fresh-code shares by week; review rounds per segment by week.
 Rationale: JSON is the surface an agent consumes; the operator reads trends, which tables show.
 
+### Added after Discussion (parent, 2026-10-12): Seed parsing follows run-robustness D4
+
+Decision: run-robustness lands first. Its D4 makes shedrun.ParseSeed and ReadSeed tolerant of unknown keys. After Merge-In, convergence-plan drops ParseSeedTolerant and its 'ReadSeed still rejects it' criterion, uses the tolerant ParseSeed, and keeps internal/alignment/records.go compiling where run-robustness removed the encoding/json import.
+
+Rationale: Two parsers for one record would contradict PATTERN-tolerant-records, which run-robustness adds; the alignment agent at run-robustness's PR-Gate found the conflict.
+
 ## Constraints
 
 - `pattern/PATTERN-told-geometry.md` and `pattern/PATTERN-sole-parsers.md` change in the same commit as the code (D2, D7); a new leaf package is listed in `pattern/PATTERN-leaf-packages.md`.
