@@ -1,0 +1,77 @@
+{
+  "runGuid": "9ec88852e796a82ac047c9aba0933299",
+  "planFingerprint": "b793a74f06578b00ec3d6e62a7b4d165653877d4074bea68b98d5c8c4da6cf86",
+  "planFileHashes": {
+    "00-overview.md": "71926a0f220b795497b4c3a07ac8a42b5639d6508795060bd3e65170a7807c99",
+    "01-pack-on-read-all-first.md": "71a0c0c09ba5c9222ddfe092cca56ff8d12a0a7ccc468328ed89ac361f7f13dc"
+  },
+  "planOverviewFrameHash": "1b02bcb4d30267b6deb969378d5fab17c801f343300d78526f5262f895fe963d",
+  "partition": [
+    {
+      "cards": [
+        "01-pack-on-read-all-first"
+      ],
+      "profile": "cautious",
+      "estimate": 105002,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54232,
+        "read_union": 25840,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 1080,
+            "reads": {
+              "file:contracts/stencils/webster/webster-fragment-card-read-pack.md": 132,
+              "file:contracts/stencils/webster/webster-fragment-fresh-read-pack.md": 156,
+              "file:contracts/stencils/webster/webster-fragment-locate-pack.md": 144,
+              "file:internal/websterengine/doc.go": 8328,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/websterengine": 2000,
+              "package:internal/websterengine_test": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:internal/websterengine_test": 2000
+            },
+            "messages": 79.5,
+            "written": 24930
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "098beb5dcec838903e7db71861ca9f27",
+  "masterSessionId": "bd88c827-51ce-499f-bbc5-b45c0179e7da",
+  "batches": {
+    "1": {
+      "slug": "pack-on-read-all-first",
+      "cards": [
+        "01-pack-on-read-all-first"
+      ],
+      "cardHashes": {
+        "01-pack-on-read-all-first": "71a0c0c09ba5c9222ddfe092cca56ff8d12a0a7ccc468328ed89ac361f7f13dc"
+      },
+      "startSha": "a40c7baef09b5bdf5ef2b11a9f7722dd64e34542",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T12:58:34Z",
+      "sessionId": "bd88c827-51ce-499f-bbc5-b45c0179e7da",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
