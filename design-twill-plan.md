@@ -1,6 +1,6 @@
 # Twill for Plan-Write at opus[medium]
 
-`twill-plan` · Task · enhancement, loom, stencil · running · Worktree-Create
+`twill-plan` · Task · enhancement, loom, stencil · running · Loom-Preflight
 
 ## Idea (operator, 2026-10-11)
 
