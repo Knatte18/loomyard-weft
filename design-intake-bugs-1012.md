@@ -1,6 +1,10 @@
-# Plan accepted a gate step naming a nonexistent external-test package path
+# Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status
 
-`plan-gate-external-test-paths` · Note · bug, loom, webster
+`intake-bugs-1012` · Task · bug, loom, webster, shed
+
+Three bugs taken in from GitHub on 2026-10-12, bundled as one small task.
+
+## Was `plan-gate-external-test-paths`
 
 Imported from [issue #571](https://github.com/Knatte18/loomyard/issues/571).
 
@@ -19,7 +23,7 @@ Optionally, make `lyx gate test` point at the missing directory in its `[setup f
 Provenance: task `twill-plan`; notes 01-fabricvocab-package.md, 06-plan-producer-key.md.
 
 
-## From issue #577
+### From issue #577
 
 Imported from [issue #577](https://github.com/Knatte18/loomyard/issues/577).
 
@@ -35,7 +39,7 @@ What to do: validate gate-line package paths against existing directories in pla
 Provenance: task `merge-review`; notes 18-merge-in-row.md.
 
 
-## From issue #580
+### From issue #580
 
 Imported from [issue #580](https://github.com/Knatte18/loomyard/issues/580).
 
@@ -48,3 +52,31 @@ The agent had to recognise the setup failure as a gate-definition flaw rather th
 What to do: have plan validation (`validate-plan`) reject a `lyx gate test` step whose package argument does not resolve to an existing directory, or have `lyx gate test` map an external test package name to its directory; the Plan-Review rubric could also name this check.
 
 Provenance: task `plan-gate-fixes`; notes: `01-shared-reference-delete-order.md`.
+
+## Was `lyxtemp-sweep-flaky`
+
+Imported from [issue #584](https://github.com/Knatte18/loomyard/issues/584).
+
+The integration-suite triage in a verify run reported `internal/lyxtemp.TestSweep/two_concurrent_sweeps_both_succeed` as flaky: it failed the first verify run and passed or vanished on rerun.
+
+Why abnormal: a test of concurrent sweeps that fails nondeterministically points at a race or an unbounded retry in the sweep itself, and flaky tests cost a verify rerun and can block a Publish step (the same run halted blocked at Publish with `publish_verify failed after merging parent branch`, exit code 1, escalation-to-human; the notes do not show whether this test caused that failure).
+
+What to do: reproduce by looping `lyx gate test -run 'TestSweep' ./internal/lyxtemp` under load, find the race in the concurrent-sweep path, and make the test deterministic or the sweep race-safe.
+
+Provenance: task `runs-overview`; notes `webster-verify-triage.md`, `loom-halt.md`.
+
+`board-field-drop` (`78e31aa06`) later bounded the sweep's not-empty retry under a per-sweep budget (its D7); check first whether the flake still reproduces on that code.
+
+## Was `merge-in-status-missing`
+
+Imported from [issue #581](https://github.com/Knatte18/loomyard/issues/581).
+
+`lyx loom` halted a run as `failed` at the Merge-In producer.
+The halt note shows reason `status-missing`, anomaly `producer-hard-failure`, `history_entries: 0` and an empty `trace_file`.
+
+This is abnormal because the producer left no status and no history, and no trace was recorded, so the cause of the failure cannot be recovered from the halt note or the run's files.
+It looks like a lyx problem (the Merge-In row failing before writing any status or trace), not a task-code failure.
+
+What to do: find out why Merge-In produced no status; make the driver record a trace file and a more specific reason when a producer exits without a status, so the halt note is diagnosable.
+
+Provenance: task `plan-gate-fixes`; notes: `loom-halt.md`.
