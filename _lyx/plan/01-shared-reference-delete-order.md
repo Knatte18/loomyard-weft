@@ -21,7 +21,6 @@
 - `internal/planglyph#validateFormatAfter`
 - `internal/planindex#Index.LaterDeleteReferences`
 - `internal/planglyph#TestLaterDeleteReferences`
-- `internal/planglyph#deleteOrderFixture`
 - `internal/planglyph#TestGlyphChain_CallerCoverage`
 - `internal/planglyph#coverageFiles`
 - `internal/planglyph#TestGlyphChain_CallerCoverageTyped`
@@ -52,7 +51,7 @@ A member subject's references come only from tokenized `.go` candidates, so a co
 `dispatchFindings` is today's `ValidateDispatch` body; `ValidateDispatch` is `dispatchFindings` followed, when it returns no error, by `LaterDeleteReferences` over the pending cards as both the deleting and the later set, so dispatch keeps the check.
 `validateFormatAfter` calls `dispatchFindings` instead of `ValidateDispatch`, so with a done card the plan gate reports each reference once, from `planGatePass`'s typed form, never also the scan-only duplicate; its exported doc says the check set it runs.
 
-`LaterDeleteReferences` becomes scan-only (Decision 4): it resolves its targets and builds its regions as today (its `glyph-rejected` arm for an unreadable Delete or Edit answer stays), takes its subjects from `coverageSubjects` over a view of the plan holding only the deleting cards, keeping deleted members alone, and calls `memberReferences` with a nil loader over the region files that end in `.go`, pass `ignoredByGoTool` and exist on disk, never walking the tree; then `deleteOrderFindings` over the regions of the later cards, plus `laterImportFindings` for the package self glyph Deletes.
+`LaterDeleteReferences` becomes scan-only (Decision 4): it resolves its targets and builds its regions as today (its `glyph-rejected` arm for an unreadable Delete or Edit answer stays), takes its subjects from `coverageSubjects` over a view of the plan holding only the deleting cards, keeping deleted members alone, and calls `memberReferences` with a nil loader over the region files that end in `.go`, pass `ignoredByGoTool` and exist on disk, never walking the tree for candidate files (coverageSubjects' go.mod directory walk for the import path still runs once); then `deleteOrderFindings` over the regions of the later cards, plus `laterImportFindings` for the package self glyph Deletes.
 So a package-level reference stays blocking and a method match there is informational.
 `deletedSymbol` and the regex construction go.
 `Index.LaterDeleteReferences`'s comment says the findings are blocking for a resolved reference and informational for a name-only method match.
@@ -79,7 +78,7 @@ A delete-before-reference expectation below is a severity and a location: `<file
   deleting `callees#Thing.Method` with a later card editing `callers/callers.go` wants `informational callers/callers.go at line 9`, no blocking delete-before-reference finding and no caller-uncovered finding;
   `coveredTargetCard(covers)`, whose own Edit covers `callers#UseTarget`, followed by a card editing `callers#UseTarget` wants `blocking callers/callers.go:6` and no caller-uncovered finding, so a covered line inside a later region is delete-before-reference's;
   deleting `other#` with a later card editing `callees/callees.go` and `docs/notes.md`, where the note quotes `"example.com/glyphchain/other"`, wants only `blocking callees/callees.go:5`, pinning that `planGatePass` runs the import-path match over `.go` regions alone.
-- `TestGlyphChain_CallerCoverageTyped` (integration, real load) wraps every row's loader in `countingTypesLoader`, which counts its calls and forwards them, and asserts at most one load per row, exactly one on the rows below that report both checks.
+- `TestGlyphChain_CallerCoverageTyped` (integration, real load) wraps every row's loader in `countingTypesLoader`, which counts its calls and forwards them and which, with its load method, lives in glyphchain_integration_test.go beside the test, and asserts at most one load per row, exactly one on the rows below that report both checks.
   It gains `wantDeleteOrder` in that shape, `done` (the number of leading cards passed as done, run through `validateFormatAfter` instead of `planGatePass`) and `wantDispatchDeleteOrder` (the same shape, from `ValidateDispatch` over the same plan, which takes no loader).
   `coverageFiles` gains `callers/uses.go`, `callers/unrelated.go`, `callers/switch.go` and `callees/runner.go`.
   New rows, each with its caller-uncovered `want`:
