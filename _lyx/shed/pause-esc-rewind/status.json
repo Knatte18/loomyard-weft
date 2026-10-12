@@ -34,6 +34,34 @@
       "output": "child awaiting → running at Discussion-Bouncer",
       "at": "2026-10-12T17:30:57Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at Plan-Bouncer",
+      "at": "2026-10-12T18:16:53Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at Plan-Bouncer",
+      "at": "2026-10-12T18:17:45Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at PR-Gate",
+      "at": "2026-10-12T18:41:39Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at PR-Gate",
+      "at": "2026-10-12T18:42:39Z",
+      "budget_exempt": true
     }
   ]
 }
