@@ -1,0 +1,651 @@
+{
+  "runGuid": "22ea0df5c129abd9d73f61b59d34fc82",
+  "planFingerprint": "a6951a57e30c17caf82c7561205b3dcb034ed42a27c8853b246001fd9f0a93ef",
+  "planFileHashes": {
+    "00-overview.md": "72147cc25afde0962f8e8edd488864775e9a755dbab99e2f1fc0bffc64d5fa76",
+    "01-lyxtemp-package.md": "dc20bd7d383c876394b901612df02b06abc30b2106f4c3317843ffbdda8a9a92",
+    "02-tmuxkit-run-directory.md": "8f7be9e12143087ccbde9f453e7c851c490b132c111ba534be0e4edba6cd5178",
+    "03-gitkit-hermetic-run-directory.md": "0a222bd3204c870e46dcc7c0ff70201ba7eac349ed0202384dc9abaad52985e5",
+    "04-test-kit-temp-sites.md": "5ddd3f66d4db87fc2c607ce5acdb2f734faed131b3d1b2e0411dc864ef311cec",
+    "05-gate-prebuild-run-directory.md": "2a32db51a33b069ddf616781aa6e336d5652fb3346bd67953c8f807b533e959e",
+    "06-testtiming-run-directory.md": "8bd8f698e75658f62d7e1c97083c910a8e75dcf98953e41d41c79876edca79cb",
+    "07-testmain-internal-a-l.md": "5005be8831518c919fae73c779fb562ab7e1285e4c70cfb69d1884b8fd3dbbb3",
+    "08-testmain-internal-m-z.md": "47aedf7df44dc3436cec1a74b6bc3cc3def0f34c1550de98bf663b7f79b70335",
+    "09-testmain-kits-tools-contracts.md": "d51f724d95f247bbdff567fe215cb8dc2acea5cd7b348e48ecff6aa75f689f1f",
+    "10-tmux-isolation-every-package.md": "c1c0fda33e30115e21c193bfd47058227d04aaddf76eded57f44d4b9c8594689",
+    "11-tmux-isolation-guard-rename.md": "f66c0fd82b5a7267dd055990ded5ae6e1073e60d0109d6f5eb82bc3ccb12f048",
+    "12-bare-temp-scan.md": "7e61992b449cb36bc44e4e081b94bf6624635eba87826d7365eb8cca0cbfc1ee",
+    "13-logger-sweep-dry-run.md": "59ef55ff0e2d1d69d811ce0781f7932d120dbf3e981ba6c8f15ea8fd482ff697",
+    "14-shedrun-cleanup-paths.md": "43fb3f47fe578ce99d64e95dab127ff2d4e244e215d40a3325f6badec3c31cc0",
+    "15-fsx-newest-modtime.md": "b01ba039d52680d6ff7389ab06270c17e4d659bb189c7f7a8d27739686b77598",
+    "16-batten-cleanup.md": "235a0f45c2d0d95f6504cbf29ae48a352e1bc118d2c613d85c8601e5a07a8109",
+    "17-batten-done-refusal.md": "25119cf92774a56b3e4bc13bb37e8d5bfa12de383d359d112d5177f5a6ea14e4",
+    "18-orch-cleanup.md": "dd454a7d97b22570f704f6ecff51491f712430aa25b90e5c3045071ec7a86968",
+    "19-cleanup-scratch-segment.md": "cf2406aa421a530a3ea20e6ecc6ef4a5824c9995caba781a6ccd00860c07a216",
+    "20-cleanup-verb.md": "a451d1d1c655f408a9335e0dd793e9a4dda61c68f04429c8072a5a8f2a07d1c7"
+  },
+  "planOverviewFrameHash": "8c53b83f7cb750d785936c6a9ce22e828d40e95220670da02f0c64f06490da25",
+  "partition": [
+    {
+      "cards": [
+        "01-lyxtemp-package",
+        "02-tmuxkit-run-directory",
+        "03-gitkit-hermetic-run-directory",
+        "04-test-kit-temp-sites",
+        "05-gate-prebuild-run-directory"
+      ],
+      "profile": "cautious",
+      "estimate": 282266,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54796,
+        "read_union": 68188,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 1116,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:docs/overview.md": 8460,
+              "file:pattern/PATTERN-leaf-packages.md": 600,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/lyxtemp": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/lyxtemp": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 226,
+            "written": 68916
+          },
+          {
+            "card": 2,
+            "card_text": 612,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:pattern/PATTERN-test-isolation.md": 768,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/testkit/tmuxkit": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/testkit/tmuxkit": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 92,
+            "written": 28212
+          },
+          {
+            "card": 3,
+            "card_text": 468,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:internal/gitkit/doc.go": 552,
+              "file:pattern/PATTERN-leaf-packages.md": 600,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/gitkit": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/gitkit": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 53,
+            "written": 16368
+          },
+          {
+            "card": 4,
+            "card_text": 348,
+            "reads": {
+              "file:internal/hubforge/doc.go": 708,
+              "package:internal/hubforge": 2000,
+              "package:internal/idecli": 2000,
+              "package:internal/ideengine": 2000,
+              "package:internal/reedengine": 2000,
+              "package:internal/testkit/lyxbin": 2000,
+              "tests:internal/hubforge": 2000,
+              "tests:internal/idecli": 2000,
+              "tests:internal/ideengine": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/testkit/lyxbin": 2000
+            },
+            "messages": 96.5,
+            "written": 29298
+          },
+          {
+            "card": 5,
+            "card_text": 288,
+            "reads": {
+              "file:internal/gatecli/doc.go": 648,
+              "package:cmd/lyx": 2000,
+              "package:internal/gatecli": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/gatecli": 2000
+            },
+            "messages": 54,
+            "written": 16488
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-testtiming-run-directory",
+        "07-testmain-internal-a-l"
+      ],
+      "profile": "cautious",
+      "estimate": 258968,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61796,
+        "read_union": 108936,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 468,
+            "reads": {
+              "package:cmd/testtiming": 2000,
+              "tests:cmd/testtiming": 2000
+            },
+            "messages": 82.5,
+            "written": 25218
+          },
+          {
+            "card": 7,
+            "card_text": 468,
+            "reads": {
+              "package:internal/agentname": 2000,
+              "package:internal/batcher": 2000,
+              "package:internal/battenrecipe": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/buildinfo": 2000,
+              "package:internal/buildvcs": 2000,
+              "package:internal/clihelp": 2000,
+              "package:internal/configengine": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/configsync": 2000,
+              "package:internal/darnengine": 2000,
+              "package:internal/discussionparser": 2000,
+              "package:internal/dotgit": 2000,
+              "package:internal/editdirective": 2000,
+              "package:internal/envsource": 2000,
+              "package:internal/friction": 2000,
+              "package:internal/frictionengine": 2000,
+              "package:internal/fslink": 2000,
+              "package:internal/fswatch": 2000,
+              "package:internal/fsx": 2000,
+              "package:internal/githubclient": 2000,
+              "package:internal/helpcli": 2000,
+              "package:internal/lock": 2000,
+              "package:internal/loggerconfig": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/loomrecipe": 2000,
+              "tests:internal/agentname": 2000,
+              "tests:internal/batcher": 2000,
+              "tests:internal/battenrecipe": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/buildinfo": 2000,
+              "tests:internal/buildvcs": 2000,
+              "tests:internal/clihelp": 2000,
+              "tests:internal/configengine": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/configsync": 2000,
+              "tests:internal/darnengine": 2000,
+              "tests:internal/discussionparser": 2000,
+              "tests:internal/dotgit": 2000,
+              "tests:internal/editdirective": 2000,
+              "tests:internal/envsource": 2000,
+              "tests:internal/friction": 2000,
+              "tests:internal/frictionengine": 2000,
+              "tests:internal/fslink": 2000,
+              "tests:internal/fswatch": 2000,
+              "tests:internal/fsx": 2000,
+              "tests:internal/githubclient": 2000,
+              "tests:internal/helpcli": 2000,
+              "tests:internal/lock": 2000,
+              "tests:internal/loggerconfig": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/loomrecipe": 2000
+            },
+            "messages": 208.5,
+            "written": 63018
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-testmain-internal-m-z"
+      ],
+      "profile": "cautious",
+      "estimate": 294576,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68796,
+        "read_union": 132540,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 540,
+            "reads": {
+              "package:internal/mergeresolve": 2000,
+              "package:internal/modelspec": 2000,
+              "package:internal/orchengine": 2000,
+              "package:internal/output": 2000,
+              "package:internal/parentdirective": 2000,
+              "package:internal/parentreview": 2000,
+              "package:internal/pattern": 2000,
+              "package:internal/planparser": 2000,
+              "package:internal/proc": 2000,
+              "package:internal/quarrycli": 2000,
+              "package:internal/reedengine/render": 2000,
+              "package:internal/segmentcolor": 2000,
+              "package:internal/selfreportcli": 2000,
+              "package:internal/selfreportengine": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedbuild": 2000,
+              "package:internal/shedcheck": 2000,
+              "package:internal/shedengine": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/shedrun": 2000,
+              "package:internal/shedtransient": 2000,
+              "package:internal/shell": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/state": 2000,
+              "package:internal/statuscommit": 2000,
+              "package:internal/stencil": 2000,
+              "package:internal/stencilstore": 2000,
+              "package:internal/summaryparser": 2000,
+              "package:internal/termwindow": 2000,
+              "package:internal/twilldirective": 2000,
+              "package:internal/vscode": 2000,
+              "package:internal/weftname": 2000,
+              "package:internal/yamlengine": 2000,
+              "tests:internal/mergeresolve": 2000,
+              "tests:internal/modelspec": 2000,
+              "tests:internal/orchengine": 2000,
+              "tests:internal/output": 2000,
+              "tests:internal/parentdirective": 2000,
+              "tests:internal/parentreview": 2000,
+              "tests:internal/pattern": 2000,
+              "tests:internal/planparser": 2000,
+              "tests:internal/proc": 2000,
+              "tests:internal/quarrycli": 2000,
+              "tests:internal/reedengine/render": 2000,
+              "tests:internal/segmentcolor": 2000,
+              "tests:internal/selfreportcli": 2000,
+              "tests:internal/selfreportengine": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedbuild": 2000,
+              "tests:internal/shedcheck": 2000,
+              "tests:internal/shedengine": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/shedrun": 2000,
+              "tests:internal/shedtransient": 2000,
+              "tests:internal/shell": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/state": 2000,
+              "tests:internal/statuscommit": 2000,
+              "tests:internal/stencil": 2000,
+              "tests:internal/stencilstore": 2000,
+              "tests:internal/summaryparser": 2000,
+              "tests:internal/termwindow": 2000,
+              "tests:internal/twilldirective": 2000,
+              "tests:internal/vscode": 2000,
+              "tests:internal/weftname": 2000,
+              "tests:internal/yamlengine": 2000
+            },
+            "messages": 309,
+            "written": 93240
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-testmain-kits-tools-contracts",
+        "10-tmux-isolation-every-package",
+        "11-tmux-isolation-guard-rename",
+        "12-bare-temp-scan",
+        "13-logger-sweep-dry-run",
+        "14-shedrun-cleanup-paths"
+      ],
+      "profile": "cautious",
+      "estimate": 330304,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75796,
+        "read_union": 126144,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 456,
+            "reads": {
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:internal/gitrepo/internal/gitoracle": 2000,
+              "package:internal/testkit": 2000,
+              "package:internal/testkit/envelope": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:internal/testkit/llmkit": 2000,
+              "package:internal/testkit/locationkit": 2000,
+              "package:internal/testkit/logcapture": 2000,
+              "package:internal/testkit/plankit": 2000,
+              "package:internal/testkit/scankit": 2000,
+              "package:internal/testkit/shedfake": 2000,
+              "package:internal/testkit/shuttlefake": 2000,
+              "package:internal/testkit/stencilkit": 2000,
+              "package:tools/codestats": 2000,
+              "package:tools/deploy": 2000,
+              "package:tools/godocreflow": 2000,
+              "package:tools/internal/devbin": 2000,
+              "package:tools/mdreflow": 2000,
+              "package:tools/sandbox": 2000,
+              "package:tools/wordswap": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:internal/gitrepo/internal/gitoracle": 2000,
+              "tests:internal/testkit": 2000,
+              "tests:internal/testkit/envelope": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:internal/testkit/llmkit": 2000,
+              "tests:internal/testkit/locationkit": 2000,
+              "tests:internal/testkit/logcapture": 2000,
+              "tests:internal/testkit/plankit": 2000,
+              "tests:internal/testkit/scankit": 2000,
+              "tests:internal/testkit/shedfake": 2000,
+              "tests:internal/testkit/shuttlefake": 2000,
+              "tests:internal/testkit/stencilkit": 2000,
+              "tests:tools/codestats": 2000,
+              "tests:tools/deploy": 2000,
+              "tests:tools/godocreflow": 2000,
+              "tests:tools/internal/devbin": 2000,
+              "tests:tools/mdreflow": 2000,
+              "tests:tools/sandbox": 2000,
+              "tests:tools/wordswap": 2000
+            },
+            "messages": 144.5,
+            "written": 43806
+          },
+          {
+            "card": 10,
+            "card_text": 288,
+            "reads": {
+              "file:pattern/PATTERN-test-isolation.md": 768,
+              "package:cmd/lyx": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 52.5,
+            "written": 16038
+          },
+          {
+            "card": 11,
+            "card_text": 180,
+            "reads": {
+              "package:cmd/lyx": 2000,
+              "tests:cmd/lyx": 2000
+            },
+            "messages": 34.5,
+            "written": 10530
+          },
+          {
+            "card": 12,
+            "card_text": 408,
+            "reads": {
+              "file:PATTERN.md": 1296,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "package:.": 2000,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 48.5,
+            "written": 14958
+          },
+          {
+            "card": 13,
+            "card_text": 468,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/logger": 2000,
+              "package:internal/logger_test": 2000,
+              "package:internal/loggerconfig": 2000,
+              "package:internal/loggerconfig_test": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/logger": 2000,
+              "tests:internal/logger_test": 2000,
+              "tests:internal/loggerconfig": 2000,
+              "tests:internal/loggerconfig_test": 2000
+            },
+            "messages": 103,
+            "written": 31368
+          },
+          {
+            "card": 14,
+            "card_text": 264,
+            "reads": {
+              "file:internal/shedrun/doc.go": 396,
+              "package:internal/shedrun": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 38,
+            "written": 11664
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "15-fsx-newest-modtime",
+        "16-batten-cleanup",
+        "17-batten-done-refusal",
+        "18-orch-cleanup",
+        "19-cleanup-scratch-segment",
+        "20-cleanup-verb"
+      ],
+      "profile": "cautious",
+      "estimate": 303930,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82796,
+        "read_union": 64216,
+        "cards": [
+          {
+            "card": 15,
+            "card_text": 228,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/fsx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/fsx": 2000
+            },
+            "messages": 24.5,
+            "written": 7578
+          },
+          {
+            "card": 16,
+            "card_text": 1056,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:docs/overview.md": 8460,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000
+            },
+            "messages": 141,
+            "written": 43356
+          },
+          {
+            "card": 17,
+            "card_text": 228,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "tests:internal/battencli": 2000
+            },
+            "messages": 37,
+            "written": 11328
+          },
+          {
+            "card": 18,
+            "card_text": 648,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:docs/overview.md": 8460,
+              "file:internal/orchcli/doc.go": 780,
+              "file:internal/orchengine/doc.go": 4584,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 96,
+            "written": 29448
+          },
+          {
+            "card": 19,
+            "card_text": 432,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/cleanupcli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/cleanupcli": 2000
+            },
+            "messages": 54,
+            "written": 16632
+          },
+          {
+            "card": 20,
+            "card_text": 876,
+            "reads": {
+              "file:cmd/lyx/seamsignature_test.go": 840,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:docs/overview.md": 8460,
+              "file:pattern/PATTERN-cli-cobra.md": 360,
+              "file:tools/sandbox/SANDBOX-CORE-SUITE.md": 4104,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/cleanupcli": 2000,
+              "package:pattern": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/cleanupcli": 2000,
+              "tests:pattern": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 159,
+            "written": 48576
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "c1cb6ab2c3bcd58bf2f520882e5f5c75",
+  "masterSessionId": "18d53add-ca9f-4785-b9e7-5c53e806b7e3",
+  "batches": {
+    "1": {
+      "slug": "lyxtemp-package",
+      "cards": [
+        "01-lyxtemp-package",
+        "02-tmuxkit-run-directory",
+        "03-gitkit-hermetic-run-directory",
+        "04-test-kit-temp-sites",
+        "05-gate-prebuild-run-directory"
+      ],
+      "cardHashes": {
+        "01-lyxtemp-package": "dc20bd7d383c876394b901612df02b06abc30b2106f4c3317843ffbdda8a9a92",
+        "02-tmuxkit-run-directory": "8f7be9e12143087ccbde9f453e7c851c490b132c111ba534be0e4edba6cd5178",
+        "03-gitkit-hermetic-run-directory": "0a222bd3204c870e46dcc7c0ff70201ba7eac349ed0202384dc9abaad52985e5",
+        "04-test-kit-temp-sites": "5ddd3f66d4db87fc2c607ce5acdb2f734faed131b3d1b2e0411dc864ef311cec",
+        "05-gate-prebuild-run-directory": "2a32db51a33b069ddf616781aa6e336d5652fb3346bd67953c8f807b533e959e"
+      },
+      "startSha": "414d8b713a9cb4a85bd49c3a8e9b733cfb38e7b5",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T08:04:10Z",
+      "sessionId": "18d53add-ca9f-4785-b9e7-5c53e806b7e3",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
