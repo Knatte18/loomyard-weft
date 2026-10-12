@@ -1,6 +1,6 @@
 # Twill for Plan-Write at opus[medium]
 
-`twill-plan` · Task · enhancement, loom, stencil · running · Webster-Bouncer
+`twill-plan` · Task · enhancement, loom, stencil · running · Webster-Burler-Review
 
 ## Idea (operator, 2026-10-11)
 
