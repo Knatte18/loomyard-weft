@@ -67,7 +67,7 @@ _No rounds yet._
 ## Question ledger
 
 - Q1 (resolved, auto-pick): Is the fifth part, the loom status pane, in scope though the title says four? Yes; it is in the body the board entry carries.
-- Q2 (resolved, auto-pick): How does a paused run show in the overview? `paused <minutes>` in the state cell of a running or starting covered run (D1).
+- Q2 (resolved, auto-pick): How does a paused run show in the overview? `paused <minutes>` in the state cell of a running, batten-paused or starting covered run (D1).
 - Q3 (resolved, auto-pick): What is left to build of the hold-notice item, given the hook-based session state? The up-line ordering and pinning tests (D2).
 - Q4 (resolved, auto-pick): Chunked set-buffer or stdin load-buffer? Stdin, for every text (D3).
 - Q5 (resolved, auto-pick, board's open question): May a shortcut carry flags of its own? No; trailing words, flags included, forward to the last argv, the global help flags excepted (D4).
