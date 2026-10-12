@@ -460,10 +460,12 @@
         "shed"
       ],
       "issues": [],
+      "priority": "low",
       "depends_on": [],
       "isolated": false,
       "brief": "On Windows the verifytree timeout kills only the shell, not the process tree it started",
-      "body": "From run-recovery PR-Gate (2026-10-07): run-recovery gave `verifytree` a 60-minute timeout and kills the process group on Unix.\nStill open from #420: on Windows the timeout kills only the shell, not the process tree it started.\nThe step-level watchdog for a `lyx shed step` that never returns moved into task `driver-context` (2026-10-10).\n"
+      "body": "From run-recovery PR-Gate (2026-10-07): run-recovery gave `verifytree` a 60-minute timeout and kills the process group on Unix.\nStill open from #420: on Windows the timeout kills only the shell, not the process tree it started.\nThe step-level watchdog for a `lyx shed step` that never returns moved into task `driver-context` (2026-10-10).\n",
+      "revised": "2026-10-12T11:24:54Z"
     },
     {
       "id": 180,
