@@ -1,11 +1,11 @@
 {
-  "current_producer": "PR-Gate",
+  "current_producer": "Merge-In",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "PR-Gate",
-    "last": "Publish → done",
+    "now": "Merge-In",
+    "last": "PR-Gate → rerouted to Merge-In",
     "wait": ""
   },
   "history": [
@@ -161,6 +161,13 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-12T10:08:38Z"
+    },
+    {
+      "producer": "PR-Gate",
+      "outcome": "reroute",
+      "output": "",
+      "at": "2026-10-12T10:08:55Z",
+      "routed_to": "Merge-In"
     }
   ],
   "product": {
