@@ -2,7 +2,7 @@
 
 **Create:**
 - `contracts/stencils/loom/loom-template-arbiter.md`
-- `plan:contracts/stencils#LoomTemplateArbiter` -> `var LoomTemplateArbiter []byte`
+- `contracts/stencils#LoomTemplateArbiter`
 
 **Edit:**
 - `contracts/stencils#entries`

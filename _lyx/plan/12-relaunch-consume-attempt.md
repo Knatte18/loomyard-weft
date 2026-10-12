@@ -3,8 +3,8 @@
 **Create:**
 - `internal/loomcli/arbiterconsume.go`
 - `internal/loomcli/arbiterconsume_test.go`
-- `plan:internal/loomcli#consumeArbiterAttempt` -> `func consumeArbiterAttempt(attemptDir string, base shedengine.RelaunchRequest) error`
-- `plan:internal/loomcli#loomCLI.loomConsumeAttempt` -> `func (c *loomCLI) loomConsumeAttempt(ctx context.Context, attempt string) error`
+- `internal/loomcli#consumeArbiterAttempt`
+- `internal/loomcli#loomCLI.loomConsumeAttempt`
 
 **Edit:**
 - `internal/loomcli#loomCLI.specFor`

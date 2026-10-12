@@ -2,8 +2,8 @@
 
 **Create:**
 - `internal/loomcli/arbitereligibility.go`
-- `plan:internal/loomcli#arbiterStop` -> `type arbiterStop struct`
-- `plan:internal/loomcli#arbiterEligibility` -> `func arbiterEligibility(stop arbiterStop) error`
+- `internal/loomcli#arbiterStop`
+- `internal/loomcli#arbiterEligibility`
 
 **Edit:**
 - `contracts/specs/refusal-spec.md`

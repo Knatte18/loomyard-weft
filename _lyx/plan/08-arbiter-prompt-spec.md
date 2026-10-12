@@ -3,15 +3,15 @@
 **Create:**
 - `internal/loomcli/arbiterprompt.go`
 - `internal/loomcli/arbiterprompt_test.go`
-- `plan:internal/loomcli#arbiterPromptInput` -> `type arbiterPromptInput struct`
-- `plan:internal/loomcli#arbiterPrompt` -> `func arbiterPrompt(stencilsDir string, in arbiterPromptInput) (string, error)`
-- `plan:internal/loomcli#arbiterSpec` -> `func arbiterSpec(prompt, verdictPath string, settings loomengine.ArbiterSettings) shuttleengine.Spec`
+- `internal/loomcli#arbiterPromptInput`
+- `internal/loomcli#arbiterPrompt`
+- `internal/loomcli#arbiterSpec`
 
 **Edit:**
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:contracts/stencils#LoomTemplateArbiter`
+- `contracts/stencils#LoomTemplateArbiter`
 - `internal/loomengine#ArbiterSettings`
 - `internal/loomengine#ArbiterRole`
 

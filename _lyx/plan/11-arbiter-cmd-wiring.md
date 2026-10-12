@@ -1,9 +1,9 @@
 # Card 11 — arbiter-cmd-wiring
 
 **Create:**
-- `plan:internal/loomcli#runnerArbiterShuttle` -> `type runnerArbiterShuttle struct`
-- `plan:internal/loomcli#loomCLI.arbiterCmd` -> `func (c *loomCLI) arbiterCmd() *cobra.Command`
-- `plan:internal/loomcli#loomCLI.arbiterDepsFor` -> `func (c *loomCLI) arbiterDepsFor() (arbiterDeps, error)`
+- `internal/loomcli#runnerArbiterShuttle`
+- `internal/loomcli#loomCLI.arbiterCmd`
+- `internal/loomcli#loomCLI.arbiterDepsFor`
 
 **Edit:**
 - `internal/loomcli#Command`
@@ -12,7 +12,7 @@
 - `internal/loomcli/doc.go`
 
 **Uses:**
-- `plan:internal/loomcli#arbiterVerb`
+- `internal/loomcli#arbiterVerb`
 - `internal/loomengine#ResolveArbiter`
 - `internal/shedrun#ArbiterDir`
 - `internal/shedrun#ArbiterRel`

@@ -3,20 +3,20 @@
 **Create:**
 - `internal/loomcli/arbiter.go`
 - `internal/loomcli/arbiter_test.go`
-- `plan:internal/loomcli#arbiterRun` -> `type arbiterRun interface`
-- `plan:internal/loomcli#arbiterShuttle` -> `type arbiterShuttle interface`
-- `plan:internal/loomcli#arbiterDeps` -> `type arbiterDeps struct`
-- `plan:internal/loomcli#arbiterInput` -> `type arbiterInput struct`
-- `plan:internal/loomcli#arbiterVerb` -> `func arbiterVerb(out io.Writer, deps arbiterDeps, in arbiterInput) int`
+- `internal/loomcli#arbiterRun`
+- `internal/loomcli#arbiterShuttle`
+- `internal/loomcli#arbiterDeps`
+- `internal/loomcli#arbiterInput`
+- `internal/loomcli#arbiterVerb`
 
 **Edit:**
 - `contracts/specs/refusal-spec.md`
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/loomcli#arbiterEligibility`
-- `plan:internal/loomcli#arbiterPrompt`
-- `plan:internal/loomcli#arbiterSpec`
+- `internal/loomcli#arbiterEligibility`
+- `internal/loomcli#arbiterPrompt`
+- `internal/loomcli#arbiterSpec`
 - `internal/loomengine#ListArbiterAttempts`
 - `internal/loomengine#ReadArbiterVerdict`
 - `internal/loomengine#WriteArbiterMarker`
