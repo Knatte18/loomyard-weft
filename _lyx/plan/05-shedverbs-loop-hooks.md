@@ -1,8 +1,8 @@
 # Card 5 — shedverbs-loop-hooks
 
 **Create:**
-- `plan:internal/shedverbs#TestLoop_ExitHookRunsOnceAtEveryStop` -> `func TestLoop_ExitHookRunsOnceAtEveryStop(t *testing.T)`
-- `plan:internal/shedverbs#TestLoop_WakeHookRunsOnWatchWakes` -> `func TestLoop_WakeHookRunsOnWatchWakes(t *testing.T)`
+- `internal/shedverbs#TestLoop_ExitHookRunsOnceAtEveryStop`
+- `internal/shedverbs#TestLoop_WakeHookRunsOnWatchWakes`
 
 **Edit:**
 - `internal/shedverbs#LoopSpec`

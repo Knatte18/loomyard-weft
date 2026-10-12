@@ -2,24 +2,24 @@
 
 **Create:**
 - `internal/parentlock/doc.go`
-- `plan:internal/parentlock#Dir` -> `func Dir(boardDir string) string`
-- `plan:internal/parentlock#Owner` -> `type Owner struct`
-- `plan:internal/parentlock#Owner.SameRun` -> `func (o Owner) SameRun(other Owner) bool`
-- `plan:internal/parentlock#Owner.SameProcess` -> `func (o Owner) SameProcess(other Owner) bool`
-- `plan:internal/parentlock#Record` -> `type Record struct`
-- `plan:internal/parentlock#Ticket` -> `type Ticket struct`
-- `plan:internal/parentlock#Entry` -> `type Entry struct`
-- `plan:internal/parentlock#Attempt` -> `type Attempt struct`
-- `plan:internal/parentlock#ErrUnreadable` -> `var ErrUnreadable error`
-- `plan:internal/parentlock#ProcessAlive` -> `func ProcessAlive(pid int, startTime string) bool`
-- `plan:internal/parentlock#Store` -> `type Store struct`
-- `plan:internal/parentlock#Store.TryAcquire` -> `func (s *Store) TryAcquire(branch string, owner Owner) (Attempt, error)`
-- `plan:internal/parentlock#Store.Read` -> `func (s *Store) Read(branch string) (Record, bool, error)`
-- `plan:internal/parentlock#Store.Release` -> `func (s *Store) Release(branch string, owner Owner) (bool, error)`
-- `plan:internal/parentlock#Store.HandOff` -> `func (s *Store) HandOff(branch string, from, to Owner) (bool, error)`
-- `plan:internal/parentlock#Store.List` -> `func (s *Store) List() ([]Entry, error)`
-- `plan:internal/parentlock#Store.ForceRelease` -> `func (s *Store) ForceRelease(branch string) (bool, error)`
-- `plan:internal/parentlock#Store.ReleaseAll` -> `func (s *Store) ReleaseAll() ([]string, error)`
+- `internal/parentlock#Dir`
+- `internal/parentlock#Owner`
+- `internal/parentlock#Owner.SameRun`
+- `internal/parentlock#Owner.SameProcess`
+- `internal/parentlock#Record`
+- `internal/parentlock#Ticket`
+- `internal/parentlock#Entry`
+- `internal/parentlock#Attempt`
+- `internal/parentlock#ErrUnreadable`
+- `internal/parentlock#ProcessAlive`
+- `internal/parentlock#Store`
+- `internal/parentlock#Store.TryAcquire`
+- `internal/parentlock#Store.Read`
+- `internal/parentlock#Store.Release`
+- `internal/parentlock#Store.HandOff`
+- `internal/parentlock#Store.List`
+- `internal/parentlock#Store.ForceRelease`
+- `internal/parentlock#Store.ReleaseAll`
 - `internal/parentlock/store_test.go`
 - `internal/parentlock/seam_enforcement_test.go`
 

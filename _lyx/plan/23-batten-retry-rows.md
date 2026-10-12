@@ -19,8 +19,8 @@
 - `internal/battencli#battenCLI.wire`
 
 **Uses:**
-- `plan:internal/parentlock#ReadWait`
-- `plan:internal/parentlock#WaitRecordPath`
+- `internal/parentlock#ReadWait`
+- `internal/parentlock#WaitRecordPath`
 
 **Intent:**
 Point batten's automatic verify retry at the row that ran the failing verify (D1), and count a parent lock wait as a live wait (D12).

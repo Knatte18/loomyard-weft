@@ -14,11 +14,11 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/parentlock#Store.List`
-- `plan:internal/parentlock#Store.Release`
-- `plan:internal/parentlock#Store.HandOff`
-- `plan:internal/parentlock#IdleWatch.Observe`
-- `plan:internal/shuttleengine#ReadAgentWaits`
+- `internal/parentlock#Store.List`
+- `internal/parentlock#Store.Release`
+- `internal/parentlock#Store.HandOff`
+- `internal/parentlock#IdleWatch.Observe`
+- `internal/shuttleengine#ReadAgentWaits`
 
 **Intent:**
 Fill the loop's exit and wake hooks for loom and darn runs, so the lock follows the loop that owns it (D5, D7).

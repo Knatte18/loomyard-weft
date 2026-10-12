@@ -1,8 +1,8 @@
 # Card 6 — shuttle-agent-waits
 
 **Create:**
-- `plan:internal/shuttleengine#AgentWait` -> `type AgentWait struct`
-- `plan:internal/shuttleengine#ReadAgentWaits` -> `func ReadAgentWaits(cfg Config, anchorPath string, engine Engine, now time.Time) ([]AgentWait, error)`
+- `internal/shuttleengine#AgentWait`
+- `internal/shuttleengine#ReadAgentWaits`
 - `internal/shuttleengine/agentwait_test.go`
 
 **Edit:**

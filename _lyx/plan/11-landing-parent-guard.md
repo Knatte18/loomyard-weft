@@ -30,11 +30,11 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/parentlock#Store.Acquire`
-- `plan:internal/parentlock#Store.Release`
-- `plan:internal/parentlock#NewWait`
-- `plan:internal/parentlock#WriteWait`
-- `plan:internal/parentlock#RemoveWait`
+- `internal/parentlock#Store.Acquire`
+- `internal/parentlock#Store.Release`
+- `internal/parentlock#NewWait`
+- `internal/parentlock#WriteWait`
+- `internal/parentlock#RemoveWait`
 - `plan:internal/fabricengine#Fabric.ReadParentTips`
 - `plan:internal/fabricengine#Fabric.HoldsWork`
 - `plan:internal/fabricengine#Fabric.ChangedPaths`

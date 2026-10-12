@@ -1,0 +1,5 @@
+status: OK
+head_sha: 2a4193feab2543556fe528ff5f56e0f72a4b431e
+deviations:
+  - internal/shedengine/goto_test.go
+  - internal/shedverbs/loop_test.go

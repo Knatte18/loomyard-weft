@@ -21,10 +21,10 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/parentlock#IdleWatch.Observe`
-- `plan:internal/parentlock#Store.List`
-- `plan:internal/parentlock#Store.Release`
-- `plan:internal/shuttleengine#ReadAgentWaits`
+- `internal/parentlock#IdleWatch.Observe`
+- `internal/parentlock#Store.List`
+- `internal/parentlock#Store.Release`
+- `internal/shuttleengine#ReadAgentWaits`
 - `plan:internal/fabricengine#Fabric.ReadParentTips`
 - `plan:internal/fabricengine#Fabric.HoldsWork`
 - `plan:internal/landingshed#ReadMergeRecord`

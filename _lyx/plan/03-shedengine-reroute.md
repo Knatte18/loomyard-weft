@@ -1,9 +1,9 @@
 # Card 3 — shedengine-reroute
 
 **Create:**
-- `plan:internal/shedengine#OutcomeReroute` -> `const OutcomeReroute Outcome = "reroute"`
-- `plan:internal/shedengine#rerouteCap` -> `const rerouteCap = 3`
-- `plan:internal/shedengine#rerouteCount` -> `func rerouteCount(history []HistoryEntry, row string) int`
+- `internal/shedengine#OutcomeReroute`
+- `internal/shedengine#rerouteCap`
+- `internal/shedengine#rerouteCount`
 - `internal/shedengine/reroute_test.go`
 
 **Edit:**

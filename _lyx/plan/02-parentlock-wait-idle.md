@@ -1,18 +1,18 @@
 # Card 2 — parentlock-wait-idle
 
 **Create:**
-- `plan:internal/parentlock#Waiter` -> `type Waiter struct`
-- `plan:internal/parentlock#ErrPaused` -> `var ErrPaused error`
-- `plan:internal/parentlock#Store.Acquire` -> `func (s *Store) Acquire(ctx context.Context, branch string, owner Owner, w Waiter) (Record, error)`
-- `plan:internal/parentlock#Wait` -> `type Wait struct`
-- `plan:internal/parentlock#NewWait` -> `func NewWait(branch, holder string) Wait`
-- `plan:internal/parentlock#WaitRecordPath` -> `func WaitRecordPath(dir string) string`
-- `plan:internal/parentlock#WriteWait` -> `func WriteWait(path string, w Wait) error`
-- `plan:internal/parentlock#ReadWait` -> `func ReadWait(path string, alive func(pid int, startTime string) bool) (Wait, bool, error)`
-- `plan:internal/parentlock#RemoveWait` -> `func RemoveWait(path string) error`
-- `plan:internal/parentlock#AgentState` -> `type AgentState struct`
-- `plan:internal/parentlock#IdleWatch` -> `type IdleWatch struct`
-- `plan:internal/parentlock#IdleWatch.Observe` -> `func (w *IdleWatch) Observe(agents []AgentState, read bool, awake time.Duration) bool`
+- `internal/parentlock#Waiter`
+- `internal/parentlock#ErrPaused`
+- `internal/parentlock#Store.Acquire`
+- `internal/parentlock#Wait`
+- `internal/parentlock#NewWait`
+- `internal/parentlock#WaitRecordPath`
+- `internal/parentlock#WriteWait`
+- `internal/parentlock#ReadWait`
+- `internal/parentlock#RemoveWait`
+- `internal/parentlock#AgentState`
+- `internal/parentlock#IdleWatch`
+- `internal/parentlock#IdleWatch.Observe`
 - `internal/parentlock/acquire_test.go`
 - `internal/parentlock/idle_test.go`
 
@@ -23,7 +23,7 @@
 - `pattern/PATTERN-daemon-wakeups.md`
 
 **Uses:**
-- `plan:internal/parentlock#Store.TryAcquire`
+- `internal/parentlock#Store.TryAcquire`
 
 **Intent:**
 Add the queue wait, the wait record and the idle rule the rows, the loop and batten share (D5, D7, D12).

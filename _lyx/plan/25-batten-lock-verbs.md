@@ -16,9 +16,9 @@
 
 **Uses:**
 - `internal/battencli#RefuseUnlessPrime`
-- `plan:internal/parentlock#Store.List`
-- `plan:internal/parentlock#Store.ForceRelease`
-- `plan:internal/parentlock#Store.ReleaseAll`
+- `internal/parentlock#Store.List`
+- `internal/parentlock#Store.ForceRelease`
+- `internal/parentlock#Store.ReleaseAll`
 
 **Intent:**
 Add the parent lock's verb group (D11), so the orch and the operator can see every parent lock and free one whose owner is alive but wedged.

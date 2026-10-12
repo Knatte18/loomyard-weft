@@ -12,8 +12,8 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/parentlock#ReadWait`
-- `plan:internal/parentlock#WaitRecordPath`
+- `internal/parentlock#ReadWait`
+- `internal/parentlock#WaitRecordPath`
 
 **Intent:**
 Show a lock wait as waiting in `lyx loom status` (D12), so the orch never reads a run waiting its turn as stuck.
