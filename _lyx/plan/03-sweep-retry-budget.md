@@ -1,11 +1,11 @@
 # Card 3 — sweep-retry-budget
 
 **Create:**
-- `plan:internal/lyxtemp#removeRetryBudget` -> `const removeRetryBudget = time.Second`
-- `plan:internal/lyxtemp#isRemovalSymptom` -> `func isRemovalSymptom(err error, path string) bool`
-- `plan:internal/lyxtemp#retryClock` -> `type retryClock struct`
-- `plan:internal/lyxtemp#retryClock.now` -> `func (c *retryClock) now() time.Time`
-- `plan:internal/lyxtemp#retryClock.sleep` -> `func (c *retryClock) sleep(d time.Duration)`
+- `internal/lyxtemp#removeRetryBudget`
+- `internal/lyxtemp#isRemovalSymptom`
+- `internal/lyxtemp#retryClock`
+- `internal/lyxtemp#retryClock.now`
+- `internal/lyxtemp#retryClock.sleep`
 
 **Delete:**
 - `internal/lyxtemp#removeAttempts`

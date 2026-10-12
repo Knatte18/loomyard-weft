@@ -1,16 +1,16 @@
 # Card 1 — board-unknown-keys
 
 **Create:**
-- `plan:internal/boardengine#jsonKeys` -> `func jsonKeys(t reflect.Type) []string`
-- `plan:internal/boardengine#splitUnknown` -> `func splitUnknown(data []byte, known []string) (map[string]json.RawMessage, error)`
-- `plan:internal/boardengine#appendUnknown` -> `func appendUnknown(object []byte, unknown map[string]json.RawMessage) ([]byte, error)`
-- `plan:internal/boardengine#Task.MarshalJSON` -> `func (t Task) MarshalJSON() ([]byte, error)`
-- `plan:internal/boardengine#Task.UnmarshalJSON` -> `func (t *Task) UnmarshalJSON(data []byte) error`
-- `plan:internal/boardengine#storedEntry.UnmarshalJSON` -> `func (e *storedEntry) UnmarshalJSON(data []byte) error`
-- `plan:internal/boardengine#storeFile.MarshalJSON` -> `func (f storeFile) MarshalJSON() ([]byte, error)`
-- `plan:internal/boardengine#loadedStoreFile.UnmarshalJSON` -> `func (f *loadedStoreFile) UnmarshalJSON(data []byte) error`
-- `plan:internal/boardengine_test#keptValue` -> `func keptValue(t *testing.T, raw []byte, slug, key string) (string, bool)`
-- `plan:internal/boardengine_test#addEntryKeys` -> `func addEntryKeys(t *testing.T, boardPath, slug, members string)`
+- `internal/boardengine#jsonKeys`
+- `internal/boardengine#splitUnknown`
+- `internal/boardengine#appendUnknown`
+- `internal/boardengine#Task.MarshalJSON`
+- `internal/boardengine#Task.UnmarshalJSON`
+- `internal/boardengine#storedEntry.UnmarshalJSON`
+- `internal/boardengine#storeFile.MarshalJSON`
+- `internal/boardengine#loadedStoreFile.UnmarshalJSON`
+- `internal/boardengine_test#keptValue`
+- `internal/boardengine_test#addEntryKeys`
 
 **Edit:**
 - `internal/boardengine#Task`

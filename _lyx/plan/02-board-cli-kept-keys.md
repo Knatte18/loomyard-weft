@@ -1,7 +1,7 @@
 # Card 2 — board-cli-kept-keys
 
 **Create:**
-- `plan:internal/boardcli_test#seedBoardFile` -> `func seedBoardFile(t *testing.T, cwd, body string)`
+- `internal/boardcli_test#seedBoardFile`
 
 **Edit:**
 - `internal/boardcli_test#stepLookupContract`
