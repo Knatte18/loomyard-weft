@@ -184,6 +184,16 @@ A decision outside both is invisible to the agent.
   - skip-alignment-local-layer-reopens-gate (class design, severity BLOCKING, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - note-records-moved-head (class consistency, severity MEDIUM, open in rounds 2)
+  - poll-close-errors-no-outcome (class design, severity MEDIUM, open in rounds 2)
+  - pralign-call-branches-untested (class scope, severity MEDIUM, open in rounds 1, 2)
+  - session-start-stop-guards-untested (class scope, severity MEDIUM, open in rounds 1, 2)
+  - snapshot-read-failure-no-outcome (class design, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - Parent review with no peer and an in-scope discussion: the round records an approve from the agent, and no delivery prompt is typed and no message reaches the orch.
