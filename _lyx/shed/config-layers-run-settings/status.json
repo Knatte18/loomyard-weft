@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Burler-Review",
+  "current_producer": "Discussion-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Burler-Review",
-    "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
+    "now": "Discussion-Burler-Fix",
+    "last": "Discussion-Burler-Review → bounced to Discussion-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -147,6 +147,13 @@
       "outcome": "stuck",
       "output": "/home/knatte/Code/loomyard-LYXHUB/config-layers-run-settings/_lyx/reviews/discussion/round-3-bouncer-ledger.md",
       "at": "2026-10-12T06:18:09Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Discussion-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/config-layers-run-settings/_lyx/reviews/discussion/round-4-review.md",
+      "at": "2026-10-12T06:21:48Z",
       "budget_exempt": true
     }
   ],
