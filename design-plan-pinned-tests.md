@@ -1,6 +1,6 @@
 # Plan does not surface tests that pin a method set a card extends
 
-`plan-pinned-tests` · Note · bug
+`plan-pinned-tests` · Note · bug, loom
 
 Imported from [issue #594](https://github.com/Knatte18/loomyard/issues/594).
 
