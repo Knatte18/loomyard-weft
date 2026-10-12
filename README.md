@@ -25,7 +25,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 3 | **lyx pause: stop every run at once, safely and on purpose**<br>• A hub-wide pause that interrupts every Claude session with Esc within seconds, unlike the step-boundary pauses, recorded as ordered so no failure or idle path fires | [`lyx-halt`](design-lyx-halt.md) | loom | Plan-Write |  |  | batten, shuttle |
-| 4 | **Board writers keep unknown fields; lyx cleanup follow-ups**<br>• An old lyx process drops board fields it does not know; plus the open items from the lyx cleanup PR | [`board-field-drop`](design-board-field-drop.md) | loom | Describe |  | 1h | board, batten |
+| 4 | **Board writers keep unknown fields; lyx cleanup follow-ups**<br>• An old lyx process drops board fields it does not know; plus the open items from the lyx cleanup PR | [`board-field-drop`](design-board-field-drop.md) | loom | Merge-In |  | 1h | board, batten |
 | 5 | **Webster kick-start pack: read the card's spans in one turn, per-card packs**<br>• Forks read listed spans whole and spread out; adopt the bench wording, per-card packs, span-only FRESH-READ and one-line var entries | [`webster-pack-read-set`](design-webster-pack-read-set.md) | loom | Webster-Burler-Review | 43m | 43m | webster, stencil |
 
 ### Ready
@@ -83,8 +83,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 18 | **End the seat hold deferral when the advisor itself is held or dead**<br>• The hold notice deferral only got a shorter cap (10 min); ending it as soon as the advisor is held or dead is not built. | [`hold-deferral-end-on-held`](design-hold-deferral-end-on-held.md) |  |  | shuttle |
 | 19 | **Measure the Webster kick-start pack with and without**<br>• Repeat the audit count (grep-for-member calls and whole-file reads per fork) on real loom runs with kickstart_pack on and off. | [`kickstart-pack-measure`](design-kickstart-pack-measure.md) |  | 53m | webster |
 | 20 | **Twill for Plan: measure fewer Plan-Review rounds; wrong-parent-dir miss**<br>• After twill-plan lands: measure a lower plan_max_bounces, and cover the parent-directory miss every bench arm shared | [`twill-plan-followups`](design-twill-plan-followups.md) |  | 41m | loom |
-| 21 | **Go-driven shed with a cold LLM watcher at every level**<br>• A Go loop always steps the run; an LLM watcher is spawned only when the loop stops on something it cannot pass, the same at loom and hub level | [`go-driven-shed`](design-go-driven-shed.md) | 50m | 50m | shed, batten, loom, orch |
-| 22 | **Runs overview shows a paused run as paused**<br>• The runs overview reads lyx-halt's paused_since so a paused run does not show as running. | [`runs-overview-paused`](design-runs-overview-paused.md) | 15m | 15m | reed, batten |
+| 21 | **Go-driven shed with a cold LLM watcher at every level**<br>• A Go loop always steps the run; an LLM watcher is spawned only when the loop stops on something it cannot pass, the same at loom and hub level | [`go-driven-shed`](design-go-driven-shed.md) | 51m | 51m | shed, batten, loom, orch |
+| 22 | **Runs overview shows a paused run as paused**<br>• The runs overview reads lyx-halt's paused_since so a paused run does not show as running. | [`runs-overview-paused`](design-runs-overview-paused.md) | 16m | 16m | reed, batten |
 
 #### Low priority
 

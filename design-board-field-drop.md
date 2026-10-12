@@ -1,6 +1,6 @@
 # Board writers keep unknown fields; lyx cleanup follow-ups
 
-`board-field-drop` · Task · bug, board, batten · running · Describe
+`board-field-drop` · Task · bug, board, batten · running · Merge-In
 
 Two small bug items, bundled (operator, 2026-10-12).
 
