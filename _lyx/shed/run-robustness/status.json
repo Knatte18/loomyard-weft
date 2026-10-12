@@ -90,6 +90,34 @@
       "output": "child paused → running at Webster-Burler-Review",
       "at": "2026-10-12T13:20:44Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at Merge-Bouncer",
+      "at": "2026-10-12T13:52:36Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at Merge-Bouncer",
+      "at": "2026-10-12T13:53:32Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at PR-Gate",
+      "at": "2026-10-12T14:01:37Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at PR-Gate",
+      "at": "2026-10-12T14:02:45Z",
+      "budget_exempt": true
     }
   ]
 }
