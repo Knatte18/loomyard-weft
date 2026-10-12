@@ -185,6 +185,12 @@ Decision: the orch's role stencil gains one line: a go-driven run has no driver 
 This departs from `orch-split`'s settled routing, where the run's driver receives every instruction for the run, and from `creel`'s planned per-run driver address; both apply to LLM-driven runs only until a later task gives go-driven runs a receiver.
 Rationale: content for a run already has durable verbs, and the most urgent instruction, stop, is a pause, which needs no live receiver.
 
+### Added after Discussion (parent, 2026-10-12): D15 accepted: a go-driven run has no message receiver yet
+
+Decision: Accept D15: a run on the Go driver has no live receiver for run messages; until a later task adds one, a go-driven run is reached through lyx loom and lyx shed verbs. go-driver-assistant lands before judge-cap-call; judge-cap-call takes its arbiter-stencil, loom-config and loomcli/doc.go changes at Merge-In.
+
+Rationale: orch-split still lists the receiver for a run with no long-lived driver as open, and the Go driver is opt-in per task while the LLM driver stays the default. The two runs touch the same files but their designs do not conflict; the run further along lands first.
+
 ## Constraints
 
 - `PATTERN-driver-choice-single-site`: the recorded seed driver is read only in loom's bootstrap verbs (start, resume) and `lyx loom drive`'s own package; the background's permitted-consumer list gains Seed-Child's and loom's seed writer's `driver_kind` reads, in the same commit.
