@@ -1,6 +1,6 @@
 # lyx pause: stop every run at once, safely and on purpose
 
-`lyx-halt` · Note · feature, batten
+`lyx-halt` · Note · feature, batten, shuttle
 
 ## Why
 
@@ -24,3 +24,11 @@ That is not enough to make the hub safe to suspend.
 - Scope: whether the orch session is paused too, or only runs.
 - Per-run use: whether `lyx pause <slug>` pauses one run the same way, now that the boundary pause goes.
 - Relation to shuttle's stop verb from `shuttle-send`, which settles a run's record before removing its strand.
+- Unplanned sleep: whether lyx should also detect a wake it was not paused for (a wall-clock jump against a monotonic clock, or a systemd-logind sleep signal), resume a turn cut by a lost connection without a typed `fortsett`, and keep slept time out of idle timers and batten notices.
+
+## Seen (2026-10-12, merged from `host-sleep-resume`)
+
+The operator hibernated the PC overnight with `driver-arbiter` in Plan-Write.
+On wake the plan writer's turn had ended with `API Error: Connection lost mid-response` (shuttle state `idle-stalled`, cause `api-error`, detail `server_error`), and the pane showed the turn as having run for 10h 51m.
+Someone typed `fortsett` into the pane to resume it; the driver then spawned a fork to diagnose an interrupted stop and restarted `lyx shed step --until-stop`.
+Batten then sent a `[batten notice]` reporting agents idle for almost 11 hours, counting the sleep.
