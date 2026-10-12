@@ -1,8 +1,8 @@
 # Card 2 — reed.yaml's window_share_max and window_split keys and their validation
 
 **Create:**
-- `plan:internal/reedengine#windowSplitLayout` -> `func windowSplitLayout(raw string) (splitFlag, layout string, err error)`
-- `plan:internal/reedengine#validateWindowConfig` -> `func validateWindowConfig(cfg Config) error`
+- `internal/reedengine#windowSplitLayout`
+- `internal/reedengine#validateWindowConfig`
 
 **Edit:**
 - `internal/reedengine#Config`

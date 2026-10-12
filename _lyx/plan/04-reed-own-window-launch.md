@@ -20,11 +20,11 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/reedengine#ownWindowOption`
-- `plan:internal/reedengine#isOwnWindow`
-- `plan:internal/reedengine#TmuxCmd.listWindowPanes`
-- `plan:internal/reedengine#windowPane.livePane`
-- `plan:internal/reedengine#Engine.listStrandAndWindowPanes`
+- `internal/reedengine#ownWindowOption`
+- `internal/reedengine#isOwnWindow`
+- `internal/reedengine#TmuxCmd.listWindowPanes`
+- `internal/reedengine#windowPane.livePane`
+- `internal/reedengine#Engine.listStrandAndWindowPanes`
 - `internal/reedengine#strandLabel`
 - `internal/reedengine#Engine.segmentColor`
 - `internal/reedengine#Engine.setStrandPaneOptionsLocked`

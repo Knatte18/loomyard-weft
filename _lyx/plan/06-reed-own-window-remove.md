@@ -13,11 +13,11 @@
 - `plan:internal/reedengine#TestOwnWindow_RealTmux`
 
 **Uses:**
-- `plan:internal/reedengine#Engine.selectStrandsWindowIfCurrentLocked`
-- `plan:internal/reedengine#TmuxCmd.listWindowPanes`
-- `plan:internal/reedengine#windowSplitLayout`
-- `plan:internal/reedengine#validateWindowConfig`
-- `plan:internal/reedengine#windowPane`
+- `internal/reedengine#Engine.selectStrandsWindowIfCurrentLocked`
+- `internal/reedengine#TmuxCmd.listWindowPanes`
+- `internal/reedengine#windowSplitLayout`
+- `internal/reedengine#validateWindowConfig`
+- `internal/reedengine#windowPane`
 
 **Intent:**
 D5's removal path and D3's remove rule: before an own window loses its last pane, a viewer on it is moved to the strands' window; a shared window a strand leaves is laid out again; and an invalid `window_split` or `window_share_max` never blocks a removal.

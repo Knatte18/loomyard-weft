@@ -18,7 +18,7 @@
 
 **Uses:**
 - `plan:internal/reedengine#unseenWindowOption`
-- `plan:internal/reedengine#ownWindowOption`
+- `internal/reedengine#ownWindowOption`
 - `internal/reedengine#Engine.AttachArgv`
 
 **Intent:**

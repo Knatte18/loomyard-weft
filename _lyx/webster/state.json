@@ -1,15 +1,15 @@
 {
   "runGuid": "fe1eacd80788616d26a641a3a950cf1d",
-  "planFingerprint": "e177671ac1e44dbd18e2b4fc0ba5db3bdc4f2ace0be419d453efa6a93dbfcbf7",
+  "planFingerprint": "ed9d2e197be947f881347af9a6273f4d660ac4a246aac38b49f96701fa26943a",
   "planFileHashes": {
     "00-overview.md": "8b9bcdaedef87f09082ad2e82a2f496157350100f45272b7f3be07cba5f9f639",
     "01-render-own-window-display.md": "c773d83374496be3c3835e2796b7a4d4ad2c280b01b1ae8688d7d5b67d0ffe14",
-    "02-reed-window-config.md": "69add34e8fa8d7f372c04fda23f458c26d923599f1fa77aab569428741761974",
-    "03-reed-own-window-presence.md": "2e86abd69a10c743841a40409b7694c513610ba3ebcc98171a5fdd95232c61dd",
-    "04-reed-own-window-launch.md": "b2b4de2d71642cec22a218c8dc70d0371e43107374c775fc082c342d26e13a30",
-    "05-reed-window-groups.md": "7d975537c4818a2e7d86958f19d89796099dab3acaa0bb4ce4401cdb6ba00a59",
-    "06-reed-own-window-remove.md": "f59fe1c75cfb64d45d86aab846aaf630abe21ccd294dadb86fe94f20c43bfb07",
-    "07-reed-own-window-bar.md": "b2107bd864894f71286451d558cc4a99ee8eabda6e21cd73da1dff98984bc817",
+    "02-reed-window-config.md": "661aa52d8054363864ba7b3a40c312c555cf166809c008b675acf59af42e7878",
+    "03-reed-own-window-presence.md": "661deac98b980189f4b2bf8ce370eda0ef8dd8fdb7fe091a89c1fe789c4d2d40",
+    "04-reed-own-window-launch.md": "b370ea1e591ea63662779b4b68591ff802bb2f9451c137080a0032981cd8156d",
+    "05-reed-window-groups.md": "138750dea291c10035015cdd29696665bc1583534b3d5a59944821d6e38cf807",
+    "06-reed-own-window-remove.md": "2b08c7628dfe99876dcc7b1d8b1a1cef669004284872e9af685caeb01a260e42",
+    "07-reed-own-window-bar.md": "22e19313deeddf48e9cc5920b4359120421ef25ede940fcf07fb86681beb8788",
     "08-shuttle-present-strand-removal.md": "09d9332f41af245842e28cd75b899d1940f48ac3f6e7ac47d7e02c47314762ab",
     "09-shuttle-own-window-default.md": "5ed4fc5eef5b629e05af1dc694c7ae3ecaabfaee6c6d1e82486b8668c1f49d5d",
     "10-seat-window-group.md": "95017a8af57159d94c43d25ace58805370445bc80244615b5a0f93c53990a2f0",
@@ -291,7 +291,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "862938762b0bd632ef202653254e8647",
   "masterSessionId": "0e9aa514-65af-4e0c-bc99-9aab28aced2a",
   "batches": {
@@ -304,15 +304,32 @@
       ],
       "cardHashes": {
         "01-render-own-window-display": "c773d83374496be3c3835e2796b7a4d4ad2c280b01b1ae8688d7d5b67d0ffe14",
-        "02-reed-window-config": "69add34e8fa8d7f372c04fda23f458c26d923599f1fa77aab569428741761974",
-        "03-reed-own-window-presence": "2e86abd69a10c743841a40409b7694c513610ba3ebcc98171a5fdd95232c61dd"
+        "02-reed-window-config": "661aa52d8054363864ba7b3a40c312c555cf166809c008b675acf59af42e7878",
+        "03-reed-own-window-presence": "661deac98b980189f4b2bf8ce370eda0ef8dd8fdb7fe091a89c1fe789c4d2d40"
       },
       "startSha": "ee8657461841207fbf62ae2721c2b97d2e91b11d",
       "kind": "fork",
       "spawnedAt": "2026-10-12T18:28:12Z",
       "sessionId": "0e9aa514-65af-4e0c-bc99-9aab28aced2a",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-render-own-window-display",
+        "status": "done",
+        "head_sha": "7e6f73f16c5c8520c3c9d919508e347f5afad0f3"
+      },
+      "cardShas": [
+        "7e6f73f16c5c8520c3c9d919508e347f5afad0f3"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-multi-window/0e9aa514-65af-4e0c-bc99-9aab28aced2a/subagents/agent-a1f87614cfa13dbc2.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-multi-window/0e9aa514-65af-4e0c-bc99-9aab28aced2a/subagents/agent-a1f87614cfa13dbc2.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-multi-window/0e9aa514-65af-4e0c-bc99-9aab28aced2a/subagents/agent-a1f87614cfa13dbc2.jsonl"
+  ]
 }

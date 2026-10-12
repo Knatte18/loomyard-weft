@@ -24,11 +24,11 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/reedengine#windowSplitLayout`
+- `internal/reedengine#windowSplitLayout`
 - `plan:internal/reedengine#Engine.openOwnWindowLocked`
-- `plan:internal/reedengine#windowPane`
-- `plan:internal/reedengine#TmuxCmd.listWindowPanes`
-- `plan:internal/reedengine#isOwnWindow`
+- `internal/reedengine#windowPane`
+- `internal/reedengine#TmuxCmd.listWindowPanes`
+- `internal/reedengine#isOwnWindow`
 - `internal/reedengine#validateSplitCreatedNewPane`
 - `internal/reedengine#strandLabel`
 

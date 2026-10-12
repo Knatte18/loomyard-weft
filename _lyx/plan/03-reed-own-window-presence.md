@@ -1,20 +1,20 @@
 # Card 3 — reed reads own-window panes through a session listing and never as window 0
 
 **Create:**
-- `plan:internal/reedengine#ownWindowOption` -> `const ownWindowOption = "@lyx_own"`
-- `plan:internal/reedengine#groupWindowOption` -> `const groupWindowOption = "@lyx_group"`
-- `plan:internal/reedengine#windowPane` -> `type windowPane struct`
-- `plan:internal/reedengine#windowPane.livePane` -> `func (w windowPane) livePane() LivePane`
-- `plan:internal/reedengine#windowPaneFormat` -> `const windowPaneFormat = "#{window_id} #{?#{@lyx_own},1,0} #{?#{@lyx_group},#{@lyx_group},-} #{pane_id} #{pane_dead} #{pane_pid} #{pane_title}"`
-- `plan:internal/reedengine#parseWindowPanes` -> `func parseWindowPanes(out string) []windowPane`
-- `plan:internal/reedengine#TmuxCmd.listWindowPanes` -> `func (p TmuxCmd) listWindowPanes(session string) ([]windowPane, error)`
-- `plan:internal/reedengine#isOwnWindow` -> `func isOwnWindow(d render.Display) bool`
-- `plan:internal/reedengine#presentPanes` -> `func presentPanes(strands []Strand, live []LivePane, windows []windowPane) []LivePane`
-- `plan:internal/reedengine#Engine.listStrandAndWindowPanes` -> `func (e *Engine) listStrandAndWindowPanes(st *ReedState) ([]LivePane, []windowPane, error)`
-- `plan:internal/reedengine#Engine.selectStrandsWindowIfCurrentLocked` -> `func (e *Engine) selectStrandsWindowIfCurrentLocked(st *ReedState, ending []string)`
-- `plan:internal/reedengine#windowPaneListingOf` -> `func windowPaneListingOf(windowListing string) string`
-- `plan:internal/reedengine#fakeTmux.answerWindowPanes` -> `func (f *fakeTmux) answerWindowPanes(out string, err error)`
-- `plan:internal/reedengine#TestStatus_ReportsOwnWindowStrandsFromTheSessionListing` -> `func TestStatus_ReportsOwnWindowStrandsFromTheSessionListing(t *testing.T)`
+- `internal/reedengine#ownWindowOption`
+- `internal/reedengine#groupWindowOption`
+- `internal/reedengine#windowPane`
+- `internal/reedengine#windowPane.livePane`
+- `internal/reedengine#windowPaneFormat`
+- `internal/reedengine#parseWindowPanes`
+- `internal/reedengine#TmuxCmd.listWindowPanes`
+- `internal/reedengine#isOwnWindow`
+- `internal/reedengine#presentPanes`
+- `internal/reedengine#Engine.listStrandAndWindowPanes`
+- `internal/reedengine#Engine.selectStrandsWindowIfCurrentLocked`
+- `internal/reedengine#windowPaneListingOf`
+- `internal/reedengine#fakeTmux.answerWindowPanes`
+- `internal/reedengine#TestStatus_ReportsOwnWindowStrandsFromTheSessionListing`
 
 **Edit:**
 - `internal/reedengine#recordedPaneIDs`
