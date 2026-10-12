@@ -53,7 +53,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Loom halts a producer as failed with a bare 'watchdog' reason and no trace record of the kill** | [`watchdog-bare-reason`](design-watchdog-bare-reason.md) | 56m | 55m | loom, shed |
-| 2 | **Weft records push refused once at Publish, passes on retry**<br>• Three runs on 2026-10-12 had the weft push refused once; find the race | [`weft-push-refused-retry`](design-weft-push-refused-retry.md) | 28m | 28m | fabric |
+| 2 | **Weft records push refused once at Publish, passes on retry**<br>• Three runs on 2026-10-12 had the weft push refused once; find the race | [`weft-push-refused-retry`](design-weft-push-refused-retry.md) | 29m | 29m | fabric |
 | 3 | **Plan card spec contradicts CLI tree invariants for a runnable group with an audience** | [`plan-cli-tree-check`](design-plan-cli-tree-check.md) | 27m | 27m | loom |
 | 4 | **Shuttle marks a working agent died when its pane is collapsed**<br>• Readiness reads only the pane capture; a squeezed pane stays blank and the agent is killed at the startup timeout | [`shuttle-ready-blank-pane`](design-shuttle-ready-blank-pane.md) | 12m | 12m | shuttle |
 
@@ -78,7 +78,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 13 | **Seats replaces SingleLLMProducer: every LLM producer is a MultiLLMProducer, zero advisors by default** | [`seats-replaces-singlellm`](design-seats-replaces-singlellm.md) |  |  | loom |
 | 14 | **tokencount: guard the slug-reuse cutoff against date skew**<br>• The slug-reuse cutoff is always applied; a tag commit date skewed against transcript timestamps could silently drop sessions. | [`tokencount-cutoff-skew`](design-tokencount-cutoff-skew.md) |  |  |  |
 | 15 | **Sweep tests that rely on a closed listener socket file**<br>• A forked child of a parallel test can inherit a closed listener fd and keep a stale socket answering; sweep other tests for the same race. | [`reed-socket-test-fd-sweep`](design-reed-socket-test-fd-sweep.md) |  |  | reed |
-| 16 | **Measure the Webster kick-start pack with and without**<br>• Repeat the audit count (grep-for-member calls and whole-file reads per fork) on real loom runs with kickstart_pack on and off. | [`kickstart-pack-measure`](design-kickstart-pack-measure.md) |  | 2h | webster |
+| 16 | **Measure the Webster kick-start pack with and without**<br>• Repeat the audit count (grep-for-member calls and whole-file reads per fork) on real loom runs with kickstart_pack on and off. | [`kickstart-pack-measure`](design-kickstart-pack-measure.md) |  | 0m | webster |
 | 17 | **Twill for Plan: measure fewer Plan-Review rounds; wrong-parent-dir miss**<br>• After twill-plan lands: measure a lower plan_max_bounces, and cover the parent-directory miss every bench arm shared | [`twill-plan-followups`](design-twill-plan-followups.md) |  | 1h | loom |
 | 18 | **Go-driven shed with a cold LLM watcher at every level**<br>• A Go loop always steps the run; an LLM watcher is spawned only when the loop stops on something it cannot pass, the same at loom and hub level | [`go-driven-shed`](design-go-driven-shed.md) | 2h | 2h | shed, batten, loom, orch |
 | 19 | **No sanctioned Go formatter verb for agents that may not run rewrite scripts** | [`agent-gofmt-verb`](design-agent-gofmt-verb.md) | 56m | 55m | shuttle |

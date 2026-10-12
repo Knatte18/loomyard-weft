@@ -23,3 +23,8 @@ Raw table and scripts: `.scratch/kickstart-measure/` in the hub prime.
 
 Verdict: the evidence does not justify building the Burler side yet.
 The cheap next step, if wanted, is a controlled test: `kickstart_pack: false` for a few comparable runs.
+
+## Next audit
+
+`webster-pack-read-set` (landed `113593990`) reshaped the pack per card, but its fork still reads card by card, so it is not the version to measure.
+Run the next audit once task `kickstart-read-all-first` has landed and a few loom runs have gone through Webster on it, compared against the runs before `113593990`.
