@@ -7,6 +7,7 @@
 **Edit:**
 - `internal/shedverbs#Hooks`
 - `internal/shedverbs#stepCmd`
+- `internal/shedverbs#TestLoop_RefusalsBeforeAnyStep`
 - `internal/shedverbs/doc.go`
 - `contracts/specs/refusal-spec.md`
 - `cmd/lyx/testdata/test-budget.yaml`
@@ -29,7 +30,8 @@ In `stepCmd`'s `RunE`:
 The `arbiter_attempt` key is what the driver stencil branches on to tell a refused consumption from any other error envelope.
 Bound: the flag can only move a run through the arming module's hook, which card 12 bounds; with no hook it is refused.
 
-`TestLoop_ArbiterAttemptConsumedByTheWaiter` drives `stepCmd` over the loop fixture of `loop_test.go`, one row per path: the flag without `--until-stop`, a nil hook, a hook returning a busy error, a hook returning another error (each a refusal with its kind and `arbiter_attempt`, no child spawned, hook called at most once), and a hook returning nil (called once with the flag's value before the first child, loop runs to its stop, the spawned argv carries no `--arbiter-attempt`).
+`TestLoop_RefusalsBeforeAnyStep` gains four rows, with a column for the step's arguments and the hook since its existing rows run detached: the flag without `--until-stop` (`kind: bootstrap`, the hook never called), and on the waiter path a nil hook, a hook returning a busy error and a hook returning another error, each asserting its kind and error, no child spawned, and in addition `arbiter_attempt` in the envelope and the hook called at most once.
+`TestLoop_ArbiterAttemptConsumedByTheWaiter` drives `stepCmd` over the loop fixture of `loop_test.go` for the one path no refusal test covers: a hook returning nil (called once with the flag's value before the first child, loop runs to its stop, the spawned argv carries no `--arbiter-attempt`).
 Raise `internal/shedverbs`'s row in the test budget by one.
 
 Add two rows to the shed section of `contracts/specs/refusal-spec.md`: `step: --arbiter-attempt without --until-stop` and `step: recipe consumes no arbiter attempt`, each a correctness halt quoting its way forward.

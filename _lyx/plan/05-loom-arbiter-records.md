@@ -16,6 +16,9 @@
 - `plan:internal/loomengine#ArbiterPromptPath` -> `func ArbiterPromptPath(dir string) string`
 - `plan:internal/loomengine#ArbiterVerdictPath` -> `func ArbiterVerdictPath(dir string) string`
 - `plan:internal/loomengine#ArbiterEnvelopePath` -> `func ArbiterEnvelopePath(dir string) string`
+- `plan:internal/loomengine#ArbiterEnvelope` -> `type ArbiterEnvelope struct`
+- `plan:internal/loomengine#WriteArbiterEnvelope` -> `func WriteArbiterEnvelope(path string, e ArbiterEnvelope) error`
+- `plan:internal/loomengine#ReadArbiterEnvelope` -> `func ReadArbiterEnvelope(path string) (ArbiterEnvelope, bool, error)`
 - `plan:internal/loomengine#MarkArbiterApplied` -> `func MarkArbiterApplied(dir string) error`
 - `plan:internal/loomengine#ArbiterApplied` -> `func ArbiterApplied(dir string) (bool, error)`
 - `plan:internal/loomengine#ArbiterMarker` -> `type ArbiterMarker struct`
@@ -37,11 +40,13 @@ Every function takes the directory or path it works on; `internal/shedrun` (card
 - `ArbiterVerdict` is the agent-written `verdict.yaml` (D3): `Verdict` (`resume` or `hand-on`), `Reason`, `Verbs []string`, `Goto` and `Question`.
   `ReadArbiterVerdict` returns found false for an absent file, and an error for a file that does not parse, an unknown verdict word, an empty reason, a `hand-on` without a question, or a `goto` on a `hand-on`.
 - `ArbiterPromptPath`, `ArbiterVerdictPath` and `ArbiterEnvelopePath` name `prompt.md`, `verdict.yaml` and `envelope.json` in an attempt directory.
+- `ArbiterEnvelope` is `envelope.json`, the verb's validated result for an attempt: `Verdict`, `Reason`, `Question`, `Goto`, `Verbs`, `Cause` (empty for the agent's own verdict), `Attempt`, `AttemptDir`, `VerdictPath` and `Relaunch`.
+  `WriteArbiterEnvelope` writes it, and `ReadArbiterEnvelope` returns found false for an absent file and an error for one that does not parse.
 - `MarkArbiterApplied` writes the `applied` mark file in an attempt directory, and `ArbiterApplied` reports whether it exists.
 - `ArbiterMarker` is the in-flight marker (D9): `Attempt`, `StrandGUID` and `Deadline`.
   `WriteArbiterMarker` creates its directory and writes it, `ReadArbiterMarker` returns found false for an absent file, and `RemoveArbiterMarker` ignores an absent one.
 
-`arbiter_test.go` holds one table-driven test per reader: attempt write, read and list (absent directory, ordering, a subdirectory without `attempt.json` refused), verdict parse (each refusal above and both valid shapes), applied mark, marker round trip and absence, and `IsArbiterStrand` (plain, numbered, another role, an unparsable name).
+`arbiter_test.go` holds one table-driven test per reader: attempt write, read and list (absent directory, ordering, a subdirectory without `attempt.json` refused), verdict parse (each refusal above and both valid shapes), applied mark, marker round trip and absence, envelope round trip, absence and an unparseable file, and `IsArbiterStrand` (plain, numbered, another role, an unparsable name).
 Raise `internal/loomengine`'s row in the test budget by the tests added.
 
 **ImpactSummary:** a new file of records; only the test budget row is an existing file changed.
