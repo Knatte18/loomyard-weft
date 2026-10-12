@@ -34,6 +34,20 @@
       "output": "child awaiting → running at Discussion-Bouncer",
       "at": "2026-10-12T11:45:17Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at Plan-Bouncer",
+      "at": "2026-10-12T12:27:22Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at Plan-Bouncer",
+      "at": "2026-10-12T12:28:18Z",
+      "budget_exempt": true
     }
   ]
 }
