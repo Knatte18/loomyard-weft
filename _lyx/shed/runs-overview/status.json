@@ -5,7 +5,7 @@
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
-    "last": "Seed-Child → done",
+    "last": "Run-Shed → bounced to Run-Shed",
     "wait": ""
   },
   "history": [
@@ -20,6 +20,34 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-12T08:56:17Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → blocked at Publish",
+      "at": "2026-10-12T11:16:47Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "automatic Publish verify retry: sent the child to Webster-Burler-Review",
+      "at": "2026-10-12T11:17:17Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "automatic Publish verify retry: resumed the child at Webster-Burler-Review",
+      "at": "2026-10-12T11:17:23Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child paused → running at Webster-Burler-Review",
+      "at": "2026-10-12T11:17:29Z",
+      "budget_exempt": true
     }
   ]
 }
