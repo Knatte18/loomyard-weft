@@ -109,6 +109,12 @@ The stripped text also fed the host-phrase check, but root files are outside its
   - d2-reader-dollar-expansion-unbounded (class design, severity BLOCKING, open in rounds 1, 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - card3-test-fixture-member-glyph (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - With `-no-cutoff`, a run whose project directory holds a transcript starting before the previous tag's date counts it: `LeftOut` is 0 and no "Session transcripts left out" line appears.
