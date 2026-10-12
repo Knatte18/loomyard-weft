@@ -58,6 +58,8 @@ No other module offers a verb that types into an agent's pane: `lyx shuttle send
 A sender may hold mail reminders to a receiver and release them later.
 The orch watcher holds `ly:orch`'s reminders during a context cycle, while its own messages still pass: the note request (post) and `/clear`, `/compact` and the reload (inject).
 
+A pause from `lyx-halt` (`lyx pause`, hub-wide or per run) holds every delivery into a paused agent's pane, injects and reminders alike, until the pause is lifted; `post` still stores the mail (operator, 2026-10-12, from `lyx-halt`'s parent review).
+
 ### The note request is mail (operator, 2026-10-07)
 
 The watcher posts the note request to `ly:orch` rather than injecting it, so the orch reads it when it is ready and is never interrupted mid-work.
