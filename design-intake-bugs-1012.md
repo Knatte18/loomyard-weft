@@ -82,3 +82,17 @@ It looks like a lyx problem (the Merge-In row failing before writing any status 
 What to do: find out why Merge-In produced no status; make the driver record a trace file and a more specific reason when a producer exits without a status, so the halt note is diagnosable.
 
 Provenance: task `plan-gate-fixes`; notes: `loom-halt.md`.
+
+
+## From issue #587
+
+Imported from [issue #587](https://github.com/Knatte18/loomyard/issues/587).
+
+A batch's gate lines named `./internal/fabricengine_test`, which is not a directory: the external test package lives inside `internal/fabricengine`.
+`lyx gate test` reports `[setup failed]` for that path on every run, although every real package passes.
+
+Abnormal: a plan gate line can name a path that never resolves to a package, and nothing catches it at plan time, so every gate run carries a spurious failure.
+
+To do: validate gate-line package paths when the plan is written or checked (a `_test` suffix names an external test package, not a directory), and make the `[setup failed]` output say the path does not exist.
+
+Provenance: task `alignment-agent`, note `01-loom-alignment-config.md`.
