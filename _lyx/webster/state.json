@@ -821,7 +821,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "993b22c04ce849f45f96709a28dd49ef",
   "masterSessionId": "7361d6f2-17ce-4121-9688-8cf5be50f44c",
   "batches": {
@@ -963,6 +963,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-a933aeb0661013dc3.jsonl"
       ]
+    },
+    "9": {
+      "slug": "loom-layered-load",
+      "cards": [
+        "09-loom-layered-load",
+        "10-darn-landing-layered-load",
+        "11-gate-board-layered-load",
+        "12-fabric-layered-load"
+      ],
+      "cardHashes": {
+        "09-loom-layered-load": "fea9829015cb02bcbddf97a915628395aaa16ef8073bfc4d7ba1bee1385cf28f",
+        "10-darn-landing-layered-load": "e0e70a36baac1f0d5f7591bcd18da65c240473ac5e04f1ec4a6968d7bd371405",
+        "11-gate-board-layered-load": "79e987dd9c8bc84df34cfe7d34904621ecd379282cbea6ee4fc8b09b455b38e8",
+        "12-fabric-layered-load": "cf8f767df874169073d58a76b71aea8084f26d321e5e36b62b0a0c319a2c0ab9"
+      },
+      "startSha": "d307692d2f010c1ec593f069a42fcfa4373a3a49",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T08:24:04Z",
+      "sessionId": "7361d6f2-17ce-4121-9688-8cf5be50f44c",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
