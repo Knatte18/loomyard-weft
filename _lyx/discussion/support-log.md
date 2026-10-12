@@ -64,6 +64,7 @@ Autonomous run: no operator answered; every pick below is an auto-pick recorded 
 - Keep `darn.review_max_bounces` local with a floor of 1 at the local layer: a value rule for one key in one layer, where closing the key keeps D4 a key list.
 - Strip keys by comparing values after `${env:...}` expansion: the result depends on the walk's environment and each worktree's `.env`, so a stripped literal could resolve differently in any other process.
 - Merge open maps per entry across layers: departs from the existing template-versus-file rule; kept consistent instead.
+- Merge a `models` alias key by key across layers: an override would inherit lower layers' `defaults` it cannot remove, the stale-default leak `modelspec.LoadRegistry`'s whole-entry replacement prevents.
 
 ## Review rounds
 
@@ -81,6 +82,12 @@ Autonomous run: no operator answered; every pick below is an auto-pick recorded 
   F2 (MEDIUM): D4's rationale claimed the denied keys had no untracked route today, but the pair's `.env` binds their markers — fixed: the rationale rests on the local layer adding no new route, and R3 names `.env` for the parent.
   F3 (MEDIUM): D6 left the strip's comparison form open, and an expanded comparison could strip a literal equal to the walk's expansion of a marker — fixed: D6 compares unexpanded nodes, and an acceptance row pins the kept literal.
   F4 (LOW): seeding the default changes keys a worktree file lacks, such as a seed-only alias the prime holds — fixed: D6 narrows its claim to held keys and reports the others as `inherited`.
+- Round 4: two findings, both fixed.
+  F1 (BLOCKING): D4's categories classified keys by kind, so `loom.parent_review_wait_min`, whose expiry passes the parent-review gate, and burler's `lenses` and `fans`, the prose and lens set review forks are given, stayed open to the local layer — fixed: the guard category covers a gate-passing timeout and a reviewer's prose and lens set, loom and burler gain `LocalDenied` entries, and the seed-only exemption narrows to `models` aliases.
+  F2 (MEDIUM): D5 refused open-map entries that D8 and D9 accept — fixed: D5 exempts a key path under an open map, and an acceptance row pins it.
+- Round 2 rerun: two findings, both fixed.
+  F1 (MEDIUM): D2 merged a `models` alias key by key, reversing `modelspec.LoadRegistry`'s whole-entry replacement, so an override inherited lower layers' `defaults` it could not drop — fixed: D1 and D2 carry each top-level alias whole from the highest layer holding it, D6 strips an alias as one unit, and an acceptance row pins an alias without `defaults`.
+  F2 (LOW): D5's and D8's `models` exemption stopped at the alias name, refusing `opus.defaults.version` under an alias the template holds — fixed: both exempt any key path under a `models` alias, and the acceptance row names that entry.
 
 ## Question ledger
 
@@ -88,11 +95,11 @@ Autonomous run: no operator answered; every pick below is an auto-pick recorded 
 - Q2 (auto-pick): how are layers shown? `--resolved` with per-leaf layer, reconcile results per layer, menu marks (D7).
 - Q3 (auto-pick): base layer full, upper layers sparse (D2).
 - Q4 (auto-pick): local override path `<anchor>/.lyx/config/<module>.local.yaml` (D3).
-- Q5 (auto-pick, revised in review rounds 1 to 3): hub-wide modules' local layer restricted to `LocalKeys`, and per-worktree modules' to every key outside `LocalDenied`, excluding executables, sourced files, cross-pair keys including shared boot options and what lands on the parent branch, and guards including reviews and approval gates (D4).
+- Q5 (auto-pick, revised in review rounds 1 to 4): hub-wide modules' local layer restricted to `LocalKeys`, and per-worktree modules' to every key outside `LocalDenied`, excluding executables, sourced files, cross-pair keys including shared boot options and what lands on the parent branch, and guards including reviews, approval gates, gate-passing timeouts and reviewers' prose and lens sets (D4).
 - Q6 (auto-pick, revised after lens review): migration strips each worktree lacking a tracked marker, once (D6).
 - Q7 (auto-pick): `run_settings` nested by module, migrated and validated at write, slug-session guard (D8).
 - Q8 (auto-pick, revised after lens review): batten writes a pair's local files only at Seed-Child (D9).
-- Q9 (auto-pick): open maps carried whole across layers (D1).
+- Q9 (auto-pick, revised in review): open maps and `models` aliases carried whole across layers (D1).
 - Q10 (open, for the parent): whether D4's narrowing of the operator's "any key" ruling stands (R1).
 - Q11 (open, for the parent): whether the `kickstart_pack` incident's cause gets its own note (R4).
-- Q12 (open, for the parent): whether the pair's `.env` route to marker-carrying denied keys gets an entry of its own (R3).
+- Q12 (open, for the parent): whether the pair's `.env` route to marker-carrying denied keys gets an entry of its own, together with the process-environment route through the hub's shared tmux server, which reaches every pair (R3).

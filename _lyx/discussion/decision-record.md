@@ -32,7 +32,9 @@ A hub-wide module resolves as template, then hub file (`<BoardDir>/_lyx/config/<
 Mappings merge key by key at every depth.
 Scalars and lists replace whole.
 An open map (`configreg.Module.OpenMaps`) is carried whole from the highest layer that holds it, the rule `FillMissing` already applies between a file and its template.
+Each top-level alias in `models` is carried whole the same way, matching the whole-entry replacement `modelspec.LoadRegistry` applies over its built-ins, so an upper layer's alias entry replaces the lower one outright and inherits none of its `defaults`.
 No layer can delete a key from a layer below.
+The layers are merged unexpanded, and the merged document is expanded once, through `envsource.Build` of the reading worktree's anchor for a per-worktree module and of the board dir for a hub-wide module; no layer is expanded against its own directory's `.env`.
 Standalone, with no board dir, the stack is template, worktree file, local override.
 Rationale: one per-key rule answers the board's first open question (yes, a key missing from a present file falls back to the layer below and finally to the template) and builds on the in-memory template fill both loaders have had since `5aa04c279`.
 
@@ -43,7 +45,8 @@ Reconcile keeps the base layer full, adding template keys and pruning retired on
 Every layer above it is sparse, holding only the keys it overrides: reconcile prunes its retired keys and runs the module's `Migrate` hook over it, and never adds a key.
 `Set` and an editor edit of an absent sparse layer start from an empty mapping, not from the template.
 A seed-only module's key set is the operator's at every layer: reconcile seeds its absent base layer once and never rewrites, prunes or migrates any of its layers, apart from D6's one-time strip.
-Its layers merge by D1, so an alias mapping in `models` merges key by key, and a lens string or fan list in `burler` replaces the lower one whole.
+Its layers merge by D1, so each top-level alias in `models` is carried whole from the highest layer holding it, and a lens string or fan list in `burler` replaces the lower one whole.
+Of the seed-only modules, only `models` takes keys its template lacks in the local layer: D4 closes `burler`'s local layer.
 Rationale: a full worktree file would shadow the repo default completely, making the default layer inert.
 Pruning a seed-only layer against its template would delete the operator's own aliases, lenses and fans, which `configsync` protects today.
 
@@ -64,12 +67,17 @@ darn keeps `verify` and `review_max_bounces` out, since `verify` runs a shell co
 landing keeps `publish_verify` out because it runs a shell command, `require_pr_to_base` because a value without the parent branch makes Publish and PR-Gate return Done with no pull request or approval, and `squash` and `co_authored_by` because they shape the commit Finalize writes on the shared parent branch.
 Gate lists none because its slots and `-p` cap are one hub-wide budget every pair shares, board none because its vocabulary is the one board's, and fabric none because its keys shape a pair at creation, before any local file exists.
 `configreg.Module` also gains `LocalDenied`, the dotted key paths of a per-worktree module a local override may not set; every other key of a per-worktree module is open to it.
-reed denies `shell`, `tmux`, `tmux_conf`, `mouse` and `debug_log`; shuttle denies `claude`, `run_dir` and every `claude_deny_*` key; the other per-worktree modules deny none.
+reed denies `shell`, `tmux`, `tmux_conf`, `mouse` and `debug_log`; shuttle denies `claude`, `run_dir` and every `claude_deny_*` key; loom denies `parent_review_wait_min`, `discussion_producer`, `discussion_fan` and `plan_fan`; burler denies `lenses` and `fans`; the remaining per-worktree modules deny none.
 reed's and shuttle's keys are denied because each names an executable lyx runs, a file sourced into the hub's shared tmux server, an option the hub's shared tmux server takes at boot from whichever pair starts it, a directory whose sharing across worktrees makes the orphan sweep delete another worktree's run dirs, or a standing PreToolUse guard of every agent the pair spawns.
-The lists come from testing every key of every module, hub-wide and per-worktree, against these categories: runs an executable, sources a file, reaches across pairs, including a shared process's boot option or what lands on the parent branch, or switches off a guard, including a review or an approval gate.
+loom's `parent_review_wait_min` is denied because Discussion-Write's parent-review gate lets the discussion through once it elapses, so a value of 1 passes the parent's approval after one minute.
+loom's `discussion_fan` and `plan_fan` are denied because each picks the lens set a review segment's forks are given, so a local empty value turns a hub-chosen fanned review back to a solo one, untracked.
+loom's `discussion_producer` is denied because `twill` makes the Discussion-Write writer fork one reviewer per lens of burler's `twill-discussion` fan over its own record, so a local value of `single` or `seats` switches off a hub-chosen review, untracked.
+burler's `lenses` and `fans` are denied because they are the review prose and the lens set every review fork is given, so a local value could hollow a review untracked; burler's local layer therefore holds no key.
+The lists come from testing every key of every module, hub-wide and per-worktree, against these categories: runs an executable, sources a file, reaches across pairs, including a shared process's boot option or what lands on the parent branch, or switches off or hollows a guard, including a review or an approval gate, a timeout whose expiry lets that gate pass, and the prose or lens set a reviewer is given.
+The test asks what a key's value can do to a guard, not what kind of key it is: a timeout or a seed-only key meets a category as any other key does.
 A key the plan touches, and a key added later, takes the same test: one that meets a category joins its module's `LocalDenied` or, for a hub-wide module, stays out of `LocalKeys`.
 A local file carrying a key outside its hub-wide module's `LocalKeys`, or inside its per-worktree module's `LocalDenied`, fails the load with `ErrInvalid` naming the file and the key; it is never silently ignored.
-Bound: a local override can never change a key that runs an executable, sources a file into a shared process, sets a shared process's boot option, switches off an agent guard, a review or an approval gate, shapes what lands on the parent branch or is a fact shared across pairs; what it can change is session tuning, such as timeouts, budgets, model picks and colors.
+Bound: a local override can never change a key that runs an executable, sources a file into a shared process, sets a shared process's boot option, switches off or hollows an agent guard, a review or an approval gate, shapes what lands on the parent branch or is a fact shared across pairs; what it can change is session tuning, such as timeouts, budgets, model picks and colors.
 What Seed-Child writes comes from the board entry, whose history shows who set it.
 A later edit of the local file in the pair, through `lyx config --layer local` or an editor, is untracked: no history records it and landing does not show it (R3).
 Rationale: hub-wide modules are hub-wide because a task branch must not change them; an untracked local file persists in the pair, reaches every later driver and spawn that loads the module and is writable by the pair's agents, so both lists keep the dangerous keys out of it and the local layer adds no untracked route to them.
@@ -82,7 +90,7 @@ Decision: `Load` and `LoadOrTemplate` keep their policies, applied to the base l
 An absent upper layer file is normal under both and adds nothing, and so is a present local file that is empty or holds only comments.
 A present layer file that fails to parse returns `ErrInvalid` naming that file.
 A local file naming a key its module's template lacks, or a key D4 closes to the local layer, returns `ErrInvalid` naming the file and the key.
-A seed-only module's local file is exempt from the template-lacks refusal, because its keys are the operator's (D2).
+Two kinds of key are exempt from the template-lacks refusal, matching D8's validation: a key path under any top-level alias in the `models` local file, whether or not the template holds that alias, because its aliases are the operator's (D2) and the models loader validates each alias block at load, and a key path under one of the module's open maps (`configreg.Module.OpenMaps`), whose entries are open-ended by design.
 The base layer and the worktree file keep today's tolerance of keys the template lacks, which `lyx config --set` reports as `preserved` and reconcile prunes.
 A filled key is logged with the layer it came from.
 Rationale: sparse upper layers make absence the common case; strictness belongs to the layer whose absence means a broken hub, and the unknown-key refusal to the one layer a tool writes from the board.
@@ -94,6 +102,7 @@ A tracked marker file in each worktree's `_lyx/config/` records that the worktre
 The walk strips, from each worktree lacking the marker, every key whose value equals what the layers below resolve to, deletes a file left empty, and writes the marker, all in that worktree's existing commit.
 The comparison is over unexpanded YAML nodes: a `${env:...}` marker equals only the same marker text, so a literal equal to the walk's own expansion of a marker below is kept.
 An open map is compared and stripped as one unit: it is kept whole unless it equals the resolved map below, because D1 carries it whole and a stripped entry would fall to the template.
+A `models` alias is compared and stripped as one unit in the same way.
 The strip never changes what a key the worktree file holds resolves to.
 Seeding the default can change a key the worktree file lacks: a key the prime's file holds beyond the template, such as a seed-only alias, lens or fan, now resolves to the prime's value beneath that worktree.
 The walk reports each such key as an `inherited` list beside `stripped`, per worktree and module, so the operator can pin the old value with `lyx config <module> --set` in that worktree.
@@ -120,7 +129,7 @@ Rationale: answers the board's second open question; the default layer is a hub-
 
 Decision: `boardengine.Task` gains `run_settings`, an object of module name to a mapping of that module's keys, nested as in the YAML file; dotted keys are not used.
 Upsert and upsert-batch accept it; an empty object clears it.
-`lyx board` runs each module's `Migrate` hook over its part, stores the migrated result, and validates it through `internal/configreg`: the module is registered, each key path exists in its template, sits under one of its open maps or belongs to a seed-only module, a value's shape (mapping or not) matches the template's where the template holds the path, and the key is open to the local layer under D4.
+`lyx board` runs each module's `Migrate` hook over its part, stores the migrated result, and validates it through `internal/configreg`: the module is registered, each key path exists in its template, sits under one of its open maps or is a key path under any `models` alias, a value's shape (mapping or not) matches the template's where the template holds the path, and the key is open to the local layer under D4.
 A write that sets or changes `run_settings` is refused from a session whose strand name carries a slug, through the same guard function as the hub-wide config write, which parses the name with `internal/agentname`; it stops a mistaken agent write, not a determined one.
 A write that changes `run_settings` on a task whose status shows a run past Seed-Child returns a notice that the change applies to the next run's Seed-Child, and that the running pair takes it through `lyx config <module> --layer local --set` in the pair.
 `lyx board intake` never sets it.
@@ -170,6 +179,12 @@ Decision: D6 and its acceptance criterion state that migration leaves every key 
 
 Rationale: The sparse layering resolves missing keys from the default, so the claim that every worktree's resolution is unchanged is false for keys the file lacked.
 
+### Added after Discussion (parent, 2026-10-12): D4: loom.discussion_producer is LocalDenied; lists derived from the category test
+
+Decision: loom.discussion_producer joins loom's LocalDenied: twill makes the Discussion-Write writer fork one reviewer per lens of burler's twill-discussion fan, so a local single or seats switches off a hub-chosen review. The plan derives LocalKeys and LocalDenied by applying D4's category test to every key of every module's template, recording per key the category it meets or none, rather than patching individual keys; a test pins that every template key is classified.
+
+Rationale: Round 4's review tested every template key and found only this one misplaced; the recurring D4 finding came from enumerating the lists instead of deriving them, which a per-key derivation in Plan and a pinning test end.
+
 ## Constraints
 
 - `PATTERN-hub-wide-config` changes: `<BoardDir>/_lyx/config/` also holds per-worktree modules' repo defaults, and a hub-wide module also reads the reading worktree's local override, restricted to `LocalKeys`.
@@ -178,7 +193,7 @@ Rationale: The sparse layering resolves missing keys from the default, so the cl
   The entry's background is updated in the same commit.
 - `PATTERN-durable-vs-ephemeral-state` is narrowed: the local override sits in the mirrored directory, not at the mirrored file path, because the mirrored path is the editor staging copy's.
   The background says so in the same commit.
-- New PATTERN entry `PATTERN-config-layers`: resolving a module's config, only `internal/configengine` reads or stacks layer files, and only it forms their paths; a key that runs an executable, sources a file, reaches across pairs, including a shared process's boot option or what lands on the parent branch, or switches off a guard, including a review or an approval gate, is closed to the local layer through D4's lists.
+- New PATTERN entry `PATTERN-config-layers`: resolving a module's config, only `internal/configengine` reads or stacks layer files, and only it forms their paths; a key that runs an executable, sources a file, reaches across pairs, including a shared process's boot option or what lands on the parent branch, or switches off or hollows a guard, including a review or an approval gate, a timeout whose expiry lets that gate pass, and the prose or lens set a reviewer is given, is closed to the local layer through D4's lists.
 - Local override files are never disposable, for `lyx-cleanup` or any other cleanup.
 - `PATTERN-told-geometry`: `configengine`, `hubreconcile` and `battenshed` are handed the board dir and the anchor; none derives them.
 - `PATTERN-binary-change-reconcile`: the layer reconcile and the D6 migration run only inside `hubreconcile.Ensure`'s walk and pair call.
@@ -190,7 +205,7 @@ Rationale: The sparse layering resolves missing keys from the default, so the cl
 
 ## Auto-mode assumptions
 
-- D4 narrows the operator's "any key of any module" for hub-wide modules and for reed's and shuttle's denied keys.
+- D4 narrows the operator's "any key of any module" for hub-wide modules and for reed's, shuttle's, loom's and burler's denied keys.
 - A running pair is not rewritten when its task's `run_settings` change (D8, D9).
 - Run settings may sit on a note; only a task's run reads them.
 
@@ -199,7 +214,9 @@ Rationale: The sparse layering resolves missing keys from the default, so the cl
 - R1: D4 departs from an operator ruling on security grounds; parent review confirms or overrules it.
 - R2: The D6 strip commits a config change in every running pair; `fabricengine.ReadConfigChanges` flags a pair's file at landing when it differs from both its fork point and the parent's current copy, so a pair whose overrides differ from the prime's sees one landing warning after the migration.
 - R3: An agent in a pair can still write its own local file, and nothing at landing shows it; D4's lists bound what that file gains to session tuning.
-  The pair's git-ignored `.env` stays an untracked route to every marker-carrying denied key, such as `LYX_SHUTTLE_CLAUDE` for `shuttle.claude`; closing it is outside this task, and the parent decides whether it gets an entry of its own.
+  The pair's git-ignored `.env` stays an untracked route to every marker-carrying denied key, such as `LYX_SHUTTLE_CLAUDE` for `shuttle.claude`.
+  `envsource.Build` lets the process environment override `.env`, so a `LYX_*` variable in the environment of the process that boots the hub's shared tmux server reaches every later pane of every pair; this cross-pair route belongs to the same parent decision (Q12).
+  Closing either route is outside this task, and the parent decides whether they get an entry of their own.
 - R4: The board's `kickstart_pack` incident is not explained by current code, which fills a missing key from the template; its cause stays unknown, and the parent decides whether it gets a note of its own.
 - R5: `burler-split-budget` (running) adds per-perch loom keys; a run setting naming one validates only once that task lands, and the hub-level per-perch values it plans go into the repo default via `lyx config loom --layer default` if this task lands first.
 - R6: `orch-wake-policy` (running) also changes batten and moves the post-landing config reconcile into batten; whichever lands second rebases its batten changes onto the other.
@@ -210,17 +227,20 @@ Rationale: The sparse layering resolves missing keys from the default, so the cl
 - A list or scalar in an upper layer replaces the lower one whole; an open map is taken whole from the highest layer holding it.
 - Standalone, with no board dir, resolution uses template, worktree file and local file only.
 - Strict `Load` errors on an absent base layer, and `LoadOrTemplate` degrades; an absent upper layer, and an empty or comment-only local file, is no error under either.
-- A local file with an unparseable body, a key the template lacks, a hub-wide key outside `LocalKeys` (including `darn.verify`, `darn.review_max_bounces`, `landing.publish_verify` and `landing.require_pr_to_base`) or a per-worktree key in `LocalDenied` (including `reed.shell`, `reed.mouse` and `shuttle.claude_deny_python`) fails the load naming that file; a key the template lacks in the base layer or the worktree file is tolerated as today.
-- A seed-only module's local file and `run_settings` accept an alias, lens or fan the template lacks.
+- A local file with an unparseable body, a key the template lacks, a hub-wide key outside `LocalKeys` (including `darn.verify`, `darn.review_max_bounces`, `landing.publish_verify` and `landing.require_pr_to_base`) or a per-worktree key in `LocalDenied` (including `reed.shell`, `reed.mouse`, `shuttle.claude_deny_python`, `loom.parent_review_wait_min`, `loom.discussion_producer`, `loom.plan_fan` and `burler.lenses`) fails the load naming that file; a key the template lacks in the base layer or the worktree file is tolerated as today.
+- A `models` local file and `run_settings` accept an alias the template lacks, and an entry such as `opus.defaults.version` under an alias the template holds.
+- A local `models` alias without a `defaults` block resolves with no defaults from the layers below.
+- A local file and `run_settings` accept an entry under an open map that the template lacks, such as `shuttle.claude_prompt_cache_ttl_roles.<role>`, and the module loads.
 - A stale editor staging file at `StagingFile` is never read as a local override.
 - `Set` into an absent sparse layer writes only the set key.
 - Reconcile adds missing keys only to the base layer, prunes retired keys and runs `Migrate` in every layer but a seed-only module's, whose present layers it leaves untouched, and reports each result with its layer.
 - The migration walk seeds an absent repo default from the prime, strips keys equal to the layers below from each unmarked worktree, reports each stripped key, deletes an emptied file and writes the marker; a second walk strips nothing.
-- After the strip every key a migrated worktree's file holds resolves to the same value as before, including an open map that differs from the default's in one entry and a literal equal to the walk's expansion of a `${env:...}` marker below, which is kept.
+- After the strip every key a migrated worktree's file holds resolves to the same value as before, including an open map that differs from the default's in one entry a literal equal to the walk's expansion of a `${env:...}` marker below, which is kept, and a `${env:...}` marker over a literal in the repo default equal to the walk's expansion of that marker, which is kept.
+- A `${env:...}` marker the worktree file inherits from the repo default expands against the reading worktree's `.env`.
 - A seed-only key the prime's file holds and a worktree's file lacks is reported in that worktree's `inherited` list.
 - A walk interrupted after the default is committed, or one that skipped a pair as being created or mid-merge, is completed by the next walk, which strips each worktree still lacking the marker.
 - `lyx config --layer default` is refused from a non-prime worktree and from a slug-named session; `--layer worktree` is refused for a hub-wide module; `--resolved` names each leaf's layer.
-- `lyx board upsert` migrates `run_settings` and refuses one naming an unknown module, a key absent from the template of a module that is not seed-only, a shape mismatch, or a key D4 closes to the local layer, and refuses a `run_settings` change from a slug-named session; a change on a running task returns the D8 notice.
+- `lyx board upsert` migrates `run_settings` and refuses one naming an unknown module, a key absent from the template that is neither under a `models` alias nor under an open map, a shape mismatch, or a key D4 closes to the local layer, and refuses a `run_settings` change from a slug-named session; a change on a running task returns the D8 notice.
 - Seed-Child writes exactly the named modules' local files and removes the others; with empty or absent `run_settings` it removes every local file and resolution falls through to the layers below.
 - Seed-Child interrupted between its writes and removals and then resumed leaves the local layer equal to the board entry's current `run_settings`.
 - A run-settings key that does not validate routes Seed-Child to Stuck with the way forward named.
