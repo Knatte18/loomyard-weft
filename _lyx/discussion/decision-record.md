@@ -170,6 +170,14 @@ Rationale: board's "stale drafts"; 14 days matches logger's default retention ag
   - d9-orphan-rule-overlaps-tracked-but-deleted (class consistency, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - cleanup-prime-refusal-untested (class scope, severity MEDIUM, open in rounds 1)
+  - testtiming-resign-arrow-missing (class consistency, severity MEDIUM, open in rounds 1)
+  - tracked-run-dir-seed-without-status (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A run directory is created under the root with its lock held; normal close removes it.
