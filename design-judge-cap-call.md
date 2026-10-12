@@ -1,6 +1,6 @@
 # Judge settles the review budget cap; arbiter only for stuck runs
 
-`judge-cap-call` · Task · enhancement, loom, burler · running · Discussion-Write
+`judge-cap-call` · Task · enhancement, loom, burler · running · Discussion-Bouncer
 
 At a spent review budget the Bouncer escalates, and today the driver hands that stop to the arbiter: a cold `opus[high]` agent, about a minute per spawn.
 Whether to run one more Burler round or accept unconverged is not a "totally stuck" stop, so the operator sees the arbiter as the wrong tool for it (2026-10-12): the judge should make that call itself, and the arbiter stays for runs that are stuck.
