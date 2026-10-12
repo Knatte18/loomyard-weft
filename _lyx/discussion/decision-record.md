@@ -133,6 +133,12 @@ Decision: The parent merged main (now at 113593990, which contains 78e31aa06) in
 
 Rationale: D2 and the acceptance criterion rely on 78e31aa06's storeFile Marshaler; merging now lets cards name glyphs that exist.
 
+### Added after Discussion (parent, 2026-10-12): Pause record rewrites keep unknown keys
+
+Decision: run-robustness's tolerant-records guarantee covers the pause record lyx-halt added: pauserecord.Update goes through state.UpdateJSON, and pauserecord's leaf import set widens by internal/state.
+
+Rationale: The pause record is rewritten by long-lived processes (orch watcher, pause and resume verbs), exactly the case PATTERN-tolerant-records exists for; internal/state imports only fsx and lock, so the leaf stays a leaf.
+
 ## Constraints
 
 - `PATTERN-shed-run-directory`: `shedrun` stays the sole declarer of run-directory paths and `Seed`; D4 changes only its decode.
