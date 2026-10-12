@@ -219,6 +219,12 @@ Auto-picks, each with its rationale in its decision: the verb shape (D1), the el
   - regoto-gap-erases-plain-pause (class design, severity MEDIUM, open in rounds 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - arbiter-verb-unreadable-input-no-test (class scope, severity MEDIUM, open in rounds 1, 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - Each eligible stop kind of D2 spawns one arbiter, and each excluded stop kind, the target-naming Publish halt in a watched and an unwatched run and an awaiting stop with a `parent_notice` but no Bouncer escalation included, is refused with a way forward and spawns nothing.
