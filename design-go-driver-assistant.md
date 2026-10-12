@@ -25,6 +25,8 @@ Three tiers:
 1. **Go driver**: steps the run with `lyx shed step --until-stop` itself and settles by rule: relaunch after a recorded parent decision, re-invoke under `reinvoke` within the repair cap, re-step on a binary change, run an envelope-named goto (capped per run), check the arbiter's eligibility before any spawn, post `parent_notice` stops to the parent.
 2. **Assistant**: a cold, cheap agent (default `haiku`, configurable) spawned only at a stop no rule settles (interrupted, failed producer, unexplained stop). It reads the stop envelope, the stop report and the logs, and answers with a verdict: resume, goto, hand back to the parent, or escalate to the arbiter. It escalates when it cannot tell the cause, or judges the stop needs something stronger.
    Today's LLM driver is in effect this middle tier, but it lives for the whole run; the assistant lives only for one stop.
+   It is spawned cold at each stop, never kept warm on standby (operator, 2026-10-12): a standby session knows nothing of a stop before it happens, so it would save only the process start, while it would have to live, be watched and could die or hang for the whole run.
+   Its name is still open (candidates: overlooker, piecer, tackler; not loomfixer, which is too loom-bound for a shed-wide helper).
 3. **Arbiter** (`opus[high]`): spawned by the Go driver for a Bouncer escalation it may take, or by the assistant's escalation. Unchanged otherwise.
 
 Anything needing a parent choice still goes to the orch.
