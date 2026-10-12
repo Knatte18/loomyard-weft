@@ -1,11 +1,11 @@
 # Card 12 — the provider seam can open a named session with no prompt
 
 **Create:**
-- `plan:internal/shuttleengine#OpenSpec` -> `type OpenSpec struct`
-- `plan:internal/shuttleengine#SessionOpener` -> `type SessionOpener interface`
-- `plan:internal/shuttleengine/claudeengine#Claude.OpenLaunch` -> `func (c *Claude) OpenLaunch(spec shuttleengine.OpenSpec, cfg shuttleengine.Config) (shuttleengine.Launch, error)`
-- `plan:internal/shuttleengine/claudeengine#buildOpenCmd` -> `func buildOpenCmd(sh shell.Shell, bin, sessionID, model, effort string, resume bool) string`
-- `plan:internal/shuttleengine/claudeengine#TestOpenLaunch` -> `func TestOpenLaunch(t *testing.T)`
+- `internal/shuttleengine#OpenSpec`
+- `internal/shuttleengine#SessionOpener`
+- `internal/shuttleengine/claudeengine#Claude.OpenLaunch`
+- `internal/shuttleengine/claudeengine#buildOpenCmd`
+- `internal/shuttleengine/claudeengine#TestOpenLaunch`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine/doc.go`
@@ -17,7 +17,7 @@
 - `internal/shuttleengine/claudeengine#resolveModelID`
 - `internal/shuttleengine/claudeengine#newSessionID`
 - `internal/shuttleengine/claudeengine#claudeBinary`
-- `plan:internal/shell#posixShell.OrElse`
+- `internal/shell#posixShell.OrElse`
 
 **Intent:**
 D12's provider specifics, kept in `claudeengine` (`PATTERN-shuttle-provider-seam`): the launch line of a named interactive session with no prompt, the session name flag, and the resume of a session that may hold no turns.

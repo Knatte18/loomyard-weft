@@ -1,7 +1,7 @@
 # Card 10 — a seat table declares one window group
 
 **Create:**
-- `plan:internal/seatengine#tableWindow` -> `func tableWindow(table Table) string`
+- `internal/seatengine#tableWindow`
 
 **Edit:**
 - `internal/seatengine#seatSpec`

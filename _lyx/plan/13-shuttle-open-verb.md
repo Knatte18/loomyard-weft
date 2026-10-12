@@ -1,13 +1,13 @@
 # Card 13 — `lyx shuttle open` opens a named LLM session with no turn in its own window
 
 **Create:**
-- `plan:internal/shuttleengine#OpenResult` -> `type OpenResult struct`
-- `plan:internal/shuttleengine#Runner.Open` -> `func (r *Runner) Open(spec OpenSpec) (OpenResult, error)`
-- `plan:internal/shuttleengine#openMarkerPath` -> `func openMarkerPath(anchorPath, token string) string`
-- `plan:internal/shuttleengine#openerFakeEngine` -> `type openerFakeEngine struct`
-- `plan:internal/shuttleengine#openerFakeEngine.OpenLaunch` -> `func (e *openerFakeEngine) OpenLaunch(spec OpenSpec, cfg Config) (Launch, error)`
-- `plan:internal/shuttleengine#TestRunner_Open` -> `func TestRunner_Open(t *testing.T)`
-- `plan:internal/shuttlecli#shuttleCLI.openCmd` -> `func (c *shuttleCLI) openCmd() *cobra.Command`
+- `internal/shuttleengine#OpenResult`
+- `internal/shuttleengine#Runner.Open`
+- `internal/shuttleengine#openMarkerPath`
+- `internal/shuttleengine#openerFakeEngine`
+- `internal/shuttleengine#openerFakeEngine.OpenLaunch`
+- `internal/shuttleengine#TestRunner_Open`
+- `internal/shuttlecli#shuttleCLI.openCmd`
 
 **Edit:**
 - `internal/shuttlecli/cli.go`
@@ -17,9 +17,9 @@
 - `internal/shuttlecli#TestRunCLI_Run_FlagValidation`
 
 **Uses:**
-- `plan:internal/shuttleengine#OpenSpec`
-- `plan:internal/shuttleengine#SessionOpener`
-- `plan:internal/shell#posixShell.Exit`
+- `internal/shuttleengine#OpenSpec`
+- `internal/shuttleengine#SessionOpener`
+- `internal/shell#posixShell.Exit`
 - `internal/shuttleengine#Runner.SetPause`
 - `internal/shuttleengine#fakeReed`
 - `internal/shuttleengine#fakeEngine`

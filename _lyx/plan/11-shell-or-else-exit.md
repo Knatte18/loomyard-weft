@@ -1,12 +1,12 @@
 # Card 11 — the pane shell seam gains a fallback and an exit statement
 
 **Create:**
-- `plan:internal/shell#posixShell.OrElse` -> `func (posixShell) OrElse(first, second string) string`
-- `plan:internal/shell#pwshShell.OrElse` -> `func (pwshShell) OrElse(first, second string) string`
-- `plan:internal/shell#posixShell.Exit` -> `func (posixShell) Exit() string`
-- `plan:internal/shell#pwshShell.Exit` -> `func (pwshShell) Exit() string`
-- `plan:internal/shell#TestShell_OrElse` -> `func TestShell_OrElse(t *testing.T)`
-- `plan:internal/shell#TestShell_Exit` -> `func TestShell_Exit(t *testing.T)`
+- `internal/shell#posixShell.OrElse`
+- `internal/shell#pwshShell.OrElse`
+- `internal/shell#posixShell.Exit`
+- `internal/shell#pwshShell.Exit`
+- `internal/shell#TestShell_OrElse`
+- `internal/shell#TestShell_Exit`
 
 **Edit:**
 - `internal/shell#Shell`

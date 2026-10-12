@@ -1,0 +1,18 @@
+status: OK
+head_sha: 1837ca953bdefd7c06661a82880a591b572b8fdb
+deviations:
+  - internal/shuttleengine/attach.go
+  - internal/shuttleengine/stepstop.go
+  - internal/shuttleengine/engine.go
+  - internal/shuttleengine/fakes_test.go
+  - internal/shuttleengine/spec_test.go
+  - internal/shell/posix.go
+  - internal/shell/pwsh.go
+  - internal/shuttleengine/claudeengine/command.go
+  - internal/shuttleengine/claudeengine/command_test.go
+  - internal/seatengine/prompt_test.go
+  - internal/shuttlecli/run.go
+  - internal/shuttlecli/open.go
+  - internal/shuttleengine/open.go
+  - internal/shuttleengine/open_test.go
+  - internal/shuttleengine/wait.go

@@ -1,6 +1,6 @@
 {
   "runGuid": "fe1eacd80788616d26a641a3a950cf1d",
-  "planFingerprint": "0ae69090ddd07545add705bffea0bb60c22d2b71fca858b9465cfc2e7e0d0533",
+  "planFingerprint": "239e81f0ea664e71ed6d1006f2535b6008901b84856ee14695af09f12a8d355f",
   "planFileHashes": {
     "00-overview.md": "8b9bcdaedef87f09082ad2e82a2f496157350100f45272b7f3be07cba5f9f639",
     "01-render-own-window-display.md": "c773d83374496be3c3835e2796b7a4d4ad2c280b01b1ae8688d7d5b67d0ffe14",
@@ -10,12 +10,12 @@
     "05-reed-window-groups.md": "10616e0ff363777ab4e94a1a325ecf5ee98490e83102c4f91c6bcaefe4fd9171",
     "06-reed-own-window-remove.md": "fbaa9a56d3eb481197313fb9c1c914af1d3167776f14ed36b44d5c3514100c68",
     "07-reed-own-window-bar.md": "87401d9316b1d3ab78a71c1b4317e2e45a1a195efa8e7535cae762afd3efb1b2",
-    "08-shuttle-present-strand-removal.md": "09d9332f41af245842e28cd75b899d1940f48ac3f6e7ac47d7e02c47314762ab",
+    "08-shuttle-present-strand-removal.md": "4a3c161a3251c963cd949088b213fe738333d6c640f86ed92392c4a1e0be7f65",
     "09-shuttle-own-window-default.md": "5ed4fc5eef5b629e05af1dc694c7ae3ecaabfaee6c6d1e82486b8668c1f49d5d",
-    "10-seat-window-group.md": "95017a8af57159d94c43d25ace58805370445bc80244615b5a0f93c53990a2f0",
-    "11-shell-or-else-exit.md": "e715bbc7a2755e04f89c1a59cb767829119b38f2d97cf075349066fd7309fab1",
-    "12-claude-open-launch.md": "0964570ac57c505f90d6a555d06dfaf61feedc4ab44fa8a8d79e1fe7c24a7af7",
-    "13-shuttle-open-verb.md": "46d061ca99b67e3e6ab64e45371020ae70acf6807c61de67adb034b6f4e671a3"
+    "10-seat-window-group.md": "b53914ff35cb3ffd27443b0f6b92cefff35c91461a572e4e7fa3064982b3a896",
+    "11-shell-or-else-exit.md": "3a7365d216724da88ce694bf502ee5e4dc312137afe87bf064103fcfce9b8e9f",
+    "12-claude-open-launch.md": "0945692a429e6915384a836d20bf207c69dffed3c52947a9925b14db2d6057e9",
+    "13-shuttle-open-verb.md": "329b2850387144b8c5c7d273ddc10808d4dd58ba6cbcdb862af46d218268a687"
   },
   "planOverviewFrameHash": "ad78bd9ebe05e3c721316cc8952fad6c9eeb058f1e4dc7b86f811b1b6b264e76",
   "partition": [
@@ -291,7 +291,7 @@
       }
     }
   ],
-  "currentBatch": 8,
+  "currentBatch": 0,
   "masterStrand": "862938762b0bd632ef202653254e8647",
   "masterSessionId": "0e9aa514-65af-4e0c-bc99-9aab28aced2a",
   "batches": {
@@ -385,23 +385,55 @@
         "13-shuttle-open-verb"
       ],
       "cardHashes": {
-        "08-shuttle-present-strand-removal": "09d9332f41af245842e28cd75b899d1940f48ac3f6e7ac47d7e02c47314762ab",
+        "08-shuttle-present-strand-removal": "4a3c161a3251c963cd949088b213fe738333d6c640f86ed92392c4a1e0be7f65",
         "09-shuttle-own-window-default": "5ed4fc5eef5b629e05af1dc694c7ae3ecaabfaee6c6d1e82486b8668c1f49d5d",
-        "10-seat-window-group": "95017a8af57159d94c43d25ace58805370445bc80244615b5a0f93c53990a2f0",
-        "11-shell-or-else-exit": "e715bbc7a2755e04f89c1a59cb767829119b38f2d97cf075349066fd7309fab1",
-        "12-claude-open-launch": "0964570ac57c505f90d6a555d06dfaf61feedc4ab44fa8a8d79e1fe7c24a7af7",
-        "13-shuttle-open-verb": "46d061ca99b67e3e6ab64e45371020ae70acf6807c61de67adb034b6f4e671a3"
+        "10-seat-window-group": "b53914ff35cb3ffd27443b0f6b92cefff35c91461a572e4e7fa3064982b3a896",
+        "11-shell-or-else-exit": "3a7365d216724da88ce694bf502ee5e4dc312137afe87bf064103fcfce9b8e9f",
+        "12-claude-open-launch": "0945692a429e6915384a836d20bf207c69dffed3c52947a9925b14db2d6057e9",
+        "13-shuttle-open-verb": "329b2850387144b8c5c7d273ddc10808d4dd58ba6cbcdb862af46d218268a687"
       },
       "startSha": "bd21acd2f057c4b46a89892cb0f4dda7c008cdc1",
       "kind": "fork",
       "spawnedAt": "2026-10-12T18:45:48Z",
       "sessionId": "0e9aa514-65af-4e0c-bc99-9aab28aced2a",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "08-shuttle-present-strand-removal",
+        "status": "done",
+        "head_sha": "1837ca953bdefd7c06661a82880a591b572b8fdb",
+        "deviations": [
+          "internal/shuttleengine/attach.go",
+          "internal/shuttleengine/stepstop.go",
+          "internal/shuttleengine/engine.go",
+          "internal/shuttleengine/fakes_test.go",
+          "internal/shuttleengine/spec_test.go",
+          "internal/shell/posix.go",
+          "internal/shell/pwsh.go",
+          "internal/shuttleengine/claudeengine/command.go",
+          "internal/shuttleengine/claudeengine/command_test.go",
+          "internal/seatengine/prompt_test.go",
+          "internal/shuttlecli/run.go",
+          "internal/shuttlecli/open.go",
+          "internal/shuttleengine/open.go",
+          "internal/shuttleengine/open_test.go",
+          "internal/shuttleengine/wait.go"
+        ]
+      },
+      "cardShas": [
+        "1837ca953bdefd7c06661a82880a591b572b8fdb"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-multi-window/0e9aa514-65af-4e0c-bc99-9aab28aced2a/subagents/agent-a63e2c527ac4c1bc0.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-multi-window/0e9aa514-65af-4e0c-bc99-9aab28aced2a/subagents/agent-a63e2c527ac4c1bc0.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-multi-window/0e9aa514-65af-4e0c-bc99-9aab28aced2a/subagents/agent-a1f87614cfa13dbc2.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-multi-window/0e9aa514-65af-4e0c-bc99-9aab28aced2a/subagents/agent-aee123379ce907768.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-multi-window/0e9aa514-65af-4e0c-bc99-9aab28aced2a/subagents/agent-aee123379ce907768.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-multi-window/0e9aa514-65af-4e0c-bc99-9aab28aced2a/subagents/agent-a63e2c527ac4c1bc0.jsonl"
   ]
 }

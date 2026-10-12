@@ -1,11 +1,11 @@
 # Card 8 — shuttle removes a tracked own-window strand whose pane is dead, and keeps a died run's capture
 
 **Create:**
-- `plan:internal/shuttleengine#strandRemovable` -> `func strandRemovable(strand reedengine.StrandStatus) bool`
-- `plan:internal/shuttleengine#removeStrandIfPresent` -> `func removeStrandIfPresent(reed ReedOps, guid string) error`
-- `plan:internal/shuttleengine#diedCaptureFileName` -> `const diedCaptureFileName = "died-capture.txt"`
-- `plan:internal/shuttleengine#Run.removeDiedOwnWindowStrand` -> `func (run *Run) removeDiedOwnWindowStrand()`
-- `plan:internal/shuttleengine#cleanupDiedCaptureKept` -> `const cleanupDiedCaptureKept cleanupExpectation = 3`
+- `internal/shuttleengine#strandRemovable`
+- `internal/shuttleengine#removeStrandIfPresent`
+- `internal/shuttleengine#diedCaptureFileName`
+- `internal/shuttleengine#Run.removeDiedOwnWindowStrand`
+- `internal/shuttleengine#cleanupDiedCaptureKept`
 
 **Delete:**
 - `internal/shuttleengine#removeStrandIfLive`
