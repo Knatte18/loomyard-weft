@@ -1,0 +1,98 @@
+{
+  "runGuid": "4779d80539912ec8470fa28699925c99",
+  "planFingerprint": "841b890ea20ad26108e1ce0ce7523001ef55e2d1e88718cc7f1c3f16eccd3328",
+  "planFileHashes": {
+    "00-overview.md": "2b95ae7a135313d01d96df3b71143a3d2cc464d6a4152588a3c8db8fdb7f8c1a",
+    "01-tokencount-no-cutoff.md": "27338fcfb33b9cf112c23eae22104f2c007dfd89a7961baf6cee10261630a1ed",
+    "02-reader-paren-dollar.md": "87b078f0b2c53e80c2f38a44fc3c4b3432b1de3d47f57ab14e096c0a5c311bb7",
+    "03-vocab-root-replaceall.md": "35586277c222fdc71cba38007ff64ed6a4a2ca17a28ecd51b63f9ba81a2313fd"
+  },
+  "planOverviewFrameHash": "5470939fa78c74b499056b162c70b153f30381e9e5424b55dcafe8da22d1fddd",
+  "partition": [
+    {
+      "cards": [
+        "01-tokencount-no-cutoff",
+        "02-reader-paren-dollar",
+        "03-vocab-root-replaceall"
+      ],
+      "profile": "cautious",
+      "estimate": 138968,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54184,
+        "read_union": 34060,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 408,
+            "reads": {
+              "package:tools/tokencount": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 20,
+            "written": 6408
+          },
+          {
+            "card": 2,
+            "card_text": 552,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 16836,
+              "package:internal/fabricengine": 2000,
+              "package:internal/fabricengine_test": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/fabricengine_test": 2000
+            },
+            "messages": 120.5,
+            "written": 36702
+          },
+          {
+            "card": 3,
+            "card_text": 264,
+            "reads": {
+              "package:internal/lyxcwd": 2000,
+              "tests:internal/lyxcwd": 2000
+            },
+            "messages": 24.5,
+            "written": 7614
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "b2f08a3c8dc83a83c9b703f78315dbba",
+  "masterSessionId": "bb61aac7-47dd-49e0-8a86-61441ebd68cf",
+  "batches": {
+    "1": {
+      "slug": "tokencount-no-cutoff",
+      "cards": [
+        "01-tokencount-no-cutoff",
+        "02-reader-paren-dollar",
+        "03-vocab-root-replaceall"
+      ],
+      "cardHashes": {
+        "01-tokencount-no-cutoff": "27338fcfb33b9cf112c23eae22104f2c007dfd89a7961baf6cee10261630a1ed",
+        "02-reader-paren-dollar": "87b078f0b2c53e80c2f38a44fc3c4b3432b1de3d47f57ab14e096c0a5c311bb7",
+        "03-vocab-root-replaceall": "35586277c222fdc71cba38007ff64ed6a4a2ca17a28ecd51b63f9ba81a2313fd"
+      },
+      "startSha": "e5b56fe913e05d1ea5054012d1f8bac96cedc47b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T15:00:18Z",
+      "sessionId": "bb61aac7-47dd-49e0-8a86-61441ebd68cf",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
