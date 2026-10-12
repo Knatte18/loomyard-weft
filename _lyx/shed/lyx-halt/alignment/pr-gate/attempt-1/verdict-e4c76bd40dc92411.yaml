@@ -1,0 +1,13 @@
+verdict: escalate
+reason: >-
+  The change matches lyx-halt's goal and its recorded decisions D1 to D10, but it has substantive overlaps with two runs in flight.
+  run-robustness (at Merge-In) changes 24 of the same files, Go code among them, and the same PATTERN-daemon-wakeups entry.
+  convergence-plan (at Webster) changes internal/loomcli/landingdeps.go and the PATTERN-leaf-packages entry.
+question: >-
+  Overlap with run-robustness: both runs change internal/alignment/session.go, internal/shedverbs/loop.go and spec.go,
+  internal/loomcli/landingdeps.go, looparm.go, resume.go, start.go and wiring.go, internal/battencli/arm.go and wire.go,
+  internal/shedengine/goto.go, run.go and rename.go, internal/websterengine/doc.go, their tests,
+  contracts/specs/refusal-spec.md and loom-status-spec.md, and each adds a declared wait to pattern/PATTERN-daemon-wakeups.md.
+  Overlap with convergence-plan: both change internal/loomcli/landingdeps.go and add a section to pattern/PATTERN-leaf-packages.md.
+  Which run lands first, and does the second merge main and re-gate before its own landing?
+superseded: []
