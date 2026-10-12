@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster-Bouncer",
+  "current_producer": "Webster-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster-Bouncer",
-    "last": "Webster → done",
+    "now": "Webster-Burler-Review",
+    "last": "Webster-Bouncer → bounced to Webster-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -121,6 +121,12 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/sed-read-ok/_lyx/webster/summary.md",
       "at": "2026-10-12T08:30:44Z"
+    },
+    {
+      "producer": "Webster-Bouncer",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-12T08:31:20Z"
     }
   ],
   "product": {
