@@ -1,6 +1,6 @@
-# Twill for Plan-Write: audit and bench
+# Twill for Plan-Write at opus[medium]
 
-`twill-plan` · Note · enhancement, loom, stencil
+`twill-plan` · Task · enhancement, loom, stencil
 
 ## Idea (operator, 2026-10-11)
 
@@ -57,6 +57,32 @@ Repeated / partly repeated: 1.0 / 0.5 on `shuttle-startup-ready` at $4.47 per pl
 Behavior: forks spawned on time, only one of four first `validate-plan` passes succeeded, the forks raised more and mostly LOW findings, and two of 18 rejections kept a key defect (one on a wrong, uncited premise), where `opus[medium]` kept none.
 The agent finds no reason to prefer it over `opus[medium]`.
 
+## Bench: sonnet[medium] twill and single Fable (2026-10-12, merged from `twill-plan-sonnet-medium`)
+
+Round 2's setup, two runs per reference per arm; record in `.scratch/twill-plan-bench/results-sonnet-medium-fable.md` and `tokens-sonnet-medium-fable.md`.
+
+| Arm | Ref 1 R / P | Ref 2 R / P | Cost per plan | Writer time |
+|---|---|---|---|---|
+| twill `opus[medium]` (round 2) | 0.5 / 0.5 | 2.0 / 3.5 | $5.24 | 10m10s |
+| single `opus[high]` (round 2) | 1.0 / 0.5 | 4.5 / 2.5 | $2.63 | 6m49s |
+| twill `sonnet[medium]` | 2.0 / 1.0 | 2.5 / 4.0 | $2.99 | 7m25s |
+| single `fable[high]` | 3.5 / 0.5 | 4.0 / 3.0 | $5.67 | 10m8s |
+
+`sonnet[medium]` twill costs 43% less than twill `opus[medium]` but repeats more key defects, and four of its 21 rejections kept a key defect.
+Single Fable lands at single `opus[high]` quality or below, at twice its cost.
+Neither arm reaches twill `opus[medium]`; an `opus[medium]` writer with `sonnet[medium]` forks is the untested cheaper variant.
+
+## Build (operator, 2026-10-12)
+
+The operator chose to build twill for Plan-Write at `opus[medium]`, as the benches recommend:
+
+- A Plan-Write producer `twill` beside `single`, selected in `loom.yaml` like `discussion_producer`, with the writer at `opus[medium]` and its forks inheriting it.
+- The four tuned lenses `criteria-coverage`, `row-reachability`, `forced-edits` and `test-economy`, as in `.scratch/twill-plan-bench/round-2/directive.md` in the hub prime; `card-structure` and `pattern-fit` stay out.
+- The directive placed so the lens forks run before the plan is written (round 2's splice before Step 3), and the rule that a rejected BLOCKING or MEDIUM lens finding must cite a code read.
+- Instead of a `pattern-scans` lens, `lyx loom validate-plan` checks deterministically what PATTERN's scans would refuse in a plan's named tests and glyphs, starting with banned tokens in test names, the defect every bench arm missed and only the verify gate caught.
+- No further bench tuning before the build: the lenses are tuned from Plan-Review and Webster findings a lens should have caught, once twill runs.
+
 ## Open
 
-- Whether lens review lets Plan-Review run fewer rounds, as the operator chose for Discussion.
+- Whether lens review lets Plan-Review run fewer rounds, as the operator chose for Discussion: once built, measure with a lower `plan_max_bounces`.
+- The other miss every arm shared, a check against the wrong parent directory, has no lens or check yet.
