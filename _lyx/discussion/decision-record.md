@@ -197,6 +197,12 @@ Rationale: Verified in the record (D3 line 62, D5, criterion): the value now rea
 - Landing warns when a task branch changes a per-worktree config file; D11 triggers that warning once, by intent.
 - D9's test-prefix heuristic misses a helper without a test prefix declared in a `_test.go` file outside `internal/`.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - plan-severity-rule-marker-slot-fit (class design, severity BLOCKING, open in rounds 1, 2)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - `plan_producer: twill` loads; an empty or absent key loads as `single`; an unknown value fails with an error naming `single` and `twill`.
