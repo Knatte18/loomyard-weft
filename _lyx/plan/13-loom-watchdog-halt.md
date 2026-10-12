@@ -8,9 +8,9 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/gateslot#FindWatchdogQuit`
-- `plan:internal/gateslot#WatchdogLine`
-- `plan:internal/gateslot#BusyQuitWayForward`
+- `internal/gateslot#FindWatchdogQuit`
+- `internal/gateslot#WatchdogLine`
+- `internal/gateslot#BusyQuitWayForward`
 
 **Intent:**
 D6 in the loom verify gate (`internal/loomshed`), whose findings become the Webster-Burler-Fix row's and the Darn-Write row's halt reason when the gate runs out of attempts.

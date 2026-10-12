@@ -3,10 +3,10 @@
 **Create:**
 - `internal/proc/cpu.go`
 - `internal/proc/doc.go`
-- `plan:internal/proc#ProcessCPU` -> `type ProcessCPU struct`
-- `plan:internal/proc#TreeCPU` -> `func TreeCPU(root int) ([]ProcessCPU, error)`
-- `plan:internal/proc#IsAncestor` -> `func IsAncestor(pid int) bool`
-- `plan:internal/proc#TestProcessTreeReads` -> `func TestProcessTreeReads(t *testing.T)`
+- `internal/proc#ProcessCPU`
+- `internal/proc#TreeCPU`
+- `internal/proc#IsAncestor`
+- `internal/proc#TestProcessTreeReads`
 
 **Edit:**
 - `internal/proc/proc_linux.go`

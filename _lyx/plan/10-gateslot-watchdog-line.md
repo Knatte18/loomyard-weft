@@ -3,10 +3,10 @@
 **Create:**
 - `internal/gateslot/watchdogline.go`
 - `internal/gateslot/watchdogline_test.go`
-- `plan:internal/gateslot#WatchdogLine` -> `func WatchdogLine(binary string, pid int, window time.Duration) string`
-- `plan:internal/gateslot#FindWatchdogQuit` -> `func FindWatchdogQuit(log string) (window string, ok bool)`
-- `plan:internal/gateslot#BusyQuitWayForward` -> `const BusyQuitWayForward = "raise busy_quit_sec in the hub's gate.yaml through \"lyx config gate\" from the prime"`
-- `plan:internal/gateslot#TestWatchdogLine` -> `func TestWatchdogLine(t *testing.T)`
+- `internal/gateslot#WatchdogLine`
+- `internal/gateslot#FindWatchdogQuit`
+- `internal/gateslot#BusyQuitWayForward`
+- `internal/gateslot#TestWatchdogLine`
 
 **Edit:**
 - `internal/gateslot/doc.go`

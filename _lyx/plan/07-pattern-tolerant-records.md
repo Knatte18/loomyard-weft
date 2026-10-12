@@ -3,8 +3,8 @@
 **Create:**
 - `pattern/PATTERN-tolerant-records.md`
 - `cmd/lyx/tolerantrecords_test.go`
-- `plan:cmd/lyx#TestTolerantRecords_NoStrictJSONDecode` -> `func TestTolerantRecords_NoStrictJSONDecode(t *testing.T)`
-- `plan:cmd/lyx#strictDecodeFindings` -> `func strictDecodeFindings(filename string, data []byte) ([]string, error)`
+- `cmd/lyx#TestTolerantRecords_NoStrictJSONDecode`
+- `cmd/lyx#strictDecodeFindings`
 
 **Edit:**
 - `PATTERN.md`

@@ -29,11 +29,11 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/proc#TreeCPU`
-- `plan:internal/proc#IsAncestor`
-- `plan:internal/gateslot#WatchdogLine`
-- `plan:internal/gateslot#FindWatchdogQuit`
-- `plan:internal/gateslot#BusyQuitWayForward`
+- `internal/proc#TreeCPU`
+- `internal/proc#IsAncestor`
+- `internal/gateslot#WatchdogLine`
+- `internal/gateslot#FindWatchdogQuit`
+- `internal/gateslot#BusyQuitWayForward`
 
 **Intent:**
 D7 and D8: while go test runs, `lyx gate test` samples its child tree, and a `.test` binary that keeps at least 90 percent of one core busy for `busy_quit_sec` gets one SIGQUIT, so the Go runtime prints every goroutine's stack and go test reports the package failed long before its own `-timeout`.

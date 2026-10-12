@@ -7,9 +7,9 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/gateslot#FindWatchdogQuit`
-- `plan:internal/gateslot#WatchdogLine`
-- `plan:internal/gateslot#BusyQuitWayForward`
+- `internal/gateslot#FindWatchdogQuit`
+- `internal/gateslot#WatchdogLine`
+- `internal/gateslot#BusyQuitWayForward`
 
 **Intent:**
 D6 in the landing verify gate (`internal/landingshed`), the post-merge verify and `publish_verify` of Merge-In, Publish and Finalize, whose Stuck reason is the halt reason.

@@ -23,9 +23,9 @@
 - `internal/websterengine#TestVerifyGateStuckReason_TimedOutReportNamesTheTimeoutAndLog`
 
 **Uses:**
-- `plan:internal/gateslot#WatchdogLine`
-- `plan:internal/gateslot#FindWatchdogQuit`
-- `plan:internal/gateslot#BusyQuitWayForward`
+- `internal/gateslot#WatchdogLine`
+- `internal/gateslot#FindWatchdogQuit`
+- `internal/gateslot#BusyQuitWayForward`
 
 **Intent:**
 D5 and D6 in webster's plan-level verify gate.
