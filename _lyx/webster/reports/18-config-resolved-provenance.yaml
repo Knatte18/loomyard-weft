@@ -1,0 +1,11 @@
+status: OK
+head_sha: 664e43062f02567c2c7668c80ba7058df6bc2b7e
+deviations:
+  - internal/configengine/layers.go
+  - internal/configengine/layers_test.go
+  - internal/boardcli/runsettings.go
+  - internal/boardcli/verbs_test.go
+  - internal/battenshed/deps.go
+  - internal/shedrecipe/entries_batten_test.go
+  - internal/battencli/run_test.go
+  - internal/testkit/envkit/envkit.go

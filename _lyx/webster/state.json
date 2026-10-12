@@ -1,6 +1,6 @@
 {
   "runGuid": "fe1e9a51e439aec540cf18ab74a6fa11",
-  "planFingerprint": "4e82125d72bbaf22b08692391e86d273277339abe36188e22c3549bb952e9ba6",
+  "planFingerprint": "0aa4b985b691ed1750f1c7fe0553005cac037f64ce5f918f23d6b832ee0729b3",
   "planFileHashes": {
     "00-overview.md": "7d1fdddb0ee17c7b5d9f4396c77c62028b6cf0832bfb9dfca52cd8505a89d327",
     "01-yamlengine-layer-ops.md": "4fb0556b34db762e83973d8ef7505d9ded76562ae979994d87ae5b313b2355e3",
@@ -20,10 +20,10 @@
     "15-configsync-layer-reconcile.md": "51e54540ae62cd97c9d2ec07967f7b89aa50279963f6c57cb8d3f96aca6936eb",
     "16-sparse-migration.md": "1b81d6b57e76f45da135bd82129cc65cb8b5d0d726f5866da721ce38285d268b",
     "17-config-cli-layers.md": "d82f7a89422cdb9c51d3a1fda2ebef8d70ae404fa59b6c9d5f0167667efa4d72",
-    "18-config-resolved-provenance.md": "9d9f546e44a1d43dac95bbb6985a6e24ea09d04e29db41438b71a26ff048d71c",
-    "19-agentname-task-slug.md": "1c579226623dd82c7c0a03193b8e66b0e8334343a3826fc046ff7ee956ca9cb1",
-    "20-board-run-settings.md": "4c9e435a1bf02dee345352511f1b9bd006f57acb099ef498cea93d31703cfdd2",
-    "21-seed-child-run-settings.md": "9dc0b0dbaedc51c10f230731bc50c6ac3c2378f707cad00e333a6edd0cac053e",
+    "18-config-resolved-provenance.md": "77aee219a30410096d9d5ee4fca37e6dcce29957679679165018add19dcdb20b",
+    "19-agentname-task-slug.md": "46b1c18d4aadfff614566a04018a84c243aea7ab0336d3317bb158bf61ef3626",
+    "20-board-run-settings.md": "e93a1483f36c547fa4a13c27eacdbe3d7c4a5cd3608dbffde800a7e07cee896b",
+    "21-seed-child-run-settings.md": "50cca3816670dda8d4c83769e32b7c37cbbca9a4d7404bcecda3f92a54d23c0c",
     "22-orch-run-settings-rule.md": "1b63b42692586e807ffa476fc84a1d3972157aec12fa8e130b44837af1e785d2",
     "23-overview-config-layers.md": "df7a88c69e4790ab6f0ca62efa49e8e76670c1ff666b430c18362bb349f4298a"
   },
@@ -821,7 +821,7 @@
       }
     }
   ],
-  "currentBatch": 18,
+  "currentBatch": 0,
   "masterStrand": "993b22c04ce849f45f96709a28dd49ef",
   "masterSessionId": "7361d6f2-17ce-4121-9688-8cf5be50f44c",
   "batches": {
@@ -921,10 +921,10 @@
         "23-overview-config-layers"
       ],
       "cardHashes": {
-        "18-config-resolved-provenance": "9d9f546e44a1d43dac95bbb6985a6e24ea09d04e29db41438b71a26ff048d71c",
-        "19-agentname-task-slug": "1c579226623dd82c7c0a03193b8e66b0e8334343a3826fc046ff7ee956ca9cb1",
-        "20-board-run-settings": "4c9e435a1bf02dee345352511f1b9bd006f57acb099ef498cea93d31703cfdd2",
-        "21-seed-child-run-settings": "9dc0b0dbaedc51c10f230731bc50c6ac3c2378f707cad00e333a6edd0cac053e",
+        "18-config-resolved-provenance": "77aee219a30410096d9d5ee4fca37e6dcce29957679679165018add19dcdb20b",
+        "19-agentname-task-slug": "46b1c18d4aadfff614566a04018a84c243aea7ab0336d3317bb158bf61ef3626",
+        "20-board-run-settings": "e93a1483f36c547fa4a13c27eacdbe3d7c4a5cd3608dbffde800a7e07cee896b",
+        "21-seed-child-run-settings": "50cca3816670dda8d4c83769e32b7c37cbbca9a4d7404bcecda3f92a54d23c0c",
         "22-orch-run-settings-rule": "1b63b42692586e807ffa476fc84a1d3972157aec12fa8e130b44837af1e785d2",
         "23-overview-config-layers": "df7a88c69e4790ab6f0ca62efa49e8e76670c1ff666b430c18362bb349f4298a"
       },
@@ -932,8 +932,32 @@
       "kind": "fork",
       "spawnedAt": "2026-10-12T08:55:19Z",
       "sessionId": "7361d6f2-17ce-4121-9688-8cf5be50f44c",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "18-config-resolved-provenance",
+        "status": "done",
+        "head_sha": "664e43062f02567c2c7668c80ba7058df6bc2b7e",
+        "deviations": [
+          "internal/configengine/layers.go",
+          "internal/configengine/layers_test.go",
+          "internal/boardcli/runsettings.go",
+          "internal/boardcli/verbs_test.go",
+          "internal/battenshed/deps.go",
+          "internal/shedrecipe/entries_batten_test.go",
+          "internal/battencli/run_test.go",
+          "internal/testkit/envkit/envkit.go"
+        ]
+      },
+      "cardShas": [
+        "664e43062f02567c2c7668c80ba7058df6bc2b7e"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-ad68cbc5e8781c2e7.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-ad68cbc5e8781c2e7.jsonl"
+      ]
     },
     "4": {
       "slug": "reed-layered-load",
@@ -1075,6 +1099,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-a2a6781696362439c.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-a933aeb0661013dc3.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-a3406e1056f5700f2.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-a2479587168e279f2.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-a2479587168e279f2.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-ad68cbc5e8781c2e7.jsonl"
   ]
 }

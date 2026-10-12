@@ -1,11 +1,11 @@
 # Card 18 — config resolved provenance
 
 **Create:**
-- `plan:internal/configengine#Provenance` -> `func Provenance(dirs Dirs, spec Spec) ([]byte, error)`
-- `plan:internal/configengine_test#TestProvenance` -> `func TestProvenance(t *testing.T)`
-- `plan:internal/configcli#printResolved` -> `func printResolved(dirs configDirs, out io.Writer, module string) int`
-- `plan:internal/configcli#runResolved` -> `func runResolved(ctx context.Context, out io.Writer, module string) int`
-- `plan:internal/configcli#TestPrintResolved` -> `func TestPrintResolved(t *testing.T)`
+- `internal/configengine#Provenance`
+- `internal/configengine_test#TestProvenance`
+- `internal/configcli#printResolved`
+- `internal/configcli#runResolved`
+- `internal/configcli#TestPrintResolved`
 
 **Edit:**
 - `internal/configcli#Command`

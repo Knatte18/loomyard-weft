@@ -1,9 +1,9 @@
 # Card 21 — Seed-Child run settings
 
 **Create:**
-- `plan:internal/battenshed#ErrInvalidRunSettings` -> `var ErrInvalidRunSettings = errors.New("battenshed: the board task's run settings do not validate")`
-- `plan:internal/battenshed#TestSeedChild_RunSettings` -> `func TestSeedChild_RunSettings(t *testing.T)`
-- `plan:internal/battencli#stepSeedChild_WritesTheRunSettingsIntoThePairsLocalLayer` -> `func stepSeedChild_WritesTheRunSettingsIntoThePairsLocalLayer(t *testing.T, h *hubforge.Hub)`
+- `internal/battenshed#ErrInvalidRunSettings`
+- `internal/battenshed#TestSeedChild_RunSettings`
+- `internal/battencli#stepSeedChild_WritesTheRunSettingsIntoThePairsLocalLayer`
 
 **Edit:**
 - `internal/battenshed#SeedChildDeps`

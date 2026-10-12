@@ -1,10 +1,10 @@
 # Card 20 — board run settings
 
 **Create:**
-- `plan:internal/boardengine#RunStatusProducer` -> `func RunStatusProducer(status *string) (string, bool)`
-- `plan:internal/boardengine_test#TestRunStatusProducer` -> `func TestRunStatusProducer(t *testing.T)`
-- `plan:internal/boardcli#prepareRunSettings` -> `func prepareRunSettings(b *boardengine.Board, fields map[string]any, strandName string) (string, error)`
-- `plan:internal/boardcli_test#stepRunSettings` -> `func stepRunSettings(t *testing.T, f *cliFixture)`
+- `internal/boardengine#RunStatusProducer`
+- `internal/boardengine_test#TestRunStatusProducer`
+- `internal/boardcli#prepareRunSettings`
+- `internal/boardcli_test#stepRunSettings`
 
 **Edit:**
 - `internal/boardengine#Task`
@@ -25,7 +25,7 @@
 
 **Uses:**
 - `internal/configreg#PrepareRunSettings`
-- `plan:internal/agentname#TaskSlug`
+- `internal/agentname#TaskSlug`
 
 **Intent:**
 Add D8's `run_settings` to the board task.

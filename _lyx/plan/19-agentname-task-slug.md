@@ -1,8 +1,8 @@
 # Card 19 — agentname task slug
 
 **Create:**
-- `plan:internal/agentname#TaskSlug` -> `func TaskSlug(strandName string) string`
-- `plan:internal/agentname#TestTaskSlug` -> `func TestTaskSlug(t *testing.T)`
+- `internal/agentname#TaskSlug`
+- `internal/agentname#TestTaskSlug`
 
 **Edit:**
 - `internal/configcli#hubWriteRefusal`
