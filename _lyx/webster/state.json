@@ -280,7 +280,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "75a07f4ee743983521af8f8e055dfb52",
   "masterSessionId": "2b565459-bf2c-474b-bc4c-292b3d6a10b6",
   "batches": {
@@ -322,6 +322,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-alignment-agent/2b565459-bf2c-474b-bc4c-292b3d6a10b6/subagents/agent-a08e455ba58d42167.jsonl"
       ]
+    },
+    "7": {
+      "slug": "parent-review-gate-alignment",
+      "cards": [
+        "07-parent-review-gate-alignment",
+        "08-parent-review-alignment-wiring",
+        "09-shared-approval-write",
+        "10-pr-align-producer",
+        "11-pr-align-row",
+        "12-orch-stencil-alignment"
+      ],
+      "cardHashes": {
+        "07-parent-review-gate-alignment": "26e07fc19e50e87b766445cd2b371267cb846085de9de37dc3f42d06eca43033",
+        "08-parent-review-alignment-wiring": "2b013ed05ab945e23727c7392d1082e36db7132f4623b423a1fbd905585eaf0b",
+        "09-shared-approval-write": "c7e1ce690b623ced43fbfe790b8f85c515ce9cb1cd30b141d8565c7c452df045",
+        "10-pr-align-producer": "950071326f29cdf103a0e9d7f89e0538f35976ac58cdbe8a94c2f2c2183e5aa5",
+        "11-pr-align-row": "68140916b1877e06569d1397e5c55925c15758db51a66da3a3ce6816c65cd06e",
+        "12-orch-stencil-alignment": "8c61f2c78f498b302e57ff3c4f659f6fe60d33d5a49e02b2aff40e7734015c39"
+      },
+      "startSha": "70027516ca17829e2c0b9db98d8cbed132993458",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T11:30:12Z",
+      "sessionId": "2b565459-bf2c-474b-bc4c-292b3d6a10b6",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
