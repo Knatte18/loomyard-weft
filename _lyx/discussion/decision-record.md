@@ -180,9 +180,9 @@ Rationale: The pause record is rewritten by long-lived processes (orch watcher, 
 <!-- /lyx:carry-over Plan-Review -->
 
 <!-- lyx:carry-over Merge-Review -->
-- Merge-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
-  Review: _lyx/reviews/merge/round-1-review.md; fixer report: _lyx/reviews/merge/round-1-fixer-report.md.
-  - alignment-attempt-json-bypasses-state (class design, severity BLOCKING, open in rounds 1)
+- Merge-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/merge/round-2-review.md; fixer report: _lyx/reviews/merge/round-2-fixer-report.md.
+  - state-keep-unknown-shifted-list-elements (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Merge-Review -->
 
 ## Acceptance criteria
