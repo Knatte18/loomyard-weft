@@ -26,7 +26,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 3 | **lyx pause: stop every run at once, safely and on purpose**<br>• A hub-wide pause that interrupts every Claude session with Esc within seconds, unlike the step-boundary pauses, recorded as ordered so no failure or idle path fires | [`lyx-halt`](design-lyx-halt.md) | loom | Plan-Write |  |  | batten, shuttle |
 | 4 | **Webster kick-start pack: read the card's spans in one turn, per-card packs**<br>• Forks read listed spans whole and spread out; adopt the bench wording, per-card packs, span-only FRESH-READ and one-line var entries | [`webster-pack-read-set`](design-webster-pack-read-set.md) | loom | Merge-In | 53m | 53m | webster, stencil |
-| 5 | **Run records tolerate newer binaries; a hung verify step is not re-run**<br>• Readers and writers of run records keep unknown fields; a verify gate stops a hung step early and never re-runs it unfixed. | [`run-robustness`](design-run-robustness.md) | loom | Discussion-Write | 10m | 9m | batten, shed, webster |
+| 5 | **Run records tolerate newer binaries; a hung verify step is not re-run**<br>• Readers and writers of run records keep unknown fields; a verify gate stops a hung step early and never re-runs it unfixed. | [`run-robustness`](design-run-robustness.md) | loom | Discussion-Bouncer | 10m | 9m | batten, shed, webster |
 
 ### Ready
 
