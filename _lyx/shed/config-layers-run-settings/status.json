@@ -34,6 +34,34 @@
       "output": "child awaiting → running at Discussion-Bouncer",
       "at": "2026-10-11T19:07:45Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → failed at Discussion-Burler-Fix",
+      "at": "2026-10-12T06:12:51Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child failed → running at Discussion-Burler-Fix",
+      "at": "2026-10-12T06:13:29Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at Discussion-Bouncer",
+      "at": "2026-10-12T06:23:44Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at Discussion-Bouncer",
+      "at": "2026-10-12T06:24:28Z",
+      "budget_exempt": true
     }
   ]
 }
