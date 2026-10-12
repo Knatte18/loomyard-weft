@@ -1,6 +1,6 @@
 # Board entries carry created and revised dates; views show age
 
-`board-entry-age` · Task · feature, board · running · PR-Gate
+`board-entry-age` · Task · feature, board · running · Finalize
 
 ## Idea (operator, 2026-10-12)
 
