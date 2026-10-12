@@ -1,10 +1,10 @@
 # Card 15 — report-cli
 
 **Create:**
-- `plan:internal/reportcli#Command` -> `func Command() *cobra.Command`
-- `plan:internal/reportcli#RunCLI` -> `func RunCLI(out io.Writer, args []string) int`
-- `plan:internal/reportcli#RunCLIIn` -> `func RunCLIIn(cwd string, out io.Writer, args []string) int`
-- `plan:internal/reportcli#refuseNonPrime` -> `func refuseNonPrime(worktreeName, primeName string, primeNameErr error) error`
+- `internal/reportcli#Command`
+- `internal/reportcli#RunCLI`
+- `internal/reportcli#RunCLIIn`
+- `internal/reportcli#refuseNonPrime`
 - `//internal/reportcli/doc.go`
 - `//internal/reportcli/cli_test.go`
 - `//internal/reportcli/convergence_integration_test.go`
@@ -20,7 +20,7 @@
 **Uses:**
 - `internal/reportengine#Open`
 - `internal/reportengine#Compute`
-- `plan:internal/reportengine#RenderMarkdown`
+- `internal/reportengine#RenderMarkdown`
 - `internal/fabricengine#RecordsRepoRoot`
 - `internal/fabricengine#RecordsBranchName`
 - `internal/fabricengine#BoardDir`

@@ -1,9 +1,9 @@
 # Card 14 — report-weeks-and-markdown
 
 **Create:**
-- `plan:internal/reportengine#Week` -> `type Week struct`
-- `plan:internal/reportengine#ClassCount` -> `type ClassCount struct`
-- `plan:internal/reportengine#RenderMarkdown` -> `func RenderMarkdown(r Report) string`
+- `internal/reportengine#Week`
+- `internal/reportengine#ClassCount`
+- `internal/reportengine#RenderMarkdown`
 - `//internal/reportengine/weeks_test.go`
 
 **Edit:**

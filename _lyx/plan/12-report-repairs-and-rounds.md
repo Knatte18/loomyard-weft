@@ -1,8 +1,8 @@
 # Card 12 — report-repairs-and-rounds
 
 **Create:**
-- `plan:internal/reportengine#ArbiterOutcome` -> `type ArbiterOutcome struct`
-- `plan:internal/reportengine#SegmentRounds` -> `type SegmentRounds struct`
+- `internal/reportengine#ArbiterOutcome`
+- `internal/reportengine#SegmentRounds`
 - `//internal/reportengine/rounds_test.go`
 
 **Edit:**

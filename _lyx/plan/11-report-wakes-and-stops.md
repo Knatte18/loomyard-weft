@@ -1,10 +1,10 @@
 # Card 11 — report-wakes-and-stops
 
 **Create:**
-- `plan:internal/reportengine#WakeSource` -> `type WakeSource struct`
-- `plan:internal/reportengine#Stop` -> `type Stop struct`
-- `plan:internal/reportengine#AlignmentOutcome` -> `type AlignmentOutcome struct`
-- `plan:internal/reportengine#failureClass` -> `func failureClass(producer, reason string) string`
+- `internal/reportengine#WakeSource`
+- `internal/reportengine#Stop`
+- `internal/reportengine#AlignmentOutcome`
+- `internal/reportengine#failureClass`
 - `//internal/reportengine/wakes_test.go`
 
 **Edit:**

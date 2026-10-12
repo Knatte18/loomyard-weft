@@ -1,7 +1,7 @@
 # Card 13 — report-landings
 
 **Create:**
-- `plan:internal/reportengine#Landing` -> `type Landing struct`
+- `internal/reportengine#Landing`
 - `//internal/reportengine/landings_test.go`
 
 **Edit:**
