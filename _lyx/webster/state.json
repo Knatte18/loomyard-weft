@@ -1,0 +1,313 @@
+{
+  "runGuid": "65604a39a016d3d7fcac6490d4b07bfe",
+  "planFingerprint": "778d3d03052e6c2cfb885b099c079d491a1cbe8e54b643fa80015bacbd1e22e6",
+  "planFileHashes": {
+    "00-overview.md": "13e626b233a542e106ca7d03bb292b315dc4e07442cdb1a9bf36b937bba9ed04",
+    "01-loom-alignment-config.md": "129150b7089a65677d5a3438e55b44a36364a5bc6f01f6750f05780f2ae5722f",
+    "02-fabric-commit-log.md": "8122d143975c464bcb3db78b9a8d1d866fb42243ee8eebd5cebaf40648fdc156",
+    "03-loom-peers.md": "fb9596920f8d6f265935cadf5602c0b06a3686072cef731bed3fb3875ad78de2",
+    "04-shedrun-alignment-paths.md": "319c0c5c8d654e5a890ce49532673909ace5d241c18580dd817fc03681474a5f",
+    "05-alignment-records.md": "052c897cd906eb6045746a2bb9f0cf1806e180e0284f575ee3b3640598b8ba79",
+    "06-alignment-session.md": "cfcafe36223505fe1e574c99f1c1803ac5a03c1c9229163f1ad28cefe063808c",
+    "07-parent-review-gate-alignment.md": "26e07fc19e50e87b766445cd2b371267cb846085de9de37dc3f42d06eca43033",
+    "08-parent-review-alignment-wiring.md": "9bc16f94a257012d527d89f2bb394c905c49d9e24bdcea66365eda56fb7dd53d",
+    "09-shared-approval-write.md": "c7e1ce690b623ced43fbfe790b8f85c515ce9cb1cd30b141d8565c7c452df045",
+    "10-pr-align-producer.md": "5b2448dedad36335c73e22545d1fb9f033c066be42b2319f4a7ae0cd70fba8a2",
+    "11-pr-align-row.md": "68140916b1877e06569d1397e5c55925c15758db51a66da3a3ce6816c65cd06e",
+    "12-orch-stencil-alignment.md": "8c61f2c78f498b302e57ff3c4f659f6fe60d33d5a49e02b2aff40e7734015c39"
+  },
+  "planOverviewFrameHash": "120af4eaf456f3e075358e55135845c5911b3136ecd27dcc57976cf4143cbdd4",
+  "partition": [
+    {
+      "cards": [
+        "01-loom-alignment-config",
+        "02-fabric-commit-log",
+        "03-loom-peers",
+        "04-shedrun-alignment-paths",
+        "05-alignment-records",
+        "06-alignment-session"
+      ],
+      "profile": "cautious",
+      "estimate": 359020,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54652,
+        "read_union": 69720,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 600,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "file:contracts/specs/refusal-spec.md": 4812,
+              "file:internal/loomengine/template.yaml": 576,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 96.5,
+            "written": 29550
+          },
+          {
+            "card": 2,
+            "card_text": 276,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/fabricengine_test": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/fabricengine_test": 2000
+            },
+            "messages": 104.5,
+            "written": 31626
+          },
+          {
+            "card": 3,
+            "card_text": 1032,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "file:contracts/specs/refusal-spec.md": 4812,
+              "file:docs/overview.md": 8676,
+              "file:internal/loomcli/doc.go": 1260,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 140.5,
+            "written": 43182
+          },
+          {
+            "card": 4,
+            "card_text": 216,
+            "reads": {
+              "file:internal/shedrun/doc.go": 480,
+              "package:internal/shedrun": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 32.5,
+            "written": 9966
+          },
+          {
+            "card": 5,
+            "card_text": 1128,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "file:docs/overview.md": 8676,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:docs": 2000,
+              "package:internal/alignment": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:docs": 2000,
+              "tests:internal/alignment": 2000
+            },
+            "messages": 250,
+            "written": 76128
+          },
+          {
+            "card": 6,
+            "card_text": 996,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/alignment": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/alignment": 2000
+            },
+            "messages": 144,
+            "written": 44196
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-parent-review-gate-alignment",
+        "08-parent-review-alignment-wiring",
+        "09-shared-approval-write",
+        "10-pr-align-producer",
+        "11-pr-align-row",
+        "12-orch-stencil-alignment"
+      ],
+      "profile": "cautious",
+      "estimate": 413904,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61652,
+        "read_union": 93724,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 1128,
+            "reads": {
+              "file:internal/parentreview/doc.go": 276,
+              "package:internal/parentreview": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/parentreview": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 153,
+            "written": 47028
+          },
+          {
+            "card": 8,
+            "card_text": 888,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "file:contracts/stencils/loom/loom-template-parent-review-brief.md": 444,
+              "file:internal/loomcli/doc.go": 1260,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 176.5,
+            "written": 53838
+          },
+          {
+            "card": 9,
+            "card_text": 516,
+            "reads": {
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 149,
+            "written": 45216
+          },
+          {
+            "card": 10,
+            "card_text": 1752,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "file:internal/landingshed/doc.go": 1632,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 231,
+            "written": 71052
+          },
+          {
+            "card": 11,
+            "card_text": 576,
+            "reads": {
+              "file:contracts/recipes/loom-recipe.yaml": 6972,
+              "file:docs/overview.md": 8676,
+              "file:internal/loomrecipe/doc.go": 312,
+              "package:contracts/recipes": 2000,
+              "package:docs": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 112.5,
+            "written": 34326
+          },
+          {
+            "card": 12,
+            "card_text": 468,
+            "reads": {
+              "file:CLAUDE.md": 912,
+              "file:contracts/stencils/orch/orch-template-role.md": 2244,
+              "package:.": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "tests:.": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/orch": 2000
+            },
+            "messages": 22,
+            "written": 7068
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "75a07f4ee743983521af8f8e055dfb52",
+  "masterSessionId": "2b565459-bf2c-474b-bc4c-292b3d6a10b6",
+  "batches": {
+    "1": {
+      "slug": "loom-alignment-config",
+      "cards": [
+        "01-loom-alignment-config",
+        "02-fabric-commit-log",
+        "03-loom-peers",
+        "04-shedrun-alignment-paths",
+        "05-alignment-records",
+        "06-alignment-session"
+      ],
+      "cardHashes": {
+        "01-loom-alignment-config": "129150b7089a65677d5a3438e55b44a36364a5bc6f01f6750f05780f2ae5722f",
+        "02-fabric-commit-log": "8122d143975c464bcb3db78b9a8d1d866fb42243ee8eebd5cebaf40648fdc156",
+        "03-loom-peers": "fb9596920f8d6f265935cadf5602c0b06a3686072cef731bed3fb3875ad78de2",
+        "04-shedrun-alignment-paths": "319c0c5c8d654e5a890ce49532673909ace5d241c18580dd817fc03681474a5f",
+        "05-alignment-records": "052c897cd906eb6045746a2bb9f0cf1806e180e0284f575ee3b3640598b8ba79",
+        "06-alignment-session": "cfcafe36223505fe1e574c99f1c1803ac5a03c1c9229163f1ad28cefe063808c"
+      },
+      "startSha": "314816cde00092577fd3e2caa5083b5763837b63",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T11:15:49Z",
+      "sessionId": "2b565459-bf2c-474b-bc4c-292b3d6a10b6",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
