@@ -18,8 +18,8 @@
 - `internal/reedengine#TestPasteSubmit_DeliversTextAndLeavesTheBufferStackAlone`
 
 **Create:**
-- `plan:internal/reedengine#TmuxCmd.runStdin` -> `func (p TmuxCmd) runStdin(stdin []byte, args ...string) error`
-- `plan:internal/reedengine#fakeTmux.StdinFor` -> `func (f *fakeTmux) StdinFor(verb string) []string`
+- `internal/reedengine#TmuxCmd.runStdin`
+- `internal/reedengine#fakeTmux.StdinFor`
 
 **Intent:**
 D3: paste-submit loads its buffer from the tmux client's standard input, so a text of any length pastes.

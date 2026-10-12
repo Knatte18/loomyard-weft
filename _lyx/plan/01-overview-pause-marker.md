@@ -13,7 +13,7 @@
 - `docs/overview.md`
 
 **Create:**
-- `plan:internal/battencli#overviewPausedFormat` -> `const overviewPausedFormat = "paused %s"`
+- `internal/battencli#overviewPausedFormat`
 
 **Uses:**
 - `internal/pauserecord#Read`

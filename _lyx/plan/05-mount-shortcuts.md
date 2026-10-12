@@ -10,14 +10,14 @@
 
 **Create:**
 - `cmd/lyx/shortcuts_test.go`
-- `plan:cmd/lyx#shortcutProblems` -> `func shortcutProblems(root *cobra.Command, shortcuts []shortcutcli.Shortcut) []string`
-- `plan:cmd/lyx#TestShortcuts_FileAndRootListing` -> `func TestShortcuts_FileAndRootListing(t *testing.T)`
+- `cmd/lyx#shortcutProblems`
+- `cmd/lyx#TestShortcuts_FileAndRootListing`
 
 **Uses:**
-- `plan:internal/shortcutcli#Mount`
-- `plan:internal/shortcutcli#Load`
-- `plan:internal/shortcutcli#Shortcut`
-- `plan:internal/shortcutcli#GroupID`
+- `internal/shortcutcli#Mount`
+- `internal/shortcutcli#Load`
+- `internal/shortcutcli#Shortcut`
+- `internal/shortcutcli#GroupID`
 - `internal/clihelp#Invocable`
 - `cmd/lyx#run`
 

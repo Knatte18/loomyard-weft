@@ -4,22 +4,22 @@
 - `internal/shortcutcli/shortcuts.yaml`
 - `internal/shortcutcli/doc.go`
 - `internal/shortcutcli/shortcut.go`
-- `plan:internal/shortcutcli#GroupID` -> `const GroupID = "shortcuts"`
-- `plan:internal/shortcutcli#shortcutFile` -> `var shortcutFile []byte`
-- `plan:internal/shortcutcli#Shortcut` -> `type Shortcut struct`
-- `plan:internal/shortcutcli#Load` -> `func Load() ([]Shortcut, error)`
-- `plan:internal/shortcutcli#parse` -> `func parse(data []byte) ([]Shortcut, error)`
-- `plan:internal/shortcutcli#Mount` -> `func Mount(root *cobra.Command, newRoot func() *cobra.Command)`
-- `plan:internal/shortcutcli#mount` -> `func mount(root *cobra.Command, newRoot func() *cobra.Command, data []byte)`
-- `plan:internal/shortcutcli#newShortcutCmd` -> `func newShortcutCmd(s Shortcut, newRoot func() *cobra.Command) *cobra.Command`
-- `plan:internal/shortcutcli#routedWords` -> `type routedWords struct`
-- `plan:internal/shortcutcli#routeWords` -> `func routeWords(words []string) routedWords`
-- `plan:internal/shortcutcli#runArgvs` -> `func runArgvs(cmd *cobra.Command, newRoot func() *cobra.Command, argvs [][]string) int`
+- `internal/shortcutcli#GroupID`
+- `internal/shortcutcli#shortcutFile`
+- `internal/shortcutcli#Shortcut`
+- `internal/shortcutcli#Load`
+- `internal/shortcutcli#parse`
+- `internal/shortcutcli#Mount`
+- `internal/shortcutcli#mount`
+- `internal/shortcutcli#newShortcutCmd`
+- `internal/shortcutcli#routedWords`
+- `internal/shortcutcli#routeWords`
+- `internal/shortcutcli#runArgvs`
 - `internal/shortcutcli/shortcut_test.go`
-- `plan:internal/shortcutcli#TestShortcut_Run` -> `func TestShortcut_Run(t *testing.T)`
-- `plan:internal/shortcutcli#TestMount_File` -> `func TestMount_File(t *testing.T)`
-- `plan:internal/shortcutcli#fakeRootFactory` -> `func fakeRootFactory(rec *fakeRecorder) func() *cobra.Command`
-- `plan:internal/shortcutcli#fakeRecorder` -> `type fakeRecorder struct`
+- `internal/shortcutcli#TestShortcut_Run`
+- `internal/shortcutcli#TestMount_File`
+- `internal/shortcutcli#fakeRootFactory`
+- `internal/shortcutcli#fakeRecorder`
 - `internal/shortcutcli/testmain_test.go`
 
 **Edit:**
