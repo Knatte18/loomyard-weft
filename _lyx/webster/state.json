@@ -1,0 +1,370 @@
+{
+  "runGuid": "3ef50480cd2a33c29da5b19b8bfbd003",
+  "planFingerprint": "74e5ca5db55dafbbd9cc225e67e5d6b152bb80ee33b6c255a009d07fd2525822",
+  "planFileHashes": {
+    "00-overview.md": "ed14a0918f326850155033109bdf6d6cd0f16e5219b9532b437c2cc30e729846",
+    "01-halt-note-leaf.md": "e87d1d43f9c2e85984e96033e22220ea703c844510ccd1393d490831c9472ac5",
+    "02-shed-record-parsers.md": "e2e9dfcab57d1f05862a4a426bcd02075f4a1d2ea6f08fa60b4b3a10dd1a2853",
+    "03-loom-record-readers.md": "cb9b532306aff3089a90bec1e6349fcb892278d7c50c5ff946e622129b1c6d0a",
+    "04-alignment-record-readers.md": "a22acd07df52475da969d9daca3bc95804aeb9c551ba0d4adeea6367b905f93e",
+    "05-review-round-and-decision-readers.md": "2ece9ef0efe6dcbb8a405b1edf6020e9b5be4e1e4e263d040a6b162a16db7e4d",
+    "06-board-and-archive-readers.md": "cd190d21ab06aa7fc7f85044ee3378486a38443f1ed8089ce34294c794f8c99f",
+    "07-batten-change-classifier.md": "665bddf43dd7e6c62fb7c96ff5972b75936464a43b4df9b7f5d83df49eca756a",
+    "08-gitrepo-history-reads.md": "84c6fc3008b880abb6109240111a6f46bd0670f9836c61992fd25311ea37f2c2",
+    "09-gitrepo-landing-reads.md": "b0163e8d4f5616992eae86e64b28fab13cd4b25dc84d6c423903019b53626e1b",
+    "10-report-run-selection.md": "e2eba182e073d6527ae8bfc590251fa6d6017d6d453c78f2791665f99f1bd4b3",
+    "11-report-wakes-and-stops.md": "8b4d37ac8ca01f6194c016b3035fc1aa2382dfb1e1e13a23c33b5589fc01338f",
+    "12-report-repairs-and-rounds.md": "fb7390668f3ffb9d4c42613a66b6de985e6f53e755eaff8068b39e51976f4639",
+    "13-report-landings.md": "710f52c2b21907eb6bf1e8356830c1d61f181e8470f038b92b892e0771a9e97d",
+    "14-report-weeks-and-markdown.md": "47aa2314fd1bfaf727e2a73c4b28e671fee4bee8e00e7628cd442b5774498503",
+    "15-report-cli.md": "caae9959d1de8a9898f1b523ca3e7ca9b7a2eba57346139cf984df5d057a322b"
+  },
+  "planOverviewFrameHash": "b3de25f7d26d5ebbb30a95a6584edb09281db96931363de2243a6e3db6449e5f",
+  "partition": [
+    {
+      "cards": [
+        "01-halt-note-leaf",
+        "02-shed-record-parsers",
+        "03-loom-record-readers",
+        "04-alignment-record-readers",
+        "05-review-round-and-decision-readers"
+      ],
+      "profile": "cautious",
+      "estimate": 243824,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54760,
+        "read_union": 59284,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 756,
+            "reads": {
+              "file:PATTERN.md": 1332,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1692,
+              "file:internal/friction/doc.go": 636,
+              "file:pattern/PATTERN-leaf-packages.md": 720,
+              "file:pattern/PATTERN-sole-parsers.md": 324,
+              "package:.": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/friction": 2000,
+              "package:internal/haltnote": 2000,
+              "package:internal/loomcli": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/friction": 2000,
+              "tests:internal/haltnote": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 135.5,
+            "written": 41406
+          },
+          {
+            "card": 2,
+            "card_text": 372,
+            "reads": {
+              "package:internal/shedengine": 2000,
+              "package:internal/shedrun": 2000,
+              "tests:internal/shedengine": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 56.5,
+            "written": 17322
+          },
+          {
+            "card": 3,
+            "card_text": 528,
+            "reads": {
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 106.5,
+            "written": 32478
+          },
+          {
+            "card": 4,
+            "card_text": 396,
+            "reads": {
+              "package:internal/alignment": 2000,
+              "package:internal/parentreview": 2000,
+              "tests:internal/alignment": 2000,
+              "tests:internal/parentreview": 2000
+            },
+            "messages": 35,
+            "written": 10896
+          },
+          {
+            "card": 5,
+            "card_text": 528,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1692,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/discussionparser": 2000,
+              "package:internal/shedadapters": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/discussionparser": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 90.5,
+            "written": 27678
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-board-and-archive-readers",
+        "07-batten-change-classifier",
+        "08-gitrepo-history-reads",
+        "09-gitrepo-landing-reads",
+        "10-report-run-selection"
+      ],
+      "profile": "cautious",
+      "estimate": 264318,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61760,
+        "read_union": 49180,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 504,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1692,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/boardengine": 2000,
+              "package:internal/boardengine_test": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/fabricengine_test": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/boardengine_test": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/fabricengine_test": 2000
+            },
+            "messages": 172,
+            "written": 52104
+          },
+          {
+            "card": 7,
+            "card_text": 732,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1692,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/battenshed": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 80.5,
+            "written": 24882
+          },
+          {
+            "card": 8,
+            "card_text": 540,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1692,
+              "file:internal/gitrepo/doc.go": 3984,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/gitrepo": 2000,
+              "package:internal/gitrepo_test": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/gitrepo": 2000,
+              "tests:internal/gitrepo_test": 2000
+            },
+            "messages": 71,
+            "written": 21840
+          },
+          {
+            "card": 9,
+            "card_text": 372,
+            "reads": {
+              "file:internal/gitrepo/doc.go": 3984,
+              "package:internal/gitrepo": 2000,
+              "package:internal/gitrepo_test": 2000,
+              "tests:internal/gitrepo": 2000,
+              "tests:internal/gitrepo_test": 2000
+            },
+            "messages": 35,
+            "written": 10872
+          },
+          {
+            "card": 10,
+            "card_text": 1080,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1692,
+              "file:pattern/PATTERN-told-geometry.md": 276,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/reportengine": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/reportengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 142,
+            "written": 43680
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "11-report-wakes-and-stops",
+        "12-report-repairs-and-rounds",
+        "13-report-landings",
+        "14-report-weeks-and-markdown",
+        "15-report-cli"
+      ],
+      "profile": "cautious",
+      "estimate": 221568,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68760,
+        "read_union": 43680,
+        "cards": [
+          {
+            "card": 11,
+            "card_text": 924,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1692,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/reportengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/reportengine": 2000
+            },
+            "messages": 82,
+            "written": 25524
+          },
+          {
+            "card": 12,
+            "card_text": 756,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1692,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/reportengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/reportengine": 2000
+            },
+            "messages": 58,
+            "written": 18156
+          },
+          {
+            "card": 13,
+            "card_text": 888,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1692,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/reportengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/reportengine": 2000
+            },
+            "messages": 54,
+            "written": 17088
+          },
+          {
+            "card": 14,
+            "card_text": 732,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1692,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/reportengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/reportengine": 2000
+            },
+            "messages": 36,
+            "written": 11532
+          },
+          {
+            "card": 15,
+            "card_text": 828,
+            "reads": {
+              "file:cmd/lyx/seamsignature_test.go": 828,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1692,
+              "file:docs/overview.md": 8736,
+              "file:tools/sandbox/SANDBOX-CORE-SUITE.md": 4296,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/reportcli": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/reportcli": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 120,
+            "written": 36828
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "d60f1feb3e51629a75bbb00067b5dec1",
+  "masterSessionId": "abc3ebff-734c-4a26-b9d4-7cfc4f7a4c31",
+  "batches": {
+    "1": {
+      "slug": "halt-note-leaf",
+      "cards": [
+        "01-halt-note-leaf",
+        "02-shed-record-parsers",
+        "03-loom-record-readers",
+        "04-alignment-record-readers",
+        "05-review-round-and-decision-readers"
+      ],
+      "cardHashes": {
+        "01-halt-note-leaf": "e87d1d43f9c2e85984e96033e22220ea703c844510ccd1393d490831c9472ac5",
+        "02-shed-record-parsers": "e2e9dfcab57d1f05862a4a426bcd02075f4a1d2ea6f08fa60b4b3a10dd1a2853",
+        "03-loom-record-readers": "cb9b532306aff3089a90bec1e6349fcb892278d7c50c5ff946e622129b1c6d0a",
+        "04-alignment-record-readers": "a22acd07df52475da969d9daca3bc95804aeb9c551ba0d4adeea6367b905f93e",
+        "05-review-round-and-decision-readers": "2ece9ef0efe6dcbb8a405b1edf6020e9b5be4e1e4e263d040a6b162a16db7e4d"
+      },
+      "startSha": "a40c7baef09b5bdf5ef2b11a9f7722dd64e34542",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T13:34:10Z",
+      "sessionId": "abc3ebff-734c-4a26-b9d4-7cfc4f7a4c31",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
