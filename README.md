@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-12 13:08 UTC; every age below is as of then.
+Rendered 2026-10-12 13:09 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -20,7 +20,6 @@ Held by a run; its scope is locked until the run ends.
 | 1 | **Convergence report: count orch wakes, driver repairs and fresh-code fixes from existing records**<br>• A lyx report verb that counts, per run and per week, what woke the orch and what the driver repaired, from records that already exist | [`convergence-plan`](design-convergence-plan.md) | loom | Plan-Write |  | 2h | orch, shed |
 | 2 | **lyx pause: stop every run at once, safely and on purpose**<br>• A hub-wide pause that interrupts every Claude session with Esc within seconds, unlike the step-boundary pauses, recorded as ordered so no failure or idle path fires | [`lyx-halt`](design-lyx-halt.md) | loom | Webster |  |  | batten, shuttle |
 | 3 | **Run records tolerate newer binaries; a hung verify step is not re-run**<br>• Readers and writers of run records keep unknown fields; a verify gate stops a hung step early and never re-runs it unfixed. | [`run-robustness`](design-run-robustness.md) | loom | Merge-In | 1h | 1h | batten, shed, webster |
-| 4 | **Kick-start pack: read every card's spans in the first turn**<br>• Implementer fork reads all cards and spans in one first turn, before any edit; drop the whole-file rule | [`kickstart-read-all-first`](design-kickstart-read-all-first.md) | loom | Finalize | 1h | 1h | webster, stencil |
 
 ### Ready
 
@@ -132,3 +131,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 24 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) |  |  | loom, stencil |
 | 25 | **Scoped build and test for C# hubs on Windows**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 1h | 1h | shed, webster |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Kick-start pack: read every card's spans in the first turn**<br>• Implementer fork reads all cards and spans in one first turn, before any edit; drop the whole-file rule | [`kickstart-read-all-first`](design-kickstart-read-all-first.md) | 1h | 1h | webster, stencil |
