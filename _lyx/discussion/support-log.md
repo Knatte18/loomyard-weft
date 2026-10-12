@@ -64,7 +64,15 @@ Autonomous run: no operator answers, so each turn below is the writer's explorat
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1 (BLOCKING): all eight findings fixed.
+  - F1, BLOCKING, D1's interpreter wording failed the no-denied-recovery scan: D1 keeps "never `python` or `node` in an inline heredoc", and the acceptance criterion names `python`.
+  - F2, MEDIUM, D6's latch never cleared after a notice: pane reads go on after the notice until an input box shows, with an acceptance criterion.
+  - F3, MEDIUM, restart repeated a sent notice: D6 persists the latest ask of the episode and never rebuilds from one at or before it, with the acceptance criterion extended.
+  - F4, MEDIUM, D2's word extent and Bound: words end at a command separator, flag words open with a single dash, and the Bound and acceptance criterion grew.
+  - F5, MEDIUM, D7's closed list covers only bare spellings: D7 and the background file say the other spellings stay outside the scan.
+  - F6, LOW, positional parameters: D3's pattern widens to a digit, `@` and `*`; the other special parameters join the lets-through list.
+  - F7, LOW, the Goal overclaimed: the Goal names the two forms, and an assumption names Claude Code's `rm` trigger set.
+  - F8, LOW, `.scratch/` exclude reach: root-anchored `/.scratch/`, with a Bound.
 
 ## Question ledger
 
