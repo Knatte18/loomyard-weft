@@ -1,0 +1,11 @@
+round: 1
+fan: ""
+seed:
+    - model: sonnet
+      effort: medium
+      start: 2026-10-12T07:37:57Z
+      end: 2026-10-12T09:38:25.26524879+02:00
+      wall_seconds: 28.26524879
+      tokens_known: true
+      fresh_tokens: 34126
+      cache_read_tokens: 135402
