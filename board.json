@@ -1030,6 +1030,21 @@
       "isolated": false,
       "brief": "Entries carry created and updated dates; list and README show age and can sort by it, so long-lying entries stand out",
       "body": "## Idea (operator, 2026-10-12)\n\nShow each board entry's age, so old notes and tasks are easy to spot, weigh and prioritize: what has sat on the board a long time.\n\n## Seen (2026-10-12)\n\n- A board entry carries no date: `lyx board get` shows no created or updated field, and `lyx board list` has no sort or age option.\n- The board lives in git (`board.json` on Bolt), so an entry's creation date can be read from the history of the commit that first added its slug, for a one-time backfill.\n\n## Open\n\n- Which dates: created, and whether also last updated (a body edit) or last touched by a run.\n- Where age shows: a column in `lyx board list --text` and the README, a sort by age, a filter such as older than N days.\n- Whether a merge keeps the oldest creation date of the entries it joins, and whether a promote keeps the note's date.\n"
+    },
+    {
+      "id": 423,
+      "slug": "twill-plan-followups",
+      "title": "Twill for Plan: measure fewer Plan-Review rounds; wrong-parent-dir miss",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "After twill-plan lands: measure a lower plan_max_bounces, and cover the parent-directory miss every bench arm shared",
+      "body": "## Seen (2026-10-12, from `twill-plan`)\n\nTwo items stay open once the `twill-plan` task lands, outside its scope:\n\n- Whether lens review lets Plan-Review run fewer rounds, as the operator chose for Discussion: once twill runs for Plan-Write, measure runs with a lower `plan_max_bounces`.\n  The operator hopes twill lets Plan-Review skip one round on average, which would pay for its cost (about $5 per plan against $2.6 for a single `opus[high]` writer).\n- A miss every twill-plan bench arm shared: a check against the wrong parent directory; no lens or check covers it yet.\n  Records in `.scratch/twill-plan-bench/` in the hub prime.\n"
     }
   ]
 }
