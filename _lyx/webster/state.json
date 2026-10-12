@@ -1,0 +1,633 @@
+{
+  "runGuid": "b06d3575e73e1ec99b060846ba88881d",
+  "planFingerprint": "d0748374e3f14ca0cf49a4c32502dd5288e0212cbd6d50aab68ebaf7a5849c05",
+  "planFileHashes": {
+    "00-overview.md": "7c48678618d739bc2fcc73e8a533358c43181c901a42c44de168996290fa6bf0",
+    "01-parentlock-store.md": "6b52f1b19c9ea8fa0d8c97f32fa766ec5d8b441a2dc9acb00d688796ca67ce08",
+    "02-parentlock-wait-idle.md": "cee7999f089e40626191226ea6b72b69ec24fb7d2a43287f63eeb08154bbc555",
+    "03-shedengine-reroute.md": "58fa9b80d8720425ccdf48fbe74dd27b1b39a2d81ee127d247a0953a25b4c779",
+    "04-shedbuild-on-reroute.md": "b8eeb790afcf8cd8b0d878c83898591bdeef0d945e6b655ec0fc7c1dab49b1b6",
+    "05-shedverbs-loop-hooks.md": "9172917ceb0bb6449956c95f88e37042a4c26f45c31558318cf3856a4481c1c8",
+    "06-shuttle-agent-waits.md": "b95b561a89c3552d88f3cc1a75858a750c2dc4ac7aef736654adadf5baa0e257",
+    "07-fabric-parent-reads.md": "4161fabb18ca2a57ff29bee33b206997a903c6d45ff152cae1afbf247186974b",
+    "08-verify-failure-row.md": "18ce7567b47b906940914f10f55caa6d4040b5e640fe74d4ed1aee43d67a183d",
+    "09-landing-idle-config.md": "ceec922d3fb2714cfaad29f646cbadda4740ad5d13a5753f844563fe04e53515",
+    "10-landing-merge-record.md": "5069011d1c55ba92997a965ff199ac65a8f9d61ad160bf4e467084556b68df6b",
+    "11-landing-parent-guard.md": "0a1c8400226317797df162c87ad47fafe3a341a910856169f91186b19bb6c54e",
+    "12-landing-merge-in-producer.md": "58c0848f844e3af737284c563b124ad39605cd1cb98fe4a0a73b8fd4e5f804d3",
+    "13-segment-colour-merge.md": "9958ff50f001631ab03750896a60fe77a4460e3edb934cc92abceb087151f78d",
+    "14-bouncer-blocking-and-merge-note.md": "f2660490237e9c7b6d31dccb3c9b4127c937f660b1856490bc59d37b8119b3e2",
+    "15-loom-merge-config.md": "143368747be21d625ecf5ee3b4eeec64d7d93d428d54c7d33a64fa04c3f43883",
+    "16-recipe-merge-seams.md": "4d71cc285147c450f8faded8d1895503f4d3d11d7403685d2334a36fcbb10f94",
+    "17-merge-review-rubric.md": "c2ac431a95d7fa1dbbbb77c7d60ba8d329f93807a5e1857d7da4107302bb63c8",
+    "18-merge-in-row.md": "d33c0a4e150132318b7702c39231e9d06d9ad9e0db4d608e0f01ed0144723bc3",
+    "19-merge-review-off-switch.md": "9ca7d3e2c9f90806315cce863ef2d0d80c35a9ddb495f298075326b2eb6e16a3",
+    "20-guarded-landing-rows.md": "5a363a1df10340b5426dc3cc8e50cf1d07dc6509a50a2d6b1023a304cae13991",
+    "21-loop-lock-hooks.md": "20f8c39f79df848ed8a99ab689788a2b3752fb3e3380a3eb365744fe8e6d7650",
+    "22-status-lock-wait.md": "ff767993d97a5de07d3f9ebb50a5e06a98ba31a780c261f5c3eab1d191fea321",
+    "23-batten-retry-rows.md": "a672a5cae56caa706da500a75f86d7747d88bf1c6726b6186791f7a31674a2cc",
+    "24-batten-lock-backstop.md": "62fd7d25963f4cecdc5902c15d9325f8edeee17555b9540bf84b7ae4877d795f",
+    "25-batten-lock-verbs.md": "ca3bc098bf3d8685d092d9c5563bb7aee62eb859f7ea3ad0fc305c897da96169",
+    "26-orch-stencil-pr-gate.md": "4da44660b868408da6566697015e22c8532bd3289ffe21fbf09ed8022cc5bd14"
+  },
+  "planOverviewFrameHash": "6a5e25554c14a192bd0803633f0a70d72fdc706a27c0dfd071f4f2b11d7aaa3e",
+  "partition": [
+    {
+      "cards": [
+        "01-parentlock-store",
+        "02-parentlock-wait-idle",
+        "03-shedengine-reroute",
+        "04-shedbuild-on-reroute",
+        "05-shedverbs-loop-hooks",
+        "06-shuttle-agent-waits"
+      ],
+      "profile": "cautious",
+      "estimate": 301146,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54664,
+        "read_union": 68444,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 792,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:docs/overview.md": 8460,
+              "file:pattern/PATTERN-told-geometry.md": 276,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/parentlock": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/parentlock": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 144,
+            "written": 43992
+          },
+          {
+            "card": 2,
+            "card_text": 684,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:pattern/PATTERN-daemon-wakeups.md": 516,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/parentlock": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/parentlock": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 132.5,
+            "written": 40434
+          },
+          {
+            "card": 3,
+            "card_text": 720,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:contracts/specs/loom-status-spec.md": 2028,
+              "file:contracts/specs/refusal-spec.md": 4284,
+              "file:internal/shedengine/doc.go": 1488,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/shedengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/shedengine": 2000
+            },
+            "messages": 133.5,
+            "written": 40770
+          },
+          {
+            "card": 4,
+            "card_text": 300,
+            "reads": {
+              "file:contracts/specs/shed-recipe-spec.md": 1428,
+              "package:contracts/specs": 2000,
+              "package:internal/shedbuild": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/shedbuild": 2000
+            },
+            "messages": 65,
+            "written": 19800
+          },
+          {
+            "card": 5,
+            "card_text": 420,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:internal/shedverbs/doc.go": 1056,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shedverbs": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shedverbs": 2000
+            },
+            "messages": 62.5,
+            "written": 19170
+          },
+          {
+            "card": 6,
+            "card_text": 372,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 45,
+            "written": 13872
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-fabric-parent-reads",
+        "08-verify-failure-row",
+        "09-landing-idle-config",
+        "10-landing-merge-record",
+        "11-landing-parent-guard"
+      ],
+      "profile": "cautious",
+      "estimate": 294154,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61664,
+        "read_union": 37220,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 984,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 226,
+            "written": 68784
+          },
+          {
+            "card": 8,
+            "card_text": 228,
+            "reads": {
+              "package:internal/landingshed": 2000,
+              "package:internal/verifytree": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/verifytree": 2000
+            },
+            "messages": 48,
+            "written": 14628
+          },
+          {
+            "card": 9,
+            "card_text": 288,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:internal/landingshed/template.yaml": 108,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/landingshed": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 51.5,
+            "written": 15738
+          },
+          {
+            "card": 10,
+            "card_text": 732,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/landingshed": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 87.5,
+            "written": 26982
+          },
+          {
+            "card": 11,
+            "card_text": 1188,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:pattern/PATTERN-wait-mark-display-only.md": 72,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 226.5,
+            "written": 69138
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "12-landing-merge-in-producer",
+        "13-segment-colour-merge",
+        "14-bouncer-blocking-and-merge-note",
+        "15-loom-merge-config",
+        "16-recipe-merge-seams",
+        "17-merge-review-rubric"
+      ],
+      "profile": "cautious",
+      "estimate": 312086,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68664,
+        "read_union": 67340,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 900,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:contracts/specs/refusal-spec.md": 4284,
+              "file:internal/landingshed/doc.go": 1284,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/landingshed": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 94,
+            "written": 29100
+          },
+          {
+            "card": 13,
+            "card_text": 384,
+            "reads": {
+              "file:internal/reedengine/template_posix.yaml": 264,
+              "file:internal/reedengine/template_windows.yaml": 264,
+              "package:internal/burlerengine": 2000,
+              "package:internal/reedengine": 2000,
+              "package:internal/segmentcolor": 2000,
+              "package:internal/shedadapters": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/segmentcolor": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 153,
+            "written": 46284
+          },
+          {
+            "card": 14,
+            "card_text": 504,
+            "reads": {
+              "package:contracts/stencils": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 114,
+            "written": 34704
+          },
+          {
+            "card": 15,
+            "card_text": 252,
+            "reads": {
+              "file:internal/loomengine/template.yaml": 492,
+              "package:internal/loomengine": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 38,
+            "written": 11652
+          },
+          {
+            "card": 16,
+            "card_text": 804,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 144,
+            "written": 44004
+          },
+          {
+            "card": 17,
+            "card_text": 288,
+            "reads": {
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000
+            },
+            "messages": 33.5,
+            "written": 10338
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "18-merge-in-row",
+        "19-merge-review-off-switch",
+        "20-guarded-landing-rows"
+      ],
+      "profile": "cautious",
+      "estimate": 332552,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75664,
+        "read_union": 58864,
+        "cards": [
+          {
+            "card": 18,
+            "card_text": 1404,
+            "reads": {
+              "file:contracts/recipes/darn-recipe.yaml": 1944,
+              "file:contracts/recipes/loom-recipe.yaml": 5712,
+              "file:contracts/specs/refusal-spec.md": 4284,
+              "file:internal/landingshed/doc.go": 1284,
+              "package:contracts/recipes": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/landingshed_test": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/landingshed_test": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 387,
+            "written": 117504
+          },
+          {
+            "card": 19,
+            "card_text": 396,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000
+            },
+            "messages": 126.5,
+            "written": 38346
+          },
+          {
+            "card": 20,
+            "card_text": 924,
+            "reads": {
+              "file:PATTERN.md": 1296,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:internal/landingshed/doc.go": 1284,
+              "package:.": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/landingshed": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 137.5,
+            "written": 42174
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "21-loop-lock-hooks",
+        "22-status-lock-wait",
+        "23-batten-retry-rows",
+        "24-batten-lock-backstop",
+        "25-batten-lock-verbs",
+        "26-orch-stencil-pr-gate"
+      ],
+      "profile": "cautious",
+      "estimate": 313166,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82664,
+        "read_union": 59364,
+        "cards": [
+          {
+            "card": 21,
+            "card_text": 660,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 97.5,
+            "written": 29910
+          },
+          {
+            "card": 22,
+            "card_text": 468,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:contracts/specs/loom-status-spec.md": 2028,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 80,
+            "written": 24468
+          },
+          {
+            "card": 23,
+            "card_text": 516,
+            "reads": {
+              "file:internal/battenshed/doc.go": 1536,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 118.5,
+            "written": 36066
+          },
+          {
+            "card": 24,
+            "card_text": 936,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:internal/battenshed/doc.go": 1536,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 162.5,
+            "written": 49686
+          },
+          {
+            "card": 25,
+            "card_text": 432,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:contracts/specs/refusal-spec.md": 4284,
+              "file:docs/overview.md": 8460,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000
+            },
+            "messages": 79.5,
+            "written": 24282
+          },
+          {
+            "card": 26,
+            "card_text": 276,
+            "reads": {
+              "file:contracts/stencils/orch/orch-template-role.md": 2148,
+              "file:docs/overview.md": 8460,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "package:docs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/orch": 2000,
+              "tests:docs": 2000
+            },
+            "messages": 21.5,
+            "written": 6726
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "ded089cc5ffb8858e688d5fdd6b216fd",
+  "masterSessionId": "a851bafe-4025-44c5-a927-72b06f2466d6",
+  "batches": {
+    "1": {
+      "slug": "parentlock-store",
+      "cards": [
+        "01-parentlock-store",
+        "02-parentlock-wait-idle",
+        "03-shedengine-reroute",
+        "04-shedbuild-on-reroute",
+        "05-shedverbs-loop-hooks",
+        "06-shuttle-agent-waits"
+      ],
+      "cardHashes": {
+        "01-parentlock-store": "6b52f1b19c9ea8fa0d8c97f32fa766ec5d8b441a2dc9acb00d688796ca67ce08",
+        "02-parentlock-wait-idle": "cee7999f089e40626191226ea6b72b69ec24fb7d2a43287f63eeb08154bbc555",
+        "03-shedengine-reroute": "58fa9b80d8720425ccdf48fbe74dd27b1b39a2d81ee127d247a0953a25b4c779",
+        "04-shedbuild-on-reroute": "b8eeb790afcf8cd8b0d878c83898591bdeef0d945e6b655ec0fc7c1dab49b1b6",
+        "05-shedverbs-loop-hooks": "9172917ceb0bb6449956c95f88e37042a4c26f45c31558318cf3856a4481c1c8",
+        "06-shuttle-agent-waits": "b95b561a89c3552d88f3cc1a75858a750c2dc4ac7aef736654adadf5baa0e257"
+      },
+      "startSha": "414d8b713a9cb4a85bd49c3a8e9b733cfb38e7b5",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T08:19:04Z",
+      "sessionId": "a851bafe-4025-44c5-a927-72b06f2466d6",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
