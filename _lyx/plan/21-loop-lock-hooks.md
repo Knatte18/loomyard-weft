@@ -1,11 +1,11 @@
 # Card 21 — loop-lock-hooks
 
 **Create:**
-- `plan:internal/loomcli#runLockIdentity` -> `func runLockIdentity(loc *lyxcwd.Location, runID string) parentlock.Owner`
-- `plan:internal/loomcli#battenWatcher` -> `func battenWatcher(loc *lyxcwd.Location, runID string) func() (int, bool)`
-- `plan:internal/loomcli#readAgentStates` -> `func readAgentStates(loc *lyxcwd.Location, cfg shuttleengine.Config) func() ([]parentlock.AgentState, error)`
-- `plan:internal/loomcli#loopLockExit` -> `func loopLockExit(locks *parentlock.Store, self func() parentlock.Owner, batten func() (int, bool)) func(stop shedverbs.LoopStop, st shedengine.Status)`
-- `plan:internal/loomcli#loopIdleRelease` -> `func loopIdleRelease(locks *parentlock.Store, self func() parentlock.Owner, agents func() ([]parentlock.AgentState, error), bound time.Duration) func()`
+- `internal/loomcli#runLockIdentity`
+- `internal/loomcli#battenWatcher`
+- `internal/loomcli#readAgentStates`
+- `internal/loomcli#loopLockExit`
+- `internal/loomcli#loopIdleRelease`
 - `internal/loomcli/looplock_test.go`
 
 **Edit:**

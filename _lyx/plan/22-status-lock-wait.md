@@ -1,9 +1,9 @@
 # Card 22 — status-lock-wait
 
 **Create:**
-- `plan:internal/loomcli#parentLockWaiting` -> `func parentLockWaiting(waitPath string, alive func(pid int, startTime string) bool, now func() time.Time, next func(st shedengine.Status) (string, error)) func(st shedengine.Status) (string, error)`
-- `plan:internal/loomcli#TestParentLockWaiting` -> `func TestParentLockWaiting(t *testing.T)`
-- `plan:internal/loomcli#TestAgentActivity_LiveLockWaitReadsAsActivity` -> `func TestAgentActivity_LiveLockWaitReadsAsActivity(t *testing.T)`
+- `internal/loomcli#parentLockWaiting`
+- `internal/loomcli#TestParentLockWaiting`
+- `internal/loomcli#TestAgentActivity_LiveLockWaitReadsAsActivity`
 
 **Edit:**
 - `internal/loomcli#reviewWaitingFor`

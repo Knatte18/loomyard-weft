@@ -1,12 +1,12 @@
 # Card 24 — batten-lock-backstop
 
 **Create:**
-- `plan:internal/battenshed#ChildParentLock` -> `type ChildParentLock struct`
-- `plan:internal/battenshed#innerRunProducer.lockStep` -> `func (p *innerRunProducer) lockStep(ctx context.Context, w *childWait)`
-- `plan:internal/battenshed#innerRunProducer.staleBaseResume` -> `func (p *innerRunProducer) staleBaseResume(ctx context.Context, w *childWait) *waitEnd`
+- `internal/battenshed#ChildParentLock`
+- `internal/battenshed#innerRunProducer.lockStep`
+- `internal/battenshed#innerRunProducer.staleBaseResume`
 - `internal/battenshed/innerrun_parentlock_test.go`
-- `plan:internal/battencli#childParentLock` -> `func childParentLock(slug string, locateTask func() (*lyxcwd.Location, error), boardDir string, bound time.Duration) *battenshed.ChildParentLock`
-- `plan:internal/battencli#TestChildParentLock` -> `func TestChildParentLock(t *testing.T)`
+- `internal/battencli#childParentLock`
+- `internal/battencli#TestChildParentLock`
 
 **Edit:**
 - `internal/battenshed#InnerRunDeps`

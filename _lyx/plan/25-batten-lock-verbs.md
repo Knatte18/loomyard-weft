@@ -1,10 +1,10 @@
 # Card 25 — batten-lock-verbs
 
 **Create:**
-- `plan:internal/battencli#lockCommand` -> `func lockCommand() *cobra.Command`
-- `plan:internal/battencli#lockStore` -> `func lockStore(ctx context.Context) (*parentlock.Store, error)`
-- `plan:internal/battencli#runLockList` -> `func runLockList(cmd *cobra.Command, args []string) error`
-- `plan:internal/battencli#runLockRelease` -> `func runLockRelease(cmd *cobra.Command, args []string) error`
+- `internal/battencli#lockCommand`
+- `internal/battencli#lockStore`
+- `internal/battencli#runLockList`
+- `internal/battencli#runLockRelease`
 - `internal/battencli/lock_test.go`
 
 **Edit:**

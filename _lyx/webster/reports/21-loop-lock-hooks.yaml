@@ -1,0 +1,6 @@
+status: OK
+head_sha: 22174be3dfb2196ff0459ae8d8dbb77509a0c258
+deviations:
+  - internal/loomcli/driverprompt.go
+  - internal/loomcli/cli_test.go
+  - internal/battenshed/notice.go
