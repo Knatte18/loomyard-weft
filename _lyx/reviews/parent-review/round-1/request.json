@@ -1,0 +1,10 @@
+{
+  "slug": "alignment-agent",
+  "round": 1,
+  "reviewer": "ly:orch",
+  "opened_at": "2026-10-12T12:17:24.289435829+02:00",
+  "decision_record": "/home/knatte/Code/loomyard-LYXHUB/alignment-agent/_lyx/discussion/decision-record.md",
+  "support_log": "/home/knatte/Code/loomyard-LYXHUB/alignment-agent/_lyx/discussion/support-log.md",
+  "state": "open",
+  "cap": 2
+}
