@@ -25,9 +25,8 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 3 | **lyx pause: stop every run at once, safely and on purpose**<br>• A hub-wide pause that interrupts every Claude session with Esc within seconds, unlike the step-boundary pauses, recorded as ordered so no failure or idle path fires | [`lyx-halt`](design-lyx-halt.md) | loom | Plan-Write |  |  | batten, shuttle |
-| 4 | **Board writers keep unknown fields; lyx cleanup follow-ups**<br>• An old lyx process drops board fields it does not know; plus the open items from the lyx cleanup PR | [`board-field-drop`](design-board-field-drop.md) | loom | Finalize |  | 1h | board, batten |
-| 5 | **Webster kick-start pack: read the card's spans in one turn, per-card packs**<br>• Forks read listed spans whole and spread out; adopt the bench wording, per-card packs, span-only FRESH-READ and one-line var entries | [`webster-pack-read-set`](design-webster-pack-read-set.md) | loom | Merge-In | 48m | 48m | webster, stencil |
-| 6 | **Run records tolerate newer binaries; a hung verify step is not re-run**<br>• Readers and writers of run records keep unknown fields; a verify gate stops a hung step early and never re-runs it unfixed. | [`run-robustness`](design-run-robustness.md) | loom | Discussion-Write | 5m | 4m | batten, shed, webster |
+| 4 | **Webster kick-start pack: read the card's spans in one turn, per-card packs**<br>• Forks read listed spans whole and spread out; adopt the bench wording, per-card packs, span-only FRESH-READ and one-line var entries | [`webster-pack-read-set`](design-webster-pack-read-set.md) | loom | Merge-In | 48m | 48m | webster, stencil |
+| 5 | **Run records tolerate newer binaries; a hung verify step is not re-run**<br>• Readers and writers of run records keep unknown fields; a verify gate stops a hung step early and never re-runs it unfixed. | [`run-robustness`](design-run-robustness.md) | loom | Discussion-Write | 5m | 4m | batten, shed, webster |
 
 ### Ready
 
@@ -71,7 +70,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 13 | **Seats replaces SingleLLMProducer: every LLM producer is a MultiLLMProducer, zero advisors by default** | [`seats-replaces-singlellm`](design-seats-replaces-singlellm.md) |  |  | loom |
 | 14 | **tokencount: guard the slug-reuse cutoff against date skew**<br>• The slug-reuse cutoff is always applied; a tag commit date skewed against transcript timestamps could silently drop sessions. | [`tokencount-cutoff-skew`](design-tokencount-cutoff-skew.md) |  |  |  |
 | 15 | **Sweep tests that rely on a closed listener socket file**<br>• A forked child of a parallel test can inherit a closed listener fd and keep a stale socket answering; sweep other tests for the same race. | [`reed-socket-test-fd-sweep`](design-reed-socket-test-fd-sweep.md) |  |  | reed |
-| 16 | **Measure the Webster kick-start pack with and without**<br>• Repeat the audit count (grep-for-member calls and whole-file reads per fork) on real loom runs with kickstart_pack on and off. | [`kickstart-pack-measure`](design-kickstart-pack-measure.md) |  | 58m | webster |
+| 16 | **Measure the Webster kick-start pack with and without**<br>• Repeat the audit count (grep-for-member calls and whole-file reads per fork) on real loom runs with kickstart_pack on and off. | [`kickstart-pack-measure`](design-kickstart-pack-measure.md) |  | 59m | webster |
 | 17 | **Twill for Plan: measure fewer Plan-Review rounds; wrong-parent-dir miss**<br>• After twill-plan lands: measure a lower plan_max_bounces, and cover the parent-directory miss every bench arm shared | [`twill-plan-followups`](design-twill-plan-followups.md) |  | 47m | loom |
 | 18 | **Go-driven shed with a cold LLM watcher at every level**<br>• A Go loop always steps the run; an LLM watcher is spawned only when the loop stops on something it cannot pass, the same at loom and hub level | [`go-driven-shed`](design-go-driven-shed.md) | 56m | 56m | shed, batten, loom, orch |
 
@@ -127,3 +126,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 24 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) |  |  | loom, stencil |
 | 25 | **Scoped build and test for C# hubs on Windows**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 9m | 2m | shed, webster |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Board writers keep unknown fields; lyx cleanup follow-ups**<br>• An old lyx process drops board fields it does not know; plus the open items from the lyx cleanup PR | [`board-field-drop`](design-board-field-drop.md) |  | 1h | board, batten |
