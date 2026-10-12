@@ -1,0 +1,18 @@
+status: OK
+head_sha: 4c20273ede703bb769c0e2de631e21793a9801c9
+deviations:
+  - internal/landingshed/stuck.go
+  - internal/landingshed/mergein_test.go
+  - internal/landingshed/commitstatus_test.go
+  - internal/landingshed/prgate_test.go
+  - internal/shedrecipe/conformance_test.go
+  - internal/shedrecipe/registry_test.go
+  - internal/testkit/envkit/envkit.go
+  - internal/loomrecipe/resume_test.go
+  - internal/loomrecipe/progress_test.go
+  - internal/loomcli/resume_test.go
+  - internal/loomcli/start.go
+  - internal/loomcli/doc.go
+  - internal/darnengine/template.yaml
+  - README.md
+  - docs/overview.md

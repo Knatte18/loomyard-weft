@@ -1,6 +1,6 @@
 {
   "runGuid": "b06d3575e73e1ec99b060846ba88881d",
-  "planFingerprint": "4e78b04f3f6d4d00ff9d91858657cd0d2a8c0c4e0b7daf38f4b41ab235e96b70",
+  "planFingerprint": "4877b84249b2d3daf80dd03ff780de389125e0294b1f92ed9c24b69a895a316e",
   "planFileHashes": {
     "00-overview.md": "7c48678618d739bc2fcc73e8a533358c43181c901a42c44de168996290fa6bf0",
     "01-parentlock-store.md": "ff0ab919a2605f05acdd0c30afa5c1a023d629fa32e82cef6cf477cfe75b9ea6",
@@ -20,8 +20,8 @@
     "15-loom-merge-config.md": "143368747be21d625ecf5ee3b4eeec64d7d93d428d54c7d33a64fa04c3f43883",
     "16-recipe-merge-seams.md": "3fb6f67513acb8b9ecb1e77598f0a30fda526e00a9909a83ba3dcc1d1a7befec",
     "17-merge-review-rubric.md": "5475804d67e60a87d9107a8a08803224f229a4c981cf67d005771f765f64e37a",
-    "18-merge-in-row.md": "d5f566297ab1b4b2842b93a54595c0d2f0523f9fc4c7d964f64a42e9a171f55a",
-    "19-merge-review-off-switch.md": "9ca7d3e2c9f90806315cce863ef2d0d80c35a9ddb495f298075326b2eb6e16a3",
+    "18-merge-in-row.md": "c190af6f6730672e8882c27ac9ce865811ac921e04e55eeaef68f18e07f56f83",
+    "19-merge-review-off-switch.md": "c695343e237da446912dcb607a27672869b15f2463c56625b92678023aab1c23",
     "20-guarded-landing-rows.md": "3d0a5b0f1c51d0c1c2dc99dd212662353e6e23663639d05b49d1f4a30dc39735",
     "21-loop-lock-hooks.md": "d1497a4f72dbe1287145ccbd54b985620d87c72f42075fd8316e135ab4613033",
     "22-status-lock-wait.md": "6e18a53ea762dc7124236d95111e7be4e915863173f4c2754dabaf89d43bd260",
@@ -600,7 +600,7 @@
       }
     }
   ],
-  "currentBatch": 18,
+  "currentBatch": 0,
   "masterStrand": "ded089cc5ffb8858e688d5fdd6b216fd",
   "masterSessionId": "a851bafe-4025-44c5-a927-72b06f2466d6",
   "batches": {
@@ -703,16 +703,47 @@
         "20-guarded-landing-rows"
       ],
       "cardHashes": {
-        "18-merge-in-row": "d5f566297ab1b4b2842b93a54595c0d2f0523f9fc4c7d964f64a42e9a171f55a",
-        "19-merge-review-off-switch": "9ca7d3e2c9f90806315cce863ef2d0d80c35a9ddb495f298075326b2eb6e16a3",
+        "18-merge-in-row": "c190af6f6730672e8882c27ac9ce865811ac921e04e55eeaef68f18e07f56f83",
+        "19-merge-review-off-switch": "c695343e237da446912dcb607a27672869b15f2463c56625b92678023aab1c23",
         "20-guarded-landing-rows": "3d0a5b0f1c51d0c1c2dc99dd212662353e6e23663639d05b49d1f4a30dc39735"
       },
       "startSha": "428f4dbac0a93e1c4ae085ac9bbd4650a6b9838d",
       "kind": "fork",
       "spawnedAt": "2026-10-12T08:54:52Z",
       "sessionId": "a851bafe-4025-44c5-a927-72b06f2466d6",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "18-merge-in-row",
+        "status": "done",
+        "head_sha": "4c20273ede703bb769c0e2de631e21793a9801c9",
+        "deviations": [
+          "internal/landingshed/stuck.go",
+          "internal/landingshed/mergein_test.go",
+          "internal/landingshed/commitstatus_test.go",
+          "internal/landingshed/prgate_test.go",
+          "internal/shedrecipe/conformance_test.go",
+          "internal/shedrecipe/registry_test.go",
+          "internal/testkit/envkit/envkit.go",
+          "internal/loomrecipe/resume_test.go",
+          "internal/loomrecipe/progress_test.go",
+          "internal/loomcli/resume_test.go",
+          "internal/loomcli/start.go",
+          "internal/loomcli/doc.go",
+          "internal/darnengine/template.yaml",
+          "README.md",
+          "docs/overview.md"
+        ]
+      },
+      "cardShas": [
+        "4c20273ede703bb769c0e2de631e21793a9801c9"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-merge-review/a851bafe-4025-44c5-a927-72b06f2466d6/subagents/agent-a35516676d8b7a2ba.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-merge-review/a851bafe-4025-44c5-a927-72b06f2466d6/subagents/agent-a35516676d8b7a2ba.jsonl"
+      ]
     },
     "7": {
       "slug": "fabric-parent-reads",
@@ -758,6 +789,7 @@
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-merge-review/a851bafe-4025-44c5-a927-72b06f2466d6/subagents/agent-a8f51573c1cd34a6c.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-merge-review/a851bafe-4025-44c5-a927-72b06f2466d6/subagents/agent-ae2379bde22a71f0c.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-merge-review/a851bafe-4025-44c5-a927-72b06f2466d6/subagents/agent-a7ee766dd6bee97f9.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-merge-review/a851bafe-4025-44c5-a927-72b06f2466d6/subagents/agent-a7ee766dd6bee97f9.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-merge-review/a851bafe-4025-44c5-a927-72b06f2466d6/subagents/agent-a35516676d8b7a2ba.jsonl"
   ]
 }

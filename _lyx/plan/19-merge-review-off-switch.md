@@ -1,8 +1,8 @@
 # Card 19 — merge-review-off-switch
 
 **Create:**
-- `plan:internal/loomrecipe#applyMergeReviewOff` -> `func applyMergeReviewOff(producers []shedengine.ProducerDef, off bool)`
-- `plan:internal/loomrecipe#TestMergeReviewOff_RoutesMergeInToPublish` -> `func TestMergeReviewOff_RoutesMergeInToPublish(t *testing.T)`
+- `internal/loomrecipe#applyMergeReviewOff`
+- `internal/loomrecipe#TestMergeReviewOff_RoutesMergeInToPublish`
 
 **Edit:**
 - `internal/loomrecipe#New`

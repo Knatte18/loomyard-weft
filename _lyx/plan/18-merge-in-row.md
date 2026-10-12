@@ -1,11 +1,11 @@
 # Card 18 — merge-in-row
 
 **Create:**
-- `plan:internal/loomshed#NameMergeIn` -> `const NameMergeIn = "Merge-In"`
-- `plan:internal/loomshed#NameMergeBouncer` -> `const NameMergeBouncer = "Merge-Bouncer"`
-- `plan:internal/loomshed#NameMergeBurlerReview` -> `const NameMergeBurlerReview = "Merge-Burler-Review"`
-- `plan:internal/loomshed#NameMergeBurlerFix` -> `const NameMergeBurlerFix = "Merge-Burler-Fix"`
-- `plan:internal/shedrecipe#mergeInEntry` -> `func mergeInEntry(name string, cfg Config, env Env) (shedengine.ShedProducer, error)`
+- `internal/loomshed#NameMergeIn`
+- `internal/loomshed#NameMergeBouncer`
+- `internal/loomshed#NameMergeBurlerReview`
+- `internal/loomshed#NameMergeBurlerFix`
+- `internal/shedrecipe#mergeInEntry`
 
 **Edit:**
 - `contracts/recipes/loom-recipe.yaml`
@@ -53,7 +53,7 @@
 - `contracts/specs/refusal-spec.md`
 
 **Rename:**
-- `internal/loomrecipe#TestSequence_FullRunBlocksAtPublish` -> `plan:internal/loomrecipe#TestSequence_FullRunBlocksAtMergeIn`
+- `internal/loomrecipe#TestSequence_FullRunBlocksAtPublish` -> `internal/loomrecipe#TestSequence_FullRunBlocksAtMergeIn`
 
 **Delete:**
 - `internal/landingshed#TestPublishVerify_ResolverStuck`
