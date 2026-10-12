@@ -41,9 +41,9 @@
 - `internal/fabricengine#repoWideFabricBase`
 
 **Uses:**
-- `plan:internal/configengine#Spec`
-- `plan:internal/configengine#Dirs`
-- `plan:internal/fabricengine#ConfigDirs`
+- `internal/configengine#Spec`
+- `internal/configengine#Dirs`
+- `internal/fabricengine#ConfigDirs`
 
 **Intent:**
 Move fabric, the last hub-wide module, onto the hub-wide stack: `LoadConfig`, `WiredNames`, `PathspecNames` and `junctionNames` take `configengine.Dirs` and load strictly through `configengine.Load(dirs, ConfigSpec())`.

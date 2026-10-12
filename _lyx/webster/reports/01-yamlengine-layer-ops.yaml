@@ -1,0 +1,9 @@
+status: OK
+head_sha: d8352fc7a7701c64a12554f842c7d7b8a1af0656
+deviations:
+  - internal/yamlengine/set.go
+  - internal/configengine/layers.go
+  - internal/configengine/layers_test.go
+  - internal/configreg/fill_test.go
+  - internal/fabricengine/junctionnames.go
+  - internal/fabricengine/junctionnames_test.go

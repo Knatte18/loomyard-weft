@@ -33,9 +33,9 @@
 - `internal/webstercli/wiring.go`
 
 **Uses:**
-- `plan:internal/configengine#Spec`
-- `plan:internal/configengine#Dirs`
-- `plan:internal/fabricengine#ConfigDirs`
+- `internal/configengine#Spec`
+- `internal/configengine#Dirs`
+- `internal/fabricengine#ConfigDirs`
 
 **Intent:**
 Move shuttle onto the hub stack the way card 4 moved reed: `LoadConfig` takes `configengine.Dirs` and loads through `configengine.LoadOrTemplate(dirs, ConfigSpec())`.

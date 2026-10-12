@@ -8,7 +8,7 @@
 
 **Edit:**
 - `internal/configengine_test#TestConfigPaths`
-- `plan:internal/configengine_test#TestLayers`
+- `internal/configengine_test#TestLayers`
 - `internal/hubreconcile_test#TestEnsure_StaleBuildReconcilesAndCommitsEveryWorktree`
 - `internal/hubreconcile_test#runStaleBuildReconcile`
 - `internal/hubreconcile_test#TestEnsure_MidMergePairIsLeftAloneAndRetried`
@@ -29,9 +29,9 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/yamlengine#Strip`
-- `plan:internal/yamlengine#LeafPaths`
-- `plan:internal/configengine#Layers`
+- `internal/yamlengine#Strip`
+- `internal/yamlengine#LeafPaths`
+- `internal/configengine#Layers`
 
 **Intent:**
 Run D6's one-time migration of today's full worktree files to sparse overrides, inside the hub walk and pair call only (`PATTERN-binary-change-reconcile`).

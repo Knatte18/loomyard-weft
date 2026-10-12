@@ -25,9 +25,9 @@
 - `internal/websterengine#TestRerunCardVerifies_Slotted`
 
 **Uses:**
-- `plan:internal/configengine#Spec`
-- `plan:internal/configengine#Dirs`
-- `plan:internal/fabricengine#ConfigDirs`
+- `internal/configengine#Spec`
+- `internal/configengine#Dirs`
+- `internal/fabricengine#ConfigDirs`
 
 **Intent:**
 Move gate and board, two hub-wide modules whose every key is closed to the local layer, onto the hub-wide stack: each loader takes `configengine.Dirs` and loads strictly through `configengine.Load(dirs, ConfigSpec())`.

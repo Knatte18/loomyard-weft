@@ -38,10 +38,10 @@
 - `internal/configcli#configDirs.baseFor`
 
 **Uses:**
-- `plan:internal/configengine#LayerFile`
-- `plan:internal/configengine#BaseLayer`
-- `plan:internal/configengine#ValidateLocal`
-- `plan:internal/yamlengine#SetSparse`
+- `internal/configengine#LayerFile`
+- `internal/configengine#BaseLayer`
+- `internal/configengine#ValidateLocal`
+- `internal/yamlengine#SetSparse`
 - `internal/configreg#Module`
 
 **Intent:**

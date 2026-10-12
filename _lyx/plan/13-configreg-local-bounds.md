@@ -13,10 +13,10 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/configengine#Spec`
-- `plan:internal/configengine#LocalKeys`
-- `plan:internal/configengine#LocalDenied`
-- `plan:internal/configengine#Layers`
+- `internal/configengine#Spec`
+- `internal/configengine#LocalKeys`
+- `internal/configengine#LocalDenied`
+- `internal/configengine#Layers`
 - `plan:internal/batcher#ConfigSpec`
 - `plan:internal/boardengine#ConfigSpec`
 - `plan:internal/burlerengine#ConfigSpec`

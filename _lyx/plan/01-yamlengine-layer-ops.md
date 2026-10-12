@@ -1,18 +1,18 @@
 # Card 1 — yamlengine layer operations
 
 **Create:**
-- `plan:internal/yamlengine#Merge` -> `func Merge(lower, upper []byte, openMaps []string, wholeEntries bool) ([]byte, error)`
-- `plan:internal/yamlengine#Strip` -> `func Strip(lower, upper []byte, openMaps []string, wholeEntries bool) ([]byte, []string, error)`
-- `plan:internal/yamlengine#SetSparse` -> `func SetSparse(template, existing []byte, pairs []KV, openMaps ...string) (SetResult, error)`
-- `plan:internal/yamlengine#Prune` -> `func Prune(template, existing []byte, openMaps ...string) ([]byte, []string, error)`
-- `plan:internal/yamlengine#TestPrune` -> `func TestPrune(t *testing.T)`
-- `plan:internal/yamlengine#LeafPaths` -> `func LeafPaths(doc []byte, openMaps []string, wholeEntries bool) ([]string, error)`
-- `plan:internal/yamlengine#AnnotateLeaves` -> `func AnnotateLeaves(doc []byte, notes map[string]string, openMaps []string, wholeEntries bool) ([]byte, error)`
-- `plan:internal/yamlengine#TestMerge` -> `func TestMerge(t *testing.T)`
-- `plan:internal/yamlengine#TestStrip` -> `func TestStrip(t *testing.T)`
-- `plan:internal/yamlengine#TestSetSparse` -> `func TestSetSparse(t *testing.T)`
-- `plan:internal/yamlengine#TestLeafPaths` -> `func TestLeafPaths(t *testing.T)`
-- `plan:internal/yamlengine#TestAnnotateLeaves` -> `func TestAnnotateLeaves(t *testing.T)`
+- `internal/yamlengine#Merge`
+- `internal/yamlengine#Strip`
+- `internal/yamlengine#SetSparse`
+- `internal/yamlengine#Prune`
+- `internal/yamlengine#TestPrune`
+- `internal/yamlengine#LeafPaths`
+- `internal/yamlengine#AnnotateLeaves`
+- `internal/yamlengine#TestMerge`
+- `internal/yamlengine#TestStrip`
+- `internal/yamlengine#TestSetSparse`
+- `internal/yamlengine#TestLeafPaths`
+- `internal/yamlengine#TestAnnotateLeaves`
 
 **Edit:**
 - `internal/yamlengine/doc.go`

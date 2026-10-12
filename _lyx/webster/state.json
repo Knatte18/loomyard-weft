@@ -1,29 +1,29 @@
 {
   "runGuid": "fe1e9a51e439aec540cf18ab74a6fa11",
-  "planFingerprint": "d35a25e8de2877942c8474ddd6039a6ab9a2b5e5623e143984e23df064f169e6",
+  "planFingerprint": "a41acd7cc951347f75bb5957ffd902a3fcf0da94b39ff618ce8b45ccbc01c5d2",
   "planFileHashes": {
     "00-overview.md": "7d1fdddb0ee17c7b5d9f4396c77c62028b6cf0832bfb9dfca52cd8505a89d327",
-    "01-yamlengine-layer-ops.md": "ccb4eeec946c56eeebd51b72d09fa699be0f3fa70b7df08c2b42b5e257f0c31e",
-    "02-configengine-layer-stack.md": "5ae656f16b461f4f5aaa3df76ef6fae21c57ddb6066525c9c27554e9b7632be4",
-    "03-fabric-config-dirs.md": "ef7c9eebf779b41231e9220ba94c477474f3ef819dc2caaae5598cd7a645e454",
-    "04-reed-layered-load.md": "f34a215191c70fe6b45191fb67496dddfd025fa03df74ef2b671d35acc2605c1",
-    "05-shuttle-layered-load.md": "eb5fb5ada28e9fc63e0612b4770023b6ce58e225e3757dfda6b64a27407aaaac",
-    "06-orch-webster-logger-layered-load.md": "6beacca42dc909756cf43964cbad2776705aeb03fe3e6cffb2dea7093647f73d",
-    "07-batcher-layered-load.md": "35fb2be5b571e5eb73ea9cb6e6ca51a0df0a560d7580e8f268f01cf9619d0e68",
-    "08-burler-models-layered-load.md": "a59c5ff0ffb5b9e6050b19faf7f31931c11aa65b79fd7594da57fe8b0057c099",
-    "09-loom-layered-load.md": "f5bfd0303e7b833f860e83a67d63605607695f6166e026cc6fe46c37e218e3a8",
-    "10-darn-landing-layered-load.md": "1b792f699e9ff6cdfe048f3b129966b4ffde576b9015cc1f2d2b1666849c3548",
-    "11-gate-board-layered-load.md": "11534ef379e2ab2bc81fef0b2116e78bd047a18f1564b779759dfa97c12eadaa",
-    "12-fabric-layered-load.md": "109af560164ea795e64cf0333345510b3b144bfe45dbd2009a972fe7fdf780d1",
-    "13-configreg-local-bounds.md": "606a10697e0856916f2be2e1433040ec81e2c823ecfd403607ea4d708d889b61",
-    "14-configreg-run-settings.md": "e9f3863fdbdc95770097ac436ebdf41626f8d8aca31fdff6b438c6e26ae8702b",
-    "15-configsync-layer-reconcile.md": "944b0a1075c250278eb05e85230996300d054b2fa73702851eb9a371a0349efe",
-    "16-sparse-migration.md": "acf681524f460b928bfd05b436af5df2bf1b763f1edbbd3bb87920424b0c6e3f",
-    "17-config-cli-layers.md": "4768f8269029faa9fe7f7ae5df39f50f9d677bd8edc5b8bab3cbb64bd388aef4",
-    "18-config-resolved-provenance.md": "b483c6377eba2cc187d3e2a77012100cf31d0c3efc20e6cfac59ed47f6230e94",
+    "01-yamlengine-layer-ops.md": "4fb0556b34db762e83973d8ef7505d9ded76562ae979994d87ae5b313b2355e3",
+    "02-configengine-layer-stack.md": "7a60b6d86149000114e1d23ffbd94b39af16fc8271cd9203135321c4e5918020",
+    "03-fabric-config-dirs.md": "141792bf45e2b740bcf0fd82b8e5af1a66309b62c23c4aa1b9f46f5510923761",
+    "04-reed-layered-load.md": "79fabde2609f01a6c6626b3f4177674b8af35b48657d7cb610c2e42b88baa455",
+    "05-shuttle-layered-load.md": "39c40725e092d45397163db112f3bfe36cf9d1c4cd27a667d517dee1a5e9fb36",
+    "06-orch-webster-logger-layered-load.md": "2207f0b7948c3fdeea4bb903f7bad5b55187f1ac38a451bae4bc6a4733d1170c",
+    "07-batcher-layered-load.md": "7152e61f40526314e5aa4ac8353aba5bc5bf24cbc4177cc62c6036628f552672",
+    "08-burler-models-layered-load.md": "569ca524325c97b1b0f374ac1fad9e34c80974132509cb8fb5c53ec936bfe9a6",
+    "09-loom-layered-load.md": "fea9829015cb02bcbddf97a915628395aaa16ef8073bfc4d7ba1bee1385cf28f",
+    "10-darn-landing-layered-load.md": "e0e70a36baac1f0d5f7591bcd18da65c240473ac5e04f1ec4a6968d7bd371405",
+    "11-gate-board-layered-load.md": "79e987dd9c8bc84df34cfe7d34904621ecd379282cbea6ee4fc8b09b455b38e8",
+    "12-fabric-layered-load.md": "cf8f767df874169073d58a76b71aea8084f26d321e5e36b62b0a0c319a2c0ab9",
+    "13-configreg-local-bounds.md": "3b3e9260743ff8581f717f94bbd3bebdd70640abdfb558b957b3607c1a52243c",
+    "14-configreg-run-settings.md": "1b028db20a2f3deedc977ef635324ebbcfd7719f0ebde34674f3059ce5cf09b5",
+    "15-configsync-layer-reconcile.md": "2c8acf7c92423d64e897ad8879b372a98804ff586c8f99c4c009d4ed51af88c8",
+    "16-sparse-migration.md": "bb4189a7287cd54a33c1182fd6ea3088c1587f10ad49da26f3b581c47b972c2a",
+    "17-config-cli-layers.md": "d532386ec74281543a7c490faea6f3f4b822e65e8bb6ce9a057fc381b7683882",
+    "18-config-resolved-provenance.md": "d56e98f1482a546fa4ce6e7315c0810e73007dcb08aabd6a4e12d0b7cfd7cc64",
     "19-agentname-task-slug.md": "1c579226623dd82c7c0a03193b8e66b0e8334343a3826fc046ff7ee956ca9cb1",
     "20-board-run-settings.md": "eca28f3d5765663aa498b38ea1e5f6e1dcc3659c8333ebc5482a7b62a9fe6d7c",
-    "21-seed-child-run-settings.md": "06613fc54f3db9cde617d1f5cf059cd239fe006aa4b9be79284c5bf59883ab4f",
+    "21-seed-child-run-settings.md": "3309e8fc034701e562d17ea15ced9f6feeb32faaa9e37931a736e7efa56c1a10",
     "22-orch-run-settings-rule.md": "1b63b42692586e807ffa476fc84a1d3972157aec12fa8e130b44837af1e785d2",
     "23-overview-config-layers.md": "df7a88c69e4790ab6f0ca62efa49e8e76670c1ff666b430c18362bb349f4298a"
   },
@@ -821,7 +821,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "993b22c04ce849f45f96709a28dd49ef",
   "masterSessionId": "7361d6f2-17ce-4121-9688-8cf5be50f44c",
   "batches": {
@@ -833,16 +833,41 @@
         "03-fabric-config-dirs"
       ],
       "cardHashes": {
-        "01-yamlengine-layer-ops": "ccb4eeec946c56eeebd51b72d09fa699be0f3fa70b7df08c2b42b5e257f0c31e",
-        "02-configengine-layer-stack": "5ae656f16b461f4f5aaa3df76ef6fae21c57ddb6066525c9c27554e9b7632be4",
-        "03-fabric-config-dirs": "ef7c9eebf779b41231e9220ba94c477474f3ef819dc2caaae5598cd7a645e454"
+        "01-yamlengine-layer-ops": "4fb0556b34db762e83973d8ef7505d9ded76562ae979994d87ae5b313b2355e3",
+        "02-configengine-layer-stack": "7a60b6d86149000114e1d23ffbd94b39af16fc8271cd9203135321c4e5918020",
+        "03-fabric-config-dirs": "141792bf45e2b740bcf0fd82b8e5af1a66309b62c23c4aa1b9f46f5510923761"
       },
       "startSha": "c279a38bafb5aced5978bceb727ff9c06e756848",
       "kind": "fork",
       "spawnedAt": "2026-10-12T07:52:02Z",
       "sessionId": "7361d6f2-17ce-4121-9688-8cf5be50f44c",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-yamlengine-layer-ops",
+        "status": "done",
+        "head_sha": "d8352fc7a7701c64a12554f842c7d7b8a1af0656",
+        "deviations": [
+          "internal/yamlengine/set.go",
+          "internal/configengine/layers.go",
+          "internal/configengine/layers_test.go",
+          "internal/configreg/fill_test.go",
+          "internal/fabricengine/junctionnames.go",
+          "internal/fabricengine/junctionnames_test.go"
+        ]
+      },
+      "cardShas": [
+        "d8352fc7a7701c64a12554f842c7d7b8a1af0656"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-ad9994eeb61f22235.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-ad9994eeb61f22235.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-ad9994eeb61f22235.jsonl"
+  ]
 }

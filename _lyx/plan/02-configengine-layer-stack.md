@@ -1,32 +1,32 @@
 # Card 2 — configengine layer stack
 
 **Create:**
-- `plan:internal/configengine#Dirs` -> `type Dirs struct`
-- `plan:internal/configengine#Layer` -> `type Layer string`
-- `plan:internal/configengine#LayerTemplate` -> `const LayerTemplate Layer = "template"`
-- `plan:internal/configengine#LayerDefault` -> `const LayerDefault Layer = "default"`
-- `plan:internal/configengine#LayerWorktree` -> `const LayerWorktree Layer = "worktree"`
-- `plan:internal/configengine#LayerLocal` -> `const LayerLocal Layer = "local"`
-- `plan:internal/configengine#Category` -> `type Category string`
-- `plan:internal/configengine#CategoryNone` -> `const CategoryNone Category = ""`
-- `plan:internal/configengine#CategoryExecutable` -> `const CategoryExecutable Category = "executable"`
-- `plan:internal/configengine#CategorySourcedFile` -> `const CategorySourcedFile Category = "sourced-file"`
-- `plan:internal/configengine#CategoryCrossPair` -> `const CategoryCrossPair Category = "cross-pair"`
-- `plan:internal/configengine#CategoryGuard` -> `const CategoryGuard Category = "guard"`
-- `plan:internal/configengine#Spec` -> `type Spec struct`
-- `plan:internal/configengine#LocalFile` -> `func LocalFile(anchor, module string) string`
-- `plan:internal/configengine#LayerFile` -> `func LayerFile(dirs Dirs, spec Spec, layer Layer) (string, bool)`
-- `plan:internal/configengine#BaseLayer` -> `func BaseLayer(dirs Dirs, spec Spec) Layer`
-- `plan:internal/configengine#LocalKeys` -> `func LocalKeys(spec Spec) []string`
-- `plan:internal/configengine#LocalDenied` -> `func LocalDenied(spec Spec) []string`
-- `plan:internal/configengine#ValidateLocal` -> `func ValidateLocal(spec Spec, doc []byte) error`
-- `plan:internal/configengine#LayerDoc` -> `type LayerDoc struct`
-- `plan:internal/configengine#Layers` -> `func Layers(dirs Dirs, spec Spec) ([]LayerDoc, error)`
-- `plan:internal/configengine#Stack` -> `type Stack struct`
-- `plan:internal/configengine#StackLayers` -> `func StackLayers(dirs Dirs, spec Spec) (Stack, error)`
-- `plan:internal/configengine_test#TestLoad_LayerStack` -> `func TestLoad_LayerStack(t *testing.T)`
-- `plan:internal/configengine_test#TestValidateLocal` -> `func TestValidateLocal(t *testing.T)`
-- `plan:internal/configengine_test#TestLayers` -> `func TestLayers(t *testing.T)`
+- `internal/configengine#Dirs`
+- `internal/configengine#Layer`
+- `internal/configengine#LayerTemplate`
+- `internal/configengine#LayerDefault`
+- `internal/configengine#LayerWorktree`
+- `internal/configengine#LayerLocal`
+- `internal/configengine#Category`
+- `internal/configengine#CategoryNone`
+- `internal/configengine#CategoryExecutable`
+- `internal/configengine#CategorySourcedFile`
+- `internal/configengine#CategoryCrossPair`
+- `internal/configengine#CategoryGuard`
+- `internal/configengine#Spec`
+- `internal/configengine#LocalFile`
+- `internal/configengine#LayerFile`
+- `internal/configengine#BaseLayer`
+- `internal/configengine#LocalKeys`
+- `internal/configengine#LocalDenied`
+- `internal/configengine#ValidateLocal`
+- `internal/configengine#LayerDoc`
+- `internal/configengine#Layers`
+- `internal/configengine#Stack`
+- `internal/configengine#StackLayers`
+- `internal/configengine_test#TestLoad_LayerStack`
+- `internal/configengine_test#TestValidateLocal`
+- `internal/configengine_test#TestLayers`
 
 **Edit:**
 - `internal/configengine#Load` -> `func Load(dirs Dirs, spec Spec) ([]byte, error)`
@@ -58,8 +58,8 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/yamlengine#Merge`
-- `plan:internal/yamlengine#LeafPaths`
+- `internal/yamlengine#Merge`
+- `internal/yamlengine#LeafPaths`
 
 **Intent:**
 Give configengine the layer stack of D1, D2, D3 and D5, behind the two loaders whose names and strictness split stay as `PATTERN-config-strictness` pins them.

@@ -54,9 +54,9 @@
 - `internal/webstercli/wiring.go`
 
 **Uses:**
-- `plan:internal/configengine#Spec`
-- `plan:internal/configengine#Dirs`
-- `plan:internal/fabricengine#ConfigDirs`
+- `internal/configengine#Spec`
+- `internal/configengine#Dirs`
+- `internal/fabricengine#ConfigDirs`
 
 **Intent:**
 Move reed onto the hub stack: `LoadConfig` takes the told `configengine.Dirs` and loads through `configengine.LoadOrTemplate(dirs, ConfigSpec())`, so a key in the repo default resolves beneath a sparse worktree file and a local override applies within D4's bound.

@@ -22,8 +22,8 @@
 - `internal/webstercli/wiring.go`
 
 **Uses:**
-- `plan:internal/configengine#Spec`
-- `plan:internal/configengine#Dirs`
+- `internal/configengine#Spec`
+- `internal/configengine#Dirs`
 
 **Intent:**
 Make loom's loader stack-aware: `LoadConfig` takes `configengine.Dirs` and loads strictly through `configengine.Load(dirs, ConfigSpec())`, so in a hub its base layer is the repo default (D5) and a sparse worktree file and a local override sit above it.

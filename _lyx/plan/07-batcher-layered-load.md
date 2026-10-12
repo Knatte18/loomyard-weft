@@ -62,11 +62,11 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/configengine#Spec`
-- `plan:internal/configengine#Dirs`
-- `plan:internal/configengine#Layer`
-- `plan:internal/configengine#StackLayers`
-- `plan:internal/fabricengine#ConfigDirs`
+- `internal/configengine#Spec`
+- `internal/configengine#Dirs`
+- `internal/configengine#Layer`
+- `internal/configengine#StackLayers`
+- `internal/fabricengine#ConfigDirs`
 
 **Intent:**
 Move batcher onto the hub stack: `Active`, `loadConfig` and `ProfileWeights` take `configengine.Dirs` and load through `configengine.LoadOrTemplate(dirs, ConfigSpec())`.

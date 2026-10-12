@@ -23,9 +23,9 @@
 - `internal/webstercli/wiring.go`
 
 **Uses:**
-- `plan:internal/configengine#Spec`
-- `plan:internal/configengine#Dirs`
-- `plan:internal/fabricengine#ConfigDirs`
+- `internal/configengine#Spec`
+- `internal/configengine#Dirs`
+- `internal/fabricengine#ConfigDirs`
 
 **Intent:**
 Move the three remaining degrading per-worktree modules onto the hub stack, each as card 4 moved reed: the loader takes `configengine.Dirs` and loads through `configengine.LoadOrTemplate(dirs, ConfigSpec())`, and `ConfigSpec` returns the module's `Spec` with `Categories` exactly as the overview's "Per-key classification" table lists its keys, every one of them none for orch, webster and logger.

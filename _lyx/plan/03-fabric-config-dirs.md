@@ -1,14 +1,14 @@
 # Card 3 — fabric config dirs
 
 **Create:**
-- `plan:internal/fabricengine#ConfigDirs` -> `func ConfigDirs(l *lyxcwd.Location) configengine.Dirs`
-- `plan:internal/fabricengine#TestConfigDirs` -> `func TestConfigDirs(t *testing.T)`
+- `internal/fabricengine#ConfigDirs`
+- `internal/fabricengine#TestConfigDirs`
 
 **Edit:**
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/configengine#Dirs`
+- `internal/configengine#Dirs`
 
 **Intent:**
 Add the one constructor every caller holding a `*lyxcwd.Location` uses to tell a layered load its geometry, beside `BoardDir` in `junctionnames.go`.

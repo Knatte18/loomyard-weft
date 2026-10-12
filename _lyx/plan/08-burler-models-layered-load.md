@@ -44,10 +44,10 @@
 - `cmd/lyx/configstrictness_test.go`
 
 **Uses:**
-- `plan:internal/configengine#Spec`
-- `plan:internal/configengine#Dirs`
-- `plan:internal/configengine#StackLayers`
-- `plan:internal/fabricengine#ConfigDirs`
+- `internal/configengine#Spec`
+- `internal/configengine#Dirs`
+- `internal/configengine#StackLayers`
+- `internal/fabricengine#ConfigDirs`
 
 **Intent:**
 Move the two seed-only modules onto the layer stack while keeping their own decoders, since neither goes through `Load`: each reads its stacked layers through `configengine.StackLayers(dirs, ConfigSpec())` and neither forms a config path nor merges layers itself (`PATTERN-config-layers`).

@@ -18,8 +18,8 @@
 
 **Uses:**
 - `plan:internal/configreg#PrepareRunSettings`
-- `plan:internal/configengine#LocalFile`
-- `plan:internal/fabricengine#ConfigDirs`
+- `internal/configengine#LocalFile`
+- `internal/fabricengine#ConfigDirs`
 
 **Intent:**
 Make batten's Seed-Child row write the pair's local overrides from the board task's `run_settings` (D9), so a small task's settings need no hand step and never show up as a tracked change at landing.

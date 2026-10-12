@@ -13,7 +13,7 @@
 **Uses:**
 - `internal/configreg#Module`
 - `internal/configreg#Lookup`
-- `plan:internal/configengine#ValidateLocal`
+- `internal/configengine#ValidateLocal`
 
 **Intent:**
 Add the one migrate-then-validate step D8's board write and D9's Seed-Child share, so the two can never judge a task's run settings differently.

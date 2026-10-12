@@ -45,11 +45,11 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/yamlengine#Prune`
-- `plan:internal/configengine#LayerFile`
-- `plan:internal/configengine#LocalFile`
-- `plan:internal/configengine#Layer`
-- `plan:internal/fabricengine#ConfigDirs`
+- `internal/yamlengine#Prune`
+- `internal/configengine#LayerFile`
+- `internal/configengine#LocalFile`
+- `internal/configengine#Layer`
+- `internal/fabricengine#ConfigDirs`
 - `internal/configreg#Module`
 - `internal/hubreconcile#Ensure`
 

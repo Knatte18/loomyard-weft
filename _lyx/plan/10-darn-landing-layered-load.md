@@ -21,9 +21,9 @@
 - `internal/loomcli/wiring.go`
 
 **Uses:**
-- `plan:internal/configengine#Spec`
-- `plan:internal/configengine#Dirs`
-- `plan:internal/fabricengine#ConfigDirs`
+- `internal/configengine#Spec`
+- `internal/configengine#Dirs`
+- `internal/fabricengine#ConfigDirs`
 
 **Intent:**
 Move the two hub-wide modules with a non-empty local bound onto the hub-wide stack of D1: template, hub file at `<BoardDir>/_lyx/config/`, then the reading worktree's local override restricted to the module's `CategoryNone` keys.

@@ -15,10 +15,10 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/configengine#Layers`
-- `plan:internal/yamlengine#Merge`
-- `plan:internal/yamlengine#LeafPaths`
-- `plan:internal/yamlengine#AnnotateLeaves`
+- `internal/configengine#Layers`
+- `internal/yamlengine#Merge`
+- `internal/yamlengine#LeafPaths`
+- `internal/yamlengine#AnnotateLeaves`
 - `plan:internal/configcli#configDirs.layerFile`
 
 **Intent:**
