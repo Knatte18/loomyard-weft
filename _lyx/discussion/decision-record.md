@@ -20,7 +20,6 @@ Out:
 - The Burler side of the pack (`kick-start-pack`) and Enclose-built packs (`enclose-kickstart`).
 - A read budget or "the pack is the read set" rule for forks.
 - Running the with/without measurement (`kickstart-pack-measure`).
-  Its pack-on counts so far used the old pack, so the after-measurement counts only pack-on runs begun after this lands; queuing it is the operator's call.
 - Any change to quarry; Loomyard stays at its pinned quarry version.
 
 ## Decisions
@@ -32,7 +31,7 @@ Out:
 Ref selection per card is today's rule: Edit, Delete and Move refs, the old side of a Rename pair, `Uses:`, and any `plan:` handle; plain paths, self glyphs, Create targets and a Rename's new side stay out.
 A ref is listed once per card that names it, so a glyph two cards name appears under both.
 `KickstartPack` still resolves the batch's distinct member refs in one quarry call and fans the answers out to the cards.
-On `ErrQuarryUnavailable` each card lists its selected refs as unresolved with the error, and begin-batch does not refuse, as today.
+On `ErrQuarryUnavailable` each card lists its selected member glyphs as unresolved with the error and its `plan:`-handle refs with the handle reason, and begin-batch does not refuse, as today.
 
 Rationale: the fork works card by card, so card N's spans must be findable at card N; one resolve call keeps begin-batch's cost; a card-agnostic `Pack` stays reusable by a card-less pack such as `enclose-kickstart`'s.
 
@@ -42,6 +41,7 @@ The pack section carries one heading per card, spelled with the same path the ca
 Under each heading come that card's resolved entries, one sub-bullet per declaration with its `file:start-end` span and signature, then that card's unresolved refs with their reasons.
 A card's unresolved list is left out when the card has none.
 A card that names no member glyph shows the empty-pack line, reworded to "this card", and still lists its `plan:` handles as unresolved, as the batch-wide section does today.
+A card that names member glyphs none of which resolved renders `none` in place of its entries, followed by its unresolved list.
 There is no batch-level unresolved list.
 
 Rationale: a grouping the fork can match by the path it is already reading needs no new identifier in the prompt; leaving out empty lists keeps a many-card prompt small.
@@ -51,18 +51,22 @@ Rationale: a grouping the fork can match by the path it is already reading needs
 The implementer body's step 1 ("Read the card file.") becomes a required marker filled from one of two fragments.
 The pack-off fragment is today's step-1 text verbatim.
 The pack-on fragment tells the fork, at the start of each card, to read the card file and every span the pack lists under that card in parallel, in one turn, before doing anything else, each span with the Read tool's offset at its start line and a limit reaching its end line.
-The pack locate fragment keeps today's rules: no `lyx quarry resolve` and no grep for a resolved entry; spans are as of the batch's start, so in a file an earlier card of this batch edited the fork finds the member by its listed signature; a `plan:` entry has nothing to locate; an unresolved member glyph is located with `lyx quarry resolve` or a grep.
+A span in a file an earlier card of this batch edited is not read by offset: that file is read whole in the same turn, and the member is found in it by the member name its glyph names, its listed signature serving only as a cross-check, since an earlier card may have re-signed it.
+The pack-on fragment keeps step 1's two following sentences verbatim (the card file is the card's whole instruction; an empty Intent field falls back to the Card Index line in `_lyx/plan/00-overview.md`), so only the read sentence changes.
+The pack locate fragment keeps today's rules: no `lyx quarry resolve` and no grep for a resolved entry; spans are as of the batch's start, so in a file an earlier card of this batch edited the fork finds the member by its glyph's member name, with the listed signature as a cross-check; a `plan:` entry has nothing to locate; an unresolved member glyph is located with `lyx quarry resolve` or a grep.
 It adds that the pack is a kick-start, not a complete list: the fork reads further code, callers or whole files whenever the card needs it.
 
-Rationale: the bench prompt that showed a gain (quarry `bench/loomyard-eval/cards/07-e1-pack.md`) said "Read all listed spans in parallel, in one turn, before doing anything else"; putting the read in step 1 makes the card file and its spans one turn instead of two; the operator wants the fork free to read more.
+Rationale: the bench prompt that showed a gain (quarry `bench/loomyard-eval/cards/07-e1-pack.md`) said "Read all listed spans in parallel, in one turn, before doing anything else"; putting the read in step 1 makes the card file and its listed spans one turn instead of two, while files only the card file names follow in the next turn (D4); the operator wants the fork free to read more.
 
 ### D4 — FRESH-READ becomes a marker with a pack-on and a pack-off text
 
 The FRESH-READ rule's body text becomes a required marker filled from one of two fragments.
 The pack-off fragment is today's text verbatim.
-The pack-on fragment says that inherited content can be stale, and that the one turn at each card's start (D3) is that card's fresh read: it re-reads the listed spans, not the whole files that hold them, and reads in the same turn any file the card targets or uses that no span covers.
+The pack-on fragment says that inherited content can be stale, and that the one turn at each card's start (D3) is that card's fresh read: it re-reads the listed spans, not the whole files that hold them, and, in the turn right after, before any edit, reads whole every file the card targets or uses that no listed span covers (a plain path, a self glyph's file).
+An unresolved member glyph's file is read whole in the turn right after the `lyx quarry resolve` call or grep that locates it, still before any edit.
+For a file an earlier card of this batch edited, the fresh read is D3's whole-file read in that turn.
 
-Bound: under the pack-on text a fork is no longer told to re-read whole target and `Uses:` files, so an edit outside a listed span in such a file is read only when the fork chooses to; D3's signature rule, the card gates and the batch gate bound a stale read.
+Bound: under the pack-on text a fork is no longer told to re-read whole the target and `Uses:` files that hold a listed span, so an edit outside a listed span in such a file is read only when the fork chooses to; D3's member-name rule, the card gates and the batch gate bound a stale read.
 
 Rationale: the operator asks for span-only FRESH-READ; pack-off text stays unchanged so the pack-off arm stays comparable with the runs already counted.
 
@@ -95,17 +99,24 @@ Rationale: `kickstart-pack-measure` reads these counts; a ref repeated under two
 
 ## Open risks
 
-- Under per-card reading a later card's spans routinely sit in files an earlier card of the batch already edited, so its offsets can land on shifted lines; D3's signature rule is the fork's only re-anchor, and for a `var` or `const` that is one line.
+- None.
+
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - d4-unresolved-member-read-turn-pin (class consistency, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
 - A fork prompt with a pack lists each card's entries under a heading equal to that card's pointer path, in the batch's card order, under both hub and standalone geometry.
 - A glyph two cards in one batch name appears under both cards, while the batch's distinct refs are resolved in one quarry call.
-- A card naming no member glyph renders the per-card empty-pack line; a card with only `plan:` handles renders that line and lists its handles as unresolved; a card with nothing unresolved renders no unresolved list.
-- With quarry unavailable, each card lists its selected refs as unresolved with the error, and begin-batch does not refuse.
+- A card naming no member glyph renders the per-card empty-pack line; a card with only `plan:` handles renders that line and lists its handles as unresolved; a card with nothing unresolved renders no unresolved list; a card naming member glyphs none of which resolved renders `none` for its entries, followed by its unresolved list.
+- With quarry unavailable, each card lists its selected member glyphs as unresolved with the error and its `plan:`-handle refs with the handle reason, and begin-batch does not refuse.
 - A `var` and a `const` entry, ungrouped and grouped, render the first line of their signature only; a function or method signature spanning several lines renders whole.
-- The pack-on card-read text tells the fork to read the card file and that card's listed spans in parallel, in one turn, with offset and limit, before anything else; the pack-on locate text keeps the find-by-signature rule for a file edited earlier in the batch and says the fork may read beyond the pack.
+- The pack-on card-read text tells the fork to read the card file and that card's listed spans in parallel, in one turn, with offset and limit, before anything else, reading whole in that turn a file an earlier card of the batch edited, and keeps step 1's whole-instruction and Intent-fallback sentences; the pack-on locate text finds a member in a file edited earlier in the batch by its glyph's member name, with the listed signature as a cross-check, and says the fork may read beyond the pack.
 - The pack-on FRESH-READ text names the listed spans, not whole files.
+- The pack-on FRESH-READ text has the fork read whole, before any edit, the target and `Uses:` files no listed span covers.
 - A fork prompt rendered with `kickstart_pack` off, one for a plan whose language opts out of glyphs, and a recovery prompt render byte-identically to their output before this change.
 - The `webster: kickstart pack` log line's `resolved` and `unresolved` count distinct refs across the batch.
 - `internal/websterengine/doc.go`'s kick-start pack section describes the per-card pack, the per-mode card-read and FRESH-READ text, and the one-line `var`/`const` rule.
