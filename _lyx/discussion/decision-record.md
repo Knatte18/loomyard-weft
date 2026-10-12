@@ -40,7 +40,7 @@ Out:
 Decision: each overview poll reads the pause record once, through `hubgeom.PauseGeometry` of the prime and `pauserecord.Read`, and asks the record per run which live entry covers the run's slug (`Record.Covering`, which returns the oldest covering entry when a hub and a slug entry both cover it).
 A covered run whose batten state is `running` or `paused`, or which shows `starting`, gets the state cell `paused <minutes>`, with the minutes since the covering entry's `PausedAt` in the overview's existing minute format, floored at zero when `PausedAt` lies after the poll's clock.
 An uncovered run whose batten state is `paused` (a `lyx batten pause` or a pause-before/after boundary) keeps the bare `paused` it shows today, so the minutes suffix marks a pause-record pause.
-A covered run that is `halted` or `failed` keeps its state, since the pause holds nothing there.
+A covered run whose batten state is `blocked`, `awaiting` or `failed` keeps its state, since the pause holds nothing there.
 An unreadable or undecodable record reads as no pause, logged at Debug like the overview's other read failures, so a broken record never blanks the pane.
 The overview still writes nothing.
 
@@ -50,12 +50,15 @@ Putting the marker in the state cell keeps the column layout and the fit-to-rows
 ### D2 — A held or dead advisor never defers the chair's held-turn notice
 
 Decision: the chair's hold-deferral predicate skips an advisor whose session reads held or dead before it looks at that advisor's up line.
-An advisor counts as outstanding only while its run has not ended, its session reading is not `idle-stalled`, `idle-done` or `dead`, and either its up line has not landed or it reads busy on a turn.
+An advisor counts as outstanding only while its run has not ended, its session reading is not `asking`, `idle-stalled`, `idle-done` or `dead`, and either its up line has not landed or it reads busy on a turn.
 A session-state reading that errors counts as neither held nor busy, as today, so only the up-line clause can still count that advisor.
+The session reading alone decides held; the advisor's held-turn wait marker is not read.
 The 10-minute cap stays as the backstop for an advisor wedged mid-turn.
 
 Rationale: an advisor that is held or dead already stops counting once its up line has landed, because the predicate reads its session state, so the deferral ends at the settle interval.
 The remaining hole is the up-line clause, which still counts a held or dead advisor whose up line the sender has not yet landed on the chair.
+The held readings, `asking` and `idle-stalled`, are the session-state half of shuttle's own waiting reading, so an advisor stopped on a question or a permission prompt ends the deferral as an idle one does.
+The held-turn wait marker, the reading's other half, is left out because a held turn end is a turn that ended without the run's output files, which the session reads as `idle-stalled`, so the marker adds no case the session reading misses.
 The change is that ordering, plus test rows pinning held and dead advisors, which no test pins today.
 
 ### D3 — Paste-submit loads its buffer from standard input
@@ -65,7 +68,8 @@ Every text takes this path, short or long.
 The tmux runner gains a run variant that writes given bytes to the command's stdin, logging its args at Debug as `run` and `output` do; its test hook receives those bytes.
 Because the text is no longer an argv element, the trailing-`;` escape and the `--` guard against a dash-leading text are removed.
 The failed-invocation cleanup (`delete-buffer` of the named buffer) stays.
-No size cap is added: every caller is lyx's own code, and shuttle's pre-write guard still stands in front of every write.
+Bound: the text reaches tmux only as stdin bytes of `load-buffer -`, never as an argv element, so no text can add, end or alter a command in the list; size is unbounded by design.
+The two paste paths are shuttle's send, whose single-line, non-empty text any invoker of `lyx shuttle send` may supply and which runs behind shuttle's pre-write guard, and reed's name repair, whose text is the fixed rename line and which pastes after the session-idle read and the activity check, or past an unreadable activity reading.
 
 Rationale: tmux's limit applies to the command message, not to a buffer loaded from stdin; checked on tmux 3.6, `set-buffer` refuses a 40 000-byte text with `command too long` while a chained `load-buffer -` of the same text followed by `paste-buffer` succeeds in one invocation.
 One invocation keeps `PATTERN-pane-text-injection`'s rule that the paste and the Enter reach the pane in one command list, so nothing the operator types lands between them.
@@ -80,10 +84,9 @@ Decision:
 - The shipped file holds `attach` → `reed attach`, and `prime` → `orch start`, then `reed attach`.
 - Each shortcut is a root command in its own help group (`Shortcuts`), with audience `operator`, a `Short` naming its expansion (such as `shortcut: lyx orch start, then lyx reed attach`), and no flags of its own.
 - Running a shortcut runs each argv through `clihelp.RunRootCtx` on a fresh root from the same factory, with the shortcut's context (which carries the cwd), stdin, stdout and stderr, so flags, envelopes and exit codes are the real command's.
-  This departs from the board's wording "through the same root": a fresh root per argv, with the same behaviour the board asks for.
   The exit code comes back as `RunRootCtx`'s return value; a non-zero one stops the sequence, and the shortcut carries it over with `clihelp.SetExit` and prints nothing of its own, since the inner root already printed its envelope.
-- The shortcut command takes no flags of its own and passes its words, flags included, verbatim onto the end of its last argv; a global flag typed before the shortcut's name, such as `lyx -v prime`, reaches the expansion the same way.
-  The global `--help`, `-h` and `--json` before the first `--` print the shortcut's own help (JSON under `--json`) and run nothing, so the invariant that `--json` never runs a command holds for shortcuts too; `--` and every word after it are forwarded verbatim.
+- The shortcut command takes no flags of its own and passes its words, flags included, verbatim onto the end of its last argv, with one exception: every word before the first `--` that spells the root's persistent verbosity flag in a form pflag accepts for it (`-v`, `-vv` and longer runs, `--verbose`, `--verbose=<n>`) goes onto every argv instead, wherever it sits relative to the shortcut's name, so a global verbosity flag such as `lyx -v prime`, `lyx -vv prime` or `lyx prime -v` reaches every expanded command.
+  The global `--help`, `-h` and `--json` before the first `--`, in every spelling pflag accepts for them (`--json=<value>` included), print the shortcut's own help (JSON under `--json`) and run nothing, so the invariant that `--json` never runs a command holds for shortcuts too; `--` and every word after it are forwarded verbatim.
   So a shortcut's last argv can never receive a local `--json` of its own except after `--`.
 - A file that fails to parse at root construction mounts no shortcut and logs one Warn; the build-time test in D5 keeps such a file out of a passing CI.
 
@@ -122,6 +125,7 @@ Rationale: the operator called the format right and the height too large; in a 4
 - `PATTERN-test-speed`: the shortcut-file test and the overview, predicate and argv tests are tier 1; the long-paste test needs a real tmux server and is tier `tmux`.
 - `PATTERN-test-economy`: extend the existing table tests (`TestEngine_Run_ChairHoldDeferral`, the overview render tests, the reed paste test) rather than adding parallel ones.
 - `PATTERN-comment-line-breaks` and the semantic-line-break rule apply to the YAML file's comments and every doc touched.
+- The root's persistent pre-run (trace adoption, sink arming, network gate install, stencil seeding) runs once for the shortcut command and once per argv in one process, and each repeat is harmless; the plan confirms each.
 - Test budget: a card whose new top-level tests push a package past its row in `cmd/lyx/testdata/test-budget.yaml` lists that file under `Edit:`.
 
 ## Auto-mode assumptions
@@ -134,17 +138,22 @@ Rationale: the operator called the format right and the height too large; in a 4
 
 ## Open risks
 
-- Re-running the root's persistent pre-run inside a shortcut (trace adoption, sink arming, network gate install, stencil seeding) twice in one process must be harmless; the plan checks each.
 - `load-buffer -` reading stdin depends on the tmux client forwarding stdin, which tmux 3.6 does; an older tmux on a host is not tested.
+
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - d4-global-flag-last-argv-only (class design, severity MEDIUM, open in rounds 1, 2)
+<!-- /lyx:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
 - The runs overview shows `paused <minutes>` in the state cell of a running, batten-paused or starting run that a slug entry covers, and of every such run under a hub entry; with a hub and a slug entry both covering a run, the minutes count from the older entry; a `PausedAt` after the poll's clock shows zero minutes.
-- An uncovered run, a resumed entry and a halted or failed covered run show their batten state, and an uncovered batten-paused run shows a bare `paused`; an unreadable record shows no pause and the pane keeps drawing.
-- The chair's hold-deferral predicate reports false for an advisor whose session reads `idle-stalled`, `idle-done` or `dead`, including while its up line has not landed; it still reports true for an advisor mid-turn and for a live, not-held advisor whose up line has not landed; an advisor whose run ended died does not count.
+- An uncovered run, a resumed entry and a `blocked`, `awaiting` or `failed` covered run show their batten state, and an uncovered batten-paused run shows a bare `paused`; an unreadable record shows no pause and the pane keeps drawing.
+- The chair's hold-deferral predicate reports false for an advisor whose session reads `asking`, `idle-stalled`, `idle-done` or `dead`, including while its up line has not landed; it still reports true for an advisor mid-turn and for a live, not-held advisor whose up line has not landed; an advisor whose run ended does not count.
 - Paste-submit's tmux command list loads the buffer from stdin, pastes it and, when asked, sends Enter in one invocation; a text above tmux's command size limit (at least 64 KiB) pastes whole into a real tmux pane; a text ending in `;` and a text starting with `-` paste verbatim; a failed invocation deletes the buffer.
 - `lyx attach` runs `lyx reed attach`, and `lyx prime` runs `lyx orch start` then `lyx reed attach`, each with the real command's output and exit code; `lyx prime` with the orch already running reaches `reed attach`, since `orch start` reports an already-running orch as success; a failing first argv stops the sequence with its exit code and exactly one error envelope.
-- Trailing words reach the last argv; `lyx prime --json` and `lyx prime --help` print the shortcut's help and run nothing; a `-h` after `--` is forwarded.
+- Trailing words reach the last argv; `lyx -v prime` runs both `orch start` and `reed attach` with `-v`, `lyx -vv prime` runs both with `-vv`, and `lyx prime -v` runs both with `-v`; `lyx prime --json` and `lyx prime --help` print the shortcut's help and run nothing; a `-h` after `--` is forwarded.
 - The shortcut-file test fails on a shortcut named like an existing root command, a duplicate shortcut, an empty argv, an argv naming no runnable command, and an argv naming a shortcut.
 - `lyx --help` lists the shortcuts in their own group, and `lyx help index` lists them for the operator audience.
 - The loom status strand's add spec declares one eighth of the free height with a minimum of 3 rows.
