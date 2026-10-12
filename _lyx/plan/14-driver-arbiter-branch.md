@@ -8,7 +8,7 @@
 - `docs/overview.md`
 
 **Create:**
-- `plan:internal/loomcli#driverArbiterCommand` -> `func driverArbiterCommand(runID string) string`
+- `internal/loomcli#driverArbiterCommand`
 
 **Intent:**
 Give the driver its arbiter branch (D6) through a new marker, keeping the stencil recipe-blind (D1).

@@ -1,10 +1,10 @@
 # Card 16 — batten-arbiter-wiring
 
 **Create:**
-- `plan:internal/battencli#arbiterInFlightFrom` -> `func arbiterInFlightFrom(present bool, readMarker func() (loomengine.ArbiterMarker, bool, error), directory func() ([]reedengine.DirectoryRow, error)) (battenshed.ChildArbiter, bool, error)`
-- `plan:internal/battencli#stopDeadArbiterStrands` -> `func stopDeadArbiterStrands(rows []reedengine.DirectoryRow, stop func(guid string) error) error`
-- `plan:internal/battencli#TestArbiterInFlightFrom` -> `func TestArbiterInFlightFrom(t *testing.T)`
-- `plan:internal/battencli#TestStopDeadArbiterStrands` -> `func TestStopDeadArbiterStrands(t *testing.T)`
+- `internal/battencli#arbiterInFlightFrom`
+- `internal/battencli#stopDeadArbiterStrands`
+- `internal/battencli#TestArbiterInFlightFrom`
+- `internal/battencli#TestStopDeadArbiterStrands`
 
 **Edit:**
 - `internal/battencli#battenCLI.wire`
@@ -12,7 +12,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/battenshed#ChildArbiter`
+- `internal/battenshed#ChildArbiter`
 - `internal/loomengine#ReadArbiterMarker`
 - `internal/loomengine#IsArbiterStrand`
 - `internal/shedrun#ArbiterMarker`

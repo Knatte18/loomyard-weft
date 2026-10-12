@@ -1,8 +1,8 @@
 # Card 15 — batten-arbiter-hold
 
 **Create:**
-- `plan:internal/battenshed#ChildArbiter` -> `type ChildArbiter struct`
-- `plan:internal/battenshed#TestNotice_LiveArbiterHoldsTheStateChange` -> `func TestNotice_LiveArbiterHoldsTheStateChange(t *testing.T)`
+- `internal/battenshed#ChildArbiter`
+- `internal/battenshed#TestNotice_LiveArbiterHoldsTheStateChange`
 
 **Edit:**
 - `internal/battenshed#InnerRunDeps`

@@ -1,0 +1,4 @@
+status: OK
+head_sha: 885578a3c6977b6962efb93e8c97c50a3a624e1f
+deviations:
+  - internal/loomcli/wiring_seams_test.go

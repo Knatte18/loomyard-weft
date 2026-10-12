@@ -1,6 +1,6 @@
 {
   "runGuid": "1da1cfb5b7b51a0ee1e094e9e54cd247",
-  "planFingerprint": "c889ff44602bcf0ed1a4e6590207aa926e88c604888c674f9f96797973031778",
+  "planFingerprint": "cf72164e15aa65d2307f4ffa5a1c8709cc3b7ebe05a8cce39db2618d3279a340",
   "planFileHashes": {
     "00-overview.md": "67db7b7c84ff5884dc42ed4d08719905ce889d2fe6a82b2a05fbdab597cb6ed4",
     "01-shedrun-arbiter-paths.md": "38d3bcf64887be49a4d9e50c77e065946c8e69333e5d25dd018cfda3cf067530",
@@ -15,10 +15,10 @@
     "10-arbiter-verb.md": "de3e9c3c7c6e024c66cb5c51db1e5c66a5dadb7ad2ea02aba45085a43988d73f",
     "11-arbiter-cmd-wiring.md": "17adb1b4e615a8bf0120a0943ad9efbcca26339d09aaa1f830d5ab5500787536",
     "12-relaunch-consume-attempt.md": "7f4bf7c333e2b335dad00da90377c1b3601787549afd3e8f1fc5c6ebdb833a9a",
-    "13-decision-by-arbiter.md": "a706cc96592fb37ff50970db165f1f3f0a1796f79811595fdb952f921a1c0f1d",
-    "14-driver-arbiter-branch.md": "96c96011b1af3737d5aa1cbe0883550d46c96572de30056526595273044783b4",
-    "15-batten-arbiter-hold.md": "8fb05ab7df19e95efe49c71c1f3d60d4992e34d8f36ae13dae8e59a1523107c1",
-    "16-batten-arbiter-wiring.md": "859c1ed1329ddd4e5cfe62bce7016b7dcb6ac619edd1fecae89fe385b11c4558",
+    "13-decision-by-arbiter.md": "2f908534ab4d054c1fa28fe37f1a0b43ba4d79e13175c921209399570ec61a07",
+    "14-driver-arbiter-branch.md": "c786bc470a701d9794bc2bdf594a2074b4c4869cb93fdf557ddea1b4aa1e86ab",
+    "15-batten-arbiter-hold.md": "9c0e8a98a731eeec2ab999f1765156d0a849cfea6cc7577243cd44e11d29c178",
+    "16-batten-arbiter-wiring.md": "78eefa0ab9496bb9ff2a3ffa5af41bc2d0ee1278e9ada21d65f126daf14665d0",
     "17-orch-arbiter-escalations.md": "453763a2b067fa69bceee23f7653853c35d4d8b6ab495de1faae897efad09659"
   },
   "planOverviewFrameHash": "4958410c82a905767cc3ad2848c7a767aa5a61c53121a06cdbd306c12825f3f0",
@@ -356,7 +356,7 @@
       }
     }
   ],
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "10d815dd37b13651c061b8428e486bf1",
   "masterSessionId": "51095fde-1181-4f9b-ae2d-4d3eccbf248d",
   "batches": {
@@ -415,18 +415,35 @@
         "17-orch-arbiter-escalations"
       ],
       "cardHashes": {
-        "13-decision-by-arbiter": "a706cc96592fb37ff50970db165f1f3f0a1796f79811595fdb952f921a1c0f1d",
-        "14-driver-arbiter-branch": "96c96011b1af3737d5aa1cbe0883550d46c96572de30056526595273044783b4",
-        "15-batten-arbiter-hold": "8fb05ab7df19e95efe49c71c1f3d60d4992e34d8f36ae13dae8e59a1523107c1",
-        "16-batten-arbiter-wiring": "859c1ed1329ddd4e5cfe62bce7016b7dcb6ac619edd1fecae89fe385b11c4558",
+        "13-decision-by-arbiter": "2f908534ab4d054c1fa28fe37f1a0b43ba4d79e13175c921209399570ec61a07",
+        "14-driver-arbiter-branch": "c786bc470a701d9794bc2bdf594a2074b4c4869cb93fdf557ddea1b4aa1e86ab",
+        "15-batten-arbiter-hold": "9c0e8a98a731eeec2ab999f1765156d0a849cfea6cc7577243cd44e11d29c178",
+        "16-batten-arbiter-wiring": "78eefa0ab9496bb9ff2a3ffa5af41bc2d0ee1278e9ada21d65f126daf14665d0",
         "17-orch-arbiter-escalations": "453763a2b067fa69bceee23f7653853c35d4d8b6ab495de1faae897efad09659"
       },
       "startSha": "608debbe5ab3cab19e50acacea7d9ed7b9387ca6",
       "kind": "fork",
       "spawnedAt": "2026-10-12T07:01:08Z",
       "sessionId": "51095fde-1181-4f9b-ae2d-4d3eccbf248d",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-decision-by-arbiter",
+        "status": "done",
+        "head_sha": "885578a3c6977b6962efb93e8c97c50a3a624e1f",
+        "deviations": [
+          "internal/loomcli/wiring_seams_test.go"
+        ]
+      },
+      "cardShas": [
+        "885578a3c6977b6962efb93e8c97c50a3a624e1f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-driver-arbiter/51095fde-1181-4f9b-ae2d-4d3eccbf248d/subagents/agent-a41ab679fcd1bc8b1.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-driver-arbiter/51095fde-1181-4f9b-ae2d-4d3eccbf248d/subagents/agent-a41ab679fcd1bc8b1.jsonl"
+      ]
     },
     "7": {
       "slug": "arbiter-stencil",
@@ -470,6 +487,7 @@
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-driver-arbiter/51095fde-1181-4f9b-ae2d-4d3eccbf248d/subagents/agent-ac03682a3bb91d6c3.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-driver-arbiter/51095fde-1181-4f9b-ae2d-4d3eccbf248d/subagents/agent-a732047deb836cbc9.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-driver-arbiter/51095fde-1181-4f9b-ae2d-4d3eccbf248d/subagents/agent-a732047deb836cbc9.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-driver-arbiter/51095fde-1181-4f9b-ae2d-4d3eccbf248d/subagents/agent-a41ab679fcd1bc8b1.jsonl"
   ]
 }

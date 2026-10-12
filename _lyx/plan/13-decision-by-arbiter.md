@@ -11,7 +11,7 @@
 - `contracts/specs/refusal-spec.md`
 
 **Create:**
-- `plan:internal/loomcli#decisionByArbiter` -> `const decisionByArbiter = "arbiter"`
+- `internal/loomcli#decisionByArbiter`
 
 **Uses:**
 - `internal/loomengine#IsArbiterStrand`
