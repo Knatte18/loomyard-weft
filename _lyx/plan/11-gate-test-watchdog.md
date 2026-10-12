@@ -3,13 +3,13 @@
 **Create:**
 - `internal/gatecli/watchdog.go`
 - `internal/gatecli/watchdog_test.go`
-- `plan:internal/gatecli#enclosingGateEnv` -> `const enclosingGateEnv = "LYX_GATE_TEST_PID"`
-- `plan:internal/gatecli#defaultSamplePeriod` -> `const defaultSamplePeriod = 5 * time.Second`
-- `plan:internal/gatecli#watchdog` -> `type watchdog struct`
-- `plan:internal/gatecli#watchdog.run` -> `func (w watchdog) run(ctx context.Context, root int)`
-- `plan:internal/gatecli#watchdogApplies` -> `func watchdogApplies(window time.Duration, flags []string, enclosing string, isAncestor func(pid int) bool) (bool, string)`
-- `plan:internal/gatecli#TestWatchdog` -> `func TestWatchdog(t *testing.T)`
-- `plan:internal/gatecli#TestWatchdogApplies` -> `func TestWatchdogApplies(t *testing.T)`
+- `internal/gatecli#enclosingGateEnv`
+- `internal/gatecli#defaultSamplePeriod`
+- `internal/gatecli#watchdog`
+- `internal/gatecli#watchdog.run`
+- `internal/gatecli#watchdogApplies`
+- `internal/gatecli#TestWatchdog`
+- `internal/gatecli#TestWatchdogApplies`
 
 **Edit:**
 - `internal/gatecli#runTest`

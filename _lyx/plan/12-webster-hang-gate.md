@@ -2,10 +2,10 @@
 
 **Create:**
 - `internal/websterengine/verifyhang.go`
-- `plan:internal/websterengine#verifyHang` -> `type verifyHang struct`
-- `plan:internal/websterengine#classifyHang` -> `func classifyHang(res verifytree.Result, log string) (verifyHang, bool)`
-- `plan:internal/websterengine#TestVerifyGate_HungVerifyFailsAtOnceWithoutRerun` -> `func TestVerifyGate_HungVerifyFailsAtOnceWithoutRerun(t *testing.T)`
-- `plan:internal/websterengine#TestVerifyGateStuckReason_HungReportNamesTheHang` -> `func TestVerifyGateStuckReason_HungReportNamesTheHang(t *testing.T)`
+- `internal/websterengine#verifyHang`
+- `internal/websterengine#classifyHang`
+- `internal/websterengine#TestVerifyGate_HungVerifyFailsAtOnceWithoutRerun`
+- `internal/websterengine#TestVerifyGateStuckReason_HungReportNamesTheHang`
 
 **Edit:**
 - `internal/websterengine#newVerifyGate`
