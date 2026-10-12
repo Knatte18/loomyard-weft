@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status**<br>• Three intake bugs: validate gate-step package paths at plan time, fix the flaky concurrent-sweep test, and make a producer exit without status diagnosable. | [`intake-bugs-1012`](design-intake-bugs-1012.md) | loom | Webster-Bouncer | 3h | 1h | loom, webster, shed |
+| 1 | **Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status**<br>• Three intake bugs: validate gate-step package paths at plan time, fix the flaky concurrent-sweep test, and make a producer exit without status diagnosable. | [`intake-bugs-1012`](design-intake-bugs-1012.md) | loom | Describe | 3h | 1h | loom, webster, shed |
 | 2 | **Small cleanups: tokencount cutoff skew, audit reader globs, duplicate weft carve-out**<br>• Guard the tokencount cutoff against tag skew, bound audit reader globs and document the git pathspec case, and drop one of two duplicate loomyard-weft carve-outs. | [`cleanup-1012`](design-cleanup-1012.md) | loom | Webster-Bouncer | 1d | 42m | fabric |
 
 ### Ready
