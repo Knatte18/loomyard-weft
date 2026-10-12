@@ -1,0 +1,15 @@
+verdict: resume
+reason: >-
+  The review segment Discussion-Bouncer stopped at round 2 because its review budget ran out (cause: budget), not because it was circling.
+  The fixer report addressed all four round-2 findings, and the decision record now carries each fix with matching acceptance lines.
+  F1 (BLOCKING): D5 makes shuttle's stop path (stop verb, StopStrand, step stop, supersession and a seat table's stop) remove a tracked own-window strand whose pane is dead.
+  Wait's OutcomeDied finalize also saves the pane capture and removes the strand.
+  F2: D3 exempts remove from failing on an invalid window_split or window_share_max.
+  F3: D2 defines the live count and when the group record is dropped.
+  F4: D12 adds an exit marker as the opened strand's done-when path.
+  No finding makes the design wrong.
+  The one residue is that a timed-out run whose agent later dies leaves its own window until a stop, respawn, lyx reed remove or pair teardown.
+  D5 records that as accepted, it is a narrow edge case, and it stays within the task's scope.
+  The rule for a review escalation is to accept unless a finding makes the design wrong, so the segment is accepted with its findings recorded as unconverged.
+verbs:
+  - lyx loom circling accept reed-multi-window
