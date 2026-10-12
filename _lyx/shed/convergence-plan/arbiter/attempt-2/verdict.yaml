@@ -1,0 +1,12 @@
+verdict: resume
+reason: >-
+  Discussion-Bouncer escalated at round 3 on budget (review_max_bounces 2 spent), with the judge calling it circling on F1 (BLOCKING, D10's time join for untagged runs) and F5 (MEDIUM, acceptance criteria).
+  The round-3 fixer applied all five findings exactly as the review prescribed, and the decision record now carries each fix:
+  D10 lines 145-147 say a time-joined run is never `hand` (Finalize writes the checkpoint it joins through, confirmed in internal/loomcli/landingdeps.go and internal/landingshed/finalize.go Step 2b),
+  an untagged time-joined run is identified by its slug, enters the landing table only and has no `land-incomplete` flag, and Scope Out line 23 and criterion 212 match.
+  F2's window bounds (line 138-142, committer dates), F3's fast-forward rule (D10 line 136, D11 line 159), F4's narrowed criterion with its residual in Open risks, and F5's failure-episode definition plus criteria for the generic wake kind, keep-alive pings, Teardown episodes and per-point alignment outcomes are all present.
+  So no blocker remains after round 3, and no open finding makes the design wrong; residual edge cases (a no-op checkpoint leaving an untagged landing unmapped until its tag exists, a direct push inside a window) are bounded and named or covered by criterion 217.
+  Under the fixed rule the segment is accepted unconverged.
+  No design call was made, so no decision was recorded.
+verbs:
+  - lyx loom circling accept convergence-plan
