@@ -146,6 +146,12 @@ Rationale: the operator called the format right and the height too large; in a 4
   - d4-global-flag-last-argv-only (class design, severity MEDIUM, open in rounds 1, 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - shortcut-group-skip-unbounded (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - The runs overview shows `paused <minutes>` in the state cell of a running, batten-paused or starting run that a slug entry covers, and of every such run under a hub entry; with a hub and a slug entry both covering a run, the minutes count from the older entry; a `PausedAt` after the poll's clock shows zero minutes.
