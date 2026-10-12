@@ -36,6 +36,6 @@ The moved code keeps its behaviour and its JSON keys, so a sidecar an older lyx 
 
 Tests: `build_test.go` carries `TestIdentityOf`, `TestSidecar_RoundTrip` and `TestReadSidecar_UnreadableIsNil` over from the deleted `statusbuild_test.go`, retargeted to the exported names; `TestResolveStatusStrandAction` builds its sidecars and identities with the statuspane types and keeps every row.
 `StrandCurrent` is reached through those rows, which hold a matching sidecar, a changed build and a foreign guid.
-`test-budget.yaml`: `internal/statuspane` 2 → 5.
+`test-budget.yaml`: `internal/statuspane` 3 → 6.
 
 **ImpactSummary:** the loom bootstrap's sidecar code moves package with its behaviour and on-disk shape unchanged; three tests move with it.

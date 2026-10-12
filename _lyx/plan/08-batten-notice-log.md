@@ -23,6 +23,7 @@
 - `internal/battencli#battenCLI.wire`
 - `internal/battencli#Command`
 - `internal/shedrun#TestPathConstructors`
+- `internal/testkit/envkit#nilLegal`
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Intent:**
@@ -36,6 +37,7 @@ The branch already contains `lyx cleanup` (bc9ee7a02).
 `appendNoticeLog` opens `Path` with `O_APPEND|O_CREATE|O_WRONLY` and writes one line, `<UTC time, RFC 3339>\t<notice text>\t<attach command>\n`, in one `Write`, so concurrent batten processes never interleave inside a line; a failure to open or write is a `logger.Warn` naming the path and never blocks or changes the notice.
 It uses the standard library and `logger` only, so `battenshed`'s import allowlist is unchanged.
 `RowNoticeDeps` and `InnerRunDeps` each gain a `NoticeLog NoticeLog` field.
+`envkit`'s `nilLegal` gains the three paths `InnerRun.NoticeLog.Now`, `Land.Notices.NoticeLog.Now` and `Teardown.Notices.NoticeLog.Now`, each nil-legal because a nil `Now` reads `time.Now`, the same reason `InnerRun.Now` and `Land.Notices.Sleep` are listed there; `wire` leaves them nil, so without them `envkit.NilSeams` reports them and the seam-completeness tests fail.
 
 Once per composition, at the first delivery attempt in this process and never at a later one:
 - `rowNotifier.send` appends on entry, before the orch-strand check, so a row notice is logged also when it is held back for a missing orch strand or dropped after its attempts; a held-back row notice is composed again by the next failure at the same history length and logged again then.
@@ -54,4 +56,4 @@ Tests:
 - `TestPathConstructors` gains a `NoticeLog` row.
 - `test-budget.yaml`: `internal/battenshed` 104 → 105, `internal/battencli` 68 → 69.
 
-**ImpactSummary:** two dep structs gain one field each, and nil-equivalent zero values keep every existing producer test passing; battencli wiring and help text; one new shedrun path.
+**ImpactSummary:** two dep structs gain one field each, and nil-equivalent zero values keep every existing producer test passing; battencli wiring and help text; one new shedrun path; envkit's nil-legal list gains the three `NoticeLog.Now` paths.
