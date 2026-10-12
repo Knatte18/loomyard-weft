@@ -339,7 +339,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "d60f1feb3e51629a75bbb00067b5dec1",
   "masterSessionId": "abc3ebff-734c-4a26-b9d4-7cfc4f7a4c31",
   "batches": {
@@ -379,6 +379,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-convergence-plan/abc3ebff-734c-4a26-b9d4-7cfc4f7a4c31/subagents/agent-a21be2305a3381be9.jsonl"
       ]
+    },
+    "6": {
+      "slug": "board-and-archive-readers",
+      "cards": [
+        "06-board-and-archive-readers",
+        "07-batten-change-classifier",
+        "08-gitrepo-history-reads",
+        "09-gitrepo-landing-reads",
+        "10-report-run-selection"
+      ],
+      "cardHashes": {
+        "06-board-and-archive-readers": "cd190d21ab06aa7fc7f85044ee3378486a38443f1ed8089ce34294c794f8c99f",
+        "07-batten-change-classifier": "665bddf43dd7e6c62fb7c96ff5972b75936464a43b4df9b7f5d83df49eca756a",
+        "08-gitrepo-history-reads": "84c6fc3008b880abb6109240111a6f46bd0670f9836c61992fd25311ea37f2c2",
+        "09-gitrepo-landing-reads": "b0163e8d4f5616992eae86e64b28fab13cd4b25dc84d6c423903019b53626e1b",
+        "10-report-run-selection": "7da175007dd723229fb7026287b422764aabacffc0009b9eb7797a6b252f4a7c"
+      },
+      "startSha": "77d73f5bf7546c12abc2f7442198276072014506",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T13:39:17Z",
+      "sessionId": "abc3ebff-734c-4a26-b9d4-7cfc4f7a4c31",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
