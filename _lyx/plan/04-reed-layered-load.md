@@ -1,7 +1,7 @@
 # Card 4 — reed layered load
 
 **Create:**
-- `plan:internal/reedengine#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
+- `internal/reedengine#ConfigSpec`
 
 **Edit:**
 - `internal/reedengine#LoadConfig` -> `func LoadConfig(dirs configengine.Dirs, module string) (Config, error)`

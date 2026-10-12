@@ -28,7 +28,7 @@
 - `plan:internal/loomengine#ConfigSpec`
 - `plan:internal/modelspec#ConfigSpec`
 - `plan:internal/orchengine#ConfigSpec`
-- `plan:internal/reedengine#ConfigSpec`
+- `internal/reedengine#ConfigSpec`
 - `plan:internal/shuttleengine#ConfigSpec`
 - `plan:internal/websterengine#ConfigSpec`
 
