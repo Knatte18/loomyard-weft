@@ -42,4 +42,5 @@ Stack them in depth instead: one tmux window per strand, behaving like tabs with
 
 ## Related
 
-- `internal/reedengine`'s package documentation — the shipped work that claims the "Selvage" name; reed still has no window support today.
+- `internal/reedengine`'s package documentation — the shipped work that claims the "Selvage" name.
+- `internal/reedengine/window.go` (since a35c8c2b1): reed already opens detached, named, hidden tmux windows in a worktree's session running a `lyx` command; such a window is not a strand, so strand-per-window anchoring is still open.

@@ -1,6 +1,6 @@
 # Measure the Webster kick-start pack with and without
 
-`kickstart-pack-measure` · Note · enhancement, webster
+`kickstart-pack-measure` · Note · enhancement, webster, burler, quarry
 
 Seen at the PR-Gate review of plan-glyph-tuning (PR #559, 2026-10-11): the task built the Webster kick-start pack behind `webster.yaml` `kickstart_pack` (default on) and made it countable, but did not measure it.
 Each begin-batch traces one `webster: kickstart pack` line (on, off or language-none, with resolved and unresolved counts), and each `plan:` handle traces one `webster: handle bind` line.
@@ -29,3 +29,25 @@ The cheap next step, if wanted, is a controlled test: `kickstart_pack: false` fo
 `webster-pack-read-set` (landed `113593990`) reshaped the pack per card, but its fork still reads card by card, so it is not the version to measure.
 Run the next audit once task `kickstart-read-all-first` has landed and a few loom runs have gone through Webster on it, compared against the runs before `113593990`.
 Under read-all-first, calls before the first edit rise by construction, so compare exploration calls per card and total reads instead.
+
+## Was `kick-start-pack`
+
+The Burler side waits on the Webster pack measurement above (triage, 2026-10-12).
+
+Read the closed GitHub issues #227 (implementer prompt) and #228 (Burler, with the operator's architecture-correction comment: inject once before the explore phase so every fork inherits it). Measured basis in quarry's `results/2026-09-06-kickstart` (`bench/loomyard-eval/ladder/results/2026-09-06-kickstart/conclusion.md`, commit `d2e492d`).
+
+## Scope left here: Burler
+
+The Webster implementer pack moved into task `plan-glyph-tuning` (2026-10-11), which also makes the pack switchable by config.
+What stays here is the Burler side from #228: a pack of the reviewed glyphs injected once before the reviewer's explore phase, so every lens fork inherits it.
+Take it up once the Webster pack has run with and without the pack and shown whether it helps.
+
+## The pack is the read set (was note pack-is-the-read-set)
+
+Seen in fan-lab 2026-10-10: a solo `opus[medium]` reviewer given a kick-start pack ("read all listed spans first") read the pack and then explored about 20 more tool calls, so the pack came on top of exploration instead of replacing it.
+Neither the prompt nor the ladder card said to stay with the pack.
+
+The reviewer prompt says the pack is the read set:
+- the reviewer reads the pack's spans and treats them as read;
+- any read beyond them needs a named gap (a caller or spawned process one hop out), within a small tool-call budget;
+- the reviewer ends with one line per extra read saying why the pack lacked it (the fork rule from `fan-master-preread` variant D).

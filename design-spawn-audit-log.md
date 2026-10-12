@@ -1,6 +1,6 @@
 # Spawn audit log: every process lyx starts is recorded and traceable
 
-`spawn-audit-log` · Note · feature, reed, shuttle
+`spawn-audit-log` · Note · feature, reed, shuttle, config
 
 ## Seen
 
@@ -19,3 +19,17 @@ This covers tmux servers, sessions and panes, claude launches, git, and `go buil
 A sampler, such as the reed watchdog, also records per-strand process-tree counts and memory every few seconds,
 so the state just before a freeze survives a reboot.
 `lyx` gains a read verb that summarises the log by minute, run, strand and executable, so a storm can be traced to its source after the fact.
+
+## Was `logger-file-level`
+
+## Seen
+
+The trace files written for each lyx invocation hold only high-level messages, and `_lyx/config/logger.yaml` sets only retention (`trace_retention_count`, `trace_retention_days`).
+The file log has no configurable level, so after the 2026-10-08 crash the traces could not show what lyx's subcommands did.
+Activity-ranked pruning also left the per-minute invocation counts incomplete.
+
+## Idea
+
+`logger.yaml` gains a `level` key (error, warn, info, debug) for the file trace, independent of the `-v` console verbosity, with info as the default.
+Every engine logs its decisions and external calls at info or debug, so raising the level makes most of what lyx does traceable without a rebuild.
+The spawn audit stays always on, whatever the level, because it cannot be turned on after a crash.

@@ -22,6 +22,11 @@ For Discussion this gives two config axes in place of `discussion_producer`:
 
 Zero advisors with the fan on is today's twill, the hub's current setting.
 
+## Retiring the single producer (operator, 2026-10-10; moved from `discussion-multi-llm-bench`)
+
+The seats producer with an empty `discussion_advisors` list covers the single writer's job: one chair prompt for every advisor count says "use your advisors if you have any; with none, decide each question yourself as you judge best", with no conditional rendering.
+Once that is tested, the single producer is parked, since seats with N=0 covers it; the bench should include an N=0 run against solo to show they match.
+
 ## Required
 
 - The seats producer carries the same gates as the gated single-LLM producer (operator, 2026-10-11): a role that runs gated today stays gated after the move.
