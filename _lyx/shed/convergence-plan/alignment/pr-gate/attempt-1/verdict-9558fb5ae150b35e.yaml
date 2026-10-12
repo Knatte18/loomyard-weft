@@ -1,0 +1,8 @@
+verdict: reject
+reason: >-
+  The change breaks a recorded decision. The parent entry "Seed parsing follows run-robustness D4" (2026-10-12) says that after Merge-In
+  the run drops shedrun.ParseSeedTolerant and its "ReadSeed still rejects it" criterion and uses the tolerant ParseSeed.
+  At fd539e313, which comes after the Merge-In of run-robustness, ParseSeedTolerant still exists, reportengine/runs.go still calls it,
+  and seed_test.go pins it, so two seed parsers remain, the outcome PATTERN-tolerant-records and the decision rule out.
+  The report's F1 gives the fix. No peer or parent-commit overlap needs escalation.
+question: ""
