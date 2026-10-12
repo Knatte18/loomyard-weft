@@ -1,0 +1,14 @@
+---
+round: 1
+focus:
+  - "decision-record.md D5 and D7, attack surface: an agent approve at PR-Gate lands on the parent and deploys to prod with no orch turn. Settle whether the stated bound (earlier gates passed, overlap check, `alignment_pr_approve`) actually bounds what the agent can let through, and whether `skip_alignment` or `alignment_timeout_min` being open to the local layer and `run_settings` can route around or weaken it."
+  - "decision-record.md D2, verdict trust boundary: settle whether the per-spawn token, the attempt check and the head and pull request check bound a stale, guessed or forged verdict, and whether the residual forgery (a same-pair agent reading the prompt file) is stated with a bound or only waved at."
+  - "decision-record.md D4 and D5, internal consistency of the state machine: settle whether the parent-review race rules (parent verb during the agent, notify held, restart attach), the `PR-Align` skip conditions (a decision record 'already matches') versus 'escalate writes no decision record', the once-per-run durable reject count, and the timeout versus `parent_review_wait_min` rule contradict each other or leave a path with no defined outcome."
+  - "decision-record.md D3 versus D6, premise check: settle whether 'every other run in flight' (D3, halted runs included) and D6's 'board task with a running status' name the same set, and whether the peer data D6 returns is sufficient for the overlap kinds D3 says escalate (shared package, contradicting decision, same PATTERN entry)."
+  - "decision-record.md D1, D8 and Scope, false premises about existing seams: settle whether the claimed seams (parentreview wired through loomcli, a verb callable from a pair, orch stencil sections, the CLAUDE.md production paragraph) match what the repository does today, and whether D8's board-decision rule and 'handled together' rule are Decisions this task needs or belong outside its scope."
+  - "Relocation and leanness across both files: check whether decision-record.md carries deliberation narrative that belongs in support-log.md (Rationale text longer than the Decision needs, Auto-mode assumptions or Open risks restating a Decision), applying the completeness-before-leanness test first so no requirement the plan writer needs is lost; also check that support-log.md's fork-finding list holds nothing Plan-Write needs that is missing from decision-record.md."
+  - "decision-record.md Acceptance criteria: settle whether each Decision's observable behavior, including D6's refusals, D7's coherence check, D8's notice and the PR-Gate double-escalation case, has a scenario, and whether any scenario asserts something no Decision states."
+---
+
+Focus is set from a read of both artifacts and the writer stencil.
+Excluded by the rubric and the stencil's no-gather rule: exact signatures, `file:line` citations, call-site enumeration, rejected alternatives in the decision record, and the optional notes subsection.
