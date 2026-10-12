@@ -51,7 +51,7 @@ Autonomous mode: no operator answered, so each turn below is the writer's own re
     - scenarios, LOW: a held start's deadline — fixed: D4.
     - scenarios, LOW: 24-hour retention — fixed: 7 days, with its bound (D2).
     - scenarios, LOW: `pause_requested` at upgrade — rejected: the field stays (D8).
-    - scenarios, LOW: who may call — fixed: D1 states any caller, and the audience annotation is the only gate.
+    - scenarios, LOW: who may call — fixed: D1 bounds an agent caller to its own pair's slug and refuses the rest.
     - leanness, MEDIUM: Constraints restated Decisions — fixed: only uncovered entries remain.
     - leanness, LOW: Goal restated Scope, a handled risk, D10's speculative clause, and an auto-mode bullet pointing at the support log — fixed: all cut.
 
@@ -70,8 +70,6 @@ Autonomous mode: no operator answered, so each turn below is the writer's own re
 - Refusing `lyx shuttle interrupt` under a pause: harmless during a pause, so the guard has no need.
 
 ## Review rounds
-
-_No rounds yet._
 
 ### Parent review round 1 (reject)
 
@@ -93,4 +91,4 @@ _No rounds yet._
 - Q10 Does `lyx batten pause` go too? — Auto-pick: no, it stops a Go wait mid-row and nothing else does (D8). Resolved.
 - Q11 How do hub and slug entries share a session? — Auto-pick: the first entry to interrupt a session owns it, and ownership moves on resume while another entry covers it (D3, D6). Resolved.
 - Q12 Which agent spawn paths wait? — Auto-pick: the D4 table. Resolved.
-- Open: whether the 2026-10-12 eleven-hour batten notice came from an older binary or a gap in the awake subtraction (Open risks).
+- Whether the 2026-10-12 eleven-hour batten notice came from an older binary or a gap in the awake subtraction — the plan checks which and fixes the cause (D9). Resolved.
