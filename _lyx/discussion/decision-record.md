@@ -31,6 +31,8 @@ Out:
    This extends the board entry, which names only card files and spans: it moves the existing per-card reads of uncovered files and unresolved glyphs ahead of the first edit, batch-wide.
    The FRESH-READ fragment tells the fork, before any edit, to read whole every existing file any card's target list or `Uses:` list names that no listed span covers, and to locate every unresolved member glyph of every card with `lyx quarry resolve` or a grep, then read its file whole.
    A `plan:` handle in an unresolved list is never located, since it names a member a card creates.
+   The fragment also tells the fork to change a file it has already edited in this batch only with the Edit tool, never by rewriting it whole with the Write tool from content read before that edit.
+   Bound: Decision 4's.
    Rationale: card files must be read before their plain-path targets and `Uses:` lists are known, so these reads cannot join the first turn; doing them batch-wide keeps the entry's "everything read before any edit".
 3. **Pack-on step 1 does not re-read the card file or spans.**
    The pack-on card-read fragment says the card file, read in the first turn, is the whole instruction for that card, and keeps the existing `**Intent:**` fallback to the Card Index in `_lyx/plan/00-overview.md`.
@@ -39,11 +41,12 @@ Out:
    No pack-on fragment tells the fork to read a file whole because an earlier card of the batch edited it, nor to find a member by its glyph's member name for that reason.
    From the pack-on FRESH-READ fragment, the sentence calling the turn at each card's start that card's fresh read and the sentence naming step 1's whole-file read both go.
    Rationale: every listed offset is valid in the first turn, since batches run one fork at a time and no edit has happened yet; later edits use the Edit tool's text matching, which does not depend on line numbers.
-   Bound: what can now get through is a later card's span held in context from the first turn and changed since by an earlier card's edit or a self-fix.
-   An Edit whose `old_string` no longer matches fails loudly, and the card and batch gates, which run every card's tests, catch reasoning over stale content that slips past.
-5. **Listed line numbers hold before any edit only.**
+   Bound: what can now get through is anything read before the first edit and changed since by an earlier card's edit or a self-fix: a listed span from the first turn, and a whole file Decision 2 reads (an uncovered target or `Uses:` file, or a located unresolved glyph's file).
+   An Edit whose `old_string` no longer matches fails loudly, and Decision 2's Edit-only rule keeps a Write built from a pre-edit read from silently dropping an earlier edit.
+   The card and batch gates, which run every card's tests, catch reasoning over stale content that slips past.
+5. **Line numbers obtained before the first edit hold before any edit only.**
    The pack-on locate fragment's opening clause becomes "… and your first turn read every listed span", replacing "step 1 read the card's listed spans".
-   Its "Spans are as of the batch's start … find the member by its glyph's member name" sentence becomes one saying the listed lines describe the tree before any edit, so after an edit the fork locates code by its text and never re-reads by a listed line.
+   Its "Spans are as of the batch's start … find the member by its glyph's member name" sentence becomes one saying every line number obtained before the first edit, the pack's listed lines and the lines a `lyx quarry resolve` call or grep returned while locating an unresolved glyph, describes the tree before any edit, so after an edit the fork locates code by its text and never reads by any such line.
    It keeps "do not call `lyx quarry resolve` or grep for a resolved entry", the `plan:` sentence, the unresolved-glyph sentence, the spec pointer, and "the pack is a kick-start, not a complete list, so read further code, callers or whole files whenever the card needs it".
    Rationale: the board entry keeps further reads open; this sentence is the one guard left against a stale offset, and it costs no read.
 
@@ -57,15 +60,14 @@ Out:
 
 ## Auto-mode assumptions
 
-- The operator's primary ask (read all first) is built, not the alternative (resolve the pack per card with quarry); see the support log.
+- The operator's primary ask (read all first) is built, not the alternative (resolve the pack per card with quarry).
 - The reads of uncovered files and unresolved glyphs are batch-wide, before any edit (Decision 2).
 - No cap on the first turn's read count: batch size is bounded by the active batcher profile, and the board entry accepts a larger first turn.
 
 ## Open risks
 
-- A large batch makes the first turn wide; a pack with many resolved entries puts all their spans into context before the first edit.
-- The `kickstart-pack-measure` audit's "calls before the first edit" metric rises by construction under this design; that audit compares exploration per card or total reads, not calls before the first edit.
-- A fork may reason over a span made stale by an earlier card's edit (Decision 4's bound).
+- A large batch makes the first phase wide: before the first edit, context holds every card file, every listed span and every whole file Decision 2 reads, the uncovered target and `Uses:` files and the located unresolved glyphs' files.
+- A fork may reason over a span or file made stale by an earlier card's edit (Decision 4's bound).
 
 ## Acceptance criteria
 
@@ -73,10 +75,11 @@ Out:
 - A pack-on fork prompt still says inherited context can be stale and only the fork's own current reads count.
 - A pack-on fork prompt tells the fork, before any edit, to read whole every existing target or `Uses:` file of any card that no listed span covers, and to locate every unresolved member glyph of every card and read its file whole.
 - A pack-on fork prompt says a `plan:` handle in an unresolved list is not located.
+- A pack-on fork prompt tells the fork to change a file it has already edited in this batch only with the Edit tool, never by rewriting it whole with Write from content read before that edit.
 - These rules hold for a card naming no member glyph, a card whose member glyphs all failed to resolve, and a batch where quarry was unavailable: every card file is still read in the first turn.
 - A pack-on fork prompt's step 1 does not tell the fork to re-read the card file or spans; it names the card file as the card's instruction and keeps the `**Intent:**` fallback.
 - No pack-on text says step 1 reads spans or is a card's fresh read, tells the fork to read a file whole because an earlier card edited it, or to find a member by its glyph's member name for that reason.
-- The pack-on locate text says listed lines hold before any edit only, and keeps the no-resolve-for-resolved-entries rule, the `plan:` rule, the unresolved-glyph path and the read-further-when-needed sentence.
+- The pack-on locate text says every line number obtained before the first edit, the pack's listed lines and the lines a `lyx quarry resolve` call or grep returned while locating an unresolved glyph, holds before any edit only, and keeps the no-resolve-for-resolved-entries rule, the `plan:` rule, the unresolved-glyph path and the read-further-when-needed sentence.
 - A pack-off fork prompt and a recovery prompt render byte-identically to before.
 - The pack section still renders one subsection per card under the card's pointer path.
 - `doc.go` describes the first-turn read and states Decision 4's bound in place of the member-name rule.
