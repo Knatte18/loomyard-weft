@@ -1,6 +1,6 @@
 # Convergence report: count orch wakes, driver repairs and fresh-code fixes from existing records
 
-`convergence-plan` · Note · enhancement, orch, shed
+`convergence-plan` · Task · enhancement, orch, shed
 
 ## Seen
 

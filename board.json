@@ -21,7 +21,7 @@
       "id": 25,
       "slug": "convergence-plan",
       "title": "Convergence report: count orch wakes, driver repairs and fresh-code fixes from existing records",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "orch",
