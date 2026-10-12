@@ -356,7 +356,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "10d815dd37b13651c061b8428e486bf1",
   "masterSessionId": "51095fde-1181-4f9b-ae2d-4d3eccbf248d",
   "batches": {
@@ -404,6 +404,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-driver-arbiter/51095fde-1181-4f9b-ae2d-4d3eccbf248d/subagents/agent-ac03682a3bb91d6c3.jsonl"
       ]
+    },
+    "7": {
+      "slug": "arbiter-stencil",
+      "cards": [
+        "07-arbiter-stencil",
+        "08-arbiter-prompt-spec",
+        "09-arbiter-eligibility",
+        "10-arbiter-verb",
+        "11-arbiter-cmd-wiring",
+        "12-relaunch-consume-attempt"
+      ],
+      "cardHashes": {
+        "07-arbiter-stencil": "ddacc2a9a88d4a6aad44142c9e3cda2229141be4cb94fdc40ffb10cf60d8d732",
+        "08-arbiter-prompt-spec": "5fc2c41ac3b03ef5b70fb706cf9b5c3f411206dbad36402e199f5e75016b565b",
+        "09-arbiter-eligibility": "57d7103fb52f739f5fe4f9f4c6745c4ecef56d025a4ea4e024ff5194707ee24e",
+        "10-arbiter-verb": "9213708d96da1579676eac7094d2c56804217fbb9c2d8170f998278ad10a9633",
+        "11-arbiter-cmd-wiring": "8dbcd06cc0dea2a08b5246e21b04b0b4597a987dff9c148d70e94f9e0647ecf7",
+        "12-relaunch-consume-attempt": "1839aef130a949ccce1c34f5ff2466d511dc2deb455acfb2d89d657ad1c61783"
+      },
+      "startSha": "ba93e3252d8dca6fd317604d81900a5d76520ff2",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T06:50:52Z",
+      "sessionId": "51095fde-1181-4f9b-ae2d-4d3eccbf248d",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
