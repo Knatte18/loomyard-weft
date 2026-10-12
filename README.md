@@ -26,7 +26,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Merge review after Publish under a parent merge lock**<br>• When the parent moved while a task ran, loom has a cold-start agent review the result of merging the parent in, since no earlier review saw that interaction. | [`merge-review`](design-merge-review.md) | loom |  | loom, burler, batten |
+| 1 | **Merge review perch and a parent merge lock that survives sleep and crashes**<br>• When the parent moved while a task ran, loom has a cold-start agent review the result of merging the parent in, since no earlier review saw that interaction. | [`merge-review`](design-merge-review.md) | loom |  | loom, burler, batten, shed |
 | 2 | **lyx cleans up after itself: temp files and one cleanup command**<br>• Tests and fixtures leave GBs of temps in /tmp; remove them on exit, sweep leftovers, and add lyx cleanup running every module cleanup | [`test-tmp-cleanup`](design-test-tmp-cleanup.md) | loom |  | fabric, loom, batten, board |
 
 ### Layer A
