@@ -1,6 +1,6 @@
 # Merge review perch and a parent merge lock that survives sleep and crashes
 
-`merge-review` · Task · enhancement, loom, burler, batten, shed
+`merge-review` · Task · enhancement, loom, burler, batten, shed · running · Worktree-Create
 
 ## Seen (2026-10-11)
 
