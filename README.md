@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-12 13:47 UTC; every age below is as of then.
+Rendered 2026-10-12 13:49 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,8 +18,8 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Convergence report: count orch wakes, driver repairs and fresh-code fixes from existing records**<br>• A lyx report verb that counts, per run and per week, what woke the orch and what the driver repaired, from records that already exist | [`convergence-plan`](design-convergence-plan.md) | loom | Webster |  | 3h | orch, shed |
-| 2 | **Run records tolerate newer binaries; a hung verify step is not re-run**<br>• Readers and writers of run records keep unknown fields; a verify gate stops a hung step early and never re-runs it unfixed. | [`run-robustness`](design-run-robustness.md) | loom | Merge-Burler-Review | 2h | 2h | batten, shed, webster |
-| 3 | **Paused runs in the overview, hold-notice end, chunked paste, operator shortcuts**<br>• Four small follow-ups: the runs overview shows pauses, the hold-notice deferral ends on a held advisor, long pastes are chunked, and shortcuts are built into lyx. | [`operator-followups`](design-operator-followups.md) | loom | Discussion-Write | 2h | 22m | reed, shuttle, batten, orch |
+| 2 | **Run records tolerate newer binaries; a hung verify step is not re-run**<br>• Readers and writers of run records keep unknown fields; a verify gate stops a hung step early and never re-runs it unfixed. | [`run-robustness`](design-run-robustness.md) | loom | Merge-Burler-Fix | 2h | 2h | batten, shed, webster |
+| 3 | **Paused runs in the overview, hold-notice end, chunked paste, operator shortcuts**<br>• Four small follow-ups: the runs overview shows pauses, the hold-notice deferral ends on a held advisor, long pastes are chunked, and shortcuts are built into lyx. | [`operator-followups`](design-operator-followups.md) | loom | Discussion-Write | 2h | 25m | reed, shuttle, batten, orch |
 
 ### Ready
 
@@ -51,7 +51,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **Weft records push refused once at Publish, passes on retry**<br>• Three runs on 2026-10-12 had the weft push refused once; find the race | [`weft-push-refused-retry`](design-weft-push-refused-retry.md) | 1h | 1h | fabric |
 | 3 | **Plan card spec contradicts CLI tree invariants for a runnable group with an audience** | [`plan-cli-tree-check`](design-plan-cli-tree-check.md) | 1h | 1h | loom |
 | 4 | **Shuttle marks a working agent died when its pane is collapsed**<br>• Readiness reads only the pane capture; a squeezed pane stays blank and the agent is killed at the startup timeout | [`shuttle-ready-blank-pane`](design-shuttle-ready-blank-pane.md) | 1h | 1h | shuttle |
-| 5 | **Loom status pane keeps an old render under the new one**<br>• The checklist pane is not cleared on redraw, so two states stack | [`loom-checklist-stale-render`](design-loom-checklist-stale-render.md) | 0m | 0m | loom |
+| 5 | **Loom status pane keeps an old render under the new one**<br>• The checklist pane is not cleared on redraw, so two states stack | [`loom-checklist-stale-render`](design-loom-checklist-stale-render.md) | 2m | 2m | loom |
 
 ### Enhancements
 
