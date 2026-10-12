@@ -1,7 +1,7 @@
 # Card 6 — loom-status-eighth
 
 **Edit:**
-- `internal/loomcli#statusStrandShareDen`
+- `internal/loomcli/bootstrap.go`
 - `internal/loomcli#TestStatusStrandAddSpec`
 - `internal/loomcli/doc.go`
 

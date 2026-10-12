@@ -1,7 +1,7 @@
 # Card 5 — mount-shortcuts
 
 **Edit:**
-- `cmd/lyx#newRoot`
+- `cmd/lyx/main.go`
 - `cmd/lyx#TestCLITree_EveryCommand`
 - `cmd/lyx#TestSandboxCoverage_AllModulesCoveredOrExcluded`
 - `cmd/lyx/testdata/test-budget.yaml`
@@ -26,19 +26,21 @@ D4 and D5: `lyx` mounts the shortcuts, and the CLI guards treat them as shortcut
 
 - `newRoot` calls `shortcutcli.Mount(root, newRoot)` after `root.AddCommand(...)` and before the help command is set, so every root `newRoot` builds, the fresh roots a shortcut runs its argvs on included, carries the same shortcuts.
   Cobra lists the shortcut group under its `Shortcuts:` title in `lyx --help`, and the ungrouped module commands under its `Additional Commands:` title.
-  The root's `Long`, inside `newRoot`, gains one line after "Available modules": "Shortcuts, from internal/shortcutcli's embedded file: attach, prime."
+  The root's `Long`, inside `newRoot`, gains one line after "Available modules": "Shortcuts, declared in internal/shortcutcli's embedded file, are listed under their own heading in lyx --help."
   The two file comments at the top of `cmd/lyx/main.go` (the file comment and the package comment, which say the root is assembled from every module's `Command()`) each gain that `newRoot` then mounts the shortcuts of `internal/shortcutcli`.
 - `TestCLITree_EveryCommand`'s subtest "root.Long names every mounted module" skips a child whose `GroupID` is `shortcutcli.GroupID`, since a shortcut is not a module.
   The tree walk itself still visits the shortcuts, so `TestCLIForm_EveryCommand` checks their `Short`, `Use` and audience unchanged.
 - `TestSandboxCoverage_AllModulesCoveredOrExcluded` skips a root child whose `GroupID` is `shortcutcli.GroupID` when it collects the registered modules, beside the `completion` skip, with a comment saying a shortcut runs other modules' commands and has nothing of its own for a sandbox scenario to exercise.
   `registration_test.go` needs no change: it finds packages by their `Command()` function, and `internal/shortcutcli` has none.
+- Both skips let through exactly the root children in `shortcutcli.GroupID`, and the shortcut file bounds that set: `TestShortcuts_FileAndRootListing` asserts the group's members are the file's shortcuts, so a module command carrying that `GroupID` fails it.
 
 `cmd/lyx/shortcuts_test.go`:
 
 - `shortcutProblems` returns one problem per defect of `shortcuts` against `root`: a name equal to a root command outside the shortcut group; a name a second shortcut also uses; an empty argv; an argv whose words, through `root.Find`, resolve to an error, to `root` itself, to a command that is not `Runnable` or not `clihelp.Invocable` (a bare group such as `reed`), or to a command in the shortcut group.
 - `TestShortcuts_FileAndRootListing` (tier 1, parallel) builds `newRoot()` and:
   - asserts `shortcutProblems(root, shortcutcli.Load())` is empty, with `Load`'s error nil;
-  - runs synthetic rows through `shortcutProblems` against the same root, each expected to report a problem containing a named substring: a shortcut named `reed`, two shortcuts named `go-to`, an empty argv, the argv `[reed]`, the argv `[nosuch, verb]`, and the argv `[prime]`;
+  - asserts the names of the root's children whose `GroupID` is `shortcutcli.GroupID` equal, as a set, the names `shortcutcli.Load()` returns;
+  - runs synthetic rows through `shortcutProblems` against the same root, each expected to report a problem containing a named substring: a shortcut named `reed`, two shortcuts named `go-to`, an empty argv, the argv `[reed]`, the argv `[nosuch, verb]`, the argv `[--verbose]` (which `root.Find` strips and resolves to the root with no error, expecting the problem that names the root), and the argv `[prime]`;
   - runs `run([]string{"--help"}, &out)` and asserts exit 0 and that the output holds the `Shortcuts:` heading followed by an `attach` and a `prime` line before the `Additional Commands:` heading;
   - runs `run([]string{"help", "index"}, &out)` and asserts the operator index holds the line `` - `prime [<args>...]`: shortcut: lyx orch start, then lyx reed attach `` and the `attach` line.
 - `cmd/lyx`'s row in `cmd/lyx/testdata/test-budget.yaml` goes from 78 to 79 for the new top-level test.
