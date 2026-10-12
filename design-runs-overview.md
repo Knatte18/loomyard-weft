@@ -1,4 +1,4 @@
-# Runs overview pane above the orch
+# reed: runs overview pane above the orch; Selvage reachable by key
 
 `runs-overview` · Note · feature, reed, orch, batten
 
@@ -34,6 +34,15 @@ This replaces the 2026-10-08 placement under the orch; the rest of that section 
 The overview's height follows the number of runs, which is what led to the own-window choice on 2026-10-02 and 2026-10-05.
 The layout has to size the pane to its lines (reed's told geometry), or fix it at a small height with a summary line when the runs do not fit.
 reed's one layout rule today would collapse the orch above and grow the overview, the opposite of what is wanted; note `reed-layout-shares` covers the sizing this pane needs.
+
+## Selvage reachable by key (operator, 2026-10-12; merged from `selvage-nav`)
+
+In every reed session, Selvage is reachable like a strand: a free terminal tied to reed is useful, so the operator wants to step to it and zoom it in.
+
+- Today (`internal/reedengine/doc.go`) Alt+Up and Alt+Down step through the strand panes and pass over Selvage, and Alt+z does nothing in Selvage, so Selvage is reached only by mouse and never full screen.
+- Alt+Up and Alt+Down include Selvage in their cycle, keeping the zoom, so stepping onto it while zoomed shows it full screen.
+- Alt+z zooms and unzooms Selvage like a strand pane.
+- Open, for later (operator): whether Alt+Up and Alt+Down should ever step between windows rather than panes.
 
 ## Related entries
 
