@@ -25,7 +25,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 3 | **lyx pause: stop every run at once, safely and on purpose**<br>• A hub-wide pause that interrupts every Claude session with Esc within seconds, unlike the step-boundary pauses, recorded as ordered so no failure or idle path fires | [`lyx-halt`](design-lyx-halt.md) | loom | Plan-Write |  |  | batten, shuttle |
-| 4 | **Board writers keep unknown fields; lyx cleanup follow-ups**<br>• An old lyx process drops board fields it does not know; plus the open items from the lyx cleanup PR | [`board-field-drop`](design-board-field-drop.md) | loom | Merge-Burler-Review |  | 1h | board, batten |
+| 4 | **Board writers keep unknown fields; lyx cleanup follow-ups**<br>• An old lyx process drops board fields it does not know; plus the open items from the lyx cleanup PR | [`board-field-drop`](design-board-field-drop.md) | loom | Merge-Burler-Fix |  | 1h | board, batten |
 | 5 | **Webster kick-start pack: read the card's spans in one turn, per-card packs**<br>• Forks read listed spans whole and spread out; adopt the bench wording, per-card packs, span-only FRESH-READ and one-line var entries | [`webster-pack-read-set`](design-webster-pack-read-set.md) | loom | Webster-Burler-Fix | 44m | 44m | webster, stencil |
 | 6 | **Run records tolerate newer binaries; a hung verify step is not re-run**<br>• Readers and writers of run records keep unknown fields; a verify gate stops a hung step early and never re-runs it unfixed. | [`run-robustness`](design-run-robustness.md) | loom | Worktree-Create | 1m | 0m | batten, shed, webster |
 
