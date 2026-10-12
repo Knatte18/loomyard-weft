@@ -1,0 +1,8 @@
+status: OK
+head_sha: ba9ad9d746fb794e3cc3e806a0dd8b253f2567a9
+deviations:
+  - internal/loomcli/pausehold.go
+  - internal/loomcli/pausehold_test.go
+  - internal/battencli/pausehold_test.go
+  - internal/battenshed/innerrun_pause.go
+  - internal/battencli/lifecycle_integration_test.go

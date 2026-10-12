@@ -1,10 +1,10 @@
 # Card 15 — start-refusals
 
 **Create:**
-- `plan:internal/loomcli#loomCLI.refuseCovered` -> `func (c *loomCLI) refuseCovered(retry string) error`
-- `plan:internal/battencli#battenCLI.refuseCovered` -> `func (c *battenCLI) refuseCovered() error`
-- `plan:internal/loomcli#TestStartCmd_RefusesWhileAPauseCoversTheRun` -> `func TestStartCmd_RefusesWhileAPauseCoversTheRun(t *testing.T)`
-- `plan:internal/battencli#TestBattenRun_RefusesWhileAPauseCoversTheSlug` -> `func TestBattenRun_RefusesWhileAPauseCoversTheSlug(t *testing.T)`
+- `internal/loomcli#loomCLI.refuseCovered`
+- `internal/battencli#battenCLI.refuseCovered`
+- `internal/loomcli#TestStartCmd_RefusesWhileAPauseCoversTheRun`
+- `internal/battencli#TestBattenRun_RefusesWhileAPauseCoversTheSlug`
 
 **Edit:**
 - `internal/loomcli#loomCLI.startCmd`

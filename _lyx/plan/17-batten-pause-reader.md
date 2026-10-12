@@ -1,8 +1,8 @@
 # Card 17 — batten-pause-reader
 
 **Create:**
-- `plan:internal/battenshed#innerRunProducer.coverage` -> `func (p *innerRunProducer) coverage(w *childWait) pauserecord.Coverage`
-- `plan:internal/battencli#TestWire_PointsTheNetworkGateAtItsSlug` -> `func TestWire_PointsTheNetworkGateAtItsSlug(t *testing.T)`
+- `internal/battenshed#innerRunProducer.coverage`
+- `internal/battencli#TestWire_PointsTheNetworkGateAtItsSlug`
 
 **Edit:**
 - `internal/battenshed#InnerRunDeps`
