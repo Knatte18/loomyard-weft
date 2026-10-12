@@ -1,6 +1,6 @@
 # Small cleanups: tokencount cutoff skew, audit reader globs, duplicate weft carve-out
 
-`cleanup-1012` · Task · enhancement, fabric · running · PR-Gate
+`cleanup-1012` · Task · enhancement, fabric · running · Finalize
 
 Three small, independent cleanups gathered from recent PR-Gate reviews and a follow-up read of the vocabulary scan.
 
