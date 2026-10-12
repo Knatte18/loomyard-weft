@@ -2,8 +2,6 @@
 
 `intake-bugs-1012` · Task · bug, loom, webster, shed
 
-Depends on: [`run-robustness`](design-run-robustness.md)
-
 Three bugs taken in from GitHub on 2026-10-12, bundled as one small task.
 
 ## Was `plan-gate-external-test-paths`
