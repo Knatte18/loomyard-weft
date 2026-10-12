@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-12 09:59 UTC; every age below is as of then.
+Rendered 2026-10-12 10:01 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **reed: runs overview pane above the orch, gate checklist, Selvage by key, run windows close**<br>• A pane above the orch listing every run in flight and its loom stage, a per-run gate checklist pane, Selvage in the Alt+arrow cycle, and run windows that close when their run ends | [`runs-overview`](design-runs-overview.md) | loom | Plan-Burler-Review |  |  | reed, orch, batten |
-| 2 | **Merge review perch and a parent merge lock that survives sleep and crashes**<br>• When the parent moved while a task ran, loom has a cold-start agent review the result of merging the parent in, since no earlier review saw that interaction. | [`merge-review`](design-merge-review.md) | loom | Webster-Burler-Fix |  |  | loom, burler, batten, shed |
+| 2 | **Merge review perch and a parent merge lock that survives sleep and crashes**<br>• When the parent moved while a task ran, loom has a cold-start agent review the result of merging the parent in, since no earlier review saw that interaction. | [`merge-review`](design-merge-review.md) | loom | Webster-Bouncer |  |  | loom, burler, batten, shed |
 
 #### Normal priority
 
@@ -40,7 +40,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Alignment agent in loom checks a run against the board and runs in flight**<br>• A cold-start agent at parent review and PR-Gate reads the board and in-flight runs records and checks alignment, waking the orch only on an overlap. | [`alignment-agent`](design-alignment-agent.md) | loom | `merge-review` |  | 49m | orch, loom |
+| 1 | **Alignment agent in loom checks a run against the board and runs in flight**<br>• A cold-start agent at parent review and PR-Gate reads the board and in-flight runs records and checks alignment, waking the orch only on an overlap. | [`alignment-agent`](design-alignment-agent.md) | loom | `merge-review` |  | 51m | orch, loom |
 
 ## Notes
 
@@ -100,7 +100,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) |  |  | webster |
-| 2 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) |  | 45m | orch, batten |
+| 2 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) |  | 47m | orch, batten |
 
 #### Normal priority
 
