@@ -964,6 +964,24 @@
       "body": "On 2026-10-12 the weft records push at Publish was refused once and passed on retry in three runs: `board-field-drop`, `webster-pack-read-set` and `alignment-agent`.\n\nA refusal that clears on retry points at a race on the weft remote, likely another run's push or a board write landing between fetch and push.\nThe retry hides it today, but each refusal costs a round and a run without retry headroom would halt.\n\n## What to find\n\n- Which ref was refused and why (non-fast-forward or lock), from the Publish trace in each run.\n- Whether the refusal comes from concurrent runs writing weft at the same time.\n- Whether the push should fetch and rebase before its first attempt, or the retry is the intended path and only needs logging.\n",
       "created": "2026-10-12T12:03:51Z",
       "revised": "2026-10-12T12:03:51Z"
+    },
+    {
+      "id": 441,
+      "slug": "plan-cli-tree-check",
+      "title": "Plan card spec contradicts CLI tree invariants for a runnable group with an audience",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        588
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #588](https://github.com/Knatte18/loomyard/issues/588).\n\nA card asked for a new `lyx loom peers` verb as a runnable group carrying `AudienceRole`.\n`cmd/lyx/clitree_test.go` requires a bare group to print help (exit 0) and a mistyped subcommand to refuse with \"unknown subcommand\", and `clihelp.Invocable` treats a runnable group with no `Use` token or flag as non-invocable, so such a group must carry no audience.\nThe implementer had to deviate from the card: the group carries no audience annotation and only the `peers show` subcommand carries `AudienceRole`.\n\nAbnormal: the plan specified a shape the CLI tree invariants forbid, and the conflict surfaced only during implementation.\n\nTo do: have plan authoring or plan review check CLI-surface cards against the `clitree_test.go` and `clihelp.Invocable` rules, and document in the CLI-authoring docs that audience annotations belong on leaf verbs.\n\nProvenance: task `alignment-agent`, note `01-loom-alignment-config.md`.\n",
+      "created": "2026-10-12T12:05:45Z",
+      "revised": "2026-10-12T12:05:45Z"
     }
   ]
 }
