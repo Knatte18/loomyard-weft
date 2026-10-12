@@ -61,7 +61,7 @@
 
 **Uses:**
 - `plan:internal/landingshed#NewMergeIn`
-- `plan:internal/landingshed#ReadMergeRecord`
+- `internal/landingshed#ReadMergeRecord`
 - `plan:contracts/stencils#LoomRubricMergeReview`
 
 **Intent:**

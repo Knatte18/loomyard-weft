@@ -19,10 +19,10 @@
 
 **Uses:**
 - `internal/shedrecipe#parseSegment`
-- `plan:internal/landingshed#ReadMergeRecord`
-- `plan:internal/landingshed#MergeRecord.SkipsReview`
-- `plan:internal/landingshed#RecordMergeReviewed`
-- `plan:internal/landingshed#MergeReviewNote`
+- `internal/landingshed#ReadMergeRecord`
+- `internal/landingshed#MergeRecord.SkipsReview`
+- `internal/landingshed#RecordMergeReviewed`
+- `internal/landingshed#MergeReviewNote`
 
 **Intent:**
 Teach the Bouncer and Burler entries the keys the Merge-Review rows will carry, and fill the seams they resolve, before any recipe row uses them.

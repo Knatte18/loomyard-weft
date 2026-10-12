@@ -16,13 +16,13 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/landingshed#newParentGuard`
-- `plan:internal/landingshed#parentGuard.ensure`
-- `plan:internal/landingshed#computeOverlap`
-- `plan:internal/landingshed#WriteMergeRecord`
-- `plan:internal/landingshed#ReadReviewedTip`
-- `plan:internal/fabricengine#Fabric.FastForwardPair`
-- `plan:internal/fabricengine#FastForwardResult`
+- `internal/landingshed#newParentGuard`
+- `internal/landingshed#parentGuard.ensure`
+- `internal/landingshed#computeOverlap`
+- `internal/landingshed#WriteMergeRecord`
+- `internal/landingshed#ReadReviewedTip`
+- `internal/fabricengine#Fabric.FastForwardPair`
+- `internal/fabricengine#FastForwardResult`
 - `internal/landingshed#preMerge.clear`
 - `internal/landingshed#verifyGate.check`
 

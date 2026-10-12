@@ -27,10 +27,10 @@
 - `internal/landingshed#Publish.noteMergeCommit`
 
 **Uses:**
-- `plan:internal/landingshed#newParentGuard`
-- `plan:internal/landingshed#parentGuard.ensure`
-- `plan:internal/landingshed#parentGuard.release`
-- `plan:internal/landingshed#parentGuard.moved`
+- `internal/landingshed#newParentGuard`
+- `internal/landingshed#parentGuard.ensure`
+- `internal/landingshed#parentGuard.release`
+- `internal/landingshed#parentGuard.moved`
 
 **Intent:**
 Make Publish, PR-Gate and Finalize hold the parent lock and reroute to Merge-In on a moved parent (D5, D9), and add the invariant they share (D14).

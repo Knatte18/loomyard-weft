@@ -25,9 +25,9 @@
 - `internal/parentlock#Store.List`
 - `internal/parentlock#Store.Release`
 - `internal/shuttleengine#ReadAgentWaits`
-- `plan:internal/fabricengine#Fabric.ReadParentTips`
-- `plan:internal/fabricengine#Fabric.HoldsWork`
-- `plan:internal/landingshed#ReadMergeRecord`
+- `internal/fabricengine#Fabric.ReadParentTips`
+- `internal/fabricengine#Fabric.HoldsWork`
+- `internal/landingshed#ReadMergeRecord`
 
 **Intent:**
 Let batten keep a lock handed to it at PR-Gate, backstop a loop that failed to release (D8), and resume a child whose base moved while it awaits the orch (D10).

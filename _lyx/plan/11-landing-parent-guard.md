@@ -1,16 +1,16 @@
 # Card 11 — landing-parent-guard
 
 **Create:**
-- `plan:internal/landingshed#ParentLockDeps` -> `type ParentLockDeps struct`
-- `plan:internal/landingshed#parentGuard` -> `type parentGuard struct`
-- `plan:internal/landingshed#newParentGuard` -> `func newParentGuard(deps Deps) parentGuard`
-- `plan:internal/landingshed#parentGuard.ensure` -> `func (g parentGuard) ensure(ctx context.Context, producer string) (string, error)`
-- `plan:internal/landingshed#parentGuard.release` -> `func (g parentGuard) release(producer string)`
-- `plan:internal/landingshed#parentGuard.moved` -> `func (g parentGuard) moved(producer string) (string, error)`
+- `internal/landingshed#ParentLockDeps`
+- `internal/landingshed#parentGuard`
+- `internal/landingshed#newParentGuard`
+- `internal/landingshed#parentGuard.ensure`
+- `internal/landingshed#parentGuard.release`
+- `internal/landingshed#parentGuard.moved`
 - `internal/landingshed/parentguard_test.go`
-- `plan:internal/loomcli#parentLockDeps` -> `func parentLockDeps(l *lyxcwd.Location, runID, statusPath, statusLockPath string) landingshed.ParentLockDeps`
-- `plan:internal/loomcli#loopLockOwner` -> `func loopLockOwner(l *lyxcwd.Location, runID string) func() (parentlock.Owner, error)`
-- `plan:internal/loomcli#TestLoopLockOwner` -> `func TestLoopLockOwner(t *testing.T)`
+- `internal/loomcli#parentLockDeps`
+- `internal/loomcli#loopLockOwner`
+- `internal/loomcli#TestLoopLockOwner`
 
 **Edit:**
 - `internal/landingshed#Deps`
@@ -35,12 +35,12 @@
 - `internal/parentlock#NewWait`
 - `internal/parentlock#WriteWait`
 - `internal/parentlock#RemoveWait`
-- `plan:internal/fabricengine#Fabric.ReadParentTips`
-- `plan:internal/fabricengine#Fabric.HoldsWork`
-- `plan:internal/fabricengine#Fabric.ChangedPaths`
-- `plan:internal/landingshed#ReadMergeRecord`
-- `plan:internal/landingshed#MergeRecordPath`
-- `plan:internal/landingshed#MergeReviewedPath`
+- `internal/fabricengine#Fabric.ReadParentTips`
+- `internal/fabricengine#Fabric.HoldsWork`
+- `internal/fabricengine#Fabric.ChangedPaths`
+- `internal/landingshed#ReadMergeRecord`
+- `internal/landingshed#MergeRecordPath`
+- `internal/landingshed#MergeReviewedPath`
 
 **Intent:**
 Wire the parent lock and the code-side parent reads into landing's told surface, and add the one guard every lock-taking row will share (D5, D9, D12), before any row calls it.

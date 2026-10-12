@@ -1,17 +1,17 @@
 # Card 10 — landing-merge-record
 
 **Create:**
-- `plan:internal/landingshed#MergeRecord` -> `type MergeRecord struct`
-- `plan:internal/landingshed#Overlap` -> `type Overlap struct`
-- `plan:internal/landingshed#MergeRecordPath` -> `func MergeRecordPath(scratchDir string) string`
-- `plan:internal/landingshed#MergeReviewedPath` -> `func MergeReviewedPath(scratchDir string) string`
-- `plan:internal/landingshed#ReadMergeRecord` -> `func ReadMergeRecord(path string) (MergeRecord, bool, error)`
-- `plan:internal/landingshed#WriteMergeRecord` -> `func WriteMergeRecord(path string, rec MergeRecord) error`
-- `plan:internal/landingshed#ReadReviewedTip` -> `func ReadReviewedTip(path string) (string, bool, error)`
-- `plan:internal/landingshed#RecordMergeReviewed` -> `func RecordMergeReviewed(recordPath, reviewedPath string) error`
-- `plan:internal/landingshed#computeOverlap` -> `func computeOverlap(parentPaths, taskPaths []string) Overlap`
-- `plan:internal/landingshed#MergeRecord.SkipsReview` -> `func (r MergeRecord) SkipsReview() bool`
-- `plan:internal/landingshed#MergeReviewNote` -> `func MergeReviewNote(recordPath string) string`
+- `internal/landingshed#MergeRecord`
+- `internal/landingshed#Overlap`
+- `internal/landingshed#MergeRecordPath`
+- `internal/landingshed#MergeReviewedPath`
+- `internal/landingshed#ReadMergeRecord`
+- `internal/landingshed#WriteMergeRecord`
+- `internal/landingshed#ReadReviewedTip`
+- `internal/landingshed#RecordMergeReviewed`
+- `internal/landingshed#computeOverlap`
+- `internal/landingshed#MergeRecord.SkipsReview`
+- `internal/landingshed#MergeReviewNote`
 - `internal/landingshed/mergerecord_test.go`
 
 **Edit:**

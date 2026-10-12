@@ -1,9 +1,9 @@
 # Card 9 — landing-idle-config
 
 **Create:**
-- `plan:internal/landingshed#defaultIdleReleaseMin` -> `const defaultIdleReleaseMin = 10`
-- `plan:internal/landingshed#Config.IdleRelease` -> `func (c Config) IdleRelease() time.Duration`
-- `plan:internal/landingshed#TestConfig_IdleRelease` -> `func TestConfig_IdleRelease(t *testing.T)`
+- `internal/landingshed#defaultIdleReleaseMin`
+- `internal/landingshed#Config.IdleRelease`
+- `internal/landingshed#TestConfig_IdleRelease`
 
 **Edit:**
 - `internal/landingshed#Config`

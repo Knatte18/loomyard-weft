@@ -1,22 +1,22 @@
 # Card 7 — fabric-parent-reads
 
 **Create:**
-- `plan:internal/fabricengine#ParentRelation` -> `type ParentRelation string`
-- `plan:internal/fabricengine#ParentEqual` -> `const ParentEqual ParentRelation = "equal"`
-- `plan:internal/fabricengine#ParentBehind` -> `const ParentBehind ParentRelation = "behind"`
-- `plan:internal/fabricengine#ParentAhead` -> `const ParentAhead ParentRelation = "ahead"`
-- `plan:internal/fabricengine#ParentDiverged` -> `const ParentDiverged ParentRelation = "diverged"`
-- `plan:internal/fabricengine#ParentNoUpstream` -> `const ParentNoUpstream ParentRelation = "no-upstream"`
-- `plan:internal/fabricengine#ParentTips` -> `type ParentTips struct`
-- `plan:internal/fabricengine#Fabric.ReadParentTips` -> `func (f *Fabric) ReadParentTips(branch string, fetch bool) (ParentTips, error)`
-- `plan:internal/fabricengine#Fabric.ChangedPaths` -> `func (f *Fabric) ChangedPaths(from, to string) ([]string, error)`
-- `plan:internal/fabricengine#Fabric.HoldsWork` -> `func (f *Fabric) HoldsWork(base, source string) (bool, error)`
-- `plan:internal/fabricengine#FastForwardRefusal` -> `type FastForwardRefusal string`
-- `plan:internal/fabricengine#FastForwardDirty` -> `const FastForwardDirty FastForwardRefusal = "dirty"`
-- `plan:internal/fabricengine#FastForwardMergeInProgress` -> `const FastForwardMergeInProgress FastForwardRefusal = "merge-in-progress"`
-- `plan:internal/fabricengine#FastForwardNotFastForward` -> `const FastForwardNotFastForward FastForwardRefusal = "not-fast-forward"`
-- `plan:internal/fabricengine#FastForwardResult` -> `type FastForwardResult struct`
-- `plan:internal/fabricengine#Fabric.FastForwardPair` -> `func (f *Fabric) FastForwardPair(opts SyncOptions) (res FastForwardResult, err error)`
+- `internal/fabricengine#ParentRelation`
+- `internal/fabricengine#ParentEqual`
+- `internal/fabricengine#ParentBehind`
+- `internal/fabricengine#ParentAhead`
+- `internal/fabricengine#ParentDiverged`
+- `internal/fabricengine#ParentNoUpstream`
+- `internal/fabricengine#ParentTips`
+- `internal/fabricengine#Fabric.ReadParentTips`
+- `internal/fabricengine#Fabric.ChangedPaths`
+- `internal/fabricengine#Fabric.HoldsWork`
+- `internal/fabricengine#FastForwardRefusal`
+- `internal/fabricengine#FastForwardDirty`
+- `internal/fabricengine#FastForwardMergeInProgress`
+- `internal/fabricengine#FastForwardNotFastForward`
+- `internal/fabricengine#FastForwardResult`
+- `internal/fabricengine#Fabric.FastForwardPair`
 - `internal/fabricengine/parenttips_integration_test.go`
 
 **Edit:**

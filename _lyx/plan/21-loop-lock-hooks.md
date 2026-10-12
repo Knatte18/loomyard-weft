@@ -10,7 +10,7 @@
 
 **Edit:**
 - `internal/loomcli#loomCLI.specFor`
-- `plan:internal/loomcli#loopLockOwner`
+- `internal/loomcli#loopLockOwner`
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
