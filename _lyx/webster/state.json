@@ -321,7 +321,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 11,
   "masterStrand": "ee46b2e92668b2497d9bd352600e7d0a",
   "masterSessionId": "d00e9340-cdfe-419b-a2d7-fd26fe1b4f19",
   "batches": {
@@ -404,6 +404,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-robustness/d00e9340-cdfe-419b-a2d7-fd26fe1b4f19/subagents/agent-a29419e873e5ef5d0.jsonl"
       ]
+    },
+    "11": {
+      "slug": "gate-test-watchdog",
+      "cards": [
+        "11-gate-test-watchdog",
+        "12-webster-hang-gate",
+        "13-loom-watchdog-halt",
+        "14-landing-watchdog-halt"
+      ],
+      "cardHashes": {
+        "11-gate-test-watchdog": "de0cb7c0ff26fde323bfc0d9d855b588a1c7539fbc8f30217cb96bec559acd7a",
+        "12-webster-hang-gate": "4c47d0be66c8d9005c4ac981b04d66d35aab049b00a0d1345d9b43c7b6357c1d",
+        "13-loom-watchdog-halt": "81d1568e278b30447bf6c6fe763b6926de5012bdb8e97d243e9567ef85922624",
+        "14-landing-watchdog-halt": "c75280f8e7c63e3561d5dfc8e64ad3fa58dd7efafcd4ea2e0a91d6e229db872b"
+      },
+      "startSha": "f7f699e6ae0a73cec907ba170649a9fd651a80e7",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T12:44:28Z",
+      "sessionId": "d00e9340-cdfe-419b-a2d7-fd26fe1b4f19",
+      "terminal": false,
+      "status": ""
     },
     "6": {
       "slug": "batten-cleanup-tolerant",
