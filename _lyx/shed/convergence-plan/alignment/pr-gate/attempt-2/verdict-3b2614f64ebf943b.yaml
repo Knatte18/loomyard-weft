@@ -1,0 +1,15 @@
+verdict: escalate
+reason: >-
+  The rework at 1a0e9e54c resolves attempt 1's reject: shedrun.ParseSeedTolerant is gone, the report reads seeds through
+  the tolerant ParseSeed, and no test pins a second parser, as the parent entry "Seed parsing follows run-robustness D4" asks.
+  The rest of the diff matches the goal and D1 to D12. The in-flight peer operator-followups now changes cmd/lyx/main.go,
+  including the same "Available modules" line this run edits, as well as the internal/loomcli and cmd/lyx packages that this run also changes.
+  That is a code-file and package overlap, which the escalation rule sends to the parent.
+question: >-
+  operator-followups and convergence-plan both change cmd/lyx/main.go. Both edit the root's "Available modules:" line,
+  so whichever lands second hits a text conflict. Each also adds an import and a mount: reportcli here, shortcutcli there.
+  Both runs also change the internal/loomcli package in different files: halt.go and landingdeps.go here,
+  bootstrap.go and doc.go there. Both change cmd/lyx tests in different files.
+  No recorded decision in either run contradicts the other. May convergence-plan land now, with operator-followups merging it in at its own Merge-In
+  and keeping both main.go edits? Or should it wait for operator-followups to land first?
+superseded: []
