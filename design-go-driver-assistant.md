@@ -1,4 +1,4 @@
-# Go driver per task, with a cold assistant and the arbiter behind it
+# Go driver per task, with the tackler (cold assistant) and the arbiter behind it
 
 `go-driver-assistant` · Task · feature, loom, shed
 
@@ -26,7 +26,7 @@ Three tiers:
 2. **Assistant**: a cold, cheap agent (default `haiku`, configurable) spawned only at a stop no rule settles (interrupted, failed producer, unexplained stop). It reads the stop envelope, the stop report and the logs, and answers with a verdict: resume, goto, hand back to the parent, or escalate to the arbiter. It escalates when it cannot tell the cause, or judges the stop needs something stronger.
    Today's LLM driver is in effect this middle tier, but it lives for the whole run; the assistant lives only for one stop.
    It is spawned cold at each stop, never kept warm on standby (operator, 2026-10-12): a standby session knows nothing of a stop before it happens, so it would save only the process start, while it would have to live, be watched and could die or hang for the whole run.
-   Its name is still open (candidates: overlooker, piecer, tackler; not loomfixer, which is too loom-bound for a shed-wide helper).
+   Its name is **tackler** (operator, 2026-10-12): in the Lancashire weaving sheds the tackler was the mechanic called when a loom stopped, who fixed it and set it running again. The name fits any shed run, not only loom.
 3. **Arbiter** (`opus[high]`): spawned by the Go driver for a Bouncer escalation it may take, or by the assistant's escalation. Unchanged otherwise.
 
 Anything needing a parent choice still goes to the orch.
