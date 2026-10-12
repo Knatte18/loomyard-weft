@@ -14,3 +14,8 @@ It was the first use of the alignment agent after `alignment-agent` landed.
 
 - Treat a recorded `SessionStart` plus a `UserPromptSubmit` or tool event in the run's `events.jsonl` as proof of readiness, ahead of the capture.
 - Give the probe a minimum pane height, or capture scrollback, so a collapsed strand cannot read as never-ready.
+
+## Seen again
+
+- 2026-10-12, `operator-followups` parent review round 1: the alignment agent died at spawn the same way (blank capture, "provider never became ready").
+- `operator-followups`' D6 halves the loom status pane's share of the window, which eases the squeeze but does not fix the probe.
