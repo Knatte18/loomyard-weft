@@ -79,7 +79,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 17 | **Twill for Plan: measure fewer Plan-Review rounds; wrong-parent-dir miss**<br>• After twill-plan lands: measure a lower plan_max_bounces, and cover the parent-directory miss every bench arm shared | [`twill-plan-followups`](design-twill-plan-followups.md) |  | 1h | loom |
 | 18 | **Go-driven shed with a cold LLM watcher at every level**<br>• A Go loop always steps the run; an LLM watcher is spawned only when the loop stops on something it cannot pass, the same at loom and hub level | [`go-driven-shed`](design-go-driven-shed.md) | 1h | 1h | shed, batten, loom, orch |
 | 19 | **No sanctioned Go formatter verb for agents that may not run rewrite scripts** | [`agent-gofmt-verb`](design-agent-gofmt-verb.md) | 28m | 28m | shuttle |
-| 20 | **Kick-start pack: read every card's spans in the first turn**<br>• Implementer fork reads all cards and spans in one first turn, before any edit; drop the whole-file rule | [`kickstart-read-all-first`](design-kickstart-read-all-first.md) | 18m | 18m | webster, stencil |
+| 20 | **Kick-start pack: read every card's spans in the first turn**<br>• Implementer fork reads all cards and spans in one first turn, before any edit; drop the whole-file rule | [`kickstart-read-all-first`](design-kickstart-read-all-first.md) | 19m | 18m | webster, stencil |
 
 #### Low priority
 
