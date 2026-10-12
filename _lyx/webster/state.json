@@ -821,7 +821,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 13,
   "masterStrand": "993b22c04ce849f45f96709a28dd49ef",
   "masterSessionId": "7361d6f2-17ce-4121-9688-8cf5be50f44c",
   "batches": {
@@ -865,6 +865,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-ad9994eeb61f22235.jsonl"
       ]
+    },
+    "13": {
+      "slug": "configreg-local-bounds",
+      "cards": [
+        "13-configreg-local-bounds",
+        "14-configreg-run-settings",
+        "15-configsync-layer-reconcile",
+        "16-sparse-migration",
+        "17-config-cli-layers"
+      ],
+      "cardHashes": {
+        "13-configreg-local-bounds": "caa4633d1769e54a84768fe2cad7c3832e15d5ae09c52481c10d8c81351687a7",
+        "14-configreg-run-settings": "1b028db20a2f3deedc977ef635324ebbcfd7719f0ebde34674f3059ce5cf09b5",
+        "15-configsync-layer-reconcile": "2c8acf7c92423d64e897ad8879b372a98804ff586c8f99c4c009d4ed51af88c8",
+        "16-sparse-migration": "bb4189a7287cd54a33c1182fd6ea3088c1587f10ad49da26f3b581c47b972c2a",
+        "17-config-cli-layers": "d532386ec74281543a7c490faea6f3f4b822e65e8bb6ce9a057fc381b7683882"
+      },
+      "startSha": "ec2b53e920b144cdf8453572673d78c8c46d96b8",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T08:32:35Z",
+      "sessionId": "7361d6f2-17ce-4121-9688-8cf5be50f44c",
+      "terminal": false,
+      "status": ""
     },
     "4": {
       "slug": "reed-layered-load",
