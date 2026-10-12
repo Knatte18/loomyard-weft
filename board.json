@@ -949,6 +949,24 @@
       "body": "## Seen (2026-10-12, from `lyx-halt`'s parent review)\n\n`lyx-halt` adds a pause, hub-wide or per run, recorded with a `paused_since` time.\nThe runs overview pane from `runs-overview` reads run states without it, so a paused run shows as running.\nBoth tasks were in flight when this was found, and `runs-overview`'s entry was claimed, so this note carries the gap.\n\n## Want\n\nThe runs overview shows a paused run as paused, with the time since it was paused, reading `lyx-halt`'s record.\nWhichever of the two tasks lands second does this, or it becomes a small task after both land.\n",
       "created": "2026-10-12T11:05:54Z",
       "revised": "2026-10-12T11:05:54Z"
+    },
+    {
+      "id": 430,
+      "slug": "dotnet-scoped-verify",
+      "title": "Scoped build and test for C# hubs on Windows",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "shed",
+        "webster"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow.",
+      "body": "## Seen (operator, 2026-10-12)\n\nThe operator will use LoomYard for C# development on a Windows work machine.\nThere Millhouse's mill-go often takes about 2 hours for implementation alone, against a median of 27 minutes on this Go codebase.\nThe machine runs Cortex XDR, which scans every file write and process start, and IT allows no scan exclusions, so every build and test run is slow.\nOn that machine, narrowly scoped testing is what decides how long a run takes.\n\n## Want\n\nThe verify gates in a .NET hub build and test only what a card or batch touches, as `lyx gate test` scopes Go packages here:\n\n- map changed files to their projects, and run only the test projects that reference them;\n- restore once per run, then build and test with `--no-restore` and incrementally;\n- keep build processes warm (MSBuild node reuse, build server) so fewer processes start;\n- run the whole solution once, at the final gate only.\n\n## Open\n\n- How a hub declares its language toolchain and the commands the gates run, and how much of today's Go-specific gate code this touches.\n- Whether a project-reference graph from `dotnet` itself or from the index (quarry) picks the test projects.\n- Measure on the work machine before and after: build and test minutes per run.\n",
+      "created": "2026-10-12T11:18:15Z",
+      "revised": "2026-10-12T11:18:15Z"
     }
   ]
 }
