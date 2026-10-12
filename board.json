@@ -1056,6 +1056,48 @@
       "isolated": false,
       "brief": "Bench pair for the twill-plan sonnet[medium] arm; torn down after the run",
       "body": "Temporary bench pair for board note twill-plan-sonnet-medium, twill sonnet[medium] arm. Plan-Write only, from a frozen decision record."
+    },
+    {
+      "id": 423,
+      "slug": "twb-sm-r-1",
+      "title": "twill-plan bench sonnet-medium arm pair twb-sm-r-1",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Bench pair for the twill-plan sonnet[medium] arm; torn down after the run",
+      "body": "Temporary bench pair for board note twill-plan-sonnet-medium, twill sonnet[medium] arm. Plan-Write only, from a frozen decision record."
+    },
+    {
+      "id": 424,
+      "slug": "twb-fab-s-1",
+      "title": "twill-plan bench Fable arm pair twb-fab-s-1",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Bench pair for the twill-plan single Fable arm; torn down after the run",
+      "body": "Temporary bench pair for board note twill-plan-sonnet-medium, single fable[high] arm. Plan-Write only, from a frozen decision record."
+    },
+    {
+      "id": 425,
+      "slug": "twb-fab-r-1",
+      "title": "twill-plan bench Fable arm pair twb-fab-r-1",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Bench pair for the twill-plan single Fable arm; torn down after the run",
+      "body": "Temporary bench pair for board note twill-plan-sonnet-medium, single fable[high] arm. Plan-Write only, from a frozen decision record."
     }
   ]
 }
