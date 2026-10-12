@@ -1,8 +1,8 @@
 # Card 8 — burler and models layered load
 
 **Create:**
-- `plan:internal/burlerengine#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
-- `plan:internal/modelspec#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
+- `internal/burlerengine#ConfigSpec`
+- `internal/modelspec#ConfigSpec`
 
 **Edit:**
 - `internal/burlerengine#LoadConfig` -> `func LoadConfig(dirs configengine.Dirs) (Config, error)`

@@ -1,7 +1,7 @@
 # Card 7 — batcher layered load
 
 **Create:**
-- `plan:internal/batcher#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
+- `internal/batcher#ConfigSpec`
 
 **Edit:**
 - `internal/batcher#Active` -> `func Active(dirs configengine.Dirs) (Batcher, error)`
