@@ -1,0 +1,1 @@
+Review segment of task `judge-cap-call` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/judge-cap-call/_lyx/reviews/discussion/round-2-escalation.md` with a one-shot fork.
