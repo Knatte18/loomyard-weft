@@ -171,6 +171,12 @@ Rationale: the board's former `extra-agent-strand` needs a named session the wat
   - d5-dead-pane-premise-vs-d6-reconcile (class design, severity BLOCKING, open in rounds 1, 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - card4-relaunch-kill-unlicensed-by-d6-stale-listing (class decision, severity MEDIUM, open in rounds 1, 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A strand added with `own-window` and no group gets its own detached window named by its role; the client's current window and active pane do not change.
