@@ -1,12 +1,12 @@
 {
   "current_producer": "Worktree-Teardown",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "worktree removal failed (session shutdown already succeeded): git refused to remove worktree /home/knatte/Code/loomyard-LYXHUB/operator-followups (git exit 255): error: failed to delete '/home/knatte/Code/loomyard-LYXHUB/operator-followups': Directory not empty; it is not a linked worktree of this repo, so fabric will not delete the directory itself",
   "pause_requested": false,
   "activity": {
     "now": "Worktree-Teardown",
-    "last": "Land → done",
-    "wait": ""
+    "last": "Worktree-Teardown → stuck",
+    "wait": "worktree removal failed (session shutdown already succeeded): git refused to remove worktree /home/knatte/Code/loomyard-LYXHUB/operator-followups (git exit 255): error: failed to delete '/home/knatte/Code/loomyard-LYXHUB/operator-followups': Directory not empty; it is not a linked worktree of this repo, so fabric will not delete the directory itself"
   },
   "history": [
     {
@@ -95,6 +95,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-12T15:01:27Z"
+    },
+    {
+      "producer": "Worktree-Teardown",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-12T15:01:36Z"
     }
   ]
 }
