@@ -87,3 +87,8 @@ This note answers that open point for the arbiter: the hard cap and a returning 
 
 - Whether a Merge-In verify failure becomes a recipe edge (`on_stuck`-like, budgeted) or stays a driver-run goto.
 - Whether case 3 is worth an opus spawn at all, or goes straight to the orch; no attempt on disk exercised it.
+
+## Later: batten stops
+
+The operator's view (2026-10-12), to think about later: a batten stop such as a Worktree-Teardown failure could be settled by an arbiter-like LLM instead of the orch.
+Example: `operator-followups` teardown failed because reed recreated two empty lock files in the pair during removal; the fix was to delete them and re-run `lyx batten run <slug>` (finding recorded in `run-window-bugs`).
