@@ -8,15 +8,19 @@
 - `plan:internal/pausecli#shuttlePair.state` -> `func (p shuttlePair) state(guid string) (shuttleengine.SessionState, error)`
 - `plan:internal/pausecli#readTurn` -> `func readTurn(state shuttleengine.SessionState) (running bool, labels []string, background bool)`
 - `plan:internal/pausecli#TestShuttlePairReadings` -> `func TestShuttlePairReadings(t *testing.T)`
+- `plan:internal/pausecli#signalEngine` -> `type signalEngine struct`
+- `plan:internal/pausecli#signalEngine.ParseSessionSignals` -> `func (e *signalEngine) ParseSessionSignals(data []byte) ([]shuttleengine.SessionSignal, int)`
 - `plan:internal/pausecli#shuttlePair.Background` -> `func (p shuttlePair) Background(guid string) ([]string, bool, error)`
 - `plan:internal/pausecli#shuttlePair.PaneRunningTurn` -> `func (p shuttlePair) PaneRunningTurn(guid string) (bool, error)`
 - `plan:internal/pausecli#shuttlePair.InterruptSettle` -> `func (p shuttlePair) InterruptSettle() time.Duration`
+- `internal/pausecli/deps_test.go`
 
 **Edit:**
 - `internal/pauseengine#Pair`
+- `internal/pauseengine#maxInterrupts`
 - `internal/pauseengine#PauseReport`
 - `internal/pauseengine#Pause`
-- `internal/pauseengine#interruptSession`
+- `internal/pauseengine#interruptSession` -> `func interruptSession(deps Deps, entry pauserecord.Entry, sessions []session, report *PauseReport) (stop bool)`
 - `internal/pauseengine#sendResumeLine`
 - `internal/pauseengine#fakePair`
 - `internal/pauseengine#newPair`
@@ -64,7 +68,12 @@ The pause entry's shape does not change (`PATTERN-tolerant-records`); the new li
   - `StillBusy`: the pane still showed a running turn after the second key's settle.
   - `Refused` now also holds a failed guard capture and an open rewind picker, with the error's message.
 
-`interruptSession(deps, entry, s, report)`, with the entry-live check and the claim kept before each key, so no key follows a resume:
+The interrupt step runs in passes over the covered sessions instead of one session at a time, so a pause waits each settle once whatever the number of busy sessions.
+`Pause`'s per-session loop keeps the caller's own session in `Skipped` and hands the rest to `interruptSession`, which now takes them all: `interruptSession(deps, entry, sessions, report) (stop bool)`.
+The entry-live check and the claim stay before each key, so no key follows a resume, and an `errEntryGone` at any claim stops the whole step, as today.
+Each settle is one `deps.Sleep` of the longest `InterruptSettle()` among the sessions the pass waits for, skipped when there are none.
+
+Pass 1, for every session:
 
 1. `Busy` (running turn).
    A read error goes to `Refused` as today.
@@ -75,12 +84,22 @@ The pause entry's shape does not change (`PATTERN-tolerant-records`); the new li
 3. Running: claim (an `errEntryGone` stops the step, `errOwnedElsewhere` skips as today), then `Interrupt`.
    - `ErrNoRunningTurn` goes to `NoRunningTurn`, and the session stays recorded.
    - Any other error goes to `Refused`: the `ErrPaneNotReady` prefix is kept, and every other error, a picker or a failed capture included, uses its message as the reason.
-4. `deps.Sleep(s.pair.InterruptSettle())`, then `Busy`.
+
+Then one settle for the sessions whose first key went.
+
+Pass 2, for every session whose first key went:
+
+4. `Busy`.
    A read error goes to `Refused`; no running turn goes to `Interrupted`.
 5. Still running: claim again, which is the entry-live check for the second key, so a resume during the settle ends the step with no second key; then `Interrupt`.
    - `ErrNoRunningTurn` goes to `Interrupted`.
    - Any other error goes to `Refused` as in step 3.
-6. `deps.Sleep(s.pair.InterruptSettle())`, then `PaneRunningTurn`.
+
+Then one settle for the sessions whose second key went.
+
+Pass 3, for every session whose second key went:
+
+6. `PaneRunningTurn`.
    A read error goes to `Refused` ("pane reading failed: "); a running turn goes to `StillBusy`, none to `Interrupted`.
 
 At most `maxInterrupts` (2) `Interrupt` calls per session per pause, as today; update its comment to "guarded interrupts".
@@ -99,11 +118,16 @@ No line is typed in either case.
 - A private `state(guid)` reads `shuttleengine.ReadSessionStates` once and returns the strand's `SessionState`, or the zero state when the strand has no running run.
 - A pure `readTurn(state)` derives both readings: `running` is `state.RunningTurn()`, and `background` is true for `SessionBusy` with cause `SessionCauseBackground`, with one label per `Outstanding` task, its `Label` or its `ID` when the label is empty.
 - `Busy` returns `readTurn`'s `running`, and `Background` its labels and `background`.
-- New `TestShuttlePairReadings` in `cli_test.go` pins the two readings `shuttlePair` derives from a state, so a `Busy` that went back to reading `Name == SessionBusy` fails here.
-  It is one table over `SessionState` values, asserting all three results of `readTurn(state)` per row:
-  - busy/turn: running, not background;
-  - busy/background with tasks `{Label: "sleep 600"}` and `{ID: "bsh2"}`: not running, background with labels `["sleep 600", "bsh2"]`;
-  - idle-done: neither.
+  `readTurn` stays the private helper both methods call, and is reached in tests only through them.
+- New `TestShuttlePairReadings` in a new untagged file `internal/pausecli/deps_test.go`, whose file comment says it pins the readings `shuttlePair` derives from a run's session state; it spawns nothing and touches neither reed nor the runner, so it stays out of the integration-tagged `cli_test.go` and runs under the package's untagged `TestMain`.
+  It drives `shuttlePair.Busy` and `shuttlePair.Background`, so a `Busy` that went back to reading `Name == SessionBusy` fails the busy/background row.
+  - The file declares `signalEngine`, which embeds `*shuttlefake.Engine` and implements `shuttleengine.SessionSignalParser`: `ParseSessionSignals` returns its `signals` field whatever the data, with `consumed` the data's length.
+  - Each row builds a `shuttlePair` from a `lyxcwd.Location` with `HubPath` a temp directory and `WorktreeName` "p1", a `shuttleengine.Config` whose `RunDir` is a temp directory, and a `signalEngine` carrying the row's signals.
+    It seeds one run directory under `RunDir` holding a `run.json` whose `outcome` is "running", whose `strandGuid` is "g-a" and whose `eventsPath` names an events file it also writes.
+  - It is one table asserting `Busy("g-a")`'s bool and `Background("g-a")`'s labels and bool per row, each with a nil error:
+    - busy/turn, a turn start: running, not background;
+    - busy/background, a turn end carrying the tasks `{Label: "sleep 600"}` and `{ID: "bsh2"}`: not running, background with labels `["sleep 600", "bsh2"]`;
+    - turn ended, a turn end with no tasks: neither.
 - `cmd/lyx/testdata/test-budget.yaml`: raise `internal/pausecli` from 3 to 4.
 - `PaneRunningTurn` delegates to `p.runner.PaneRunningTurn`, and `InterruptSettle` to `p.runner.InterruptSettle`.
 
@@ -118,7 +142,9 @@ Tests, `pause_test.go`:
 
 - `fakePair` gains:
   - `background map[string][]string`: a key present reads as background with those labels.
+  - `backgroundErr map[string]error`: a key present fails `Background` with that error.
   - `paneRunning map[string]bool`, answered by `PaneRunningTurn`, which also counts its calls in `paneReads int` and runs an `onPaneRead func()` hook when set.
+  - `paneErr map[string]error`: a key present fails `PaneRunningTurn` with that error, after the count and the hook.
   - `settle time.Duration`, answered by `InterruptSettle`.
   - `interruptErr map[string]error` becomes `interruptErrs map[string][]error`, consumed in order with the last repeating, like `busy`, an empty list answering nil.
   `newPair` initialises the new maps and sets `settle` to 2 s, so every pause waits a settle the clock can show.
@@ -126,10 +152,10 @@ Tests, `pause_test.go`:
   - "the grace waits for a busy session and never past the grace end": set `p.settle = 0`, since the session stays busy through both keys and the row pins the clock at exactly the 10-second grace.
   - "the entry is on disk and the session recorded in it before the first Esc": add `len(p.interrupts) == 1` beside `Interrupted == [a]`.
     This is the "first Esc frees the pane" criterion: one key, then the state reads idle after the settle.
-  - "a busy session is interrupted at most twice and reported still busy": add `p.paneRunning["g-a"] = true`.
-    Record each `Interrupt`'s clock time through `onInterrupt` and the pane read's through `onPaneRead`.
-    Assert the second key is at least `p.settle` after the first, the pane read at least `p.settle` after the second key, and `StillBusy == [a]`.
-    The second gap fails if the settle after the second key is dropped.
+  - "a busy session is interrupted at most twice and reported still busy" becomes "busy sessions are interrupted at most twice, share each settle and are reported still busy", over a pair with sessions `a` and `b`, both busy `[true]` and `paneRunning` true.
+    Record each `Interrupt`'s clock time through `onInterrupt` and the pane reads' through `onPaneRead`.
+    Assert the interrupts `[g-a, g-b, g-a, g-b]`, each session's second key at least `p.settle` after its first, each pane read at least `p.settle` after the second keys, and `StillBusy == [a, b]`.
+    Assert the clock elapsed is exactly 2 settles (4 s), so the row fails if the settle goes back inside a per-session loop, and the second gap fails if the settle after the second key is dropped.
   - New "a second Esc whose settle leaves no running turn on the pane is interrupted": busy `[true]`, `paneRunning` false; two interrupts, `Interrupted == [a]`, `StillBusy` empty.
   - New "a guarded second Esc that finds no running turn ends interrupted": busy `[true]`, `interruptErrs [nil, wrapped ErrNoRunningTurn]`; two `Interrupt` calls and `Interrupted == [a]`.
     Also assert `p.paneReads == 0`.
@@ -143,6 +169,8 @@ Tests, `pause_test.go`:
   - New "a failed guard capture is refused": busy `[true]`, `interruptErrs [errors.New("shuttle: capture strand \"g-a\"'s pane before the interrupt: boom")]`; `Refused[0].Reason` contains "boom".
   - New "a resume during the settle sends no second Esc": busy `[true]`; `onInterrupt` installs a `clock.onSleep` that resumes the hub entry.
     One interrupt and `ResumedDuringGrace` true.
+  - New "a failed background or pane reading is refused with its prefix": session `a` with busy `[false]` and `backgroundErr["g-a"] = boom`, and session `b` with busy `[true]` and `paneErr["g-b"] = boom`.
+    `a` gets no interrupt and its `Refused` reason starts "background reading failed: "; `b` gets two interrupts and its `Refused` reason starts "pane reading failed: ".
   - "a pane refusal is reported as refused" uses `interruptErrs`.
 - `TestResume`:
   - The row "a dead, busy or draft-holding session gets no line and each is named with its reason" becomes "a dead strand, a held send and an open picker get no line, each named with its reason".

@@ -11,6 +11,8 @@
 - `plan:internal/shuttleengine#fakeEngine.InterruptSettle` -> `func (e *fakeEngine) InterruptSettle() time.Duration`
 - `plan:internal/shuttleengine#pickerEngine` -> `type pickerEngine struct`
 - `plan:internal/shuttleengine#pickerEngine.RewindPicker` -> `func (e *pickerEngine) RewindPicker(capture string) bool`
+- `plan:internal/shuttleengine#pickerOnlyEngine` -> `type pickerOnlyEngine struct`
+- `plan:internal/shuttleengine#pickerOnlyEngine.RewindPicker` -> `func (e *pickerOnlyEngine) RewindPicker(capture string) bool`
 - `plan:internal/shuttleengine#TestGuardedPickerClose` -> `func TestGuardedPickerClose(t *testing.T)`
 
 **Edit:**
@@ -22,6 +24,7 @@
 - `internal/shuttleengine#fakeReed.CapturePane`
 - `internal/shuttleengine#TestRun_Interrupt_PlaysEscape`
 - `internal/shuttleengine/doc.go`
+- `internal/shuttlecli#shuttleCLI.interruptCmd`
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
@@ -72,7 +75,9 @@ Wiring:
 - Both godocs say the interrupt goes only into a pane showing a running turn, closes an open rewind picker with one key and fails, and returns `ErrNoRunningTurn` when there is nothing to stop.
 - `awaitIdleSession`: right after `requireReadyAgentPane` (the engine without `SessionCycler`) or `requireLiveStrand` (the engine with it), and before any readiness reading or operator-activity check, an engine that implements `RewindPickerReader` gets one `sc.reed.CapturePane`.
   On a successful capture, `closeRewindPicker(sc.reed, sc.engine, sc.clock, sc.guid, capture)` returns its error, which ends the send with nothing typed.
-  A failed capture skips the close, and the idle wait goes on as today; its polls read the pane again and hold on a pane they cannot read or that shows no input box, so nothing is typed into an unread picker.
+  A failed capture is handled per branch, so nothing is typed into an unread picker:
+  - The engine without `SessionCycler` has no polls after it, so the failed capture fails closed: it returns `fmt.Errorf("shuttle: capture strand %q's pane before the send: %w", sc.guid, err)` and types nothing.
+  - The engine with `SessionCycler` skips the close, and the idle wait goes on as today; its polls read the pane again and hold on a pane they cannot read or that shows no input box.
   An engine without the capability pays no extra capture, so the scripted capture queues of the existing send tests are unchanged.
   This covers every verified send: `Run.Send`, `Runner.Send`, the session commands and the skill-load and prompt-line sends.
 - `Runner.InterruptSettle` returns the engine's `InterruptSettle` when it implements `InterruptGuard`, else 0, for the pause and the orch watcher to wait out (cards 8 and 9).
@@ -87,6 +92,7 @@ Test support in `fakes_test.go`:
   Every engine fake that embeds `fakeEngine` inherits the guard, so `Run.Interrupt` through any of them needs a capture showing `RUNNING` to send a key.
 - `pickerEngine` embeds `readinessEngine`, so it has the box reader and the idle reading, and implements `RewindPickerReader`: `RewindPicker` is `strings.Contains(capture, "REWIND-PICKER")`.
   Captures that show the box after a close carry the caret `"❯ "` that `readinessEngine.InputBoxText` reads.
+- `pickerOnlyEngine` embeds `fakeEngine` and implements `RewindPicker` with the same needle, so it reads the picker but is not a `SessionCycler`; it drives the send path's branch without polls.
 - `fakeReed` gains `CaptureErrQueue []error`, consumed FIFO by `CapturePane` with the last entry sticking, like `CaptureQueue`.
   A nil entry answers from `CaptureQueue` as today, and a non-nil entry fails that call; `CaptureErr` keeps failing every call.
   It lets a row pass the ready check on its first capture and fail the guard's capture after it.
@@ -120,6 +126,10 @@ Tests:
   - "no picker on an interrupt: the close sends nothing and the guard decides": captures `["RUNNING ❯ "]`, exactly one `Escape`, the guarded interrupt's own, and a nil error.
   - "no picker on a send: the close sends nothing and the send goes on to its idle wait": captures `["working"]`, so the idle wait holds on a pane that is not idle until the 5-second window runs out on the fake clock.
     It expects `ErrSessionBusy` and zero `SendKey` calls.
+  - "a failed picker capture on a send skips the close and the idle wait holds": `runner-send` with `captureErrs [boom, nil]` and captures `["working"]`, so the picker check's capture fails and the polls read a pane that is not idle.
+    It expects `ErrSessionBusy`, zero `SendKey` calls and no typed or pasted text.
+  - "a failed picker capture on a send without polls fails closed": `runner-send` over a `pickerOnlyEngine` with `StartupScript` `[StartupReady]`, `captureErrs [nil, boom]` and captures `["❯ "]`, since `requireReadyAgentPane` takes the first capture before the picker check's own.
+    The error wraps `boom` and is not `ErrSessionBusy`, with zero `SendKey` calls and no typed or pasted text.
 - `cmd/lyx/testdata/test-budget.yaml`: raise `internal/shuttleengine` from 168 to 169 for `TestGuardedPickerClose`.
 
 The other tests that call `Interrupt` keep passing unchanged:
@@ -132,6 +142,14 @@ The other tests that call `Interrupt` keep passing unchanged:
 `internal/shuttleengine/doc.go` gains a paragraph after the one on the verified send's idle wait.
 It covers the guarded interrupt and its fail-closed capture; `ErrNoRunningTurn` as "nothing to stop"; the picker close before every interrupt and every verified send, with its one key, its settle and its re-check; `ErrRewindPickerOpen`; and the two new Runner methods.
 
-**ImpactSummary:** `Runner.Interrupt` and `Run.Interrupt` now refuse a pane with no running turn, which changes `lyx shuttle interrupt` (help in card 7), the pause (card 8) and the orch watcher (card 9). Verified sends gain one capture only for an engine that reads the picker, which is Claude and shuttlefake in production and tests.
+`lyx shuttle interrupt`'s help, in the same commit as the behavior (`internal/shuttlecli`'s `interruptCmd`; its `RunE` body is unchanged):
+
+- `Long` says the interrupt is sent only when the pane shows a running turn.
+  On a pane with no running turn it sends nothing and fails, and `lyx shuttle send <guid> <text>` gives the agent a turn instead.
+  On a pane showing the rewind picker it sends one interrupt key to close the picker and fails, with nothing interrupted.
+- `Short` becomes "stop a shuttle run's running turn without killing its pane".
+- `TestRunCLI_PositionalArgValidation` does not read the help text.
+
+**ImpactSummary:** `Runner.Interrupt` and `Run.Interrupt` now refuse a pane with no running turn, which changes `lyx shuttle interrupt` (help here, CLI test in card 7), the pause (card 8) and the orch watcher (card 9). Verified sends gain one capture only for an engine that reads the picker, which is Claude and shuttlefake in production and tests.
 
 **Commit:** 4: Guard every interrupt key by the pane and close an open rewind picker once

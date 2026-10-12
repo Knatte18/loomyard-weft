@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -24,10 +24,10 @@ The plan builds bottom-up:
 1 — running-turn-predicate — add `SessionState.RunningTurn`, shared by send readiness and the pause
 2 — pane-readings — declare the `InterruptGuard` and `RewindPickerReader` capabilities and implement them in Claude, with the captured picker fixture
 3 — shuttlefake-guard — let shuttlefake script the running-turn and picker readings and the settle
-4 — guarded-interrupt — guard every interrupt key by the pane and close an open rewind picker once, in interrupt and send
+4 — guarded-interrupt — guard every interrupt key by the pane and close an open rewind picker once, in interrupt and send, with `lyx shuttle interrupt`'s help
 5 — inject-refusal-and-pattern — Inject refuses the interrupt key; add `PATTERN-guarded-interrupt` within the overview's headroom
 6 — session-busy-reason — carry a held send's readiness reason in `SessionBusyError`
-7 — shuttle-cli-guard — `lyx shuttle interrupt` help, and a CLI test of both verbs' guard failures
+7 — shuttle-cli-guard — a CLI test of `lyx shuttle interrupt`'s and `send`'s guard failures
 8 — pause-sequence — the pause interrupts only a running turn, settles before a guarded retry, lists background work, and resume reports the guard's reason
 9 — orch-watcher-settle — the orch watcher waits the settle across ticks before a guarded second Esc and logs refusals
 
