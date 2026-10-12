@@ -61,12 +61,16 @@ All six forks returned a report.
 - board-fit, LOW, overlap with `run-window-bugs` in `Startup`: fixed, plan note.
 - board-fit, LOW, orch watcher loop moves under `orch-split`/`creel` later: fixed, plan note.
 
+### Turn 4 — parent override (2026-10-12)
+
+- The parent, relaying the operator, added a decision after Discussion: lyx must never open the rewind picker, and a picker it finds in a pane it drives is an error that lyx closes with one Esc, re-checks and reports as a failure.
+  This overrides the auto-pick in Q4 and the rejected alternative that ruled out closing or detecting the picker.
+- The review round that followed reconciled the record with it: D8 states the detection, the guarded close, its bound and each surface's report, and Scope, D6, D7 and the Acceptance criteria follow it.
+
 ## Rejected alternatives
 
 - **Drop the second Esc entirely.**
   Simpler, but a turn whose first Esc is swallowed would then run through the pause; the guard and settle make the retry safe, so it stays.
-- **Close a picker at resume with one Esc, or detect it from the pane.**
-  lyx no longer opens it after D1 to D4, an operator may have opened it deliberately, and the guarded send already refuses to type into it.
 - **Retry loop inside `Runner`.**
   It would lose the pause engine's entry-live check between Escs, so a resume landing between them could see its own resumed turn interrupted.
 - **A new `InterruptTurn` beside an unguarded `Interrupt`.**
@@ -91,7 +95,7 @@ _No rounds yet._
 - Q1 (resolved, auto-pick): What does the pause treat as busy? — A running turn only (`busy`/`turn`). Background sessions have an idle prompt and Esc does nothing for them.
 - Q2 (resolved, auto-pick): Where does the Esc guard live? — In `Runner.Interrupt` and `Run.Interrupt`, so the pause, the orch watcher and `lyx shuttle interrupt` all get it; provider specifics in `claudeengine`.
 - Q3 (resolved, auto-pick): Keep the second Esc? — Yes, after a 2-second provider settle and a fresh pane read, at most two per session.
-- Q4 (resolved, auto-pick): Should resume close a picker? — No; the guarded send refuses, and the reason text is corrected.
+- Q4 (resolved, overridden by the parent, 2026-10-12): Should resume close a picker? — Yes: shuttle's send and interrupt paths detect the rewind picker, close it with one Esc, re-check the input box and fail the operation (D8). The earlier auto-pick, No, is superseded.
 - Q5 (resolved, auto-pick): Are the running shed steps intended? — Yes, per the shipped design; the new `background` list makes them visible.
 - Q6 (resolved, auto-pick): Is the orch watcher in scope? — Yes, for its immediate re-probe after the first Esc; it already reads a background orch as idle.
 - Q7 (resolved, auto-pick): Does a session claimed but turned away by the guard keep its entry record? — Yes; the claim-before-Esc order stays, it is listed under `no_running_turn`, and the resume line's text covers a session with nothing cut.
