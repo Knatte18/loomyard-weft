@@ -203,7 +203,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "aef7df2e985ab7e9c88a93b013a62140",
   "masterSessionId": "ac698ea6-0953-47db-98cb-c235ebcdc41a",
   "batches": {
@@ -251,6 +251,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-pause-esc-rewind/ac698ea6-0953-47db-98cb-c235ebcdc41a/subagents/agent-ae46cb72daaf39233.jsonl"
       ]
+    },
+    "6": {
+      "slug": "session-busy-reason",
+      "cards": [
+        "06-session-busy-reason",
+        "07-shuttle-cli-guard",
+        "08-pause-sequence",
+        "09-orch-watcher-settle"
+      ],
+      "cardHashes": {
+        "06-session-busy-reason": "b1c68273b782481ac264e127f6e7fcaa52204b8490e6f5483759421456c3531f",
+        "07-shuttle-cli-guard": "c057f56a7910c1b3ae42f365150c9825ef35bb3e636b202f6610dc148f3160dd",
+        "08-pause-sequence": "2682c22dbd00baf1efdde7ba947e952c1d89c4af5c950f4c3e4cd7eccdb30a88",
+        "09-orch-watcher-settle": "68aa169be4fac322fac765ce550490d3e9d488f50170aeadc5f3053b83a7bd02"
+      },
+      "startSha": "2e174f6954392a9a5b46a4a69d7402fead52f16e",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T18:24:10Z",
+      "sessionId": "ac698ea6-0953-47db-98cb-c235ebcdc41a",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
