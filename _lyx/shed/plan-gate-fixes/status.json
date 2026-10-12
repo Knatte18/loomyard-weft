@@ -1,12 +1,12 @@
 {
   "current_producer": "Run-Shed",
-  "state": "failed",
-  "error": "battenshed: Run-Shed: read status: state: decode failed: json: unknown field \"routed_to\"",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
     "last": "Seed-Child → done",
-    "wait": "battenshed: Run-Shed: read status: state: decode failed: json: unknown field \"routed_to\""
+    "wait": ""
   },
   "history": [
     {
