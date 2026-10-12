@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Paused runs in the overview, hold-notice end, chunked paste, operator shortcuts**<br>• Four small follow-ups: the runs overview shows pauses, the hold-notice deferral ends on a held advisor, long pastes are chunked, and shortcuts are built into lyx. | [`operator-followups`](design-operator-followups.md) | loom | Merge-Burler-Review | 3h | 1h | reed, shuttle, batten, orch |
 | 2 | **Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status**<br>• Three intake bugs: validate gate-step package paths at plan time, fix the flaky concurrent-sweep test, and make a producer exit without status diagnosable. | [`intake-bugs-1012`](design-intake-bugs-1012.md) | loom | Plan-Bouncer | 3h | 1h | loom, webster, shed |
-| 3 | **Small cleanups: tokencount cutoff skew, audit reader globs, duplicate weft carve-out**<br>• Guard the tokencount cutoff against tag skew, bound audit reader globs and document the git pathspec case, and drop one of two duplicate loomyard-weft carve-outs. | [`cleanup-1012`](design-cleanup-1012.md) | loom | Plan-Burler-Review | 1d | 29m | fabric |
+| 3 | **Small cleanups: tokencount cutoff skew, audit reader globs, duplicate weft carve-out**<br>• Guard the tokencount cutoff against tag skew, bound audit reader globs and document the git pathspec case, and drop one of two duplicate loomyard-weft carve-outs. | [`cleanup-1012`](design-cleanup-1012.md) | loom | Plan-Burler-Review | 1d | 30m | fabric |
 
 ### Ready
 
@@ -57,7 +57,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Arbiter relaunch refused when the run already moved to the verdict row**<br>• A resume whose goto matches the row the run already stands on is refused as moved and parks the run. | [`arbiter-relaunch-moved`](design-arbiter-relaunch-moved.md) | 6m | 6m | loom, shed |
+| 1 | **Arbiter relaunch refused when the run already moved to the verdict row**<br>• A resume whose goto matches the row the run already stands on is refused as moved and parks the run. | [`arbiter-relaunch-moved`](design-arbiter-relaunch-moved.md) | 7m | 7m | loom, shed |
 
 ### Enhancements
 
@@ -75,17 +75,18 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 8 | **Seats replaces SingleLLMProducer: every LLM producer is a MultiLLMProducer, zero advisors by default** | [`seats-replaces-singlellm`](design-seats-replaces-singlellm.md) | 1d | 1h | loom |
 | 9 | **Measure the Webster kick-start pack with and without**<br>• Repeat the audit count (grep-for-member calls and whole-file reads per fork) on real loom runs with kickstart_pack on and off. | [`kickstart-pack-measure`](design-kickstart-pack-measure.md) | 23h | 22h | webster, burler, quarry |
 | 10 | **Twill for Plan: measure fewer Plan-Review rounds; wrong-parent-dir miss**<br>• After twill-plan lands: measure a lower plan_max_bounces, and cover the parent-directory miss every bench arm shared | [`twill-plan-followups`](design-twill-plan-followups.md) | 7h | 4h | loom |
-| 11 | **Judge settles the review budget cap; arbiter only for stuck runs**<br>• At a spent review budget the judge tags findings mechanical or design-wrong and continues or accepts itself, instead of spawning the arbiter. | [`judge-cap-call`](design-judge-cap-call.md) | 19m | 17m | loom, burler |
-| 12 | **Arbiter spawns only on stops that need it**<br>• Five arbiter spawns on 2026-10-12, none needed: narrow the triggers to the hard review cap, circling, and blocked or error stops with no computed way forward. | [`arbiter-when`](design-arbiter-when.md) | 1m | 1m | loom, shed |
+| 11 | **Judge settles the review budget cap; arbiter only for stuck runs**<br>• At a spent review budget the judge tags findings mechanical or design-wrong and continues or accepts itself, instead of spawning the arbiter. | [`judge-cap-call`](design-judge-cap-call.md) | 20m | 18m | loom, burler |
+| 12 | **Arbiter spawns only on stops that need it**<br>• Five arbiter spawns on 2026-10-12, none needed: narrow the triggers to the hard review cap, circling, and blocked or error stops with no computed way forward. | [`arbiter-when`](design-arbiter-when.md) | 2m | 2m | loom, shed |
+| 13 | **Alignment agent settles landing order itself; escalates only on design conflict**<br>• Apply furthest-along-lands-first in the alignment agent and wake the orch only when two runs designs conflict. | [`alignment-landing-order`](design-alignment-landing-order.md) | 0m | 0m | orch, loom |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 13 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 8d | 2d | fabric |
-| 14 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 8d |  | ide, fabric |
-| 15 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 4d | 1h | shed |
-| 16 | **Bench the chair-and-advisors Discussion against the solo writer before switching it on**<br>• Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on | [`discussion-multi-llm-bench`](design-discussion-multi-llm-bench.md) | 2d | 7h | loom, stencil, config |
+| 14 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 8d | 2d | fabric |
+| 15 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 8d |  | ide, fabric |
+| 16 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 4d | 1h | shed |
+| 17 | **Bench the chair-and-advisors Discussion against the solo writer before switching it on**<br>• Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on | [`discussion-multi-llm-bench`](design-discussion-multi-llm-bench.md) | 2d | 7h | loom, stencil, config |
 
 ### Features
 
@@ -94,7 +95,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 1d | 1h | webster |
-| 2 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) | 4h | 58m | orch, batten, shed, loom |
+| 2 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) | 4h | 59m | orch, batten, shed, loom |
 
 #### Normal priority
 
