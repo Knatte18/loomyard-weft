@@ -968,6 +968,23 @@
       "body": "Shuttle's startup probe decides readiness only from a pane capture (`internal/shuttleengine/wait.go`, through `claudeengine/startup.go`), looking for the prompt glyph or `shortcuts` on screen.\n\nOn 2026-10-12 convergence-plan's parent-review alignment agent (run dir `4e8c64f5…`) started, took its prompt and was mid-review when shuttle marked it died at `startup_timeout_s` (90 s) and removed its strand.\n`startup-capture.txt` held a single newline: the pane was blank.\nThe likely cause is reed's layout: loom status, driver, Discussion-Write and the alignment strand exceed the 44-row window, so `clampToFit` (`reedengine/render/height.go`) floors a pane to about one row.\nThe review fell back to the orch, so the verdict path held but ran without the alignment pre-pass.\nIt was the first use of the alignment agent after `alignment-agent` landed.\n\n## What to do\n\n- Treat a recorded `SessionStart` plus a `UserPromptSubmit` or tool event in the run's `events.jsonl` as proof of readiness, ahead of the capture.\n- Give the probe a minimum pane height, or capture scrollback, so a collapsed strand cannot read as never-ready.\n",
       "created": "2026-10-12T12:20:15Z",
       "revised": "2026-10-12T12:20:15Z"
+    },
+    {
+      "id": 443,
+      "slug": "loom-checklist-stale-render",
+      "title": "Loom status pane keeps an old render under the new one",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The checklist pane is not cleared on redraw, so two states stack",
+      "body": "The operator saw two loom checklist renders stacked in one run window's status pane on 2026-10-12 (task `run-robustness`): an older `loom paused | now Webster-Burler-Review` block, with a right-hand column left over from a wider layout, above the current `loom running | now Merge-In` block.\n\nThe old render is not cleared when the new one is drawn, so the pane mixes two states and reads as if boxes were assigned at random.\n\n## What to do\n\n- Clear or overwrite the whole pane on every redraw, including after a resize or a layout change from two columns to one.\n- Pin it with a test that redraws a shorter, narrower checklist over a longer, wider one.\n",
+      "created": "2026-10-12T13:46:28Z",
+      "revised": "2026-10-12T13:46:28Z"
     }
   ]
 }
