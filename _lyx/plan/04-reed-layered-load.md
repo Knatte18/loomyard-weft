@@ -2,7 +2,6 @@
 
 **Create:**
 - `plan:internal/reedengine#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
-- `plan:internal/reedengine_test#TestLoadConfig_ResolvesTheHubStack` -> `func TestLoadConfig_ResolvesTheHubStack(t *testing.T)`
 
 **Edit:**
 - `internal/reedengine#LoadConfig` -> `func LoadConfig(dirs configengine.Dirs, module string) (Config, error)`
@@ -53,7 +52,6 @@
 - `internal/treadleengine/smoke_judge_test.go`
 - `internal/webstercli/cli_tmux_test.go`
 - `internal/webstercli/wiring.go`
-- `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
 - `plan:internal/configengine#Spec`
@@ -67,7 +65,6 @@ Move reed onto the hub stack: `LoadConfig` takes the told `configengine.Dirs` an
 Every caller passes the geometry it already holds: a caller with a `*lyxcwd.Location` passes `fabricengine.ConfigDirs(location)`, a standalone caller holding only a state dir passes `configengine.Dirs{Anchor: stateDir}`, and a test passes `configengine.Dirs{Anchor: dir}` unless it pins the hub stack.
 The production callers in hubgeom, pairteardown, reedcli (the watchdog included) and the CLI wirings already hold the location whose anchor they pass today.
 
-`TestLoadConfig_ResolvesTheHubStack` pins the wiring over a temp board dir and anchor: a `width` set only in the repo default resolves beneath a worktree file that lacks it, a local `width` wins, and a local `shell` fails the load with `ErrInvalid` naming the local file and the key.
-The budget row for `internal/reedengine` rises by one.
+`TestLoadConfig_TemplateDefaultsResolve` gains two rows over a temp board dir and anchor that pin the wiring: a `width` set only in the repo default resolves beneath a worktree file that lacks it, and a local `shell` fails the load with `ErrInvalid` naming the local file and the key, proving the loader passes its `ConfigSpec`; card 13's `TestModules_LocalLayerRefusals` owns the local-layer keys no loader card pins, reed's `mouse` among them, and never repeats `shell`.
 
 **ImpactSummary:** re-signs `reedengine.LoadConfig`: every caller across the CLIs, hubgeom, pairteardown and the tmux smoke tests passes told dirs; no behaviour changes outside a hub.

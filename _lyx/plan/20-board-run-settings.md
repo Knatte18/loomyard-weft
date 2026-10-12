@@ -17,7 +17,8 @@
 - `internal/boardengine_test#TestRunLock`
 - `internal/boardengine/doc.go`
 - `internal/boardcli#storeVerbs`
-- `internal/boardcli#outputSuccessWithTask`
+- `internal/boardcli#Command`
+- `internal/boardcli#outputSuccessWithTask` -> `func outputSuccessWithTask(out io.Writer, task boardengine.Task, notice string) int`
 - `internal/boardcli_test#TestCLI`
 - `internal/boardcli/doc.go`
 - `cmd/lyx/testdata/test-budget.yaml`
@@ -39,13 +40,13 @@ In boardcli: `prepareRunSettings` runs on every payload that carries `run_settin
 
 - the value must be an object, and `configreg.PrepareRunSettings` migrates and validates it; a refusal is the verb's error, naming the module and the key; the migrated documents are decoded back and replace the payload's value, so the board stores the migrated result;
 - when the value differs from the task's stored one (read through `Board.GetTask` before the write), a session whose strand name (`agentname.StrandNameEnv`) yields a slug from `agentname.TaskSlug`, the same guard the hub-wide config write uses, is refused, naming the operator or the hub orch as the way forward; the bound is the guard's own, a mistaken write and not a determined one, read outside the write lock;
-- when the value differs and the stored status is a run status whose producer is neither `Worktree-Create` nor `Seed-Child` (`battenrecipe.NameWorktreeCreate`, `battenrecipe.NameSeedChild`), it returns the notice that the change applies to the next run's Seed-Child and that the running pair takes it through `lyx config <module> --layer local --set` in the pair, which `outputSuccessWithTask` adds as a `notice` field of the envelope (upsert-batch and merge carry the notices of their tasks the same way).
+- when the value differs and the stored status is a run status whose producer is neither `Worktree-Create` nor `Seed-Child` (`battenrecipe.NameWorktreeCreate`, `battenrecipe.NameSeedChild`), it returns the notice that the change applies to the next run's Seed-Child and that the running pair takes it through `lyx config <module> --layer local --set` in the pair, which `outputSuccessWithTask` adds as a `notice` field of the envelope, an empty notice omitting the field, as `Command`'s promote verb passes (upsert-batch and merge carry the notices of their tasks the same way).
 
 Value semantics, such as a positive integer, stay with the module's load.
 The upsert command's `Use` gains `run_settings?` and its `Long` documents the field, its validation, the guard and the notice; boardcli's `doc.go` says the same.
 
 `TestRunStatusProducer` pins a run status, `done`, a hand-set word and nil; `TestUpsertFieldAllowlist` accepts `run_settings`; `TestApplyPatch` pins `{}` clearing it; `TestRunLock` pins a `run_settings` change on a run-held entry passing while a title change is still refused.
-`stepRunSettings`, run from `TestCLI`, drives the verbs: a valid loom setting is stored migrated; an unknown module, a key absent from the template outside open maps and aliases, a shape mismatch and a D4-closed key are each refused naming module and key; a slug-named session's change is refused while an identical re-write passes; a change on a task whose status is `running · Discussion-Write` returns the notice, and one at `running · Seed-Child` returns none.
+`stepRunSettings`, run from `TestCLI`, drives the verbs: a valid loom setting is stored migrated; a non-object value (`"run_settings": 3`) is refused naming `run_settings`; an unknown module, a key absent from the template outside open maps and aliases, a shape mismatch and a D4-closed key are each refused naming module and key; a slug-named session's change is refused while an identical re-write passes; a change on a task whose status is `running · Discussion-Write` returns the notice, and one at `running · Seed-Child` returns none.
 The budget row for `internal/boardengine` rises by one.
 
 **ImpactSummary:** one new task field and its validation on every upsert path; the run lock and README are unchanged, and the upsert envelope gains an optional `notice`.

@@ -56,4 +56,4 @@ Tests pass `configengine.Dirs{Board: boardDir}` where they read a hub's fabric f
 
 `TestLoadConfig` gains a row over a temp board dir and anchor in which a local `pathspec` fails with `ErrInvalid` naming the local file and the key; the other listed tests take the new argument.
 
-**ImpactSummary:** re-signs four fabricengine loaders and deletes their dead base helper: fabriccli, battencli, pairteardown and hubforge follow, all reading the same hub file as before.
+**ImpactSummary:** re-signs four fabricengine loaders and deletes their dead base helper: fabriccli, battencli, pairteardown and hubforge follow, all reading the same hub file as before, even when the reading worktree's `_lyx/` is absent, as card 2's `TestLoad_LayerStack` row pins.

@@ -46,21 +46,21 @@
 **Uses:**
 - `plan:internal/configengine#Spec`
 - `plan:internal/configengine#Dirs`
-- `plan:internal/configengine#Layers`
+- `plan:internal/configengine#StackLayers`
 - `plan:internal/fabricengine#ConfigDirs`
 
 **Intent:**
-Move the two seed-only modules onto the layer stack while keeping their own readers, since neither goes through `Load`: each reads its layers through `configengine.Layers(dirs, ConfigSpec())` and no longer forms a config path itself.
+Move the two seed-only modules onto the layer stack while keeping their own decoders, since neither goes through `Load`: each reads its stacked layers through `configengine.StackLayers(dirs, ConfigSpec())` and neither forms a config path nor merges layers itself (`PATTERN-config-layers`).
 
-- `burlerengine.ConfigSpec` returns burler's `Spec` with `Categories` as the overview's table lists: `lenses` and `fans` both guard, so a local `burler.yaml` can hold no key (D4).
-  `LoadConfig` decodes each layer strictly as today, naming that layer's file in a parse error, and merges them in stack order per name, so a lens string or a fan list in an upper layer replaces the lower one whole; no layer present still returns the zero `Config`, and `ResolveFan` keeps falling back per name to the template.
+- `burlerengine.ConfigSpec` returns burler's `Spec`, with no open maps, so the stack merges `lenses` and `fans` per name, and `Categories` as the overview's table lists: `lenses` and `fans` both guard, so a local `burler.yaml` can hold no key (D4).
+  `LoadConfig` decodes each of the stack's `Layers` strictly as today, naming that layer's file in a parse error, then decodes the stack's `Doc`, in which a lens string or a fan list in an upper layer has replaced the lower one whole; an empty `Doc` still returns the zero `Config`, and `ResolveFan` keeps falling back per name to the template.
 - `modelspec.ConfigSpec` returns models's `Spec` with `WholeEntries: true` and `Categories` listing each template alias as none.
-  `LoadRegistry` decodes and validates each layer's entries as today, naming that layer's file, then lays them over `builtins()` in stack order by whole-entry replacement, so an upper layer's alias replaces the lower one outright and inherits none of its `defaults`; no layer present still yields the built-ins.
+  `LoadRegistry` decodes and validates each of the stack's `Layers` entries as today, naming that layer's file, then lays the entries of the stack's `Doc` over `builtins()` by whole-entry replacement, so an upper layer's alias, already carried whole by the stack, replaces the lower one outright and inherits none of its `defaults`; an empty `Doc` still yields the built-ins.
   `modelspec` keeps its leaf import set (`PATTERN-leaf-packages`): the standard library, `configengine` and `yaml.v3`.
 
 The production callers in burlercli, loomcli and webstercli pass `fabricengine.ConfigDirs(location)` or, standalone, `configengine.Dirs{Anchor: stateDir}`.
 Inside loomengine, `LoadConfig`, `validateFanKeys` and `twillBlocks` pass the transitional `configengine.Dirs{Anchor: baseDir}` (the layout's anchor for twill) that keeps today's single-file behaviour until card 9 tells them the hub dirs; tests pass `configengine.Dirs{Anchor: dir}`.
-The comment in `cmd/lyx/configstrictness_test.go` that says the two own-loader modules resolve their path with `configengine.ConfigFile` is corrected to say they read their layers through `configengine.Layers`, which the guard's substring scan still does not see; `internal/modelspec/modelspec.go`'s fallback note is updated the same way.
+The comment in `cmd/lyx/configstrictness_test.go` that says the two own-loader modules resolve their path with `configengine.ConfigFile` is corrected to say they read their layers through `configengine.StackLayers`, which the guard's substring scan still does not see; `internal/modelspec/modelspec.go`'s fallback note is updated the same way.
 
 `TestLoadConfig` (burler) gains rows over a temp board dir and anchor: a fan defined only in the repo default resolves, a worktree-file lens replaces the default's whole, and a local `lenses` entry fails the load with `ErrInvalid` naming the local file.
 `TestLoadRegistry_FileOverridesWholeEntry` gains the layered rows: a local alias without a `defaults` block resolves with no defaults from the layers below, a local alias the template lacks loads, and a local `opus.defaults.version` entry loads; `TestLoadRegistry_RejectsInvalidEntries` gains an invalid local entry refused naming the local file.

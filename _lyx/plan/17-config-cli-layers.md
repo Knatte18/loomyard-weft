@@ -60,7 +60,7 @@ So `lyx config loom --set review_max_bounces=2` in a hub pair with no worktree f
 `buildConfigLong` and `doc.go` document `--layer`, the sparse writes, the local bound and the menu marks.
 `contracts/specs/refusal-spec.md`'s "hub-wide config write refused" row widens its trigger to a `--layer default` write of any module.
 
-`TestDispatchLayers` is table-driven over a hub fixture: `--layer default --set` on loom writes and commits the repo default from the prime, and is refused from a pair and from a slug-named session; `--layer worktree` on darn is refused; `--layer local --set writer=...` on darn writes the local file uncommitted, while `--layer local --set verify=...` is refused naming the key and leaves no file; a `--set` into an absent pair worktree file writes only that key; `--print --layer local` prints the local file.
+`TestDispatchLayers` is table-driven over a hub fixture: `--layer bogus` is refused naming the three layers and writes nothing; `--layer default --set` on loom writes and commits the repo default from the prime, and is refused from a pair and from a slug-named session; `--layer worktree` on darn is refused; `--layer local --set writer=...` on darn writes the local file uncommitted, while `--layer local --set verify=...` is refused naming the key and leaves no file; a `--set` into an absent pair worktree file writes only that key; `--print --layer local` prints the local file.
 `TestSet` and `TestEdit` gain the sparse rows (only the set key written, an empty scaffold) and a refused local write restored; `TestMenu` asserts the new marks; the other listed tests take the new arguments.
 The budget row for `internal/configcli` rises by one.
 

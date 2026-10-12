@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -26,7 +26,7 @@ The plan builds the YAML operations and configengine's stack first, moves every 
 12 — fabric-layered-load — fabric loads the hub-wide stack with no local key
 13 — configreg-local-bounds — LocalKeys, LocalDenied, the classification pin and PATTERN-config-layers
 14 — configreg-run-settings — the shared migrate-then-validate step for run settings
-15 — configsync-layer-reconcile — full base layer, sparse upper layers, per-worktree repo defaults
+15 — configsync-layer-reconcile — full base layer, sparse upper layers, per-worktree repo defaults seeded by the walk a clone also runs, loom told the hub dirs
 16 — sparse-migration — the one-time strip to sparse files with its marker and reports
 17 — config-cli-layers — lyx config --layer and sparse writes
 18 — config-resolved-provenance — lyx config --resolved
@@ -59,8 +59,9 @@ The plan builds the YAML operations and configengine's stack first, moves every 
 
 - **Decision:** card 2 re-signs `configengine.Load` and `LoadOrTemplate` and moves each module loader to `Dirs{Anchor: baseDir}` (per-worktree) or `Dirs{Board: baseDir}` (hub-wide), which reproduces today's single-file behaviour; each module's own card then re-signs that module's loader to take told dirs and its full `ConfigSpec`.
   Card 8 does the same inside loomengine for its burler and models reads until card 9.
+  loom, the one strict per-worktree loader, keeps its callers on `Dirs{Anchor: ...}` through card 9 and is told the hub dirs in card 15, the card that seeds every per-worktree repo default, so no card leaves a hub's strict loom load without a base layer.
 - **Rationale:** every card builds and stays behaviour-preserving outside its own module, without one card touching every loader's callers.
-- **Applies to:** cards 2–12
+- **Applies to:** cards 2–12, 15
 
 ### Decision: per-key classification
 
