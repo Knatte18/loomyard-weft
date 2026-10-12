@@ -1,6 +1,6 @@
 # Run records tolerate newer binaries; a hung verify step is not re-run
 
-`run-robustness` · Task · bug, batten, shed, webster · running · Publish
+`run-robustness` · Task · bug, batten, shed, webster · blocked · Publish
 
 Two bugs found on 2026-10-12, bundled as one small task.
 
