@@ -1,13 +1,12 @@
 {
   "current_producer": "PR-Gate",
-  "state": "awaiting",
-  "error": "alignment report /home/knatte/Code/loomyard-LYXHUB/pause-esc-rewind/_lyx/shed/pause-esc-rewind/alignment/pr-gate/attempt-1/report-ee473b69c6243df0.md did not settle this pull request - Peer reed-multi-window plans to change internal/shuttleengine (doc.go, fakes_test.go, stop paths, Spec, plus a new SessionOpener capability beside Engine), internal/shuttleengine/claudeengine/doc.go, internal/shuttlecli/cli_test.go and internal/orchcli. This run changes the same packages and those four files, including new optional engine capabilities and fake-engine methods. The designs do not contradict each other. Which lands first: may pause-esc-rewind land now, with reed-multi-window merging it before its own PR-Gate, or should it wait?; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/598",
-  "parent_notice": "alignment report /home/knatte/Code/loomyard-LYXHUB/pause-esc-rewind/_lyx/shed/pause-esc-rewind/alignment/pr-gate/attempt-1/report-ee473b69c6243df0.md did not settle this pull request - Peer reed-multi-window plans to change internal/shuttleengine (doc.go, fakes_test.go, stop paths, Spec, plus a new SessionOpener capability beside Engine), internal/shuttleengine/claudeengine/doc.go, internal/shuttlecli/cli_test.go and internal/orchcli. This run changes the same packages and those four files, including new optional engine capabilities and fake-engine methods. The designs do not contradict each other. Which lands first: may pause-esc-rewind land now, with reed-multi-window merging it before its own PR-Gate, or should it wait?",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "PR-Gate",
     "last": "PR-Gate → awaiting",
-    "wait": "alignment report /home/knatte/Code/loomyard-LYXHUB/pause-esc-rewind/_lyx/shed/pause-esc-rewind/alignment/pr-gate/attempt-1/report-ee473b69c6243df0.md did not settle this pull request - Peer reed-multi-window plans to change internal/shuttleengine (doc.go, fakes_test.go, stop paths, Spec, plus a new SessionOpener capability beside Engine), internal/shuttleengine/claudeengine/doc.go, internal/shuttlecli/cli_test.go and internal/orchcli. This run changes the same packages and those four files, including new optional engine capabilities and fake-engine methods. The designs do not contradict each other. Which lands first: may pause-esc-rewind land now, with reed-multi-window merging it before its own PR-Gate, or should it wait?; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/598"
+    "wait": ""
   },
   "history": [
     {
