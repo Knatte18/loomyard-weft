@@ -15,3 +15,5 @@ Operator 2026-10-04: the board needs an interactive view with filters, reachable
 
 Builds on `board-model`'s kind and labels.
 
+Operator 2026-10-12: the README's Running section is one list, with no priority groups.
+
