@@ -24,6 +24,19 @@ This could replace the `all | areas` switch: the per-entry area is the selection
 An alternative to an advisor: one seat is a co-chair that does its own exploration of the code and the task rather than only answering the chair's batches, so the draft gets a second independent study.
 How the co-chair's findings reach the chair, and who writes the decision record, is open.
 
+## Blind exploration and compared lists (operator, 2026-10-12)
+
+From an outside review the operator brought in of why the chair-and-advisors Discussion did poorly: whoever asks the questions owns the solution space, so an advisor is only as broad as the questions it gets; dropping the recommendation helped, but the questions and options still anchor it.
+Independent thinking comes from different information and a different job, not from a different model.
+Three steps beyond `chair-blind-questions`, `discussion-premise-cites` and the areas above, all building on the co-chair:
+
+- Blind parallel exploration: the co-chair gets only the task and the code, never the chair's questions, and writes its own list of design decisions with answers; the two lists are then compared, and the value lies where they disagree or where one has a decision the other missed.
+  The review named this the one step to take if only one is taken, since it attacks both the anchoring and the breadth.
+- Question critic: before answering, the second agent critiques the questions: which decisions are missing, which questions are false choices between two options, and what they assume that is not settled; "none of these" is always allowed.
+- Disagreement escalates: a decision where the agents disagree, or where uncertainty is high, is recorded as an explicit assumption or sent to the parent, so the decisions that matter are the ones surfaced.
+
+The blind compared-lists variant is a candidate arm in `discussion-multi-llm-bench`'s second round.
+
 ## Lens advisors as forks of the chair (2026-10-11)
 
 The operator compares lens advisors with Burler's review fan, whose lens forks each review from one focus.
