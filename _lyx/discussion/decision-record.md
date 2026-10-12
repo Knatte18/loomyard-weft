@@ -191,6 +191,12 @@ Decision: Layers merge unexpanded; the merged document is expanded once through 
 
 Rationale: D6's claim that the strip never changes a held key's resolution holds only under single post-merge expansion; it matches today's one-expansion load and keeps per-worktree .env bindings such as LYX_SHUTTLE_CLAUDE working after migration.
 
+### Added after Discussion (parent, 2026-10-12): D6: strip acceptance covers both marker directions
+
+Decision: The strip's acceptance row also pins the reverse case: a ${env:...} marker in the worktree file over a literal in the repo default equal to that marker's expansion is kept, not stripped.
+
+Rationale: D6 compares unexpanded values in both directions; the reverse case is the common one after migration and would otherwise silently drop a .env binding.
+
 ## Constraints
 
 - `PATTERN-hub-wide-config` changes: `<BoardDir>/_lyx/config/` also holds per-worktree modules' repo defaults, and a hub-wide module also reads the reading worktree's local override, restricted to `LocalKeys`.
