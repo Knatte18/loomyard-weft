@@ -732,6 +732,24 @@
           "review_max_bounces": 2
         }
       }
+    },
+    {
+      "id": 441,
+      "slug": "judge-cap-call",
+      "title": "Judge settles the review budget cap; arbiter only for stuck runs",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "burler"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "At a spent review budget the judge tags findings mechanical or design-wrong and continues or accepts itself, instead of spawning the arbiter.",
+      "body": "At a spent review budget the Bouncer escalates, and today the driver hands that stop to the arbiter: a cold `opus[high]` agent, about a minute per spawn.\nWhether to run one more Burler round or accept unconverged is not a \"totally stuck\" stop, so the operator sees the arbiter as the wrong tool for it (2026-10-12): the judge should make that call itself, and the arbiter stays for runs that are stuck.\n\n## Seen\n\n`convergence-plan`, 2026-10-12, Discussion-Bouncer with `review_max_bounces: 2`, arbiter records in `_lyx/shed/convergence-plan/arbiter/` in the run's weft:\n\n- attempt 1 (after round 2): a BLOCKING finding made the design wrong (D10's landing join), the fixer rewrote it, nothing had reviewed the rewrite; verdict `circling continue`.\n- attempt 2 (after round 3): every finding fixed as prescribed, none design-wrong; verdict `circling accept`.\n\n## Idea\n\nThe judge reads only what Burler wrote, never the code or the fixer's diff.\nFrom the finding text alone it can tag each finding: a mechanical fix that is accepted at the cap, or a design-wrong finding that needs a re-review.\nAt the cap the Bouncer then continues one round when a design-wrong finding was fixed but not re-reviewed, and accepts unconverged when only mechanical findings remain, with no arbiter spawn.\nThe arbiter is spawned only when that rule cannot settle the stop.\n\n## Open\n\n- How many extra rounds the judge may grant past the cap, and what ends them.\n- Whether a design-wrong finding still standing after the extra round goes to the arbiter or straight to the parent.\n",
+      "created": "2026-10-12T14:33:41Z",
+      "revised": "2026-10-12T14:33:41Z"
     }
   ]
 }
