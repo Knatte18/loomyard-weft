@@ -53,7 +53,11 @@ Autonomous run: no operator answers; every pick below is the writer's, recorded 
 
 ## Review rounds
 
-_No rounds yet._
+- Round 2:
+  - F1 BLOCKING — every named remover of a dead own-window strand removes only a live one: fixed in D5 (shuttle's stop path removes a tracked dead own-window strand; `Wait` removes one on `OutcomeDied` after saving the pane capture; a timed-out run keeps its strand) with acceptance lines.
+  - F2 MEDIUM — an invalid `window_split` blocks every removal: fixed in D3 (remove skips only the even layout and reports the key) with acceptance lines.
+  - F3 LOW — a group's live count and its record's lifetime: fixed in D2 (dead bound panes count; the record drops with the last strand).
+  - F4 LOW — a failed self-removal lets `Resume` relaunch an ended opened session: fixed in D12 by a different rule than the review's, an exit marker as the strand's done-when path, since reed keeps no record of which panes were alive when the server died.
 
 ## Question ledger
 
@@ -66,6 +70,6 @@ _No rounds yet._
 - Q7 (auto-pick): Does zoom go? No (Scope Out): window 0 still holds several panes worth zooming, so the own window replaces zoom only for spawned agents.
 - Q8 (auto-pick): Is the extra agent strand in scope? Yes, as `lyx shuttle open` (D12), since the entry folds it in and names its layout as answered by own windows.
 - Q9 (auto-pick): Anchor changes into or out of `own-window`? Refused with a way forward (D9).
-- Q10 (resolved by the premises lens): Does a binary change restart the hub watchdog daemon? No; Constraints has Plan design for it.
+- Q10 (resolved by the premises lens): Does a binary change restart the hub watchdog daemon? No; Constraints records that an older daemon leaves own-window strands untouched, so no restart is needed.
 - Q11 (auto-pick): Does `lyx shuttle open` wait or refuse under a pause? It refuses, since a CLI verb the orch runs must not block indefinitely (D12).
-- Q12 (auto-pick): What happens to a dead agent's own window? It stays showing the dead pane until the strand's owner removes it (D5).
+- Q12 (auto-pick): What happens to a dead agent's own window? It stays showing the dead pane until its strand is removed, since reconcile's dead-pane kill stays limited to window 0; shuttle's stop path and `Wait`'s died finalize remove dead own-window strands (D5, D6).
