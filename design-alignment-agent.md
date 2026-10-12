@@ -1,6 +1,6 @@
 # Alignment agent in loom checks a run against the board and runs in flight
 
-`alignment-agent` · Task · enhancement, orch, loom · awaiting · Discussion-Bouncer
+`alignment-agent` · Task · enhancement, orch, loom · running · Discussion-Bouncer
 
 Split out of note `orch-token-spend` (2026-10-11), whose other means went to `orch-owns-the-loop` (batten lands itself, what wakes the orch), `merge-review`, `orch-split` and `task-run-settings`.
 
