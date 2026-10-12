@@ -821,7 +821,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "993b22c04ce849f45f96709a28dd49ef",
   "masterSessionId": "7361d6f2-17ce-4121-9688-8cf5be50f44c",
   "batches": {
@@ -894,6 +894,23 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-aa4e977eb91ec020b.jsonl"
       ]
+    },
+    "5": {
+      "slug": "shuttle-layered-load",
+      "cards": [
+        "05-shuttle-layered-load",
+        "06-orch-webster-logger-layered-load"
+      ],
+      "cardHashes": {
+        "05-shuttle-layered-load": "39c40725e092d45397163db112f3bfe36cf9d1c4cd27a667d517dee1a5e9fb36",
+        "06-orch-webster-logger-layered-load": "2207f0b7948c3fdeea4bb903f7bad5b55187f1ac38a451bae4bc6a4733d1170c"
+      },
+      "startSha": "2d0dcf7f5dbec1228c4f3a94def303711b39a12e",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T08:09:07Z",
+      "sessionId": "7361d6f2-17ce-4121-9688-8cf5be50f44c",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
