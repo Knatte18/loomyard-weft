@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Discussion-Bouncer stopped at round 2 because its budget ran out (cause budget). Round 2's BLOCKING F1 made the design wrong: the hard cap could be passed after a goto reset Shed's bounce count. Its design-class MEDIUMs, F2 (the way forward for a hard cap set in run_settings) and F4 (the mechanical-tag bound on Darn-Review), also changed decisions. The fixer rewrote D2, D3 and D5 for all three, and the decision record now carries those rewrites, but no review has read them yet. Under the fixed rule the round is not accepted while a finding makes the design wrong, and round 2 is below the round-3 hand-on line. The task's own board entry records the same call for this case: a design-wrong fix that was not re-reviewed gets one more round. So the segment runs round 3, whose focus file already targets these keys. No design call was needed, so no decision was added.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling continue judge-cap-call"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/judge-cap-call/_lyx/shed/judge-cap-call/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/judge-cap-call/_lyx/shed/judge-cap-call/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lyx shed step judge-cap-call --until-stop --arbiter-attempt 1"
+}
