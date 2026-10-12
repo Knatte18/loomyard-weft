@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The decision record covers every point of the reed-multi-window entry (own-window anchoring, the producer as the unit with shared or per-strand windows, the split direction, strands in depth with the driver in window 0, close and fall back, no focus stealing with an unseen marker, and the folded extra-agent-strand as lyx shuttle open) and keeps the dropped ideas out.
+  It duplicates and contradicts no other board entry; the readiness probe stays with run-window-bugs.
+  No peer or parent commit overlaps it: cleanup-1012 touches fabricengine, lyxcwd and tokencount, pause-esc-rewind has no changes or record yet, and 22b4aff touches no reed, shuttle or seat package and no PATTERN entry this design changes.
+question: ""
+superseded: []
