@@ -19,9 +19,8 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Merge review perch and a parent merge lock that survives sleep and crashes**<br>• When the parent moved while a task ran, loom has a cold-start agent review the result of merging the parent in, since no earlier review saw that interaction. | [`merge-review`](design-merge-review.md) | loom | Webster | 16h | 1h | loom, burler, batten, shed |
 | 2 | **Config layers and per-task run settings**<br>• Config resolves through a repo default, the worktree file and an untracked local override under .lyx/; a board task carries run settings that batten writes into the pair local override. | [`config-layers-run-settings`](design-config-layers-run-settings.md) | loom | Webster | 16h | 16h | config, batten, board |
-| 3 | **Twill for Plan-Write at opus[medium]**<br>• Bench a self-forking lens review for the plan writer, as twill does for Discussion | [`twill-plan`](design-twill-plan.md) | loom | Finalize | 15h | 1h | loom, stencil |
-| 4 | **Agent shell hygiene: read-only sed allowed, no scripted edits or /tmp rm in Webster forks**<br>• Make read-only sed work without refusals or prompts across lyx-spawned agents, stencils and audits, keeping the no-script-edit rule. | [`sed-read-ok`](design-sed-read-ok.md) | loom | Webster | 13h | 53m | stencil, webster, shuttle |
-| 5 | **lyx cleans up after itself: temp files and one cleanup command**<br>• Tests and fixtures leave GBs of temps in /tmp; remove them on exit, sweep leftovers, and add lyx cleanup running every module cleanup | [`test-tmp-cleanup`](design-test-tmp-cleanup.md) | loom | Webster | 12h | 12h | fabric, loom, batten, board |
+| 3 | **Agent shell hygiene: read-only sed allowed, no scripted edits or /tmp rm in Webster forks**<br>• Make read-only sed work without refusals or prompts across lyx-spawned agents, stencils and audits, keeping the no-script-edit rule. | [`sed-read-ok`](design-sed-read-ok.md) | loom | Webster | 13h | 53m | stencil, webster, shuttle |
+| 4 | **lyx cleans up after itself: temp files and one cleanup command**<br>• Tests and fixtures leave GBs of temps in /tmp; remove them on exit, sweep leftovers, and add lyx cleanup running every module cleanup | [`test-tmp-cleanup`](design-test-tmp-cleanup.md) | loom | Webster | 12h | 12h | fabric, loom, batten, board |
 
 ### Ready
 
@@ -131,3 +130,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 28 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) | 3d | 22h | loom, stencil |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Twill for Plan-Write at opus[medium]**<br>• Bench a self-forking lens review for the plan writer, as twill does for Discussion | [`twill-plan`](design-twill-plan.md) | 15h | 1h | loom, stencil |
