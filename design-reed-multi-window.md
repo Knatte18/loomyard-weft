@@ -4,6 +4,7 @@
 
 Own-window strand anchoring: a `display` anchor that spawns a strand into its own switchable tmux window instead of a pane.
 Operator 2026-10-12: wanted at some point, not now.
+Later the same day the operator reconsidered, since there is more to show than the panes leave room for: an important strand always gets its own full-size window, which replaces zooming a pane in reed.
 
 ## Operator, 2026-10-05: strands in depth, not stacked in height
 
