@@ -8,6 +8,7 @@ Later the same day the operator reconsidered, since there is more to show than t
 The unit is the producer, not the strand: a multi-LLM producer with two agents shows both together in one window (operator, 2026-10-12).
 A producer with many agents (5–6) does not fit in one window, so each of those gets its own.
 The strand's `display` anchoring setting carries all of this: a window shared by the producer's strands, or a window per strand.
+In a shared window the strands split either by height or by width (side by side), set the same way.
 
 ## Operator, 2026-10-05: strands in depth, not stacked in height
 
