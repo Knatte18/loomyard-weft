@@ -1,0 +1,43 @@
+attempt: 2
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/fabricengine.TestRebuildIndex_EqualsIncrementallyBuiltIndex
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/fabricengine
+      tail: '    syncweft_integration_test.go:57: incrementally-built index has 4 entries; want 3'
+    - id: github.com/Knatte18/loomyard/internal/fabricengine.TestCommitWeft_UnbornWarpHEAD_CommitsWithoutTrailerOrRecord
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/fabricengine
+      tail: '    weftgit_unborn_warp_test.go:78: correspondence index has 1 entries after an unborn-warp commit; want 0'
+    - id: github.com/Knatte18/loomyard/internal/fabricengine.TestPull_EmptyIndexNoDrift
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/fabricengine
+      tail: '    pull_integration_test.go:482: Pull() error = fabricengine: weft pull succeeded, warp anchor-walk failed: gitrepo: merge-base --is-ancestor 565568ba3a8b5124a64ec84e2aa8bf6e5013835e af9002223e8fec154f425d72645b61170b5ab96a in /tmp/lyx2439219698/TestPull_EmptyIndexNoDrift2726683151/002: git merge-base --is-ancestor 565568ba3a8b5124a64ec84e2aa8bf6e5013835e af9002223e8fec154f425d72645b61170b5ab96a: exit 128: fatal: Not a valid commit name 565568ba3a8b5124a64ec84e2aa8bf6e5013835e'
+    - id: github.com/Knatte18/loomyard/internal/fabricengine.TestPull_NoSurvivingAnchorAborts
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/fabricengine
+      tail: '    pull_integration_test.go:280: Pull() error = fabricengine: weft pull succeeded, warp anchor-walk failed: gitrepo: merge-base --is-ancestor 565568ba3a8b5124a64ec84e2aa8bf6e5013835e af9002223e8fec154f425d72645b61170b5ab96a in /tmp/lyx2439219698/TestPull_NoSurvivingAnchorAborts2491530413/002: git merge-base --is-ancestor 565568ba3a8b5124a64ec84e2aa8bf6e5013835e af9002223e8fec154f425d72645b61170b5ab96a: exit 128: fatal: Not a valid commit name 565568ba3a8b5124a64ec84e2aa8bf6e5013835e; want errors.Is(err, fabricengine.ErrNoSurvivingAnchor)'
+    - id: github.com/Knatte18/loomyard/internal/fabricengine.TestDiff_NoWeftCorrespondence_BeforeFirstSync
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/fabricengine
+      tail: |4-
+            diff_integration_test.go:159: Diff("e5fd65e64c04cad8a84f25efc749a0e881c796dd") NoWeftCorrespondence = false; want true
+            diff_integration_test.go:162: Diff("e5fd65e64c04cad8a84f25efc749a0e881c796dd") weft-side entries = [_lyx/config.yaml]; want empty
+    - id: github.com/Knatte18/loomyard/internal/fabricengine.TestWeftSHAForWarpSHA_CorrespondenceOverwrite_EmptyCommitWins
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/fabricengine
+      tail: '    snapshot_integration_test.go:437: entries[0]: RebuildIndex()={WarpSHA:565568ba3a8b5124a64ec84e2aa8bf6e5013835e WeftSHA:ef290299d63a122575172089aca9dd26d2ab8875 WarpSeq:0} incremental={WarpSHA:565568ba3a8b5124a64ec84e2aa8bf6e5013835e WeftSHA:ef290299d63a122575172089aca9dd26d2ab8875 WarpSeq:1}; want equal'
+    - id: github.com/Knatte18/loomyard/internal/fabricengine.TestSnapshotWarpSHA_TopologicalOrderBeatsCommitDate
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/fabricengine
+      tail: '    snapshot_integration_test.go:330: incrementally-built index has 3 entries; want 2'
+    - id: github.com/Knatte18/loomyard/internal/fabricengine.TestCheckout_RefreshesCorrespondenceIndex
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/fabricengine
+      tail: '    checkout_index_refresh_test.go:85: post-switch WeftSHAForWarpSHA(565568ba3a8b5124a64ec84e2aa8bf6e5013835e) = ("ef290299d63a122575172089aca9dd26d2ab8875", nil); want ErrNoCorrespondence — a cross-branch answer served from the stale cache'
+log_path: /home/knatte/Code/loomyard-LYXHUB/config-layers-run-settings/.lyx/verify/verify-4.log
+hint:
+    - 01-yamlengine-layer-ops
+    - 09-loom-layered-load
+fix_commits:
+    - 6f2beaba943644f5b4757643cf889863c372d3f6
