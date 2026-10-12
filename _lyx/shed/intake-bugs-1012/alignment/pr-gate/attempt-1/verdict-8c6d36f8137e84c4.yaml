@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  PR 596 carries D1 to D7 as recorded and closes the board entry's four bugs (#571/#577/#580/#587, #584 by D6's no-change close, #581, #588).
+  The two edits outside the listed scope both serve a decision: exporting shedengine.MissingStatusClause for D5's reseed way forward, and trimming the PATTERN-cli-cobra one-liner because PATTERN.md sat at internal/pattern's HeadroomBytes.
+  It overlaps no peer: cleanup-1012 touches fabricengine, lyxcwd and tools/tokencount, reed-multi-window has no changes, and no parent commits are listed.
+  The only shared bookkeeping is test-budget.yaml and one docs/overview.md sentence.
+question: ""
+superseded: []
