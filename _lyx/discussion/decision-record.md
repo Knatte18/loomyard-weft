@@ -222,6 +222,13 @@ Rationale: The round-2 fixer applied F1, F2 and F3 as the review proposed and ch
 - `config-layers-run-settings` classifies which keys its local layer and run settings may override; `merge_max_bounces`, `merge_auto_accept`, `skip_merge_review` and `parent_lock_idle_release_min` need that classification in whichever task lands second.
 - `driver-arbiter` names the Publish verify halt in its eligibility rules and edits batten's notice path; under D1 that halt is Merge-In's, and whichever task lands second updates the other's row name and notice handling.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - merge-in-and-moved-parent-check-read-different-refs (class design, severity BLOCKING, open in rounds 1, 2)
+  - parent-fast-forward-moves-pair-worktree-unbounded (class design, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - Two runs on one parent: the second waits at Merge-In in queue order, shows the wait in `lyx loom status`, sends no quiet notice, and proceeds once the first's lock is released by Finalize's Done or by any release path.
