@@ -55,6 +55,7 @@ Autonomous mode: no operator answered; every pick below is an auto-pick recorded
 - Make auto-accept follow the rule on a harvest too: rejected; it is a per-perch operator choice the entry does not reopen.
 - Let any severity of `design-wrong` count: rejected; the entry speaks of blockers, and a LOW finding should not buy rounds.
 - Apply the returning-blocker and `CIRCLING` checks only past the soft cap: rejected; it would turn an earned circling call at the soft-cap round into a continue.
+- Raise a `run_settings` hard cap through `lyx board upsert` and `lyx batten run <slug>` alone: rejected; Seed-Child runs once, before either refusal can arise, and a later `batten run` resumes at Run-Shed, so the board edit never reaches the task's local layer.
 
 ## Review rounds
 
@@ -65,9 +66,10 @@ _No rounds yet._
 - Q1 (auto-pick, resolved): when does the judge tag findings? Every round (D1, A1).
 - Q2 (auto-pick, resolved): what does a missing tag mean? `design-wrong` (D1, A2).
 - Q3 (auto-pick, resolved): which severities count as design-wrong? BLOCKING and MEDIUM (D2, A3).
-- Q4 (auto-pick, resolved): what is a returning blocker? A design-wrong key open in the previous round too, past the soft cap; an earned `CIRCLING` escalates from the soft cap on (D2, A4).
+- Q4 (auto-pick, resolved): what is a returning blocker? A key that counts as design-wrong in this round and the previous one, after a continue granted on the previous round; an earned `CIRCLING` escalates from the soft cap on (D2, A4).
 - Q5 (auto-pick, resolved): does darn get a hard cap? Yes, its own darn config key (D3, A5).
 - Q6 (auto-pick, resolved): hard cap below soft cap? Refused at load (D3, A6).
 - Q7 (auto-pick, resolved): how do the auto-accept flags fit? Unchanged on a harvest; replays and `blocking_escalates` rounds go to the rule (D8, A7).
 - Q8 (auto-pick, resolved): may anyone continue past the hard cap? No; the verb refuses and a recorded continue there escalates (D2, D5).
 - Q9 (auto-pick, resolved): does the arbiter's eligibility change? No (A8).
+- Q10 (auto-pick, resolved): does the orch's small-task advice set a hard cap? Yes, 3, beside `review_max_bounces: 2` (D9, A9).
