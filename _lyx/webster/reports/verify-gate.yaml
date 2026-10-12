@@ -1,0 +1,48 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/boardengine/boardtest
+      kind: package
+      package: github.com/Knatte18/loomyard/internal/boardengine/boardtest
+      tail: |-
+        	/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 +0x1 fp=0x32d1442b47e8 sp=0x32d1442b47e0 pc=0x492021
+        created by runtime.gcBgMarkStartWorkers in goroutine 15
+        	/usr/lib/go-1.26/src/runtime/mgc.go:1695 +0x105
+
+        goroutine 61 gp=0x32d144285c20 m=10 mp=0x32d143d80808 [stopping the world]:
+        runtime.systemstack_switch()
+        	/usr/lib/go-1.26/src/runtime/asm_amd64.s:516 +0x8 fp=0x32d1442b4ea0 sp=0x32d1442b4e90 pc=0x4903e8
+        runtime.gcMarkDone()
+        	/usr/lib/go-1.26/src/runtime/mgc.go:1083 +0x21f fp=0x32d1442b4f40 sp=0x32d1442b4ea0 pc=0x42dfdf
+        runtime.gcBgMarkWorker(0x32d1442ae000)
+        	/usr/lib/go-1.26/src/runtime/mgc.go:1912 +0x2c8 fp=0x32d1442b4fc8 sp=0x32d1442b4f40 pc=0x42fd68
+        runtime.gcBgMarkStartWorkers.gowrap1()
+        	/usr/lib/go-1.26/src/runtime/mgc.go:1695 +0x17 fp=0x32d1442b4fe0 sp=0x32d1442b4fc8 pc=0x42fa77
+        runtime.goexit({})
+        	/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 +0x1 fp=0x32d1442b4fe8 sp=0x32d1442b4fe0 pc=0x492021
+        created by runtime.gcBgMarkStartWorkers in goroutine 15
+        	/usr/lib/go-1.26/src/runtime/mgc.go:1695 +0x105
+
+        rax    0x49
+        rbx    0x1c
+        rcx    0x40ba6e
+        rdx    0x0
+        rdi    0x1c
+        rsi    0x2
+        rbp    0x32d143faf1d0
+        rsp    0x32d143faf190
+        r8     0x0
+        r9     0x0
+        r10    0x0
+        r11    0x212
+        r12    0x7ffff75dd828
+        r13    0x32d144322240
+        r14    0x32d143c7cb40
+        r15    0xffffffffffffffff
+        rip    0x40ba6c
+        rflags 0x212
+        cs     0x33
+        fs     0x0
+        gs     0x0
+        FAIL	github.com/Knatte18/loomyard/internal/boardengine/boardtest	76.364s
+log_path: /home/knatte/Code/loomyard-LYXHUB/board-field-drop/.lyx/verify/verify-2.log
