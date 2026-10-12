@@ -803,6 +803,25 @@
       "body": "## Seen (2026-10-12, `pause-esc-rewind`)\n\nThe Webster report `_lyx/webster/reports/01-running-turn-predicate.yaml` listed six `deviations`: `interruptguard.go`, `send.go`, `engine.go`, `fakes_test.go` and `run_inject_test.go` in `internal/shuttleengine`, plus `pattern/PATTERN-guarded-interrupt.md`.\nThe batch most likely held cards 1 to 5, so several of these probably house the batch's own target glyphs and are no deviation at all; the pair was torn down before that could be checked.\n\n## Cause\n\nThe implementer stencil (`contracts/stencils/webster/webster-body-implementer.md`, the `deviations` paragraph) contradicts itself.\nIt asks the fork to list the paths it changed outside the batch's target-glyph union, then says the fork reports what it touched and never estimates the comparison itself, because `internal/planglyph`'s `ScopeGuard` makes it.\nA fork cannot map a glyph to its file without that comparison, so it guesses, and the list mixes real deviations with the batch's own files.\n\n## Idea\n\nPick one meaning:\n\n- the fork reports every path it changed, and `ScopeGuard` alone decides which are deviations; the Merriam digest and the PR narrative show the guard's result, not the fork's list;\n- or the fork reports nothing, and the guard's output over the batch delta is the deviation list.\n\nEither way the list a reader sees comes from the guard, never from a fork's guess.\n",
       "created": "2026-10-12T18:45:10Z",
       "revised": "2026-10-12T18:45:10Z"
+    },
+    {
+      "id": 451,
+      "slug": "glyph-use-audit",
+      "title": "Audit glyph use in Plan and Webster from transcripts",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "webster"
+      ],
+      "issues": [],
+      "priority": "high",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Check from transcripts of a smaller task whether Plan, then Webster, use glyphs as intended",
+      "body": "## Idea (operator, 2026-10-12)\n\nGlyph use is probably not fully in place yet.\nAnalyse transcripts to see whether glyphs are used as intended: first the Plan steps (plan writer, twill forks, plan gate, Plan-Review), then Webster (Merriam, implementer forks, the scope guard), on a smaller task.\n\n## Seen\n\n`webster-deviations-list`: a Webster fork's `deviations` list mixed in files that probably house its batch's own target glyphs, because the implementer stencil asks it to compare against the glyph union and also tells it not to.\n",
+      "created": "2026-10-12T18:46:24Z",
+      "revised": "2026-10-12T18:46:24Z"
     }
   ]
 }
