@@ -620,7 +620,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 15,
   "masterStrand": "c1cb6ab2c3bcd58bf2f520882e5f5c75",
   "masterSessionId": "18d53add-ca9f-4785-b9e7-5c53e806b7e3",
   "batches": {
@@ -668,6 +668,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tmp-cleanup/18d53add-ca9f-4785-b9e7-5c53e806b7e3/subagents/agent-a8df31cb92e70ff52.jsonl"
       ]
+    },
+    "15": {
+      "slug": "fsx-newest-modtime",
+      "cards": [
+        "15-fsx-newest-modtime",
+        "16-batten-cleanup",
+        "17-batten-done-refusal",
+        "18-orch-cleanup",
+        "19-cleanup-scratch-segment",
+        "20-cleanup-verb"
+      ],
+      "cardHashes": {
+        "15-fsx-newest-modtime": "b01ba039d52680d6ff7389ab06270c17e4d659bb189c7f7a8d27739686b77598",
+        "16-batten-cleanup": "d7d7d2a0a127661d977c7ec6ac6499820403b4a9c5f5bf9314eaa154caa83ddf",
+        "17-batten-done-refusal": "25119cf92774a56b3e4bc13bb37e8d5bfa12de383d359d112d5177f5a6ea14e4",
+        "18-orch-cleanup": "dd454a7d97b22570f704f6ecff51491f712430aa25b90e5c3045071ec7a86968",
+        "19-cleanup-scratch-segment": "cf2406aa421a530a3ea20e6ecc6ef4a5824c9995caba781a6ccd00860c07a216",
+        "20-cleanup-verb": "a3f7916cacb10356c5af4dca66aedf68f82a1e3dd612ac31a691dad30a6ccced"
+      },
+      "startSha": "60f54140196a6ca4e5f7e70216a939368a115b97",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T08:20:22Z",
+      "sessionId": "18d53add-ca9f-4785-b9e7-5c53e806b7e3",
+      "terminal": false,
+      "status": ""
     },
     "6": {
       "slug": "testtiming-run-directory",
