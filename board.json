@@ -983,6 +983,23 @@
       "body": "Imported from [issue #588](https://github.com/Knatte18/loomyard/issues/588).\n\nA card asked for a new `lyx loom peers` verb as a runnable group carrying `AudienceRole`.\n`cmd/lyx/clitree_test.go` requires a bare group to print help (exit 0) and a mistyped subcommand to refuse with \"unknown subcommand\", and `clihelp.Invocable` treats a runnable group with no `Use` token or flag as non-invocable, so such a group must carry no audience.\nThe implementer had to deviate from the card: the group carries no audience annotation and only the `peers show` subcommand carries `AudienceRole`.\n\nAbnormal: the plan specified a shape the CLI tree invariants forbid, and the conflict surfaced only during implementation.\n\nTo do: have plan authoring or plan review check CLI-surface cards against the `clitree_test.go` and `clihelp.Invocable` rules, and document in the CLI-authoring docs that audience annotations belong on leaf verbs.\n\nProvenance: task `alignment-agent`, note `01-loom-alignment-config.md`.\n",
       "created": "2026-10-12T12:05:45Z",
       "revised": "2026-10-12T12:05:47Z"
+    },
+    {
+      "id": 442,
+      "slug": "shuttle-ready-blank-pane",
+      "title": "Shuttle marks a working agent died when its pane is collapsed",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Readiness reads only the pane capture; a squeezed pane stays blank and the agent is killed at the startup timeout",
+      "body": "Shuttle's startup probe decides readiness only from a pane capture (`internal/shuttleengine/wait.go`, through `claudeengine/startup.go`), looking for the prompt glyph or `shortcuts` on screen.\n\nOn 2026-10-12 convergence-plan's parent-review alignment agent (run dir `4e8c64f5…`) started, took its prompt and was mid-review when shuttle marked it died at `startup_timeout_s` (90 s) and removed its strand.\n`startup-capture.txt` held a single newline: the pane was blank.\nThe likely cause is reed's layout: loom status, driver, Discussion-Write and the alignment strand exceed the 44-row window, so `clampToFit` (`reedengine/render/height.go`) floors a pane to about one row.\nThe review fell back to the orch, so the verdict path held but ran without the alignment pre-pass.\nIt was the first use of the alignment agent after `alignment-agent` landed.\n\n## What to do\n\n- Treat a recorded `SessionStart` plus a `UserPromptSubmit` or tool event in the run's `events.jsonl` as proof of readiness, ahead of the capture.\n- Give the probe a minimum pane height, or capture scrollback, so a collapsed strand cannot read as never-ready.\n",
+      "created": "2026-10-12T12:20:15Z",
+      "revised": "2026-10-12T12:20:15Z"
     }
   ]
 }
