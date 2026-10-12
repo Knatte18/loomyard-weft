@@ -18,8 +18,8 @@
 - `//docs/overview.md`
 
 **Uses:**
-- `plan:internal/reportengine#Open`
-- `plan:internal/reportengine#Compute`
+- `internal/reportengine#Open`
+- `internal/reportengine#Compute`
 - `plan:internal/reportengine#RenderMarkdown`
 - `internal/fabricengine#RecordsRepoRoot`
 - `internal/fabricengine#RecordsBranchName`

@@ -1,11 +1,11 @@
 # Card 9 — gitrepo-landing-reads
 
 **Create:**
-- `plan:internal/gitrepo#Repo.PreImageLines` -> `func (r *Repo) PreImageLines(sha string) (map[string][]int, error)`
-- `plan:internal/gitrepo#Repo.BlameLines` -> `func (r *Repo) BlameLines(rev, relPath string, lines []int) (map[int]string, error)`
+- `internal/gitrepo#Repo.PreImageLines`
+- `internal/gitrepo#Repo.BlameLines`
 
 **Edit:**
-- `plan:internal/gitrepo_test#TestReportReads`
+- `internal/gitrepo_test#TestReportReads`
 - `//internal/gitrepo/doc.go`
 
 **Intent:**

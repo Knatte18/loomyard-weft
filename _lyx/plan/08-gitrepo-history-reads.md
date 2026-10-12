@@ -1,14 +1,14 @@
 # Card 8 — gitrepo-history-reads
 
 **Create:**
-- `plan:internal/gitrepo#TagRef` -> `type TagRef struct`
-- `plan:internal/gitrepo#Repo.TagRefs` -> `func (r *Repo) TagRefs(prefix string) ([]TagRef, error)`
-- `plan:internal/gitrepo#LogQuery` -> `type LogQuery struct`
-- `plan:internal/gitrepo#LogCommit` -> `type LogCommit struct`
-- `plan:internal/gitrepo#Repo.Log` -> `func (r *Repo) Log(tip string, q LogQuery) ([]LogCommit, error)`
-- `plan:internal/gitrepo#Repo.SubdirsAtRevision` -> `func (r *Repo) SubdirsAtRevision(rev, dir string) ([]string, error)`
+- `internal/gitrepo#TagRef`
+- `internal/gitrepo#Repo.TagRefs`
+- `internal/gitrepo#LogQuery`
+- `internal/gitrepo#LogCommit`
+- `internal/gitrepo#Repo.Log`
+- `internal/gitrepo#Repo.SubdirsAtRevision`
 - `//internal/gitrepo/reportreads_integration_test.go`
-- `plan:internal/gitrepo_test#TestReportReads` -> `func TestReportReads(t *testing.T)`
+- `internal/gitrepo_test#TestReportReads`
 
 **Edit:**
 - `//internal/gitrepo/doc.go`

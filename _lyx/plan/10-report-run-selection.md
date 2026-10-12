@@ -1,25 +1,25 @@
 # Card 10 — report-run-selection
 
 **Create:**
-- `plan:internal/reportengine#Geometry` -> `type Geometry struct`
-- `plan:internal/reportengine#Reader` -> `type Reader interface`
-- `plan:internal/reportengine#Sources` -> `type Sources struct`
-- `plan:internal/reportengine#Open` -> `func Open(g Geometry) (Sources, error)`
-- `plan:internal/reportengine#Options` -> `type Options struct`
-- `plan:internal/reportengine#Report` -> `type Report struct`
-- `plan:internal/reportengine#Selection` -> `type Selection struct`
-- `plan:internal/reportengine#RunRow` -> `type RunRow struct`
-- `plan:internal/reportengine#PartialRun` -> `type PartialRun struct`
-- `plan:internal/reportengine#Finding` -> `type Finding struct`
-- `plan:internal/reportengine#Compute` -> `func Compute(src Sources, opts Options) (Report, error)`
+- `internal/reportengine#Geometry`
+- `internal/reportengine#Reader`
+- `internal/reportengine#Sources`
+- `internal/reportengine#Open`
+- `internal/reportengine#Options`
+- `internal/reportengine#Report`
+- `internal/reportengine#Selection`
+- `internal/reportengine#RunRow`
+- `internal/reportengine#PartialRun`
+- `internal/reportengine#Finding`
+- `internal/reportengine#Compute`
 - `//internal/reportengine/doc.go`
 - `//internal/reportengine/fake_test.go`
 - `//internal/reportengine/runs_test.go`
 - `//internal/reportengine/seam_enforcement_test.go`
 - `//internal/reportengine/testmain_test.go`
-- `plan:internal/reportengine#allowedImports` -> `var allowedImports = []string`
-- `plan:internal/reportengine#fakeRepo` -> `type fakeRepo struct`
-- `plan:internal/reportengine#fakeRepo.BlameLines` -> `func (f *fakeRepo) BlameLines(rev, relPath string, lines []int) (map[int]string, error)`
+- `internal/reportengine#allowedImports`
+- `internal/reportengine#fakeRepo`
+- `internal/reportengine#fakeRepo.BlameLines`
 
 **Edit:**
 - `//pattern/PATTERN-told-geometry.md`
@@ -29,10 +29,10 @@
 - `internal/shedrun#ParseSeedTolerant`
 - `internal/shedrun#TreeRunRels`
 - `internal/shedengine#ParseStatusTolerant`
-- `plan:internal/fabricengine#ArchiveTagSlug`
-- `plan:internal/fabricengine#ArchiveTagPrefix`
-- `plan:internal/gitrepo#Repo.Log`
-- `plan:internal/gitrepo#Repo.TagRefs`
+- `internal/fabricengine#ArchiveTagSlug`
+- `internal/fabricengine#ArchiveTagPrefix`
+- `internal/gitrepo#Repo.Log`
+- `internal/gitrepo#Repo.TagRefs`
 - `internal/shedrun#RunsRootRel`
 
 **Intent:**

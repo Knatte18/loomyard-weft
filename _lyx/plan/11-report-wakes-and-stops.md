@@ -10,12 +10,12 @@
 **Edit:**
 - `//internal/reportengine/doc.go`
 - `//internal/reportengine/fake_test.go`
-- `plan:internal/reportengine#allowedImports`
+- `internal/reportengine#allowedImports`
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/battenshed#ClassifyRecords`
-- `plan:internal/battenshed#NoticeRules`
+- `internal/battenshed#ClassifyRecords`
+- `internal/battenshed#NoticeRules`
 - `internal/haltnote#Parse`
 - `internal/haltnote#IsNoteName`
 - `internal/loomengine#LoomFrictionDirRel`

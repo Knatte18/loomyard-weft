@@ -1,0 +1,5 @@
+status: OK
+head_sha: 0e662e528fceb7c16bae3e83d2fe1616dea9e469
+deviations:
+  - internal/gitrepo/blobread.go
+  - cmd/lyx/gitrepoboundary_test.go

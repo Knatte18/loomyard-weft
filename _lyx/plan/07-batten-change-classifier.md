@@ -1,14 +1,14 @@
 # Card 7 — batten-change-classifier
 
 **Create:**
-- `plan:internal/battenshed#StateChange` -> `type StateChange struct`
-- `plan:internal/battenshed#ParseStateChange` -> `func ParseStateChange(output string) (StateChange, bool)`
-- `plan:internal/battenshed#NoticeRules` -> `type NoticeRules struct`
-- `plan:internal/battenshed#BattenRecord` -> `type BattenRecord struct`
-- `plan:internal/battenshed#Wake` -> `type Wake struct`
-- `plan:internal/battenshed#AutomaticStep` -> `type AutomaticStep struct`
-- `plan:internal/battenshed#Classification` -> `type Classification struct`
-- `plan:internal/battenshed#ClassifyRecords` -> `func ClassifyRecords(rec BattenRecord, rules NoticeRules) Classification`
+- `internal/battenshed#StateChange`
+- `internal/battenshed#ParseStateChange`
+- `internal/battenshed#NoticeRules`
+- `internal/battenshed#BattenRecord`
+- `internal/battenshed#Wake`
+- `internal/battenshed#AutomaticStep`
+- `internal/battenshed#Classification`
+- `internal/battenshed#ClassifyRecords`
 - `//internal/battenshed/classify_test.go`
 
 **Edit:**

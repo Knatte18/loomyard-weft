@@ -6,18 +6,18 @@
 
 **Edit:**
 - `//internal/reportengine/doc.go`
-- `plan:internal/reportengine#fakeRepo`
-- `plan:internal/reportengine#fakeRepo.BlameLines`
-- `plan:internal/reportengine#allowedImports`
+- `internal/reportengine#fakeRepo`
+- `internal/reportengine#fakeRepo.BlameLines`
+- `internal/reportengine#allowedImports`
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/fabricengine#TaskCommitOf`
+- `internal/fabricengine#TaskCommitOf`
 - `internal/loomengine#LandingCheckpointSlug`
-- `plan:internal/boardengine#ParseBoardTasks`
-- `plan:internal/boardengine#BoardFileRel`
-- `plan:internal/gitrepo#Repo.PreImageLines`
-- `plan:internal/gitrepo#Repo.BlameLines`
+- `internal/boardengine#ParseBoardTasks`
+- `internal/boardengine#BoardFileRel`
+- `internal/gitrepo#Repo.PreImageLines`
+- `internal/gitrepo#Repo.BlameLines`
 
 **Intent:**
 The report gains landings by kind (D10) and the fresh-code fix share (D11), in a new file `landings.go`; `Report.Landings` lists every landing in range, and a full run's `RunRow.Landing` points at its own.

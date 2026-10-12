@@ -1,11 +1,11 @@
 # Card 6 — board-and-archive-readers
 
 **Create:**
-- `plan:internal/boardengine#BoardFileRel` -> `func BoardFileRel() string`
-- `plan:internal/boardengine#ParseBoardTasks` -> `func ParseBoardTasks(data []byte) ([]Task, error)`
-- `plan:internal/fabricengine#ArchiveTagPrefix` -> `const ArchiveTagPrefix = "archive/"`
-- `plan:internal/fabricengine#ArchiveTagSlug` -> `func ArchiveTagSlug(name string) (string, bool)`
-- `plan:internal/fabricengine#TaskCommitOf` -> `func TaskCommitOf(message string) (string, bool)`
+- `internal/boardengine#BoardFileRel`
+- `internal/boardengine#ParseBoardTasks`
+- `internal/fabricengine#ArchiveTagPrefix`
+- `internal/fabricengine#ArchiveTagSlug`
+- `internal/fabricengine#TaskCommitOf`
 - `//internal/fabricengine/archivetag_test.go`
 
 **Edit:**

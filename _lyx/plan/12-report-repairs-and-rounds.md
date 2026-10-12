@@ -8,7 +8,7 @@
 **Edit:**
 - `//internal/reportengine/doc.go`
 - `//internal/reportengine/fake_test.go`
-- `plan:internal/reportengine#allowedImports`
+- `internal/reportengine#allowedImports`
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
