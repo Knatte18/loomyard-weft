@@ -5,7 +5,7 @@
 
 **Edit:**
 - `internal/lyxcwd#fabricVocabularyFailures`
-- `internal/lyxcwd/vocabscan_test.go`
+- `internal/lyxcwd#TestFabricVocabularyFailures_Fixtures`
 
 **Intent:** Carries D3.
 In `internal/lyxcwd/enforcement_test.go`, the `recordsRepositoryName` constant and its doc comment go, and `fabricVocabularyFailures` drops the `if vocabScanRootFiles[rel]` block that runs `strings.ReplaceAll(text, recordsRepositoryName, "")` with its comment.

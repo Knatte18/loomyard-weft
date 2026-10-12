@@ -34,7 +34,8 @@ every other rule is in `IsReadOnlyCommand`'s comment, which the paragraph points
 Bound: the change only narrows what is read-only; a reader command the new rules reject fails the read-only check and the webster audit treats it as any other non-read-only command.
 `lyx`, `git` and `sed` segments are unchanged: their shell-word split already rejects every `$` and unquoted parenthesis.
 
-Test rows join the table of `TestIsReadOnlyCommand` in `internal/fabricengine/refscanner_test.go`, each reaching `readOnlyReaderSegment` through `IsReadOnlyCommand` after every command-wide scan passes:
+Test rows join the table of `TestIsReadOnlyCommand` in `internal/fabricengine/refscanner_test.go`;
+each reader row reaches `readOnlyReaderSegment` through `IsReadOnlyCommand` after every command-wide scan passes, and the two `git diff` rows reach the git form check:
 - false: `cat *(e:'touch x':)`, `ls *(+fn)`, `grep x (a)` (parenthesis rule);
   `cat ${x@P}`, `head -n ${a[y]} f`, `cat $x`, `cat $~x`, `cat $1`, `cat $@`, `cat "${x@P}"` (dollar rule);
   `cat $'\'' $(touch x) f` (dollar rule on `$'`, written as a Go raw string; its `$(` is hidden from the command-wide substitution scan by the unterminated single-quoted span, so only the dollar rule rejects it);
