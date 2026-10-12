@@ -960,6 +960,23 @@
       "body": "The operator's intent for the kick-start pack was that the implementer fork reads everything in its first turn: every card file and every listed span for every card of the batch, all in parallel, before any edit.\n\n`webster-pack-read-set` (landed `113593990`) built it per card instead: pack-on step 1 has the fork read the card file and the spans listed under that card in one turn, then edit, then move to the next card.\nBecause pack offsets are computed at begin-batch, a later card's spans can be stale once an earlier card edited the same file, so the landed text adds a rule to read such a file whole and find the member by its glyph's member name.\n\n## What to change\n\n- Pack-on step 1: in the first turn, read every card file of the batch and every span listed under every card, in parallel, with the Read tool's offset and limit, before any edit.\n- Drop the whole-file rule for files an earlier card edited: offsets are all valid in the first turn, and later edits use the Edit tool's text matching, which does not depend on line numbers.\n- The pack stays grouped per card in the prompt so the fork knows which span serves which card; only the read timing changes.\n- The fork still reads further (callers, whole files) whenever a card needs it.\n\n## Alternative (operator)\n\nResolve the pack fresh with quarry before each card, top down, instead of once at begin-batch.\nEach card's spans then match the file as earlier cards left it, so per-card reads stay valid and the whole-file rule can go too.\nThis keeps the first turn's context small, at the cost of one quarry call per card.\n",
       "created": "2026-10-12T11:46:26Z",
       "revised": "2026-10-12T11:46:46Z"
+    },
+    {
+      "id": 440,
+      "slug": "weft-push-refused-retry",
+      "title": "Weft records push refused once at Publish, passes on retry",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Three runs on 2026-10-12 had the weft push refused once; find the race",
+      "body": "On 2026-10-12 the weft records push at Publish was refused once and passed on retry in three runs: `board-field-drop`, `webster-pack-read-set` and `alignment-agent`.\n\nA refusal that clears on retry points at a race on the weft remote, likely another run's push or a board write landing between fetch and push.\nThe retry hides it today, but each refusal costs a round and a run without retry headroom would halt.\n\n## What to find\n\n- Which ref was refused and why (non-fast-forward or lock), from the Publish trace in each run.\n- Whether the refusal comes from concurrent runs writing weft at the same time.\n- Whether the push should fetch and rebase before its first attempt, or the retry is the intended path and only needs logging.\n",
+      "created": "2026-10-12T12:03:51Z",
+      "revised": "2026-10-12T12:03:51Z"
     }
   ]
 }
