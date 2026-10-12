@@ -127,11 +127,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 25 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) |  |  | loom, stencil |
-
-## Done
-
-Finished, awaiting `lyx board prune --apply`.
-
-| # | Entry | Slug | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Plan gate: receiver-typed delete-before-reference; plan review validates its fixes**<br>• Bare-name method matching floods plans with false blocking findings, and plan-review proposes fixes the gate refuses | [`plan-gate-fixes`](design-plan-gate-fixes.md) |  |  | loom, quarry, stencil |
