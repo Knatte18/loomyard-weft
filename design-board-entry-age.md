@@ -1,6 +1,6 @@
 # Board entries carry created and revised dates; views show age
 
-`board-entry-age` · Task · feature, board · running · Darn-Burler-Review
+`board-entry-age` · Task · feature, board · running · Darn-Burler-Fix
 
 ## Idea (operator, 2026-10-12)
 
