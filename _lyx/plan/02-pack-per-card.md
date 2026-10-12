@@ -105,7 +105,7 @@ The `renderPackSection`, `RenderForkPrompt` and `buildKickstartPack` doc comment
 
 `renderFork` takes `[]planindex.CardPack`; `TestRenderPrompts_FrictionDirective` and `TestRenderPrompts_ParentDirective` keep passing nil.
 `TestRenderPrompts`'s pack rows become per card, under hub geometry (`_lyx/plan`):
-- the multipart row renders a two-card batch (`alpha` and a second card `beta` from `cardWithSourcePath`), card 1 with `internal/foo#Bar` (two declarations) and `internal/foo#Baz`, card 2 with `internal/foo#Baz`; it wants in order the pointer bullets, then `` ### `_lyx/plan/01-alpha.md` ``, Bar's and Baz's lines, `` ### `_lyx/plan/02-beta.md` ``, Baz's line, and not `#### Unresolved`;
+- the multipart row renders a two-card batch (`alpha` and a second card `beta` from `cardWithSourcePath`), card 1 with `internal/foo#Bar` (two declarations) and `internal/foo#Baz`, card 2 with `internal/foo#Baz`; it wants in order the pointer bullets, then `` ### `_lyx/plan/01-alpha.md` ``, Bar's and Baz's lines, `` ### `_lyx/plan/02-beta.md` ``, Baz's line, and not `#### Unresolved`; its `notContains` needle `no member glyphs on this batch's cards` becomes `no member glyphs on this card`, so a card that names member glyphs is still asserted not to render the per-card empty line;
 - the unresolved row wants in order the heading, Bar's line, `#### Unresolved` and both unresolved lines;
 - the empty-pack row passes one card with an empty `Pack` and wants `no member glyphs on this card` and not `#### Unresolved`;
 - the `plan:`-handles-only row wants in order `no member glyphs on this card`, `#### Unresolved` and the handle line;
