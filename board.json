@@ -489,7 +489,7 @@
       "id": 204,
       "slug": "lyx-halt",
       "title": "lyx pause: stop every run at once, safely and on purpose",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "feature",
         "batten",

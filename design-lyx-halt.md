@@ -1,6 +1,6 @@
 # lyx pause: stop every run at once, safely and on purpose
 
-`lyx-halt` · Note · feature, batten, shuttle
+`lyx-halt` · Task · feature, batten, shuttle
 
 ## Why
 
