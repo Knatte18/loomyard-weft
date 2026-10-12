@@ -1,0 +1,848 @@
+{
+  "runGuid": "fe1e9a51e439aec540cf18ab74a6fa11",
+  "planFingerprint": "d35a25e8de2877942c8474ddd6039a6ab9a2b5e5623e143984e23df064f169e6",
+  "planFileHashes": {
+    "00-overview.md": "7d1fdddb0ee17c7b5d9f4396c77c62028b6cf0832bfb9dfca52cd8505a89d327",
+    "01-yamlengine-layer-ops.md": "ccb4eeec946c56eeebd51b72d09fa699be0f3fa70b7df08c2b42b5e257f0c31e",
+    "02-configengine-layer-stack.md": "5ae656f16b461f4f5aaa3df76ef6fae21c57ddb6066525c9c27554e9b7632be4",
+    "03-fabric-config-dirs.md": "ef7c9eebf779b41231e9220ba94c477474f3ef819dc2caaae5598cd7a645e454",
+    "04-reed-layered-load.md": "f34a215191c70fe6b45191fb67496dddfd025fa03df74ef2b671d35acc2605c1",
+    "05-shuttle-layered-load.md": "eb5fb5ada28e9fc63e0612b4770023b6ce58e225e3757dfda6b64a27407aaaac",
+    "06-orch-webster-logger-layered-load.md": "6beacca42dc909756cf43964cbad2776705aeb03fe3e6cffb2dea7093647f73d",
+    "07-batcher-layered-load.md": "35fb2be5b571e5eb73ea9cb6e6ca51a0df0a560d7580e8f268f01cf9619d0e68",
+    "08-burler-models-layered-load.md": "a59c5ff0ffb5b9e6050b19faf7f31931c11aa65b79fd7594da57fe8b0057c099",
+    "09-loom-layered-load.md": "f5bfd0303e7b833f860e83a67d63605607695f6166e026cc6fe46c37e218e3a8",
+    "10-darn-landing-layered-load.md": "1b792f699e9ff6cdfe048f3b129966b4ffde576b9015cc1f2d2b1666849c3548",
+    "11-gate-board-layered-load.md": "11534ef379e2ab2bc81fef0b2116e78bd047a18f1564b779759dfa97c12eadaa",
+    "12-fabric-layered-load.md": "109af560164ea795e64cf0333345510b3b144bfe45dbd2009a972fe7fdf780d1",
+    "13-configreg-local-bounds.md": "606a10697e0856916f2be2e1433040ec81e2c823ecfd403607ea4d708d889b61",
+    "14-configreg-run-settings.md": "e9f3863fdbdc95770097ac436ebdf41626f8d8aca31fdff6b438c6e26ae8702b",
+    "15-configsync-layer-reconcile.md": "944b0a1075c250278eb05e85230996300d054b2fa73702851eb9a371a0349efe",
+    "16-sparse-migration.md": "acf681524f460b928bfd05b436af5df2bf1b763f1edbbd3bb87920424b0c6e3f",
+    "17-config-cli-layers.md": "4768f8269029faa9fe7f7ae5df39f50f9d677bd8edc5b8bab3cbb64bd388aef4",
+    "18-config-resolved-provenance.md": "b483c6377eba2cc187d3e2a77012100cf31d0c3efc20e6cfac59ed47f6230e94",
+    "19-agentname-task-slug.md": "1c579226623dd82c7c0a03193b8e66b0e8334343a3826fc046ff7ee956ca9cb1",
+    "20-board-run-settings.md": "eca28f3d5765663aa498b38ea1e5f6e1dcc3659c8333ebc5482a7b62a9fe6d7c",
+    "21-seed-child-run-settings.md": "06613fc54f3db9cde617d1f5cf059cd239fe006aa4b9be79284c5bf59883ab4f",
+    "22-orch-run-settings-rule.md": "1b63b42692586e807ffa476fc84a1d3972157aec12fa8e130b44837af1e785d2",
+    "23-overview-config-layers.md": "df7a88c69e4790ab6f0ca62efa49e8e76670c1ff666b430c18362bb349f4298a"
+  },
+  "planOverviewFrameHash": "f8b60827c078fcdac00c85a38ae7d4e196be8ef910aab8c9593a73e77e53e1be",
+  "partition": [
+    {
+      "cards": [
+        "01-yamlengine-layer-ops",
+        "02-configengine-layer-stack",
+        "03-fabric-config-dirs"
+      ],
+      "profile": "cautious",
+      "estimate": 354458,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 56248,
+        "read_union": 80608,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 516,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:internal/yamlengine/doc.go": 372,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/yamlengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/yamlengine": 2000
+            },
+            "messages": 86.5,
+            "written": 26466
+          },
+          {
+            "card": 2,
+            "card_text": 1272,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:internal/configengine/doc.go": 300,
+              "file:pattern/PATTERN-config-strictness.md": 120,
+              "file:pattern/PATTERN-durable-vs-ephemeral-state.md": 132,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/batcher": 2000,
+              "package:internal/boardengine": 2000,
+              "package:internal/configcli": 2000,
+              "package:internal/configengine": 2000,
+              "package:internal/configengine_test": 2000,
+              "package:internal/configreg_test": 2000,
+              "package:internal/darnengine": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/gateslot": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loggerconfig": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/orchengine": 2000,
+              "package:internal/reedengine": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/websterengine": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/batcher": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/configengine": 2000,
+              "tests:internal/configengine_test": 2000,
+              "tests:internal/configreg_test": 2000,
+              "tests:internal/darnengine": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loggerconfig": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/orchengine": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 526,
+            "written": 159072
+          },
+          {
+            "card": 3,
+            "card_text": 264,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 106,
+            "written": 32064
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-reed-layered-load"
+      ],
+      "profile": "cautious",
+      "estimate": 379910,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 63248,
+        "read_union": 186072,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 840,
+            "reads": {
+              "file:internal/battencli/cli.go": 5172,
+              "file:internal/battencli/wire.go": 11940,
+              "file:internal/burlercli/wiring.go": 2748,
+              "file:internal/burlerengine/smoke_cluster_test.go": 3888,
+              "file:internal/burlerengine/smoke_round_test.go": 4488,
+              "file:internal/hubgeom/spawnorder.go": 1332,
+              "file:internal/loomcli/smoke_parentreview_test.go": 2268,
+              "file:internal/loomcli/smoke_test.go": 8424,
+              "file:internal/loomcli/wiring.go": 10608,
+              "file:internal/orchcli/cli.go": 2112,
+              "file:internal/orchcli/smoke_cycle_test.go": 3636,
+              "file:internal/orchcli/smoke_live_test.go": 7128,
+              "file:internal/pairteardown/teardown.go": 5880,
+              "file:internal/pairteardown/teardown_integration_test.go": 5520,
+              "file:internal/reedcli/cli.go": 2148,
+              "file:internal/reedcli/cli_integration_test.go": 2796,
+              "file:internal/reedcli/entersession_integration_test.go": 612,
+              "file:internal/reedcli/list.go": 1188,
+              "file:internal/reedcli/naming_integration_test.go": 2748,
+              "file:internal/reedcli/unlessname_integration_test.go": 1860,
+              "file:internal/reedcli/watchdog.go": 8712,
+              "file:internal/reedcli/watchdog_integration_test.go": 6444,
+              "file:internal/reedcli/watchdogreap_integration_test.go": 5244,
+              "file:internal/seatengine/smoke_seats_test.go": 2208,
+              "file:internal/shuttlecli/cli.go": 1620,
+              "file:internal/shuttlecli/smoke_interrupt_test.go": 4116,
+              "file:internal/standalonegeom/naming_integration_test.go": 1008,
+              "file:internal/treadleengine/smoke_judge_test.go": 4008,
+              "file:internal/webstercli/cli_tmux_test.go": 984,
+              "file:internal/webstercli/wiring.go": 4392,
+              "package:internal/battencli": 2000,
+              "package:internal/burlercli": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/hubgeom": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/pairteardown": 2000,
+              "package:internal/reedcli": 2000,
+              "package:internal/reedengine": 2000,
+              "package:internal/reedengine_test": 2000,
+              "package:internal/seatengine": 2000,
+              "package:internal/shuttlecli": 2000,
+              "package:internal/standalonegeom": 2000,
+              "package:internal/treadleengine": 2000,
+              "package:internal/webstercli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/pairteardown": 2000,
+              "tests:internal/reedcli": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/reedengine_test": 2000,
+              "tests:internal/seatengine": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:internal/standalonegeom": 2000,
+              "tests:internal/treadleengine": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 432.5,
+            "written": 130590
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-shuttle-layered-load",
+        "06-orch-webster-logger-layered-load"
+      ],
+      "profile": "cautious",
+      "estimate": 377794,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 70248,
+        "read_union": 158128,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 576,
+            "reads": {
+              "file:internal/battencli/wire.go": 11940,
+              "file:internal/burlercli/wiring.go": 2748,
+              "file:internal/burlerengine/smoke_cluster_test.go": 3888,
+              "file:internal/burlerengine/smoke_round_test.go": 4488,
+              "file:internal/loomcli/reviewstatus.go": 2100,
+              "file:internal/loomcli/smoke_attachprobe_test.go": 5988,
+              "file:internal/loomcli/smoke_gate_test.go": 2580,
+              "file:internal/loomcli/smoke_parentreview_test.go": 2268,
+              "file:internal/loomcli/wiring.go": 10608,
+              "file:internal/orchcli/cli.go": 2112,
+              "file:internal/orchcli/smoke_cycle_test.go": 3636,
+              "file:internal/orchcli/smoke_live_test.go": 7128,
+              "file:internal/seatengine/smoke_seats_test.go": 2208,
+              "file:internal/shuttlecli/cli.go": 1620,
+              "file:internal/shuttlecli/smoke_interrupt_test.go": 4116,
+              "file:internal/treadleengine/smoke_judge_test.go": 4008,
+              "file:internal/webstercli/smoke_test.go": 4680,
+              "file:internal/webstercli/wiring.go": 4392,
+              "package:internal/battencli": 2000,
+              "package:internal/burlercli": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/seatengine": 2000,
+              "package:internal/shuttlecli": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengine_test": 2000,
+              "package:internal/treadleengine": 2000,
+              "package:internal/webstercli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/seatengine": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine_test": 2000,
+              "tests:internal/treadleengine": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 278,
+            "written": 83976
+          },
+          {
+            "card": 6,
+            "card_text": 492,
+            "reads": {
+              "file:cmd/lyx/exitsweep.go": 552,
+              "file:internal/loomcli/wiring.go": 10608,
+              "file:internal/orchcli/cli.go": 2112,
+              "file:internal/webstercli/wiring.go": 4392,
+              "package:cmd/lyx": 2000,
+              "package:internal/loggerconfig": 2000,
+              "package:internal/loggerconfig_test": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/orchengine": 2000,
+              "package:internal/orchengine_test": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "package:internal/websterengine_test": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/loggerconfig": 2000,
+              "tests:internal/loggerconfig_test": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/orchengine": 2000,
+              "tests:internal/orchengine_test": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:internal/websterengine_test": 2000
+            },
+            "messages": 216.5,
+            "written": 65442
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-batcher-layered-load",
+        "08-burler-models-layered-load"
+      ],
+      "profile": "cautious",
+      "estimate": 411360,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 77248,
+        "read_union": 105776,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 1020,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4248,
+              "file:internal/batcher/doc.go": 804,
+              "file:internal/loomcli/wiring.go": 10608,
+              "file:internal/loomshed/doc.go": 672,
+              "file:internal/webstercli/wiring.go": 4392,
+              "file:tools/tokencount/calibrate.go": 8976,
+              "package:contracts/specs": 2000,
+              "package:internal/batcher": 2000,
+              "package:internal/batcher_test": 2000,
+              "package:internal/configsync": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:internal/webstercli": 2000,
+              "package:tools/tokencount": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/batcher": 2000,
+              "tests:internal/batcher_test": 2000,
+              "tests:internal/configsync": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 431,
+            "written": 130320
+          },
+          {
+            "card": 8,
+            "card_text": 816,
+            "reads": {
+              "file:cmd/lyx/configstrictness_test.go": 1764,
+              "file:internal/burlercli/wiring.go": 2748,
+              "file:internal/loomcli/wiring.go": 10608,
+              "file:internal/modelspec/modelspec.go": 1728,
+              "file:internal/webstercli/wiring.go": 4392,
+              "package:cmd/lyx": 2000,
+              "package:internal/burlercli": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/darnengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/modelspec": 2000,
+              "package:internal/webstercli": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/darnengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/modelspec": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 324,
+            "written": 98016
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-loom-layered-load",
+        "10-darn-landing-layered-load",
+        "11-gate-board-layered-load",
+        "12-fabric-layered-load"
+      ],
+      "profile": "cautious",
+      "estimate": 439238,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 84248,
+        "read_union": 108144,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 468,
+            "reads": {
+              "file:internal/loomcli/arm.go": 6948,
+              "file:internal/loomcli/wiring.go": 10608,
+              "file:internal/webstercli/wiring.go": 4392,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/webstercli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 154,
+            "written": 46668
+          },
+          {
+            "card": 10,
+            "card_text": 504,
+            "reads": {
+              "file:internal/loomcli/wiring.go": 10608,
+              "package:internal/darnengine": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:internal/darnengine": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 146,
+            "written": 44304
+          },
+          {
+            "card": 11,
+            "card_text": 516,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "package:internal/boardcli": 2000,
+              "package:internal/boardengine": 2000,
+              "package:internal/boardengine_test": 2000,
+              "package:internal/gateslot": 2000,
+              "package:internal/hubgeom": 2000,
+              "package:internal/ideengine": 2000,
+              "package:internal/pairteardown_test": 2000,
+              "package:internal/planglyph": 2000,
+              "package:internal/verifytree": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/boardcli": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/boardengine_test": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/ideengine": 2000,
+              "tests:internal/pairteardown_test": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/verifytree": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 197.5,
+            "written": 59766
+          },
+          {
+            "card": 12,
+            "card_text": 708,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/fabricengine_test": 2000,
+              "package:internal/hubforge": 2000,
+              "package:internal/pairteardown": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/fabricengine_test": 2000,
+              "tests:internal/hubforge": 2000,
+              "tests:internal/pairteardown": 2000
+            },
+            "messages": 318,
+            "written": 96108
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-configreg-local-bounds",
+        "14-configreg-run-settings",
+        "15-configsync-layer-reconcile",
+        "16-sparse-migration",
+        "17-config-cli-layers"
+      ],
+      "profile": "cautious",
+      "estimate": 441158,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 91248,
+        "read_union": 103016,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 660,
+            "reads": {
+              "file:PATTERN.md": 1296,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "package:.": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/configreg": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 85.5,
+            "written": 26310
+          },
+          {
+            "card": 14,
+            "card_text": 360,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/configreg": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/configreg": 2000
+            },
+            "messages": 43.5,
+            "written": 13410
+          },
+          {
+            "card": 15,
+            "card_text": 1308,
+            "reads": {
+              "file:PATTERN.md": 1296,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:internal/hubforge/doc.go": 708,
+              "file:internal/hubreconcile/doc.go": 636,
+              "file:internal/loomcli/arm.go": 6948,
+              "file:internal/loomcli/wiring.go": 10608,
+              "file:internal/webstercli/wiring.go": 4392,
+              "file:pattern/PATTERN-hub-wide-config.md": 72,
+              "package:.": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/configcli": 2000,
+              "package:internal/configsync": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabriccli_test": 2000,
+              "package:internal/hubforge": 2000,
+              "package:internal/hubreconcile": 2000,
+              "package:internal/hubreconcile_test": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/webstercli": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/configsync": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabriccli_test": 2000,
+              "tests:internal/hubforge": 2000,
+              "tests:internal/hubreconcile": 2000,
+              "tests:internal/hubreconcile_test": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 313.5,
+            "written": 95358
+          },
+          {
+            "card": 16,
+            "card_text": 912,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:internal/hubforge/doc.go": 708,
+              "file:internal/hubreconcile/doc.go": 636,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/configcli": 2000,
+              "package:internal/configengine": 2000,
+              "package:internal/configengine_test": 2000,
+              "package:internal/configsync": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabriccli_test": 2000,
+              "package:internal/hubforge": 2000,
+              "package:internal/hubreconcile": 2000,
+              "package:internal/hubreconcile_test": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/configengine": 2000,
+              "tests:internal/configengine_test": 2000,
+              "tests:internal/configsync": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabriccli_test": 2000,
+              "tests:internal/hubforge": 2000,
+              "tests:internal/hubreconcile": 2000,
+              "tests:internal/hubreconcile_test": 2000
+            },
+            "messages": 166.5,
+            "written": 50862
+          },
+          {
+            "card": 17,
+            "card_text": 804,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:contracts/specs/refusal-spec.md": 4248,
+              "file:internal/configcli/doc.go": 432,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/configcli": 2000,
+              "package:internal/configengine": 2000,
+              "package:internal/configengine_test": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/configengine": 2000,
+              "tests:internal/configengine_test": 2000
+            },
+            "messages": 200.5,
+            "written": 60954
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "18-config-resolved-provenance",
+        "19-agentname-task-slug",
+        "20-board-run-settings",
+        "21-seed-child-run-settings",
+        "22-orch-run-settings-rule",
+        "23-overview-config-layers"
+      ],
+      "profile": "cautious",
+      "estimate": 279984,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 98248,
+        "read_union": 78524,
+        "cards": [
+          {
+            "card": 18,
+            "card_text": 408,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:internal/configcli/doc.go": 432,
+              "file:internal/configengine/doc.go": 300,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/configcli": 2000,
+              "package:internal/configengine": 2000,
+              "package:internal/configengine_test": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/configengine": 2000,
+              "tests:internal/configengine_test": 2000
+            },
+            "messages": 74,
+            "written": 22608
+          },
+          {
+            "card": 19,
+            "card_text": 228,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/agentname": 2000,
+              "package:internal/configcli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/agentname": 2000,
+              "tests:internal/configcli": 2000
+            },
+            "messages": 27,
+            "written": 8328
+          },
+          {
+            "card": 20,
+            "card_text": 624,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:internal/boardcli/doc.go": 552,
+              "file:internal/boardengine/doc.go": 1548,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/boardcli": 2000,
+              "package:internal/boardcli_test": 2000,
+              "package:internal/boardengine": 2000,
+              "package:internal/boardengine_test": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/boardcli": 2000,
+              "tests:internal/boardcli_test": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/boardengine_test": 2000
+            },
+            "messages": 130,
+            "written": 39624
+          },
+          {
+            "card": 21,
+            "card_text": 612,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1632,
+              "file:contracts/specs/refusal-spec.md": 4248,
+              "file:internal/battenshed/doc.go": 1236,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 94,
+            "written": 28812
+          },
+          {
+            "card": 22,
+            "card_text": 120,
+            "reads": {
+              "file:contracts/stencils/orch/orch-template-role.md": 2064,
+              "package:contracts/stencils/orch": 2000,
+              "tests:contracts/stencils/orch": 2000
+            },
+            "messages": 6,
+            "written": 1920
+          },
+          {
+            "card": 23,
+            "card_text": 120,
+            "reads": {
+              "file:docs/overview.md": 8400,
+              "package:docs": 2000,
+              "tests:docs": 2000
+            },
+            "messages": 6,
+            "written": 1920
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "993b22c04ce849f45f96709a28dd49ef",
+  "masterSessionId": "7361d6f2-17ce-4121-9688-8cf5be50f44c",
+  "batches": {
+    "1": {
+      "slug": "yamlengine-layer-ops",
+      "cards": [
+        "01-yamlengine-layer-ops",
+        "02-configengine-layer-stack",
+        "03-fabric-config-dirs"
+      ],
+      "cardHashes": {
+        "01-yamlengine-layer-ops": "ccb4eeec946c56eeebd51b72d09fa699be0f3fa70b7df08c2b42b5e257f0c31e",
+        "02-configengine-layer-stack": "5ae656f16b461f4f5aaa3df76ef6fae21c57ddb6066525c9c27554e9b7632be4",
+        "03-fabric-config-dirs": "ef7c9eebf779b41231e9220ba94c477474f3ef819dc2caaae5598cd7a645e454"
+      },
+      "startSha": "c279a38bafb5aced5978bceb727ff9c06e756848",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T07:52:02Z",
+      "sessionId": "7361d6f2-17ce-4121-9688-8cf5be50f44c",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
