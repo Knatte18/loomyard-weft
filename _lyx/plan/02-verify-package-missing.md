@@ -1,11 +1,11 @@
 # Card 2 — verify-package-missing
 
 **Create:**
-- `plan:internal/planparser#checkVerifyPackageMissing` -> `func checkVerifyPackageMissing(plan *Plan, worktreeRoot string) []ValidationError`
-- `plan:internal/planparser#missingPackageArg` -> `type missingPackageArg struct`
-- `plan:internal/planparser#missingPackageArgs` -> `func missingPackageArgs(chain, worktreeRoot string, created []string) []missingPackageArg`
-- `plan:internal/planparser#gateTestDirAndPackages` -> `func gateTestDirAndPackages(runDir string, fields []string) (commandDir string, packageArgs []string, ok bool)`
-- `plan:internal/planparser#createdDirs` -> `func createdDirs(plan *Plan, through int) []string`
+- `internal/planparser#checkVerifyPackageMissing`
+- `internal/planparser#missingPackageArg`
+- `internal/planparser#missingPackageArgs`
+- `internal/planparser#gateTestDirAndPackages`
+- `internal/planparser#createdDirs`
 
 **Edit:**
 - `internal/planparser#goCommandDirAndPackages` -> `func goCommandDirAndPackages(runDir string, fields []string) (commandDir, subcommand string, packageArgs []string, ok bool)`

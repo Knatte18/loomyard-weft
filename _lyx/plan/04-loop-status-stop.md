@@ -1,10 +1,10 @@
 # Card 4 — loop-status-stop
 
 **Rename:**
-- `internal/shedengine#missingStatusClause` -> `plan:internal/shedengine#MissingStatusClause`
+- `internal/shedengine#missingStatusClause` -> `internal/shedengine#MissingStatusClause`
 
 **Create:**
-- `plan:internal/shedverbs#statusStopWayForward` -> `func statusStopWayForward(spec *Spec, readErr error) string`
+- `internal/shedverbs#statusStopWayForward`
 
 **Edit:**
 - `internal/shedengine#Goto`

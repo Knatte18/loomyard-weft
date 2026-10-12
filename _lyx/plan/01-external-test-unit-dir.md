@@ -1,7 +1,7 @@
 # Card 1 — external-test-unit-dir
 
 **Create:**
-- `plan:internal/planparser#goPackageDir` -> `func goPackageDir(unit string) string`
+- `internal/planparser#goPackageDir`
 
 **Edit:**
 - `internal/planparser#CardTargetDirs`

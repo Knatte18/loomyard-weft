@@ -1,7 +1,7 @@
 # Card 3 — gate-test-package-dirs
 
 **Create:**
-- `plan:internal/gatecli#missingPackageDirs` -> `func missingPackageDirs(dir string, packages []string) string`
+- `internal/gatecli#missingPackageDirs`
 
 **Edit:**
 - `internal/gatecli#runTest`

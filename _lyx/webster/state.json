@@ -1,12 +1,12 @@
 {
   "runGuid": "4d1e13bee778835f01c9478efa610f49",
-  "planFingerprint": "318348075df7a9b691e9888f19708165f651b042fe17971cce4efa80ab7579cd",
+  "planFingerprint": "49e58c6db2cb57c2f4e1901fea0543d4ac3e7c8b53f5acb4331c0fe18c5234e3",
   "planFileHashes": {
     "00-overview.md": "95d484f046c409281515b43690a59f232e1e7e44595f43a065adce52a2b8cf4c",
-    "01-external-test-unit-dir.md": "c5cd5628b3eadc532f66ec33d9d44683396fc567ba3350a81cd646558d69c6e3",
-    "02-verify-package-missing.md": "a4710be5aaea0e602a771251919b3bc569b8cdde57b7cc1c3b8d932f4e93fa4c",
-    "03-gate-test-package-dirs.md": "0b11148c3adff7ddaba4eb7cbec1d3ffa90c3d70c112cc5bf032b56b8df1dfcd",
-    "04-loop-status-stop.md": "9ee6384fe5419c5deee4360caeec79f6cda1df575cefddca8a9573d00b0d9bb6",
+    "01-external-test-unit-dir.md": "6b40c55a111dc658a86fab6a7c99807b4727131d4906ab961f44a93bd02263eb",
+    "02-verify-package-missing.md": "ec3e4b99576318474d809381ef381adcc48aace1d643b9cd91ff0364084afd0f",
+    "03-gate-test-package-dirs.md": "7d1951cfe0d648a3c462caa638a92a6565beb3d4b6fa692a285b951c92152903",
+    "04-loop-status-stop.md": "246ab6bbedae3820be932e0d70d58f5f62c9304c750db612a73dc2f1c5257706",
     "05-cli-runnable-group-rule.md": "654fbda581804d4b544b19b0dfb8d08daebd502eedbd44dd81e6f276012f1d13"
   },
   "planOverviewFrameHash": "42d9348147da0b7688a35487837177abe8fa8864c6c66c3fbdfaa66b3c9da249",
@@ -136,7 +136,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "ac002a5141edfa194c8b4945b47f4933",
   "masterSessionId": "cdb0fbb6-2e4b-4c46-87d2-9f4f072ff2e7",
   "batches": {
@@ -150,18 +150,51 @@
         "05-cli-runnable-group-rule"
       ],
       "cardHashes": {
-        "01-external-test-unit-dir": "c5cd5628b3eadc532f66ec33d9d44683396fc567ba3350a81cd646558d69c6e3",
-        "02-verify-package-missing": "a4710be5aaea0e602a771251919b3bc569b8cdde57b7cc1c3b8d932f4e93fa4c",
-        "03-gate-test-package-dirs": "0b11148c3adff7ddaba4eb7cbec1d3ffa90c3d70c112cc5bf032b56b8df1dfcd",
-        "04-loop-status-stop": "9ee6384fe5419c5deee4360caeec79f6cda1df575cefddca8a9573d00b0d9bb6",
+        "01-external-test-unit-dir": "6b40c55a111dc658a86fab6a7c99807b4727131d4906ab961f44a93bd02263eb",
+        "02-verify-package-missing": "ec3e4b99576318474d809381ef381adcc48aace1d643b9cd91ff0364084afd0f",
+        "03-gate-test-package-dirs": "7d1951cfe0d648a3c462caa638a92a6565beb3d4b6fa692a285b951c92152903",
+        "04-loop-status-stop": "246ab6bbedae3820be932e0d70d58f5f62c9304c750db612a73dc2f1c5257706",
         "05-cli-runnable-group-rule": "654fbda581804d4b544b19b0dfb8d08daebd502eedbd44dd81e6f276012f1d13"
       },
       "startSha": "e5b56fe913e05d1ea5054012d1f8bac96cedc47b",
       "kind": "fork",
       "spawnedAt": "2026-10-12T14:54:34Z",
       "sessionId": "cdb0fbb6-2e4b-4c46-87d2-9f4f072ff2e7",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-external-test-unit-dir",
+        "status": "done",
+        "head_sha": "b6af4a84c801f0c1c7d51e54ee820c01a7dbb3cb",
+        "deviations": [
+          "PATTERN.md",
+          "internal/planparser/verifymodule.go",
+          "internal/planparser/validate.go",
+          "internal/planparser/verifypackage.go",
+          "internal/gatecli/cli.go",
+          "internal/gatecli/run.go",
+          "internal/shedverbs/loop.go",
+          "internal/shedverbs/loopenvelope.go",
+          "internal/shedverbs/spec.go",
+          "internal/shedengine/run.go",
+          "internal/shedengine/goto.go",
+          "internal/planparser/vocabname.go",
+          "internal/planparser/targetdirs.go",
+          "docs/overview.md"
+        ]
+      },
+      "cardShas": [
+        "b6af4a84c801f0c1c7d51e54ee820c01a7dbb3cb"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-intake-bugs-1012/cdb0fbb6-2e4b-4c46-87d2-9f4f072ff2e7/subagents/agent-a40475d274bdf80d0.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-intake-bugs-1012/cdb0fbb6-2e4b-4c46-87d2-9f4f072ff2e7/subagents/agent-a40475d274bdf80d0.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-intake-bugs-1012/cdb0fbb6-2e4b-4c46-87d2-9f4f072ff2e7/subagents/agent-a40475d274bdf80d0.jsonl"
+  ]
 }
