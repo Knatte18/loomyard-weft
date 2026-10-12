@@ -229,6 +229,13 @@ Rationale: The round-2 fixer applied F1, F2 and F3 as the review proposed and ch
   - parent-fast-forward-moves-pair-worktree-unbounded (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 3: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-3-review.md; fixer report: _lyx/reviews/plan/round-3-fixer-report.md.
+  - fastforward-pair-weft-step-unstated (class design, severity MEDIUM, open in rounds 3)
+  - merged-tip-uses-prefetch-upstream (class design, severity MEDIUM, open in rounds 3)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - Two runs on one parent: the second waits at Merge-In in queue order, shows the wait in `lyx loom status`, sends no quiet notice, and proceeds once the first's lock is released by Finalize's Done or by any release path.
