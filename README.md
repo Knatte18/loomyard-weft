@@ -24,8 +24,8 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2 | **reed: a strand in its own tmux window**<br>• Three related ideas for reed beyond one pane per strand and one window per worktree | [`reed-multi-window`](design-reed-multi-window.md) | loom | Plan-Bouncer | 8d | 3h | reed, shuttle |
-| 3 | **lyx pause leaves idle drivers in the rewind picker**<br>• The pause Esc opened Claude Code rewind picker in both idle run drivers; resume then types into the picker. | [`pause-esc-rewind`](design-pause-esc-rewind.md) | loom | Plan-Burler-Fix | 2h | 2h | reed, shuttle |
-| 4 | **Go driver per task, with the tackler (cold assistant) and the arbiter behind it**<br>• Go steps the run and settles mechanical stops; a cheap assistant spawns only at stops no rule settles and may escalate to the arbiter; LLM driver stays as an option. | [`go-driver-assistant`](design-go-driver-assistant.md) | loom | Discussion-Write | 18m | 7m | loom, shed |
+| 3 | **lyx pause leaves idle drivers in the rewind picker**<br>• The pause Esc opened Claude Code rewind picker in both idle run drivers; resume then types into the picker. | [`pause-esc-rewind`](design-pause-esc-rewind.md) | loom | Plan-Bouncer | 2h | 2h | reed, shuttle |
+| 4 | **Go driver per task, with the tackler (cold assistant) and the arbiter behind it**<br>• Go steps the run and settles mechanical stops; a cheap assistant spawns only at stops no rule settles and may escalate to the arbiter; LLM driver stays as an option. | [`go-driver-assistant`](design-go-driver-assistant.md) | loom | Discussion-Write | 19m | 7m | loom, shed |
 
 ### Ready
 
@@ -41,7 +41,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Run window and shuttle bugs from 2026-10-12**<br>• Six run window, shuttle, reed, loom and weft push bugs and fixes noted on 2026-10-12, bundled. | [`run-window-bugs`](design-run-window-bugs.md) | loom | `reed-multi-window` | 4d | 2h | shuttle, reed, loom, fabric |
+| 1 | **Run window and shuttle bugs from 2026-10-12**<br>• Six run window, shuttle, reed, loom and weft push bugs and fixes noted on 2026-10-12, bundled. | [`run-window-bugs`](design-run-window-bugs.md) | loom | `reed-multi-window` | 4d | 3h | shuttle, reed, loom, fabric |
 
 ## Notes
 
