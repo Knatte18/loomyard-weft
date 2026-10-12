@@ -1,0 +1,389 @@
+{
+  "runGuid": "1da1cfb5b7b51a0ee1e094e9e54cd247",
+  "planFingerprint": "60fb7966199355ff457e9202bf2fa575297826693a76cf2ff72b1c8f00af3cbf",
+  "planFileHashes": {
+    "00-overview.md": "67db7b7c84ff5884dc42ed4d08719905ce889d2fe6a82b2a05fbdab597cb6ed4",
+    "01-shedrun-arbiter-paths.md": "773f87dd7e15a9d2efd33960991ee6ffa41cf368cdff47a597750821463fc635",
+    "02-shedengine-relaunch.md": "91cad6b47de14a2a96209cc1d88de91dc673a6ab36a79add53c70e1e9029c6e5",
+    "03-shedverbs-arbiter-attempt-flag.md": "31de5c2bb49c612b1ea12e12f7c4bb85052132227b1daa5c7017fbbdc5b63c22",
+    "04-loom-arbiter-config.md": "f3230afbf2fc42e00c1c163989465daca48df5da7793fdac393c1071f0e20d24",
+    "05-loom-arbiter-records.md": "0c0acc603a32ec5a52f122614523b504a976e4122ed8cf27bc704f0e54f0ebed",
+    "06-pending-escalation.md": "5b581cfbb665186ffdb226f364c8890d2d0373a0ad052d5f578b38bf4d2249a5",
+    "07-arbiter-stencil.md": "ddacc2a9a88d4a6aad44142c9e3cda2229141be4cb94fdc40ffb10cf60d8d732",
+    "08-arbiter-prompt-spec.md": "dfc208a6387f4bf2def2f5b5de95c401589c983a8d71ceba7ee04c22eeebdc59",
+    "09-arbiter-eligibility.md": "57d7103fb52f739f5fe4f9f4c6745c4ecef56d025a4ea4e024ff5194707ee24e",
+    "10-arbiter-verb.md": "4881e4033b3b9a8c8735a8895f068bfbf30b59d6eb7e016195b80fd163b2b091",
+    "11-arbiter-cmd-wiring.md": "0a3e7f4f2839de4520cd4c017ccd45df6c3f73ac2af50ff440867777bc42d813",
+    "12-relaunch-consume-attempt.md": "0701560aa705fe793690d3dd4773eac79e5222c5b3a91beaf42980cfeb0b112b",
+    "13-decision-by-arbiter.md": "6575c753821d2495b73a1179e16d4a87d28b38aae4d6c131fc947f6941f885d2",
+    "14-driver-arbiter-branch.md": "96c96011b1af3737d5aa1cbe0883550d46c96572de30056526595273044783b4",
+    "15-batten-arbiter-hold.md": "8fb05ab7df19e95efe49c71c1f3d60d4992e34d8f36ae13dae8e59a1523107c1",
+    "16-batten-arbiter-wiring.md": "6083100bc09dc241d6eb0f1aeb1a226996c72f222ab767cde686723e13d062d1",
+    "17-orch-arbiter-escalations.md": "453763a2b067fa69bceee23f7653853c35d4d8b6ab495de1faae897efad09659"
+  },
+  "planOverviewFrameHash": "4958410c82a905767cc3ad2848c7a767aa5a61c53121a06cdbd306c12825f3f0",
+  "partition": [
+    {
+      "cards": [
+        "01-shedrun-arbiter-paths",
+        "02-shedengine-relaunch",
+        "03-shedverbs-arbiter-attempt-flag",
+        "04-loom-arbiter-config",
+        "05-loom-arbiter-records",
+        "06-pending-escalation"
+      ],
+      "profile": "cautious",
+      "estimate": 227294,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54652,
+        "read_union": 43924,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 312,
+            "reads": {
+              "file:internal/shedrun/doc.go": 396,
+              "package:internal/shedrun": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 44,
+            "written": 13512
+          },
+          {
+            "card": 2,
+            "card_text": 444,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:contracts/specs/refusal-spec.md": 4260,
+              "file:internal/shedengine/doc.go": 1488,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/shedengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/shedengine": 2000
+            },
+            "messages": 59.5,
+            "written": 18294
+          },
+          {
+            "card": 3,
+            "card_text": 480,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:contracts/specs/refusal-spec.md": 4260,
+              "file:internal/shedverbs/doc.go": 1056,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/shedverbs": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/shedverbs": 2000
+            },
+            "messages": 57,
+            "written": 17580
+          },
+          {
+            "card": 4,
+            "card_text": 444,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:contracts/specs/refusal-spec.md": 4260,
+              "file:internal/loomengine/template.yaml": 492,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 68.5,
+            "written": 20994
+          },
+          {
+            "card": 5,
+            "card_text": 624,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 158,
+            "written": 48024
+          },
+          {
+            "card": 6,
+            "card_text": 264,
+            "reads": {
+              "file:internal/shedadapters/doc.go": 4044,
+              "package:internal/shedadapters": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 33.5,
+            "written": 10314
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-arbiter-stencil",
+        "08-arbiter-prompt-spec",
+        "09-arbiter-eligibility",
+        "10-arbiter-verb",
+        "11-arbiter-cmd-wiring",
+        "12-relaunch-consume-attempt"
+      ],
+      "profile": "cautious",
+      "estimate": 227566,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61652,
+        "read_union": 29696,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 468,
+            "reads": {
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000
+            },
+            "messages": 33.5,
+            "written": 10518
+          },
+          {
+            "card": 8,
+            "card_text": 360,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 75.5,
+            "written": 23010
+          },
+          {
+            "card": 9,
+            "card_text": 324,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4260,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 58,
+            "written": 17724
+          },
+          {
+            "card": 10,
+            "card_text": 732,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:contracts/specs/refusal-spec.md": 4260,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 104,
+            "written": 31932
+          },
+          {
+            "card": 11,
+            "card_text": 444,
+            "reads": {
+              "file:internal/loomcli/doc.go": 948,
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 87.5,
+            "written": 26694
+          },
+          {
+            "card": 12,
+            "card_text": 540,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:contracts/specs/refusal-spec.md": 4260,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 86,
+            "written": 26340
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-decision-by-arbiter",
+        "14-driver-arbiter-branch",
+        "15-batten-arbiter-hold",
+        "16-batten-arbiter-wiring",
+        "17-orch-arbiter-escalations"
+      ],
+      "profile": "cautious",
+      "estimate": 223080,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68652,
+        "read_union": 65712,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 468,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4260,
+              "file:internal/loomcli/circling.go": 2736,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 90,
+            "written": 27468
+          },
+          {
+            "card": 14,
+            "card_text": 492,
+            "reads": {
+              "file:contracts/stencils/shed/shed-template-driver.md": 1776,
+              "file:docs/overview.md": 8460,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/shed": 2000,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/shed": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 73,
+            "written": 22392
+          },
+          {
+            "card": 15,
+            "card_text": 372,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:internal/battenshed/doc.go": 1536,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/battenshed": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 49.5,
+            "written": 15222
+          },
+          {
+            "card": 16,
+            "card_text": 468,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:internal/battencli/cli.go": 5172,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/battencli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/battencli": 2000
+            },
+            "messages": 61,
+            "written": 18768
+          },
+          {
+            "card": 17,
+            "card_text": 216,
+            "reads": {
+              "file:contracts/stencils/orch/orch-template-role.md": 2136,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/orch": 2000
+            },
+            "messages": 15.5,
+            "written": 4866
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "10d815dd37b13651c061b8428e486bf1",
+  "masterSessionId": "51095fde-1181-4f9b-ae2d-4d3eccbf248d",
+  "batches": {
+    "1": {
+      "slug": "shedrun-arbiter-paths",
+      "cards": [
+        "01-shedrun-arbiter-paths",
+        "02-shedengine-relaunch",
+        "03-shedverbs-arbiter-attempt-flag",
+        "04-loom-arbiter-config",
+        "05-loom-arbiter-records",
+        "06-pending-escalation"
+      ],
+      "cardHashes": {
+        "01-shedrun-arbiter-paths": "773f87dd7e15a9d2efd33960991ee6ffa41cf368cdff47a597750821463fc635",
+        "02-shedengine-relaunch": "91cad6b47de14a2a96209cc1d88de91dc673a6ab36a79add53c70e1e9029c6e5",
+        "03-shedverbs-arbiter-attempt-flag": "31de5c2bb49c612b1ea12e12f7c4bb85052132227b1daa5c7017fbbdc5b63c22",
+        "04-loom-arbiter-config": "f3230afbf2fc42e00c1c163989465daca48df5da7793fdac393c1071f0e20d24",
+        "05-loom-arbiter-records": "0c0acc603a32ec5a52f122614523b504a976e4122ed8cf27bc704f0e54f0ebed",
+        "06-pending-escalation": "5b581cfbb665186ffdb226f364c8890d2d0373a0ad052d5f578b38bf4d2249a5"
+      },
+      "startSha": "3a627c00de0b6c5006ef41fb1df79e04041ae360",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T06:44:19Z",
+      "sessionId": "51095fde-1181-4f9b-ae2d-4d3eccbf248d",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
