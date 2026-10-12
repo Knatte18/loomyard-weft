@@ -1,11 +1,11 @@
 # Card 13 — logger-sweep-dry-run
 
 **Create:**
-- `plan:internal/logger#planSweep` -> `func planSweep(dir string, bounds RetentionBounds, now time.Time, stat func(string) (fs.FileInfo, error)) []string`
-- `plan:internal/logger#SweepDir` -> `func SweepDir(dir string, bounds RetentionBounds, apply bool) ([]string, error)`
-- `plan:internal/logger#LogsDirAt` -> `func LogsDirAt(anchorPath string) string`
-- `plan:internal/loggerconfig#LoadOrDefault` -> `func LoadOrDefault(anchorPath string) logger.RetentionBounds`
-- `plan:internal/logger#TestSweepDir_DryRunListsWhatApplyRemoves` -> `func TestSweepDir_DryRunListsWhatApplyRemoves(t *testing.T)`
+- `internal/logger#planSweep`
+- `internal/logger#SweepDir`
+- `internal/logger#LogsDirAt`
+- `internal/loggerconfig#LoadOrDefault`
+- `internal/logger#TestSweepDir_DryRunListsWhatApplyRemoves`
 
 **Edit:**
 - `internal/logger#sweep`

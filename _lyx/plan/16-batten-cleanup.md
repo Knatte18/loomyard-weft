@@ -21,9 +21,9 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/shedrun#RunsRoot`
-- `plan:internal/shedrun#ScratchRoot`
-- `plan:internal/shedrun#RunDirRel`
+- `internal/shedrun#RunsRoot`
+- `internal/shedrun#ScratchRoot`
+- `internal/shedrun#RunDirRel`
 - `plan:internal/fsx#NewestModTime`
 - `internal/shedrun#RunDir`
 - `internal/shedrun#ScratchDir`

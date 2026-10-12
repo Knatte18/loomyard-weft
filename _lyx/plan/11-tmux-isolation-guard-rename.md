@@ -1,7 +1,7 @@
 # Card 11 — tmux-isolation-guard-rename
 
 **Rename:**
-- `cmd/lyx#TestTmuxIsolation_TaggedPackagesRunThroughTmuxkitMain` -> `plan:cmd/lyx#TestTmuxIsolation_EveryTestPackageRunsThroughTmuxkitMain`
+- `cmd/lyx#TestTmuxIsolation_TaggedPackagesRunThroughTmuxkitMain` -> `cmd/lyx#TestTmuxIsolation_EveryTestPackageRunsThroughTmuxkitMain`
 
 **Edit:**
 - `cmd/lyx#TestFileNamePlatform`

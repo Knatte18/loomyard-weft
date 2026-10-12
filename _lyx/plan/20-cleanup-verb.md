@@ -26,9 +26,9 @@
 - `plan:internal/battencli#Cleanup`
 - `plan:internal/orchengine#CleanupHandoffs`
 - `plan:internal/cleanupcli#scratchSegment`
-- `plan:internal/logger#SweepDir`
-- `plan:internal/logger#LogsDirAt`
-- `plan:internal/loggerconfig#LoadOrDefault`
+- `internal/logger#SweepDir`
+- `internal/logger#LogsDirAt`
+- `internal/loggerconfig#LoadOrDefault`
 - `internal/lyxtemp#ProcessRoot`
 - `internal/lyxtemp#Root.Sweep`
 - `internal/battencli#RefuseUnlessPrime`

@@ -1,9 +1,9 @@
 # Card 14 — shedrun-cleanup-paths
 
 **Create:**
-- `plan:internal/shedrun#RunsRoot` -> `func RunsRoot(l *lyxcwd.Location) string`
-- `plan:internal/shedrun#ScratchRoot` -> `func ScratchRoot(l *lyxcwd.Location) string`
-- `plan:internal/shedrun#RunDirRel` -> `func RunDirRel(l *lyxcwd.Location, runID string) string`
+- `internal/shedrun#RunsRoot`
+- `internal/shedrun#ScratchRoot`
+- `internal/shedrun#RunDirRel`
 
 **Edit:**
 - `internal/shedrun#TestRunsRootRel`
