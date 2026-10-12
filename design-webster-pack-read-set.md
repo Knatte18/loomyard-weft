@@ -1,6 +1,6 @@
 # Webster kick-start pack: read the card's spans in one turn, per-card packs
 
-`webster-pack-read-set` · Task · enhancement, webster, stencil · running · Finalize
+`webster-pack-read-set` · Task · enhancement, webster, stencil · done
 
 ## Seen (2026-10-12)
 
