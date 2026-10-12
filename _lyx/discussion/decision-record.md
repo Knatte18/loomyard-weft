@@ -3,7 +3,7 @@
 ## Goal
 
 Read-only `sed` works for every lyx-spawned agent with no refusal, prompt or false audit halt, while rewriting a file with a script stays banned and becomes enforced.
-A Webster fork, or any agent, can no longer stall a run on a Claude Code permission prompt unseen: the shell forms that raise one are steered away before they run, and a dialog that still appears reaches the operator through a notice.
+A Webster fork, or any agent, can no longer stall a run on a Claude Code permission prompt unseen: the `sed -i` and computed-path `rm` forms that raise one are steered away before they run, and a dialog that still appears reaches the operator through a notice.
 
 ## Scope
 
@@ -29,13 +29,15 @@ Out:
 ### D1 — The edit directive states the rule by its in-place forms and names a scratch place
 
 `contracts/stencils/edit/edit-directive.md` keeps "change files only with Edit or Write" and the one-Edit-per-site and `replace_all` sentence.
-Its script ban names the rewriting forms, each directly after its own "never" so `PATTERN-no-denied-recovery`'s exemption marker admits it: never `sed -i`, never `perl -i`, never `awk`, and never an inline `python` or `node` heredoc.
+Its script ban names the rewriting forms, each directly after its own "never" so `PATTERN-no-denied-recovery`'s exemption marker admits it: never `sed -i`, never `perl -i`, never `awk`, and never `python` or `node` in an inline heredoc, as the current directive has it.
 It states that reading with `sed -n`, `grep` or `cat` is fine.
 It adds one sentence: scratch files go under `.scratch/` in the working directory, never a system temp directory, and are removed by their literal path.
 `internal/editdirective/doc.go` restates the rule summary to match.
 In `editRulePhrases`, "`sed`" becomes "`sed -i`", so the single-statement check still finds the directive and no stencil that mentions reading with `sed`.
 
-Fabric's git-exclude seeding (`internal/fabricengine`'s `gitexclude.go`) adds `.scratch/` to each wired repo's `.git/info/exclude`, so the place is ignored in a target repo that does not list it in its own `.gitignore`.
+Fabric's git-exclude seeding (`internal/fabricengine`'s `gitexclude.go`) adds `.scratch/` to each wired repo's `.git/info/exclude` as the root-anchored entry `/.scratch/`, written through `ExcludeAnchoredDir` like the existing entries, so the place is ignored in a target repo that does not list it in its own `.gitignore`.
+Bound: untracked files under the root `.scratch/` no longer show in `git status`, so a dirty-tree check no longer sees them;
+a `.scratch/` below the root is not excluded and shows as untracked, and the entry never hides tracked content, since git ignores no tracked path.
 `.scratch/` is agent scratch, not lyx state, so `PATTERN-durable-vs-ephemeral-state` and `PATTERN-lyxdirs-single-declarer` do not apply.
 
 Rationale: the directive is the rule's only statement and reaches every spawned role's opening stencil, and Webster's implementer forks through Merriam's context, so one edit there covers every agent.
@@ -43,25 +45,29 @@ The current "never `sed`" reads as a ban on all `sed`, the stale wording the ope
 
 ### D2 — A standing deny refuses an in-place script edit
 
-A new row in `claudeengine`'s `standingDenies` denies a Bash command that runs, in command position (the existing `commandPositionPattern`), `sed` with an in-place flag anywhere among its words (`-i`, `-i<suffix>`, `--in-place`, `--in-place=<suffix>`, or a short-flag cluster holding `i` such as `-ni` or `-Ei`), or `perl` with `i` in a short-flag cluster (such as `-pi` or `-i.bak`).
+A new row in `claudeengine`'s `standingDenies` denies a Bash command that runs, in command position (the existing `commandPositionPattern`), `sed` with an in-place flag anywhere among its words (`-i`, `-i<suffix>`, a `--` word that is a prefix of `--in-place` at least as long as `--i`, optionally followed by `=<suffix>`, or a short-flag cluster holding `i` such as `-ni` or `-Ei`), or `perl` with `i` in a short-flag cluster (such as `-pi` or `-i.bak`).
+The `sed` and `perl` words run to the next `;`, `&`, `|`, `)`, backtick or JSON-escaped newline, so a later command's `-i` is outside them.
+A flag word opens after whitespace with a single dash, so `--quiet`, `--silent`, `--expression=` and `--file=`, which hold an `i`, never match as a short-flag cluster.
+GNU sed accepts any unambiguous abbreviation of a long option, which is why every prefix of `--in-place` from `--i` up is denied;
+no other GNU sed long option starts with `--i`, so the widening denies no read.
 Its steer says scripted in-place edits are refused under the edit directive's rule and that reading with `sed -n` is fine; it points at the rule and does not restate it.
 It is installed in every run, the orch included, with no config key.
 
 Bound: a guardrail, not a barrier, stated in its row comment and `claudeengine`'s doc.
-It lets through `sed` writing by redirection (`sed ... > f`), a `w` command inside a script, `awk`, and anything behind `bash -c`, `eval` or a variable.
-It falsely denies a matching spelling in a quoted argument, in a `grep` alternation such as `'x\|sed -i'`, or in another payload field, as the python row does.
+It lets through `sed` writing by redirection (`sed ... > f`), a `w` command inside a script, `awk`, `find -exec sed -i`, anything behind `bash -c`, `eval` or a variable, and anything after a prefix `commandPositionPattern` does not list (`nohup`, `command`, `timeout`).
+It falsely denies a matching spelling in a quoted argument, in a `grep` alternation such as `'x\|sed -i'`, or in another payload field, as the python row does, and a `perl` read whose argument cluster holds an `i`, such as `perl -Mstrict -ne ...`.
 
 Rationale: the directive reached the fork and did not stop its `sed -i`; why the fork ignored it is unknown, and a deny at the moment of the call makes the answer moot.
 
 ### D3 — A standing deny refuses `rm` on a computed path
 
-A new row denies a Bash command with `rm` in command position whose command also holds a command substitution (`$(` or a backtick) or a shell variable expansion (`$` followed by a letter, `_` or `{`).
+A new row denies a Bash command with `rm` in command position whose command also holds a command substitution (`$(` or a backtick) or a shell variable expansion (`$` followed by a letter, digit, `_`, `{`, `@` or `*`, which takes in the positional parameters and `$@` and `$*`).
 Its steer and notice say to remove a file by its literal path; the scratch place stays D1's alone.
 It is installed in every run, with no config key.
 
 Bound: a guardrail, not a barrier.
 It falsely denies an `rm` of a literal path in a command that uses `$` elsewhere, a `grep` alternation naming `rm`, and a matching spelling in another payload field;
-it lets through a removal behind `find -delete`, `xargs rm` with no `$`, `bash -c`, or a script.
+it lets through a removal behind `find -delete`, `xargs rm` with no `$`, `bash -c`, or a script, and one through the other special parameters (`$$`, `$?`, `$#`, `$!`).
 
 Rationale: Claude Code raises "Dangerous rm operation on statically-unresolvable target" even in bypass mode, so the only way to keep that stall from happening is to refuse the call before Claude Code evaluates it; a deny costs one turn, a prompt costs the run.
 
@@ -92,15 +98,19 @@ Rationale: agents commonly read a function with `sed -n '/^func X/,/^}/p'`; misr
 In `internal/shuttleengine`'s wait loop, an autonomous run on a runner with a notifier keeps a pending-dialog latch:
 
 - An ask signal that is not an `AskUserQuestion` (the engine's permission and input-dialog signals) sets the latch, stamped with the signal's time and events offset, when it is not already set.
-  A further ask while the latch is set changes nothing, so dialogs close together give one notice.
+  A further ask while the latch is set opens no new episode and keeps the latch's stamp, so dialogs close together give one notice.
 - The latch is independent of the session-state fold: a later turn end or turn start, the main session's or a fork's, does not clear it.
   It clears only when a pane read through the engine's input-box reader shows an input box.
-- Once the latch is `permissionNoticeBound` old, a new package constant of 60 seconds, the loop reads the pane on each poll tick until it shows an input box or the notice is sent.
-  A read showing no input box sends one notice; a failed read sends nothing and is retried on a later tick.
+- From the moment the latch is set, the loop reads the pane through the input-box reader on each poll tick.
+  A read showing an input box clears the latch at any age, so a later ask opens a new episode stamped with its own time and offset.
+  Once the latch is `permissionNoticeBound` old, a new package constant of 60 seconds, a read showing no input box sends one notice; a failed read sends nothing and is retried on a later tick.
+After the notice is sent, the reads go on until one shows an input box, which clears the latch so a later ask starts a new episode.
 
 The notice, built like the held-turn-end notice and with any agent text delimited the same way, names the strand, says its pane shows a permission or input dialog lyx cannot answer, and gives the way forward: the operator answers the dialog in the pane, reached with `lyx reed attach`.
-The latch's offset is persisted before the notifier is called, in a run-state field of its own beside `RunState.NotifiedOffset`, so a held-turn-end notice and this notice never suppress each other.
-On attach, the loop rebuilds the latch from the events after the persisted offset, so a dialog still pending across a driver restart is still notified once and a sent one is not repeated.
+When the notice is sent, the offset of the latest ask folded into the latch episode up to that moment, not the episode's first ask, is persisted before the notifier is called, in a run-state field of its own beside `RunState.NotifiedOffset`, so a held-turn-end notice and this notice never suppress each other.
+While the latch stays set after its notice, each further ask folded into it advances the same persisted dialog offset, so a reattach never rebuilds a latch from an ask of an episode already notified.
+One dialog can yield several ask events, such as a `PermissionRequest` and a `permission_prompt` `Notification`, which may land on either side of the send, and a second fork's dialog can fold into a notified episode; advancing the offset covers both.
+On attach, the loop rebuilds the latch from the asks after the persisted offset and never from one at or before it, so a dialog still pending across a driver restart is still notified once and a sent one is not repeated.
 `Spec.QuietHold` and `Spec.HoldDeferral` do not suppress or defer it, since no peer can answer a dialog.
 An interactive run, a runner without a notifier, and an engine without session signals or an input-box reader send nothing.
 The loop's classification of the run is unchanged, and the run stays bounded by its deadline and liveness check as today.
@@ -115,7 +125,9 @@ The runners for loom, Webster and burler already route notices to the orch throu
 ### D7 — `PATTERN-no-denied-recovery` follows the new denies
 
 `sed -i` and `perl -i` join the closed list of denied forms in `pattern/PATTERN-no-denied-recovery.md` and `cmd/lyx/norecoverydeny_test.go`.
-The computed-path `rm` deny is pattern-shaped, so, like the raw `go` deny, it stays outside the closed list and its token scan, and the background file says so; a plain `rm <path>` stays a valid step.
+Those entries catch only the bare spellings: the other spellings D2 denies (`-i<suffix>`, `--in-place` and its abbreviations such as `--in` or `--in-pl=.bak`, a short cluster holding `i` such as `-ni` or `-pi`) stay outside the token scan, as the raw `go` deny does.
+The computed-path `rm` deny is pattern-shaped, so, like the raw `go` deny, it stays outside the closed list and its token scan; a plain `rm <path>` stays a valid step.
+The background file says, in one sentence, that the computed-path `rm` deny and the in-place spellings beyond the bare `sed -i` and `perl -i` are outside the scan.
 The PATTERN.md one-line entry is unchanged.
 
 Rationale: the entry requires its list to follow `claudeengine`'s deny table.
@@ -144,6 +156,7 @@ A prefix rule such as `Bash(sed -n:*)` would also admit `sed -n 's/a/b/w f'`, a 
 
 - Claude Code's permission and input dialogs replace the input box in the pane, so the input-box reader reads no box while one shows.
 - Claude Code honours a PreToolUse deny before its own "statically-unresolvable target" check, so D3's deny prevents the prompt.
+- Claude Code's statically-unresolvable `rm` prompt fires only on a target holding a command substitution or a shell variable, as D3's pattern assumes; another form left to it (a glob, `~`, a special parameter D3 lets through) still stalls the run until D6's notice.
 - Claude Code's built-in read-only check admits `sed -n` prints without a prompt in a prompting interactive run.
 - 60 seconds is long enough that an operator answering a dialog at once sees no notice, and short enough to surface a stall well inside any run's timeout.
 
@@ -153,12 +166,18 @@ A prefix rule such as `Bash(sed -n:*)` would also admit `sed -n 's/a/b/w f'`, a 
 - A Claude Code release that changes the dialog's pane rendering could make the input-box read report a box while a dialog shows, silencing D6; the shadow fold's state log still records the ask.
 - Task `test-tmp-cleanup` plans a sweep of `.scratch/`; it must take only age-stale entries, or it can delete a live run's scratch files.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - d2-abbreviated-in-place-spellings-not-denied (class design, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
-- The rendered edit directive allows `sed -n` reading, puts "never" directly before each of `sed -i`, `perl -i`, `awk` and the interpreter heredoc, names `.scratch/` as the scratch place, and the single-statement check finds it alone.
+- The rendered edit directive allows `sed -n` reading, puts "never" directly before each of `sed -i`, `perl -i`, `awk` and `python`, names `.scratch/` as the scratch place, and the single-statement check finds it alone.
 - A repo wired by fabric has `.scratch/` in its `.git/info/exclude`.
-- The in-place deny refuses `sed -i 's/a/b/' f`, `sed -i.bak ...`, `sed -ni ...`, `sed --in-place ...`, `sed --in-place=.bak ...`, `sed -n 3p f -i`, `perl -pi -e ...`, a path-prefixed `/usr/bin/sed -i`, and each after `&&`, `;` or `|`; it admits `sed -n 1,5p f`, `sed 's/a/b/' f`, `grep -i x f` and `git diff`.
-- The computed-path deny refuses `rm -rf "$(cat x)"`, `rm $DIR/f`, `rm ${D}/f` and an `rm` behind backticks; it admits `rm -f .scratch/a` and `rm a b`.
+- The in-place deny refuses `sed -i 's/a/b/' f`, `sed -i.bak ...`, `sed -ni ...`, `sed --in-place ...`, `sed --in-place=.bak ...`, `sed --in s/a/b/ f`, `sed --in-pl=.bak s/a/b/ f`, `sed -n 3p f -i`, `perl -pi -e ...`, a path-prefixed `/usr/bin/sed -i`, and each after `&&`, `;` or `|`; it admits `sed -n 1,5p f`, `sed 's/a/b/' f`, `sed --quiet 3p f`, `sed --silent 3p f`, `sed -n 3p f` followed by a newline and `grep -i x f`, `grep -i x f` and `git diff`.
+- The computed-path deny refuses `rm -rf "$(cat x)"`, `rm $DIR/f`, `rm $1`, `rm ${D}/f` and an `rm` behind backticks; it admits `rm -f .scratch/a` and `rm a b`.
 - Both new denies are announced in the system-prompt notice of every run mode, and the hook and notice tables stay in step.
 - The python deny's steer names `sed -n`.
 - The classifier admits `sed -n '/^func X/,/^}/p' f`, `sed --quiet 3p f`, `sed -n '1,5p;20,30p' f` and `sed -n '/a/p' f`, and rejects `sed -n '1w out' f`, `sed -n 's/a/b/w f' f`, `sed -n '$p' f`, `sed -n '/a;b/p' f`, `sed -n '1p;' f`, `sed -n '//p' f`, `sed -n '/a/Ip' f`, `sed -i 3p f`, `sed -n 3p -i f` and `sed -n 3p f -i`.
@@ -166,8 +185,10 @@ A prefix rule such as `Bash(sed -n:*)` would also admit `sed -n 's/a/b/w f'`, a 
 - A fork's ask followed by a main-session turn end with outstanding tasks, with the pane still showing no input box, still sends the notice.
 - No notice is sent when the pane shows an input box before the bound, for an interactive run, or for a runner without a notifier; a `QuietHold` run still sends it.
 - Two asks within the bound send one notice.
+- An ask followed by a pane showing an input box at 10 s and a second ask at 55 s sends no notice before 60 s after the second ask.
+- A run whose first dialog was notified and then answered (the pane shows an input box), followed by a second ask, sends a second notice once the bound passes on that second ask.
 - A deferred held-turn-end notice pending when a dialog notice is sent is still sent when its deferral ends.
-- A run reattached with a dialog pending and unnotified sends the notice once; one reattached after the notice was sent does not repeat it.
+- A run reattached with a dialog pending and unnotified sends the notice once; one reattached after the notice was sent does not repeat it, including when its events hold a `PermissionRequest` and then a `permission_prompt` `Notification` for the same dialog, and when that `Notification` lands after the notice was sent and before the restart.
 - The `PATTERN-no-denied-recovery` scan fails a planted `sed -i` or `perl -i` step and passes the directive's wording.
 - A live llm-tier scenario in which a fork runs a command Claude Code prompts on in bypass mode records an ask signal in the run's events file.
 
