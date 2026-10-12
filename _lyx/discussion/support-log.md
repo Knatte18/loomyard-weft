@@ -21,6 +21,7 @@ Autonomous run: no operator answered; every pick below is an auto-pick recorded 
    - board-fit: `board-field-drop` landed at `78e31aa06` with `storeFile` implementing `json.Marshaler`, so D2's opaque rule already covers board.json — fixed: opt-out dropped, baseline named.
    - board-fit: D9 conflicts with read-only decodes outside `state` (`runs-overview`, batten cleanup) — fixed, D9 narrowed to "no refusal; rewrites keep".
    - board-fit: name `lyx-halt`, `proc-child-lifetime`, `verify-watchdog`, `dotnet-scoped-verify` — fixed.
+   - board-fit: D7's CPU sampler goes in `internal/proc`, beside the child-lifetime code that `proc-child-lifetime` plans to move there, so `gatecli` gains no process handling beyond the loop.
    - goal-scope: D2 reaches non-run records — fixed, named in Scope with the extra-read cost in the bound.
    - goal-scope: busy non-test process and non-gate verify commands lack rationale — fixed in Scope Out.
    - goal-scope: `ReadJSONStrict` rename is churn — rejected: the name would state behavior it no longer has.
@@ -59,7 +60,11 @@ Autonomous run: no operator answered; every pick below is an auto-pick recorded 
 
 ## Review rounds
 
-_No rounds yet._
+- Round 2:
+  - F1 (BLOCKING): `busy_quit_sec` way forward only on webster's gate — fixed: D6 extends it to the loom and landing verify gates and their refusal-spec rows, with Scope lines and a criterion.
+  - F2: nested-run skip trusted its variable unchecked — fixed: the variable carries the enclosing run's pid and counts only as a live ancestor.
+  - F3: integration criterion satisfiable by the outer watchdog — fixed: the test strips the variable and asserts the 1-second window.
+  - F4: integration criterion on the threshold boundary — fixed: single-spinner boundary moved to a 92 percent sampler criterion, integration spins at least two goroutines, margin rationale stated.
 
 ## Question ledger
 
