@@ -173,6 +173,12 @@ Rationale: D2 and the acceptance criterion rely on 78e31aa06's storeFile Marshal
   - loomshed-round-record-rewrite-drops-unknown-keys (class scope, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - vacuous-unknown-field-undecodable-fixtures (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - A shed `status.json` carrying an unknown top-level key and an unknown key in one history entry reads through every reader D1 renames, and round-trips through `UpdateJSON` and `WriteJSON` with both keys and their JSON values kept.
