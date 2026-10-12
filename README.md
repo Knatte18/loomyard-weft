@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-12 17:18 UTC; every age below is as of then.
+Rendered 2026-10-12 17:19 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -114,11 +114,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 19 | **Scoped build and test for C# hubs on Windows**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 6h | 5h | shed, webster |
-
-## Done
-
-Finished, awaiting `lyx board prune --apply`.
-
-| # | Entry | Slug | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Small cleanups: tokencount cutoff skew, audit reader globs, duplicate weft carve-out**<br>• Guard the tokencount cutoff against tag skew, bound audit reader globs and document the git pathspec case, and drop one of two duplicate loomyard-weft carve-outs. | [`cleanup-1012`](design-cleanup-1012.md) | 2d | 2h | fabric |
