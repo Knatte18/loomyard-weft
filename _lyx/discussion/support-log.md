@@ -30,10 +30,10 @@ Autonomous run: no operator answered; every pick below is an auto-pick recorded 
    - goal-scope, MEDIUM, D5 touches LLM children. Fixed: bounded by "no driver strand recorded".
    - goal-scope + board-fit, MEDIUM, R3/Q11 open and `orch-split`/`creel` routing. Fixed: D15 decides it and names both departures.
    - goal-scope + premises, LOW/MEDIUM, absent `child_driver` default is `go`. Fixed: D1 states the change.
-   - goal-scope, LOW, `interrupted` under `handback` narrows the entry. Fixed: stated in D3.
+   - goal-scope, LOW, `interrupted` under `handback` narrows the entry. Fixed: D3's table rows carry the rule, and the rejected alternative below carries the reason.
    - goal-scope, LOW, D6 wider than the board's trigger until `judge-cap-call` lands. Fixed: stated in D6.
    - board-fit, MEDIUM, divergence from `orch-split`'s Run-Shed-steps-in-Go idea. Rejected: the hub-level loop is out of scope and the support log's rejected alternatives record why the task-level driver is the go arm; the record needs no cross-reference to act on it.
-   - board-fit, LOW, `arbiter-when` case 2 differs. Fixed: stated in D6.
+   - board-fit, LOW, `arbiter-when` case 2 differs. Fixed: D3's last row sends a `blocked` stop with no matching failure record to the tackler before any arbiter spawn, which differs from `arbiter-when`'s proposed direct arbiter trigger for it.
    - board-fit, LOW, tackler spawn failure and `run-window-bugs`. Fixed: D7 cause, R3.
    - board-fit, LOW, `report-timing` vocabulary. Fixed: D9 says report-timing maps the settler and the record carries its time.
    - board-fit + leanness, LOW, the race attributed to batten's retry. Fixed: worded as a hypothesis here; D4 no longer claims it.
@@ -85,5 +85,5 @@ _No rounds yet._
 - Q7 (auto-pick): Does `lyx loom resume` spawn a Go driver? Yes, for a driverless go-seeded halted run (D10).
 - Q8 (auto-pick): Tackler timeout or malformed verdict: hand back, not escalate (A5).
 - Q9 (auto-pick): Does the Go driver get a strand or pane? No (A6).
-- Q10 (auto-pick): The empty-reason `paused` stop: trace and fix in shed when found there, and a Go friction note at every sighting (D13).
+- Q10 (auto-pick): The empty-reason `paused` stop: shed records a reason where the stop arises, and the Go driver writes a friction note only for a `paused` stop whose reason is still empty (D13).
 - Q11 (auto-pick): How does the orch address a go-driven run? Through verbs; the orch role stencil gains one line (D15).
