@@ -1,11 +1,11 @@
 {
-  "current_producer": "Merge-Burler-Review",
+  "current_producer": "Merge-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Merge-Burler-Review",
-    "last": "Merge-Bouncer → bounced to Merge-Burler-Review",
+    "now": "Merge-Burler-Fix",
+    "last": "Merge-Burler-Review → bounced to Merge-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -172,6 +172,13 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-12T17:11:17Z"
+    },
+    {
+      "producer": "Merge-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/cleanup-1012/_lyx/reviews/merge/round-1-review.md",
+      "at": "2026-10-12T17:12:26Z",
+      "budget_exempt": true
     }
   ],
   "product": {
