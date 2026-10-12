@@ -32,7 +32,8 @@ Three steps beyond `chair-blind-questions`, `discussion-premise-cites` and the a
 
 - Blind parallel exploration: the co-chair gets only the task and the code, never the chair's questions, and writes its own list of design decisions with answers; the two lists are then compared, and the value lies where they disagree or where one has a decision the other missed.
   The review named this the one step to take if only one is taken, since it attacks both the anchoring and the breadth.
-- Question critic: before answering, the second agent critiques the questions: which decisions are missing, which questions are false choices between two options, and what they assume that is not settled; "none of these" is always allowed.
+- Question critic: before answering, the second agent critiques the questions: which decisions are missing, which questions are false choices between two options, and what they assume that is not settled.
+  It gets bare questions only, never options (`chair-blind-questions`), so it has nothing to choose among.
 - Disagreement escalates: a decision where the agents disagree, or where uncertainty is high, is recorded as an explicit assumption or sent to the parent, so the decisions that matter are the ones surfaced.
 
 The blind compared-lists variant is a candidate arm in `discussion-multi-llm-bench`'s second round.
