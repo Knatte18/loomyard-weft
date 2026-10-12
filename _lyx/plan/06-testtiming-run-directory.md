@@ -14,9 +14,9 @@
 - `cmd/testtiming#TestReferencesDir`
 
 **Create:**
-- `plan:cmd/testtiming#leftoverMarkerEnv` -> `const leftoverMarkerEnv = "LYX_TESTTIMING_PACKAGE"`
-- `plan:cmd/testtiming#carriesMarker` -> `func carriesMarker(environ []byte, marker string) bool`
-- `plan:cmd/testtiming#TestCarriesMarker` -> `func TestCarriesMarker(t *testing.T)`
+- `cmd/testtiming#leftoverMarkerEnv`
+- `cmd/testtiming#carriesMarker`
+- `cmd/testtiming#TestCarriesMarker`
 
 **Uses:**
 - `internal/lyxtemp#MkdirTemp`

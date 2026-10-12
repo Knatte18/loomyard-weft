@@ -1,6 +1,6 @@
 {
   "runGuid": "22ea0df5c129abd9d73f61b59d34fc82",
-  "planFingerprint": "8e232b48e276cf67e4720802a6983a71beb3bd928be175b3ad6630d721c8a4e3",
+  "planFingerprint": "30a5238241ca0a7ff3c39a05f8ca66f4738f7c223ec830c9212cdb15b941e78c",
   "planFileHashes": {
     "00-overview.md": "72147cc25afde0962f8e8edd488864775e9a755dbab99e2f1fc0bffc64d5fa76",
     "01-lyxtemp-package.md": "27e51668098b68022d945e529ed1e9a90fc4d62ec5e7037d9fc9ae32ef0f0dcd",
@@ -8,7 +8,7 @@
     "03-gitkit-hermetic-run-directory.md": "cb2cd4221504f36c3dc8fb2e3299f46b83a5a0a873fb9e020b4822fb8d7df56b",
     "04-test-kit-temp-sites.md": "0ed60d92ecc740b3d28e7c83bd8c67a497691c7247dec7125bfa1ab6dbe22569",
     "05-gate-prebuild-run-directory.md": "26c2d11b7b66ccf7815c34ad346077d3e4d49fcf8164a863f1fe6ba2de330afe",
-    "06-testtiming-run-directory.md": "e7ae1a2a6a6be5aeea4a94df8059e35da246c3a19eb147e763bed4ff62d1d202",
+    "06-testtiming-run-directory.md": "bd849f943fdbbfe000856eeb7d435a6a07454ef49d7812e8d020b30e00f8a8b8",
     "07-testmain-internal-a-l.md": "5005be8831518c919fae73c779fb562ab7e1285e4c70cfb69d1884b8fd3dbbb3",
     "08-testmain-internal-m-z.md": "47aedf7df44dc3436cec1a74b6bc3cc3def0f34c1550de98bf663b7f79b70335",
     "09-testmain-kits-tools-contracts.md": "d51f724d95f247bbdff567fe215cb8dc2acea5cd7b348e48ecff6aa75f689f1f",
@@ -620,7 +620,7 @@
       }
     }
   ],
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "c1cb6ab2c3bcd58bf2f520882e5f5c75",
   "masterSessionId": "18d53add-ca9f-4785-b9e7-5c53e806b7e3",
   "batches": {
@@ -676,18 +676,33 @@
         "07-testmain-internal-a-l"
       ],
       "cardHashes": {
-        "06-testtiming-run-directory": "e7ae1a2a6a6be5aeea4a94df8059e35da246c3a19eb147e763bed4ff62d1d202",
+        "06-testtiming-run-directory": "bd849f943fdbbfe000856eeb7d435a6a07454ef49d7812e8d020b30e00f8a8b8",
         "07-testmain-internal-a-l": "5005be8831518c919fae73c779fb562ab7e1285e4c70cfb69d1884b8fd3dbbb3"
       },
       "startSha": "07949ed22d3f63a3d41f0cbc7fbe9cd6b20ba3c3",
       "kind": "fork",
       "spawnedAt": "2026-10-12T08:11:08Z",
       "sessionId": "18d53add-ca9f-4785-b9e7-5c53e806b7e3",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-testtiming-run-directory",
+        "status": "done",
+        "head_sha": "e23de91e10e3f77837fa03ac3a03f493c535090d"
+      },
+      "cardShas": [
+        "e23de91e10e3f77837fa03ac3a03f493c535090d"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tmp-cleanup/18d53add-ca9f-4785-b9e7-5c53e806b7e3/subagents/agent-a169dce3bd644b4f5.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tmp-cleanup/18d53add-ca9f-4785-b9e7-5c53e806b7e3/subagents/agent-a169dce3bd644b4f5.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tmp-cleanup/18d53add-ca9f-4785-b9e7-5c53e806b7e3/subagents/agent-a8df31cb92e70ff52.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tmp-cleanup/18d53add-ca9f-4785-b9e7-5c53e806b7e3/subagents/agent-a8df31cb92e70ff52.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tmp-cleanup/18d53add-ca9f-4785-b9e7-5c53e806b7e3/subagents/agent-a169dce3bd644b4f5.jsonl"
   ]
 }
