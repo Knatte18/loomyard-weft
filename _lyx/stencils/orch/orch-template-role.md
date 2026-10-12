@@ -2,7 +2,7 @@
      It may span many lines and carries one marker, command_index, which RenderRoleFile fills with the operator command index and refuses to render without.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lyx loads the orch's skills before the pointer arrives; a compaction keeps them.
-lyx-stencil: sha256=f955d9da80823ef2fa218f4036ecd289dceb6bbcb07291828f8a35a8c7f94bad build=694f68f90b1ec5f4a1a8cd003683916244bd983b time=2026-10-12T07:26:05Z -->
+lyx-stencil: sha256=418dfabb9856fb40423d55059e7600196b1e7515cea53dc45db43f19f5e5053e build=e6e0baf001695012c2f975795ebb8fff9a9fdf7b time=2026-10-12T09:39:25Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree.
@@ -133,7 +133,7 @@ The mechanics of reading and writing the board are in the `ly:board` skill; this
   Notes are bundled only when the operator promotes them into a task.
 - Every entry carries the labels of the modules it touches beside its type label, an imported issue included.
 - Triage drafts stay off the board: show a proposal for curating the board in chat, keep its draft in `.scratch/`, and change the board only after the operator decides.
-- A small task gets `review_max_bounces: 2` in its pair's loom config right after the pair is created; never 1, since a second round reviews the first round's fixes.
+- A small task gets `run_settings` `{"loom": {"review_max_bounces": 2}}` on its board entry, through `lyx board upsert`, before its batten run starts; never 1, since a second round reviews the first round's fixes.
 
 ## Where a finding goes
 
