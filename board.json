@@ -1121,6 +1121,24 @@
       "body": "## Seen (2026-10-12, from `twill-plan`)\n\nTwo items stay open once the `twill-plan` task lands, outside its scope:\n\n- Whether lens review lets Plan-Review run fewer rounds, as the operator chose for Discussion: once twill runs for Plan-Write, measure runs with a lower `plan_max_bounces`.\n  The operator hopes twill lets Plan-Review skip one round on average, which would pay for its cost (about $5 per plan against $2.6 for a single `opus[high]` writer).\n- A miss every twill-plan bench arm shared: a check against the wrong parent directory; no lens or check covers it yet.\n  Records in `.scratch/twill-plan-bench/` in the hub prime.\n",
       "created": "2026-10-12T07:08:35Z",
       "revised": "2026-10-12T07:08:35Z"
+    },
+    {
+      "id": 424,
+      "slug": "board-field-drop",
+      "title": "An old lyx process drops board fields it does not know",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "board",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A run started before a deploy rewrites board.json with its old struct and loses newly added fields such as created and revised",
+      "body": "## Seen (2026-10-12)\n\n`board-entry-age` landed and deployed new entry fields (`created`, `revised`), and a backfill wrote them for every entry.\nWithin minutes a status write from a run dropped every date: board commit `5e5402f5` in the board repo rewrote `board.json` without the new fields, and the same happened again after a second backfill.\nThe writers were long-lived `lyx batten run` and `lyx shed step --until-stop` processes started before the deploy: the old binary decodes an entry into its own struct, so a field it does not know is lost when it writes the board back.\n\n## Why it matters\n\nAny deploy that adds a board field loses that field's data while a run started before the deploy is still writing status, and runs live for hours.\nThe same holds for any other record file a long-lived process rewrites whole.\n\n## Idea\n\n- A board writer keeps fields it does not know: it decodes entries so unknown keys survive a rewrite, or a status write patches only `status` instead of rewriting the entry.\n- Or a writer refuses to write a board whose schema is newer than it knows, naming the restart it needs.\n",
+      "created": "2026-10-12T07:57:31Z",
+      "revised": "2026-10-12T07:57:31Z"
     }
   ]
 }

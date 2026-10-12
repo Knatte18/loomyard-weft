@@ -41,6 +41,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Plan gate delete-before-reference matches deleted methods by bare name**<br>• Hundreds of false blocking findings when a plan deletes a method with a common name | [`delete-before-reference-receiver`](design-delete-before-reference-receiver.md) | 14h | 13h | quarry, loom |
 | 2 | **Plan-review fixes are proposed without running lyx loom validate-plan; fix glyphs name the wrong function** | [`plan-review-validate`](design-plan-review-validate.md) | 13h | 13h | loom, stencil |
+| 3 | **An old lyx process drops board fields it does not know**<br>• A run started before a deploy rewrites board.json with its old struct and loses newly added fields such as created and revised | [`board-field-drop`](design-board-field-drop.md) | 0m | 0m | board, batten |
 
 ### Enhancements
 
@@ -92,7 +93,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **reed: runs overview pane above the orch, strand sizing, Selvage by key**<br>• A minimal pane under the orch listing every run in flight and its shed state; the per-run batten windows stay but the status bar hides them | [`runs-overview`](design-runs-overview.md) | 9d | 21m | reed, orch, batten |
+| 1 | **reed: runs overview pane above the orch, strand sizing, Selvage by key**<br>• A minimal pane under the orch listing every run in flight and its shed state; the per-run batten windows stay but the status bar hides them | [`runs-overview`](design-runs-overview.md) | 9d | 22m | reed, orch, batten |
 | 2 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 1d | 15h | webster |
 | 3 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) | 16h | 15h | orch, batten |
 
