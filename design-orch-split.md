@@ -25,3 +25,9 @@ Split the hub orchestrator into two agents:
   Starting a batten run on each ready board task (kind task, `depends_on` cleared, not claimed) needs no LLM (operator, 2026-10-11); nor does the landing routine.
   What the orch adds by hand today would need a home: per-task loom settings such as `review_max_bounces: 2` for a small task (a board field), and a cap on concurrent runs.
 - `runs-overview` and `orch-token-spend` touch the same split.
+
+## Idea: the run driver as a Go program (operator, 2026-10-12)
+
+Perhaps the part split out of the orch is a Go-driven program: Go handles most of it on its own (starting ready tasks with their run settings, landings) and brings in the orch only when something goes wrong.
+Today loom's shed engine is Go and only its driver above it is an LLM, so this would put no LLM at all on the mechanical hub loop.
+Per-task run settings (`config-layers-run-settings`) carry a task's review budgets and step models, so a start needs no LLM to set them.
