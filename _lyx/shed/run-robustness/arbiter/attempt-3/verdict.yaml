@@ -1,0 +1,14 @@
+verdict: resume
+reason: >-
+  Merge-Bouncer stopped at round 1 because the merge segment's review budget ran out (cause: budget), not because it was circling.
+  Round 1 raised one finding, F1 (BLOCKING, design): the parent's internal/alignment rewrote attempt.json through os.WriteFile, outside internal/state, so a rewrite dropped unknown keys against D9's PATTERN-tolerant-records.
+  The round-1 fixer applied the review's fix as proposed in commit bb224aaf0, with nothing disputed or deferred.
+  The code confirms it: WriteAttempt goes through state.WriteJSON, whose writeJSONUnlocked merges the replaced file's unknown keys via keepUnknown; Close and MarkApplied go through a new updateAttempt over state.UpdateJSON under attempt.lock; readAttemptFile uses state.ReadJSONNoMkdir; Attempt.Dir stays json:"-".
+  The MarkApplied subtest injects an unknown top-level key and asserts it survives the rewrite.
+  The review found no other interaction defect in the merge seams.
+  No finding makes the design wrong, and the fix stays within D2 and D9 and the task's scope.
+  Under the fixed rule (accept unless a finding makes the design wrong), the segment is accepted unconverged on round 1.
+  No new design call was made, so no decision was added.
+  The drive report named in the prompt (drive-report-20261012-132334-d9a2.md) does not exist, and `lyx board get run-robustness` returned an invalid-json error; neither bears on this call, because the review materials, the code and the decision record settle it.
+verbs:
+  - lyx loom circling accept run-robustness

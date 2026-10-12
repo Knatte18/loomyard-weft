@@ -1,0 +1,15 @@
+{
+  "number": 3,
+  "stop_key": {
+    "current_producer": "Merge-Bouncer",
+    "history_length": 32,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-10-12T15:17:15.986128076+02:00",
+  "deadline": "2026-10-12T15:47:15.986128076+02:00",
+  "strand_guid": "638e3686d12b2bb9dcfdd63ba8ec72f2",
+  "envelope_path": "/home/knatte/Code/loomyard-LYXHUB/run-robustness/.lyx/shed/run-robustness/steps/9d1a8a567fc68245.json",
+  "report_path": "/home/knatte/Code/loomyard-LYXHUB/run-robustness/_lyx/shed/run-robustness/drive-reports/drive-report-20261012-132334-d9a2.md"
+}
