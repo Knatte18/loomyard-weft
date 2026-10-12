@@ -6,6 +6,8 @@ Own-window strand anchoring: a `display` anchor that spawns a strand into its ow
 Operator 2026-10-12: wanted at some point, not now.
 Later the same day the operator reconsidered, since there is more to show than the panes leave room for: an important strand always gets its own full-size window, which replaces zooming a pane in reed.
 The unit is the producer, not the strand: a multi-LLM producer with two agents shows both together in one window (operator, 2026-10-12).
+A producer with many agents (5–6) does not fit in one window, so each of those gets its own.
+The strand's `display` anchoring setting carries all of this: a window shared by the producer's strands, or a window per strand.
 
 ## Operator, 2026-10-05: strands in depth, not stacked in height
 
