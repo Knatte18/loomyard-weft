@@ -2,8 +2,6 @@
 
 `operator-followups` · Task · enhancement, feature, reed, shuttle, batten, orch
 
-Depends on: [`lyx-halt`](design-lyx-halt.md)
-
 Four small follow-ups, bundled as one task (operator, 2026-10-12).
 
 ## Runs overview shows a paused run as paused (was `runs-overview-paused`)
