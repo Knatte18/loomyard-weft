@@ -1,0 +1,14 @@
+status: OK
+head_sha: a4ad225ab81eeb08f8353b732909768931e04e6a
+deviations:
+  - internal/orchcli/watch_test.go
+  - cmd/lyx/seamsignature_test.go
+  - internal/orchengine/pause.go
+  - internal/orchengine/watcher_pause_test.go
+  - internal/loomcli/looparm_test.go
+  - internal/pauseengine/report.go
+  - internal/pauseengine/pause.go
+  - internal/pauseengine/resume.go
+  - internal/pausecli/cli.go
+  - internal/pausecli/deps.go
+  - internal/pausecli/gate.go

@@ -1,7 +1,7 @@
 # Card 19 — watchdog-awake
 
 **Create:**
-- `plan:internal/shedverbs#fakeClock.Awake` -> `func (c *fakeClock) Awake() time.Duration`
+- `internal/shedverbs#fakeClock.Awake`
 
 **Edit:**
 - `internal/shedverbs#LoopSpec`

@@ -2,19 +2,19 @@
 
 **Create:**
 - `internal/pauseengine/doc.go`
-- `plan:internal/pauseengine#SessionInfo` -> `type SessionInfo struct`
-- `plan:internal/pauseengine#Pair` -> `type Pair interface`
-- `plan:internal/pauseengine#Deps` -> `type Deps struct`
-- `plan:internal/pauseengine#PauseRequest` -> `type PauseRequest struct`
-- `plan:internal/pauseengine#PauseReport` -> `type PauseReport struct`
-- `plan:internal/pauseengine#Pause` -> `func Pause(deps Deps, req PauseRequest) (PauseReport, error)`
-- `plan:internal/pauseengine#ResumeRequest` -> `type ResumeRequest struct`
-- `plan:internal/pauseengine#ResumeReport` -> `type ResumeReport struct`
-- `plan:internal/pauseengine#Resume` -> `func Resume(deps Deps, req ResumeRequest) (ResumeReport, error)`
-- `plan:internal/pauseengine#StatusReport` -> `type StatusReport struct`
-- `plan:internal/pauseengine#Status` -> `func Status(deps Deps) (StatusReport, error)`
-- `plan:internal/pauseengine#holdReport` -> `type holdReport struct`
-- `plan:internal/pauseengine#readHolds` -> `func readHolds(deps Deps, rec pauserecord.Record) (holdReport, error)`
+- `internal/pauseengine#SessionInfo`
+- `internal/pauseengine#Pair`
+- `internal/pauseengine#Deps`
+- `internal/pauseengine#PauseRequest`
+- `internal/pauseengine#PauseReport`
+- `internal/pauseengine#Pause`
+- `internal/pauseengine#ResumeRequest`
+- `internal/pauseengine#ResumeReport`
+- `internal/pauseengine#Resume`
+- `internal/pauseengine#StatusReport`
+- `internal/pauseengine#Status`
+- `internal/pauseengine#holdReport`
+- `internal/pauseengine#readHolds`
 - `internal/pauseengine/pause_test.go`
 - `internal/pauseengine/resume_test.go`
 - `internal/pauseengine/testmain_test.go`

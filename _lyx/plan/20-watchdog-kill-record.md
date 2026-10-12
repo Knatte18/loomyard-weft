@@ -1,11 +1,11 @@
 # Card 20 — watchdog-kill-record
 
 **Create:**
-- `plan:internal/shedverbs#WatchdogKill` -> `type WatchdogKill struct`
-- `plan:internal/shedverbs#WatchdogKill.cause` -> `func (k WatchdogKill) cause(note string) string`
-- `plan:internal/loomcli#watchdogKillNote` -> `func watchdogKillNote(stop func(shuttleengine.StepTie) (shuttleengine.StepStopReport, error), stepsDir string) func(shedverbs.WatchdogKill) string`
-- `plan:internal/loomcli#loomCLI.stopStepRuns` -> `func (c *loomCLI) stopStepRuns(tie shuttleengine.StepTie) (shuttleengine.StepStopReport, error)`
-- `plan:internal/loomcli#TestWatchdogKillNote_StopsTheKilledStepsRunsAndNamesTheRest` -> `func TestWatchdogKillNote_StopsTheKilledStepsRunsAndNamesTheRest(t *testing.T)`
+- `internal/shedverbs#WatchdogKill`
+- `internal/shedverbs#WatchdogKill.cause`
+- `internal/loomcli#watchdogKillNote`
+- `internal/loomcli#loomCLI.stopStepRuns`
+- `internal/loomcli#TestWatchdogKillNote_StopsTheKilledStepsRunsAndNamesTheRest`
 
 **Edit:**
 - `internal/shedverbs#LoopSpec`

@@ -2,23 +2,23 @@
 
 **Create:**
 - `internal/pausecli/doc.go`
-- `plan:internal/pausecli#Command` -> `func Command() *cobra.Command`
-- `plan:internal/pausecli#ResumeCommand` -> `func ResumeCommand() *cobra.Command`
-- `plan:internal/pausecli#RunCLI` -> `func RunCLI(out io.Writer, args []string) int`
-- `plan:internal/pausecli#RunCLIIn` -> `func RunCLIIn(cwd string, out io.Writer, args []string) int`
-- `plan:internal/pausecli#InstallNetworkGate` -> `func InstallNetworkGate(ctx context.Context)`
-- `plan:internal/pausecli#caller` -> `type caller struct`
-- `plan:internal/pausecli#callerOf` -> `func callerOf(strand string) caller`
-- `plan:internal/pausecli#refuseCaller` -> `func refuseCaller(c caller, slug string) error`
-- `plan:internal/pausecli#hubDeps` -> `func hubDeps(location *lyxcwd.Location, strand string) (pauseengine.Deps, []string, error)`
-- `plan:internal/pausecli#shuttlePair` -> `type shuttlePair struct`
-- `plan:internal/pausecli#shuttlePair.Slug` -> `func (p shuttlePair) Slug() string`
-- `plan:internal/pausecli#shuttlePair.Sessions` -> `func (p shuttlePair) Sessions() ([]pauseengine.SessionInfo, error)`
-- `plan:internal/pausecli#shuttlePair.Busy` -> `func (p shuttlePair) Busy(guid string) (bool, error)`
-- `plan:internal/pausecli#shuttlePair.Live` -> `func (p shuttlePair) Live(guid string) (bool, error)`
-- `plan:internal/pausecli#shuttlePair.Interrupt` -> `func (p shuttlePair) Interrupt(guid string) error`
-- `plan:internal/pausecli#shuttlePair.Send` -> `func (p shuttlePair) Send(guid, text string) error`
-- `plan:internal/pausecli#shuttlePair.Running` -> `func (p shuttlePair) Running() (string, bool, error)`
+- `internal/pausecli#Command`
+- `internal/pausecli#ResumeCommand`
+- `internal/pausecli#RunCLI`
+- `internal/pausecli#RunCLIIn`
+- `internal/pausecli#InstallNetworkGate`
+- `internal/pausecli#caller`
+- `internal/pausecli#callerOf`
+- `internal/pausecli#refuseCaller`
+- `internal/pausecli#hubDeps`
+- `internal/pausecli#shuttlePair`
+- `internal/pausecli#shuttlePair.Slug`
+- `internal/pausecli#shuttlePair.Sessions`
+- `internal/pausecli#shuttlePair.Busy`
+- `internal/pausecli#shuttlePair.Live`
+- `internal/pausecli#shuttlePair.Interrupt`
+- `internal/pausecli#shuttlePair.Send`
+- `internal/pausecli#shuttlePair.Running`
 - `internal/pausecli/cli_test.go`
 - `internal/pausecli/testmain_test.go`
 

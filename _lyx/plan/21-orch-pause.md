@@ -1,11 +1,11 @@
 # Card 21 — orch-pause
 
 **Create:**
-- `plan:internal/orchengine#PauseWatch` -> `type PauseWatch struct`
-- `plan:internal/orchengine#Watcher.WatchPause` -> `func (w *Watcher) WatchPause(p PauseWatch)`
-- `plan:internal/orchengine#Watcher.pauseTick` -> `func (w *Watcher) pauseTick(st State, now time.Time) (held bool, err error)`
-- `plan:internal/orchengine#TestWatcher_HubPauseInterruptsAtGraceEndHoldsAndQueuesTheResumeLine` -> `func TestWatcher_HubPauseInterruptsAtGraceEndHoldsAndQueuesTheResumeLine(t *testing.T)`
-- `plan:internal/orchcli#runnerSession.Interrupt` -> `func (s runnerSession) Interrupt(guid string) error`
+- `internal/orchengine#PauseWatch`
+- `internal/orchengine#Watcher.WatchPause`
+- `internal/orchengine#Watcher.pauseTick`
+- `internal/orchengine#TestWatcher_HubPauseInterruptsAtGraceEndHoldsAndQueuesTheResumeLine`
+- `internal/orchcli#runnerSession.Interrupt`
 
 **Edit:**
 - `internal/orchengine#Session`

@@ -1,6 +1,6 @@
 {
   "runGuid": "3bb889d42e5749ee0b48effeda89947c",
-  "planFingerprint": "f2dae13915b7ee395d3a5b99891a3b029c6284fd5ffc0d91a31f8b94e7516953",
+  "planFingerprint": "2b3a8bc1a03e6dde7466fbddc0ddd38c429d6cf7dd60a86b631b90e09265a4a3",
   "planFileHashes": {
     "00-overview.md": "d71cea8e9dc89b18d973c253036ba8f5f3dd3511c99e40f46ed5b6dc35930996",
     "01-pause-record.md": "7af60106e3900a7e1ed23c567fba49261ae55dd2c939fd740eac23b83d0cc347",
@@ -21,11 +21,11 @@
     "16-batten-sleep-clock.md": "2fc8b24ef2f29c0c5ae1b62b4952dfc40cb22ed59ac866d66850960410c785fc",
     "17-batten-pause-reader.md": "a328c24d7d1b1c9c106e75e3de383c30e5fe97f9d9cc19d6dc663f664b24877e",
     "18-loom-idle-release-pause.md": "85bca948d1ea86944da0b5076ad922ee9a9d4ca54b888f63b9b13275b45038e6",
-    "19-watchdog-awake.md": "9932763fd9d8f73fa4bf057cca65215f066aa9258fde6ccaf7b24c0a67cb056c",
-    "20-watchdog-kill-record.md": "150444bc84ec2b7ba8db2d292b0488fe3afc5ae3601fdf9bfd61418edbc21bd3",
-    "21-orch-pause.md": "0d97544d5c32e5f1cbd971dda67764ae9cfc3835545fb3e31468bf1ee9d8ee84",
-    "22-pause-engine.md": "cd99c8a82361b31452724ea1e2a920328c8166f5dc705ebbb31c4d9c780241f1",
-    "23-pause-cli.md": "e1f73f3aeea701f927ae49cebaa077b0cca4db66efa54865dfa1bdaedf1c8122",
+    "19-watchdog-awake.md": "13b8ac78d98e358e375b83d5bbd49f590b18946a37fd362757c79042206853d5",
+    "20-watchdog-kill-record.md": "f2ceb62c5b08f3a4e1fc528c066e9f0f968e6e38cbd823f04667b7c3150e9d99",
+    "21-orch-pause.md": "e808cef7597eab4fda888955629e35a3bac79ffefae15cc96655f636a081f4be",
+    "22-pause-engine.md": "f5dea6dcc2626364252d0d86c62ba7bbfe48156d09670d946ac2fefece91d8b5",
+    "23-pause-cli.md": "5728f402c8086cbfde2926e8cdc317eff416bf43527631354ad17553d83f6b04",
     "24-status-paused-since.md": "86aad5c5851e05a8b610b9056714ac478cb92219658c7a07692f23f74172320c",
     "25-loom-bare-pause-refusal.md": "00823838db5ebcb6876b201f70ce96183c61f1997cef5a0d210bbcb46ab15535",
     "26-shed-pause-way-forward.md": "49c7f019e4af731a0f190adcc1955387b63b3242a9ea2dcf51fdef1b43abcd18",
@@ -691,7 +691,7 @@
       }
     }
   ],
-  "currentBatch": 19,
+  "currentBatch": 0,
   "masterStrand": "1eb52434bb50dc6bc4414b28acb6018a",
   "masterSessionId": "d11aa544-37b6-416d-a69c-8a37b5df69b6",
   "batches": {
@@ -790,18 +790,45 @@
         "23-pause-cli"
       ],
       "cardHashes": {
-        "19-watchdog-awake": "9932763fd9d8f73fa4bf057cca65215f066aa9258fde6ccaf7b24c0a67cb056c",
-        "20-watchdog-kill-record": "150444bc84ec2b7ba8db2d292b0488fe3afc5ae3601fdf9bfd61418edbc21bd3",
-        "21-orch-pause": "0d97544d5c32e5f1cbd971dda67764ae9cfc3835545fb3e31468bf1ee9d8ee84",
-        "22-pause-engine": "cd99c8a82361b31452724ea1e2a920328c8166f5dc705ebbb31c4d9c780241f1",
-        "23-pause-cli": "e1f73f3aeea701f927ae49cebaa077b0cca4db66efa54865dfa1bdaedf1c8122"
+        "19-watchdog-awake": "13b8ac78d98e358e375b83d5bbd49f590b18946a37fd362757c79042206853d5",
+        "20-watchdog-kill-record": "f2ceb62c5b08f3a4e1fc528c066e9f0f968e6e38cbd823f04667b7c3150e9d99",
+        "21-orch-pause": "e808cef7597eab4fda888955629e35a3bac79ffefae15cc96655f636a081f4be",
+        "22-pause-engine": "f5dea6dcc2626364252d0d86c62ba7bbfe48156d09670d946ac2fefece91d8b5",
+        "23-pause-cli": "5728f402c8086cbfde2926e8cdc317eff416bf43527631354ad17553d83f6b04"
       },
       "startSha": "ba9ad9d746fb794e3cc3e806a0dd8b253f2567a9",
       "kind": "fork",
       "spawnedAt": "2026-10-12T12:44:25Z",
       "sessionId": "d11aa544-37b6-416d-a69c-8a37b5df69b6",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "19-watchdog-awake",
+        "status": "done",
+        "head_sha": "a4ad225ab81eeb08f8353b732909768931e04e6a",
+        "deviations": [
+          "internal/orchcli/watch_test.go",
+          "cmd/lyx/seamsignature_test.go",
+          "internal/orchengine/pause.go",
+          "internal/orchengine/watcher_pause_test.go",
+          "internal/loomcli/looparm_test.go",
+          "internal/pauseengine/report.go",
+          "internal/pauseengine/pause.go",
+          "internal/pauseengine/resume.go",
+          "internal/pausecli/cli.go",
+          "internal/pausecli/deps.go",
+          "internal/pausecli/gate.go"
+        ]
+      },
+      "cardShas": [
+        "a4ad225ab81eeb08f8353b732909768931e04e6a"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-acf1aa060190e9f10.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-acf1aa060190e9f10.jsonl"
+      ]
     },
     "7": {
       "slug": "parentlock-covered",
@@ -856,6 +883,7 @@
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-af64589d3fe8fe725.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-a7593c586fbfabccf.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-a9d111d44d222b912.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-a9d111d44d222b912.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-acf1aa060190e9f10.jsonl"
   ]
 }
