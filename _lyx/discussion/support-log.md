@@ -8,7 +8,7 @@ Autonomous session: no operator answered; every pick below is the writer's own a
 
 Read the board entry and the entries it names (`orch-split`, `go-driven-shed`, `twill-plan-followups`, `kickstart-pack-measure`, `run-robustness`, `watchdog-bare-reason`, `spawn-audit-log`, `tokencount-cutoff-skew`).
 Read an archive tag's tree in the hub's records store: decision record, plan, review rounds per segment, parent-review rounds, arbiter attempts, drive reports, friction and halt notes, webster records.
-Found that orch notices are files removed on delivery, so no durable notice record exists; batten's history on the prime's records branch records each child state change; halt notes are Go-authored with `anomaly`, `state` and `producer`; drive reports are written by the LLM driver.
+Found that orch notices are files removed on delivery, and the only lasting log of them, the hub's notice log, is untracked, so no git object records a notice; batten's history on the prime's records branch records each child state change; halt notes are Go-authored with `anomaly`, `state` and `producer`; drive reports are written by the LLM driver.
 
 ### Turn 2 — design
 
@@ -28,14 +28,14 @@ Six lens forks spawned before the files were written; all six returned.
 - scenarios, BLOCKING: the batten-record bound picks the next run's history. Fixed: D4 bounds at the next fresh seed.
 - scenarios, MEDIUM: partial and bench runs counted. Fixed: D4 counts them as `partial`.
 - scenarios, MEDIUM: no halt-note-to-stop match rule. Fixed: D7 matches in order by producer and state.
-- scenarios, MEDIUM: landing before archive tag maps as hand. Fixed: D10 joins through the landing checkpoint commit.
+- scenarios, MEDIUM: landing before archive tag maps as hand. Fixed: D10 joins exactly through the archived task commit's `Warp-SHA` trailer, else by time between the landing checkpoint commit and the board done commit (review rounds 1 and 2).
 - scenarios, MEDIUM: empty denominators. Fixed: D5 reports no data.
 - scenarios and board-fit, MEDIUM: ordered pauses counted as wakes. Fixed: D6 reports `paused` outside wakes.
 - scenarios, LOW: blame cost unbounded by default. Fixed: D4 defaults `--since` to twelve weeks.
 - scenarios, LOW: invalid `--since` and `--format` uncovered. Fixed: D4 and acceptance criteria.
 - scenarios, LOW: fallback and keep-alive placement. Fixed: D6.
-- goal-scope, MEDIUM: Land's ready-tasks notice and the superseded notice missed. Fixed: D6, with the Land notice absent when no durable record exists.
-- goal-scope, MEDIUM: hand landings redefined. Fixed: D10 `hand` for a mapped run with no Land done, `unmapped` for the rest.
+- goal-scope, MEDIUM: Land's ready-tasks notice and the superseded notice missed. Fixed: D6, with the Land notice always absent, since no git object records it (review round 1).
+- goal-scope, MEDIUM: hand landings redefined. Fixed: D10 `hand` for a mapped run with no Finalize done, `unmapped` for the rest (review round 2).
 - goal-scope, MEDIUM: repairs and hand steps double-count with no actor. Fixed: D8 splits automatic, arbiter and LLM steps and says driver and orch are not separable.
 - goal-scope, MEDIUM: failure classes undefined. Fixed: D7 defines them.
 - goal-scope, LOW: departure from "from the drive reports" not stated. Fixed: D8 says so.
@@ -45,7 +45,7 @@ Six lens forks spawned before the files were written; all six returned.
 - pattern-fit, LOW: fabric-git scope claim. Fixed: D3 cites the read-only exemption.
 - pattern-fit, LOW: `_lyx/` exclusion spells the literal. Fixed: dropped from D11.
 - board-fit, MEDIUM: Publish retry counted as wake and hand step. Fixed: D6 and D8.
-- board-fit, MEDIUM: `run-robustness` dependency unnamed. Fixed: Constraints and D5 make called readers tolerant here.
+- board-fit, MEDIUM: `run-robustness` dependency unnamed. Fixed: Constraints and D5 confine tolerance to the report's own parse functions and leave live readers to `run-robustness` (review round 1).
 - board-fit, LOW: `orch-any-worktree` and `tokencount-cutoff-skew` not in risks. Fixed: Open risks.
 - board-fit, LOW: `spawn-audit-log`'s summary verb could join `report`. Rejected: that entry is unbuilt, YAGNI.
 - board-fit, LOW: `watchdog-bare-reason` fits D7. No change.
@@ -60,6 +60,7 @@ Six lens forks spawned before the files were written; all six returned.
 
 - A `tools/` program beside `tools/tokencount`: no CLI tree, sandbox or test-budget cost, but it needs the source checkout and a Go toolchain and only runs in this repository's hub, and the board entry asks for a `lyx` verb.
 - A durable notice log written by `orchengine.QueueNotice`: the most exact wake count, but it is new bookkeeping, which the board entry rules out, and it has no history for past runs.
+- Counting wakes from the hub's notice log (`shedrun.NoticeLog`): untracked and machine-local, and it logs held-back and dropped notices too.
 - Counting wakes from the orch's Claude transcripts: provider-specific (`PATTERN-shuttle-provider-seam`), machine-local, and mixes operator turns with notices.
 - Parsing drive-report bodies for stop class and repairs: LLM prose with no format contract; a parser would pin a format no one maintains.
 - Including in-flight runs: their counts change as they run, which makes week totals move between invocations.
@@ -71,6 +72,9 @@ Six lens forks spawned before the files were written; all six returned.
 - Classing stops with no halt note as `unclassified`: planned awaitings would flood the table.
 - Splitting LLM steps between the loom driver and the orch: the records carry no actor.
 - A halt-note reader in `loomcli`: an engine may not import a cli package.
+- Joining a landing to batten's Land `done` commit: Land only pulls, deploys and prunes after Finalize's own merge, so another landing can fall between them (review round 2).
+- Making `shedrun.ParseSeed` tolerant for the report: a live reader calls it, so every live seed read would loosen (review round 2).
+- Excluding direct pushes from a run's time-join window: no record tells a direct push from a landing, so the residual case is an open risk instead (review round 3).
 
 ## Review rounds
 
@@ -84,9 +88,9 @@ _No rounds yet._
 - Q4 (resolved, auto-pick): how to count orch wakes with no notice record? From batten halt entries and parent-review deliveries, split so one escalation counts once (D6).
 - Q5 (resolved, auto-pick): stop class source? Go-authored halt notes; drive reports only counted (D7).
 - Q6 (resolved, auto-pick): what about records missing from older archives? Absent, never zero (D5).
-- Q7 (resolved, auto-pick): landing kind? Board labels from board history, `bug` meaning fix; unmapped commits are hand landings (D10).
+- Q7 (resolved, auto-pick): landing kind? Board labels from board history, `bug` meaning fix; `hand` is a run mapped by the exact join with no Finalize `done`, a time-joined run is never `hand`, a run whose batten Land never reached `done` is flagged `land-incomplete`, and `unmapped` is a commit that maps to no run (D10).
 - Q8 (resolved, auto-pick): fresh-code definition? Majority of the fix's modified pre-image lines from landings within 3 days (D11).
 - Q9 (resolved, auto-pick): output? JSON envelope plus `--format markdown` (D12).
 - Q10 (resolved, auto-pick): default range? Twelve weeks, to bound blame (D4).
 - Q11 (resolved, auto-pick): failure class? Producer plus the normalised leading clause of the halt reason (D7).
-- Q12 (open, for Plan): is there a durable record of the Land row's ready-tasks notice? If not, that kind is absent (D6).
+- Q12 (resolved, from the code): is there a durable record of the Land row's ready-tasks notice? No: only scratch markers cleared at a fresh seed and the untracked notice log, so that kind is always absent (D6).
