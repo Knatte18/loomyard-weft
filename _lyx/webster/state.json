@@ -620,7 +620,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "c1cb6ab2c3bcd58bf2f520882e5f5c75",
   "masterSessionId": "18d53add-ca9f-4785-b9e7-5c53e806b7e3",
   "batches": {
@@ -728,6 +728,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tmp-cleanup/18d53add-ca9f-4785-b9e7-5c53e806b7e3/subagents/agent-ab33bd1358a8ada92.jsonl"
       ]
+    },
+    "9": {
+      "slug": "testmain-kits-tools-contracts",
+      "cards": [
+        "09-testmain-kits-tools-contracts",
+        "10-tmux-isolation-every-package",
+        "11-tmux-isolation-guard-rename",
+        "12-bare-temp-scan",
+        "13-logger-sweep-dry-run",
+        "14-shedrun-cleanup-paths"
+      ],
+      "cardHashes": {
+        "09-testmain-kits-tools-contracts": "d51f724d95f247bbdff567fe215cb8dc2acea5cd7b348e48ecff6aa75f689f1f",
+        "10-tmux-isolation-every-package": "c1c0fda33e30115e21c193bfd47058227d04aaddf76eded57f44d4b9c8594689",
+        "11-tmux-isolation-guard-rename": "f66c0fd82b5a7267dd055990ded5ae6e1073e60d0109d6f5eb82bc3ccb12f048",
+        "12-bare-temp-scan": "7e61992b449cb36bc44e4e081b94bf6624635eba87826d7365eb8cca0cbfc1ee",
+        "13-logger-sweep-dry-run": "59ef55ff0e2d1d69d811ce0781f7932d120dbf3e981ba6c8f15ea8fd482ff697",
+        "14-shedrun-cleanup-paths": "43fb3f47fe578ce99d64e95dab127ff2d4e244e215d40a3325f6badec3c31cc0"
+      },
+      "startSha": "7332207175d3a9194d3b056b2df258a7bba5657b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T08:14:39Z",
+      "sessionId": "18d53add-ca9f-4785-b9e7-5c53e806b7e3",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
