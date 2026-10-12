@@ -14,7 +14,7 @@
 - `plan:internal/loomcli#decisionByArbiter` -> `const decisionByArbiter = "arbiter"`
 
 **Uses:**
-- `plan:internal/loomengine#IsArbiterStrand`
+- `internal/loomengine#IsArbiterStrand`
 
 **Intent:**
 Let the run's own arbiter record a design call with `lyx loom decision add --by arbiter` (D12).

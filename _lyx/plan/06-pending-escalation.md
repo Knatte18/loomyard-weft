@@ -1,7 +1,7 @@
 # Card 6 — pending-escalation
 
 **Create:**
-- `plan:internal/shedadapters#PendingEscalation` -> `func PendingEscalation(runDir string) (round int, briefPath string, pending bool, err error)`
+- `internal/shedadapters#PendingEscalation`
 
 **Edit:**
 - `internal/shedadapters#TestPendingCirclingDecision`

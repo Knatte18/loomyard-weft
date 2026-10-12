@@ -1,10 +1,10 @@
 # Card 2 — shedengine-relaunch
 
 **Create:**
-- `plan:internal/shedengine#CheckGotoTarget` -> `func CheckGotoTarget(producers []ProducerDef, st Status, target, runID string) error`
-- `plan:internal/shedengine#RelaunchRequest` -> `type RelaunchRequest struct`
-- `plan:internal/shedengine#Relaunch` -> `func Relaunch(req RelaunchRequest) (Status, error)`
-- `plan:internal/shedengine#TestRelaunch` -> `func TestRelaunch(t *testing.T)`
+- `internal/shedengine#CheckGotoTarget`
+- `internal/shedengine#RelaunchRequest`
+- `internal/shedengine#Relaunch`
+- `internal/shedengine#TestRelaunch`
 
 **Edit:**
 - `internal/shedengine#Goto`

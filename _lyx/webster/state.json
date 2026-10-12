@@ -1,24 +1,24 @@
 {
   "runGuid": "1da1cfb5b7b51a0ee1e094e9e54cd247",
-  "planFingerprint": "60fb7966199355ff457e9202bf2fa575297826693a76cf2ff72b1c8f00af3cbf",
+  "planFingerprint": "e0fa0a11e629dfdea6f8346802ac2bf3a52cebfea5d456b55409c8c50847ed84",
   "planFileHashes": {
     "00-overview.md": "67db7b7c84ff5884dc42ed4d08719905ce889d2fe6a82b2a05fbdab597cb6ed4",
-    "01-shedrun-arbiter-paths.md": "773f87dd7e15a9d2efd33960991ee6ffa41cf368cdff47a597750821463fc635",
-    "02-shedengine-relaunch.md": "91cad6b47de14a2a96209cc1d88de91dc673a6ab36a79add53c70e1e9029c6e5",
-    "03-shedverbs-arbiter-attempt-flag.md": "31de5c2bb49c612b1ea12e12f7c4bb85052132227b1daa5c7017fbbdc5b63c22",
-    "04-loom-arbiter-config.md": "f3230afbf2fc42e00c1c163989465daca48df5da7793fdac393c1071f0e20d24",
-    "05-loom-arbiter-records.md": "0c0acc603a32ec5a52f122614523b504a976e4122ed8cf27bc704f0e54f0ebed",
-    "06-pending-escalation.md": "5b581cfbb665186ffdb226f364c8890d2d0373a0ad052d5f578b38bf4d2249a5",
+    "01-shedrun-arbiter-paths.md": "38d3bcf64887be49a4d9e50c77e065946c8e69333e5d25dd018cfda3cf067530",
+    "02-shedengine-relaunch.md": "ee0170a9de37bef10d314e3fd9158661e91955a0a7146c84ef8476b500ad47ed",
+    "03-shedverbs-arbiter-attempt-flag.md": "84a4a75bb4e1e63ac8e969b658c3b0a1058d5b5e6b0fb966cc5109dfb027249e",
+    "04-loom-arbiter-config.md": "fd9e05d1e077fd3f5917c9bcff6c54cdd65cbf6753f58d0923a3c9dd7941265f",
+    "05-loom-arbiter-records.md": "635c86ca7942ee09b1473f6e4c60e8363b80019f4c1784c03b11159745ea4750",
+    "06-pending-escalation.md": "f27e2d5ddac009b088bc8265e32a95846b137fd78b216f4227edd3bfe08fc440",
     "07-arbiter-stencil.md": "ddacc2a9a88d4a6aad44142c9e3cda2229141be4cb94fdc40ffb10cf60d8d732",
-    "08-arbiter-prompt-spec.md": "dfc208a6387f4bf2def2f5b5de95c401589c983a8d71ceba7ee04c22eeebdc59",
+    "08-arbiter-prompt-spec.md": "5fc2c41ac3b03ef5b70fb706cf9b5c3f411206dbad36402e199f5e75016b565b",
     "09-arbiter-eligibility.md": "57d7103fb52f739f5fe4f9f4c6745c4ecef56d025a4ea4e024ff5194707ee24e",
-    "10-arbiter-verb.md": "4881e4033b3b9a8c8735a8895f068bfbf30b59d6eb7e016195b80fd163b2b091",
-    "11-arbiter-cmd-wiring.md": "0a3e7f4f2839de4520cd4c017ccd45df6c3f73ac2af50ff440867777bc42d813",
-    "12-relaunch-consume-attempt.md": "0701560aa705fe793690d3dd4773eac79e5222c5b3a91beaf42980cfeb0b112b",
-    "13-decision-by-arbiter.md": "6575c753821d2495b73a1179e16d4a87d28b38aae4d6c131fc947f6941f885d2",
+    "10-arbiter-verb.md": "9213708d96da1579676eac7094d2c56804217fbb9c2d8170f998278ad10a9633",
+    "11-arbiter-cmd-wiring.md": "8dbcd06cc0dea2a08b5246e21b04b0b4597a987dff9c148d70e94f9e0647ecf7",
+    "12-relaunch-consume-attempt.md": "1839aef130a949ccce1c34f5ff2466d511dc2deb455acfb2d89d657ad1c61783",
+    "13-decision-by-arbiter.md": "a706cc96592fb37ff50970db165f1f3f0a1796f79811595fdb952f921a1c0f1d",
     "14-driver-arbiter-branch.md": "96c96011b1af3737d5aa1cbe0883550d46c96572de30056526595273044783b4",
     "15-batten-arbiter-hold.md": "8fb05ab7df19e95efe49c71c1f3d60d4992e34d8f36ae13dae8e59a1523107c1",
-    "16-batten-arbiter-wiring.md": "6083100bc09dc241d6eb0f1aeb1a226996c72f222ab767cde686723e13d062d1",
+    "16-batten-arbiter-wiring.md": "859c1ed1329ddd4e5cfe62bce7016b7dcb6ac619edd1fecae89fe385b11c4558",
     "17-orch-arbiter-escalations.md": "453763a2b067fa69bceee23f7653853c35d4d8b6ab495de1faae897efad09659"
   },
   "planOverviewFrameHash": "4958410c82a905767cc3ad2848c7a767aa5a61c53121a06cdbd306c12825f3f0",
@@ -356,7 +356,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "10d815dd37b13651c061b8428e486bf1",
   "masterSessionId": "51095fde-1181-4f9b-ae2d-4d3eccbf248d",
   "batches": {
@@ -371,19 +371,42 @@
         "06-pending-escalation"
       ],
       "cardHashes": {
-        "01-shedrun-arbiter-paths": "773f87dd7e15a9d2efd33960991ee6ffa41cf368cdff47a597750821463fc635",
-        "02-shedengine-relaunch": "91cad6b47de14a2a96209cc1d88de91dc673a6ab36a79add53c70e1e9029c6e5",
-        "03-shedverbs-arbiter-attempt-flag": "31de5c2bb49c612b1ea12e12f7c4bb85052132227b1daa5c7017fbbdc5b63c22",
-        "04-loom-arbiter-config": "f3230afbf2fc42e00c1c163989465daca48df5da7793fdac393c1071f0e20d24",
-        "05-loom-arbiter-records": "0c0acc603a32ec5a52f122614523b504a976e4122ed8cf27bc704f0e54f0ebed",
-        "06-pending-escalation": "5b581cfbb665186ffdb226f364c8890d2d0373a0ad052d5f578b38bf4d2249a5"
+        "01-shedrun-arbiter-paths": "38d3bcf64887be49a4d9e50c77e065946c8e69333e5d25dd018cfda3cf067530",
+        "02-shedengine-relaunch": "ee0170a9de37bef10d314e3fd9158661e91955a0a7146c84ef8476b500ad47ed",
+        "03-shedverbs-arbiter-attempt-flag": "84a4a75bb4e1e63ac8e969b658c3b0a1058d5b5e6b0fb966cc5109dfb027249e",
+        "04-loom-arbiter-config": "fd9e05d1e077fd3f5917c9bcff6c54cdd65cbf6753f58d0923a3c9dd7941265f",
+        "05-loom-arbiter-records": "635c86ca7942ee09b1473f6e4c60e8363b80019f4c1784c03b11159745ea4750",
+        "06-pending-escalation": "f27e2d5ddac009b088bc8265e32a95846b137fd78b216f4227edd3bfe08fc440"
       },
       "startSha": "3a627c00de0b6c5006ef41fb1df79e04041ae360",
       "kind": "fork",
       "spawnedAt": "2026-10-12T06:44:19Z",
       "sessionId": "51095fde-1181-4f9b-ae2d-4d3eccbf248d",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-shedrun-arbiter-paths",
+        "status": "done",
+        "head_sha": "ba93e3252d8dca6fd317604d81900a5d76520ff2",
+        "deviations": [
+          "internal/loomengine/driver.go",
+          "internal/loomengine/driver_test.go",
+          "internal/shedverbs/loop.go",
+          "internal/shedengine/goto_test.go"
+        ]
+      },
+      "cardShas": [
+        "ba93e3252d8dca6fd317604d81900a5d76520ff2"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-driver-arbiter/51095fde-1181-4f9b-ae2d-4d3eccbf248d/subagents/agent-ac03682a3bb91d6c3.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-driver-arbiter/51095fde-1181-4f9b-ae2d-4d3eccbf248d/subagents/agent-ac03682a3bb91d6c3.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-driver-arbiter/51095fde-1181-4f9b-ae2d-4d3eccbf248d/subagents/agent-ac03682a3bb91d6c3.jsonl"
+  ]
 }

@@ -1,10 +1,10 @@
 # Card 1 — shedrun-arbiter-paths
 
 **Create:**
-- `plan:internal/shedrun#ArbiterDir` -> `func ArbiterDir(l *lyxcwd.Location, runID string) string`
-- `plan:internal/shedrun#ArbiterRel` -> `func ArbiterRel(l *lyxcwd.Location, runID string) string`
-- `plan:internal/shedrun#ArbiterAttemptDir` -> `func ArbiterAttemptDir(l *lyxcwd.Location, runID string, attempt int) string`
-- `plan:internal/shedrun#ArbiterMarker` -> `func ArbiterMarker(l *lyxcwd.Location, runID string) string`
+- `internal/shedrun#ArbiterDir`
+- `internal/shedrun#ArbiterRel`
+- `internal/shedrun#ArbiterAttemptDir`
+- `internal/shedrun#ArbiterMarker`
 
 **Edit:**
 - `internal/shedrun#TestPathConstructors`

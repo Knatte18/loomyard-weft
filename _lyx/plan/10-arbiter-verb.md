@@ -17,11 +17,11 @@
 - `plan:internal/loomcli#arbiterEligibility`
 - `plan:internal/loomcli#arbiterPrompt`
 - `plan:internal/loomcli#arbiterSpec`
-- `plan:internal/loomengine#ListArbiterAttempts`
-- `plan:internal/loomengine#ReadArbiterVerdict`
-- `plan:internal/loomengine#WriteArbiterMarker`
-- `plan:internal/loomengine#WriteArbiterEnvelope`
-- `plan:internal/shedengine#CheckGotoTarget`
+- `internal/loomengine#ListArbiterAttempts`
+- `internal/loomengine#ReadArbiterVerdict`
+- `internal/loomengine#WriteArbiterMarker`
+- `internal/loomengine#WriteArbiterEnvelope`
+- `internal/shedengine#CheckGotoTarget`
 
 **Intent:**
 Implement the body of `lyx loom arbiter` (D1, D5–D9) over injected seams, so every branch is a Go-tier test with a fake shuttle and clock (`PATTERN-test-speed`).

@@ -13,11 +13,11 @@
 
 **Uses:**
 - `plan:internal/loomcli#arbiterVerb`
-- `plan:internal/loomengine#ResolveArbiter`
-- `plan:internal/shedrun#ArbiterDir`
-- `plan:internal/shedrun#ArbiterRel`
-- `plan:internal/shedrun#ArbiterAttemptDir`
-- `plan:internal/shedrun#ArbiterMarker`
+- `internal/loomengine#ResolveArbiter`
+- `internal/shedrun#ArbiterDir`
+- `internal/shedrun#ArbiterRel`
+- `internal/shedrun#ArbiterAttemptDir`
+- `internal/shedrun#ArbiterMarker`
 
 **Intent:**
 Mount the verb as `lyx loom arbiter <run-id> --envelope <path> [--report <path>]` and wire its seams, in `arbiter.go` beside the body.

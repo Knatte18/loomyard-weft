@@ -1,8 +1,8 @@
 # Card 3 — shedverbs-arbiter-attempt-flag
 
 **Create:**
-- `plan:internal/shedverbs#ArbiterAttemptFlag` -> `const ArbiterAttemptFlag = "arbiter-attempt"`
-- `plan:internal/shedverbs#TestLoop_ArbiterAttemptConsumedByTheWaiter` -> `func TestLoop_ArbiterAttemptConsumedByTheWaiter(t *testing.T)`
+- `internal/shedverbs#ArbiterAttemptFlag`
+- `internal/shedverbs#TestLoop_ArbiterAttemptConsumedByTheWaiter`
 
 **Edit:**
 - `internal/shedverbs#Hooks`

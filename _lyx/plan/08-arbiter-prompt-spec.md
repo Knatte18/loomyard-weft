@@ -12,8 +12,8 @@
 
 **Uses:**
 - `plan:contracts/stencils#LoomTemplateArbiter`
-- `plan:internal/loomengine#ArbiterSettings`
-- `plan:internal/loomengine#ArbiterRole`
+- `internal/loomengine#ArbiterSettings`
+- `internal/loomengine#ArbiterRole`
 
 **Intent:**
 Compose the arbiter's launch prompt and shuttle spec, pure composers in a new file beside `driverprompt.go` and `driverspec.go`.

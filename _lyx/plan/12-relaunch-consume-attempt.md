@@ -12,11 +12,11 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/shedengine#Relaunch`
-- `plan:internal/shedverbs#ArbiterAttemptFlag`
-- `plan:internal/loomengine#ReadArbiterAttempt`
-- `plan:internal/loomengine#ReadArbiterEnvelope`
-- `plan:internal/loomengine#MarkArbiterApplied`
+- `internal/shedengine#Relaunch`
+- `internal/shedverbs#ArbiterAttemptFlag`
+- `internal/loomengine#ReadArbiterAttempt`
+- `internal/loomengine#ReadArbiterEnvelope`
+- `internal/loomengine#MarkArbiterApplied`
 
 **Intent:**
 Consume an arbiter's `resume` verdict when the driver re-launches the loop naming its attempt (D1, D6, D7).

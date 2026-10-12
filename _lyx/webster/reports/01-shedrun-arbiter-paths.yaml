@@ -1,0 +1,7 @@
+status: OK
+head_sha: ba93e3252d8dca6fd317604d81900a5d76520ff2
+deviations:
+  - internal/loomengine/driver.go
+  - internal/loomengine/driver_test.go
+  - internal/shedverbs/loop.go
+  - internal/shedengine/goto_test.go

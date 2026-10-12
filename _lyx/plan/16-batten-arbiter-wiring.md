@@ -13,9 +13,9 @@
 
 **Uses:**
 - `plan:internal/battenshed#ChildArbiter`
-- `plan:internal/loomengine#ReadArbiterMarker`
-- `plan:internal/loomengine#IsArbiterStrand`
-- `plan:internal/shedrun#ArbiterMarker`
+- `internal/loomengine#ReadArbiterMarker`
+- `internal/loomengine#IsArbiterStrand`
+- `internal/shedrun#ArbiterMarker`
 
 **Intent:**
 Wire the batten hold to the child's marker (D10) and keep batten's strand revive from relaunching an arbiter strand (D11).

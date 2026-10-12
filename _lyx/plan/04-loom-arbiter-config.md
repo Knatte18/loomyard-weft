@@ -1,9 +1,9 @@
 # Card 4 — loom-arbiter-config
 
 **Create:**
-- `plan:internal/loomengine#ArbiterSettings` -> `type ArbiterSettings struct`
-- `plan:internal/loomengine#ResolveArbiter` -> `func ResolveArbiter(cfg Config, reg modelspec.Registry) (ArbiterSettings, error)`
-- `plan:internal/loomengine#TestResolveArbiter` -> `func TestResolveArbiter(t *testing.T)`
+- `internal/loomengine#ArbiterSettings`
+- `internal/loomengine#ResolveArbiter`
+- `internal/loomengine#TestResolveArbiter`
 
 **Edit:**
 - `internal/loomengine#Config`

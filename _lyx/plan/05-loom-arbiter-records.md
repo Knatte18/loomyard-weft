@@ -3,28 +3,28 @@
 **Create:**
 - `internal/loomengine/arbiter.go`
 - `internal/loomengine/arbiter_test.go`
-- `plan:internal/loomengine#ArbiterRole` -> `const ArbiterRole = "arbiter"`
-- `plan:internal/loomengine#IsArbiterStrand` -> `func IsArbiterStrand(name string) bool`
-- `plan:internal/loomengine#ArbiterStopKey` -> `type ArbiterStopKey struct`
-- `plan:internal/loomengine#StopKeyOf` -> `func StopKeyOf(st shedengine.Status) ArbiterStopKey`
-- `plan:internal/loomengine#ArbiterAttempt` -> `type ArbiterAttempt struct`
-- `plan:internal/loomengine#WriteArbiterAttempt` -> `func WriteArbiterAttempt(dir string, a ArbiterAttempt) error`
-- `plan:internal/loomengine#ListArbiterAttempts` -> `func ListArbiterAttempts(arbiterDir string) ([]ArbiterAttempt, error)`
-- `plan:internal/loomengine#ReadArbiterAttempt` -> `func ReadArbiterAttempt(dir string) (ArbiterAttempt, error)`
-- `plan:internal/loomengine#ArbiterVerdict` -> `type ArbiterVerdict struct`
-- `plan:internal/loomengine#ReadArbiterVerdict` -> `func ReadArbiterVerdict(path string) (ArbiterVerdict, bool, error)`
-- `plan:internal/loomengine#ArbiterPromptPath` -> `func ArbiterPromptPath(dir string) string`
-- `plan:internal/loomengine#ArbiterVerdictPath` -> `func ArbiterVerdictPath(dir string) string`
-- `plan:internal/loomengine#ArbiterEnvelopePath` -> `func ArbiterEnvelopePath(dir string) string`
-- `plan:internal/loomengine#ArbiterEnvelope` -> `type ArbiterEnvelope struct`
-- `plan:internal/loomengine#WriteArbiterEnvelope` -> `func WriteArbiterEnvelope(path string, e ArbiterEnvelope) error`
-- `plan:internal/loomengine#ReadArbiterEnvelope` -> `func ReadArbiterEnvelope(path string) (ArbiterEnvelope, bool, error)`
-- `plan:internal/loomengine#MarkArbiterApplied` -> `func MarkArbiterApplied(dir string) error`
-- `plan:internal/loomengine#ArbiterApplied` -> `func ArbiterApplied(dir string) (bool, error)`
-- `plan:internal/loomengine#ArbiterMarker` -> `type ArbiterMarker struct`
-- `plan:internal/loomengine#WriteArbiterMarker` -> `func WriteArbiterMarker(path string, m ArbiterMarker) error`
-- `plan:internal/loomengine#ReadArbiterMarker` -> `func ReadArbiterMarker(path string) (ArbiterMarker, bool, error)`
-- `plan:internal/loomengine#RemoveArbiterMarker` -> `func RemoveArbiterMarker(path string) error`
+- `internal/loomengine#ArbiterRole`
+- `internal/loomengine#IsArbiterStrand`
+- `internal/loomengine#ArbiterStopKey`
+- `internal/loomengine#StopKeyOf`
+- `internal/loomengine#ArbiterAttempt`
+- `internal/loomengine#WriteArbiterAttempt`
+- `internal/loomengine#ListArbiterAttempts`
+- `internal/loomengine#ReadArbiterAttempt`
+- `internal/loomengine#ArbiterVerdict`
+- `internal/loomengine#ReadArbiterVerdict`
+- `internal/loomengine#ArbiterPromptPath`
+- `internal/loomengine#ArbiterVerdictPath`
+- `internal/loomengine#ArbiterEnvelopePath`
+- `internal/loomengine#ArbiterEnvelope`
+- `internal/loomengine#WriteArbiterEnvelope`
+- `internal/loomengine#ReadArbiterEnvelope`
+- `internal/loomengine#MarkArbiterApplied`
+- `internal/loomengine#ArbiterApplied`
+- `internal/loomengine#ArbiterMarker`
+- `internal/loomengine#WriteArbiterMarker`
+- `internal/loomengine#ReadArbiterMarker`
+- `internal/loomengine#RemoveArbiterMarker`
 
 **Edit:**
 - `cmd/lyx/testdata/test-budget.yaml`
