@@ -1,11 +1,11 @@
 {
-  "current_producer": "Publish",
+  "current_producer": "PR-Gate",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Publish",
-    "last": "Publish → goto",
+    "now": "PR-Gate",
+    "last": "Publish → done",
     "wait": ""
   },
   "history": [
@@ -227,6 +227,12 @@
       "outcome": "goto",
       "output": "",
       "at": "2026-10-12T08:56:48Z"
+    },
+    {
+      "producer": "Publish",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-12T09:01:02Z"
     }
   ],
   "product": {
