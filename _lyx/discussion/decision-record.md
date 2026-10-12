@@ -23,7 +23,7 @@ Out:
 - `lyx pause` itself (note `lyx-halt`): this task provides the release-all function and verb it calls (D11).
 - Detecting a live owner that hangs (task `driver-arbiter`).
 - A lock verb for a hand landing outside a run: a hand landing goes through the run's own rows (`lyx loom goto --to Finalize`), and a raw push to the parent is caught as a moved parent (D9).
-- A merge perch in darn.
+- A parent lock at batten's Land row: Finalize has already landed and released the lock before Land, and Land only pulls the prime, deploys and prunes under its existing land lock.
 - Glyph-level overlap: the seam judges overlap by file and Go package, a superset of the glyphs the board names (D6).
 - A `lyx cleanup` hook for lock records: a stale record is replaced by the next acquire on its branch and shown as stale by `lyx batten lock list`.
 
@@ -34,6 +34,13 @@ Out:
 Decision: Publish's merge-in of the parent, its clearing of a parked merge-in and of live conflict-session strands, its clean-tree checks, its conflict session and its post-merge plan verify move into a new `landingshed` producer, `Merge-In`, which runs for every parent branch, including one outside `require_pr_to_base`.
 Publish keeps `publish_verify`, the push and the pull request, and stays a no-op for a parent outside `require_pr_to_base`.
 Loom's order becomes `Webster-Bouncer → Describe → Merge-In → Merge-Bouncer → Publish → PR-Gate → Finalize`; darn's becomes `… → Merge-In → Publish → PR-Gate → Finalize`.
+Once it holds the parent lock (D5), and before it merges, Merge-In fetches the parent's upstream and fast-forwards the local parent branch to the upstream tip, so a hand push to the upstream reaches the local parent at the next Merge-In and needs no other actor; it then merges the local parent branch, which now equals the upstream tip, and records that tip.
+The local parent branch is checked out in the parent pair's own worktree, the one Finalize opens, so the fast-forward pulls that pair through `fabricengine`'s pull; running it under the lock keeps it from racing another run's Finalize, which merges into the same worktree under the lock.
+A parent with no upstream is merged and recorded as its local tip.
+Under the told push skip (`Deps.PushSkipped`, from `FABRIC_SKIP_PUSH`), Finalize never pushes the parent, so Merge-In skips the fetch and the fast-forward and merges and records the local parent tip, as for a parent with no upstream.
+A local parent ahead of its upstream, or diverged from it, is Stuck at Merge-In with a way forward naming the push or reconcile of the parent branch in its own pair, then `lyx loom resume`; Merge-In never pushes or rewrites the parent.
+The fast-forward is refused, Stuck with a way forward, when the parent pair's worktree is dirty (commit or stash the changes in the parent pair), when a merge is in progress there (finish or abort that merge in the parent pair), or when no live parent pair exists (re-create the parent pair); each names the step in the parent pair and then `lyx loom resume`.
+Bound: the fast-forward only moves the parent pair to its upstream tip, only when that move is a fast-forward, and never touches local commits; the ahead and diverged states are Stuck before the pull runs.
 Merge-In writes a Go-owned merge record in the run's ephemeral directory: the parent tip it merged, the parent tip the last finished merge review reached (the fork point before any), the task head before the merge, and the overlap D6 computes.
 The Publish verify failure record and batten's Publish-retry name the row that ran the failing verify: `Merge-In` for the plan verify, `Publish` for `publish_verify`.
 A run parked on a row whose name or edges changed is restarted, not migrated, as the recipe headers already state for earlier row changes.
@@ -80,8 +87,11 @@ Rationale: an OS file lock dies with the short-lived step process that takes it,
 
 Decision: `Merge-In` acquires the lock in the name of the run's detached `--until-stop` loop process, read from the loop's pid record; a step run outside a loop names its own step process, so its lock lapses when that step exits.
 `internal/shedverbs` gains a told exit hook on its loop spec, filled by the arming modules (loom and darn), and keeps its import set; the hook releases the run's lock when the loop exits, which it does at every stop: awaiting, blocked, failed, paused, a stop condition and the terminal.
+The release is a compare-and-release on the loop's own pid and start time, as D8's is: a record that names the run but is owned by another process, batten or a newer loop, is left alone.
 The one exception is an awaiting stop at PR-Gate with a live batten watching the run: the hook hands the record to that batten's process instead (D8), so the lock is kept while the orch reviews.
 Finalize releases the lock on its Done, before Friction-Reflect runs.
+A lock-holding row whose verdict takes an edge out of the window from Merge-In to Finalize releases the run's lock on that edge: today that is PR-Gate's rejection Stuck, to PR-Rework in loom and to Darn-Write in darn.
+The rework comes back around through Merge-In, which reacquires.
 Merge-In, and each row of D9 that finds the lock not held, waits for it with no time limit in the queue of D4, polling from one second doubling to thirty; the wait counts as activity for the loop's idle watchdog.
 A pause request or cancellation seen during the wait halts the row blocked, as the land-lock wait does, with the way forward `lyx loom goto --to <row>` then `lyx loom resume`.
 
@@ -95,7 +105,7 @@ The task side is the files changed between the parent tip last merged into the t
 They overlap when a file is changed on both sides, when a Go package directory holds files changed on both sides, or when the parent side changes `PATTERN.md` or a file under `pattern/`.
 An already-up-to-date merge-in skips.
 Merge-In computes the overlap and writes it into the merge record; the seam reads only that record.
-Merge-Bouncer's Done, a skip included, records the merged parent tip as the last finished review in the run's ephemeral directory; a review cut short by a reroute records nothing, so the next range still covers its commits.
+Merge-Bouncer's Done, a skip included, records the merged parent tip as the last finished review in the run's ephemeral directory; a review that ends without Merge-Bouncer's Done, such as an escalation followed by a goto past it, records nothing, so the next range still covers its commits.
 A missing or unreadable merge record falls back to a real review whose subject is the whole merge-in diff.
 
 Rationale: the reviewer's subject is the interaction, which is empty when the two sides touch nothing in common; a PATTERN change binds every package, so it always reviews.
@@ -117,7 +127,7 @@ Bound: release frees the lock only; it never stops or changes the run, and the r
 ### D8: Batten holds a PR-Gate lock and backstops releases
 
 Decision: batten's InnerRun wait, at its notice-probe cadence, acts on a lock record that names its child's run:
-- a record handed to batten at a PR-Gate awaiting (D5) is released once the awaiting has lasted `parent_lock_idle_release_min` on batten's monotonic clock with no decision, or once the child leaves awaiting for any stop but a resume;
+- a record handed to batten at a PR-Gate awaiting (D5) is released once the awaiting has lasted `parent_lock_idle_release_min` on batten's monotonic clock with no decision, or once the child leaves awaiting for any stop but a resume, or once a resumed child stops again without having taken the record back;
 - a record whose owner is the child's loop is released when that same owner, by pid and start time, has met D7's rule; the release is a compare-and-release on the owner, so a fresh loop's record is never freed.
 It logs one Warn per release.
 
@@ -129,14 +139,17 @@ Bound: batten releases only records naming its own child's run, and only under t
 Decision: `shedengine` gains a recipe-declared reroute edge: a `ProducerDef` field (recipe key `on_reroute`) naming one row, and an output flag a producer sets on a Stuck verdict to take that edge instead of `on_stuck`.
 A reroute writes a new history-only outcome, `reroute`, which every history reader accepts; it ends the bounce episode of its target's segment, spends no bounce budget, and is allowed across segments.
 `PATTERN-shed-verb-set`'s goto clause is unchanged: `OutcomeGoto` stays the goto verb's alone.
-A row's reroutes are capped at three per run without a landing; the fourth is a blocked halt for a human whose reason names the moving parent and `lyx loom resume`.
+A row's reroutes are capped at three, counted from the row's last Done or from the last `lyx loom resume` of that row's reroute-cap halt, whichever is later; the fourth is a blocked halt for a human whose reason names the moving parent and `lyx loom resume`, and that resume resets the row's count, so each resume grants three more reroutes.
 `Publish`, `PR-Gate` and `Finalize` in loom and darn declare `on_reroute: Merge-In`.
-Each first ensures the lock (D5) and then reads the code side's parent tip from its upstream after a fetch, the tip a hand push reaches, and compares it with the tip the merge record says was merged.
-The parent has moved when the tips differ and the parent does not already contain the task's work; a parent that contains it, after a pull request merged on GitHub or an earlier Finalize that landed, takes Finalize's already-landed path.
-Finalize's catch-up merge-in stays, after this check, so it brings no new code and still syncs the records side; its parent-records commit keeps its place after it.
+Each first ensures the lock (D5) and then reads two code-side parent tips: the local parent branch tip, which Finalize's catch-up merge-in and parent-side merge use, and its upstream tip after a fetch, which a hand push reaches.
+A parent with no upstream, or a hub under the told push skip (D1), reads the local tip alone.
+The parent has moved when either tip differs from the tip the merge record says was merged and the parent does not already contain the task's work; a parent that contains it, after a pull request merged on GitHub or an earlier Finalize that landed, takes Finalize's already-landed path.
+A local parent ahead of or diverged from its upstream at Publish, PR-Gate or Finalize therefore reroutes to Merge-In, where D1's Stuck applies.
+Finalize's catch-up merge-in stays, after this check; with the local tip checked equal to the merged tip under the lock, it brings no parent code the merge review has not covered, and still syncs the records side; its parent-records commit keeps its place after it.
+Finalize's retry after a parent-side merge that reports merge-in-required runs only when both code-side tips, read the same two-ref way, still equal the merge record's merged tip, which covers a parent moved by run records alone; otherwise Finalize reroutes to Merge-In as its first check does.
 
 Rationale: losing the lock or a hand push to the parent leaves a merge nobody reviewed; sending the run back to its merge row is the one path for both.
-Bound: a row can reroute only to the one target its recipe row names, only after reading a parent tip that differs from the recorded merge and does not hold the task's work, and at most three times; a reroute redoes the merge and its review, never skips them.
+Bound: a row can reroute only to the one target its recipe row names, only after reading a parent tip that differs from the recorded merge and does not hold the task's work, and at most three times before a human resumes it; a reroute redoes the merge and its review, never skips them.
 
 ### D10: Batten resumes a child awaiting at PR-Gate whose parent moved
 
@@ -178,6 +191,12 @@ Decision: `PATTERN.md` gains `PATTERN-parent-lock`: merging a parent into a task
 
 Rationale: three rows across two recipes, the loop and batten all take or release the lock, so one invariant names the rule they share.
 
+### Added after Discussion (parent, 2026-10-12): Moved-parent check reads both parent refs
+
+Decision: Accept the round-2 fixes as written: D9 reads the local parent tip and its upstream tip, D1 fast-forwards the parent pair only under the lock with Stuck exits for a dirty, mid-merge or missing parent pair, and a push-skipped hub merges and compares the local tip.
+
+Rationale: The round-2 fixer applied F1, F2 and F3 as the review proposed and checked each premise against the code; the segment ran out of rounds, not out of agreement, and no open finding makes the design wrong.
+
 ## Constraints
 
 - `PATTERN-told-geometry`: the lock engine, landingshed and battenshed take the lock directory told; only CLI wiring resolves it.
@@ -211,15 +230,21 @@ Rationale: three rows across two recipes, the loop and batten all take or releas
 - A parent branch name containing `/` maps to a record inside the lock directory, and a first acquire creates the directory.
 - A clock jump during a lock hold leaves the lock valid; the idle bound ignores time the injected monotonic clock did not see.
 - Each stop kind (blocked, failed, paused, stop condition, terminal, awaiting outside PR-Gate) releases the run's lock; Finalize's Done releases it before Friction-Reflect.
-- An awaiting at PR-Gate under a live batten hands the lock to batten, which keeps it until a decision resumes the child or the bound passes, and the resumed loop takes it back.
+- An awaiting at PR-Gate under a live batten hands the lock to batten, which keeps it until a decision resumes the child or the bound passes, and the resumed loop takes it back; a resumed child that stops before taking it back leaves it to batten, which releases it, and the stopped loop's exit hook leaves batten's record alone.
+- A rejected PR-Gate releases the lock before PR-Rework (darn: Darn-Write) runs, and the reworked run reacquires at Merge-In.
 - With no busy agent, a waiting agent past the bound releases the lock while the run keeps running; one below the bound, one beside a busy agent, and an unreadable state do not.
 - Batten's backstop releases only a record whose owner matches the stalled loop, never one a fresh loop took after a resume.
 - A moved parent at Publish, PR-Gate or Finalize reroutes to Merge-In without spending bounce budget, and the next merge review judges only the parent commits since the last finished review, with the task side excluding earlier merged parent changes.
-- A review cut short by a reroute leaves its commits in the next review's range.
-- The fourth reroute of a row in a run halts blocked with a way forward.
+- A review that ends without Merge-Bouncer's Done, such as an escalation followed by a goto past it, leaves its commits in the next review's range.
+- The fourth reroute of a row since its last Done halts blocked with a way forward, and `lyx loom resume` of that halt lets the row reroute three more times.
 - A parent that already holds the task's work, after a GitHub merge or an earlier landing, lands through Finalize's already-landed path with no reroute.
-- A hand push to the parent's upstream is seen as a moved parent.
-- Finalize's merge-in brings no new parent code and still syncs the records side.
+- A hand push to the parent's upstream is seen as a moved parent; the rerouted Merge-In fast-forwards the local parent, merges the pushed commits and records their tip, and the next check passes.
+- A local parent ahead of or diverged from its upstream is Stuck at Merge-In with a way forward, never merged.
+- A commit made on the local parent branch after Merge-In, with the upstream unchanged, is seen as a moved parent at Publish, PR-Gate and Finalize and reroutes to Merge-In, where it is Stuck as ahead of its upstream.
+- Merge-In's fast-forward moves the parent pair only after the lock is held; a dirty parent pair, a parent pair with a merge in progress and a missing parent pair are each Stuck with a way forward, and a parent pair with local commits is never moved.
+- Two successive landings on one parent with the push skipped both pass Merge-In, each merging and recording the local parent tip.
+- Finalize's merge-in brings no parent code the merge review has not covered and still syncs the records side.
+- A code-side parent commit that arrives between Finalize's check and its parent-side merge, whether a local commit on the parent branch or a push to its upstream, reroutes to Merge-In and never lands; a parent moved by run records alone takes Finalize's retry.
 - A child awaiting at PR-Gate whose parent moved is resumed by batten and reroutes.
 - A loop killed during Merge-In's conflict session resumes through Merge-In's clearing of the parked merge and its conflict strands.
 - The skip seam skips with no agent when the sides share no file and no Go package and the parent side leaves PATTERN untouched; it runs the round on a shared file, a shared package or a PATTERN change; it skips an up-to-date merge; it reviews the whole merge-in diff when the merge record is missing.
