@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-12 17:09 UTC; every age below is as of then.
+Rendered 2026-10-12 17:10 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **reed: a strand in its own tmux window**<br>• Three related ideas for reed beyond one pane per strand and one window per worktree | [`reed-multi-window`](design-reed-multi-window.md) | loom | Discussion-Write | 8d | 2h | reed, shuttle |
-| 2 | **Small cleanups: tokencount cutoff skew, audit reader globs, duplicate weft carve-out**<br>• Guard the tokencount cutoff against tag skew, bound audit reader globs and document the git pathspec case, and drop one of two duplicate loomyard-weft carve-outs. | [`cleanup-1012`](design-cleanup-1012.md) | loom | Merge-In | 2d | 2h | fabric |
+| 2 | **Small cleanups: tokencount cutoff skew, audit reader globs, duplicate weft carve-out**<br>• Guard the tokencount cutoff against tag skew, bound audit reader globs and document the git pathspec case, and drop one of two duplicate loomyard-weft carve-outs. | [`cleanup-1012`](design-cleanup-1012.md) | loom | Merge-Bouncer | 2d | 2h | fabric |
 | 3 | **lyx pause leaves idle drivers in the rewind picker**<br>• The pause Esc opened Claude Code rewind picker in both idle run drivers; resume then types into the picker. | [`pause-esc-rewind`](design-pause-esc-rewind.md) | loom | Discussion-Write | 2h | 2h | reed, shuttle |
 
 ### Ready
