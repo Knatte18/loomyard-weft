@@ -7,7 +7,7 @@
 - `internal/fabricengine_test#TestIsReadOnlyCommand`
 
 **Create:**
-- `plan:internal/fabricengine#readOnlyReaderSegment` -> `func readOnlyReaderSegment(segment string) bool`
+- `internal/fabricengine#readOnlyReaderSegment`
 
 **Uses:**
 - `internal/fabricengine#blankQuoted`

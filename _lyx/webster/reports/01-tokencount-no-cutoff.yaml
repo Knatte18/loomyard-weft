@@ -1,0 +1,4 @@
+status: OK
+head_sha: 83a2a47668bbcfb082589a7557d36010f6067606
+deviations:
+  - internal/fabricengine/refscanner.go
