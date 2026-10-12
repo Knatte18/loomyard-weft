@@ -166,6 +166,13 @@ Rationale: D2 and the acceptance criterion rely on 78e31aa06's storeFile Marshal
   - d7-integration-criterion-satisfied-by-outer-watchdog (class consistency, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - finalize-verify-failed-no-refusal-row (class scope, severity BLOCKING, open in rounds 2)
+  - loomshed-round-record-rewrite-drops-unknown-keys (class scope, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A shed `status.json` carrying an unknown top-level key and an unknown key in one history entry reads through every reader D1 renames, and round-trips through `UpdateJSON` and `WriteJSON` with both keys and their JSON values kept.
