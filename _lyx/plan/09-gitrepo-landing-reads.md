@@ -5,7 +5,7 @@
 - `plan:internal/gitrepo#Repo.BlameLines` -> `func (r *Repo) BlameLines(rev, relPath string, lines []int) (map[int]string, error)`
 
 **Edit:**
-- `//internal/gitrepo/reportreads_integration_test.go`
+- `plan:internal/gitrepo_test#TestReportReads`
 - `//internal/gitrepo/doc.go`
 
 **Intent:**

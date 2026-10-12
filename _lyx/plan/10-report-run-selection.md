@@ -17,6 +17,9 @@
 - `//internal/reportengine/runs_test.go`
 - `//internal/reportengine/seam_enforcement_test.go`
 - `//internal/reportengine/testmain_test.go`
+- `plan:internal/reportengine#allowedImports` -> `var allowedImports = []string`
+- `plan:internal/reportengine#fakeRepo` -> `type fakeRepo struct`
+- `plan:internal/reportengine#fakeRepo.BlameLines` -> `func (f *fakeRepo) BlameLines(rev, relPath string, lines []int) (map[int]string, error)`
 
 **Edit:**
 - `//pattern/PATTERN-told-geometry.md`
@@ -67,6 +70,7 @@ Tests:
 `fake_test.go` holds `fakeRepo`, an in-memory `Reader`: files per commit SHA, a commit list per tip that `Log` filters by `FirstParent`, `Since`, `PathPrefix` (computing `Paths` from the per-commit files against the first parent) and `Limit`, directory listings derived from the file maps, and maps standing in for `PreImageLines` and `BlameLines`; plus builders for a tag, a loom seed and status, and a batten snapshot commit.
 `TestCompute_SelectsRuns` (in `runs_test.go`) is table-driven over fake sources, each row asserting the exact runs, partial runs, batten presence and snapshot sequence, and findings:
 - no archive tags yields a report with no runs, no partial runs and no findings, and no error;
+- an `archive/x` tag, which carries the prefix but no slug and sha segments, yields one finding naming the tag, no run and no partial run;
 - a slug with two tags yields two runs, each with its own batten snapshots, when the second run's batten commits precede its tag;
 - a slug whose first tag came from a batten run and whose second came from a run batten never seeded reports the batten source absent for the second tag, and the first tag's snapshots appear on the first run only;
 - a slug whose `status.json` a later commit deleted reads its batten record from the last commit holding it;
@@ -74,7 +78,7 @@ Tests:
 - a loom `status.json` that does not decode yields a finding naming the tag and the status path, the tag is partial, and `Compute` returns no error; a seed and a status each carrying an unknown key read, and the run is full;
 - a tag dated before `Since` is in neither runs nor partial runs;
 - tags at Sunday 23:59:59 UTC and at Monday 00:00:00 UTC fall in consecutive ISO weeks, and one at Monday 00:30 +02:00 falls in the earlier week.
-`seam_enforcement_test.go` holds `TestToldGeometryInvariant_AllowlistOnly`: `scankit.AssertImportAllowlistNoStale` over `internal/reportengine` with the allowlist `gitrepo`, `shedrun`, `shedengine`, `loomshed`, `battenrecipe` and `fabricengine`, which every later engine card extends with what it imports.
+`seam_enforcement_test.go` holds `TestToldGeometryInvariant_AllowlistOnly`: `scankit.AssertImportAllowlistNoStale` over `internal/reportengine` with the allowlist variable `allowedImports` holding `gitrepo`, `shedrun`, `shedengine`, `loomshed`, `battenrecipe` and `fabricengine`, which every later engine card extends with what it imports.
 `testmain_test.go` runs the package under `tmuxkit.Main`.
 
 `pattern/PATTERN-told-geometry.md`'s bound-packages list gains `reportengine` (D2).

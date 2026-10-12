@@ -8,13 +8,14 @@
 **Edit:**
 - `//internal/reportengine/doc.go`
 - `//internal/reportengine/fake_test.go`
-- `//internal/reportengine/seam_enforcement_test.go`
+- `plan:internal/reportengine#allowedImports`
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
 - `plan:internal/loomengine#ParseArbiterAttemptDir`
 - `plan:internal/discussionparser#ParseAddedDecisions`
 - `plan:internal/shedadapters#ReviewRounds`
+- `plan:internal/shedadapters#ArchivedRunDirSegment`
 - `plan:internal/parentreview#ParseRoundDir`
 - `internal/loomengine#DiscussionDecisionRecordRel`
 - `internal/loomengine#LoomReviewsDirRel`
@@ -34,11 +35,12 @@ Repairs (D8):
 
 Review rounds and decisions (D9):
 - Every subdirectory of `LoomReviewsDirRel()` but the parent-review one is a segment; `shedadapters.ReviewRounds` over its file names gives `SegmentRounds{Rounds, Outcome}` in `RunRow.Segments`, keyed by segment name.
+  A subdirectory `shedadapters.ArchivedRunDirSegment` accepts is a Bouncer re-seed's archived generation, not a segment of its own: its `ReviewRounds` rounds add to its segment's `Rounds`, while `Outcome` stays the live directory's last round.
   The segment set of the report is every segment any selected run's tree holds, so a run lacking one of them reports it absent.
 - Parent-review rounds count under `parent-review` in the same map: the round directories `RoundNumber` accepts whose `ParseRoundDir` result holds a request, with the outcome the last round's verdict kind (`approve` or `reject`), `none` when it has no verdict.
 - Parent decisions: `discussionparser.ParseAddedDecisions` over `DiscussionDecisionRecordRel()` at the tag gives `RunRow.Decisions`, a count per `by`; absent without the file, and a parse error is a finding naming the tag and the file.
 
-`seam_enforcement_test.go`'s allowlist gains `discussionparser`.
+`seam_enforcement_test.go`'s `allowedImports` gains `discussionparser`.
 `fake_test.go` gains builders for an arbiter attempt directory, drive reports and a decision record.
 `doc.go` describes the actor split and the round counts.
 
@@ -48,6 +50,7 @@ Tests:
   a `goto` entry and a `reroute` entry each count as an LLM step, a resume after a halt with no automatic step or applied arbiter verdict is an LLM step, and the `goto` of batten's verify retry is none;
   two `Added after Discussion` entries by one author and one by another yield two and one;
   a segment whose last round holds an escalation file is `escalated`, one holding a circling-decision file is `circling-decided` with or without an escalation file, one holding neither is `accepted`, a numbered round with no review file is not a round, and a run with no directory for a segment another run holds reports it absent;
+  a run with `plan` holding one round and `plan-20261012T101500Z` holding two reports `plan` with 3 rounds and no `plan-20261012T101500Z` key;
   a parent-review round takes its outcome from its verdict record;
   a run with no drive-reports directory reports drive reports absent;
   a malformed `Added after Discussion` heading is a finding naming the tag and the decision record, and the run's other counts stand.

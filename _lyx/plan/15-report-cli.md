@@ -52,15 +52,17 @@ What it newly lets through is a read of the hub's git history; an explicit early
 
 Tests:
 - `TestConvergence_RefusesBadFlags` (in `cli_test.go`, untagged) runs `RunCLIIn` from `t.TempDir()`, which is no git checkout, with rows `--since 2026-13-01`, `--since yesterday`, `--fresh-days 0` and `--format yaml`; each exits 1 with an envelope whose error names the flag, which shows the refusal comes before any cwd resolution or read.
+- `TestRefuseNonPrime` (in `cli_test.go`, untagged) is a table over `refuseNonPrime`, the shape of `internal/orchcli/cli_test.go`'s: the prime's own name passes, another name is refused naming the prime, and a non-nil `primeNameErr` is an error that wraps it.
 - `TestConvergence_RefusesOutsideThePrimeThenReportsTheSeededRun` (in `convergence_integration_test.go`, `//go:build integration`) builds `hubforge.CopyHub(t, hubforge.Shape{Anchor: ".", Pairs: []string{hubforge.TemplatePairSlug}})` and, in order:
+  run from the prime's records-side worktree (`fabricengine.RecordsRepoRoot` of the prime's location), it exits 1 with the `RequireDrivableWorktree` refusal;
   run from the pair's worktree, it exits 1 and its error names the prime;
   run from the prime before any tag, it exits 0 with no runs;
   it then seeds one finished run of the template pair, in this order: a new code commit in the pair's worktree with `gitkit.Git`, so the pair's code HEAD is a commit the prime's branch does not hold; the pair's loom seed (recipe `loom`), a status whose history holds `Finalize` `done`, and a decision record whose one `### Added after Discussion (` heading carries no date, committed on the pair's records side through `Fabric.Commit` on `fabricengine.Open` of the pair's location (from `lyxcwd.Resolve(h.PairCodeWorktree(slug))`), the commit path that writes the task-commit trailer (`CommitAnchoredPaths` writes none), so that commit's trailer names the new code commit; a batten `status.json` for the slug on the prime's records branch whose history runs from `Worktree-Create` to `Land` `done`; a board entry for the slug labelled `bug` through `boardengine.OpenHub` and `UpsertTask`; the new code commit fast-forwarded onto the prime's branch with `gitkit.Git`; and an `archive/<slug>/<sha12>` tag at the pair's records tip, also with `gitkit.Git`;
-  run from the prime with no `--since`, so the twelve-week default applies, and with `--fresh-days 1`, it exits 0 with `selection.since` the UTC date 84 days before today, one run whose batten source is present, exactly one landing for the slug, of kind `fix` and joined `exact` to that run (the hub template's own commits, dated today, are in range and read `unmapped`, which the test does not count), and one finding naming the decision record, which pins that a finding leaves the exit code 0 (D5);
+  run from the prime with no `--since`, so the twelve-week default applies, and with `--fresh-days 1`, it exits 0 with `selection.since` equal to one of the two dates 84 days before the UTC dates the test takes just before and just after the `RunCLIIn` call, one run whose batten source is present, exactly one landing for the slug, of kind `fix` and joined `exact` to that run (the hub template's own commits, dated today, are in range and read `unmapped`, which the test does not count), and one finding naming the decision record, which pins that a finding leaves the exit code 0 (D5);
   run with `--format markdown`, it prints the four section headings.
 - `testmain_test.go` runs the package under `tmuxkit.Main`.
 
-`cmd/lyx/testdata/test-budget.yaml` gains `internal/reportcli: 2`.
+`cmd/lyx/testdata/test-budget.yaml` gains `internal/reportcli: 3`.
 
 **ImpactSummary:** `newRoot` mounts one more module, which `TestRegistration_AllModulesRegistered`, the clitree walk and `TestSandboxCoverage_AllModulesCoveredOrExcluded` then check; the rest is new files, docs and one test list.
 

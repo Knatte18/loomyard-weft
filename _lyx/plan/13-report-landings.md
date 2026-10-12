@@ -6,8 +6,9 @@
 
 **Edit:**
 - `//internal/reportengine/doc.go`
-- `//internal/reportengine/fake_test.go`
-- `//internal/reportengine/seam_enforcement_test.go`
+- `plan:internal/reportengine#fakeRepo`
+- `plan:internal/reportengine#fakeRepo.BlameLines`
+- `plan:internal/reportengine#allowedImports`
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
@@ -23,12 +24,12 @@ The report gains landings by kind (D10) and the fresh-code fix share (D11), in a
 
 Landings (D10):
 - The landings are the first-parent commits of `ParentTip` committed at or after `Since`, from one `Code.Log(ParentTip, LogQuery{FirstParent: true, Since: Since minus FreshDays days})`; the older commits that walk returns only date blame owners.
-- Exact join, applied to every tag the selection read before any time join: the task commit is `fabricengine.TaskCommitOf` of the newest commit carrying one in `Records.Log(tag commit, LogQuery{FirstParent: true})`, walked with no limit and stopping at the first match.
+- Exact join, applied to every tag the selection read before any time join: the task commit is `fabricengine.TaskCommitOf` of the newest commit carrying one in `Records.Log(tag commit, LogQuery{FirstParent: true})`, walked in growing pages (`Limit` 64, then doubling, re-reading from the tag) until a commit carrying a trailer is found or the walk returns fewer commits than its `Limit`.
 Loom's per-transition records commits carry no trailer, so that commit often sits several commits below the tag (in the hub's own archives, webster's last record-batch commit); a tag whose history carries none gets no exact join.
   The landing is the first-parent commit that is the task commit (a fast-forward), has it as a parent (a merge), or has its tree (a squash).
   For a fast-forward, the first-parent commits after the nearest older landing and before the task commit are the task branch's own: they belong to that landing and are neither landings nor `unmapped`.
 - Time join, for a tagged run the exact join left unmapped and for a slug with checkpoints after its newest tag (a pair not yet torn down): the checkpoints are the records commits whose subject `loomengine.LandingCheckpointSlug` names the slug, from card 10's records walk.
-  A tagged run's window opens at the newest checkpoint committed after the slug's previous tag's commit and at or before this tag's commit; an untagged slug's opens at the newest checkpoint after its newest tag's commit.
+  A tagged run's window opens at the newest checkpoint committed after the slug's previous tag's commit and at or before this tag's commit; an untagged slug's opens at the newest checkpoint after its newest tag's commit, and a slug with no archive tag opens at its newest checkpoint.
   The window closes at the first board commit after the checkpoint whose `board.json` (`ParseBoardTasks` over `BoardFileRel()` at that commit, from one `Board.Log(BoardTip, LogQuery{})`) shows the slug's entry with status `done`.
   The landing is the first first-parent commit committed inside the window that no exact join claimed; every comparison reads committer dates.
   No checkpoint in the interval, or no done mark after it, means no time join.
@@ -46,14 +47,14 @@ Fresh-code fixes (D11), for each `fix` and `unmapped` landing in range and no ot
 - A fast-forward's own task-branch commits are never blamed, and a `feature` or `other` landing is never blamed.
 `Landing` holds `Commit`, `Committed`, `Week`, `Kind`, `Slug`, `Tag`, `Join` (`exact` or `time`, empty for unmapped), `Hand`, `LandIncomplete` (`*bool`) and `Fresh` (`fresh`, `aged`, `no-pre-image`, or empty when not blamed).
 
-`seam_enforcement_test.go`'s allowlist gains `boardengine`.
+`seam_enforcement_test.go`'s `allowedImports` gains `boardengine`.
 `fake_test.go`'s `fakeRepo` gains a call log for `BlameLines` and builders for a parent-branch history, a records commit with a trailer, a checkpoint commit and a board commit.
 `doc.go` describes both joins, the kinds and the fresh-code rule.
 
 `TestCompute_Landings` (new, in `landings_test.go`) is table-driven, each row asserting the exact `Report.Landings`, the affected runs' `Landing`, LLM steps and findings, and the `BlameLines` call log:
 - a fix whose modified lines mostly came from a landing two days earlier is `fresh`, ten days earlier `aged`, exactly half from a recent landing `aged`, a pure-addition fix `no-pre-image`, and a fix touching only a `_test.go` file, a `docs/` file and a `.md` file `no-pre-image`;
 - a full run mapped by the exact join whose loom history at its tag holds a `Finalize` entry but no `Finalize` `done` is a `hand` landing with one landing LLM step, and a partial tag with no `Finalize` entry mapped by the exact join is a `hand` landing carrying its tag in `Report.Landings` and adds no run;
-- a landing whose pair is not yet torn down maps through its checkpoint and board done commit, keeps its label kind, is not `hand`, has no `LandIncomplete` and adds no run;
+- a landing whose pair is not yet torn down, on a slug with no archive tag, maps through its checkpoint and board done commit, keeps its label kind, is not `hand`, has no `LandIncomplete` and adds no run;
 - a commit mapping to no run is `unmapped`, is blamed, and its share never mixes into a fix's;
 - a slug with two runs, each with its own checkpoint and board done commit, maps each landing to its own run, and a run with two checkpoints in its interval opens its window at the newer one;
 - a run with no checkpoint in its interval, and a run whose board entry was never marked done after its checkpoint, get no time join;
@@ -62,6 +63,7 @@ Fresh-code fixes (D11), for each `fix` and `unmapped` landing in range and no ot
 - a run with no checkpoint commit maps through its task commit's trailer by commit (fast-forward), by parent (merge) and by tree (squash), one row each, the merge row's trailer sitting three trailer-free commits below the tag;
 - a commit in a run's window that another tagged run's exact join claimed is not taken by the time join, and two runs whose exact joins claim one commit both become unmapped with a finding;
 - labels `bug`, `enhancement` and `chore` give `fix`, `feature` and `other`, read from the last board commit before the landing even when a later board commit pruned the entry;
+- an exact-joined landing whose slug no board commit holds is kind `other` with one finding naming the slug, and is not blamed;
 - a `feature` landing and an `other` landing leave the call log empty;
 - a landing committed before `Since` is left out.
 

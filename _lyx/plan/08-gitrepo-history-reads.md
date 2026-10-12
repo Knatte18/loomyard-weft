@@ -8,6 +8,7 @@
 - `plan:internal/gitrepo#Repo.Log` -> `func (r *Repo) Log(tip string, q LogQuery) ([]LogCommit, error)`
 - `plan:internal/gitrepo#Repo.SubdirsAtRevision` -> `func (r *Repo) SubdirsAtRevision(rev, dir string) ([]string, error)`
 - `//internal/gitrepo/reportreads_integration_test.go`
+- `plan:internal/gitrepo_test#TestReportReads` -> `func TestReportReads(t *testing.T)`
 
 **Edit:**
 - `//internal/gitrepo/doc.go`
