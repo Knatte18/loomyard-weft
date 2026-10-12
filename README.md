@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Convergence report: count orch wakes, driver repairs and fresh-code fixes from existing records**<br>• A lyx report verb that counts, per run and per week, what woke the orch and what the driver repaired, from records that already exist | [`convergence-plan`](design-convergence-plan.md) | loom | Webster |  | 3h | orch, shed |
 | 2 | **Run records tolerate newer binaries; a hung verify step is not re-run**<br>• Readers and writers of run records keep unknown fields; a verify gate stops a hung step early and never re-runs it unfixed. | [`run-robustness`](design-run-robustness.md) | loom | Merge-Burler-Fix | 2h | 2h | batten, shed, webster |
-| 3 | **Paused runs in the overview, hold-notice end, chunked paste, operator shortcuts**<br>• Four small follow-ups: the runs overview shows pauses, the hold-notice deferral ends on a held advisor, long pastes are chunked, and shortcuts are built into lyx. | [`operator-followups`](design-operator-followups.md) | loom | Discussion-Bouncer | 2h | 31m | reed, shuttle, batten, orch |
+| 3 | **Paused runs in the overview, hold-notice end, chunked paste, operator shortcuts**<br>• Four small follow-ups: the runs overview shows pauses, the hold-notice deferral ends on a held advisor, long pastes are chunked, and shortcuts are built into lyx. | [`operator-followups`](design-operator-followups.md) | loom | Discussion-Burler-Review | 2h | 31m | reed, shuttle, batten, orch |
 
 ### Ready
 
@@ -49,7 +49,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Weft records push refused once at Publish, passes on retry**<br>• Three runs on 2026-10-12 had the weft push refused once; find the race | [`weft-push-refused-retry`](design-weft-push-refused-retry.md) | 1h | 1h | fabric |
 | 2 | **Shuttle marks a working agent died when its pane is collapsed**<br>• Readiness reads only the pane capture; a squeezed pane stays blank and the agent is killed at the startup timeout | [`shuttle-ready-blank-pane`](design-shuttle-ready-blank-pane.md) | 1h | 0m | shuttle |
-| 3 | **Loom status pane keeps an old render under the new one**<br>• The checklist pane is not cleared on redraw, so two states stack | [`loom-checklist-stale-render`](design-loom-checklist-stale-render.md) | 8m | 8m | loom |
+| 3 | **Loom status pane keeps an old render under the new one**<br>• The checklist pane is not cleared on redraw, so two states stack | [`loom-checklist-stale-render`](design-loom-checklist-stale-render.md) | 9m | 9m | loom |
 
 ### Enhancements
 
@@ -89,7 +89,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) |  | 3m | webster |
-| 2 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) | 3h | 0m | orch, batten, shed, loom |
+| 2 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) | 3h | 1m | orch, batten, shed, loom |
 
 #### Normal priority
 
