@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-12 10:02 UTC; every age below is as of then.
+Rendered 2026-10-12 10:03 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -24,7 +24,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 3 | **Plan gate: receiver-typed delete-before-reference; plan review validates its fixes**<br>• Bare-name method matching floods plans with false blocking findings, and plan-review proposes fixes the gate refuses | [`plan-gate-fixes`](design-plan-gate-fixes.md) | loom | Webster-Burler-Review |  |  | loom, quarry, stencil |
+| 3 | **Plan gate: receiver-typed delete-before-reference; plan review validates its fixes**<br>• Bare-name method matching floods plans with false blocking findings, and plan-review proposes fixes the gate refuses | [`plan-gate-fixes`](design-plan-gate-fixes.md) | loom | Webster-Burler-Fix |  |  | loom, quarry, stencil |
 
 ### Ready
 
@@ -40,7 +40,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Alignment agent in loom checks a run against the board and runs in flight**<br>• A cold-start agent at parent review and PR-Gate reads the board and in-flight runs records and checks alignment, waking the orch only on an overlap. | [`alignment-agent`](design-alignment-agent.md) | loom | `merge-review` |  | 52m | orch, loom |
+| 1 | **Alignment agent in loom checks a run against the board and runs in flight**<br>• A cold-start agent at parent review and PR-Gate reads the board and in-flight runs records and checks alignment, waking the orch only on an overlap. | [`alignment-agent`](design-alignment-agent.md) | loom | `merge-review` |  | 53m | orch, loom |
 
 ## Notes
 
@@ -100,7 +100,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) |  |  | webster |
-| 2 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) |  | 48m | orch, batten |
+| 2 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) |  | 49m | orch, batten |
 
 #### Normal priority
 
