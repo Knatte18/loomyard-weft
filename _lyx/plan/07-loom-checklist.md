@@ -28,7 +28,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/statuspane#FormatMinutes`
+- `internal/statuspane#FormatMinutes`
 
 **Intent:**
 Build D7: the pair's `loom-status` strand becomes the gate checklist, a top content strand at a quarter share, on both child drivers.

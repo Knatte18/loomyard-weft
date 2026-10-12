@@ -1,17 +1,17 @@
 # Card 1 — render-size-vocabulary
 
 **Create:**
-- `plan:internal/reedengine/render#AnchorTop` -> `const AnchorTop Anchor = "top"`
-- `plan:internal/reedengine/render#SizeKind` -> `type SizeKind string`
-- `plan:internal/reedengine/render#SizePositional` -> `const SizePositional SizeKind = ""`
-- `plan:internal/reedengine/render#SizeContent` -> `const SizeContent SizeKind = "content"`
-- `plan:internal/reedengine/render#SizeSharing` -> `const SizeSharing SizeKind = "sharing"`
-- `plan:internal/reedengine/render#Size` -> `type Size struct`
-- `plan:internal/reedengine/render#ValidateDisplay` -> `func ValidateDisplay(d Display) error`
-- `plan:internal/reedengine/render#cellRole` -> `type cellRole int`
-- `plan:internal/reedengine/render#roleCollapsed` -> `const roleCollapsed cellRole = iota`
-- `plan:internal/reedengine/render#roleContent` -> `const roleContent cellRole = 1`
-- `plan:internal/reedengine/render#roleExpanding` -> `const roleExpanding cellRole = 2`
+- `internal/reedengine/render#AnchorTop`
+- `internal/reedengine/render#SizeKind`
+- `internal/reedengine/render#SizePositional`
+- `internal/reedengine/render#SizeContent`
+- `internal/reedengine/render#SizeSharing`
+- `internal/reedengine/render#Size`
+- `internal/reedengine/render#ValidateDisplay`
+- `internal/reedengine/render#cellRole`
+- `internal/reedengine/render#roleCollapsed`
+- `internal/reedengine/render#roleContent`
+- `internal/reedengine/render#roleExpanding`
 
 **Edit:**
 - `internal/reedengine/render#Anchor`

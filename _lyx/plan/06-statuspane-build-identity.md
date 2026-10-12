@@ -1,13 +1,13 @@
 # Card 6 — statuspane-build-identity
 
 **Create:**
-- `plan:internal/statuspane#BuildIdentity` -> `type BuildIdentity struct`
-- `plan:internal/statuspane#IdentityOf` -> `func IdentityOf(path string) (BuildIdentity, error)`
-- `plan:internal/statuspane#CurrentBuild` -> `func CurrentBuild() (BuildIdentity, error)`
-- `plan:internal/statuspane#Sidecar` -> `type Sidecar struct`
-- `plan:internal/statuspane#ReadSidecar` -> `func ReadSidecar(path string) *Sidecar`
-- `plan:internal/statuspane#WriteSidecar` -> `func WriteSidecar(path, guid string, build BuildIdentity) error`
-- `plan:internal/statuspane#StrandCurrent` -> `func StrandCurrent(live bool, guid string, sidecar *Sidecar, build BuildIdentity) bool`
+- `internal/statuspane#BuildIdentity`
+- `internal/statuspane#IdentityOf`
+- `internal/statuspane#CurrentBuild`
+- `internal/statuspane#Sidecar`
+- `internal/statuspane#ReadSidecar`
+- `internal/statuspane#WriteSidecar`
+- `internal/statuspane#StrandCurrent`
 - `internal/statuspane/build_test.go`
 
 **Delete:**

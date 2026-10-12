@@ -1,17 +1,17 @@
 {
   "runGuid": "e07e1e774738b2cef2c991ef0f96e8ac",
-  "planFingerprint": "731229a21f6fcaa9b949b446c4aed2a34aed1761576f3a0c0a22d39746acddac",
+  "planFingerprint": "8a870587a4286b5be7bcb0d2f97daa3a011db9a61a6e84fdbd81ee01a42f6423",
   "planFileHashes": {
     "00-overview.md": "92202a2cbc85ae39c8a7c3bfc63e2187fec5966b490d232bfbf09a3d41c24fd0",
-    "01-render-size-vocabulary.md": "6f852b8177c25e4942635ba1d0aa32e553a8c1cfd2156c09c4eca2a4f7b59ec2",
-    "02-reed-content-strands.md": "915022041dc4f8d2768f8dcd99a6d76ab92b2bde8d9b77d4a94330227627001f",
-    "03-reed-content-rows-op.md": "55916db4c1ad85ae7b4beed17e1a58a9b38bb07ec6469f180543e34b6551bd3a",
-    "04-reed-selvage-cycle.md": "eab3a2df7f9ce272c33a882968cfef5a13c1f1d2cc19d505529233040a034ebd",
-    "05-statuspane-pane.md": "6c284ca643d9f26453e1d0bbee5bf58a3d1fe6cbf106adf9e1aa9f7a5b39fd59",
-    "06-statuspane-build-identity.md": "e05bbb6efa20e4c4c55d3f079d4d1af90d8d6ce2853f7c4c09b4f8fb925a0352",
-    "07-loom-checklist.md": "11ca08807e009efaa9dcd3d138bc8a02e4c3fac24e54c305b85130e35a490964",
+    "01-render-size-vocabulary.md": "3c6ab3bebfc1621f8717a31767cd9ea63241c16ae2a115d7dcf0cfc77738ed52",
+    "02-reed-content-strands.md": "e0e401588eae9e7c56a7455c4c121df23b9b77c20c170e8c9a0acf2ff4980c59",
+    "03-reed-content-rows-op.md": "378e57ce51f9c7680c40716135d9798eadeb2048f3a575332c64fe84e383725d",
+    "04-reed-selvage-cycle.md": "ecbfc3f27d6cf08e6dd1f8c4b26b4f6a3d4a415f2b8d84657f7f7ed514ff6ba4",
+    "05-statuspane-pane.md": "d54dd97bb272c9ce8103d010ade1627692f3ede784fcdbdeb814dbd4caa2a0fc",
+    "06-statuspane-build-identity.md": "c544d9c0b722bb7e25abd62199f7b015506f96065d17e6dd9653fab90cd9dbc6",
+    "07-loom-checklist.md": "749908cf93849072c2acf576fb13539e3a0a0da4f6c24bcadf80f7f424dc5c60",
     "08-batten-notice-log.md": "f072452936a25165308513d5a872771fe59e62ac009fd60940818e10df41aa6c",
-    "09-batten-overview.md": "c91883b0e22cee4e56fae50d129150076fc4d2ac8611cb212dd950d662ba2667",
+    "09-batten-overview.md": "45edc6003db1d7c1d0d438b37d960f0db2939dce5742d4d471b5f520ad7761c1",
     "10-orch-runs-strand.md": "ac9dc610d9d378b84b056b9f33ffc2279c0c2464f8feebb177418ae585888399",
     "11-seat-sharing.md": "df4b4b2a7b8e0cc9230df37753350fcaf75859021933bb278e656dac1ab5f51a",
     "12-run-window-close.md": "b370faadb6c70bbe834ca72825f0ab400f0d5a6c20a55cad22344d348ca8b8cb"
@@ -272,7 +272,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "63b730dbfb4ffb968d127be96e00179f",
   "masterSessionId": "aed52dbd-eeed-449f-8613-1e669e8caaf9",
   "batches": {
@@ -287,19 +287,40 @@
         "06-statuspane-build-identity"
       ],
       "cardHashes": {
-        "01-render-size-vocabulary": "6f852b8177c25e4942635ba1d0aa32e553a8c1cfd2156c09c4eca2a4f7b59ec2",
-        "02-reed-content-strands": "915022041dc4f8d2768f8dcd99a6d76ab92b2bde8d9b77d4a94330227627001f",
-        "03-reed-content-rows-op": "55916db4c1ad85ae7b4beed17e1a58a9b38bb07ec6469f180543e34b6551bd3a",
-        "04-reed-selvage-cycle": "eab3a2df7f9ce272c33a882968cfef5a13c1f1d2cc19d505529233040a034ebd",
-        "05-statuspane-pane": "6c284ca643d9f26453e1d0bbee5bf58a3d1fe6cbf106adf9e1aa9f7a5b39fd59",
-        "06-statuspane-build-identity": "e05bbb6efa20e4c4c55d3f079d4d1af90d8d6ce2853f7c4c09b4f8fb925a0352"
+        "01-render-size-vocabulary": "3c6ab3bebfc1621f8717a31767cd9ea63241c16ae2a115d7dcf0cfc77738ed52",
+        "02-reed-content-strands": "e0e401588eae9e7c56a7455c4c121df23b9b77c20c170e8c9a0acf2ff4980c59",
+        "03-reed-content-rows-op": "378e57ce51f9c7680c40716135d9798eadeb2048f3a575332c64fe84e383725d",
+        "04-reed-selvage-cycle": "ecbfc3f27d6cf08e6dd1f8c4b26b4f6a3d4a415f2b8d84657f7f7ed514ff6ba4",
+        "05-statuspane-pane": "d54dd97bb272c9ce8103d010ade1627692f3ede784fcdbdeb814dbd4caa2a0fc",
+        "06-statuspane-build-identity": "c544d9c0b722bb7e25abd62199f7b015506f96065d17e6dd9653fab90cd9dbc6"
       },
       "startSha": "bc9ee7a021410441e54ffbbbe0dc5b220deeb786",
       "kind": "fork",
       "spawnedAt": "2026-10-12T10:26:16Z",
       "sessionId": "aed52dbd-eeed-449f-8613-1e669e8caaf9",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-render-size-vocabulary",
+        "status": "done",
+        "head_sha": "4a31fd0f06004f5feb999751c6abaeba0b37e389",
+        "deviations": [
+          "internal/reedengine/attach_test.go",
+          "internal/reedengine/watchdog_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "4a31fd0f06004f5feb999751c6abaeba0b37e389"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-runs-overview/aed52dbd-eeed-449f-8613-1e669e8caaf9/subagents/agent-a09424441933e48c8.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-runs-overview/aed52dbd-eeed-449f-8613-1e669e8caaf9/subagents/agent-a09424441933e48c8.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-runs-overview/aed52dbd-eeed-449f-8613-1e669e8caaf9/subagents/agent-a09424441933e48c8.jsonl"
+  ]
 }

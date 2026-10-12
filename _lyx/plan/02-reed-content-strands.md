@@ -1,8 +1,8 @@
 # Card 2 — reed-content-strands
 
 **Create:**
-- `plan:internal/reedengine#validateDisplay` -> `func validateDisplay(display render.Display) error`
-- `plan:internal/reedengine#paneSplit` -> `type paneSplit struct`
+- `internal/reedengine#validateDisplay`
+- `internal/reedengine#paneSplit`
 
 **Delete:**
 - `internal/reedengine#validateAnchor`

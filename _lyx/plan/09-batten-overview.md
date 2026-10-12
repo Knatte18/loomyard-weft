@@ -18,7 +18,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/statuspane#FormatMinutes`
+- `internal/statuspane#FormatMinutes`
 
 **Intent:**
 Build D2's runs overview as `lyx batten overview`, a hidden pane verb (audience internal, a cobra child of `batten`, a `Short`, JSON errors per `PATTERN-cli-cobra`) in `overview.go`.

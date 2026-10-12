@@ -1,10 +1,10 @@
 # Card 4 — reed-selvage-cycle
 
 **Create:**
-- `plan:internal/reedengine#consolePaneOption` -> `const consolePaneOption = "@lyx_console"`
-- `plan:internal/reedengine#Engine.markSelvagePaneLocked` -> `func (e *Engine) markSelvagePaneLocked(st *ReedState)`
-- `plan:internal/reedengine#TestBindings_AltZTogglesStrandAndSelvageZoomInTheStrandsWindowOnly` -> `func TestBindings_AltZTogglesStrandAndSelvageZoomInTheStrandsWindowOnly(t *testing.T)`
-- `plan:internal/reedengine#TestBindings_AltUpDownCycleStrandPanesAndSelvageWrappingAndKeepingTheZoom` -> `func TestBindings_AltUpDownCycleStrandPanesAndSelvageWrappingAndKeepingTheZoom(t *testing.T)`
+- `internal/reedengine#consolePaneOption`
+- `internal/reedengine#Engine.markSelvagePaneLocked`
+- `internal/reedengine#TestBindings_AltZTogglesStrandAndSelvageZoomInTheStrandsWindowOnly`
+- `internal/reedengine#TestBindings_AltUpDownCycleStrandPanesAndSelvageWrappingAndKeepingTheZoom`
 
 **Delete:**
 - `internal/reedengine#TestBindings_AltZTogglesAStrandsZoomAndLeavesSelvageAndOtherWindowsAlone`

@@ -2,17 +2,17 @@
 
 **Create:**
 - `internal/statuspane/doc.go`
-- `plan:internal/statuspane#Frame` -> `type Frame struct`
-- `plan:internal/statuspane#Pane` -> `type Pane struct`
-- `plan:internal/statuspane#Pane.Run` -> `func (p Pane) Run(ctx context.Context, poll func() Frame)`
-- `plan:internal/statuspane#TerminalSize` -> `func TerminalSize(f *os.File) func() (cols, rows int, err error)`
-- `plan:internal/statuspane#ReportFromEnv` -> `func ReportFromEnv(getenv func(string) string, set func(name, paneID string, rows int) error) func(rows int) error`
-- `plan:internal/statuspane#StatusCache` -> `type StatusCache struct`
-- `plan:internal/statuspane#NewStatusCache` -> `func NewStatusCache() *StatusCache`
-- `plan:internal/statuspane#StatusPoll` -> `type StatusPoll struct`
-- `plan:internal/statuspane#StatusCache.Poll` -> `func (c *StatusCache) Poll(path string) StatusPoll`
-- `plan:internal/statuspane#FormatMinutes` -> `func FormatMinutes(d time.Duration) string`
-- `plan:internal/statuspane#TestFormatMinutes` -> `func TestFormatMinutes(t *testing.T)`
+- `internal/statuspane#Frame`
+- `internal/statuspane#Pane`
+- `internal/statuspane#Pane.Run`
+- `internal/statuspane#TerminalSize`
+- `internal/statuspane#ReportFromEnv`
+- `internal/statuspane#StatusCache`
+- `internal/statuspane#NewStatusCache`
+- `internal/statuspane#StatusPoll`
+- `internal/statuspane#StatusCache.Poll`
+- `internal/statuspane#FormatMinutes`
+- `internal/statuspane#TestFormatMinutes`
 - `internal/statuspane/pane_test.go`
 - `internal/statuspane/cache_test.go`
 - `internal/statuspane/testmain_test.go`
