@@ -1,6 +1,6 @@
 # Paused runs in the overview, hold-notice end, chunked paste, operator shortcuts
 
-`operator-followups` · Task · enhancement, feature, reed, shuttle, batten, orch · running · Merge-In
+`operator-followups` · Task · enhancement, feature, reed, shuttle, batten, orch · running · Merge-Bouncer
 
 Four small follow-ups, bundled as one task (operator, 2026-10-12).
 
