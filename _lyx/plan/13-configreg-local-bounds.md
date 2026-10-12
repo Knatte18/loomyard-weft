@@ -1,8 +1,8 @@
 # Card 13 — configreg local bounds
 
 **Create:**
-- `plan:internal/configreg#TestModules_EveryTemplateKeyClassified` -> `func TestModules_EveryTemplateKeyClassified(t *testing.T)`
-- `plan:internal/configreg#TestModules_LocalLayerRefusals` -> `func TestModules_LocalLayerRefusals(t *testing.T)`
+- `internal/configreg#TestModules_EveryTemplateKeyClassified`
+- `internal/configreg#TestModules_LocalLayerRefusals`
 - `pattern/PATTERN-config-layers.md`
 
 **Edit:**

@@ -1,0 +1,8 @@
+status: OK
+head_sha: 349ac3128e671ca72a7912814d1618f41ca601eb
+deviations:
+  - internal/hubreconcile/hubreconcile.go
+  - internal/configengine/config.go
+  - internal/configengine/layers.go
+  - internal/loomcli/wiring_test.go
+  - internal/configcli/configcli_integration_test.go

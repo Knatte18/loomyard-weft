@@ -1,11 +1,11 @@
 # Card 14 — configreg run settings
 
 **Create:**
-- `plan:internal/configreg#RunSettingsError` -> `type RunSettingsError struct`
-- `plan:internal/configreg#RunSettingsError.Error` -> `func (e *RunSettingsError) Error() string`
-- `plan:internal/configreg#RunSettingsError.Unwrap` -> `func (e *RunSettingsError) Unwrap() error`
-- `plan:internal/configreg#PrepareRunSettings` -> `func PrepareRunSettings(settings map[string]any) (map[string][]byte, error)`
-- `plan:internal/configreg#TestPrepareRunSettings` -> `func TestPrepareRunSettings(t *testing.T)`
+- `internal/configreg#RunSettingsError`
+- `internal/configreg#RunSettingsError.Error`
+- `internal/configreg#RunSettingsError.Unwrap`
+- `internal/configreg#PrepareRunSettings`
+- `internal/configreg#TestPrepareRunSettings`
 
 **Edit:**
 - `cmd/lyx/testdata/test-budget.yaml`

@@ -19,7 +19,7 @@
 - `internal/yamlengine#Merge`
 - `internal/yamlengine#LeafPaths`
 - `internal/yamlengine#AnnotateLeaves`
-- `plan:internal/configcli#configDirs.layerFile`
+- `internal/configcli#configDirs.layerFile`
 
 **Intent:**
 Add D7's `--resolved`: `lyx config <module> --resolved` prints the merged result each leaf annotated with the layer it came from, `template`, `default`, `worktree` or `local`.

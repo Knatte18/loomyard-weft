@@ -1,10 +1,10 @@
 # Card 16 — sparse migration
 
 **Create:**
-- `plan:internal/configengine#SparseMarker` -> `func SparseMarker(baseDir string) string`
-- `plan:internal/configengine#SparseMarkerRel` -> `func SparseMarkerRel() string`
-- `plan:internal/configengine#BelowLayer` -> `func BelowLayer(dirs Dirs, spec Spec, layer Layer) ([]byte, error)`
-- `plan:internal/configsync#TestReconcileAll_MigratesToSparse` -> `func TestReconcileAll_MigratesToSparse(t *testing.T)`
+- `internal/configengine#SparseMarker`
+- `internal/configengine#SparseMarkerRel`
+- `internal/configengine#BelowLayer`
+- `internal/configsync#TestReconcileAll_MigratesToSparse`
 
 **Edit:**
 - `internal/configengine_test#TestConfigPaths`
@@ -18,7 +18,7 @@
 - `internal/hubforge/doc.go`
 - `internal/fabriccli#CloneAndWire`
 - `internal/fabriccli_test#TestRunCLI_CleanHubScenario`
-- `plan:internal/configsync#Options`
+- `internal/configsync#Options`
 - `internal/configsync#Result`
 - `internal/configsync#ReconcileAll`
 - `internal/hubreconcile#reconcileWorktree`

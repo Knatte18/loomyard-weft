@@ -1,8 +1,8 @@
 # Card 17 — config CLI layers
 
 **Create:**
-- `plan:internal/configcli#configDirs.layerFile` -> `func (d configDirs) layerFile(module configreg.Module) (string, configengine.Layer, error)`
-- `plan:internal/configcli#TestDispatchLayers` -> `func TestDispatchLayers(t *testing.T)`
+- `internal/configcli#configDirs.layerFile`
+- `internal/configcli#TestDispatchLayers`
 
 **Edit:**
 - `internal/configengine#Set` -> `func Set(dirs Dirs, spec Spec, layer Layer, pairs []yamlengine.KV) ([]string, error)`

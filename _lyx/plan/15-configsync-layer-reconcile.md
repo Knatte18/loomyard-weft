@@ -1,9 +1,9 @@
 # Card 15 — configsync layer reconcile
 
 **Create:**
-- `plan:internal/configsync#Options` -> `type Options struct`
-- `plan:internal/configsync#HubWideOptions` -> `type HubWideOptions struct`
-- `plan:internal/configsync#TestReconcileAll_SparseLayers` -> `func TestReconcileAll_SparseLayers(t *testing.T)`
+- `internal/configsync#Options`
+- `internal/configsync#HubWideOptions`
+- `internal/configsync#TestReconcileAll_SparseLayers`
 
 **Edit:**
 - `internal/configsync#Result`

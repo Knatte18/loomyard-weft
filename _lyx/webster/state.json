@@ -1,6 +1,6 @@
 {
   "runGuid": "fe1e9a51e439aec540cf18ab74a6fa11",
-  "planFingerprint": "adaf4e101c1f99fc7f9f3d2322926f53e321fae2cfb3d92a27348d52375ad430",
+  "planFingerprint": "4e82125d72bbaf22b08692391e86d273277339abe36188e22c3549bb952e9ba6",
   "planFileHashes": {
     "00-overview.md": "7d1fdddb0ee17c7b5d9f4396c77c62028b6cf0832bfb9dfca52cd8505a89d327",
     "01-yamlengine-layer-ops.md": "4fb0556b34db762e83973d8ef7505d9ded76562ae979994d87ae5b313b2355e3",
@@ -15,15 +15,15 @@
     "10-darn-landing-layered-load.md": "554e1bc335d2459ab6168b2edeb4983f8624e2b21dbc2e32a1a555c24ce221b9",
     "11-gate-board-layered-load.md": "37f967bbf070f8d4621428888ead4e4d2f6f5acde70654792f68f32cd8b14d5e",
     "12-fabric-layered-load.md": "4ff010fd0ab0384e56e3b19d6cd7b66e08a93e20b31bef1bbff7bac18a06e95d",
-    "13-configreg-local-bounds.md": "caa4633d1769e54a84768fe2cad7c3832e15d5ae09c52481c10d8c81351687a7",
-    "14-configreg-run-settings.md": "1b028db20a2f3deedc977ef635324ebbcfd7719f0ebde34674f3059ce5cf09b5",
-    "15-configsync-layer-reconcile.md": "2c8acf7c92423d64e897ad8879b372a98804ff586c8f99c4c009d4ed51af88c8",
-    "16-sparse-migration.md": "bb4189a7287cd54a33c1182fd6ea3088c1587f10ad49da26f3b581c47b972c2a",
-    "17-config-cli-layers.md": "d532386ec74281543a7c490faea6f3f4b822e65e8bb6ce9a057fc381b7683882",
-    "18-config-resolved-provenance.md": "d56e98f1482a546fa4ce6e7315c0810e73007dcb08aabd6a4e12d0b7cfd7cc64",
+    "13-configreg-local-bounds.md": "e2959cd38736c81f2918929a97be70912b1b51e0c64d71a03ac50b9d2d1481a6",
+    "14-configreg-run-settings.md": "e7a401e63c7ceabc889acff20a6d54bbff6fb480903b0b6de0b0799f26b0ab81",
+    "15-configsync-layer-reconcile.md": "51e54540ae62cd97c9d2ec07967f7b89aa50279963f6c57cb8d3f96aca6936eb",
+    "16-sparse-migration.md": "1b81d6b57e76f45da135bd82129cc65cb8b5d0d726f5866da721ce38285d268b",
+    "17-config-cli-layers.md": "d82f7a89422cdb9c51d3a1fda2ebef8d70ae404fa59b6c9d5f0167667efa4d72",
+    "18-config-resolved-provenance.md": "9d9f546e44a1d43dac95bbb6985a6e24ea09d04e29db41438b71a26ff048d71c",
     "19-agentname-task-slug.md": "1c579226623dd82c7c0a03193b8e66b0e8334343a3826fc046ff7ee956ca9cb1",
-    "20-board-run-settings.md": "eca28f3d5765663aa498b38ea1e5f6e1dcc3659c8333ebc5482a7b62a9fe6d7c",
-    "21-seed-child-run-settings.md": "3309e8fc034701e562d17ea15ced9f6feeb32faaa9e37931a736e7efa56c1a10",
+    "20-board-run-settings.md": "4c9e435a1bf02dee345352511f1b9bd006f57acb099ef498cea93d31703cfdd2",
+    "21-seed-child-run-settings.md": "9dc0b0dbaedc51c10f230731bc50c6ac3c2378f707cad00e333a6edd0cac053e",
     "22-orch-run-settings-rule.md": "1b63b42692586e807ffa476fc84a1d3972157aec12fa8e130b44837af1e785d2",
     "23-overview-config-layers.md": "df7a88c69e4790ab6f0ca62efa49e8e76670c1ff666b430c18362bb349f4298a"
   },
@@ -821,7 +821,7 @@
       }
     }
   ],
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "993b22c04ce849f45f96709a28dd49ef",
   "masterSessionId": "7361d6f2-17ce-4121-9688-8cf5be50f44c",
   "batches": {
@@ -876,18 +876,39 @@
         "17-config-cli-layers"
       ],
       "cardHashes": {
-        "13-configreg-local-bounds": "caa4633d1769e54a84768fe2cad7c3832e15d5ae09c52481c10d8c81351687a7",
-        "14-configreg-run-settings": "1b028db20a2f3deedc977ef635324ebbcfd7719f0ebde34674f3059ce5cf09b5",
-        "15-configsync-layer-reconcile": "2c8acf7c92423d64e897ad8879b372a98804ff586c8f99c4c009d4ed51af88c8",
-        "16-sparse-migration": "bb4189a7287cd54a33c1182fd6ea3088c1587f10ad49da26f3b581c47b972c2a",
-        "17-config-cli-layers": "d532386ec74281543a7c490faea6f3f4b822e65e8bb6ce9a057fc381b7683882"
+        "13-configreg-local-bounds": "e2959cd38736c81f2918929a97be70912b1b51e0c64d71a03ac50b9d2d1481a6",
+        "14-configreg-run-settings": "e7a401e63c7ceabc889acff20a6d54bbff6fb480903b0b6de0b0799f26b0ab81",
+        "15-configsync-layer-reconcile": "51e54540ae62cd97c9d2ec07967f7b89aa50279963f6c57cb8d3f96aca6936eb",
+        "16-sparse-migration": "1b81d6b57e76f45da135bd82129cc65cb8b5d0d726f5866da721ce38285d268b",
+        "17-config-cli-layers": "d82f7a89422cdb9c51d3a1fda2ebef8d70ae404fa59b6c9d5f0167667efa4d72"
       },
       "startSha": "ec2b53e920b144cdf8453572673d78c8c46d96b8",
       "kind": "fork",
       "spawnedAt": "2026-10-12T08:32:35Z",
       "sessionId": "7361d6f2-17ce-4121-9688-8cf5be50f44c",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-configreg-local-bounds",
+        "status": "done",
+        "head_sha": "349ac3128e671ca72a7912814d1618f41ca601eb",
+        "deviations": [
+          "internal/hubreconcile/hubreconcile.go",
+          "internal/configengine/config.go",
+          "internal/configengine/layers.go",
+          "internal/loomcli/wiring_test.go",
+          "internal/configcli/configcli_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "349ac3128e671ca72a7912814d1618f41ca601eb"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-a2479587168e279f2.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-a2479587168e279f2.jsonl"
+      ]
     },
     "4": {
       "slug": "reed-layered-load",
@@ -1028,6 +1049,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-aa4e977eb91ec020b.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-a2a6781696362439c.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-a933aeb0661013dc3.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-a3406e1056f5700f2.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-a3406e1056f5700f2.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-config-layers-run-settings/7361d6f2-17ce-4121-9688-8cf5be50f44c/subagents/agent-a2479587168e279f2.jsonl"
   ]
 }

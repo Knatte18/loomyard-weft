@@ -24,7 +24,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/configreg#PrepareRunSettings`
+- `internal/configreg#PrepareRunSettings`
 - `plan:internal/agentname#TaskSlug`
 
 **Intent:**

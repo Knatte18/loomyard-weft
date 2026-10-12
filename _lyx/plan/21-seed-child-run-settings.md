@@ -17,7 +17,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/configreg#PrepareRunSettings`
+- `internal/configreg#PrepareRunSettings`
 - `internal/configengine#LocalFile`
 - `internal/fabricengine#ConfigDirs`
 
