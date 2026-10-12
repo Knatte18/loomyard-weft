@@ -9,7 +9,7 @@ Autonomous run: no operator answered, so each turn is the writer's own explorati
 3. Liveness: pure age would delete a long gate run's directory; picked an OS file lock plus a creation grace (D2).
 4. Scan shape: banning bare system-temp creation outright instead of matching each site with a cleanup (D6).
 5. `lyx cleanup` segments: found `lyx board prune`, `lyx fabric prune`, `lyx fabric cleanup`, logger's exit sweep. Fabric's verbs hold no lock against `fabric add` (no lock in `prune.go`/`cleanup.go`), so they stay out (D8).
-6. `.lyx` disposability: prime holds `.lyx/shed/<slug>` mirrors (108), `.lyx/batten/*.log`, `.lyx/orch/handoffs` (44), logs (already retention-swept), one shuttle dir. Picked batten mirror/log, orch handoffs beyond newest, logs via existing sweep; everything else left (D9–D11).
+6. `.lyx` disposability: prime holds `.lyx/shed/<slug>` mirrors (108), `.lyx/batten/*.log`, `.lyx/orch/handoffs` (44), logs (already retention-swept), one shuttle dir. Picked batten mirror/log, orch handoffs other than `LastHandoff`'s, logs via existing sweep; everything else left (D9–D11).
 7. `.scratch/` has no owning module; the cleanup module owns that segment with a 14-day age (D11).
 8. Lens review: all six forks (premises, goal-scope, board-fit, pattern-fit, scenarios, leanness) returned. Findings, duplicates merged:
    - board-fit + scenarios BLOCKING, nested child sweep deletes the parent's lock-less fixtures: fixed; D3 puts a child beside its parent, D2 sweeps only prefixed run directories.
@@ -62,9 +62,10 @@ _No rounds yet._
 
 - Q1 Temp root liveness — auto-pick: OS file lock plus 10-minute creation grace (D1, D2).
 - Q2 Where once-per-binary fixtures are removed — auto-pick: with the process run directory, by `tmuxkit.Main` or an explicit `TestMain` removal (D4).
-- Q3 Scan rule — auto-pick: ban bare system-temp creation outside the temp package, empty allowlist (D6).
+- Q3 Scan rule — auto-pick: ban bare system-temp creation outside the temp package; allowlist entries only for sites that cannot move, each naming its obstacle (D6).
+- Q3b Tmux-isolation scan allowlist — auto-pick: an entry names one package and why it cannot call `tmuxkit.Main`, its `TestMain` removes the process run directory, and it lets through only that package's tmux isolation and its `t.TempDir` trees after a kill (D4).
 - Q4 Does `lyx cleanup` run fabric prune/cleanup — auto-pick: no (D8).
-- Q5 Which `.lyx` paths are disposable — auto-pick: batten's run scratch contents (lock file kept) of a cleaned or aged orphan slug, orch handoffs beyond the newest, logs through the existing retention sweep (D9–D11).
+- Q5 Which `.lyx` paths are disposable — auto-pick: batten's run scratch contents (every lock file kept) of a cleaned or aged orphan slug, orch handoffs other than the one `State.LastHandoff` names, logs through the existing retention sweep (D9–D11).
 - Q6 `.scratch/` age — auto-pick: 14 days, matching logger's default retention.
 - Q7 Where `lyx cleanup` runs — auto-pick: prime only, as batten does.
 - Q8 Legacy `/tmp` leftovers — auto-pick: not swept; removed once by hand.
