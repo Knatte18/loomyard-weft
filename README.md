@@ -13,23 +13,25 @@ Concrete and claimable; only a task can run.
 
 Held by a run; its scope is locked until the run ends.
 
+#### High priority
+
+| # | Task | Slug | Recipe | At | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Judge settles the review budget cap; arbiter only for stuck runs**<br>• At a spent review budget the judge tags findings mechanical or design-wrong and continues or accepts itself, instead of spawning the arbiter. | [`judge-cap-call`](design-judge-cap-call.md) | loom | Worktree-Create | 3h | 0m | loom, burler |
+
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **reed: a strand in its own tmux window**<br>• Three related ideas for reed beyond one pane per strand and one window per worktree | [`reed-multi-window`](design-reed-multi-window.md) | loom | Plan-Bouncer | 8d | 3h | reed, shuttle |
-| 2 | **lyx pause leaves idle drivers in the rewind picker**<br>• The pause Esc opened Claude Code rewind picker in both idle run drivers; resume then types into the picker. | [`pause-esc-rewind`](design-pause-esc-rewind.md) | loom | Plan-Burler-Fix | 2h | 2h | reed, shuttle |
-| 3 | **Go driver per task, with the tackler (cold assistant) and the arbiter behind it**<br>• Go steps the run and settles mechanical stops; a cheap assistant spawns only at stops no rule settles and may escalate to the arbiter; LLM driver stays as an option. | [`go-driver-assistant`](design-go-driver-assistant.md) | loom | Discussion-Write | 18m | 7m | loom, shed |
+| 2 | **reed: a strand in its own tmux window**<br>• Three related ideas for reed beyond one pane per strand and one window per worktree | [`reed-multi-window`](design-reed-multi-window.md) | loom | Plan-Bouncer | 8d | 3h | reed, shuttle |
+| 3 | **lyx pause leaves idle drivers in the rewind picker**<br>• The pause Esc opened Claude Code rewind picker in both idle run drivers; resume then types into the picker. | [`pause-esc-rewind`](design-pause-esc-rewind.md) | loom | Plan-Burler-Fix | 2h | 2h | reed, shuttle |
+| 4 | **Go driver per task, with the tackler (cold assistant) and the arbiter behind it**<br>• Go steps the run and settles mechanical stops; a cheap assistant spawns only at stops no rule settles and may escalate to the arbiter; LLM driver stays as an option. | [`go-driver-assistant`](design-go-driver-assistant.md) | loom | Discussion-Write | 18m | 7m | loom, shed |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### High priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Judge settles the review budget cap; arbiter only for stuck runs**<br>• At a spent review budget the judge tags findings mechanical or design-wrong and continues or accepts itself, instead of spawning the arbiter. | [`judge-cap-call`](design-judge-cap-call.md) | loom |  | 3h | 0m | loom, burler |
+_None._
 
 ### Layer A
 
