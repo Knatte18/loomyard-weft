@@ -12,9 +12,9 @@
 - `internal/gitkit/rundir_integration_test.go`
 
 **Uses:**
-- `plan:internal/lyxtemp#CreateTemp`
-- `plan:internal/lyxtemp#MkdirTemp`
-- `plan:internal/lyxtemp#ProcessRoot`
+- `internal/lyxtemp#CreateTemp`
+- `internal/lyxtemp#MkdirTemp`
+- `internal/lyxtemp#ProcessRoot`
 - `internal/testkit/tmuxkit#Main`
 
 **Intent:**

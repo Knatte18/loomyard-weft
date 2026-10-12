@@ -17,13 +17,13 @@
 - `internal/testkit/tmuxkit#kitBase`
 
 **Create:**
-- `plan:internal/testkit/tmuxkit#setTempEnv` -> `func setTempEnv(dir string)`
-- `plan:internal/testkit/tmuxkit#TestAfterRun_ReportsFailedRemovalKeepingTheCode` -> `func TestAfterRun_ReportsFailedRemovalKeepingTheCode(t *testing.T)`
+- `internal/testkit/tmuxkit#setTempEnv`
+- `internal/testkit/tmuxkit#TestAfterRun_ReportsFailedRemovalKeepingTheCode`
 
 **Uses:**
-- `plan:internal/lyxtemp#Dir`
-- `plan:internal/lyxtemp#MkdirTemp`
-- `plan:internal/lyxtemp#Remove`
+- `internal/lyxtemp#Dir`
+- `internal/lyxtemp#MkdirTemp`
+- `internal/lyxtemp#Remove`
 
 **Intent:**
 `tmuxkit.Main` uses the process run directory `lyxtemp.Dir()` as its private directory, the `TMPDIR`/`TMUX_TMPDIR` target, instead of its own `os.MkdirTemp(kitBase(), dirPrefix)`, and removes it after `m.Run` on every platform, Windows included (D4).

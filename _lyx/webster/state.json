@@ -1,14 +1,14 @@
 {
   "runGuid": "22ea0df5c129abd9d73f61b59d34fc82",
-  "planFingerprint": "a6951a57e30c17caf82c7561205b3dcb034ed42a27c8853b246001fd9f0a93ef",
+  "planFingerprint": "8e232b48e276cf67e4720802a6983a71beb3bd928be175b3ad6630d721c8a4e3",
   "planFileHashes": {
     "00-overview.md": "72147cc25afde0962f8e8edd488864775e9a755dbab99e2f1fc0bffc64d5fa76",
-    "01-lyxtemp-package.md": "dc20bd7d383c876394b901612df02b06abc30b2106f4c3317843ffbdda8a9a92",
-    "02-tmuxkit-run-directory.md": "8f7be9e12143087ccbde9f453e7c851c490b132c111ba534be0e4edba6cd5178",
-    "03-gitkit-hermetic-run-directory.md": "0a222bd3204c870e46dcc7c0ff70201ba7eac349ed0202384dc9abaad52985e5",
-    "04-test-kit-temp-sites.md": "5ddd3f66d4db87fc2c607ce5acdb2f734faed131b3d1b2e0411dc864ef311cec",
-    "05-gate-prebuild-run-directory.md": "2a32db51a33b069ddf616781aa6e336d5652fb3346bd67953c8f807b533e959e",
-    "06-testtiming-run-directory.md": "8bd8f698e75658f62d7e1c97083c910a8e75dcf98953e41d41c79876edca79cb",
+    "01-lyxtemp-package.md": "27e51668098b68022d945e529ed1e9a90fc4d62ec5e7037d9fc9ae32ef0f0dcd",
+    "02-tmuxkit-run-directory.md": "fa9276afcff6b02aa5541e18701cd6244e0dee86c410deb7d5a957a9a51e2a9e",
+    "03-gitkit-hermetic-run-directory.md": "cb2cd4221504f36c3dc8fb2e3299f46b83a5a0a873fb9e020b4822fb8d7df56b",
+    "04-test-kit-temp-sites.md": "0ed60d92ecc740b3d28e7c83bd8c67a497691c7247dec7125bfa1ab6dbe22569",
+    "05-gate-prebuild-run-directory.md": "26c2d11b7b66ccf7815c34ad346077d3e4d49fcf8164a863f1fe6ba2de330afe",
+    "06-testtiming-run-directory.md": "e7ae1a2a6a6be5aeea4a94df8059e35da246c3a19eb147e763bed4ff62d1d202",
     "07-testmain-internal-a-l.md": "5005be8831518c919fae73c779fb562ab7e1285e4c70cfb69d1884b8fd3dbbb3",
     "08-testmain-internal-m-z.md": "47aedf7df44dc3436cec1a74b6bc3cc3def0f34c1550de98bf663b7f79b70335",
     "09-testmain-kits-tools-contracts.md": "d51f724d95f247bbdff567fe215cb8dc2acea5cd7b348e48ecff6aa75f689f1f",
@@ -22,7 +22,7 @@
     "17-batten-done-refusal.md": "25119cf92774a56b3e4bc13bb37e8d5bfa12de383d359d112d5177f5a6ea14e4",
     "18-orch-cleanup.md": "dd454a7d97b22570f704f6ecff51491f712430aa25b90e5c3045071ec7a86968",
     "19-cleanup-scratch-segment.md": "cf2406aa421a530a3ea20e6ecc6ef4a5824c9995caba781a6ccd00860c07a216",
-    "20-cleanup-verb.md": "a451d1d1c655f408a9335e0dd793e9a4dda61c68f04429c8072a5a8f2a07d1c7"
+    "20-cleanup-verb.md": "c206ccbd1ba7dd097a5006fe01a2a67d594d59ef740f2f993c9a96b5aa09c14e"
   },
   "planOverviewFrameHash": "8c53b83f7cb750d785936c6a9ce22e828d40e95220670da02f0c64f06490da25",
   "partition": [
@@ -620,7 +620,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "c1cb6ab2c3bcd58bf2f520882e5f5c75",
   "masterSessionId": "18d53add-ca9f-4785-b9e7-5c53e806b7e3",
   "batches": {
@@ -634,18 +634,43 @@
         "05-gate-prebuild-run-directory"
       ],
       "cardHashes": {
-        "01-lyxtemp-package": "dc20bd7d383c876394b901612df02b06abc30b2106f4c3317843ffbdda8a9a92",
-        "02-tmuxkit-run-directory": "8f7be9e12143087ccbde9f453e7c851c490b132c111ba534be0e4edba6cd5178",
-        "03-gitkit-hermetic-run-directory": "0a222bd3204c870e46dcc7c0ff70201ba7eac349ed0202384dc9abaad52985e5",
-        "04-test-kit-temp-sites": "5ddd3f66d4db87fc2c607ce5acdb2f734faed131b3d1b2e0411dc864ef311cec",
-        "05-gate-prebuild-run-directory": "2a32db51a33b069ddf616781aa6e336d5652fb3346bd67953c8f807b533e959e"
+        "01-lyxtemp-package": "27e51668098b68022d945e529ed1e9a90fc4d62ec5e7037d9fc9ae32ef0f0dcd",
+        "02-tmuxkit-run-directory": "fa9276afcff6b02aa5541e18701cd6244e0dee86c410deb7d5a957a9a51e2a9e",
+        "03-gitkit-hermetic-run-directory": "cb2cd4221504f36c3dc8fb2e3299f46b83a5a0a873fb9e020b4822fb8d7df56b",
+        "04-test-kit-temp-sites": "0ed60d92ecc740b3d28e7c83bd8c67a497691c7247dec7125bfa1ab6dbe22569",
+        "05-gate-prebuild-run-directory": "26c2d11b7b66ccf7815c34ad346077d3e4d49fcf8164a863f1fe6ba2de330afe"
       },
       "startSha": "414d8b713a9cb4a85bd49c3a8e9b733cfb38e7b5",
       "kind": "fork",
       "spawnedAt": "2026-10-12T08:04:10Z",
       "sessionId": "18d53add-ca9f-4785-b9e7-5c53e806b7e3",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-lyxtemp-package",
+        "status": "done",
+        "head_sha": "07949ed22d3f63a3d41f0cbc7fbe9cd6b20ba3c3",
+        "deviations": [
+          "internal/gitkit/leaf_enforcement_test.go",
+          "internal/gatecli/test_integration_test.go",
+          "pattern/PATTERN-leaf-packages.md",
+          "pattern/PATTERN-test-isolation.md",
+          "docs/overview.md",
+          "cmd/lyx/testdata/test-budget.yaml"
+        ]
+      },
+      "cardShas": [
+        "07949ed22d3f63a3d41f0cbc7fbe9cd6b20ba3c3"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tmp-cleanup/18d53add-ca9f-4785-b9e7-5c53e806b7e3/subagents/agent-a8df31cb92e70ff52.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tmp-cleanup/18d53add-ca9f-4785-b9e7-5c53e806b7e3/subagents/agent-a8df31cb92e70ff52.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-test-tmp-cleanup/18d53add-ca9f-4785-b9e7-5c53e806b7e3/subagents/agent-a8df31cb92e70ff52.jsonl"
+  ]
 }

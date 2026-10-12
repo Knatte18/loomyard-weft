@@ -12,7 +12,7 @@
 - `internal/reedengine#TestRemoveStaleSocket`
 
 **Uses:**
-- `plan:internal/lyxtemp#MkdirTemp`
+- `internal/lyxtemp#MkdirTemp`
 
 **Intent:**
 Move every remaining test-kit and test-file creation in the bare system temp directory into the process run directory, so it goes with the run directory and a killed binary's copy goes to the next start's sweep (D4: once-per-binary fixtures go with it).

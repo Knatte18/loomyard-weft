@@ -19,9 +19,9 @@
 - `plan:cmd/testtiming#TestCarriesMarker` -> `func TestCarriesMarker(t *testing.T)`
 
 **Uses:**
-- `plan:internal/lyxtemp#MkdirTemp`
-- `plan:internal/lyxtemp#Dir`
-- `plan:internal/lyxtemp#Remove`
+- `internal/lyxtemp#MkdirTemp`
+- `internal/lyxtemp#Dir`
+- `internal/lyxtemp#Remove`
 
 **Intent:**
 `cmd/testtiming`'s directories are created under the process run directory through `lyxtemp.MkdirTemp`, keeping their prefixes and their existing removal on normal exit (D5): the prebuilt-`lyx` directory in `prebuildLyx`, the coverage directory in `runRedundancy` and the per-package trace directory in `measurePackageResources`.

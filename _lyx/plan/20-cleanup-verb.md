@@ -29,8 +29,8 @@
 - `plan:internal/logger#SweepDir`
 - `plan:internal/logger#LogsDirAt`
 - `plan:internal/loggerconfig#LoadOrDefault`
-- `plan:internal/lyxtemp#ProcessRoot`
-- `plan:internal/lyxtemp#Root.Sweep`
+- `internal/lyxtemp#ProcessRoot`
+- `internal/lyxtemp#Root.Sweep`
 - `internal/battencli#RefuseUnlessPrime`
 - `internal/orchcli#PrimePaths`
 - `internal/boardengine#OpenHub`

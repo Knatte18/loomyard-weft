@@ -7,9 +7,9 @@
 - `cmd/lyx#main`
 
 **Uses:**
-- `plan:internal/lyxtemp#MkdirTemp`
-- `plan:internal/lyxtemp#Dir`
-- `plan:internal/lyxtemp#Remove`
+- `internal/lyxtemp#MkdirTemp`
+- `internal/lyxtemp#Dir`
+- `internal/lyxtemp#Remove`
 
 **Intent:**
 `lyx gate test`'s prebuilt-`lyx` directory is created under the process run directory through `lyxtemp.MkdirTemp("lyx-prebuilt-")` and keeps its existing cleanup, which removes it after go test ends (D5).

@@ -8,28 +8,28 @@
 - `internal/lyxtemp/root_windows.go`
 - `internal/lyxtemp/run.go`
 - `internal/lyxtemp/sweep.go`
-- `plan:internal/lyxtemp#Root` -> `type Root struct`
-- `plan:internal/lyxtemp#Root.Path` -> `func (r *Root) Path() string`
-- `plan:internal/lyxtemp#ProcessRoot` -> `func ProcessRoot() (*Root, error)`
-- `plan:internal/lyxtemp#openRoot` -> `func openRoot(path string, uid int, now func() time.Time) (*Root, error)`
-- `plan:internal/lyxtemp#resolveRootPath` -> `func resolveRootPath(tempDir string, uid int) string`
-- `plan:internal/lyxtemp#checkRoot` -> `func checkRoot(path string, uid int) error`
-- `plan:internal/lyxtemp#rootName` -> `func rootName(uid int) string`
-- `plan:internal/lyxtemp#runPrefix` -> `const runPrefix = "r"`
-- `plan:internal/lyxtemp#lockFileName` -> `const lockFileName = "run.lock"`
-- `plan:internal/lyxtemp#creationGrace` -> `const creationGrace = 10 * time.Minute`
-- `plan:internal/lyxtemp#run` -> `type run struct`
-- `plan:internal/lyxtemp#Root.newRun` -> `func (r *Root) newRun() (*run, error)`
-- `plan:internal/lyxtemp#run.remove` -> `func (u *run) remove() error`
-- `plan:internal/lyxtemp#SweepReport` -> `type SweepReport struct`
-- `plan:internal/lyxtemp#SweepFailure` -> `type SweepFailure struct`
-- `plan:internal/lyxtemp#Root.Sweep` -> `func (r *Root) Sweep(apply bool) SweepReport`
-- `plan:internal/lyxtemp#processMu` -> `var processMu sync.Mutex`
-- `plan:internal/lyxtemp#processRun` -> `var processRun *run`
-- `plan:internal/lyxtemp#Dir` -> `func Dir() (string, error)`
-- `plan:internal/lyxtemp#MkdirTemp` -> `func MkdirTemp(pattern string) (string, error)`
-- `plan:internal/lyxtemp#CreateTemp` -> `func CreateTemp(pattern string) (*os.File, error)`
-- `plan:internal/lyxtemp#Remove` -> `func Remove() error`
+- `internal/lyxtemp#Root`
+- `internal/lyxtemp#Root.Path`
+- `internal/lyxtemp#ProcessRoot`
+- `internal/lyxtemp#openRoot`
+- `internal/lyxtemp#resolveRootPath`
+- `internal/lyxtemp#checkRoot`
+- `internal/lyxtemp#rootName`
+- `internal/lyxtemp#runPrefix`
+- `internal/lyxtemp#lockFileName`
+- `internal/lyxtemp#creationGrace`
+- `internal/lyxtemp#run`
+- `internal/lyxtemp#Root.newRun`
+- `internal/lyxtemp#run.remove`
+- `internal/lyxtemp#SweepReport`
+- `internal/lyxtemp#SweepFailure`
+- `internal/lyxtemp#Root.Sweep`
+- `internal/lyxtemp#processMu`
+- `internal/lyxtemp#processRun`
+- `internal/lyxtemp#Dir`
+- `internal/lyxtemp#MkdirTemp`
+- `internal/lyxtemp#CreateTemp`
+- `internal/lyxtemp#Remove`
 - `internal/lyxtemp/root_test.go`
 - `internal/lyxtemp/sweep_test.go`
 - `internal/lyxtemp/run_test.go`

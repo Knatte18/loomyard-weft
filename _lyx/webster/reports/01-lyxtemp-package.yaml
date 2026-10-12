@@ -1,0 +1,9 @@
+status: OK
+head_sha: 07949ed22d3f63a3d41f0cbc7fbe9cd6b20ba3c3
+deviations:
+  - internal/gitkit/leaf_enforcement_test.go
+  - internal/gatecli/test_integration_test.go
+  - pattern/PATTERN-leaf-packages.md
+  - pattern/PATTERN-test-isolation.md
+  - docs/overview.md
+  - cmd/lyx/testdata/test-budget.yaml
