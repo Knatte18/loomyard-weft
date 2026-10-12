@@ -1,4 +1,4 @@
-# Runs overview pane under the orch
+# Runs overview pane above the orch
 
 `runs-overview` · Note · feature, reed, orch, batten
 
@@ -13,6 +13,15 @@ This replaces the 2026-10-05 choice of an own window for the overview.
 - The runs overview is its own pane directly under the orch, in the same window.
   It is as small as possible while still showing every run in flight and its shed state.
 - VIEW shows both panes; the `orch` strand button zooms the orch alone, so switching to an orch-only view is one key or click.
+
+## Layout revised (operator, 2026-10-12)
+
+This replaces the 2026-10-08 placement under the orch; the rest of that section stands.
+
+- The overview pane sits directly above the orch, in the prime's strand window, and VIEW shows both; it is a pane, not a window.
+- Its height is dynamic: one line per run in flight, growing and shrinking as runs start and land.
+- Each line names the run and the loom stage it is in.
+- The batten windows are gone from the prime's reed session, so today nothing shows every run at once.
 
 ## What the overview shows
 
