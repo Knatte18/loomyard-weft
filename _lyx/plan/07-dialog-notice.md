@@ -37,10 +37,11 @@ Every new member lives in a new file, `internal/shuttleengine/dialog.go`, whose 
 The loop's classification, outcomes, deadline and liveness check are unchanged, and the latch adds no wait of its own (`PATTERN-daemon-wakeups`) and finalizes nothing (`PATTERN-completion-signal`).
 The file header of `wait.go` gains one provider-neutral sentence on the latch beside the hold notice.
 
-`watchDialog` does nothing for an interactive run, a runner without a notifier, or an engine that lacks `SessionSignalParser` or `InputBoxReader`.
+`watchDialog` does nothing for an interactive run, a runner without a notifier, or an engine that lacks `SessionSignalParser` or `InputBoxReader`;
+the test's input for the last is `sessionFakeEngine`, which parses session signals and reads no input box, so without the guard its every read would show no box.
 `Spec.QuietHold` and `Spec.HoldDeferral` neither suppress nor defer it, since no peer can answer a dialog.
 Otherwise it calls `foldDialogAsks`, then, while the latch is set, captures the pane through reed and reads it with `readBox`:
-- a capture error or a pane too short to draw the box is a failed read, which changes nothing and is retried on a later tick;
+- a capture error or a pane too short to draw the box is a failed read, which changes nothing and is retried on a later tick; the test's input for the short pane is `readinessEngine` with `tooShort` set over a pane showing no caret;
 - a read showing an input box clears the latch at any age, so a later ask opens a new episode;
 - a read showing no input box, with the latch at least `permissionNoticeBound` old and its notice not yet sent, calls `notifyDialog`, which marks the notice sent when it returns true.
 After the notice, the reads go on each tick until one shows an input box.
@@ -71,6 +72,8 @@ Its rows pin:
 - a notified dialog answered (an input box) and then a second ask sends a second notice once the bound passes on the second ask;
 - a `HoldDeferral` run's pending held-turn-end notice is still sent when its deferral ends after a dialog notice was sent;
 - a failed capture sends nothing on that tick and the notice follows on a later tick that reads no box;
+- an ASK line run on `sessionFakeEngine`, which parses session signals but has no `InputBoxReader`, sends no notice with the clock past `permissionNoticeBound`;
+- an ASK line run on `readinessEngine` with `tooShort` set and a pane showing no caret sends no notice with the clock past `permissionNoticeBound`;
 - a further ask after the notice advances the persisted `DialogNotifiedOffset` past it;
 - a run whose record's `DialogNotifiedOffset` is before a pending ask, as a reattach finds it, sends the notice once, and one whose `DialogNotifiedOffset` is past every ask, two asks for one dialog included, sends none.
 `cmd/lyx/testdata/test-budget.yaml` raises `internal/shuttleengine` by one for it.
