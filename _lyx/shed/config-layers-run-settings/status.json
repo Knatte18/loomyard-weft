@@ -104,6 +104,20 @@
       "output": "child awaiting → running at Plan-Bouncer",
       "at": "2026-10-12T07:51:02Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at PR-Gate",
+      "at": "2026-10-12T09:38:14Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at PR-Gate",
+      "at": "2026-10-12T09:38:53Z",
+      "budget_exempt": true
     }
   ]
 }
