@@ -1,12 +1,12 @@
 {
   "current_producer": "Discussion-Burler-Fix",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "shedverbs: step Discussion-Burler-Fix interrupted (watchdog); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lyx shed step config-layers-run-settings --until-stop",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Burler-Fix",
     "last": "Discussion-Burler-Review → bounced to Discussion-Burler-Fix",
-    "wait": ""
+    "wait": "shedverbs: step Discussion-Burler-Fix interrupted (watchdog); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lyx shed step config-layers-run-settings --until-stop"
   },
   "history": [
     {
