@@ -32,7 +32,11 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Run records tolerate newer binaries; a hung verify step is not re-run**<br>• Readers and writers of run records keep unknown fields; a verify gate stops a hung step early and never re-runs it unfixed. | [`run-robustness`](design-run-robustness.md) | loom |  | 0m | 0m | batten, shed, webster |
 
 ### Layer A
 
@@ -47,15 +51,6 @@ Waits only on Running or Ready entries.
 ## Notes
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-### Bugs
-
-#### Normal priority
-
-| # | Note | Slug | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Run-record readers accept fields a newer binary added**<br>• An older batten halted on status.json field routed_to; every run-record reader and writer must tolerate and keep unknown fields. | [`record-unknown-fields`](design-record-unknown-fields.md) | 0m | 0m | batten, shed, loom |
-| 2 | **Verify gate re-ran a hung test with no fix in between**<br>• A livelocked test hung the gate at full CPU, and a second gate run started 2s later on the same code. | [`verify-hang-rerun`](design-verify-hang-rerun.md) | 0m | 0m | shed, webster |
 
 ### Enhancements
 
