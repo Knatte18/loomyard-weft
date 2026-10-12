@@ -1,0 +1,11 @@
+verdict: escalate
+reason: >-
+  The design matches the board entry's goal and change list with no scope deviation,
+  but peer run-robustness also changes Go package internal/websterengine,
+  including its doc.go, which this run's Scope edits; a shared Go package is a substantive overlap.
+question: >-
+  Peer run-robustness (running, Webster) changes internal/websterengine: verifygate.go for its D5 and D6 (card 12, webster-hang-gate)
+  and the package doc.go to describe them, while this run edits internal/websterengine/doc.go, template_test.go and beginbatch_test.go.
+  Which run lands first, or how is the doc.go edit split between them?
+  Peer lyx-halt's decision record also lists contracts/stencils/claims_test.go and webster package docs among its edits, which this run also changes;
+  its branch has not touched them yet.

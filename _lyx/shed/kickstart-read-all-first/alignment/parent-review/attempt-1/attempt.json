@@ -1,0 +1,16 @@
+{
+  "number": 1,
+  "key": "round-1",
+  "point": "parent-review",
+  "token": "b5066266e0cb5ce9",
+  "spawned_at": "2026-10-12T14:38:31.179695499+02:00",
+  "deadline": "2026-10-12T14:58:31.179695499+02:00",
+  "strand_guid": "159c7f4f008257615b7321e4a210f013",
+  "snapshot": "e88ebeee7a08f6fa2a11e197a48496d8191daf2dac60d9b7033c7545d41d322a",
+  "pr_number": 0,
+  "head_sha": "",
+  "closed": true,
+  "closed_reason": "Peer run-robustness (running, Webster) changes internal/websterengine: verifygate.go for its D5 and D6 (card 12, webster-hang-gate) and the package doc.go to describe them, while this run edits internal/websterengine/doc.go, template_test.go and beginbatch_test.go. Which run lands first, or how is the doc.go edit split between them? Peer lyx-halt's decision record also lists contracts/stencils/claims_test.go and webster package docs among its edits, which this run also changes; its branch has not touched them yet.",
+  "applied": "",
+  "notified": false
+}
