@@ -180,6 +180,12 @@ Rationale: a pair's session ends at Worktree-Teardown, before its worktree is re
   - d8-notice-append-identity (class decision, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 3: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-3-review.md; fixer report: _lyx/reviews/plan/round-3-fixer-report.md.
+  - overview-source-undecodable-seed-run-unspecified (class consistency, severity MEDIUM, open in rounds 3)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - With the orch and two runs in flight, the prime's strand window shows the `runs` strand directly above the orch, showing two lines, one per run, with slug, state, loom stage, stage time, run age and session name.
