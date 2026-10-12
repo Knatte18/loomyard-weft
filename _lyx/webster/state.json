@@ -1,0 +1,230 @@
+{
+  "runGuid": "be66bb99f127670826b63a3427ae3f02",
+  "planFingerprint": "a9f3118bceaf4f712faa77fc70c7e14a1af6801e2e151cf62d23680ac80ed2e0",
+  "planFileHashes": {
+    "00-overview.md": "1d161a0f2db99b3251e971ecf691933128ffde5095c1913ee2ea93eca605d051",
+    "01-edit-directive-wording.md": "c75ece21c3a3d96169a9f6f387f0e137f3e27acad18c6f0cb8d373d441748593",
+    "02-scratch-exclude.md": "8aeb7121d0efb77eeb0f07c506d7ae14747c5178d7b82ed66ff54d1e212048ab",
+    "03-in-place-edit-deny.md": "496b4fcb5e6e020be369b4903923661fd93a5b808d36965720c5cfc646383035",
+    "04-computed-rm-deny.md": "3ade3ad0c18ded004b7c810b3dee6b3ffd12619ee765c5edb5a908fa19e252e1",
+    "05-no-denied-recovery-forms.md": "66caed9357f878ee466d7bb9106d7d2e7cf6c8374f5f06642d71b63b6c704593",
+    "06-sed-print-classifier.md": "19236dab10ab33e979483fdf084ffb912d33459843ae80173277b76bac86c20f",
+    "07-dialog-notice.md": "39753a29e25c79ed0bcb3f95c356b39cc42bd1dfc1e941510407e7f3250d9c4e",
+    "08-fork-ask-live-scenario.md": "a57a2c071fba7b3c20f2ceb4f247bd383a902ad803ba4e0b208a59f1c9f39077"
+  },
+  "planOverviewFrameHash": "087ec92885bd0d42769469d52a7d0ebf87021256016a88fcd0486ba0f9cbb845",
+  "partition": [
+    {
+      "cards": [
+        "01-edit-directive-wording",
+        "02-scratch-exclude",
+        "03-in-place-edit-deny",
+        "04-computed-rm-deny",
+        "05-no-denied-recovery-forms"
+      ],
+      "profile": "cautious",
+      "estimate": 219566,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54292,
+        "read_union": 54916,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 324,
+            "reads": {
+              "file:contracts/stencils/edit/edit-directive.md": 84,
+              "file:internal/editdirective/doc.go": 240,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/edit": 2000,
+              "package:internal/editdirective": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/edit": 2000,
+              "tests:internal/editdirective": 2000
+            },
+            "messages": 34,
+            "written": 10524
+          },
+          {
+            "card": 2,
+            "card_text": 384,
+            "reads": {
+              "package:internal/fabricengine": 2000,
+              "package:internal/fabricengine_test": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/fabricengine_test": 2000
+            },
+            "messages": 112,
+            "written": 33984
+          },
+          {
+            "card": 3,
+            "card_text": 660,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:docs/overview.md": 8472,
+              "file:internal/shuttleengine/claudeengine/doc.go": 2052,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 87,
+            "written": 26760
+          },
+          {
+            "card": 4,
+            "card_text": 540,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:docs/overview.md": 8472,
+              "file:internal/shuttleengine/claudeengine/doc.go": 2052,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 87,
+            "written": 26640
+          },
+          {
+            "card": 5,
+            "card_text": 300,
+            "reads": {
+              "file:pattern/PATTERN-no-denied-recovery.md": 240,
+              "package:cmd/lyx": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 40.5,
+            "written": 12450
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-sed-print-classifier",
+        "07-dialog-notice",
+        "08-fork-ask-live-scenario"
+      ],
+      "profile": "cautious",
+      "estimate": 217172,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61292,
+        "read_union": 66612,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 348,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4512,
+              "file:internal/websterengine/doc.go": 8196,
+              "package:contracts/specs": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/fabricengine_test": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/fabricengine_test": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 152,
+            "written": 45948
+          },
+          {
+            "card": 7,
+            "card_text": 1032,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "file:docs/overview.md": 8472,
+              "file:internal/shuttleengine/claudeengine/doc.go": 2052,
+              "file:internal/shuttleengine/doc.go": 4092,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 124,
+            "written": 38232
+          },
+          {
+            "card": 8,
+            "card_text": 288,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1620,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttlecli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttlecli": 2000
+            },
+            "messages": 16,
+            "written": 5088
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "160c92c639ab5332105bb24adff15d69",
+  "masterSessionId": "9d5b6e7e-2b3d-4347-b78c-819701d0db0b",
+  "batches": {
+    "1": {
+      "slug": "edit-directive-wording",
+      "cards": [
+        "01-edit-directive-wording",
+        "02-scratch-exclude",
+        "03-in-place-edit-deny",
+        "04-computed-rm-deny",
+        "05-no-denied-recovery-forms"
+      ],
+      "cardHashes": {
+        "01-edit-directive-wording": "c75ece21c3a3d96169a9f6f387f0e137f3e27acad18c6f0cb8d373d441748593",
+        "02-scratch-exclude": "8aeb7121d0efb77eeb0f07c506d7ae14747c5178d7b82ed66ff54d1e212048ab",
+        "03-in-place-edit-deny": "496b4fcb5e6e020be369b4903923661fd93a5b808d36965720c5cfc646383035",
+        "04-computed-rm-deny": "3ade3ad0c18ded004b7c810b3dee6b3ffd12619ee765c5edb5a908fa19e252e1",
+        "05-no-denied-recovery-forms": "66caed9357f878ee466d7bb9106d7d2e7cf6c8374f5f06642d71b63b6c704593"
+      },
+      "startSha": "694f68f90b1ec5f4a1a8cd003683916244bd983b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T08:14:53Z",
+      "sessionId": "9d5b6e7e-2b3d-4347-b78c-819701d0db0b",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
