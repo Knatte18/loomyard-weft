@@ -69,5 +69,5 @@ _No rounds yet._
 - Q3 (auto-pick, resolved): cover other whole-file record writers? No; the entry names board writers. The hazard is in Open risks.
 - Q4 (auto-pick, resolved): do the three non-race PR items need work? No; each is already met (turn 3).
 - Q5 (auto-pick, resolved, revised after lens review): fix the sweep code or the test? Both: a time-budget retry, pinned by deterministic rows through `Sweep` (D7).
-- Q6 (auto-pick, resolved): should `get` and `list-full` show kept keys? Yes, since `Task`'s encoding carries them; list, README and rendered views stay on known fields.
-- Q7 (auto-pick, resolved): the removal budget? One second total, retrying while the directory exists.
+- Q6 (auto-pick, resolved, revised in burler round 1): should whole-`Task` output show kept keys? Yes, since `Task`'s encoding carries them: `get`, `list-full` and the task envelope of `upsert`, `promote` and `merge`; list, README and rendered views stay on known fields.
+- Q7 (auto-pick, resolved, revised in burler round 1): the removal budget? One second shared by one sweep's retries, retrying only on the directory-not-empty symptom; any other error is reported at once, so a persistent failure of another kind does not cost every `newRun` a second; a persistent writer into a dead directory still does.
