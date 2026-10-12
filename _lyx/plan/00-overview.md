@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -25,7 +25,7 @@ D11, selecting twill at `opus[medium]` for this repository, is no card: per the 
 ## Shared Decisions
 
 - No production file outside the fabric-vocabulary owner set spells a fabric side token, and no test file outside it either: tests build a side-token name from `fabricvocab.SideTokens()`, and host-geometry rows spell `hostBranch`, which the host rule leaves to non-test files.
-- The plan host's rejection rule, severity rule, spawn point and per-fork line are rendered exactly as the record states them (card 9), since the bench file they come from is unreadable to the writer.
+- The plan host's rejection rule and spawn point carry D5's and D3's content in the prompt's second-person voice, and its severity rule and per-fork line are rendered verbatim as the record states them (card 9), since the bench file they come from is unreadable to the writer.
 - `single` keeps today's prompt bytes: every new template marker is optional and sits on a line that would otherwise be blank.
 
 ## verify:

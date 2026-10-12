@@ -16,7 +16,7 @@
 - `internal/planparser#HandleUnit`
 - `internal/planparser#HandleMember`
 - `internal/planparser#HandleIdentifier`
-- `internal/planparser#IsHandleRef`
+- `internal/planparser#OwnedHandles`
 - `internal/planparser#cardID`
 - `plan:internal/fabricvocab#BareToken`
 - `plan:internal/fabricvocab#SkipsBareCheck`
@@ -28,10 +28,11 @@
 D9: a `planparser` function that refuses a name a plan declares which the fabric-vocabulary scan would refuse once it lands.
 It sits outside `ValidateFormat` and `Validate`, like `CheckCardFabricReference`; card 3 appends it in the plan index.
 
-`CheckFabricVocabularyName(plan)` reads, per card, the handle of every `Card.Declarations` entry (the `Create` handles) and the `New` side of every `Card.Pairs` entry that `IsHandleRef` reports as a handle (a `Rename` pair's new name).
+`CheckFabricVocabularyName(plan)` iterates, per card, `OwnedHandles(card)`: every `Create` handle and every `Rename` pair's `New` handle.
 A handle whose unit or member does not split (`HandleUnit` or `HandleMember` reports false, or either half is empty) is skipped, since `handle-malformed` or `handle-name-failed` already reports it; a `Create` bullet that failed the declaration grammar never reaches `Declarations`, so it raises no second finding.
-For each name, with `unit` the handle's unit half, `first` its first path segment, `member` the whole member half and `last` its last dot-segment (`HandleIdentifier`):
-- the bare-token rule fails when `fabricvocab.BareToken(member)` holds, `fabricvocab.SkipsBareCheck(unit)` does not (so an owner-set package passes and `internal/configsync` still fails, its identifier rule), and either `first` is `internal` or `fabricvocab.IsDocRoot(first)` holds, or `hasTestPrefix(last)` holds;
+For each name, with `unit` the handle's unit half, `dir` the unit with a trailing `_test` stripped from its last path segment (`internal/fabricengine_test` becomes `internal/fabricengine`), `first` its first path segment, `member` the whole member half and `last` its last dot-segment (`HandleIdentifier`):
+- the bare-token rule fails when `fabricvocab.BareToken(member)` holds, `fabricvocab.SkipsBareCheck(dir)` does not (so an owner-set package and its external test package pass, and `internal/configsync` still fails, its identifier rule), and either `first` is `internal` or `fabricvocab.IsDocRoot(first)` holds, or `hasTestPrefix(last)` holds;
+  `dir` is the directory the scan's owner check reads, since the scan keys the owner set by a file's directory and an external test package's file sits in its package's directory;
 - the host-geometry rule fails when `hasTestPrefix(last)` does not hold, `fabricvocab.IsHostGeometryIdentifier(last)` holds, and `first` is `internal` or `cmd`.
 `hasTestPrefix` reports a `Test`, `Benchmark`, `Fuzz` or `Example` prefix.
 The bare-token rule reads the whole member, so a `Type.Method` whose type segment alone carries a side token fails; the other two rules read `last`.
@@ -43,8 +44,8 @@ No string literal in the new production file spells a side token: the detail say
 
 `TestCheckFabricVocabularyName` (external package `planparser_test`, beside `validate_test.go`'s `validCard`) is one table over in-memory plans, each row a card carrying `Declarations` or `Pairs`, asserting the exact count of `fabric-vocabulary-name` findings and, for a failing row, the finding's `Card` and `Ref`.
 Side-token names are built from `fabricvocab.SideTokens()`, never spelled, since the test file sits outside the owner set; host-geometry rows spell `hostBranch`, which the host rule leaves to non-test files.
-Rows that refuse (the record's acceptance list): a `Create` handle `Test<Side>…` in a package outside `internal/`, such as `tools/x`; a member with a side token and no test prefix under `internal/`; the same under `cmd/`; a member with a side token in `internal/configsync`; a `Rename` pair whose `New` handle carries a side token; a host-geometry identifier under `internal/`, and as a method's last segment `Type.hostBranch`; a host-geometry identifier under `cmd/`; a `Type.Method` under `internal/` whose type segment alone carries the side token.
-Rows that pass: a side token in an owner-set package other than configsync, such as `internal/fabricengine`; a member without a test prefix outside `internal/` and the doc roots, such as `tools/x`; a host-geometry identifier under `tools/`; a name with no token; a declaration whose handle carries no `#`, which yields no finding.
+Rows that refuse (the record's acceptance list): a `Create` handle `Test<Side>…` in a package outside `internal/`, such as `tools/x`; a member with a side token and no test prefix under `internal/`; the same under `cmd/`; a member with a side token in `internal/configsync`; a `Create` handle `Test<Side>…` in `plan:internal/configsync_test`, which still fails under configsync's identifier rule; a `Rename` pair whose `New` handle carries a side token; a host-geometry identifier under `internal/`, and as a method's last segment `Type.hostBranch`; a host-geometry identifier under `cmd/`; a `Type.Method` under `internal/` whose type segment alone carries the side token.
+Rows that pass: a side token in an owner-set package other than configsync, such as `internal/fabricengine`; a `Create` handle `plan:internal/fabricengine_test#Test<Side>…`, the owner package's external test package; a member without a test prefix outside `internal/` and the doc roots, such as `tools/x`; a host-geometry identifier under `tools/`; a name with no token; a declaration whose handle carries no `#`, which yields no finding.
 One more row pins one finding for a name failing both rules.
 
 `internal/planparser/doc.go`'s sentence naming the functions outside `ValidateFormat` and `Validate` adds `CheckFabricVocabularyName`, which needs no told input but is appended by the plan index beside `CheckCardFabricReference`.

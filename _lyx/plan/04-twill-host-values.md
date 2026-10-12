@@ -9,7 +9,7 @@
 - `internal/loomengine#twillBlocks`
 - `internal/loomengine#TestDiscussionSpec_Twill`
 - `contracts/stencils#TestStencils_TopLevelMarkers`
-- `contracts/stencils#stencilClaims`
+- `contracts/stencils#wordingClaims`
 - `contracts/stencils#hostNeutralClaims`
 - `cmd/lyx/testdata/test-budget.yaml`
 
@@ -40,7 +40,7 @@ Tests:
 - New `TestDirective_MissingValueNamesTheMarker` is a table over a fully filled `Values` with one field emptied per row (`ReviewedFiles`, `SpawnPoint`, `RejectionRule`, `SeverityRule`, `Lenses` set to nil), asserting `Directive` errors and the error names that row's marker (`reviewed_files`, `spawn_point`, `rejection_rule`, `severity_rule`, `lens_list`); acceptance: "A missing host value or an empty lens list fails the directive render with an error naming the marker."
 - `TestDiscussionSpec_Twill` additionally asserts the prompt holds "read `" + the decision record path + "` and `" + the support log path + "` and review them", today's spawn point line, today's rejection rule and "each with a severity (`BLOCKING`, `MEDIUM` or `LOW`), the section or decision it concerns", pinning that only the reviewed-files line changed.
 - `TestStencils_TopLevelMarkers`'s `twill-directive` row adds `rejection_rule`, `severity_rule` and `spawn_point` in sorted order.
-- `stencilClaims`' `twill-directive.md` entry claims `{{.spawn_point}}`, `{{.rejection_rule}}` and `{{.severity_rule}}`, and replaces nothing else; `hostNeutralClaims` also bars the Plan host's names `validate-plan`, `00-overview.md`, `lens-review.md` and `Card Index`.
+- `wordingClaims`' `twill-directive.md` entry claims `{{.spawn_point}}`, `{{.rejection_rule}}` and `{{.severity_rule}}`, and replaces nothing else; `hostNeutralClaims` also bars the Plan host's names `validate-plan`, `00-overview.md`, `lens-review.md` and `Card Index`.
 - `cmd/lyx/testdata/test-budget.yaml` raises `internal/twilldirective` by one.
 
 **ImpactSummary:** `Values` changes shape and `twillBlocks`, its one caller, follows; the Discussion twill prompt changes on the reviewed-files line only.

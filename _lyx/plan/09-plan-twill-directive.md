@@ -17,7 +17,7 @@
 - `internal/loomengine#TestPlanSpec_Refuses`
 - `internal/loomengine#TestCompose_FrictionDirective`
 - `contracts/stencils/loom/loom-template-plan.md`
-- `contracts/stencils#stencilClaims`
+- `contracts/stencils#wordingClaims`
 - `contracts/specs/refusal-spec.md`
 - `docs/overview.md`
 - `cmd/lyx/testdata/test-budget.yaml`
@@ -89,7 +89,7 @@ Tests:
   Each row asserts `ForkSubagents` true, and the prompt holds `PlanReadyMarker(layout)`, the plan rubric path, the `lens-review.md` path, "lyx shuttle await", `subagent_type: "fork"`, "lyx loom validate-plan", "Step 3 and Step 4", the spawn point's first line, the per-fork line, the rejection rule, and exactly the line "Return your findings only as your final message, each with a severity (`BLOCKING` when the plan as written fails its verify or ships a wrong behavior, `MEDIUM` when a decision, criterion or branch goes unreached or untested, `LOW` otherwise), the section or decision it concerns, a one-line summary and the evidence."; that "## Lens review by forks" sits after "## Step 2" and before "## Step 3"; and that the write-scope sentence "and you create its parent directory too" is absent.
 - `TestPlanSpec_Refuses` gains a `burlerYAML` and a `wantErrNames` field and two twill rows over a temp-dir location with `PlanProducer: PlanProducerTwill`: a `burler.yaml` that does not parse, and one whose `twill-plan` names an undefined lens; each error names `twill-plan` and `burler.yaml` (acceptance: "An unreadable `burler.yaml` and an unresolvable `twill-plan` each fail the Plan-Write spawn with the refusal-spec text").
   `TestDiscussionSpec_Refuses`' two twill rows keep passing unchanged, pinning the shared function's Discussion text.
-- `stencilClaims`' `loom-template-plan.md` entry claims `{{.twill_directive}}` in section "## Step 2 — Explore the codebase", because the lens review spawns once Step 2's reading is done and before Step 3 writes a plan file.
+- `wordingClaims`' `loom-template-plan.md` entry claims `{{.twill_directive}}` in section "## Step 2 — Explore the codebase", because the lens review spawns once Step 2's reading is done and before Step 3 writes a plan file.
 - `cmd/lyx/testdata/test-budget.yaml` raises `internal/loomengine` by one.
 
 `docs/overview.md`'s Planner producer line adds that `plan_producer: twill` selects the single plan writer that forks itself once per lens of the `twill-plan` fan in `burler.yaml` after its exploration, writes and self-checks the plan, marks it ready, takes the forks' findings in, records them in `lens-review.md` and rejects a `BLOCKING` or `MEDIUM` finding only with a cited code read.

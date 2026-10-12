@@ -11,7 +11,6 @@
 - `internal/websterengine#TestFingerprint`
 - `internal/loomshed#NewPlanDirRotator`
 - `internal/loomshed#TestNewPlanDirRotator`
-- `internal/loomshed#TestPRRework_FirstRoundMovesGenerationZero`
 
 **Uses:**
 - `internal/planparser#AmendmentsFileName`
@@ -29,13 +28,12 @@ The name is admitted under every producer, and its content is never parsed or va
   When the lens review is the only stale file, the rotation still moves it and returns an empty amendment without rendering a block, since there is no plan for a re-run writer to carry forward and `PriorPlanBlock` refuses an empty list.
   Its doc comment states both.
 - PR-Rework's round archive already moves every plan-directory entry into `prior-generation/plan/`, and `planCommitPathspec` stages the whole plan directory, so the file is committed and rotated with the plan with no code change there.
+  `TestPRRework_FirstRoundMovesGenerationZero`'s existing `amendments.md` assertion covers that path, since the archive has no per-name logic.
 
 Tests:
 - `TestValidate_IndexFileMismatch` gains a subtest beside the amendments one: a plan directory holding `lens-review.md` beside the indexed cards produces no `index-file-mismatch` finding.
 - `TestFingerprint`'s mutation table gains a row adding `lens-review.md` to the plan directory, with the fingerprint required not to follow.
 - `TestNewPlanDirRotator` gains two subtests: a plan directory holding `00-overview.md`, `01-card-one.md` and `lens-review.md` moves all three into the archive, and the amendment names the two plan files and not `lens-review.md`; a plan directory holding only `lens-review.md` moves it into the archive and returns an empty amendment and a nil error.
-- `TestPRRework_FirstRoundMovesGenerationZero` seeds `lens-review.md` in the plan directory and asserts it lands under the round's `prior-generation/plan/` beside the cards.
-
 Acceptance: "`lens-review.md` in the plan directory raises no `index-file-mismatch`, changes no webster plan fingerprint, is not named in the prior-plan block, and is committed and rotated with the plan."
 
 **ImpactSummary:** two plan-directory enumerations and the prior-plan block skip one more fixed name; plans without the file behave as today.
