@@ -24,18 +24,15 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 3 | **Board writers keep unknown fields; lyx cleanup follow-ups**<br>• An old lyx process drops board fields it does not know; plus the open items from the lyx cleanup PR | [`board-field-drop`](design-board-field-drop.md) | loom | Worktree-Create |  | 0m | board, batten |
-| 4 | **Plan gate: receiver-typed delete-before-reference; plan review validates its fixes**<br>• Bare-name method matching floods plans with false blocking findings, and plan-review proposes fixes the gate refuses | [`plan-gate-fixes`](design-plan-gate-fixes.md) | loom | awaiting · PR-Gate |  |  | loom, quarry, stencil |
+| 3 | **lyx pause: stop every run at once, safely and on purpose**<br>• A hub-wide pause that interrupts every Claude session with Esc within seconds, unlike the step-boundary pauses, recorded as ordered so no failure or idle path fires | [`lyx-halt`](design-lyx-halt.md) | loom | Worktree-Create |  |  | batten, shuttle |
+| 4 | **Board writers keep unknown fields; lyx cleanup follow-ups**<br>• An old lyx process drops board fields it does not know; plus the open items from the lyx cleanup PR | [`board-field-drop`](design-board-field-drop.md) | loom | Worktree-Create |  | 0m | board, batten |
+| 5 | **Plan gate: receiver-typed delete-before-reference; plan review validates its fixes**<br>• Bare-name method matching floods plans with false blocking findings, and plan-review proposes fixes the gate refuses | [`plan-gate-fixes`](design-plan-gate-fixes.md) | loom | awaiting · PR-Gate |  |  | loom, quarry, stencil |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **lyx pause: stop every run at once, safely and on purpose**<br>• A hub-wide pause that interrupts every Claude session with Esc within seconds, unlike the step-boundary pauses, recorded as ordered so no failure or idle path fires | [`lyx-halt`](design-lyx-halt.md) | loom |  |  |  | batten, shuttle |
+_None._
 
 ## Notes
 
