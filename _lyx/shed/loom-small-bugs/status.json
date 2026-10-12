@@ -1,12 +1,12 @@
 {
   "current_producer": "Run-Shed",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "battenshed: Run-Shed: resolve status path: battencli: the task worktree for \"loom-small-bugs\" is not present at /home/knatte/Code/loomyard-LYXHUB/loom-small-bugs; this run's durable status says it was already created, so it is either on another machine or was removed by hand -- batten does not recreate a pair from its branch, and no \"lyx fabric\" command currently does either (creating one refuses when its branch already exists). Resolve it by hand, one of two ways: restore the worktree pair yourself from its branches, outside lyx's own automation, which keeps the task's work, then resume this run; or abandon this run by deleting its run directory /home/knatte/Code/loomyard-LYXHUB/loomyard/_lyx/shed/loom-small-bugs (a change on the pair's fabric sibling) and the pair's branches, local and remote, after which \"lyx batten run loom-small-bugs\" starts over from a fresh create -- discarding any of the task's work not already merged",
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
     "last": "Run-Shed → bounced to Run-Shed",
-    "wait": ""
+    "wait": "battenshed: Run-Shed: resolve status path: battencli: the task worktree for \"loom-small-bugs\" is not present at /home/knatte/Code/loomyard-LYXHUB/loom-small-bugs; this run's durable status says it was already created, so it is either on another machine or was removed by hand -- batten does not recreate a pair from its branch, and no \"lyx fabric\" command currently does either (creating one refuses when its branch already exists). Resolve it by hand, one of two ways: restore the worktree pair yourself from its branches, outside lyx's own automation, which keeps the task's work, then resume this run; or abandon this run by deleting its run directory /home/knatte/Code/loomyard-LYXHUB/loomyard/_lyx/shed/loom-small-bugs (a change on the pair's fabric sibling) and the pair's branches, local and remote, after which \"lyx batten run loom-small-bugs\" starts over from a fresh create -- discarding any of the task's work not already merged"
   },
   "history": [
     {
