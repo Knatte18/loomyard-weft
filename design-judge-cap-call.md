@@ -1,6 +1,6 @@
 # Judge settles the review budget cap; arbiter only for stuck runs
 
-`judge-cap-call` · Note · enhancement, loom, burler
+`judge-cap-call` · Task · enhancement, loom, burler
 
 At a spent review budget the Bouncer escalates, and today the driver hands that stop to the arbiter: a cold `opus[high]` agent, about a minute per spawn.
 Whether to run one more Burler round or accept unconverged is not a "totally stuck" stop, so the operator sees the arbiter as the wrong tool for it (2026-10-12): the judge should make that call itself, and the arbiter stays for runs that are stuck.
@@ -35,7 +35,12 @@ The orch proposed two caps, and the operator asked to record them here:
 The soft cap sets the cost of a review that goes well; the hard cap stops loops.
 The arbiter is spawned only at the hard cap or on a returning blocker.
 
-## Open
+## Settled for the task (operator, 2026-10-12)
 
-- The hard cap's default and its config key.
-- Whether a stuck stop at the hard cap goes to the arbiter or straight to the parent.
+- The hard cap defaults to 4, in its own loom config key beside `review_max_bounces` (the soft cap); a per-perch override follows the existing `<perch>_max_bounces` pattern.
+- A design-wrong blocker still standing at the hard cap, or a blocker returning after the soft-cap round, goes to the arbiter; the arbiter's `hand-on` goes to the orch.
+- The Bouncer today is too quick to escalate (operator): a driver count over 98 runs (2026-10-05..12) found 11 real arbiter attempts on Bouncer escalations, every one `resume` (continue or accept), so the escalation at the soft cap added nothing but a spawn and a wait.
+
+## Related
+
+`go-driver-assistant` (running) builds the Go driver, the tackler and the arbiter path behind it; this task changes only the Bouncer and the judge, and hands its hard-cap stop to the arbiter through the existing escalation.
