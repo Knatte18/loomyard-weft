@@ -1,0 +1,234 @@
+{
+  "runGuid": "70607c2e99d1b79bed7915a7af83c456",
+  "planFingerprint": "14b59d3319e0790306ec735259e8bc74c20936b67ff8ea0562bb5378ac441b1d",
+  "planFileHashes": {
+    "00-overview.md": "f76cbd0a09bc6efe3ae39e2983a09482a3aa3eb22b8792a69f044dfa57321e46",
+    "01-running-turn-predicate.md": "3b5cf181191f4eb32af20d024f33c630355a4bf83fb520c25faeeaba5c280051",
+    "02-pane-readings.md": "fb172bb8a5fd4abecbae0ee3fa7145eebab5feb8be3eacd2a4477f06e65a1dac",
+    "03-shuttlefake-guard.md": "984a72d55a46fc8edd67325f02b2101010d8f8916dda47439173e504ea124239",
+    "04-guarded-interrupt.md": "b08ff4d477a23c3ada7db79d31396c14bbeba8f706fc9a70de10dcbadf224476",
+    "05-inject-refusal-and-pattern.md": "7292636d65e86d9ed69a92d6a86a36f79f942961972c3fc085382272ad8fbd11",
+    "06-session-busy-reason.md": "b1c68273b782481ac264e127f6e7fcaa52204b8490e6f5483759421456c3531f",
+    "07-shuttle-cli-guard.md": "6f90dc487b9562a7880fcb130f555999831a2e3534d94155bac6797a842cab00",
+    "08-pause-sequence.md": "bca0ca4de2bede8dd18f81485d04bd8f2f38d59ef44806d84acc4bc9b3fe9d95",
+    "09-orch-watcher-settle.md": "d6c65bed144b9c8911d89b26f8eb7058429244d7b33c99bc1781be353000e3ea"
+  },
+  "planOverviewFrameHash": "19baa7c59bd87a2a725c1cd097ba9e42afe80a9c29dcae5a42df1caba81be398",
+  "partition": [
+    {
+      "cards": [
+        "01-running-turn-predicate",
+        "02-pane-readings",
+        "03-shuttlefake-guard",
+        "04-guarded-interrupt",
+        "05-inject-refusal-and-pattern"
+      ],
+      "profile": "cautious",
+      "estimate": 239712,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54472,
+        "read_union": 46796,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 264,
+            "reads": {
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 34.5,
+            "written": 10614
+          },
+          {
+            "card": 2,
+            "card_text": 1092,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1776,
+              "file:internal/shuttleengine/claudeengine/doc.go": 2220,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata": 2000
+            },
+            "messages": 123.5,
+            "written": 38142
+          },
+          {
+            "card": 3,
+            "card_text": 300,
+            "reads": {
+              "package:internal/testkit/shuttlefake": 2000,
+              "tests:internal/testkit/shuttlefake": 2000
+            },
+            "messages": 37,
+            "written": 11400
+          },
+          {
+            "card": 4,
+            "card_text": 1860,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1776,
+              "file:internal/shuttleengine/doc.go": 4572,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttlecli": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 168.5,
+            "written": 52410
+          },
+          {
+            "card": 5,
+            "card_text": 1128,
+            "reads": {
+              "file:PATTERN.md": 1344,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1776,
+              "file:pattern/PATTERN-pane-text-injection.md": 240,
+              "package:.": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 82.5,
+            "written": 25878
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-session-busy-reason",
+        "07-shuttle-cli-guard",
+        "08-pause-sequence",
+        "09-orch-watcher-settle"
+      ],
+      "profile": "cautious",
+      "estimate": 228994,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61472,
+        "read_union": 52472,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 456,
+            "reads": {
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 46.5,
+            "written": 14406
+          },
+          {
+            "card": 7,
+            "card_text": 432,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1776,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttlecli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttlecli": 2000
+            },
+            "messages": 26,
+            "written": 8232
+          },
+          {
+            "card": 8,
+            "card_text": 2340,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1776,
+              "file:docs/overview.md": 8928,
+              "file:internal/pauseengine/doc.go": 456,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/pausecli": 2000,
+              "package:internal/pauseengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/pausecli": 2000,
+              "tests:internal/pauseengine": 2000
+            },
+            "messages": 200.5,
+            "written": 62490
+          },
+          {
+            "card": 9,
+            "card_text": 1272,
+            "reads": {
+              "file:internal/orchengine/doc.go": 4812,
+              "package:internal/orchcli": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 95.5,
+            "written": 29922
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "aef7df2e985ab7e9c88a93b013a62140",
+  "masterSessionId": "ac698ea6-0953-47db-98cb-c235ebcdc41a",
+  "batches": {
+    "1": {
+      "slug": "running-turn-predicate",
+      "cards": [
+        "01-running-turn-predicate",
+        "02-pane-readings",
+        "03-shuttlefake-guard",
+        "04-guarded-interrupt",
+        "05-inject-refusal-and-pattern"
+      ],
+      "cardHashes": {
+        "01-running-turn-predicate": "3b5cf181191f4eb32af20d024f33c630355a4bf83fb520c25faeeaba5c280051",
+        "02-pane-readings": "fb172bb8a5fd4abecbae0ee3fa7145eebab5feb8be3eacd2a4477f06e65a1dac",
+        "03-shuttlefake-guard": "984a72d55a46fc8edd67325f02b2101010d8f8916dda47439173e504ea124239",
+        "04-guarded-interrupt": "b08ff4d477a23c3ada7db79d31396c14bbeba8f706fc9a70de10dcbadf224476",
+        "05-inject-refusal-and-pattern": "7292636d65e86d9ed69a92d6a86a36f79f942961972c3fc085382272ad8fbd11"
+      },
+      "startSha": "22b4aff8a2031328dec3d3e24ac6037af5a27cbe",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T18:18:21Z",
+      "sessionId": "ac698ea6-0953-47db-98cb-c235ebcdc41a",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
