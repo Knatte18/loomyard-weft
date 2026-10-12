@@ -2,8 +2,6 @@
 
 `alignment-agent` · Task · enhancement, orch, loom
 
-Depends on: [`merge-review`](design-merge-review.md)
-
 Split out of note `orch-token-spend` (2026-10-11), whose other means went to `orch-owns-the-loop` (batten lands itself, what wakes the orch), `merge-review`, `orch-split` and `task-run-settings`.
 
 ## Seen (operator, 2026-10-11)
