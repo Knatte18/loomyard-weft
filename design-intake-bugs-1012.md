@@ -1,6 +1,6 @@
 # Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status
 
-`intake-bugs-1012` · Task · bug, loom, webster, shed · running · Worktree-Create
+`intake-bugs-1012` · Task · bug, loom, webster, shed · running · Loom-Preflight
 
 Three bugs taken in from GitHub on 2026-10-12, bundled as one small task.
 
