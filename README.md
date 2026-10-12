@@ -21,12 +21,6 @@ Held by a run; its scope is locked until the run ends.
 | 4 | **Agent shell hygiene: read-only sed allowed, no scripted edits or /tmp rm in Webster forks**<br>• Make read-only sed work without refusals or prompts across lyx-spawned agents, stencils and audits, keeping the no-script-edit rule. | [`sed-read-ok`](design-sed-read-ok.md) | loom | Discussion-Burler-Review | stencil, webster, shuttle |
 | 5 | **lyx cleans up after itself: temp files and one cleanup command**<br>• Tests and fixtures leave GBs of temps in /tmp; remove them on exit, sweep leftovers, and add lyx cleanup running every module cleanup | [`test-tmp-cleanup`](design-test-tmp-cleanup.md) | loom | Plan-Write | fabric, loom, batten, board |
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | At | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 6 | **Board entries carry created and revised dates; views show age**<br>• Entries carry created and updated dates; list and README show age and can sort by it, so long-lying entries stand out | [`board-entry-age`](design-board-entry-age.md) | darn | Finalize | board |
-
 ### Ready
 
 Waits on nothing open; can start now.
@@ -134,3 +128,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Labels |
 | --- | --- | --- | --- |
 | 28 | **Plan-Write on MultiLLMProducer: advisors gather facts and check cards**<br>• Later: Plan-Write as the chair, with an advisor that maps callers, tests and verify commands per package, and possibly one that checks each card as it is written | [`plan-multi-llm`](design-plan-multi-llm.md) | loom, stencil |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Labels |
+| --- | --- | --- | --- |
+| 1 | **Board entries carry created and revised dates; views show age**<br>• Entries carry created and updated dates; list and README show age and can sort by it, so long-lying entries stand out | [`board-entry-age`](design-board-entry-age.md) | board |
