@@ -1,59 +1,34 @@
 # Board entries carry created and revised dates; views show age
 
-Board entries now record when they were created and when their scope was last revised.
-The README and `lyx board list --text` show each entry's age and the time since its last revision, so entries that have sat on the board a long time stand out.
+Every board entry now stores when it was created and when its scope last changed, and the README and `lyx board list --text` show both as a compact age, so long-lying entries stand out.
 
-## Dates on entries
+## What changes
 
-`Task` and `BriefTask` gain `created` and `revised`, RFC 3339 times in whole UTC seconds.
-`board.json` omits a date while it is unknown, so existing entries load unchanged.
+- `board.json` entries gain `created` and `revised`, in whole UTC seconds.
+  Neither key is written while the date is unknown.
+- The write critical section in `internal/boardengine` stamps the dates after the mutation: a new entry gets the current time for whichever date it lacks, and an entry whose scope changed gets it as `revised`.
+  Scope is what the run lock guards (title, brief, body, kind, labels, priority, dependencies), so a status change from a run is not a revision.
+- No age is stored.
+  `FormatAge` renders it at display time in one unit, such as `3d` or `5w`.
+- `lyx board list --text` gets an age column and a time-since-revision column, each omitted when no listed entry has that date.
+  `list` takes `--sort age` or `--sort revised`, oldest first, with entries lacking the date last.
+- The README opens with the UTC date and time it was rendered, and each row gets Age and Revised cells, so the ages read as of that moment.
+- `upsert` accepts `created` and `revised` as RFC 3339 times, which is how a backfill writes them; the run lock lets such a write through on a held entry.
+- A merge gives the surviving entry the oldest `created` among the entries it joins.
+- `boardengine/doc.go`, `boardcli/doc.go` and the board skill document the dates.
 
-The write critical section in `boardengine.Board` sets the dates after each mutation, comparing the result with the entries loaded under the lock (`stampDates` in `internal/boardengine/dates.go`).
-Doing it there covers every write path at once: upsert, batch, merge, set-deps, promote, set-status and intake.
+## Design decisions
 
-- A new entry gets the write time for whichever date it lacks.
-- An entry whose scope changed gets the write time as `revised`, unless the write set `revised` itself.
-  "Scope" is the run lock's existing `scopeChanged`, which now also ignores the two dates.
-- A status change is not a revision.
-  Neither is prune dropping a removed done dependency, nor a note becoming a task, so a promote keeps the note's dates.
-- An existing entry with no `created` date keeps none, since no write can know when it was added.
-- A merge gives the upserted entry the oldest known `created` date among itself and the entries it removes.
+- Stamping runs against the entries as loaded, in one place, so no mutation has to remember to set a date.
+- A promote keeps the note's dates: the engine marks the promoted slug, and only that entry's kind change is exempt from revising.
+  An upsert that flips a note's kind is a normal revision.
+- Prune dropping a done dependency from a survivor is not a revision, so pruning leaves the survivors' dates alone.
+- An existing entry without `created` keeps none; no write can know when it was added, and views show it blank.
+- `Config.Clock` supplies the time, defaulting to the wall clock, so tests pin it.
+- Ages use fixed unit boundaries (minutes under an hour, hours under a day, days under 14, weeks under 91 days, then 30-day months, then years); a blank date renders empty and a future date clamps to `0m`.
 
-`upsert` accepts `created` and `revised`, which is how a backfill writes them.
-The run lock lets such a write through on a run-held entry, because the dates are not scope.
-`Config.Clock` sets the time source, defaulting to the wall clock, and the tests use it to inject a clock.
-The upsert, merge, promote and import results are read back after the dates are set, so they carry their dates.
+## To run by hand
 
-## Views
-
-The views store no age; each computes ages when it renders, through `boardengine.FormatAge`, as one compact unit (`45m`, `5h`, `3d`, `5w`, `4mo`, `2y`).
-
-- The README opens with `Rendered <date> <time> UTC; every age below is as of then.`
-  Every table gains `Age` and `Revised` columns before `Labels`, left blank for an unknown date.
-  `Render` and `RenderToDisk` now take the render time.
-- `list --text` and `find --text` add the same two columns after the priority column.
-  As with priority, each column is dropped when no listed entry has that date.
-- `list --sort age` lists the oldest entries first, and `list --sort revised` lists the longest unrevised first.
-  Entries without the date go last, ties keep README order, and any other value is refused.
-
-## Backfill, after deploy
-
-The entry's one-time backfill writes the dates of every existing entry from the board's git history, through `lyx board upsert`.
-It is not part of this diff.
-It needs the deployed binary, because today's production `lyx board upsert` refuses `created` and `revised` as unknown fields.
-Once this lands and is deployed, the orch spawns a Haiku 5.5 agent that, for each slug in `board.json` on Bolt:
-
-1. Takes the time of the first commit that added the slug as `created`.
-2. Takes the time of the last commit that changed its scope as `revised`: title, brief, body, kind, labels, priority or dependencies, with status-only changes not counted.
-3. Writes both with `lyx board upsert '{"slug":"<slug>","created":"<RFC 3339>","revised":"<RFC 3339>"}'`.
-
-Until then, existing entries show blank ages.
-Entries created or revised after the deploy get dates right away.
-
-## Docs and tests
-
-- The `boardengine` doc gains a Dates section and covers the README's render line and the new columns.
-- The `boardcli` doc, the `list`, `find` and `upsert` help text, and the `ly:board` skill describe the age columns, `--sort` and the date fields.
-- `TestEntryDates` covers stamping across a new entry, a status change, a scope change, a promote, a backfill on a run-held entry and a merge.
-- The README goldens, `TestRenderCompact` and the CLI `list --text` step are extended.
-  The `internal/boardengine` test budget goes up by one.
+- The one-time backfill of dates for every existing entry is not part of this diff.
+  It reads the board's git history (first commit adding each slug, last commit changing its scope) and writes the dates through `lyx board upsert` with `created` and `revised`, never by editing `board.json`.
+- The open question of an older-than-N-days filter on `list` is left out; only the sorts were added.
