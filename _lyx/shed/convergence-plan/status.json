@@ -1,12 +1,13 @@
 {
   "current_producer": "PR-Gate",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "alignment report /home/knatte/Code/loomyard-LYXHUB/convergence-plan/_lyx/shed/convergence-plan/alignment/pr-gate/attempt-2/report-3b2614f64ebf943b.md did not settle this pull request - operator-followups and convergence-plan both change cmd/lyx/main.go. Both edit the root's \"Available modules:\" line, so whichever lands second hits a text conflict. Each also adds an import and a mount: reportcli here, shortcutcli there. Both runs also change the internal/loomcli package in different files: halt.go and landingdeps.go here, bootstrap.go and doc.go there. Both change cmd/lyx tests in different files. No recorded decision in either run contradicts the other. May convergence-plan land now, with operator-followups merging it in at its own Merge-In and keeping both main.go edits? Or should it wait for operator-followups to land first?; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/592",
+  "parent_notice": "alignment report /home/knatte/Code/loomyard-LYXHUB/convergence-plan/_lyx/shed/convergence-plan/alignment/pr-gate/attempt-2/report-3b2614f64ebf943b.md did not settle this pull request - operator-followups and convergence-plan both change cmd/lyx/main.go. Both edit the root's \"Available modules:\" line, so whichever lands second hits a text conflict. Each also adds an import and a mount: reportcli here, shortcutcli there. Both runs also change the internal/loomcli package in different files: halt.go and landingdeps.go here, bootstrap.go and doc.go there. Both change cmd/lyx tests in different files. No recorded decision in either run contradicts the other. May convergence-plan land now, with operator-followups merging it in at its own Merge-In and keeping both main.go edits? Or should it wait for operator-followups to land first?",
   "pause_requested": false,
   "activity": {
     "now": "PR-Gate",
-    "last": "PR-Align → done",
-    "wait": ""
+    "last": "PR-Gate → awaiting",
+    "wait": "alignment report /home/knatte/Code/loomyard-LYXHUB/convergence-plan/_lyx/shed/convergence-plan/alignment/pr-gate/attempt-2/report-3b2614f64ebf943b.md did not settle this pull request - operator-followups and convergence-plan both change cmd/lyx/main.go. Both edit the root's \"Available modules:\" line, so whichever lands second hits a text conflict. Each also adds an import and a mount: reportcli here, shortcutcli there. Both runs also change the internal/loomcli package in different files: halt.go and landingdeps.go here, bootstrap.go and doc.go there. Both change cmd/lyx tests in different files. No recorded decision in either run contradicts the other. May convergence-plan land now, with operator-followups merging it in at its own Merge-In and keeping both main.go edits? Or should it wait for operator-followups to land first?; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/592"
   },
   "history": [
     {
@@ -341,6 +342,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-12T14:49:33Z"
+    },
+    {
+      "producer": "PR-Gate",
+      "outcome": "awaiting",
+      "output": "",
+      "at": "2026-10-12T14:49:45Z"
     }
   ],
   "product": {
