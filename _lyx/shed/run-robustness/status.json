@@ -48,6 +48,48 @@
       "output": "child awaiting → running at Plan-Bouncer",
       "at": "2026-10-12T12:28:18Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at Merge-Bouncer",
+      "at": "2026-10-12T13:17:01Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at Merge-Bouncer",
+      "at": "2026-10-12T13:17:55Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → blocked at Publish",
+      "at": "2026-10-12T13:19:33Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "automatic Publish verify retry: sent the child to Webster-Burler-Review",
+      "at": "2026-10-12T13:20:03Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "automatic Publish verify retry: resumed the child at Webster-Burler-Review",
+      "at": "2026-10-12T13:20:36Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child paused → running at Webster-Burler-Review",
+      "at": "2026-10-12T13:20:44Z",
+      "budget_exempt": true
     }
   ]
 }
