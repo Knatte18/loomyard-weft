@@ -600,7 +600,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 12,
   "masterStrand": "ded089cc5ffb8858e688d5fdd6b216fd",
   "masterSessionId": "a851bafe-4025-44c5-a927-72b06f2466d6",
   "batches": {
@@ -646,6 +646,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-merge-review/a851bafe-4025-44c5-a927-72b06f2466d6/subagents/agent-a8f51573c1cd34a6c.jsonl"
       ]
+    },
+    "12": {
+      "slug": "landing-merge-in-producer",
+      "cards": [
+        "12-landing-merge-in-producer",
+        "13-segment-colour-merge",
+        "14-bouncer-blocking-and-merge-note",
+        "15-loom-merge-config",
+        "16-recipe-merge-seams",
+        "17-merge-review-rubric"
+      ],
+      "cardHashes": {
+        "12-landing-merge-in-producer": "35b85fa6be655dbee0fd3d9052bc7d58e1904a75367d35b1d1419c2ef1f8ed49",
+        "13-segment-colour-merge": "9958ff50f001631ab03750896a60fe77a4460e3edb934cc92abceb087151f78d",
+        "14-bouncer-blocking-and-merge-note": "f2660490237e9c7b6d31dccb3c9b4127c937f660b1856490bc59d37b8119b3e2",
+        "15-loom-merge-config": "143368747be21d625ecf5ee3b4eeec64d7d93d428d54c7d33a64fa04c3f43883",
+        "16-recipe-merge-seams": "deed323621f35ef9c25580869302b151ed519a04f33c94113bd3a0d87badf6bd",
+        "17-merge-review-rubric": "c2ac431a95d7fa1dbbbb77c7d60ba8d329f93807a5e1857d7da4107302bb63c8"
+      },
+      "startSha": "d0bee07d813dca5c5e012faa7fd3a2d75f66e623",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T08:41:26Z",
+      "sessionId": "a851bafe-4025-44c5-a927-72b06f2466d6",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "fabric-parent-reads",
