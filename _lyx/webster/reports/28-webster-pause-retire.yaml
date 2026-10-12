@@ -1,0 +1,12 @@
+status: OK
+head_sha: cbe02c166afb00014dc1c7e520e6a4e0a1678e66
+deviations:
+  - internal/websterengine/audit.go
+  - internal/websterengine/state.go
+  - internal/websterengine/geometry.go
+  - internal/websterengine/inflight.go
+  - internal/websterengine/outcome.go
+  - internal/webstercli/refusalnote.go
+  - internal/webstercli/sync_integration_test.go
+  - contracts/specs/webster-spec.md
+  - tools/sandbox/SANDBOX-WEBSTER-SUITE.md

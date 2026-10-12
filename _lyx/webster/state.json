@@ -691,7 +691,7 @@
       }
     }
   ],
-  "currentBatch": 28,
+  "currentBatch": 0,
   "masterStrand": "1eb52434bb50dc6bc4414b28acb6018a",
   "masterSessionId": "d11aa544-37b6-416d-a69c-8a37b5df69b6",
   "batches": {
@@ -892,8 +892,33 @@
       "kind": "fork",
       "spawnedAt": "2026-10-12T13:11:55Z",
       "sessionId": "d11aa544-37b6-416d-a69c-8a37b5df69b6",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "28-webster-pause-retire",
+        "status": "done",
+        "head_sha": "cbe02c166afb00014dc1c7e520e6a4e0a1678e66",
+        "deviations": [
+          "internal/websterengine/audit.go",
+          "internal/websterengine/state.go",
+          "internal/websterengine/geometry.go",
+          "internal/websterengine/inflight.go",
+          "internal/websterengine/outcome.go",
+          "internal/webstercli/refusalnote.go",
+          "internal/webstercli/sync_integration_test.go",
+          "contracts/specs/webster-spec.md",
+          "tools/sandbox/SANDBOX-WEBSTER-SUITE.md"
+        ]
+      },
+      "cardShas": [
+        "cbe02c166afb00014dc1c7e520e6a4e0a1678e66"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-a21415fe608813287.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-a21415fe608813287.jsonl"
+      ]
     },
     "7": {
       "slug": "parentlock-covered",
@@ -950,6 +975,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-a7593c586fbfabccf.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-a9d111d44d222b912.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-acf1aa060190e9f10.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-a043c58a533c9ce9b.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-a043c58a533c9ce9b.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-a21415fe608813287.jsonl"
   ]
 }
