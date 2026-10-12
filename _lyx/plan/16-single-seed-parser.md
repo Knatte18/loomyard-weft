@@ -20,7 +20,8 @@ Delete `ParseSeedTolerant` from `internal/shedrun/seed.go`.
 `ParseSeed`, `decodeSeed`, `ReadSeed` and `WriteSeed` stay unchanged.
 In `readLoomRecords` (`internal/reportengine/runs.go`), read the seed through `shedrun.ParseSeed(seedBytes)` instead; the error branch, its `the seed does not decode` reason and its finding naming the seed file stay as they are.
 The report thereby inherits `ParseSeed`'s driver and params validation: a tagged seed naming an unknown driver or an empty params key now reads as a partial run with a finding, where `ParseSeedTolerant` read it as a loom seed.
-That is the only behavior the change lets through or shuts out, and it is bounded to tags whose seed `WriteSeed` could never have written.
+That is the only behavior the change lets through or shuts out, and it is bounded to tags whose seed `ReadSeed` already refuses, so their run never bootstrapped and never reached Finalize;
+no lyx writer produces such a seed, since `WriteSeed` refuses an unknown driver and `lyx shed seed` refuses an empty `--param` key.
 
 In `internal/shedrun/seed_test.go`, `TestParseSeed` drops its `ParseSeedTolerant` assertions: the per-row tolerant check and the `[1]` decode-error check after the loop.
 Its rows keep asserting that `ParseSeed` refuses an unknown driver and an empty params key.
