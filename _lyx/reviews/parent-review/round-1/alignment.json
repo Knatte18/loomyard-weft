@@ -1,0 +1,8 @@
+{
+  "attempt": "/home/knatte/Code/loomyard-LYXHUB/pause-esc-rewind/_lyx/shed/pause-esc-rewind/alignment/parent-review/attempt-1",
+  "strand": "7ab4f80123e85cca5d3654d4de12f4d2",
+  "spawned_at": "2026-10-12T19:16:59.550450905+02:00",
+  "state": "fallback",
+  "report": "/home/knatte/Code/loomyard-LYXHUB/pause-esc-rewind/_lyx/shed/pause-esc-rewind/alignment/parent-review/attempt-1/report-e3aa9ce22409ad24.md",
+  "reason": "Overlap with reed-multi-window (Discussion-Burler-Review, no plan yet): both runs plan changes to internal/shuttleengine and internal/shuttleengine/claudeengine. reed-multi-window changes spec.go and attach.go (own-window anchor default), adds lyx shuttle open, and adds a launch line, session name flag and turnless resume in claudeengine. pause-esc-rewind changes Runner.Interrupt and Run.Interrupt, extracts a running-turn predicate from readiness.go and sessionstate.go, and adds a running-turn pane reading and a settle time in claudeengine. The named files differ, so a text conflict is unlikely. Which lands first, or may both proceed in parallel with the later one rebasing over the earlier in these two packages?"
+}
