@@ -28,7 +28,7 @@ Any other field spelled relative (`.`, `..`, `./…`, `../…`) is a package arg
 
 `missingPackageArgs` walks one chain exactly as `crossModuleCommands` does: `splitChain`, leading `isEnvAssignment` fields skipped, a literal `cd <dir>` followed through `resolveRunDir`, and the scan ended at a `cd` in a pipeline stage, after `||`, or one that cannot be placed, and at a `-C` that cannot be placed.
 It reads a `go` command through `goCommandDirAndPackages` when the subcommand is `test`, `build` or `vet`, and a `lyx gate test` command through `gateTestDirAndPackages`.
-For each package argument not ending in `.go`, it removes a trailing `/...` and joins the rest onto the command's directory with `path.Join`; a result outside the worktree root (`..` or `../…`) passes.
+For each package argument not ending in `.go`, it removes a trailing `/...` and joins the rest onto the command's directory with `path.Join`.
 The argument is missing when that directory is not a directory on disk under `worktreeRoot` and is neither equal to nor an ancestor of an entry of `created`.
 A `missingPackageArg` holds the command text, the argument as written and a hint: when the trimmed argument ends in `_test` and its `_test`-less spelling joined onto the command directory exists or is created by that same rule, the hint is the argument with `_test` removed (a trailing `/...` kept), else empty.
 
@@ -45,7 +45,8 @@ It runs under any `language:`.
 `validate.go`'s leading comment, which lists every check ID and sits outside `validate`'s span, lists the new ID beside `verify-module-wide`; the card names `validate` rather than the file, since a file beside its member is refused as `redundant-file-target`.
 Dispatch already drops a finding against a completed card.
 
-Bound: it reads static spellings only, so an argument behind a variable, inside `bash -c`, or after an unplaceable `cd` passes, as do an import path, a module-wide pattern whose stem exists and a `.go` file argument.
+Bound: it reads static spellings only, so an argument behind a variable or inside `bash -c` passes, as do an import path, a module-wide pattern whose stem exists and a `.go` file argument.
+An argument after an unplaceable `cd` or a `cd` in a pipeline stage or after `||`, or in or after a command whose `-C` or `--dir` cannot be placed, passes too, since the scan ends there as `verify-nested-module`'s does.
 A directory an earlier card deletes is not reported; that card's own verify run catches it.
 The check only refuses and removes no guard.
 
@@ -54,6 +55,7 @@ Each row runs `planparser.ValidateFormat` and compares the `(Card, Ref)` pairs o
 Rows that report:
 - a card Verify `lyx gate test ./internal/x_test`, whose detail also contains `./internal/x` as the replacement;
 - the overview chain `go test ./nope`, with an empty card;
+- `go test ../outside` in the overview chain, with an empty card;
 - `go build ./nope` and `go vet ./nope`, one row each;
 - `go -C m test ./absent`, resolved against the module;
 - `lyx gate test -C m ./absent`, `lyx gate test -C=m ./absent`, `lyx gate test --dir m ./absent` and `lyx gate test --dir=m ./absent`, one row each;
@@ -73,6 +75,10 @@ Rows that report nothing:
 - `lyx gate test ./internal/x -- ./nope`, where reading stops at `--`;
 - `go run ./nope`, a subcommand the check does not read;
 - `cd $DIR && go test ./nope`, after an unplaceable `cd`;
+- `true | cd internal && go test ./nope`, where a `cd` in a pipeline stage ends the scan;
+- `false || cd internal && go test ./nope`, where a `cd` after `||` ends the scan;
+- `go -C .. test ./x && go test ./nope`, where a `-C` that cannot be placed ends the scan before `./nope` is read;
+- `lyx gate test -C .. ./x && go test ./nope`, where `gateTestDirAndPackages` reports ok false and the scan ends the same way;
 - a card 2 Verify `go test ./nope` after a card 1 with a Move group, and a Verify `go test ./nope` on a card with a Move group itself.
 
 The test sits in the external `planparser_test` package for its `validCard`, `cardOfType` and `materializeFiles` helpers, so the card names the file rather than a `plan:internal/planparser_test#…` handle (see the overview's Shared Decisions).
