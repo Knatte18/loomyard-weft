@@ -1,12 +1,13 @@
 {
   "current_producer": "Plan-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Plan-Bouncer: round 5 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYXHUB/config-layers-run-settings/_lyx/reviews/plan/round-5-escalation.md; decide with `lyx loom circling accept config-layers-run-settings` or `lyx loom circling continue config-layers-run-settings`, then run `lyx loom resume` in the task worktree to resume",
+  "parent_notice": "Review segment of task `config-layers-run-settings` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/config-layers-run-settings/_lyx/reviews/plan/round-5-escalation.md` with a one-shot fork.",
   "pause_requested": false,
   "activity": {
     "now": "Plan-Bouncer",
-    "last": "Plan-Burler-Fix → bounced to Plan-Bouncer",
-    "wait": ""
+    "last": "Plan-Bouncer → awaiting",
+    "wait": "bouncer Plan-Bouncer: round 5 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYXHUB/config-layers-run-settings/_lyx/reviews/plan/round-5-escalation.md; decide with `lyx loom circling accept config-layers-run-settings` or `lyx loom circling continue config-layers-run-settings`, then run `lyx loom resume` in the task worktree to resume"
   },
   "history": [
     {
@@ -301,6 +302,12 @@
       "at": "2026-10-12T07:49:43Z",
       "gate_attempts": 0,
       "budget_exempt": true
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/config-layers-run-settings/_lyx/reviews/plan/round-5-bouncer-ledger.md",
+      "at": "2026-10-12T07:50:31Z"
     }
   ],
   "product": {
