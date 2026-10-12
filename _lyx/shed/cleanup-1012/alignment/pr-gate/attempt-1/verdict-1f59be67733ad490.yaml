@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  PR 597 delivers the board entry's three cleanups as D1-D3 record them: the -no-cutoff flag with its header line, Older clamp and doc comment,
+  the reader parenthesis and dollar rules with every acceptance row and the doc.go paragraph, and the removal of the test-local loomyard-weft ReplaceAll.
+  The only extra change is merge-review F1, which routes archivedSlugs through fabricengine.ArchiveTagSlug with the same accepted tag shape.
+  Peers reed-multi-window and pause-esc-rewind touch none of these files, no parent commits are listed, and no PATTERN entry changes.
+question: ""
+superseded: []
