@@ -1,11 +1,11 @@
 {
-  "current_producer": "Run-Shed",
+  "current_producer": "Land",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Run-Shed",
-    "last": "Run-Shed → bounced to Run-Shed",
+    "now": "Land",
+    "last": "Run-Shed → done",
     "wait": ""
   },
   "history": [
@@ -62,6 +62,19 @@
       "output": "child awaiting → running at PR-Gate",
       "at": "2026-10-12T11:32:06Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → done at Friction-Reflect",
+      "at": "2026-10-12T11:33:08Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-12T11:33:38Z"
     }
   ]
 }
