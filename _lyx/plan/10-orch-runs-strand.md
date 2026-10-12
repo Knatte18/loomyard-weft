@@ -1,14 +1,14 @@
 # Card 10 — orch-runs-strand
 
 **Create:**
-- `plan:internal/orchcli#runsStrandName` -> `const runsStrandName = "runs"`
-- `plan:internal/orchcli#runsStrandAddSpec` -> `func runsStrandAddSpec(cmd string) reedengine.AddSpec`
-- `plan:internal/orchcli#orchCLI.ensureRunsStrand` -> `func (c *orchCLI) ensureRunsStrand()`
-- `plan:internal/orchcli#reedStrandOps.AddStrand` -> `func (o reedStrandOps) AddStrand(spec reedengine.AddSpec) (reedengine.Strand, error)`
-- `plan:internal/orchcli#reedStrandOps.ReplaceStrand` -> `func (o reedStrandOps) ReplaceStrand(guid string, spec reedengine.AddSpec) (reedengine.Strand, error)`
-- `plan:internal/orchcli#fakeStrands.AddStrand` -> `func (f *fakeStrands) AddStrand(spec reedengine.AddSpec) (reedengine.Strand, error)`
-- `plan:internal/orchcli#fakeStrands.ReplaceStrand` -> `func (f *fakeStrands) ReplaceStrand(guid string, spec reedengine.AddSpec) (reedengine.Strand, error)`
-- `plan:internal/orchcli#TestStart_EnsuresTheRunsStrandBeforeTheOrch` -> `func TestStart_EnsuresTheRunsStrandBeforeTheOrch(t *testing.T)`
+- `internal/orchcli#runsStrandName`
+- `internal/orchcli#runsStrandAddSpec`
+- `internal/orchcli#orchCLI.ensureRunsStrand`
+- `internal/orchcli#reedStrandOps.AddStrand`
+- `internal/orchcli#reedStrandOps.ReplaceStrand`
+- `internal/orchcli#fakeStrands.AddStrand`
+- `internal/orchcli#fakeStrands.ReplaceStrand`
+- `internal/orchcli#TestStart_EnsuresTheRunsStrandBeforeTheOrch`
 
 **Edit:**
 - `internal/orchcli#strandOps`

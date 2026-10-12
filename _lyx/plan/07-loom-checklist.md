@@ -1,10 +1,10 @@
 # Card 7 — loom-checklist
 
 **Create:**
-- `plan:internal/loomrecipe#RowNames` -> `func RowNames(recipe string) ([]string, error)`
-- `plan:internal/loomrecipe#TestRowNames_FollowEachRecipesRowOrder` -> `func TestRowNames_FollowEachRecipesRowOrder(t *testing.T)`
-- `plan:internal/loomcli#loomCLI.checklistCmd` -> `func (c *loomCLI) checklistCmd() *cobra.Command`
-- `plan:internal/loomcli#renderChecklist` -> `func renderChecklist(rows []string, rowsErr error, poll statuspane.StatusPoll, startedAt string, now time.Time) statuspane.Frame`
+- `internal/loomrecipe#RowNames`
+- `internal/loomrecipe#TestRowNames_FollowEachRecipesRowOrder`
+- `internal/loomcli#loomCLI.checklistCmd`
+- `internal/loomcli#renderChecklist`
 - `internal/loomcli/checklist_test.go`
 
 **Delete:**

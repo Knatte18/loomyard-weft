@@ -1,13 +1,13 @@
 # Card 9 — batten-overview
 
 **Create:**
-- `plan:internal/battencli#battenCLI.overviewCmd` -> `func (c *battenCLI) overviewCmd() *cobra.Command`
-- `plan:internal/battencli#overviewRun` -> `type overviewRun struct`
-- `plan:internal/battencli#overviewSource` -> `type overviewSource struct`
-- `plan:internal/battencli#newOverviewSource` -> `func newOverviewSource(prime *lyxcwd.Location, now func() time.Time) *overviewSource`
-- `plan:internal/battencli#overviewSource.frame` -> `func (s *overviewSource) frame() statuspane.Frame`
-- `plan:internal/battencli#renderOverview` -> `func renderOverview(runs []overviewRun, now time.Time) []string`
-- `plan:internal/battencli#fitOverview` -> `func fitOverview(lines []string, rows int) []string`
+- `internal/battencli#battenCLI.overviewCmd`
+- `internal/battencli#overviewRun`
+- `internal/battencli#overviewSource`
+- `internal/battencli#newOverviewSource`
+- `internal/battencli#overviewSource.frame`
+- `internal/battencli#renderOverview`
+- `internal/battencli#fitOverview`
 - `internal/battencli/overview_test.go`
 - `internal/battencli/overview_integration_test.go`
 

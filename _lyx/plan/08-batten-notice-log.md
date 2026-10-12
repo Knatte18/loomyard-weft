@@ -1,13 +1,13 @@
 # Card 8 — batten-notice-log
 
 **Create:**
-- `plan:internal/shedrun#NoticeLog` -> `func NoticeLog(l *lyxcwd.Location) string`
-- `plan:internal/shedrun#NoticeLogRel` -> `func NoticeLogRel() string`
-- `plan:internal/battenshed#NoticeLog` -> `type NoticeLog struct`
-- `plan:internal/battenshed#appendNoticeLog` -> `func appendNoticeLog(log NoticeLog, line string)`
-- `plan:internal/battenshed#TestAppendNoticeLog` -> `func TestAppendNoticeLog(t *testing.T)`
-- `plan:internal/battencli#noticeLog` -> `func noticeLog(location *lyxcwd.Location, slug string) battenshed.NoticeLog`
-- `plan:internal/battencli#TestNoticeLog_NamesTheHubLogAndTheQuotedAttach` -> `func TestNoticeLog_NamesTheHubLogAndTheQuotedAttach(t *testing.T)`
+- `internal/shedrun#NoticeLog`
+- `internal/shedrun#NoticeLogRel`
+- `internal/battenshed#NoticeLog`
+- `internal/battenshed#appendNoticeLog`
+- `internal/battenshed#TestAppendNoticeLog`
+- `internal/battencli#noticeLog`
+- `internal/battencli#TestNoticeLog_NamesTheHubLogAndTheQuotedAttach`
 
 **Edit:**
 - `internal/battenshed#RowNoticeDeps`

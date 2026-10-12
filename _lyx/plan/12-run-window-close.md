@@ -1,10 +1,10 @@
 # Card 12 — run-window-close
 
 **Create:**
-- `plan:internal/termwindow#pairGoneWaitSeconds` -> `const pairGoneWaitSeconds = 30`
-- `plan:internal/termwindow#attachLineWaiting` -> `func attachLineWaiting(lyxPath, dir string, waitSeconds int) string`
+- `internal/termwindow#pairGoneWaitSeconds`
+- `internal/termwindow#attachLineWaiting`
 - `internal/termwindow/termwindow_integration_test.go`
-- `plan:internal/reedengine#TestAttachGeometry_ClientExitStatusOnSessionEndAndServerShutdown` -> `func TestAttachGeometry_ClientExitStatusOnSessionEndAndServerShutdown(t *testing.T)`
+- `internal/reedengine#TestAttachGeometry_ClientExitStatusOnSessionEndAndServerShutdown`
 
 **Edit:**
 - `internal/termwindow#attachLine` -> `func attachLine(lyxPath, dir string) string`

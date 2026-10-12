@@ -1,6 +1,6 @@
 {
   "runGuid": "e07e1e774738b2cef2c991ef0f96e8ac",
-  "planFingerprint": "8a870587a4286b5be7bcb0d2f97daa3a011db9a61a6e84fdbd81ee01a42f6423",
+  "planFingerprint": "f3caad4afa6193da7884a4f12a4ff76c4891b54d733714b838041be9c78e9fec",
   "planFileHashes": {
     "00-overview.md": "92202a2cbc85ae39c8a7c3bfc63e2187fec5966b490d232bfbf09a3d41c24fd0",
     "01-render-size-vocabulary.md": "3c6ab3bebfc1621f8717a31767cd9ea63241c16ae2a115d7dcf0cfc77738ed52",
@@ -9,12 +9,12 @@
     "04-reed-selvage-cycle.md": "ecbfc3f27d6cf08e6dd1f8c4b26b4f6a3d4a415f2b8d84657f7f7ed514ff6ba4",
     "05-statuspane-pane.md": "d54dd97bb272c9ce8103d010ade1627692f3ede784fcdbdeb814dbd4caa2a0fc",
     "06-statuspane-build-identity.md": "c544d9c0b722bb7e25abd62199f7b015506f96065d17e6dd9653fab90cd9dbc6",
-    "07-loom-checklist.md": "749908cf93849072c2acf576fb13539e3a0a0da4f6c24bcadf80f7f424dc5c60",
-    "08-batten-notice-log.md": "f072452936a25165308513d5a872771fe59e62ac009fd60940818e10df41aa6c",
-    "09-batten-overview.md": "45edc6003db1d7c1d0d438b37d960f0db2939dce5742d4d471b5f520ad7761c1",
-    "10-orch-runs-strand.md": "ac9dc610d9d378b84b056b9f33ffc2279c0c2464f8feebb177418ae585888399",
+    "07-loom-checklist.md": "3d04f07f534be1b98f07d43b5547225efd5794025ccc8c1f705adea8085cd52e",
+    "08-batten-notice-log.md": "eb8aaff3abad99e9c6eff97ca0b033e5b8a48544eecea9db132ebcdba59b0dd9",
+    "09-batten-overview.md": "1028e1e78e1547c16960b95ac7c9d2c06a92740dc207fc19d70dd666dc991528",
+    "10-orch-runs-strand.md": "6696e83a67c9f336ce40ab70098952456629303349cba83558b91a7f50212b94",
     "11-seat-sharing.md": "df4b4b2a7b8e0cc9230df37753350fcaf75859021933bb278e656dac1ab5f51a",
-    "12-run-window-close.md": "b370faadb6c70bbe834ca72825f0ab400f0d5a6c20a55cad22344d348ca8b8cb"
+    "12-run-window-close.md": "bc699b66f06b6e819f733f0c350eeb8d1892e794510ceb37c2f17dee5b0ab9b6"
   },
   "planOverviewFrameHash": "970b6f3cbef66dc1cddacafe19e56a79f781546020c4a4c69967ff70de727561",
   "partition": [
@@ -272,7 +272,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "63b730dbfb4ffb968d127be96e00179f",
   "masterSessionId": "aed52dbd-eeed-449f-8613-1e669e8caaf9",
   "batches": {
@@ -330,22 +330,47 @@
         "12-run-window-close"
       ],
       "cardHashes": {
-        "07-loom-checklist": "749908cf93849072c2acf576fb13539e3a0a0da4f6c24bcadf80f7f424dc5c60",
-        "08-batten-notice-log": "f072452936a25165308513d5a872771fe59e62ac009fd60940818e10df41aa6c",
-        "09-batten-overview": "45edc6003db1d7c1d0d438b37d960f0db2939dce5742d4d471b5f520ad7761c1",
-        "10-orch-runs-strand": "ac9dc610d9d378b84b056b9f33ffc2279c0c2464f8feebb177418ae585888399",
+        "07-loom-checklist": "3d04f07f534be1b98f07d43b5547225efd5794025ccc8c1f705adea8085cd52e",
+        "08-batten-notice-log": "eb8aaff3abad99e9c6eff97ca0b033e5b8a48544eecea9db132ebcdba59b0dd9",
+        "09-batten-overview": "1028e1e78e1547c16960b95ac7c9d2c06a92740dc207fc19d70dd666dc991528",
+        "10-orch-runs-strand": "6696e83a67c9f336ce40ab70098952456629303349cba83558b91a7f50212b94",
         "11-seat-sharing": "df4b4b2a7b8e0cc9230df37753350fcaf75859021933bb278e656dac1ab5f51a",
-        "12-run-window-close": "b370faadb6c70bbe834ca72825f0ab400f0d5a6c20a55cad22344d348ca8b8cb"
+        "12-run-window-close": "bc699b66f06b6e819f733f0c350eeb8d1892e794510ceb37c2f17dee5b0ab9b6"
       },
       "startSha": "4a31fd0f06004f5feb999751c6abaeba0b37e389",
       "kind": "fork",
       "spawnedAt": "2026-10-12T10:39:56Z",
       "sessionId": "aed52dbd-eeed-449f-8613-1e669e8caaf9",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-loom-checklist",
+        "status": "done",
+        "head_sha": "912644437c5789632bdf92c8a3aa81798b6ca257",
+        "deviations": [
+          "internal/loomrecipe/seam_enforcement_test.go",
+          "cmd/lyx/hermeticenv_test.go",
+          "internal/battenshed/rownotice.go",
+          "internal/battenshed/deps.go",
+          "internal/battenshed/notice.go",
+          "internal/shedrun/paths.go",
+          "internal/orchcli/start.go",
+          "internal/seatengine/prompt_test.go"
+        ]
+      },
+      "cardShas": [
+        "912644437c5789632bdf92c8a3aa81798b6ca257"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-runs-overview/aed52dbd-eeed-449f-8613-1e669e8caaf9/subagents/agent-ad0baac0ecdd31ec7.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-runs-overview/aed52dbd-eeed-449f-8613-1e669e8caaf9/subagents/agent-ad0baac0ecdd31ec7.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-runs-overview/aed52dbd-eeed-449f-8613-1e669e8caaf9/subagents/agent-a09424441933e48c8.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-runs-overview/aed52dbd-eeed-449f-8613-1e669e8caaf9/subagents/agent-a09424441933e48c8.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-runs-overview/aed52dbd-eeed-449f-8613-1e669e8caaf9/subagents/agent-ad0baac0ecdd31ec7.jsonl"
   ]
 }

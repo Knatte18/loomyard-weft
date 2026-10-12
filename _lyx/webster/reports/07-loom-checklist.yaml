@@ -1,0 +1,11 @@
+status: OK
+head_sha: 912644437c5789632bdf92c8a3aa81798b6ca257
+deviations:
+  - internal/loomrecipe/seam_enforcement_test.go
+  - cmd/lyx/hermeticenv_test.go
+  - internal/battenshed/rownotice.go
+  - internal/battenshed/deps.go
+  - internal/battenshed/notice.go
+  - internal/shedrun/paths.go
+  - internal/orchcli/start.go
+  - internal/seatengine/prompt_test.go
