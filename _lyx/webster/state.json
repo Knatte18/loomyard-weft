@@ -1,0 +1,724 @@
+{
+  "runGuid": "3bb889d42e5749ee0b48effeda89947c",
+  "planFingerprint": "81be589935117053de8f0958e70b1d0fcd7afaa68fa19fe013f7f9a7ecd7287b",
+  "planFileHashes": {
+    "00-overview.md": "d71cea8e9dc89b18d973c253036ba8f5f3dd3511c99e40f46ed5b6dc35930996",
+    "01-pause-record.md": "c9ad873b0fbd39a719838d5c10abe081e86955a0f6c62b8ce431af48c712e546",
+    "02-sleep-watch.md": "060437ff26160de614fc3b4e9c4a169250d329ffa4c1ccef1811176a8f8e32b2",
+    "03-network-gate.md": "ae982866fe11a14e83def121f6f254f30b19b6b150685d10aa2d4ec6a15f70bd",
+    "04-pause-geometry.md": "9b45fb7aac8753982c4acaf416cd27ee01535393e1c20acbee86a087a03aaa38",
+    "05-gitexec-network-hold.md": "6073c6ddba34900cf42da2cdc4c8f04824b8cdb3760cf7bf2a4db4f220dd2950",
+    "06-github-network-hold.md": "1ebafe4830b099fd8c420713133137c9344ede9231ab62b8fa938b2ed2d38f6a",
+    "07-parentlock-covered.md": "fca108e0f3d6b6c23a07b739e3421fcf3e2301265b6fec8f7a2fcb14583ff2a8",
+    "08-shuttle-pause.md": "9b3f96f7a6b518f8b365665ee5ffbb34ca225e5ce1f9af5e2accc1fdf96934ed",
+    "09-shuttle-api-continue.md": "137d2166f06f39c6a7801cbba99dd9e7ab824a4a4a18b5e26b62fdf1d8454040",
+    "10-shuttle-step-tie.md": "77ec9c936f3f531726a8c2e6a4616f7fc80b20b30a630a561781f172b49ef9c2",
+    "11-shuttle-pending-prompt.md": "737c8fb2013d37e1a77e210caf3fa429011fa9c318988004f4d9ebed0de9cafe",
+    "12-runner-pause-wiring.md": "b422601ac2983b282476d518ef0e373d3ed1dd09b3f161d5b5902afe59f42309",
+    "13-shuttle-send-refusal.md": "074a0f4732efdc466f94ee910099ef32ea34490bd73f24f725d6e62c60bee1c3",
+    "14-reed-resume-hold.md": "5ca89f17831b42650dba995fe3a43e31b30fd41199dc1068e5659281d7f96fa8",
+    "15-start-refusals.md": "f6e196438888fc8abb8f38d732bece8b803a1f4a4491f0ee2eeca14d90af02ab",
+    "16-batten-sleep-clock.md": "2fc8b24ef2f29c0c5ae1b62b4952dfc40cb22ed59ac866d66850960410c785fc",
+    "17-batten-pause-reader.md": "65d64cb6fdd93d231f6cf76b2c51347e3357f414552159ba03e69cdc75fe411a",
+    "18-loom-idle-release-pause.md": "85bca948d1ea86944da0b5076ad922ee9a9d4ca54b888f63b9b13275b45038e6",
+    "19-watchdog-awake.md": "9932763fd9d8f73fa4bf057cca65215f066aa9258fde6ccaf7b24c0a67cb056c",
+    "20-watchdog-kill-record.md": "150444bc84ec2b7ba8db2d292b0488fe3afc5ae3601fdf9bfd61418edbc21bd3",
+    "21-orch-pause.md": "0d97544d5c32e5f1cbd971dda67764ae9cfc3835545fb3e31468bf1ee9d8ee84",
+    "22-pause-engine.md": "cd99c8a82361b31452724ea1e2a920328c8166f5dc705ebbb31c4d9c780241f1",
+    "23-pause-cli.md": "e1f73f3aeea701f927ae49cebaa077b0cca4db66efa54865dfa1bdaedf1c8122",
+    "24-status-paused-since.md": "86aad5c5851e05a8b610b9056714ac478cb92219658c7a07692f23f74172320c",
+    "25-loom-bare-pause-refusal.md": "00823838db5ebcb6876b201f70ce96183c61f1997cef5a0d210bbcb46ab15535",
+    "26-shed-pause-way-forward.md": "49c7f019e4af731a0f190adcc1955387b63b3242a9ea2dcf51fdef1b43abcd18",
+    "27-lock-wait-pause-after.md": "a0196bc4173267857a2e9413f82ba837534b263636257eb7e0fc2b830ead44e9",
+    "28-webster-pause-retire.md": "577dd24ade85055e31a7e4da64a85a01cd95039ff900b6d80d2ca12679c13f1f"
+  },
+  "planOverviewFrameHash": "039a3e9ebeb29d2fc9a2a99df3597df0fbd702c583343072f506c964ae8c1c4a",
+  "partition": [
+    {
+      "cards": [
+        "01-pause-record",
+        "02-sleep-watch",
+        "03-network-gate",
+        "04-pause-geometry",
+        "05-gitexec-network-hold",
+        "06-github-network-hold"
+      ],
+      "profile": "cautious",
+      "estimate": 231308,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54856,
+        "read_union": 48280,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 732,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "file:internal/lyxdirs/dirs.go": 204,
+              "file:pattern/PATTERN-leaf-packages.md": 720,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/lyxdirs": 2000,
+              "package:internal/pauserecord": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/lyxdirs": 2000,
+              "tests:internal/pauserecord": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 156,
+            "written": 47532
+          },
+          {
+            "card": 2,
+            "card_text": 372,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/pauserecord": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/pauserecord": 2000
+            },
+            "messages": 54,
+            "written": 16572
+          },
+          {
+            "card": 3,
+            "card_text": 540,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "file:pattern/PATTERN-daemon-wakeups.md": 528,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/pauserecord": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/pauserecord": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 107,
+            "written": 32640
+          },
+          {
+            "card": 4,
+            "card_text": 300,
+            "reads": {
+              "file:internal/hubgeom/doc.go": 456,
+              "file:internal/standalonegeom/doc.go": 396,
+              "package:internal/hubgeom": 2000,
+              "package:internal/standalonegeom": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/standalonegeom": 2000
+            },
+            "messages": 48,
+            "written": 14700
+          },
+          {
+            "card": 5,
+            "card_text": 252,
+            "reads": {
+              "file:internal/gitexec/doc.go": 384,
+              "package:internal/gitexec": 2000,
+              "package:internal/gitexec_test": 2000,
+              "tests:internal/gitexec": 2000,
+              "tests:internal/gitexec_test": 2000
+            },
+            "messages": 21,
+            "written": 6552
+          },
+          {
+            "card": 6,
+            "card_text": 276,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "file:internal/githubclient/doc.go": 1452,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/githubclient": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/githubclient": 2000
+            },
+            "messages": 33,
+            "written": 10176
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-parentlock-covered",
+        "08-shuttle-pause",
+        "09-shuttle-api-continue",
+        "10-shuttle-step-tie",
+        "11-shuttle-pending-prompt",
+        "12-runner-pause-wiring"
+      ],
+      "profile": "cautious",
+      "estimate": 279872,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61856,
+        "read_union": 49020,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 348,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "file:internal/parentlock/doc.go": 576,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/parentlock": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/parentlock": 2000
+            },
+            "messages": 73.5,
+            "written": 22398
+          },
+          {
+            "card": 8,
+            "card_text": 576,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "file:internal/shuttleengine/doc.go": 4224,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 130.5,
+            "written": 39726
+          },
+          {
+            "card": 9,
+            "card_text": 396,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 4224,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 58.5,
+            "written": 17946
+          },
+          {
+            "card": 10,
+            "card_text": 408,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "file:internal/shuttleengine/doc.go": 4224,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 82.5,
+            "written": 25158
+          },
+          {
+            "card": 11,
+            "card_text": 432,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "file:internal/burlerengine/doc.go": 4056,
+              "file:internal/shuttleengine/doc.go": 4224,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 89,
+            "written": 27132
+          },
+          {
+            "card": 12,
+            "card_text": 336,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "package:internal/burlercli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shuttlecli": 2000,
+              "package:internal/webstercli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 121,
+            "written": 36636
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-shuttle-send-refusal",
+        "14-reed-resume-hold",
+        "15-start-refusals",
+        "16-batten-sleep-clock",
+        "17-batten-pause-reader",
+        "18-loom-idle-release-pause"
+      ],
+      "profile": "cautious",
+      "estimate": 301498,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68856,
+        "read_union": 61528,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 276,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4812,
+              "package:contracts/specs": 2000,
+              "package:internal/shuttlecli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/shuttlecli": 2000
+            },
+            "messages": 35,
+            "written": 10776
+          },
+          {
+            "card": 14,
+            "card_text": 396,
+            "reads": {
+              "file:internal/reedengine/doc.go": 10944,
+              "package:internal/battencli": 2000,
+              "package:internal/hubgeom": 2000,
+              "package:internal/reedcli": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/reedcli": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 123.5,
+            "written": 37446
+          },
+          {
+            "card": 15,
+            "card_text": 420,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "file:contracts/specs/refusal-spec.md": 4812,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 115.5,
+            "written": 35070
+          },
+          {
+            "card": 16,
+            "card_text": 420,
+            "reads": {
+              "file:internal/battenshed/doc.go": 1740,
+              "package:internal/battenshed": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 74.5,
+            "written": 22770
+          },
+          {
+            "card": 17,
+            "card_text": 636,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "file:internal/battenshed/doc.go": 1740,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 154.5,
+            "written": 46986
+          },
+          {
+            "card": 18,
+            "card_text": 216,
+            "reads": {
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 59.5,
+            "written": 18066
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "19-watchdog-awake",
+        "20-watchdog-kill-record",
+        "21-orch-pause",
+        "22-pause-engine",
+        "23-pause-cli"
+      ],
+      "profile": "cautious",
+      "estimate": 359024,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75856,
+        "read_union": 81892,
+        "cards": [
+          {
+            "card": 19,
+            "card_text": 432,
+            "reads": {
+              "file:internal/shedverbs/doc.go": 1164,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedverbs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedverbs": 2000
+            },
+            "messages": 110,
+            "written": 33432
+          },
+          {
+            "card": 20,
+            "card_text": 540,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "file:contracts/specs/refusal-spec.md": 4812,
+              "file:internal/shedverbs/doc.go": 1164,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedverbs": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedverbs": 2000
+            },
+            "messages": 141,
+            "written": 42840
+          },
+          {
+            "card": 21,
+            "card_text": 660,
+            "reads": {
+              "file:PATTERN.md": 1332,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "file:internal/orchengine/doc.go": 4596,
+              "package:.": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 119,
+            "written": 36360
+          },
+          {
+            "card": 22,
+            "card_text": 588,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/pauseengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/pauseengine": 2000
+            },
+            "messages": 108,
+            "written": 32988
+          },
+          {
+            "card": 23,
+            "card_text": 756,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "file:contracts/specs/refusal-spec.md": 4812,
+              "file:docs/overview.md": 8676,
+              "file:pattern/PATTERN-cli-cobra.md": 372,
+              "file:tools/sandbox/SANDBOX-CORE-SUITE.md": 4296,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/pausecli": 2000,
+              "package:pattern": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/pausecli": 2000,
+              "tests:pattern": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 183,
+            "written": 55656
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "24-status-paused-since",
+        "25-loom-bare-pause-refusal",
+        "26-shed-pause-way-forward",
+        "27-lock-wait-pause-after"
+      ],
+      "profile": "cautious",
+      "estimate": 348954,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82856,
+        "read_union": 82960,
+        "cards": [
+          {
+            "card": 24,
+            "card_text": 276,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 90.5,
+            "written": 27426
+          },
+          {
+            "card": 25,
+            "card_text": 552,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "file:contracts/specs/loom-status-spec.md": 2076,
+              "file:contracts/specs/refusal-spec.md": 4812,
+              "file:contracts/stencils/orch/orch-template-role.md": 2244,
+              "file:docs/overview.md": 8676,
+              "file:docs/skills.md": 2532,
+              "file:internal/shedverbs/doc.go": 1164,
+              "file:tools/sandbox/SANDBOX-CORE-SUITE.md": 4296,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedcli": 2000,
+              "package:internal/shedverbs": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils/orch": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedcli": 2000,
+              "tests:internal/shedverbs": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 171.5,
+            "written": 52002
+          },
+          {
+            "card": 26,
+            "card_text": 600,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4812,
+              "file:internal/shedengine/doc.go": 1704,
+              "package:contracts/specs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/pairteardown": 2000,
+              "package:internal/shedbuild": 2000,
+              "package:internal/shedengine": 2000,
+              "package:internal/shedverbs": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/pairteardown": 2000,
+              "tests:internal/shedbuild": 2000,
+              "tests:internal/shedengine": 2000,
+              "tests:internal/shedverbs": 2000
+            },
+            "messages": 240.5,
+            "written": 72750
+          },
+          {
+            "card": 27,
+            "card_text": 360,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1668,
+              "file:contracts/specs/refusal-spec.md": 4812,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 102,
+            "written": 30960
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "28-webster-pause-retire"
+      ],
+      "profile": "cautious",
+      "estimate": 241996,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89856,
+        "read_union": 62332,
+        "cards": [
+          {
+            "card": 28,
+            "card_text": 708,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 4812,
+              "file:contracts/stencils/claims_test.go": 11016,
+              "file:contracts/stencils/webster/webster-template-master.md": 3036,
+              "file:internal/shedadapters/doc.go": 4056,
+              "file:internal/webstercli/pause.go": 576,
+              "file:internal/websterengine/doc.go": 8196,
+              "file:internal/websterengine/pause.go": 792,
+              "file:internal/websterengine/pause_test.go": 1140,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "package:internal/websterengine_test": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:internal/websterengine_test": 2000
+            },
+            "messages": 297,
+            "written": 89808
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "1eb52434bb50dc6bc4414b28acb6018a",
+  "masterSessionId": "d11aa544-37b6-416d-a69c-8a37b5df69b6",
+  "batches": {
+    "1": {
+      "slug": "pause-record",
+      "cards": [
+        "01-pause-record",
+        "02-sleep-watch",
+        "03-network-gate",
+        "04-pause-geometry",
+        "05-gitexec-network-hold",
+        "06-github-network-hold"
+      ],
+      "cardHashes": {
+        "01-pause-record": "c9ad873b0fbd39a719838d5c10abe081e86955a0f6c62b8ce431af48c712e546",
+        "02-sleep-watch": "060437ff26160de614fc3b4e9c4a169250d329ffa4c1ccef1811176a8f8e32b2",
+        "03-network-gate": "ae982866fe11a14e83def121f6f254f30b19b6b150685d10aa2d4ec6a15f70bd",
+        "04-pause-geometry": "9b45fb7aac8753982c4acaf416cd27ee01535393e1c20acbee86a087a03aaa38",
+        "05-gitexec-network-hold": "6073c6ddba34900cf42da2cdc4c8f04824b8cdb3760cf7bf2a4db4f220dd2950",
+        "06-github-network-hold": "1ebafe4830b099fd8c420713133137c9344ede9231ab62b8fa938b2ed2d38f6a"
+      },
+      "startSha": "314816cde00092577fd3e2caa5083b5763837b63",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T12:14:17Z",
+      "sessionId": "d11aa544-37b6-416d-a69c-8a37b5df69b6",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
