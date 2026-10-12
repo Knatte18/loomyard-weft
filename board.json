@@ -31,7 +31,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "Record every hub intervention and driver repair with a class and cause, so interventions per run and repeat failure classes are visible",
-      "body": "## Seen\n\nOperator 2026-09-30: take a step back and plan for convergence, not keep accepting more bugs.\nThat day nearly every hub intervention was in same-day new code (#319: approve nil dep, reject reading its file argument as run-id), and both passed tests built on fake deps.\n\n## Idea\n\nLog every hub intervention and every driver repair per run with a class and a cause, so interventions per run and new versus repeat failure classes are visible over time.\nFixing at the source with a test through the real CLI wiring, and hardening-only periods when the rate climbs, are working practice and need no build.\n\nGoal: the outside LLM steps in rarely, and for the task rather than for lyx.\n"
+      "body": "## Seen\n\nOperator 2026-09-30: take a step back and plan for convergence, not keep accepting more bugs.\nThat day nearly every hub intervention was in same-day new code (#319: approve nil dep, reject reading its file argument as run-id), and both passed tests built on fake deps.\n\n## Idea\n\nLog every hub intervention and every driver repair per run with a class and a cause, so interventions per run and new versus repeat failure classes are visible over time.\nFixing at the source with a test through the real CLI wiring, and hardening-only periods when the rate climbs, are working practice and need no build.\n\nGoal: the outside LLM steps in rarely, and for the task rather than for lyx.\n",
+      "created": "2026-10-02T10:12:46Z",
+      "revised": "2026-10-10T09:21:56Z"
     },
     {
       "id": 38,
