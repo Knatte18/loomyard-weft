@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **reed: runs overview pane above the orch, gate checklist, Selvage by key, run windows close**<br>• A pane above the orch listing every run in flight and its loom stage, a per-run gate checklist pane, Selvage in the Alt+arrow cycle, and run windows that close when their run ends | [`runs-overview`](design-runs-overview.md) | loom | Webster-Bouncer |  |  | reed, orch, batten |
+| 1 | **reed: runs overview pane above the orch, gate checklist, Selvage by key, run windows close**<br>• A pane above the orch listing every run in flight and its loom stage, a per-run gate checklist pane, Selvage in the Alt+arrow cycle, and run windows that close when their run ends | [`runs-overview`](design-runs-overview.md) | loom | Describe |  |  | reed, orch, batten |
 | 2 | **Alignment agent in loom checks a run against the board and runs in flight**<br>• A cold-start agent at parent review and PR-Gate reads the board and in-flight runs records and checks alignment, waking the orch only on an overlap. | [`alignment-agent`](design-alignment-agent.md) | loom | Plan-Burler-Fix |  |  | orch, loom |
 
 #### Normal priority
@@ -72,7 +72,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 16 | **tokencount: guard the slug-reuse cutoff against date skew**<br>• The slug-reuse cutoff is always applied; a tag commit date skewed against transcript timestamps could silently drop sessions. | [`tokencount-cutoff-skew`](design-tokencount-cutoff-skew.md) |  |  |  |
 | 17 | **Sweep tests that rely on a closed listener socket file**<br>• A forked child of a parallel test can inherit a closed listener fd and keep a stale socket answering; sweep other tests for the same race. | [`reed-socket-test-fd-sweep`](design-reed-socket-test-fd-sweep.md) |  |  | reed |
 | 18 | **End the seat hold deferral when the advisor itself is held or dead**<br>• The hold notice deferral only got a shorter cap (10 min); ending it as soon as the advisor is held or dead is not built. | [`hold-deferral-end-on-held`](design-hold-deferral-end-on-held.md) |  |  | shuttle |
-| 19 | **Measure the Webster kick-start pack with and without**<br>• Repeat the audit count (grep-for-member calls and whole-file reads per fork) on real loom runs with kickstart_pack on and off. | [`kickstart-pack-measure`](design-kickstart-pack-measure.md) |  | 34m | webster |
+| 19 | **Measure the Webster kick-start pack with and without**<br>• Repeat the audit count (grep-for-member calls and whole-file reads per fork) on real loom runs with kickstart_pack on and off. | [`kickstart-pack-measure`](design-kickstart-pack-measure.md) |  | 35m | webster |
 | 20 | **Twill for Plan: measure fewer Plan-Review rounds; wrong-parent-dir miss**<br>• After twill-plan lands: measure a lower plan_max_bounces, and cover the parent-directory miss every bench arm shared | [`twill-plan-followups`](design-twill-plan-followups.md) |  | 23m | loom |
 | 21 | **Go-driven shed with a cold LLM watcher at every level**<br>• A Go loop always steps the run; an LLM watcher is spawned only when the loop stops on something it cannot pass, the same at loom and hub level | [`go-driven-shed`](design-go-driven-shed.md) | 32m | 32m | shed, batten, loom, orch |
 
