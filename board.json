@@ -934,7 +934,7 @@
       "id": 439,
       "slug": "kickstart-read-all-first",
       "title": "Kick-start pack: read every card's spans in the first turn",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "webster",
