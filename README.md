@@ -25,7 +25,11 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Plan gate: receiver-typed delete-before-reference; plan review validates its fixes**<br>• Bare-name method matching floods plans with false blocking findings, and plan-review proposes fixes the gate refuses | [`plan-gate-fixes`](design-plan-gate-fixes.md) | loom |  | 0m | 0m | loom, quarry, stencil |
 
 ## Notes
 
@@ -37,9 +41,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Plan gate delete-before-reference matches deleted methods by bare name**<br>• Hundreds of false blocking findings when a plan deletes a method with a common name | [`delete-before-reference-receiver`](design-delete-before-reference-receiver.md) |  |  | quarry, loom |
-| 2 | **Plan-review fixes are proposed without running lyx loom validate-plan; fix glyphs name the wrong function** | [`plan-review-validate`](design-plan-review-validate.md) |  |  | loom, stencil |
-| 3 | **An old lyx process drops board fields it does not know**<br>• A run started before a deploy rewrites board.json with its old struct and loses newly added fields such as created and revised | [`board-field-drop`](design-board-field-drop.md) |  |  | board, batten |
+| 1 | **An old lyx process drops board fields it does not know**<br>• A run started before a deploy rewrites board.json with its old struct and loses newly added fields such as created and revised | [`board-field-drop`](design-board-field-drop.md) |  |  | board, batten |
 
 ### Enhancements
 
