@@ -1,9 +1,9 @@
 # Card 4 — Rename ReadJSONStrict for what still sets it apart
 
 **Rename:**
-- `internal/state#ReadJSONStrict` -> `plan:internal/state#ReadJSONNoMkdir`
-- `internal/state#TestReadJSONStrict` -> `plan:internal/state#TestReadJSONNoMkdir`
-- `internal/state#TestReadJSONStrict_MissingFile_NoMkdirAll` -> `plan:internal/state#TestReadJSONNoMkdir_MissingFileCreatesNoDirectory`
+- `internal/state#ReadJSONStrict` -> `internal/state#ReadJSONNoMkdir`
+- `internal/state#TestReadJSONStrict` -> `internal/state#TestReadJSONNoMkdir`
+- `internal/state#TestReadJSONStrict_MissingFile_NoMkdirAll` -> `internal/state#TestReadJSONNoMkdir_MissingFileCreatesNoDirectory`
 
 **Edit:**
 - `contracts/specs/loom-status-spec.md`

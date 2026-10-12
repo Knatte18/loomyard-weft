@@ -1,13 +1,13 @@
 {
   "runGuid": "76f126c768c165f9a4c3b2a65db5ca1b",
-  "planFingerprint": "7bec1f595aad54cfcbfa4e483ea7215ea46bf0fed51e69fcc04f0d774a8875b8",
+  "planFingerprint": "8e29a03f2196a62544f725e8bab0e08b196adce8e7e30a1c843a7b8ea60d8cf5",
   "planFileHashes": {
     "00-overview.md": "8ea6e4fad3b3b273a1b5ffa37aa2a54b5f58d1a3ebf47b2fadf9e0a81dc31615",
     "01-board-encoding-pin.md": "3df309a27433d335be694b6e5fd6e9633937661623ec8539c0b7e9d5836c6443",
     "02-state-tolerant-read.md": "16139b30048b87c10616cd0bfb0e6dc02b29edbcdda2cd6bffc9a38d5a0af39f",
-    "03-state-keep-unknown.md": "4a08a5b9e6f733c07de6ca9ce3eb0c3147fc0753b68f0d29ea248c3afcd357df",
-    "04-state-rename.md": "b96af428503899ddd1666ec66492cb4cea135815caaf0e04494f93ee9883d7d5",
-    "05-shedrun-seed-tolerant.md": "11aa6f4d1b4c5611dec41680e3019ce50eda3dcc2b24ea3f4a0f8b51bb6c8b1b",
+    "03-state-keep-unknown.md": "1f7f5f5ba278499457491aa75690bde29a7b6e10497b4d6d6d1f4c1e200b8e03",
+    "04-state-rename.md": "85bc7949a5cfb44be70b508bf9457d07fc80c998e3d33fc40045844a267092c6",
+    "05-shedrun-seed-tolerant.md": "4e67fcb42e2359d95f719babd93f62a9b71989916474e91ec8e7a77a15238e0c",
     "06-batten-cleanup-tolerant.md": "7a3cd8e091ec0911b2fa24efa016887c8cbfb127c590d2b8e538a4272758251c",
     "07-pattern-tolerant-records.md": "f1a623cb8975302fed4e2a124f143a686c861d7bf890ecd0fbb116cf297fa01f",
     "08-gate-busy-quit-key.md": "ca58068a5ed3f7f452dc33dac423568e579fe88240c28cf2b128660381524b8e",
@@ -321,7 +321,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "ee46b2e92668b2497d9bd352600e7d0a",
   "masterSessionId": "d00e9340-cdfe-419b-a2d7-fd26fe1b4f19",
   "batches": {
@@ -337,16 +337,76 @@
       "cardHashes": {
         "01-board-encoding-pin": "3df309a27433d335be694b6e5fd6e9633937661623ec8539c0b7e9d5836c6443",
         "02-state-tolerant-read": "16139b30048b87c10616cd0bfb0e6dc02b29edbcdda2cd6bffc9a38d5a0af39f",
-        "03-state-keep-unknown": "4a08a5b9e6f733c07de6ca9ce3eb0c3147fc0753b68f0d29ea248c3afcd357df",
-        "04-state-rename": "b96af428503899ddd1666ec66492cb4cea135815caaf0e04494f93ee9883d7d5",
-        "05-shedrun-seed-tolerant": "11aa6f4d1b4c5611dec41680e3019ce50eda3dcc2b24ea3f4a0f8b51bb6c8b1b"
+        "03-state-keep-unknown": "1f7f5f5ba278499457491aa75690bde29a7b6e10497b4d6d6d1f4c1e200b8e03",
+        "04-state-rename": "85bc7949a5cfb44be70b508bf9457d07fc80c998e3d33fc40045844a267092c6",
+        "05-shedrun-seed-tolerant": "4e67fcb42e2359d95f719babd93f62a9b71989916474e91ec8e7a77a15238e0c"
       },
       "startSha": "1135939906fcdddd4cfdcf1bd7b46ad7ace09268",
       "kind": "fork",
       "spawnedAt": "2026-10-12T12:29:27Z",
       "sessionId": "d00e9340-cdfe-419b-a2d7-fd26fe1b4f19",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-board-encoding-pin",
+        "status": "done",
+        "head_sha": "6f6270e0560bd218a29d77c3845c56e8e466600f",
+        "deviations": [
+          "internal/battencli/arm.go",
+          "internal/battencli/land.go",
+          "internal/battencli/run_test.go",
+          "internal/battencli/step_test.go",
+          "internal/battencli/wire.go",
+          "internal/battenrecipe/recipe_test.go",
+          "internal/loomcli/approve.go",
+          "internal/loomcli/circling.go",
+          "internal/loomcli/darnwiring.go",
+          "internal/loomcli/entryobservation.go",
+          "internal/loomcli/halt.go",
+          "internal/loomcli/landingdeps.go",
+          "internal/loomcli/looparm.go",
+          "internal/loomcli/reject.go",
+          "internal/loomcli/resume.go",
+          "internal/loomcli/review.go",
+          "internal/loomcli/smoke_bootstrapwiring_test.go",
+          "internal/loomcli/start_driver_test.go",
+          "internal/loomcli/start.go",
+          "internal/loomcli/wiring_darn_test.go",
+          "internal/loomcli/wiring.go",
+          "internal/loomrecipe/escalation_test.go",
+          "internal/loomrecipe/frictionreflect_test.go",
+          "internal/loomrecipe/resume_test.go",
+          "internal/loomrecipe/sequence_test.go",
+          "internal/loomshed/loompreflight.go",
+          "internal/pairteardown/claim.go",
+          "internal/shedcli/cli_test.go",
+          "internal/shedengine/failedstop.go",
+          "internal/shedengine/goto.go",
+          "internal/shedengine/rename.go",
+          "internal/shedengine/testsupport_test.go",
+          "internal/shedverbs/goto_test.go",
+          "internal/shedverbs/loop_arming_integration_test.go",
+          "internal/shedverbs/loop.go",
+          "internal/shedverbs/loop_integration_test.go",
+          "internal/shedverbs/loop_test.go",
+          "internal/shedverbs/pause_test.go",
+          "internal/shedverbs/spec.go",
+          "internal/shedverbs/status.go",
+          "internal/shedverbs/status_test.go"
+        ]
+      },
+      "cardShas": [
+        "6f6270e0560bd218a29d77c3845c56e8e466600f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-robustness/d00e9340-cdfe-419b-a2d7-fd26fe1b4f19/subagents/agent-a29419e873e5ef5d0.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-robustness/d00e9340-cdfe-419b-a2d7-fd26fe1b4f19/subagents/agent-a29419e873e5ef5d0.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-robustness/d00e9340-cdfe-419b-a2d7-fd26fe1b4f19/subagents/agent-a29419e873e5ef5d0.jsonl"
+  ]
 }

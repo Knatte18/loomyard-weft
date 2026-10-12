@@ -1,0 +1,44 @@
+status: OK
+head_sha: 6f6270e0560bd218a29d77c3845c56e8e466600f
+deviations:
+  - internal/battencli/arm.go
+  - internal/battencli/land.go
+  - internal/battencli/run_test.go
+  - internal/battencli/step_test.go
+  - internal/battencli/wire.go
+  - internal/battenrecipe/recipe_test.go
+  - internal/loomcli/approve.go
+  - internal/loomcli/circling.go
+  - internal/loomcli/darnwiring.go
+  - internal/loomcli/entryobservation.go
+  - internal/loomcli/halt.go
+  - internal/loomcli/landingdeps.go
+  - internal/loomcli/looparm.go
+  - internal/loomcli/reject.go
+  - internal/loomcli/resume.go
+  - internal/loomcli/review.go
+  - internal/loomcli/smoke_bootstrapwiring_test.go
+  - internal/loomcli/start_driver_test.go
+  - internal/loomcli/start.go
+  - internal/loomcli/wiring_darn_test.go
+  - internal/loomcli/wiring.go
+  - internal/loomrecipe/escalation_test.go
+  - internal/loomrecipe/frictionreflect_test.go
+  - internal/loomrecipe/resume_test.go
+  - internal/loomrecipe/sequence_test.go
+  - internal/loomshed/loompreflight.go
+  - internal/pairteardown/claim.go
+  - internal/shedcli/cli_test.go
+  - internal/shedengine/failedstop.go
+  - internal/shedengine/goto.go
+  - internal/shedengine/rename.go
+  - internal/shedengine/testsupport_test.go
+  - internal/shedverbs/goto_test.go
+  - internal/shedverbs/loop_arming_integration_test.go
+  - internal/shedverbs/loop.go
+  - internal/shedverbs/loop_integration_test.go
+  - internal/shedverbs/loop_test.go
+  - internal/shedverbs/pause_test.go
+  - internal/shedverbs/spec.go
+  - internal/shedverbs/status.go
+  - internal/shedverbs/status_test.go

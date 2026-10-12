@@ -12,7 +12,7 @@
 - `internal/shedrun#TestSeed_LegacyParentKey`
 
 **Create:**
-- `plan:internal/shedrun#TestSeed_UnknownKey` -> `func TestSeed_UnknownKey(t *testing.T)`
+- `internal/shedrun#TestSeed_UnknownKey`
 
 **Intent:**
 D4: `decodeSeed` stops calling `DisallowUnknownFields` and decodes straight into a `Seed` with `json.Unmarshal`, so a seed another binary wrote with a key this one does not know decodes; malformed JSON is still an error.

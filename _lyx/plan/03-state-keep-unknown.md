@@ -2,8 +2,8 @@
 
 **Create:**
 - `internal/state/keep.go`
-- `plan:internal/state#keepUnknown` -> `func keepUnknown(t reflect.Type, oldRaw, newRaw []byte) []byte`
-- `plan:internal/state_test#TestWriteJSON_KeepsUnknownKeys` -> `func TestWriteJSON_KeepsUnknownKeys(t *testing.T)`
+- `internal/state#keepUnknown`
+- `internal/state_test#TestWriteJSON_KeepsUnknownKeys`
 
 **Edit:**
 - `internal/state#writeJSONUnlocked`
