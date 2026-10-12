@@ -1,12 +1,12 @@
 # Card 7 — dialog-notice
 
 **Create:**
-- `plan:internal/shuttleengine#permissionNoticeBound` -> `const permissionNoticeBound = 60 * time.Second`
-- `plan:internal/shuttleengine#dialogLatch` -> `type dialogLatch struct`
-- `plan:internal/shuttleengine#dialogNotice` -> `func dialogNotice(strandName string) string`
-- `plan:internal/shuttleengine#Run.watchDialog` -> `func (run *Run) watchDialog()`
-- `plan:internal/shuttleengine#Run.foldDialogAsks` -> `func (run *Run) foldDialogAsks(parser SessionSignalParser)`
-- `plan:internal/shuttleengine#Run.notifyDialog` -> `func (run *Run) notifyDialog() bool`
+- `internal/shuttleengine#permissionNoticeBound`
+- `internal/shuttleengine#dialogLatch`
+- `internal/shuttleengine#dialogNotice`
+- `internal/shuttleengine#Run.watchDialog`
+- `internal/shuttleengine#Run.foldDialogAsks`
+- `internal/shuttleengine#Run.notifyDialog`
 - `internal/shuttleengine/dialog_test.go`
 
 **Edit:**

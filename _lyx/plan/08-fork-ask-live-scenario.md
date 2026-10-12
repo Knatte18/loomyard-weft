@@ -1,7 +1,7 @@
 # Card 8 — fork-ask-live-scenario
 
 **Create:**
-- `plan:internal/shuttlecli#TestSmokeTurnsForkPermissionAsk` -> `func TestSmokeTurnsForkPermissionAsk(t *testing.T)`
+- `internal/shuttlecli#TestSmokeTurnsForkPermissionAsk`
 
 **Edit:**
 - `cmd/lyx/testdata/test-budget.yaml`
