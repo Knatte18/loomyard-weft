@@ -339,7 +339,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 11,
   "masterStrand": "d60f1feb3e51629a75bbb00067b5dec1",
   "masterSessionId": "abc3ebff-734c-4a26-b9d4-7cfc4f7a4c31",
   "batches": {
@@ -379,6 +379,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-convergence-plan/abc3ebff-734c-4a26-b9d4-7cfc4f7a4c31/subagents/agent-a21be2305a3381be9.jsonl"
       ]
+    },
+    "11": {
+      "slug": "report-wakes-and-stops",
+      "cards": [
+        "11-report-wakes-and-stops",
+        "12-report-repairs-and-rounds",
+        "13-report-landings",
+        "14-report-weeks-and-markdown",
+        "15-report-cli"
+      ],
+      "cardHashes": {
+        "11-report-wakes-and-stops": "f7f63f6b5e78dd9195170875bd14fc8df23dc05025e7c5b13de97634fd3f38b1",
+        "12-report-repairs-and-rounds": "fdc03a670ad1e35ac2dcb51f77f7f31f6c4d09f63a80483ac2c59c88065657c6",
+        "13-report-landings": "6fc832bb01168f85e6350107629e8c1e71303a2f8050ecea51a1d067b2282557",
+        "14-report-weeks-and-markdown": "47aa2314fd1bfaf727e2a73c4b28e671fee4bee8e00e7628cd442b5774498503",
+        "15-report-cli": "b451a111f18d96732840a6e3b7ce9d0b8e8211ee9ec88a680bc1240473cbe960"
+      },
+      "startSha": "0e662e528fceb7c16bae3e83d2fe1616dea9e469",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T13:50:47Z",
+      "sessionId": "abc3ebff-734c-4a26-b9d4-7cfc4f7a4c31",
+      "terminal": false,
+      "status": ""
     },
     "6": {
       "slug": "board-and-archive-readers",
