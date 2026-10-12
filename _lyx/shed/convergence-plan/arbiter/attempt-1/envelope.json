@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Discussion-Bouncer escalated at round 2 on budget with two BLOCKING findings. F1 made the design wrong: D10 joined landings to batten's Land done commit, which does not perform the landing, so runs mapped to the wrong commit. F3 left D5 and D9 contradicting each other over the strict, live-called shedrun.ParseSeed. The round-2 fixer rewrote D10's join (Warp-SHA trailer exact join, time join bounded by the Finalize checkpoint and board done commits) and the D5/D9 tolerance rule, but no review has checked the new join yet. Accepting would pass an unreviewed replacement for a design-wrong decision, so one more round is warranted. round-3-focus.md already targets D10, D4/D5/D9 and the remaining MEDIUM findings. No design call was made, so no decision was recorded. Under the fixed rule, a blocker that still stands after round 3 is handed on.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling continue convergence-plan"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/convergence-plan/_lyx/shed/convergence-plan/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/convergence-plan/_lyx/shed/convergence-plan/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lyx shed step convergence-plan --until-stop --arbiter-attempt 1"
+}
