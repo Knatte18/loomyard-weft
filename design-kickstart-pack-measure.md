@@ -28,3 +28,4 @@ The cheap next step, if wanted, is a controlled test: `kickstart_pack: false` fo
 
 `webster-pack-read-set` (landed `113593990`) reshaped the pack per card, but its fork still reads card by card, so it is not the version to measure.
 Run the next audit once task `kickstart-read-all-first` has landed and a few loom runs have gone through Webster on it, compared against the runs before `113593990`.
+Under read-all-first, calls before the first edit rise by construction, so compare exploration calls per card and total reads instead.
