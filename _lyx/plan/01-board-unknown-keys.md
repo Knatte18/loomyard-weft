@@ -78,7 +78,8 @@ Tests, untagged with temp-dir fixtures:
 - `TestLoad` gains `act func(*testing.T, *boardengine.Store)`, run after `check` and before the save, and `wantKeys`, a list of slug, key and compact value, an empty value meaning the key must be absent, asserted with `keptValue` after the save; a row with `act` or `wantKeys` saves, and the runner skips a nil `check`.
   Rows share one body: a top-level `"zz_top":{"k":[1,2]}`, a task `a` carrying `"zz_scalar":9007199254740993` and `"zz_nested":{"a":[1,{"b":"c"}]}`, a task `b` carrying `"zz_b":true`, a note `n` carrying `"zz_n":"x"` and a done task `fin`.
   One row per path asserts `a`'s two keys and `zz_top` with exactly those values: `SetStatus("a", …)`, `UpsertTask` of `a`'s title, `UpsertTasksBatch` changing `a`'s and `b`'s titles, `Promote("n")` (also asserting `zz_n`), `Prune()` and `SetDeps("a", []string{"b"})`.
-  The set-status row also gains `saveOrder`, a list of whitespace-free substrings that must appear in that order in the compact saved file, set to `"title":"A"`, `"zz_nested"`, `"zz_scalar"`, which pins that kept keys come after the known fields in sorted key order while the body lists them unsorted.
+  The set-status row also gains `saveOrder`, a list of whitespace-free substrings that must appear in that order in the compact saved file, set to the `"status":` member the row writes, then `"zz_nested"`, `"zz_scalar"`.
+  `status` is `a`'s last known member after the write, since the seeded body gives `a` no short name, dates or run settings, so the order pins that kept keys come after every known field in sorted key order while the body lists them unsorted.
   The upsert and batch rows fail on today's float64 round trip, which writes 9007199254740992.
   A merge row runs `MergeTasks([]string{"b"}, {"slug":"a","title":…}, nil)` and asserts `a`'s keys kept and `zz_b` absent on `a` and at the top level, so the removed entry's key neither survives on the upserted entry nor moves elsewhere; a remove row runs `RemoveTask("b")` and asserts the same absences.
   A row on `{"version":1,"entries":[],"zz_top":"x"}` upserts a first entry and asserts `zz_top`.
@@ -87,7 +88,7 @@ Tests, untagged with temp-dir fixtures:
   `TestLoad`'s doc comment names the kept keys.
 - `addEntryKeys`, in `runlock_test.go`, splices the raw JSON members `members` into the entry `slug` of the board.json under `boardPath`, decoding and re-encoding with `json.RawMessage` so no value changes.
   `TestRunLock` rows gain `unknown string`; when set, the harness calls `addEntryKeys` on `locked` after seeding and before reading `before`, and an accepted row asserts with `keptValue` that the after file still carries each member.
-  A new row, "set-status on an entry with unknown keys", sets `unknown` to `"zz_scalar":9007199254740993` and acts with `SetStatus("locked", strPtr("paused · X"))`.
+  The existing accepted row "set-status to another value" sets `unknown` to `"zz_scalar":9007199254740993`, so it pins both the status write and the kept key passing the run lock; no row is added.
 
 **ImpactSummary:** Every board write path inherits the kept keys through `Task`'s and the store file's JSON encoding; `ApplyPatch` and `NewTask` are the only round trips through JSON, every caller of `ApplyPatch` is in `store.go`, and boardengine's other consumers, such as `cleanupcli` and `battencli`, read known fields only.
 
