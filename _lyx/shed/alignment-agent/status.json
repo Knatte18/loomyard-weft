@@ -1,12 +1,13 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Discussion-Bouncer: round 2 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYXHUB/alignment-agent/_lyx/reviews/discussion/round-2-escalation.md; decide with `lyx loom circling accept alignment-agent` or `lyx loom circling continue alignment-agent`, then run `lyx loom resume` in the task worktree to resume",
+  "parent_notice": "Review segment of task `alignment-agent` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/alignment-agent/_lyx/reviews/discussion/round-2-escalation.md` with a one-shot fork.",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler-Fix → bounced to Discussion-Bouncer",
-    "wait": ""
+    "last": "Discussion-Bouncer → awaiting",
+    "wait": "bouncer Discussion-Bouncer: round 2 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYXHUB/alignment-agent/_lyx/reviews/discussion/round-2-escalation.md; decide with `lyx loom circling accept alignment-agent` or `lyx loom circling continue alignment-agent`, then run `lyx loom resume` in the task worktree to resume"
   },
   "history": [
     {
@@ -69,6 +70,12 @@
       "at": "2026-10-12T10:30:52Z",
       "gate_attempts": 0,
       "budget_exempt": true
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/alignment-agent/_lyx/reviews/discussion/round-2-bouncer-ledger.md",
+      "at": "2026-10-12T10:31:26Z"
     }
   ],
   "product": {

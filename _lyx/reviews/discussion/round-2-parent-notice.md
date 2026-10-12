@@ -1,0 +1,1 @@
+Review segment of task `alignment-agent` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/alignment-agent/_lyx/reviews/discussion/round-2-escalation.md` with a one-shot fork.
