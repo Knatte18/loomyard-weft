@@ -751,6 +751,24 @@
       "body": "The alignment agent escalates to the orch on cross-run overlap with \"which run lands first?\".\nThe orch answers by one rule nearly every time: the run furthest along lands first, and the other takes its changes at Merge-In.\nOn 2026-10-12 it woke the orch twice for such overlaps (`cleanup-1012` and `convergence-plan` against other runs in flight), and both were settled by that rule with no design call.\nThe facts the rule needs are already readable to the agent: the board, `lyx loom peers` and each peer's decision record.\n\n## Idea\n\nThe alignment agent applies the landing-order rule itself and records the outcome in its report.\nIt escalates to the orch only when the designs conflict: both runs change the same behavior in different ways, or a recorded decision in one contradicts the other, so a parent decision is needed in the later run.\nA text-only overlap (same file, different lines or an import and a mount on each side) is never a reason to escalate.\n\nThe operator agreed the orch should get only stops that need a parent choice (2026-10-12); see the note `arbiter-when` for the matching rule on arbiter spawns.\n",
       "created": "2026-10-12T14:53:48Z",
       "revised": "2026-10-12T14:53:48Z"
+    },
+    {
+      "id": 445,
+      "slug": "plan-pinned-tests",
+      "title": "Plan does not surface tests that pin a method set a card extends",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        594
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #594](https://github.com/Knatte18/loomyard/issues/594).\n\n**What happened.** A card added a method to the `r.runChecked` method set.\n`cmd/lyx/gitrepoboundary_test.go` pins that set by name, so the change breaks it.\nThe plan named no card edit for that file, and the break surfaced only when the agent ran `./cmd/lyx` by hand.\n\n**Why abnormal.** A card's declared `Edit:` list and gate steps did not include a test the change necessarily affects, so the per-card gate stayed green while a cross-package boundary test failed.\n\n**What to do.** Have plan or card validation flag cards that change a symbol pinned by name in a boundary test, or run the boundary-test package in the card gate so the break is caught at the card that causes it.\n\nProvenance: task `convergence-plan`; note `06-board-and-archive-readers.md`.\n",
+      "created": "2026-10-12T15:01:42Z",
+      "revised": "2026-10-12T15:01:42Z"
     }
   ]
 }
