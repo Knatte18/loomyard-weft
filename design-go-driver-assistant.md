@@ -29,6 +29,29 @@ Three tiers:
 
 Anything needing a parent choice still goes to the orch.
 
+## When the arbiter is spawned
+
+1. **By the Go driver directly**, with no assistant: a Bouncer escalation at the hard review cap, or a blocker that returns (see `judge-cap-call`). That is a question about content, the arbiter's job.
+2. **On the assistant's `escalate` verdict**, when it cannot name the cause from the envelope, the stop report and the logs, or when the cause needs code read and judged (is a review finding right, is a fix sound).
+3. **Automatically by the Go driver** when the same stop key returns after an assistant `resume`: the assistant was wrong, so the stop goes one tier up.
+
+A scope or design choice never goes to the arbiter: it goes to the orch.
+`arbiter_max_spawns` per run stays the bound; with the budget spent, the stop goes to the orch.
+The arbiter answers `resume`, `goto` or `hand-on`; the Go driver performs it, and `hand-on` goes to the orch.
+
+## The assistant's case brief
+
+On `escalate` the assistant does the legwork and writes a case brief the arbiter receives (operator, 2026-10-12), so opus time is not spent searching.
+The brief has fixed parts:
+
+- the question the arbiter must answer;
+- facts, each with a pointer (file and line, log path and line, trace id);
+- what the assistant ruled out, and how;
+- its hypothesis, marked as a hypothesis.
+
+The arbiter checks the facts it relies on itself and never takes the hypothesis as given, so a wrong cheap diagnosis cannot steer the verdict.
+The assistant writes only the brief: the arbiter's instructions, its allowed actions and its verdict format come from lyx's own stencil, so no LLM changes what the arbiter may do.
+
 ## Scope
 
 - A per-task choice between the LLM and the Go driver through `run_settings`; the default stays the LLM driver.
