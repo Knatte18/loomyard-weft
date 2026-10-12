@@ -1,0 +1,16 @@
+{
+  "number": 1,
+  "key": "round-1",
+  "point": "parent-review",
+  "token": "8facc05b8271e662",
+  "spawned_at": "2026-10-12T14:16:05.071521703+02:00",
+  "deadline": "2026-10-12T14:36:05.071521703+02:00",
+  "strand_guid": "",
+  "snapshot": "fff1a2e4233985872ce7ccfe304017b73c80a2454507bce39a0195a4ffc3eab8",
+  "pr_number": 0,
+  "head_sha": "",
+  "closed": true,
+  "closed_reason": "alignment: start the agent: shuttle: start: shuttle: the provider never became ready — run dir /home/knatte/Code/loomyard-LYXHUB/convergence-plan/.lyx/shuttle/4e8c64f54fa989b78865d1a4d187c437, strand \"726ba49ed57542dd4b283d037bb83255\", outcome \"died\"; the last pane capture was saved to startup-capture.txt; the strand was removed. The pane's last lines:\n",
+  "applied": "",
+  "notified": false
+}
