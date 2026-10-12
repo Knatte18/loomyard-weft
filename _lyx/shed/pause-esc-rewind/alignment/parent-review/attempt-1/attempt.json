@@ -1,0 +1,16 @@
+{
+  "number": 1,
+  "key": "round-1",
+  "point": "parent-review",
+  "token": "e3aa9ce22409ad24",
+  "spawned_at": "2026-10-12T19:16:59.550450905+02:00",
+  "deadline": "2026-10-12T19:36:59.550450905+02:00",
+  "strand_guid": "7ab4f80123e85cca5d3654d4de12f4d2",
+  "snapshot": "4b621956b5ef998fbf7dfefaf9509d657c3d71a70a6c9450edb5035fb4cd373b",
+  "pr_number": 0,
+  "head_sha": "",
+  "closed": true,
+  "closed_reason": "Overlap with reed-multi-window (Discussion-Burler-Review, no plan yet): both runs plan changes to internal/shuttleengine and internal/shuttleengine/claudeengine. reed-multi-window changes spec.go and attach.go (own-window anchor default), adds lyx shuttle open, and adds a launch line, session name flag and turnless resume in claudeengine. pause-esc-rewind changes Runner.Interrupt and Run.Interrupt, extracts a running-turn predicate from readiness.go and sessionstate.go, and adds a running-turn pane reading and a settle time in claudeengine. The named files differ, so a text conflict is unlikely. Which lands first, or may both proceed in parallel with the later one rebasing over the earlier in these two packages?",
+  "applied": "",
+  "notified": false
+}

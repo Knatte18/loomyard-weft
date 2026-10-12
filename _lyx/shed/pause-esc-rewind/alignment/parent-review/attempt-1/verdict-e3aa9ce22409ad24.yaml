@@ -1,0 +1,10 @@
+verdict: escalate
+reason: >-
+  The design fits the board entry pause-esc-rewind with no scope deviation: it answers all three checks and the resume-into-picker risk, and contradicts no other entry.
+  It escalates only on the overlap rule: the in-flight run reed-multi-window plans changes to the same Go packages, internal/shuttleengine and internal/shuttleengine/claudeengine.
+question: >-
+  Overlap with reed-multi-window (Discussion-Burler-Review, no plan yet): both runs plan changes to internal/shuttleengine and internal/shuttleengine/claudeengine.
+  reed-multi-window changes spec.go and attach.go (own-window anchor default), adds lyx shuttle open, and adds a launch line, session name flag and turnless resume in claudeengine.
+  pause-esc-rewind changes Runner.Interrupt and Run.Interrupt, extracts a running-turn predicate from readiness.go and sessionstate.go, and adds a running-turn pane reading and a settle time in claudeengine.
+  The named files differ, so a text conflict is unlikely.
+  Which lands first, or may both proceed in parallel with the later one rebasing over the earlier in these two packages?
