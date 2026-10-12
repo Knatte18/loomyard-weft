@@ -25,7 +25,8 @@ The operator doubts the pack has any effect as it is delivered today.
 Idea to test once the audit shows how forks read: two prompts instead of one.
 The first carries the background (role, rules, cards, gates, report); the second says only "read all of this in one turn, in parallel, before any edit" followed by the pack.
 That costs a turn, but the read is then the only thing the fork is told to do in that turn.
-Open: how a fork spawned through the Agent tool receives a second prompt.
+The first prompt can end with "now read `<file>` and do what it says", so no second message is needed: the second prompt is a file (operator, 2026-10-12).
+A cheaper variant to compare: one prompt whose last section is the one-turn instruction and the pack, since the end of a prompt is what an agent acts on first.
 
 ## Seen
 
