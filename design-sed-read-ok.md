@@ -1,6 +1,6 @@
 # Agent shell hygiene: read-only sed allowed, no scripted edits or /tmp rm in Webster forks
 
-`sed-read-ok` · Task · bug, enhancement, stencil, webster, shuttle · running · Batchifier
+`sed-read-ok` · Task · bug, enhancement, stencil, webster, shuttle · running · Webster
 
 ## Idea (operator, 2026-10-11)
 
