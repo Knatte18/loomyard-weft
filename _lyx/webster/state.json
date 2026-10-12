@@ -691,7 +691,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 24,
   "masterStrand": "1eb52434bb50dc6bc4414b28acb6018a",
   "masterSessionId": "d11aa544-37b6-416d-a69c-8a37b5df69b6",
   "batches": {
@@ -829,6 +829,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lyx-halt/d11aa544-37b6-416d-a69c-8a37b5df69b6/subagents/agent-acf1aa060190e9f10.jsonl"
       ]
+    },
+    "24": {
+      "slug": "status-paused-since",
+      "cards": [
+        "24-status-paused-since",
+        "25-loom-bare-pause-refusal",
+        "26-shed-pause-way-forward",
+        "27-lock-wait-pause-after"
+      ],
+      "cardHashes": {
+        "24-status-paused-since": "86aad5c5851e05a8b610b9056714ac478cb92219658c7a07692f23f74172320c",
+        "25-loom-bare-pause-refusal": "00823838db5ebcb6876b201f70ce96183c61f1997cef5a0d210bbcb46ab15535",
+        "26-shed-pause-way-forward": "49c7f019e4af731a0f190adcc1955387b63b3242a9ea2dcf51fdef1b43abcd18",
+        "27-lock-wait-pause-after": "a0196bc4173267857a2e9413f82ba837534b263636257eb7e0fc2b830ead44e9"
+      },
+      "startSha": "a4ad225ab81eeb08f8353b732909768931e04e6a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T13:04:05Z",
+      "sessionId": "d11aa544-37b6-416d-a69c-8a37b5df69b6",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "parentlock-covered",
