@@ -66,7 +66,8 @@ Autonomous run: no operator answered; every pick below is the writer's own, reco
 
 ## Review rounds
 
-_No rounds yet._
+- Round 2: the dollar rule became deny-by-default, reading the follower from the raw text, so it also rejects zsh's `$~x`, positional parameters and the ANSI-C quote `$'…'`, which hides the rest of a command from `blankQuotedSpans`; D2 states that the command-wide scans rely on it.
+  The acceptance criteria pin the untimestamped-transcript rule and the new dollar-rule rows.
 
 ## Question ledger
 
@@ -74,6 +75,6 @@ _No rounds yet._
 - Q2 (auto-pick): flag or tolerance window? Picked: flag; see Rejected alternatives.
 - Q3 (auto-pick): does the flag lift the shed span clamp too? Picked: yes; it reads the same tag date.
 - Q4 (auto-pick): tighten reader globs, or document why they need no bound? Picked first: document and pin; revised after the scenarios lens to reject an unquoted parenthesis and document the rest; see D2.
-- Q7 (auto-pick): may `-no-cutoff` combine with `-calibrate`? Picked: yes, with the effect stated in the flag's description.
 - Q5 (auto-pick): which carve-out to keep? Picked: `fabricvocab.BareTokenInRootDoc`.
 - Q6 (auto-pick): flag name? Picked: `-no-cutoff`, matching the board's word for the bound.
+- Q7 (auto-pick): may `-no-cutoff` combine with `-calibrate`? Picked: yes, with the effect stated in the flag's description.
