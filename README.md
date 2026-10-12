@@ -26,8 +26,17 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Agent shell hygiene: read-only sed allowed, no scripted edits or /tmp rm in Webster forks**<br>• Make read-only sed work without refusals or prompts across lyx-spawned agents, stencils and audits, keeping the no-script-edit rule. | [`sed-read-ok`](design-sed-read-ok.md) | loom |  | stencil, webster, shuttle |
-| 2 | **lyx cleans up after itself: temp files and one cleanup command**<br>• Tests and fixtures leave GBs of temps in /tmp; remove them on exit, sweep leftovers, and add lyx cleanup running every module cleanup | [`test-tmp-cleanup`](design-test-tmp-cleanup.md) | loom |  | fabric, loom, batten, board |
+| 1 | **lyx cleans up after itself: temp files and one cleanup command**<br>• Tests and fixtures leave GBs of temps in /tmp; remove them on exit, sweep leftovers, and add lyx cleanup running every module cleanup | [`test-tmp-cleanup`](design-test-tmp-cleanup.md) | loom |  | fabric, loom, batten, board |
+
+### Layer A
+
+Waits only on Running or Ready entries.
+
+#### High priority
+
+| # | Task | Slug | Recipe | After | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Agent shell hygiene: read-only sed allowed, no scripted edits or /tmp rm in Webster forks**<br>• Make read-only sed work without refusals or prompts across lyx-spawned agents, stencils and audits, keeping the no-script-edit rule. | [`sed-read-ok`](design-sed-read-ok.md) | loom | `driver-arbiter` | stencil, webster, shuttle |
 
 ## Notes
 

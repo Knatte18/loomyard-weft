@@ -2,6 +2,8 @@
 
 `sed-read-ok` · Task · bug, enhancement, stencil, webster, shuttle
 
+Depends on: [`driver-arbiter`](design-driver-arbiter.md)
+
 ## Idea (operator, 2026-10-11)
 
 Make `sed` work well for agents: reading with `sed` is allowed, and only rewriting files with a script stays banned.
