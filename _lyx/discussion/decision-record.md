@@ -218,6 +218,12 @@ Rationale: the issue asks for these, and a kill that leaves a live agent behind 
   - d7-drops-grace-for-busy-orch (class consistency, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Merge-Review -->
+- Merge-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/merge/round-1-review.md; fixer report: _lyx/reviews/merge/round-1-fixer-report.md.
+  - alignment-attempt-deadline-ignores-pause-sleep (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Merge-Review -->
+
 ## Acceptance criteria
 
 Pause and resume:
