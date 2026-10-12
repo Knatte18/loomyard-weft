@@ -1,11 +1,11 @@
 {
-  "current_producer": "Publish",
+  "current_producer": "PR-Gate",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Publish",
-    "last": "Merge-Bouncer → done",
+    "now": "PR-Gate",
+    "last": "Publish → done",
     "wait": ""
   },
   "history": [
@@ -186,6 +186,12 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/webster-pack-read-set/_lyx/reviews/merge/round-1-bouncer-ledger.md",
       "at": "2026-10-12T11:35:09Z"
+    },
+    {
+      "producer": "Publish",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-12T11:36:49Z"
     }
   ],
   "product": {
