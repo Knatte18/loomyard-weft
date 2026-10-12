@@ -1,0 +1,129 @@
+{
+  "runGuid": "0abf03e6e964b82fb83109c9cee78774",
+  "planFingerprint": "87984c7ff35fc94796378c5433927c8e56550c951671faf7c8b2dbd45a626f70",
+  "planFileHashes": {
+    "00-overview.md": "6da73114bf0df6b8acd2b4e3b94a954509d5a65228fed30049ecf80803838edf",
+    "01-pack-var-const-first-line.md": "41965498a63effa7a1df677abdaa80b76fbf27aca7872860b908b364e533c56d",
+    "02-pack-per-card.md": "27ae9cb65985f7f59488f15151d9b57a2c531698d7153f904bd115f8eae16f19",
+    "03-pack-on-read-texts.md": "1ef01af70853869614d1b76d7f7043cfd683f8fd4a30547b38cae2c84f0ef2a7"
+  },
+  "planOverviewFrameHash": "a071daf012509a8d0e007d5b1b3d68ccfc333bfa157f99a3d50080ffffc1d099",
+  "partition": [
+    {
+      "cards": [
+        "01-pack-var-const-first-line",
+        "02-pack-per-card",
+        "03-pack-on-read-texts"
+      ],
+      "profile": "cautious",
+      "estimate": 251450,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54256,
+        "read_union": 42460,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 336,
+            "reads": {
+              "file:internal/websterengine/doc.go": 8208,
+              "package:internal/planglyph": 2000,
+              "package:internal/planindex": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/planindex": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 63.5,
+            "written": 19386
+          },
+          {
+            "card": 2,
+            "card_text": 1464,
+            "reads": {
+              "file:.gitattributes": 432,
+              "file:contracts/stencils/webster/webster-fragment-pack-empty.md": 72,
+              "file:contracts/stencils/webster/webster-fragment-pack-section.md": 216,
+              "file:internal/planglyph/doc.go": 1296,
+              "file:internal/websterengine/doc.go": 8208,
+              "package:.": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/planglyph": 2000,
+              "package:internal/planindex": 2000,
+              "package:internal/websterengine": 2000,
+              "package:internal/websterengine_test": 2000,
+              "tests:.": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/planindex": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:internal/websterengine_test": 2000
+            },
+            "messages": 277.5,
+            "written": 84714
+          },
+          {
+            "card": 3,
+            "card_text": 984,
+            "reads": {
+              "file:.gitattributes": 432,
+              "file:contracts/stencils/webster/webster-body-implementer.md": 1308,
+              "file:contracts/stencils/webster/webster-fragment-locate-pack.md": 144,
+              "file:internal/websterengine/doc.go": 8208,
+              "package:.": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/websterengine": 2000,
+              "package:internal/websterengine_test": 2000,
+              "tests:.": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:internal/websterengine_test": 2000
+            },
+            "messages": 165.5,
+            "written": 50634
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "0ded13121efcac9e2d34e4d5dc10f098",
+  "masterSessionId": "c4eb04fc-e1af-4d76-860f-906426075a87",
+  "batches": {
+    "1": {
+      "slug": "pack-var-const-first-line",
+      "cards": [
+        "01-pack-var-const-first-line",
+        "02-pack-per-card",
+        "03-pack-on-read-texts"
+      ],
+      "cardHashes": {
+        "01-pack-var-const-first-line": "41965498a63effa7a1df677abdaa80b76fbf27aca7872860b908b364e533c56d",
+        "02-pack-per-card": "27ae9cb65985f7f59488f15151d9b57a2c531698d7153f904bd115f8eae16f19",
+        "03-pack-on-read-texts": "1ef01af70853869614d1b76d7f7043cfd683f8fd4a30547b38cae2c84f0ef2a7"
+      },
+      "startSha": "7b17ddfac785b47adc0e76d70703118c4dd439a3",
+      "kind": "fork",
+      "spawnedAt": "2026-10-12T11:11:58Z",
+      "sessionId": "c4eb04fc-e1af-4d76-860f-906426075a87",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
