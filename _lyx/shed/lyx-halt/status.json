@@ -1,13 +1,12 @@
 {
   "current_producer": "PR-Gate",
-  "state": "awaiting",
-  "error": "alignment report /home/knatte/Code/loomyard-LYXHUB/lyx-halt/_lyx/shed/lyx-halt/alignment/pr-gate/attempt-1/report-e4c76bd40dc92411.md did not settle this pull request - Overlap with run-robustness: both runs change internal/alignment/session.go, internal/shedverbs/loop.go and spec.go, internal/loomcli/landingdeps.go, looparm.go, resume.go, start.go and wiring.go, internal/battencli/arm.go and wire.go, internal/shedengine/goto.go, run.go and rename.go, internal/websterengine/doc.go, their tests, contracts/specs/refusal-spec.md and loom-status-spec.md, and each adds a declared wait to pattern/PATTERN-daemon-wakeups.md. Overlap with convergence-plan: both change internal/loomcli/landingdeps.go and add a section to pattern/PATTERN-leaf-packages.md. Which run lands first, and does the second merge main and re-gate before its own landing?; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/590",
-  "parent_notice": "alignment report /home/knatte/Code/loomyard-LYXHUB/lyx-halt/_lyx/shed/lyx-halt/alignment/pr-gate/attempt-1/report-e4c76bd40dc92411.md did not settle this pull request - Overlap with run-robustness: both runs change internal/alignment/session.go, internal/shedverbs/loop.go and spec.go, internal/loomcli/landingdeps.go, looparm.go, resume.go, start.go and wiring.go, internal/battencli/arm.go and wire.go, internal/shedengine/goto.go, run.go and rename.go, internal/websterengine/doc.go, their tests, contracts/specs/refusal-spec.md and loom-status-spec.md, and each adds a declared wait to pattern/PATTERN-daemon-wakeups.md. Overlap with convergence-plan: both change internal/loomcli/landingdeps.go and add a section to pattern/PATTERN-leaf-packages.md. Which run lands first, and does the second merge main and re-gate before its own landing?",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "PR-Gate",
     "last": "PR-Gate → awaiting",
-    "wait": "alignment report /home/knatte/Code/loomyard-LYXHUB/lyx-halt/_lyx/shed/lyx-halt/alignment/pr-gate/attempt-1/report-e4c76bd40dc92411.md did not settle this pull request - Overlap with run-robustness: both runs change internal/alignment/session.go, internal/shedverbs/loop.go and spec.go, internal/loomcli/landingdeps.go, looparm.go, resume.go, start.go and wiring.go, internal/battencli/arm.go and wire.go, internal/shedengine/goto.go, run.go and rename.go, internal/websterengine/doc.go, their tests, contracts/specs/refusal-spec.md and loom-status-spec.md, and each adds a declared wait to pattern/PATTERN-daemon-wakeups.md. Overlap with convergence-plan: both change internal/loomcli/landingdeps.go and add a section to pattern/PATTERN-leaf-packages.md. Which run lands first, and does the second merge main and re-gate before its own landing?; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/590"
+    "wait": ""
   },
   "history": [
     {
