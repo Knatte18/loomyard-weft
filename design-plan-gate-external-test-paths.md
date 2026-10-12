@@ -17,3 +17,19 @@ What to do: have the plan validation (or the Plan-Write step) check that every p
 Optionally, make `lyx gate test` point at the missing directory in its `[setup failed]` message.
 
 Provenance: task `twill-plan`; notes 01-fabricvocab-package.md, 06-plan-producer-key.md.
+
+
+## From issue #577
+
+Imported from [issue #577](https://github.com/Knatte18/loomyard/issues/577).
+
+A task card's gate line listed a path ending in `_test` that names the external test package of a Go package (for example `./internal/<pkg>_test`) and is not a directory.
+`lyx gate test` reports `[setup failed]` for that argument.
+The implementing agent worked around it by running the gate line without that path; every other package passed.
+
+This is abnormal because the bad argument is only discovered at implementation time, after the plan was approved by the Plan bouncer and review rounds.
+A card's gate line should be checked when the plan is written or reviewed, or `lyx gate test` should map an external test package path to its package directory with a clear message.
+
+What to do: validate gate-line package paths against existing directories in plan validation, and/or make `lyx gate test` name the missing directory in its setup-failure output.
+
+Provenance: task `merge-review`; notes 18-merge-in-row.md.
