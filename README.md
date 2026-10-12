@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-12 08:51 UTC; every age below is as of then.
+Rendered 2026-10-12 08:52 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Merge review perch and a parent merge lock that survives sleep and crashes**<br>• When the parent moved while a task ran, loom has a cold-start agent review the result of merging the parent in, since no earlier review saw that interaction. | [`merge-review`](design-merge-review.md) | loom | Webster |  |  | loom, burler, batten, shed |
 | 2 | **Config layers and per-task run settings**<br>• Config resolves through a repo default, the worktree file and an untracked local override under .lyx/; a board task carries run settings that batten writes into the pair local override. | [`config-layers-run-settings`](design-config-layers-run-settings.md) | loom | Webster |  |  | config, batten, board |
-| 3 | **lyx cleans up after itself: temp files and one cleanup command**<br>• Tests and fixtures leave GBs of temps in /tmp; remove them on exit, sweep leftovers, and add lyx cleanup running every module cleanup | [`test-tmp-cleanup`](design-test-tmp-cleanup.md) | loom | Webster-Burler-Fix |  |  | fabric, loom, batten, board |
+| 3 | **lyx cleans up after itself: temp files and one cleanup command**<br>• Tests and fixtures leave GBs of temps in /tmp; remove them on exit, sweep leftovers, and add lyx cleanup running every module cleanup | [`test-tmp-cleanup`](design-test-tmp-cleanup.md) | loom | Webster-Bouncer |  |  | fabric, loom, batten, board |
 
 ### Ready
 
