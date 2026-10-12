@@ -10,24 +10,25 @@ The session ran autonomously: no operator answered, and every pick below is an a
 3. Scope: built every merged section of the entry (overview, sizing, Selvage keys, checklist, run windows), with the notice log because the entry states it "either way".
 4. Overview placement and ownership: a batten pane verb in a `runs` strand that `lyx orch start` ensures; a top anchor makes its position independent of insertion order.
 5. Sizing: three kinds (positional default, content, sharing) plus a top anchor; content rows pushed by the pane's own process through one engine operation.
+   Shared strands stack in rows, though `reed-multi-window`'s 2026-10-05 note prefers one tmux window per strand on a small screen; the board entry's 2026-10-08 sizing proposal leaves rows open, and the depth idea is that note's own work (A5).
 6. Checklist: replaces the `loom-status` strand's content and is kept on both drivers, since the llm child driver is the default.
 7. Run window: close on attach exit 0, a bounded wait for the pair directory on a non-zero exit, else keep the shell.
 8. Lens review by forks: all six lenses returned; findings and dispositions:
-   - board-fit: rows contradict `reed-multi-window`'s depth note — fixed, named in A5 and Open risks.
+   - board-fit: rows contradict `reed-multi-window`'s depth note — fixed, named in the Interview (item 5), A5 and Open risks.
    - board-fit: `orch-split` unnamed — fixed, Scope Out names it.
    - board-fit: `extra-agent-strand` as a future consumer — fixed, Notes.
    - board-fit: `own-window` stays reserved — fixed, D3.
-   - board-fit: `lyx cleanup` vs the notice log — fixed, Open risks.
+   - board-fit: `lyx cleanup` vs the notice log — fixed, Open risks; moved to Constraints in round 1.
    - board-fit: "in flight" shared with `alignment-agent` — rejected: that note is unbuilt and defines nothing to share yet.
    - board-fit: Related entries cite landed tasks — no change, consistent.
    - leanness: assumptions repeat decisions — fixed, A-list cut to picks with a pointer.
    - leanness: Goal repeats Scope — fixed.
-   - leanness: D2 attach rationale is deliberation — fixed by turning it into the stated departure.
+   - leanness: D2 attach rationale is deliberation — fixed by turning it into the stated departure; moved to Rejected alternatives in round 1.
    - leanness: test-budget and pane-binary constraints redundant — fixed, removed.
    - leanness: redraw risk not actionable — fixed, removed.
    - leanness: D5 declarations stated thrice — fixed, D1 and D7 point at D5.
    - leanness and scenarios: silent 30-second window wait — fixed, D10 prints first.
-   - goal-scope: attach command handed over by `batten-notice-trim` — fixed, D2 states the departure.
+   - goal-scope: attach command handed over by `batten-notice-trim` — fixed, the departure is recorded under Rejected alternatives.
    - goal-scope: checklist size and llm-run presence unlisted — fixed, quarter share in D5, A3.
    - goal-scope: notice log path unsurfaced — fixed, `lyx batten` help names it (D8).
    - goal-scope, premises, scenarios: stale non-`done` runs stay forever — fixed, D2 needs a pair or Worktree-Create.
@@ -61,6 +62,7 @@ The session ran autonomously: no operator answered, and every pick below is an a
 - **Overview in its own window** (2026-10-02 and 2026-10-05 choice): replaced by the operator's 2026-10-12 layout.
 - **Notice log lines inside the overview pane**: the pane grows with every notice and stops being small; the log file serves the same purpose.
 - **Full attach command on each overview line**: too wide for one line per run; the session name reaches the run from the attached client, and the notice log carries the command.
+  This departs from the board entry's note that the overview carries each run's attach command (handed over from `batten-notice-trim`): an attached operator reaches a run by its session name through Alt+Left/Alt+Right or the session buttons, and an operator outside the reed session gets the full command from the notice log (D8).
 - **Columns for sharing strands, or a rule by window width**: the board calls columns a broader revision; rows keep the render layer's stacking and work on a small laptop screen.
 - **Reed choosing a strand's kind by role**: reed would have to interpret strand names, which it never does today.
 - **Reed polling the pane content to learn its line count**: costs a tmux round trip per poll per strand and guesses at what the process meant.
@@ -73,7 +75,8 @@ The session ran autonomously: no operator answered, and every pick below is an a
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1: eight findings, all fixed: D7's row time built on end times, the last-strand rule and the anchor-kind table in D3, D8's append trigger, D2's and D7's unstated states, the cleanup risk as a Constraint, D2's departure and A5's narrative moved here, and acceptance criteria for D1, D2 and D7's untested behaviors.
+- Round 2: three findings, all fixed: D7's row time counts halt waits as wall time between stamps and drops the wait before a `goto`, D7 gains a halted box for paused, blocked and awaiting runs, and D8's append is once per batten process, logged again after a restart.
 
 ## Question ledger
 
