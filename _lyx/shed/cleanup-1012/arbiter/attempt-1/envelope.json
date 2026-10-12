@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "The Discussion-Bouncer segment stopped at round 2 because the review budget ran out (cause: budget), not because it was circling. The round-2 fixer report settles all four findings (F1 to F4) with nothing disputed or deferred, and the decision record shows each fix. F1 was fixed differently from the review's proposal, for a sound reason: the single-quote-blanked view blanks the quote itself, so D2 reads the character after a kept `$` from the raw text. F2's deny-by-default dollar rule now also covers `$'…'`, `$~x`, `$=x`, `$^x`, `$+x`, positional and special parameters, and the acceptance rows pin each case, along with D1's untimestamped-transcript rule (F3). I checked the fixed D2 against `blankQuotedSpans` and `IsReadOnlyCommand` in internal/fabricengine/refscanner.go. The scanner treats a `'` inside double quotes as text, so the only way to hide the rest of a command from the command-wide checks is the ANSI-C `$'`. Every segment holding `$'` is rejected: a reader segment by the dollar rule, a lyx, git or sed segment by splitShellWords, and any other command by not being on the list. So the bound D2 claims holds, and the fix stays inside Scope Out, which leaves the quote scanner unchanged. No open finding makes the design wrong, so the fixed rule calls for accept. I made no new design call, so I recorded no decision. Two inputs were missing: the drive report path named in the prompt does not exist (the drive-reports directory is empty), and `lyx board get cleanup-1012` failed with \"invalid json: invalid character 'c' looking for beginning of value\". The support log's account of the board entry was enough to decide.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling accept cleanup-1012"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/cleanup-1012/_lyx/shed/cleanup-1012/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/cleanup-1012/_lyx/shed/cleanup-1012/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lyx shed step cleanup-1012 --until-stop --arbiter-attempt 1"
+}
