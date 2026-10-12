@@ -60,9 +60,9 @@
 - `internal/landingshed#TestPublish_CommitStatus`
 
 **Uses:**
-- `plan:internal/landingshed#NewMergeIn`
+- `internal/landingshed#NewMergeIn`
 - `internal/landingshed#ReadMergeRecord`
-- `plan:contracts/stencils#LoomRubricMergeReview`
+- `contracts/stencils#LoomRubricMergeReview`
 
 **Intent:**
 Put Merge-In and the Merge-Review perch into the recipes and take the merge-in out of Publish (D1, D2).

@@ -1,6 +1,6 @@
 {
   "runGuid": "b06d3575e73e1ec99b060846ba88881d",
-  "planFingerprint": "24473cb547130f91e8e5710a19146d794702d2298e41100c8442b7e089f1a709",
+  "planFingerprint": "4e78b04f3f6d4d00ff9d91858657cd0d2a8c0c4e0b7daf38f4b41ab235e96b70",
   "planFileHashes": {
     "00-overview.md": "7c48678618d739bc2fcc73e8a533358c43181c901a42c44de168996290fa6bf0",
     "01-parentlock-store.md": "ff0ab919a2605f05acdd0c30afa5c1a023d629fa32e82cef6cf477cfe75b9ea6",
@@ -14,13 +14,13 @@
     "09-landing-idle-config.md": "73a3455f41df70cce61dac5895db8f0405760cc8542e309106de1109925732da",
     "10-landing-merge-record.md": "fa22e70e2c37e6225308b46761a78e80119e323d10765f810a4a0a23885b4823",
     "11-landing-parent-guard.md": "b5ed35775f3ba24ed0e11416b677708bdae0529afaae34f927fd4a31bdf7c6e9",
-    "12-landing-merge-in-producer.md": "35b85fa6be655dbee0fd3d9052bc7d58e1904a75367d35b1d1419c2ef1f8ed49",
-    "13-segment-colour-merge.md": "9958ff50f001631ab03750896a60fe77a4460e3edb934cc92abceb087151f78d",
-    "14-bouncer-blocking-and-merge-note.md": "f2660490237e9c7b6d31dccb3c9b4127c937f660b1856490bc59d37b8119b3e2",
+    "12-landing-merge-in-producer.md": "89dd2e751e7b9f55ac282b9fac9847a394823354c5f3ad2a748e43ae179a8942",
+    "13-segment-colour-merge.md": "c19b65abfabd3fa4a7570d6603871ebd64a0deb6ccb6bfd4a854699f8825fd9e",
+    "14-bouncer-blocking-and-merge-note.md": "93270e5d91b72d776b6d57a495726ff9bba93003f8f6dbb7f70121b273d1d6f9",
     "15-loom-merge-config.md": "143368747be21d625ecf5ee3b4eeec64d7d93d428d54c7d33a64fa04c3f43883",
-    "16-recipe-merge-seams.md": "deed323621f35ef9c25580869302b151ed519a04f33c94113bd3a0d87badf6bd",
-    "17-merge-review-rubric.md": "c2ac431a95d7fa1dbbbb77c7d60ba8d329f93807a5e1857d7da4107302bb63c8",
-    "18-merge-in-row.md": "332247a2dcedacdcea6248163ca5ffa0db973e136de9fd9f9617f767f59ac168",
+    "16-recipe-merge-seams.md": "3fb6f67513acb8b9ecb1e77598f0a30fda526e00a9909a83ba3dcc1d1a7befec",
+    "17-merge-review-rubric.md": "5475804d67e60a87d9107a8a08803224f229a4c981cf67d005771f765f64e37a",
+    "18-merge-in-row.md": "d5f566297ab1b4b2842b93a54595c0d2f0523f9fc4c7d964f64a42e9a171f55a",
     "19-merge-review-off-switch.md": "9ca7d3e2c9f90806315cce863ef2d0d80c35a9ddb495f298075326b2eb6e16a3",
     "20-guarded-landing-rows.md": "3d0a5b0f1c51d0c1c2dc99dd212662353e6e23663639d05b49d1f4a30dc39735",
     "21-loop-lock-hooks.md": "d1497a4f72dbe1287145ccbd54b985620d87c72f42075fd8316e135ab4613033",
@@ -600,7 +600,7 @@
       }
     }
   ],
-  "currentBatch": 12,
+  "currentBatch": 0,
   "masterStrand": "ded089cc5ffb8858e688d5fdd6b216fd",
   "masterSessionId": "a851bafe-4025-44c5-a927-72b06f2466d6",
   "batches": {
@@ -658,19 +658,42 @@
         "17-merge-review-rubric"
       ],
       "cardHashes": {
-        "12-landing-merge-in-producer": "35b85fa6be655dbee0fd3d9052bc7d58e1904a75367d35b1d1419c2ef1f8ed49",
-        "13-segment-colour-merge": "9958ff50f001631ab03750896a60fe77a4460e3edb934cc92abceb087151f78d",
-        "14-bouncer-blocking-and-merge-note": "f2660490237e9c7b6d31dccb3c9b4127c937f660b1856490bc59d37b8119b3e2",
+        "12-landing-merge-in-producer": "89dd2e751e7b9f55ac282b9fac9847a394823354c5f3ad2a748e43ae179a8942",
+        "13-segment-colour-merge": "c19b65abfabd3fa4a7570d6603871ebd64a0deb6ccb6bfd4a854699f8825fd9e",
+        "14-bouncer-blocking-and-merge-note": "93270e5d91b72d776b6d57a495726ff9bba93003f8f6dbb7f70121b273d1d6f9",
         "15-loom-merge-config": "143368747be21d625ecf5ee3b4eeec64d7d93d428d54c7d33a64fa04c3f43883",
-        "16-recipe-merge-seams": "deed323621f35ef9c25580869302b151ed519a04f33c94113bd3a0d87badf6bd",
-        "17-merge-review-rubric": "c2ac431a95d7fa1dbbbb77c7d60ba8d329f93807a5e1857d7da4107302bb63c8"
+        "16-recipe-merge-seams": "3fb6f67513acb8b9ecb1e77598f0a30fda526e00a9909a83ba3dcc1d1a7befec",
+        "17-merge-review-rubric": "5475804d67e60a87d9107a8a08803224f229a4c981cf67d005771f765f64e37a"
       },
       "startSha": "d0bee07d813dca5c5e012faa7fd3a2d75f66e623",
       "kind": "fork",
       "spawnedAt": "2026-10-12T08:41:26Z",
       "sessionId": "a851bafe-4025-44c5-a927-72b06f2466d6",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "12-landing-merge-in-producer",
+        "status": "done",
+        "head_sha": "428f4dbac0a93e1c4ae085ac9bbd4650a6b9838d",
+        "deviations": [
+          "internal/landingshed/publish.go",
+          "internal/landingshed/stuck.go",
+          "internal/reedengine/config_test.go",
+          "internal/shedrecipe/entries_bouncer_test.go",
+          "internal/shedrecipe/entries_burlerhalves_test.go",
+          "internal/loomcli/wiring_test.go",
+          "cmd/lyx/testdata/test-budget.yaml"
+        ]
+      },
+      "cardShas": [
+        "428f4dbac0a93e1c4ae085ac9bbd4650a6b9838d"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-merge-review/a851bafe-4025-44c5-a927-72b06f2466d6/subagents/agent-a7ee766dd6bee97f9.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-merge-review/a851bafe-4025-44c5-a927-72b06f2466d6/subagents/agent-a7ee766dd6bee97f9.jsonl"
+      ]
     },
     "7": {
       "slug": "fabric-parent-reads",
@@ -715,6 +738,7 @@
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-merge-review/a851bafe-4025-44c5-a927-72b06f2466d6/subagents/agent-a8f51573c1cd34a6c.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-merge-review/a851bafe-4025-44c5-a927-72b06f2466d6/subagents/agent-ae2379bde22a71f0c.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-merge-review/a851bafe-4025-44c5-a927-72b06f2466d6/subagents/agent-ae2379bde22a71f0c.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-merge-review/a851bafe-4025-44c5-a927-72b06f2466d6/subagents/agent-a7ee766dd6bee97f9.jsonl"
   ]
 }

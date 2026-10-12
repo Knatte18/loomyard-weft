@@ -1,9 +1,9 @@
 # Card 14 — bouncer-blocking-and-merge-note
 
 **Create:**
-- `plan:internal/shedadapters#RubricNotes` -> `type RubricNotes struct`
-- `plan:internal/shedadapters#Bouncer.rubricNotes` -> `func (b *Bouncer) rubricNotes() RubricNotes`
-- `plan:internal/shedadapters#Bouncer.openBlocking` -> `func (b *Bouncer) openBlocking(round int) (bool, error)`
+- `internal/shedadapters#RubricNotes`
+- `internal/shedadapters#Bouncer.rubricNotes`
+- `internal/shedadapters#Bouncer.openBlocking`
 
 **Edit:**
 - `internal/shedadapters#BouncerConfig`

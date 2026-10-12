@@ -2,7 +2,7 @@
 
 **Create:**
 - `contracts/stencils/loom/loom-rubric-merge-review.md`
-- `plan:contracts/stencils#LoomRubricMergeReview` -> `var LoomRubricMergeReview []byte`
+- `contracts/stencils#LoomRubricMergeReview`
 
 **Edit:**
 - `contracts/stencils#entries`

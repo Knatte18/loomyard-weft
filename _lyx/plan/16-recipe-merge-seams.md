@@ -1,7 +1,7 @@
 # Card 16 — recipe-merge-seams
 
 **Create:**
-- `plan:internal/shedrecipe#colorSegmentKey` -> `func colorSegmentKey(entry string, cfg Config) (segmentcolor.Segment, error)`
+- `internal/shedrecipe#colorSegmentKey`
 
 **Edit:**
 - `internal/shedrecipe#Env`

@@ -1,7 +1,7 @@
 # Card 13 — segment-colour-merge
 
 **Create:**
-- `plan:internal/segmentcolor#Merge` -> `const Merge Segment = "merge"`
+- `internal/segmentcolor#Merge`
 
 **Edit:**
 - `internal/segmentcolor#Segments`

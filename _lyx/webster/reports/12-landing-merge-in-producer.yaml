@@ -1,0 +1,10 @@
+status: OK
+head_sha: 428f4dbac0a93e1c4ae085ac9bbd4650a6b9838d
+deviations:
+  - internal/landingshed/publish.go
+  - internal/landingshed/stuck.go
+  - internal/reedengine/config_test.go
+  - internal/shedrecipe/entries_bouncer_test.go
+  - internal/shedrecipe/entries_burlerhalves_test.go
+  - internal/loomcli/wiring_test.go
+  - cmd/lyx/testdata/test-budget.yaml

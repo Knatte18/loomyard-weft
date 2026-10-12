@@ -1,13 +1,13 @@
 # Card 12 — landing-merge-in-producer
 
 **Create:**
-- `plan:internal/landingshed#mergeInName` -> `const mergeInName = "Merge-In"`
-- `plan:internal/landingshed#parentPuller` -> `type parentPuller interface`
-- `plan:internal/landingshed#MergeIn` -> `type MergeIn struct`
-- `plan:internal/landingshed#NewMergeIn` -> `func NewMergeIn(deps Deps) (*MergeIn, error)`
-- `plan:internal/landingshed#MergeIn.Call` -> `func (m *MergeIn) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/landingshed#MergeIn.syncParent` -> `func (m *MergeIn) syncParent(ctx context.Context) (string, string, error)`
-- `plan:internal/landingshed#MergeIn.writeRecord` -> `func (m *MergeIn) writeRecord(tip, head string, merge mergeresolve.Result) error`
+- `internal/landingshed#mergeInName`
+- `internal/landingshed#parentPuller`
+- `internal/landingshed#MergeIn`
+- `internal/landingshed#NewMergeIn`
+- `internal/landingshed#MergeIn.Call`
+- `internal/landingshed#MergeIn.syncParent`
+- `internal/landingshed#MergeIn.writeRecord`
 - `internal/landingshed/mergein_test.go`
 
 **Edit:**
