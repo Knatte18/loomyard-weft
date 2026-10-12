@@ -1,0 +1,16 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/testkit/envkit.TestFullEnv_FillsEverySeam
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/testkit/envkit
+      tail: '    envkit_test.go:13: NilSeams(FullEnv) = [InnerRun.ArbiterInFlight]; want none'
+    - id: github.com/Knatte18/loomyard/internal/testkit/envkit.TestNilSeams_ReportsExactPaths
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/testkit/envkit
+      tail: '    envkit_test.go:29: NilSeams = [CommitPlan InnerRun.ArbiterInFlight Landing.PushBranch SeedChild.WriteSeed Shuttle Teardown.Remove]; want [CommitPlan Landing.PushBranch SeedChild.WriteSeed Shuttle Teardown.Remove]'
+    - id: github.com/Knatte18/loomyard/internal/testkit/envkit.TestNilSeams_SkipsNilLegalPaths
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/testkit/envkit
+      tail: '    envkit_test.go:38: NilSeams = [InnerRun.ArbiterInFlight]; want none for nil-legal seams'
+log_path: /home/knatte/Code/loomyard-LYXHUB/driver-arbiter/.lyx/verify/verify-2.log
