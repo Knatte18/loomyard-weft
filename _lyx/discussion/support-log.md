@@ -51,7 +51,19 @@ Autonomous run: no operator answered, so every turn below is the writer's explor
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1, BLOCKING, every finding fixed:
+  - F1, BLOCKING: canonicalization writes card files and re-reads the plan from disk under the overlay — fixed: in-memory substitution and an overlay-reader re-parse (Decision 5), the reviewer's baseline is `--overlay` with `{}` (Decision 6), and an acceptance row.
+  - F2, MEDIUM: both delete-before-reference forms at a plan gate with done cards — fixed: Decision 1 names the typed form's entry points and drops the check from the shared resolve-backed pass at the plan gates, with an acceptance row.
+  - F3, MEDIUM: `recover-batch`'s refusal undecided — fixed: blocking findings only (Decision 4, Scope), with an acceptance row.
+  - F4, LOW: the candidate walk's skipped directories unbounded — fixed: stated in Decision 3's bound.
+  - F5, LOW: non-plan `.md` names accepted — fixed: names narrowed to `00-overview.md` and Card Index cards (Decision 5), with refusal rows.
+  - F6, LOW: terminal stdin and the `.go`-only import-path match lacked rows — fixed: rows added.
+  - F7, LOW: Decision 6's search procedure — fixed: solo runs per fix, the combined run's named cards otherwise, and the bound restated.
+  - F8, LOW: no enclosing span — fixed: the finding names the file's self glyph (Decision 7).
+- Round 2, APPROVED, every finding fixed:
+  - F1, LOW: a joint conflict alongside a solo failure stayed proposed — fixed: every combined-run finding no solo run reproduces withholds the fixes it names (Decision 6), with no extra run.
+  - F2, LOW: no plan-gate home for a package self glyph Delete — fixed: its import-path match runs in `planGatePass` at the same entry points and stays blocking (Decision 1).
+  - F3, LOW: Decision 5's refusals omitted two the acceptance row requires — fixed: a listed card with no file on disk and the combination with `--rework` or `--require-approved` added (Decision 5).
 
 ## Question ledger
 
@@ -61,3 +73,6 @@ _No rounds yet._
 - Q: Which `validate-plan` modes accept the overlay? — Resolved, auto-pick: the flag-less mode only. Revised after the lens review from "all of them".
 - Q: May the overlay add or remove plan files? — Resolved, auto-pick: no, replace existing files only (Decision 5).
 - Q: Are non-Go Edit targets still searched? — Resolved, auto-pick: no (Decision 3).
+- Q: Does the overlay run's handle canonicalization rewrite or report a non-canonical handle? — Resolved, auto-pick: it substitutes in memory, so later checks see what the Plan-Write gate would leave on disk (Decision 5). Added in review round 1.
+- Q: Are later `.go` Edit regions under `testdata`, `vendor`, or `.`- or `_`-prefixed directories searched? — Resolved, auto-pick: no, as `caller-uncovered`'s walk; the go tool never compiles them (Decision 3). Added in review round 1.
+- Q: Which run is the reviewer's baseline? — Resolved, auto-pick: `--overlay` with `{}`, which writes nothing (Decision 6). Added in review round 1.
