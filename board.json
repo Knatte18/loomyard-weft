@@ -747,30 +747,6 @@
       "revised": "2026-10-12T15:02:43Z"
     },
     {
-      "id": 447,
-      "slug": "pause-esc-rewind",
-      "title": "lyx pause leaves idle drivers in the rewind picker",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "reed",
-        "shuttle"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The pause Esc opened Claude Code rewind picker in both idle run drivers; resume then types into the picker.",
-      "body": "First live test of `lyx pause` (hub scope, 2026-10-12 17:07, grace 10 s).\nBoth run drivers (`ly:cleanup-1012:driver`, `ly:intake-bugs-1012:driver`) were reported `still_busy` and are recorded as interrupted sessions.\nAfter the pause each driver pane shows Claude Code's rewind picker (\"❯ (current) … Enter to continue · Esc to cancel\"), the dialog a double Esc opens on an idle prompt.\nBoth drivers were waiting on a background `lyx shed step` job, so the pause's Esc landed on an idle prompt, or one Esc too many reached it, and opened the picker.\nRisk: `lyx resume` types one line into each interrupted session; into an open picker that line is lost or selects a rewind point.\n\n## What to check\n\n- Whether pause sends more than one Esc, or sends Esc to a session whose prompt is idle while a background shell runs.\n- Whether resume closes a picker (one Esc) before it types its line, or detects the picker from the pane capture.\n- `interrupted` in the pause output was empty while `still_busy` listed both drivers; check what each list means.\n\nAlso seen: the shed step processes carried on under the pause (`intake-bugs-1012` Merge-In verify kept running, `cleanup-1012` at Describe); check that this is intended (hold only new agent and network work).\n",
-      "status": "done",
-      "created": "2026-10-12T15:08:27Z",
-      "revised": "2026-10-12T15:08:27Z",
-      "run_settings": {
-        "loom": {
-          "review_max_bounces": 2
-        }
-      }
-    },
-    {
       "id": 448,
       "slug": "batten-land-notice",
       "title": "Batten sends no notice for a landing that readies nothing",
