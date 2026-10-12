@@ -1,12 +1,13 @@
 {
   "current_producer": "PR-Gate",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "alignment report /home/knatte/Code/loomyard-LYXHUB/operator-followups/_lyx/shed/operator-followups/alignment/pr-gate/attempt-1/report-a045e2567752cc50.md did not settle this pull request - Peer intake-bugs-1012 (decision D7, plan card 5 cli-runnable-group-rule, now at Webster) rewrites the audience bullet of pattern/PATTERN-cli-cobra.md, and this run adds a shortcutcli bullet to that file's Deviations list; both runs also edit different paragraphs of docs/overview.md. The edits touch different bullets and do not contradict each other (shortcuts are operator-audience leaf commands, outside D7's rule for commands with subcommands). May operator-followups land as it stands, ahead of intake-bugs-1012, or should it wait for or be reconciled with the peer's PATTERN-cli-cobra change?; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/595",
+  "parent_notice": "alignment report /home/knatte/Code/loomyard-LYXHUB/operator-followups/_lyx/shed/operator-followups/alignment/pr-gate/attempt-1/report-a045e2567752cc50.md did not settle this pull request - Peer intake-bugs-1012 (decision D7, plan card 5 cli-runnable-group-rule, now at Webster) rewrites the audience bullet of pattern/PATTERN-cli-cobra.md, and this run adds a shortcutcli bullet to that file's Deviations list; both runs also edit different paragraphs of docs/overview.md. The edits touch different bullets and do not contradict each other (shortcuts are operator-audience leaf commands, outside D7's rule for commands with subcommands). May operator-followups land as it stands, ahead of intake-bugs-1012, or should it wait for or be reconciled with the peer's PATTERN-cli-cobra change?",
   "pause_requested": false,
   "activity": {
     "now": "PR-Gate",
-    "last": "PR-Align → done",
-    "wait": ""
+    "last": "PR-Gate → awaiting",
+    "wait": "alignment report /home/knatte/Code/loomyard-LYXHUB/operator-followups/_lyx/shed/operator-followups/alignment/pr-gate/attempt-1/report-a045e2567752cc50.md did not settle this pull request - Peer intake-bugs-1012 (decision D7, plan card 5 cli-runnable-group-rule, now at Webster) rewrites the audience bullet of pattern/PATTERN-cli-cobra.md, and this run adds a shortcutcli bullet to that file's Deviations list; both runs also edit different paragraphs of docs/overview.md. The edits touch different bullets and do not contradict each other (shortcuts are operator-audience leaf commands, outside D7's rule for commands with subcommands). May operator-followups land as it stands, ahead of intake-bugs-1012, or should it wait for or be reconciled with the peer's PATTERN-cli-cobra change?; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/595"
   },
   "history": [
     {
@@ -265,6 +266,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-12T14:58:35Z"
+    },
+    {
+      "producer": "PR-Gate",
+      "outcome": "awaiting",
+      "output": "",
+      "at": "2026-10-12T14:58:48Z"
     }
   ],
   "product": {
