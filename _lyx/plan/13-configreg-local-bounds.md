@@ -24,13 +24,13 @@
 - `plan:internal/fabricengine#ConfigSpec`
 - `plan:internal/gateslot#ConfigSpec`
 - `plan:internal/landingshed#ConfigSpec`
-- `plan:internal/loggerconfig#ConfigSpec`
+- `internal/loggerconfig#ConfigSpec`
 - `plan:internal/loomengine#ConfigSpec`
 - `plan:internal/modelspec#ConfigSpec`
-- `plan:internal/orchengine#ConfigSpec`
+- `internal/orchengine#ConfigSpec`
 - `internal/reedengine#ConfigSpec`
-- `plan:internal/shuttleengine#ConfigSpec`
-- `plan:internal/websterengine#ConfigSpec`
+- `internal/shuttleengine#ConfigSpec`
+- `internal/websterengine#ConfigSpec`
 
 **Intent:**
 Give the registry D4's two lists and the pin that ends enumeration by hand.

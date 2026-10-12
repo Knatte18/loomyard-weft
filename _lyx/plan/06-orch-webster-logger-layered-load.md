@@ -1,9 +1,9 @@
 # Card 6 — orch, webster and logger layered load
 
 **Create:**
-- `plan:internal/orchengine#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
-- `plan:internal/websterengine#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
-- `plan:internal/loggerconfig#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
+- `internal/orchengine#ConfigSpec`
+- `internal/websterengine#ConfigSpec`
+- `internal/loggerconfig#ConfigSpec`
 
 **Edit:**
 - `internal/orchengine#LoadConfig` -> `func LoadConfig(dirs configengine.Dirs, module string) (Config, error)`

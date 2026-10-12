@@ -1,7 +1,7 @@
 # Card 5 — shuttle layered load
 
 **Create:**
-- `plan:internal/shuttleengine#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
+- `internal/shuttleengine#ConfigSpec`
 
 **Edit:**
 - `internal/shuttleengine#LoadConfig` -> `func LoadConfig(dirs configengine.Dirs, module string) (Config, error)`
