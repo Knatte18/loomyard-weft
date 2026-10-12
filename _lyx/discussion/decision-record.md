@@ -179,6 +179,12 @@ Rationale: D2 and the acceptance criterion rely on 78e31aa06's storeFile Marshal
   - vacuous-unknown-field-undecodable-fixtures (class scope, severity MEDIUM, open in rounds 1)
 <!-- /lyx:carry-over Webster-Review -->
 
+<!-- lyx:carry-over Merge-Review -->
+- Merge-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/merge/round-1-review.md; fixer report: _lyx/reviews/merge/round-1-fixer-report.md.
+  - alignment-attempt-json-bypasses-state (class design, severity BLOCKING, open in rounds 1)
+<!-- /lyx:carry-over Merge-Review -->
+
 ## Acceptance criteria
 
 - A shed `status.json` carrying an unknown top-level key and an unknown key in one history entry reads through every reader D1 renames, and round-trips through `UpdateJSON` and `WriteJSON` with both keys and their JSON values kept.
