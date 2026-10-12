@@ -32,6 +32,24 @@ Perhaps the part split out of the orch is a Go-driven program: Go handles most o
 The same shape as loom today: the Go shed engine steps the run on its own (`lyx shed step --until-stop`), and the LLM driver above it wakes only when shed stops on something it cannot pass.
 Per-task run settings (`config-layers-run-settings`) carry a task's review budgets and step models, so a start needs no LLM to set them.
 
+## Two tiers, as in `go-driver-assistant` (2026-10-12)
+
+`go-driver-assistant` (running) builds this shape for one loom run: a Go driver that settles stops by rule, a cold cheap assistant (the tackler) spawned only at a stop no rule settles, and the arbiter behind it.
+The same two tiers fit the repo level:
+
+1. A Go run driver: starts ready tasks with their `run_settings`, runs the landing routine (Land row, prod, intake), and posts what it cannot settle.
+2. A spawnable assistant, cold per stop, never kept warm: it reads the stop and answers with a verdict or hands the question to the conversational orch.
+   Scope and design choices always go to the orch.
+
+Evidence from the loom level, a driver count over 98 runs (2026-10-05..12, 392 stops):
+
+- plain relaunch 12 %; mechanical fix a Go rule could do 52 %; repair that needed an LLM 0 %;
+- arbiter called 5 % (11 real attempts, all `resume`); relayed to the orch 22 %; other 10 %;
+- drivers lived 370 h, 93 % of it idle.
+
+The agent that ran the count estimated a cold helper would be needed at about 1 stop in 12 runs once Go takes the mechanical stops.
+Nobody has counted the hub level yet: the orch's parent reviews, escalations, PR-Gates and landings by hand would need the same split before the Go share is known.
+
 ## Was `go-driven-shed`
 
 ## Question (operator, 2026-10-12)
