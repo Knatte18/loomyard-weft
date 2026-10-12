@@ -40,15 +40,15 @@ Rationale: batten owns the runs and their status files; the orch start is the on
 ### D2 — Which runs show, and what one line shows
 
 A run is in flight when its prime batten run directory's status state is anything but `done`, and its pair worktree exists or its current producer is Worktree-Create.
+A run directory with a seed but no batten status file yet is in flight, shown as `starting` with no stage.
 Halted and failed runs with a pair still show; a run leaves the list when it reaches `done` or its pair is gone.
-Lines are ordered by the seed's start time, and runs with no readable seed come last, by slug.
+Lines are ordered by the seed's `started_at`, and runs with no readable seed or a seed without `started_at` come last, by slug.
 One line per run: the slug, the batten state, the loom stage, the time in that stage, the run's age, and the pair's reed session name.
 The loom stage is the pair's loom child's current producer while batten is in its Run-Shed row, and batten's own current producer otherwise, also when the child's status file does not exist yet or any more.
 A status file that fails to read or decode on two polls in a row shows the slug and `status unreadable`; one failed poll keeps the previous line; neither stops the other lines.
 No run in flight renders one line, `no runs in flight`.
 The pane is redrawn in place, never scrolled, and only when a line's text changes; it polls at most once a second, backs off while nothing changes (`PATTERN-daemon-wakeups`), and re-decodes only a status file whose modification time changed.
 It reads status files without the run's status lock, which is safe because `internal/state` writes them atomically; it never blocks or slows a run.
-This departs from the board entry's note that the overview carries each run's attach command (handed over from `batten-notice-trim`): an attached operator reaches a run by its session name through Alt+Left/Alt+Right or the session buttons, and an operator outside the reed session gets the full command from the notice log (D8).
 
 ### D3 — Strand sizing in reed
 
@@ -59,12 +59,20 @@ This departs from the board entry's note that the overview carries each run's at
   Its height is `min(content rows, max(min rows, floor(share × free height)))`.
   Content rows count visible content lines; reed adds the title row a pane at window row 0 loses to `pane-border-status top`, so a pane of N content rows shows N lines.
   Until its first report (D4) a content strand's content rows are its minimum.
-- **Sharing**: the strand splits the rows left after the fixed-height panes evenly with the other live sharing strands of the window.
+- **Sharing**: the strand splits the rows left after the fixed-height panes evenly with the other live sharing strands of the window, and the bottom-most sharing strand takes the remainder rows of the split.
   While any sharing strand is live, every positional strand takes `collapsed_rows`; with none live, the bottom-most positional strand expands as today.
   Sharing and positional strands keep one below-parent stack in insertion order.
 
 Free height is the strands' window's render box less the Selvage band.
 Top-anchored strands stack above the below-parent stack, in insertion order.
+Each anchor and kind pair has one outcome:
+
+- `top` with content: the content height above.
+- `top` with positional or sharing: Rules refuses it with an error, as it refuses `own-window`.
+- `below-parent` with any kind: its kind's height, in its place in the below-parent stack.
+- `hidden` with any kind: no pane, as today; the declaration is ignored.
+
+When no sharing strand and no positional strand is live, the bottom-most strand of the window, whatever its kind, takes the rows the others leave free; a content strand doing so exceeds its maximum and shows blank rows below its lines.
 Fixed-height panes are Selvage, the collapsed positional strands and every content strand; the window-resized hook pins every one of them, as it pins Selvage today.
 A window too short reclaims rows from collapsed placements first, then from content strands down to one row each, then from the expanding strands, and every pane keeps a positive height.
 The spawning module sets the declaration on its add spec (`reedengine.AddSpec`; shuttle's launch spec carries it inside `Display`); reed reads it only to place panes.
@@ -98,8 +106,13 @@ Rationale: the spawning module sets its strands' kind, as the board entry's open
 
 `lyx loom` gets a hidden pane verb that renders the run's recipe rows, read from the run's seed recipe through `shedbuild` (`PATTERN-sole-parsers`), as a checklist.
 The first line is the run's state line through `shedverbs.RenderStatusLine`.
-Then one line per row in recipe order: a box (done, running, failed, not reached), the row name, the time spent in it summed over its visits (a history entry's start to the next entry's start, and to now for the running row), and the visit count when above one.
+Then one line per row in recipe order: a box (done, running, halted, failed, not reached), the row name, the time spent in it summed over its visits, and the visit count when above one.
+A history entry's `at` is stamped when its producer call returns, so it marks a visit's end: a visit lasts from the previous history entry's `at` (the seed's `started_at` for the first entry) to its own `at`, and the running row's current visit from the last entry's `at` to now.
+An entry's `repeats` count as further visits of its row, and its time runs to its `last_at`, which then serves as the next visit's start; a `goto` entry is no visit and adds no time, and its `at` starts the next visit; a call that records no history entry (an error with no outcome) adds its time to the next recorded visit.
+A row's time is wall time between history stamps, since the status file records no resume time: it includes every halt, pause and awaiting wait before the call that ends the visit, and the wait before a `goto` entry is dropped, since the `goto`'s `at` starts the next visit.
+The current producer's row shows running while the run's state is running, failed while it is failed, and halted while it is paused, blocked or awaiting; its current visit's time keeps running to now in every one of them, by the rule above.
 History entries naming a row the recipe no longer has follow the recipe rows, marked as such.
+When the seed or its recipe cannot be read, the pane shows the state line followed by `recipe unreadable`.
 The loom start bootstrap runs it in the existing `loom-status` strand, keeping that strand's name, its build sidecar and its keep-or-replace logic, and keeps the strand on both drivers instead of removing it on an llm-driven run.
 The strand names no segment.
 It reads the status file the way D2 does, and takes its height from D3, D4 and D5.
@@ -107,11 +120,12 @@ Rationale: one status pane per pair; the checklist holds the one-line status and
 
 ### D8 — The hub notice log
 
-Every batten notice queued or logged for the orch is also appended, once per delivered notice and never per attempt, to one hub log file under the prime's `.lyx`: one line with the UTC time, the notice text and the run's attach command, `cd <pair dir> && lyx reed attach`, the directory quoted through `internal/shell`.
+Every notice a batten process composes is appended once by that process, at its first delivery attempt in that process and never at a later one, whether it is then queued, held back for a missing orch strand or dropped after its attempts, to one hub log file under the prime's `.lyx`: one line with the UTC time, the notice text and the run's attach command, `cd <pair dir> && lyx reed attach`, the directory quoted through `internal/shell`.
 Each line is one `O_APPEND` write, so concurrent batten processes never interleave inside a line.
 The path is declared through `internal/lyxdirs` and `internal/shedrun`, resolved in `battencli`'s wiring and told to `battenshed` through its deps (`PATTERN-told-geometry`), so `battenshed`'s import allowlist is unchanged.
 A failed append is logged and never blocks or changes the notice.
-The log is append-only and never rotated: a notice goes once per condition episode, so it grows by a few lines per run.
+The append is keyed on nothing persisted: a notice held back or dropped is composed again by the next batten process for the same episode, or for a row notice by the next failure at the same history length, and is logged again then.
+The log is append-only and never rotated: a notice goes once per condition episode and batten process, so it grows by a few lines per run and operator restart.
 `lyx batten`'s help text names the log's path.
 
 ### D9 — Selvage joins the strand-pane cycle
@@ -137,6 +151,7 @@ Rationale: a pair's session ends at Worktree-Teardown, before its worktree is re
 - `PATTERN-leaf-packages`: `render` stays a pure leaf; the size math lives in its policy layer, never in its mechanics layer.
 - `PATTERN-shed-run-directory`: run directories, status and seed paths only through `shedrun`.
 - `PATTERN-sandbox-coverage`: no new module is registered, so the sandbox suite needs no change.
+- The hub notice log's path lies outside every directory `lyx cleanup` sweeps (shed's records and scratch roots, `.scratch` and the lyx temp root), so no cleanup segment removes it or reads it as a run; the branch is rebased onto a `main` that contains `lyx cleanup` (bc9ee7a02) before D8 is built.
 - The positional rule's output for a window whose strands declare nothing is byte-identical to today's.
 - A strand persisted by an older lyx, with no size declaration, lays out positionally.
 - Docs change in the same commit: reedengine's `doc.go` layout-rule and bindings paragraphs, `render`'s anchor vocabulary comment, `orchengine`'s, `battenshed`'s and `loomcli`'s docs, and `termwindow`'s package comment.
@@ -147,7 +162,7 @@ Rationale: a pair's session ends at Worktree-Teardown, before its worktree is re
 - A2: the overview's attach command moves to the notice log (D2, D8).
 - A3: the checklist takes over the `loom-status` strand, and now shows on llm-driven runs at a quarter share (D5, D7).
 - A4: "gates" in the checklist means the loom recipe's rows (D7).
-- A5: shared strands stack in rows, though `reed-multi-window`'s 2026-10-05 note prefers one tmux window per strand on a small screen; the board entry's 2026-10-08 sizing proposal leaves rows open, and the depth idea is that note's own work.
+- A5: shared strands stack in rows (D3).
 - A6: an operator detach closes the run window (D10).
 
 ## Open risks
@@ -157,11 +172,18 @@ Rationale: a pair's session ends at Worktree-Teardown, before its worktree is re
 - An operator `tmux_conf` setting `detach-on-destroy off` moves the run window's client onto another session when the pair session ends, so the window stays open showing that session.
 - The window-resized hook array grows by one pin per content strand; the resize behaviour measured for Selvage is assumed to hold for more pinned panes.
 - Seat agents sharing rows on a small laptop screen may be cramped (A5).
-- `test-tmp-cleanup`'s `lyx cleanup` must not sweep the hub notice log.
+
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - d7-halt-wait-attribution (class design, severity MEDIUM, open in rounds 2)
+  - d8-notice-append-identity (class decision, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
 - With the orch and two runs in flight, the prime's strand window shows the `runs` strand directly above the orch, showing two lines, one per run, with slug, state, loom stage, stage time, run age and session name.
+- Lines follow the seeds' `started_at`; runs with no readable seed or no `started_at` come last, by slug; a run in Worktree-Create shows before its pair exists, and a run with a seed and no batten status file shows as `starting`.
 - No runs in flight: the pane shows `no runs in flight` in one line.
 - A run starts or lands: the pane grows or shrinks by one line without the operator acting, and a zoomed orch or zoomed Selvage stays zoomed.
 - More runs than fit: the last line names how many runs are not shown, and the pane never exceeds the D3 height.
@@ -169,13 +191,13 @@ Rationale: a pair's session ends at Worktree-Teardown, before its worktree is re
 - A run in Run-Shed whose child status file does not exist shows batten's producer, never `status unreadable`.
 - A status file unreadable on one poll keeps its previous line; unreadable on two shows `status unreadable`; the other lines still render.
 - The overview in a pane whose height disagrees with its reported count still shows a correct summary line.
-- `lyx orch start` replaces a live `runs` strand from another build and keeps one from its own.
+- `lyx orch start` replaces a live `runs` strand from another build and keeps one from its own; `lyx orch stop` leaves the `runs` strand, and the prime window then lays out the `runs` strand and Selvage with every row assigned.
 - VIEW shows the `runs` strand and the orch; the `orch` strand button zooms the orch alone.
 - The content-rows operation refuses an unknown strand, a strand with no content declaration, a pane id other than the strand's, and a count below 1; an unchanged count re-applies no layout; a refused first report succeeds at the next poll once the strand is recorded.
-- render: a window of positional strands only lays out byte-identically to today; content, sharing and top-anchored strands take the D3 heights, including a top pane's title row and a window too short for every minimum.
+- render: a window of positional strands only lays out byte-identically to today; content, sharing and top-anchored strands take the D3 heights, including a top pane's title row, a sharing split with remainder rows, a window whose only strand is a content strand, and a window too short for every minimum; Rules refuses a top strand that is positional or sharing.
 - Two seat-table agents get equal heights and the driver collapses; a third equalizes all three; once none is live the bottom-most positional strand expands again.
-- The checklist shows every recipe row in order with the right box, the summed time and the visit count for a row reviewed twice, on both child drivers; with more rows than fit, the state line and the running row stay visible.
-- A batten notice appends exactly one line with time, text and attach command, also when its delivery took retries; two runs' simultaneous notices give two whole lines; an unwritable log logs a warning and the notice still goes.
+- The checklist shows every recipe row in order with the right box, the summed time and the visit count for a row reviewed twice, and for a row whose visits include a folded repeat and a goto, on both child drivers; a row resumed after a failed call counts the halt in that row's time, and a row reached by `goto` after a halt counts only the time since the `goto`; the current row shows halted, with its time running to now, while the run is blocked; history entries naming a removed row follow the recipe rows; an unreadable seed or recipe shows the state line and `recipe unreadable`; with more rows than fit, the state line and the running row stay visible.
+- A batten notice appends exactly one line per batten process with time, text and attach command, also when its delivery took retries, and also when it is sent while no orch strand is recorded; a held-back notice composed again by a restarted batten appends a second line; two runs' simultaneous notices give two whole lines; an unwritable log logs a warning and the notice still goes.
 - Alt+Down from the bottom strand lands on Selvage, Alt+Down from Selvage wraps to the top strand, both keeping the zoom; Alt+z on Selvage zooms and unzooms it; neither key acts on a hidden batten window's pane.
 - The run window's shell line, for both the Konsole and Windows Terminal argument builders: exit 0 ends; non-zero prints the status, then ends when the pair directory is removed within the wait; non-zero with the directory present keeps a shell.
 
