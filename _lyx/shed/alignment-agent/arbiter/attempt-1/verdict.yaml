@@ -1,0 +1,14 @@
+verdict: resume
+reason: >-
+  Discussion-Bouncer escalated at round 2 for budget, not circling.
+  The round 2 fixer report fixes all five findings as proposed, disputes none and defers none, and the decision record shows each fix.
+  F1 (BLOCKING): D7 closes `skip_alignment` to the local layer and run_settings, and the acceptance criterion now refuses it.
+  F2: D8 routes a held task's decision to a board note through `lyx board upsert` with kind note whenever `decision add` refuses for want of a record; the run lock's refusal in internal/boardengine/runlock.go names that route.
+  F3: D5 adds a decision-snapshot check that turns an approve into an escalation, with an acceptance criterion.
+  F4 and F5 are LOW wording fixes, also applied.
+  No open finding makes the design wrong, and the board entry's operator points (disturb the orch less, decisions written where the agent reads them) are what the record implements.
+  One detail is left to the plan writer: which board notes count as "naming the task" for the snapshot hash, since notes carry no depends_on link.
+  That is a plan-level detail, not a design defect.
+  The rule is to accept unless a finding makes the design wrong, so the segment is accepted and the run resumes.
+verbs:
+  - lyx loom circling accept alignment-agent
