@@ -21,15 +21,17 @@ Held by a run; its scope is locked until the run ends.
 | 4 | **Driver arbiter: a cold, stronger agent decides when a driver is stuck**<br>• A stuck driver spawns a cold arbiter agent instead of waking the orch | [`driver-arbiter`](design-driver-arbiter.md) | loom | Publish | shed, orch, stencil |
 | 5 | **lyx cleans up after itself: temp files and one cleanup command**<br>• Tests and fixtures leave GBs of temps in /tmp; remove them on exit, sweep leftovers, and add lyx cleanup running every module cleanup | [`test-tmp-cleanup`](design-test-tmp-cleanup.md) | loom | Discussion-Burler-Fix | fabric, loom, batten, board |
 
+#### Normal priority
+
+| # | Task | Slug | Recipe | At | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 6 | **Board entries carry created and revised dates; views show age**<br>• Entries carry created and updated dates; list and README show age and can sort by it, so long-lying entries stand out | [`board-entry-age`](design-board-entry-age.md) | darn | Worktree-Create | board |
+
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | After | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Board entries carry created and revised dates; views show age**<br>• Entries carry created and updated dates; list and README show age and can sort by it, so long-lying entries stand out | [`board-entry-age`](design-board-entry-age.md) | darn |  | board |
+_None._
 
 ### Layer A
 
