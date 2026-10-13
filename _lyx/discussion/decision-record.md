@@ -259,6 +259,12 @@ Rationale: At the hard cap the segment can only be accepted. F1 faults one card'
   - recovery-branches-unreached-by-tests (class consistency, severity MEDIUM, open in rounds 1, 2, 3, 4)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Merge-Review -->
+- Merge-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/merge/round-1-review.md; fixer report: _lyx/reviews/merge/round-1-fixer-report.md.
+  - restep-and-verify-retry-warn-every-poll (class design, severity BLOCKING, open in rounds 1)
+<!-- /lyx:carry-over Merge-Review -->
+
 ## Acceptance criteria
 
 - A watchdog whose executable path is replaced retires: it releases the lock, spawns one successor through `SpawnWatchdog` and exits 0. One whose stat fails or whose file is unchanged keeps running.
