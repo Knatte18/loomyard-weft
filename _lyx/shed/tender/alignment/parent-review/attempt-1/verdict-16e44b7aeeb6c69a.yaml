@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  The design covers the board entry's goal: pause and resume moved into a tender module with lyx pause and lyx resume kept as shortcuts,
+  revive for API-error stalls, a hub-wide status view, both #606 scope points, and self-restart of the two stale processes the entry saw, with the rest listed.
+  Drain and the run cap are candidates the entry leaves to discussion, and the cap stays with orch-split.
+  Dropping a restart verb follows the entry's own self-re-exec option.
+  No peer run or parent commit is in flight, and creel and spawn-audit-log are named without duplication.
+question: ""
+superseded: []
