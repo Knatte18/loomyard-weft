@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-13 09:20 UTC; every age below is as of then.
+Rendered 2026-10-13 09:21 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`logging-cleanup`](design-logging-cleanup.md) | loom | Plan-Burler-Fix | 15h | 1h | batten, reed, orch, fabric |
-| 2 | **Arbiter relaunch, Webster deviations list, alignment landing order** | [`arbiter-fixes`](design-arbiter-fixes.md) | loom | Discussion-Bouncer | 18h | 1h | loom, shed, webster, orch |
+| 2 | **Arbiter relaunch, Webster deviations list, alignment landing order** | [`arbiter-fixes`](design-arbiter-fixes.md) | loom | Plan-Write | 18h | 1h | loom, shed, webster, orch |
 
 ### Ready
 
@@ -37,7 +37,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Plan does not surface tests that pin a method set a card extends** | [`plan-pinned-tests`](design-plan-pinned-tests.md) | 18h | 18h | loom |
-| 2 | **reed: strand windows first, Selvage last**<br>• Attach lands on Selvage while the agent works in another window, and Alt+Up/Down cannot reach own-window strands; strand windows first, Selvage last | [`reed-window-order`](design-reed-window-order.md) | 12m | 2m | reed |
+| 2 | **reed: strand windows first, Selvage last**<br>• Attach lands on Selvage while the agent works in another window, and Alt+Up/Down cannot reach own-window strands; strand windows first, Selvage last | [`reed-window-order`](design-reed-window-order.md) | 13m | 3m | reed |
 
 ### Enhancements
 
@@ -65,8 +65,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 13 | **Arbiter spawns only on stops that need it**<br>• Five arbiter spawns on 2026-10-12, none needed: narrow the triggers to the hard review cap, circling, and blocked or error stops with no computed way forward. | [`arbiter-when`](design-arbiter-when.md) | 18h | 18h | loom, shed |
 | 14 | **lyx report timing: phase minutes, parent waits and agent spawns from run records**<br>• A mechanical per-run and per-day time report beside lyx report convergence, including stops by who settled them. | [`report-timing`](design-report-timing.md) | 18h | 18h | shed, orch |
 | 15 | **Make shuttle and lyx neutral to the LLM provider**<br>• Engine registry, engine in run.json, no Claude names in the core, usage readers behind the engine | [`llm-agnostic-engine`](design-llm-agnostic-engine.md) | 1h | 1h | shuttle, config, stencil |
-| 16 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 41m | 40m | burler, stencil |
-| 17 | **Twill: spawn lens forks before or after writing**<br>• A/B the twill spawn point, Discussion first: forks spawned before writing re-read the output as fresh cache writes, once per fork | [`twill-fork-timing`](design-twill-fork-timing.md) | 36m | 33m | loom, stencil |
+| 16 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 42m | 41m | burler, stencil |
+| 17 | **Twill: spawn lens forks before or after writing**<br>• A/B the twill spawn point, Discussion first: forks spawned before writing re-read the output as fresh cache writes, once per fork | [`twill-fork-timing`](design-twill-fork-timing.md) | 37m | 34m | loom, stencil |
 
 #### Low priority
 
