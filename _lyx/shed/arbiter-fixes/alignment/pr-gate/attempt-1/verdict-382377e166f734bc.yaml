@@ -1,0 +1,12 @@
+verdict: escalate
+reason: >-
+  The diff matches the board entry and decisions D1 to D5 with no scope deviation,
+  but it shares the Go package internal/websterengine with the in-flight peer logging-cleanup,
+  and the alignment rule in force escalates on any Go package both runs change.
+question: >-
+  Overlap with peer logging-cleanup (running at Webster): both change the Go package internal/websterengine
+  (the peer edits captureLogs in runlevel_test.go for its D13; this run edits recordbatch.go, digest.go, report.go and others for D4),
+  and the peer's plan also changes internal/loomcli (card 14, idle-release logging) and contracts/stencils claims_test.go (card 19),
+  both packages this run changes. No design conflict was found: the changes sit at different places and no decision contradicts
+  or duplicates another. Confirm it as a text-only overlap and the landing order: by recipe row arbiter-fixes (PR-Gate) lands first
+  and logging-cleanup takes its changes at Merge-In.
