@@ -250,6 +250,14 @@ Rationale: orch-split still lists the receiver for a run with no long-lived driv
   - verify-goto-record-match-and-retry-split (class design, severity MEDIUM, open in rounds 1, 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - binary-restep-marker-blocks-retry (class consistency, severity MEDIUM, open in rounds 2)
+  - friction-failed-done-names-unwritten-report (class consistency, severity MEDIUM, open in rounds 2)
+  - resume-second-seed-driver-reader-no-pattern-edit (class consistency, severity BLOCKING, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - Seeding: `run_settings` `loom.driver_kind: go` seeds the Go driver; no setting seeds the LLM driver; a typed `--child-driver` wins over both; a typed `--child-driver` against an adopted seed that records none is refused with its way forward; an invalid value routes Seed-Child to Stuck; a standalone `lyx loom start` honours the key; changing `run_settings` after seeding leaves the recorded driver unchanged.
