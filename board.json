@@ -832,6 +832,25 @@
       "body": "## Idea (operator, 2026-10-13)\n\nThe project's test and doc rules make small changes large.\n`webster-pack-last` moved the kick-start pack into a file of its own: about 70 lines of change, about 140 lines of tests and about 20 lines of required docs and registration, 14 files in all.\n\n## Seen\n\n- Tests that pin stencil wording (`contracts/stencils/claims_test.go`, the template tests such as `internal/websterengine/template_test.go`) change with every sentence a prompt changes, and prompt changes are much of today's work.\n- The doc rule (`doc.go` in the same commit) is cheap and keeps the package docs true.\n\n## Options to discuss\n\n1. Tests pin only what must hold: markers, file paths, order and the presence of load-bearing rules, not the wording of sentences.\n2. Stencil wording claims move from tests to review: the Burler review checks them instead.\n3. Keep the doc rule, but drop the per-card test requirement for stencil-only changes.\n\n## First step\n\nCount, over the landed tasks of the last weeks, how much of each diff is tests that pin stencil or template wording, against the code change itself, so the choice rests on numbers.\n",
       "created": "2026-10-13T13:50:13Z",
       "revised": "2026-10-13T14:08:14Z"
+    },
+    {
+      "id": 479,
+      "slug": "claimed-scope-edit",
+      "title": "A running task scope cannot be corrected",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "board",
+        "loom",
+        "burler"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A claimed entry refuses body edits and darn has no decision record, so a mid-run scope correction never reaches the reviewers",
+      "body": "## Seen (2026-10-13, `webster-pack-last`)\n\nThe task was scoped with the wrong variant (the pack at the end of the fork prompt) instead of the operator's decision in `glyph-use-audit` (the pack in its own file, the prompt ending with one line to read it).\nThe operator corrected the scope mid-run, and the orch confirmed it to Darn-Write, which built the own-file design (`645d6093b`).\nThe Darn review is a separate session that reads the scope from the board body, which still held the old variant: the entry was claimed, so the body could not be edited.\nIts round-1 finding F1 (BLOCKING, design) called the own-file design out of scope, and the fix commit `f1ce95ce5` reverted it.\nPR-Gate caught it and the PR was rejected, at the cost of a review round, a fix round and a rework round.\n\n## The weakness (operator, 2026-10-13)\n\nIt is not good that a task's description cannot be changed while it runs.\nA scope correction mid-run has no place every later session reads:\n- a claimed board entry refuses any scope edit;\n- a darn run has no decision record (`lyx loom decision add` is refused);\n- a message to a session reaches only that session.\n\n## To discuss\n\n- Let the parent (orch or operator) edit a claimed entry's body, or append a scope amendment to it, recorded with who and when, and make every row that reads the scope read the current body.\n- Or give darn the decision record loom has, so `lyx loom decision add --by parent` works in every recipe, and have every reviewer read it.\n- Either way a reviewer must treat the amended scope as authoritative over the original.\n",
+      "created": "2026-10-13T14:30:37Z",
+      "revised": "2026-10-13T14:30:37Z"
     }
   ]
 }
