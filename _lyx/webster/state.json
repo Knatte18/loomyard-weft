@@ -420,7 +420,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "c948d8532832f9fffda626e476eacea9",
   "masterSessionId": "619f85ac-c3bf-4aee-8c58-7c22f14e4b85",
   "batches": {
@@ -497,6 +497,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-logging-cleanup/619f85ac-c3bf-4aee-8c58-7c22f14e4b85/subagents/agent-a086a817e2c076dd2.jsonl"
       ]
+    },
+    "9": {
+      "slug": "battenshed-read-guards",
+      "cards": [
+        "09-battenshed-read-guards",
+        "10-shuttle-draft-kind",
+        "11-shuttle-read-guards",
+        "12-orch-probe-holds",
+        "13-shedverbs-read-guards"
+      ],
+      "cardHashes": {
+        "09-battenshed-read-guards": "bdf600c9f2d537131c120a883c2f3c590c2992bfc3d33d24ac0c8a67bdb07f4e",
+        "10-shuttle-draft-kind": "256dbb1835c897d5830d1ef0a63f6c90a4f71bb1673e86d62c60379f652bf963",
+        "11-shuttle-read-guards": "6675acc19e27396c02239e409542f4767f68fbe18b632a8a1478bffd2324ada5",
+        "12-orch-probe-holds": "e8d3f2dde5da3814f7b6b62edfaef01f2eec813abe9233c81bad06df6a62b685",
+        "13-shedverbs-read-guards": "1abb0b8cbe22e9aff70de343bb235da13cf883e4435140da001761cbe92b3bc6"
+      },
+      "startSha": "07791120976184d7eba56a13b6b35b958392ff80",
+      "kind": "fork",
+      "spawnedAt": "2026-10-13T10:34:28Z",
+      "sessionId": "619f85ac-c3bf-4aee-8c58-7c22f14e4b85",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
