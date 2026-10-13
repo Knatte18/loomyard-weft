@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The design covers every goal and scope point of the reed-window-order entry (overview first, agents in start order including the LLM driver, shell last replacing VIEW, focus rules, Alt+Up/Down across windows, the full checklist frame, status-pane re-exec, the reapplyLayout zoom fix) and drops only the watchdog re-exec that logging-cleanup (a90ef61d1) already landed, as the entry asks.
+  Remaining long-lived verbs stay with stale-binary-daemons, so nothing is duplicated.
+  The one peer, shuttle-gate-early-done, changes only internal/shuttleengine's gate and readiness, with no conflicting behaviour or decision; no parent commits are listed.
+question: ""
+superseded: []
