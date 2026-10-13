@@ -1,4 +1,4 @@
-# A running task scope cannot be corrected
+# A running darn task scope cannot be corrected
 
 `claimed-scope-edit` · Note · bug, board, loom, burler
 
@@ -17,6 +17,12 @@ A scope correction mid-run has no place every later session reads:
 - a claimed board entry refuses any scope edit;
 - a darn run has no decision record (`lyx loom decision add` is refused);
 - a message to a session reaches only that session.
+
+## Loom has the way, darn does not (operator, 2026-10-13)
+
+In a loom run the parent records a correction with `lyx loom decision add --by parent` once Discussion-Write has written the decision record, and the later rows read that record.
+Darn skips Discussion and has no decision record, so the gap is darn's.
+Loom keeps a narrower gap: before Discussion-Write has written the record, `decision add` is refused.
 
 ## To discuss
 
