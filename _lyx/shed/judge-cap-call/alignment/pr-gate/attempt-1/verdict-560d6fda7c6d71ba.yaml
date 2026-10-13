@@ -1,0 +1,15 @@
+verdict: escalate
+reason: >-
+  The run stays within its board entry and decision record, with no scope deviation.
+  It shares Go packages and files with the in-flight go-driver-assistant run.
+  That run's record holds a parent decision that go-driver-assistant lands first, which an approve here would reverse.
+question: >-
+  Peer go-driver-assistant (at Webster) and judge-cap-call (at PR-Gate) both change internal/loomengine/config.go,
+  config_test.go and template.yaml, internal/loomcli/wiring.go, internal/configreg/runsettings_test.go,
+  contracts/stencils/stencils.go and claims_test.go, contracts/stencils/loom/loom-template-arbiter.md and
+  contracts/specs/refusal-spec.md.
+  go-driver-assistant's decision record (Added after Discussion, parent, 2026-10-12) says go-driver-assistant lands
+  before judge-cap-call and judge-cap-call takes the arbiter-stencil, loom-config and loomcli/doc.go changes at
+  Merge-In, because the run further along lands first. judge-cap-call is now the run further along.
+  Should judge-cap-call land now, with go-driver-assistant taking the shared files at its own Merge-In, or wait at
+  PR-Gate until go-driver-assistant lands, as recorded?
