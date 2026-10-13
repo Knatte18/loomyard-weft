@@ -42,6 +42,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 4 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-ftb-3`](design-twb-ftb-3.md) | 4m | 4m |  |
 | 5 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-fta-2`](design-twb-fta-2.md) | 4m | 4m |  |
 | 6 | **Plan does not surface tests that pin a method set a card extends** | [`plan-pinned-tests`](design-plan-pinned-tests.md) | 18h | 18h | loom |
+| 7 | **reed: strand windows first, Selvage last**<br>• Attach lands on Selvage in window 0 while the agent works in another window; the strand window should come first and be the default | [`reed-window-order`](design-reed-window-order.md) | 0m | 0m | reed |
 
 ### Enhancements
 
@@ -50,7 +51,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Audit glyph use in Webster, the kick-start pack first**<br>• Check from transcripts of a smaller task whether Webster forks use the kick-start pack and glyphs as intended | [`glyph-use-audit`](design-glyph-use-audit.md) | 1d | 1h | webster, burler, quarry |
-| 2 | **Model downgrade per role**<br>• Bench cheaper models (Sonnet 5.5, Haiku 5.5) per role by replaying older runs; per-round models and fan vs solo | [`model-downgrade`](design-model-downgrade.md) | 1h | 16m | burler, loom, webster, shuttle |
+| 2 | **Model downgrade per role**<br>• Bench cheaper models (Sonnet 5.5, Haiku 5.5) per role by replaying older runs; per-round models and fan vs solo | [`model-downgrade`](design-model-downgrade.md) | 1h | 17m | burler, loom, webster, shuttle |
 
 #### Normal priority
 

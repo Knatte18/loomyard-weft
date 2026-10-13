@@ -841,6 +841,23 @@
       "status": "running · Discussion-Write",
       "created": "2026-10-13T09:03:43Z",
       "revised": "2026-10-13T09:03:43Z"
+    },
+    {
+      "id": 465,
+      "slug": "reed-window-order",
+      "title": "reed: strand windows first, Selvage last",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Attach lands on Selvage in window 0 while the agent works in another window; the strand window should come first and be the default",
+      "body": "## Seen (operator, 2026-10-13)\n\nSince `reed-multi-window` each strand gets its own tmux window, but the session's window 0 holds Selvage alone, and `lyx reed attach` lands there.\nA strand such as `discussion` opens in window 1, detached and never selected (`internal/reedengine/doc.go`, \"Detached windows\" and the own-window strand lines), so the operator attaching to a run sees only Selvage and has to switch windows to see the agent at work.\n\n## Wanted (operator, 2026-10-13)\n\nSelvage goes last.\nWhen a strand's window opens beside Selvage, the strand's window comes first and is the one attach shows by default: the foreground work is what the operator watches.\n\n## Scope to discuss\n\n- Window order: strand windows before Selvage's window, and which strand comes first when several are open (the newest, or the run's current row).\n- Whether a newly opened strand window takes focus for an attached client, or only becomes attach's default.\n- What attach shows when no strand is open (Selvage).\n",
+      "created": "2026-10-13T09:07:59Z",
+      "revised": "2026-10-13T09:07:59Z"
     }
   ]
 }
