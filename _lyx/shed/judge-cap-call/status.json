@@ -1,11 +1,11 @@
 {
-  "current_producer": "Merge-Bouncer",
+  "current_producer": "Publish",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Merge-Bouncer",
-    "last": "Merge-Burler-Fix → bounced to Merge-Bouncer",
+    "now": "Publish",
+    "last": "Merge-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -236,6 +236,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/judge-cap-call/_lyx/reviews/merge/round-1-review.md",
       "at": "2026-10-13T07:20:49Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Merge-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/judge-cap-call/_lyx/reviews/merge/round-1-bouncer-ledger.md",
+      "at": "2026-10-13T07:21:27Z"
     }
   ],
   "product": {
