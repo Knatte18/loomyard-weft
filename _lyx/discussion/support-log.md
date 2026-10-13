@@ -54,6 +54,7 @@ Autonomous mode: no operator answered; every pick below is the writer's, and eac
 - Drain: pause with grace already makes the hub safe to suspend, and a deploy is already absorbed by binary re-step, drive hand-over and self-restart; drain would add a new hold point to every step loop for no case the existing tools leave open.
 - A concurrent-run cap in tender: tender starts no runs; the cap belongs with whatever starts them, `orch-split`'s run driver.
 - A `tender restart` verb that signals or kills stale processes: the processes that can restart safely do so themselves, and the rest must not be restarted mid-work.
+  This narrows the board entry's "listing and restart" on purpose.
 - The deploy (`update-plugins.sh`, batten's Land deploy) restarting every process: couples deployment to process management and cannot know what is mid-work.
 - For #606, starting the deadline only at each call site after a hold: every GitHub caller would need to know about pauses; moving the deadlines in the transport covers all of them.
 - For #606, reclassifying a held deadline error: it is already transient; the defect is that the pause consumed the budget.
@@ -78,3 +79,5 @@ _No rounds yet._
 - Q10 How is a hub process found for the stale listing? Auto-pick: cwd under the hub on Linux, matching a deleted exe by base name; no pair attribution. Resolved.
 - Q11 How does the orch watcher keep one instance across its re-exec? Auto-pick: re-acquire the lock and accept the bounded gap, rather than handing the lock descriptor across the exec. Resolved.
 - Q12 Does `pause --status` get a refusing alias? Auto-pick: no; references are updated. Resolved.
+- Q13 Does revive's conditioned send wait on a draft, operator activity or an unmatched turn start? Auto-pick: no, it refuses every hold at once, so its hold on the pause record lock is bounded by two submit windows. Resolved.
+- Q14 When may the orch watcher re-exec under a pause? Auto-pick: only with no hub pause entry live, so no handled entry is handled afresh by the new image. Resolved.
