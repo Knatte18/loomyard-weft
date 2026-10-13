@@ -83,4 +83,24 @@ Two runs per arm on the `run-time-by-role` reference, `opus[medium]`, $18 in all
 
 Bench verdict: no cost gain, no case to build fork0 yet; if benched again, fork0 writes a short rationale file the master reads before fixing and the lens forks do not inherit.
 
+## Next arm to bench: fork0 stays alive and revises (operator, 2026-10-13)
+
+The fork0 arm's weak point: fork0 has ended when the findings come back, so the master fixes without fork0's reasoning.
+The operator's idea: fork0 never ends, and revises the plan itself, as the writer does today, while the lens forks stay blind to its reasoning.
+
+1. The master explores and forks fork0.
+2. fork0 writes the plan, runs `validate-plan` and writes the ready marker.
+3. The master awaits the marker and forks the lens forks; they inherit the master's context and the written files, not fork0's reasoning.
+4. Each lens fork writes its findings to its own file (`lens-<name>.md`) instead of returning them to the master, so the master never reads them.
+5. fork0 runs a Go command that waits for every lens file, merges them mechanically into one findings file and returns; it re-runs it like `lyx shuttle await`, under the cache lifetime, so fork0's cache stays warm while it waits.
+6. fork0 judges the merged findings with its own reasoning, rejects wrong ones with a reason, revises, and ends.
+
+No dummy file is needed: the merged file exists only once the command has written it.
+Lens forks are read-only today and return findings as their final message (`contracts/stencils/twill/twill-directive.md`), so the arm needs each fork's write permission limited to its own lens file, and the merge command (for instance a `lyx twill` verb taking the expected lens files).
+Prototype the merge with a scratch script for the bench before building it.
+
+Fallback, if keeping fork0 alive fails: fork0 writes a second file with its rationale, which the master reads only after it has forked the lens forks, then fixes as in the fork0 arm; the lens forks are told not to read it.
+
+Measure against the after arm and the fork0 arm: cost per plan, fork0's await calls and cache writes, lens findings, rejected findings and the grade on the key.
+
 Ideas from the bench agent, untested: merge two lenses (for instance `test-economy` into `row-reachability`), have forks batch their reads into one or two calls, and cut the writer's `validate-plan` rounds (the writer is about $4 of $5.6 per plan).
