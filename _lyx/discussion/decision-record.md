@@ -12,6 +12,7 @@ In:
 - The unmatched-turn-start hold in `internal/shuttleengine` (`turnStartHold`), which the gate boundary (`startHoldReleased`), every verified send's idle wait and `Runner.SessionIdle` (the orch watcher's idle probe) all decide through.
 - A transcript reading in `internal/shuttleengine/claudeengine` that tells a turn in flight from a turn that is over.
 - The Plan-Write row's gate under twill: it refuses Done until `lens-review.md` holds non-whitespace text in the plan directory, plus the parity mode `lyx loom validate-plan --lens-review`.
+- A run-record field in `internal/shuttleengine` (`RunState`) holding the spec's fork-subagent authorization at spawn, tolerant of its absence on an older record, which reads as not twill; the Plan-Write gate and the fork audit at finalize (`Run.finalize`) both read it.
 - The twill directive's final self-check step names that mode for the Plan host.
 - Docs: `internal/shuttleengine/doc.go`, `claudeengine`'s doc, `internal/loomengine/plan.go`'s file doc, `docs/overview.md` (the `validate-plan` modes and the twill writer paragraph), and `pattern/PATTERN-gate-self-check-parity.md`, whose Plan-Write row is rewritten, not only extended.
 
@@ -41,8 +42,11 @@ A turn read in flight forever (a hung model) holds until a turn end, a reported 
 Decision: the reading is a new optional engine capability beside `SessionProber`, so an engine without it keeps today's behaviour with no change to existing implementers or fakes.
 `shuttleengine` sees only in flight, over, or unknown.
 `claudeengine` reads the transcript the turn start's `UserPromptSubmit` payload names, backward from its end over complete lines only, as `TurnStartInterrupt` does.
-The turn is in flight when the newest main-chain user or assistant entry is a user entry that is not the interrupt marker (a prompt, a task notification, a tool result), or an assistant entry that ends on a tool use.
-It is over when that entry is an assistant entry whose stop reason ends the turn with no tool use.
+The turn is in flight when the newest main-chain user or assistant entry is a user entry that is not the interrupt marker (a prompt, a task notification, a tool result), or an assistant entry whose message's stop reason is `tool_use`.
+It is over when that entry is an assistant entry whose stop reason is `end_turn` or `stop_sequence` (which Claude Code's synthetic API-error entry carries).
+An assistant entry whose stop reason is absent or null, or is any value other than `tool_use`, `end_turn` or `stop_sequence`, reads unknown; a message cut off mid-stream leaves its lines with a null stop reason.
+An assistant entry is classified by its message's stop reason, never by its last content block: every line of a completed message split over several transcript lines carries the message's final stop reason, so a thinking or text line ahead of its `tool_use` line already reads in flight.
+The interrupt marker reads unknown, since D1 releases on a reported interrupt first.
 Sidechain (subagent) entries and non-message entries (`system`, attachments, summaries) are skipped; a line that does not parse is skipped.
 Rationale: `PATTERN-shuttle-provider-seam` keeps transcript shape knowledge in `claudeengine`; reusing the backward reader keeps one transcript-reading path.
 
@@ -50,7 +54,10 @@ Rationale: `PATTERN-shuttle-provider-seam` keeps transcript shape knowledge in `
 
 Decision: the Plan-Write row's gate, when that row's spawn ran with the twill directive, adds one blocking finding when `planparser.LensReviewFileName` is absent from the plan directory or holds only whitespace.
 The finding names the file's absolute path and says to record the lens review there as the directive describes; it is a validation finding, not a refusal, so it adds no `refusal-spec.md` row.
-Whether the spawn was twill is taken from what the Plan-Write spawn recorded (its fork-subagent authorization, which `PlanSpec` sets exactly under twill), never from a fresh `plan_producer` read, so a config edit between spawn and gate changes nothing.
+The run record (shuttle's `RunState`) records the spec's `ForkSubagents` at spawn, which `PlanSpec` sets exactly under twill.
+The Plan-Write gate reads it from the run it judges, attached or spawned, and never from the spec composed for that Call, so a `plan_producer` edit between spawn and gate changes nothing.
+The run's fork audit at finalize reads the same recorded authorization instead of the attaching Call's spec, so one run has one answer to whether it was authorized to fork.
+The gate evaluation receives that run's recorded authorization, since the `GateSpec` itself is fixed at wire time.
 The Plan-Burler-Fix row shares the `plan` gate kind today; the wiring tells the Plan-Write row apart, so Plan-Burler-Fix, PR-Rework and a non-twill Plan-Write keep today's check set.
 The check is one exported `loomshed` function that the gate closure and `lyx loom validate-plan --lens-review` both call; that mode runs `ValidatePlan`'s full set plus the lens-review check, and the flag-less mode ignores `lens-review.md`.
 Rationale: a twill plan without a recorded lens review fails at the gate instead of passing silently.
@@ -76,9 +83,7 @@ Rationale: the writer meets a missing lens review in its own turn instead of in 
 
 ## Auto-mode assumptions
 
-- Claude Code writes the turn's prompt line to the transcript at or right after `UserPromptSubmit`, and an assistant message's lines carry its final stop reason.
-- Real-run audit: of the twill Plan-Write runs since 2026-10-12, only `lyx-halt` landed a plan with no `lens-review.md`; its pair and logs are gone, so the cause is unconfirmed, and it is not backfilled.
-
+- Claude Code writes the turn's prompt line to the transcript at or right after `UserPromptSubmit`, and a completed assistant message's lines carry its final stop reason; a message cut off mid-stream leaves a null stop reason on its lines.
 ## Open risks
 
 - An assistant message split over several transcript lines: a thinking line that already carries a turn-ending stop reason, read before the text line lands, reads as over; the pane must still read idle for the whole override with no turn end, so the exposure is a long final text block under an idle-looking pane.
@@ -94,9 +99,11 @@ Rationale: the writer meets a missing lens review in its own turn instead of in 
 - An unmatched turn start whose transcript's newest main-chain entry is an assistant entry ending the turn still releases after `turnStartIdleOverride` with one Warn.
 - A reported interrupt still releases at once, ahead of the in-flight reading.
 - A turn start whose payload names no transcript, or names one that cannot be read, keeps today's override.
-- `claudeengine`'s reading over transcript fixtures cut from the bench transcripts: newest entry a prompt, a task notification, a tool result, an assistant tool use → in flight; an assistant end of turn → over; the interrupt marker → not in flight; trailing sidechain and `system` entries, a malformed last line and a line with no trailing newline are skipped; a thinking-then-text assistant message is covered.
+- `claudeengine`'s reading over transcript fixtures cut from the bench transcripts: newest entry a prompt, a task notification, a tool result, an assistant tool use → in flight; an assistant end of turn → over; the interrupt marker → unknown; a thinking or text line whose stop reason is `tool_use`, with no `tool_use` line yet → in flight; a thinking line whose stop reason is `end_turn` → over; a synthetic API-error entry → over; an assistant line with a null stop reason, and one with an unlisted stop reason such as `max_tokens` → unknown; trailing sidechain and `system` entries, a malformed last line and a line with no trailing newline are skipped.
 - A twill Plan-Write gate over a valid plan with no `lens-review.md`, an empty one or a whitespace-only one does not pass, and its finding names the file's path; with text in the file it passes.
 - A non-twill Plan-Write gate, a Plan-Burler-Fix gate and a PR-Rework gate pass a valid plan with no `lens-review.md`.
+- A twill-spawned Plan-Write run attached by a later Call whose `plan_producer` now reads single still gets the lens-review check; a single-spawned run attached by a later Call whose `plan_producer` now reads twill does not.
+- A twill-spawned run attached by a Call whose spec does not set `ForkSubagents` is still fork-audited when it ends Done; a single-spawned run attached by a Call whose spec sets it is not.
 - `lyx loom validate-plan --lens-review` and the twill gate report the same findings over the same plan directory; `lyx loom validate-plan` ignores `lens-review.md`.
 - The twill Plan prompt's step 8 names `lyx loom validate-plan --lens-review` and its step 3 `lyx loom validate-plan`; the Discussion twill prompt is unchanged.
 
