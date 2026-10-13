@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-13 08:25 UTC; every age below is as of then.
+Rendered 2026-10-13 08:26 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Run window and shuttle bugs from 2026-10-12**<br>• Six run window, shuttle, reed, loom and weft push bugs and fixes noted on 2026-10-12, bundled. | [`run-window-bugs`](design-run-window-bugs.md) | loom | Webster | 4d | 17h | shuttle, reed, loom, fabric |
-| 2 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`logging-cleanup`](design-logging-cleanup.md) | loom | Plan-Write | 14h | 46m | batten, reed, orch, fabric |
+| 2 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`logging-cleanup`](design-logging-cleanup.md) | loom | Plan-Write | 14h | 47m | batten, reed, orch, fabric |
 
 ### Ready
 
@@ -34,7 +34,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Arbiter relaunch, Webster deviations list, alignment landing order** | [`arbiter-fixes`](design-arbiter-fixes.md) | loom | `run-window-bugs` | 17h | 46m | loom, shed, webster, orch |
+| 1 | **Arbiter relaunch, Webster deviations list, alignment landing order** | [`arbiter-fixes`](design-arbiter-fixes.md) | loom | `run-window-bugs` | 17h | 47m | loom, shed, webster, orch |
 
 ## Notes
 
@@ -55,13 +55,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Audit glyph use in Webster, the kick-start pack first**<br>• Check from transcripts of a smaller task whether Webster forks use the kick-start pack and glyphs as intended | [`glyph-use-audit`](design-glyph-use-audit.md) | 1d | 45m | webster, burler, quarry |
-| 2 | **Model downgrade per role**<br>• Bench cheaper models (Sonnet 5.5, Haiku 5.5) per role by replaying older runs; per-round models and fan vs solo | [`model-downgrade`](design-model-downgrade.md) | 24m | 24m | burler, loom, webster, shuttle |
+| 2 | **Model downgrade per role**<br>• Bench cheaper models (Sonnet 5.5, Haiku 5.5) per role by replaying older runs; per-round models and fan vs solo | [`model-downgrade`](design-model-downgrade.md) | 25m | 25m | burler, loom, webster, shuttle |
 
 #### Normal priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 3 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 9d | 44m | shuttle |
+| 3 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 9d | 45m | shuttle |
 | 4 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 8d | 8d | fabric, loom |
 | 5 | **shedrecipe: capability declaration instead of manual seam-threading**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | 8d |  | shed |
 | 6 | **Discussion stage has no sanctioned path to land a repository edit ahead of Plan**<br>• Discussion has no sanctioned path to commit a PATTERN edit ahead of Plan | [`discussion-lands-invariant`](design-discussion-lands-invariant.md) | 7d | 7d | loom |
@@ -73,7 +73,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 12 | **Twill for Plan: measure fewer Plan-Review rounds; wrong-parent-dir miss**<br>• After twill-plan lands: measure a lower plan_max_bounces, and cover the parent-directory miss every bench arm shared | [`twill-plan-followups`](design-twill-plan-followups.md) | 1d | 13h | loom |
 | 13 | **Arbiter spawns only on stops that need it**<br>• Five arbiter spawns on 2026-10-12, none needed: narrow the triggers to the hard review cap, circling, and blocked or error stops with no computed way forward. | [`arbiter-when`](design-arbiter-when.md) | 17h | 17h | loom, shed |
 | 14 | **lyx report timing: phase minutes, parent waits and agent spawns from run records**<br>• A mechanical per-run and per-day time report beside lyx report convergence, including stops by who settled them. | [`report-timing`](design-report-timing.md) | 17h | 17h | shed, orch |
-| 15 | **Make shuttle and lyx neutral to the LLM provider**<br>• Engine registry, engine in run.json, no Claude names in the core, usage readers behind the engine | [`llm-agnostic-engine`](design-llm-agnostic-engine.md) | 53m | 45m | shuttle, config, stencil |
+| 15 | **Make shuttle and lyx neutral to the LLM provider**<br>• Engine registry, engine in run.json, no Claude names in the core, usage readers behind the engine | [`llm-agnostic-engine`](design-llm-agnostic-engine.md) | 54m | 45m | shuttle, config, stencil |
 
 #### Low priority
 
@@ -118,11 +118,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 18 | **Scoped build and test for C# hubs on Windows**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 21h | 21h | shed, webster |
-
-## Done
-
-Finished, awaiting `lyx board prune --apply`.
-
-| # | Entry | Slug | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Go driver per task, with the tackler (cold assistant) and the arbiter behind it**<br>• Go steps the run and settles mechanical stops; a cheap assistant spawns only at stops no rule settles and may escalate to the arbiter; LLM driver stays as an option. | [`go-driver-assistant`](design-go-driver-assistant.md) | 14h | 14h | loom, shed |
