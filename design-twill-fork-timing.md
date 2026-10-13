@@ -119,4 +119,15 @@ Two runs (`twb-ftr-1`, `-2`), same reference and setup, $10.74; all six plans of
 
 Bench verdict: no quality gain for $0.75–1.00 more per plan; the after arm (writer fixes its own plan) stays the best choice, and neither fork0 variant is worth building on this evidence.
 
+## Reading the fork0 results (operator, 2026-10-13)
+
+The operator expects a writer fork to pay off: lens forks blind to the writer's reasoning found more BLOCKING and MEDIUM findings (fork0 6 and 6, alive 4 and 5, against after 2 and 4), and the operator does not take that for noise.
+The "key" the grader used is not a correct answer: it is the list of problems the reference's real Plan-Review found (J1–J9), so it measures only whether a plan repeats known problems, and misses true findings outside it (such as the `filepath.Abs` cwd violation the fork0 arm caught).
+So the bench verdicts above judge the final plan against a narrow list, not the operator's question, which is whether blind lens forks find more real problems.
+The operator wants the fork0 arms benched further before any call.
+
+Next bench steps to discuss:
+- Grade every lens finding of the six existing runs as real, wrong or noise (no new runs), so the arms compare on true findings, not on the key alone.
+- Bench on more references than `run-time-by-role`.
+
 Ideas from the bench agent, untested: merge two lenses (for instance `test-economy` into `row-reachability`), have forks batch their reads into one or two calls, and cut the writer's `validate-plan` rounds (the writer is about $4 of $5.6 per plan).
