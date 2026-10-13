@@ -1,6 +1,6 @@
 # Run window and shuttle bugs from 2026-10-12
 
-`run-window-bugs` · Task · bug, enhancement, shuttle, reed, loom, fabric · running · Discussion-Bouncer
+`run-window-bugs` · Task · bug, enhancement, shuttle, reed, loom, fabric · running · Discussion-Burler-Review
 
 This task bundles the run window and shuttle bugs and fixes noted on 2026-10-12: `shuttle-ready-blank-pane`, `loom-checklist-stale-render`, `weft-push-refused-retry`, `shuttle-color-verified-send`, `reed-socket-test-fd-sweep` and `agent-gofmt-verb`.
 
