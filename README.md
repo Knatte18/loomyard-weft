@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Run window and shuttle bugs from 2026-10-12**<br>• Six run window, shuttle, reed, loom and weft push bugs and fixes noted on 2026-10-12, bundled. | [`run-window-bugs`](design-run-window-bugs.md) | loom | Webster-Bouncer | 4d | 17h | shuttle, reed, loom, fabric |
+| 1 | **Run window and shuttle bugs from 2026-10-12**<br>• Six run window, shuttle, reed, loom and weft push bugs and fixes noted on 2026-10-12, bundled. | [`run-window-bugs`](design-run-window-bugs.md) | loom | Describe | 4d | 17h | shuttle, reed, loom, fabric |
 | 2 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`logging-cleanup`](design-logging-cleanup.md) | loom | Plan-Write | 15h | 55m | batten, reed, orch, fabric |
 
 ### Ready
@@ -34,7 +34,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Arbiter relaunch, Webster deviations list, alignment landing order** | [`arbiter-fixes`](design-arbiter-fixes.md) | loom | `run-window-bugs` | 17h | 54m | loom, shed, webster, orch |
+| 1 | **Arbiter relaunch, Webster deviations list, alignment landing order** | [`arbiter-fixes`](design-arbiter-fixes.md) | loom | `run-window-bugs` | 17h | 55m | loom, shed, webster, orch |
 
 ## Notes
 
@@ -55,7 +55,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Audit glyph use in Webster, the kick-start pack first**<br>• Check from transcripts of a smaller task whether Webster forks use the kick-start pack and glyphs as intended | [`glyph-use-audit`](design-glyph-use-audit.md) | 1d | 53m | webster, burler, quarry |
-| 2 | **Model downgrade per role**<br>• Bench cheaper models (Sonnet 5.5, Haiku 5.5) per role by replaying older runs; per-round models and fan vs solo | [`model-downgrade`](design-model-downgrade.md) | 32m | 32m | burler, loom, webster, shuttle |
+| 2 | **Model downgrade per role**<br>• Bench cheaper models (Sonnet 5.5, Haiku 5.5) per role by replaying older runs; per-round models and fan vs solo | [`model-downgrade`](design-model-downgrade.md) | 33m | 33m | burler, loom, webster, shuttle |
 
 #### Normal priority
 
