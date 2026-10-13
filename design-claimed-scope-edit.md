@@ -1,4 +1,4 @@
-# A running darn task scope cannot be corrected
+# Darn: a decision record for mid-run scope corrections, and PR-Align
 
 `claimed-scope-edit` · Note · bug, board, loom, burler
 
@@ -30,6 +30,12 @@ Darn stays one combined agent; turning it into a loom without perches (Discussio
 Instead Darn-Write writes a short decision record in the same session before it writes code: the scope as it reads it and the calls it makes, in loom's record format.
 Then `lyx loom decision add --by parent` works on a darn run once that record exists, and the Darn review reads the record and holds it authoritative over the board body.
 First check where the Darn review reads its scope from today (the board body or a copy), which sets how much the change touches.
+
+## Darn also lacks PR-Align (operator, 2026-10-13)
+
+The loom recipe's PR-Align row spawns the alignment agent, which approves and lands the pull request itself (`alignment_pr_approve`); `contracts/recipes/darn-recipe.yaml` has no such row, so every darn run stops at PR-Gate for the orch.
+The operator wants PR-Align in darn too.
+Check first whether darn left it out on purpose, and what the alignment agent reads that darn lacks (the decision record above may be one).
 
 ## Other options considered
 
