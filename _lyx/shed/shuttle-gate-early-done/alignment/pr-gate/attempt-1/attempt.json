@@ -9,8 +9,8 @@
   "snapshot": "c5a717f78c1232b18197d2b1dde0c15135607f97e501ce0d189fca4f2ec2c29d",
   "pr_number": 605,
   "head_sha": "3b92ae242c26b255f6491787a284ad5fcfdbb867",
-  "closed": false,
-  "closed_reason": "",
-  "applied": "",
+  "closed": true,
+  "closed_reason": "the alignment verdict was applied",
+  "applied": "approve",
   "notified": false
 }
