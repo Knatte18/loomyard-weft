@@ -861,7 +861,7 @@
       "id": 472,
       "slug": "shuttle-gate-early-done",
       "title": "Shuttle gate ends a twill writer mid-turn",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "shuttle",
