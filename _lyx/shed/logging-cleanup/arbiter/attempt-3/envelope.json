@@ -1,0 +1,14 @@
+{
+  "verdict": "hand-on",
+  "reason": "Round 3 of Plan-Review escalated with cause circling on the design-wrong key d11-audit-table-incomplete. The returned finding F1 is right: adoptPaneGenerationLocked (internal/reedengine/generation.go:133) Warns and returns nil on every tick while the generation read fails, and the shuttle readers log and skip a record without returning an error, so no caller's guard covers them. The fix is converging: rounds 1 and 2 added only the rows each review named, while the round-3 fixer changed the D11 method itself (00-overview.md lines 40 and 42 now follow the call graph to its leaves and give a no-error line its own row), re-swept, and found sites the review did not name (battencli childGoto and the wire Spawn closure). The two keep rows the fixer chose instead of the proposed guards hold against the code: readSessionStatesByStrand's ReadSessionStates fails only on the run root's ReadDir, which ReadAgentActivity has just read without error (internal/battencli/wire.go:560-565, internal/shuttleengine/sessionread.go:38). F2 to F4 were applied as proposed. Plan-Review's hard cap is 4 (review_hard_max_bounces in _board/_lyx/config/loom.yaml, plan_hard_max_bounces 0), so round 3 is below it, and the circling rule calls for continue. `lyx loom circling continue logging-cleanup` was refused: {\"error\":\"loom: circling continue: a decision is already recorded for the escalated round at Plan-Bouncer; way forward: the decision for this round is recorded and stays; run \\\"lyx loom resume\\\" in the task worktree to resume the run\",\"ok\":false}. _lyx/reviews/plan/round-3-circling-decision.md holds round 3, decision continue, cause circling, automatic false, written at 11:23:34, 34 seconds after this attempt spawned and before this arbiter ran any verb. Another session recorded it while this attempt was live. The recorded decision matches this arbiter's judgment, but by the refusal rule this attempt hands on rather than resuming on a decision it did not record.",
+  "question": "Round 3 of Plan-Review already carries a parent-side `continue` decision (_lyx/reviews/plan/round-3-circling-decision.md, written 11:23:34 by a session other than this arbiter), so the arbiter's own `lyx loom circling continue logging-cleanup` was refused. The arbiter's reading of the round agrees with `continue`. Which session recorded that decision, and should the run resume on it with `lyx loom resume` in /home/knatte/Code/loomyard-LYXHUB/logging-cleanup?",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling continue logging-cleanup (refused)"
+  ],
+  "cause": "",
+  "attempt": 3,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/logging-cleanup/_lyx/shed/logging-cleanup/arbiter/attempt-3",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/logging-cleanup/_lyx/shed/logging-cleanup/arbiter/attempt-3/verdict.yaml",
+  "relaunch": ""
+}

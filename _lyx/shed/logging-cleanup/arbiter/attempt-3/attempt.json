@@ -1,0 +1,15 @@
+{
+  "number": 3,
+  "stop_key": {
+    "current_producer": "Plan-Bouncer",
+    "history_length": 29,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-10-13T11:23:00.100927288+02:00",
+  "deadline": "2026-10-13T11:53:00.100927288+02:00",
+  "strand_guid": "534f46c5c59331eed5570482ea5906c2",
+  "envelope_path": "/home/knatte/Code/loomyard-LYXHUB/logging-cleanup/.lyx/shed/logging-cleanup/steps/f91bba2febdf2bed.json",
+  "report_path": "/home/knatte/Code/loomyard-LYXHUB/logging-cleanup/_lyx/shed/logging-cleanup/drive-reports/drive-report-20261013-093905-2f73.md"
+}
