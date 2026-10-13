@@ -17,6 +17,7 @@
 - `internal/fabricengine/doc.go`
 - `pattern/PATTERN-fabric-destruction-chokepoint.md`
 - `internal/fabricengine_test#TestRemove_RefusesForeignWorktreeWithoutDeletingIt`
+- `cmd/lyx#destructiveGuardRecordingExecutors`
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
@@ -32,6 +33,7 @@ A target the gate refused before git ran keeps its refusal, since that branch re
 It removes the target recursively through `seam.remove`, nil meaning `removeContainedPath(container, target, true)`, which keeps containment under the hub through `os.Root`.
 When that fails with an error `isLateWriterError` accepts, it waits through `seam.sleep`, nil meaning `time.Sleep`, one second and then two, and removes the same target again, at most three attempts in all.
 A successful removal appends `KindPathRemoved` for the target with detail `recursive`, the entry `removePath` records for a directory, so `Remove`'s mutation record shows the deleted directory, per `PATTERN-mutation-record`.
+`destructiveGuardRecordingExecutors` in `cmd/lyx/destructiveguard_test.go` gains the row `{"removeWorktreeLeftover", "func removeWorktreeLeftover(rec *Mutations, "}`, so `TestMutationRecord_FabricengineProductionSource` pins its leading recorder.
 A failure after the last attempt, or any failure `isLateWriterError` rejects on its first attempt, is returned unretried as the not-a-linked-worktree error today's branch returns, with git's exit code and stderr and the removal's error wrapped with `%w`.
 Bound: only a late-writer failure is retried, only on the target git was asked to remove after the gate passed it, at most twice, and no git stderr or message text is read.
 
