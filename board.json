@@ -768,31 +768,6 @@
       "body": "## Idea (operator, 2026-10-13)\n\nLong-lived lyx processes keep running the binary they started with after a deploy replaces `lyx`, and nothing restarts them.\nThey should pick up the new binary on their own.\n\nThe shared re-exec helper, the status panes and the reed watchdog moved to `reed-window-order` on 2026-10-13.\n\n## Seen (2026-10-13)\n\n- After the watchdog kill, other lyx processes still ran a deleted binary (`/proc/\u003cpid\u003e/exe` marked deleted): `lyx orch watch` (since 2026-10-10) and an operator's `lyx reed attach`.\n\n## Scope to discuss\n\n- Which processes restart themselves: `lyx orch watch`, an operator's `lyx reed attach`, and any other long-lived verb.\n- How: each process notices a changed binary and re-execs itself with the same arguments at a safe point (using the shared helper from `reed-window-order`); or the deploy (`update-plugins.sh` and batten's Land deploy) signals or restarts every running process.\n- Processes that must not restart mid-work (an agent session, a step in flight) are only reported, for instance in `lyx reed status`.\n",
       "created": "2026-10-13T10:23:14Z",
       "revised": "2026-10-13T11:26:12Z"
-    },
-    {
-      "id": 472,
-      "slug": "shuttle-gate-early-done",
-      "title": "Shuttle gate ends a twill writer mid-turn",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "shuttle",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The gate released a held turn start against a pane that looked idle and ended Plan-Write before the lens review",
-      "body": "## Seen (twill Plan fork-timing bench, 2026-10-13)\n\nOn today's binary (`e17b29219`), two bench runs of twill Plan-Write ended before the writer weighed its lens forks' findings.\nIn both, the writer wrote the plan, `validate-plan` passed, the ready marker was written and the four lens forks ran.\nRight after the last fork finished, shuttle ended the run while the writer was mid-turn:\nthe trace log shows \"turn started after the boundary, holding the gate send\" and, about 10 s later, \"send released an unmatched turn start held against an idle pane\".\nThe pane looked idle while the model was thinking, so the gate ran and returned Done.\nNo `lens-review.md` was written and no finding was fixed.\n\nTwill Plan-Write in production can end the same way: the gate does not check that `lens-review.md` exists.\nNot yet checked on a real run.\n\nEvidence (transcripts, traces, plans) is in the hub prime's `.scratch/twill-fork-timing-plan/`; the bench pairs `twb-ftp-s-1` and `twb-ftp-r-1` are still standing.\n\n## Scope to discuss\n\n- Why the held turn start is released against a pane that only looks idle, and whether the idle test can see a thinking model.\n- Whether the twill gate should refuse Done until the lens review is written.\n- Whether real runs since `e17b29219` lost their lens review this way.\n",
-      "status": "done",
-      "created": "2026-10-13T10:36:34Z",
-      "revised": "2026-10-13T10:36:34Z",
-      "run_settings": {
-        "loom": {
-          "review_hard_max_bounces": 3,
-          "review_max_bounces": 2
-        }
-      }
     }
   ]
 }
