@@ -18,11 +18,11 @@
 - `internal/battencli#overviewMoreRunsFormat`
 
 **Create:**
-- `plan:internal/statuspane#TestPane_Run` -> `func TestPane_Run(t *testing.T)`
+- `internal/statuspane#TestPane_Run`
 
 **Uses:**
-- `plan:internal/selfexec#New`
-- `plan:internal/selfexec#Watcher.Check`
+- `internal/selfexec#New`
+- `internal/selfexec#Watcher.Check`
 
 **Intent:** Both overview panes stop reporting a content size and stop cutting their frame (D7's first half), and the shared pane loop re-execs on a changed binary (D8's wiring).
 

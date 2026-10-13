@@ -20,8 +20,8 @@
 - `internal/reedengine#Engine.ReplaceStrand`
 - `internal/reedengine#TestAddStrandLocked`
 - `internal/reedengine#TestUpdateStrandLocked`
-- `plan:internal/reedengine#TestWindowOrder`
-- `plan:internal/reedengine#TestWindowOrder_RealTmux`
+- `internal/reedengine#TestWindowOrder`
+- `internal/reedengine#TestWindowOrder_RealTmux`
 - `internal/reedengine/doc.go`
 
 **Intent:** Add the `overview` anchor: one strand per session in a window of its own that is always the session's first window (D1).

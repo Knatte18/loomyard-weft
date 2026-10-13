@@ -1,19 +1,19 @@
 # Card 5 — window-order-and-shell
 
 **Create:**
-- `plan:internal/reedengine#sessionWindow` -> `type sessionWindow struct`
-- `plan:internal/reedengine#sessionWindowFormat` -> `const sessionWindowFormat = "#{window_id} #{window_index} #{?#{@lyx_hidden},1,0} #{?#{@lyx_shell_check_failed},1,0} #{window_name}"`
-- `plan:internal/reedengine#parseSessionWindows` -> `func parseSessionWindows(out string) []sessionWindow`
-- `plan:internal/reedengine#TmuxCmd.listSessionWindows` -> `func (p TmuxCmd) listSessionWindows(session string) ([]sessionWindow, error)`
-- `plan:internal/reedengine#shellWindowOf` -> `func shellWindowOf(st *ReedState, windowByPane map[string]string) (string, bool)`
-- `plan:internal/reedengine#ownWindowInsertArgs` -> `func ownWindowInsertArgs(windows []sessionWindow, shellWindow, previousWindow string) []string`
-- `plan:internal/reedengine#hiddenWindowInsertArgs` -> `func hiddenWindowInsertArgs(windows []sessionWindow) []string`
-- `plan:internal/reedengine#planShellWindowFix` -> `func planShellWindowFix(windows []sessionWindow, shellWindow string) (rename bool, after string)`
-- `plan:internal/reedengine#Engine.ensureShellWindowLocked` -> `func (e *Engine) ensureShellWindowLocked(st *ReedState)`
-- `plan:internal/reedengine#Engine.newWindowLocked` -> `func (e *Engine) newWindowLocked(placement []string, argv []string) (string, error)`
-- `plan:internal/reedengine#TestWindowOrder` -> `func TestWindowOrder(t *testing.T)`
-- `plan:internal/reedengine#TestEnsureShellWindow` -> `func TestEnsureShellWindow(t *testing.T)`
-- `plan:internal/reedengine#TestWindowOrder_RealTmux` -> `func TestWindowOrder_RealTmux(t *testing.T)`
+- `internal/reedengine#sessionWindow`
+- `internal/reedengine#sessionWindowFormat`
+- `internal/reedengine#parseSessionWindows`
+- `internal/reedengine#TmuxCmd.listSessionWindows`
+- `internal/reedengine#shellWindowOf`
+- `internal/reedengine#ownWindowInsertArgs`
+- `internal/reedengine#hiddenWindowInsertArgs`
+- `internal/reedengine#planShellWindowFix`
+- `internal/reedengine#Engine.ensureShellWindowLocked`
+- `internal/reedengine#Engine.newWindowLocked`
+- `internal/reedengine#TestWindowOrder`
+- `internal/reedengine#TestEnsureShellWindow`
+- `internal/reedengine#TestWindowOrder_RealTmux`
 
 **Edit:**
 - `internal/reedengine#Engine.openOwnWindowLocked` -> `func (e *Engine) openOwnWindowLocked(st *ReedState, s *Strand, name, group string) (string, error)`

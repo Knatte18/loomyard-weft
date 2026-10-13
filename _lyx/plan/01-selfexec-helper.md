@@ -2,17 +2,17 @@
 
 **Create:**
 - `internal/selfexec/doc.go`
-- `plan:internal/selfexec#Watcher` -> `type Watcher struct`
-- `plan:internal/selfexec#identity` -> `type identity struct`
-- `plan:internal/selfexec#New` -> `func New() *Watcher`
-- `plan:internal/selfexec#newWatcher` -> `func newWatcher(path string, stat func(string) (identity, error), exec func(path string, argv, env []string) error) *Watcher`
-- `plan:internal/selfexec#Watcher.Check` -> `func (w *Watcher) Check()`
-- `plan:internal/selfexec#statIdentity` -> `func statIdentity(path string) (identity, error)`
-- `plan:internal/selfexec#execSelf` -> `func execSelf(path string, argv, env []string) error`
-- `plan:internal/selfexec#errUnderTest` -> `var errUnderTest error`
-- `plan:internal/selfexec#TestWatcher_Check` -> `func TestWatcher_Check(t *testing.T)`
-- `plan:internal/selfexec#TestLeafInvariant_AllowlistOnly` -> `func TestLeafInvariant_AllowlistOnly(t *testing.T)`
-- `plan:internal/selfexec#TestMain` -> `func TestMain(m *testing.M)`
+- `internal/selfexec#Watcher`
+- `internal/selfexec#identity`
+- `internal/selfexec#New`
+- `internal/selfexec#newWatcher`
+- `internal/selfexec#Watcher.Check`
+- `internal/selfexec#statIdentity`
+- `internal/selfexec#execSelf`
+- `internal/selfexec#errUnderTest`
+- `internal/selfexec#TestWatcher_Check`
+- `internal/selfexec#TestLeafInvariant_AllowlistOnly`
+- `internal/selfexec#TestMain`
 
 **Edit:**
 - `pattern/PATTERN-leaf-packages.md`

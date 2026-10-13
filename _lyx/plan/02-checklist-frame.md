@@ -12,9 +12,9 @@
 - `internal/loomcli#TestRenderChecklist_Fit`
 
 **Create:**
-- `plan:internal/loomcli#checklistVisit` -> `type checklistVisit struct`
-- `plan:internal/loomcli#checklistDetailLines` -> `func checklistDetailLines(name string, v checklistVisits) []string`
-- `plan:internal/loomcli#checklistWaitLine` -> `func checklistWaitLine(poll statuspane.StatusPoll, waitNote string) string`
+- `internal/loomcli#checklistVisit`
+- `internal/loomcli#checklistDetailLines`
+- `internal/loomcli#checklistWaitLine`
 
 **Intent:** Redraw the loom checklist as D7's frame: detail blocks on top, then the row list, then the state line and the wait line last, so a terminal shorter than the frame keeps the list and the wait in view and the operator scrolls up for the detail.
 

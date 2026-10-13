@@ -16,7 +16,7 @@
 - `internal/reedengine#Engine.openOwnWindowLocked`
 - `internal/reedengine#Engine.AttachArgv`
 - `internal/reedengine#Engine.warnMismatchedClientsLocked` -> `func (e *Engine) warnMismatchedClientsLocked(cols, rows int) (anotherClient bool)`
-- `plan:internal/reedengine#TestWindowOrder_RealTmux`
+- `internal/reedengine#TestWindowOrder_RealTmux`
 - `internal/reedengine#TestOwnWindow_RealTmux`
 - `internal/reedengine#TestAttachArgv_MultiClientWarning`
 - `internal/reedengine/doc.go`
