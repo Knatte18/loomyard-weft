@@ -41,7 +41,8 @@ The operator wants each review round's reviewer and fixer pair able to run on it
 Per-round models exist today: `review`, `fix` and each segment's `*_review`, `*_fix` and `fan_review` take a YAML list with one model per round, the last entry serving every later round.
 `plan_fan` and `discussion_fan` turn the fan on per segment; empty runs solo.
 Fan on or off per round (for instance fan in round 1, solo after) does not exist and needs code.
-Open question for the bench: whether the fan pays at all, against a solo reviewer; arms such as solo Opus, fan Sonnet and fan Haiku on the same plan.
+The fan is already benched and parked (`docs/research/lens-fan-lab-phase1.md`, "Conclusion"): on Discussion-Review solo `opus[medium]` alone found the BLOCKING defect, a `sonnet[medium]` fan missed it in every variant, and on Plan-Review the `sonnet[high]` fan's surplus was mostly LOW findings at six times a solo round's cost; the operator recalls the fans found mostly overlapping findings.
+Every perch runs solo today (`discussion_fan` and `plan_fan` empty), so the bench here compares solo models per round, not fan against solo.
 Risk to measure: round 1 finds the most, so a weak first round pushes findings to later rounds with less budget left.
 
 ## Code items
