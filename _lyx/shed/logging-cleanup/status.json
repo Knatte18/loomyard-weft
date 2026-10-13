@@ -1,13 +1,12 @@
 {
   "current_producer": "Plan-Bouncer",
-  "state": "awaiting",
-  "error": "bouncer Plan-Bouncer: round 4 escalated to the parent (cause: hard-cap); brief at /home/knatte/Code/loomyard-LYXHUB/logging-cleanup/_lyx/reviews/plan/round-4-escalation.md; the round is at or past the perch's hard cap, so it can only be accepted: decide with `lyx loom circling accept logging-cleanup`, then run `lyx loom resume` in the task worktree to resume",
-  "parent_notice": "Review segment of task `logging-cleanup` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/logging-cleanup/_lyx/reviews/plan/round-4-escalation.md` with a one-shot fork.",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Plan-Bouncer",
     "last": "Plan-Bouncer → awaiting",
-    "wait": "bouncer Plan-Bouncer: round 4 escalated to the parent (cause: hard-cap); brief at /home/knatte/Code/loomyard-LYXHUB/logging-cleanup/_lyx/reviews/plan/round-4-escalation.md; the round is at or past the perch's hard cap, so it can only be accepted: decide with `lyx loom circling accept logging-cleanup`, then run `lyx loom resume` in the task worktree to resume"
+    "wait": ""
   },
   "history": [
     {
