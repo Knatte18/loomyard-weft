@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-13 07:33 UTC; every age below is as of then.
+Rendered 2026-10-13 07:36 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -36,11 +36,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Arbiter relaunch refused when the run already moved to the verdict row**<br>• A resume whose goto matches the row the run already stands on is refused as moved and parks the run. | [`arbiter-relaunch-moved`](design-arbiter-relaunch-moved.md) | 16h | 52m | loom, shed |
+| 1 | **Arbiter relaunch refused when the run already moved to the verdict row**<br>• A resume whose goto matches the row the run already stands on is refused as moved and parks the run. | [`arbiter-relaunch-moved`](design-arbiter-relaunch-moved.md) | 16h | 54m | loom, shed |
 | 2 | **Plan does not surface tests that pin a method set a card extends** | [`plan-pinned-tests`](design-plan-pinned-tests.md) | 16h | 16h | loom |
 | 3 | **Batten sends no notice for a landing that readies nothing**<br>• A plain landing is silent, so the orch misses landings the alignment agent approved. | [`batten-land-notice`](design-batten-land-notice.md) | 14h | 14h | batten |
 | 4 | **Webster deviations list mixes in the batch's own files**<br>• The implementer stencil contradicts itself on deviations; let ScopeGuard alone produce the list | [`webster-deviations-list`](design-webster-deviations-list.md) | 12h | 12h | webster |
-| 5 | **WARN for real problems only: batten waiting is an action log**<br>• About 80% of WARN lines are normal waiting; log state changes at Info or Debug | [`log-level-hygiene`](design-log-level-hygiene.md) | 0m | 0m | batten, orch |
+| 5 | **Logging cleanup: right levels, no per-tick noise**<br>• 91% of trace lines come from six messages logged per tick or at the wrong level; fix them, keep tests from leaking WARN | [`log-level-hygiene`](design-log-level-hygiene.md) | 2m | 0m | batten, orch |
 
 ### Enhancements
 
@@ -67,9 +67,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 12 | **Arbiter spawns only on stops that need it**<br>• Five arbiter spawns on 2026-10-12, none needed: narrow the triggers to the hard review cap, circling, and blocked or error stops with no computed way forward. | [`arbiter-when`](design-arbiter-when.md) | 16h | 16h | loom, shed |
 | 13 | **Alignment agent settles landing order itself; escalates only on design conflict**<br>• Apply furthest-along-lands-first in the alignment agent and wake the orch only when two runs designs conflict. | [`alignment-landing-order`](design-alignment-landing-order.md) | 16h | 16h | orch, loom |
 | 14 | **lyx report timing: phase minutes, parent waits and agent spawns from run records**<br>• A mechanical per-run and per-day time report beside lyx report convergence, including stops by who settled them. | [`report-timing`](design-report-timing.md) | 16h | 16h | shed, orch |
-| 15 | **Keep pair trace logs in a git-ignored hub archive**<br>• Copy a pair's .lyx/logs into the hub's .lyx at teardown and prune after a retention period | [`run-log-archive`](design-run-log-archive.md) | 2m | 2m | batten, fabric |
-| 16 | **Hands-on tests of Codex CLI in tmux**<br>• Short tests of Codex CLI as a second LLM provider: TUI in tmux, hooks, session files, billing | [`codex-spike`](design-codex-spike.md) | 2m | 2m | shuttle |
-| 17 | **Make shuttle and lyx neutral to the LLM provider**<br>• Engine registry, engine in run.json, no Claude names in the core, usage readers behind the engine | [`llm-agnostic-engine`](design-llm-agnostic-engine.md) | 2m | 2m | shuttle, config, stencil |
+| 15 | **Keep pair trace logs in a git-ignored hub archive**<br>• Copy a pair's .lyx/logs into the hub's .lyx at teardown and prune after a retention period | [`run-log-archive`](design-run-log-archive.md) | 4m | 4m | batten, fabric |
+| 16 | **Hands-on tests of Codex CLI in tmux**<br>• Short tests of Codex CLI as a second LLM provider: TUI in tmux, hooks, session files, billing | [`codex-spike`](design-codex-spike.md) | 4m | 4m | shuttle |
+| 17 | **Make shuttle and lyx neutral to the LLM provider**<br>• Engine registry, engine in run.json, no Claude names in the core, usage readers behind the engine | [`llm-agnostic-engine`](design-llm-agnostic-engine.md) | 4m | 4m | shuttle, config, stencil |
 
 #### Low priority
 
