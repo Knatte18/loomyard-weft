@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-13 14:51 UTC; every age below is as of then.
+Rendered 2026-10-13 14:52 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -47,7 +47,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Plan does not surface tests that pin a method set a card extends** | [`plan-pinned-tests`](design-plan-pinned-tests.md) | 23h | 23h | loom |
 | 2 | **tokencount under-counts fork output tokens**<br>• tokencount keeps the first transcript line per message id, which in subagent transcripts carries partial output_tokens; fork costs come out low | [`tokencount-fork-output`](design-tokencount-fork-output.md) | 5h | 5h |  |
-| 3 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`claimed-scope-edit`](design-claimed-scope-edit.md) | 21m | 8m | board, loom, burler |
+| 3 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`claimed-scope-edit`](design-claimed-scope-edit.md) | 21m | 9m | board, loom, burler |
 
 ### Enhancements
 
