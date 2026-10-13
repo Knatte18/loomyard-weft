@@ -1,0 +1,15 @@
+verdict: resume
+reason: >-
+  Round 3 of Discussion-Review escalated with cause circling on the design-wrong key
+  d16-d17-dropped-landing-notice-no-recovery. The returned finding F1 is right: the hub's
+  landing.yaml sets deploy, so D17's origin/main-versus-origin/prod fallback, gated on an empty
+  deploy key, never ran. The fix is converging: round 1 had no fallback, round 2 added one with no
+  durable baseline, round 3 added an origin/prod baseline that the deploy key gated, and the round-3
+  fixer applied the reviewer's own proposal, which changes the baseline rather than rewording it.
+  D17 now catches a dropped notice from the board entry turning done or the pair being gone. Neither
+  depends on the deploy key, and both are durable: internal/pairteardown/claim.go marks a landed
+  run's entry done at teardown. F2 is a mechanical wording fix, already applied as proposed. Round 3
+  is below the hard cap of 4 (review_hard_max_bounces), so by the circling rule one more round runs;
+  round 4 sits at the hard cap and can only be accepted or escalated with cause hard-cap.
+verbs:
+  - lyx loom circling continue logging-cleanup
