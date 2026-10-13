@@ -1,0 +1,14 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/gatecli.TestGateTest_Scenario/an_inherited_held_slot_runs_without_acquiring
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/gatecli
+      tail: |4-
+                test_integration_test.go:365: nested stderr = ""; want the watchdog's start log, an inherited slot being no enclosing run
+                test_integration_test.go:374: enclosed stderr = ""; want the enclosing-run reason and no watchdog start
+    - id: github.com/Knatte18/loomyard/internal/gatecli.TestGateTest_Scenario/a_target_outside_every_hub_runs_unslotted_and_logs_it
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/gatecli
+      tail: '        test_integration_test.go:489: stderr = ""; want the log that no hub bound applies'
+log_path: /home/knatte/Code/loomyard-LYXHUB/logging-cleanup/.lyx/verify/verify-2.log
