@@ -24,6 +24,7 @@ Savings below are estimates from those six runs, not measured.
 - Candidates, ranked by estimated saving, all config-only:
   1. Plan-Review and Discussion-Review reviewers to `sonnet[high]` from round 2, keeping Opus for round 1: about $10.
   2. Bouncer judge and seed to `haiku[medium]`: about $7.5; check the judge for false CONVERGED verdicts.
+     An earlier analysis exists (`docs/research/haiku-judge.md`, 2026-10-10, note `haiku-roles`): the seed pass is Haiku-safe on every row; the judge stays Sonnet on Discussion-Bouncer, needs a trial first on Plan-Bouncer, and Webster-Bouncer is the strongest candidate; one wrongly bounced round costs about three times the saving, so a trial must show Haiku adds no rounds.
   3. Plan and Discussion fixers to `sonnet[medium]`: about $4.
   4. Small items under $1 each: conflict resolver, friction, describe.
 - Keep Opus for plan, discussion, arbiter, alignment and recovery.
