@@ -1,13 +1,13 @@
 {
   "runGuid": "3f9ec9976f7a1b53d09bb3726ace571c",
-  "planFingerprint": "b7285eb71cfc22c1dbbf931904bf3d9dfbc73bf03b7567e013aaa8648593b4ca",
+  "planFingerprint": "8097fd95f2d65a933edc5e17259d489262c8dce2cea577af6de0b44cbc57a72e",
   "planFileHashes": {
     "00-overview.md": "e3bc53159537370d243f1d81d0934add8e00f313c71ec640af1041ea6e96b110",
     "01-ledger-fix-tag.md": "d529e33b77306a3f5b2d56239f01ed63bd94d2b59a3669c03c7ff23b78874368",
-    "02-hard-cap-cause.md": "056891fea5209d621abce40bd7ede0067a29aa37c6af4ebb7aa3bf898c8bb9ad",
-    "03-bouncer-hard-cap.md": "eff846cfc070137140b6d16bc398556977964590129f367915686bef187a93de",
+    "02-hard-cap-cause.md": "43cfc06799c4125f349fad4a16ee06084783022b9d4ce96fbfa4820f0960227c",
+    "03-bouncer-hard-cap.md": "21df106b7819fd2866ba11056b311d81c0b4d9b7c12020c589cd60227d3b912a",
     "04-env-hard-cap.md": "d855bc030594988ad27e4145629fc0060f4214b11643c2c701c284c111048ee7",
-    "05-soft-cap-rule.md": "ed082ce50710d466f899218a703824b0cb49797cd646e6deb54ed7da1c79cbfc",
+    "05-soft-cap-rule.md": "99f652217f3f0c76f9da3e4c6c90fb962435b2e1c15d5cd5d6b31d7b395b1ed6",
     "06-loom-hard-cap-config.md": "5a6a4d4397843a50b165affd35393919fe118573b50c78e373d9d8279af4f310",
     "07-darn-hard-cap-config.md": "2edd3fd3c49a3af6d38b0693502fb9876db3536e1de37daa81631db86b9f80b5",
     "08-circling-continue-hard-cap.md": "aef4bee24072f643da261b4b596d9a7a9119a83ecd8e713e8b9e3c896e1c6cb9",
@@ -228,7 +228,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "78cacf6040c0085f7ce19103d6cf830c",
   "masterSessionId": "5e54c777-69bc-47d4-9464-ab6f4f5874bb",
   "batches": {
@@ -243,17 +243,34 @@
       ],
       "cardHashes": {
         "01-ledger-fix-tag": "d529e33b77306a3f5b2d56239f01ed63bd94d2b59a3669c03c7ff23b78874368",
-        "02-hard-cap-cause": "056891fea5209d621abce40bd7ede0067a29aa37c6af4ebb7aa3bf898c8bb9ad",
-        "03-bouncer-hard-cap": "eff846cfc070137140b6d16bc398556977964590129f367915686bef187a93de",
+        "02-hard-cap-cause": "43cfc06799c4125f349fad4a16ee06084783022b9d4ce96fbfa4820f0960227c",
+        "03-bouncer-hard-cap": "21df106b7819fd2866ba11056b311d81c0b4d9b7c12020c589cd60227d3b912a",
         "04-env-hard-cap": "d855bc030594988ad27e4145629fc0060f4214b11643c2c701c284c111048ee7",
-        "05-soft-cap-rule": "ed082ce50710d466f899218a703824b0cb49797cd646e6deb54ed7da1c79cbfc"
+        "05-soft-cap-rule": "99f652217f3f0c76f9da3e4c6c90fb962435b2e1c15d5cd5d6b31d7b395b1ed6"
       },
       "startSha": "8bc7491c23d83df4f920d7d7477a65de267fe5b1",
       "kind": "fork",
       "spawnedAt": "2026-10-13T06:51:13Z",
       "sessionId": "5e54c777-69bc-47d4-9464-ab6f4f5874bb",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-ledger-fix-tag",
+        "status": "done",
+        "head_sha": "184b6ff9aec6c453f6902484f26d212edbf83d82"
+      },
+      "cardShas": [
+        "184b6ff9aec6c453f6902484f26d212edbf83d82"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-judge-cap-call/5e54c777-69bc-47d4-9464-ab6f4f5874bb/subagents/agent-a9b9e88704c007a7f.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-judge-cap-call/5e54c777-69bc-47d4-9464-ab6f4f5874bb/subagents/agent-a9b9e88704c007a7f.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-judge-cap-call/5e54c777-69bc-47d4-9464-ab6f4f5874bb/subagents/agent-a9b9e88704c007a7f.jsonl"
+  ]
 }

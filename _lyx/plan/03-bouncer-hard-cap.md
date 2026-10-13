@@ -16,12 +16,12 @@
 - `internal/shedadapters#TestBouncer_Escalation_RecordedDecision`
 
 **Create:**
-- `plan:internal/shedadapters#Bouncer.atHardCap` -> `func (b *Bouncer) atHardCap(round int) bool`
-- `plan:internal/shedadapters#Bouncer.retireContinue` -> `func (b *Bouncer) retireContinue(round int) error`
+- `internal/shedadapters#Bouncer.atHardCap`
+- `internal/shedadapters#Bouncer.retireContinue`
 - `contracts/stencils/bouncer/bouncer-fragment-decide-open.md`
 - `contracts/stencils/bouncer/bouncer-fragment-decide-capped.md`
-- `plan:contracts/stencils#BouncerFragmentDecideOpen` -> `var BouncerFragmentDecideOpen []byte`
-- `plan:contracts/stencils#BouncerFragmentDecideCapped` -> `var BouncerFragmentDecideCapped []byte`
+- `contracts/stencils#BouncerFragmentDecideOpen`
+- `contracts/stencils#BouncerFragmentDecideCapped`
 
 **Intent:** The Bouncer learns its perch's hard cap and never continues a round at or past it (D3), a continue past the soft cap is budget-exempt whoever recorded it (D4), and an escalation at or past the hard cap offers only accept (D6).
 The soft-cap rule itself is card 5; this card adds the cap, the recorded-continue handling and the escalation surfaces both cards share.

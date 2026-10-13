@@ -24,16 +24,16 @@
 - `internal/loomrecipe#TestEscalation_BudgetContinueGrantsOneRoundThenAccept`
 
 **Create:**
-- `plan:internal/loomrecipe#TestEscalation_DarnPerchRuleContinuesThenHardCapAcceptReachesDescribe` -> `func TestEscalation_DarnPerchRuleContinuesThenHardCapAcceptReachesDescribe(t *testing.T)`
-- `plan:internal/loomrecipe#TestEscalation_RuleContinuesOneRoundThenHardCapThenAccept` -> `func TestEscalation_RuleContinuesOneRoundThenHardCapThenAccept(t *testing.T)`
-- `plan:internal/shedadapters#Bouncer.softCapRule` -> `func (b *Bouncer) softCapRule(round int, verdict bouncerVerdict, ptr shedengine.OutputPointer) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/shedadapters#designWrongKeys` -> `func designWrongKeys(ledger ledgerFile) map[string]bool`
-- `plan:internal/shedadapters#readLedger` -> `func readLedger(runDir string, round int) (ledgerFile, error)`
-- `plan:internal/shedadapters#recordAutoContinue` -> `func recordAutoContinue(runDir string, round int) error`
-- `plan:internal/shedadapters#taggedEntry` -> `type taggedEntry struct`
-- `plan:internal/shedadapters#taggedLedgerContent` -> `func taggedLedgerContent(round int, entries ...taggedEntry) string`
-- `plan:internal/shedadapters#TestBouncer_SoftCapRule` -> `func TestBouncer_SoftCapRule(t *testing.T)`
-- `plan:internal/loomrecipe#designWrongBouncerJudge` -> `func designWrongBouncerJudge(env shedrecipe.Env)`
+- `internal/loomrecipe#TestEscalation_DarnPerchRuleContinuesThenHardCapAcceptReachesDescribe`
+- `internal/loomrecipe#TestEscalation_RuleContinuesOneRoundThenHardCapThenAccept`
+- `internal/shedadapters#Bouncer.softCapRule`
+- `internal/shedadapters#designWrongKeys`
+- `internal/shedadapters#readLedger`
+- `internal/shedadapters#recordAutoContinue`
+- `internal/shedadapters#taggedEntry`
+- `internal/shedadapters#taggedLedgerContent`
+- `internal/shedadapters#TestBouncer_SoftCapRule`
+- `internal/loomrecipe#designWrongBouncerJudge`
 
 **Intent:** At a spent review budget the Bouncer settles the round itself from the judge's fix tags (D2), replacing the budget escalation, and the auto-accept perches' replay and `blocking_escalates` paths go to the same rule (D8).
 

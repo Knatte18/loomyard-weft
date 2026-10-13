@@ -12,8 +12,8 @@
 - `internal/shedadapters#TestRecordCirclingDecision_WritesPendingFile`
 
 **Create:**
-- `plan:internal/shedadapters#EscalationHardCap` -> `const EscalationHardCap EscalationCause = "hard-cap"`
-- `plan:internal/shedadapters#EscalationCause.valid` -> `func (c EscalationCause) valid() bool`
+- `internal/shedadapters#EscalationHardCap`
+- `internal/shedadapters#EscalationCause.valid`
 
 **Intent:** `hard-cap` becomes a third escalation cause beside `circling` and `budget` (D6), legal in the escalation record and the circling decision file alike.
 
