@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **Webster fork prompt: read instruction and pack last**<br>• Move the implementer fork prompt one-turn read instruction and kick-start pack to the end of the prompt | [`webster-pack-last`](design-webster-pack-last.md) | darn | Merge-In | 42m | 42m | webster, stencil |
+| 2 | **Webster fork prompt: read instruction and pack last**<br>• Move the implementer fork prompt one-turn read instruction and kick-start pack to the end of the prompt | [`webster-pack-last`](design-webster-pack-last.md) | darn | Publish | 43m | 43m | webster, stencil |
 
 ### Ready
 
@@ -39,7 +39,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **tender: hub-wide pause, resume, revive and stale-binary restart**<br>• A tender module holds hub-wide pause, resume, revive and stale-binary restart, and a pause no longer consumes a call deadline | [`tender`](design-tender.md) | loom | `reed-window-order` | 3h | 59m | shuttle, reed, batten, shed, orch, loom |
+| 1 | **tender: hub-wide pause, resume, revive and stale-binary restart**<br>• A tender module holds hub-wide pause, resume, revive and stale-binary restart, and a pause no longer consumes a call deadline | [`tender`](design-tender.md) | loom | `reed-window-order` | 3h | 1h | shuttle, reed, batten, shed, orch, loom |
 
 ## Notes
 
