@@ -1,13 +1,12 @@
 {
   "current_producer": "Publish",
-  "state": "failed",
-  "error": "landingshed: Publish: query existing pull request: Get \"https://api.github.com/repos/Knatte18/loomyard/pulls?base=main\u0026direction=desc\u0026head=Knatte18%3Alogging-cleanup\u0026sort=created\u0026state=all\": dial tcp: lookup api.github.com on 127.0.0.53:53: read udp 127.0.0.1:53455-\u003e127.0.0.53:53: i/o timeout",
-  "transient": "github-api",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Publish",
     "last": "Merge-Bouncer → done",
-    "wait": "landingshed: Publish: query existing pull request: Get \"https://api.github.com/repos/Knatte18/loomyard/pulls?base=main\u0026direction=desc\u0026head=Knatte18%3Alogging-cleanup\u0026sort=created\u0026state=all\": dial tcp: lookup api.github.com on 127.0.0.53:53: read udp 127.0.0.1:53455-\u003e127.0.0.53:53: i/o timeout"
+    "wait": ""
   },
   "history": [
     {
