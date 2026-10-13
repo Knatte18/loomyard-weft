@@ -1,6 +1,6 @@
 # Webster fork prompt: read instruction and pack last
 
-`webster-pack-last` · Task · enhancement, webster, stencil · running · Darn-Bouncer
+`webster-pack-last` · Task · enhancement, webster, stencil · running · Darn-Burler-Review
 
 ## Goal (operator, 2026-10-13)
 
