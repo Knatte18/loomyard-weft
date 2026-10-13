@@ -1,11 +1,11 @@
 {
-  "current_producer": "Merge-In",
+  "current_producer": "Publish",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Merge-In",
-    "last": "Describe → done",
+    "now": "Publish",
+    "last": "Merge-In → done",
     "wait": ""
   },
   "history": [
@@ -77,6 +77,12 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/webster-pack-last/_lyx/landing/summary.md",
       "at": "2026-10-13T14:05:38Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Merge-In",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-13T14:07:42Z"
     }
   ],
   "product": {
