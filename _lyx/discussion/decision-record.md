@@ -21,8 +21,7 @@ In:
 
 Out:
 
-- The hub watchdog's restart on a new binary: `logging-cleanup` (`a90ef61d1`) already retires it and spawns a successor.
-  The lock gap the board worried about is harmless: a racing spawner that wins the lock makes the successor exit on a lost race.
+- The hub watchdog's restart on a new binary, which `logging-cleanup` already retires and replaces with a successor.
 - Restarting `lyx orch watch`, an operator's `lyx reed attach` and other long-lived verbs: board entry `stale-binary-daemons`, which builds on D8's helper.
 - Retiring `AnchorTop`, `AnchorBelowParent`, content sizing or the stacked layout: they stay valid for an explicit caller and keep working in the shell window.
 - Per-row detail in the batten overview: its rows are tasks whose line already carries the task's state and reason.
@@ -33,9 +32,10 @@ Out:
 
 `render.AnchorOverview` (`"overview"`) joins the closed anchor vocabulary.
 Its strand gets a window of its own named `overview`, opened before the session's lowest-index window (`new-window -d -b -t <lowest window>`), so it holds the lowest index whenever it is opened.
+On psmux, where D2's fallback applies, this is best-effort.
 At most one `overview` strand exists per session: adding a second under another name is refused, naming the existing strand and `lyx reed remove` of it as the way forward.
 `ReplaceStrand` kills the old pane before launching the new one, which ends a one-pane window, so a replace of the overview strand, including one from another anchor (D10), opens a fresh overview window, again first.
-When the replaced strand's window was the session's current window, the replacement's window is selected.
+When the replace ends the session's current window (the replaced strand was alone in it), the replacement's window is selected; a replace whose old strand shared a window that stays open, such as a `top` strand in the shell window, switches nothing.
 The overview strands set no segment, so the overview button takes the plain window-button style.
 Rationale: the overview is a placement, so it belongs in the anchor vocabulary callers already choose from; one per session keeps "the first window is the overview" true.
 Bound: the anchor places a single strand per session, only in the first window.
@@ -44,8 +44,8 @@ Bound: the anchor places a single strand per session, only in the first window.
 
 - Own-window strands, the overview excepted, open with `new-window -d -b -t <shell window id>`: after every earlier agent window, before the shell.
   A relaunch keeps its window; a replace opens a new window before the shell, so it counts as the newest.
-- `OpenWindow`'s hidden windows open after the highest-index window (`new-window -d -a`), so all of them sit after the shell, and the shell is the last visible window.
-- When no shell window resolves (no Selvage pane recorded or alive), a window opens with the plain `new-window -d`, logged at Debug.
+- `OpenWindow`'s hidden windows open after the highest-index window (`new-window -d -a -t <highest-index window>`, the target read at open time under the op lock), so all of them sit after the shell, and the shell is the last visible window.
+- When no shell window resolves (no recorded Selvage pane, alive or dead, in the session's listing), an own window opens with `new-window -d -a -t <highest-index non-hidden window>` and a hidden window as in the bullet above, so start order and hidden-last still hold, logged at Debug.
 - On psmux, a refused `-b` or `-a` falls back to the plain form, logged at Debug: the order is best-effort on Windows and nothing fails.
 
 Rationale: inserting before the shell keeps start order with no sort pass and no reserved index, so window index order is start order.
@@ -53,7 +53,8 @@ Rationale: inserting before the shell keeps start order with no sort pass and no
 ### D3. Selvage's window is the `shell` window
 
 The session's first window, where boot creates Selvage, is renamed `shell` at boot with automatic renaming off.
-It stays the strands' window that `strandWindowTarget` resolves through the Selvage pane, so a strand an explicit caller anchors `top` or `below-parent` still lays out there above Selvage, and the stacked layout, zoom bracket and resize loop keep working for it.
+It stays the strands' window that `strandWindowTarget` resolves first through the Selvage pane;
+an overview strand's pane is excluded from the resolver's window-0 strand fallback, as an own-window strand's is, so a strand an explicit caller anchors `top` or `below-parent` still lays out there above Selvage, and the stacked layout, zoom bracket and resize loop keep working for it.
 Rationale: moving everything else out leaves Selvage alone in that window with no change to how reed finds or lays it out.
 
 ### D4. The driver and orchestrator strands get their own windows
@@ -66,8 +67,15 @@ Rationale: in the prime, the batten overview takes the first window, and the ope
 
 An agent window is a window holding an own-window strand; the overview, shell and hidden windows are not agent windows.
 The relevant window is the highest-index agent window with a live pane, which by D2 is the newest live agent, else the overview window.
+On psmux, where D2's order is best-effort, the relevant window may be an older live agent's.
 
-- **Attach.** `AttachArgv`'s chain selects the relevant window; with neither an agent nor an overview it leaves the current window.
+- **Attach.** `AttachArgv` appends a `select-window` on the relevant window to every argv it returns, the bare argv of every degrade path included; with neither an agent nor an overview it appends nothing and leaves the current window.
+  When another client is already attached to the session, it appends nothing either, so a second attach never moves a viewer;
+  the client listing the pre-flight already takes decides this.
+  A failed client listing counts as another client attached: the selection is dropped, logged at Warn.
+  The selection is not subject to the layout chain's guards: it is resolved under the op lock ahead of them, and also when no client size is known, so a strands' window with fewer than two panes, no placed strand, or a failed window-size or status readback still gets it.
+  Only a failure to take the lock, read reed state or list the attached clients drops it, logged at Warn.
+  The layout chain's skip for a strands' window with fewer than two panes or no placed strand logs at Debug, since D3 and D4 make Selvage alone there the normal state; the other suppressions keep Warn.
 - **A new agent window.** Reed selects it only when the session's current window is the overview or an agent window whose panes are all dead; otherwise it keeps `@lyx_unseen`.
   The shell counts as watched.
   A strand with `Focus: true` is selected regardless.
@@ -84,7 +92,7 @@ Bound: an automatic switch happens only at these three points, never moves a vie
 Alt+Down runs `next-window` and, when it lands on a window carrying `@lyx_hidden`, selects the session's first window (`:^`).
 Alt+Up runs `previous-window` and, when it lands on a hidden window, selects the window carrying `@lyx_strands`, the shell.
 Both wrap and work in every window; the `@lyx_strands` gate on the keys goes.
-Since hidden windows only sit after the shell (D2), one conditional step always reaches a visible window.
+Since hidden windows sit after the shell (D2), one conditional step reaches a visible window; on psmux, where D2's order is best-effort, a step may land on a hidden window.
 Stepping between panes of the shell window is dropped; a click on a strand's pane button still reaches it.
 The window buttons on line 1 follow window index order, so the overview's comes first and the shell's last.
 The `shell` button replaces VIEW in the click dispatch and keeps VIEW's action: select the strands' window and unzoom it.
@@ -124,16 +132,25 @@ Rationale: a re-apply that changes nothing, failed or not, must not unzoom and r
 
 ### D10. Live sessions from an older `lyx`
 
-Before every window open and in the attach pre-flight, reed checks the strands' window: it renames it `shell` when it is not, and moves it after the last non-hidden window (`move-window -a`) when a visible window sits after it.
+Before every window open and in the attach pre-flight, reed checks the strands' window.
+The check acts only on a window that holds the recorded Selvage pane, alive or dead;
+when `strandWindowTarget` resolves through its fallbacks (a `top` or `below-parent` strand in window 0, or the session's current window), the check renames and moves nothing and logs at Debug.
+It renames it `shell` when it is not, and moves it after the last non-hidden window (`move-window -a`) when a visible window sits after it.
+In the attach pre-flight the rename and move run ahead of the layout chain's guards, and also when no client size is known, together with D5's attach selection.
+The check runs under the op lock; a failed rename or move is logged at Warn once per failure episode, at Debug while it persists and at Info when a later check succeeds, and at Debug only on psmux, as D2 does;
+a session option records an open episode, since each open and attach is its own process, and a successful check clears it.
+It never fails the window open or the attach, and is retried at the next open or attach.
 Strands already placed stay where they are: `Resume` and a revive relaunch a strand from its persisted display, so an in-flight run's `below-parent` LLM driver stays in the shell window until the run ends.
 A strand placed from a fresh spec takes its new anchor: `lyx loom start` replaces a status strand launched by an older build (`statuspane.StrandCurrent`), which moves it to the overview window by D1, and a new driver spawn opens its own window.
 Rationale: no pane is moved under a live agent, and the check costs one rename and one move once per old session.
+Bound: the check renames and moves only the strands' window, and only when its name or position is wrong.
 
 ## Constraints
 
 - `PATTERN-wait-mark-display-only` (D5), `PATTERN-spawn-observability` and `PATTERN-daemon-wakeups` (D8) bind as the Decisions cite them.
-- `internal/selfexec` documents its closed import set in its `doc.go`; `internal/statuspane/doc.go`'s import list gains it.
-- `PATTERN-log-levels`: the Debug and Warn levels in D2, D8 and D9 follow its policy; nothing logs per poll above Debug.
+- `PATTERN-leaf-packages` applies to `internal/selfexec`: `pattern/PATTERN-leaf-packages.md` gains an `internal/selfexec` section stating that it imports only the standard library and `internal/logger`, and `internal/selfexec` gets a `leaf_enforcement_test.go` that pins that allowlist through `scankit.AssertImportAllowlist`, as `internal/segmentcolor` does.
+- `internal/statuspane/doc.go`'s import list gains `internal/selfexec`.
+- `PATTERN-log-levels`: the Debug and Warn levels in D2, D5, D8 and D10 follow its policy; nothing logs per poll above Debug.
 - `PATTERN-test-speed` and `PATTERN-test-isolation`: window order and focus are tested at the tmux tier through `tmuxkit.Main`, the rest at the lowest fitting tier.
 - Docs land in the same commit: `internal/reedengine/doc.go` (window order, anchors, focus, bindings, bar), `internal/statuspane/doc.go`, `internal/selfexec/doc.go`, the loomcli, orchcli and battencli docs that describe their strands and panes, and `docs/overview.md` where it describes the run window.
 
@@ -152,14 +169,24 @@ Rationale: no pane is moved under a live agent, and the check costs one rename a
 - A new build that exits at once on the same argv (a renamed hidden verb, a startup crash) leaves the overview pane dead until `lyx loom start` or `lyx orch start` replaces it.
 - tmux copy mode shows a frozen copy of the frame, so a redraw while the operator scrolls appears only when copy mode is left.
 - A row list taller than the window scrolls its earliest rows off the top; the state and wait lines stay in view.
+- A re-exec'd overview pane keeps a sidecar naming the build it started with, so the next `lyx loom start` or `lyx orch start` replaces it once more; D8 does not rewrite the sidecar.
+
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 4: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-4-review.md; fixer report: _lyx/reviews/discussion/round-4-fixer-report.md.
+  - attach-select-moves-other-attached-clients (class decision, severity MEDIUM, open in rounds 3, 4)
+<!-- /lyx:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
 - In a session with a run, window indexes read overview first, agent windows in start order, shell last among visible windows; this holds after an agent window ends and a new one opens, and after the overview strand is replaced while agents are live.
-- Replacing a `top` loom-status strand with an `overview` strand opens the overview window first and removes the old pane from the shell window; replacing the strand of the viewed overview selects the new overview window.
+- Replacing a `top` loom-status strand with an `overview` strand opens the overview window first and removes the old pane from the shell window; replacing the strand of the viewed overview selects the new overview window; replacing a `top` loom-status strand while the shell window is viewed leaves the shell window selected.
 - Two hidden `OpenWindow` windows open after the shell, and Alt+Up and Alt+Down never stop on either.
 - A second `overview` strand under another name is refused with a message naming the existing strand.
 - Attach selects the newest live agent's window; with no live agent the overview; with neither it changes nothing.
+  This holds when Selvage is the only pane in the shell window, and when no client size is known.
+  An attach while another client is attached leaves the current window unchanged.
+  An attach whose client listing fails leaves the current window unchanged.
 - A new agent window is selected when the current window is the overview or a dead agent window, and not when it is a live agent window or the shell, where it carries `@lyx_unseen`; a `Focus: true` strand is always selected.
 - Ending the viewed window, by removal, replace or reconcile, selects the newest remaining live agent's window, else the overview, never the shell; one seat leaving a shared window that stays open switches nothing.
 - Alt+Up and Alt+Down step across visible windows in index order and wrap.
@@ -169,7 +196,9 @@ Rationale: no pane is moved under a live agent, and the check costs one rename a
 - The checklist frame ends with the row list, state line and wait line, holds a detail block per visited row above the list, and words an escalation wait as waiting on the parent.
 - The re-exec helper execs the recorded path with the process's argv once a changed identity holds over two checks; a failed stat never execs; a failed exec keeps the process running, logs once and is not retried for that identity; nothing execs under `go test`.
 - `reapplyLayout` with the last applied box, or with the box whose apply last failed, issues no `resize-pane -Z`.
-- In a session booted by an older `lyx`, the next attach or window open renames the strands' window `shell` and moves it last, and a resumed `below-parent` strand stays in the shell window.
+- In a session booted by an older `lyx`, the next attach or window open renames the strands' window `shell` and moves it after the last non-hidden window, and a resumed `below-parent` strand stays in the shell window.
+  This holds when Selvage is the only pane in the strands' window and when no client size is known.
+- With no recorded Selvage pane in the session, an attach or window open renames and moves no window.
 
 ## Notes for the plan writer
 
