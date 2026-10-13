@@ -219,6 +219,12 @@ Decision: D11's per-site verdict list is complete when it covers the sites the p
 
 Rationale: Three rounds each added the rows the review named and the next review found more one call level down; an exhaustive static call-graph sweep does not converge through review rounds, while the design itself (policy, verdict per site, guards) is sound and the trace inventory already ranks the sites that fire.
 
+### Added after Discussion (parent, 2026-10-13): Plan-Review hard cap: F1 settled at Webster
+
+Decision: Plan-Bouncer round 4 is accepted unconverged. Round 4's F1 is applied as its review states when card 9 is built: handedLockStep's decision read is not guarded (D11 verdict keep, since awaitingStep's own decision read ends the Call on the same check and the line never repeats), and the stale-base and notice-step decision-read rows of TestInnerRun_ReadFailuresLogOncePerEpisode run with a pause covering the slug so runArm skips awaitingStep. F2 (recovery reached by the strand-read test) is a mechanical test fix taken the same way.
+
+Rationale: At the hard cap the segment can only be accepted. F1 faults one card's guard rows and one site's verdict, not the task's design: D11's per-site guard-or-keep rule stands, and the review spells out the exact fix, so Webster applies it and Webster-Review checks it.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: the draft kind (D9) is exposed through shuttle's provider-neutral types, and Claude's shape stays in `claudeengine`.
