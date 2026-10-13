@@ -1,0 +1,19 @@
+verdict: resume
+reason: >-
+  Round 4 of Discussion-Review escalated with cause hard-cap on the design-wrong key
+  d16-d17-dropped-landing-notice-no-recovery, raised as F1 (BLOCKING) and F2 (MEDIUM). The round-4
+  fixer applied both fixes as proposed, and the decision record now answers each against the code.
+  F1: D17's fallback no longer starts any ready task. It starts only the tasks named in a landed
+  task's `landed; newly ready:` line in the hub notice log, under a stated Bound sentence, and other
+  ready tasks wait for operator approval. The notice log is durable: rowNotifier.send
+  (internal/battenshed/rownotice.go) calls appendNoticeLog, an O_APPEND file write, before the
+  hold-back and queue attempts, so a dropped notice's line survives. The fallback starts the same set
+  the normal path starts (orch-template-role.md line 129), so it stays inside the orch's board policy
+  (line 149). An acceptance row pins the bound. F2: D16 now says Finalize marked the entry done and the
+  Land row's prune removed it. D17's first check and its acceptance row now match an entry that is
+  `done` or gone from the board, which covers the window between Land and Worktree-Teardown. F3 is LOW
+  and mechanical, and was also applied. No design-wrong finding is left unanswered, so the segment is
+  accepted at the hard cap. The decision record already holds the fixes, so no new design call is
+  recorded.
+verbs:
+  - lyx loom circling accept logging-cleanup
