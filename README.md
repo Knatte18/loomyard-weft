@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-13 14:41 UTC; every age below is as of then.
+Rendered 2026-10-13 14:42 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **reed: overview window first, agents next, shell last**<br>• Window 0 is the run overview for any shed run, each spawned agent gets the next windows, Selvage is the last window named shell; attach shows the most relevant agent | [`reed-window-order`](design-reed-window-order.md) | loom | Plan-Bouncer | 5h | 3h | reed, loom, shed |
+| 1 | **reed: overview window first, agents next, shell last**<br>• Window 0 is the run overview for any shed run, each spawned agent gets the next windows, Selvage is the last window named shell; attach shows the most relevant agent | [`reed-window-order`](design-reed-window-order.md) | loom | Plan-Burler-Review | 5h | 3h | reed, loom, shed |
 
 #### Normal priority
 
@@ -53,7 +53,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Plan does not surface tests that pin a method set a card extends** | [`plan-pinned-tests`](design-plan-pinned-tests.md) | 23h | 23h | loom |
 | 2 | **tokencount under-counts fork output tokens**<br>• tokencount keeps the first transcript line per message id, which in subagent transcripts carries partial output_tokens; fork costs come out low | [`tokencount-fork-output`](design-tokencount-fork-output.md) | 5h | 5h |  |
-| 3 | **A running darn task scope cannot be corrected**<br>• A claimed entry refuses body edits and darn has no decision record, so a mid-run scope correction never reaches the reviewers | [`claimed-scope-edit`](design-claimed-scope-edit.md) | 11m | 6m | board, loom, burler |
+| 3 | **A running darn task scope cannot be corrected**<br>• A claimed entry refuses body edits and darn has no decision record, so a mid-run scope correction never reaches the reviewers | [`claimed-scope-edit`](design-claimed-scope-edit.md) | 11m | 7m | board, loom, burler |
 
 ### Enhancements
 
