@@ -1,6 +1,6 @@
 # reed: overview window first, agents next, shell last
 
-`reed-window-order` · Task · bug, reed, loom, shed · running · Loom-Preflight
+`reed-window-order` · Task · bug, reed, loom, shed · running · Discussion-Write
 
 ## Seen (operator, 2026-10-13)
 
