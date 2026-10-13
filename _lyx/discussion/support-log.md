@@ -4,6 +4,7 @@ Autonomous run: no operator answers; every pick below is the writer's own and is
 
 1. Read the board entry `reed-window-order` and the related `stale-binary-daemons` and `logging-cleanup` entries.
    `logging-cleanup` is done (`a90ef61d1`): its watchdog re-stats its binary and retires and respawns on a change, so the watchdog half of the folded-in re-exec work is dropped from scope.
+   The lock gap the board worried about is harmless: a racing spawner that wins the lock makes the successor exit on a lost race.
    Its `reapplyLayout` still wraps the whole body in `keepZoomLocked`, so the zoom-flicker fix stays in scope.
 2. Explored at module level: reedengine's strands' window (resolved through the Selvage pane), own windows (`new-window -d`, next free index), `OpenWindow`'s hidden windows used by batten in the prime, the anchor vocabulary, the navigation bindings and status bar, loomcli's status and driver strands, orchcli's runs and orchestrator strands, and statuspane's pane loop and `BuildIdentity`.
    `lyx loom start` serves loom and darn, so one status strand covers both; batten's overview is the prime's `runs` strand.
