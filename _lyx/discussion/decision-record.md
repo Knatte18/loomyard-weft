@@ -140,6 +140,12 @@ A target that git leaves still registered keeps today's fallback, and a target t
   - fmt-unreadable-file-refusal-unreached (class scope, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Merge-Review -->
+- Merge-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/merge/round-1-review.md; fixer report: _lyx/reviews/merge/round-1-fixer-report.md.
+  - probequiet-ignores-go-driver-lock (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Merge-Review -->
+
 ## Acceptance criteria
 
 - A `start` launch whose events file holds a session start, then a turn start, is ready while every capture is blank.
