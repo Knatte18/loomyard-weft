@@ -178,9 +178,9 @@ Bound: the check renames and moves only the strands' window, and only when its n
 <!-- /lyx:carry-over Discussion-Review -->
 
 <!-- lyx:carry-over Plan-Review -->
-- Plan-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
-  Review: _lyx/reviews/plan/round-3-review.md; fixer report: _lyx/reviews/plan/round-3-fixer-report.md.
-  - shell-window-of-outside-selvage-seam (class consistency, severity BLOCKING, open in rounds 3)
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - card10-restored-comments-stale-pane-retry (class consistency, severity MEDIUM, open in rounds 1)
 <!-- /lyx:carry-over Plan-Review -->
 
 ## Acceptance criteria
