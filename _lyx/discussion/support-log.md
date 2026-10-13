@@ -55,21 +55,45 @@ Duplicates merged; one line per finding:
 - Having the fork report every path it changed and the guard filter it (the entry's first option): the delta already knows every changed path, so the fork's list is redundant work and a second source.
 - Keeping the scope findings in record-batch's warnings beside the digest list: shows the same fact twice.
 - Accepting a bare slug in `lyx board get`: a CLI change for one stencil's wording.
+- Resolving a symbol target's file through the plan index for D4's exemption: the delta gives an import-only file no symbols, so the link would rest on a second lookup beside the guard's comparison, where `Glyph.UnitPath` alone gives the package directory.
+- Reading the row order from a recipe file in the hub or the worktree: the recipe is embedded in the binary, no hub carries a copy, and a worktree's copy can differ from the recipe the binary runs.
 - A verdict key for the landing order: the entry asks for it in the report, and `ReadVerdict` refuses unknown keys, so a key would change the verdict contract for no reader.
 - Extending the arbiter-trigger narrowing to every blocked stop that names a goto: that is `arbiter-when`'s scope.
 
 ## Review rounds
 
-_No rounds yet._
+Round 1, APPROVED with seven findings, all fixed:
+
+- F1 MEDIUM, D2's refusal read a stale verify-failure record: the record must belong to the halt (row, head, write time), at Publish too, with a criterion.
+- F2 LOW, D2's Bound omitted the no-batten and spent-retry cost: Bound sentence added.
+- F3 MEDIUM, D4 left the target-file match open: a target's file part exempts the file, with a Bound and an import-only criterion.
+- F4 LOW, D4 named the PR narrative: now the Master's summary narrative.
+- F5 MEDIUM, D5 named no row order: the stencil points at the hub's loom recipe and compares the producer half of the run status.
+- F6 LOW, D5's Bound was partial: it names the behavioural text-only interaction and the narrowed PATTERN-entry rule.
+- F7 LOW, D1's relaxed pause check reached unmoved runs: scoped to the verdict-in-effect admit, with a criterion.
+
+Round 2, BLOCKING with five findings, all fixed:
+
+- F1 BLOCKING, D4's symbol-target file part is a package directory in Go: a package-unit target covers the files directly in its directory, a file-unit target its one file, with the Bound and criteria rewritten.
+- F2 BLOCKING, D5's hub loom recipe file does not exist: `lyx loom peers` gains `row` and `own_row` from the embedded recipe, with a Constraints entry, a Bound and a criterion.
+- F3 MEDIUM, D2's Publish narrowing contradicted its Bound: the Bound names the narrowing, with a criterion.
+- F4 MEDIUM, D5 left design conflicts with landed parent commits open: they escalate, compared by the commit's subject and diff, with a criterion.
+- F5 LOW, D4 dropped the guard's symbol names silently: the Bound states the file granularity.
+
+Round 3, APPROVED with three findings, all fixed:
+
+- F1 MEDIUM, D4 had no rule for a target in a Go external test package: such a target covers its package directory through planparser's external-test unit mapping, in the Decision, the Bound and the Constraints line, with a criterion.
+- F2 LOW, D5 did not say how a darn peer's row is read: every peer is read against the loom recipe, a darn run's shared rows take their loom positions and its darn-only rows read 0, with the criterion extended.
+- F3 LOW, D5's parent-commit test dropped the duplicate case: a landed commit that already makes one of this run's decisions escalates, with the criterion extended.
 
 ## Question ledger
 
 - Q1 (auto-pick): Which actor moved the run during the arbiter's spawn? Batten's first-verify-failure retry, from the code path and both incidents' shape; the attempt records are gone, noted as an open risk.
-- Q2 (auto-pick): How strict is the verdict-already-in-effect admit? Paused on the exact target, reached by goto entries only after the attempt's history length, and no pause condition present now that was absent at spawn.
+- Q2 (auto-pick): How strict is the verdict-already-in-effect admit? Paused on the exact target, reached by goto entries only after the attempt's history length, and no pause condition present now that was absent at spawn; an unmoved run keeps the equality check (revised in review round 1).
 - Q3 (auto-pick): Does the tackler's consume take the same admit? Yes, one shared check.
 - Q4 (auto-pick, revised after the lens review): Close the race on the arbiter side or batten's side? The arbiter verb's eligibility, by widening the existing Publish-halt refusal to Merge-In.
-- Q10 (auto-pick): How does the deviation list keep non-code files? The guard compares a changed file with no symbols at file level against the cards' target files.
-- Q11 (auto-pick): Is a duplicated decision with a peer still an escalation? Yes, a design conflict.
+- Q10 (auto-pick): How does the deviation list keep non-code files? The guard compares a changed file with no symbols at file level against the cards' target units: a file unit by equality, a package unit by the files directly in its directory (revised in review round 2).
+- Q11 (auto-pick): Is a duplicated decision with a peer still an escalation? Yes, a design conflict, and so is a landed parent commit that already makes one of this run's decisions (revised in review round 3).
 - Q5 (auto-pick): Which of the entry's two deviation options? The fork reports nothing, and the guard's findings over the batch delta are the list.
 - Q6 (auto-pick): Do scope findings stay in record-batch's warnings too? No, the digest list alone.
 - Q7 (auto-pick): Where does the alignment agent record the landing order? In its report; the verdict keys stay.
