@@ -1,0 +1,6 @@
+verdict: approve
+reason: >-
+  The diff implements D1 to D4 of the decision record within its In and Out scope and answers the board entry's two code questions (the in-flight veto of the idle-pane release, and the twill Plan-Write gate refusing Done without lens-review.md) with the docs and PATTERN row in the same change.
+  The only peer, reed-window-order, overlaps as text only in internal/loomcli and docs/overview.md at different places; this run (row 22) lands first, and no parent commit is listed.
+question: ""
+superseded: []

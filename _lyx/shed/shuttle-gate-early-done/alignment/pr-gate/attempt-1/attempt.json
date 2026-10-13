@@ -1,0 +1,16 @@
+{
+  "number": 1,
+  "key": "pr-605-3b92ae242c26b255f6491787a284ad5fcfdbb867",
+  "point": "pr-gate",
+  "token": "5514e5e373325f97",
+  "spawned_at": "2026-10-13T13:51:34.426794903+02:00",
+  "deadline": "2026-10-13T14:11:34.426794903+02:00",
+  "strand_guid": "4c3e1017409cb988570296617095c7b8",
+  "snapshot": "c5a717f78c1232b18197d2b1dde0c15135607f97e501ce0d189fca4f2ec2c29d",
+  "pr_number": 605,
+  "head_sha": "3b92ae242c26b255f6491787a284ad5fcfdbb867",
+  "closed": false,
+  "closed_reason": "",
+  "applied": "",
+  "notified": false
+}

@@ -1,12 +1,13 @@
 {
   "current_producer": "PR-Align",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "landingshed: PR-Align: query existing pull request: context deadline exceeded",
+  "transient": "github-api",
   "pause_requested": false,
   "activity": {
     "now": "PR-Align",
     "last": "Publish → done",
-    "wait": ""
+    "wait": "landingshed: PR-Align: query existing pull request: context deadline exceeded"
   },
   "history": [
     {
