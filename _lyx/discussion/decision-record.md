@@ -209,6 +209,12 @@ Decision: Accept D15: a run on the Go driver has no live receiver for run messag
 
 Rationale: orch-split still lists the receiver for a run with no long-lived driver as open, and the Go driver is opt-in per task while the LLM driver stays the default. The two runs touch the same files but their designs do not conflict; the run further along lands first.
 
+### Added after Discussion (parent, 2026-10-13): Landing order reversed: judge-cap-call lands first
+
+Decision: judge-cap-call lands before go-driver-assistant; go-driver-assistant takes judge-cap-call's changes to the arbiter stencil, loom config (config.go, template.yaml), loomcli wiring, runsettings tests, stencils registry and the refusal spec at its own Merge-In. This replaces the landing order in 'D15 accepted: a go-driven run has no message receiver yet'; D15 itself stands.
+
+Rationale: The run further along lands first. judge-cap-call reached PR-Gate while go-driver-assistant is at Webster. The two designs do not conflict.
+
 ## Constraints
 
 - `PATTERN-driver-choice-single-site`: the recorded seed driver is read only in loom's bootstrap verbs (start, resume) and `lyx loom drive`'s own package; the background's permitted-consumer list gains Seed-Child's and loom's seed writer's `driver_kind` reads, in the same commit.
