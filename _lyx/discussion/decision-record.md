@@ -213,6 +213,12 @@ A separate deploy-recovery check runs at each wake only while the landing `deplo
 All three checks read durable state, so they hold across a refresh, a compact or a handoff of the orch.
 The `contracts/stencils/claims_test.go` rows that pin the old sentences change with it, and `docs/overview.md`'s line on Land notifying only on a failure or a newly ready task is updated.
 
+### Added after Discussion (parent, 2026-10-13): D11 audit bounded to the listed and review-named sites
+
+Decision: D11's per-site verdict list is complete when it covers the sites the plan lists plus every site named in the Plan-Review rounds 1-3 reviews (round 3: reed's state-load Warns, shuttle's record readers reached through loop callbacks, battencli's session-state reader, parentlock's release Warn). Per-tick lines found later, below further callees or behind callbacks, are not a plan defect: they are caught from traces after deploy and fixed as follow-ups. A review finding that only names more unlisted sites beyond these is not BLOCKING.
+
+Rationale: Three rounds each added the rows the review named and the next review found more one call level down; an exhaustive static call-graph sweep does not converge through review rounds, while the design itself (policy, verdict per site, guards) is sound and the trace inventory already ranks the sites that fire.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: the draft kind (D9) is exposed through shuttle's provider-neutral types, and Claude's shape stays in `claudeengine`.
