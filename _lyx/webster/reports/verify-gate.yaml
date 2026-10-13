@@ -1,0 +1,23 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/lyxcwd.TestEnforcement_FabricVocabulary/tree-scan
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/lyxcwd
+      tail: |4-
+                enforcement_test.go:891: fabric-vocabulary leak found:
+                    internal/battencli/wire.go: bare weft/warp token outside the owner set
+                    internal/loomcli/drivewiring.go: bare weft/warp token outside the owner set
+    - id: github.com/Knatte18/loomyard/internal/testkit/envkit.TestFullEnv_FillsEverySeam
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/testkit/envkit
+      tail: '    envkit_test.go:13: NilSeams(FullEnv) = [InnerRun.ChildDriverLockHeld InnerRun.TacklerInFlight InnerRun.GoVerifyRetrySpent InnerRun.ChildBuildChanged InnerRun.ChildDirtyPaths]; want none'
+    - id: github.com/Knatte18/loomyard/internal/testkit/envkit.TestNilSeams_ReportsExactPaths
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/testkit/envkit
+      tail: '    envkit_test.go:29: NilSeams = [CommitPlan InnerRun.ChildBuildChanged InnerRun.ChildDirtyPaths InnerRun.ChildDriverLockHeld InnerRun.GoVerifyRetrySpent InnerRun.TacklerInFlight Landing.PushBranch SeedChild.WriteSeed Shuttle Teardown.Remove]; want [CommitPlan Landing.PushBranch SeedChild.WriteSeed Shuttle Teardown.Remove]'
+    - id: github.com/Knatte18/loomyard/internal/testkit/envkit.TestNilSeams_SkipsNilLegalPaths
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/testkit/envkit
+      tail: '    envkit_test.go:38: NilSeams = [InnerRun.ChildDriverLockHeld InnerRun.TacklerInFlight InnerRun.GoVerifyRetrySpent InnerRun.ChildBuildChanged InnerRun.ChildDirtyPaths]; want none for nil-legal seams'
+log_path: /home/knatte/Code/loomyard-LYXHUB/go-driver-assistant/.lyx/verify/verify-2.log
