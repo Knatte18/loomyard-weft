@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=df6c5d22e86ac2b9aea68cd60534d52582ade5f1b16cc2a0f99a889acd56cdb3 build=22b4aff8a2031328dec3d3e24ac6037af5a27cbe time=2026-10-12T17:08:31Z -->
+<!-- lyx-stencil: sha256=5133ee7abe7e830e35c1d8bae821edf65ca4edd8e1fc33bc46abf192a0e07250 build=30385e1ae3cd25497f9b9d6d2a9848ce19516dad time=2026-10-13T10:42:56Z -->
 
 # Loom plan-spec — flat card list
 
@@ -352,7 +352,7 @@ The real gate is post-merge: once a concurrently-executed batch's worktrees merg
 
 ## Deferred / forward-compat
 
-The **`changes-files`/deviation union** — the artifact webster's fork-return contract compares actual changed files against (a fork reports `OK, SHA <x>` or a deviation note; a file-list mismatch against this union is always informational, never blocking on its own) — is, under format 5, restated over glyphs rather than paths-plus-symbol-files: a mechanical guard compares the delta's changed files against the batch's own target glyphs' `UnitPath`-mapped files directly, rather than this spec defining a files-union to compare against. The mismatch stays exactly as informational, never blocking on its own, and `Uses:` stays excluded from the comparison because it names what a card reads, not what it changes.
+The **`changes-files`/deviation union** — the artifact webster's fork-return contract compares actual changed files against (a fork reports `OK` and a SHA, while record-batch's mechanical guard produces the file list; a file-list mismatch against this union is always informational, never blocking on its own) — is, under format 5, restated over glyphs rather than paths-plus-symbol-files: a mechanical guard compares the delta's changed files against the batch's own target glyphs' `UnitPath`-mapped files directly, rather than this spec defining a files-union to compare against. The mismatch stays exactly as informational, never blocking on its own, and `Uses:` stays excluded from the comparison because it names what a card reads, not what it changes.
 See `internal/websterengine`'s package documentation for the verification semantics.
 This union is defined over each card's flat target set (the union across all of that card's own `TargetGroups`), so it is unchanged by multi-label: a card carrying two groups contributes both groups' targets exactly as it always contributed one group's.
 
