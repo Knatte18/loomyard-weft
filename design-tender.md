@@ -2,6 +2,8 @@
 
 `tender` · Task · enhancement, bug, shuttle, reed, batten, shed, orch, loom
 
+Depends on: [`reed-window-order`](design-reed-window-order.md)
+
 ## Idea (operator, 2026-10-13)
 
 `lyx pause` and `lyx resume` are two top-level verbs from one package (`internal/pausecli`), so `lyx --help` lists them as if each were a module.
