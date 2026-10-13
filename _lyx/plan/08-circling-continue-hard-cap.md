@@ -17,7 +17,7 @@
 
 **Create:**
 - `plan:internal/shedadapters#LatestRound` -> `func LatestRound(runDir string) (int, error)`
-- `plan:internal/loomcli#circlingWayHardCap` -> `const circlingWayHardCap = "way forward: fix the file or key the message names, then re-run the verb"`
+- `plan:internal/loomcli#circlingWayHardCap` -> `const circlingWayHardCap = "way forward: fix the file or key the message names, then re-run \"lyx loom circling continue %s\" in place of any \"lyx loom resume\" it names"`
 - `plan:internal/loomcli#perchHardCap` -> `func perchHardCap(location *lyxcwd.Location, row string) (int, string, error)`
 - `plan:internal/loomcli#TestPerchHardCap` -> `func TestPerchHardCap(t *testing.T)`
 
@@ -41,7 +41,9 @@ It also gains `hardCap func(row string) (hardCap int, raise string, err error)`,
 `circlingVerb`, for `continue` only, after the Bouncer-row check and before `record`:
 
 - It reads the round with `latestRound` and the cap with `hardCap`.
-  Either error refuses as "%s; %s" with `circlingWayHardCap`: `way forward: fix the file or key the message names, then re-run the verb`.
+  A `latestRound` error is a raw I/O failure and refuses as "%s; %s" with `circlingWayRetry`.
+  A `hardCap` error refuses as "%s; %s" with `circlingWayHardCap`, its `%s` filled with the verb's `slug`: `way forward: fix the file or key the message names, then re-run "lyx loom circling continue <slug>" in place of any "lyx loom resume" it names`.
+  A loom.yaml load failure carries card 6's `then run "lyx loom resume"`, and running it would re-step the Bouncer and lose the `continue`, so this way forward names the circling verb in its place, as D5 does for the hard-cap refusal.
 - `hardCap > 0` and `round >= hardCap` refuses: "round N at <row> is at or past its perch's hard cap H, so no review round runs past it; way forward: run `lyx loom circling accept <slug>`, or raise the hard cap: <raise>, then run `lyx loom circling continue <slug>`".
   This reaches the refusal at a `hard-cap` escalation (whose round is always at or past the cap) and at a `circling` or `budget` escalation on such a round.
   A `continue` below the cap on a `circling` escalation records as before.
@@ -64,8 +66,9 @@ It also gains `hardCap func(row string) (hardCap int, raise string, err error)`,
 
 - "circling: continue at the hard cap": `lyx loom circling continue` finds the latest round at or past its perch's hard cap, a correctness halt.
   Its way forward: `lyx loom circling accept <slug>`, or raise the hard cap with the command the message names for the layer its value comes from, then `lyx loom circling continue <slug>`.
-- "circling: hard cap unresolved": `lyx loom circling continue` cannot read the run directory's latest round, or loom.yaml or darn.yaml fails to load, a correctness halt.
-  Its way forward: fix the file or key the message names, then re-run the verb.
+- "circling: hard cap unresolved": `lyx loom circling continue` finds loom.yaml or darn.yaml failing to load, a correctness halt.
+  Its way forward: fix the file or key the message names, then re-run `lyx loom circling continue <slug>` in place of any `lyx loom resume` the message names.
+- The existing transient row "circling: decision record failed" widens its trigger with "or cannot read the run directory's latest round for the hard-cap check"; its way forward stays.
 
 Tests:
 
@@ -75,7 +78,8 @@ Tests:
   New continue rows:
   - "continue at the hard cap": latest 4, hard cap 4, raise `run "lyx config loom --set review_hard_max_bounces=<n>" in the task worktree`; wants "at or past its perch's hard cap 4", `lyx loom circling accept task-a`, the raise text and `lyx loom circling continue task-a`.
   - "continue whose hard cap comes from run_settings": raise is the local-layer text with `--layer local` and `lyx board upsert`, which must appear verbatim.
-  - "hard cap unresolved" (`hardCapErr`) and "latest round unreadable" (`latestErr`), each wanting "fix the file or key the message names".
+  - "hard cap unresolved" (`hardCapErr`), wanting "fix the file or key the message names", `lyx loom circling continue task-a` and "in place of any";
+  - "latest round unreadable" (`latestErr`), wanting "re-run the verb".
   Every refusal row asserts nothing was recorded.
 - New `TestPerchHardCap` resolves over `hubLocation` with configs seeded as the wiring tests seed them:
   - Plan-Bouncer with `plan_hard_max_bounces: 6` in the worktree's loom.yaml returns 6 and `lyx config loom --set plan_hard_max_bounces=<n>`;

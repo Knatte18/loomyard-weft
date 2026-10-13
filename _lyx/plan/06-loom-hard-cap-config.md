@@ -54,8 +54,9 @@ A `StackLayers` error is returned.
 
 `LoadConfig`:
 
-- `review_hard_max_bounces` joins the at-least-1 loop beside `review_max_bounces`, with its way forward.
-- The four per-perch hard keys get the negative check the per-perch budgets have: "must not be negative, got %d; set it to 0 to take review_hard_max_bounces, or to a positive integer, in loom.yaml".
+- After the at-least-1 loop beside `review_max_bounces`, a `review_hard_max_bounces` below 1 is refused through `CapRoute`, never with that loop's "set it to a positive integer in loom.yaml" text: "loom config key %q: must be at least 1, got %d; way forward: <CapRoute(dirs, \"review_hard_max_bounces\")>, then run \"lyx loom resume\"".
+- After the per-perch budgets' negative loop, each of the four per-perch hard keys below 0 is refused through `CapRoute`, never with that loop's "..., in loom.yaml" text: "loom config key %q: must not be negative, got %d; set it to 0 to take review_hard_max_bounces, or to a positive integer; way forward: <CapRoute(dirs, that key)>, then run \"lyx loom resume\"".
+  A `run_settings` value lands in the local layer, so only the route of the layer it comes from clears it.
 - After both, for each of the four perches, a resolved `Hard` below its resolved `Soft` is refused.
   The message names both keys and both values: "loom config key %q: resolved hard cap %d is below %q's resolved soft cap %d; way forward: raise the hard cap: <CapRoute(hard key)>, or lower the soft cap: <CapRoute(soft key)>, then run \"lyx loom resume\"".
   Equal caps load (D3).
@@ -68,10 +69,9 @@ A `StackLayers` error is returned.
 
 `refusal-spec.md`:
 
-- The "config: review key below 1" row adds `review_hard_max_bounces` at 0 or below and a negative per-perch hard cap to its trigger.
-  It adds "set a per-perch hard cap to 0 to take `review_hard_max_bounces`" to its way forward.
-- A new row "config: hard cap below soft cap" beside it: a perch's resolved hard cap below its resolved soft cap at load, a correctness halt.
-  Its way forward: raise the hard cap or lower the soft cap in the layer the resolved key comes from, the message naming the command (`lyx config loom --layer local --set` in the task worktree plus `lyx board upsert` for `run_settings`, `lyx config loom --set` in the task worktree, or `lyx config loom --layer default --set` from the prime), then `lyx loom resume`.
+- The "config: review key below 1" row is unchanged: the hard keys take the new row's per-layer way forward, not its static one.
+- A new row "config: hard cap out of range" beside it: at load, `review_hard_max_bounces` is 0 or negative, a per-perch hard cap is negative, or a perch's resolved hard cap is below its resolved soft cap, a correctness halt.
+  Its way forward: set the hard cap to a positive integer (a per-perch hard cap to 0 to take `review_hard_max_bounces`), or for hard below soft raise the hard cap or lower the soft cap, in the layer the key comes from, the message naming the command (`lyx config loom --layer local --set` in the task worktree plus `lyx board upsert` for `run_settings`, `lyx config loom --set` in the task worktree, or `lyx config loom --layer default --set` from the prime), then `lyx loom resume`.
 
 `docs/overview.md`'s loom config sentence lists `review_hard_max_bounces` and the per-perch hard keys, where 0 takes the run-wide value, and the hard-below-soft refusal.
 
@@ -82,14 +82,15 @@ Tests:
   A new row "explicit hard caps" sets `review_hard_max_bounces` 5 and `plan_hard_max_bounces` 6 and expects both fields.
   A new row "a hard cap equal to the soft cap loads" sets `review_max_bounces` and `review_hard_max_bounces` both to 3 (D3).
 - `TestLoadConfig_Refuses` gains rows for:
-  - `review_hard_max_bounces` 0, wanting the positive-integer way forward;
-  - each per-perch hard key at -1, wanting "set it to 0 to take review_hard_max_bounces";
+  - `review_hard_max_bounces` 0 in a worktree-only config, wanting "must be at least 1", `lyx config loom --set review_hard_max_bounces=<n>` and `lyx loom resume`;
+  - each per-perch hard key at -1 in a worktree-only config, wanting "set it to 0 to take review_hard_max_bounces", `lyx config loom --set <that key>=<n>` and `lyx loom resume`;
   - `review_max_bounces` 5 under the default hard cap of 4 in a worktree-only config, wanting `review_hard_max_bounces`, `review_max_bounces`, `lyx config loom --set review_hard_max_bounces=<n>`, "in the task worktree" and `lyx loom resume`;
   - `webster_max_bounces` 5, wanting `review_hard_max_bounces` and `webster_max_bounces`.
   A new subtest "a hard cap below the soft cap names the route of the layer each key comes from" runs over a hub stack with a board default from `loomTemplateWith`:
   - a local `review_max_bounces: 5` wants `lyx config loom --layer local --set review_max_bounces=<n>`, `lyx board upsert` and, for the hard key from the board default, `lyx config loom --layer default --set review_hard_max_bounces=<n>` and "prime";
-  - a worktree `review_hard_max_bounces: 2` under the board default's soft cap of 3 wants `lyx config loom --set review_hard_max_bounces=<n>` and "in the task worktree".
-  A local `run_settings` value reaches the refusal with the local route this way.
+  - a worktree `review_hard_max_bounces: 2` under the board default's soft cap of 3 wants `lyx config loom --set review_hard_max_bounces=<n>` and "in the task worktree";
+  - a local `review_hard_max_bounces: 0` wants "must be at least 1", `lyx config loom --layer local --set review_hard_max_bounces=<n>`, `lyx board upsert` and `lyx loom resume`.
+  A local `run_settings` value reaches each refusal with the local route this way.
 - `TestWire_ReviewKeysReachTheEnv` seeds `plan_hard_max_bounces: 5` and asserts `c.env.RowHardMaxBounces` equals 4 for the Discussion, Webster and Merge Bouncer rows and 5 for Plan-Bouncer.
 - `TestPrepareRunSettings` gains a row for the small-task advice's settings `{"loom": {"review_max_bounces": 2, "review_hard_max_bounces": 3}}`.
   It expects a loom document holding both keys in the order the existing renderer emits, which proves the hard-cap key settable through `run_settings`.
