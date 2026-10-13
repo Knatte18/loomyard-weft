@@ -1,0 +1,71 @@
+{
+  "runGuid": "2c2842d3f17a0e6242a27a549d97f625",
+  "planFingerprint": "be8b0f0a6be7afdb7d16037e40270f65560620111143263dab173183f4406064",
+  "planFileHashes": {
+    "00-overview.md": "6dd46615682d4643cef874e37a661ccd48df2083df5ef2697fe89ecb60e88c93",
+    "10-restore-set-content-rows.md": "24caa552cb1012d8a7e5303cd8cea7665cdaf99e50a3fa1ef217cb612c4bb641"
+  },
+  "planOverviewFrameHash": "759c9b08df079bf3196b88739fb5d0d2cc220416e5856e03b71b10219c79abf5",
+  "partition": [
+    {
+      "cards": [
+        "10-restore-set-content-rows"
+      ],
+      "profile": "cautious",
+      "estimate": 100326,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54208,
+        "read_union": 22088,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 480,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1788,
+              "file:internal/reedengine/doc.go": 11820,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 78.5,
+            "written": 24030
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 10,
+  "masterStrand": "d6575adc4a47754ac17f5133b701d2ce",
+  "masterSessionId": "40a541d2-c1e1-41de-832f-f53a09c86031",
+  "batches": {
+    "10": {
+      "slug": "restore-set-content-rows",
+      "cards": [
+        "10-restore-set-content-rows"
+      ],
+      "cardHashes": {
+        "10-restore-set-content-rows": "24caa552cb1012d8a7e5303cd8cea7665cdaf99e50a3fa1ef217cb612c4bb641"
+      },
+      "startSha": "65d36fda60381350970e0659d94e834d8a88b8d3",
+      "kind": "fork",
+      "spawnedAt": "2026-10-13T14:46:01Z",
+      "sessionId": "40a541d2-c1e1-41de-832f-f53a09c86031",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
