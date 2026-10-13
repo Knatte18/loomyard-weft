@@ -9,6 +9,8 @@ The operator thinks the fan could pay with better-tuned prompts: lenses and fork
 
 ## Starting point
 
+- The operator's first bench of Burler's fan, when it was designed, found a fair amount, though mostly less advanced defects; twill, built after it, proved clearly more effective (operator, 2026-10-13).
+  Twill's forks share the writer's context and their findings are judged by the writer, which may be the design to borrow.
 - Bench results: `docs/research/lens-fan-lab-phase1.md` ("Conclusion") and `lens-fan-lab-phase0.md`, cost in `lens-fan-cost-analysis.md`.
 - On Discussion-Review a `sonnet[medium]` fan missed the BLOCKING defect that solo `opus[medium]` found; a `sonnet[high]` fan found it but passed 300k context and cost more than solo.
 - On Plan-Review the `sonnet[high]` fan's surplus was mostly LOW findings, at about six times a solo round's cost.
