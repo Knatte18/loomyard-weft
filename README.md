@@ -67,15 +67,17 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 13 | **Alignment agent settles landing order itself; escalates only on design conflict**<br>• Apply furthest-along-lands-first in the alignment agent and wake the orch only when two runs designs conflict. | [`alignment-landing-order`](design-alignment-landing-order.md) | 16h | 16h | orch, loom |
 | 14 | **lyx report timing: phase minutes, parent waits and agent spawns from run records**<br>• A mechanical per-run and per-day time report beside lyx report convergence, including stops by who settled them. | [`report-timing`](design-report-timing.md) | 16h | 16h | shed, orch |
 | 15 | **Keep pair trace logs in a git-ignored hub archive**<br>• Copy a pair's .lyx/logs into the hub's .lyx at teardown and prune after a retention period | [`run-log-archive`](design-run-log-archive.md) | 0m | 0m | batten, fabric |
+| 16 | **Hands-on tests of Codex CLI in tmux**<br>• Short tests of Codex CLI as a second LLM provider: TUI in tmux, hooks, session files, billing | [`codex-spike`](design-codex-spike.md) | 0m | 0m | shuttle |
+| 17 | **Make shuttle and lyx neutral to the LLM provider**<br>• Engine registry, engine in run.json, no Claude names in the core, usage readers behind the engine | [`llm-agnostic-engine`](design-llm-agnostic-engine.md) | 0m | 0m | shuttle, config, stencil |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 16 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 9d | 2d | fabric |
-| 17 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 8d |  | ide, fabric |
-| 18 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 5d | 17h | shed |
-| 19 | **Bench the chair-and-advisors Discussion against the solo writer before switching it on**<br>• Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on | [`discussion-multi-llm-bench`](design-discussion-multi-llm-bench.md) | 2d | 23h | loom, stencil, config |
+| 18 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 9d | 2d | fabric |
+| 19 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 8d |  | ide, fabric |
+| 20 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 5d | 17h | shed |
+| 21 | **Bench the chair-and-advisors Discussion against the solo writer before switching it on**<br>• Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on | [`discussion-multi-llm-bench`](design-discussion-multi-llm-bench.md) | 2d | 23h | loom, stencil, config |
 
 ### Features
 
