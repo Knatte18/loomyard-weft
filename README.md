@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`logging-cleanup`](design-logging-cleanup.md) | loom | Plan-Burler-Review | 15h | 1h | batten, reed, orch, fabric |
+| 1 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`logging-cleanup`](design-logging-cleanup.md) | loom | Plan-Burler-Fix | 15h | 1h | batten, reed, orch, fabric |
 | 2 | **Arbiter relaunch, Webster deviations list, alignment landing order** | [`arbiter-fixes`](design-arbiter-fixes.md) | loom | Discussion-Burler-Fix | 18h | 1h | loom, shed, webster, orch |
 
 ### Ready
@@ -39,8 +39,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 1 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-ftb-1`](design-twb-ftb-1.md) | 24m | 24m |  |
 | 2 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-fta-1`](design-twb-fta-1.md) | 24m | 24m |  |
 | 3 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-ftb-2`](design-twb-ftb-2.md) | 12m | 12m |  |
-| 4 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-ftb-3`](design-twb-ftb-3.md) | 11m | 11m |  |
-| 5 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-fta-2`](design-twb-fta-2.md) | 11m | 11m |  |
+| 4 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-ftb-3`](design-twb-ftb-3.md) | 12m | 12m |  |
+| 5 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-fta-2`](design-twb-fta-2.md) | 12m | 12m |  |
 | 6 | **Plan does not surface tests that pin a method set a card extends** | [`plan-pinned-tests`](design-plan-pinned-tests.md) | 18h | 18h | loom |
 | 7 | **reed: strand windows first, Selvage last**<br>• Attach lands on Selvage while the agent works in another window, and Alt+Up/Down cannot reach own-window strands; strand windows first, Selvage last | [`reed-window-order`](design-reed-window-order.md) | 7m | 3m | reed |
 
@@ -51,7 +51,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Audit glyph use in Webster, the kick-start pack first**<br>• Check from transcripts of a smaller task whether Webster forks use the kick-start pack and glyphs as intended | [`glyph-use-audit`](design-glyph-use-audit.md) | 1d | 1h | webster, burler, quarry |
-| 2 | **Model downgrade per role**<br>• Bench cheaper models (Sonnet 5.5, Haiku 5.5) per role by replaying older runs; per-round models and fan vs solo | [`model-downgrade`](design-model-downgrade.md) | 1h | 24m | burler, loom, webster, shuttle |
+| 2 | **Model downgrade per role**<br>• Bench cheaper models (Sonnet 5.5, Haiku 5.5) per role by replaying older runs; per-round models and fan vs solo | [`model-downgrade`](design-model-downgrade.md) | 1h | 25m | burler, loom, webster, shuttle |
 
 #### Normal priority
 
@@ -70,7 +70,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 13 | **Arbiter spawns only on stops that need it**<br>• Five arbiter spawns on 2026-10-12, none needed: narrow the triggers to the hard review cap, circling, and blocked or error stops with no computed way forward. | [`arbiter-when`](design-arbiter-when.md) | 18h | 18h | loom, shed |
 | 14 | **lyx report timing: phase minutes, parent waits and agent spawns from run records**<br>• A mechanical per-run and per-day time report beside lyx report convergence, including stops by who settled them. | [`report-timing`](design-report-timing.md) | 18h | 18h | shed, orch |
 | 15 | **Make shuttle and lyx neutral to the LLM provider**<br>• Engine registry, engine in run.json, no Claude names in the core, usage readers behind the engine | [`llm-agnostic-engine`](design-llm-agnostic-engine.md) | 1h | 1h | shuttle, config, stencil |
-| 16 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 35m | 34m | burler, stencil |
+| 16 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 36m | 35m | burler, stencil |
 | 17 | **Twill: spawn lens forks before or after writing**<br>• A/B the twill spawn point, Discussion first: forks spawned before writing re-read the output as fresh cache writes, once per fork | [`twill-fork-timing`](design-twill-fork-timing.md) | 31m | 28m | loom, stencil |
 
 #### Low priority
