@@ -1,6 +1,6 @@
 # Twill: spawn lens forks before or after writing
 
-`twill-fork-timing` · Note · enhancement, loom, stencil
+`twill-fork-timing` · Note · audit, loom, stencil
 
 ## Idea (operator, 2026-10-13)
 

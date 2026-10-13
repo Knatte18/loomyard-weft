@@ -1,6 +1,6 @@
 # Lighter test rules for small changes
 
-`lighter-test-rules` · Note · enhancement, stencil
+`lighter-test-rules` · Note · audit, stencil
 
 ## Idea (operator, 2026-10-13)
 
