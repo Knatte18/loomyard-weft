@@ -18,7 +18,7 @@ The battencli package-doc fix (`c7fc40966`) and the `SkipWhenBoxEquals` removal 
 
 The restored code is what `4ddcb5133` removed, read with `git show 4ddcb5133`, applied against the current tip:
 
-- `Engine.SetContentRows` goes back into `internal/reedengine/strand.go` after `Engine.UpdateStrand`, with its doc comment and body unchanged: it refuses `rows < 1` before taking any lock, then under the op lock and the zoom bracket refuses an unknown name, a strand that is not content-sized and a strand whose recorded pane is not `paneID`, each naming the strand and the reason;
+- `Engine.SetContentRows` goes back into `internal/reedengine/strand.go` after `Engine.UpdateStrand`, with its body unchanged and its doc comment unchanged but for its last clause, "and the pane process retries at its next poll after any refusal", which is dropped, since no pane process reports or retries any more, so the comment's last sentence ends after "so it can resize no strand": it refuses `rows < 1` before taking any lock, then under the op lock and the zoom bracket refuses an unknown name, a strand that is not content-sized and a strand whose recorded pane is not `paneID`, each naming the strand and the reason;
   a count equal to the recorded one touches neither `reed.json` nor tmux, and a new count is persisted and applied with `applyOpts{SkipFocus: true, InstallPins: true}`.
   Bound: the name and pane checks keep a hand-run or replaced pane process from resizing any strand, and the operation changes nothing but that strand's `ContentRows` and the layout and pins derived from it.
 - `applyOpts` regains its `InstallPins bool` field and comment, beside `SkipFocus` only, since `SkipWhenBoxEquals` stays removed.
@@ -28,6 +28,7 @@ The restored code is what `4ddcb5133` removed, read with `git show 4ddcb5133`, a
 - `TestZoomBracket_ZoomedStrandSurvivesEveryReedStep` in `internal/reedengine/zoom_integration_test.go` regains its content-strand part: after the resume it adds a top content strand and reports 5 rows with the child zoomed, then with Selvage zoomed reports 6 rows, unzooms and asserts the content pane's height is 6.
   The "AddStrand with Selvage zoomed" step `4ddcb5133` put in its place goes, the `render` import `8422f9434` dropped comes back, and the doc comment says the content-rows reports again.
 - In `internal/reedengine/doc.go`, `SetContentRows` goes back into the zoom-bracket call-site list after `UpdateStrand`, and its paragraph comes back in place of the line "No pane process reports a content line count today, so a content strand's ContentRows stays unreported and the strand takes its minimum rows."
+  The restored paragraph's Bound sentence ends after "so it can resize no strand", dropping "the pane process retries at its next poll after any refusal, which is how a report made before AddStrand has recorded the pane succeeds once it has".
   The restored paragraph gains one sentence saying neither overview pane reports a count, so the operation stays for an explicit content-sized caller.
 - The `internal/reedengine` row in `cmd/lyx/testdata/test-budget.yaml` rises by one, from 264 to 265, for `TestSetContentRows`.
 
