@@ -50,6 +50,16 @@ Evidence from the loom level, a driver count over 98 runs (2026-10-05..12, 392 s
 The agent that ran the count estimated a cold helper would be needed at about 1 stop in 12 runs once Go takes the mechanical stops.
 Nobody has counted the hub level yet: the orch's parent reviews, escalations, PR-Gates and landings by hand would need the same split before the Go share is known.
 
+## A landing check for the Go run driver (operator, 2026-10-13)
+
+At landing, loom warns that a task branch changed per-worktree config files (`_lyx/config/*.yaml`), which landing does not carry to the parent, and asks the parent to re-apply each change meant for it.
+`logging-cleanup` raised it for a new, empty `_lyx/config/loom.yaml`: nothing to re-apply, and the orch found that only by diffing the file by hand.
+The operator sees that check as a job for the Go run driver:
+
+- parse the file at the fork base, the task tip and the parent tip, and compare keys;
+- stay silent when the tip changes no key (an empty file, comments only) or the parent already holds the tip's value;
+- otherwise name each changed key with its base, tip and parent values, so the parent knows exactly what to re-apply.
+
 ## Was `go-driven-shed`
 
 ## Question (operator, 2026-10-12)
