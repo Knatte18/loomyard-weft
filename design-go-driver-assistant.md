@@ -1,6 +1,6 @@
 # Go driver per task, with the tackler (cold assistant) and the arbiter behind it
 
-`go-driver-assistant` · Task · feature, loom, shed · running · Finalize
+`go-driver-assistant` · Task · feature, loom, shed · done
 
 Make the Go driver (`shedrun.DriverGo`) a full alternative to the LLM loom driver: Go steps the run and settles the mechanical stops, a cold assistant is spawned only at a stop Go cannot settle, and the arbiter only when the assistant says it is needed.
 The LLM driver stays as an option; the choice is per task, so the Go driver can be tested on a few tasks first.
