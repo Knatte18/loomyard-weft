@@ -62,7 +62,17 @@ Autonomous run: no operator answered; every pick below is an auto-pick, recorded
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1 — burler review, BLOCKING, six findings, all fixed.
+  - F1, BLOCKING: D7's retry sat on the fallback the sighted failure never reaches, since `git worktree remove` deletes the registration before its delete fails — fixed: D7 places the retry in `removeWarpWorktreeDir`'s not-a-linked-worktree branch, with a new ownership proof, a two-part not-empty recognition and per-OS error values; the re-entry sentence and the acceptance criterion are reworded.
+  - F2, MEDIUM: D1's tool-event proof named a signal no hook records — fixed: the proof is a session start followed by a turn start.
+  - F3, LOW: D1 cited D3 for the launch-line change — fixed: D2.
+  - F4, LOW: D2 did not bound the bypass of the verified send — fixed: a Bound line names the skipped landing check, the turn-end proof and the skill-load timeout measured from the end of `awaitStartup`.
+  - F5, LOW: D6 left root resolution, a partial write and three bounds untested — fixed in D6 and acceptance.
+  - F6, LOW: Scope item 4 had no acceptance criterion — fixed.
+- Round 2 — burler review, APPROVED, three findings, all fixed.
+  - F1, MEDIUM: D7's Windows value missed a lock file still held by its writer, which fails the removal with a sharing violation — fixed: `windows.ERROR_SHARING_VIOLATION` is retried beside `windows.ERROR_DIR_NOT_EMPTY`, with a Windows acceptance criterion.
+  - F2, LOW: D7's recognition named a git delete failure only stderr could decide — fixed: the first half is the branch condition, nonzero exit, unregistered and still on disk.
+  - F3, LOW: D7's leftover removal recorded no mutation — fixed: it appends `KindPathRemoved` with detail `recursive`, Constraints names `PATTERN-mutation-record`, and the acceptance criterion checks the entry.
 
 ## Question ledger
 
