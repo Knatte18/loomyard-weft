@@ -1,6 +1,6 @@
 # Webster stability: gate shells, Master self-fix, recovery, Create checks
 
-`twb-fta-2` · Note · bug · paused · Discussion-Bouncer
+`twb-fta-2` · Note · bug
 
 ## Bench base
 
