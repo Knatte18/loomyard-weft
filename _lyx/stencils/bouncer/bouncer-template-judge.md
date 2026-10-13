@@ -19,7 +19,7 @@
      round-agrees-with-filename check discards it as malformed (crucible round sonnet-xhigh-r8,
      LS-1) -- before this fix, both instructions reused {{.round}}, so a compliant judge wrote a
      focus file whose OWN frontmatter round permanently disagreed with its OWN filename by one.
-lyx-stencil: sha256=1e6ac05901272bec93b9824ac9f7d01969137f7a419840acdec41385faa7bb8e -->
+lyx-stencil: sha256=e3b8ca306cad783c467afacb09632ee9026b1ea02fded72ec7d36ccc621297f5 build=072e2ed86cca361e439c0062b67634777d1b3410 time=2026-10-13T07:25:55Z -->
 
 # Bouncer — judge pass, round {{.round}}
 
@@ -104,6 +104,7 @@ ledger:
     status: open
     class: design
     severity: MEDIUM
+    fix: design-wrong
   - key: another-finding-identity
     rounds: [2]
     status: resolved
@@ -118,6 +119,11 @@ Frontmatter rules, all strict:
 - Every `status: open` entry also carries `class` and `severity`, copied from the latest review's finding that you map to that key (after any relabel you name in the rationale).
   A `status: resolved` entry may omit them.
   `class` is one of `design`, `scope`, `decision`, `consistency`; `severity` is one of `BLOCKING`, `MEDIUM`, `LOW`, `NIT`.
+- Every `status: open` entry also carries `fix`, `design-wrong` or `mechanical`, in every round.
+  `design-wrong` means the finding says the design itself was wrong, so its fix changes a decision, an approach, a contract or an interface, and that new text needs a fresh review.
+  `mechanical` means a local correction whose result the finding text already fixes, so the fix can be accepted unreviewed.
+  Choose it from the review's finding text alone: never open the artifacts or the fixer's diff.
+  A `status: resolved` entry may omit it.
 - REQUIRED — lossless carry-forward rule: every entry present in the previous ledger reappears in
   this ledger, as either `status: open` (still applies) or `status: resolved` (no longer applies),
   never silently dropped.
