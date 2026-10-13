@@ -1,0 +1,23 @@
+# Twill: spawn lens forks before or after writing
+
+`twill-fork-timing` · Note · enhancement, loom, stencil
+
+## Idea (operator, 2026-10-13)
+
+Twill's writer spawns its lens forks before it writes its output, and the forks then wait for the ready marker and read the written files.
+None of them has those files in its cache, so every fork pays a fresh cache write for them: once per fork.
+Spawned after the writing, the forks would inherit the written files in their context as cache reads.
+Test Discussion's twill first (operator, 2026-10-13).
+
+## Seen
+
+- The spawn point is one sentence per producer: `internal/loomengine/twill.go:91` for Discussion ("When the design is settled and before you write any output file"), `planTwillSpawnPoint` at `twill.go:66` for Plan.
+- The forks wait on the ready marker and read nothing before it (`contracts/stencils/twill/twill-directive.md`, the fork boilerplate), so spawning early buys no parallel work; in the Plan bench they waited about five minutes each (`.scratch/twill-plan-bench/results.md:172` in the hub prime).
+- Spawning before writing was never benched on its own: in `twill-plan` round 1 both writers spawned after writing by mistake, and round 2 changed the spawn point together with the rejection rule and the lenses (`results.md`, "Changes to the prototype").
+- What spawning early may buy: a smaller inherited context per fork turn, and forks that do not see the writer's drafting, so they judge the written files less anchored to its reasoning.
+
+## Bench to discuss
+
+- An A/B on Discussion-Write: spawn before writing against spawn after writing, the same reference records and lenses, more than one run per arm; the `twill-plan` bench is the precedent for the setup.
+- Compare per arm: fork cache writes and reads, total cost, writer time, and the findings against the reference's Discussion-Review findings.
+- A third arm to consider: forks spawned early that read the code their lens needs while they wait, and read the written files only after the marker.
