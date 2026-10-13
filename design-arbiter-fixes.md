@@ -2,8 +2,6 @@
 
 `arbiter-fixes` · Task · bug, enhancement, loom, shed, webster, orch
 
-Depends on: [`run-window-bugs`](design-run-window-bugs.md)
-
 Fix three rough edges around the arbiter and the alignment agent: a relaunch refused although the verdict is already in effect, a Webster deviations list that mixes in the batch's own files, and a landing order the alignment agent should settle itself.
 This task builds on the driver and arbiter changes of `go-driver-assistant` once they have landed.
 
