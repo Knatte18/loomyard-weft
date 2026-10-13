@@ -19,12 +19,6 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **reed: overview window first, agents next, shell last**<br>• Window 0 is the run overview for any shed run, each spawned agent gets the next windows, Selvage is the last window named shell; attach shows the most relevant agent | [`reed-window-order`](design-reed-window-order.md) | loom | Plan-Burler-Review | 5h | 3h | reed, loom, shed |
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | At | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **Webster fork prompt: read instruction and pack last**<br>• Move the implementer fork prompt one-turn read instruction and kick-start pack to the end of the prompt | [`webster-pack-last`](design-webster-pack-last.md) | darn | Finalize | 1h | 1h | webster, stencil |
-
 ### Ready
 
 Waits on nothing open; can start now.
@@ -53,7 +47,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Plan does not surface tests that pin a method set a card extends** | [`plan-pinned-tests`](design-plan-pinned-tests.md) | 23h | 23h | loom |
 | 2 | **tokencount under-counts fork output tokens**<br>• tokencount keeps the first transcript line per message id, which in subagent transcripts carries partial output_tokens; fork costs come out low | [`tokencount-fork-output`](design-tokencount-fork-output.md) | 5h | 5h |  |
-| 3 | **A running darn task scope cannot be corrected**<br>• A claimed entry refuses body edits and darn has no decision record, so a mid-run scope correction never reaches the reviewers | [`claimed-scope-edit`](design-claimed-scope-edit.md) | 11m | 7m | board, loom, burler |
+| 3 | **A running darn task scope cannot be corrected**<br>• A claimed entry refuses body edits and darn has no decision record, so a mid-run scope correction never reaches the reviewers | [`claimed-scope-edit`](design-claimed-scope-edit.md) | 12m | 7m | board, loom, burler |
 
 ### Enhancements
 
@@ -141,3 +135,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` | 3d | 34m |  |
 | 3 | **Twill: spawn lens forks before or after writing**<br>• A/B the twill spawn point, Discussion first: forks spawned before writing re-read the output as fresh cache writes, once per fork | [`twill-fork-timing`](design-twill-fork-timing.md) | 5h | 21m | loom, stencil |
 | 4 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | 52m | 34m | stencil |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Webster fork prompt: read instruction and pack last**<br>• Move the implementer fork prompt one-turn read instruction and kick-start pack to the end of the prompt | [`webster-pack-last`](design-webster-pack-last.md) | 1h | 1h | webster, stencil |
