@@ -9,8 +9,8 @@
 - `internal/shuttleengine#TestRun_Wait_StartupWindow`
 
 **Create:**
-- `plan:internal/shuttleengine#turnStartedAfterSessionStart` -> `func turnStartedAfterSessionStart(engine Engine, eventsPath string) bool`
-- `plan:internal/shuttleengine#Run.markStarted` -> `func (run *Run) markStarted()`
+- `internal/shuttleengine#turnStartedAfterSessionStart`
+- `internal/shuttleengine#Run.markStarted`
 
 **Uses:**
 - `internal/shuttleengine#sessionStartRecorded`

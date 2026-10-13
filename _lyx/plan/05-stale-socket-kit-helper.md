@@ -2,7 +2,7 @@
 
 **Create:**
 - `internal/testkit/tmuxkit/stalesocket.go`
-- `plan:internal/testkit/tmuxkit#BindStaleSocket` -> `func BindStaleSocket(t *testing.T, path string)`
+- `internal/testkit/tmuxkit#BindStaleSocket`
 
 **Edit:**
 - `internal/testkit/tmuxkit/tmuxkit.go`

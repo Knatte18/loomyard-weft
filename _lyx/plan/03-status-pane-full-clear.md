@@ -14,9 +14,9 @@
 **Create:**
 - `internal/statuspane/resize_unix.go`
 - `internal/statuspane/resize_windows.go`
-- `plan:internal/statuspane#NotifyResize` -> `func NotifyResize(ctx context.Context) <-chan struct{}`
-- `plan:internal/statuspane#eraseScreen` -> `const eraseScreen = "\x1b[2J"`
-- `plan:internal/statuspane#eraseHistory` -> `const eraseHistory = "\x1b[3J"`
+- `internal/statuspane#NotifyResize`
+- `internal/statuspane#eraseScreen`
+- `internal/statuspane#eraseHistory`
 
 **Delete:**
 - `internal/statuspane#eraseToLineEnd`

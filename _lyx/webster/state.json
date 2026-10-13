@@ -1,13 +1,13 @@
 {
   "runGuid": "4a3f5ff5ac0c108e846887d037bb3396",
-  "planFingerprint": "fbcdaf4ffd89d696696af5352a0877b375bf441401b6160209ac9c45f2652c50",
+  "planFingerprint": "df97a34cfac382c461677bea0757479db5315f260ecf80d7eef9b279e195d69c",
   "planFileHashes": {
     "00-overview.md": "f4b359fa97a4668986c07c7c229381cdb8d5cc65287991037645c9845632c293",
-    "01-skill-load-on-launch-line.md": "3121a8c1d15bb8586ba556a99f765505ba18609c34410dad075e391142d808ff",
-    "02-startup-ready-from-events.md": "0d89ea4d11194f07c84470450045fa8af8e1bd3e30228eb40fe48fa292d22f9c",
-    "03-status-pane-full-clear.md": "037b17af6a78c944317cb87875281a99e2d4693928899f5f9890f3c3888580be",
+    "01-skill-load-on-launch-line.md": "debd940a018159d90670849382ff970a1216b6c6e11d5cccb89a5e89e21ae032",
+    "02-startup-ready-from-events.md": "4f7a512a35499947a030afa99d2a53bd7750e3423cdd7e630c29845c5053d244",
+    "03-status-pane-full-clear.md": "1f5faa42b4e243478ac374feb44a8f3fc232620ce9e8257e4ba513dc51eee183",
     "04-push-retry-race-doc.md": "1073254805e1d6e820834b38c4d65fda7253d876bbb82625e9898a31e967d087",
-    "05-stale-socket-kit-helper.md": "876bbaa3f8260d2f764ff78701d789feed01d1ea4d0e4cfcead617b3b7bd4b59",
+    "05-stale-socket-kit-helper.md": "3b146d34a4492cc0f260e2bc00bf5c8f1490b028a5e925ec604ab9af19d3dd8f",
     "06-loom-fmt-verb.md": "e4538f1f49a37b5bc478dfa5f0d284122db84d973e9076b0a4a6781cc10b59d7",
     "07-worktree-leftover-retry.md": "53692b85ea80c7ebaeb3bbebefe2526ff6268133db90eff623322c158a4ab19f"
   },
@@ -186,7 +186,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "7850b4544d183ca1e6d046b301a596be",
   "masterSessionId": "d35f1241-daf9-4957-9a42-ca383872235a",
   "batches": {
@@ -200,18 +200,39 @@
         "05-stale-socket-kit-helper"
       ],
       "cardHashes": {
-        "01-skill-load-on-launch-line": "3121a8c1d15bb8586ba556a99f765505ba18609c34410dad075e391142d808ff",
-        "02-startup-ready-from-events": "0d89ea4d11194f07c84470450045fa8af8e1bd3e30228eb40fe48fa292d22f9c",
-        "03-status-pane-full-clear": "037b17af6a78c944317cb87875281a99e2d4693928899f5f9890f3c3888580be",
+        "01-skill-load-on-launch-line": "debd940a018159d90670849382ff970a1216b6c6e11d5cccb89a5e89e21ae032",
+        "02-startup-ready-from-events": "4f7a512a35499947a030afa99d2a53bd7750e3423cdd7e630c29845c5053d244",
+        "03-status-pane-full-clear": "1f5faa42b4e243478ac374feb44a8f3fc232620ce9e8257e4ba513dc51eee183",
         "04-push-retry-race-doc": "1073254805e1d6e820834b38c4d65fda7253d876bbb82625e9898a31e967d087",
-        "05-stale-socket-kit-helper": "876bbaa3f8260d2f764ff78701d789feed01d1ea4d0e4cfcead617b3b7bd4b59"
+        "05-stale-socket-kit-helper": "3b146d34a4492cc0f260e2bc00bf5c8f1490b028a5e925ec604ab9af19d3dd8f"
       },
       "startSha": "58534d414c8b9dda2239045fee0e67c2a40ed323",
       "kind": "fork",
       "spawnedAt": "2026-10-13T08:11:20Z",
       "sessionId": "d35f1241-daf9-4957-9a42-ca383872235a",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-skill-load-on-launch-line",
+        "status": "done",
+        "head_sha": "a1b424dfc7edf1c14fd9d849849ebd269565492a",
+        "deviations": [
+          "internal/shuttleengine/claudeengine/command.go",
+          "cmd/lyx/tierpurity_test.go"
+        ]
+      },
+      "cardShas": [
+        "a1b424dfc7edf1c14fd9d849849ebd269565492a"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-window-bugs/d35f1241-daf9-4957-9a42-ca383872235a/subagents/agent-aa6ad65f3abd8f611.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-window-bugs/d35f1241-daf9-4957-9a42-ca383872235a/subagents/agent-aa6ad65f3abd8f611.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-window-bugs/d35f1241-daf9-4957-9a42-ca383872235a/subagents/agent-aa6ad65f3abd8f611.jsonl"
+  ]
 }

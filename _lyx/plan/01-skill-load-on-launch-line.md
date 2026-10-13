@@ -24,9 +24,9 @@
 - `docs/overview.md`
 
 **Create:**
-- `plan:internal/shuttleengine#skillFakeEngine.Prepare` -> `func (e *skillFakeEngine) Prepare(runDir string, spec Spec, cfg Config) (Launch, error)`
-- `plan:internal/shuttleengine#skillReed.AddStrand` -> `func (r *skillReed) AddStrand(spec reedengine.AddSpec) (reedengine.Strand, error)`
-- `plan:internal/shuttleengine#skillReed.playLoad` -> `func (r *skillReed) playLoad(list string) error`
+- `internal/shuttleengine#skillFakeEngine.Prepare`
+- `internal/shuttleengine#skillReed.AddStrand`
+- `internal/shuttleengine#skillReed.playLoad`
 
 **Intent:**
 D2: a spec that names skills launches with the engine's skill-load message as the launch argument, so every launch through `start` carries its first turn and the first load turn is no longer typed.

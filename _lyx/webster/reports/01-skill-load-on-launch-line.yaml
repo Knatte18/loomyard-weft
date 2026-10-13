@@ -1,0 +1,5 @@
+status: OK
+head_sha: a1b424dfc7edf1c14fd9d849849ebd269565492a
+deviations:
+  - internal/shuttleengine/claudeengine/command.go
+  - cmd/lyx/tierpurity_test.go
