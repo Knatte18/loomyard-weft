@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`logging-cleanup`](design-logging-cleanup.md) | loom | Plan-Burler-Fix | 15h | 1h | batten, reed, orch, fabric |
+| 1 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`logging-cleanup`](design-logging-cleanup.md) | loom | Plan-Bouncer | 15h | 1h | batten, reed, orch, fabric |
 | 2 | **Arbiter relaunch, Webster deviations list, alignment landing order** | [`arbiter-fixes`](design-arbiter-fixes.md) | loom | Plan-Write | 18h | 1h | loom, shed, webster, orch |
 
 ### Ready
@@ -67,7 +67,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 14 | **lyx report timing: phase minutes, parent waits and agent spawns from run records**<br>• A mechanical per-run and per-day time report beside lyx report convergence, including stops by who settled them. | [`report-timing`](design-report-timing.md) | 18h | 18h | shed, orch |
 | 15 | **Make shuttle and lyx neutral to the LLM provider**<br>• Engine registry, engine in run.json, no Claude names in the core, usage readers behind the engine | [`llm-agnostic-engine`](design-llm-agnostic-engine.md) | 1h | 1h | shuttle, config, stencil |
 | 16 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 42m | 41m | burler, stencil |
-| 17 | **Twill: spawn lens forks before or after writing**<br>• A/B the twill spawn point, Discussion first: forks spawned before writing re-read the output as fresh cache writes, once per fork | [`twill-fork-timing`](design-twill-fork-timing.md) | 37m | 0m | loom, stencil |
+| 17 | **Twill: spawn lens forks before or after writing**<br>• A/B the twill spawn point, Discussion first: forks spawned before writing re-read the output as fresh cache writes, once per fork | [`twill-fork-timing`](design-twill-fork-timing.md) | 38m | 0m | loom, stencil |
 
 #### Low priority
 
