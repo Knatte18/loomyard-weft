@@ -252,6 +252,13 @@ Rationale: At the hard cap the segment can only be accepted. F1 faults one card'
   - d16-d17-dropped-landing-notice-no-recovery (class design, severity BLOCKING, open in rounds 1, 2, 3, 4)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 4: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/plan/round-4-review.md; fixer report: _lyx/reviews/plan/round-4-fixer-report.md.
+  - decision-read-guard-rows-unreachable (class design, severity BLOCKING, open in rounds 4)
+  - recovery-branches-unreached-by-tests (class consistency, severity MEDIUM, open in rounds 1, 2, 3, 4)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A watchdog whose executable path is replaced retires: it releases the lock, spawns one successor through `SpawnWatchdog` and exits 0. One whose stat fails or whose file is unchanged keeps running.
