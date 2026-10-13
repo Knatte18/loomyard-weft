@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`logging-cleanup`](design-logging-cleanup.md) | loom | Plan-Burler-Fix | 15h | 1h | batten, reed, orch, fabric |
-| 2 | **Arbiter relaunch, Webster deviations list, alignment landing order** | [`arbiter-fixes`](design-arbiter-fixes.md) | loom | Discussion-Bouncer | 18h | 1h | loom, shed, webster, orch |
+| 2 | **Arbiter relaunch, Webster deviations list, alignment landing order** | [`arbiter-fixes`](design-arbiter-fixes.md) | loom | Discussion-Burler-Review | 18h | 1h | loom, shed, webster, orch |
 
 ### Ready
 
@@ -36,11 +36,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-ftb-1`](design-twb-ftb-1.md) | 15m | 15m |  |
-| 2 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-fta-1`](design-twb-fta-1.md) | 15m | 15m |  |
-| 3 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-ftb-2`](design-twb-ftb-2.md) | 3m | 3m |  |
-| 4 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-ftb-3`](design-twb-ftb-3.md) | 3m | 3m |  |
-| 5 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-fta-2`](design-twb-fta-2.md) | 3m | 3m |  |
+| 1 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-ftb-1`](design-twb-ftb-1.md) | 16m | 16m |  |
+| 2 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-fta-1`](design-twb-fta-1.md) | 16m | 16m |  |
+| 3 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-ftb-2`](design-twb-ftb-2.md) | 4m | 4m |  |
+| 4 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-ftb-3`](design-twb-ftb-3.md) | 4m | 4m |  |
+| 5 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-fta-2`](design-twb-fta-2.md) | 4m | 4m |  |
 | 6 | **Plan does not surface tests that pin a method set a card extends** | [`plan-pinned-tests`](design-plan-pinned-tests.md) | 18h | 18h | loom |
 
 ### Enhancements
@@ -69,8 +69,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 13 | **Arbiter spawns only on stops that need it**<br>• Five arbiter spawns on 2026-10-12, none needed: narrow the triggers to the hard review cap, circling, and blocked or error stops with no computed way forward. | [`arbiter-when`](design-arbiter-when.md) | 18h | 18h | loom, shed |
 | 14 | **lyx report timing: phase minutes, parent waits and agent spawns from run records**<br>• A mechanical per-run and per-day time report beside lyx report convergence, including stops by who settled them. | [`report-timing`](design-report-timing.md) | 18h | 18h | shed, orch |
 | 15 | **Make shuttle and lyx neutral to the LLM provider**<br>• Engine registry, engine in run.json, no Claude names in the core, usage readers behind the engine | [`llm-agnostic-engine`](design-llm-agnostic-engine.md) | 1h | 1h | shuttle, config, stencil |
-| 16 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 27m | 26m | burler, stencil |
-| 17 | **Twill: spawn lens forks before or after writing**<br>• A/B the twill spawn point, Discussion first: forks spawned before writing re-read the output as fresh cache writes, once per fork | [`twill-fork-timing`](design-twill-fork-timing.md) | 22m | 19m | loom, stencil |
+| 16 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 28m | 27m | burler, stencil |
+| 17 | **Twill: spawn lens forks before or after writing**<br>• A/B the twill spawn point, Discussion first: forks spawned before writing re-read the output as fresh cache writes, once per fork | [`twill-fork-timing`](design-twill-fork-timing.md) | 23m | 20m | loom, stencil |
 
 #### Low priority
 
@@ -88,7 +88,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 2d | 19h | webster |
-| 2 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) | 22h | 14h | orch, batten, shed, loom |
+| 2 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) | 22h | 15h | orch, batten, shed, loom |
 
 #### Normal priority
 
