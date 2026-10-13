@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  The diff implements the board entry's four sections and decisions D1 to D18 as recorded.
+  The Merge-Review carry-over (re-step and verify-retry Warn on every poll) is fixed by 22aa94bfc and 25bcbc9b0.
+  The four shortened PATTERN lines are the plan's planned byte-budget offset, not scope creep.
+  The only peer, shuttle-gate-early-done, changes a different shuttle behaviour (the turn-start hold release) with no conflicting decision.
+  This run lands first (row 22 against 9).
+question: ""
+superseded: []
