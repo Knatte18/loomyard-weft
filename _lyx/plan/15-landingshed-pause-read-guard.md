@@ -1,7 +1,7 @@
 # Card 15 — The parent-lock wait's pause-flag read failure logs once per episode
 
 **Create:**
-- `plan:internal/landingshed#TestParentGuard_PauseReadFailureLogsOncePerEpisode` -> `func TestParentGuard_PauseReadFailureLogsOncePerEpisode(t *testing.T)`
+- `internal/landingshed#TestParentGuard_PauseReadFailureLogsOncePerEpisode`
 
 **Edit:**
 - `internal/landingshed#parentGuard.pauseRequested` -> `func (g parentGuard) pauseRequested(failures *logger.Episode) bool`

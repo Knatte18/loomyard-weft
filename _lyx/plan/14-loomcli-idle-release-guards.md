@@ -1,7 +1,7 @@
 # Card 14 — The loop's idle-release wake hook logs a repeating read failure once, and a release at Info
 
 **Create:**
-- `plan:internal/loomcli#TestIdleReleaseLogLevels` -> `func TestIdleReleaseLogLevels(t *testing.T)`
+- `internal/loomcli#TestIdleReleaseLogLevels`
 
 **Edit:**
 - `internal/loomcli#ownedLockBranches` -> `func ownedLockBranches(locks *parentlock.Store, self parentlock.Owner) ([]string, error)`

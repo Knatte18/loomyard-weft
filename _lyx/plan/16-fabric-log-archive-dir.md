@@ -1,7 +1,7 @@
 # Card 16 — The hub log archive root
 
 **Create:**
-- `plan:internal/fabricengine#LogArchiveDir` -> `func LogArchiveDir(hub string) string`
+- `internal/fabricengine#LogArchiveDir`
 
 **Edit:**
 - `internal/fabricengine_test#TestHubScratchAndLogsDir`

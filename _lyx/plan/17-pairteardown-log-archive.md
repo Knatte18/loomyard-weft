@@ -2,14 +2,14 @@
 
 **Create:**
 - `internal/pairteardown/archive.go`
-- `plan:internal/pairteardown#logArchiveRetention` -> `const logArchiveRetention = 30 * 24 * time.Hour`
-- `plan:internal/pairteardown#logArchive` -> `type logArchive struct`
-- `plan:internal/pairteardown#logArchive.write` -> `func (a logArchive) write(slug string, sources []archiveSource) (entry string, files int, err error)`
-- `plan:internal/pairteardown#logArchive.prune` -> `func (a logArchive) prune()`
-- `plan:internal/pairteardown#archiveSource` -> `type archiveSource struct`
-- `plan:internal/pairteardown#Teardown.archivePairLogs` -> `func (t *Teardown) archivePairLogs(slug string)`
+- `internal/pairteardown#logArchiveRetention`
+- `internal/pairteardown#logArchive`
+- `internal/pairteardown#logArchive.write`
+- `internal/pairteardown#logArchive.prune`
+- `internal/pairteardown#archiveSource`
+- `internal/pairteardown#Teardown.archivePairLogs`
 - `internal/pairteardown/archive_test.go`
-- `plan:internal/pairteardown#TestLogArchive` -> `func TestLogArchive(t *testing.T)`
+- `internal/pairteardown#TestLogArchive`
 
 **Edit:**
 - `internal/pairteardown#Teardown`
@@ -22,7 +22,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/fabricengine#LogArchiveDir`
+- `internal/fabricengine#LogArchiveDir`
 - `internal/logger#LogsDirAt`
 - `internal/verifytree#Dir`
 - `internal/verifytree#IsLogPath`
