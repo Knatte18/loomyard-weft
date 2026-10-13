@@ -264,6 +264,13 @@ Rationale: The run further along lands first. judge-cap-call reached PR-Gate whi
   - resume-second-seed-driver-reader-no-pattern-edit (class consistency, severity BLOCKING, open in rounds 2)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - batten-build-check-reresolves-executable (class design, severity MEDIUM, open in rounds 1)
+  - handover-successor-spawn-reresolves-executable (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - Seeding: `run_settings` `loom.driver_kind: go` seeds the Go driver; no setting seeds the LLM driver; a typed `--child-driver` wins over both; a typed `--child-driver` against an adopted seed that records none is refused with its way forward; an invalid value routes Seed-Child to Stuck; a standalone `lyx loom start` honours the key; changing `run_settings` after seeding leaves the recorded driver unchanged.
