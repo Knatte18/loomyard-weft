@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-13 09:15 UTC; every age below is as of then.
+Rendered 2026-10-13 09:16 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`logging-cleanup`](design-logging-cleanup.md) | loom | Plan-Burler-Fix | 15h | 1h | batten, reed, orch, fabric |
-| 2 | **Arbiter relaunch, Webster deviations list, alignment landing order** | [`arbiter-fixes`](design-arbiter-fixes.md) | loom | Discussion-Burler-Fix | 18h | 1h | loom, shed, webster, orch |
+| 2 | **Arbiter relaunch, Webster deviations list, alignment landing order** | [`arbiter-fixes`](design-arbiter-fixes.md) | loom | Discussion-Bouncer | 18h | 1h | loom, shed, webster, orch |
 
 ### Ready
 
@@ -42,7 +42,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 4 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-ftb-3`](design-twb-ftb-3.md) | 12m | 12m |  |
 | 5 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-fta-2`](design-twb-fta-2.md) | 12m | 12m |  |
 | 6 | **Plan does not surface tests that pin a method set a card extends** | [`plan-pinned-tests`](design-plan-pinned-tests.md) | 18h | 18h | loom |
-| 7 | **reed: strand windows first, Selvage last**<br>• Attach lands on Selvage while the agent works in another window, and Alt+Up/Down cannot reach own-window strands; strand windows first, Selvage last | [`reed-window-order`](design-reed-window-order.md) | 7m | 3m | reed |
+| 7 | **reed: strand windows first, Selvage last**<br>• Attach lands on Selvage while the agent works in another window, and Alt+Up/Down cannot reach own-window strands; strand windows first, Selvage last | [`reed-window-order`](design-reed-window-order.md) | 8m | 4m | reed |
 
 ### Enhancements
 
