@@ -1,0 +1,259 @@
+{
+  "runGuid": "3f9ec9976f7a1b53d09bb3726ace571c",
+  "planFingerprint": "b7285eb71cfc22c1dbbf931904bf3d9dfbc73bf03b7567e013aaa8648593b4ca",
+  "planFileHashes": {
+    "00-overview.md": "e3bc53159537370d243f1d81d0934add8e00f313c71ec640af1041ea6e96b110",
+    "01-ledger-fix-tag.md": "d529e33b77306a3f5b2d56239f01ed63bd94d2b59a3669c03c7ff23b78874368",
+    "02-hard-cap-cause.md": "056891fea5209d621abce40bd7ede0067a29aa37c6af4ebb7aa3bf898c8bb9ad",
+    "03-bouncer-hard-cap.md": "eff846cfc070137140b6d16bc398556977964590129f367915686bef187a93de",
+    "04-env-hard-cap.md": "d855bc030594988ad27e4145629fc0060f4214b11643c2c701c284c111048ee7",
+    "05-soft-cap-rule.md": "ed082ce50710d466f899218a703824b0cb49797cd646e6deb54ed7da1c79cbfc",
+    "06-loom-hard-cap-config.md": "5a6a4d4397843a50b165affd35393919fe118573b50c78e373d9d8279af4f310",
+    "07-darn-hard-cap-config.md": "2edd3fd3c49a3af6d38b0693502fb9876db3536e1de37daa81631db86b9f80b5",
+    "08-circling-continue-hard-cap.md": "aef4bee24072f643da261b4b596d9a7a9119a83ecd8e713e8b9e3c896e1c6cb9",
+    "09-arbiter-orch-stencils.md": "4156a62f0510236bb4e76f7989665fc706d995f2202108425c3a261112e84e0d"
+  },
+  "planOverviewFrameHash": "a138815585c37942cf92639d292382734c17eba090a20341ac8ff9aa05e55241",
+  "partition": [
+    {
+      "cards": [
+        "01-ledger-fix-tag",
+        "02-hard-cap-cause",
+        "03-bouncer-hard-cap",
+        "04-env-hard-cap",
+        "05-soft-cap-rule"
+      ],
+      "profile": "cautious",
+      "estimate": 283018,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54340,
+        "read_union": 68112,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 420,
+            "reads": {
+              "file:contracts/stencils/bouncer/bouncer-template-judge.md": 1932,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/bouncer": 2000,
+              "package:internal/shedadapters": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/bouncer": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 56,
+            "written": 17220
+          },
+          {
+            "card": 2,
+            "card_text": 468,
+            "reads": {
+              "package:internal/shedadapters": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 82,
+            "written": 25068
+          },
+          {
+            "card": 3,
+            "card_text": 1284,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5208,
+              "file:contracts/stencils/bouncer/bouncer-template-escalation.md": 480,
+              "file:internal/shedadapters/doc.go": 4056,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/bouncer": 2000,
+              "package:internal/shedadapters": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/bouncer": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 135,
+            "written": 41784
+          },
+          {
+            "card": 4,
+            "card_text": 312,
+            "reads": {
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 36.5,
+            "written": 11262
+          },
+          {
+            "card": 5,
+            "card_text": 1932,
+            "reads": {
+              "file:contracts/recipes/loom-recipe.yaml": 7092,
+              "file:docs/overview.md": 8928,
+              "file:internal/shedadapters/doc.go": 4056,
+              "package:contracts/recipes": 2000,
+              "package:docs": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 211,
+            "written": 65232
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-loom-hard-cap-config",
+        "07-darn-hard-cap-config",
+        "08-circling-continue-hard-cap",
+        "09-arbiter-orch-stencils"
+      ],
+      "profile": "cautious",
+      "estimate": 275218,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61340,
+        "read_union": 69092,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 1200,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5208,
+              "file:docs/overview.md": 8928,
+              "file:internal/loomengine/template.yaml": 624,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 183,
+            "written": 56100
+          },
+          {
+            "card": 7,
+            "card_text": 600,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5208,
+              "file:docs/overview.md": 8928,
+              "file:internal/darnengine/doc.go": 180,
+              "file:internal/darnengine/template.yaml": 60,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/darnengine": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/darnengine": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 101,
+            "written": 30900
+          },
+          {
+            "card": 8,
+            "card_text": 1104,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1776,
+              "file:contracts/specs/refusal-spec.md": 5208,
+              "file:internal/loomcli/doc.go": 1680,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedadapters": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 165.5,
+            "written": 50754
+          },
+          {
+            "card": 9,
+            "card_text": 432,
+            "reads": {
+              "file:contracts/stencils/loom/loom-template-arbiter.md": 900,
+              "file:contracts/stencils/orch/orch-template-role.md": 2400,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils/orch": 2000
+            },
+            "messages": 22,
+            "written": 7032
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "78cacf6040c0085f7ce19103d6cf830c",
+  "masterSessionId": "5e54c777-69bc-47d4-9464-ab6f4f5874bb",
+  "batches": {
+    "1": {
+      "slug": "ledger-fix-tag",
+      "cards": [
+        "01-ledger-fix-tag",
+        "02-hard-cap-cause",
+        "03-bouncer-hard-cap",
+        "04-env-hard-cap",
+        "05-soft-cap-rule"
+      ],
+      "cardHashes": {
+        "01-ledger-fix-tag": "d529e33b77306a3f5b2d56239f01ed63bd94d2b59a3669c03c7ff23b78874368",
+        "02-hard-cap-cause": "056891fea5209d621abce40bd7ede0067a29aa37c6af4ebb7aa3bf898c8bb9ad",
+        "03-bouncer-hard-cap": "eff846cfc070137140b6d16bc398556977964590129f367915686bef187a93de",
+        "04-env-hard-cap": "d855bc030594988ad27e4145629fc0060f4214b11643c2c701c284c111048ee7",
+        "05-soft-cap-rule": "ed082ce50710d466f899218a703824b0cb49797cd646e6deb54ed7da1c79cbfc"
+      },
+      "startSha": "8bc7491c23d83df4f920d7d7477a65de267fe5b1",
+      "kind": "fork",
+      "spawnedAt": "2026-10-13T06:51:13Z",
+      "sessionId": "5e54c777-69bc-47d4-9464-ab6f4f5874bb",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
