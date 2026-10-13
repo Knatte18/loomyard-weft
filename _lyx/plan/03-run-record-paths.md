@@ -8,7 +8,6 @@
 - `plan:internal/shedrun#TacklerMarker` -> `func TacklerMarker(l *lyxcwd.Location, runID string) string`
 - `plan:internal/shedrun#SettleRecordsFile` -> `func SettleRecordsFile(frictionDir string) string`
 - `plan:internal/loomengine#TacklerRole` -> `const TacklerRole = "tackler"`
-- `plan:internal/loomengine#IsTacklerStrand` -> `func IsTacklerStrand(name string) bool`
 - `plan:internal/loomengine#TacklerVerdictResume` -> `const TacklerVerdictResume = "resume"`
 - `plan:internal/loomengine#TacklerVerdictHandBack` -> `const TacklerVerdictHandBack = "hand-back"`
 - `plan:internal/loomengine#TacklerVerdictEscalate` -> `const TacklerVerdictEscalate = "escalate"`
@@ -72,7 +71,7 @@ The records the Go driver and the tackler keep, declared where `PATTERN-shed-run
 `internal/shedrun/doc.go` names the five paths and the settle file.
 
 A new file `internal/loomengine/tackler.go` declares the tackler's records the way `arbiter.go` declares the arbiter's, reusing `writeArbiterJSON` and `readArbiterJSON`:
-- `TacklerRole = "tackler"` and `IsTacklerStrand(name string) bool`;
+- `TacklerRole = "tackler"`;
 - the verdict words `TacklerVerdictResume`, `TacklerVerdictHandBack` (`hand-back`) and `TacklerVerdictEscalate`;
 - `WorktreeSnapshot` (`Head`, `Branch`, `Dirty map[string]string` from path to content hash) and its `Equal` method;
 - `TacklerAttempt` (`Number`, `StopKey ArbiterStopKey`, `PauseBefore`, `PauseAfter`, `Snapshot WorktreeSnapshot`, `SpawnedAt`, `Deadline`, `EnvelopePath`, `ReportPath`, `Dir`, `StrandGUID`) with `WriteTacklerAttempt`, `ReadTacklerAttempt` and `ListTacklerAttempts`, the last sorted by number and counting from disk;
@@ -96,7 +95,7 @@ The settle file sits under the loom durable directory, which the pathspec alread
 Tests:
 - `TestPathConstructors` gains rows for `DriverLock`, `TacklerDir`, `TacklerRel`, `TacklerAttemptDir` and `TacklerMarker`, and `SettleRecordsFile` over a told directory.
 - `TestStatusCommitPathspec` gains a row with a file under the tackler directory, expecting `TacklerRel` in the pathspec, and keeps an empty tackler directory out.
-- `tackler_test.go` holds `TestTacklerRecords`: `WorktreeSnapshot.Equal` rows, where an equal snapshot is equal and a moved HEAD, a commit, a switched branch, a changed dirty-path set and an edited already-dirty path each are not (D7's tamper cases); an attempt, envelope and marker round-trip, `ListTacklerAttempts` orders and counts, the applied mark, `IsTacklerStrand` on a plain and numbered tackler name and on an arbiter name, and `ReadTacklerVerdict` on a valid file, an absent file, an unknown verdict word and undecodable YAML.
+- `tackler_test.go` holds `TestTacklerRecords`: `WorktreeSnapshot.Equal` rows, where an equal snapshot is equal and a moved HEAD, a commit, a switched branch, a changed dirty-path set and an edited already-dirty path each are not (D7's tamper cases); an attempt, envelope and marker round-trip, `ListTacklerAttempts` orders and counts, the applied mark, and `ReadTacklerVerdict` on a valid file, an absent file, an unknown verdict word and undecodable YAML.
 - `settle_test.go` holds `TestSettleRecords`: two appends read back in order, an absent file reads nil, an unknown key is kept readable, a torn last line is skipped, and `GoVerifyRetrySpent` is true only with a `verify-retry` record.
 `test-budget.yaml`'s `internal/loomengine` row rises by two.
 

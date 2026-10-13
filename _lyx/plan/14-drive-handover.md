@@ -20,7 +20,7 @@ The code lands in `internal/loomcli/drive.go`.
 `goDriverDeps` gains five seams:
 - `OnDiskBuild() (buildvcs.Identity, error)`: `buildvcs.OfFile` over the `lyx` executable path resolved once at drive start;
 - `BuildChanged(onDisk buildvcs.Identity) bool`: `shedverbs.LastStepBuildChanged` over the run's steps directory;
-- `DirtyPaths() ([]string, error)`: the task pair's tracked uncommitted paths outside the run's own records directories;
+- `DirtyPaths() ([]string, error)`: the task pair's uncommitted or untracked paths outside the run's own records directories;
 - `ReleaseLock() error`: releases the driver lock;
 - `SpawnSuccessor() error`: starts a detached `lyx loom drive`.
 `facts` reads `OnDiskBuild` and `BuildChanged` only for a `binaryEligible` stop, and sets `HandedOver` when the settle records hold a `hand-over` record for the stop key whose `Build` is the on-disk build's label.

@@ -63,6 +63,7 @@ This lands before batten writes the longer marker, so no driver ever misreads it
 With no orch strand recorded, it logs the line and queues nothing, and the report alone carries it.
 It then writes the report at `ReportPath`, a fresh `driverReportPath`, creating its directory, and calls `commitAndPark`.
 It returns a report-write failure; a commit failure is logged, and the park marker is still written, as `--park` does.
+For a hand-back describing a `friction: failed` done, `handBackRun` writes the report at `ReportPath`, sends the notice through `Notify` under the `OrchRecorded` rule and records the outcome line, but calls no `commitAndPark`, so a finished run is never parked.
 Releasing the driver lock and exiting are the caller's (card 12).
 
 Tests:
@@ -79,7 +80,8 @@ Tests:
   - the report holds the run-id, reason, rules, attempts, question and directories;
   - a failed send and a no-orch-strand line each appear in the report, and no orch strand queues nothing;
   - the commit runs and the park marker holds the report path;
-  - a failing commit still writes the marker.
+  - a failing commit still writes the marker;
+  - a `friction: failed` done writes the report with its send line and writes no park marker.
 `TestCommitRecordsVerb_*` keep pinning the commit envelope that `commitAndPark` wraps.
 `test-budget.yaml`'s `internal/loomcli` row rises by two and its `internal/shedrun` row by one.
 

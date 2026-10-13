@@ -33,8 +33,8 @@ The code lands in `internal/loomcli/drive.go`.
 In `run`, the tackler action calls `tackle`, the arbiter action and a returned tackler `resume` call `arbitrate`, and the loop goes on with the stop they return.
 
 `tackle`:
-1. Holds any pause first, writes a `spawn` settle record with settler `tackler`, and writes the stop report so far at the attempt's report path for the tackler to read.
-2. Calls `Tackler`. An `errTacklerUnavailable` hands back, the reason in the report; `errTacklerResumeReturned` goes to `arbitrate`.
+1. Holds any pause first and writes the stop report so far at the attempt's report path for the tackler to read.
+2. Calls `Tackler`. Once it returns, a `spawn` settle record with settler `tackler` is written only when the call started a fresh attempt, that is, when the returned attempt number is not among the attempts `OpenAttempts` or `ListTacklerAttempts` listed before the call; a refusal, a reused verdict or an attached attempt writes none. An `errTacklerUnavailable` hands back, the reason in the report; `errTacklerResumeReturned` goes to `arbitrate`.
 3. With a verdict in hand, it runs `recheck` (D12) before anything else:
    - a changed stop key is a moved run: the verdict is discarded, the stop report gets a line noting the change, and the fresh state is acted on as a new stop, never as `tampered`, since the records cannot say which actor moved the run;
    - with the key unchanged, an attempt snapshot that is not `Equal` to `Snapshot()` reads as `hand-back` with cause `tampered`.
@@ -45,7 +45,8 @@ In `run`, the tackler action calls `tackle`, the arbiter action and a returned t
 Bound: a wrong `resume` or `goto` costs one re-step, or one move to the current row or the halting entry's routed-from row, per attempt (card 7's check); `tackler_max_spawns` caps attempts per run, and a returning stop key goes to the arbiter.
 
 `arbitrate`:
-1. Holds any pause, writes a `spawn` record with settler `arbiter`, and calls `Arbiter` with the saved envelope, the report and the brief.
+1. Holds any pause and calls `Arbiter` with the saved envelope, the report and the brief.
+   Once it returns, a `spawn` record with settler `arbiter` is written only when the call started a fresh attempt, the same test as the tackler's over the arbiter attempts listed before the call; a refusal, a reused verdict or an attached attempt writes none.
 2. A refused spawn (not eligible, off, budget spent, an applied resume left the key unchanged) hands back, quoting the refusal, and at an `awaiting` stop relays the `parent_notice` (D3, D8).
 3. After the verdict, it runs `recheck` like the tackler path.
 4. A `resume` writes a `restep` record with settler `arbiter` and steps with the attempt number, so `shedverbs.RunUntilStop` consumes it through loom's `ConsumeAttempt` hook.
@@ -62,23 +63,24 @@ The arbiter spawns only at the three D6 stops: an awaiting stop with a pending e
 Bound: the arbiter's own reuse is the shared path's, unchanged, so a parent-resumed stop that recurs at the same key gets the arbiter's earlier verdict, as the LLM driver's re-run does today.
 
 Tests are rows of `TestGoDriver_Settle`, with fake `Tackler`, `ConsumeTackler`, `Arbiter`, `Snapshot`, `OpenAttempts` and `AttemptSnapshot` columns.
-Every agent row asserts the `spawn` settle record with its settler.
+Every agent row that starts a fresh attempt asserts the `spawn` settle record with its settler.
 - Tackler outcomes:
   - a transient stop calls `Tackler` once, and its `resume` is consumed then re-stepped with a `restep` record of settler `tackler`;
   - a third `reinvoke` failure, and a `blocked` stop whose verify record does not match, each reach `Tackler`;
   - `hand-back` parks with the tackler's question in the report;
   - `escalate` calls `Arbiter` with the case brief path, and the arbiter's `resume` steps with its attempt number;
   - `escalate` at an `unseeded` error hands back when `Arbiter` refuses it as not eligible.
-- Budgets: `tackler_max_spawns: 0` (`errTacklerUnavailable`) and `arbiter_max_spawns: 0` (an off refusal) each hand back with no agent started.
+- Budgets: `tackler_max_spawns: 0` (`errTacklerUnavailable`) and `arbiter_max_spawns: 0` (an off refusal) each hand back with no agent started and no `spawn` record.
   An off refusal at an awaiting stop carrying a `parent_notice` still relays it.
 - Moves and tampering:
   - a `resume` whose consume is refused as moved is acted on as a new stop;
   - an orch goto during the tackler wait (a re-read status with a goto entry) discards the verdict, writes the report line naming the change, and re-steps, never reading `tampered`;
   - with the stop key unchanged and the snapshot changed, the hand-back cause is `tampered`;
-  - a stop key returning after an applied tackler `resume` goes to `Arbiter`.
+  - a stop key returning after an applied tackler `resume` goes to `Arbiter`;
+  - a re-read status moved to an awaiting stop with a pending escalation calls `Arbiter` with a readable envelope path.
 - Restart:
-  - a halted run with an open tackler attempt calls `Tackler` before any `Step` (the reuse itself is `TestTacklerCall_Rerun`'s);
-  - one with an open, applied tackler attempt goes to `Arbiter` and never calls `ConsumeTackler`;
+  - a halted run with an open tackler attempt calls `Tackler` before any `Step` and writes no `spawn` record for the reused attempt (the reuse itself is `TestTacklerCall_Rerun`'s);
+  - one with an open, applied tackler attempt goes to `Arbiter` and never calls `ConsumeTackler`, writing no `spawn` record for a reused arbiter attempt;
   - one whose attempt a later `hand-back` record closed calls `Step` first and `Tackler` only at the next stop.
 - Awaiting escalations: an awaiting stop with a pending escalation calls `Arbiter`, and a `hand-on` parks with the `parent_notice` relayed after the arbiter outcome.
 - Pauses: a pause covering the slug starts no tackler and no arbiter until `PauseHold` returns.

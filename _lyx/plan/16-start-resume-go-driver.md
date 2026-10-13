@@ -20,6 +20,7 @@
 - `internal/loomcli/doc.go`
 - `docs/overview.md`
 - `pattern/PATTERN-driver-choice-single-site.md`
+- `PATTERN.md`
 - `contracts/specs/refusal-spec.md`
 - `cmd/lyx/testdata/test-budget.yaml`
 
@@ -57,7 +58,10 @@ Batten's awaiting arm, which spawns a decided child through `lyx loom start`, th
 Bound: the new spawn needs a halted run, a go seed, no strand, both locks free and no unfinished merge, and the driver it spawns refuses to stack on a held driver lock.
 
 The seed read in resume is a bootstrap verb's read (`PATTERN-driver-choice-single-site`).
-The background says the recorded driver is read in loom's bootstrap verbs `start` and `resume`.
+The invariant's text widens to admit it, as the decision record's first Constraint states:
+- `pattern/PATTERN-driver-choice-single-site.md`'s opening sentence says loom's recorded seed driver is read in its bootstrap verbs `start` and `resume` and in `lyx loom drive`'s own package, each branch selecting only the driving surface;
+- `PATTERN.md`'s `PATTERN-driver-choice-single-site` line changes "once per recipe, in its bootstrap verb" to "in its bootstrap verbs (loom's `start` and `resume`)", keeping the rest of the line.
+
 The tripwire `TestDriverChoiceSingleSiteInvariant_OnlyLoomcliReadsTheSeedDriverField` already admits `internal/loomcli`.
 
 Docs:
@@ -91,4 +95,4 @@ Tests:
   The table's no-spawn assertion holds on every other row.
 `test-budget.yaml`'s `internal/loomcli` row rises by one.
 
-**ImpactSummary:** start's go arm now spawns `lyx loom drive` and waits on the driver lock, resume gains one spawn branch for go-seeded halted runs, and the go-seeded tmux smoke tests follow; llm-seeded runs and every other branch are unchanged.
+**ImpactSummary:** start's go arm now spawns `lyx loom drive` and waits on the driver lock, resume gains one spawn branch for go-seeded halted runs, the go-seeded tmux smoke tests follow, and `PATTERN-driver-choice-single-site`'s text names resume as a reader; llm-seeded runs and every other branch are unchanged.

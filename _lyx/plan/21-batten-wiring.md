@@ -4,6 +4,7 @@
 - `internal/battencli#battenCLI.wire`
 - `internal/battencli#markBattenWatched` -> `func markBattenWatched(prime, taskLocation *lyxcwd.Location, scratchDir, producer string) (bool, error)`
 - `internal/battencli#TestArbiterInFlightFrom`
+- `internal/battencli#stepMarkWatched_HoldsTheMarkerOnlyWhileItsNoticesReachTheDriversParent`
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
@@ -33,7 +34,7 @@ In `battenCLI.wire`'s `InnerRun` deps, each seam is resolved lazily through `loc
 - `GoVerifyRetrySpent`: `loomengine.GoVerifyRetrySpent` over `loomengine.ReadSettleRecords(shedrun.SettleRecordsFile(loomengine.LoomFrictionDir(taskLocation)))`.
 - `ChildBuildChanged`: `buildvcs.OfFile` of `os.Executable()`, returning its `Label()` with `shedverbs.LastStepBuildChanged(shedrun.StepsDir(taskLocation, shedrun.SelfRunID), onDisk)`.
   An unreadable on-disk build is returned as an error, which card 20's re-step logs and skips.
-- `ChildDirtyPaths`: `fabricengine.Open(taskLocation)`'s `DirtyPaths` through `loomengine.PathsOutsideRunRecords`, the filter the Go driver's hand-over uses.
+- `ChildDirtyPaths`: `fabricengine.Open(taskLocation)`'s `Status`, which lists tracked-modified, staged and untracked paths per side, each entry joined to `taskLocation.WorktreePath()`, through `loomengine.PathsOutsideRunRecords`, the read and filter the Go driver's hand-over uses (card 15).
 
 `markBattenWatched` takes the batten scratch directory and the Run-Shed row's name, decides `watched` through `noticesReachDriversParent` as today, and calls `syncWatchedMarker` with `shedrun.BattenWatchedContent(os.Getpid(), scratchDir, producer)`.
 A Go driver can then read batten's publish-retry marker through `battenshed.PublishRetrySpent` even after that batten died (D4).
@@ -51,6 +52,7 @@ Tests in `wire_test.go`:
   - watched writes the given content byte for byte (its format is `TestBattenWatchedContent`'s);
   - identical content leaves the file's modification time;
   - unwatched removes the marker, and unwatched over an absent marker succeeds.
+- `stepMarkWatched_HoldsTheMarkerOnlyWhileItsNoticesReachTheDriversParent` in `lifecycle_integration_test.go`: its held rows expect `shedrun.BattenWatchedContent(os.Getpid(), BattenDir(h.Location, slug), battenrecipe.NameRunShed)` in place of the pid line `strconv.Itoa(os.Getpid()) + "\n"`, and the file drops its now unused `strconv` import.
 The other seams are thin closures over functions with their own tests (`runLockHeld`, `ReadSettleRecords`, `OfFile`, `LastStepBuildChanged`, `PathsOutsideRunRecords`), and the tables of cards 19 and 20 pin their consumers.
 `test-budget.yaml`'s `internal/battencli` row rises by one.
 

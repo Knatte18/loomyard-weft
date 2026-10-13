@@ -22,7 +22,7 @@ A standalone go-driven run with no batten has no such watch (A7).
 
 `InnerRunDeps` gains two seams, each resolved on Call:
 - `ChildBuildChanged func() (build string, changed bool, err error)`: the label of the `lyx` on disk and whether it differs from the child's last step's recorded build;
-- `ChildDirtyPaths func() ([]string, error)`: the task pair's tracked uncommitted paths outside the run's records directories.
+- `ChildDirtyPaths func() ([]string, error)`: the task pair's uncommitted or untracked paths outside the run's records directories.
 A nil `ChildBuildChanged` switches the re-step off.
 
 `haltedStep` calls `binaryRestep` after the publish-retry step and the revive.
@@ -34,9 +34,10 @@ A nil `ChildBuildChanged` switches the re-step off.
 - `ChildBuildChanged` reports a changed build;
 - `ChildDirtyPaths` reports none, the same clean-tree check the Go driver's hand-over makes;
 - the re-step marker `binaryRestepFile(scratchDir, name)`, beside the publish-retry marker, does not already name this halt's stop key and this build.
-It then writes the marker (stop key and build label) before calling `Spawn`, which runs the child's `lyx loom start`, whose go arm spawns `lyx loom drive`.
+It then calls `Spawn`, which runs the child's `lyx loom start`, whose go arm spawns `lyx loom drive`, and writes the marker (stop key and build label) only after `Spawn` returns nil.
 That is once per halt episode and build, surviving a batten restart.
-A refused spawn (`ErrChildNotParked`, `ErrChildDriverBusy`) or a dirty tree is logged and retried at the next due check, never failing the row.
+A refused spawn (`ErrChildNotParked`, `ErrChildDriverBusy`) writes no marker; it, or a dirty tree, is logged and retried at the next due check, never failing the row.
+A batten crash between a spawn and the marker write is bounded by start's driver-lock check, which spawns no second driver.
 A pause covering the slug holds it through `runArm`, as every halted-arm action is.
 
 The check reads a build and a dirty-path list, so it spawns a process.
@@ -50,8 +51,9 @@ Each Call ends through the scripted statuses: after the checks a row needs, `Rea
 - a driverless blocked child with a changed build and a clean tree spawns once and writes the marker, and a second check in the same episode spawns nothing;
 - a fresh producer over the same scratch directory, as after a batten restart, spawns nothing for the same stop key and build;
 - a newer build label spawns again;
+- a `Spawn` refusing with `ErrChildNotParked` writes no marker, and the next due check spawns again and then writes the marker;
 - a `failed` child qualifies the same way, and a `paused` one does not;
-- a dead or live driver strand, a held run lock, a held driver lock, a publish retry taking the halt, a dirty tree, and an unchanged build each spawn nothing;
+- a dead or live driver strand, a held run lock, a held driver lock, a publish retry taking the halt, a dirty tree, a tree whose only change is a new untracked file, and an unchanged build each spawn nothing;
 - with nothing changing, the build seam is read at `NoticeProbe`, then at twice it, up to the ceiling.
 `test-budget.yaml`'s `internal/battenshed` row rises by one.
 

@@ -53,13 +53,14 @@ A new file `internal/loomcli/drive.go` holds it; the tackler, the arbiter and th
    It reads `Watch`; `VerifyRetrySpent` is `loomengine.GoVerifyRetrySpent` over the settle records, or `BattenRetrySpent` when the watch names a prime, read whether or not that batten is alive.
    It also counts `RepairCount` from the settle records.
 3. `decideDrive`.
-4. Before carrying out any action but `done`, `recheck` re-reads the status (D12):
+4. Before carrying out any action but `done` and the busy exit, `recheck` re-reads the status (D12):
    - a `running` status, or a run lock another process holds, writes a `running-exit` settle record and exits;
    - a stop key that differs from the stop's is a moved run: a status whose last history entry is `shedengine.OutcomeGoto` is re-stepped, and any other moved status is decided afresh through `stopFromStatus`, each writing a `moved` record;
+   - a moved status decided through `stopFromStatus` is saved through `SaveEnvelope` as a synthesized envelope carrying `state`, an empty `reason` and a `loop` object with `current_producer` and `history_length` from the status, and its path becomes the stop's `EnvelopePath`, so the tackler and the arbiter read an envelope for it;
    - a moved run is never parked and never gets a friction note.
 5. Before a re-step, a goto, a spawn or a hand-over, `holdPause` reads `Pause`; while it covers the slug, it waits in `PauseHold` and then rechecks, so nothing moves under a pause (D11).
 6. The action:
-   - `done` commits the records through `CommitRecords`, sends the `friction: failed` notice when the envelope reports it, and exits;
+   - `done` commits the records through `CommitRecords` and exits; after the commit, a `friction: failed` done builds a `driveReport` (run-id, position, reason, the friction directory), takes `NewReportPath` and calls `handBackRun` with it, so the notice names a report on disk;
    - a busy exit writes a `busy-exit` record, logs the holder named in the envelope's error, and exits with no report and no park;
    - a re-step writes a `restep` record and loops;
    - the verify goto writes a `verify-retry` record naming the target, calls `Goto`, then loops to re-step; a refused goto is rechecked as a moved run;
@@ -75,8 +76,8 @@ It never retries a failed seam on its own; a failure it cannot act on hands back
 
 Test `TestGoDriver_Settle` in `drive_test.go`, a table over fake seams scripting the envelopes `Step` returns, the statuses `ReadStatus` returns and the settle file in a temp directory.
 Every hand-back row asserts the report on disk, the park marker and a `hand-back` settle record with settler `parent`; which messages a hand-back sends is `TestDriveNotices`' (card 11), so the loop rows assert only that `Notify` was reached.
-- `done` commits and exits with no park, and a `friction: failed` done reaches `Notify`;
-- `busy` writes `busy-exit` and parks nothing;
+- `done` commits and exits with no park, and a `friction: failed` done writes its report on disk, reaches `Notify` and writes no park marker;
+- `busy`, with the run lock held by another process, writes `busy-exit`, logs the holder and parks nothing;
 - a step `paused` stop with an empty reason writes the friction note and parks, and one with a reason writes no note;
 - `awaiting` with no notice parks;
 - verify halts:
