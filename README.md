@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **Webster fork prompt: read instruction and pack last**<br>• Move the implementer fork prompt one-turn read instruction and kick-start pack to the end of the prompt | [`webster-pack-last`](design-webster-pack-last.md) | darn | Darn-Burler-Review | 54m | 54m | webster, stencil |
+| 2 | **Webster fork prompt: read instruction and pack last**<br>• Move the implementer fork prompt one-turn read instruction and kick-start pack to the end of the prompt | [`webster-pack-last`](design-webster-pack-last.md) | darn | Darn-Burler-Fix | 54m | 54m | webster, stencil |
 
 ### Ready
 
