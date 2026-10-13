@@ -12,7 +12,11 @@ A strand such as `discussion` opens in window 1, detached and never selected (`i
 Selvage goes last.
 When a strand's window opens beside Selvage, the strand's window comes first and is the one attach shows by default: the foreground work is what the operator watches.
 
+Alt+Up and Alt+Down do not reach them either: they step between the panes of the strands' window only (`internal/reedengine/bindings.go:71-72`, `select-pane -t :.-`/`:.+`, gated on `@lyx_strands`), and an own-window strand lives outside that window, so from Selvage the keys find nothing to step to (operator, 2026-10-13).
+
 ## Scope to discuss
+
+- Alt+Up and Alt+Down step across every strand, own-window strands included, with Selvage last.
 
 - Window order: strand windows before Selvage's window, and which strand comes first when several are open (the newest, or the run's current row).
 - Whether a newly opened strand window takes focus for an attached client, or only becomes attach's default.
