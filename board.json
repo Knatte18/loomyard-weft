@@ -878,6 +878,24 @@
       "body": "## Idea (operator, 2026-10-13)\n\nLong-lived lyx processes keep running the binary they started with after a deploy replaces `lyx`, and nothing restarts them.\nThey should pick up the new binary on their own.\n\n## Seen (2026-10-13)\n\n- The hub's `lyx reed watchdog` (single instance per hub, spawned by `up`, `resume` and `attach` only when no daemon holds the lock) ran from 2026-10-08 on a deleted binary.\n  It re-applied the layout of every session every 2 s and failed each time with an error only the old binary raises (`deferred anchor \"own-window\"`), and each attempt unzoomed and re-zoomed the strands' window (`internal/reedengine/reapply.go:130`, `zoom.go:57-76`): the zoom flicker in `reed-window-order`.\n  It also filled its trace log to the size cap (`_board/.lyx/logs/trace-20261008T181526Z-f2e3f7df172f3d30-3854.log`); the orch killed it and started a new one by hand.\n- After the kill, other lyx processes still ran a deleted binary (`/proc/\u003cpid\u003e/exe` marked deleted): `lyx orch watch` (since 2026-10-10), a run's `lyx loom checklist` status pane (started before the `run-window-bugs` deploy, so it lacks the status-pane fix) and an operator's `lyx reed attach`.\n- Shed already records a build identity per step and reports `binary_changed` (`internal/shedverbs/steprecord.go`), so a build identity to compare against exists.\n\n## Scope to discuss\n\n- Which processes restart themselves: the reed watchdog, status panes (`lyx loom checklist`, batten's overview), `lyx orch watch`, and any other long-lived verb.\n- How: each daemon notices a changed binary (its own executable deleted or a new build identity) and re-execs itself with the same arguments at a safe point; or the deploy (`update-plugins.sh` and batten's Land deploy) signals or restarts every running daemon.\n- A single-instance daemon hands its lock over across the re-exec, so no second instance starts in the gap.\n- Processes that must not restart mid-work (an agent session, a step in flight) are only reported, for instance in `lyx reed status`.\n",
       "created": "2026-10-13T10:23:14Z",
       "revised": "2026-10-13T10:23:14Z"
+    },
+    {
+      "id": 472,
+      "slug": "shuttle-gate-early-done",
+      "title": "Shuttle gate ends a twill writer mid-turn",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The gate released a held turn start against a pane that looked idle and ended Plan-Write before the lens review",
+      "body": "## Seen (twill Plan fork-timing bench, 2026-10-13)\n\nOn today's binary (`e17b29219`), two bench runs of twill Plan-Write ended before the writer weighed its lens forks' findings.\nIn both, the writer wrote the plan, `validate-plan` passed, the ready marker was written and the four lens forks ran.\nRight after the last fork finished, shuttle ended the run while the writer was mid-turn:\nthe trace log shows \"turn started after the boundary, holding the gate send\" and, about 10 s later, \"send released an unmatched turn start held against an idle pane\".\nThe pane looked idle while the model was thinking, so the gate ran and returned Done.\nNo `lens-review.md` was written and no finding was fixed.\n\nTwill Plan-Write in production can end the same way: the gate does not check that `lens-review.md` exists.\nNot yet checked on a real run.\n\nEvidence (transcripts, traces, plans) is in the hub prime's `.scratch/twill-fork-timing-plan/`; the bench pairs `twb-ftp-s-1` and `twb-ftp-r-1` are still standing.\n\n## Scope to discuss\n\n- Why the held turn start is released against a pane that only looks idle, and whether the idle test can see a thinking model.\n- Whether the twill gate should refuse Done until the lens review is written.\n- Whether real runs since `e17b29219` lost their lens review this way.\n",
+      "created": "2026-10-13T10:36:34Z",
+      "revised": "2026-10-13T10:36:34Z"
     }
   ]
 }
