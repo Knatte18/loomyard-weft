@@ -1,0 +1,5 @@
+status: OK
+head_sha: 07791120976184d7eba56a13b6b35b958392ff80
+deviations:
+  - internal/reedengine/generation.go
+  - internal/reedengine/watchloop_test.go

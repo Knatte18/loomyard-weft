@@ -1,11 +1,11 @@
 # Card 5 — The watchdog retires on a replaced binary; lock contention exits at Debug
 
 **Create:**
-- `plan:internal/reedcli#errWatchdogBinaryReplaced` -> `var errWatchdogBinaryReplaced = errors.New("reed: the watchdog's binary was replaced")`
-- `plan:internal/reedcli#exeReplaced` -> `func exeReplaced(start, now os.FileInfo, statErr error) bool`
-- `plan:internal/reedcli#exeWatch` -> `func exeWatch(stat func() (os.FileInfo, error)) func() bool`
-- `plan:internal/reedcli#TestExeReplaced` -> `func TestExeReplaced(t *testing.T)`
-- `plan:internal/reedcli#TestWatchdogCmd_ExitsZeroBeforeOrInsteadOfLooping` -> `func TestWatchdogCmd_ExitsZeroBeforeOrInsteadOfLooping(t *testing.T)`
+- `internal/reedcli#errWatchdogBinaryReplaced`
+- `internal/reedcli#exeReplaced`
+- `internal/reedcli#exeWatch`
+- `internal/reedcli#TestExeReplaced`
+- `internal/reedcli#TestWatchdogCmd_ExitsZeroBeforeOrInsteadOfLooping`
 
 **Edit:**
 - `internal/reedcli#runWatchdogLoop` -> `func runWatchdogLoop(ctx context.Context, hub, tmuxPath, shellPath string, timing watchdogTiming, open reedengine.FileWatchOpener, replaced func() bool) error`

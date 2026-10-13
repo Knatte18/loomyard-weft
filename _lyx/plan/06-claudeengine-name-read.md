@@ -1,8 +1,8 @@
 # Card 6 — Session-name read failures: missing transcript at Debug, others once per session
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#nameReadWarnings` -> `type nameReadWarnings struct`
-- `plan:internal/shuttleengine/claudeengine#nameReadWarnings.first` -> `func (s *nameReadWarnings) first(sessionID string) bool`
+- `internal/shuttleengine/claudeengine#nameReadWarnings`
+- `internal/shuttleengine/claudeengine#nameReadWarnings.first`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine#Claude`

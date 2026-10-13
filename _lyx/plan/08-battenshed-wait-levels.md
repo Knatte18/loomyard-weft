@@ -1,11 +1,11 @@
 # Card 8 — Batten waits log Info once per state; Warn means a failed step
 
 **Create:**
-- `plan:internal/battenshed#reportWait` -> `func reportWait(producer, reason, scratchDir string, fields ...any)`
-- `plan:internal/battenshed#writeStuckReason` -> `func writeStuckReason(producer, reason, scratchDir string)`
-- `plan:internal/battenshed#innerRunProducer.failedEnd` -> `func (p *innerRunProducer) failedEnd(text string) *waitEnd`
+- `internal/battenshed#reportWait`
+- `internal/battenshed#writeStuckReason`
+- `internal/battenshed#innerRunProducer.failedEnd`
 - `internal/battenshed/stuck_test.go`
-- `plan:internal/battenshed#TestStuckReport_LevelFollowsCause` -> `func TestStuckReport_LevelFollowsCause(t *testing.T)`
+- `internal/battenshed#TestStuckReport_LevelFollowsCause`
 
 **Edit:**
 - `internal/battenshed#reportStuck`
