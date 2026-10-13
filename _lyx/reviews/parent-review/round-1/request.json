@@ -1,0 +1,10 @@
+{
+  "slug": "logging-cleanup",
+  "round": 1,
+  "reviewer": "ly:orch",
+  "opened_at": "2026-10-13T09:54:30.18827829+02:00",
+  "decision_record": "/home/knatte/Code/loomyard-LYXHUB/logging-cleanup/_lyx/discussion/decision-record.md",
+  "support_log": "/home/knatte/Code/loomyard-LYXHUB/logging-cleanup/_lyx/discussion/support-log.md",
+  "state": "open",
+  "cap": 2
+}

@@ -1,0 +1,8 @@
+{
+  "attempt": "/home/knatte/Code/loomyard-LYXHUB/logging-cleanup/_lyx/shed/logging-cleanup/alignment/parent-review/attempt-1",
+  "strand": "60a9067639c210f35d8c669737489a0e",
+  "spawned_at": "2026-10-13T09:55:33.507316802+02:00",
+  "state": "fallback",
+  "report": "/home/knatte/Code/loomyard-LYXHUB/logging-cleanup/_lyx/shed/logging-cleanup/alignment/parent-review/attempt-1/report-0bf0969f4ae0b8b7.md",
+  "reason": "Overlap with go-driver-assistant (Webster): both runs change internal/battenshed/innerrun.go (D5 reportStuck levels via exemptEnd), publishretry.go (D5), notice.go (D7 session state at notice), battenshed/doc.go, contracts/stencils/claims_test.go (D17) and docs/overview.md (D16, outside the module table). go-driver-assistant's tackler also reads step traces and the driver log to find a stop's cause, and D5 moves batten waits from Warn to Info. Overlap with run-window-bugs (Plan-Burler-Review): both change the internal/shuttleengine package (that run: wait.go, run.go, doc.go; this run: readiness.go, send.go for the D9 draft kind) and internal/shuttleengine/claudeengine (that run: claudeengine.go, command.go; this run: sessionname.go for D10). Which run lands first, and does logging-cleanup proceed now and merge against the others at Merge-In?"
+}
