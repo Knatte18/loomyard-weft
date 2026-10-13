@@ -839,7 +839,7 @@
       "isolated": false,
       "brief": "Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run",
       "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write after arm. Plan-Write only, from a frozen decision record.",
-      "status": "running · Loom-Preflight",
+      "status": "running · Discussion-Write",
       "created": "2026-10-13T10:20:08Z",
       "revised": "2026-10-13T10:20:08Z"
     },
