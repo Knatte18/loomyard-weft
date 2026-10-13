@@ -11,7 +11,7 @@
 
 **Uses:**
 - `plan:internal/loomcli#binaryEligible`
-- `plan:internal/loomengine#SettleHandOver`
+- `internal/loomengine#SettleHandOver`
 
 **Intent:**
 D5: at a binary-eligible stop whose last step ran a build other than the `lyx` now on disk, the Go driver hands the run to a fresh driver of the on-disk build instead of settling it with old code.

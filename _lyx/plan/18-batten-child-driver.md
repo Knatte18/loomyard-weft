@@ -29,7 +29,7 @@
 - `plan:internal/battencli#TestChildDriverFrom` -> `func TestChildDriverFrom(t *testing.T)`
 
 **Uses:**
-- `plan:internal/loomengine#ResolveDriverKind`
+- `internal/loomengine#ResolveDriverKind`
 
 **Intent:**
 D1 at batten: a task's driver comes from an operator-typed `--child-driver`, then the task's resolved `driver_kind`, then `llm`.

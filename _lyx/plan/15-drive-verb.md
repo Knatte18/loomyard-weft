@@ -20,10 +20,10 @@
 
 **Uses:**
 - `plan:internal/loomcli#goDriver.run`
-- `plan:internal/shedrun#DriverLock`
+- `internal/shedrun#DriverLock`
 - `plan:internal/battenshed#PublishRetrySpent`
-- `plan:internal/shedverbs#RunUntilStop`
-- `plan:internal/shedverbs#RunGoto`
+- `internal/shedverbs#RunUntilStop`
+- `internal/shedverbs#RunGoto`
 
 **Intent:**
 D2: the Go driver is the hidden role verb `lyx loom drive`, holding a driver lock of its own for its whole life, so a settling Go driver reads as live while the run lock stays free between steps.

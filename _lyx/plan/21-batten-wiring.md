@@ -13,15 +13,15 @@
 
 **Uses:**
 - `plan:internal/shedrun#BattenWatchedContent`
-- `plan:internal/shedrun#DriverLock`
-- `plan:internal/shedrun#TacklerMarker`
-- `plan:internal/shedrun#SettleRecordsFile`
-- `plan:internal/loomengine#ReadTacklerMarker`
-- `plan:internal/loomengine#ReadSettleRecords`
-- `plan:internal/loomengine#GoVerifyRetrySpent`
+- `internal/shedrun#DriverLock`
+- `internal/shedrun#TacklerMarker`
+- `internal/shedrun#SettleRecordsFile`
+- `internal/loomengine#ReadTacklerMarker`
+- `internal/loomengine#ReadSettleRecords`
+- `internal/loomengine#GoVerifyRetrySpent`
 - `plan:internal/loomengine#PathsOutsideRunRecords`
-- `plan:internal/buildvcs#OfFile`
-- `plan:internal/shedverbs#LastStepBuildChanged`
+- `internal/buildvcs#OfFile`
+- `internal/shedverbs#LastStepBuildChanged`
 - `internal/battencli#arbiterInFlightFrom`
 - `internal/battencli#runLockHeld`
 

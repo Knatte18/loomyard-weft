@@ -16,7 +16,7 @@
 - `plan:internal/loomcli#errTacklerResumeReturned`
 - `plan:internal/loomcli#goDriver.recheck`
 - `plan:internal/loomcli#goDriver.holdPause`
-- `plan:internal/loomengine#WorktreeSnapshot.Equal`
+- `internal/loomengine#WorktreeSnapshot.Equal`
 
 **Intent:**
 D6, D7 and D12 inside the loop: the tackler at the stops no rule settles, the arbiter at the three stops D6 lists, and a restart that reuses an open attempt instead of spawning a second agent.

@@ -1,29 +1,29 @@
 {
   "runGuid": "5fb8cea56d7835bd10e417aadf3813de",
-  "planFingerprint": "c2009c68913772838fe1b1318e5f086cb6dbcbc3e766f1bdcbaabb49a8adda4e",
+  "planFingerprint": "e6cd766264e77ad30cc76bcec313912a15f02b46c4c730832eb4cdd4fc9c1960",
   "planFileHashes": {
     "00-overview.md": "5aedeac311c95676a67a5c477b40bcfce50d435267f2cb78295bd1adf36b0fb5",
     "01-shed-paused-reasons.md": "ba9aa1d3d3d8fa13fe092a3c0e795124a32e31df37fcb83271ab7b0178ab02ba",
-    "02-loom-config-keys.md": "cb8373bbc6f83b228de174add7339755572a8113eb06b50a92aa0a3ff6b21db9",
-    "03-run-record-paths.md": "91d4c1e24c2f7b0e98fa6d124f76cc257ab562e3cccaad818959d4c12508db0c",
-    "04-on-disk-build-and-verb-bodies.md": "d944142df7dbccf9b7ef2f91f87710ac82218e17333d1561a21360fd234ecd73",
-    "05-tackler-stencil.md": "874a1f06ddee4931f47e94aba597c1c617d3ab8ca0a0e12615766f365f1d2d18",
+    "02-loom-config-keys.md": "686ef2eea38261e3ce734917b0b0f24f398ea91821aa02a27f5b1193b539e8b9",
+    "03-run-record-paths.md": "d07769bc8a3a3e8df095768e943bedb7668a792a2ca9b8f75b62a05ed327acd6",
+    "04-on-disk-build-and-verb-bodies.md": "bfc69cf47d084cedafad462a8b73b37d86f3fbccf8c5d5e099d383d8e7579123",
+    "05-tackler-stencil.md": "a006570fcfab6533261512e1ba9ab23e0f791a49cb623728691e550aef24655f",
     "06-arbiter-case-brief.md": "8353a34c9066f9f023bf81201510e55e865ec138ca1c440cc34c64aa415f8c79",
-    "07-tackler-call.md": "b3af5bdf1333e122ca5a3a59e72b3f835af45f66e83b8ccf96fbe7256d28922c",
-    "08-tackler-consume.md": "2b68e46cc86424770ec90574a674008eb39dd036edbf6d6c2ba292bd89468a89",
+    "07-tackler-call.md": "87038f4adced82a7af6c5c00ae1961416c7ca96bf92114d5555a1e14dbf3cac4",
+    "08-tackler-consume.md": "0484279d73b47e58f330d0f4ac1fb3f857fd856edede4e7cd40a31882cdd3e91",
     "09-batten-retry-exports.md": "80b2b89cf2645f00f20bdcb9aa0b9bd52334be12bb9ef0d0d8493166e0a6752e",
-    "10-drive-rules.md": "12e170ff9c33111067c6ff56d7345b92699baab8be1fbca5c4ec3c7926d8fec7",
+    "10-drive-rules.md": "7981f92b2721cb53124eaea7f87fb482ce0b2ed76fe06ecc250b17dd18312a6f",
     "11-drive-handback.md": "0918fc60b705d8401f448c00bf0d12aaae0ba49e0daeadbb7bc8db8cdf54410d",
-    "12-drive-loop.md": "452d03cfaff2c374687ea42c69f371338e30ba93145ff3b0bc8563970c5d86fa",
-    "13-drive-agents.md": "1253b5a3c991132bf69bd70866cfc8a278f354353013ad36876dafe978832e4a",
-    "14-drive-handover.md": "6818d15f9ec4fe7401495a457922b3e01efbd0a3bd183ec268cf74d4883c57db",
-    "15-drive-verb.md": "8b8356dedd63c46f65a1bb88e19d116a21839bca23691c2554e3548153470dc5",
-    "16-start-resume-go-driver.md": "404ef9101d8c741ab215181961785d7bb0334b645dc47aefd5e73f64000e702c",
-    "17-loom-seed-driver-kind.md": "d5a1a3446e1a32077e2ba23f4e64081a83f255bd15d7f19bd35ef209806de793",
-    "18-batten-child-driver.md": "ccd8e194d8c377c74623a074fe2d62f7f55724ddf708f2a27f4dd8d0c45567f8",
+    "12-drive-loop.md": "299794829befd2d083c88fafe75b7f795d1a4f3e130cb81949693912f22c6e5e",
+    "13-drive-agents.md": "87eefdb7470d17151c5194436d18b13e3a2abd68803813e0c957129a08d6c0a8",
+    "14-drive-handover.md": "8a60aea2da93e4ad834c5438a3af2081ed3d6a4ec58f8c3a6a92d75e27a662be",
+    "15-drive-verb.md": "ba132f0a2cbc748bee061939246456b8b9b82e9934318df81448db47b29ea15d",
+    "16-start-resume-go-driver.md": "517e6a2d8cbe637d0565ed6c422ea916e90328c0e04d06f11312ffca238c9e46",
+    "17-loom-seed-driver-kind.md": "d5bfcffaf85d24068c04c8b035ad0d85f86d859f2130f1339a0babd89dc7a6a5",
+    "18-batten-child-driver.md": "96f82e0ec2718e738a2fedb1aad0be7950cf81a0632026aeb30187d41e7a87fa",
     "19-batten-liveness-hold-retry.md": "6c3d7dea30e100b6e9abfbbf736d3a78b112382946d598215bb5b8d7a779c590",
     "20-batten-binary-restep.md": "5cd4849f71aca362aa6e09de19ebd8c4611c1953f94af5444afa1b0992a4c6dc",
-    "21-batten-wiring.md": "f513ee66610a80f1cc5b4f36b9852f2149ef9df504d7ea67f211f17284e83dec",
+    "21-batten-wiring.md": "4f36f01e2797078f02ad0f9016d64497b675059152dd9ad406521c12a7a4a813",
     "22-orch-go-driver-line.md": "548385f032dbed0229e06f118c20409c3f28f3b2e4fd496aa4df3e2d4867b9bb"
   },
   "planOverviewFrameHash": "2fd5f6f8c08a9038ebee49fbcc27276e3847ddfc13547912f58716f046dfb475",
@@ -480,7 +480,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "150d08a4fe3801d28e9ebb50e13cd6a3",
   "masterSessionId": "2ff11991-c28f-48de-aaa6-1e8b8f16c4ff",
   "batches": {
@@ -495,17 +495,44 @@
       ],
       "cardHashes": {
         "01-shed-paused-reasons": "ba9aa1d3d3d8fa13fe092a3c0e795124a32e31df37fcb83271ab7b0178ab02ba",
-        "02-loom-config-keys": "cb8373bbc6f83b228de174add7339755572a8113eb06b50a92aa0a3ff6b21db9",
-        "03-run-record-paths": "91d4c1e24c2f7b0e98fa6d124f76cc257ab562e3cccaad818959d4c12508db0c",
-        "04-on-disk-build-and-verb-bodies": "d944142df7dbccf9b7ef2f91f87710ac82218e17333d1561a21360fd234ecd73",
-        "05-tackler-stencil": "874a1f06ddee4931f47e94aba597c1c617d3ab8ca0a0e12615766f365f1d2d18"
+        "02-loom-config-keys": "686ef2eea38261e3ce734917b0b0f24f398ea91821aa02a27f5b1193b539e8b9",
+        "03-run-record-paths": "d07769bc8a3a3e8df095768e943bedb7668a792a2ca9b8f75b62a05ed327acd6",
+        "04-on-disk-build-and-verb-bodies": "bfc69cf47d084cedafad462a8b73b37d86f3fbccf8c5d5e099d383d8e7579123",
+        "05-tackler-stencil": "a006570fcfab6533261512e1ba9ab23e0f791a49cb623728691e550aef24655f"
       },
       "startSha": "8bc7491c23d83df4f920d7d7477a65de267fe5b1",
       "kind": "fork",
       "spawnedAt": "2026-10-13T07:01:41Z",
       "sessionId": "2ff11991-c28f-48de-aaa6-1e8b8f16c4ff",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-shed-paused-reasons",
+        "status": "done",
+        "head_sha": "fd0ccc90c6b8d0db7cb7444b28cb55bff74aaedc",
+        "deviations": [
+          "internal/loomengine/driver_test.go",
+          "internal/loomcli/wiring.go",
+          "internal/shedverbs/steprecord.go",
+          "internal/shedrun/paths.go",
+          "internal/buildvcs/buildvcs.go",
+          "internal/buildvcs/doc.go",
+          "internal/buildvcs/buildvcs_test.go",
+          "internal/shedengine/run.go"
+        ]
+      },
+      "cardShas": [
+        "fd0ccc90c6b8d0db7cb7444b28cb55bff74aaedc"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-go-driver-assistant/2ff11991-c28f-48de-aaa6-1e8b8f16c4ff/subagents/agent-a118485432ce255ef.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-go-driver-assistant/2ff11991-c28f-48de-aaa6-1e8b8f16c4ff/subagents/agent-a118485432ce255ef.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-go-driver-assistant/2ff11991-c28f-48de-aaa6-1e8b8f16c4ff/subagents/agent-a118485432ce255ef.jsonl"
+  ]
 }

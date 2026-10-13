@@ -2,12 +2,12 @@
 
 **Create:**
 - `contracts/stencils/loom/loom-template-tackler.md`
-- `plan:contracts/stencils#LoomTemplateTackler` -> `var LoomTemplateTackler []byte`
-- `plan:internal/loomcli#tacklerStencilName` -> `const tacklerStencilName = "loom-template-tackler"`
-- `plan:internal/loomcli#tacklerSkills` -> `var tacklerSkills = []string{}`
-- `plan:internal/loomcli#tacklerPromptInput` -> `type tacklerPromptInput struct`
-- `plan:internal/loomcli#tacklerPrompt` -> `func tacklerPrompt(stencilsDir string, in tacklerPromptInput) (string, error)`
-- `plan:internal/loomcli#tacklerSpec` -> `func tacklerSpec(prompt, verdictPath, caseBriefPath string, settings loomengine.TacklerSettings) shuttleengine.Spec`
+- `contracts/stencils#LoomTemplateTackler`
+- `internal/loomcli#tacklerStencilName`
+- `internal/loomcli#tacklerSkills`
+- `internal/loomcli#tacklerPromptInput`
+- `internal/loomcli#tacklerPrompt`
+- `internal/loomcli#tacklerSpec`
 - `internal/loomcli/tacklerprompt_test.go`
 
 **Edit:**
@@ -17,8 +17,8 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/loomengine#TacklerSettings`
-- `plan:internal/loomengine#TacklerRole`
+- `internal/loomengine#TacklerSettings`
+- `internal/loomengine#TacklerRole`
 
 **Intent:**
 D7's tackler stencil and its launch, read at call time from the told stencils directory (`PATTERN-stencil-ownership`).

@@ -18,8 +18,8 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/loomengine#SettleRecord`
-- `plan:internal/loomengine#SettleRestep`
+- `internal/loomengine#SettleRecord`
+- `internal/loomengine#SettleRestep`
 - `internal/loomengine#StopKeyOf`
 
 **Intent:**

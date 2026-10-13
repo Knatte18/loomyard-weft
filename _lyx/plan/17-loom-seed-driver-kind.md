@@ -9,7 +9,7 @@
 - `pattern/PATTERN-driver-choice-single-site.md`
 
 **Uses:**
-- `plan:internal/loomengine#ResolveDriverKind`
+- `internal/loomengine#ResolveDriverKind`
 
 **Intent:**
 D1 at loom's own seed writer: a standalone `lyx loom start` on an unseeded run seeds the driver `driver_kind` resolves to, through the config `start` already loads strictly, instead of always `llm`.

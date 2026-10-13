@@ -1,53 +1,53 @@
 # Card 3 — run-record-paths
 
 **Create:**
-- `plan:internal/shedrun#DriverLock` -> `func DriverLock(l *lyxcwd.Location, runID string) string`
-- `plan:internal/shedrun#TacklerDir` -> `func TacklerDir(l *lyxcwd.Location, runID string) string`
-- `plan:internal/shedrun#TacklerRel` -> `func TacklerRel(l *lyxcwd.Location, runID string) string`
-- `plan:internal/shedrun#TacklerAttemptDir` -> `func TacklerAttemptDir(l *lyxcwd.Location, runID string, attempt int) string`
-- `plan:internal/shedrun#TacklerMarker` -> `func TacklerMarker(l *lyxcwd.Location, runID string) string`
-- `plan:internal/shedrun#SettleRecordsFile` -> `func SettleRecordsFile(frictionDir string) string`
-- `plan:internal/loomengine#TacklerRole` -> `const TacklerRole = "tackler"`
-- `plan:internal/loomengine#TacklerVerdictResume` -> `const TacklerVerdictResume = "resume"`
-- `plan:internal/loomengine#TacklerVerdictHandBack` -> `const TacklerVerdictHandBack = "hand-back"`
-- `plan:internal/loomengine#TacklerVerdictEscalate` -> `const TacklerVerdictEscalate = "escalate"`
-- `plan:internal/loomengine#WorktreeSnapshot` -> `type WorktreeSnapshot struct`
-- `plan:internal/loomengine#WorktreeSnapshot.Equal` -> `func (s WorktreeSnapshot) Equal(other WorktreeSnapshot) bool`
-- `plan:internal/loomengine#TacklerAttempt` -> `type TacklerAttempt struct`
-- `plan:internal/loomengine#WriteTacklerAttempt` -> `func WriteTacklerAttempt(dir string, a TacklerAttempt) error`
-- `plan:internal/loomengine#ReadTacklerAttempt` -> `func ReadTacklerAttempt(dir string) (TacklerAttempt, error)`
-- `plan:internal/loomengine#ListTacklerAttempts` -> `func ListTacklerAttempts(tacklerDir string) ([]TacklerAttempt, error)`
-- `plan:internal/loomengine#TacklerVerdict` -> `type TacklerVerdict struct`
-- `plan:internal/loomengine#ReadTacklerVerdict` -> `func ReadTacklerVerdict(path string) (TacklerVerdict, bool, error)`
-- `plan:internal/loomengine#TacklerEnvelope` -> `type TacklerEnvelope struct`
-- `plan:internal/loomengine#WriteTacklerEnvelope` -> `func WriteTacklerEnvelope(path string, e TacklerEnvelope) error`
-- `plan:internal/loomengine#ReadTacklerEnvelope` -> `func ReadTacklerEnvelope(path string) (TacklerEnvelope, bool, error)`
-- `plan:internal/loomengine#TacklerPromptPath` -> `func TacklerPromptPath(dir string) string`
-- `plan:internal/loomengine#TacklerVerdictPath` -> `func TacklerVerdictPath(dir string) string`
-- `plan:internal/loomengine#TacklerCaseBriefPath` -> `func TacklerCaseBriefPath(dir string) string`
-- `plan:internal/loomengine#TacklerEnvelopePath` -> `func TacklerEnvelopePath(dir string) string`
-- `plan:internal/loomengine#MarkTacklerApplied` -> `func MarkTacklerApplied(dir string) error`
-- `plan:internal/loomengine#TacklerApplied` -> `func TacklerApplied(dir string) (bool, error)`
-- `plan:internal/loomengine#TacklerMarker` -> `type TacklerMarker struct`
-- `plan:internal/loomengine#WriteTacklerMarker` -> `func WriteTacklerMarker(path string, m TacklerMarker) error`
-- `plan:internal/loomengine#ReadTacklerMarker` -> `func ReadTacklerMarker(path string) (TacklerMarker, bool, error)`
-- `plan:internal/loomengine#RemoveTacklerMarker` -> `func RemoveTacklerMarker(path string) error`
-- `plan:internal/loomengine#SettleRecord` -> `type SettleRecord struct`
-- `plan:internal/loomengine#SettlerGoRule` -> `const SettlerGoRule = "go-rule"`
-- `plan:internal/loomengine#SettlerTackler` -> `const SettlerTackler = "tackler"`
-- `plan:internal/loomengine#SettlerArbiter` -> `const SettlerArbiter = "arbiter"`
-- `plan:internal/loomengine#SettlerParent` -> `const SettlerParent = "parent"`
-- `plan:internal/loomengine#SettleRestep` -> `const SettleRestep = "restep"`
-- `plan:internal/loomengine#SettleVerifyRetry` -> `const SettleVerifyRetry = "verify-retry"`
-- `plan:internal/loomengine#SettleHandOver` -> `const SettleHandOver = "hand-over"`
-- `plan:internal/loomengine#SettleSpawn` -> `const SettleSpawn = "spawn"`
-- `plan:internal/loomengine#SettleHandBack` -> `const SettleHandBack = "hand-back"`
-- `plan:internal/loomengine#SettleBusyExit` -> `const SettleBusyExit = "busy-exit"`
-- `plan:internal/loomengine#SettleRunningExit` -> `const SettleRunningExit = "running-exit"`
-- `plan:internal/loomengine#SettleMoved` -> `const SettleMoved = "moved"`
-- `plan:internal/loomengine#AppendSettleRecord` -> `func AppendSettleRecord(path string, r SettleRecord) error`
-- `plan:internal/loomengine#ReadSettleRecords` -> `func ReadSettleRecords(path string) ([]SettleRecord, error)`
-- `plan:internal/loomengine#GoVerifyRetrySpent` -> `func GoVerifyRetrySpent(records []SettleRecord) bool`
+- `internal/shedrun#DriverLock`
+- `internal/shedrun#TacklerDir`
+- `internal/shedrun#TacklerRel`
+- `internal/shedrun#TacklerAttemptDir`
+- `internal/shedrun#TacklerMarker`
+- `internal/shedrun#SettleRecordsFile`
+- `internal/loomengine#TacklerRole`
+- `internal/loomengine#TacklerVerdictResume`
+- `internal/loomengine#TacklerVerdictHandBack`
+- `internal/loomengine#TacklerVerdictEscalate`
+- `internal/loomengine#WorktreeSnapshot`
+- `internal/loomengine#WorktreeSnapshot.Equal`
+- `internal/loomengine#TacklerAttempt`
+- `internal/loomengine#WriteTacklerAttempt`
+- `internal/loomengine#ReadTacklerAttempt`
+- `internal/loomengine#ListTacklerAttempts`
+- `internal/loomengine#TacklerVerdict`
+- `internal/loomengine#ReadTacklerVerdict`
+- `internal/loomengine#TacklerEnvelope`
+- `internal/loomengine#WriteTacklerEnvelope`
+- `internal/loomengine#ReadTacklerEnvelope`
+- `internal/loomengine#TacklerPromptPath`
+- `internal/loomengine#TacklerVerdictPath`
+- `internal/loomengine#TacklerCaseBriefPath`
+- `internal/loomengine#TacklerEnvelopePath`
+- `internal/loomengine#MarkTacklerApplied`
+- `internal/loomengine#TacklerApplied`
+- `internal/loomengine#TacklerMarker`
+- `internal/loomengine#WriteTacklerMarker`
+- `internal/loomengine#ReadTacklerMarker`
+- `internal/loomengine#RemoveTacklerMarker`
+- `internal/loomengine#SettleRecord`
+- `internal/loomengine#SettlerGoRule`
+- `internal/loomengine#SettlerTackler`
+- `internal/loomengine#SettlerArbiter`
+- `internal/loomengine#SettlerParent`
+- `internal/loomengine#SettleRestep`
+- `internal/loomengine#SettleVerifyRetry`
+- `internal/loomengine#SettleHandOver`
+- `internal/loomengine#SettleSpawn`
+- `internal/loomengine#SettleHandBack`
+- `internal/loomengine#SettleBusyExit`
+- `internal/loomengine#SettleRunningExit`
+- `internal/loomengine#SettleMoved`
+- `internal/loomengine#AppendSettleRecord`
+- `internal/loomengine#ReadSettleRecords`
+- `internal/loomengine#GoVerifyRetrySpent`
 - `internal/loomengine/tackler_test.go`
 - `internal/loomengine/settle_test.go`
 

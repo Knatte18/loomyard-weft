@@ -23,9 +23,9 @@
 - `plan:internal/loomcli#driveNotices`
 - `plan:internal/loomcli#readBattenWatch`
 - `plan:internal/battenshed#RecordMatchesHalt`
-- `plan:internal/loomengine#AppendSettleRecord`
-- `plan:internal/loomengine#ReadSettleRecords`
-- `plan:internal/loomengine#GoVerifyRetrySpent`
+- `internal/loomengine#AppendSettleRecord`
+- `internal/loomengine#ReadSettleRecords`
+- `internal/loomengine#GoVerifyRetrySpent`
 
 **Intent:**
 The Go driver's settle loop for the stops Go settles by its own rule (D2, D3, D4, D9, D11, D12, D13), over injected seams so every branch runs at Tier 1.

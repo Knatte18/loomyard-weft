@@ -15,14 +15,14 @@
 
 **Uses:**
 - `internal/loomcli#arbiterShuttle`
-- `plan:internal/loomcli#tacklerPrompt`
-- `plan:internal/loomcli#tacklerSpec`
-- `plan:internal/loomengine#TacklerAttempt`
-- `plan:internal/loomengine#TacklerEnvelope`
-- `plan:internal/loomengine#ListTacklerAttempts`
-- `plan:internal/loomengine#ReadTacklerVerdict`
-- `plan:internal/loomengine#TacklerMarker`
-- `plan:internal/loomengine#WorktreeSnapshot`
+- `internal/loomcli#tacklerPrompt`
+- `internal/loomcli#tacklerSpec`
+- `internal/loomengine#TacklerAttempt`
+- `internal/loomengine#TacklerEnvelope`
+- `internal/loomengine#ListTacklerAttempts`
+- `internal/loomengine#ReadTacklerVerdict`
+- `internal/loomengine#TacklerMarker`
+- `internal/loomengine#WorktreeSnapshot`
 
 **Intent:**
 D7: one cold tackler per stop, spawned through shuttle like the arbiter, its attempt records keyed by stop key so a restart never spawns a second agent for a stop already judged.

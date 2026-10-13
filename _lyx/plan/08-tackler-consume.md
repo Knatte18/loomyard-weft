@@ -9,10 +9,10 @@
 
 **Uses:**
 - `internal/loomcli#consumeArbiterAttempt`
-- `plan:internal/loomengine#ReadTacklerAttempt`
-- `plan:internal/loomengine#ReadTacklerEnvelope`
-- `plan:internal/loomengine#TacklerApplied`
-- `plan:internal/loomengine#MarkTacklerApplied`
+- `internal/loomengine#ReadTacklerAttempt`
+- `internal/loomengine#ReadTacklerEnvelope`
+- `internal/loomengine#TacklerApplied`
+- `internal/loomengine#MarkTacklerApplied`
 
 **Intent:**
 D7: a tackler `resume` is performed through the arbiter's consume path, so the mark and the move land under one hold of the status lock and a restarted driver can tell a `resume` never performed from one whose stop key returned.

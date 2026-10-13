@@ -1,0 +1,11 @@
+status: OK
+head_sha: fd0ccc90c6b8d0db7cb7444b28cb55bff74aaedc
+deviations:
+  - internal/loomengine/driver_test.go
+  - internal/loomcli/wiring.go
+  - internal/shedverbs/steprecord.go
+  - internal/shedrun/paths.go
+  - internal/buildvcs/buildvcs.go
+  - internal/buildvcs/doc.go
+  - internal/buildvcs/buildvcs_test.go
+  - internal/shedengine/run.go

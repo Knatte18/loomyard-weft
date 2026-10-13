@@ -30,7 +30,7 @@
 
 **Uses:**
 - `plan:internal/loomcli#spawnDetachedDrive`
-- `plan:internal/shedrun#DriverLock`
+- `internal/shedrun#DriverLock`
 
 **Intent:**
 D2's liveness at start and resume, and D10: a go-seeded run is driven by `lyx loom drive`, a held driver lock reads as a live driver, and resume spawns a Go driver for a halted go run that has none.

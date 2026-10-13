@@ -15,11 +15,11 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/loomengine#TacklerSettings` -> `type TacklerSettings struct`
-- `plan:internal/loomengine#ResolveTackler` -> `func ResolveTackler(cfg Config, reg modelspec.Registry) (TacklerSettings, error)`
-- `plan:internal/loomengine#ResolveDriverKind` -> `func ResolveDriverKind(cfg Config) string`
-- `plan:internal/loomengine#ValidateLocalValues` -> `func ValidateLocalValues(document []byte) error`
-- `plan:internal/loomengine#TestResolveTackler` -> `func TestResolveTackler(t *testing.T)`
+- `internal/loomengine#TacklerSettings`
+- `internal/loomengine#ResolveTackler`
+- `internal/loomengine#ResolveDriverKind`
+- `internal/loomengine#ValidateLocalValues`
+- `internal/loomengine#TestResolveTackler`
 
 **Intent:**
 D1's and D7's loom keys, every one open to the local layer so `run_settings` sets it per task.

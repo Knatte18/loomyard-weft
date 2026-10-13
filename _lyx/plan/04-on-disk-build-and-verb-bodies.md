@@ -1,11 +1,11 @@
 # Card 4 — on-disk-build-and-verb-bodies
 
 **Create:**
-- `plan:internal/buildvcs#OfFile` -> `func OfFile(path string) (Identity, error)`
-- `plan:internal/buildvcs#TestOfFile` -> `func TestOfFile(t *testing.T)`
-- `plan:internal/shedverbs#RunUntilStop` -> `func RunUntilStop(ctx context.Context, spec *Spec, argv []string, attempt string, out io.Writer) int`
-- `plan:internal/shedverbs#RunGoto` -> `func RunGoto(ctx context.Context, spec *Spec, target string) (shedengine.Status, error)`
-- `plan:internal/shedverbs#LastStepBuildChanged` -> `func LastStepBuildChanged(stepsDir string, against buildvcs.Identity) bool`
+- `internal/buildvcs#OfFile`
+- `internal/buildvcs#TestOfFile`
+- `internal/shedverbs#RunUntilStop`
+- `internal/shedverbs#RunGoto`
+- `internal/shedverbs#LastStepBuildChanged`
 
 **Edit:**
 - `internal/shedverbs#stepCmd`
