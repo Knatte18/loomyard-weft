@@ -19,12 +19,6 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **reed: overview window first, agents next, shell last**<br>• Window 0 is the run overview for any shed run, each spawned agent gets the next windows, Selvage is the last window named shell; attach shows the most relevant agent | [`reed-window-order`](design-reed-window-order.md) | loom | Discussion-Burler-Review | 3h | 1h | reed, loom, shed |
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | At | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **Shuttle gate ends a twill writer mid-turn**<br>• The gate released a held turn start against a pane that looked idle and ended Plan-Write before the lens review | [`shuttle-gate-early-done`](design-shuttle-gate-early-done.md) | loom | Finalize | 2h | 2h | shuttle, loom |
-
 ### Ready
 
 Waits on nothing open; can start now.
@@ -117,3 +111,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 18 | **Scoped build and test for C# hubs on Windows**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 1d | 1d | shed, webster |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Shuttle gate ends a twill writer mid-turn**<br>• The gate released a held turn start against a pane that looked idle and ended Plan-Write before the lens review | [`shuttle-gate-early-done`](design-shuttle-gate-early-done.md) | 2h | 2h | shuttle, loom |
