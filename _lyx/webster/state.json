@@ -1,6 +1,6 @@
 {
   "runGuid": "af4599ed6856bb970196499302530e1a",
-  "planFingerprint": "fd87ba7cb77dee1801bab5878e94688873d570543d56251a8efafc12a5e95513",
+  "planFingerprint": "0bc670ce747606506fda818631a94ccddfe8a9bed3edb39e49003d8ecc5a1721",
   "planFileHashes": {
     "00-overview.md": "4f82a6eafc57ad982a367eb72ab02e1034f74964f9fda7bbc640b7707d07cbd2",
     "01-relaunch-in-effect-signal.md": "2fdd955b14b0c89f6f17cdcb780d7494c921b2e527bef1ec0a03252805e8f6cf",
@@ -8,7 +8,7 @@
     "03-arbiter-verify-halt.md": "5442f15fc7bc0f60eda2d9278d73690ae4530c5ff3e95dd17532f78444356cdf",
     "04-peers-row.md": "7b46362d506d3fe2f2af9511b136f54c17eacb47afb11b0a4e04bd3385b89efc",
     "05-alignment-arbiter-stencils.md": "4fa769b89e542b3fa49d6542f15fd88e8ebfb05f2b6d350bb843b97b333ef92b",
-    "06-scope-guard-files.md": "47410f5f5c9e59b849859a99b66764621901e360947cbbac2a31413f3c82ff7f",
+    "06-scope-guard-files.md": "10030f6e4c195fb99488e146ab51d7eddc9ef9f62c2b431ca065f7bfa4a6bb8f",
     "07-webster-guard-deviations.md": "8c0872f20b9a0005bb1de8c253336092115e5b06875a4cdc1583793c813c2015",
     "08-webster-stencils-deviations.md": "7464a75b1ada6f0ae63686ff44f4dd86c7eafa15a0b189536da693a9b46d985c"
   },
@@ -189,7 +189,7 @@
       }
     }
   ],
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "60e06f899d30287dd22d26769ca2f7be",
   "masterSessionId": "f4243f09-c131-47f7-aa03-b4dc38650b9f",
   "batches": {
@@ -238,7 +238,7 @@
       ],
       "cardHashes": {
         "05-alignment-arbiter-stencils": "4fa769b89e542b3fa49d6542f15fd88e8ebfb05f2b6d350bb843b97b333ef92b",
-        "06-scope-guard-files": "47410f5f5c9e59b849859a99b66764621901e360947cbbac2a31413f3c82ff7f",
+        "06-scope-guard-files": "10030f6e4c195fb99488e146ab51d7eddc9ef9f62c2b431ca065f7bfa4a6bb8f",
         "07-webster-guard-deviations": "8c0872f20b9a0005bb1de8c253336092115e5b06875a4cdc1583793c813c2015",
         "08-webster-stencils-deviations": "7464a75b1ada6f0ae63686ff44f4dd86c7eafa15a0b189536da693a9b46d985c"
       },
@@ -246,11 +246,26 @@
       "kind": "fork",
       "spawnedAt": "2026-10-13T10:24:11Z",
       "sessionId": "f4243f09-c131-47f7-aa03-b4dc38650b9f",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-alignment-arbiter-stencils",
+        "status": "done",
+        "head_sha": "3b66dbe7459c7be2779d15453d2a6c00ababac58"
+      },
+      "cardShas": [
+        "3b66dbe7459c7be2779d15453d2a6c00ababac58"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-arbiter-fixes/f4243f09-c131-47f7-aa03-b4dc38650b9f/subagents/agent-ad1f6a2d438cb64a7.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-arbiter-fixes/f4243f09-c131-47f7-aa03-b4dc38650b9f/subagents/agent-ad1f6a2d438cb64a7.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-arbiter-fixes/f4243f09-c131-47f7-aa03-b4dc38650b9f/subagents/agent-a8fb887848a71507d.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-arbiter-fixes/f4243f09-c131-47f7-aa03-b4dc38650b9f/subagents/agent-a8fb887848a71507d.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-arbiter-fixes/f4243f09-c131-47f7-aa03-b4dc38650b9f/subagents/agent-ad1f6a2d438cb64a7.jsonl"
   ]
 }

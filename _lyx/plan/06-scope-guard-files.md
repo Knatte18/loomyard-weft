@@ -1,8 +1,8 @@
 # Card 6 — The scope guard names each finding's file and reports changed files no target covers
 
 **Create:**
-- `plan:internal/planparser#RefScope` -> `func RefScope(plan *Plan, ref string) (scope string, isFile bool, ok bool)`
-- `plan:internal/planglyph#TestScopeGuard_FileLevelCoverage` -> `func TestScopeGuard_FileLevelCoverage(t *testing.T)`
+- `internal/planparser#RefScope`
+- `internal/planglyph#TestScopeGuard_FileLevelCoverage`
 
 **Edit:**
 - `internal/planindex#Finding`
