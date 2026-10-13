@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-13 07:19 UTC; every age below is as of then.
+Rendered 2026-10-13 07:20 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Judge settles the review budget cap; arbiter only for stuck runs**<br>• At a spent review budget the judge tags findings mechanical or design-wrong and continues or accepts itself, instead of spawning the arbiter. | [`judge-cap-call`](design-judge-cap-call.md) | loom | Merge-Burler-Review | 16h | 13h | loom, burler |
+| 1 | **Judge settles the review budget cap; arbiter only for stuck runs**<br>• At a spent review budget the judge tags findings mechanical or design-wrong and continues or accepts itself, instead of spawning the arbiter. | [`judge-cap-call`](design-judge-cap-call.md) | loom | Merge-Burler-Fix | 16h | 13h | loom, burler |
 
 #### Normal priority
 
@@ -42,7 +42,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Arbiter relaunch refused when the run already moved to the verdict row**<br>• A resume whose goto matches the row the run already stands on is refused as moved and parks the run. | [`arbiter-relaunch-moved`](design-arbiter-relaunch-moved.md) | 16h | 37m | loom, shed |
+| 1 | **Arbiter relaunch refused when the run already moved to the verdict row**<br>• A resume whose goto matches the row the run already stands on is refused as moved and parks the run. | [`arbiter-relaunch-moved`](design-arbiter-relaunch-moved.md) | 16h | 38m | loom, shed |
 | 2 | **Plan does not surface tests that pin a method set a card extends** | [`plan-pinned-tests`](design-plan-pinned-tests.md) | 16h | 16h | loom |
 | 3 | **Batten sends no notice for a landing that readies nothing**<br>• A plain landing is silent, so the orch misses landings the alignment agent approved. | [`batten-land-notice`](design-batten-land-notice.md) | 13h | 13h | batten |
 | 4 | **Webster deviations list mixes in the batch's own files**<br>• The implementer stencil contradicts itself on deviations; let ScopeGuard alone produce the list | [`webster-deviations-list`](design-webster-deviations-list.md) | 12h | 12h | webster |
