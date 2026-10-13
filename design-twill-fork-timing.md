@@ -16,6 +16,15 @@ Test Discussion's twill first (operator, 2026-10-13).
 - Spawning before writing was never benched on its own: in `twill-plan` round 1 both writers spawned after writing by mistake, and round 2 changed the spawn point together with the rejection rule and the lenses (`results.md`, "Changes to the prototype").
 - What spawning early may buy: a smaller inherited context per fork turn, and forks that do not see the writer's drafting, so they judge the written files less anchored to its reasoning.
 
+## Bench result (2026-10-13)
+
+Discussion-Write on the `webster-stability` reference, today's binary, two fresh runs per arm (report `.scratch/twill-fork-timing-bench.md` in the hub prime, until it moves to `docs/research/`):
+
+- Spawning after writing cost $4.44 per run against $5.43 (18 % less), all of it in the forks ($1.29 against $1.86; fork cache writes 5.7k against 13.8k per fork).
+- Quality held: graded 1/5 and 1/4 against 1/5 and 2/4, with about as many lens findings.
+- The after arm also changed the fork boilerplate's read line, so forks review the files they inherited instead of re-reading them.
+- Two runs per arm: a direction, not a measured effect size.
+
 ## Bench to discuss
 
 The question (operator, 2026-10-13): with the same model as today's twill, does spawning after writing give (1) as good a result and (2) a lower cost in money and tokens?
