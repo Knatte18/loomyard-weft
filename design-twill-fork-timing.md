@@ -103,4 +103,20 @@ Fallback, if keeping fork0 alive fails: fork0 writes a second file with its rati
 
 Measure against the after arm and the fork0 arm: cost per plan, fork0's await calls and cache writes, lens findings, rejected findings and the grade on the key.
 
+## Plan bench, fork0 stays alive (2026-10-13)
+
+Two runs (`twb-ftr-1`, `-2`), same reference and setup, $10.74; all six plans of both rounds re-graded by one fresh grader session; report section "Round 3" in `docs/research/twill-fork-timing-plan-bench.md`, evidence and the merge script in the hub prime's `.scratch/twill-fork-timing-plan/alive/`.
+
+| Arm | Total per plan | Lens forks | Key repeated + partly, both runs |
+|---|---|---|---|
+| after | $4.60 | $0.94 | 8 |
+| fork0 | $4.40 | $0.94 | 11 |
+| alive | $5.37 | $1.33 | 9 |
+
+- The mechanism works: one findings file per lens, a mechanical merge, one wait call of about 2 minutes, and fork0's cache stayed warm (about 300 tokens written on waking against 184–205k read).
+- Fixing with fork0's own reasoning did not help: ftr-1 repeated both of the fork0 arm's misses (J1, J5); fork0 rejected 0 and 2 findings, both rejections right.
+- The extra cost is fork0's revise phase ($0.56–0.78 per run) and lens forks that inherited more context.
+
+Bench verdict: no quality gain for $0.75–1.00 more per plan; the after arm (writer fixes its own plan) stays the best choice, and neither fork0 variant is worth building on this evidence.
+
 Ideas from the bench agent, untested: merge two lenses (for instance `test-economy` into `row-reachability`), have forks batch their reads into one or two calls, and cut the writer's `validate-plan` rounds (the writer is about $4 of $5.6 per plan).
