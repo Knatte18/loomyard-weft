@@ -1,0 +1,234 @@
+{
+  "runGuid": "b55543f4c552e98fb3c707f463b117b5",
+  "planFingerprint": "86e1f9690d3c776bdb3660529a3b71ad6c1e901864371a0cd09491ba9e8dddd9",
+  "planFileHashes": {
+    "00-overview.md": "c6fd963c820d0e836604d3df5574381bb79b11cd1cc83b954688d6138322546b",
+    "01-selfexec-helper.md": "ad44101b6a95a6d5ad5e006de8858c6754ec237e577db65583fe8eed7171d952",
+    "02-checklist-frame.md": "2698e8a67b4b41968c416f4fec273cb8493fd59b558ea1bde2c17e5d1f146114",
+    "03-plain-overview-panes.md": "c1f1f15416ee63b329284e912d7d2685997609cdbad7fa4223eef08ffd240770",
+    "04-reapply-no-zoom-flicker.md": "b4394b40fc2d848fac30b3ee94b47402dd3adef1c5c93161cc83b98ac7a60e09",
+    "05-window-order-and-shell.md": "cf3f4ac82ee7ddb04a991b68d709835b2dc794b1a9f1edca53342f796d944015",
+    "06-overview-anchor.md": "0ec8dd06e7e7b10c8787b957160202fcbf433919f7499cb133a020f8894772a4",
+    "07-focus-rules.md": "0e42080915fa513d4154f0eb019af59559688cebd3887e13bc0962c39963ec7c",
+    "08-window-navigation-bar.md": "b9500b5c15e62b570291d5b7a439015ae8facfe5486a8f443db1d37883bded7a",
+    "09-strand-placements.md": "84b617ef823339f6f4d5684bc94bbc04aeac894196bdccf7b6365812829e44cb"
+  },
+  "planOverviewFrameHash": "57fc6cc1adf3c737d99db798ebb74af259d0b01fc2d9876516a31f75a0d19e51",
+  "partition": [
+    {
+      "cards": [
+        "01-selfexec-helper",
+        "02-checklist-frame",
+        "03-plain-overview-panes",
+        "04-reapply-no-zoom-flicker",
+        "05-window-order-and-shell"
+      ],
+      "profile": "cautious",
+      "estimate": 300210,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54412,
+        "read_union": 58508,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 612,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1776,
+              "file:docs/overview.md": 8952,
+              "file:pattern/PATTERN-leaf-packages.md": 828,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/selfexec": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/selfexec": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 90,
+            "written": 27612
+          },
+          {
+            "card": 2,
+            "card_text": 552,
+            "reads": {
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 102,
+            "written": 31152
+          },
+          {
+            "card": 3,
+            "card_text": 636,
+            "reads": {
+              "file:internal/statuspane/doc.go": 240,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/statuspane": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/statuspane": 2000
+            },
+            "messages": 146.5,
+            "written": 44586
+          },
+          {
+            "card": 4,
+            "card_text": 504,
+            "reads": {
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 101.5,
+            "written": 30954
+          },
+          {
+            "card": 5,
+            "card_text": 936,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1776,
+              "file:internal/reedengine/doc.go": 11472,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 173.5,
+            "written": 52986
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-overview-anchor",
+        "07-focus-rules",
+        "08-window-navigation-bar",
+        "09-strand-placements"
+      ],
+      "profile": "cautious",
+      "estimate": 315514,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61412,
+        "read_union": 69020,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 684,
+            "reads": {
+              "file:internal/reedengine/doc.go": 11472,
+              "package:internal/reedengine": 2000,
+              "package:internal/reedengine/render": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/reedengine/render": 2000
+            },
+            "messages": 159,
+            "written": 48384
+          },
+          {
+            "card": 7,
+            "card_text": 756,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1776,
+              "file:internal/reedengine/doc.go": 11472,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 131.5,
+            "written": 40206
+          },
+          {
+            "card": 8,
+            "card_text": 564,
+            "reads": {
+              "file:internal/reedengine/doc.go": 11472,
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 131.5,
+            "written": 40014
+          },
+          {
+            "card": 9,
+            "card_text": 528,
+            "reads": {
+              "file:docs/overview.md": 8952,
+              "file:internal/loomcli/doc.go": 2496,
+              "file:internal/orchengine/doc.go": 4860,
+              "file:internal/shuttleengine/doc.go": 4932,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/orchengine": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/orchengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 186.5,
+            "written": 56478
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "780b114868974159cbfab70661a41bdf",
+  "masterSessionId": "7b08a054-ac62-4a0a-ba19-f2645ffb3e7f",
+  "batches": {
+    "1": {
+      "slug": "selfexec-helper",
+      "cards": [
+        "01-selfexec-helper",
+        "02-checklist-frame",
+        "03-plain-overview-panes",
+        "04-reapply-no-zoom-flicker",
+        "05-window-order-and-shell"
+      ],
+      "cardHashes": {
+        "01-selfexec-helper": "ad44101b6a95a6d5ad5e006de8858c6754ec237e577db65583fe8eed7171d952",
+        "02-checklist-frame": "2698e8a67b4b41968c416f4fec273cb8493fd59b558ea1bde2c17e5d1f146114",
+        "03-plain-overview-panes": "c1f1f15416ee63b329284e912d7d2685997609cdbad7fa4223eef08ffd240770",
+        "04-reapply-no-zoom-flicker": "b4394b40fc2d848fac30b3ee94b47402dd3adef1c5c93161cc83b98ac7a60e09",
+        "05-window-order-and-shell": "cf3f4ac82ee7ddb04a991b68d709835b2dc794b1a9f1edca53342f796d944015"
+      },
+      "startSha": "a90ef61d1525f9b808e5895accacfc8dc37aa5ba",
+      "kind": "fork",
+      "spawnedAt": "2026-10-13T13:52:17Z",
+      "sessionId": "7b08a054-ac62-4a0a-ba19-f2645ffb3e7f",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
