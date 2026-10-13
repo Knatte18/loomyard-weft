@@ -1,6 +1,6 @@
 # Audit glyph use in Webster, the kick-start pack first
 
-`glyph-use-audit` · Note · enhancement, webster, burler, quarry
+`glyph-use-audit` · Note · audit, webster, burler, quarry
 
 ## Idea (operator, 2026-10-12)
 
