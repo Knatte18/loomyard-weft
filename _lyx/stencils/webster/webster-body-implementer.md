@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=64df92a040ad95956712f11039bf1958c763b301cb3baaf45e6a557e75b24353 build=1135939906fcdddd4cfdcf1bd7b46ad7ace09268 time=2026-10-12T11:39:01Z -->
+<!-- lyx-stencil: sha256=2d09513492d9331ed229b8931c48a5c81830bce704158b87ec74378996deb430 build=30385e1ae3cd25497f9b9d6d2a9848ce19516dad time=2026-10-13T10:42:56Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -12,6 +12,7 @@
 
 This is the immediately preceding batch's own persisted digest, rendered as a fixed one-line summary by `begin-batch` — the literal string `none (first batch)` when you are the first executed batch's fork.
 It is Go-rendered from the persisted record, never something you need to go derive yourself.
+The line's `scope-guard deviations` are the files record-batch's scope guard found changed outside that batch's targets.
 
 ## Where and how you run commands
 
@@ -92,14 +93,13 @@ A failure the card did not cause is never yours to fix and never a `FAILED` on i
 
 Your LAST action of this session — after every card above is committed (or you have given up per the bound above) — is writing the batch-report YAML file to `{{.report_path}}`.
 Nothing you do after this file exists is read by anyone: write it last, and write it exactly once.
-The report is deliberately minimal — Master reads ONLY these three fields:
+The report is deliberately minimal — Master reads ONLY these two fields:
 
 ```yaml
 status: OK | FAILED
 head_sha: <the commit SHA your worktree is at right now>
-deviations:
-  - <path>
 ```
 
 `status` is `OK` when every card above is committed and every gate it ran, the batch gate included, passed;
-`FAILED` when you stopped after exhausting the self-fix bound on some card or on the batch gate, whether its gate failed or a test the card broke did. `head_sha` is your worktree's current HEAD commit SHA — capture it with `git rev-parse HEAD` as your very last read before writing the report, so it reflects every commit you made. `deviations` is the list of worktree-relative paths you changed OUTSIDE the deviation union — the batch's own target glyphs across its cards, reported as the paths you touched rather than resolved by you: under the glyph alphabet a symbol-shaped target is a glyph, not a package-qualified name, and the mechanical glyph scope guard (`internal/planglyph`'s `ScopeGuard`, run over the record-batch delta) is what actually compares your work against the union — your own job here is only to report what you touched, never to estimate the comparison yourself. `Uses:` stays out of the union because it is read rather than written. Omit `deviations` entirely when you made no such changes. `deviations` is ALWAYS informational: a non-empty list never makes `status` `FAILED` on its own — only a failed card gate, a failed card `verify:`, a failed batch gate or a test the card broke does, never a slot-busy exit.
+`FAILED` when you stopped after exhausting the self-fix bound on some card or on the batch gate, whether its gate failed or a test the card broke did. `head_sha` is your worktree's current HEAD commit SHA — capture it with `git rev-parse HEAD` as your very last read before writing the report, so it reflects every commit you made.
+Only a failed card gate, a failed card `verify:`, a failed batch gate or a test the card broke makes `status` `FAILED`, never a slot-busy exit.

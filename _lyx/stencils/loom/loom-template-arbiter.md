@@ -8,7 +8,7 @@
      {{.parent_directive}} the no-parent variant of the shared parent directive rendered by internal/parentdirective,
      and {{.edit_directive}} the shared edit directive rendered by internal/editdirective.
      The body is recipe-blind: it names no recipe and no row, which arrive only through the stop envelope and the files it points at.
-lyx-stencil: sha256=7bc1aa8c648d659ef888bd89bf9fded2352b638b1dc3824492cf2e899a0b5b1b build=1c812c1f84c9651d97a852e09b613d80ed075b9c time=2026-10-13T08:25:18Z -->
+lyx-stencil: sha256=d254b7c715c4bbd743b8fc98354d8b3353408c1ee23afd266f99ab07b1a4342a build=30385e1ae3cd25497f9b9d6d2a9848ce19516dad time=2026-10-13T10:42:56Z -->
 
 # Arbiter for run `{{.run_id}}`
 
@@ -29,7 +29,7 @@ You start cold: everything you know comes from the files below.
 - The driver's stop or fork report `{{.report_path}}`.
 - The review escalation brief `{{.brief_path}}` and the review rounds it names.
 - The tackler's case brief `{{.case_brief_path}}`.
-- The task's board entry, from `lyx board get {{.slug}}`.
+- The task's board entry, from `lyx board get '{"slug":"{{.slug}}"}'`.
 - The decision record `{{.decision_record_path}}` and the support log `{{.support_log_path}}`, when they exist.
 - Any read-only `lyx` command or file in `{{.worktree}}`.
 

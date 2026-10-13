@@ -3,7 +3,7 @@
      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the codebase and the plan once, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lyx/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive. parent_directive is a third optional marker, rendered by internal/parentdirective. edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=3f4f820bc0b00c14fa4ca0eb6a47511437259d97a938092ec5e4b927c9296fa3 build=ad900dc11d4694d14b46c171b8947664ed061026 time=2026-10-12T13:43:16Z -->
+lyx-stencil: sha256=d8fc1825c210942fd12a040dc1902ab8633b812a5fdb5f6d0a49a688176d8158 build=30385e1ae3cd25497f9b9d6d2a9848ce19516dad time=2026-10-13T10:42:56Z -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -98,7 +98,7 @@ and you read ONLY these fields:
 - `dead_reason`
 - `elapsed_s`
 
-`deviations` is ALWAYS informational — files a fork changed outside its batch's declared file-ops, never a reason a batch is `stuck` on its own.
+`deviations` is the list of files record-batch's glyph scope guard found changed outside the batch's own targets, ALWAYS informational and never a reason a batch is `stuck` on its own.
 You never read raw fork output beyond its own turn, and you never open a file to double-check the digest — this is the only implementer output you ever see, by design.
 
 ## The failure ladder
@@ -241,8 +241,8 @@ batches_done: <int>
 and a single line naming the batch and the blocker for `stuck`. `batches_done` counts every batch in your batch list whose status is `done` when you write this file — including batches your Progress section already listed as `done` before a resume, so the count always describes the whole plan's progress, never just this session's own share of it.
 
 `{{.summary_path}}` is a prose narrative built strictly from the minimal reports and digests you actually read — never a fork's own success narrative (forks never write prose narratives;
-their whole report is `status`/`head_sha`/`deviations`);
-first line `# <title>`, then a narrative of what was actually built, including any reported deviations from the plan's declared file-ops — required whenever `outcome: done`.
+their whole report is `status`/`head_sha`);
+first line `# <title>`, then a narrative of what was actually built, naming each batch's deviations from the digest's list, the scope guard's result — required whenever `outcome: done`.
 
 ## Tuning knobs
 
