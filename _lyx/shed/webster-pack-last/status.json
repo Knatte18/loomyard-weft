@@ -1,12 +1,12 @@
 {
   "current_producer": "Land",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "deploy failed: exit code 1; log: /home/knatte/Code/loomyard-LYXHUB/loomyard/.lyx/shed/webster-pack-last/Land-deploy.log; way forward: fix the cause, then run \"lyx batten run webster-pack-last\" from the prime",
   "pause_requested": false,
   "activity": {
     "now": "Land",
-    "last": "Run-Shed → done",
-    "wait": ""
+    "last": "Land → stuck",
+    "wait": "deploy failed: exit code 1; log: /home/knatte/Code/loomyard-LYXHUB/loomyard/.lyx/shed/webster-pack-last/Land-deploy.log; way forward: fix the cause, then run \"lyx batten run webster-pack-last\" from the prime"
   },
   "history": [
     {
@@ -89,6 +89,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-13T14:43:55Z"
+    },
+    {
+      "producer": "Land",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-13T14:43:58Z"
     }
   ]
 }
