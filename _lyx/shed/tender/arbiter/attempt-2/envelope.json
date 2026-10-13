@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Review escalation at Discussion-Bouncer round 4, cause hard-cap, so the segment can only be accepted. The rule is to accept when each open design-wrong finding is wrong or the fix in place answers it. The round-4 reviewer returned APPROVED with four findings (three MEDIUM design, one LOW decision), and the round-4 fixer applied each as proposed with none disputed or deferred. Each fix is in the current decision record. F1 (d5-revive-pause-race): D5 lines 87-89 now separate the late-turn-start case from the turn that ends before the poll, state that a late turn runs under the live entry unrecorded, and bound it by revive's \"sent with no turn start seen\" report and lyx tender status; Acceptance line 182 now matches. F2 (d5-revive-sends-keys): D5 line 76 refuses the rewind picker and a lone stray character at once with no key sent and never clears unlanded text; line 81 names the dropped closes and clears, so the \"sends no key\" bound on line 96 holds; Acceptance line 183 names both refusals. F3 (d5-conditioned-send-lock-hold-unbounded): D5 lines 91-94 state the hold as one ready reading plus at most two submit windows, and say the pane captures wait on reed's operation lock and an untimed tmux call, so the windows bound the polling only. F4 (d5-revive-lock-without-write-undecided): D5 line 84 picks running inside pauserecord.Update with a mutate that changes no entry and accepts the prune; line 96 now reads \"changes no live entry\". The code facts these fixes rest on check out: pauserecord.Update prunes via withoutExpired under state.UpdateJSON (record.go:101-107); closePickerBeforeSend, clearStrayCharacter, clearUnlandedText and awaitIdleSession exist in shuttleengine; reedengine io.go wraps its pane calls in withOpLock; pauseengine's grace poll breaks on anyBusy (pause.go:140). The fixes stay inside the board entry's revive and pause scope and need no operator call. The arbiter made no design call of its own, so no decision was added. The named driver report drive-report-20261013-165832-338a.md does not exist; the drive-reports directory is empty.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling accept tender"
+  ],
+  "cause": "",
+  "attempt": 2,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/tender/_lyx/shed/tender/arbiter/attempt-2",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/tender/_lyx/shed/tender/arbiter/attempt-2/verdict.yaml",
+  "relaunch": "lyx shed step tender --until-stop --arbiter-attempt 2"
+}
