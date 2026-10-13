@@ -36,3 +36,14 @@ Windows give more room than panes in one window, so:
 - Alt+Up and Alt+Down step across every window in that order.
 - The overview's content: the full row list with time and rounds, the wait reason in full (an escalation waiting on the parent named as such), and how the operator scrolls to a row's detail.
 - The status pane restarting on the new binary after a deploy, so a fix reaches runs already in flight.
+
+## Zoom flicker (2026-10-13)
+
+Cause: the hub's resize watchdog (pid 3854, started 2026-10-08, exe deleted so it runs the old binary) is in poll mode and calls `reapplyLayout` every 2 s per session.
+`reapplyLayout` wraps its whole body in `keepZoomLocked` (`internal/reedengine/reapply.go:130`), and `keepZoomLocked` unzooms before running the step and re-zooms after it (`internal/reedengine/zoom.go:57-76`), even when the step is a no-op or fails.
+So a zoomed strands' window is unzoomed and re-zoomed every poll cycle, which is the flicker.
+Evidence: `_board/.lyx/logs/trace-20261008T181526Z-f2e3f7df172f3d30-3854.log` holds about 29000 lines of `reed: resize re-apply failed`, one per session every 2 s (`session=logging-cleanup` last at 10:07:04, then the sink hit its size cap); the error is `plan layout: render: strand ... uses deferred anchor "own-window"`, which the old binary raises for any session holding an own window (both sessions have one: `burler-review-chair`, `webster`).
+A failed apply counts as "no change" only in current source (`watchloop.go:204-208`), and the old binary kept the 2 s cadence, so it never backed off.
+Ruled out: the status pane redraws only when its text changes (`internal/statuspane/pane.go:96-103`; capture was stable over several samples) and reports rows only on a count change; the status bar interval is 15 s (`status-interval`); `reed-resize.signal` mtimes (11:16 and 11:20) show no periodic window resize, so the `window-resized` hook is not firing.
+Own windows with no zoom avoid it: `keepZoomLocked` reads the strands' window only, finds `window_zoomed_flag` 0 and runs the step plain, so nothing is toggled; a window the watchdog never touches is never unzoomed.
+Fix direction: restart the watchdog on the new binary after a deploy (the board item above already asks the same of the status pane), and make `reapplyLayout` read the live box before `keepZoomLocked`, so a skipped or failing apply never unzooms.
