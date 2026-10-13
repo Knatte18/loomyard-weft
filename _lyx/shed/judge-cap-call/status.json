@@ -1,12 +1,13 @@
 {
   "current_producer": "PR-Gate",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "alignment report /home/knatte/Code/loomyard-LYXHUB/judge-cap-call/_lyx/shed/judge-cap-call/alignment/pr-gate/attempt-1/report-560d6fda7c6d71ba.md did not settle this pull request - Peer go-driver-assistant (at Webster) and judge-cap-call (at PR-Gate) both change internal/loomengine/config.go, config_test.go and template.yaml, internal/loomcli/wiring.go, internal/configreg/runsettings_test.go, contracts/stencils/stencils.go and claims_test.go, contracts/stencils/loom/loom-template-arbiter.md and contracts/specs/refusal-spec.md. go-driver-assistant's decision record (Added after Discussion, parent, 2026-10-12) says go-driver-assistant lands before judge-cap-call and judge-cap-call takes the arbiter-stencil, loom-config and loomcli/doc.go changes at Merge-In, because the run further along lands first. judge-cap-call is now the run further along. Should judge-cap-call land now, with go-driver-assistant taking the shared files at its own Merge-In, or wait at PR-Gate until go-driver-assistant lands, as recorded?; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/600",
+  "parent_notice": "alignment report /home/knatte/Code/loomyard-LYXHUB/judge-cap-call/_lyx/shed/judge-cap-call/alignment/pr-gate/attempt-1/report-560d6fda7c6d71ba.md did not settle this pull request - Peer go-driver-assistant (at Webster) and judge-cap-call (at PR-Gate) both change internal/loomengine/config.go, config_test.go and template.yaml, internal/loomcli/wiring.go, internal/configreg/runsettings_test.go, contracts/stencils/stencils.go and claims_test.go, contracts/stencils/loom/loom-template-arbiter.md and contracts/specs/refusal-spec.md. go-driver-assistant's decision record (Added after Discussion, parent, 2026-10-12) says go-driver-assistant lands before judge-cap-call and judge-cap-call takes the arbiter-stencil, loom-config and loomcli/doc.go changes at Merge-In, because the run further along lands first. judge-cap-call is now the run further along. Should judge-cap-call land now, with go-driver-assistant taking the shared files at its own Merge-In, or wait at PR-Gate until go-driver-assistant lands, as recorded?",
   "pause_requested": false,
   "activity": {
     "now": "PR-Gate",
-    "last": "PR-Align → done",
-    "wait": ""
+    "last": "PR-Gate → awaiting",
+    "wait": "alignment report /home/knatte/Code/loomyard-LYXHUB/judge-cap-call/_lyx/shed/judge-cap-call/alignment/pr-gate/attempt-1/report-560d6fda7c6d71ba.md did not settle this pull request - Peer go-driver-assistant (at Webster) and judge-cap-call (at PR-Gate) both change internal/loomengine/config.go, config_test.go and template.yaml, internal/loomcli/wiring.go, internal/configreg/runsettings_test.go, contracts/stencils/stencils.go and claims_test.go, contracts/stencils/loom/loom-template-arbiter.md and contracts/specs/refusal-spec.md. go-driver-assistant's decision record (Added after Discussion, parent, 2026-10-12) says go-driver-assistant lands before judge-cap-call and judge-cap-call takes the arbiter-stencil, loom-config and loomcli/doc.go changes at Merge-In, because the run further along lands first. judge-cap-call is now the run further along. Should judge-cap-call land now, with go-driver-assistant taking the shared files at its own Merge-In, or wait at PR-Gate until go-driver-assistant lands, as recorded?; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/600"
   },
   "history": [
     {
@@ -254,6 +255,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-13T07:24:21Z"
+    },
+    {
+      "producer": "PR-Gate",
+      "outcome": "awaiting",
+      "output": "",
+      "at": "2026-10-13T07:24:27Z"
     }
   ],
   "product": {
