@@ -1,10 +1,10 @@
 # Card 2 — claudeengine-turn-progress
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#Claude.TurnStartProgress` -> `func (c *Claude) TurnStartProgress(turnStart shuttleengine.SessionSignal) shuttleengine.TurnProgress`
-- `plan:internal/shuttleengine/claudeengine#newestTurnProgress` -> `func newestTurnProgress(data []byte) (progress shuttleengine.TurnProgress, found bool)`
-- `plan:internal/shuttleengine/claudeengine#scanTurnStartTranscript` -> `func scanTurnStartTranscript(turnStart shuttleengine.SessionSignal, scan func(data []byte) bool)`
-- `plan:internal/shuttleengine/claudeengine#TestTurnStartProgress` -> `func TestTurnStartProgress(t *testing.T)`
+- `internal/shuttleengine/claudeengine#Claude.TurnStartProgress`
+- `internal/shuttleengine/claudeengine#newestTurnProgress`
+- `internal/shuttleengine/claudeengine#scanTurnStartTranscript`
+- `internal/shuttleengine/claudeengine#TestTurnStartProgress`
 - `internal/shuttleengine/claudeengine/testdata/turnprogress/prompt.jsonl`
 - `internal/shuttleengine/claudeengine/testdata/turnprogress/task-notification.jsonl`
 - `internal/shuttleengine/claudeengine/testdata/turnprogress/tool-result.jsonl`

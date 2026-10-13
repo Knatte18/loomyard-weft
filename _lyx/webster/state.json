@@ -1,10 +1,10 @@
 {
   "runGuid": "22ab3eed0256fdbc330e347befc35799",
-  "planFingerprint": "5904c639e558b6ba719f6148c0b9d50ff3a427f857ab0ae1d6a50ece5fa78824",
+  "planFingerprint": "09872366e51bb0708d079f1c6ba15c6f084e3c34c5e0c5a1f2479c007da5d48e",
   "planFileHashes": {
     "00-overview.md": "6ae4939d56da66d5e2455a8478e560f244895a44ed9a372ec66142f3437a255b",
-    "01-shuttle-turn-in-flight-veto.md": "c027432bb034eccf33d991ae16b86c2acee26d01b29ecfb0076a21e943a5e964",
-    "02-claudeengine-turn-progress.md": "5a5f5059f454fd0e626a5e3a3f00c25bf7c70c5b8bc68c8ff92d9488e2ae771e",
+    "01-shuttle-turn-in-flight-veto.md": "919e254edc8d6f6b1b2b1907d266f149b88206590df8fefdffa4b7857b4bda70",
+    "02-claudeengine-turn-progress.md": "f7205ad89c56fc5382a5ee3695d734f370746052a466e0e25decf9868629db58",
     "03-shuttle-recorded-fork-authorization.md": "c4ce8fcbd3365378f51b094870bc3d8cb4b559130974e435f43095696eac5d63",
     "04-loomshed-lens-review-gate.md": "08b3fc4a72cd6fbfeecbdf4ff297f259333243bcc52d571079f2e1350e39a4b9",
     "05-shedrecipe-plan-write-forked-gate.md": "58d449c5bab6fdfaac898be445113bd3ca490506be669c2da016e8c0c5e0d6ec",
@@ -173,7 +173,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "87c80f66784f642a31e6557b46a9a16b",
   "masterSessionId": "f0236baf-55ec-46a1-be4f-9476cde9089e",
   "batches": {
@@ -185,16 +185,36 @@
         "03-shuttle-recorded-fork-authorization"
       ],
       "cardHashes": {
-        "01-shuttle-turn-in-flight-veto": "c027432bb034eccf33d991ae16b86c2acee26d01b29ecfb0076a21e943a5e964",
-        "02-claudeengine-turn-progress": "5a5f5059f454fd0e626a5e3a3f00c25bf7c70c5b8bc68c8ff92d9488e2ae771e",
+        "01-shuttle-turn-in-flight-veto": "919e254edc8d6f6b1b2b1907d266f149b88206590df8fefdffa4b7857b4bda70",
+        "02-claudeengine-turn-progress": "f7205ad89c56fc5382a5ee3695d734f370746052a466e0e25decf9868629db58",
         "03-shuttle-recorded-fork-authorization": "c4ce8fcbd3365378f51b094870bc3d8cb4b559130974e435f43095696eac5d63"
       },
       "startSha": "30385e1ae3cd25497f9b9d6d2a9848ce19516dad",
       "kind": "fork",
       "spawnedAt": "2026-10-13T11:30:49Z",
       "sessionId": "f0236baf-55ec-46a1-be4f-9476cde9089e",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-shuttle-turn-in-flight-veto",
+        "status": "done",
+        "head_sha": "673469b07073f1a9f23940ab982b2352936c50ff",
+        "deviations": [
+          "internal/shuttleengine/sessionsignal.go"
+        ]
+      },
+      "cardShas": [
+        "673469b07073f1a9f23940ab982b2352936c50ff"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-gate-early-done/f0236baf-55ec-46a1-be4f-9476cde9089e/subagents/agent-adbb80f59410a1e46.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-gate-early-done/f0236baf-55ec-46a1-be4f-9476cde9089e/subagents/agent-adbb80f59410a1e46.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-gate-early-done/f0236baf-55ec-46a1-be4f-9476cde9089e/subagents/agent-adbb80f59410a1e46.jsonl"
+  ]
 }

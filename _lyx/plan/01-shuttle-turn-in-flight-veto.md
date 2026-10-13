@@ -1,13 +1,13 @@
 # Card 1 — shuttle-turn-in-flight-veto
 
 **Create:**
-- `plan:internal/shuttleengine#TurnProgress` -> `type TurnProgress int`
-- `plan:internal/shuttleengine#TurnProgressUnknown` -> `const TurnProgressUnknown TurnProgress = 0`
-- `plan:internal/shuttleengine#TurnInFlight` -> `const TurnInFlight TurnProgress = 1`
-- `plan:internal/shuttleengine#TurnOver` -> `const TurnOver TurnProgress = 2`
-- `plan:internal/shuttleengine#TurnProgressReader` -> `type TurnProgressReader interface`
-- `plan:internal/shuttleengine#sessionFakeEngine.TurnStartProgress` -> `func (e *sessionFakeEngine) TurnStartProgress(SessionSignal) TurnProgress`
-- `plan:internal/shuttleengine#clearableBoxEngine.TurnStartProgress` -> `func (e *clearableBoxEngine) TurnStartProgress(SessionSignal) TurnProgress`
+- `internal/shuttleengine#TurnProgress`
+- `internal/shuttleengine#TurnProgressUnknown`
+- `internal/shuttleengine#TurnInFlight`
+- `internal/shuttleengine#TurnOver`
+- `internal/shuttleengine#TurnProgressReader`
+- `internal/shuttleengine#sessionFakeEngine.TurnStartProgress`
+- `internal/shuttleengine#clearableBoxEngine.TurnStartProgress`
 
 **Edit:**
 - `internal/shuttleengine#unmatchedTurnStart` -> `func unmatchedTurnStart(engine Engine, eventsPath string) (turnStart SessionSignal, restarted, found bool)`
