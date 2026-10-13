@@ -1,11 +1,11 @@
 {
-  "current_producer": "Batchifier",
+  "current_producer": "Webster",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Batchifier",
-    "last": "Plan-Bouncer → done",
+    "now": "Webster",
+    "last": "Batchifier → done",
     "wait": ""
   },
   "history": [
@@ -142,6 +142,12 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/go-driver-assistant/_lyx/reviews/plan/round-2-bouncer-ledger.md",
       "at": "2026-10-13T07:01:08Z"
+    },
+    {
+      "producer": "Batchifier",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-13T07:01:11Z"
     }
   ],
   "product": {
