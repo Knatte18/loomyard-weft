@@ -186,7 +186,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "7850b4544d183ca1e6d046b301a596be",
   "masterSessionId": "d35f1241-daf9-4957-9a42-ca383872235a",
   "batches": {
@@ -230,6 +230,23 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-window-bugs/d35f1241-daf9-4957-9a42-ca383872235a/subagents/agent-aa6ad65f3abd8f611.jsonl"
       ]
+    },
+    "6": {
+      "slug": "loom-fmt-verb",
+      "cards": [
+        "06-loom-fmt-verb",
+        "07-worktree-leftover-retry"
+      ],
+      "cardHashes": {
+        "06-loom-fmt-verb": "e4538f1f49a37b5bc478dfa5f0d284122db84d973e9076b0a4a6781cc10b59d7",
+        "07-worktree-leftover-retry": "53692b85ea80c7ebaeb3bbebefe2526ff6268133db90eff623322c158a4ab19f"
+      },
+      "startSha": "a1b424dfc7edf1c14fd9d849849ebd269565492a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-13T08:20:36Z",
+      "sessionId": "d35f1241-daf9-4957-9a42-ca383872235a",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
