@@ -1,6 +1,6 @@
 # Shuttle gate ends a twill writer mid-turn
 
-`shuttle-gate-early-done` · Task · bug, shuttle, loom · running · Webster-Bouncer
+`shuttle-gate-early-done` · Task · bug, shuttle, loom · running · Webster-Burler-Review
 
 ## Seen (twill Plan fork-timing bench, 2026-10-13)
 
