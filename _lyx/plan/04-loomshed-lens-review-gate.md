@@ -1,9 +1,9 @@
 # Card 4 — loomshed-lens-review-gate
 
 **Create:**
-- `plan:internal/loomshed#ValidatePlanLensReview` -> `func ValidatePlanLensReview(plan *planparser.Plan, anchorPath, worktreeRoot string, index planindex.Index) ([]planindex.Finding, error)`
-- `plan:internal/loomshed#NewLensReviewPlanGate` -> `func NewLensReviewPlanGate(anchorPath, worktreeRoot, scratchDir string, index planindex.Index) shuttleengine.Gate`
-- `plan:internal/loomshed#lensReviewMissingCheck` -> `const lensReviewMissingCheck = "lens-review-missing"`
+- `internal/loomshed#ValidatePlanLensReview`
+- `internal/loomshed#NewLensReviewPlanGate`
+- `internal/loomshed#lensReviewMissingCheck`
 
 **Edit:**
 - `internal/loomshed#TestNewPlanGate`

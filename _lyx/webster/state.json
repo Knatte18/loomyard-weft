@@ -1,14 +1,14 @@
 {
   "runGuid": "22ab3eed0256fdbc330e347befc35799",
-  "planFingerprint": "09872366e51bb0708d079f1c6ba15c6f084e3c34c5e0c5a1f2479c007da5d48e",
+  "planFingerprint": "842f18f0cd51975009e84e8fcb7594d1c48e8370c4f9199ba6f96a5b35d4bb08",
   "planFileHashes": {
     "00-overview.md": "6ae4939d56da66d5e2455a8478e560f244895a44ed9a372ec66142f3437a255b",
     "01-shuttle-turn-in-flight-veto.md": "919e254edc8d6f6b1b2b1907d266f149b88206590df8fefdffa4b7857b4bda70",
     "02-claudeengine-turn-progress.md": "f7205ad89c56fc5382a5ee3695d734f370746052a466e0e25decf9868629db58",
     "03-shuttle-recorded-fork-authorization.md": "c4ce8fcbd3365378f51b094870bc3d8cb4b559130974e435f43095696eac5d63",
-    "04-loomshed-lens-review-gate.md": "08b3fc4a72cd6fbfeecbdf4ff297f259333243bcc52d571079f2e1350e39a4b9",
-    "05-shedrecipe-plan-write-forked-gate.md": "58d449c5bab6fdfaac898be445113bd3ca490506be669c2da016e8c0c5e0d6ec",
-    "06-validate-plan-lens-review.md": "d804f25268f0df57ce632429e1a58624c8e47930b0bde5a1a620dca28b10dad5",
+    "04-loomshed-lens-review-gate.md": "c154aa73598ca916c8322f78c206e967bf04a49de9c5baa7ad325437368e5c31",
+    "05-shedrecipe-plan-write-forked-gate.md": "ab0754811d7db51127f11d75e75a533e78957eeeb0ea348e04489d743096f310",
+    "06-validate-plan-lens-review.md": "51fa13a3626c598299f223593a0f9a15a8ea6587a8c0711982b32ee97119430e",
     "07-twill-final-self-check.md": "8ba04bfb4cff1900fb2a777324dca0341ff800ab29a8b5cefef130f347330324"
   },
   "planOverviewFrameHash": "a61098e7f780e19a4301f52bbbeaf89dd0d60ba1b747e18526549a474bf49844",
@@ -173,7 +173,7 @@
       }
     }
   ],
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "87c80f66784f642a31e6557b46a9a16b",
   "masterSessionId": "f0236baf-55ec-46a1-be4f-9476cde9089e",
   "batches": {
@@ -222,20 +222,38 @@
         "07-twill-final-self-check"
       ],
       "cardHashes": {
-        "04-loomshed-lens-review-gate": "08b3fc4a72cd6fbfeecbdf4ff297f259333243bcc52d571079f2e1350e39a4b9",
-        "05-shedrecipe-plan-write-forked-gate": "58d449c5bab6fdfaac898be445113bd3ca490506be669c2da016e8c0c5e0d6ec",
-        "06-validate-plan-lens-review": "d804f25268f0df57ce632429e1a58624c8e47930b0bde5a1a620dca28b10dad5",
+        "04-loomshed-lens-review-gate": "c154aa73598ca916c8322f78c206e967bf04a49de9c5baa7ad325437368e5c31",
+        "05-shedrecipe-plan-write-forked-gate": "ab0754811d7db51127f11d75e75a533e78957eeeb0ea348e04489d743096f310",
+        "06-validate-plan-lens-review": "51fa13a3626c598299f223593a0f9a15a8ea6587a8c0711982b32ee97119430e",
         "07-twill-final-self-check": "8ba04bfb4cff1900fb2a777324dca0341ff800ab29a8b5cefef130f347330324"
       },
       "startSha": "673469b07073f1a9f23940ab982b2352936c50ff",
       "kind": "fork",
       "spawnedAt": "2026-10-13T11:35:30Z",
       "sessionId": "f0236baf-55ec-46a1-be4f-9476cde9089e",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-loomshed-lens-review-gate",
+        "status": "done",
+        "head_sha": "b61695ae9de0665d426d8c62fe67a1ccb152f1d6",
+        "deviations": [
+          "internal/loomcli/parity_test.go"
+        ]
+      },
+      "cardShas": [
+        "b61695ae9de0665d426d8c62fe67a1ccb152f1d6"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-gate-early-done/f0236baf-55ec-46a1-be4f-9476cde9089e/subagents/agent-a9a60ea3a33a8b382.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-gate-early-done/f0236baf-55ec-46a1-be4f-9476cde9089e/subagents/agent-a9a60ea3a33a8b382.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-gate-early-done/f0236baf-55ec-46a1-be4f-9476cde9089e/subagents/agent-adbb80f59410a1e46.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-gate-early-done/f0236baf-55ec-46a1-be4f-9476cde9089e/subagents/agent-adbb80f59410a1e46.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-gate-early-done/f0236baf-55ec-46a1-be4f-9476cde9089e/subagents/agent-a9a60ea3a33a8b382.jsonl"
   ]
 }

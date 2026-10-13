@@ -1,9 +1,9 @@
 # Card 5 — shedrecipe-plan-write-forked-gate
 
 **Create:**
-- `plan:internal/shedrecipe#planWriteGateSpec` -> `func planWriteGateSpec(cfg Config, env Env) (shuttleengine.GateSpec, error)`
-- `plan:internal/shedrecipe#noFindingsPlanIndex` -> `type noFindingsPlanIndex struct`
-- `plan:internal/shedrecipe#noFindingsPlanIndex.ValidateFormat` -> `func (noFindingsPlanIndex) ValidateFormat(*planparser.Plan, string, []planparser.Card) ([]planindex.Finding, error)`
+- `internal/shedrecipe#planWriteGateSpec`
+- `internal/shedrecipe#noFindingsPlanIndex`
+- `internal/shedrecipe#noFindingsPlanIndex.ValidateFormat`
 
 **Edit:**
 - `internal/shedrecipe#planWriteEntry`

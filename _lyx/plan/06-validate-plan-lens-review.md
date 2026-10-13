@@ -1,7 +1,7 @@
 # Card 6 — validate-plan-lens-review
 
 **Rename:**
-- `internal/loomcli#TestValidatePlanCmd_ReworkAndRequireApprovedAreExclusive` -> `plan:internal/loomcli#TestValidatePlanCmd_ModeFlagsAreExclusive`
+- `internal/loomcli#TestValidatePlanCmd_ReworkAndRequireApprovedAreExclusive` -> `internal/loomcli#TestValidatePlanCmd_ModeFlagsAreExclusive`
 
 **Edit:**
 - `internal/loomcli#loomCLI.validatePlanCmd`
