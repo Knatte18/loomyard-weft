@@ -15,16 +15,16 @@
 - `internal/configreg#TestPrepareRunSettings`
 
 **Create:**
-- `plan:internal/loomengine#Perch` -> `type Perch string`
-- `plan:internal/loomengine#PerchDiscussion` -> `const PerchDiscussion Perch = "discussion"`
-- `plan:internal/loomengine#PerchPlan` -> `const PerchPlan Perch = "plan"`
-- `plan:internal/loomengine#PerchWebster` -> `const PerchWebster Perch = "webster"`
-- `plan:internal/loomengine#PerchMerge` -> `const PerchMerge Perch = "merge"`
-- `plan:internal/loomengine#PerchCaps` -> `type PerchCaps struct`
-- `plan:internal/loomengine#Config.Caps` -> `func (cfg Config) Caps(p Perch) PerchCaps`
-- `plan:internal/loomengine#CapRoute` -> `func CapRoute(dirs configengine.Dirs, key string) (string, error)`
-- `plan:internal/loomcli#loomPerches` -> `var loomPerches map[string]loomengine.Perch`
-- `plan:internal/loomcli#perchHardMaxBounces` -> `func perchHardMaxBounces(cfg loomengine.Config) map[string]int`
+- `internal/loomengine#Perch`
+- `internal/loomengine#PerchDiscussion`
+- `internal/loomengine#PerchPlan`
+- `internal/loomengine#PerchWebster`
+- `internal/loomengine#PerchMerge`
+- `internal/loomengine#PerchCaps`
+- `internal/loomengine#Config.Caps`
+- `internal/loomengine#CapRoute`
+- `internal/loomcli#loomPerches`
+- `internal/loomcli#perchHardMaxBounces`
 
 **Intent:** loom config gains a hard cap per perch that no round passes (D3), refused at load when it cannot hold, and wired into each loom Bouncer row.
 

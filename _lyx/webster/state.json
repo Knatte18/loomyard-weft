@@ -1,6 +1,6 @@
 {
   "runGuid": "3f9ec9976f7a1b53d09bb3726ace571c",
-  "planFingerprint": "8097fd95f2d65a933edc5e17259d489262c8dce2cea577af6de0b44cbc57a72e",
+  "planFingerprint": "dfe79b520a360797b53d157962c4d39b03378e03af8c008738230b236cad1d7b",
   "planFileHashes": {
     "00-overview.md": "e3bc53159537370d243f1d81d0934add8e00f313c71ec640af1041ea6e96b110",
     "01-ledger-fix-tag.md": "d529e33b77306a3f5b2d56239f01ed63bd94d2b59a3669c03c7ff23b78874368",
@@ -8,9 +8,9 @@
     "03-bouncer-hard-cap.md": "21df106b7819fd2866ba11056b311d81c0b4d9b7c12020c589cd60227d3b912a",
     "04-env-hard-cap.md": "d855bc030594988ad27e4145629fc0060f4214b11643c2c701c284c111048ee7",
     "05-soft-cap-rule.md": "99f652217f3f0c76f9da3e4c6c90fb962435b2e1c15d5cd5d6b31d7b395b1ed6",
-    "06-loom-hard-cap-config.md": "5a6a4d4397843a50b165affd35393919fe118573b50c78e373d9d8279af4f310",
+    "06-loom-hard-cap-config.md": "7db99db1f1db64e700fb0c3a9b9c3e764b91f34b3c10f9f3adce30c1a119b0c2",
     "07-darn-hard-cap-config.md": "2edd3fd3c49a3af6d38b0693502fb9876db3536e1de37daa81631db86b9f80b5",
-    "08-circling-continue-hard-cap.md": "aef4bee24072f643da261b4b596d9a7a9119a83ecd8e713e8b9e3c896e1c6cb9",
+    "08-circling-continue-hard-cap.md": "f9937cf29798620f90897923d7ebb7e6c9e0fead10ca363795970a48993d1b08",
     "09-arbiter-orch-stencils.md": "4156a62f0510236bb4e76f7989665fc706d995f2202108425c3a261112e84e0d"
   },
   "planOverviewFrameHash": "a138815585c37942cf92639d292382734c17eba090a20341ac8ff9aa05e55241",
@@ -228,7 +228,7 @@
       }
     }
   ],
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "78cacf6040c0085f7ce19103d6cf830c",
   "masterSessionId": "5e54c777-69bc-47d4-9464-ab6f4f5874bb",
   "batches": {
@@ -278,20 +278,38 @@
         "09-arbiter-orch-stencils"
       ],
       "cardHashes": {
-        "06-loom-hard-cap-config": "5a6a4d4397843a50b165affd35393919fe118573b50c78e373d9d8279af4f310",
+        "06-loom-hard-cap-config": "7db99db1f1db64e700fb0c3a9b9c3e764b91f34b3c10f9f3adce30c1a119b0c2",
         "07-darn-hard-cap-config": "2edd3fd3c49a3af6d38b0693502fb9876db3536e1de37daa81631db86b9f80b5",
-        "08-circling-continue-hard-cap": "aef4bee24072f643da261b4b596d9a7a9119a83ecd8e713e8b9e3c896e1c6cb9",
+        "08-circling-continue-hard-cap": "f9937cf29798620f90897923d7ebb7e6c9e0fead10ca363795970a48993d1b08",
         "09-arbiter-orch-stencils": "4156a62f0510236bb4e76f7989665fc706d995f2202108425c3a261112e84e0d"
       },
       "startSha": "184b6ff9aec6c453f6902484f26d212edbf83d82",
       "kind": "fork",
       "spawnedAt": "2026-10-13T07:01:45Z",
       "sessionId": "5e54c777-69bc-47d4-9464-ab6f4f5874bb",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-loom-hard-cap-config",
+        "status": "done",
+        "head_sha": "0e1daed8f6bfa421e935eea02166ae14c3147e4e",
+        "deviations": [
+          "internal/loomengine/caps.go"
+        ]
+      },
+      "cardShas": [
+        "0e1daed8f6bfa421e935eea02166ae14c3147e4e"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-judge-cap-call/5e54c777-69bc-47d4-9464-ab6f4f5874bb/subagents/agent-ab08250b3fdc342e0.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-judge-cap-call/5e54c777-69bc-47d4-9464-ab6f4f5874bb/subagents/agent-ab08250b3fdc342e0.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-judge-cap-call/5e54c777-69bc-47d4-9464-ab6f4f5874bb/subagents/agent-a9b9e88704c007a7f.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-judge-cap-call/5e54c777-69bc-47d4-9464-ab6f4f5874bb/subagents/agent-a9b9e88704c007a7f.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-judge-cap-call/5e54c777-69bc-47d4-9464-ab6f4f5874bb/subagents/agent-ab08250b3fdc342e0.jsonl"
   ]
 }

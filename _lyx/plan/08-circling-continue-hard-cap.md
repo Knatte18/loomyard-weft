@@ -16,10 +16,10 @@
 - `internal/shedadapters#TestRecordCirclingDecision_WritesPendingFile`
 
 **Create:**
-- `plan:internal/shedadapters#LatestRound` -> `func LatestRound(runDir string) (int, error)`
-- `plan:internal/loomcli#circlingWayHardCap` -> `const circlingWayHardCap = "way forward: fix the file or key the message names, then re-run \"lyx loom circling continue %s\" in place of any \"lyx loom resume\" it names"`
-- `plan:internal/loomcli#perchHardCap` -> `func perchHardCap(location *lyxcwd.Location, row string) (int, string, error)`
-- `plan:internal/loomcli#TestPerchHardCap` -> `func TestPerchHardCap(t *testing.T)`
+- `internal/shedadapters#LatestRound`
+- `internal/loomcli#circlingWayHardCap`
+- `internal/loomcli#perchHardCap`
+- `internal/loomcli#TestPerchHardCap`
 
 **Uses:**
 - `internal/loomengine#LoadConfig`
