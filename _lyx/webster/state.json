@@ -420,7 +420,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 3,
   "masterStrand": "c948d8532832f9fffda626e476eacea9",
   "masterSessionId": "619f85ac-c3bf-4aee-8c58-7c22f14e4b85",
   "batches": {
@@ -454,6 +454,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-logging-cleanup/619f85ac-c3bf-4aee-8c58-7c22f14e4b85/subagents/agent-ab6e328a49b34bf6b.jsonl"
       ]
+    },
+    "3": {
+      "slug": "reed-resize-episode",
+      "cards": [
+        "03-reed-resize-episode",
+        "04-reed-callee-episodes",
+        "05-reed-watchdog-retire",
+        "06-claudeengine-name-read",
+        "07-battencli-create-log",
+        "08-battenshed-wait-levels"
+      ],
+      "cardHashes": {
+        "03-reed-resize-episode": "54fde03cebe6d72846e0ae5caf4701f33e47b9de21e6c0d933a6509e94997ba4",
+        "04-reed-callee-episodes": "ca4eb541648b7daa1498ff8d101feba7227e86a485175f6f2fa81c33179716bf",
+        "05-reed-watchdog-retire": "b5c80d5eac48901b1e41b20787870c05e6ae04ffb981f75815abec372f92d22b",
+        "06-claudeengine-name-read": "62fdc37b574ebfac4e70e03d45455ca155d2c3f2759a3e22074d580e1b265822",
+        "07-battencli-create-log": "fb36751e6c7b1fa7b2b54e773b57833d73937f078839ba83d7f861ec927712e2",
+        "08-battenshed-wait-levels": "8c4f417e09866bd18212efca27e0ac1cd34b76d024e01f4cae8e8f03f5dcd94c"
+      },
+      "startSha": "b2cb6adfca03674ea110cb9baaf2749a821ceb48",
+      "kind": "fork",
+      "spawnedAt": "2026-10-13T10:20:22Z",
+      "sessionId": "619f85ac-c3bf-4aee-8c58-7c22f14e4b85",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
