@@ -1,11 +1,11 @@
 {
-  "current_producer": "Merge-Bouncer",
+  "current_producer": "Publish",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Merge-Bouncer",
-    "last": "Merge-Burler-Fix → bounced to Merge-Bouncer",
+    "now": "Publish",
+    "last": "Merge-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -313,6 +313,12 @@
       "at": "2026-10-13T11:19:43Z",
       "gate_attempts": 0,
       "budget_exempt": true
+    },
+    {
+      "producer": "Merge-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/logging-cleanup/_lyx/reviews/merge/round-1-bouncer-ledger.md",
+      "at": "2026-10-13T11:20:10Z"
     }
   ],
   "product": {
