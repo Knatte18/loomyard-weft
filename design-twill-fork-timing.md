@@ -20,4 +20,7 @@ Test Discussion's twill first (operator, 2026-10-13).
 
 - An A/B on Discussion-Write: spawn before writing against spawn after writing, the same reference records and lenses, more than one run per arm; the `twill-plan` bench is the precedent for the setup.
 - Compare per arm: fork cache writes and reads, total cost, writer time, and the findings against the reference's Discussion-Review findings.
+- The operator's choice for the test arm: spawn the forks after the files are written (2026-10-13).
+- An idea that needs nested forks (operator, 2026-10-13): the writer forks once before writing; while the writer writes, that one fork waits, reads the written files, then forks the N lens forks, which inherit the files from it, so the files are read once instead of N times and the writer's drafting stays out of the lens forks' context.
+  As far as known, Claude Code gives a fork no Agent tool, so forks cannot fork; verify against the current version before designing on it.
 - A third arm to consider: forks spawned early that read the code their lens needs while they wait, and read the written files only after the marker.
