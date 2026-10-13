@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Webster-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Batchifier → done",
+    "now": "Webster-Bouncer",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -201,6 +201,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-13T13:51:20Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/reed-window-order/_lyx/webster/summary.md",
+      "at": "2026-10-13T14:21:57Z"
     }
   ],
   "product": {
