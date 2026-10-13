@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-13 09:16 UTC; every age below is as of then.
+Rendered 2026-10-13 09:17 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -40,9 +40,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-fta-1`](design-twb-fta-1.md) | 25m | 25m |  |
 | 3 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-ftb-2`](design-twb-ftb-2.md) | 13m | 13m |  |
 | 4 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-ftb-3`](design-twb-ftb-3.md) | 13m | 13m |  |
-| 5 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-fta-2`](design-twb-fta-2.md) | 12m | 12m |  |
+| 5 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-fta-2`](design-twb-fta-2.md) | 13m | 13m |  |
 | 6 | **Plan does not surface tests that pin a method set a card extends** | [`plan-pinned-tests`](design-plan-pinned-tests.md) | 18h | 18h | loom |
-| 7 | **reed: strand windows first, Selvage last**<br>• Attach lands on Selvage while the agent works in another window, and Alt+Up/Down cannot reach own-window strands; strand windows first, Selvage last | [`reed-window-order`](design-reed-window-order.md) | 8m | 4m | reed |
+| 7 | **reed: strand windows first, Selvage last**<br>• Attach lands on Selvage while the agent works in another window, and Alt+Up/Down cannot reach own-window strands; strand windows first, Selvage last | [`reed-window-order`](design-reed-window-order.md) | 9m | 5m | reed |
 
 ### Enhancements
 
@@ -51,7 +51,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Audit glyph use in Webster, the kick-start pack first**<br>• Check from transcripts of a smaller task whether Webster forks use the kick-start pack and glyphs as intended | [`glyph-use-audit`](design-glyph-use-audit.md) | 1d | 1h | webster, burler, quarry |
-| 2 | **Model downgrade per role**<br>• Bench cheaper models (Sonnet 5.5, Haiku 5.5) per role by replaying older runs; per-round models and fan vs solo | [`model-downgrade`](design-model-downgrade.md) | 1h | 25m | burler, loom, webster, shuttle |
+| 2 | **Model downgrade per role**<br>• Bench cheaper models (Sonnet 5.5, Haiku 5.5) per role by replaying older runs; per-round models and fan vs solo | [`model-downgrade`](design-model-downgrade.md) | 1h | 26m | burler, loom, webster, shuttle |
 
 #### Normal priority
 
@@ -71,7 +71,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 14 | **lyx report timing: phase minutes, parent waits and agent spawns from run records**<br>• A mechanical per-run and per-day time report beside lyx report convergence, including stops by who settled them. | [`report-timing`](design-report-timing.md) | 18h | 18h | shed, orch |
 | 15 | **Make shuttle and lyx neutral to the LLM provider**<br>• Engine registry, engine in run.json, no Claude names in the core, usage readers behind the engine | [`llm-agnostic-engine`](design-llm-agnostic-engine.md) | 1h | 1h | shuttle, config, stencil |
 | 16 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 37m | 36m | burler, stencil |
-| 17 | **Twill: spawn lens forks before or after writing**<br>• A/B the twill spawn point, Discussion first: forks spawned before writing re-read the output as fresh cache writes, once per fork | [`twill-fork-timing`](design-twill-fork-timing.md) | 32m | 29m | loom, stencil |
+| 17 | **Twill: spawn lens forks before or after writing**<br>• A/B the twill spawn point, Discussion first: forks spawned before writing re-read the output as fresh cache writes, once per fork | [`twill-fork-timing`](design-twill-fork-timing.md) | 33m | 30m | loom, stencil |
 
 #### Low priority
 
