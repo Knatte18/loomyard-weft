@@ -2,13 +2,13 @@
      It is filled via internal/stencil.Fill (internal/loomcli's arbiterPrompt) and typed into the arbiter session as its entire instruction set.
      Every marker below is a top-level {{.X}} substitution and every one is required non-empty:
      {{.run_id}} is the run whose stop is judged, {{.slug}} the task it belongs to, {{.worktree}} the directory every command runs in,
-     {{.envelope_path}} the stop envelope, {{.report_path}} the driver's stop or fork report and {{.brief_path}} the review escalation brief (each the literal `none` when absent),
+     {{.envelope_path}} the stop envelope, {{.report_path}} the driver's stop or fork report, {{.brief_path}} the review escalation brief and {{.case_brief_path}} the tackler's case brief (each the literal `none` when absent),
      {{.decision_record_path}} and {{.support_log_path}} the task's decision record and support log,
      {{.verdict_path}} the one file the arbiter writes,
      {{.parent_directive}} the no-parent variant of the shared parent directive rendered by internal/parentdirective,
      and {{.edit_directive}} the shared edit directive rendered by internal/editdirective.
      The body is recipe-blind: it names no recipe and no row, which arrive only through the stop envelope and the files it points at.
-lyx-stencil: sha256=8699a182a5f631ce849617cbafb98afde27ba6e3fdda76d3d863e22674121249 build=072e2ed86cca361e439c0062b67634777d1b3410 time=2026-10-13T07:25:55Z -->
+lyx-stencil: sha256=7bc1aa8c648d659ef888bd89bf9fded2352b638b1dc3824492cf2e899a0b5b1b build=1c812c1f84c9651d97a852e09b613d80ed075b9c time=2026-10-13T08:25:18Z -->
 
 # Arbiter for run `{{.run_id}}`
 
@@ -28,11 +28,15 @@ You start cold: everything you know comes from the files below.
 - The stop envelope `{{.envelope_path}}`.
 - The driver's stop or fork report `{{.report_path}}`.
 - The review escalation brief `{{.brief_path}}` and the review rounds it names.
+- The tackler's case brief `{{.case_brief_path}}`.
 - The task's board entry, from `lyx board get {{.slug}}`.
 - The decision record `{{.decision_record_path}}` and the support log `{{.support_log_path}}`, when they exist.
 - Any read-only `lyx` command or file in `{{.worktree}}`.
 
 A path reading `none` is absent.
+
+The case brief is a cheaper agent's reading of the stop, not authority.
+Check every fact you rely on against its pointer yourself, and never take its hypothesis as given.
 
 ## What you may change
 
