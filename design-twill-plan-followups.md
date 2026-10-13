@@ -10,14 +10,14 @@ Two items stay open once the `twill-plan` task lands, outside its scope:
   The operator hopes twill lets Plan-Review skip one round on average, which would pay for its cost (about $5 per plan against $2.6 for a single `opus[high]` writer).
   The count of review rounds per segment moved into task `convergence-plan` (2026-10-12), whose report answers this.
 - A miss every twill-plan bench arm shared: a check against the wrong parent directory; no lens or check covers it yet.
-  Records in `.scratch/twill-plan-bench/` in the hub prime.
+  Reports in `docs/research/twill-plan-bench.md` and the `docs/research/twill-plan-bench-*.md` files beside it, token reports in `docs/research/twill-plan-bench/`; raw run records stay in `.scratch/twill-plan-bench/` in the hub prime.
 
 ## First numbers (2026-10-12)
 
 An efficiency audit of the twill planner is wanted later (operator, 2026-10-12).
 Two counts taken today belong to it.
 
-Token use by role over the six newest runs, all planned with twill (`lyx tokencount`, report `.scratch/token-usage-by-role.md` in the hub prime):
+Token use by role over the six newest runs, all planned with twill (`lyx tokencount`, report `docs/research/token-usage-by-role.md`):
 
 - The plan writer's own session dominates, not the four twill forks: 0.7M to 9.9M weight per run against 0.3M to 1.4M for the forks.
   Its cost grows with session length: average cache read per message ran from about 88k (`cleanup-1012`, 42 messages) to about 346k (`lyx-halt`, 236 messages).

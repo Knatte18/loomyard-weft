@@ -17,7 +17,7 @@ First step: short hands-on tests of Codex CLI, since the operator has never used
 
 ## What to test
 
-From the feasibility study (`.scratch/codex-feasibility.md` in the hub prime):
+From the feasibility study (`docs/research/codex-feasibility.md`):
 
 - Drive the interactive TUI in tmux (`--no-alt-screen`): startup, trust prompt, idle and busy readings, bracketed paste, Esc interrupt.
 - Capture hook payloads (SessionStart, Stop, UserPromptSubmit, PermissionRequest) and a session file under `~/.codex/sessions/`, with its `token_count` events.
@@ -27,7 +27,7 @@ From the feasibility study (`.scratch/codex-feasibility.md` in the hub prime):
 
 ## Steps
 
-From `.scratch/codex-feasibility.md`, section 3:
+From `docs/research/codex-feasibility.md`, section 3:
 
 1. Spike: drive Codex in tmux and capture startup, trust, idle, busy and paste behaviour, the hook payloads and a rollout file. Small.
 2. A minimal `codexengine` for the single-session roles: launch line, hook-fed event parsing, startup and trust classifier, send and paste handling. Medium to large, since claudeengine is about 3,900 non-test lines.

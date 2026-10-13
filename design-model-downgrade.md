@@ -11,12 +11,12 @@ Find the roles that can move to a cheaper model (Sonnet 5.5 or Haiku 5.5) withou
 
 Take a few older runs that have landed and replay the same run with the cheaper model in a role, everything else the same.
 Compare cost, turns, rounds, findings, stuck batches and the outcome against the original run.
-LLM runs vary, so run each arm more than once before reading a difference into it; the `twill-plan` bench (`.scratch/twill-plan-bench/` in the hub prime) is the precedent for the setup.
+LLM runs vary, so run each arm more than once before reading a difference into it; the `twill-plan` bench (`docs/research/twill-plan-bench.md`) is the precedent for the setup.
 No model setting changes before the bench has shown it holds.
 
 ## Study (2026-10-13)
 
-Report `.scratch/model-downgrade.md` in the hub prime: every role with its model, where it is set, its cost share over the six runs in `.scratch/token-usage-by-role.md`, a proposal and the risk.
+Report `docs/research/model-downgrade.md`: every role with its model, where it is set, its cost share over the six runs in `docs/research/token-usage-by-role.md`, a proposal and the risk.
 Savings below are estimates from those six runs, not measured.
 
 - Cost is dominated by cache reads in long sessions, and Sonnet 5.5 reads cache at the same price as Opus ($0.20 per million), so Opus to Sonnet saves about 30-40 % of a role's cost; the large saving is Haiku.

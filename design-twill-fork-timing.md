@@ -12,13 +12,13 @@ Test Discussion's twill first (operator, 2026-10-13).
 ## Seen
 
 - The spawn point is one sentence per producer: `internal/loomengine/twill.go:91` for Discussion ("When the design is settled and before you write any output file"), `planTwillSpawnPoint` at `twill.go:66` for Plan.
-- The forks wait on the ready marker and read nothing before it (`contracts/stencils/twill/twill-directive.md`, the fork boilerplate), so spawning early buys no parallel work; in the Plan bench they waited about five minutes each (`.scratch/twill-plan-bench/results.md:172` in the hub prime).
-- Spawning before writing was never benched on its own: in `twill-plan` round 1 both writers spawned after writing by mistake, and round 2 changed the spawn point together with the rejection rule and the lenses (`results.md`, "Changes to the prototype").
+- The forks wait on the ready marker and read nothing before it (`contracts/stencils/twill/twill-directive.md`, the fork boilerplate), so spawning early buys no parallel work; in the Plan bench they waited about five minutes each (`docs/research/twill-plan-bench.md:172`).
+- Spawning before writing was never benched on its own: in `twill-plan` round 1 both writers spawned after writing by mistake, and round 2 changed the spawn point together with the rejection rule and the lenses (`docs/research/twill-plan-bench.md`, "Changes to the prototype").
 - What spawning early may buy: a smaller inherited context per fork turn, and forks that do not see the writer's drafting, so they judge the written files less anchored to its reasoning.
 
 ## Bench result (2026-10-13)
 
-Discussion-Write on the `webster-stability` reference, today's binary, two fresh runs per arm (report `.scratch/twill-fork-timing-bench.md` in the hub prime, until it moves to `docs/research/`):
+Discussion-Write on the `webster-stability` reference, today's binary, two fresh runs per arm (report `docs/research/twill-fork-timing-bench.md`):
 
 - Spawning after writing cost $4.44 per run against $5.43 (18 % less), all of it in the forks ($1.29 against $1.86; fork cache writes 5.7k against 13.8k per fork).
 - Quality held: graded 1/5 and 1/4 against 1/5 and 2/4, with about as many lens findings.

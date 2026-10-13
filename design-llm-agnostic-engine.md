@@ -9,7 +9,7 @@ Rewrite shuttle and the other modules so that holds: lyx is neutral to the LLM, 
 
 ## Seen (feasibility study, 2026-10-13)
 
-Report `.scratch/codex-feasibility.md` in the hub prime. Couplings outside the engine interface:
+Report `docs/research/codex-feasibility.md`. Couplings outside the engine interface:
 
 - The engine choice is hardwired at about 15 call sites (the `wiring.go` files of burlercli, webstercli and loomcli, `loomcli/looparm.go`, `orchcli/cli.go`, `battencli/wire.go`, `pausecli/deps.go`, `shuttlecli/cli.go`, `cliwire/sessionnamer.go`, `shuttleengine/rundir.go`).
   `modelspec` has an `Engine` field, but only `claude` is accepted and nothing reads the resolved engine.
