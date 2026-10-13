@@ -38,6 +38,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Plan does not surface tests that pin a method set a card extends** | [`plan-pinned-tests`](design-plan-pinned-tests.md) | 17h | 17h | loom |
 | 2 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-ftb-1`](design-twb-ftb-1.md) | 0m | 0m |  |
+| 3 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-fta-1`](design-twb-fta-1.md) | 0m | 0m |  |
 
 ### Enhancements
 
