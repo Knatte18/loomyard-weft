@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-13 10:54 UTC; every age below is as of then.
+Rendered 2026-10-13 10:55 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`logging-cleanup`](design-logging-cleanup.md) | loom | Webster | 17h | 3h | batten, reed, orch, fabric |
-| 2 | **Shuttle gate ends a twill writer mid-turn**<br>• The gate released a held turn start against a pane that looked idle and ended Plan-Write before the lens review | [`shuttle-gate-early-done`](design-shuttle-gate-early-done.md) | loom | Discussion-Bouncer | 18m | 18m | shuttle, loom |
+| 2 | **Shuttle gate ends a twill writer mid-turn**<br>• The gate released a held turn start against a pane that looked idle and ended Plan-Write before the lens review | [`shuttle-gate-early-done`](design-shuttle-gate-early-done.md) | loom | Discussion-Burler-Review | 18m | 18m | shuttle, loom |
 
 ### Ready
 
@@ -54,10 +54,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 3 | **twill fork-timing Plan bench pair twb-ftp-s-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-s-1`](design-twb-ftp-s-1.md) | 34m | 34m |  |
-| 4 | **twill fork-timing Plan bench pair twb-ftp-r-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-r-1`](design-twb-ftp-r-1.md) | 34m | 34m |  |
-| 5 | **twill fork-timing Plan bench pair twb-ftp-s-2**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-s-2`](design-twb-ftp-s-2.md) | 34m | 34m |  |
-| 6 | **twill fork-timing Plan bench pair twb-ftp-r-2**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-r-2`](design-twb-ftp-r-2.md) | 34m | 34m |  |
+| 3 | **twill fork-timing Plan bench pair twb-ftp-s-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-s-1`](design-twb-ftp-s-1.md) | 35m | 35m |  |
+| 4 | **twill fork-timing Plan bench pair twb-ftp-r-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-r-1`](design-twb-ftp-r-1.md) | 35m | 35m |  |
+| 5 | **twill fork-timing Plan bench pair twb-ftp-s-2**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-s-2`](design-twb-ftp-s-2.md) | 35m | 35m |  |
+| 6 | **twill fork-timing Plan bench pair twb-ftp-r-2**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-r-2`](design-twb-ftp-r-2.md) | 35m | 35m |  |
 | 7 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 9d | 1h | shuttle |
 | 8 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 8d | 8d | fabric, loom |
 | 9 | **shedrecipe: capability declaration instead of manual seam-threading**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | 8d |  | shed |
