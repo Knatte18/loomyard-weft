@@ -41,6 +41,11 @@ The question (operator, 2026-10-13): with the same model as today's twill, does 
 The Plan-Write bench (spawn-after arm against `twill-plan` Round 2's spawn-before arm, `opus[medium]`) stopped after wave 1: in both runs shuttle ended the writer mid-turn after the last fork finished, so no lens review was written (task `shuttle-gate-early-done`).
 Cost so far, without the writer's review phase: forks $1.16 and $0.95 per run against $1.64, fork cache writes 6.2k and 3.8k against 16–24k; total spend about $10.3 of a $25 cap.
 The operator holds further benches until `shuttle-gate-early-done` lands (2026-10-13); then four fresh spawn-after runs.
+`shuttle-gate-early-done` landed 2026-10-13 (`b1c731a2`).
+
+## Decided (operator, 2026-10-13)
+
+Spawning the lens forks after the files are written goes in; further benches refine it, they do not decide it.
 The pairs `twb-ftp-{s,r}-{1,2}` and the evidence in the hub prime's `.scratch/twill-fork-timing-plan/` stay until then.
 
 Ideas from the bench agent, untested: merge two lenses (for instance `test-economy` into `row-reachability`), have forks batch their reads into one or two calls, and cut the writer's `validate-plan` rounds (the writer is about $4 of $5.6 per plan).
