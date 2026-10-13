@@ -173,7 +173,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "87c80f66784f642a31e6557b46a9a16b",
   "masterSessionId": "f0236baf-55ec-46a1-be4f-9476cde9089e",
   "batches": {
@@ -212,6 +212,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shuttle-gate-early-done/f0236baf-55ec-46a1-be4f-9476cde9089e/subagents/agent-adbb80f59410a1e46.jsonl"
       ]
+    },
+    "4": {
+      "slug": "loomshed-lens-review-gate",
+      "cards": [
+        "04-loomshed-lens-review-gate",
+        "05-shedrecipe-plan-write-forked-gate",
+        "06-validate-plan-lens-review",
+        "07-twill-final-self-check"
+      ],
+      "cardHashes": {
+        "04-loomshed-lens-review-gate": "08b3fc4a72cd6fbfeecbdf4ff297f259333243bcc52d571079f2e1350e39a4b9",
+        "05-shedrecipe-plan-write-forked-gate": "58d449c5bab6fdfaac898be445113bd3ca490506be669c2da016e8c0c5e0d6ec",
+        "06-validate-plan-lens-review": "d804f25268f0df57ce632429e1a58624c8e47930b0bde5a1a620dca28b10dad5",
+        "07-twill-final-self-check": "8ba04bfb4cff1900fb2a777324dca0341ff800ab29a8b5cefef130f347330324"
+      },
+      "startSha": "673469b07073f1a9f23940ab982b2352936c50ff",
+      "kind": "fork",
+      "spawnedAt": "2026-10-13T11:35:30Z",
+      "sessionId": "f0236baf-55ec-46a1-be4f-9476cde9089e",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
