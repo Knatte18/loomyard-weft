@@ -1,13 +1,12 @@
 {
   "current_producer": "PR-Gate",
-  "state": "awaiting",
-  "error": "alignment report /home/knatte/Code/loomyard-LYXHUB/go-driver-assistant/_lyx/shed/go-driver-assistant/alignment/pr-gate/attempt-1/report-567b24cc369decb1.md did not settle this pull request - Peer run-window-bugs overlaps this run in the Go packages internal/loomcli and internal/battencli. Its card 6 (lyx loom fmt) will edit the same AddCommand line in internal/loomcli/cli.go and internal/loomcli/doc.go. The designs do not conflict. May go-driver-assistant, now at PR-Gate, land first, with run-window-bugs taking its loomcli and battencli changes at its own Merge-In, as was decided for judge-cap-call?; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/601",
-  "parent_notice": "alignment report /home/knatte/Code/loomyard-LYXHUB/go-driver-assistant/_lyx/shed/go-driver-assistant/alignment/pr-gate/attempt-1/report-567b24cc369decb1.md did not settle this pull request - Peer run-window-bugs overlaps this run in the Go packages internal/loomcli and internal/battencli. Its card 6 (lyx loom fmt) will edit the same AddCommand line in internal/loomcli/cli.go and internal/loomcli/doc.go. The designs do not conflict. May go-driver-assistant, now at PR-Gate, land first, with run-window-bugs taking its loomcli and battencli changes at its own Merge-In, as was decided for judge-cap-call?",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "PR-Gate",
     "last": "PR-Gate → awaiting",
-    "wait": "alignment report /home/knatte/Code/loomyard-LYXHUB/go-driver-assistant/_lyx/shed/go-driver-assistant/alignment/pr-gate/attempt-1/report-567b24cc369decb1.md did not settle this pull request - Peer run-window-bugs overlaps this run in the Go packages internal/loomcli and internal/battencli. Its card 6 (lyx loom fmt) will edit the same AddCommand line in internal/loomcli/cli.go and internal/loomcli/doc.go. The designs do not conflict. May go-driver-assistant, now at PR-Gate, land first, with run-window-bugs taking its loomcli and battencli changes at its own Merge-In, as was decided for judge-cap-call?; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/601"
+    "wait": ""
   },
   "history": [
     {
