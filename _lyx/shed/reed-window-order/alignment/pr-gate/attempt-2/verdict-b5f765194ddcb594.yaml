@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  Card 10 (533defd3a) restores Engine.SetContentRows, the InstallPins apply option, their tests and their doc paragraph.
+  That keeps content sizing for an explicit caller, as the decision record's Scope Out requires, and resolves attempt 1's rejection.
+  No overview pane calls the operation, so D7 still holds.
+  The rest of the diff meets the goal and D1 to D10.
+  Peers twb-ftr-1 and twb-ftr-2 change no overlapping path, and no parent commit is listed.
+question: ""
+superseded: []
