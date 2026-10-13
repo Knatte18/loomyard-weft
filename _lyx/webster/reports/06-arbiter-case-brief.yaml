@@ -1,0 +1,6 @@
+status: OK
+head_sha: 225c78c85b782f32f0ac9218db6ed121be97efe7
+deviations:
+  - internal/loomcli/arbiter_test.go
+  - internal/battenshed/publishretry.go
+  - internal/shedrun/doc.go

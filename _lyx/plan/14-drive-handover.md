@@ -10,7 +10,7 @@
 - `plan:internal/loomcli#goDriver.handOver` -> `func (d *goDriver) handOver(ctx context.Context, stop driveStop) error`
 
 **Uses:**
-- `plan:internal/loomcli#binaryEligible`
+- `internal/loomcli#binaryEligible`
 - `internal/loomengine#SettleHandOver`
 
 **Intent:**

@@ -1,19 +1,19 @@
 # Card 11 — drive-handback
 
 **Create:**
-- `plan:internal/shedrun#BattenWatchedContent` -> `func BattenWatchedContent(pid int, scratchDir, producer string) []byte`
-- `plan:internal/shedrun#ParseBattenWatched` -> `func ParseBattenWatched(data []byte) (pid int, scratchDir, producer string, err error)`
-- `plan:internal/shedrun#TestBattenWatchedContent` -> `func TestBattenWatchedContent(t *testing.T)`
-- `plan:internal/loomcli#battenWatch` -> `type battenWatch struct`
-- `plan:internal/loomcli#readBattenWatch` -> `func readBattenWatch(markerPath string, isAlive func(pid int) bool) (battenWatch, bool)`
-- `plan:internal/loomcli#driveNoticeTail` -> `const driveNoticeTail = "Answer briefly, then continue your task."`
-- `plan:internal/loomcli#driveHandBack` -> `type driveHandBack struct`
-- `plan:internal/loomcli#driveNotices` -> `func driveNotices(h driveHandBack, watched bool) []string`
-- `plan:internal/loomcli#driveReport` -> `type driveReport struct`
-- `plan:internal/loomcli#driveReport.render` -> `func (r driveReport) render() string`
-- `plan:internal/loomcli#driveParkDeps` -> `type driveParkDeps struct`
-- `plan:internal/loomcli#handBackRun` -> `func handBackRun(d driveParkDeps, h driveHandBack, report driveReport, watched bool) error`
-- `plan:internal/loomcli#commitAndPark` -> `func commitAndPark(out io.Writer, d commitStatusDeps, markerPath, reportPath string) int`
+- `internal/shedrun#BattenWatchedContent`
+- `internal/shedrun#ParseBattenWatched`
+- `internal/shedrun#TestBattenWatchedContent`
+- `internal/loomcli#battenWatch`
+- `internal/loomcli#readBattenWatch`
+- `internal/loomcli#driveNoticeTail`
+- `internal/loomcli#driveHandBack`
+- `internal/loomcli#driveNotices`
+- `internal/loomcli#driveReport`
+- `internal/loomcli#driveReport.render`
+- `internal/loomcli#driveParkDeps`
+- `internal/loomcli#handBackRun`
+- `internal/loomcli#commitAndPark`
 - `internal/loomcli/drivehandback_test.go`
 
 **Edit:**
@@ -29,7 +29,7 @@
 - `internal/loomcli#commitRecordsVerb`
 - `internal/loomcli#writeParkMarker`
 - `internal/loomcli#driverReportPath`
-- `plan:internal/loomcli#driveStop`
+- `internal/loomcli#driveStop`
 
 **Intent:**
 D8 and D9: what every Go-driver hand-back leaves, which is a Go-authored stop report, the run records committed and the park marker written by the same code `lyx loom commit-records --park` runs, plus the parent messages the LLM driver's two notify rules send.

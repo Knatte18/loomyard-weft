@@ -16,13 +16,13 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/loomcli#decideDrive`
-- `plan:internal/loomcli#parseDriveStop`
-- `plan:internal/loomcli#stopFromStatus`
-- `plan:internal/loomcli#handBackRun`
-- `plan:internal/loomcli#driveNotices`
-- `plan:internal/loomcli#readBattenWatch`
-- `plan:internal/battenshed#RecordMatchesHalt`
+- `internal/loomcli#decideDrive`
+- `internal/loomcli#parseDriveStop`
+- `internal/loomcli#stopFromStatus`
+- `internal/loomcli#handBackRun`
+- `internal/loomcli#driveNotices`
+- `internal/loomcli#readBattenWatch`
+- `internal/battenshed#RecordMatchesHalt`
 - `internal/loomengine#AppendSettleRecord`
 - `internal/loomengine#ReadSettleRecords`
 - `internal/loomengine#GoVerifyRetrySpent`

@@ -1,13 +1,13 @@
 # Card 7 — tackler-call
 
 **Create:**
-- `plan:internal/loomcli#tacklerDeps` -> `type tacklerDeps struct`
-- `plan:internal/loomcli#tacklerInput` -> `type tacklerInput struct`
-- `plan:internal/loomcli#tacklerCall` -> `type tacklerCall struct`
-- `plan:internal/loomcli#newTacklerCall` -> `func newTacklerCall(deps tacklerDeps, in tacklerInput) (*tacklerCall, error)`
-- `plan:internal/loomcli#tacklerCall.settle` -> `func (c *tacklerCall) settle() (loomengine.TacklerEnvelope, error)`
-- `plan:internal/loomcli#errTacklerUnavailable` -> `var errTacklerUnavailable = errors.New("tackler unavailable")`
-- `plan:internal/loomcli#errTacklerResumeReturned` -> `var errTacklerResumeReturned = errors.New("tackler resume returned")`
+- `internal/loomcli#tacklerDeps`
+- `internal/loomcli#tacklerInput`
+- `internal/loomcli#tacklerCall`
+- `internal/loomcli#newTacklerCall`
+- `internal/loomcli#tacklerCall.settle`
+- `internal/loomcli#errTacklerUnavailable`
+- `internal/loomcli#errTacklerResumeReturned`
 - `internal/loomcli/tackler_test.go`
 
 **Edit:**

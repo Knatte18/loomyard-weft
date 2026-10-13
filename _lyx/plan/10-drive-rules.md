@@ -1,17 +1,17 @@
 # Card 10 — drive-rules
 
 **Create:**
-- `plan:internal/loomcli#driveStop` -> `type driveStop struct`
-- `plan:internal/loomcli#parseDriveStop` -> `func parseDriveStop(envelope []byte) (driveStop, error)`
-- `plan:internal/loomcli#stopFromStatus` -> `func stopFromStatus(st shedengine.Status) driveStop`
-- `plan:internal/loomcli#driveStop.key` -> `func (s driveStop) key() loomengine.ArbiterStopKey`
-- `plan:internal/loomcli#driveFacts` -> `type driveFacts struct`
-- `plan:internal/loomcli#driveAction` -> `type driveAction string`
-- `plan:internal/loomcli#driveDecision` -> `type driveDecision struct`
-- `plan:internal/loomcli#decideDrive` -> `func decideDrive(stop driveStop, facts driveFacts) driveDecision`
-- `plan:internal/loomcli#binaryEligible` -> `func binaryEligible(stop driveStop) bool`
-- `plan:internal/loomcli#repairCount` -> `func repairCount(records []loomengine.SettleRecord, key loomengine.ArbiterStopKey) int`
-- `plan:internal/loomcli#driveRepairCap` -> `const driveRepairCap = 2`
+- `internal/loomcli#driveStop`
+- `internal/loomcli#parseDriveStop`
+- `internal/loomcli#stopFromStatus`
+- `internal/loomcli#driveStop.key`
+- `internal/loomcli#driveFacts`
+- `internal/loomcli#driveAction`
+- `internal/loomcli#driveDecision`
+- `internal/loomcli#decideDrive`
+- `internal/loomcli#binaryEligible`
+- `internal/loomcli#repairCount`
+- `internal/loomcli#driveRepairCap`
 - `internal/loomcli/driverules_test.go`
 
 **Edit:**

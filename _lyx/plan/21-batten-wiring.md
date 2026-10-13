@@ -12,7 +12,7 @@
 - `plan:internal/battencli#TestSyncWatchedMarker` -> `func TestSyncWatchedMarker(t *testing.T)`
 
 **Uses:**
-- `plan:internal/shedrun#BattenWatchedContent`
+- `internal/shedrun#BattenWatchedContent`
 - `internal/shedrun#DriverLock`
 - `internal/shedrun#TacklerMarker`
 - `internal/shedrun#SettleRecordsFile`

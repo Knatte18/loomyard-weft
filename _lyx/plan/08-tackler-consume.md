@@ -1,7 +1,7 @@
 # Card 8 — tackler-consume
 
 **Create:**
-- `plan:internal/loomcli#consumeTacklerAttempt` -> `func consumeTacklerAttempt(attemptDir string, base shedengine.RelaunchRequest) error`
+- `internal/loomcli#consumeTacklerAttempt`
 - `internal/loomcli/tacklerconsume_test.go`
 
 **Edit:**

@@ -21,7 +21,7 @@
 **Uses:**
 - `plan:internal/loomcli#goDriver.run`
 - `internal/shedrun#DriverLock`
-- `plan:internal/battenshed#PublishRetrySpent`
+- `internal/battenshed#PublishRetrySpent`
 - `internal/shedverbs#RunUntilStop`
 - `internal/shedverbs#RunGoto`
 

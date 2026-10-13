@@ -12,8 +12,8 @@
 - `plan:internal/loomcli#goDriver.resumeOpenAttempt` -> `func (d *goDriver) resumeOpenAttempt(ctx context.Context) (stop driveStop, found bool, err error)`
 
 **Uses:**
-- `plan:internal/loomcli#errTacklerUnavailable`
-- `plan:internal/loomcli#errTacklerResumeReturned`
+- `internal/loomcli#errTacklerUnavailable`
+- `internal/loomcli#errTacklerResumeReturned`
 - `plan:internal/loomcli#goDriver.recheck`
 - `plan:internal/loomcli#goDriver.holdPause`
 - `internal/loomengine#WorktreeSnapshot.Equal`

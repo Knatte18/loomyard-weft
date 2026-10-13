@@ -1,11 +1,11 @@
 # Card 9 — batten-retry-exports
 
 **Rename:**
-- `internal/battenshed#recordMatchesHalt` -> `plan:internal/battenshed#RecordMatchesHalt`
+- `internal/battenshed#recordMatchesHalt` -> `internal/battenshed#RecordMatchesHalt`
 
 **Create:**
-- `plan:internal/battenshed#PublishRetrySpent` -> `func PublishRetrySpent(scratchDir, producer string) (bool, error)`
-- `plan:internal/battenshed#TestPublishRetrySpent` -> `func TestPublishRetrySpent(t *testing.T)`
+- `internal/battenshed#PublishRetrySpent`
+- `internal/battenshed#TestPublishRetrySpent`
 
 **Edit:**
 - `internal/battenshed#innerRunProducer.readPublishRetryMarker`
