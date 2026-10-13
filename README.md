@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-13 10:59 UTC; every age below is as of then.
+Rendered 2026-10-13 11:00 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`logging-cleanup`](design-logging-cleanup.md) | loom | Webster | 17h | 3h | batten, reed, orch, fabric |
-| 2 | **Shuttle gate ends a twill writer mid-turn**<br>• The gate released a held turn start against a pane that looked idle and ended Plan-Write before the lens review | [`shuttle-gate-early-done`](design-shuttle-gate-early-done.md) | loom | Discussion-Burler-Fix | 23m | 23m | shuttle, loom |
+| 2 | **Shuttle gate ends a twill writer mid-turn**<br>• The gate released a held turn start against a pane that looked idle and ended Plan-Write before the lens review | [`shuttle-gate-early-done`](design-shuttle-gate-early-done.md) | loom | Discussion-Bouncer | 24m | 24m | shuttle, loom |
 
 ### Ready
 
@@ -37,9 +37,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Plan does not surface tests that pin a method set a card extends** | [`plan-pinned-tests`](design-plan-pinned-tests.md) | 19h | 19h | loom |
-| 2 | **reed: overview window first, agents next, shell last**<br>• Window 0 is the run overview for any shed run, each spawned agent gets the next windows, Selvage is the last window named shell; attach shows the most relevant agent | [`reed-window-order`](design-reed-window-order.md) | 1h | 40m | reed, loom, shed |
+| 2 | **reed: overview window first, agents next, shell last**<br>• Window 0 is the run overview for any shed run, each spawned agent gets the next windows, Selvage is the last window named shell; attach shows the most relevant agent | [`reed-window-order`](design-reed-window-order.md) | 1h | 41m | reed, loom, shed |
 | 3 | **tokencount under-counts fork output tokens**<br>• tokencount keeps the first transcript line per message id, which in subagent transcripts carries partial output_tokens; fork costs come out low | [`tokencount-fork-output`](design-tokencount-fork-output.md) | 1h | 1h |  |
-| 4 | **Long-lived lyx processes restart on a new binary**<br>• The reed watchdog, status panes and orch watch keep running a deleted binary after a deploy; they should re-exec on a changed build | [`stale-binary-daemons`](design-stale-binary-daemons.md) | 36m | 36m | reed, orch, loom |
+| 4 | **Long-lived lyx processes restart on a new binary**<br>• The reed watchdog, status panes and orch watch keep running a deleted binary after a deploy; they should re-exec on a changed build | [`stale-binary-daemons`](design-stale-binary-daemons.md) | 37m | 37m | reed, orch, loom |
 
 ### Enhancements
 
@@ -48,16 +48,16 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Audit glyph use in Webster, the kick-start pack first**<br>• Check from transcripts of a smaller task whether Webster forks use the kick-start pack and glyphs as intended | [`glyph-use-audit`](design-glyph-use-audit.md) | 1d | 1h | webster, burler, quarry |
-| 2 | **Model downgrade per role**<br>• Bench cheaper models (Sonnet 5.5, Haiku 5.5) per role by replaying older runs; per-round models and fan vs solo | [`model-downgrade`](design-model-downgrade.md) | 2h | 1h | burler, loom, webster, shuttle |
+| 2 | **Model downgrade per role**<br>• Bench cheaper models (Sonnet 5.5, Haiku 5.5) per role by replaying older runs; per-round models and fan vs solo | [`model-downgrade`](design-model-downgrade.md) | 3h | 1h | burler, loom, webster, shuttle |
 
 #### Normal priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 3 | **twill fork-timing Plan bench pair twb-ftp-s-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-s-1`](design-twb-ftp-s-1.md) | 39m | 39m |  |
-| 4 | **twill fork-timing Plan bench pair twb-ftp-r-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-r-1`](design-twb-ftp-r-1.md) | 39m | 39m |  |
-| 5 | **twill fork-timing Plan bench pair twb-ftp-s-2**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-s-2`](design-twb-ftp-s-2.md) | 39m | 39m |  |
-| 6 | **twill fork-timing Plan bench pair twb-ftp-r-2**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-r-2`](design-twb-ftp-r-2.md) | 39m | 39m |  |
+| 3 | **twill fork-timing Plan bench pair twb-ftp-s-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-s-1`](design-twb-ftp-s-1.md) | 40m | 40m |  |
+| 4 | **twill fork-timing Plan bench pair twb-ftp-r-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-r-1`](design-twb-ftp-r-1.md) | 40m | 40m |  |
+| 5 | **twill fork-timing Plan bench pair twb-ftp-s-2**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-s-2`](design-twb-ftp-s-2.md) | 40m | 40m |  |
+| 6 | **twill fork-timing Plan bench pair twb-ftp-r-2**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-r-2`](design-twb-ftp-r-2.md) | 40m | 40m |  |
 | 7 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 9d | 1h | shuttle |
 | 8 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 8d | 8d | fabric, loom |
 | 9 | **shedrecipe: capability declaration instead of manual seam-threading**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | 8d |  | shed |
