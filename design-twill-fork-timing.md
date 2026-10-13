@@ -46,6 +46,25 @@ The operator holds further benches until `shuttle-gate-early-done` lands (2026-1
 ## Decided (operator, 2026-10-13)
 
 Spawning the lens forks after the files are written goes in; further benches refine it, they do not decide it.
-The pairs `twb-ftp-{s,r}-{1,2}` and the evidence in the hub prime's `.scratch/twill-fork-timing-plan/` stay until then.
+The wave-1 pairs are torn down (2026-10-13); the evidence stays in the hub prime's `.scratch/twill-fork-timing-plan/`, and the next bench sets up fresh pairs.
+
+## Arm to bench: a writer fork (operator, 2026-10-13)
+
+With the forks spawned after writing, every lens fork inherits all the writer did to reach the files: drafts, write calls, failed `validate-plan` rounds.
+The idea:
+
+1. The master explores until it holds all it needs to think and write the files.
+2. It forks one fork0, which thinks, writes the files (running `validate-plan` itself) and ends.
+3. The master reads the written files: it sees them fresh, on top of everything it explored, blind to the reasoning behind them.
+4. The master forks the lens forks as today; they inherit the exploration and the files, not the drafting.
+
+Allowed: the master forks both times, so the fork-cannot-fork limit does not apply.
+Points to measure or settle:
+
+- The shared prefix likely stays warm on its own, since every fork0 turn reads it; the operator's idea of `lyx shuttle wait` to keep the master's cache warm may not be needed, and the bench should check.
+- The lens forks' inherited context gets smaller, so they should cost less than in the after arm.
+- Fork0 has ended when the findings come back, so the master fixes them without the reasoning: it fixes against the files, not the intent, which may help or may miss why something was written so.
+
+Bench it as a third arm against the after arm: the same reference, two runs per arm, cost and findings per arm.
 
 Ideas from the bench agent, untested: merge two lenses (for instance `test-economy` into `row-reachability`), have forks batch their reads into one or two calls, and cut the writer's `validate-plan` rounds (the writer is about $4 of $5.6 per plan).
