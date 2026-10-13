@@ -1,8 +1,8 @@
 # Card 10 — restore-set-content-rows
 
 **Create:**
-- `plan:internal/reedengine#Engine.SetContentRows` -> `func (e *Engine) SetContentRows(name, paneID string, rows int) error`
-- `plan:internal/reedengine#TestSetContentRows` -> `func TestSetContentRows(t *testing.T)`
+- `internal/reedengine#Engine.SetContentRows`
+- `internal/reedengine#TestSetContentRows`
 
 **Edit:**
 - `internal/reedengine#applyOpts`
