@@ -36,6 +36,7 @@ Windows give more room than panes in one window, so:
 - Alt+Up and Alt+Down step across every window in that order.
 - The overview's content: the full row list with time and rounds, the wait reason in full (an escalation waiting on the parent named as such), and how the operator scrolls to a row's detail.
 - The status pane restarting on the new binary after a deploy, so a fix reaches runs already in flight.
+- `logging-cleanup` (landing soon) changes `reapplyLayout` and the watchdog's resize path; check at Discussion what it already fixed and drop that from scope.
 
 ## Zoom flicker (2026-10-13)
 
@@ -47,3 +48,20 @@ A failed apply counts as "no change" only in current source (`watchloop.go:204-2
 Ruled out: the status pane redraws only when its text changes (`internal/statuspane/pane.go:96-103`; capture was stable over several samples) and reports rows only on a count change; the status bar interval is 15 s (`status-interval`); `reed-resize.signal` mtimes (11:16 and 11:20) show no periodic window resize, so the `window-resized` hook is not firing.
 Own windows with no zoom avoid it: `keepZoomLocked` reads the strands' window only, finds `window_zoomed_flag` 0 and runs the step plain, so nothing is toggled; a window the watchdog never touches is never unzoomed.
 Fix direction: restart the watchdog on the new binary after a deploy (the board item above already asks the same of the status pane), and make `reapplyLayout` read the live box before `keepZoomLocked`, so a skipped or failing apply never unzooms.
+
+## Folded in from stale-binary-daemons (2026-10-13)
+
+Long-lived reed-side processes re-exec themselves on a changed binary, through one shared helper:
+
+- The loom status pane (`lyx loom checklist`) and batten's overview re-exec on a changed binary, so a fix reaches runs already in flight.
+- The single-instance `lyx reed watchdog` re-execs with its lock handed over across the exec (keep the flock fd), so no second instance starts in the gap; the old watchdog on a deleted binary caused the zoom flicker.
+- The build identity to compare against exists already (`internal/shedverbs/steprecord.go`, `binary_changed`).
+- Windows has no exec; what happens there is a point to discuss.
+
+Evidence carried over:
+
+- The hub's `lyx reed watchdog` (single instance per hub, spawned by `up`, `resume` and `attach` only when no daemon holds the lock) ran from 2026-10-08 on a deleted binary.
+  It re-applied the layout of every session every 2 s and failed each time with an error only the old binary raises (`deferred anchor "own-window"`), and each attempt unzoomed and re-zoomed the strands' window (`internal/reedengine/reapply.go:130`, `zoom.go:57-76`).
+  It also filled its trace log to the size cap (`_board/.lyx/logs/trace-20261008T181526Z-f2e3f7df172f3d30-3854.log`); the orch killed it and started a new one by hand.
+- After the kill, a run's `lyx loom checklist` status pane still ran a deleted binary (`/proc/<pid>/exe` marked deleted), started before the `run-window-bugs` deploy, so it lacks the status-pane fix.
+- Shed already records a build identity per step and reports `binary_changed` (`internal/shedverbs/steprecord.go`).

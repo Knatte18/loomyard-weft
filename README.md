@@ -35,7 +35,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **reed: overview window first, agents next, shell last**<br>• Window 0 is the run overview for any shed run, each spawned agent gets the next windows, Selvage is the last window named shell; attach shows the most relevant agent | [`reed-window-order`](design-reed-window-order.md) | 2h | 1m | reed, loom, shed |
+| 1 | **reed: overview window first, agents next, shell last**<br>• Window 0 is the run overview for any shed run, each spawned agent gets the next windows, Selvage is the last window named shell; attach shows the most relevant agent | [`reed-window-order`](design-reed-window-order.md) | 2h | 0m | reed, loom, shed |
 
 #### Normal priority
 
