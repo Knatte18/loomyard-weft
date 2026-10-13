@@ -67,7 +67,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 3 | **twill fork-timing Plan bench pair twb-ftq-a-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm against fork0 arm; torn down after the run | [`twb-ftq-a-1`](design-twb-ftq-a-1.md) | 0m | 0m |  |
+| 3 | **twill fork-timing Plan bench pair twb-ftq-a-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm against fork0 arm; torn down after the run | [`twb-ftq-a-1`](design-twb-ftq-a-1.md) | 1m | 1m |  |
 | 4 | **twill fork-timing Plan bench pair twb-ftq-f-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm against fork0 arm; torn down after the run | [`twb-ftq-f-1`](design-twb-ftq-f-1.md) | 0m | 0m |  |
 | 5 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 9d | 4h | shuttle |
 | 6 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 9d | 8d | fabric, loom |
