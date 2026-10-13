@@ -1,12 +1,12 @@
 {
   "current_producer": "Land",
-  "state": "blocked",
-  "error": "deploy failed: exit code 1; log: /home/knatte/Code/loomyard-LYXHUB/loomyard/.lyx/shed/webster-pack-last/Land-deploy.log; way forward: fix the cause, then run \"lyx batten run webster-pack-last\" from the prime",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Land",
     "last": "Land → stuck",
-    "wait": "deploy failed: exit code 1; log: /home/knatte/Code/loomyard-LYXHUB/loomyard/.lyx/shed/webster-pack-last/Land-deploy.log; way forward: fix the cause, then run \"lyx batten run webster-pack-last\" from the prime"
+    "wait": ""
   },
   "history": [
     {
