@@ -2,6 +2,6 @@
 round: 4
 decision: accept
 cause: hard-cap
-settled: false
+settled: true
 automatic: false
 ---
