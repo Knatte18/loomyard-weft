@@ -26,7 +26,7 @@ Every peer is read against the loom rows, darn runs included, so a darn run at a
 
 `peerLine` gains `Row int` with JSON key `row`.
 `peersDeps` gains `loomRows []string`, the loom recipe's row names in file order.
-`hubPeersDeps` fills it from `loomrecipe.RowNames(shedrun.RecipeLoom)`, the embedded `recipes.LoomRecipe`; a parse error there is a defect of the binary itself, so it logs one `logger.Warn` and leaves the list empty, and every row then reads 0, an unknown order, rather than refusing the verb.
+`hubPeersDeps` fills it from `loomrecipe.RowNames(shedrun.RecipeLoom)`, the embedded `recipes.LoomRecipe`; a parse error there is a defect of the binary itself, so it panics with the error; `loomrecipe`'s `TestRowNames_FollowEachRecipesRowOrder` already pins that the embedded recipe parses.
 `peersVerb` sets each line's `Row` from the board task's status, never from the peer's pair, so a peer whose pair is unreadable still gets the board's row.
 From a task pair it also adds `own_row`, the caller's own position by the same rule from the caller's board task, 0 when the caller has no board task; from the prime the key is absent, as `parent_commits` is.
 The two fields are read-only: they reveal only recipe positions of producers the peers' and the caller's board statuses already name.
