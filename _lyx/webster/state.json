@@ -228,7 +228,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "78cacf6040c0085f7ce19103d6cf830c",
   "masterSessionId": "5e54c777-69bc-47d4-9464-ab6f4f5874bb",
   "batches": {
@@ -268,6 +268,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-judge-cap-call/5e54c777-69bc-47d4-9464-ab6f4f5874bb/subagents/agent-a9b9e88704c007a7f.jsonl"
       ]
+    },
+    "6": {
+      "slug": "loom-hard-cap-config",
+      "cards": [
+        "06-loom-hard-cap-config",
+        "07-darn-hard-cap-config",
+        "08-circling-continue-hard-cap",
+        "09-arbiter-orch-stencils"
+      ],
+      "cardHashes": {
+        "06-loom-hard-cap-config": "5a6a4d4397843a50b165affd35393919fe118573b50c78e373d9d8279af4f310",
+        "07-darn-hard-cap-config": "2edd3fd3c49a3af6d38b0693502fb9876db3536e1de37daa81631db86b9f80b5",
+        "08-circling-continue-hard-cap": "aef4bee24072f643da261b4b596d9a7a9119a83ecd8e713e8b9e3c896e1c6cb9",
+        "09-arbiter-orch-stencils": "4156a62f0510236bb4e76f7989665fc706d995f2202108425c3a261112e84e0d"
+      },
+      "startSha": "184b6ff9aec6c453f6902484f26d212edbf83d82",
+      "kind": "fork",
+      "spawnedAt": "2026-10-13T07:01:45Z",
+      "sessionId": "5e54c777-69bc-47d4-9464-ab6f4f5874bb",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
