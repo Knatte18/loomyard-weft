@@ -1,6 +1,6 @@
 # reed: overview window first, agents next, shell last
 
-`reed-window-order` · Task · bug, reed, loom, shed · running · Batchifier
+`reed-window-order` · Task · bug, reed, loom, shed · running · Webster
 
 ## Seen (operator, 2026-10-13)
 
