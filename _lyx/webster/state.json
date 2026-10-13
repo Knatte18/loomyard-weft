@@ -480,7 +480,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "150d08a4fe3801d28e9ebb50e13cd6a3",
   "masterSessionId": "2ff11991-c28f-48de-aaa6-1e8b8f16c4ff",
   "batches": {
@@ -530,6 +530,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-go-driver-assistant/2ff11991-c28f-48de-aaa6-1e8b8f16c4ff/subagents/agent-a118485432ce255ef.jsonl"
       ]
+    },
+    "6": {
+      "slug": "arbiter-case-brief",
+      "cards": [
+        "06-arbiter-case-brief",
+        "07-tackler-call",
+        "08-tackler-consume",
+        "09-batten-retry-exports",
+        "10-drive-rules",
+        "11-drive-handback"
+      ],
+      "cardHashes": {
+        "06-arbiter-case-brief": "8353a34c9066f9f023bf81201510e55e865ec138ca1c440cc34c64aa415f8c79",
+        "07-tackler-call": "87038f4adced82a7af6c5c00ae1961416c7ca96bf92114d5555a1e14dbf3cac4",
+        "08-tackler-consume": "0484279d73b47e58f330d0f4ac1fb3f857fd856edede4e7cd40a31882cdd3e91",
+        "09-batten-retry-exports": "80b2b89cf2645f00f20bdcb9aa0b9bd52334be12bb9ef0d0d8493166e0a6752e",
+        "10-drive-rules": "7981f92b2721cb53124eaea7f87fb482ce0b2ed76fe06ecc250b17dd18312a6f",
+        "11-drive-handback": "0918fc60b705d8401f448c00bf0d12aaae0ba49e0daeadbb7bc8db8cdf54410d"
+      },
+      "startSha": "fd0ccc90c6b8d0db7cb7444b28cb55bff74aaedc",
+      "kind": "fork",
+      "spawnedAt": "2026-10-13T07:08:51Z",
+      "sessionId": "2ff11991-c28f-48de-aaa6-1e8b8f16c4ff",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
