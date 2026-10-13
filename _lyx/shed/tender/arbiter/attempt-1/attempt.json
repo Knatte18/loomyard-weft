@@ -1,0 +1,15 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 13,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-10-13T17:29:12.493231711+02:00",
+  "deadline": "2026-10-13T17:59:12.493231711+02:00",
+  "strand_guid": "cf9b5a68b2204951da3d3e62fda220dc",
+  "envelope_path": "/home/knatte/Code/loomyard-LYXHUB/tender/.lyx/shed/tender/steps/13feaa3e16eca6b3.json",
+  "report_path": "/home/knatte/Code/loomyard-LYXHUB/tender/_lyx/shed/tender/drive-reports/drive-report-20261013-165832-338a.md"
+}

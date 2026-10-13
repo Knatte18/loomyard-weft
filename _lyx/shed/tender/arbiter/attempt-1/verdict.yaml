@@ -1,0 +1,19 @@
+verdict: resume
+reason: >-
+  Review escalation at Discussion-Bouncer round 3, cause circling.
+  The returned gating finding F1 (d5-revive-pause-race, BLOCKING design) is correct against the code:
+  confirmSubmitted in internal/shuttleengine/send.go accepts a landing when the input box clears or a turn start appears,
+  shuttlePair.Busy in internal/pausecli/deps.go reads busy from hook-derived state only,
+  and pauseengine.Pause breaks its grace poll on the first reading with no covered session busy (pause.go:145).
+  The fix is converging: round 1 found the race, round 2 added the pause-record lock before the send,
+  round 3 found the landing-to-turn-start gap, and the round-3 fixer applied the proposed turn-start wait
+  (decision-record.md lines 75-88 and Acceptance line 175), naming the residual unrecorded cases.
+  The new design-wrong key d5-conditioned-send-lock-hold-unbounded was answered with an auto-pick recorded as support-log Q13
+  (refuse every hold at once, lock held at most two submit windows), which stays within the board entry's revive scope.
+  F3 and F4 are mechanical and were fixed as proposed.
+  The Discussion-Review hard cap is 4 (review_hard_max_bounces 4, discussion_hard_max_bounces 0), so round 3 is below it,
+  and the circling rule calls for continue: one more round reviews the turn-start wait and the at-once refusal.
+  No design call of the arbiter's own was made, so no decision was added.
+  The named driver report drive-report-20261013-165832-338a.md does not exist; the drive-reports directory is empty.
+verbs:
+  - lyx loom circling continue tender
