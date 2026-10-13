@@ -4,7 +4,7 @@
 
 ## Idea (operator, 2026-10-13)
 
-Everything about driving an LLM is meant to go through shuttle, so a new provider (Codex CLI first, `codex-spike`) should need only one more engine.
+Everything about driving an LLM is meant to go through shuttle, so a new provider (Codex CLI first, `codex-engine`) should need only one more engine.
 Rewrite shuttle and the other modules so that holds: lyx is neutral to the LLM, not tailored to Claude Code.
 
 ## Seen (feasibility study, 2026-10-13)
