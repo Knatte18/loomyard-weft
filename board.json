@@ -830,6 +830,24 @@
       "body": "## Idea (operator, 2026-10-13)\n\nEverything about driving an LLM is meant to go through shuttle, so a new provider (Codex CLI first, `codex-spike`) should need only one more engine.\nRewrite shuttle and the other modules so that holds: lyx is neutral to the LLM, not tailored to Claude Code.\n\n## Seen (feasibility study, 2026-10-13)\n\nReport `.scratch/codex-feasibility.md` in the hub prime. Couplings outside the engine interface:\n\n- The engine choice is hardwired at about 15 call sites (the `wiring.go` files of burlercli, webstercli and loomcli, `loomcli/looparm.go`, `orchcli/cli.go`, `battencli/wire.go`, `pausecli/deps.go`, `shuttlecli/cli.go`, `cliwire/sessionnamer.go`, `shuttleengine/rundir.go`).\n  `modelspec` has an `Engine` field, but only `claude` is accepted and nothing reads the resolved engine.\n- `run.json` records no engine, so readers over many runs assume one.\n- `shuttleengine/hold.go`'s hold-notice text names `SendMessage`: a provider leak into the core.\n- tokencount and the timing report read `~/.claude/projects` and carry Claude prices.\n- Deploy syncs skills only into `~/.claude/plugins`.\n- Stencils assume Claude Code features: Agent-tool forks, `SendMessage`/`ListAgents`, background Bash that wakes the session.\n- Smaller: `CleanClaudeEnv` in reed, `claude_*` config keys, session naming, CLAUDE.md counted in Merriam's base.\n\n## Scope to discuss\n\n- An engine registry chosen per role through model specs, the engine recorded in `run.json`, multi-run readers that pick the reader per run.\n- Provider-neutral wording in core notices; provider-specific text only in the engine.\n- Usage and transcript readers behind the engine, so tokencount and timing work for any engine.\n- Which stencil features get a neutral form (a parent directive that does not rely on `SendMessage`) and which stay Claude-only, refused for other engines.\n",
       "created": "2026-10-13T07:31:27Z",
       "revised": "2026-10-13T07:31:27Z"
+    },
+    {
+      "id": 455,
+      "slug": "log-level-hygiene",
+      "title": "WARN for real problems only: batten waiting is an action log",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "batten",
+        "orch"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "About 80% of WARN lines are normal waiting; log state changes at Info or Debug",
+      "body": "## Seen (2026-10-13)\n\nIn the hub prime's trace logs (`.lyx/logs`, 10-10 to 10-13), 516 of 2339 lines are WARN:\n\n| Count | Message | What it is |\n|---|---|---|\n| 415 | `battenshed: producer stuck` | Mostly normal waiting, such as `reason=\"inner shed run still running; checking it every 2s\"` or `\"child running → awaiting at PR-Gate\"`, logged at each check |\n| 79 | `orch: session state disagrees with the idle probe` | A real diagnostic, repeated per reading |\n| 11 | `gitrepo: push refused, retrying` | A real anomaly that recovers by itself |\n| 8 | `battenshed: inner shed run halted; waiting for the operator to resume it` | A pause, not a problem |\n\nSo about 80 % of WARN lines record an ordinary state as a problem: an action log, not a warning (operator, 2026-10-13).\n`internal/logger/logger.go` states a level policy (\"Level policy\"); these lines break it.\n\n## Idea\n\n- Batten logs a producer's normal waiting at Info or Debug, once per change of state, never per poll; WARN only when a run is stuck in fact.\n- The orch's idle-probe disagreement logs once per change, not per reading.\n- A halted run waiting for the operator is Info.\n- Check the other modules' WARN calls against the level policy while at it.\n\nRelated: `run-log-archive` (keeping pair logs makes the noise cost more).\n",
+      "created": "2026-10-13T07:33:29Z",
+      "revised": "2026-10-13T07:33:29Z"
     }
   ]
 }
