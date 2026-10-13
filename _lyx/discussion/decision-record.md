@@ -177,12 +177,6 @@ Rationale: the board's former `extra-agent-strand` needs a named session the wat
   - card4-relaunch-kill-unlicensed-by-d6-stale-listing (class decision, severity MEDIUM, open in rounds 1, 2)
 <!-- /lyx:carry-over Plan-Review -->
 
-<!-- lyx:carry-over Webster-Review -->
-- Webster-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
-  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
-  - own-window-relaunch-leaves-dead-pane (class design, severity MEDIUM, open in rounds 1)
-<!-- /lyx:carry-over Webster-Review -->
-
 ## Acceptance criteria
 
 - A strand added with `own-window` and no group gets its own detached window named by its role; the client's current window and active pane do not change.
