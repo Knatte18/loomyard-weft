@@ -807,6 +807,54 @@
       "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write after arm. Plan-Write only, from a frozen decision record.",
       "created": "2026-10-13T10:20:08Z",
       "revised": "2026-10-13T10:20:08Z"
+    },
+    {
+      "id": 468,
+      "slug": "twb-ftp-r-1",
+      "title": "twill fork-timing Plan bench pair twb-ftp-r-1",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run",
+      "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write after arm. Plan-Write only, from a frozen decision record.",
+      "created": "2026-10-13T10:20:08Z",
+      "revised": "2026-10-13T10:20:08Z"
+    },
+    {
+      "id": 469,
+      "slug": "twb-ftp-s-2",
+      "title": "twill fork-timing Plan bench pair twb-ftp-s-2",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run",
+      "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write after arm. Plan-Write only, from a frozen decision record.",
+      "created": "2026-10-13T10:20:08Z",
+      "revised": "2026-10-13T10:20:08Z"
+    },
+    {
+      "id": 470,
+      "slug": "twb-ftp-r-2",
+      "title": "twill fork-timing Plan bench pair twb-ftp-r-2",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run",
+      "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write after arm. Plan-Write only, from a frozen decision record.",
+      "created": "2026-10-13T10:20:08Z",
+      "revised": "2026-10-13T10:20:08Z"
     }
   ]
 }
