@@ -8,11 +8,14 @@ Autonomous mode: no operator answered, and every pick below is an auto-pick reco
 2. Explored the reed resize bug live.
    The `go-driver-assistant` window holds four panes, the failing layout string names every pane but `loom-status`, and reed's recorded pane ids match the window.
    The hub watchdog process (started 2026-10-08) runs a deleted binary, `AnchorTop` landed on 2026-10-12, and the first failure in the trace is 2026-10-12T14:06.
+   tmux refuses the layout with "have 4 panes but need 3".
+   The failures began after the `AnchorTop` landing, before `reed-multi-window` landed, and do not depend on it.
+   The failing layout and the four-pane window were read from `_board/.lyx/logs/trace-20261008T181526Z-f2e3f7df172f3d30-3854.log` and `go-driver-assistant/.lyx/reed.json` in the hub.
    Conclusion: a stale-binary daemon, not a lost pane binding (D1).
 3. Read the battenshed wait reporting: `report` already dedupes per reason, but some reasons carry counters, and `exemptEnd` mixes ordinary state changes with real failures (D5).
 4. Read the orch watcher: the idle-disagreement line already dedupes per pair, and its repeats come from two benign combinations flipping (D8); the draft text enters through shuttle's readiness reason (D9).
 5. Checked the logger sink: it opens lazily, so a Debug-only process writes no trace file (D4).
-   Every `TestMain` goes through `tmuxkit.Main` (D13).
+   It already switches its durable half off under `testing.Testing()`, so the stderr half can take the same test-time default (D13).
 6. Checked teardown and paths: `pairteardown` is the single teardown route, the hub's `.lyx` is `_board/.lyx`, verify logs sit in the pair's verifytree directory, and batten per-slug logs live in the prime (D14).
 7. Checked the land notice and the orch stencil wording that pins "newly ready" (D16, D17).
 8. Lens review (six forks, all returned):
@@ -39,7 +42,7 @@ Autonomous mode: no operator answered, and every pick below is an auto-pick reco
    - scenarios LOW, chained retirements during a multi-step deploy: fixed in D2's bound.
    - scenarios LOW, no `-v` escape after the discard: fixed, the trade-off is stated in D13.
    - board-fit MEDIUM, `run-window-bugs` shuttle overlap unnamed: fixed in Open risks.
-   - board-fit LOW, `orch-split` tension: fixed with one sentence in D16.
+   - board-fit LOW, `orch-split` tension: resolved; the landing notice is the signal a later run driver (`orch-split`) would take over, so it does not add to what that note plans to move.
    - board-fit LOW, `go-driver-assistant`'s assistant reads logs: fixed in Open risks.
    - board-fit LOW, `spawn-audit-log` sampler: rejected, no conflict and nothing to change.
    - board-fit LOW, name `shedverbs.binaryChanged` in the rejected alternative: fixed below.
@@ -70,10 +73,13 @@ Autonomous mode: no operator answered, and every pick below is an auto-pick reco
 - **Move the pair's logs instead of copying**: a refused removal would leave the pair without its logs.
 - **Archive shuttle run directories**: not asked for; trace logs carry shuttle's engine log lines.
 - **Archive batten per-slug logs**: they live in the prime, which is never torn down.
+- **Landing fallback: compare the board against the landings the orch handled**: nothing records the handled set, so a refresh, compact or handoff loses it.
+- **Landing fallback: read the hub notice log's landed lines since the orch's last deploy**: the time of that deploy is recorded nowhere either; `origin/prod`, which `update-plugins.sh` moves, records it as a commit.
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1 (BLOCKING): D13 moved from `tmuxkit.Main` into the logger, since a tmuxkit import of the logger closes an import cycle in `internal/dotgit`'s tests; D11 bounded to listed loop and polled sites with a code-observable acceptance row; D16 and D17 keep a next-wake fallback for a dropped landing notice; D5 splits the reason-file write from the log dedupe and has callers pass the key; forensic and board-fit narrative moved here.
+- Round 2 (APPROVED): D17's dropped-notice fallback keys on `origin/main` holding a commit `origin/prod` lacks, with D16 and the acceptance row naming the same baseline; D11 and the Scope bullet narrowed to Warn and Info-or-above lines in a loop or polled path.
 
 ## Question ledger
 
@@ -83,7 +89,7 @@ _No rounds yet._
 - Q4 (resolved, auto-pick): level for batten waits. Answer: Info once per state; Warn only for a failed step (D5).
 - Q5 (resolved, auto-pick): how to fix the orch idle-disagreement repeats. Answer: treat the two benign combinations as agreement, Info once per episode (D8).
 - Q6 (resolved, auto-pick): how to keep draft text out of orch logs. Answer: a draft kind on the idle probe and a constant orch reason (D9).
-- Q7 (resolved, auto-pick): how far the "other modules" Warn check reaches. Answer: every production Warn site and every polled log line, against stated criteria (D11).
+- Q7 (resolved, auto-pick): how far the "other modules" Warn check reaches. Answer: every Warn or Info-or-above line in a loop or polled path, against stated criteria; a Warn site in no loop is out of the audit (D11).
 - Q8 (resolved, auto-pick): whether the policy refinement needs a PATTERN entry. Answer: yes, `PATTERN-log-levels`, because agents read PATTERN and not `logger.go` (D12).
 - Q9 (resolved, auto-pick): archive retention period and config. Answer: 30 days, a Go constant (D15).
 - Q10 (resolved, auto-pick): whether batten per-slug logs and verify logs join the archive. Answer: verify logs yes; batten per-slug logs no, since the prime keeps them (D14).
