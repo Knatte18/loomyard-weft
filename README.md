@@ -13,21 +13,23 @@ Concrete and claimable; only a task can run.
 
 Held by a run; its scope is locked until the run ends.
 
+#### High priority
+
+| # | Task | Slug | Recipe | At | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **reed: overview window first, agents next, shell last**<br>• Window 0 is the run overview for any shed run, each spawned agent gets the next windows, Selvage is the last window named shell; attach shows the most relevant agent | [`reed-window-order`](design-reed-window-order.md) | loom | Worktree-Create | 2h | 0m | reed, loom, shed |
+
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Shuttle gate ends a twill writer mid-turn**<br>• The gate released a held turn start against a pane that looked idle and ended Plan-Write before the lens review | [`shuttle-gate-early-done`](design-shuttle-gate-early-done.md) | loom | Plan-Burler-Review | 49m | 49m | shuttle, loom |
+| 2 | **Shuttle gate ends a twill writer mid-turn**<br>• The gate released a held turn start against a pane that looked idle and ended Plan-Write before the lens review | [`shuttle-gate-early-done`](design-shuttle-gate-early-done.md) | loom | Plan-Burler-Review | 49m | 49m | shuttle, loom |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### High priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **reed: overview window first, agents next, shell last**<br>• Window 0 is the run overview for any shed run, each spawned agent gets the next windows, Selvage is the last window named shell; attach shows the most relevant agent | [`reed-window-order`](design-reed-window-order.md) | loom |  | 2h | 0m | reed, loom, shed |
+_None._
 
 ## Notes
 
