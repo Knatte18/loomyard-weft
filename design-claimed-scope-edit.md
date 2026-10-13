@@ -24,7 +24,14 @@ In a loom run the parent records a correction with `lyx loom decision add --by p
 Darn skips Discussion and has no decision record, so the gap is darn's.
 Loom keeps a narrower gap: before Discussion-Write has written the record, `decision add` is refused.
 
-## To discuss
+## Direction (operator, 2026-10-13)
+
+Darn stays one combined agent; turning it into a loom without perches (Discussion-Write, Plan-Write and Webster in turn) was considered and dropped, since each row would explore the code anew and the run would be slower and dearer.
+Instead Darn-Write writes a short decision record in the same session before it writes code: the scope as it reads it and the calls it makes, in loom's record format.
+Then `lyx loom decision add --by parent` works on a darn run once that record exists, and the Darn review reads the record and holds it authoritative over the board body.
+First check where the Darn review reads its scope from today (the board body or a copy), which sets how much the change touches.
+
+## Other options considered
 
 - Let the parent (orch or operator) edit a claimed entry's body, or append a scope amendment to it, recorded with who and when, and make every row that reads the scope read the current body.
 - Or give darn the decision record loom has, so `lyx loom decision add --by parent` works in every recipe, and have every reviewer read it.

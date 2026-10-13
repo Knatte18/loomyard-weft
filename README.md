@@ -53,7 +53,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Plan does not surface tests that pin a method set a card extends** | [`plan-pinned-tests`](design-plan-pinned-tests.md) | 23h | 23h | loom |
 | 2 | **tokencount under-counts fork output tokens**<br>• tokencount keeps the first transcript line per message id, which in subagent transcripts carries partial output_tokens; fork costs come out low | [`tokencount-fork-output`](design-tokencount-fork-output.md) | 5h | 5h |  |
-| 3 | **A running darn task scope cannot be corrected**<br>• A claimed entry refuses body edits and darn has no decision record, so a mid-run scope correction never reaches the reviewers | [`claimed-scope-edit`](design-claimed-scope-edit.md) | 4m | 3m | board, loom, burler |
+| 3 | **A running darn task scope cannot be corrected**<br>• A claimed entry refuses body edits and darn has no decision record, so a mid-run scope correction never reaches the reviewers | [`claimed-scope-edit`](design-claimed-scope-edit.md) | 4m | 0m | board, loom, burler |
 
 ### Enhancements
 
