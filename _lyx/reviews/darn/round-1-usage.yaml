@@ -1,42 +1,11 @@
 round: 1
 fan: ""
-review:
-    model: sonnet
-    effort: medium
-    start: 2026-10-13T13:54:08Z
-    end: 2026-10-13T15:55:28.461460922+02:00
-    wall_seconds: 80.461460922
-    tokens_known: true
-    fresh_tokens: 73600
-    cache_read_tokens: 668226
-    forks: 0
-    fork_fresh_tokens: 0
-    fork_cache_read_tokens: 0
-    fork_fresh_share: 0
-fix:
-    model: sonnet
-    effort: medium
-    start: 2026-10-13T13:55:40Z
-    end: 2026-10-13T16:00:21.081793256+02:00
-    wall_seconds: 281.081793256
-    tokens_known: true
-    fresh_tokens: 107430
-    cache_read_tokens: 2370247
 seed:
     - model: sonnet
       effort: medium
-      start: 2026-10-13T13:53:32Z
-      end: 2026-10-13T15:53:55.315304355+02:00
-      wall_seconds: 23.315304355
+      start: 2026-10-13T14:16:05Z
+      end: 2026-10-13T16:16:26.09023844+02:00
+      wall_seconds: 21.09023844
       tokens_known: true
-      fresh_tokens: 20970
-      cache_read_tokens: 124773
-judge:
-    - model: sonnet
-      effort: medium
-      start: 2026-10-13T14:00:34Z
-      end: 2026-10-13T16:01:00.858011076+02:00
-      wall_seconds: 26.858011076
-      tokens_known: true
-      fresh_tokens: 31349
-      cache_read_tokens: 143548
+      fresh_tokens: 23867
+      cache_read_tokens: 149891
