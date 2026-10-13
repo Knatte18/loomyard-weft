@@ -1,8 +1,8 @@
 # Card 1 — Logger discards its stderr half under go test
 
 **Create:**
-- `plan:internal/logger#DefaultOutput` -> `func DefaultOutput() io.Writer`
-- `plan:internal/logger#TestDefaultOutput_DiscardsUnderGoTest` -> `func TestDefaultOutput_DiscardsUnderGoTest(t *testing.T)`
+- `internal/logger#DefaultOutput`
+- `internal/logger#TestDefaultOutput_DiscardsUnderGoTest`
 
 **Edit:**
 - `internal/logger#out`

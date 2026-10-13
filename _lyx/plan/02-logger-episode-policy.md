@@ -2,14 +2,14 @@
 
 **Create:**
 - `internal/logger/episode.go`
-- `plan:internal/logger#Episode` -> `type Episode struct`
-- `plan:internal/logger#Episode.Fail` -> `func (e *Episode) Fail(msg string, args ...any)`
-- `plan:internal/logger#Episode.Recover` -> `func (e *Episode) Recover(msg string, args ...any)`
-- `plan:internal/logger#EpisodeSet` -> `type EpisodeSet struct`
-- `plan:internal/logger#EpisodeSet.Fail` -> `func (s *EpisodeSet) Fail(key, msg string, args ...any)`
-- `plan:internal/logger#EpisodeSet.Recover` -> `func (s *EpisodeSet) Recover(key, msg string, args ...any)`
+- `internal/logger#Episode`
+- `internal/logger#Episode.Fail`
+- `internal/logger#Episode.Recover`
+- `internal/logger#EpisodeSet`
+- `internal/logger#EpisodeSet.Fail`
+- `internal/logger#EpisodeSet.Recover`
 - `internal/logger/episode_test.go`
-- `plan:internal/logger#TestEpisode_WarnsOncePerEpisodeAndInfoOnRecovery` -> `func TestEpisode_WarnsOncePerEpisodeAndInfoOnRecovery(t *testing.T)`
+- `internal/logger#TestEpisode_WarnsOncePerEpisodeAndInfoOnRecovery`
 
 **Edit:**
 - `internal/logger/logger.go`
