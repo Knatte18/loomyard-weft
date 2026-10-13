@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-13 14:18 UTC; every age below is as of then.
+Rendered 2026-10-13 14:19 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **Webster fork prompt: read instruction and pack last**<br>• Move the implementer fork prompt one-turn read instruction and kick-start pack to the end of the prompt | [`webster-pack-last`](design-webster-pack-last.md) | darn | Darn-Bouncer | 41m | 41m | webster, stencil |
+| 2 | **Webster fork prompt: read instruction and pack last**<br>• Move the implementer fork prompt one-turn read instruction and kick-start pack to the end of the prompt | [`webster-pack-last`](design-webster-pack-last.md) | darn | Describe | 42m | 42m | webster, stencil |
 
 ### Ready
 
@@ -39,7 +39,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **tender: hub-wide pause, resume, revive and stale-binary restart**<br>• A tender module holds hub-wide pause, resume, revive and stale-binary restart, and a pause no longer consumes a call deadline | [`tender`](design-tender.md) | loom | `reed-window-order` | 3h | 58m | shuttle, reed, batten, shed, orch, loom |
+| 1 | **tender: hub-wide pause, resume, revive and stale-binary restart**<br>• A tender module holds hub-wide pause, resume, revive and stale-binary restart, and a pause no longer consumes a call deadline | [`tender`](design-tender.md) | loom | `reed-window-order` | 3h | 59m | shuttle, reed, batten, shed, orch, loom |
 
 ## Notes
 
