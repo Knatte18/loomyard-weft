@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Darn-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "PR-Gate → bounced to Darn-Write",
+    "now": "Darn-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -160,6 +160,13 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-13T14:25:30Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/webster-pack-last/_lyx/landing/summary.md",
+      "at": "2026-10-13T14:28:32Z",
+      "gate_attempts": 0
     }
   ],
   "product": {
