@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-13 13:51 UTC; every age below is as of then.
+Rendered 2026-10-13 13:53 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **Webster fork prompt: read instruction and pack last**<br>• Move the implementer fork prompt one-turn read instruction and kick-start pack to the end of the prompt | [`webster-pack-last`](design-webster-pack-last.md) | darn | Darn-Bouncer | 14m | 14m | webster, stencil |
+| 2 | **Webster fork prompt: read instruction and pack last**<br>• Move the implementer fork prompt one-turn read instruction and kick-start pack to the end of the prompt | [`webster-pack-last`](design-webster-pack-last.md) | darn | Darn-Burler-Review | 17m | 17m | webster, stencil |
 
 ### Ready
 
@@ -39,7 +39,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **tender: hub-wide pause, resume, revive and stale-binary restart**<br>• A tender module holds hub-wide pause, resume, revive and stale-binary restart, and a pause no longer consumes a call deadline | [`tender`](design-tender.md) | loom | `reed-window-order` | 3h | 31m | shuttle, reed, batten, shed, orch, loom |
+| 1 | **tender: hub-wide pause, resume, revive and stale-binary restart**<br>• A tender module holds hub-wide pause, resume, revive and stale-binary restart, and a pause no longer consumes a call deadline | [`tender`](design-tender.md) | loom | `reed-window-order` | 3h | 34m | shuttle, reed, batten, shed, orch, loom |
 
 ## Notes
 
@@ -60,17 +60,17 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Audit glyph use in Webster, the kick-start pack first**<br>• Check from transcripts of a smaller task whether Webster forks use the kick-start pack and glyphs as intended | [`glyph-use-audit`](design-glyph-use-audit.md) | 1d | 16m | webster, burler, quarry |
+| 1 | **Audit glyph use in Webster, the kick-start pack first**<br>• Check from transcripts of a smaller task whether Webster forks use the kick-start pack and glyphs as intended | [`glyph-use-audit`](design-glyph-use-audit.md) | 1d | 19m | webster, burler, quarry |
 | 2 | **Model downgrade per role**<br>• Bench cheaper models (Sonnet 5.5, Haiku 5.5) per role by replaying older runs; per-round models and fan vs solo | [`model-downgrade`](design-model-downgrade.md) | 5h | 4h | burler, loom, webster, shuttle |
 
 #### Normal priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 3 | **twill fork-timing Plan bench pair twb-ftq-a-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm against fork0 arm; torn down after the run | [`twb-ftq-a-1`](design-twb-ftq-a-1.md) | 15m | 15m |  |
-| 4 | **twill fork-timing Plan bench pair twb-ftq-f-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm against fork0 arm; torn down after the run | [`twb-ftq-f-1`](design-twb-ftq-f-1.md) | 14m | 14m |  |
-| 5 | **twill fork-timing Plan bench pair twb-ftq-a-2**<br>• Bench pair for twill-fork-timing, Plan-Write after arm against fork0 arm; torn down after the run | [`twb-ftq-a-2`](design-twb-ftq-a-2.md) | 0m | 0m |  |
-| 6 | **twill fork-timing Plan bench pair twb-ftq-f-2**<br>• Bench pair for twill-fork-timing, Plan-Write after arm against fork0 arm; torn down after the run | [`twb-ftq-f-2`](design-twb-ftq-f-2.md) | 0m | 0m |  |
+| 3 | **twill fork-timing Plan bench pair twb-ftq-a-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm against fork0 arm; torn down after the run | [`twb-ftq-a-1`](design-twb-ftq-a-1.md) | 17m | 17m |  |
+| 4 | **twill fork-timing Plan bench pair twb-ftq-f-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm against fork0 arm; torn down after the run | [`twb-ftq-f-1`](design-twb-ftq-f-1.md) | 17m | 17m |  |
+| 5 | **twill fork-timing Plan bench pair twb-ftq-a-2**<br>• Bench pair for twill-fork-timing, Plan-Write after arm against fork0 arm; torn down after the run | [`twb-ftq-a-2`](design-twb-ftq-a-2.md) | 3m | 3m |  |
+| 6 | **twill fork-timing Plan bench pair twb-ftq-f-2**<br>• Bench pair for twill-fork-timing, Plan-Write after arm against fork0 arm; torn down after the run | [`twb-ftq-f-2`](design-twb-ftq-f-2.md) | 3m | 3m |  |
 | 7 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 9d | 4h | shuttle |
 | 8 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 9d | 8d | fabric, loom |
 | 9 | **shedrecipe: capability declaration instead of manual seam-threading**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | 9d |  | shed |
@@ -79,15 +79,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 12 | **Lens fan: master pre-reads the cited code before forking, forks get a read budget**<br>• Make the lens fan work as designed: the master reads the cited code (and judges nothing) before forking, each fork has a tool-call budget, and Discussion and Plan use their own fans | [`fan-master-preread`](design-fan-master-preread.md) | 3d | 2d | burler, stencil |
 | 13 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` | 3d |  |  |
 | 14 | **Discussion premises cite the glyph they rest on; the gate resolves them** | [`discussion-premise-cites`](design-discussion-premise-cites.md) | 2d | 2d | loom, quarry, stencil |
-| 15 | **Seats replaces SingleLLMProducer: every LLM producer is a MultiLLMProducer, zero advisors by default** | [`seats-replaces-singlellm`](design-seats-replaces-singlellm.md) | 1d | 23h | loom |
+| 15 | **Seats replaces SingleLLMProducer: every LLM producer is a MultiLLMProducer, zero advisors by default** | [`seats-replaces-singlellm`](design-seats-replaces-singlellm.md) | 1d | 1d | loom |
 | 16 | **Twill for Plan: measure fewer Plan-Review rounds; wrong-parent-dir miss**<br>• After twill-plan lands: measure a lower plan_max_bounces, and cover the parent-directory miss every bench arm shared | [`twill-plan-followups`](design-twill-plan-followups.md) | 1d | 4h | loom |
-| 17 | **Arbiter spawns only on stops that need it**<br>• Five arbiter spawns on 2026-10-12, none needed: narrow the triggers to the hard review cap, circling, and blocked or error stops with no computed way forward. | [`arbiter-when`](design-arbiter-when.md) | 22h | 22h | loom, shed |
+| 17 | **Arbiter spawns only on stops that need it**<br>• Five arbiter spawns on 2026-10-12, none needed: narrow the triggers to the hard review cap, circling, and blocked or error stops with no computed way forward. | [`arbiter-when`](design-arbiter-when.md) | 23h | 22h | loom, shed |
 | 18 | **lyx report timing: phase minutes, parent waits and agent spawns from run records**<br>• A mechanical per-run and per-day time report beside lyx report convergence, including stops by who settled them. | [`report-timing`](design-report-timing.md) | 22h | 22h | shed, orch |
 | 19 | **Make shuttle and lyx neutral to the LLM provider**<br>• Engine registry, engine in run.json, no Claude names in the core, usage readers behind the engine | [`llm-agnostic-engine`](design-llm-agnostic-engine.md) | 6h | 4h | shuttle, config, stencil |
 | 20 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 5h | 5h | burler, stencil |
-| 21 | **Twill: spawn lens forks before or after writing**<br>• A/B the twill spawn point, Discussion first: forks spawned before writing re-read the output as fresh cache writes, once per fork | [`twill-fork-timing`](design-twill-fork-timing.md) | 5h | 20m | loom, stencil |
-| 22 | **Seed the VS Code config of each pair when it is made**<br>• Write the title-bar color and .vscode config that lyx ide spawn writes when a pair is made, so code . gives the same | [`seed-vscode-config`](design-seed-vscode-config.md) | 35m | 35m | ide, batten |
-| 23 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | 1m | 1m | stencil |
+| 21 | **Twill: spawn lens forks before or after writing**<br>• A/B the twill spawn point, Discussion first: forks spawned before writing re-read the output as fresh cache writes, once per fork | [`twill-fork-timing`](design-twill-fork-timing.md) | 5h | 22m | loom, stencil |
+| 22 | **Seed the VS Code config of each pair when it is made**<br>• Write the title-bar color and .vscode config that lyx ide spawn writes when a pair is made, so code . gives the same | [`seed-vscode-config`](design-seed-vscode-config.md) | 38m | 38m | ide, batten |
+| 23 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | 3m | 3m | stencil |
 
 #### Low priority
 
@@ -95,7 +95,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 24 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 9d | 3d | fabric |
 | 25 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 9d |  | ide, fabric |
-| 26 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 5d | 23h | shed |
+| 26 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 5d | 1d | shed |
 | 27 | **Bench the chair-and-advisors Discussion against the solo writer before switching it on**<br>• Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on | [`discussion-multi-llm-bench`](design-discussion-multi-llm-bench.md) | 3d | 1d | loom, stencil, config |
 
 ### Features
@@ -104,7 +104,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 2d | 23h | webster |
+| 1 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 2d | 1d | webster |
 | 2 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) | 1d | 2h | orch, batten, shed, loom |
 
 #### Normal priority
@@ -124,7 +124,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 13 | **doctor: a lyx diagnostics command**<br>• lyx doctor checks the _lyx layout, config parse, board reachability and stale locks | [`doctor`](design-doctor.md) | 9d | 4d | config, board |
 | 14 | **session sync: Claude transcripts across machines**<br>• Copy Claude .jsonl transcripts across machines so --resume works elsewhere | [`session-sync`](design-session-sync.md) | 9d |  | shuttle |
 | 15 | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 8d | 7d | board, ide, orch |
-| 16 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 4d | 23h | reed, shuttle, config |
+| 16 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 4d | 1d | reed, shuttle, config |
 | 17 | **lyx orch start --continue resumes the last orch session**<br>• lyx orch records its session id so a reboot resumes the same orch conversation instead of a fresh one. | [`orch-continue`](design-orch-continue.md) | 1d |  | orch |
 
 #### Low priority
