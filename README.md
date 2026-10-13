@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **reed: overview window first, agents next, shell last**<br>• Window 0 is the run overview for any shed run, each spawned agent gets the next windows, Selvage is the last window named shell; attach shows the most relevant agent | [`reed-window-order`](design-reed-window-order.md) | loom | Webster-Bouncer | 5h | 3h | reed, loom, shed |
+| 1 | **reed: overview window first, agents next, shell last**<br>• Window 0 is the run overview for any shed run, each spawned agent gets the next windows, Selvage is the last window named shell; attach shows the most relevant agent | [`reed-window-order`](design-reed-window-order.md) | loom | Describe | 5h | 3h | reed, loom, shed |
 
 ### Ready
 
@@ -70,7 +70,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 8 | **Discussion premises cite the glyph they rest on; the gate resolves them** | [`discussion-premise-cites`](design-discussion-premise-cites.md) | 2d | 2d | loom, quarry, stencil |
 | 9 | **Seats replaces SingleLLMProducer: every LLM producer is a MultiLLMProducer, zero advisors by default** | [`seats-replaces-singlellm`](design-seats-replaces-singlellm.md) | 2d | 1d | loom |
 | 10 | **Twill for Plan: measure fewer Plan-Review rounds; wrong-parent-dir miss**<br>• After twill-plan lands: measure a lower plan_max_bounces, and cover the parent-directory miss every bench arm shared | [`twill-plan-followups`](design-twill-plan-followups.md) | 1d | 5h | loom |
-| 11 | **Arbiter spawns only on stops that need it**<br>• Five arbiter spawns on 2026-10-12, none needed: narrow the triggers to the hard review cap, circling, and blocked or error stops with no computed way forward. | [`arbiter-when`](design-arbiter-when.md) | 23h | 23h | loom, shed |
+| 11 | **Arbiter spawns only on stops that need it**<br>• Five arbiter spawns on 2026-10-12, none needed: narrow the triggers to the hard review cap, circling, and blocked or error stops with no computed way forward. | [`arbiter-when`](design-arbiter-when.md) | 1d | 23h | loom, shed |
 | 12 | **lyx report timing: phase minutes, parent waits and agent spawns from run records**<br>• A mechanical per-run and per-day time report beside lyx report convergence, including stops by who settled them. | [`report-timing`](design-report-timing.md) | 23h | 23h | shed, orch |
 | 13 | **Make shuttle and lyx neutral to the LLM provider**<br>• Engine registry, engine in run.json, no Claude names in the core, usage readers behind the engine | [`llm-agnostic-engine`](design-llm-agnostic-engine.md) | 7h | 5h | shuttle, config, stencil |
 | 14 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 6h | 6h | burler, stencil |
