@@ -811,22 +811,6 @@
       "revised": "2026-10-13T14:43:04Z"
     },
     {
-      "id": 480,
-      "slug": "twb-ftr-1",
-      "title": "twill fork-timing Plan bench pair twb-ftr-1",
-      "kind": "note",
-      "labels": [
-        "enhancement"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Bench pair for twill-fork-timing, Plan-Write fork0-alive arm; torn down after the run",
-      "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write fork0-alive arm. Plan-Write only, from a frozen decision record.",
-      "created": "2026-10-13T14:51:18Z",
-      "revised": "2026-10-13T14:51:18Z"
-    },
-    {
       "id": 481,
       "slug": "twb-ftr-2",
       "title": "twill fork-timing Plan bench pair twb-ftr-2",
