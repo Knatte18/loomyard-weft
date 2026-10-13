@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Burler-Review",
+  "current_producer": "Darn-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Burler-Review",
-    "last": "Darn-Bouncer → bounced to Darn-Burler-Review",
+    "now": "Darn-Burler-Fix",
+    "last": "Darn-Burler-Review → bounced to Darn-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -48,6 +48,13 @@
       "outcome": "stuck",
       "output": "/home/knatte/Code/loomyard-LYXHUB/webster-pack-last/_lyx/reviews/darn/round-1-bouncer-ledger.md",
       "at": "2026-10-13T14:01:01Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Darn-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/webster-pack-last/_lyx/reviews/darn/round-2-review.md",
+      "at": "2026-10-13T14:02:06Z",
       "budget_exempt": true
     }
   ],
