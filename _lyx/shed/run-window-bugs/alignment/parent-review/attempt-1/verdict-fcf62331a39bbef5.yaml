@@ -1,0 +1,15 @@
+verdict: escalate
+reason: >-
+  The design (decision record D1 to D7) covers every bundled item of run-window-bugs, with no scope deviation and no duplication or contradiction of another board entry.
+  It still escalates under the shared-package rule.
+  D6 adds lyx loom fmt to internal/loomcli, as a verb file, a cli.go registration and a doc.go section, and both peers in flight, judge-cap-call (Merge-In) and go-driver-assistant (Webster), change that package, internal/loomcli/doc.go included.
+  D2 and D6 also change contracts/stencils (roleskills_test.go and the embedded edit/edit-directive.md), a package where both peers change stencils.go and claims_test.go.
+  No peer decision conflicts, and neither peer changes PATTERN.md.
+question: >-
+  Overlap with judge-cap-call and go-driver-assistant.
+  This run's D6 (lyx loom fmt) changes Go package internal/loomcli, adding a new verb file, a cli.go registration and a doc.go section.
+  Both peers change internal/loomcli, and doc.go is the one file all three edit.
+  This run's D2 and D6 also change Go package contracts/stencils (a comment in roleskills_test.go, and edit/edit-directive.md, which stencils.go embeds), where both peers change stencils.go and claims_test.go.
+  Neither peer's record contradicts a decision here.
+  May run-window-bugs go on beside them, landing after both and taking their loomcli/doc.go changes at Merge-In?
+superseded: []
