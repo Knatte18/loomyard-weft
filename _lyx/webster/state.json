@@ -1,0 +1,200 @@
+{
+  "runGuid": "22ab3eed0256fdbc330e347befc35799",
+  "planFingerprint": "5904c639e558b6ba719f6148c0b9d50ff3a427f857ab0ae1d6a50ece5fa78824",
+  "planFileHashes": {
+    "00-overview.md": "6ae4939d56da66d5e2455a8478e560f244895a44ed9a372ec66142f3437a255b",
+    "01-shuttle-turn-in-flight-veto.md": "c027432bb034eccf33d991ae16b86c2acee26d01b29ecfb0076a21e943a5e964",
+    "02-claudeengine-turn-progress.md": "5a5f5059f454fd0e626a5e3a3f00c25bf7c70c5b8bc68c8ff92d9488e2ae771e",
+    "03-shuttle-recorded-fork-authorization.md": "c4ce8fcbd3365378f51b094870bc3d8cb4b559130974e435f43095696eac5d63",
+    "04-loomshed-lens-review-gate.md": "08b3fc4a72cd6fbfeecbdf4ff297f259333243bcc52d571079f2e1350e39a4b9",
+    "05-shedrecipe-plan-write-forked-gate.md": "58d449c5bab6fdfaac898be445113bd3ca490506be669c2da016e8c0c5e0d6ec",
+    "06-validate-plan-lens-review.md": "d804f25268f0df57ce632429e1a58624c8e47930b0bde5a1a620dca28b10dad5",
+    "07-twill-final-self-check.md": "8ba04bfb4cff1900fb2a777324dca0341ff800ab29a8b5cefef130f347330324"
+  },
+  "planOverviewFrameHash": "a61098e7f780e19a4301f52bbbeaf89dd0d60ba1b747e18526549a474bf49844",
+  "partition": [
+    {
+      "cards": [
+        "01-shuttle-turn-in-flight-veto",
+        "02-claudeengine-turn-progress",
+        "03-shuttle-recorded-fork-authorization"
+      ],
+      "profile": "cautious",
+      "estimate": 219536,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54484,
+        "read_union": 47752,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 924,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 4896,
+              "file:internal/shuttleengine/wait.go": 20364,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 149,
+            "written": 45624
+          },
+          {
+            "card": 2,
+            "card_text": 888,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1776,
+              "file:internal/shuttleengine/claudeengine/doc.go": 2316,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/turnprogress": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/turnprogress": 2000
+            },
+            "messages": 133,
+            "written": 40788
+          },
+          {
+            "card": 3,
+            "card_text": 588,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 4896,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 101,
+            "written": 30888
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-loomshed-lens-review-gate",
+        "05-shedrecipe-plan-write-forked-gate",
+        "06-validate-plan-lens-review",
+        "07-twill-final-self-check"
+      ],
+      "profile": "cautious",
+      "estimate": 214284,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61484,
+        "read_union": 65404,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 444,
+            "reads": {
+              "file:internal/loomshed/doc.go": 720,
+              "file:internal/loomshed/gates.go": 3108,
+              "package:internal/loomshed": 2000,
+              "tests:internal/loomshed": 2000
+            },
+            "messages": 47.5,
+            "written": 14694
+          },
+          {
+            "card": 5,
+            "card_text": 348,
+            "reads": {
+              "package:internal/shedrecipe": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 41.5,
+            "written": 12798
+          },
+          {
+            "card": 6,
+            "card_text": 588,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5364,
+              "file:docs/overview.md": 8952,
+              "file:internal/loomcli/doc.go": 2496,
+              "file:pattern/PATTERN-gate-self-check-parity.md": 312,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:pattern": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 97,
+            "written": 29688
+          },
+          {
+            "card": 7,
+            "card_text": 516,
+            "reads": {
+              "file:contracts/stencils/twill/twill-directive.md": 576,
+              "file:docs/overview.md": 8952,
+              "file:internal/loomengine/plan.go": 1980,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/twill": 2000,
+              "package:docs": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/twilldirective": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/twill": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/twilldirective": 2000
+            },
+            "messages": 99,
+            "written": 30216
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "87c80f66784f642a31e6557b46a9a16b",
+  "masterSessionId": "f0236baf-55ec-46a1-be4f-9476cde9089e",
+  "batches": {
+    "1": {
+      "slug": "shuttle-turn-in-flight-veto",
+      "cards": [
+        "01-shuttle-turn-in-flight-veto",
+        "02-claudeengine-turn-progress",
+        "03-shuttle-recorded-fork-authorization"
+      ],
+      "cardHashes": {
+        "01-shuttle-turn-in-flight-veto": "c027432bb034eccf33d991ae16b86c2acee26d01b29ecfb0076a21e943a5e964",
+        "02-claudeengine-turn-progress": "5a5f5059f454fd0e626a5e3a3f00c25bf7c70c5b8bc68c8ff92d9488e2ae771e",
+        "03-shuttle-recorded-fork-authorization": "c4ce8fcbd3365378f51b094870bc3d8cb4b559130974e435f43095696eac5d63"
+      },
+      "startSha": "30385e1ae3cd25497f9b9d6d2a9848ce19516dad",
+      "kind": "fork",
+      "spawnedAt": "2026-10-13T11:30:49Z",
+      "sessionId": "f0236baf-55ec-46a1-be4f-9476cde9089e",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
