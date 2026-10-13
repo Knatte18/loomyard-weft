@@ -3,6 +3,7 @@
   "state": "running",
   "error": "",
   "pause_requested": false,
+  "pause_after": "Plan-Write",
   "activity": {
     "now": "Plan-Write",
     "last": "Discussion-Bouncer → done",
