@@ -1,6 +1,6 @@
 # reed: overview window first, agents next, shell last
 
-`reed-window-order` · Task · bug, reed, loom, shed · running · Merge-In
+`reed-window-order` · Task · bug, reed, loom, shed · running · Merge-Bouncer
 
 ## Seen (operator, 2026-10-13)
 
