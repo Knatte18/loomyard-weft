@@ -420,7 +420,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 14,
   "masterStrand": "c948d8532832f9fffda626e476eacea9",
   "masterSessionId": "619f85ac-c3bf-4aee-8c58-7c22f14e4b85",
   "batches": {
@@ -454,6 +454,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-logging-cleanup/619f85ac-c3bf-4aee-8c58-7c22f14e4b85/subagents/agent-ab6e328a49b34bf6b.jsonl"
       ]
+    },
+    "14": {
+      "slug": "loomcli-idle-release-guards",
+      "cards": [
+        "14-loomcli-idle-release-guards",
+        "15-landingshed-pause-read-guard",
+        "16-fabric-log-archive-dir",
+        "17-pairteardown-log-archive",
+        "18-land-notice",
+        "19-orch-stencil-landing"
+      ],
+      "cardHashes": {
+        "14-loomcli-idle-release-guards": "2c5f0cce7052c61c4527cd6d5553f3deee0aa66263ac85f496ec1c5fb46db589",
+        "15-landingshed-pause-read-guard": "2e5e70e239e8e0bbd96c937c905f5019ebac49549cdacc63280dd898705786b7",
+        "16-fabric-log-archive-dir": "7f90b5403b899da9f5b0c755465f20de4ed525848f7bcffaa1f9f165c9e19910",
+        "17-pairteardown-log-archive": "cfe6467fef50eb9a72bb353f01eaa550a1925f2046c84c1fb7f81046d2ffdaf2",
+        "18-land-notice": "1c44802afc046caf8f564afece1ee55b302c1b8c035c3a3f5d3bbd2520137ef4",
+        "19-orch-stencil-landing": "d58c75026c0cbc14d07dc95f1d8efe36c45234d76f9970e5da800070cbb9e2ed"
+      },
+      "startSha": "3baaf17432c598b5a6bc619b1c0cbb105c4e1fb3",
+      "kind": "fork",
+      "spawnedAt": "2026-10-13T10:51:54Z",
+      "sessionId": "619f85ac-c3bf-4aee-8c58-7c22f14e4b85",
+      "terminal": false,
+      "status": ""
     },
     "3": {
       "slug": "reed-resize-episode",
