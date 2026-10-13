@@ -35,3 +35,12 @@ The question (operator, 2026-10-13): with the same model as today's twill, does 
 - An idea that needs nested forks (operator, 2026-10-13): the writer forks once before writing; while the writer writes, that one fork waits, reads the written files, then forks the N lens forks, which inherit the files from it, so the files are read once instead of N times and the writer's drafting stays out of the lens forks' context.
   Claude Code refuses it: a fork holds the Agent tool, but a `subagent_type: "fork"` call from inside a fork fails with "Fork is not available inside a forked worker. Complete your task directly using your tools." (tested 2026-10-13).
 - A third arm to consider: forks spawned early that read the code their lens needs while they wait, and read the written files only after the marker.
+
+## Plan bench, wave 1 (2026-10-13): stopped on a shuttle bug
+
+The Plan-Write bench (spawn-after arm against `twill-plan` Round 2's spawn-before arm, `opus[medium]`) stopped after wave 1: in both runs shuttle ended the writer mid-turn after the last fork finished, so no lens review was written (task `shuttle-gate-early-done`).
+Cost so far, without the writer's review phase: forks $1.16 and $0.95 per run against $1.64, fork cache writes 6.2k and 3.8k against 16–24k; total spend about $10.3 of a $25 cap.
+The operator holds further benches until `shuttle-gate-early-done` lands (2026-10-13); then four fresh spawn-after runs.
+The pairs `twb-ftp-{s,r}-{1,2}` and the evidence in the hub prime's `.scratch/twill-fork-timing-plan/` stay until then.
+
+Ideas from the bench agent, untested: merge two lenses (for instance `test-economy` into `row-reachability`), have forks batch their reads into one or two calls, and cut the writer's `validate-plan` rounds (the writer is about $4 of $5.6 per plan).
