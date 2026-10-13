@@ -1,6 +1,6 @@
 {
   "runGuid": "5fb8cea56d7835bd10e417aadf3813de",
-  "planFingerprint": "f69eff8670adbbdd26334097c3cd53e639bfab7effb34e681e50f70e1abeda47",
+  "planFingerprint": "bfa7705753b7bce36b7d2d0ed7097a4ab7f81be72a9c252a726adda5977acb83",
   "planFileHashes": {
     "00-overview.md": "5aedeac311c95676a67a5c477b40bcfce50d435267f2cb78295bd1adf36b0fb5",
     "01-shed-paused-reasons.md": "ba9aa1d3d3d8fa13fe092a3c0e795124a32e31df37fcb83271ab7b0178ab02ba",
@@ -20,10 +20,10 @@
     "15-drive-verb.md": "83ec70a8db1cb55e03d0c4e99041b820ae55ddd973558d0d3abbdad97af8b593",
     "16-start-resume-go-driver.md": "6b982e3d74969cb863a9431afee3e6a2ac6dae36a37623c9aae14e587deca5d4",
     "17-loom-seed-driver-kind.md": "d5bfcffaf85d24068c04c8b035ad0d85f86d859f2130f1339a0babd89dc7a6a5",
-    "18-batten-child-driver.md": "96f82e0ec2718e738a2fedb1aad0be7950cf81a0632026aeb30187d41e7a87fa",
+    "18-batten-child-driver.md": "2c1deb39fda052aad68429e14834cb99f0c8774d223dcd8be37870549956e4d1",
     "19-batten-liveness-hold-retry.md": "6c3d7dea30e100b6e9abfbbf736d3a78b112382946d598215bb5b8d7a779c590",
-    "20-batten-binary-restep.md": "5cd4849f71aca362aa6e09de19ebd8c4611c1953f94af5444afa1b0992a4c6dc",
-    "21-batten-wiring.md": "c433d691d6ffb4ac2442087b6a4aa47cfcaff3b9bdd047fd4289a58b7d6af1e5",
+    "20-batten-binary-restep.md": "88b34de22d2690bfaee09fdb599c09988e82b0802bbe054c780cee2f7af8cc3e",
+    "21-batten-wiring.md": "4568c14427a35389a33724a9ef7bf555189c5d118af60c25a419a5ad149f712e",
     "22-orch-go-driver-line.md": "548385f032dbed0229e06f118c20409c3f28f3b2e4fd496aa4df3e2d4867b9bb"
   },
   "planOverviewFrameHash": "2fd5f6f8c08a9038ebee49fbcc27276e3847ddfc13547912f58716f046dfb475",
@@ -480,7 +480,7 @@
       }
     }
   ],
-  "currentBatch": 17,
+  "currentBatch": 0,
   "masterStrand": "150d08a4fe3801d28e9ebb50e13cd6a3",
   "masterSessionId": "2ff11991-c28f-48de-aaa6-1e8b8f16c4ff",
   "batches": {
@@ -585,18 +585,45 @@
       ],
       "cardHashes": {
         "17-loom-seed-driver-kind": "d5bfcffaf85d24068c04c8b035ad0d85f86d859f2130f1339a0babd89dc7a6a5",
-        "18-batten-child-driver": "96f82e0ec2718e738a2fedb1aad0be7950cf81a0632026aeb30187d41e7a87fa",
+        "18-batten-child-driver": "2c1deb39fda052aad68429e14834cb99f0c8774d223dcd8be37870549956e4d1",
         "19-batten-liveness-hold-retry": "6c3d7dea30e100b6e9abfbbf736d3a78b112382946d598215bb5b8d7a779c590",
-        "20-batten-binary-restep": "5cd4849f71aca362aa6e09de19ebd8c4611c1953f94af5444afa1b0992a4c6dc",
-        "21-batten-wiring": "c433d691d6ffb4ac2442087b6a4aa47cfcaff3b9bdd047fd4289a58b7d6af1e5",
+        "20-batten-binary-restep": "88b34de22d2690bfaee09fdb599c09988e82b0802bbe054c780cee2f7af8cc3e",
+        "21-batten-wiring": "4568c14427a35389a33724a9ef7bf555189c5d118af60c25a419a5ad149f712e",
         "22-orch-go-driver-line": "548385f032dbed0229e06f118c20409c3f28f3b2e4fd496aa4df3e2d4867b9bb"
       },
       "startSha": "324c1e96737c4054ecaa047e99e62d4b78378891",
       "kind": "fork",
       "spawnedAt": "2026-10-13T07:43:44Z",
       "sessionId": "2ff11991-c28f-48de-aaa6-1e8b8f16c4ff",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "17-loom-seed-driver-kind",
+        "status": "done",
+        "head_sha": "7c5ea3976ff163c33b7fe229c6604976c62b1e98",
+        "deviations": [
+          "internal/battenshed/innerrun_binaryrestep.go",
+          "internal/battenshed/innerrun.go",
+          "internal/battenshed/deps.go",
+          "internal/battenshed/publishretry.go",
+          "internal/battenshed/notice.go",
+          "internal/battenshed/innerrun_halted_test.go",
+          "internal/battencli/cli.go",
+          "internal/battencli/lifecycle_integration_test.go",
+          "internal/loomcli/wiring_seams_test.go",
+          "internal/loomcli/start.go",
+          "docs/overview.md"
+        ]
+      },
+      "cardShas": [
+        "7c5ea3976ff163c33b7fe229c6604976c62b1e98"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-go-driver-assistant/2ff11991-c28f-48de-aaa6-1e8b8f16c4ff/subagents/agent-aca125c407c65a537.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-go-driver-assistant/2ff11991-c28f-48de-aaa6-1e8b8f16c4ff/subagents/agent-aca125c407c65a537.jsonl"
+      ]
     },
     "6": {
       "slug": "arbiter-case-brief",
@@ -646,6 +673,7 @@
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-go-driver-assistant/2ff11991-c28f-48de-aaa6-1e8b8f16c4ff/subagents/agent-a118485432ce255ef.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-go-driver-assistant/2ff11991-c28f-48de-aaa6-1e8b8f16c4ff/subagents/agent-aa6ba87eab5a24172.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-go-driver-assistant/2ff11991-c28f-48de-aaa6-1e8b8f16c4ff/subagents/agent-a41c0834619ad56bd.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-go-driver-assistant/2ff11991-c28f-48de-aaa6-1e8b8f16c4ff/subagents/agent-a41c0834619ad56bd.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-go-driver-assistant/2ff11991-c28f-48de-aaa6-1e8b8f16c4ff/subagents/agent-aca125c407c65a537.jsonl"
   ]
 }

@@ -25,8 +25,8 @@
 - `internal/battencli#battenChildDriver`
 
 **Create:**
-- `plan:internal/battencli#childDriverFrom` -> `func childDriverFrom(seed shedrun.Seed, found bool, resolveKind func() (string, error)) (string, error)`
-- `plan:internal/battencli#TestChildDriverFrom` -> `func TestChildDriverFrom(t *testing.T)`
+- `internal/battencli#childDriverFrom`
+- `internal/battencli#TestChildDriverFrom`
 
 **Uses:**
 - `internal/loomengine#ResolveDriverKind`

@@ -8,10 +8,10 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/battenshed#innerRunProducer.binaryRestep` -> `func (p *innerRunProducer) binaryRestep(ctx context.Context, w *childWait) *waitEnd`
-- `plan:internal/battenshed#binaryRestepFile` -> `func binaryRestepFile(scratchDir, producer string) string`
-- `plan:internal/battenshed#binaryRestepCeiling` -> `const binaryRestepCeiling = 30 * time.Minute`
-- `plan:internal/battenshed#TestInnerRun_BinaryChangeRestepsADriverlessGoChild` -> `func TestInnerRun_BinaryChangeRestepsADriverlessGoChild(t *testing.T)`
+- `internal/battenshed#innerRunProducer.binaryRestep`
+- `internal/battenshed#binaryRestepFile`
+- `internal/battenshed#binaryRestepCeiling`
+- `internal/battenshed#TestInnerRun_BinaryChangeRestepsADriverlessGoChild`
 
 **Uses:**
 - `internal/battenshed#innerRunProducer.driverAtWork`

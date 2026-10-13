@@ -1,0 +1,14 @@
+status: OK
+head_sha: 7c5ea3976ff163c33b7fe229c6604976c62b1e98
+deviations:
+  - internal/battenshed/innerrun_binaryrestep.go
+  - internal/battenshed/innerrun.go
+  - internal/battenshed/deps.go
+  - internal/battenshed/publishretry.go
+  - internal/battenshed/notice.go
+  - internal/battenshed/innerrun_halted_test.go
+  - internal/battencli/cli.go
+  - internal/battencli/lifecycle_integration_test.go
+  - internal/loomcli/wiring_seams_test.go
+  - internal/loomcli/start.go
+  - docs/overview.md

@@ -8,8 +8,8 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/battencli#syncWatchedMarker` -> `func syncWatchedMarker(marker string, watched bool, content []byte) (bool, error)`
-- `plan:internal/battencli#TestSyncWatchedMarker` -> `func TestSyncWatchedMarker(t *testing.T)`
+- `internal/battencli#syncWatchedMarker`
+- `internal/battencli#TestSyncWatchedMarker`
 
 **Uses:**
 - `internal/shedrun#BattenWatchedContent`
