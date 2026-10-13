@@ -1,0 +1,14 @@
+---
+round: 1
+focus:
+  - "internal/loomengine/config.go, template.yaml, config_test.go: both sides added loom config keys and validation to LoadConfig, ConfigSpec categories and the template. Does every key the task added (driver_kind, the tackler keys) still have a category, a template entry and validation in the merged ConfigSpec, and do the parent's hard-cap and CapRoute checks leave the task's keys and load order intact?"
+  - "contracts/stencils/loom/loom-template-arbiter.md and orch-template-role.md: the parent rewrote the arbiter's review-escalation rule around hard-cap, circling and budget causes, and the task has the arbiter receive the tackler's case brief and the orch stencil gain a go-driven line. Does the merged arbiter stencil still cover a case brief, and does the Go driver's in-process arbiter spawn supply the escalation cause the parent's rule now keys on?"
+  - "contracts/stencils/stencils.go and claims_test.go: the parent added registry entries and claims tests, the task added tackler stencil entries. Do the merged registry, embeds and claims assertions agree, with no entry missing from either side's tests?"
+  - "internal/loomcli/wiring.go and circling.go: the parent changed wiring and the circling/cap path, the task changed wiring for the Go driver, tackler and resolved executable. Does the merged wiring still construct every InnerRun seam both sides expect, and does the Go driver's settle loop use the parent's new soft-cap and hard-cap semantics for a review escalation stop?"
+  - "The tackler's shuttle spawn against the parent's shuttle changes (guarded interrupt, ready-pane checks, the new open verb, ErrNoRunningTurn, ErrRewindPickerOpen, step-stop and wait changes). Does the task's tackler spawn or timeout path send an interrupt or inject keys by a route PATTERN-guarded-interrupt and PATTERN-pane-text-injection now forbid, or rely on a shuttleengine behaviour the parent changed?"
+  - "PATTERN.md, docs/overview.md, internal/loomcli/doc.go and cmd/lyx/testdata/test-budget.yaml: both sides edited these. Does the merged text still state the task's invariants and the parent's, and do the merged test budgets match the merged test counts for the overlapping packages?"
+  - "internal/testkit/envkit/envkit.go and internal/configreg/runsettings_test.go: both sides added entries. Do the merged env and run-settings tables account for the task's driver_kind and tackler keys alongside the parent's cap keys?"
+  - "Test economy: do any tests from the two sides now cover the same merged behavior, or does a behavior of the interaction (Go driver reaching an escalation stop that carries the parent's cause, or the tackler spawn under the guarded-interrupt rules) have no covering test?"
+---
+
+Focus covers only the interaction of the two sides in the overlapping files and packages; each side's own defects are out of scope.
