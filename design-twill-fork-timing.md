@@ -71,4 +71,16 @@ Measured from existing spawn-after transcripts (2026-10-13, scripts in the hub p
 At cache-read prices that is $0.003–0.016 per fork and $0.03–0.09 per run gross; the master's Read of the finished files and fork0's own reads take most of it back, so the net cost effect is about zero.
 The case for the arm is quality, lens forks that judge the files blind to the reasoning, not cost.
 
+## Plan bench, after against fork0 (2026-10-13)
+
+Two runs per arm on the `run-time-by-role` reference, `opus[medium]`, $18 in all; report `docs/research/twill-fork-timing-plan-bench.md`, evidence in the hub prime's `.scratch/twill-fork-timing-plan/`.
+
+- Cost per plan: after $4.60 mean, fork0 $4.40 mean; lens forks $0.94 per run in both, against $1.60 in the spawn-before runs, so spawn-after holds its saving.
+- The master's cache stayed warm through fork0's run (about 5 minutes): `lyx shuttle wait` is not needed.
+- Quality on the key: level or slightly worse for fork0; the fork0 master once followed a wrong finding and once dropped a detail, missing fork0's intent.
+- fork0's blind lens forks were sharper: more BLOCKING and MEDIUM findings (6, 6 against 2, 4), one a real BLOCKING the after arm shipped.
+- Caveats: one reference, the prototype route (`plan_producer: single` with a spliced directive), not the twill producer.
+
+Bench verdict: no cost gain, no case to build fork0 yet; if benched again, fork0 writes a short rationale file the master reads before fixing and the lens forks do not inherit.
+
 Ideas from the bench agent, untested: merge two lenses (for instance `test-economy` into `row-reachability`), have forks batch their reads into one or two calls, and cut the writer's `validate-plan` rounds (the writer is about $4 of $5.6 per plan).
