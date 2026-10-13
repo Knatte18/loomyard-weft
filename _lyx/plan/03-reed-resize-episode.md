@@ -29,7 +29,16 @@ The doc comment names the episode sequence it now pins.
 D11, the watchdog's other per-tick Warn in this package: `repairSessionName`, reached on every watchdog tick while a session's name has drifted and its pane is idle, logs `reed: operator activity unreadable, not holding the session rename` at Warn on each tick while tmux cannot list its clients.
 `Engine` gains an `activityFailures logger.Episode`, and `repairSessionName` calls `e.activityFailures.Fail` with that message and fields on a client-list error and `e.activityFailures.Recover("reed: operator activity readable again for session name repair", …)` on a successful read; the rename decision is unchanged.
 `TestRepairNames_SessionName`'s "UnreadableClientListStillRenames" row runs the repair twice on one engine, still wants the rename, and asserts exactly one `level=WARN` `operator activity unreadable` line, capturing the process-global logger at Debug, so that row runs serially.
+It then answers `list-clients` without an error, runs the repair a third time on the same engine, and asserts one `level=INFO` `operator activity readable again for session name repair` line.
 
-**ImpactSummary:** one field on each of `watchState` and `Engine` and two method bodies in `internal/reedengine`; the log texts are unchanged, so only their level per tick and new recovery lines change, and no layout or rename decision does.
+`repairSessionName`'s two other Warns repeat on every name-repair wake too: the capture runs right after `SessionNameDrift` and before any idleness check, so `reed: could not capture pane for session name repair` returns on every wake while the name drifts and `capture-pane` fails, and a failed paste-submit leaves the drift, so `reed: could not type the session rename` repeats on every wake while the pane reads idle.
+`Engine` gains a `nameRepairFailures logger.EpisodeSet`, keyed per strand:
+a capture error calls `e.nameRepairFailures.Fail("capture:"+s.GUID, …)` with the existing message and fields, and a capture without an error calls `Recover("capture:"+s.GUID, "reed: session name repair captures the pane again", "socket", …, "session", …, "guid", s.GUID)`;
+a paste-submit error calls `Fail("rename:"+s.GUID, …)` with the existing message and fields, and a paste-submit without an error calls `Recover("rename:"+s.GUID, "reed: session rename types again", …, "guid", s.GUID)` before the existing `reed: repaired session name` Info, which stays.
+`TestRepairNames_SessionName` gains a `fail` step and a `heal` step on the fake tmux, and two rows that run the repair three times on one engine after `fail` and once after `heal`, capturing at Debug and asserting exactly one `level=WARN` and two `level=DEBUG` lines carrying the failure message, each DEBUG with `failed_ticks=`, and exactly one `level=INFO` line carrying the recovery message:
+"FailedCaptureLogsOncePerEpisode", `fake.answer("capture-pane", "", errors.New("capture failed"))` healed by answering `capture-pane` with no error;
+"FailedRenameLogsOncePerEpisode", `fake.answer("load-buffer", "", errors.New("paste failed"))` healed by answering `load-buffer` with no error, which also asserts one `reed: repaired session name` INFO line after the heal.
+
+**ImpactSummary:** one field on `watchState` and two on `Engine`, and two method bodies in `internal/reedengine`; the log texts are unchanged, so only their level per tick and new recovery lines change, and no layout or rename decision does.
 
 **Commit:** 3: reed: log a failing resize re-apply once per episode

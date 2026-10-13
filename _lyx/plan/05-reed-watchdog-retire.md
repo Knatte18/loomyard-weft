@@ -1,4 +1,4 @@
-# Card 4 — The watchdog retires on a replaced binary; lock contention exits at Debug
+# Card 5 — The watchdog retires on a replaced binary; lock contention exits at Debug
 
 **Create:**
 - `plan:internal/reedcli#errWatchdogBinaryReplaced` -> `var errWatchdogBinaryReplaced = errors.New("reed: the watchdog's binary was replaced")`
@@ -52,4 +52,4 @@ and the hub logs directory's trace file holds the `reed: watchdog retired` line.
 
 **ImpactSummary:** one re-signed unexported loop function with three callers, all in `internal/reedcli` and listed here, two nil-defaulted CLI seams and one log level; the daemon's discovery, reap and idle-exit behavior is unchanged when the binary is not replaced.
 
-**Commit:** 4: reed: retire and respawn the watchdog on a replaced binary
+**Commit:** 5: reed: retire and respawn the watchdog on a replaced binary

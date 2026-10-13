@@ -1,4 +1,4 @@
-# Card 5 — Session-name read failures: missing transcript at Debug, others once per session
+# Card 6 — Session-name read failures: missing transcript at Debug, others once per session
 
 **Create:**
 - `plan:internal/shuttleengine/claudeengine#nameReadWarnings` -> `type nameReadWarnings struct`
@@ -29,4 +29,4 @@ Neither test is parallel, since both redirect the process-global logger.
 
 **ImpactSummary:** one struct field set by both constructors and one method body in `claudeengine`; callers see the same drift answers, and only the log level and repetition of read failures change.
 
-**Commit:** 5: claudeengine: log a session-name read failure once per session
+**Commit:** 6: claudeengine: log a session-name read failure once per session

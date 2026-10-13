@@ -1,4 +1,4 @@
-# Card 6 — The create-worktree line drops its mutations field
+# Card 7 — The create-worktree line drops its mutations field
 
 **Edit:**
 - `internal/battencli#battenCLI.wire`
@@ -9,4 +9,4 @@ No test asserts the line or its fields (a grep of `internal/battencli` tests for
 
 **ImpactSummary:** one field removed from one Info line in one closure; no caller, envelope or record changes.
 
-**Commit:** 6: battencli: drop the duplicate mutations field from the create-worktree line
+**Commit:** 7: battencli: drop the duplicate mutations field from the create-worktree line

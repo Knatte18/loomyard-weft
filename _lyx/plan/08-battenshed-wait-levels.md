@@ -1,4 +1,4 @@
-# Card 7 — Batten waits log Info once per state; Warn means a failed step
+# Card 8 — Batten waits log Info once per state; Warn means a failed step
 
 **Create:**
 - `plan:internal/battenshed#reportWait` -> `func reportWait(producer, reason, scratchDir string, fields ...any)`
@@ -75,4 +75,4 @@ The package's 109 top-level tests become 110, within its budget row of 110.
 
 **ImpactSummary:** `report` is re-signed with every caller listed here; `reportStuck`'s callers keep their call and their Warn, and the only observable changes are the log levels and the one-line-per-state dedupe, while every reason file write and every verdict stays as it was.
 
-**Commit:** 7: battenshed: waits log Info once per state, failed steps Warn
+**Commit:** 8: battenshed: waits log Info once per state, failed steps Warn

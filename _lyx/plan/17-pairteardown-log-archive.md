@@ -1,4 +1,4 @@
-# Card 14 — Pair teardown archives the pair's logs and prunes the archive
+# Card 17 — Pair teardown archives the pair's logs and prunes the archive
 
 **Create:**
 - `internal/pairteardown/archive.go`
@@ -71,4 +71,4 @@ The rows that capture the process-global logger (the two prune-logging rows and 
 
 **ImpactSummary:** a new best-effort step inside `RemovePair`, the one removal route, plus its substrate field; no result, error or ordering of the existing teardown steps changes, and the archive writes only under `<hub>/_board/.lyx/log-archive`.
 
-**Commit:** 14: pairteardown: archive the pair's logs before removal, keep 30 days
+**Commit:** 17: pairteardown: archive the pair's logs before removal, keep 30 days

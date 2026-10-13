@@ -1,4 +1,4 @@
-# Card 9 — Shuttle tells a draft hold apart from its reason text
+# Card 10 — Shuttle tells a draft hold apart from its reason text
 
 **Create:**
 - `plan:internal/shuttleengine#busyHold` -> `type busyHold struct`
@@ -45,4 +45,4 @@ text that is not the send's now wraps the new sentinel `ErrForeignBoxText`, whic
 
 **ImpactSummary:** two exported struct fields, one exported sentinel and one exported predicate in `internal/shuttleengine`; three unexported helpers re-signed with their only callers (`awaitIdleSession`, `busyReading` itself) listed here, and every error text and existing `errors.Is` chain unchanged.
 
-**Commit:** 9: shuttle: carry a draft kind on the idle probe and the busy send error
+**Commit:** 10: shuttle: carry a draft kind on the idle probe and the busy send error

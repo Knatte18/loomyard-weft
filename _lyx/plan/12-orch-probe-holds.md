@@ -1,4 +1,4 @@
-# Card 11 — Orch: benign probe states agree, draft holds carry no draft text, polled failures log once
+# Card 12 — Orch: benign probe states agree, draft holds carry no draft text, polled failures log once
 
 **Create:**
 - `plan:internal/orchengine#draftHoldReason` -> `const draftHoldReason = "the input box holds a draft"`
@@ -43,7 +43,9 @@ Tests:
 a new row "an idle probe beside busy on background work agrees" (cause `background`) logs 0;
 "a disagreement warns again after an agreement between" becomes "a disagreement with the same since logs once across an agreement between" and wants 1;
 and a `sinces` column, consumed one per tick into the scripted state's `Since` (the last one sticking), drives a new row "a disagreement with a new since logs again": an idle probe beside `busy` on three ticks whose `Since` is t0, t0, t1, wanting 2.
-`TestWatcher_HubPauseInterruptsAtGraceEndHoldsAndQueuesTheResumeLine`, whose rows already reach `orchNetworkOperationInFlight` through `watchEnv.orchMarker`, gains a row that writes a plain file at `pauserecord.NetDir(e.pausePath)`, so `ListNetOps` fails on every grace tick while the orch reads idle, ticks three times within the grace, and asserts exactly one `level=WARN` `network operation markers cannot be read` line; that row captures the logger, so it runs serially.
+`TestWatcher_HubPauseInterruptsAtGraceEndHoldsAndQueuesTheResumeLine`, whose rows already reach `orchNetworkOperationInFlight` through `watchEnv.orchMarker`, gains a row that writes a plain file at `pauserecord.NetDir(e.pausePath)`, so `ListNetOps` fails on every grace tick while the orch reads idle, ticks three times within the grace, and asserts exactly one `level=WARN` `network operation markers cannot be read` line;
+it then replaces that plain file with an empty directory, ticks once more within the grace, and asserts one `level=INFO` `network operation markers are readable again` line.
+That row captures the logger at Info, so it runs serially.
 `TestWatcher_DraftHoldLogsOnceWithoutTheDraftText` is serial (it captures the process-global logger) with four rows, each driving three ticks whose draft grows by one character per tick (`a`, `ab`, `abc`) through a queued notice:
 the probe route, with `fakeSession.idle` false, `draft` true and `reason` quoting the draft;
 the send route held by the idle wait, with the probe idle and `sendErrs` three `*shuttleengine.SessionBusyError` values with `Draft` set whose messages quote the draft;
@@ -55,4 +57,4 @@ Each row asserts exactly one of its held lines (`orch: injection held` for the p
 
 **ImpactSummary:** watcher logging and the text stored in `State.Stuck` for a draft hold change in `internal/orchengine`; no injection, cycle or exit decision changes, and `orch status` shows the constant draft reason in place of the quoted draft.
 
-**Commit:** 11: orch: agree on benign probe states, keep drafts out of holds, log tick failures once
+**Commit:** 12: orch: agree on benign probe states, keep drafts out of holds, log tick failures once

@@ -1,4 +1,4 @@
-# Card 12 — The loop watchdog and waiter log a repeating read failure once
+# Card 13 — The loop watchdog and waiter log a repeating read failure once
 
 **Create:**
 - `plan:internal/shedverbs#TestLoopReadFailuresLogOncePerEpisode` -> `func TestLoopReadFailuresLogOncePerEpisode(t *testing.T)`
@@ -26,4 +26,4 @@ The pid-file row calls `takeSnapshot` with a `LoopSpec` whose lock, envelope and
 
 **ImpactSummary:** two unexported helpers re-signed, each with its one caller listed here, all in `internal/shedverbs`; the loop's kill and wait decisions are unchanged.
 
-**Commit:** 12: shedverbs: log a repeating loop read failure once per episode
+**Commit:** 13: shedverbs: log a repeating loop read failure once per episode

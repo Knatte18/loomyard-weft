@@ -1,4 +1,4 @@
-# Card 13 — The hub log archive root
+# Card 16 — The hub log archive root
 
 **Create:**
 - `plan:internal/fabricengine#LogArchiveDir` -> `func LogArchiveDir(hub string) string`
@@ -18,4 +18,4 @@ Its doc comment says the pair teardown's copy and its prune both resolve the roo
 
 **ImpactSummary:** one new path accessor in `internal/fabricengine` with no caller until the next card; one existing test gains an assertion.
 
-**Commit:** 13: fabricengine: name the hub log archive root
+**Commit:** 16: fabricengine: name the hub log archive root

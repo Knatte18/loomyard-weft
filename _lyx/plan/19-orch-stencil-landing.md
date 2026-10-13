@@ -1,4 +1,4 @@
-# Card 16 — The orch stencil handles every landing notice and catches a dropped one
+# Card 19 — The orch stencil handles every landing notice and catches a dropped one
 
 **Edit:**
 - `contracts/stencils/orch/orch-template-role.md`
@@ -28,4 +28,4 @@ The claims test's top-level test count is unchanged.
 
 **ImpactSummary:** one stencil section, two run-loop sentences and their claim rows in `contracts/stencils`; no Go behavior changes, and the deployed orch reads the new text after the operator's next `update-plugins.sh`.
 
-**Commit:** 16: orch stencil: handle every landing notice and catch a dropped one
+**Commit:** 19: orch stencil: handle every landing notice and catch a dropped one
