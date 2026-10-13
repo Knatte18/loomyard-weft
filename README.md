@@ -17,8 +17,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`logging-cleanup`](design-logging-cleanup.md) | loom | Webster-Bouncer | 17h | 3h | batten, reed, orch, fabric |
-| 2 | **Shuttle gate ends a twill writer mid-turn**<br>• The gate released a held turn start against a pane that looked idle and ended Plan-Write before the lens review | [`shuttle-gate-early-done`](design-shuttle-gate-early-done.md) | loom | Plan-Write | 30m | 30m | shuttle, loom |
+| 1 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`logging-cleanup`](design-logging-cleanup.md) | loom | Describe | 17h | 3h | batten, reed, orch, fabric |
+| 2 | **Shuttle gate ends a twill writer mid-turn**<br>• The gate released a held turn start against a pane that looked idle and ended Plan-Write before the lens review | [`shuttle-gate-early-done`](design-shuttle-gate-early-done.md) | loom | Plan-Write | 31m | 31m | shuttle, loom |
 
 ### Ready
 
@@ -90,7 +90,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 2d | 21h | webster |
-| 2 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) | 1d | 16h | orch, batten, shed, loom |
+| 2 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) | 1d | 17h | orch, batten, shed, loom |
 
 #### Normal priority
 
