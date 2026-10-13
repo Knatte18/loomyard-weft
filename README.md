@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-13 10:42 UTC; every age below is as of then.
+Rendered 2026-10-13 10:43 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -36,10 +36,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Plan does not surface tests that pin a method set a card extends** | [`plan-pinned-tests`](design-plan-pinned-tests.md) | 19h | 19h | loom |
-| 2 | **reed: overview window first, agents next, shell last**<br>• Window 0 is the run overview for any shed run, each spawned agent gets the next windows, Selvage is the last window named shell; attach shows the most relevant agent | [`reed-window-order`](design-reed-window-order.md) | 1h | 23m | reed, loom, shed |
+| 2 | **reed: overview window first, agents next, shell last**<br>• Window 0 is the run overview for any shed run, each spawned agent gets the next windows, Selvage is the last window named shell; attach shows the most relevant agent | [`reed-window-order`](design-reed-window-order.md) | 1h | 24m | reed, loom, shed |
 | 3 | **tokencount under-counts fork output tokens**<br>• tokencount keeps the first transcript line per message id, which in subagent transcripts carries partial output_tokens; fork costs come out low | [`tokencount-fork-output`](design-tokencount-fork-output.md) | 1h | 1h |  |
-| 4 | **Long-lived lyx processes restart on a new binary**<br>• The reed watchdog, status panes and orch watch keep running a deleted binary after a deploy; they should re-exec on a changed build | [`stale-binary-daemons`](design-stale-binary-daemons.md) | 19m | 19m | reed, orch, loom |
-| 5 | **Shuttle gate ends a twill writer mid-turn**<br>• The gate released a held turn start against a pane that looked idle and ended Plan-Write before the lens review | [`shuttle-gate-early-done`](design-shuttle-gate-early-done.md) | 6m | 6m | shuttle, loom |
+| 4 | **Long-lived lyx processes restart on a new binary**<br>• The reed watchdog, status panes and orch watch keep running a deleted binary after a deploy; they should re-exec on a changed build | [`stale-binary-daemons`](design-stale-binary-daemons.md) | 20m | 20m | reed, orch, loom |
+| 5 | **Shuttle gate ends a twill writer mid-turn**<br>• The gate released a held turn start against a pane that looked idle and ended Plan-Write before the lens review | [`shuttle-gate-early-done`](design-shuttle-gate-early-done.md) | 7m | 7m | shuttle, loom |
 
 ### Enhancements
 
@@ -54,10 +54,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 3 | **twill fork-timing Plan bench pair twb-ftp-s-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-s-1`](design-twb-ftp-s-1.md) | 22m | 22m |  |
-| 4 | **twill fork-timing Plan bench pair twb-ftp-r-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-r-1`](design-twb-ftp-r-1.md) | 22m | 22m |  |
-| 5 | **twill fork-timing Plan bench pair twb-ftp-s-2**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-s-2`](design-twb-ftp-s-2.md) | 22m | 22m |  |
-| 6 | **twill fork-timing Plan bench pair twb-ftp-r-2**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-r-2`](design-twb-ftp-r-2.md) | 22m | 22m |  |
+| 3 | **twill fork-timing Plan bench pair twb-ftp-s-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-s-1`](design-twb-ftp-s-1.md) | 23m | 23m |  |
+| 4 | **twill fork-timing Plan bench pair twb-ftp-r-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-r-1`](design-twb-ftp-r-1.md) | 23m | 23m |  |
+| 5 | **twill fork-timing Plan bench pair twb-ftp-s-2**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-s-2`](design-twb-ftp-s-2.md) | 23m | 23m |  |
+| 6 | **twill fork-timing Plan bench pair twb-ftp-r-2**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-r-2`](design-twb-ftp-r-2.md) | 23m | 23m |  |
 | 7 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 9d | 1h | shuttle |
 | 8 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 8d | 8d | fabric, loom |
 | 9 | **shedrecipe: capability declaration instead of manual seam-threading**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | 8d |  | shed |
@@ -117,11 +117,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 18 | **Scoped build and test for C# hubs on Windows**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 23h | 23h | shed, webster |
-
-## Done
-
-Finished, awaiting `lyx board prune --apply`.
-
-| # | Entry | Slug | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Arbiter relaunch, Webster deviations list, alignment landing order** | [`arbiter-fixes`](design-arbiter-fixes.md) | 19h | 3h | loom, shed, webster, orch |
