@@ -1,0 +1,16 @@
+{
+  "number": 1,
+  "key": "round-1",
+  "point": "parent-review",
+  "token": "0bf0969f4ae0b8b7",
+  "spawned_at": "2026-10-13T09:55:33.507316802+02:00",
+  "deadline": "2026-10-13T10:15:33.507316802+02:00",
+  "strand_guid": "60a9067639c210f35d8c669737489a0e",
+  "snapshot": "3381c540958acf326608306edaa07bad9c94814cb3db4a11cd1d1216ca992d7f",
+  "pr_number": 0,
+  "head_sha": "",
+  "closed": true,
+  "closed_reason": "Overlap with go-driver-assistant (Webster): both runs change internal/battenshed/innerrun.go (D5 reportStuck levels via exemptEnd), publishretry.go (D5), notice.go (D7 session state at notice), battenshed/doc.go, contracts/stencils/claims_test.go (D17) and docs/overview.md (D16, outside the module table). go-driver-assistant's tackler also reads step traces and the driver log to find a stop's cause, and D5 moves batten waits from Warn to Info. Overlap with run-window-bugs (Plan-Burler-Review): both change the internal/shuttleengine package (that run: wait.go, run.go, doc.go; this run: readiness.go, send.go for the D9 draft kind) and internal/shuttleengine/claudeengine (that run: claudeengine.go, command.go; this run: sessionname.go for D10). Which run lands first, and does logging-cleanup proceed now and merge against the others at Merge-In?",
+  "applied": "",
+  "notified": false
+}
