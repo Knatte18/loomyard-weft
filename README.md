@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-13 09:04 UTC; every age below is as of then.
+Rendered 2026-10-13 09:05 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`logging-cleanup`](design-logging-cleanup.md) | loom | Plan-Burler-Fix | 15h | 1h | batten, reed, orch, fabric |
-| 2 | **Arbiter relaunch, Webster deviations list, alignment landing order** | [`arbiter-fixes`](design-arbiter-fixes.md) | loom | Discussion-Burler-Review | 18h | 1h | loom, shed, webster, orch |
+| 2 | **Arbiter relaunch, Webster deviations list, alignment landing order** | [`arbiter-fixes`](design-arbiter-fixes.md) | loom | Discussion-Burler-Fix | 18h | 1h | loom, shed, webster, orch |
 
 ### Ready
 
@@ -36,8 +36,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-ftb-1`](design-twb-ftb-1.md) | 13m | 13m |  |
-| 2 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-fta-1`](design-twb-fta-1.md) | 13m | 13m |  |
+| 1 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-ftb-1`](design-twb-ftb-1.md) | 14m | 14m |  |
+| 2 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-fta-1`](design-twb-fta-1.md) | 14m | 14m |  |
 | 3 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-ftb-2`](design-twb-ftb-2.md) | 1m | 1m |  |
 | 4 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-ftb-3`](design-twb-ftb-3.md) | 1m | 1m |  |
 | 5 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-fta-2`](design-twb-fta-2.md) | 1m | 1m |  |
@@ -70,7 +70,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 14 | **lyx report timing: phase minutes, parent waits and agent spawns from run records**<br>• A mechanical per-run and per-day time report beside lyx report convergence, including stops by who settled them. | [`report-timing`](design-report-timing.md) | 18h | 18h | shed, orch |
 | 15 | **Make shuttle and lyx neutral to the LLM provider**<br>• Engine registry, engine in run.json, no Claude names in the core, usage readers behind the engine | [`llm-agnostic-engine`](design-llm-agnostic-engine.md) | 1h | 1h | shuttle, config, stencil |
 | 16 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 25m | 24m | burler, stencil |
-| 17 | **Twill: spawn lens forks before or after writing**<br>• A/B the twill spawn point, Discussion first: forks spawned before writing re-read the output as fresh cache writes, once per fork | [`twill-fork-timing`](design-twill-fork-timing.md) | 20m | 17m | loom, stencil |
+| 17 | **Twill: spawn lens forks before or after writing**<br>• A/B the twill spawn point, Discussion first: forks spawned before writing re-read the output as fresh cache writes, once per fork | [`twill-fork-timing`](design-twill-fork-timing.md) | 21m | 18m | loom, stencil |
 
 #### Low priority
 
