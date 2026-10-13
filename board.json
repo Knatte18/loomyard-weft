@@ -784,7 +784,7 @@
       "isolated": false,
       "brief": "The gate released a held turn start against a pane that looked idle and ended Plan-Write before the lens review",
       "body": "## Seen (twill Plan fork-timing bench, 2026-10-13)\n\nOn today's binary (`e17b29219`), two bench runs of twill Plan-Write ended before the writer weighed its lens forks' findings.\nIn both, the writer wrote the plan, `validate-plan` passed, the ready marker was written and the four lens forks ran.\nRight after the last fork finished, shuttle ended the run while the writer was mid-turn:\nthe trace log shows \"turn started after the boundary, holding the gate send\" and, about 10 s later, \"send released an unmatched turn start held against an idle pane\".\nThe pane looked idle while the model was thinking, so the gate ran and returned Done.\nNo `lens-review.md` was written and no finding was fixed.\n\nTwill Plan-Write in production can end the same way: the gate does not check that `lens-review.md` exists.\nNot yet checked on a real run.\n\nEvidence (transcripts, traces, plans) is in the hub prime's `.scratch/twill-fork-timing-plan/`; the bench pairs `twb-ftp-s-1` and `twb-ftp-r-1` are still standing.\n\n## Scope to discuss\n\n- Why the held turn start is released against a pane that only looks idle, and whether the idle test can see a thinking model.\n- Whether the twill gate should refuse Done until the lens review is written.\n- Whether real runs since `e17b29219` lost their lens review this way.\n",
-      "status": "running · Plan-Burler-Review",
+      "status": "running · Plan-Burler-Fix",
       "created": "2026-10-13T10:36:34Z",
       "revised": "2026-10-13T10:36:34Z",
       "run_settings": {
