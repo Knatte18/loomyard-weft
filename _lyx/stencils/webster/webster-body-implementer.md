@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=2d09513492d9331ed229b8931c48a5c81830bce704158b87ec74378996deb430 build=30385e1ae3cd25497f9b9d6d2a9848ce19516dad time=2026-10-13T10:42:56Z -->
+<!-- lyx-stencil: sha256=4cc9b9265c36bfbdd29706a39cc7107fda1a7470ec262daa458dfce340e6b661 build=1e39afc10eb44299d7bb150adf86bcb6bf84a8a8 time=2026-10-13T14:42:47Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -45,7 +45,7 @@ For EACH card file listed above, in the order listed:
    A non-zero exit fails the card exactly like the gate in step 3 — there is no separate "deferred verify" concept;
    every card's gate (the steps above, plus its own `verify:` when it declares one) is checked right after that card's own commit, never bundled into a later card.
 
-If any card's gate fails, or a test the card broke fails, and you cannot fix it within your self-fix bound (see next section), stop and report `status: FAILED` — do not continue to a later card on top of a broken one.{{.kickstart_pack}}
+If any card's gate fails, or a test the card broke fails, and you cannot fix it within your self-fix bound (see next section), stop and report `status: FAILED` — do not continue to a later card on top of a broken one.
 
 ## The sandbox rule
 
@@ -102,4 +102,4 @@ head_sha: <the commit SHA your worktree is at right now>
 
 `status` is `OK` when every card above is committed and every gate it ran, the batch gate included, passed;
 `FAILED` when you stopped after exhausting the self-fix bound on some card or on the batch gate, whether its gate failed or a test the card broke did. `head_sha` is your worktree's current HEAD commit SHA — capture it with `git rev-parse HEAD` as your very last read before writing the report, so it reflects every commit you made.
-Only a failed card gate, a failed card `verify:`, a failed batch gate or a test the card broke makes `status` `FAILED`, never a slot-busy exit.
+Only a failed card gate, a failed card `verify:`, a failed batch gate or a test the card broke makes `status` `FAILED`, never a slot-busy exit.{{.kickstart_pack}}

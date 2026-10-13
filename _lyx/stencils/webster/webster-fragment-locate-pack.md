@@ -2,9 +2,9 @@
      RenderForkPrompt reads it through stencilstore when begin-batch built a kick-start pack, fills its one marker, strips this banner and trailing newline,
      and fills the text into the required locate marker of webster-body-implementer, in place of the quarry locate fragment.
      The one marker is specs_dir, the deployed specs directory the card grammar lives in.
-lyx-stencil: sha256=fba3de251d578b296e9354ad23fcee2bf508503eed1f299e43fe0244acb002c1 build=793c6a8ee30725b93c4bd6b701dde467888b7a21 time=2026-10-12T13:09:13Z -->
+lyx-stencil: sha256=792cb58e7495a4d21eca45d7f7d00068c41f1d45d1f039a679dc18057c94a6df build=1e39afc10eb44299d7bb150adf86bcb6bf84a8a8 time=2026-10-13T14:42:47Z -->
 
-   The kick-start pack below lists, under each card's path, where each member glyph on that card is, and your first turn read every listed span.
+   The kick-start pack file lists, under each card's path, where each member glyph on that card is, and your first turn read every listed span.
    Do not call `lyx quarry resolve`, and do not grep, for a resolved entry.
    Every line number you obtained before your first edit, the pack's listed lines and the lines a `lyx quarry resolve` call or grep returned while locating an unresolved glyph, describes the tree before any edit, so after an edit locate code by its text and never read by any such line.
    The pack is a kick-start, not a complete list, so read further code, callers or whole files whenever the card needs it.
