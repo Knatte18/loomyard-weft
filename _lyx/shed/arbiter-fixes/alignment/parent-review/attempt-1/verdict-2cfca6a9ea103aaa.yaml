@@ -1,0 +1,14 @@
+verdict: escalate
+reason: >-
+  The design passes the scope check: D1 to D5 cover the board entry's three sections and its "Also seen" item without going past them, and they contradict neither arbiter-when, glyph-use-audit nor orch-split.
+  It still overlaps runs in flight in shared Go code: the contracts/stencils package's claims_test.go with logging-cleanup, and internal/websterengine, internal/planglyph, the Master stencil and refusal-spec.md with the bench run twb-ftb-1 (and, by its matching board entry, twb-fta-1).
+  No design conflict was found: each overlap changes different behaviour in the same files.
+question: >-
+  Peer overlaps to settle.
+  (1) logging-cleanup (Plan-Bouncer) and arbiter-fixes both change contracts/stencils/claims_test.go: logging-cleanup the orch stencil's rows, arbiter-fixes the implementer row that pins deviations: (line 451) and likely the alignment and arbiter rows.
+  By the landing-order rule logging-cleanup lands first, and arbiter-fixes takes its changes at Merge-In.
+  (2) twb-ftb-1 (Discussion-Write, bench at base 800a0e892) and arbiter-fixes both change internal/websterengine (twb: Master's shell wait, verify re-prompt, recovery evidence; here: record-batch's scope warnings, the digest, digestSummaryLine, ParseReport), internal/planglyph (twb: a build-variant predicate in DoneChecks; here: ScopeGuard's file field and file-level comparison), webster-template-master.md, refusal-spec.md, and the websterengine and planglyph doc.go files.
+  twb-fta-1 has the same board entry and no record yet.
+  By the rule arbiter-fixes lands first; will the twb bench runs land at all?
+  If not, they need no landing order.
+  Either way, may arbiter-fixes go on with these text-only overlaps?

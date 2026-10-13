@@ -1,0 +1,16 @@
+{
+  "number": 1,
+  "key": "round-1",
+  "point": "parent-review",
+  "token": "2cfca6a9ea103aaa",
+  "spawned_at": "2026-10-13T10:58:46.647930927+02:00",
+  "deadline": "2026-10-13T11:18:46.647930927+02:00",
+  "strand_guid": "bccaf1ace57cdf5e511b4df756432c28",
+  "snapshot": "92f117081a0214213a30b816ca6045d244a62581e6e21f1ad7e935c0072cda06",
+  "pr_number": 0,
+  "head_sha": "",
+  "closed": true,
+  "closed_reason": "Peer overlaps to settle. (1) logging-cleanup (Plan-Bouncer) and arbiter-fixes both change contracts/stencils/claims_test.go: logging-cleanup the orch stencil's rows, arbiter-fixes the implementer row that pins deviations: (line 451) and likely the alignment and arbiter rows. By the landing-order rule logging-cleanup lands first, and arbiter-fixes takes its changes at Merge-In. (2) twb-ftb-1 (Discussion-Write, bench at base 800a0e892) and arbiter-fixes both change internal/websterengine (twb: Master's shell wait, verify re-prompt, recovery evidence; here: record-batch's scope warnings, the digest, digestSummaryLine, ParseReport), internal/planglyph (twb: a build-variant predicate in DoneChecks; here: ScopeGuard's file field and file-level comparison), webster-template-master.md, refusal-spec.md, and the websterengine and planglyph doc.go files. twb-fta-1 has the same board entry and no record yet. By the rule arbiter-fixes lands first; will the twb bench runs land at all? If not, they need no landing order. Either way, may arbiter-fixes go on with these text-only overlaps?",
+  "applied": "",
+  "notified": false
+}
