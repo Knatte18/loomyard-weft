@@ -1,9 +1,9 @@
 # Card 8 — window-navigation-bar
 
 **Create:**
-- `plan:internal/reedengine#shellButtonFormat` -> `const shellButtonFormat = ""`
-- `plan:internal/reedengine#shellClickCommand` -> `const shellClickCommand = ""`
-- `plan:internal/reedengine#TestBindings_AltUpDownStepWindowsInIndexOrderPastHiddenOnes` -> `func TestBindings_AltUpDownStepWindowsInIndexOrderPastHiddenOnes(t *testing.T)`
+- `internal/reedengine#shellButtonFormat`
+- `internal/reedengine#shellClickCommand`
+- `internal/reedengine#TestBindings_AltUpDownStepWindowsInIndexOrderPastHiddenOnes`
 
 **Delete:**
 - `internal/reedengine#viewButtonFormat`

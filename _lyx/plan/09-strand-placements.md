@@ -24,7 +24,7 @@
 - `internal/orchcli#runsStrandMinRows`
 
 **Uses:**
-- `plan:internal/reedengine/render#AnchorOverview`
+- `internal/reedengine/render#AnchorOverview`
 
 **Intent:** Put the run's strands where D1 and D4 say: the two overview panes in the overview window, and the two coordinating agents in windows of their own.
 

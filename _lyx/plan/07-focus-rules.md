@@ -1,11 +1,11 @@
 # Card 7 — focus-rules
 
 **Create:**
-- `plan:internal/reedengine#relevantWindow` -> `func relevantWindow(st *ReedState, windows []sessionWindow, panes []windowPane, ending map[string]bool) string`
-- `plan:internal/reedengine#newAgentWindowSelected` -> `func newAgentWindowSelected(st *ReedState, panes []windowPane, current string, focus bool) bool`
-- `plan:internal/reedengine#Engine.selectRelevantWindowIfCurrentLocked` -> `func (e *Engine) selectRelevantWindowIfCurrentLocked(st *ReedState, ending []string)`
-- `plan:internal/reedengine#Engine.attachWindowSelectionLocked` -> `func (e *Engine) attachWindowSelectionLocked(st *ReedState) []string`
-- `plan:internal/reedengine#TestAttachArgv_SelectsTheRelevantWindow` -> `func TestAttachArgv_SelectsTheRelevantWindow(t *testing.T)`
+- `internal/reedengine#relevantWindow`
+- `internal/reedengine#newAgentWindowSelected`
+- `internal/reedengine#Engine.selectRelevantWindowIfCurrentLocked`
+- `internal/reedengine#Engine.attachWindowSelectionLocked`
+- `internal/reedengine#TestAttachArgv_SelectsTheRelevantWindow`
 
 **Delete:**
 - `internal/reedengine#Engine.selectStrandsWindowIfCurrentLocked`

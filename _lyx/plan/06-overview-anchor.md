@@ -1,9 +1,9 @@
 # Card 6 — overview-anchor
 
 **Create:**
-- `plan:internal/reedengine/render#AnchorOverview` -> `const AnchorOverview Anchor = "overview"`
-- `plan:internal/reedengine#isOverview` -> `func isOverview(d render.Display) bool`
-- `plan:internal/reedengine#overviewWindowInsertArgs` -> `func overviewWindowInsertArgs(windows []sessionWindow) []string`
+- `internal/reedengine/render#AnchorOverview`
+- `internal/reedengine#isOverview`
+- `internal/reedengine#overviewWindowInsertArgs`
 
 **Edit:**
 - `internal/reedengine/render#Anchor`
