@@ -1,27 +1,29 @@
-# Webster fork prompt: one-turn read and pack come last
+# Webster fork prompt: read instruction and pack last
 
-The implementer fork prompt now ends with the kick-start pack section, and that section opens with the one-turn read instruction.
-Before, the instruction stood in the FRESH-READ rule at the top and the pack sat mid-prompt, at the end of the cards section.
-The end of a prompt is what an agent acts on first, and the glyph audit found 9 of 29 pack-on forks still reading serially in their first work turn.
+The implementer fork's one-turn read instruction and its kick-start pack now end the fork prompt, since the end of a prompt is what an agent acts on first.
+An audit of pack-on forks found a share still reading serially in their first work turn, despite the instruction in the FRESH-READ rule at the top.
 
-## Changes
+## What changes
 
-- With a pack, the prompt's last section reads "Read all of this in one turn, in parallel, before any edit", with the follow-up reads for uncovered target and `Uses:` files and unresolved glyphs, then the per-card subsections.
-  The instruction text moved from `webster-fragment-fresh-read-pack.md` into `webster-fragment-pack-section.md`; the FRESH-READ rule now points at the pack section.
-- `{{.kickstart_pack}}` moved to the end of `webster-body-implementer.md`, after the batch-report section.
-  The report section still says the report is the fork's last action; only its place in the text moved above the read section.
-- Without a pack the prompt is unchanged: pack off, language none, and now also an empty pack.
-- `internal/websterengine/doc.go` and the `WebsterFragmentPackSection` comment describe the new placement.
-  Tests pinning the stencil layout (`contracts/stencils/claims_test.go`, `beginbatch_test.go`, `template_test.go`) are updated.
+- With a pack, the prompt's last section is `## Kick-start pack`, which opens with the instruction to read all of it in one turn, in parallel, before any edit, then holds the per-card subsections.
+  The instruction carries what the FRESH-READ rule carried: every card file and every listed span, then the target and `Uses:` files no span covers, then the located unresolved glyphs' files.
+- The FRESH-READ rule at the top now points at the pack section for what is read before any edit; it keeps the stale-context and Edit-only rules.
+- `{{.kickstart_pack}}` moves in `webster-body-implementer.md` from the end of the cards section to the end of the body, after the batch-report section.
+  That section still names the report as the fork's last action; only its place in the text moves above the read section.
+- Without a pack (pack off, language none), the prompt renders as before.
 
 ## Design decisions
 
-- A pack where no card has a resolved or unresolved entry would now be an instruction to read "all of this" with nothing under it.
-  `buildKickstartPack` returns nil in that case and logs `kickstart_pack=empty`, so the prompt renders as with the pack off.
-  Before, such a batch got a non-nil empty pack.
-- The `webster: kickstart pack` log line gains the value `empty` beside `on`, `off` and `language-none`.
+- A pack in which no card has a resolved or unresolved entry now counts as no pack: `buildKickstartPack` returns nil and logs `kickstart_pack=empty`.
+  Before, such a batch got an all-empty pack section, and with the section now carrying the read instruction it would have ended the prompt with an instruction to read spans that do not exist.
+- The pack-on and pack-off fragments are unchanged in how they are selected; only the pack-on FRESH-READ text shrank.
 
-## Not run
+## Docs and tests
 
-The effect on fork behaviour is not measured here.
-After this lands, re-run the audit scripts in the hub prime's `.scratch/glyph-audit-2/` on new runs: the share of forks with three or more parallel reads in the first work turn, and exploration calls per card.
+- `internal/websterengine/doc.go` describes the pack's new place, the instruction opening the section and the `empty` log value.
+- `contracts/stencils/claims_test.go` and the `internal/websterengine` render and begin-batch tests pin the new layout, including the empty-pack case.
+
+## Not run by hand
+
+- A real Webster run with a pack, to confirm the rendered prompt reads as intended end to end.
+- The audit's scripts in the hub prime's `.scratch/glyph-audit-2/`, to be re-run on runs after this lands: the share of forks with three or more parallel reads in the first work turn, and exploration calls per card.
