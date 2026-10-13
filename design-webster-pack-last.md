@@ -1,6 +1,6 @@
 # Webster fork prompt: read instruction and pack last
 
-`webster-pack-last` · Task · enhancement, webster, stencil · running · PR-Gate
+`webster-pack-last` · Task · enhancement, webster, stencil · running · Finalize
 
 ## Goal (operator, 2026-10-13)
 
