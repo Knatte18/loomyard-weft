@@ -28,7 +28,7 @@ So about 80 % of WARN lines record an ordinary state as a problem: an action log
 Full report: `.scratch/logging-inventory.md` in the hub prime, with a verdict and reason for each of the top 30 messages.
 Data: 30,111 level lines in 647 trace files (8.8 MB) across the hub prime and live pairs; 89 % WARN, 11 % INFO, no DEBUG or ERROR.
 
-- `reed: resize re-apply failed` (`internal/reedengine/watchloop.go:437`): 83.8 % of all lines, WARN on every failing tick with no dedupe; one file under `_board` holds 26,486 lines (7.7 MB), the same tmux layout error thousands of times per session. The repeating failure itself may be a bug worth a look, beside the logging.
+- `reed: resize re-apply failed` (`internal/reedengine/watchloop.go:437`): 83.8 % of all lines, WARN on every failing tick with no dedupe; one file under `_board` holds 26,486 lines (7.7 MB), the same tmux layout error thousands of times per session. The repeating failure itself is a live bug: still firing on 2026-10-13 09:36 for session `go-driver-assistant`, with `select-layout: exit status 1: have 4 panes but need 3`, so the layout reed re-applies counts one pane fewer than the window holds (25,343 lines in the hub reed watchdog's trace file since 10-08).
 - `claudeengine: could not read the session name` (WARN, 3.7 %): polled before the transcript exists; Debug, or once per session.
 - `orch: injection held` (INFO, 1.6 %): the dedupe fails because 409 of 494 reasons embed the changing draft text; key it on a constant reason, and stop logging the operator's draft text.
 - `battenshed: producer stuck` (WARN, 1.4 %): normal polled waits; Debug, WARN only for a real block.
