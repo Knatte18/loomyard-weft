@@ -1,0 +1,8 @@
+verdict: reject
+reason: >-
+  Scope deviation: commit 4ddcb5133 deletes Engine.SetContentRows and the InstallPins option it fed,
+  so a content-sized strand can no longer report its line count. That retires content sizing,
+  which the decision record's Scope Out keeps valid and working for an explicit caller; the goal and D7
+  call only for the two overview panes to stop calling it. The rest of the diff meets the goal and D1 to D10,
+  and nothing overlaps peer webster-pack-last or a parent commit.
+question: ""
