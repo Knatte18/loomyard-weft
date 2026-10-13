@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **reed: a strand in its own tmux window**<br>• Three related ideas for reed beyond one pane per strand and one window per worktree | [`reed-multi-window`](design-reed-multi-window.md) | loom | Webster-Bouncer | 8d | 16h | reed, shuttle |
+| 2 | **reed: a strand in its own tmux window**<br>• Three related ideas for reed beyond one pane per strand and one window per worktree | [`reed-multi-window`](design-reed-multi-window.md) | loom | Describe | 8d | 16h | reed, shuttle |
 | 3 | **Go driver per task, with the tackler (cold assistant) and the arbiter behind it**<br>• Go steps the run and settles mechanical stops; a cheap assistant spawns only at stops no rule settles and may escalate to the arbiter; LLM driver stays as an option. | [`go-driver-assistant`](design-go-driver-assistant.md) | loom | Webster | 13h | 13h | loom, shed |
 
 ### Ready
@@ -40,7 +40,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Run window and shuttle bugs from 2026-10-12**<br>• Six run window, shuttle, reed, loom and weft push bugs and fixes noted on 2026-10-12, bundled. | [`run-window-bugs`](design-run-window-bugs.md) | loom | `reed-multi-window` | 4d | 15h | shuttle, reed, loom, fabric |
+| 1 | **Run window and shuttle bugs from 2026-10-12**<br>• Six run window, shuttle, reed, loom and weft push bugs and fixes noted on 2026-10-12, bundled. | [`run-window-bugs`](design-run-window-bugs.md) | loom | `reed-multi-window` | 4d | 16h | shuttle, reed, loom, fabric |
 
 ## Notes
 
@@ -52,7 +52,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Arbiter relaunch refused when the run already moved to the verdict row**<br>• A resume whose goto matches the row the run already stands on is refused as moved and parks the run. | [`arbiter-relaunch-moved`](design-arbiter-relaunch-moved.md) | 16h | 20m | loom, shed |
+| 1 | **Arbiter relaunch refused when the run already moved to the verdict row**<br>• A resume whose goto matches the row the run already stands on is refused as moved and parks the run. | [`arbiter-relaunch-moved`](design-arbiter-relaunch-moved.md) | 16h | 21m | loom, shed |
 | 2 | **Plan does not surface tests that pin a method set a card extends** | [`plan-pinned-tests`](design-plan-pinned-tests.md) | 16h | 16h | loom |
 | 3 | **Batten sends no notice for a landing that readies nothing**<br>• A plain landing is silent, so the orch misses landings the alignment agent approved. | [`batten-land-notice`](design-batten-land-notice.md) | 13h | 13h | batten |
 | 4 | **Webster deviations list mixes in the batch's own files**<br>• The implementer stencil contradicts itself on deviations; let ScopeGuard alone produce the list | [`webster-deviations-list`](design-webster-deviations-list.md) | 12h | 12h | webster |
@@ -81,7 +81,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 11 | **Twill for Plan: measure fewer Plan-Review rounds; wrong-parent-dir miss**<br>• After twill-plan lands: measure a lower plan_max_bounces, and cover the parent-directory miss every bench arm shared | [`twill-plan-followups`](design-twill-plan-followups.md) | 23h | 12h | loom |
 | 12 | **Arbiter spawns only on stops that need it**<br>• Five arbiter spawns on 2026-10-12, none needed: narrow the triggers to the hard review cap, circling, and blocked or error stops with no computed way forward. | [`arbiter-when`](design-arbiter-when.md) | 16h | 15h | loom, shed |
 | 13 | **Alignment agent settles landing order itself; escalates only on design conflict**<br>• Apply furthest-along-lands-first in the alignment agent and wake the orch only when two runs designs conflict. | [`alignment-landing-order`](design-alignment-landing-order.md) | 16h | 16h | orch, loom |
-| 14 | **lyx report timing: phase minutes, parent waits and agent spawns from run records**<br>• A mechanical per-run and per-day time report beside lyx report convergence, including stops by who settled them. | [`report-timing`](design-report-timing.md) | 15h | 15h | shed, orch |
+| 14 | **lyx report timing: phase minutes, parent waits and agent spawns from run records**<br>• A mechanical per-run and per-day time report beside lyx report convergence, including stops by who settled them. | [`report-timing`](design-report-timing.md) | 16h | 16h | shed, orch |
 
 #### Low priority
 
