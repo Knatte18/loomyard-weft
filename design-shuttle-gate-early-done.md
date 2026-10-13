@@ -1,6 +1,6 @@
 # Shuttle gate ends a twill writer mid-turn
 
-`shuttle-gate-early-done` · Task · bug, shuttle, loom · running · PR-Align
+`shuttle-gate-early-done` · Task · bug, shuttle, loom · running · PR-Gate
 
 ## Seen (twill Plan fork-timing bench, 2026-10-13)
 
