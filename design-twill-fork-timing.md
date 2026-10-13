@@ -18,6 +18,8 @@ Test Discussion's twill first (operator, 2026-10-13).
 
 ## Bench to discuss
 
+The question (operator, 2026-10-13): with the same model as today's twill, does spawning after writing give (1) as good a result and (2) a lower cost in money and tokens?
+
 - An A/B on Discussion-Write: spawn before writing against spawn after writing, the same reference records and lenses, more than one run per arm; the `twill-plan` bench is the precedent for the setup.
 - Compare per arm: fork cache writes and reads, total cost, writer time, and the findings against the reference's Discussion-Review findings.
 - The operator's choice for the test arm: spawn the forks after the files are written (2026-10-13).
