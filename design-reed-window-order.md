@@ -20,7 +20,8 @@ The operator wants Selvage's window kept, one per session: it keeps the session 
 
 ## Scope to discuss
 
-- What VIEW becomes: renamed for what it shows (the Selvage window), or dropped in favour of the strand windows' own buttons.
+- VIEW is in practice the Selvage button now. The operator leans to renaming it `shell`, in lower case like the window buttons rather than capitals, and placing it last (2026-10-13).
+- Selvage lives in the strands' window, which holds only Selvage once every strand runs in its own window; whether a strand can still land in that window (a window-0 strand) decides whether Selvage needs a window of its own.
 
 - Alt+Up and Alt+Down step across every strand, own-window strands included, with Selvage last.
 
