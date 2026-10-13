@@ -53,7 +53,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 3 | **twill fork-timing Plan bench pair twb-ftp-s-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-s-1`](design-twb-ftp-s-1.md) | 0m | 0m |  |
+| 3 | **twill fork-timing Plan bench pair twb-ftp-s-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-s-1`](design-twb-ftp-s-1.md) | 1m | 1m |  |
 | 4 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 9d | 51m | shuttle |
 | 5 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 8d | 8d | fabric, loom |
 | 6 | **shedrecipe: capability declaration instead of manual seam-threading**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | 8d |  | shed |
@@ -69,9 +69,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 16 | **Make shuttle and lyx neutral to the LLM provider**<br>• Engine registry, engine in run.json, no Claude names in the core, usage readers behind the engine | [`llm-agnostic-engine`](design-llm-agnostic-engine.md) | 2h | 51m | shuttle, config, stencil |
 | 17 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 1h | 1h | burler, stencil |
 | 18 | **Twill: spawn lens forks before or after writing**<br>• A/B the twill spawn point, Discussion first: forks spawned before writing re-read the output as fresh cache writes, once per fork | [`twill-fork-timing`](design-twill-fork-timing.md) | 1h | 51m | loom, stencil |
-| 19 | **twill fork-timing Plan bench pair twb-ftp-r-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-r-1`](design-twb-ftp-r-1.md) | 0m | 0m |  |
-| 20 | **twill fork-timing Plan bench pair twb-ftp-s-2**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-s-2`](design-twb-ftp-s-2.md) | 0m | 0m |  |
-| 21 | **twill fork-timing Plan bench pair twb-ftp-r-2**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-r-2`](design-twb-ftp-r-2.md) | 0m | 0m |  |
+| 19 | **twill fork-timing Plan bench pair twb-ftp-r-1**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-r-1`](design-twb-ftp-r-1.md) | 1m | 1m |  |
+| 20 | **twill fork-timing Plan bench pair twb-ftp-s-2**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-s-2`](design-twb-ftp-s-2.md) | 1m | 1m |  |
+| 21 | **twill fork-timing Plan bench pair twb-ftp-r-2**<br>• Bench pair for twill-fork-timing, Plan-Write after arm; torn down after the run | [`twb-ftp-r-2`](design-twb-ftp-r-2.md) | 1m | 1m |  |
 
 #### Low priority
 
