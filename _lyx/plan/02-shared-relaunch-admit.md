@@ -1,7 +1,7 @@
 # Card 2 — One admit check admits a re-launch whose verdict is already in effect
 
 **Create:**
-- `plan:internal/loomcli#admitRelaunch` -> `func admitRelaunch(current shedengine.Status, key loomengine.ArbiterStopKey, pauseBefore, pauseAfter, target, actor string) (inEffect bool, refusal string)`
+- `internal/loomcli#admitRelaunch`
 
 **Edit:**
 - `internal/loomcli#consumeArbiterAttempt`

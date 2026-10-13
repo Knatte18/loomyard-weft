@@ -1,7 +1,7 @@
 # Card 4 — `lyx loom peers` gives each run's position in the embedded loom recipe
 
 **Create:**
-- `plan:internal/loomcli#recipeRow` -> `func recipeRow(status *string, rows []string) int`
+- `internal/loomcli#recipeRow`
 
 **Edit:**
 - `internal/loomcli#peerLine`
