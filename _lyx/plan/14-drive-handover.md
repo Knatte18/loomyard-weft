@@ -1,13 +1,13 @@
 # Card 14 — drive-handover
 
 **Edit:**
-- `plan:internal/loomcli#goDriverDeps`
-- `plan:internal/loomcli#goDriver.run`
-- `plan:internal/loomcli#goDriver.facts`
-- `plan:internal/loomcli#TestGoDriver_Settle`
+- `internal/loomcli#goDriverDeps`
+- `internal/loomcli#goDriver.run`
+- `internal/loomcli#goDriver.facts`
+- `internal/loomcli#TestGoDriver_Settle`
 
 **Create:**
-- `plan:internal/loomcli#goDriver.handOver` -> `func (d *goDriver) handOver(ctx context.Context, stop driveStop) error`
+- `internal/loomcli#goDriver.handOver`
 
 **Uses:**
 - `internal/loomcli#binaryEligible`

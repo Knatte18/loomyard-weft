@@ -19,7 +19,7 @@
 - `internal/loomengine#ReadTacklerMarker`
 - `internal/loomengine#ReadSettleRecords`
 - `internal/loomengine#GoVerifyRetrySpent`
-- `plan:internal/loomengine#PathsOutsideRunRecords`
+- `internal/loomengine#PathsOutsideRunRecords`
 - `internal/buildvcs#OfFile`
 - `internal/shedverbs#LastStepBuildChanged`
 - `internal/battencli#arbiterInFlightFrom`

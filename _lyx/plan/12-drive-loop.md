@@ -1,16 +1,16 @@
 # Card 12 — drive-loop
 
 **Create:**
-- `plan:internal/loomcli#goDriverDeps` -> `type goDriverDeps struct`
-- `plan:internal/loomcli#goDriver` -> `type goDriver struct`
-- `plan:internal/loomcli#goDriver.run` -> `func (d *goDriver) run(ctx context.Context) error`
-- `plan:internal/loomcli#goDriver.facts` -> `func (d *goDriver) facts(stop driveStop) (driveFacts, error)`
-- `plan:internal/loomcli#goDriver.recheck` -> `func (d *goDriver) recheck(stop driveStop) (next driveStop, exit bool, err error)`
-- `plan:internal/loomcli#goDriver.holdPause` -> `func (d *goDriver) holdPause(ctx context.Context) error`
-- `plan:internal/loomcli#goDriver.settle` -> `func (d *goDriver) settle(stop driveStop, settler, action, outcome, target string)`
-- `plan:internal/loomcli#goDriver.handBack` -> `func (d *goDriver) handBack(stop driveStop, h driveHandBack) error`
+- `internal/loomcli#goDriverDeps`
+- `internal/loomcli#goDriver`
+- `internal/loomcli#goDriver.run`
+- `internal/loomcli#goDriver.facts`
+- `internal/loomcli#goDriver.recheck`
+- `internal/loomcli#goDriver.holdPause`
+- `internal/loomcli#goDriver.settle`
+- `internal/loomcli#goDriver.handBack`
 - `internal/loomcli/drive_test.go`
-- `plan:internal/loomcli#TestGoDriver_Settle` -> `func TestGoDriver_Settle(t *testing.T)`
+- `internal/loomcli#TestGoDriver_Settle`
 
 **Edit:**
 - `cmd/lyx/testdata/test-budget.yaml`

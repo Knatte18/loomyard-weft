@@ -25,11 +25,11 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/loomcli#loomCLI.driverLockHeld` -> `func (c *loomCLI) driverLockHeld() (bool, error)`
-- `plan:internal/loomcli#TestRunDriverSpawnAndWait_GoArm` -> `func TestRunDriverSpawnAndWait_GoArm(t *testing.T)`
+- `internal/loomcli#loomCLI.driverLockHeld`
+- `internal/loomcli#TestRunDriverSpawnAndWait_GoArm`
 
 **Uses:**
-- `plan:internal/loomcli#spawnDetachedDrive`
+- `internal/loomcli#spawnDetachedDrive`
 - `internal/shedrun#DriverLock`
 
 **Intent:**

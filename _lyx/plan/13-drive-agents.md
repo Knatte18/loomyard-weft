@@ -1,21 +1,21 @@
 # Card 13 — drive-agents
 
 **Edit:**
-- `plan:internal/loomcli#goDriverDeps`
-- `plan:internal/loomcli#goDriver.run`
-- `plan:internal/loomcli#goDriver.facts`
-- `plan:internal/loomcli#TestGoDriver_Settle`
+- `internal/loomcli#goDriverDeps`
+- `internal/loomcli#goDriver.run`
+- `internal/loomcli#goDriver.facts`
+- `internal/loomcli#TestGoDriver_Settle`
 
 **Create:**
-- `plan:internal/loomcli#goDriver.tackle` -> `func (d *goDriver) tackle(ctx context.Context, stop driveStop) (next driveStop, exit bool, err error)`
-- `plan:internal/loomcli#goDriver.arbitrate` -> `func (d *goDriver) arbitrate(ctx context.Context, stop driveStop, caseBriefPath string) (next driveStop, exit bool, err error)`
-- `plan:internal/loomcli#goDriver.resumeOpenAttempt` -> `func (d *goDriver) resumeOpenAttempt(ctx context.Context) (stop driveStop, found bool, err error)`
+- `internal/loomcli#goDriver.tackle`
+- `internal/loomcli#goDriver.arbitrate`
+- `internal/loomcli#goDriver.resumeOpenAttempt`
 
 **Uses:**
 - `internal/loomcli#errTacklerUnavailable`
 - `internal/loomcli#errTacklerResumeReturned`
-- `plan:internal/loomcli#goDriver.recheck`
-- `plan:internal/loomcli#goDriver.holdPause`
+- `internal/loomcli#goDriver.recheck`
+- `internal/loomcli#goDriver.holdPause`
 - `internal/loomengine#WorktreeSnapshot.Equal`
 
 **Intent:**

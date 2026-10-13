@@ -1,14 +1,14 @@
 # Card 15 — drive-verb
 
 **Create:**
-- `plan:internal/loomcli#loomCLI.driveCmd` -> `func (c *loomCLI) driveCmd() *cobra.Command`
-- `plan:internal/loomcli#driveVerb` -> `func driveVerb(out io.Writer, lockPath string, stale []string, run func(release func() error) error) int`
-- `plan:internal/loomcli#loomCLI.goDriverDepsFor` -> `func (c *loomCLI) goDriverDepsFor(release func() error) (goDriverDeps, error)`
-- `plan:internal/loomcli#spawnDetachedDrive` -> `func spawnDetachedDrive(l *lyxcwd.Location) (int, error)`
-- `plan:internal/loomcli#driveEnvelopePath` -> `func driveEnvelopePath(l *lyxcwd.Location, runID string, now func() time.Time, rand func() string) string`
-- `plan:internal/loomcli#TestDriveVerb` -> `func TestDriveVerb(t *testing.T)`
-- `plan:internal/loomengine#PathsOutsideRunRecords` -> `func PathsOutsideRunRecords(l *lyxcwd.Location, runID string, paths []string) []string`
-- `plan:internal/loomengine#TestPathsOutsideRunRecords` -> `func TestPathsOutsideRunRecords(t *testing.T)`
+- `internal/loomcli#loomCLI.driveCmd`
+- `internal/loomcli#driveVerb`
+- `internal/loomcli#loomCLI.goDriverDepsFor`
+- `internal/loomcli#spawnDetachedDrive`
+- `internal/loomcli#driveEnvelopePath`
+- `internal/loomcli#TestDriveVerb`
+- `internal/loomengine#PathsOutsideRunRecords`
+- `internal/loomengine#TestPathsOutsideRunRecords`
 
 **Edit:**
 - `internal/loomcli#loomCLI`
@@ -19,7 +19,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/loomcli#goDriver.run`
+- `internal/loomcli#goDriver.run`
 - `internal/shedrun#DriverLock`
 - `internal/battenshed#PublishRetrySpent`
 - `internal/shedverbs#RunUntilStop`

@@ -1,0 +1,6 @@
+status: OK
+head_sha: 324c1e96737c4054ecaa047e99e62d4b78378891
+deviations:
+  - internal/loomcli/driverules.go
+  - internal/loomcli/drivewiring.go
+  - internal/loomcli/smoke_test.go
