@@ -1,6 +1,6 @@
 # Logging cleanup: right levels, no per-tick noise, reed resize layout bug
 
-`logging-cleanup` · Task · bug, enhancement, batten, reed, orch, fabric · running · Merge-Bouncer
+`logging-cleanup` · Task · bug, enhancement, batten, reed, orch, fabric · running · Merge-Burler-Review
 
 Bring the logs to the level policy: ordinary states at Info or Debug, nothing logged per tick or per poll, and no test leaking WARN into verify logs.
 The reed resize bug (`reed-resize-pane-count` below) is the largest single noise source and is fixed in this task.
