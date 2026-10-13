@@ -1,13 +1,12 @@
 {
   "current_producer": "PR-Gate",
-  "state": "awaiting",
-  "error": "alignment report /home/knatte/Code/loomyard-LYXHUB/arbiter-fixes/_lyx/shed/arbiter-fixes/alignment/pr-gate/attempt-1/report-382377e166f734bc.md did not settle this pull request - Overlap with peer logging-cleanup (running at Webster): both change the Go package internal/websterengine (the peer edits captureLogs in runlevel_test.go for its D13; this run edits recordbatch.go, digest.go, report.go and others for D4), and the peer's plan also changes internal/loomcli (card 14, idle-release logging) and contracts/stencils claims_test.go (card 19), both packages this run changes. No design conflict was found: the changes sit at different places and no decision contradicts or duplicates another. Confirm it as a text-only overlap and the landing order: by recipe row arbiter-fixes (PR-Gate) lands first and logging-cleanup takes its changes at Merge-In.; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/603",
-  "parent_notice": "alignment report /home/knatte/Code/loomyard-LYXHUB/arbiter-fixes/_lyx/shed/arbiter-fixes/alignment/pr-gate/attempt-1/report-382377e166f734bc.md did not settle this pull request - Overlap with peer logging-cleanup (running at Webster): both change the Go package internal/websterengine (the peer edits captureLogs in runlevel_test.go for its D13; this run edits recordbatch.go, digest.go, report.go and others for D4), and the peer's plan also changes internal/loomcli (card 14, idle-release logging) and contracts/stencils claims_test.go (card 19), both packages this run changes. No design conflict was found: the changes sit at different places and no decision contradicts or duplicates another. Confirm it as a text-only overlap and the landing order: by recipe row arbiter-fixes (PR-Gate) lands first and logging-cleanup takes its changes at Merge-In.",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "PR-Gate",
     "last": "PR-Gate → awaiting",
-    "wait": "alignment report /home/knatte/Code/loomyard-LYXHUB/arbiter-fixes/_lyx/shed/arbiter-fixes/alignment/pr-gate/attempt-1/report-382377e166f734bc.md did not settle this pull request - Overlap with peer logging-cleanup (running at Webster): both change the Go package internal/websterengine (the peer edits captureLogs in runlevel_test.go for its D13; this run edits recordbatch.go, digest.go, report.go and others for D4), and the peer's plan also changes internal/loomcli (card 14, idle-release logging) and contracts/stencils claims_test.go (card 19), both packages this run changes. No design conflict was found: the changes sit at different places and no decision contradicts or duplicates another. Confirm it as a text-only overlap and the landing order: by recipe row arbiter-fixes (PR-Gate) lands first and logging-cleanup takes its changes at Merge-In.; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/603"
+    "wait": ""
   },
   "history": [
     {
