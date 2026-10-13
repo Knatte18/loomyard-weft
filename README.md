@@ -38,7 +38,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 1 | **Plan does not surface tests that pin a method set a card extends** | [`plan-pinned-tests`](design-plan-pinned-tests.md) | 22h | 22h | loom |
 | 2 | **tokencount under-counts fork output tokens**<br>• tokencount keeps the first transcript line per message id, which in subagent transcripts carries partial output_tokens; fork costs come out low | [`tokencount-fork-output`](design-tokencount-fork-output.md) | 3h | 3h |  |
 | 3 | **Long-lived lyx processes restart on a new binary**<br>• The reed watchdog, status panes and orch watch keep running a deleted binary after a deploy; they should re-exec on a changed build | [`stale-binary-daemons`](design-stale-binary-daemons.md) | 2h | 1h | reed, orch, loom |
-| 4 | **PR-Align fails with 'context deadline exceeded' after a hub-wide pause held its GitHub call** | [`pause-held-deadline`](design-pause-held-deadline.md) | 0m | 0m |  |
+| 4 | **PR-Align fails with 'context deadline exceeded' after a hub-wide pause held its GitHub call** | [`pause-held-deadline`](design-pause-held-deadline.md) | 0m | 0m | batten, shed |
 
 ### Enhancements
 

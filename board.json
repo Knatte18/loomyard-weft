@@ -794,7 +794,9 @@
       "title": "PR-Align fails with 'context deadline exceeded' after a hub-wide pause held its GitHub call",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "batten",
+        "shed"
       ],
       "issues": [
         606
@@ -804,7 +806,7 @@
       "brief": "",
       "body": "Imported from [issue #606](https://github.com/Knatte18/loomyard/issues/606).\n\n**What happened**\n\nA run halted `failed` at `PR-Align` with anomaly `producer-hard-failure`:\n\n```\nlandingshed: PR-Align: query existing pull request: context deadline exceeded\n```\n\nThe trace shows the sequence:\n\n- `alignment: spawn` for `point=pr-gate` with a 20-minute `deadline`.\n- `pausecli: a network call is held by a pause` — `lyx: held by a hub-wide pause since ...; it continues after \"lyx resume\"`.\n- About 70 minutes later the pause ended, the session went `busy` again, and the first `landingshed: github call failed` for `action=\"query existing pull request\"` reported `cause=\"context deadline exceeded\"`.\n\n**Why it is abnormal**\n\nThe deadline kept running while the call was deliberately held by `lyx pause`.\nThe operator's pause, not a GitHub or network fault, consumed the budget, so the first call after `lyx resume` failed at once and the whole run halted as a hard failure.\nThe alignment session itself finished `done` (`loop=done`), yet the run was still marked `failed`.\n\n**What to do**\n\n- Do not count pause-held time against the deadline: extend the context deadline by the pause duration, or start the deadline only after the pause releases the call.\n- Treat a deadline error on a call that was held by a pause as retryable, not as `producer-hard-failure`.\n\nProvenance: task `shuttle-gate-early-done`, note `loom-halt.md`.\n",
       "created": "2026-10-13T13:12:00Z",
-      "revised": "2026-10-13T13:12:00Z"
+      "revised": "2026-10-13T13:12:02Z"
     }
   ]
 }

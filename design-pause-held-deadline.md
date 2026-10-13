@@ -1,6 +1,6 @@
 # PR-Align fails with 'context deadline exceeded' after a hub-wide pause held its GitHub call
 
-`pause-held-deadline` · Note · bug
+`pause-held-deadline` · Note · bug, batten, shed
 
 Imported from [issue #606](https://github.com/Knatte18/loomyard/issues/606).
 
