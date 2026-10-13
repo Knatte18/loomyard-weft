@@ -2,8 +2,6 @@
 
 `run-window-bugs` · Task · bug, enhancement, shuttle, reed, loom, fabric
 
-Depends on: [`reed-multi-window`](design-reed-multi-window.md)
-
 This task bundles the run window and shuttle bugs and fixes noted on 2026-10-12: `shuttle-ready-blank-pane`, `loom-checklist-stale-render`, `weft-push-refused-retry`, `shuttle-color-verified-send`, `reed-socket-test-fd-sweep` and `agent-gofmt-verb`.
 
 ## Was `shuttle-ready-blank-pane`
