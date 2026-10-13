@@ -14,7 +14,7 @@ Plan's glyphs can be taken as sound for now (operator, 2026-10-12): the plan wri
 Take a smaller task that has already landed and replay its Webster step in two separate worktrees, both checked out at the state right before Webster started (the parent commit plus the task's approved plan).
 One arm runs with `kickstart_pack` on in `webster.yaml`, the other with it off; everything else, models included, is the same.
 Compare per fork: turns, cache read, total weight, wall time, and whether the batch gates pass.
-LLM runs vary, so run each arm more than once before reading a difference into it; the `twill-plan` bench (`.scratch/twill-plan-bench/` in the hub prime) is the precedent for the setup.
+LLM runs vary, so run each arm more than once before reading a difference into it; the `twill-plan` bench (`docs/research/twill-plan-bench.md`) is the precedent for the setup.
 The result decides whether the pack pays, and gives the baseline the two-prompt variant below is measured against.
 
 ## Was kickstart-pack-measure
