@@ -1,8 +1,8 @@
 <!-- This is the twill directive: the host-neutral block that has a writer review its own finished record through lenses, one fork per lens, before it ends.
      internal/twilldirective renders it, and the spawning module hands that renderer every host value, so this block names no file, step, verb or section of any one host.
      It declares these required markers:
-     {{.reviewed_files}}, {{.ready_marker}}, {{.rubric_path}}, {{.lens_list}}, {{.format_step}}, {{.self_check_step}}, {{.self_check_command}}, {{.disposition_place}}, {{.spawn_point}}, {{.rejection_rule}} and {{.severity_rule}}.
-lyx-stencil: sha256=6356c266e78d65b1927d820a4f0c4597cd2d2181b551f5b3baa909f076c8eb37 build=7931932b7ccb132a2d46070d0d2acfec4571f89a time=2026-10-12T08:20:15Z -->
+     {{.reviewed_files}}, {{.ready_marker}}, {{.rubric_path}}, {{.lens_list}}, {{.format_step}}, {{.self_check_step}}, {{.self_check_command}}, {{.final_self_check_command}}, {{.disposition_place}}, {{.spawn_point}}, {{.rejection_rule}} and {{.severity_rule}}.
+lyx-stencil: sha256=b4ba9b6497e0e7d56905538992dab5e034745468075681410cd98ffc197d72db build=b1c731a2f91cc95b841268a81a36a083dd5c12d3 time=2026-10-13T13:02:32Z -->
 
 ## Lens review by forks
 
@@ -19,7 +19,7 @@ lyx-stencil: sha256=6356c266e78d65b1927d820a4f0c4597cd2d2181b551f5b3baa909f076c8
    {{.rejection_rule}}
 7. Record the lens review at `{{.disposition_place}}`: one line per finding, with its lens and whether it was fixed or rejected and why.
    Name a fork that returned no report.
-8. Run `{{.self_check_command}}` again until it passes, then end your turn.
+8. Run `{{.final_self_check_command}}` again until it passes, then end your turn.
 
 One fork pass per writer spawn.
 A gate re-prompt, a parent-review reject or a later turn of the same session never spawns forks again.
