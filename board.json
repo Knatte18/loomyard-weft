@@ -877,6 +877,7 @@
       "revised": "2026-10-13T10:36:34Z",
       "run_settings": {
         "loom": {
+          "review_hard_max_bounces": 3,
           "review_max_bounces": 2
         }
       }
