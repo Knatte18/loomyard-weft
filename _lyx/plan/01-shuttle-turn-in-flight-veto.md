@@ -6,6 +6,8 @@
 - `plan:internal/shuttleengine#TurnInFlight` -> `const TurnInFlight TurnProgress = 1`
 - `plan:internal/shuttleengine#TurnOver` -> `const TurnOver TurnProgress = 2`
 - `plan:internal/shuttleengine#TurnProgressReader` -> `type TurnProgressReader interface`
+- `plan:internal/shuttleengine#sessionFakeEngine.TurnStartProgress` -> `func (e *sessionFakeEngine) TurnStartProgress(SessionSignal) TurnProgress`
+- `plan:internal/shuttleengine#clearableBoxEngine.TurnStartProgress` -> `func (e *clearableBoxEngine) TurnStartProgress(SessionSignal) TurnProgress`
 
 **Edit:**
 - `internal/shuttleengine#unmatchedTurnStart` -> `func unmatchedTurnStart(engine Engine, eventsPath string) (turnStart SessionSignal, restarted, found bool)`
@@ -17,6 +19,7 @@
 - `internal/shuttleengine#awaitIdleSession`
 - `internal/shuttleengine#sessionFakeEngine`
 - `internal/shuttleengine#clearableBoxEngine`
+- `internal/shuttleengine#clearableBoxEngine.ParseSessionSignals`
 - `internal/shuttleengine#TestSend_WaitsForIdleSession`
 - `internal/shuttleengine#TestGate_WaitsForIdleWriter`
 - `internal/shuttleengine#TestRunner_SessionIdle_ReturnsScriptedClassification`

@@ -17,7 +17,7 @@ D3: the check a twill Plan-Write run's gate adds, as one exported function that 
 The file is `filepath.Join(plan.Dir, planparser.LensReviewFileName)`; `plan.Dir` is the directory the plan was parsed from, the real plan directory under an overlay too.
 It is read with `os.ReadFile`: a not-exist error, or content that `strings.TrimSpace` leaves empty, adds the finding; any other read error is a returned error, a raw I/O fault and never a finding, as `ValidatePlan` treats an unreadable card file.
 The file is checked for presence only and never parsed (`PATTERN-sole-parsers`), and its content and timing are not checked: a lens review written before the forks return passes.
-The finding is `planindex.Finding{Check: lensReviewMissingCheck, Severity: planindex.SeverityBlocking, Detail: ...}` with no card, and its detail names the file's absolute path and says to record the lens review there as the lens review directive describes, one line per finding with its lens and whether it was fixed or rejected and why.
+The finding is `planindex.Finding{Check: lensReviewMissingCheck, Severity: planindex.SeverityBlocking, Detail: ...}` with no card, and its detail names the file's absolute path and says to record the lens review there as the lens review directive describes.
 It is a validation finding the gate re-prompts on, not a refusal, so it adds no `refusal-spec.md` row.
 
 `NewLensReviewPlanGate` is `NewPlanGate` with `ValidatePlanLensReview` as its check: `planGate("Plan-Gate", anchorPath, scratchDir, ...)` over it, so parse failures, the blocking-versus-informational split and the logging follow the plan gate's contract.

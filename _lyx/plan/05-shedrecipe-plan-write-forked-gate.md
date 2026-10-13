@@ -2,6 +2,8 @@
 
 **Create:**
 - `plan:internal/shedrecipe#planWriteGateSpec` -> `func planWriteGateSpec(cfg Config, env Env) (shuttleengine.GateSpec, error)`
+- `plan:internal/shedrecipe#noFindingsPlanIndex` -> `type noFindingsPlanIndex struct`
+- `plan:internal/shedrecipe#noFindingsPlanIndex.ValidateFormat` -> `func (noFindingsPlanIndex) ValidateFormat(*planparser.Plan, string, []planparser.Card) ([]planindex.Finding, error)`
 
 **Edit:**
 - `internal/shedrecipe#planWriteEntry`
@@ -17,8 +19,10 @@ Its doc comment drops the claim that the entry never makes a validator choice of
 Selecting by the row's own name in `resolveGateSpec` stays rejected; the dedicated constructor is what tells the Plan-Write row apart, so `resolveGateSpec`, which every other gated entry calls, never sets `Forked`.
 Bound: `Forked` is consulted only for a fork-authorized run of this row, and it runs the plan gate's own set plus one presence check.
 
-`TestPlanWriteEntry_GateConfig` gains the subtest "PlanWriteSetsForkedOnItsPlanEntry": over `newTestEnv(t)` and `gatesCfg("plan", 3)`, `planWriteGateSpec` returns one entry whose `Gate` and `Forked` are both non-nil, and driving `Forked()` over `newTestEnv`'s empty anchor returns a failed result whose findings name the missing plan overview, as the existing subtest drives `Gate`, proving `Forked` is a plan-gate closure.
-The lens-review half of its verdict is pinned by card 4's `TestNewPlanGate` rows and its selection by card 3's `TestAttach_GateThreading` rows; `newTestEnv`'s `placeholderIndex` cannot validate a plan, so this subtest stops at the parse.
+`fixture_test.go` gains `noFindingsPlanIndex`, a test index that embeds `planindex.Index` and answers no findings and a nil error from `ValidateFormat`, the one index method `ValidatePlan` calls when the anchor holds no webster record.
+`TestPlanWriteEntry_GateConfig` gains the subtest "PlanWriteSetsForkedOnItsPlanEntry": over `newTestEnv(t)` with `env.PlanIndex` set to `noFindingsPlanIndex{}`, and `gatesCfg("plan", 3)`, it seeds a minimal parseable plan (`00-overview.md` plus one card file) under `planparser.PlanDir(env.AnchorPath)` with no `lens-review.md`.
+`planWriteGateSpec` returns one entry whose `Gate` and `Forked` are both non-nil; `Gate()` passes, while `Forked()` fails with findings naming `lens-review-missing`, so the row's `Forked` is the lens-review closure and not the plain plan gate.
+The lens-review verdict's other cases are pinned by card 4's `TestNewPlanGate` rows and its selection by card 3's `TestAttach_GateThreading` rows.
 
 **ImpactSummary:** one private helper replacing one call inside `planWriteEntry`; no other entry, recipe key or exported signature changes.
 

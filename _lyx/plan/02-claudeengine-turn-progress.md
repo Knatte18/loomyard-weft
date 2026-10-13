@@ -45,7 +45,8 @@ Every line of a completed message split over several transcript lines carries th
 `transcriptEntry.Message.StopReason` decodes a null as `""`, which falls in the unknown branch.
 
 Fixtures are files in `testdata/turnprogress/`, one JSON object per line, each line ending in a newline unless the file says otherwise.
-Each line carries the shape of a Claude Code transcript entry: `type`, `isSidechain`, `timestamp`, `uuid`, and for a message entry `message` with `role`, `content` and, on an assistant entry, `stop_reason`.
+Each fixture line whose shape appears in the bench transcripts (a string prompt, a task notification, a `tool_result` user entry, a `tool_use` assistant line, a thinking line with `stop_reason: "tool_use"`, a thinking line with `stop_reason: "end_turn"`, an `end_turn` text line, a `system` `turn_duration` entry) is copied verbatim from `ftp-r-1` or `ftp-s-1` under the hub prime's `.scratch/twill-fork-timing-plan/after/<run>/transcripts/`, so all of the line's real keys stay.
+Only shapes the bench lacks (the interrupt marker, the API-error entry, the null and `max_tokens` stop reasons, the unknown type, the malformed and unterminated lines) are hand-built, each carrying the shape of a Claude Code transcript entry: `type`, `isSidechain`, `timestamp`, `uuid`, and for a message entry `message` with `role`, `content` and, on an assistant entry, `stop_reason`.
 Each file opens with an assistant `end_turn` entry closing a previous turn, so a reading that skipped past the newest entry would read over:
 - `prompt.jsonl`: then a user entry whose content is a string prompt → `TurnInFlight`.
 - `task-notification.jsonl`: the bench incident shape: then a `system` entry with `subtype: "turn_duration"`, then a user entry whose content is a string starting `<task-notification>\n<task-id>` and naming a completed agent → `TurnInFlight`.

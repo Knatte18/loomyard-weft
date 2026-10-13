@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -42,9 +42,9 @@ Card 7 makes the twill Plan writer run that mode as its final self-check (D4).
 
 ```bash
 go build ./...
-go vet -tags integration ./internal/shuttleengine/... ./internal/loomshed ./internal/loomcli ./internal/shedrecipe ./internal/loomengine ./internal/twilldirective ./contracts/stencils ./cmd/lyx
-go vet -tags tmux ./internal/shuttleengine/... ./internal/loomshed ./internal/loomcli ./internal/shedrecipe ./internal/loomengine ./internal/twilldirective ./contracts/stencils ./cmd/lyx
-go vet -tags llm ./internal/shuttleengine/... ./internal/loomshed ./internal/loomcli ./internal/shedrecipe ./internal/loomengine ./internal/twilldirective ./contracts/stencils ./cmd/lyx
-go test ./internal/shuttleengine/... ./internal/loomshed ./internal/loomcli ./internal/shedrecipe ./internal/loomengine ./internal/twilldirective ./contracts/stencils ./cmd/lyx
-go test -tags integration ./internal/shuttleengine/... ./internal/loomshed ./internal/loomcli ./internal/shedrecipe ./internal/loomengine ./internal/twilldirective ./contracts/stencils ./cmd/lyx
+go vet -tags integration ./internal/shuttleengine/... ./internal/loomshed ./internal/loomcli ./internal/shedrecipe ./internal/loomengine ./internal/twilldirective ./contracts/stencils ./contracts/specs ./cmd/lyx
+go vet -tags tmux ./internal/shuttleengine/... ./internal/loomshed ./internal/loomcli ./internal/shedrecipe ./internal/loomengine ./internal/twilldirective ./contracts/stencils ./contracts/specs ./cmd/lyx
+go vet -tags llm ./internal/shuttleengine/... ./internal/loomshed ./internal/loomcli ./internal/shedrecipe ./internal/loomengine ./internal/twilldirective ./contracts/stencils ./contracts/specs ./cmd/lyx
+go test ./internal/shuttleengine/... ./internal/loomshed ./internal/loomcli ./internal/shedrecipe ./internal/loomengine ./internal/twilldirective ./contracts/stencils ./contracts/specs ./cmd/lyx
+go test -tags integration ./internal/shuttleengine/... ./internal/loomshed ./internal/loomcli ./internal/shedrecipe ./internal/loomengine ./internal/twilldirective ./contracts/stencils ./contracts/specs ./cmd/lyx
 ```
