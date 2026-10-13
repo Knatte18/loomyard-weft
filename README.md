@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-13 09:09 UTC; every age below is as of then.
+Rendered 2026-10-13 09:10 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -42,7 +42,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 4 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-ftb-3`](design-twb-ftb-3.md) | 6m | 6m |  |
 | 5 | **Webster stability: gate shells, Master self-fix, recovery, Create checks** | [`twb-fta-2`](design-twb-fta-2.md) | 6m | 6m |  |
 | 6 | **Plan does not surface tests that pin a method set a card extends** | [`plan-pinned-tests`](design-plan-pinned-tests.md) | 18h | 18h | loom |
-| 7 | **reed: strand windows first, Selvage last**<br>• Attach lands on Selvage while the agent works in another window, and Alt+Up/Down cannot reach own-window strands; strand windows first, Selvage last | [`reed-window-order`](design-reed-window-order.md) | 1m | 1m | reed |
+| 7 | **reed: strand windows first, Selvage last**<br>• Attach lands on Selvage while the agent works in another window, and Alt+Up/Down cannot reach own-window strands; strand windows first, Selvage last | [`reed-window-order`](design-reed-window-order.md) | 2m | 0m | reed |
 
 ### Enhancements
 

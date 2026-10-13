@@ -14,7 +14,13 @@ When a strand's window opens beside Selvage, the strand's window comes first and
 
 Alt+Up and Alt+Down do not reach them either: they step between the panes of the strands' window only (`internal/reedengine/bindings.go:71-72`, `select-pane -t :.-`/`:.+`, gated on `@lyx_strands`), and an own-window strand lives outside that window, so from Selvage the keys find nothing to step to (operator, 2026-10-13).
 
+The status bar's VIEW button selects the strands' window and unzooms it (`internal/reedengine/bindings.go:33-36`, `bar.go:27-28`); with every strand in its own window that window holds Selvage alone, so VIEW now shows only the console and its name misleads (operator, 2026-10-13).
+
+The operator wants Selvage's window kept, one per session: it keeps the session alive when every loom pane has gone, and it is always a terminal into the session's worktree (2026-10-13).
+
 ## Scope to discuss
+
+- What VIEW becomes: renamed for what it shows (the Selvage window), or dropped in favour of the strand windows' own buttons.
 
 - Alt+Up and Alt+Down step across every strand, own-window strands included, with Selvage last.
 
