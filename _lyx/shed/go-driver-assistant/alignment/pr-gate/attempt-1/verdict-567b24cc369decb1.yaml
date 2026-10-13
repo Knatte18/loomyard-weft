@@ -1,0 +1,13 @@
+verdict: escalate
+reason: >-
+  The run matches its board entry's goal and the decision record, and changes nothing on the Out list.
+  But the in-flight peer run-window-bugs (Webster) changes two Go packages this run changes, internal/loomcli (checklist.go) and internal/battencli (overview.go).
+  Its unbuilt plan card 6 (loom-fmt-verb) edits internal/loomcli#Command, the same parent.AddCommand line this run extends with driveCmd, and internal/loomcli/doc.go.
+  No record or board entry gives the landing order between the two runs.
+  The designs do not conflict.
+question: >-
+  Peer run-window-bugs overlaps this run in the Go packages internal/loomcli and internal/battencli.
+  Its card 6 (lyx loom fmt) will edit the same AddCommand line in internal/loomcli/cli.go and internal/loomcli/doc.go.
+  The designs do not conflict.
+  May go-driver-assistant, now at PR-Gate, land first, with run-window-bugs taking its loomcli and battencli changes at its own Merge-In, as was decided for judge-cap-call?
+superseded: []
