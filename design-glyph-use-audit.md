@@ -49,6 +49,20 @@ The cheap next step, if wanted, is a controlled test: `kickstart_pack: false` fo
 Run the next audit once task `kickstart-read-all-first` has landed and a few loom runs have gone through Webster on it, compared against the runs before `113593990`.
 Under read-all-first, calls before the first edit rise by construction, so compare exploration calls per card and total reads instead.
 
+### Result (audit after read-all-first, 2026-10-13)
+
+Read-all-first (`793c6a8ee`): 29 forks over 13 runs (125 cards), against 114 pack-off forks and 41 old-pack forks; all Sonnet.
+Report, data and scripts: `.scratch/glyph-audit-2/` in the hub prime.
+
+- Exploration calls per card are unchanged (5.8, against 5.8 old pack and 5.2 no pack): a solid result.
+- Reads per card fell about 20 % (whole-file reads 3.5 to 2.0), turns per card 17–18 to 14.7, cache read 15–25 % lower; suggestive only, on mixed task sizes.
+- 15 of 29 forks read in parallel in their first work turn (7 of 41 before); 9 still read serially.
+- Quarry: 0 lookups with a pack; 19 of 114 pack-off forks used it.
+- Unresolved pack entries are 35 % of the median pack, almost all `plan:` handles for members a card creates.
+
+Verdict: do not build the Burler side yet.
+Cheap next step: the end-of-prompt variant (the one-turn instruction and the pack as the prompt's last section), measured with the same scripts by the share of forks reading in parallel in the first work turn and exploration calls per card; the two-prompt variant only if the serial share stays high.
+
 ### Was `kick-start-pack`
 
 The Burler side waits on the Webster pack measurement above (triage, 2026-10-12).
