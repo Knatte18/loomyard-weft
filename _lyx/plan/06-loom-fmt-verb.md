@@ -2,11 +2,11 @@
 
 **Create:**
 - `internal/loomcli/fmtverb.go`
-- `plan:internal/loomcli#loomCLI.fmtCmd` -> `func (c *loomCLI) fmtCmd() *cobra.Command`
-- `plan:internal/loomcli#goRewrite` -> `type goRewrite struct`
-- `plan:internal/loomcli#planGoFormat` -> `func planGoFormat(root, cwd string, paths []string) (rewrites []goRewrite, refused []string)`
+- `internal/loomcli#loomCLI.fmtCmd`
+- `internal/loomcli#goRewrite`
+- `internal/loomcli#planGoFormat`
 - `internal/loomcli/fmtverb_test.go`
-- `plan:internal/loomcli#TestFmtCmd` -> `func TestFmtCmd(t *testing.T)`
+- `internal/loomcli#TestFmtCmd`
 
 **Edit:**
 - `internal/loomcli#Command`

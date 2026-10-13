@@ -1,13 +1,13 @@
 # Card 7 — Finish a task worktree directory `git worktree remove` left refilled
 
 **Create:**
-- `plan:internal/fabricengine#leftoverSeam` -> `type leftoverSeam struct`
-- `plan:internal/fabricengine#removeWorktreeLeftover` -> `func removeWorktreeLeftover(rec *Mutations, container, target string, seam leftoverSeam) error`
+- `internal/fabricengine#leftoverSeam`
+- `internal/fabricengine#removeWorktreeLeftover`
 - `internal/fabricengine/latewriter_unix.go`
 - `internal/fabricengine/latewriter_windows.go`
-- `plan:internal/fabricengine#isLateWriterError` -> `func isLateWriterError(err error) bool`
-- `plan:internal/fabricengine#SetLeftoverSeamForTest` -> `func SetLeftoverSeamForTest(t *Topology, remove func(container, target string) (removed, wasDir bool, err error), sleep func(delay time.Duration))`
-- `plan:internal/fabricengine_test#TestRemoveWarpWorktreeDir_LeftoverRetry` -> `func TestRemoveWarpWorktreeDir_LeftoverRetry(t *testing.T)`
+- `internal/fabricengine#isLateWriterError`
+- `internal/fabricengine#SetLeftoverSeamForTest`
+- `internal/fabricengine_test#TestRemoveWarpWorktreeDir_LeftoverRetry`
 
 **Edit:**
 - `internal/fabricengine#removeWarpWorktreeDir` -> `func removeWarpWorktreeDir(rec *Mutations, l *lyxcwd.Location, target string, force bool, leftover leftoverSeam) error`
