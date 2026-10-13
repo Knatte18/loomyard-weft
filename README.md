@@ -38,7 +38,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Arbiter relaunch, Webster deviations list, alignment landing order** | [`arbiter-fixes`](design-arbiter-fixes.md) | loom | `go-driver-assistant` | 16h | 0m | loom, shed, webster, orch |
+| 1 | **Arbiter relaunch, Webster deviations list, alignment landing order** | [`arbiter-fixes`](design-arbiter-fixes.md) | loom | `go-driver-assistant`, `run-window-bugs` | 16h | 0m | loom, shed, webster, orch |
 
 ## Notes
 
