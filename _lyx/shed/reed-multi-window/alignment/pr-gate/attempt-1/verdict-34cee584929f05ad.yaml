@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  The diff carries out the board entry's goal and decisions D1-D12: own-window placement in reed with groups, removal, resume and the status bar;
+  own-window as shuttle's default with the orch kept in window 0; one window group per seat table; and lyx shuttle open, listed in the operator index.
+  Nothing out of scope changed.
+  No Go package, code file or PATTERN entry overlaps judge-cap-call or go-driver-assistant, and no parent commits are listed.
+  The only shared files are test-budget.yaml and the docs/overview.md module-table bullets, which are bookkeeping.
+question: ""
+superseded: []
