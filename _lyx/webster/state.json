@@ -1,0 +1,218 @@
+{
+  "runGuid": "af4599ed6856bb970196499302530e1a",
+  "planFingerprint": "b0c478eb943cd458aae0d1a02990329542713a2bae37cf1245f8993ff8ecc306",
+  "planFileHashes": {
+    "00-overview.md": "4f82a6eafc57ad982a367eb72ab02e1034f74964f9fda7bbc640b7707d07cbd2",
+    "01-relaunch-in-effect-signal.md": "2fdd955b14b0c89f6f17cdcb780d7494c921b2e527bef1ec0a03252805e8f6cf",
+    "02-shared-relaunch-admit.md": "43fb0b02d7f3f20e2fcafdb2d5bbc3ee7f20c515fc0c55e7ebe10564d33f85f5",
+    "03-arbiter-verify-halt.md": "5442f15fc7bc0f60eda2d9278d73690ae4530c5ff3e95dd17532f78444356cdf",
+    "04-peers-row.md": "71191590f8925a741da465e7979caab48e46b61476f50096095a20d575f44962",
+    "05-alignment-arbiter-stencils.md": "4fa769b89e542b3fa49d6542f15fd88e8ebfb05f2b6d350bb843b97b333ef92b",
+    "06-scope-guard-files.md": "47410f5f5c9e59b849859a99b66764621901e360947cbbac2a31413f3c82ff7f",
+    "07-webster-guard-deviations.md": "8c0872f20b9a0005bb1de8c253336092115e5b06875a4cdc1583793c813c2015",
+    "08-webster-stencils-deviations.md": "7464a75b1ada6f0ae63686ff44f4dd86c7eafa15a0b189536da693a9b46d985c"
+  },
+  "planOverviewFrameHash": "5900bcb07bd6bcac6c211861930336f90fcdbf8da3232d803b78cddd0f6b8ae6",
+  "partition": [
+    {
+      "cards": [
+        "01-relaunch-in-effect-signal",
+        "02-shared-relaunch-admit",
+        "03-arbiter-verify-halt",
+        "04-peers-row"
+      ],
+      "profile": "cautious",
+      "estimate": 196648,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54376,
+        "read_union": 23724,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 372,
+            "reads": {
+              "file:internal/shedengine/doc.go": 1728,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedengine": 2000
+            },
+            "messages": 90,
+            "written": 27372
+          },
+          {
+            "card": 2,
+            "card_text": 660,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5364,
+              "file:internal/loomcli/doc.go": 2484,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 85,
+            "written": 26160
+          },
+          {
+            "card": 3,
+            "card_text": 576,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5364,
+              "file:internal/loomcli/doc.go": 2484,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 103,
+            "written": 31476
+          },
+          {
+            "card": 4,
+            "card_text": 540,
+            "reads": {
+              "file:internal/loomcli/doc.go": 2484,
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 110,
+            "written": 33540
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-alignment-arbiter-stencils",
+        "06-scope-guard-files",
+        "07-webster-guard-deviations",
+        "08-webster-stencils-deviations"
+      ],
+      "profile": "cautious",
+      "estimate": 211758,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61376,
+        "read_union": 70444,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 468,
+            "reads": {
+              "file:contracts/stencils/loom/loom-template-alignment.md": 1140,
+              "file:contracts/stencils/loom/loom-template-arbiter.md": 996,
+              "file:internal/alignment/doc.go": 540,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/alignment": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/alignment": 2000
+            },
+            "messages": 30.5,
+            "written": 9618
+          },
+          {
+            "card": 6,
+            "card_text": 588,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1776,
+              "file:internal/planglyph/doc.go": 1296,
+              "file:internal/planparser/doc.go": 1752,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/planglyph": 2000,
+              "package:internal/planindex": 2000,
+              "package:internal/planparser": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/planindex": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 69,
+            "written": 21288
+          },
+          {
+            "card": 7,
+            "card_text": 672,
+            "reads": {
+              "file:internal/websterengine/doc.go": 8436,
+              "package:internal/websterengine": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 131,
+            "written": 39972
+          },
+          {
+            "card": 8,
+            "card_text": 360,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 8208,
+              "file:contracts/stencils/webster/webster-body-implementer.md": 1236,
+              "file:contracts/stencils/webster/webster-template-master.md": 2976,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000
+            },
+            "messages": 29,
+            "written": 9060
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "60e06f899d30287dd22d26769ca2f7be",
+  "masterSessionId": "f4243f09-c131-47f7-aa03-b4dc38650b9f",
+  "batches": {
+    "1": {
+      "slug": "relaunch-in-effect-signal",
+      "cards": [
+        "01-relaunch-in-effect-signal",
+        "02-shared-relaunch-admit",
+        "03-arbiter-verify-halt",
+        "04-peers-row"
+      ],
+      "cardHashes": {
+        "01-relaunch-in-effect-signal": "2fdd955b14b0c89f6f17cdcb780d7494c921b2e527bef1ec0a03252805e8f6cf",
+        "02-shared-relaunch-admit": "43fb0b02d7f3f20e2fcafdb2d5bbc3ee7f20c515fc0c55e7ebe10564d33f85f5",
+        "03-arbiter-verify-halt": "5442f15fc7bc0f60eda2d9278d73690ae4530c5ff3e95dd17532f78444356cdf",
+        "04-peers-row": "71191590f8925a741da465e7979caab48e46b61476f50096095a20d575f44962"
+      },
+      "startSha": "e17b29219d8d6f7980439bea0ae83ea4f9d9458e",
+      "kind": "fork",
+      "spawnedAt": "2026-10-13T10:20:21Z",
+      "sessionId": "f4243f09-c131-47f7-aa03-b4dc38650b9f",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
