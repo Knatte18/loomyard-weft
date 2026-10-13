@@ -1,0 +1,7 @@
+status: OK
+head_sha: 3baaf17432c598b5a6bc619b1c0cbb105c4e1fb3
+deviations:
+  - internal/battenshed/innerrun_failures_test.go
+  - internal/shuttleengine/fakes_test.go
+  - internal/shuttleengine/wait_test.go
+  - internal/orchengine/watchloop_test.go

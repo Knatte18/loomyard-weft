@@ -1,7 +1,7 @@
 # Card 13 — The loop watchdog and waiter log a repeating read failure once
 
 **Create:**
-- `plan:internal/shedverbs#TestLoopReadFailuresLogOncePerEpisode` -> `func TestLoopReadFailuresLogOncePerEpisode(t *testing.T)`
+- `internal/shedverbs#TestLoopReadFailuresLogOncePerEpisode`
 
 **Edit:**
 - `internal/shedverbs#newestActivity` -> `func newestActivity(traceFiles []string, agent func() (time.Time, bool, error), failures *logger.Episode) (time.Time, bool)`

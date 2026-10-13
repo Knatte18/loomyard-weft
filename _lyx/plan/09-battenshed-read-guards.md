@@ -1,7 +1,7 @@
 # Card 9 — Batten's polled seam failures log once per episode
 
 **Create:**
-- `plan:internal/battenshed#TestInnerRun_ReadFailuresLogOncePerEpisode` -> `func TestInnerRun_ReadFailuresLogOncePerEpisode(t *testing.T)`
+- `internal/battenshed#TestInnerRun_ReadFailuresLogOncePerEpisode`
 
 **Edit:**
 - `internal/battenshed#innerRunProducer`

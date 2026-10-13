@@ -1,9 +1,9 @@
 # Card 10 — Shuttle tells a draft hold apart from its reason text
 
 **Create:**
-- `plan:internal/shuttleengine#busyHold` -> `type busyHold struct`
-- `plan:internal/shuttleengine#IsDraftHold` -> `func IsDraftHold(err error) bool`
-- `plan:internal/shuttleengine#ErrForeignBoxText` -> `var ErrForeignBoxText = fmt.Errorf("%w: the input box holds text that is not this send's", ErrSessionBusy)`
+- `internal/shuttleengine#busyHold`
+- `internal/shuttleengine#IsDraftHold`
+- `internal/shuttleengine#ErrForeignBoxText`
 
 **Edit:**
 - `internal/shuttleengine#IdleProbe`

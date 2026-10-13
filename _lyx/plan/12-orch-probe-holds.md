@@ -1,8 +1,8 @@
 # Card 12 — Orch: benign probe states agree, draft holds carry no draft text, polled failures log once
 
 **Create:**
-- `plan:internal/orchengine#draftHoldReason` -> `const draftHoldReason = "the input box holds a draft"`
-- `plan:internal/orchengine#TestWatcher_DraftHoldLogsOnceWithoutTheDraftText` -> `func TestWatcher_DraftHoldLogsOnceWithoutTheDraftText(t *testing.T)`
+- `internal/orchengine#draftHoldReason`
+- `internal/orchengine#TestWatcher_DraftHoldLogsOnceWithoutTheDraftText`
 
 **Edit:**
 - `internal/orchengine#Watcher`
