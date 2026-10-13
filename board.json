@@ -796,22 +796,6 @@
       "revised": "2026-10-13T13:15:24Z"
     },
     {
-      "id": 476,
-      "slug": "twb-ftq-f-1",
-      "title": "twill fork-timing Plan bench pair twb-ftq-f-1",
-      "kind": "note",
-      "labels": [
-        "enhancement"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Bench pair for twill-fork-timing, Plan-Write after arm against fork0 arm; torn down after the run",
-      "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write after arm against fork0 arm. Plan-Write only, from a frozen decision record.",
-      "created": "2026-10-13T13:36:22Z",
-      "revised": "2026-10-13T13:36:22Z"
-    },
-    {
       "id": 477,
       "slug": "webster-pack-last",
       "title": "Webster fork prompt: read instruction and pack last",
@@ -847,38 +831,6 @@
       "body": "## Idea (operator, 2026-10-13)\n\nThe project's test and doc rules make small changes large.\n`webster-pack-last` moved the kick-start pack into a file of its own: about 70 lines of change, about 140 lines of tests and about 20 lines of required docs and registration, 14 files in all.\n\n## Seen\n\n- Tests that pin stencil wording (`contracts/stencils/claims_test.go`, the template tests such as `internal/websterengine/template_test.go`) change with every sentence a prompt changes, and prompt changes are much of today's work.\n- The doc rule (`doc.go` in the same commit) is cheap and keeps the package docs true.\n\n## Options to discuss\n\n1. Tests pin only what must hold: markers, file paths, order and the presence of load-bearing rules, not the wording of sentences.\n2. Stencil wording claims move from tests to review: the Burler review checks them instead.\n3. Keep the doc rule, but drop the per-card test requirement for stencil-only changes.\n\n## First step\n\nCount, over the landed tasks of the last weeks, how much of each diff is tests that pin stencil or template wording, against the code change itself, so the choice rests on numbers.\n",
       "created": "2026-10-13T13:50:13Z",
       "revised": "2026-10-13T13:50:13Z"
-    },
-    {
-      "id": 479,
-      "slug": "twb-ftq-a-2",
-      "title": "twill fork-timing Plan bench pair twb-ftq-a-2",
-      "kind": "note",
-      "labels": [
-        "enhancement"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Bench pair for twill-fork-timing, Plan-Write after arm against fork0 arm; torn down after the run",
-      "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write after arm against fork0 arm. Plan-Write only, from a frozen decision record.",
-      "created": "2026-10-13T13:50:34Z",
-      "revised": "2026-10-13T13:50:34Z"
-    },
-    {
-      "id": 480,
-      "slug": "twb-ftq-f-2",
-      "title": "twill fork-timing Plan bench pair twb-ftq-f-2",
-      "kind": "note",
-      "labels": [
-        "enhancement"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Bench pair for twill-fork-timing, Plan-Write after arm against fork0 arm; torn down after the run",
-      "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write after arm against fork0 arm. Plan-Write only, from a frozen decision record.",
-      "created": "2026-10-13T13:50:39Z",
-      "revised": "2026-10-13T13:50:39Z"
     }
   ]
 }
