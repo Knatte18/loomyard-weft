@@ -67,4 +67,8 @@ Points to measure or settle:
 
 Bench it as a third arm against the after arm: the same reference, two runs per arm, cost and findings per arm.
 
+Measured from existing spawn-after transcripts (2026-10-13, scripts in the hub prime's `.scratch/drafting/`): the drafting the master would shed is 2–4 % of its context at the first fork spawn in Discussion and 5.5–12 % in Plan (12–26k tokens), about two thirds of it the write turns and half of that thinking.
+At cache-read prices that is $0.003–0.016 per fork and $0.03–0.09 per run gross; the master's Read of the finished files and fork0's own reads take most of it back, so the net cost effect is about zero.
+The case for the arm is quality, lens forks that judge the files blind to the reasoning, not cost.
+
 Ideas from the bench agent, untested: merge two lenses (for instance `test-economy` into `row-reachability`), have forks batch their reads into one or two calls, and cut the writer's `validate-plan` rounds (the writer is about $4 of $5.6 per plan).
