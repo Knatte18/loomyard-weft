@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster-Bouncer",
+  "current_producer": "Webster-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster-Bouncer",
-    "last": "Webster-Burler-Fix → bounced to Webster-Bouncer",
+    "now": "Webster-Burler-Review",
+    "last": "Webster-Bouncer → bounced to Webster-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -209,6 +209,12 @@
       "at": "2026-10-13T06:45:15Z",
       "gate_attempts": 0,
       "budget_exempt": true
+    },
+    {
+      "producer": "Webster-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/reed-multi-window/_lyx/reviews/webster/round-2-bouncer-ledger.md",
+      "at": "2026-10-13T06:45:48Z"
     }
   ],
   "product": {
