@@ -14,8 +14,8 @@ In:
 
 - **reed-resize-pane-count**: the hub watchdog daemon retires and respawns itself when the `lyx` binary it was started from is replaced (D1, D2, D18).
   The resize re-apply failure logs once per failure episode (D3).
-- **log-level-hygiene**: the call sites the board inventory names (D3 to D10), an audit of every production `logger.Warn` site plus every log line in a polled loop (D11), and the `Level policy` text with a new PATTERN entry (D12).
-- **Test noise**: `tmuxkit.Main` discards the logger's stderr half (D13).
+- **log-level-hygiene**: the call sites the board inventory names (D3 to D10), an audit of every Info-or-above log line, Warn included, in a loop or polled path (D11), and the `Level policy` text with a new PATTERN entry (D12).
+- **Test noise**: the logger discards its stderr half under `go test` (D13).
 - **run-log-archive**: pair teardown copies the pair's trace logs and verify logs into a hub archive and prunes entries older than 30 days (D14, D15).
 - **batten-land-notice**: every landing sends `<slug>: landed`, with `; newly ready: …` appended when a task became ready, and the orch stencil handles it (D16, D17).
 
@@ -33,9 +33,8 @@ Out:
 
 The hub watchdog daemon (`lyx reed watchdog`) keeps running the binary it was started from after a deploy replaces that binary on disk.
 The running daemon predates `AnchorTop`, so its `render.partitionByAnchor` leaves the top-anchored `loom-status` strand out of the layout string.
-tmux then refuses a layout that names fewer panes than the window holds ("have 4 panes but need 3").
+tmux then refuses a layout that names fewer panes than the window holds.
 The current render code places `AnchorTop` strands, and reed's recorded pane ids match the live window, so neither render nor reconcile changes.
-The failures began after the `AnchorTop` landing, before `reed-multi-window` landed, and do not depend on it.
 
 ### D2 — The watchdog retires on a binary change and respawns itself
 
@@ -86,6 +85,8 @@ Rationale: losing the lock race is the expected outcome of every `up`, `attach` 
 
 A blocked or halted child is Info because batten itself is not stuck: it is waiting, and the child's stop reaches the orch through its own notice.
 The wait report's log dedupe keys on the reason without its changing parts, such as elapsed seconds, a grace countdown or a retried command's error tail.
+The wait report writes the reason file whenever the reason text changes and logs only when the dedupe key changes.
+Each caller passes that key beside the text, the reason with its counters, countdowns and error tails left out, rather than having the key parsed back out of the formatted text.
 A reason whose text only counts up then logs once per state of the child, while the reason file still carries the full current text for `lyx batten status`.
 Rationale: most WARN lines in the prime's traces recorded ordinary waits, and the operator ruled them an action log, not warnings.
 
@@ -126,14 +127,14 @@ Rationale: the changing draft defeated the dedupe and wrote what the operator wa
   Any other read failure logs at Warn once per session id for as long as the provider value lives, through a mutex-guarded seen-set on it.
 - `battencli: create worktree` drops its `mutations` field, since `fabric: mutation` already logs the same record.
 
-### D11 — Audit every Warn site and every polled log line against the policy
+### D11 — Audit every Info-or-above line, Warn included, in a loop or polled path against the policy
 
-Every production `logger.Warn` call is checked against the policy, and so is every log line at Info or above inside a loop or a polled path.
+The audit checks every Info-or-above line, Warn included, inside a loop or a polled path against the policy.
 Each site either stays as it is, moves to Info or Debug, or gains a once-per-change or once-per-episode guard.
 The test for a site: Warn only for a recoverable failure (a retry, an unconfirmed teardown, an error swallowed on a fallback path); nothing at Info or above repeats without a state change.
-A site that sits in no loop and records a real failure stays Warn.
-The audit is finished when the plan gives every production `logger.Warn` site a verdict (keep, demote, or guard) and every changed site has its change in a card.
-Rationale: the board asks for the other modules' Warn calls to be checked, and the inventory ranked only the sites that fired in four days of traces.
+The plan lists every Info-or-above line, Warn included, that sits in a loop or polled path, each with a verdict (keep, demote or guard), and every changed site has its change in a card.
+A line at Info or above that sits in no loop or polled path needs no per-site verdict: such a site is out of this audit.
+Rationale: the board asks for the other modules' Warn calls to be checked, and the audit narrows that to the Warn calls in a loop or polled path and adds the Info and Error lines there, where an Info-or-above line can repeat without a state change; the inventory ranked only the sites that fired in four days of traces.
 
 ### D12 — The policy text and a PATTERN entry
 
@@ -147,12 +148,12 @@ Rationale: the board asks for the other modules' Warn calls to be checked, and t
 It goes under `## Daemons and waits`, where the per-tick floods it prevents arise, and it carries no `(test)` tag because review enforces it.
 Rationale: spawned agents get `PATTERN.md` inlined and not `logger.go`, which is how the current violations accrued unseen.
 
-### D13 — `tmuxkit.Main` discards the logger's stderr half
+### D13 — The logger discards its stderr half under `go test`
 
-`tmuxkit.Main` calls `logger.SetOutput(io.Discard)` before `m.Run`.
-A test that asserts on log output keeps redirecting the logger itself, and the durable sink is untouched.
+Under `testing.Testing()` the logger's stderr half defaults to `io.Discard` instead of `os.Stderr`, the same test-time switch its sink already applies to the durable half.
+A test that asserts on log output still calls `logger.SetOutput` itself, and the durable sink is untouched.
 The trade-off: a developer running a failing test with `-v` sees no logger lines on stderr unless that test redirects the logger.
-Rationale: every package's `TestMain` already runs through `tmuxkit.Main`, so one line covers all of them.
+Rationale: the default lives in the logger, so it covers every test binary that links it and adds no import to any test kit.
 
 ### D14 — Pair teardown archives the pair's logs before removal
 
@@ -186,10 +187,11 @@ Pruning sits outside `package fabricengine`, so `PATTERN-fabric-destruction-chok
 The Land row's last step queues `<slug>: landed` after the board prune, appending `; newly ready: a, b` when the landing made tasks ready.
 It is sent once per batten run, guarded by the row's marker line.
 The existing ready marker literal keeps meaning "the landing notice was queued", so a row resumed across the upgrade sends no second notice.
-A notice that cannot be queued, because the orch state is unreadable or no orch strand is recorded, logs Warn naming the slug and is not retried: the row is done, and the board entry turns `done` at teardown.
+A notice that cannot be queued, because the orch state is unreadable or no orch strand is recorded, logs Warn naming the slug and is not retried: the row is done; Finalize already marked the board entry `done`, and the Land row's prune removed it.
+The line is still appended to the hub notice log before the hold-back check, and the orch learns of the landing from D17's board checks and of newly ready tasks from that notice-log line at its next wake.
+`origin/prod` is the baseline for the deploy only, never for the landing.
 A Land failure still sends its failure notice, and a landing that fails before the ready read sends no landed notice.
 Rationale: the alignment agent lands tasks with no orch turn, so the notice is the orch's only prompt that a task landed.
-It is also the signal a later run driver (`orch-split`) would take over, so it does not add to what that note plans to move.
 
 ### D17 — The orch stencil handles every landing notice
 
@@ -200,12 +202,19 @@ It is also the signal a later run driver (`orch-split`) would take over, so it d
 - starts any tasks the notice names as newly ready;
 - runs `update-plugins.sh` by hand when the hub's landing `deploy` key is empty.
 
-The line telling the orch to deploy "at your next wake after any landing" goes, since the notice now marks each landing.
+A dropped notice is caught at the orch's next wake by two board checks, neither of which depends on the `deploy` key:
+
+- any task the orch counts as running whose board entry is `done` or gone from the board, or whose pair is gone, is treated as landed and no longer running, and the newly-ready check below runs for it;
+- for a task the first check finds landed, the orch reads that task's `landed; newly ready:` line in the hub notice log D16 appends to, and starts each task it names that the board still shows ready and that has not started; any other ready task waits for the operator's approval, as the orch's board policy requires.
+
+Bound: the fallback starts only tasks a landing named as newly ready, so it never starts a task the operator has not released.
+
+A separate deploy-recovery check runs at each wake only while the landing `deploy` key is empty, and covers only landings into a `require_pr_to_base` branch: the orch compares `origin/prod`, which `update-plugins.sh` moves to the commit it deploys, against `origin/main`, and runs `update-plugins.sh` when `main` holds a commit `prod` lacks.
+All three checks read durable state, so they hold across a refresh, a compact or a handoff of the orch.
 The `contracts/stencils/claims_test.go` rows that pin the old sentences change with it, and `docs/overview.md`'s line on Land notifying only on a failure or a newly ready task is updated.
 
 ## Constraints
 
-- `PATTERN-testkit`: tmuxkit's new `internal/logger` import breaks none of the kit bans, and creates no cycle, because logger's own `TestMain` lives in the external package `logger_test`.
 - `PATTERN-shuttle-provider-seam`: the draft kind (D9) is exposed through shuttle's provider-neutral types, and Claude's shape stays in `claudeengine`.
 - `PATTERN-test-speed` and `PATTERN-test-economy`: new tests are unit-tier with injected clocks and fakes, extending existing tables where one covers the behavior.
 - Docs in the same commit: `reedengine`'s `doc.go` (D2, D3), `pairteardown`'s `doc.go` and `pattern/PATTERN-pair-teardown.md` (D14), `battenshed`'s `doc.go` (D5, D16), `logger.go` (D12) and `docs/overview.md` (D16).
@@ -225,6 +234,12 @@ The `contracts/stencils/claims_test.go` rows that pin the old sentences change w
 - On Windows a running binary cannot be overwritten in place; D2's check fires on whatever the deploy leaves at the path, or not at all, and Windows is unverified.
 - D18 depends on the operator; until it is done, the hub's old daemon keeps failing every tick.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 4: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/discussion/round-4-review.md; fixer report: _lyx/reviews/discussion/round-4-fixer-report.md.
+  - d16-d17-dropped-landing-notice-no-recovery (class design, severity BLOCKING, open in rounds 1, 2, 3, 4)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - A watchdog whose executable path is replaced retires: it releases the lock, spawns one successor through `SpawnWatchdog` and exits 0. One whose stat fails or whose file is unchanged keeps running.
@@ -238,16 +253,18 @@ The `contracts/stencils/claims_test.go` rows that pin the old sentences change w
 - A held-by-draft probe, or a busy send refused over foreign box text, whose draft changes on every tick logs its held line once. Neither the log lines nor `State.Stuck` contain the draft text.
 - Loom's `driver_busy` refusal still names the draft.
 - A missing transcript in `SessionNameDrift` logs at Debug; another read error logs Warn once per session id.
-- `tmuxkit.Main` leaves no logger stderr output in a package run whose code logs at Warn, and the logger package's own tests still pass.
-- Every production `logger.Warn` site has a verdict in the plan (D11).
+- A package test run whose code logs at Warn leaves no logger stderr output, and the logger package's own tests still pass.
+- No Info-or-above line the plan listed as in a loop or polled path logs more than once while its state is unchanged (D11).
 - Pair teardown copies the pair's trace logs and verify logs into `<root>/<slug>/<timestamp>/` after the run-lock wait and before removal. A pair with neither source creates no entry. A copy failure leaves no partial entry, logs Warn and leaves the teardown's result unchanged. A refused removal leaves the pair's logs in place. Two archives of one slug in the same second land in two entries.
 - An archive write removes timestamp entries older than 30 days and empty slug directories, keeps newer entries, leaves entries with unparsable names and plain files alone, and treats an entry already gone as removed.
 - A landing with no newly ready task sends `[batten notice] <slug>: landed`; one with ready tasks sends `[batten notice] <slug>: landed; newly ready: a, b`. A Land row resumed after the notice was queued sends no second notice, a notice that cannot be queued logs Warn, and a failed Land step sends only its failure notice.
 - The orch stencil's claims test pins that every landing notice goes to After landing.
+- The orch stencil's claims test pins the next-wake board check: a running task whose board entry is `done` or gone from the board, or whose pair is gone, is treated as landed.
+- The orch stencil's claims test pins that the next-wake fallback starts only the tasks a landed task's notice-log line names, never another ready task.
+- The orch stencil's claims test pins the deploy-recovery check, scoped to an empty `deploy` key, including its baseline: `origin/main` holding a commit `origin/prod` lacks.
 
 ## Notes for the plan writer
 
-- The failing layout and the four-pane window are in `_board/.lyx/logs/trace-20261008T181526Z-f2e3f7df172f3d30-3854.log` and `go-driver-assistant/.lyx/reed.json` in the hub.
 - Draft text enters through `internal/shuttleengine/readiness.go` and `internal/shuttleengine/send.go`.
 - `exemptEnd` in `internal/battenshed/innerrun.go` mixes state changes with unreadable-status failures.
 - A held-back row notice is `rowNotifier.send` in `internal/battenshed/rownotice.go`.
