@@ -16,7 +16,6 @@
 - `internal/reedengine#Engine.openOwnWindowLocked`
 - `internal/reedengine#Engine.AttachArgv`
 - `internal/reedengine#Engine.warnMismatchedClientsLocked` -> `func (e *Engine) warnMismatchedClientsLocked(cols, rows int) (anotherClient bool)`
-- `plan:internal/reedengine#TestWindowOrder`
 - `plan:internal/reedengine#TestWindowOrder_RealTmux`
 - `internal/reedengine#TestOwnWindow_RealTmux`
 - `internal/reedengine#TestAttachArgv_MultiClientWarning`
@@ -45,11 +44,18 @@ When another client is attached, `AttachArgv` appends no selection, so a second 
 Only a failure to take the lock, read the session or state, or list the attached clients drops the selection, each logged at Warn.
 The chain's skip for a strands' window with fewer than two panes or no placed strand logs at Debug, since D3 and D4 make Selvage alone there the normal state; the other suppressions keep Warn.
 Bound: an automatic switch happens only at these three points, never moves a viewer off the shell or a live agent window, and races an operator's own window change by at most one switch.
-`AttachArgv`'s, `killStrandPanes`' and `reconcileLocked`'s doc comments and `internal/reedengine/doc.go`'s focus section say so.
+`AttachArgv`'s, `killStrandPanes`' and `reconcileLocked`'s doc comments and `internal/reedengine/doc.go` say so.
+In `doc.go`, the Own windows sentence ending `by new-window -d, so it never takes focus` is rewritten to say a new agent window is selected under the focus rule, and the sentence `Removing an own-window strand moves a viewer on its window to the strands' window before the window ends` is rewritten to say the viewer goes to the relevant window, never the shell.
+Three more `doc.go` sentences are rewritten.
+The Own windows sentence "The window carries @lyx_own, @strand_color and @lyx_unseen, each set by window id" says an overview window carries neither `@strand_color` nor `@lyx_unseen`, and a new agent window the focus rule selects carries no `@lyx_unseen`.
+The multi-client warning bullet's "It never blocks, never changes the argv" says another attached client, or a failed client listing, drops the attach selection from the argv.
+The Detached windows sentence "one chained after a detached new-window without a target lands on the current window, the strands' window" drops "the strands' window", since attach and the focus rules select agent and overview windows, so the current window can be any window.
 
-`TestWindowOrder` gains rows for `newAgentWindowSelected` (from the overview, from an all-dead agent window, with `Focus`: selected; from a live agent window, from the shell: not); `relevantWindow` is pinned through its callers below, not by pure rows.
+`newAgentWindowSelected` and `relevantWindow` are pinned through their callers below, not by pure rows.
 `TestAttachArgv_SelectsTheRelevantWindow` drives `AttachArgv` against the fake tmux, scripting `list-windows`, the session pane listing (`answerWindowPanes`) and `list-clients`, with rows: the chained argv ends with `select-window -t` the newest live agent window; with the newest agent's pane dead it targets the older live agent; with no live agent it targets the overview window; with neither no `select-window` is appended; with another client listed none is appended; an unknown client size (`AttachArgv(0, 0)`) gives the bare argv plus the selection; a session whose only pane is Selvage gives the bare argv plus the selection; a `#{window-size}` readback other than `latest` and an unrecognized `#{status}` readback each give the bare argv plus the selection.
-`TestAttachArgv_MultiClientWarning`'s rows keep their warnings; its "ListClientsError" row now also asserts no `select-window` is appended, the one row for a failed client listing.
+`TestAttachArgv_MultiClientWarning`'s rows keep their warnings; its "ListClientsError" row, the one row for a failed client listing, keeps its warning assertion and now seeds the state with a live own-window strand and scripts `list-windows` and the session pane listing (`answerWindowPanes`) the way `TestAttachArgv_SelectsTheRelevantWindow` does, so `relevantWindow` would return that strand's window, and asserts no `select-window` is appended;
+the row, `ListClientsError_WarnsAndDoesNotChangeBehaviour` in `internal/reedengine/attach_test.go`, is renamed `ListClientsError_WarnsAndAppendsNoSelection`.
+Without the listing failure the same fixture appends the selection, so a missing guard fails the row.
 `TestOwnWindow_RealTmux`'s row "RemoveMovesAViewerOnTheEndingWindowToWindowZero" becomes "RemoveMovesAViewerOnTheEndingWindowToTheNewestLiveAgent": with an older live agent window, removing the viewed one selects the older one, never the shell; its other rows are checked against the new rule, which keeps a viewer on the shell or a live agent window.
 `TestWindowOrder_RealTmux` gains rows: a new agent window is selected from the overview and from an all-dead agent window, is not selected from a live agent window or the shell and carries `@lyx_unseen` there, and a `Focus: true` own-window strand is selected from the shell; removing the viewed agent window when no live agent is left selects the overview (the newest-live-agent case is `TestOwnWindow_RealTmux`'s row); replacing the viewed agent while an older agent is live leaves the viewer on the older agent's window; reconcile ending a viewed orphan own window selects the newest live agent; one seat leaving a viewed shared window of two switches nothing.
 `cmd/lyx/testdata/test-budget.yaml` raises `internal/reedengine` from 265 to 266.
