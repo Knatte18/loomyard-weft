@@ -1,36 +1,31 @@
 # Twill: spawn lens forks after the files are written
 
-The twill writer, under both `discussion_producer: twill` and `plan_producer: twill`, now spawns its lens forks only after it has written the reviewed files and its self-check has passed.
-Before this change it spawned them before writing, and they waited on a ready marker.
-The forks now review the files as their inherited context holds them, without reading them again, and wait on nothing.
-The benches in `docs/research/twill-fork-timing-bench.md` and `docs/research/twill-fork-timing-plan-bench.md` found this cheaper at the same quality: $4.44 against $5.43 per Discussion run, and $0.94 against $1.60 per Plan run for the lens forks.
+Discussion-Write and Plan-Write now spawn their twill lens forks once the writer has written the reviewed files and its self-check has passed, not before writing.
+The forks inherit the finished files in their context and review them as held, so they no longer wait on a ready marker.
+The fork-timing benches in `docs/research/twill-fork-timing-bench.md` and `docs/research/twill-fork-timing-plan-bench.md` measured this order as cheaper with quality held: Discussion $4.44 against $5.43 per run, Plan lens forks $0.94 against $1.60 per run.
 
 ## What changes
 
-- **Directive** (`contracts/stencils/twill/twill-directive.md`): the procedure starts at reading the rubric, then spawns, waits, judges, records and runs the final self-check.
-  Writing the files and the first self-check now happen before the procedure, and each host's spawn point says so.
-  The fork boilerplate drops the `lyx shuttle await` loop and its give-up rule, and tells the fork the writer wrote and checked the files before spawning it, so it never reads them again.
-  The 6-call cap and the report line for each extra read stay.
-- **Relaunch rules**: a writer that died before its Agent call still spawns once, after it finishes writing and passes the self-check.
-  A writer that died at or after its Agent call never spawns again, and records the lost forks as "no report", as before.
-- **Spawn points** (`internal/loomengine/twill.go`): Discussion runs the procedure once both output files are written per Step 5 and `validate-discussion` passes per Step 6.
-  Plan runs it once the plan is written per Steps 3 and 4 and `validate-plan` passes per Step 5.
-  The Plan spawn point drops its "state the cards and spawn before writing" instructions.
-  It keeps the override of the template's no-review-logic line and the extra fork line.
-- **Ready marker removed**: the `ready_marker` directive marker, `twilldirective.Values.ReadyMarker`, `DiscussionReadyMarker`/`PlanReadyMarker` and their `Remove…` functions are gone.
-  So are the `twill-write-scope` stencil, `twilldirective.WriteScope` and `WriteScopeMarkerName`, and the `{{.twill_write_scope}}` marker in `loom-template-discussion.md`.
-  The write-scope paragraph existed only to add the marker to the Discussion writer's write scope.
-  With the marker line now blank, a `single` or `seats` prompt renders the same bytes as before.
-- **Seams removed**: `shedrecipe.Env.PrepareDiscussionSpawn` and `PreparePlanSpawn` only ever removed a stale marker.
-  They are dropped along with their `loomcli` wiring, the envkit and fixture stubs, and batten's seam-exclusion rows.
-  DiscussionWrite's fresh-spawn preparation is back to the parent-review `PrepareRound` alone, nil without that gate.
-  PlanWrite's preparation is back to the plan-directory rotator alone.
-- **Docs**: the `internal/twilldirective` package doc, the twill paragraphs in `internal/loomengine`'s `discussion.go` and `plan.go` file docs, and the twill rows of `docs/overview.md`.
+- `contracts/stencils/twill/twill-directive.md`: the procedure reads the rubric, then spawns every lens fork in one message, waits, judges, records and runs the final self-check.
+  Writing the files and the first self-check now happen before the procedure starts.
+- The fork boilerplate drops the `lyx shuttle await` wait and its give-up rule.
+  A fork reviews the files as its context holds them and never reads them again.
+  The cap of 6 further tool calls and the report line for each such read stay.
+- The spawn point of each host (`discussionTwillDirective` and `planTwillSpawnPoint` in `internal/loomengine/twill.go`) says the procedure runs once the files are written and the host's validator passes.
+- The ready marker is removed as a whole: the `twilldirective.Values` field and the `{{.ready_marker}}` template marker, `DiscussionReadyMarker` and `PlanReadyMarker`, their removal in `internal/loomcli/wiring.go`, and the Discussion write-scope stencil `twill-write-scope.md` with `twilldirective.WriteScope`, which existed only to permit writing the marker.
+  Nothing else read the marker.
+- `internal/twilldirective/doc.go`, `docs/overview.md` and the loom-recipe wiring in `internal/shedrecipe` follow the new order.
 
-## To check by hand
+## Design decisions
 
-- `lyx shuttle await` stays, since `lyx burler await-review` and other waits share it; only the twill forks stop calling it.
-- A hub seeded before this change keeps a stale `twill-write-scope.md` in its stencils directory.
-  Nothing reads it any more, and no retirement mechanism removes seeded stencils.
-- The twill directive still sits where it did in both templates: between Step 4 and Step 5 in Discussion, and between Step 2 and Step 3 in Plan.
-  Its spawn point now points forward to the later steps, so confirm that reading order is clear in a rendered prompt.
+- Relaunch rules split on where the writer died.
+  A writer that died before its Agent call still spawns once: on its next turn it reads back every reviewed file it did not write in this session, so the forks inherit them, then finishes writing, passes the self-check and runs the procedure from its first step.
+  A writer that died at or after its Agent call has lost its forks and never spawns again; it resumes at judging the findings and records the lens review as cut short, naming each fork that returned no report.
+- The directive stays host-neutral: it names no file or step of a host, and each host supplies its own spawn point.
+
+## Not run by hand
+
+- No live Discussion-Write or Plan-Write run was made against the new order; the benches cited above are the evidence for the cost and quality claim.
+- The relaunch path (a writer killed between writing and spawning) is covered by the directive text and its render tests, not exercised against a real killed session.
+
+Out of scope: the fork0 arms (a writer fork, fork0 staying alive), which stay in `twill-fork-timing`.
