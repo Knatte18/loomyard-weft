@@ -4,7 +4,7 @@
 - `plan:internal/loomcli#readChecklistPaused` -> `func readChecklistPaused(recordPath, slug string, now time.Time) []pauserecord.Interval`
 
 **Edit:**
-- `plan:internal/loomcli#checklistInput`
+- `internal/loomcli#checklistInput`
 - `internal/loomcli#loomCLI.checklistPoll`
 - `internal/loomcli#renderChecklist`
 - `internal/loomcli#checklistVisitsOf` -> `func checklistVisitsOf(status shedengine.Status, startedAt string, paused []pauserecord.Interval, now time.Time) (visits map[string]checklistVisits, order []string, history []checklistVisit)`

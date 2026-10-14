@@ -1,15 +1,15 @@
 {
   "runGuid": "50dde7a59fc8df99eb2686fde35c19df",
-  "planFingerprint": "1fadf5ea7a96880aa0f92e31013cfafd1db5fd1ae50b2b79e5cef7b21fd97b95",
+  "planFingerprint": "d1e8a975af486545f616eff9110ee95e440641b04ca6bebc45419b270873f4f3",
   "planFileHashes": {
     "00-overview.md": "42e322575ccdd0a5890994f90bf399708d6a4af309219028a4a1eda7bcb9d6cd",
     "01-shed-bounce-routed-to.md": "6b28c27ae1cfaa2fca6622946da3e7cef200f41e351bf644462000a5ace298e3",
-    "02-loomrecipe-rows.md": "16f8fec70c81a2b43df41a4eb84ffcee49b74fab849231e8c78719efc3d2ddae",
-    "03-output-round.md": "3e5cea32287ec396d04d6e924d523a9fc4838646e68875aeb9e2a7c627511afe",
-    "04-checklist-combined-frame.md": "71138d4abf8c1a07fce3eccd9484f44b541ea3e108a17cdaa8eda71d608daf48",
-    "05-checklist-review-rounds.md": "44fd9aebb9ab03d69c7dd9b85bc3f0a19fd3f19242ea4301ab353790cf3ded50",
-    "06-checklist-arbiter-lines.md": "4b3507feeba0980ad90e066170dcc11976ea8a76bb5e57d856797ca6f2222f93",
-    "07-checklist-pause-net-time.md": "e28bd31f8aba5b01bd018fb688b3af6588d320d3112622ac37e28c37b015d819",
+    "02-loomrecipe-rows.md": "f85a1e41ac112b4647207d7b7ecfa514cb92db3ba12bcd2f5c80ff2a005ae5a8",
+    "03-output-round.md": "a9ea12074e5e3a5963f94219c94d3c62ffee6622f79885136e51cec26c3ccd9a",
+    "04-checklist-combined-frame.md": "ebfd9e6e31ab3d009f6857e7a34fd4466500c16460169ea7d3e811158d23bb0e",
+    "05-checklist-review-rounds.md": "47d19000fa69f86cdbf1ec8da96bb89d6fa31062bea671b4573ab00c957a8852",
+    "06-checklist-arbiter-lines.md": "b70c4993ba6d9552880de4b6ab550e28900b33dbd376547bbcd567375bb356b6",
+    "07-checklist-pause-net-time.md": "06df9ab60c6b84e32d4f343cc5b61afaadae085a7e912aed0e1906cdf2068baf",
     "08-seat-lead-naming.md": "52d855f66455500c3690be850b09f380b3aa8fd062723e5ef5cacaf2bed6dde4",
     "09-seat-lead-amendment.md": "e5895ce81f5d04aea211ae55237f79059a1ea9e9b7fa475cfe3c67f009cf965f",
     "10-multillm-amendment.md": "9b619bc50518c08661ea4509350b21284c7410ef322a2d7e377197f91ece8acf",
@@ -578,7 +578,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "8658427a8147d936d244a19ba3d56491",
   "masterSessionId": "f89f830f-dc11-4772-8b04-5e5563696e53",
   "batches": {
@@ -594,18 +594,40 @@
       ],
       "cardHashes": {
         "01-shed-bounce-routed-to": "6b28c27ae1cfaa2fca6622946da3e7cef200f41e351bf644462000a5ace298e3",
-        "02-loomrecipe-rows": "16f8fec70c81a2b43df41a4eb84ffcee49b74fab849231e8c78719efc3d2ddae",
-        "03-output-round": "3e5cea32287ec396d04d6e924d523a9fc4838646e68875aeb9e2a7c627511afe",
-        "04-checklist-combined-frame": "71138d4abf8c1a07fce3eccd9484f44b541ea3e108a17cdaa8eda71d608daf48",
-        "05-checklist-review-rounds": "44fd9aebb9ab03d69c7dd9b85bc3f0a19fd3f19242ea4301ab353790cf3ded50",
-        "06-checklist-arbiter-lines": "4b3507feeba0980ad90e066170dcc11976ea8a76bb5e57d856797ca6f2222f93"
+        "02-loomrecipe-rows": "f85a1e41ac112b4647207d7b7ecfa514cb92db3ba12bcd2f5c80ff2a005ae5a8",
+        "03-output-round": "a9ea12074e5e3a5963f94219c94d3c62ffee6622f79885136e51cec26c3ccd9a",
+        "04-checklist-combined-frame": "ebfd9e6e31ab3d009f6857e7a34fd4466500c16460169ea7d3e811158d23bb0e",
+        "05-checklist-review-rounds": "47d19000fa69f86cdbf1ec8da96bb89d6fa31062bea671b4573ab00c957a8852",
+        "06-checklist-arbiter-lines": "b70c4993ba6d9552880de4b6ab550e28900b33dbd376547bbcd567375bb356b6"
       },
       "startSha": "d4824a3d68de466ba3db5015cf6212f7d41126f7",
       "kind": "fork",
       "spawnedAt": "2026-10-14T18:05:01Z",
       "sessionId": "f89f830f-dc11-4772-8b04-5e5563696e53",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-shed-bounce-routed-to",
+        "status": "done",
+        "head_sha": "90519b289613f046b2fa0ea2c08be82be357ac1d",
+        "deviations": [
+          "internal/loomcli/checklist.go",
+          "internal/loomcli/checklist_test.go",
+          "internal/shedadapters/round.go"
+        ]
+      },
+      "cardShas": [
+        "90519b289613f046b2fa0ea2c08be82be357ac1d"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-overview-seats/f89f830f-dc11-4772-8b04-5e5563696e53/subagents/agent-aa1c7f80a754a0e6d.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-overview-seats/f89f830f-dc11-4772-8b04-5e5563696e53/subagents/agent-aa1c7f80a754a0e6d.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-overview-seats/f89f830f-dc11-4772-8b04-5e5563696e53/subagents/agent-aa1c7f80a754a0e6d.jsonl"
+  ]
 }

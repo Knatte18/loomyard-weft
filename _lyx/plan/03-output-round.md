@@ -1,7 +1,7 @@
 # Card 3 — output-round
 
 **Create:**
-- `plan:internal/shedadapters#OutputRound` -> `func OutputRound(path string) (int, bool)`
+- `internal/shedadapters#OutputRound`
 
 **Edit:**
 - `internal/shedadapters#ReviewRounds`

@@ -1,15 +1,15 @@
 # Card 6 — checklist-arbiter-lines
 
 **Create:**
-- `plan:internal/loomcli#checklistArbiter` -> `type checklistArbiter struct`
-- `plan:internal/loomcli#readChecklistArbiters` -> `func readChecklistArbiters(arbiterDir string) []checklistArbiter`
-- `plan:internal/loomcli#checklistArbiterLine` -> `func checklistArbiterLine(a checklistArbiter, now time.Time) string`
+- `internal/loomcli#checklistArbiter`
+- `internal/loomcli#readChecklistArbiters`
+- `internal/loomcli#checklistArbiterLine`
 
 **Edit:**
-- `plan:internal/loomcli#checklistInput`
+- `internal/loomcli#checklistInput`
 - `internal/loomcli#loomCLI.checklistPoll`
 - `internal/loomcli#renderChecklist`
-- `plan:internal/loomcli#checklistReviewBlock`
+- `internal/loomcli#checklistReviewBlock`
 - `internal/loomcli#TestRenderChecklist`
 
 **Intent:** D3: each arbiter attempt shows as one line in the round it decided.

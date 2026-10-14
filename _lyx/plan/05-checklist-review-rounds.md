@@ -1,7 +1,7 @@
 # Card 5 — checklist-review-rounds
 
 **Create:**
-- `plan:internal/loomcli#checklistReviewBlock` -> `func checklistReviewBlock(segment string, rows []loomrecipe.RecipeRow, visits []checklistVisit, status shedengine.Status) []string`
+- `internal/loomcli#checklistReviewBlock`
 
 **Edit:**
 - `internal/loomcli#renderChecklist`
@@ -11,8 +11,8 @@
 - `internal/loomcli#TestRenderChecklist`
 
 **Uses:**
-- `plan:internal/shedadapters#OutputRound`
-- `plan:internal/loomrecipe#RecipeRow`
+- `internal/shedadapters#OutputRound`
+- `internal/loomrecipe#RecipeRow`
 
 **Intent:** D2: a review segment renders as one block, grouped by round in run order.
 

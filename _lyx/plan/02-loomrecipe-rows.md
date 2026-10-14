@@ -1,8 +1,8 @@
 # Card 2 — loomrecipe-rows
 
 **Create:**
-- `plan:internal/loomrecipe#RecipeRow` -> `type RecipeRow struct`
-- `plan:internal/loomrecipe#Rows` -> `func Rows(recipe string) ([]RecipeRow, error)`
+- `internal/loomrecipe#RecipeRow`
+- `internal/loomrecipe#Rows`
 
 **Edit:**
 - `internal/loomrecipe#RowNames`

@@ -1,8 +1,8 @@
 # Card 4 — checklist-combined-frame
 
 **Create:**
-- `plan:internal/loomcli#checklistInput` -> `type checklistInput struct`
-- `plan:internal/loomcli#checklistVisitLine` -> `func checklistVisitLine(visit checklistVisit, row string) string`
+- `internal/loomcli#checklistInput`
+- `internal/loomcli#checklistVisitLine`
 
 **Edit:**
 - `internal/loomcli#renderChecklist` -> `func renderChecklist(in checklistInput, now time.Time) statuspane.Frame`
@@ -16,8 +16,8 @@
 - `//docs/overview.md`
 
 **Uses:**
-- `plan:internal/loomrecipe#Rows`
-- `plan:internal/loomrecipe#RecipeRow`
+- `internal/loomrecipe#Rows`
+- `internal/loomrecipe#RecipeRow`
 
 **Intent:** D1, and the outcome words of D3 and D4, in `internal/loomcli/checklist.go`.
 
