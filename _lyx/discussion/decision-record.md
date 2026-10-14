@@ -156,6 +156,12 @@ In `logging-cleanup` the arbiter was still running after the notice, since the o
 In `tender` the orch's handoff places the arbiter's `continue` at the notice's minute, which also fits the window after the verb removed the marker.
 Batten's trace logged no seam error, and the task worktrees, which held the arbiter attempt records and the driver's logs, are gone, so the evidence does not single out one window; the hold covers all three.
 
+### Added after Discussion (operator, 2026-10-14): Darn review perch can be switched off per run
+
+Decision: A single darn run can skip its Darn-Review perch (zero review rounds) through the board entry's run_settings, not only hub-wide. The per-run off switch is settable in a run's local layer; the hub-wide default stays in darn.yaml. This replaces D3's guard-only, hub-only skip_review: the off switch is per-run overridable like the budget keys.
+
+Rationale: The operator wants small darn tasks run with no review round at all, decided per task; a hub-wide switch changes every darn run. Seen 2026-10-14 on tokencount-fork-output, which could not skip its perch.
+
 ## Constraints
 
 - `PATTERN-config-layers`: categories stay declared in each module's `ConfigSpec`, built through D1's package, and `skip_review` is classified in the same change; only `configengine` reads layers.
