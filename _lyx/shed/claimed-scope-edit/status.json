@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster-Burler-Review",
+  "current_producer": "Webster-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster-Burler-Review",
-    "last": "Webster-Burler-Review → goto",
+    "now": "Webster-Burler-Fix",
+    "last": "Webster-Burler-Review → bounced to Webster-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -221,6 +221,13 @@
       "outcome": "goto",
       "output": "",
       "at": "2026-10-14T16:36:33Z"
+    },
+    {
+      "producer": "Webster-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/claimed-scope-edit/_lyx/reviews/webster/round-2-review.md",
+      "at": "2026-10-14T16:38:38Z",
+      "budget_exempt": true
     }
   ],
   "product": {
