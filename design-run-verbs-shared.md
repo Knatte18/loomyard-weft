@@ -13,6 +13,7 @@ The same holds for the other run verbs the orch uses on darn runs: `lyx loom sta
 Darn and loom are both shed recipes and are to be handled the same way.
 Verbs that act on any run move to one shared namespace, and `lyx loom` keeps only what is loom's own.
 Not `lyx shed`: shed is only the FSM and knows nothing about decisions, reviews or approvals (operator).
+For now the verbs stay under `lyx loom` (operator, 2026-10-14).
 
 ## Open
 
