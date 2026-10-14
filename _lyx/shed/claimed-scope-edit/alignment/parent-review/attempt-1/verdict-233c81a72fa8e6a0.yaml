@@ -1,0 +1,10 @@
+verdict: approve
+reason: >-
+  The design covers every ask in the board entry: a darn record written before code,
+  decision add on a darn run, the review reading the amended scope, both requested checks
+  answered, and PR-Align in darn. Its Out list follows the operator's direction, and its
+  extra decisions (spec, gate, carry-over, orch stencil) follow from the asked work without
+  taking over another entry's work. Overlap with twill-spawn-after is text only, in the
+  Discussion stencil and the stencil registry, and its order is unknown (row 0). Overlap
+  with tender is the shared test-budget file and a seam test, and tender (row 12) lands first.
+question: ""
