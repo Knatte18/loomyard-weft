@@ -578,7 +578,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 19,
   "masterStrand": "2c29ef402d51db0e7d2e7fb6e69f31a7",
   "masterSessionId": "e02893aa-3520-426e-af8c-09abb52aab0e",
   "batches": {
@@ -767,6 +767,23 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-overview-seats/e02893aa-3520-426e-af8c-09abb52aab0e/subagents/agent-a0922f2f2ba6a9aab.jsonl"
       ]
+    },
+    "19": {
+      "slug": "loom-config-axes",
+      "cards": [
+        "19-loom-config-axes",
+        "20-seat-names-delete"
+      ],
+      "cardHashes": {
+        "19-loom-config-axes": "377d805254e4e5cfdd7b841044128eaca5c0ce9dac0be74eec00f05a01236649",
+        "20-seat-names-delete": "aeb21299dce1f12ae807c6686f8be7beee81ab3a614b7132809787daf5758caa"
+      },
+      "startSha": "3ad0cb42904db86fcdefa0ba928c5630186912af",
+      "kind": "fork",
+      "spawnedAt": "2026-10-14T19:40:16Z",
+      "sessionId": "e02893aa-3520-426e-af8c-09abb52aab0e",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "checklist-pause-net-time",
