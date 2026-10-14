@@ -578,9 +578,9 @@
       }
     }
   ],
-  "currentBatch": 0,
-  "masterStrand": "8658427a8147d936d244a19ba3d56491",
-  "masterSessionId": "f89f830f-dc11-4772-8b04-5e5563696e53",
+  "currentBatch": 17,
+  "masterStrand": "2c29ef402d51db0e7d2e7fb6e69f31a7",
+  "masterSessionId": "e02893aa-3520-426e-af8c-09abb52aab0e",
   "batches": {
     "1": {
       "slug": "shed-bounce-routed-to",
@@ -721,6 +721,23 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-overview-seats/f89f830f-dc11-4772-8b04-5e5563696e53/subagents/agent-aa703fbe9ddb4b8fd.jsonl"
       ]
+    },
+    "17": {
+      "slug": "single-llm-delete",
+      "cards": [
+        "17-single-llm-delete",
+        "18-retired-builders-delete"
+      ],
+      "cardHashes": {
+        "17-single-llm-delete": "6c17fe7e23132843f30604b8a7a5746108aa6a00ea3aa69b4cf773dcc211f280",
+        "18-retired-builders-delete": "923871f377b45d6adfee1d3bdadd245da41113261c6d38941b17da835e3e9c8a"
+      },
+      "startSha": "374efea4fff12746a4b666c6cb4a68763d637f85",
+      "kind": "fork",
+      "spawnedAt": "2026-10-14T19:29:24Z",
+      "sessionId": "e02893aa-3520-426e-af8c-09abb52aab0e",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "checklist-pause-net-time",
