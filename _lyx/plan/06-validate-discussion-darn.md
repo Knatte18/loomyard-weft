@@ -31,6 +31,9 @@
 `validateDiscussionCmd` runs `loomshed.ValidateDarnDiscussion(c.env.DecisionRecordPath, c.env.SupportLogPath, c.env.DiscussionHistory)` when `c.env.DiscussionHistory` is set and `discussionparser.Validate` otherwise, mapping findings and I/O errors onto the envelope exactly as today.
 On a clean darn check it calls `c.env.CommitDiscussion()` before the ok envelope; a commit error is a refusal, `loom: validate discussion: commit the discussion files: <err>; way forward: re-run "lyx loom validate-discussion"`, exit 1.
 A later clean run commits again, a no-op over an unchanged record.
+The commit is a new side effect of a verb any session of the darn worktree may run.
+It lets a writer's post-validation edit, followed by another clean run, become the committed copy, so `decision add`'s working-copy-equals-committed-copy check (card 7) passes over it.
+It is bounded to a darn seed (`c.recipe` is `shedrun.RecipeDarn`), to `commitDiscussion`'s pathspec (the discussion directory, plus the parent-review directory when it holds a file), and to a record that passes the whole darn check, whose history check refuses any commit that drops an `Added after Discussion` entry, so no appended entry can be erased this way.
 Its `Short` and `Long` say that on a darn run it is the Darn-Write row's gate check, which also refuses a record missing an `Added after Discussion` entry its commit history held, and that a clean run commits the two files.
 
 `TestValidateDiscussionCmd` gains darn rows whose `build` sets the history seam and a counting commit seam on the fixture's `loomCLI`, and the row struct gains the commit count each row wants (0 for the loom rows, which set no seam): a clean record commits once and exits 0; a record missing an entry a history version holds exits 1 naming the heading and commits nothing; a commit failure exits 1 with the way forward.

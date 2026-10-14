@@ -1,9 +1,5 @@
 # Card 13 — darn-recipe-rows
 
-**Create:**
-- `plan:internal/loomrecipe#TestDarnPerch_ConvergedOverAnOpenDecisionFindingAcceptsAndCarriesItOver` -> `func TestDarnPerch_ConvergedOverAnOpenDecisionFindingAcceptsAndCarriesItOver(t *testing.T)`
-- `plan:internal/loomrecipe#decisionOpenConvergedBouncerJudge` -> `func decisionOpenConvergedBouncerJudge(env shedrecipe.Env)`
-
 **Edit:**
 - `contracts/recipes/darn-recipe.yaml`
 - `internal/loomrecipe#wantDarnProducerTable`
@@ -12,14 +8,11 @@
 - `internal/loomrecipe#TestBouncerRowsCarryOverTheirOwnSegment`
 - `internal/loomrecipe#TestEscalation_DarnPerchRuleContinuesThenHardCapAcceptReachesDescribe`
 - `internal/loomrecipe/doc.go`
-- `cmd/lyx/testdata/test-budget.yaml`
 - `contracts/specs/refusal-spec.md`
 - `docs/overview.md`
 
 **Uses:**
-- `internal/loomrecipe#writeBouncerJudge`
 - `internal/loomrecipe#designWrongBouncerJudge`
-- `internal/loomrecipe#haltingProducer`
 
 **Intent:** Change the darn recipe's rows: a `discussion` gate on Darn-Write, a carry-over on Darn-Bouncer, and a PR-Align row between Publish and PR-Gate (D4, D8, D9).
 No row is renamed, and an in-flight darn run is restarted, not migrated (A4).
@@ -37,9 +30,6 @@ PR-Gate keeps `on_stuck: Darn-Write`: an agent reject writes the rejection recor
 `TestDarnVerifyBudget`'s want map gives Darn-Write `{"discussion": 3, "verify": 7, "description": 3}`.
 `TestBouncerRowsCarryOverTheirOwnSegment` runs over both embedded recipes, so it pins `carry_over` equal to the segment on Darn-Bouncer too.
 `TestEscalation_DarnPerchRuleContinuesThenHardCapAcceptReachesDescribe` swaps `env.CarryOver` for a capturing closure and, after the accept, asserts one carry-over entry whose segment is `Darn-Review` and whose findings hold the open `design-gap` entry, in place of its two no-decision-record assertions; its doc drops "with no decision record on disk".
-`decisionOpenConvergedBouncerJudge`, in `fixture_test.go` beside `designWrongBouncerJudge`, makes every bouncer-judge round write a CONVERGED verdict over a ledger holding one open `decision`-class MEDIUM entry with no fix tag.
-`TestDarnPerch_ConvergedOverAnOpenDecisionFindingAcceptsAndCarriesItOver`, in `escalation_test.go`, builds `NewDarn` with that judge and a capturing `CarryOver`, fakes Preflight and Darn-Write as Done and Describe with a `haltingProducer`, runs the shed once and asserts it reaches Describe with no circling escalation file in the run directory, and that the carry-over entry has segment `Darn-Review` and holds the `decision` MEDIUM finding.
-The new top-level test raises `internal/loomrecipe`'s row in `cmd/lyx/testdata/test-budget.yaml` from 54 to 55.
 
 `internal/loomrecipe/doc.go` drops "the darn recipe has no PR-Align row" and names darn's tail as `Describe → Merge-In → Publish → PR-Align → PR-Gate → Finalize`.
 `contracts/specs/refusal-spec.md`'s `Darn-Write verify gate exhausted` row covers the discussion gate too: its condition names a discussion gate still failing after its recipe attempts.

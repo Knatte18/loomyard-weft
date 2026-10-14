@@ -15,6 +15,7 @@
 **Intent:** Have darn's Describe session read the decision record beside the board entry for the scope and decisions it describes (D7).
 
 `DarnDescribeInputs` gains a required `DecisionRecordPath`; `DarnDescribeSpec` refuses it empty by name and fills it as the `decision_record_path` marker.
+`DarnDescribeSpec`'s doc comment says the darn Describe session reads the decision record beside the board entry and still reads no run record.
 `wireDarn`'s `DescribeSpec` closure tells it `loomengine.DiscussionDecisionRecord(location)`, and `wireDarn`'s doc and the header comment of its file, `internal/loomcli/darnwiring.go`, stop saying the darn Describe reads no decision record.
 
 `landing-template-describe-darn.md`'s "What to read" gains the decision record `{{.decision_record_path}}`: its `Added after Discussion` entries amend the board entry and win over its body where they differ, and its other sections are the writer's own account of scope and early calls, read as a claim against the diff.
