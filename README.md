@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-14 18:07 UTC; every age below is as of then.
+Rendered 2026-10-14 18:08 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Hibernate the machine on a trigger, such as a task landing**<br>• Let the operator trigger a hibernate through lyx, for instance once a task is done | [`hibernate-trigger`](design-hibernate-trigger.md) | loom | Merge-Burler-Review | 3h | 1h | batten |
 | 2 | **Overview window tidy, seat names, Seats replaces SingleLLMProducer**<br>• Overview window log/checklist and bounce naming, seat names, and one MultiLLMProducer in place of SingleLLMProducer | [`overview-seats`](design-overview-seats.md) | loom | Webster | 3d | 1h | reed, shed, loom, burler |
-| 3 | **Perch budgets and stops: darn budget per run like loom, arbiter only when needed**<br>• Darn review budget overridable per run like loom, with its own off switch; arbiter spawns only on stops that need it. | [`perch-budget-arbiter`](design-perch-budget-arbiter.md) | loom | Plan-Write | 2d | 1h | config, loom, shed |
+| 3 | **Perch budgets and stops: darn budget per run like loom, arbiter only when needed**<br>• Darn review budget overridable per run like loom, with its own off switch; arbiter spawns only on stops that need it. | [`perch-budget-arbiter`](design-perch-budget-arbiter.md) | loom | Plan-Bouncer | 2d | 1h | config, loom, shed |
 
 ### Ready
 
@@ -35,7 +35,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | `perch-budget-arbiter`, `overview-seats` | 11m | 5m | shed, loom, batten |
+| 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | `perch-budget-arbiter`, `overview-seats` | 11m | 6m | shed, loom, batten |
 
 ## Notes
 
@@ -54,8 +54,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 2 | **twill rationale bench pair twb-f3-ir**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm | [`twb-f3-ir`](design-twb-f3-ir.md) | 24m | 24m |  |
-| 3 | **twill rationale bench pair twb-f3-wr**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm | [`twb-f3-wr`](design-twb-f3-wr.md) | 23m | 23m |  |
-| 4 | **twill rationale bench pair twb-f3-pr**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm | [`twb-f3-pr`](design-twb-f3-pr.md) | 23m | 23m |  |
+| 3 | **twill rationale bench pair twb-f3-wr**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm | [`twb-f3-wr`](design-twb-f3-wr.md) | 24m | 24m |  |
+| 4 | **twill rationale bench pair twb-f3-pr**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm | [`twb-f3-pr`](design-twb-f3-pr.md) | 24m | 24m |  |
 | 5 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 11d | 1d | shuttle |
 | 6 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 10d | 9d | fabric, loom |
 | 7 | **shedrecipe: capability declaration instead of manual seam-threading**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | 10d |  | shed |
@@ -69,7 +69,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 15 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 1d | 1d | burler, stencil |
 | 16 | **Seed the VS Code config of each pair when it is made**<br>• Write the title-bar color and .vscode config that lyx ide spawn writes when a pair is made, so code . gives the same | [`seed-vscode-config`](design-seed-vscode-config.md) | 1d | 1d | ide, batten |
 | 17 | **Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 3h | 3h | loom, webster, config |
-| 18 | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 43m | 42m | shed, loom |
+| 18 | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 44m | 43m | shed, loom |
 
 #### Low priority
 
