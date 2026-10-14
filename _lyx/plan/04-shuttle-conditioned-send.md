@@ -9,12 +9,12 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/shuttleengine#SendCondition` -> `type SendCondition struct`
-- `plan:internal/shuttleengine#ErrSendConditionUnmet` -> `var ErrSendConditionUnmet error`
-- `plan:internal/shuttleengine#Runner.SendConditioned` -> `func (r *Runner) SendConditioned(guid, text string, want SendCondition) (turnStarted bool, err error)`
-- `plan:internal/shuttleengine#conditionedReading` -> `func conditionedReading(sc sendContext, want SendCondition) error`
-- `plan:internal/shuttleengine#awaitTurnStart` -> `func awaitTurnStart(sc sendContext, sentAt int64) bool`
-- `plan:internal/shuttleengine#typeVerified` -> `func typeVerified(sc sendContext, text string) error`
+- `internal/shuttleengine#SendCondition`
+- `internal/shuttleengine#ErrSendConditionUnmet`
+- `internal/shuttleengine#Runner.SendConditioned`
+- `internal/shuttleengine#conditionedReading`
+- `internal/shuttleengine#awaitTurnStart`
+- `internal/shuttleengine#typeVerified`
 - `internal/shuttleengine/conditionedsend.go`
 - `internal/shuttleengine/conditionedsend_test.go`
 

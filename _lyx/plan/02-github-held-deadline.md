@@ -9,9 +9,9 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/githubclient#authRT.requestContext` -> `func (rt *authRT) requestContext(caller context.Context, held time.Duration) (context.Context, context.CancelFunc, error)`
-- `plan:internal/githubclient#cancelOnClose` -> `type cancelOnClose struct`
-- `plan:internal/githubclient#TestAuthRT_HeldCallGetsItsFullDeadlineAfterRelease` -> `func TestAuthRT_HeldCallGetsItsFullDeadlineAfterRelease(t *testing.T)`
+- `internal/githubclient#authRT.requestContext`
+- `internal/githubclient#cancelOnClose`
+- `internal/githubclient#TestAuthRT_HeldCallGetsItsFullDeadlineAfterRelease`
 
 **Intent:**
 A GitHub call a pause holds gets its full deadline after the hold ends, so the hold no longer uses up the call's budget (D6, issue #606).

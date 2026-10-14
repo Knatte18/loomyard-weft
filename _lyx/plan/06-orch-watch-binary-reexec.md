@@ -9,9 +9,9 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/orchengine#Watcher.WatchBinary` -> `func (w *Watcher) WatchBinary(check func())`
-- `plan:internal/orchengine#Watcher.restartSafe` -> `func (w *Watcher) restartSafe() bool`
-- `plan:internal/orchengine#TestRun_ChecksTheBinaryOnlyAtARestartSafeTick` -> `func TestRun_ChecksTheBinaryOnlyAtARestartSafeTick(t *testing.T)`
+- `internal/orchengine#Watcher.WatchBinary`
+- `internal/orchengine#Watcher.restartSafe`
+- `internal/orchengine#TestRun_ChecksTheBinaryOnlyAtARestartSafeTick`
 
 **Intent:**
 `lyx orch watch` re-execs itself onto a replaced binary, at a point where nothing in flight is lost (D8).

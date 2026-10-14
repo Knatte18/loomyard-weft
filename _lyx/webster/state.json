@@ -1,14 +1,14 @@
 {
   "runGuid": "536c546e8bfeed4b8edb7ceecbc98003",
-  "planFingerprint": "b9ee8b85733dfee72bbd0a1c8b3d6f3d5e8e0df08cc2e7d1f46eaad00291cb1f",
+  "planFingerprint": "7a7bee72442c4035a2922c49ad6a15df76b60bff29fe9761195a79c332ce3329",
   "planFileHashes": {
     "00-overview.md": "78cdc52679e80a7805a018d5e3525ffded09b0169d5f5fc6de50ebba91f725b8",
     "01-pauserecord-network-held.md": "28f97329e709280faae540010a6c0a7b5146b5a4fa8a918381b30eaf1e6e683c",
-    "02-github-held-deadline.md": "8da8c4ba6654ea49dcb02fa11617039d97355b6958341ff5b82bc011e6aba465",
-    "03-github-per-request-deadlines.md": "1afb44f7c82009166f738a47f03b7d485e8580c13aec363e6354a72f76e120c7",
-    "04-shuttle-conditioned-send.md": "fd506dd4c58f813c262b9ba899d77d0267207e3bfcf798743cb1c3218c78f66c",
-    "05-orch-conditional-notice.md": "8f1aae3d1cc34c77142f7c94ee4fbb5af70b030aaae6ab98afc1b529962a2a67",
-    "06-orch-watch-binary-reexec.md": "301a1845e3ea03bf026fb35f525a0310090be045fc4eba75f1478eae68c480af",
+    "02-github-held-deadline.md": "c4ad7aa05f20b57fdad722f8784a8c11ff95b24977fcc81ef6156a10733bd883",
+    "03-github-per-request-deadlines.md": "583f62af17b94fdc90e63337118e57ff48a741e3d14784f713013064bf878e42",
+    "04-shuttle-conditioned-send.md": "04129336f1fcb8af8a45597e7c2e53c8e5999ca45bc48cab76f4f744447f32ce",
+    "05-orch-conditional-notice.md": "63719fafbe05009e1301d6162e68d035f31fd52c06d8505c4110c27ca4947234",
+    "06-orch-watch-binary-reexec.md": "c46af52082be654d6c9715e78343cabf7888d8f3a9691811ea89f17450df1165",
     "07-proc-process-listing.md": "80d5cee8cacf9a94892faf8de463c0771f93df616bdc8015adea8fb5838b0b96",
     "08-tender-command.md": "adae94db43d6ca896bbb3c4c5c9f6d43d99369c92bcf779a0f755269a0691622",
     "09-tender-status.md": "1ccb9980901304ff8b438ae8606108910c0aa3f1a658609008f1547dba0a8ef6",
@@ -305,7 +305,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "622d89feca73b348c555b3145452f402",
   "masterSessionId": "7dcad885-e3f1-4e52-b765-afe7ef72c656",
   "batches": {
@@ -321,18 +321,41 @@
       ],
       "cardHashes": {
         "01-pauserecord-network-held": "28f97329e709280faae540010a6c0a7b5146b5a4fa8a918381b30eaf1e6e683c",
-        "02-github-held-deadline": "8da8c4ba6654ea49dcb02fa11617039d97355b6958341ff5b82bc011e6aba465",
-        "03-github-per-request-deadlines": "1afb44f7c82009166f738a47f03b7d485e8580c13aec363e6354a72f76e120c7",
-        "04-shuttle-conditioned-send": "fd506dd4c58f813c262b9ba899d77d0267207e3bfcf798743cb1c3218c78f66c",
-        "05-orch-conditional-notice": "8f1aae3d1cc34c77142f7c94ee4fbb5af70b030aaae6ab98afc1b529962a2a67",
-        "06-orch-watch-binary-reexec": "301a1845e3ea03bf026fb35f525a0310090be045fc4eba75f1478eae68c480af"
+        "02-github-held-deadline": "c4ad7aa05f20b57fdad722f8784a8c11ff95b24977fcc81ef6156a10733bd883",
+        "03-github-per-request-deadlines": "583f62af17b94fdc90e63337118e57ff48a741e3d14784f713013064bf878e42",
+        "04-shuttle-conditioned-send": "04129336f1fcb8af8a45597e7c2e53c8e5999ca45bc48cab76f4f744447f32ce",
+        "05-orch-conditional-notice": "63719fafbe05009e1301d6162e68d035f31fd52c06d8505c4110c27ca4947234",
+        "06-orch-watch-binary-reexec": "c46af52082be654d6c9715e78343cabf7888d8f3a9691811ea89f17450df1165"
       },
       "startSha": "e05b83faa209927a451c0537496ad7d665c12501",
       "kind": "fork",
       "spawnedAt": "2026-10-14T14:45:54Z",
       "sessionId": "7dcad885-e3f1-4e52-b765-afe7ef72c656",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-pauserecord-network-held",
+        "status": "done",
+        "head_sha": "3c5699680211f4f2b9f924e3bf7d9230265ecdf6",
+        "deviations": [
+          "internal/githubclient/transport.go",
+          "internal/orchengine/notice.go",
+          "internal/orchengine/watcher.go",
+          "internal/shuttleengine/conditionedsend_test.go"
+        ]
+      },
+      "cardShas": [
+        "3c5699680211f4f2b9f924e3bf7d9230265ecdf6"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender/7dcad885-e3f1-4e52-b765-afe7ef72c656/subagents/agent-abffd1379e2e0fb99.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender/7dcad885-e3f1-4e52-b765-afe7ef72c656/subagents/agent-abffd1379e2e0fb99.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender/7dcad885-e3f1-4e52-b765-afe7ef72c656/subagents/agent-abffd1379e2e0fb99.jsonl"
+  ]
 }

@@ -13,10 +13,10 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/orchengine#NoticeCondition` -> `type NoticeCondition struct`
-- `plan:internal/orchengine#QueueConditionalNotice` -> `func QueueConditionalNotice(p Paths, line string, when NoticeCondition, now time.Time) (queued bool, err error)`
-- `plan:internal/orchengine#TestQueueConditionalNotice` -> `func TestQueueConditionalNotice(t *testing.T)`
-- `plan:internal/orchengine#TestWatcher_ConditionalNoticeDeliveredOnlyWhileItsStateReads` -> `func TestWatcher_ConditionalNoticeDeliveredOnlyWhileItsStateReads(t *testing.T)`
+- `internal/orchengine#NoticeCondition`
+- `internal/orchengine#QueueConditionalNotice`
+- `internal/orchengine#TestQueueConditionalNotice`
+- `internal/orchengine#TestWatcher_ConditionalNoticeDeliveredOnlyWhileItsStateReads`
 
 **Intent:**
 The orch notice queue gains a conditioned notice, which `revive` queues for the orch instead of typing into its pane (D5, `PATTERN-orch-pane-single-writer`).

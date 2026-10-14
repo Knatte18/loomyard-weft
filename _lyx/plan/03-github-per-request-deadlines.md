@@ -10,7 +10,7 @@
 - `internal/fabriccli#fetchOpenPRHeads`
 
 **Create:**
-- `plan:internal/selfreportengine#listOpenIssues` -> `func listOpenIssues(perRequest time.Duration) ([]Issue, error)`
+- `internal/selfreportengine#listOpenIssues`
 
 **Intent:**
 A GitHub caller whose one context deadline spans several requests derives a fresh deadline per request instead, so each request's own extension from card 2 covers its own hold (D6).
