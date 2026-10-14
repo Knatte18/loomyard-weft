@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Webster-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Batchifier → done",
+    "now": "Webster-Bouncer",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -115,6 +115,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-14T17:35:15Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/hibernate-trigger/_lyx/webster/summary.md",
+      "at": "2026-10-14T17:56:04Z"
     }
   ],
   "product": {
