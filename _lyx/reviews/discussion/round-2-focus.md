@@ -1,0 +1,11 @@
+---
+round: 2
+focus:
+  - "D3 in decision-record.md reports a Verify whose relative package directory neither exists nor is created by an earlier card. Settle whether the created-directory set covers every way a plan creates a directory: Create groups with path or member-glyph targets (diskPathForRef in internal/planparser/shape.go maps only path refs and self glyphs), Custom groups (createTargetsUnion in internal/planparser/validate.go reads only Create groups), and the overview chain checked against the whole plan. Question: can a valid plan still draw a false-positive Verify finding, and do the acceptance criteria pin it?"
+  - "D5 in decision-record.md changes the shed loop stop (readStatusAt in internal/shedverbs/loop.go returns false for absent, unlockable, unreadable and undecodable status files) by adding a status-unreadable cause and a new way forward. PATTERN-refusal-way-forward requires the matching row of contracts/specs/refusal-spec.md in the same commit. Question: do Scope In, D5 and the Constraints name the shed section's step interrupted row, including that status is left as found at these causes?"
+  - "D5's way forward and Bound in decision-record.md: for a status-missing stop, does re-running lyx shed step --until-stop reach anything, given step refuses on an absent file with the status file missing row of refusal-spec.md? For a file that later reads running, does the Bound say what resumes it, given lyx loom resume answers already running while a driver is live and lyx loom arbiter refuses under its status or envelope unreadable row?"
+  - "D5's No re-step bullet in decision-record.md rests on atomic writes. state.ReadJSONNoMkdir in internal/state/state.go also fails on read-lock acquisition and on non-ENOENT read errors, which readStatusAt folds into the same false. Question: does the Decision state what status-unreadable covers and how those transient causes are handled?"
+  - "Acceptance criteria in decision-record.md: does each of D2 and D7 have a criterion that fails when the Decision is not implemented, and does every criterion test behavior a Decision states?"
+---
+
+Targets the round-1 gating areas and the lower findings together, each restated with its sites.
