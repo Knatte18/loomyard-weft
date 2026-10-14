@@ -1,6 +1,6 @@
 # Hibernate the machine on a trigger, such as a task landing
 
-`hibernate-trigger` · Task · feature, batten · running · Loom-Preflight
+`hibernate-trigger` · Task · feature, batten · running · Discussion-Write
 
 ## Seen (2026-10-13)
 
