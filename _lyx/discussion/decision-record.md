@@ -180,6 +180,12 @@ Decision: (1) skip_review is dropped; darn's review_max_bounces: 0 (category non
 
 Rationale: The operator wants one shape for darn and loom, zero rounds settable on every perch per run, and no guard on these keys: zero rounds is a normal setting, and an agent misusing it is fixed in the agent.
 
+### Added after Discussion (parent, 2026-10-14): Zero-round perch: the Bouncer settles at once
+
+Decision: A perch at 0 keeps its writer -> Bouncer route; it is not routed past. A Bouncer whose resolved budget is 0 settles approved at once with no review round and runs its approve and commit seams as its existing skip_seam path does (Plan-Bouncer's rework-exempt skip). This replaces 'a perch at 0 routes past itself' from 'Zero-round perches: settled design' for all four loom perches. Merge-Review gets the same Bouncer skip, so merge_max_bounces: 0 runs Merge-In -> Merge-Bouncer -> Publish, as skip_merge_review did. Darn at 0 keeps today's Darn-Write -> Merge-In route and skips Describe, since Darn-Bouncer has no approve or commit seam.
+
+Rationale: Plan-Bouncer's approve_seam is the only writer of approved: true, and the Bouncers' commit seams commit the plan and discussion; routing a writer's Done past its Bouncer leaves the plan unapproved and Webster refuses the run (internal/websterengine/runlevel.go:385). Settling in the Bouncer keeps every seam and changes only the round count.
+
 ## Constraints
 
 - `PATTERN-config-layers`: categories stay declared in each module's `ConfigSpec`, built through D1's package, and `skip_review` is classified in the same change; only `configengine` reads layers.
