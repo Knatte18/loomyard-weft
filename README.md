@@ -18,8 +18,8 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Hibernate the machine on a trigger, such as a task landing**<br>• Let the operator trigger a hibernate through lyx, for instance once a task is done | [`hibernate-trigger`](design-hibernate-trigger.md) | loom | Discussion-Burler-Review | 2h | 34m | batten |
-| 2 | **Overview window tidy, seat names, Seats replaces SingleLLMProducer**<br>• Overview window log/checklist and bounce naming, seat names, and one MultiLLMProducer in place of SingleLLMProducer | [`overview-seats`](design-overview-seats.md) | loom | Discussion-Burler-Review | 3d | 34m | reed, shed, loom, burler |
-| 3 | **Perch budgets and stops: darn budget per run like loom, arbiter only when needed**<br>• Darn review budget overridable per run like loom, with its own off switch; arbiter spawns only on stops that need it. | [`perch-budget-arbiter`](design-perch-budget-arbiter.md) | loom | Worktree-Create | 2d | 0m | config, loom, shed |
+| 2 | **Overview window tidy, seat names, Seats replaces SingleLLMProducer**<br>• Overview window log/checklist and bounce naming, seat names, and one MultiLLMProducer in place of SingleLLMProducer | [`overview-seats`](design-overview-seats.md) | loom | Discussion-Burler-Review | 3d | 35m | reed, shed, loom, burler |
+| 3 | **Perch budgets and stops: darn budget per run like loom, arbiter only when needed**<br>• Darn review budget overridable per run like loom, with its own off switch; arbiter spawns only on stops that need it. | [`perch-budget-arbiter`](design-perch-budget-arbiter.md) | loom | Loom-Preflight | 2d | 0m | config, loom, shed |
 
 ### Ready
 
@@ -56,7 +56,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 4 | **twill fork0 bench pair twb-f2-wa**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 against after, both with the critical fixer | [`twb-f2-wa`](design-twb-f2-wa.md) | 13m | 13m |  |
 | 5 | **twill fork0 bench pair twb-f2-wf**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 against after, both with the critical fixer | [`twb-f2-wf`](design-twb-f2-wf.md) | 13m | 13m |  |
 | 6 | **twill fork0 bench pair twb-f2-pa**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 against after, both with the critical fixer | [`twb-f2-pa`](design-twb-f2-pa.md) | 13m | 13m |  |
-| 7 | **twill fork0 bench pair twb-f2-pf**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 against after, both with the critical fixer | [`twb-f2-pf`](design-twb-f2-pf.md) | 12m | 12m |  |
+| 7 | **twill fork0 bench pair twb-f2-pf**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 against after, both with the critical fixer | [`twb-f2-pf`](design-twb-f2-pf.md) | 13m | 13m |  |
 | 8 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 10d | 1d | shuttle |
 | 9 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 10d | 9d | fabric, loom |
 | 10 | **shedrecipe: capability declaration instead of manual seam-threading**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | 10d |  | shed |
@@ -69,7 +69,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 17 | **Make shuttle and lyx neutral to the LLM provider**<br>• Engine registry, engine in run.json, no Claude names in the core, usage readers behind the engine | [`llm-agnostic-engine`](design-llm-agnostic-engine.md) | 1d | 1d | shuttle, config, stencil |
 | 18 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 1d | 1d | burler, stencil |
 | 19 | **Seed the VS Code config of each pair when it is made**<br>• Write the title-bar color and .vscode config that lyx ide spawn writes when a pair is made, so code . gives the same | [`seed-vscode-config`](design-seed-vscode-config.md) | 1d | 1d | ide, batten |
-| 20 | **Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 1h | 1h | loom, webster, config |
+| 20 | **Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 2h | 2h | loom, webster, config |
 
 #### Low priority
 
