@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "Merge-In",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Webster-Bouncer → done",
+    "now": "Merge-In",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -218,6 +218,13 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/perch-budget-arbiter/_lyx/reviews/webster/round-1-bouncer-ledger.md",
       "at": "2026-10-14T19:04:15Z"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/perch-budget-arbiter/_lyx/landing/summary.md",
+      "at": "2026-10-14T19:05:00Z",
+      "gate_attempts": 0
     }
   ],
   "product": {
