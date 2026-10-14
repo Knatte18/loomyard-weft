@@ -54,6 +54,13 @@ Rationale: the bug concerns scalar-or-list keys only; a mapping-valued open map 
 
 - A hand-written value starting with `[` meant as a literal string at a non-mapping open-map path would now be parsed as a list; no current key takes such a string.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/darn/round-1-review.md; fixer report: _lyx/reviews/darn/round-1-fixer-report.md.
+  - open-map-list-shape-overwritten-by-set (class design, severity BLOCKING, open in rounds 1)
+  - trailing-text-after-bracket-dropped (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - `--set 'plan_review=["opus[medium]","sonnet[high]"]'` writes `plan_review` as a list of those two entries, on the full base layer and on a sparse layer.
