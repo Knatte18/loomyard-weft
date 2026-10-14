@@ -130,4 +130,20 @@ Next bench steps to discuss:
 - Grade every lens finding of the six existing runs as real, wrong or noise (no new runs), so the arms compare on true findings, not on the key alone.
 - Bench on more references than `run-time-by-role`.
 
+## Every lens finding graded (2026-10-14)
+
+All 111 lens findings of the six runs graded real, wrong or noise against the code by one fresh agent; file in the hub prime's `.scratch/twill-fork-timing-plan/finding-grades.md` (git-ignored).
+
+| Arm | Findings | Real (B/M/L) | Wrong | Noise | Real distinct, per run | Real fixed in final plan |
+|---|---|---|---|---|---|---|
+| after | 35 | 23 (0/4/19) | 1 | 11 | 9, 12 | 22 of 23 |
+| fork0 | 38 | 24 (1/10/13) | 1 | 13 | 14, 8 | 23 of 24 |
+| alive | 38 | 30 (2/7/21) | 0 | 8 | 12, 15 | 30 of 30 |
+
+- Blind lens forks found about as many real problems as the after arm's, perhaps slightly more; the spread between two runs of one arm is larger than between arms.
+- Most of the BLOCKING/MEDIUM gap is labels: re-rated, real problems at MEDIUM or above are after 6, fork0 9, alive 9, and one after run (1 against 5) pulls its arm down.
+- Blind lenses beat anchored ones on two defects (`filepath.Abs`, a false status line) and missed others; J6 was missed by every lens in every run.
+- Fixing decides the final plan: both J1 regressions came from a fixer following a half-right test-economy suggestion, in blind arms.
+- Caveats: one grader, one reference, two runs per arm; real against noise is a judgement call.
+
 Ideas from the bench agent, untested: merge two lenses (for instance `test-economy` into `row-reachability`), have forks batch their reads into one or two calls, and cut the writer's `validate-plan` rounds (the writer is about $4 of $5.6 per plan).
