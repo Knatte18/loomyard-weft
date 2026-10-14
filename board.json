@@ -864,6 +864,24 @@
       "body": "## Seen (2026-10-14)\n\nDiscussion and every Burler round run through the seat engine (`internal/seatengine`), even with one agent.\nA seat's name is fixed: `seatengine.RoleChair` (`chair`) for the leading seat and `advisor-\u003cn\u003e` for the others (`Seat.Name` in `internal/seatengine/table.go`).\nThe name goes into the strand and role names the operator sees, such as `burler-review-chair` and `burler-fix-chair` (`internal/burlerengine/doc.go`), even in a round with one seat.\nA recipe's MultiLLM row has a `name` key per seat, but the engine expects `chair` and `advisor-\u003cn\u003e`.\n\n## Wanted (operator, 2026-10-14)\n\n- A lone seat carries no seat name: the role reads `burler-review`, not `burler-review-chair`.\n- With two or more seats, the operator names each seat in the recipe or config, and that name is what the windows, strands and overview show.\n- `chair` is not a name to show the operator.\n\n## To consider (operator, 2026-10-14)\n\nA name that shows which round a session belongs to, since `burler-review-chair` does not say which round it is.\nThe operator notes this may matter less now that the overview window shows the rounds.\n\n## To check\n\n- Where `chair` and `advisor-\u003cn\u003e` are load-bearing: stencils (`seat-directive-chair`, the `advisor_names` marker), strand names, reed window names, and any lookup by role.\n- Whether the leading seat is marked by its place in the table or by a flag, once the name is free.\n",
       "created": "2026-10-14T14:27:21Z",
       "revised": "2026-10-14T14:30:25Z"
+    },
+    {
+      "id": 483,
+      "slug": "twill-spawn-after",
+      "title": "Twill: spawn lens forks after the files are written",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "loom",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Discussion-Write and Plan-Write spawn their lens forks once the files are written and checked; forks review what they inherited, no ready-marker wait",
+      "body": "## Decided (operator, 2026-10-13)\n\nTwill's writer spawns its lens forks after it has written the reviewed files and its self-check has passed, not before writing.\nThis holds for both twill hosts, Discussion-Write and Plan-Write.\nThe benches behind it are in `twill-fork-timing` and `docs/research/twill-fork-timing-bench.md` (Discussion: $4.44 against $5.43 per run, quality held) and `docs/research/twill-fork-timing-plan-bench.md` (Plan: lens forks $0.94 against $1.60 per run).\n\n## Scope\n\n- `contracts/stencils/twill/twill-directive.md`: reorder the procedure so the writer writes the reviewed files and runs the self-check until it passes, then spawns every lens fork in one message, then waits, judges, records and runs the final self-check as today.\n- The fork boilerplate: the forks no longer wait on a ready marker; they review the reviewed files as their inherited context holds them, without reading them again, and read only what their context lacks (the existing report line for such reads stays).\n- The spawn point per host in `internal/loomengine/twill.go` (Discussion's inline sentence and `planTwillSpawnPoint`): say the procedure runs once the files are written and the self-check passes.\n- The ready marker exists only for the forks' wait: drop it, its `twilldirective.Values` field and marker, `DiscussionReadyMarker`/`PlanReadyMarker` and their removal in `internal/loomcli/wiring.go`, unless something else is found to read it.\n- The relaunch rules in the directive: a writer that died after writing but before spawning still spawns once; a writer that died after spawning never spawns again, as today.\n- Docs: `internal/twilldirective` and `internal/loomengine` `doc.go` where they describe the spawn point or the marker.\n\n## Out of scope\n\nThe fork0 arms (a writer fork, fork0 staying alive) stay in `twill-fork-timing` for further benches.\n",
+      "created": "2026-10-14T14:35:59Z",
+      "revised": "2026-10-14T14:35:59Z"
     }
   ]
 }
