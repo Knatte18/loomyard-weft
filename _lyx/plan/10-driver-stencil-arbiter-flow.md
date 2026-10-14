@@ -5,7 +5,7 @@
 - `contracts/stencils#wordingClaims`
 
 **Uses:**
-- `plan:internal/arbiterstop#Eligibility`
+- `internal/arbiterstop#Eligibility`
 
 **Intent:**
 D7, D8 and D9's driver half, in the stencil the LLM driver runs under; the Go driver already behaves this way.

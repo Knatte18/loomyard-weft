@@ -16,14 +16,14 @@
 
 **Create:**
 - `internal/battenshed/stophold.go`
-- `plan:internal/battenshed#failArbiterStop` -> `const failArbiterStop = "battenshed: arbiter stop unreadable; holding nothing"`
-- `plan:internal/battenshed#innerRunProducer.eligibleStopHold` -> `func (p *innerRunProducer) eligibleStopHold(ctx context.Context, w *childWait, now, parkAt time.Time, parkFound bool) (holding bool, end time.Time)`
-- `plan:internal/battenshed#stopHold` -> `func stopHold(reading ChildArbiterStop, since, now, parkAt time.Time, parkFound bool, offSeen time.Time) (holding bool, end time.Time)`
-- `plan:internal/battenshed#TestNotice_EligibleStopHold` -> `func TestNotice_EligibleStopHold(t *testing.T)`
+- `internal/battenshed#failArbiterStop`
+- `internal/battenshed#innerRunProducer.eligibleStopHold`
+- `internal/battenshed#stopHold`
+- `internal/battenshed#TestNotice_EligibleStopHold`
 
 **Uses:**
-- `plan:internal/battenshed#ChildArbiterStop`
-- `plan:internal/arbiterstop#HoldReading`
+- `internal/battenshed#ChildArbiterStop`
+- `internal/arbiterstop#HoldReading`
 - `internal/battenshed#innerRunProducer.arbiterHolds`
 - `internal/battenshed#TestNotice_LiveArbiterHoldsTheStateChange`
 - `internal/battenshed#TestNotice_AwaitingLeavesTheRelayToTheDriver`

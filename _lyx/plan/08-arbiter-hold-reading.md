@@ -1,11 +1,11 @@
 # Card 8 — what batten's eligible-stop hold reads
 
 **Create:**
-- `plan:internal/battenshed#ChildArbiterStop` -> `type ChildArbiterStop struct`
-- `plan:internal/loomengine#ArbiterTimeout` -> `func ArbiterTimeout(cfg Config) time.Duration`
-- `plan:internal/loomengine#ArbiterAppliedPath` -> `func ArbiterAppliedPath(dir string) string`
-- `plan:internal/arbiterstop#HoldReading` -> `func HoldReading(location *lyxcwd.Location, status shedengine.Status) (battenshed.ChildArbiterStop, error)`
-- `plan:internal/arbiterstop#TestHoldReading` -> `func TestHoldReading(t *testing.T)`
+- `internal/battenshed#ChildArbiterStop`
+- `internal/loomengine#ArbiterTimeout`
+- `internal/loomengine#ArbiterAppliedPath`
+- `internal/arbiterstop#HoldReading`
+- `internal/arbiterstop#TestHoldReading`
 
 **Edit:**
 - `internal/loomengine#ResolveArbiter`
@@ -16,8 +16,8 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/arbiterstop#Check`
-- `plan:internal/arbiterstop#NewReaders`
+- `internal/arbiterstop#Check`
+- `internal/arbiterstop#NewReaders`
 - `internal/loomengine#LoadConfig`
 - `internal/loomengine#ListArbiterAttempts`
 - `internal/loomengine#ArbiterEnvelopePath`

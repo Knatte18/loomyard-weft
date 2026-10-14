@@ -2,17 +2,17 @@
 
 **Create:**
 - `internal/arbiterstop/doc.go`
-- `plan:internal/arbiterstop#HandBackWayForward` -> `const HandBackWayForward = "way forward: report the stop to the run's parent in the stop report"`
-- `plan:internal/arbiterstop#Stop` -> `type Stop struct`
-- `plan:internal/arbiterstop#Eligibility` -> `func Eligibility(stop Stop) error`
-- `plan:internal/arbiterstop#Readers` -> `type Readers struct`
-- `plan:internal/arbiterstop#Check` -> `func Check(status shedengine.Status, kind, transient string, readers Readers) (briefPath string, err error)`
-- `plan:internal/arbiterstop#EscalationEligible` -> `func EscalationEligible(producer string, readers Readers) bool`
-- `plan:internal/arbiterstop#NewReaders` -> `func NewReaders(location *lyxcwd.Location) Readers`
+- `internal/arbiterstop#HandBackWayForward`
+- `internal/arbiterstop#Stop`
+- `internal/arbiterstop#Eligibility`
+- `internal/arbiterstop#Readers`
+- `internal/arbiterstop#Check`
+- `internal/arbiterstop#EscalationEligible`
+- `internal/arbiterstop#NewReaders`
 - `internal/arbiterstop/arbiterstop_test.go`
-- `plan:internal/arbiterstop#TestEscalationEligible` -> `func TestEscalationEligible(t *testing.T)`
+- `internal/arbiterstop#TestEscalationEligible`
 - `internal/arbiterstop/testmain_test.go`
-- `plan:internal/arbiterstop#TestMain` -> `func TestMain(m *testing.M)`
+- `internal/arbiterstop#TestMain`
 
 **Edit:**
 - `internal/loomcli#arbiterHandBackWayForward`
@@ -37,7 +37,7 @@
 - `internal/loomcli#arbiterEligibility`
 
 **Uses:**
-- `plan:internal/shedadapters#PendingEscalationCause`
+- `internal/shedadapters#PendingEscalationCause`
 - `internal/loomrecipe#BouncerRunSubdir`
 - `internal/battenshed#RecordMatchesHalt`
 - `internal/loomcli#decideDrive`

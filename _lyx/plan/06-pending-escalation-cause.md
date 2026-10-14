@@ -6,8 +6,8 @@
 - `internal/shedadapters/doc.go`
 
 **Create:**
-- `plan:internal/shedadapters#PendingEscalationCause` -> `func PendingEscalationCause(runDir string) (cause EscalationCause, briefPath string, pending bool, err error)`
-- `plan:internal/shedadapters#pendingEscalation` -> `func pendingEscalation(runDir string) (round int, cause EscalationCause, briefPath string, pending bool, err error)`
+- `internal/shedadapters#PendingEscalationCause`
+- `internal/shedadapters#pendingEscalation`
 
 **Uses:**
 - `internal/shedadapters#readEscalation`
