@@ -1,6 +1,8 @@
 # Terminal window, VS Code seed and VS Code open as shed producers with config flags
 
-`seed-vscode-config` · Note · enhancement, ide, batten, shed
+`seed-vscode-config` · Task · enhancement, ide, batten, shed
+
+Depends on: [`perch-budget-arbiter`](design-perch-budget-arbiter.md), [`shed-tackler`](design-shed-tackler.md)
 
 ## Goal (operator, 2026-10-14)
 
