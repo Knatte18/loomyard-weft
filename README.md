@@ -20,6 +20,7 @@ Held by a run; its scope is locked until the run ends.
 | 1 | **Hibernate the machine on a trigger, such as a task landing**<br>• Let the operator trigger a hibernate through lyx, for instance once a task is done | [`hibernate-trigger`](design-hibernate-trigger.md) | loom | Plan-Write | 3h | 49m | batten |
 | 2 | **Overview window tidy, seat names, Seats replaces SingleLLMProducer**<br>• Overview window log/checklist and bounce naming, seat names, and one MultiLLMProducer in place of SingleLLMProducer | [`overview-seats`](design-overview-seats.md) | loom | Plan-Write | 3d | 49m | reed, shed, loom, burler |
 | 3 | **Perch budgets and stops: darn budget per run like loom, arbiter only when needed**<br>• Darn review budget overridable per run like loom, with its own off switch; arbiter spawns only on stops that need it. | [`perch-budget-arbiter`](design-perch-budget-arbiter.md) | loom | Discussion-Burler-Review | 2d | 14m | config, loom, shed |
+| 4 | **Run window opens as soon as the worktree exists**<br>• batten --window waits about 20 s (sync pushes, inner shed spawn) before Konsole opens; open it at once with attach | [`run-window-early`](design-run-window-early.md) | darn | Worktree-Create | 7m | 0m | batten, reed, fabric |
 
 ### Ready
 
@@ -70,16 +71,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 18 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 1d | 1d | burler, stencil |
 | 19 | **Seed the VS Code config of each pair when it is made**<br>• Write the title-bar color and .vscode config that lyx ide spawn writes when a pair is made, so code . gives the same | [`seed-vscode-config`](design-seed-vscode-config.md) | 1d | 1d | ide, batten |
 | 20 | **Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 2h | 2h | loom, webster, config |
-| 21 | **Run window opens as soon as the worktree exists**<br>• batten --window waits about 20 s (sync pushes, inner shed spawn) before Konsole opens; open it at once with attach | [`run-window-early`](design-run-window-early.md) | 7m | 0m | batten, reed, fabric |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 22 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 10d | 4d | fabric |
-| 23 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 10d |  | ide, fabric |
-| 24 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 7d | 2d | shed |
-| 25 | **Bench the chair-and-advisors Discussion against the solo writer before switching it on**<br>• Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on | [`discussion-multi-llm-bench`](design-discussion-multi-llm-bench.md) | 4d | 2d | loom, stencil, config |
+| 21 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 10d | 4d | fabric |
+| 22 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 10d |  | ide, fabric |
+| 23 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 7d | 2d | shed |
+| 24 | **Bench the chair-and-advisors Discussion against the solo writer before switching it on**<br>• Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on | [`discussion-multi-llm-bench`](design-discussion-multi-llm-bench.md) | 4d | 2d | loom, stencil, config |
 
 ### Features
 
