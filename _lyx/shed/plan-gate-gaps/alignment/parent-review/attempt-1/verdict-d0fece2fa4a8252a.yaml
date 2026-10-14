@@ -1,0 +1,6 @@
+verdict: approve
+reason: >-
+  The design settles the board entry's three scope items, the batch split by the route the entry itself lists and the per-card guard step after weighing the alternatives it names, with no work belonging to another entry and no ruled-out direction.
+  Peer overlaps are text-only or bookkeeping (tender on test-budget.yaml; the twb-fx bench pairs replaying already-landed intake-bugs-1012), with no conflicting design.
+question: ""
+superseded: []
