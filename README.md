@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-14 18:51 UTC; every age below is as of then.
+Rendered 2026-10-14 18:52 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Overview window tidy, seat names, Seats replaces SingleLLMProducer**<br>• Overview window log/checklist and bounce naming, seat names, and one MultiLLMProducer in place of SingleLLMProducer | [`overview-seats`](design-overview-seats.md) | loom | blocked · Webster | 3d | 2h | reed, shed, loom, burler |
 | 2 | **Perch budgets and stops: darn budget per run like loom, arbiter only when needed**<br>• Darn review budget overridable per run like loom, with its own off switch; arbiter spawns only on stops that need it. | [`perch-budget-arbiter`](design-perch-budget-arbiter.md) | loom | Webster | 2d | 1h | config, loom, shed |
-| 3 | **Twill fork0: blind lens review, strict critical fixer, branch-coverage lens**<br>• Plan-Write: fork0 writes the plan, the master spawns blind lens forks and judges as a strict Burler-style fixer; new branch-coverage lens | [`twill-fork0`](design-twill-fork0.md) | loom | Discussion-Burler-Review | 2d | 31m | loom, stencil, burler |
+| 3 | **Twill fork0: blind lens review, strict critical fixer, branch-coverage lens**<br>• Plan-Write: fork0 writes the plan, the master spawns blind lens forks and judges as a strict Burler-style fixer; new branch-coverage lens | [`twill-fork0`](design-twill-fork0.md) | loom | Discussion-Burler-Fix | 2d | 31m | loom, stencil, burler |
 
 ### Ready
 
@@ -35,7 +35,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Terminal window, VS Code seed and VS Code open as shed producers with config flags**<br>• OpenWindow, SeedIDE and OpenIDE producers as batten rows after Worktree-Create, each switched by a batten.yaml flag | [`seed-vscode-config`](design-seed-vscode-config.md) | darn | `perch-budget-arbiter` | 1d | 9m | ide, batten, shed |
+| 1 | **Terminal window, VS Code seed and VS Code open as shed producers with config flags**<br>• OpenWindow, SeedIDE and OpenIDE producers as batten rows after Worktree-Create, each switched by a batten.yaml flag | [`seed-vscode-config`](design-seed-vscode-config.md) | darn | `perch-budget-arbiter` | 1d | 10m | ide, batten, shed |
 
 ### Layer B
 
@@ -45,7 +45,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | `perch-budget-arbiter`, `overview-seats`, `seed-vscode-config` | 55m | 7m | shed, loom, batten |
+| 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | `perch-budget-arbiter`, `overview-seats`, `seed-vscode-config` | 55m | 8m | shed, loom, batten |
 
 ## Notes
 
