@@ -914,6 +914,24 @@
       "status": "running · Darn-Write",
       "created": "2026-10-14T17:10:47Z",
       "revised": "2026-10-14T17:17:59Z"
+    },
+    {
+      "id": 504,
+      "slug": "run-verbs-shared",
+      "title": "Run verbs in one shared namespace, not under lyx loom",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shed",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace",
+      "body": "## Seen (operator, 2026-10-14)\n\nSince `0850f76e` a darn run has a decision record, and `lyx loom decision add` works on it.\nThe operator finds it absurd that a `loom` command acts on something that is not a loom run.\nThe same holds for the other run verbs the orch uses on darn runs: `lyx loom status`, `goto`, `resume`, `approve`, `reject`, `start`, `review approve`.\n\n## Direction (operator, 2026-10-14)\n\nDarn and loom are both shed recipes and are to be handled the same way.\nVerbs that act on any run move to one shared namespace (such as `lyx shed ...` or `lyx run ...`), and `lyx loom` keeps only what is loom's own.\n\n## Open\n\n- The shared namespace's name.\n- Which verbs are recipe-neutral and which are loom's own.\n- Every stencil, way-forward text and doc that names `lyx loom \u003cverb\u003e` for a darn run changes with it.\n- Relates to `perch-budget-arbiter`, which gives darn and loom one config shape for review budgets.\n",
+      "created": "2026-10-14T17:23:45Z",
+      "revised": "2026-10-14T17:23:45Z"
     }
   ]
 }

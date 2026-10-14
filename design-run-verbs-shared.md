@@ -1,0 +1,21 @@
+# Run verbs in one shared namespace, not under lyx loom
+
+`run-verbs-shared` · Note · enhancement, shed, loom
+
+## Seen (operator, 2026-10-14)
+
+Since `0850f76e` a darn run has a decision record, and `lyx loom decision add` works on it.
+The operator finds it absurd that a `loom` command acts on something that is not a loom run.
+The same holds for the other run verbs the orch uses on darn runs: `lyx loom status`, `goto`, `resume`, `approve`, `reject`, `start`, `review approve`.
+
+## Direction (operator, 2026-10-14)
+
+Darn and loom are both shed recipes and are to be handled the same way.
+Verbs that act on any run move to one shared namespace (such as `lyx shed ...` or `lyx run ...`), and `lyx loom` keeps only what is loom's own.
+
+## Open
+
+- The shared namespace's name.
+- Which verbs are recipe-neutral and which are loom's own.
+- Every stencil, way-forward text and doc that names `lyx loom <verb>` for a darn run changes with it.
+- Relates to `perch-budget-arbiter`, which gives darn and loom one config shape for review budgets.
