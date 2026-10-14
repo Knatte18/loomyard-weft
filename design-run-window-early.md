@@ -16,6 +16,10 @@ The trace of that start:
 
 Start Konsole with `lyx reed attach` in the pair as soon as the warp worktree is up, before the pushes, the weft seed and the inner shed spawn; `lyx reed attach` boots the reed session itself when it does not exist yet (operator).
 
-## Open
+## Scope
+
+This task moves the window's start only; the pushes stay as they are.
+
+## Out of scope, for a later note
 
 - Whether the add's pushes can go async like `fabric sync`, or be coalesced into one push per side; a push failure today rolls the add back, so an async push needs another failure path.
