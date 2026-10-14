@@ -1,0 +1,7 @@
+{
+  "attempt": "",
+  "strand": "",
+  "spawned_at": "0001-01-01T00:00:00Z",
+  "state": "fallback",
+  "reason": "alignment: compose the prompt: alignment: prompt: fill stencil \"loom-template-alignment\": stencil: unfilled top-level marker(s): pr_gate_measure"
+}
