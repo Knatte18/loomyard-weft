@@ -1,0 +1,11 @@
+verdict: escalate
+reason: >-
+  The change matches the board entry's goal and Decisions 1 to 13, and no peer or parent commit conflicts with it.
+  But it ships the p and r shortcuts (Decision 12) on an auto-pick that the board entry reserves for the operator, and that the decision record leaves for a parent review this run never had:
+  the run has no Parent-Review row, and the parent-review alignment attempt closed on a prompt-composition error with no verdict.
+  An approve would land them with no orch turn.
+question: >-
+  The board entry hibernate-trigger says that whether to add the p and r shortcuts, and under which names, is the operator's call.
+  Decision 12 in _lyx/discussion/decision-record.md auto-picks p: [tender, pause] and r: [tender, resume] for parent review to confirm, and no confirmation is recorded.
+  Does the operator confirm p and r as built, or should they be withdrawn before PR-Gate?
+superseded: []
