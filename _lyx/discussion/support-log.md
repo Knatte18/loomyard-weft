@@ -12,7 +12,7 @@ Autonomous session: no operator answered, so each turn below is an exploration f
    Hub-wide modules already read the worktree local layer for category-none keys, so making them none is enough for per-run use.
    Picked a shared package for the key family (D1), `skip_review` as the off switch (D3) and a migration (D4).
 4. Double notice: `notices.log` shows batten state-change notices for `logging-cleanup` (09:26:22, since 09:22:51) and `tender` (15:32:29, since 15:28:56), both "report none yet", while the arbiter ran.
-   Batten's `arbiterHolds` should hold; picked a hold that starts at the stop episode for an arbiter-eligible stop with a bounded deadline, and left the precise root cause to Plan (D9).
+   Batten's `arbiterHolds` should hold; picked a hold that starts at the stop episode for an arbiter-eligible stop with a bounded deadline (D9); round 1 made it independent of the marker, since the evidence leaves three windows open.
 5. Eligibility single source: picked the verb as the one filter for the LLM driver (D8) and one shared Go function for the verb and Go driver (D5).
 6. Lens review, all six forks returned:
    - premises MEDIUM, `budget` also arises from a re-escalated round and pre-upgrade runs: fixed, D5 lists every source and sends all to the parent.
@@ -56,7 +56,23 @@ Autonomous session: no operator answered, so each turn below is an exploration f
 
 ## Review rounds
 
-_No rounds yet._
+1. Round 1, BLOCKING, all nine findings fixed:
+   - F1 BLOCKING, D9 deferred the double-notice cause to Plan: the incident evidence (notices, the batten trace with no seam error, the orch handoffs) leaves the pre-marker window, a marker reading not alive and the gap after the verb removes the marker all open, so D9's hold no longer depends on the marker and covers all three; the incidents are named in D9's rationale.
+   - F2 MEDIUM, criteria's hold-ending cases: rewritten to match D9, with a separate does-not-start criterion and the existing relay wait kept.
+   - F3 MEDIUM, D2's false loom premise: one shared upsert check for both recipes (Q11), with a criterion for loom's one change.
+   - F4 MEDIUM, D5's error contract: not eligible with a reason, never an error; Go driver criterion extended.
+   - F5 MEDIUM, both-keys migration: explicit `skip_review` wins (Q12), pinned in a criterion.
+   - F6 LOW, F7 LOW, F8 LOW, F9 NIT: `Migrate` doc widening in D4, `internal/shedadapters` in Scope, orch stencil change in D3, commit reference dropped from D6.
+2. Round 2, BLOCKING, all five findings fixed:
+   - F1 BLOCKING, D9's post-hold notice: `stateChangeReady` measures its report wait from the hold's end, so a hand-on keeps the relay wait; criterion rewritten.
+   - F2 MEDIUM, D4's `run_settings` refusal: `PrepareRunSettings` validates then migrates (Q13), so the refusal names the key the task set.
+   - F3 LOW, a Go driver hand-over's report and marker no longer end the hold; criterion added.
+   - F4 LOW, D5's shared function carries D6's `blocked` rule too.
+   - F5 NIT, the refusal-spec row cited by title.
+3. Round 3, APPROVED, all three findings fixed:
+   - F1 MEDIUM, D9's hand-over exemption: a park marker is exempt only while the newest settle record at the stop key is the `hand-over`, so a successor's hand-back ends the hold; criterion added for a successor tackler's hand-back.
+   - F2 LOW, D9's end condition is the park marker only, the Go driver's `startReport` files never end the hold, and the report-wait reason no longer rests on false premises; criteria reworded.
+   - F3 LOW, the hold's end time has a named source per end condition (Q14); the Bound and the restart criterion cover the end.
 
 ## Question ledger
 
@@ -68,5 +84,9 @@ _No rounds yet._
 - Q6 (auto-pick): Is case 3 worth an opus spawn? — Yes, behind the fork or tackler.
 - Q7 (auto-pick): Merge-In verify goto as a recipe edge? — No.
 - Q8 (auto-pick): How does the LLM driver know eligibility at an awaiting `parent_notice` stop? — It calls the verb; a refusal is the planned hand-off.
-- Q9 (auto-pick): Fix for the double notice? — A batten pre-marker hold for awaiting and blocked eligible stops from the stop's own time, bounded by the arbiter timeout plus the report wait, then the existing marker hold; the driver relays only after the arbiter.
+- Q9 (auto-pick): Fix for the double notice? — A batten eligible-stop hold for awaiting and blocked eligible stops from the stop's own time, independent of the marker and its liveness, bounded by the later of the arbiter timeout and the attempt's deadline, each plus the report wait; the driver relays only after the arbiter.
 - Q10 (auto-pick): Where does a `budget` escalation go, whatever its source? — The parent.
+- Q11 (auto-pick): Does loom gain an upsert-time budget check? — Yes; `internal/reviewbudget` owns one local-values check that loom's and darn's `CheckValues` hooks both call.
+- Q12 (auto-pick): Which key wins when a document holds `review_max_bounces: 0` beside an explicit `skip_review`? — The explicit `skip_review`, as the newer statement of intent; the budget is raised to the template default.
+- Q13 (auto-pick): Where is a `run_settings` `review_max_bounces: 0` refused? — In `PrepareRunSettings`, which now validates the document as written before migrating it, for every module; loom's floor repair is unaffected, since no value check reads the key it raises.
+- Q14 (auto-pick): Where does the hold's end time come from, for the report wait measured from it? — The park marker's time, the write time of the hand-on attempt's `envelope.json`, the write time of an applied attempt's `applied` mark or the backstop's computed time, never earlier than the episode's since; the arbiter switched off is dated by batten's first observation, and a restart after such an end by its own start time.
