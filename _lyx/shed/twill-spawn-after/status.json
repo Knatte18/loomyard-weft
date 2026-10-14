@@ -1,12 +1,12 @@
 {
   "current_producer": "PR-Gate",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/610",
   "pause_requested": false,
   "activity": {
     "now": "PR-Gate",
-    "last": "Publish → done",
-    "wait": ""
+    "last": "PR-Gate → awaiting",
+    "wait": "the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/610"
   },
   "history": [
     {
@@ -67,6 +67,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-14T14:59:41Z"
+    },
+    {
+      "producer": "PR-Gate",
+      "outcome": "awaiting",
+      "output": "",
+      "at": "2026-10-14T14:59:54Z"
     }
   ],
   "product": {
