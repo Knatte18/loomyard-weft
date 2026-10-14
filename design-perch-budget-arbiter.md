@@ -1,6 +1,6 @@
 # Perch budgets and stops: darn budget per run like loom, arbiter only when needed
 
-`perch-budget-arbiter` · Task · enhancement, config, loom, shed · running · Merge-In
+`perch-budget-arbiter` · Task · enhancement, config, loom, shed · running · Merge-Bouncer
 
 These two notes are one task because both concern how a review perch's budget and stops are configured and settled in shed.
 
