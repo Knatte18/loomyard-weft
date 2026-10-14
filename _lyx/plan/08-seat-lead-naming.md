@@ -1,7 +1,7 @@
 # Card 8 — seat-lead-naming
 
 **Create:**
-- `plan:internal/seatengine#ValidateSeatName` -> `func ValidateSeatName(name string) error`
+- `internal/seatengine#ValidateSeatName`
 
 **Edit:**
 - `internal/seatengine#SeatRole`

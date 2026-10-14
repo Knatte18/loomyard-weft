@@ -1,7 +1,7 @@
 # Card 7 — checklist-pause-net-time
 
 **Create:**
-- `plan:internal/loomcli#readChecklistPaused` -> `func readChecklistPaused(recordPath, slug string, now time.Time) []pauserecord.Interval`
+- `internal/loomcli#readChecklistPaused`
 
 **Edit:**
 - `internal/loomcli#checklistInput`
