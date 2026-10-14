@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  The diff makes lyx config --set write a per-round model list as a list on every loom per-round model key,
+  through the existing loomengine.ConfigOpenMaps declaration, and refuses a bracketed value that is not a list of scalars,
+  which is all the board entry asks and nothing more; the carried-over Darn-Review findings are addressed in 0331e1931
+  and none names an unrecorded parent correction; the only peer overlap is a text-only docs/overview.md line shared with
+  overview-seats, and this run (row 22) lands before it (row 12).
+question: ""
+superseded: []
