@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 | 1 | **tokencount under-counts fork output tokens**<br>• tokencount keeps the first transcript line per message id, which in subagent transcripts carries partial output_tokens; fork costs come out low | [`tokencount-fork-output`](design-tokencount-fork-output.md) | darn | Publish | 1d | 13m |  |
 | 2 | **tender: hub-wide pause, resume, revive and stale-binary restart**<br>• A tender module holds hub-wide pause, resume, revive and stale-binary restart, and a pause no longer consumes a call deadline | [`tender`](design-tender.md) | loom | Webster-Burler-Fix | 1d | 1d | shuttle, reed, batten, shed, orch, loom |
 | 3 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`claimed-scope-edit`](design-claimed-scope-edit.md) | loom | Plan-Write | 1d | 1d | board, loom, burler |
-| 4 | **Plan and Webster checks out of step with the code a plan changes** | [`plan-gate-gaps`](design-plan-gate-gaps.md) | loom | Discussion-Burler-Fix | 2d | 15m | webster, loom, quarry |
+| 4 | **Plan and Webster checks out of step with the code a plan changes** | [`plan-gate-gaps`](design-plan-gate-gaps.md) | loom | Discussion-Bouncer | 2d | 15m | webster, loom, quarry |
 
 ### Ready
 
