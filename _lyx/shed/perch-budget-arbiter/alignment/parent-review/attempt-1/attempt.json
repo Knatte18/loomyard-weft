@@ -1,0 +1,16 @@
+{
+  "number": 1,
+  "key": "round-1",
+  "point": "parent-review",
+  "token": "f758153ce0ec3a3d",
+  "spawned_at": "2026-10-14T19:12:21.192323184+02:00",
+  "deadline": "2026-10-14T19:32:21.192323184+02:00",
+  "strand_guid": "56f21c40d99560aa93fb29e04988b932",
+  "snapshot": "ed3fbd4f663a316f18d44458fc29fc0b39a4aaf4b65f8761784dd5a086fcc536",
+  "pr_number": 0,
+  "head_sha": "",
+  "closed": true,
+  "closed_reason": "a decision was recorded for this task while the alignment agent ran",
+  "applied": "",
+  "notified": false
+}

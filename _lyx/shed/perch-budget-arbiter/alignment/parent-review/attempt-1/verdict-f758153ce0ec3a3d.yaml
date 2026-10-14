@@ -1,0 +1,10 @@
+verdict: approve
+reason: >-
+  The design covers every point of the board entry: per-run darn budget keys with minimum 1 (D2), a separate
+  skip_review guard key (D3, D4), a shared config shape (D1), arbiter eligibility narrowed to hard-cap and circling
+  (D5), the transient-to-fork change (D7) and the double-notice hold (D9). The entry's open points are answered
+  (D6, Scope Out). D8 departs from the entry's stencil narrowing for a stated reason but still meets its ask: no
+  spawn, straight to the orch. The entry's later and open sections stay out. The only peer overlap, overview-seats,
+  is text only; it is further along (row 5 against own row 3) and lands first.
+question: ""
+superseded: []
