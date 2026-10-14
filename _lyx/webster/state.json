@@ -1,0 +1,360 @@
+{
+  "runGuid": "72954bbc75060e0845127daa537d6305",
+  "planFingerprint": "1bf313be0c33ac25573cd3ac0d035e09fecf9239200732bc685f4be5ae44669e",
+  "planFileHashes": {
+    "00-overview.md": "968040f042ffcc935693c9d45b1c010a9a8e19ecb272d0cfa159f8add3d5d7dd",
+    "01-discussion-spec.md": "60af9ce6c0957a3cb4e2e5e23e351f29af9aa7bae72b89c9a7ce0b70135e4ef1",
+    "02-committed-file-history.md": "6720f42961c6dfe9a817e1c24bd893a939f7c296c88d091cd9f20e2ee1328113",
+    "03-kept-entries-check.md": "73ae7cdd781900f25d521866cbe4041157b6c64450065d02cfa1014e3d63972d",
+    "04-darn-discussion-gate.md": "a8240100a4e3cbd6c55bd386d1e095283da7f75974deb71e8ba357733c38a2ce",
+    "05-gate-resolver-darn.md": "02cee8678bebf16d3beeb15f8a85bff246d9fb61918a30dd9c7f7a1826361fdf",
+    "06-validate-discussion-darn.md": "9a436603c7c69a3c0360c4e0fe1e836aea1e3fb586bbf77cd9277348930b56e2",
+    "07-decision-add-darn.md": "4758221e229f78978662201f75005c280510c9aee0c0faff9b175976faac97f2",
+    "08-darn-writer-record.md": "8dd6ff21dfa5bcea9eb765df48f7c98d6b463a4a9b18187ff1876bc2acf99eeb",
+    "09-darn-describe-record.md": "88b3617f4ae7c25d76790745235399de46916fb514eda7857a6b88d86aac6e9b",
+    "10-darn-review-scope.md": "9e7e5367d893ed09bb459ff4f1249bd3d56d5d15ca0413dd479a746e75c16581",
+    "11-alignment-pr-gate-measure.md": "373e3024d3d56e0112500aca0d5bc0e9de713a02ecca8a91c0934bfb71be272c",
+    "12-darn-pr-align-wiring.md": "fe229894bfb85631cf6254bcb2963d7719b42765c2365be26b661ce3afb5fc59",
+    "13-darn-recipe-rows.md": "3f6b6341095ef50b28b2d783ee212ce368c7b5ab786174e160f7995259dd39c6",
+    "14-orch-correction-guidance.md": "aad1bc72c5070ff652364fad5d9ebe6f3da6336303dd9e7826bf8e4c8201dfc2"
+  },
+  "planOverviewFrameHash": "d73f12e72c627471fdf2a353fd38a647a53007e2ce877349bc5ecdc685519d3f",
+  "partition": [
+    {
+      "cards": [
+        "01-discussion-spec",
+        "02-committed-file-history",
+        "03-kept-entries-check",
+        "04-darn-discussion-gate",
+        "05-gate-resolver-darn"
+      ],
+      "profile": "cautious",
+      "estimate": 233076,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54436,
+        "read_union": 50864,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 672,
+            "reads": {
+              "file:contracts/stencils/loom/loom-rubric-discussion-review.md": 588,
+              "file:contracts/stencils/loom/loom-template-discussion.md": 2280,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/discussionparser": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/discussionparser": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 197.5,
+            "written": 59922
+          },
+          {
+            "card": 2,
+            "card_text": 288,
+            "reads": {
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 101,
+            "written": 30588
+          },
+          {
+            "card": 3,
+            "card_text": 384,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1788,
+              "file:internal/discussionparser/doc.go": 132,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/discussionparser": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/discussionparser": 2000
+            },
+            "messages": 36.5,
+            "written": 11334
+          },
+          {
+            "card": 4,
+            "card_text": 396,
+            "reads": {
+              "package:internal/loomshed": 2000,
+              "tests:internal/loomshed": 2000
+            },
+            "messages": 37.5,
+            "written": 11646
+          },
+          {
+            "card": 5,
+            "card_text": 336,
+            "reads": {
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 46.5,
+            "written": 14286
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-validate-discussion-darn",
+        "07-decision-add-darn",
+        "08-darn-writer-record",
+        "09-darn-describe-record"
+      ],
+      "profile": "cautious",
+      "estimate": 259478,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61436,
+        "read_union": 56196,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 612,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5376,
+              "file:docs/overview.md": 9000,
+              "file:pattern/PATTERN-gate-self-check-parity.md": 324,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:pattern": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 119,
+            "written": 36312
+          },
+          {
+            "card": 7,
+            "card_text": 720,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5376,
+              "file:docs/overview.md": 9000,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 139,
+            "written": 42420
+          },
+          {
+            "card": 8,
+            "card_text": 504,
+            "reads": {
+              "file:contracts/stencils/darn/darn-template-write.md": 792,
+              "file:internal/darnengine/doc.go": 192,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/darn": 2000,
+              "package:internal/darnengine": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/darn": 2000,
+              "tests:internal/darnengine": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 105.5,
+            "written": 32154
+          },
+          {
+            "card": 9,
+            "card_text": 360,
+            "reads": {
+              "file:contracts/stencils/landing/landing-template-describe-darn.md": 552,
+              "file:internal/landingshed/doc.go": 1764,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/landing": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/landing": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 102,
+            "written": 30960
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-darn-review-scope",
+        "11-alignment-pr-gate-measure",
+        "12-darn-pr-align-wiring",
+        "13-darn-recipe-rows",
+        "14-orch-correction-guidance"
+      ],
+      "profile": "cautious",
+      "estimate": 250362,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68436,
+        "read_union": 62676,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 336,
+            "reads": {
+              "file:contracts/recipes/darn-recipe.yaml": 2112,
+              "file:contracts/stencils/loom/loom-rubric-darn-review.md": 840,
+              "package:contracts/recipes": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/loomrecipe": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/loomrecipe": 2000
+            },
+            "messages": 37.5,
+            "written": 11586
+          },
+          {
+            "card": 11,
+            "card_text": 612,
+            "reads": {
+              "file:contracts/stencils/loom/loom-template-alignment.md": 1308,
+              "file:internal/alignment/doc.go": 552,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/alignment": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/alignment": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 152.5,
+            "written": 46362
+          },
+          {
+            "card": 12,
+            "card_text": 456,
+            "reads": {
+              "file:internal/loomcli/doc.go": 2556,
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 118,
+            "written": 35856
+          },
+          {
+            "card": 13,
+            "card_text": 480,
+            "reads": {
+              "file:contracts/recipes/darn-recipe.yaml": 2112,
+              "file:contracts/specs/refusal-spec.md": 5376,
+              "file:docs/overview.md": 9000,
+              "file:internal/loomrecipe/doc.go": 348,
+              "package:contracts/recipes": 2000,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/loomrecipe": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomrecipe": 2000
+            },
+            "messages": 66.5,
+            "written": 20430
+          },
+          {
+            "card": 14,
+            "card_text": 216,
+            "reads": {
+              "file:contracts/stencils/orch/orch-template-role.md": 2484,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/orch": 2000
+            },
+            "messages": 16,
+            "written": 5016
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "5d5412f02fafe30d78f8f33fb0631227",
+  "masterSessionId": "a9da6aec-5f1a-4cba-a1a7-37417a148270",
+  "batches": {
+    "1": {
+      "slug": "discussion-spec",
+      "cards": [
+        "01-discussion-spec",
+        "02-committed-file-history",
+        "03-kept-entries-check",
+        "04-darn-discussion-gate",
+        "05-gate-resolver-darn"
+      ],
+      "cardHashes": {
+        "01-discussion-spec": "60af9ce6c0957a3cb4e2e5e23e351f29af9aa7bae72b89c9a7ce0b70135e4ef1",
+        "02-committed-file-history": "6720f42961c6dfe9a817e1c24bd893a939f7c296c88d091cd9f20e2ee1328113",
+        "03-kept-entries-check": "73ae7cdd781900f25d521866cbe4041157b6c64450065d02cfa1014e3d63972d",
+        "04-darn-discussion-gate": "a8240100a4e3cbd6c55bd386d1e095283da7f75974deb71e8ba357733c38a2ce",
+        "05-gate-resolver-darn": "02cee8678bebf16d3beeb15f8a85bff246d9fb61918a30dd9c7f7a1826361fdf"
+      },
+      "startSha": "e2366eca7599d9b238ae977a6d763eb5fbe17d02",
+      "kind": "fork",
+      "spawnedAt": "2026-10-14T15:50:37Z",
+      "sessionId": "a9da6aec-5f1a-4cba-a1a7-37417a148270",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
