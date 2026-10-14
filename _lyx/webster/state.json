@@ -198,7 +198,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "840887492a0b450daf6d63008e525a0d",
   "masterSessionId": "6fd58a27-eabb-41d9-ac7c-d76f447481ee",
   "batches": {
@@ -246,6 +246,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-hibernate-trigger/6fd58a27-eabb-41d9-ac7c-d76f447481ee/subagents/agent-aafbc567865cafce7.jsonl"
       ]
+    },
+    "5": {
+      "slug": "hibernate-cli",
+      "cards": [
+        "05-hibernate-cli",
+        "06-sleep-deny",
+        "07-shortcuts-p-r",
+        "08-orch-role-hibernate"
+      ],
+      "cardHashes": {
+        "05-hibernate-cli": "86b653a66efea6afb8f86d351201b1cbb913fc04713f27bfdee0d902c80b458a",
+        "06-sleep-deny": "9caacf1e4aabdfb863411e3f560616f57030e08470791f3bce750a5b7b16d04c",
+        "07-shortcuts-p-r": "fd10d318c6bafcf06b486c6f8f0544f9fa0cc5d4df807edce22f8c2f408f430b",
+        "08-orch-role-hibernate": "ed3b2c88375e35c52ea1dba359e55d5abec6dad74a462845d4507318410cd980"
+      },
+      "startSha": "61e42da0db5e5733ee5dafd583b9d3689a104f99",
+      "kind": "fork",
+      "spawnedAt": "2026-10-14T17:46:50Z",
+      "sessionId": "6fd58a27-eabb-41d9-ac7c-d76f447481ee",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
