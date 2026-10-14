@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=4cc9b9265c36bfbdd29706a39cc7107fda1a7470ec262daa458dfce340e6b661 build=1e39afc10eb44299d7bb150adf86bcb6bf84a8a8 time=2026-10-13T14:42:47Z -->
+<!-- lyx-stencil: sha256=786550240e251e22c3c33116a859034321b994579d5bf60e97c76b26d34d7c12 build=d4824a3d68de466ba3db5015cf6212f7d41126f7 time=2026-10-14T16:27:00Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -34,6 +34,11 @@ For EACH card file listed above, in the order listed:
    this gate is implicit in every card, never optional.
 
 {{.card_gates}}
+
+   A card gate's guard step, the `lyx gate test --tags integration … -- -run` step over the repository's `//lyx:guard` tests, can fail on a file the card does not list, such as the pinned set in a `cmd/lyx` test.
+   Fix it under the card's commit.
+   Fix the code that broke the guard where that is the right fix, and change a pinned set or an allowlist only when the pin itself must move.
+   Change only a file the guard step's failure names this way; every other deviation rule stands.
 
 4. Commit the card to the repo — normal dev git, run from your working directory — never any `_lyx` path.
    One commit per card is the norm.
