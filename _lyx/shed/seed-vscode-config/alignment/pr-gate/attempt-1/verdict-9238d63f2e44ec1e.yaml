@@ -1,0 +1,13 @@
+verdict: escalate
+reason: >-
+  The diff covers every point of the board entry except one: board scope item 2 puts the Open-Window, Seed-IDE and Open-IDE rows right after Worktree-Create, and the diff puts them after Seed-Child.
+  No Added-after-Discussion entry records that move.
+  The Darn-Review carry-over in the decision record keeps it open as row-placement-departs-from-board-entry and defers it to the parent, as the effect of an unrecorded parent correction.
+  The entry pulls against itself, because a task's run_settings reach the pair's local layer only in Seed-Child (writeRunSettings in internal/battenshed/seamchild.go), and scope item 3 needs them to set the flags per task.
+  Only the parent can record or refuse the correction.
+  The only overlap is text-only with overview-seats (row 12), and this run (row 22) lands first.
+question: >-
+  Board scope item 2 of seed-vscode-config places the three rows right after Worktree-Create, but the diff places them after Seed-Child, so that a task's run_settings, written into the pair's local layer by Seed-Child, can set batten.yaml's flags as scope item 3 requires.
+  The decision record's Darn-Review carry-over (row-placement-departs-from-board-entry) leaves this open.
+  Does the parent record the after-Seed-Child placement as an amendment of scope item 2, which costs the window opening a few seconds later than "as soon as the pair exists", or refuse it and require the rows directly after Worktree-Create with another way to honour per-task flags?
+superseded: []
