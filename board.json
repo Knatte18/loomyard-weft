@@ -816,6 +816,22 @@
       "status": "running · Discussion-Write",
       "created": "2026-10-11T14:06:09Z",
       "revised": "2026-10-14T16:28:37Z"
+    },
+    {
+      "id": 495,
+      "slug": "twb-f2-ia",
+      "title": "twill fork0 bench pair twb-f2-ia",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Bench pair for twill-fork-timing, Plan-Write fork0 against after, both with the critical fixer",
+      "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write fork0 bench. Plan-Write only, from a frozen decision record.",
+      "created": "2026-10-14T16:49:54Z",
+      "revised": "2026-10-14T16:49:54Z"
     }
   ]
 }
