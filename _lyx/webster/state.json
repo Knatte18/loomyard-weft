@@ -305,7 +305,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "622d89feca73b348c555b3145452f402",
   "masterSessionId": "7dcad885-e3f1-4e52-b765-afe7ef72c656",
   "batches": {
@@ -353,6 +353,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender/7dcad885-e3f1-4e52-b765-afe7ef72c656/subagents/agent-abffd1379e2e0fb99.jsonl"
       ]
+    },
+    "7": {
+      "slug": "proc-process-listing",
+      "cards": [
+        "07-proc-process-listing",
+        "08-tender-command",
+        "09-tender-status",
+        "10-tender-revive",
+        "11-reed-attach-exec",
+        "12-tender-rename"
+      ],
+      "cardHashes": {
+        "07-proc-process-listing": "80d5cee8cacf9a94892faf8de463c0771f93df616bdc8015adea8fb5838b0b96",
+        "08-tender-command": "adae94db43d6ca896bbb3c4c5c9f6d43d99369c92bcf779a0f755269a0691622",
+        "09-tender-status": "1ccb9980901304ff8b438ae8606108910c0aa3f1a658609008f1547dba0a8ef6",
+        "10-tender-revive": "367c9bb2cb6eb9a4016ab8d9d3e62cdfe1b953807ac301a010cc380336c5d4f3",
+        "11-reed-attach-exec": "1c3740f818b430c2a2da41c64aa466c4de609e2c986859d1f33936acda6712ef",
+        "12-tender-rename": "c2bff1470cfe6fb059f23925316010fdecbf22ec786ebc931f05c9d3249a7ef1"
+      },
+      "startSha": "3c5699680211f4f2b9f924e3bf7d9230265ecdf6",
+      "kind": "fork",
+      "spawnedAt": "2026-10-14T14:55:43Z",
+      "sessionId": "7dcad885-e3f1-4e52-b765-afe7ef72c656",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
