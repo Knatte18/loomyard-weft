@@ -1,11 +1,11 @@
-<!-- This is the Darn-Review rubric. It is read by both rows of the darn recipe's Darn-Review perch:
+<!-- This is the Darn-Review rubric. It is read by the Bouncer row and the review row of the darn recipe's Darn-Review perch:
      the Darn-Bouncer row interpolates it as bouncer-template-seed.md's and
-     bouncer-template-judge.md's rubric marker value, and the Darn-Burler row interpolates it
-     the same way into internal/burlerengine's own round prompt.
+     bouncer-template-judge.md's rubric marker value, and the Darn-Burler-Review row interpolates it
+     the same way into internal/burlerengine's own review prompt.
      It is a marker VALUE, never a template -- it carries no top-level stencil markers of its own, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=b58256b6f510a76a74fb48cfafd75858d82af4bd4d92bf3faff5c1dafe7397eb build=5271f1887cbe8a1dd77b279b389c8c5275b59548 time=2026-10-11T10:32:34Z -->
+lyx-stencil: sha256=1ae3285864a3df3418817cbe757c5ba9920876469d87192e9a5fa03ed3f29003 build=0850f76e44d4328c27ab16d0bea13c08c7e0eb8e time=2026-10-14T16:52:39Z -->
 
 # Darn-Review rubric
 
@@ -13,7 +13,9 @@ The subject under review is the **committed diff**, not a file and not a directo
 Ordinary diff review is the base: read the diff as code, with no checklist supplied, and judge it the way a careful reviewer judges any change.
 The dimensions under `## Also flag` are added on top of that base, never a replacement for it.
 
-The measuring stick is the task's board entry, read with `lyx board get '{"slug":"<slug>"}'`, where `<slug>` is this worktree's own directory name.
+The measuring stick is the task's board entry, read with `lyx board get '{"slug":"<slug>"}'`, where `<slug>` is this worktree's own directory name, as amended by the `Added after Discussion` entries of `_lyx/discussion/decision-record.md`.
+An entry by the parent, the operator or the arbiter wins over the board body where they differ.
+The record's other sections are the writer's own claim, made before coding and reviewed by no one: check them against the board entry the way the change description is checked, never use them as the measuring stick.
 The change description at `_lyx/landing/summary.md` is the writer's own account of the diff: read it as a claim to check against the diff, never as the measuring stick.
 
 This perch is a safety net behind one writer who edited, tested and committed the change and passed a mechanical verify gate.
@@ -38,7 +40,7 @@ Do not flag any of the following as a finding:
 - **Anything the verify gate already decides.**
   A failing build or test is the verify gate's to report, and it ran on this tree before the review.
 - **Findings raised against the board entry itself.**
-  The board entry is the measuring stick and never the subject.
+  The board entry and the record's `Added after Discussion` entries are the measuring stick and never the subject.
   A finding about what the entry should have asked for cannot be satisfied by changing the diff, which is the only thing this segment can fix.
 - **Anything that is not the diff.**
   This segment's own round artifacts under `_lyx/reviews/darn/` are never the subject of a finding.
@@ -46,7 +48,11 @@ Do not flag any of the following as a finding:
 ## Also flag
 
 - **Scope against the board entry.**
-  A change the entry asks for that the diff does not make, and a change the diff makes that the entry does not license, are each a finding.
+  A change the amended entry asks for that the diff does not make, and a change the diff makes that the amended entry does not license, are each a finding.
+- **An unrecorded parent correction.**
+  A deviation from the amended board entry that the change description names as an unrecorded parent correction is never fixed by revert.
+  File it as class `decision` at severity MEDIUM.
+  Its fix text tells the fixer to leave the code in place and defer the finding to the run's parent, since its only sound change, recording or refusing the correction with `lyx loom decision add`, is the parent's and lies outside the fixer's write surface.
 - **The repository's own rules.**
   The diff follows the target repository's constraints document if it has one, and the docs it names for the kind of change the diff makes land in the same diff.
   A rule written in that document outranks a convention inferred from the surrounding code.

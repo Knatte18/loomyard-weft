@@ -1,11 +1,11 @@
-<!-- This is the Discussion-Review rubric. It is read by both rows of the Discussion-Review perch:
+<!-- This is the Discussion-Review rubric. It is read by the Bouncer row and the review row of the Discussion-Review perch:
      the Discussion-Bouncer row interpolates it as bouncer-template-seed.md's and
-     bouncer-template-judge.md's rubric marker value, and the Discussion-Burler row interpolates it
-     the same way into internal/burlerengine's own round prompt.
+     bouncer-template-judge.md's rubric marker value, and the Discussion-Burler-Review row interpolates it
+     the same way into internal/burlerengine's own review prompt.
      It is a marker VALUE, never a template -- its only markers are the ones ReadRubric fills, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=b1cd337441cd89aa3c4e85732e437b997e477ee13e863442916c10ae4080d6f3 -->
+lyx-stencil: sha256=8709491342065b44596b6b7f39ba0a444a706f475fe8d66522aab3ec6fcd6d88 build=0850f76e44d4328c27ab16d0bea13c08c7e0eb8e time=2026-10-14T16:52:39Z -->
 
 # Discussion-Review rubric
 
@@ -38,7 +38,7 @@ Do not flag any of the following as a finding:
   For every new verb, flag, escape hatch or routing edge, and every guard that is removed, downgraded or bypassable, the Decision that introduces it states what it can now skip or let through and what bounds it.
   A Decision that introduces one with no stated bound is a finding.
 - **The writer/reviewer symmetry note.**
-  The discussion writer's own stencil is `{{.stencils_dir}}/loom/loom-template-discussion.md`: read it to learn what the writer was told not to gather.
+  The discussion writer's own stencil is `{{.stencils_dir}}/loom/loom-template-discussion.md`, and the record rules it follows are in `{{.specs_dir}}/loom/loom-discussion-spec.md`: read them to learn what the writer was told not to gather.
   Whatever it says not to gather, this rubric must not flag as missing, or the additive bias reappears even with the writer-side fix in place.
 
 ## Finding class

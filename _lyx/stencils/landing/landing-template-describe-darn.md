@@ -2,9 +2,9 @@
      default in the top-level stencils package (stencils/stencils.go), seeded to
      <hub>/_board/_lyx/stencils/landing/, and read from there at call time by landingshed's
      DarnDescribeSpec via internal/stencil, then handed to shuttle as the describing agent's whole
-     prompt. Every marker below is a top-level {{.X}} substitution; stencil.Fill requires every
+     prompt. The markers are slug, decision_record_path, task_branch, parent_branch, review_dir and description_path, plus the two directives. Every marker below is a top-level {{.X}} substitution; stencil.Fill requires every
      marker non-empty, parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective) included, and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=575e2825b68a183e678526a8ea103a9ab78f7e727487a7d127cbcbf46fc0bac4 build=66f4e711353236a637689da121b500ac49da45e6 time=2026-10-11T11:12:50Z -->
+lyx-stencil: sha256=856a338f40628cb491ba0eacb28a6237100570acd63e290b2829aaed57219ebd build=0850f76e44d4328c27ab16d0bea13c08c7e0eb8e time=2026-10-14T16:52:39Z -->
 
 # Change description — write the one description this task lands under
 
@@ -20,6 +20,9 @@ The change was reviewed and may have been fixed after its first description was 
 Read only these sources, and use read-only git for the diff:
 
 - The board entry, via `lyx board get '{"slug":"{{.slug}}"}'`.
+- The decision record `{{.decision_record_path}}`.
+  Its `Added after Discussion` entries amend the board entry and win over its body where they differ.
+  Its other sections are the writer's own account of scope and early calls, which you read as a claim to check against the diff.
 - The diff of the task branch `{{.task_branch}}` against its merge base with the parent branch `{{.parent_branch}}` — for example `git diff $(git merge-base {{.parent_branch}} {{.task_branch}}) {{.task_branch}}`.
 - The review directory `{{.review_dir}}`, only as a source of manual-check items.
   When a `round-<N>-circling-decision.md` file in it records `decision: accept`, the review passed that round without converging.
