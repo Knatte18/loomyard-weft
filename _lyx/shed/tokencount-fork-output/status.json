@@ -3,6 +3,7 @@
   "state": "running",
   "error": "",
   "pause_requested": false,
+  "pause_after": "Darn-Burler-Review",
   "activity": {
     "now": "Darn-Burler-Review",
     "last": "Darn-Bouncer → bounced to Darn-Burler-Review",
