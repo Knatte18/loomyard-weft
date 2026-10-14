@@ -795,7 +795,7 @@
       "id": 479,
       "slug": "claimed-scope-edit",
       "title": "Darn: a decision record for mid-run scope corrections, and PR-Align",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "board",

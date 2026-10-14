@@ -1,6 +1,6 @@
 # Darn: a decision record for mid-run scope corrections, and PR-Align
 
-`claimed-scope-edit` · Note · bug, board, loom, burler
+`claimed-scope-edit` · Task · bug, board, loom, burler
 
 ## Seen (2026-10-13, `webster-pack-last`)
 
