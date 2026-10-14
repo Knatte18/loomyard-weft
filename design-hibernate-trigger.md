@@ -1,6 +1,6 @@
 # Hibernate the machine on a trigger, such as a task landing
 
-`hibernate-trigger` · Task · feature, batten · running · Batchifier
+`hibernate-trigger` · Task · feature, batten · running · Webster
 
 ## Seen (2026-10-13)
 
