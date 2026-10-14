@@ -1,0 +1,13 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/cmd/lyx.TestTierPurity_UntaggedTestsSpawnNothing
+      kind: test
+      package: github.com/Knatte18/loomyard/cmd/lyx
+      tail: |4-
+            tierpurity_test.go:138: `PATTERN-test-speed` violated:
+                internal/githubclient/githubclient_test.go: contains a literal time.Sleep(...) of >= 1s in an untagged test file (/home/knatte/Code/loomyard-LYXHUB/tender/internal/githubclient/githubclient_test.go:677:3 (duration argument could not be resolved to a known constant)) — move it behind a build tag, shrink the duration, or add an allowedLongSleepers entry in cmd/lyx/tiersleep_test.go with a reason
+                internal/selfreportengine/inbox_test.go: contains a literal time.Sleep(...) of >= 1s in an untagged test file (/home/knatte/Code/loomyard-LYXHUB/tender/internal/selfreportengine/inbox_test.go:100:5 (duration argument could not be resolved to a known constant)) — move it behind a build tag, shrink the duration, or add an allowedLongSleepers entry in cmd/lyx/tiersleep_test.go with a reason
+log_path: /home/knatte/Code/loomyard-LYXHUB/tender/.lyx/verify/verify-2.log
+hint:
+    - 07-proc-process-listing
