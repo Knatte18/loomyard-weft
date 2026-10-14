@@ -214,6 +214,12 @@ Rationale: Plan-Bouncer's approve_seam is the only writer of approved: true, and
   - d9-hand-on-end-time-file (class design, severity MEDIUM, open in rounds 4)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - null-per-perch-budget-breaks-config-set (class scope, severity MEDIUM, open in rounds 1, 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A darn `.local` override and a board `run_settings` of `{"darn": {"review_max_bounces": 2, "review_hard_max_bounces": 3}}` are accepted and the darn run's Darn-Review uses budget 2 and hard cap 3.
