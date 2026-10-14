@@ -1,0 +1,15 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 16,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-10-14T19:42:16.641431834+02:00",
+  "deadline": "2026-10-14T20:12:16.641431834+02:00",
+  "strand_guid": "3fc0cea9f52f61820a8dd63e7c60409a",
+  "envelope_path": "/home/knatte/Code/loomyard-LYXHUB/perch-budget-arbiter/.lyx/shed/perch-budget-arbiter/steps/e2c481eef206b207.json",
+  "report_path": "/home/knatte/Code/loomyard-LYXHUB/perch-budget-arbiter/_lyx/shed/perch-budget-arbiter/drive-reports/drive-report-20261014-190329-dbc0.md"
+}

@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Hard-cap escalation at Discussion-Bouncer round 4. The open design-wrong findings are F1 (d9-hand-on-end-time-file, MEDIUM) and F2 (d9-hand-on-episode-bound, LOW). The round-4 fixer applied both fixes as proposed, and decision-record.md D9 now carries them. Line 136 dates a hand-on by the attempt's envelope.json, line 135 bounds it to an envelope written in this episode, and line 143 keeps the end time no earlier than the episode's since. The restart criterion (line 197) and support-log Q14 match. The code agrees with both premises: handOn in internal/loomcli/arbiter.go routes through finish, which writes envelope.json for every outcome, and MarkArbiterApplied in internal/loomengine/arbiter.go writes the applied mark the F4 fix dates. F3 and F4 are mechanical NITs, also fixed. With the fixes answering the findings, the hard-cap rule says accept. I made no design calls of my own, so I recorded no decision.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling accept perch-budget-arbiter"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/perch-budget-arbiter/_lyx/shed/perch-budget-arbiter/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/perch-budget-arbiter/_lyx/shed/perch-budget-arbiter/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lyx shed step perch-budget-arbiter --until-stop --arbiter-attempt 1"
+}
