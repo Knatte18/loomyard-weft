@@ -30,6 +30,7 @@ All six forks returned a report. Premises re-checked against `overview-seats-wef
 - board-fit, LOW, `lighter-test-rules` unnamed: fixed as proposed in the test-economy constraint.
 - pattern-fit and scenarios, MEDIUM (merged), a master ending after the overview exists counts as finished under `PATTERN-completion-signal` and is re-prompted, not relaunched, and the re-prompt rule would skip the lens review: fixed as proposed; D3 rewritten around the completion signal, with a re-prompted master that has not spawned its lens forks running the lens review once.
 - scenarios, MEDIUM, relaunch is a fresh spawn whose rotator archives the partial plan: fixed as proposed; D3 says a session ending before the overview exists is respawned fresh and runs the whole procedure.
+  A relaunch can also be a reed resume of the same conversation, which D3 covers with its resumed paths.
 - scenarios, LOW, the "at most twice" bound did not hold under a second relaunch: fixed differently; the bound is now per master session, a respawn counting as a new master, as today.
 - scenarios, LOW, D3 branches as one acceptance item: fixed as proposed; each failure path is its own criterion item.
 - scenarios, LOW, the plan rejection rule's "unplanned test" escape dropped: fixed as proposed in D6's waiver sentence.
@@ -69,7 +70,8 @@ _No rounds yet._
 - Q1 (auto-pick): Does the critical judge also apply where twill reviews Discussion-Write? Picked yes (D6): one judge text in the shared directive, and Discussion-Burler-Fix already weighs findings this way; the benches measured Plan-Write only, recorded under Open risks.
 - Q2 (auto-pick): Keep the after-flow selectable? Picked no (D1): the operator chose fork0, and YAGNI.
 - Q3 (auto-pick): Where does fork0's text live? Picked an optional, host-neutral part of the twill directive (D4).
-- Q4 (auto-pick): What happens when fork0 returns an incomplete plan or the master is relaunched? Picked D3: the master finishes the plan; a relaunch respawns fork0 once only when the overview is missing.
+- Q4 (auto-pick): What happens when fork0 returns an incomplete plan or the master is relaunched? Picked D3: the master finishes an incomplete plan itself; a fresh respawn before the overview exists runs the whole procedure, fork0 included; each master session spawns fork0 at most once, and a respawned session counts as a new master.
+  A session resumed in the same conversation through reed's `ResumeCmd` is not a new master: it keeps its per-session bound, never spawns fork0 or lens forks a second time, and takes D3's resumed paths.
 - Q5 (auto-pick): Lens or rubric for the wrong-parent-directory miss? Picked the `criteria-coverage` lens (D9).
 - Q6 (auto-pick): Where does `branch-coverage` sit in the fan? Picked after `criteria-coverage` (D7); order has no behavioral effect beyond the rendered list.
 - Q7 (auto-pick): Fork boilerplate wording under fork0? Picked a host-neutral "written and passed the self-check before you were spawned" (D5).
