@@ -1013,6 +1013,22 @@
       "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write critical-fixer 2x2 bench. Plan-Write only, from a frozen decision record.",
       "created": "2026-10-14T15:20:24Z",
       "revised": "2026-10-14T15:20:24Z"
+    },
+    {
+      "id": 492,
+      "slug": "twb-fx-wd",
+      "title": "twill fixer bench pair twb-fx-wd",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run",
+      "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write critical-fixer 2x2 bench. Plan-Write only, from a frozen decision record.",
+      "created": "2026-10-14T15:20:29Z",
+      "revised": "2026-10-14T15:20:29Z"
     }
   ]
 }

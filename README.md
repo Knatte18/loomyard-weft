@@ -63,20 +63,21 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 18 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 1d | 1d | burler, stencil |
 | 19 | **Seed the VS Code config of each pair when it is made**<br>• Write the title-bar color and .vscode config that lyx ide spawn writes when a pair is made, so code . gives the same | [`seed-vscode-config`](design-seed-vscode-config.md) | 1d | 1d | ide, batten |
 | 20 | **Overview window: one combined log and checklist, no stuck for a bounce**<br>• A bounce reads stuck, finished rows show in both log and checklist, paused time counts as row time | [`overview-window-tidy`](design-overview-window-tidy.md) | 59m | 46m | reed, shed, loom |
-| 21 | **Seat names: none for a lone seat, operator-chosen names for several, no chair**<br>• burler-review-chair shows chair even with one seat; let the operator name seats | [`seat-names`](design-seat-names.md) | 53m | 49m | shed, burler, reed |
-| 22 | **Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 16m | 16m | loom, webster, config |
+| 21 | **Seat names: none for a lone seat, operator-chosen names for several, no chair**<br>• burler-review-chair shows chair even with one seat; let the operator name seats | [`seat-names`](design-seat-names.md) | 53m | 50m | shed, burler, reed |
+| 22 | **Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 17m | 17m | loom, webster, config |
 | 23 | **twill fixer bench pair twb-fx-wa**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-wa`](design-twb-fx-wa.md) | 0m | 0m |  |
 | 24 | **twill fixer bench pair twb-fx-wb**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-wb`](design-twb-fx-wb.md) | 0m | 0m |  |
 | 25 | **twill fixer bench pair twb-fx-wc**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-wc`](design-twb-fx-wc.md) | 0m | 0m |  |
+| 26 | **twill fixer bench pair twb-fx-wd**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-wd`](design-twb-fx-wd.md) | 0m | 0m |  |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 26 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 10d | 4d | fabric |
-| 27 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 10d |  | ide, fabric |
-| 28 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 6d | 2d | shed |
-| 29 | **Bench the chair-and-advisors Discussion against the solo writer before switching it on**<br>• Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on | [`discussion-multi-llm-bench`](design-discussion-multi-llm-bench.md) | 4d | 2d | loom, stencil, config |
+| 27 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 10d | 4d | fabric |
+| 28 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 10d |  | ide, fabric |
+| 29 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 6d | 2d | shed |
+| 30 | **Bench the chair-and-advisors Discussion against the solo writer before switching it on**<br>• Same tasks through both producers, compare review rounds, findings, tokens and time; the operator watches a live run before it goes on | [`discussion-multi-llm-bench`](design-discussion-multi-llm-bench.md) | 4d | 2d | loom, stencil, config |
 
 ### Features
 
