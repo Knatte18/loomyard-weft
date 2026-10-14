@@ -305,7 +305,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "622d89feca73b348c555b3145452f402",
   "masterSessionId": "7dcad885-e3f1-4e52-b765-afe7ef72c656",
   "batches": {
@@ -376,11 +376,47 @@
       "kind": "fork",
       "spawnedAt": "2026-10-14T14:55:43Z",
       "sessionId": "7dcad885-e3f1-4e52-b765-afe7ef72c656",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "failed",
+      "digest": {
+        "batch": "07-proc-process-listing",
+        "status": "failed",
+        "head_sha": "5348618b43261dbfdac31795c5e8fda821e0adc3",
+        "reasons": [
+          "batch 07-proc-process-listing holds cards 7-proc-process-listing, 8-tender-command, 9-tender-status, 10-tender-revive, 11-reed-attach-exec, 12-tender-rename",
+          "rename-not-done/8-tender-command[blocking]: Rename pair's new side \"plan:internal/pausecli#resumeCmd\" still does not resolve — the rename did not happen: looked up \"internal/pausecli#resumeCmd\", quarry answered not_found (the unit is missing)",
+          "create-not-done/8-tender-command[blocking]: Create target \"plan:internal/pausecli#pauseCmd\" still does not resolve: looked up \"internal/pausecli#pauseCmd\", quarry answered not_found (the unit is missing)",
+          "create-not-done/8-tender-command[blocking]: Create target \"plan:internal/pausecli#statusCmd\" still does not resolve: looked up \"internal/pausecli#statusCmd\", quarry answered not_found (the unit is missing)",
+          "rename-not-done/9-tender-status[blocking]: Rename pair's new side \"plan:internal/pausecli#shuttlePair.State\" still does not resolve — the rename did not happen: looked up \"internal/pausecli#shuttlePair.State\", quarry answered not_found (the unit is missing)",
+          "create-not-done/9-tender-status[blocking]: Create target \"plan:internal/pauseengine#SessionStatus\" still does not resolve: looked up \"internal/pauseengine#SessionStatus\", quarry answered not_found (the unit is missing)",
+          "create-not-done/9-tender-status[blocking]: Create target \"plan:internal/pauseengine#StaleReport\" still does not resolve: looked up \"internal/pauseengine#StaleReport\", quarry answered not_found (the unit is missing)",
+          "create-not-done/9-tender-status[blocking]: Create target \"plan:internal/pauseengine#StaleProcess\" still does not resolve: looked up \"internal/pauseengine#StaleProcess\", quarry answered not_found (the unit is missing)",
+          "create-not-done/9-tender-status[blocking]: Create target \"plan:internal/pauseengine#sessionStatuses\" still does not resolve: looked up \"internal/pauseengine#sessionStatuses\", quarry answered not_found (the unit is missing)",
+          "create-not-done/9-tender-status[blocking]: Create target \"plan:internal/pauseengine#staleProcesses\" still does not resolve: looked up \"internal/pauseengine#staleProcesses\", quarry answered not_found (the unit is missing)",
+          "create-not-done/9-tender-status[blocking]: Create target \"plan:internal/pauseengine#fakePair.State\" still does not resolve: looked up \"internal/pauseengine#fakePair.State\", quarry answered not_found (the unit is missing)",
+          "create-not-done/10-tender-revive[blocking]: Create target \"plan:internal/pauseengine#ReviveLine\" still does not resolve: looked up \"internal/pauseengine#ReviveLine\", quarry answered not_found (the unit is missing)",
+          "create-not-done/10-tender-revive[blocking]: Create target \"plan:internal/pauseengine#ReviveRequest\" still does not resolve: looked up \"internal/pauseengine#ReviveRequest\", quarry answered not_found (the unit is missing)",
+          "create-not-done/10-tender-revive[blocking]: Create target \"plan:internal/pauseengine#ReviveReport\" still does not resolve: looked up \"internal/pauseengine#ReviveReport\", quarry answered not_found (the unit is missing)",
+          "create-not-done/10-tender-revive[blocking]: Create target \"plan:internal/pauseengine#OrchRevive\" still does not resolve: looked up \"internal/pauseengine#OrchRevive\", quarry answered not_found (the unit is missing)",
+          "create-not-done/10-tender-revive[blocking]: Create target \"plan:internal/pauseengine#Revive\" still does not resolve: looked up \"internal/pauseengine#Revive\", quarry answered not_found (the unit is missing)",
+          "create-not-done/10-tender-revive[blocking]: Create target \"plan:internal/pauseengine#reviveSession\" still does not resolve: looked up \"internal/pauseengine#reviveSession\", quarry answered not_found (the unit is missing)",
+          "create-not-done/10-tender-revive[blocking]: Create target \"plan:internal/pauseengine#reviveOrch\" still does not resolve: looked up \"internal/pauseengine#reviveOrch\", quarry answered not_found (the unit is missing)",
+          "create-not-done/10-tender-revive[blocking]: Create target \"plan:internal/pauseengine#fakePair.SendConditioned\" still does not resolve: looked up \"internal/pauseengine#fakePair.SendConditioned\", quarry answered not_found (the unit is missing)",
+          "create-not-done/10-tender-revive[blocking]: Create target \"plan:internal/pauseengine#TestRevive\" still does not resolve: looked up \"internal/pauseengine#TestRevive\", quarry answered not_found (the unit is missing)",
+          "create-not-done/10-tender-revive[blocking]: Create target \"plan:internal/pausecli#reviveCmd\" still does not resolve: looked up \"internal/pausecli#reviveCmd\", quarry answered not_found (the unit is missing)",
+          "create-not-done/10-tender-revive[blocking]: Create target \"plan:internal/pausecli#shuttlePair.SendConditioned\" still does not resolve: looked up \"internal/pausecli#shuttlePair.SendConditioned\", quarry answered not_found (the unit is missing)"
+        ]
+      },
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender/7dcad885-e3f1-4e52-b765-afe7ef72c656/subagents/agent-a42938ef9f1cbc904.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender/7dcad885-e3f1-4e52-b765-afe7ef72c656/subagents/agent-a42938ef9f1cbc904.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender/7dcad885-e3f1-4e52-b765-afe7ef72c656/subagents/agent-abffd1379e2e0fb99.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender/7dcad885-e3f1-4e52-b765-afe7ef72c656/subagents/agent-abffd1379e2e0fb99.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender/7dcad885-e3f1-4e52-b765-afe7ef72c656/subagents/agent-a42938ef9f1cbc904.jsonl"
   ]
 }
