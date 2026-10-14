@@ -1,0 +1,10 @@
+---
+round: 3
+focus:
+  - "D9's 'When the hold ends' bullet in decision-record.md: when batten's hold on an eligible stop ends on the arbiter's hand-on attempt record, before the driver has written its stop report, does the decided notice timing keep a relay wait measured from the report (or a report wait measured from the hand-on) rather than sending the notice at once with no report yet? Check this against how stateChangeReady in internal/battenshed/notice.go decides readiness for a watched awaiting stop with a parent notice, and check that the acceptance criterion for the hand-on path pins the same outcome."
+  - "D9's end condition in decision-record.md: when the Go driver hands over to a successor driver at a binary-eligible blocked stop and the hand-over writes a stop report and park marker (internal/loomcli/drive.go handOver, placed before the tackler and arbiter in decideDrive), does the hold still run until the successor's arbiter has acted, or does the hand-over's own report and marker end it early? Check that an acceptance criterion covers the case."
+  - "D4 in decision-record.md, the run_settings path: PrepareRunSettings in internal/configreg/runsettings.go runs the module's Migrate hook before configengine.ValidateLocal. Does D4 decide where the review_max_bounces refusal is raised and on which document, so the refusal names review_max_bounces and the hub's darn.yaml skip_review as the way forward, and not skip_review as a key the task set? Check the acceptance criterion for run_settings agrees."
+  - "D5 and D9 in decision-record.md: D9 takes the eligibility of a blocked stop from D5's shared function, while D5 defines that function for an awaiting stop's escalation cause and D6 holds the blocked rule (a Merge-In or Publish verify halt naming a target is refused). Does the record say which single Go function answers the verb's whole awaiting and blocked eligibility for the verb, the Go driver and batten's hold, so batten carries no copy of the rule?"
+---
+
+Round 3 re-checks the D9 hold timing and end conditions, D4's run_settings refusal mechanism and the D5/D9 eligibility source, each against the code the entry names.
