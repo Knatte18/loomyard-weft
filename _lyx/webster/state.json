@@ -1,0 +1,338 @@
+{
+  "runGuid": "536c546e8bfeed4b8edb7ceecbc98003",
+  "planFingerprint": "b9ee8b85733dfee72bbd0a1c8b3d6f3d5e8e0df08cc2e7d1f46eaad00291cb1f",
+  "planFileHashes": {
+    "00-overview.md": "78cdc52679e80a7805a018d5e3525ffded09b0169d5f5fc6de50ebba91f725b8",
+    "01-pauserecord-network-held.md": "28f97329e709280faae540010a6c0a7b5146b5a4fa8a918381b30eaf1e6e683c",
+    "02-github-held-deadline.md": "8da8c4ba6654ea49dcb02fa11617039d97355b6958341ff5b82bc011e6aba465",
+    "03-github-per-request-deadlines.md": "1afb44f7c82009166f738a47f03b7d485e8580c13aec363e6354a72f76e120c7",
+    "04-shuttle-conditioned-send.md": "fd506dd4c58f813c262b9ba899d77d0267207e3bfcf798743cb1c3218c78f66c",
+    "05-orch-conditional-notice.md": "8f1aae3d1cc34c77142f7c94ee4fbb5af70b030aaae6ab98afc1b529962a2a67",
+    "06-orch-watch-binary-reexec.md": "301a1845e3ea03bf026fb35f525a0310090be045fc4eba75f1478eae68c480af",
+    "07-proc-process-listing.md": "80d5cee8cacf9a94892faf8de463c0771f93df616bdc8015adea8fb5838b0b96",
+    "08-tender-command.md": "adae94db43d6ca896bbb3c4c5c9f6d43d99369c92bcf779a0f755269a0691622",
+    "09-tender-status.md": "1ccb9980901304ff8b438ae8606108910c0aa3f1a658609008f1547dba0a8ef6",
+    "10-tender-revive.md": "367c9bb2cb6eb9a4016ab8d9d3e62cdfe1b953807ac301a010cc380336c5d4f3",
+    "11-reed-attach-exec.md": "1c3740f818b430c2a2da41c64aa466c4de609e2c986859d1f33936acda6712ef",
+    "12-tender-rename.md": "c2bff1470cfe6fb059f23925316010fdecbf22ec786ebc931f05c9d3249a7ef1"
+  },
+  "planOverviewFrameHash": "e97536f9ff550a383e897e57d53acf909eb3a292f946a8a376142b03aea1b0dc",
+  "partition": [
+    {
+      "cards": [
+        "01-pauserecord-network-held",
+        "02-github-held-deadline",
+        "03-github-per-request-deadlines",
+        "04-shuttle-conditioned-send",
+        "05-orch-conditional-notice",
+        "06-orch-watch-binary-reexec"
+      ],
+      "profile": "cautious",
+      "estimate": 258616,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54568,
+        "read_union": 66168,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 480,
+            "reads": {
+              "file:internal/pauserecord/doc.go": 384,
+              "package:internal/battencli": 2000,
+              "package:internal/gitexec": 2000,
+              "package:internal/githubclient": 2000,
+              "package:internal/pausecli": 2000,
+              "package:internal/pauserecord": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/gitexec": 2000,
+              "tests:internal/githubclient": 2000,
+              "tests:internal/pausecli": 2000,
+              "tests:internal/pauserecord": 2000
+            },
+            "messages": 72.5,
+            "written": 22230
+          },
+          {
+            "card": 2,
+            "card_text": 864,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1788,
+              "file:internal/githubclient/doc.go": 1500,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/githubclient": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/githubclient": 2000
+            },
+            "messages": 57,
+            "written": 17964
+          },
+          {
+            "card": 3,
+            "card_text": 540,
+            "reads": {
+              "package:internal/fabriccli": 2000,
+              "package:internal/selfreportengine": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/selfreportengine": 2000
+            },
+            "messages": 57,
+            "written": 17640
+          },
+          {
+            "card": 4,
+            "card_text": 1044,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1788,
+              "file:internal/shuttleengine/doc.go": 4980,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 101,
+            "written": 31344
+          },
+          {
+            "card": 5,
+            "card_text": 756,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1788,
+              "file:internal/orchengine/doc.go": 4860,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 90.5,
+            "written": 27906
+          },
+          {
+            "card": 6,
+            "card_text": 696,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1788,
+              "file:internal/orchengine/doc.go": 4860,
+              "file:internal/selfexec/doc.go": 276,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/orchengine": 2000,
+              "package:internal/selfexec": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/orchengine": 2000,
+              "tests:internal/selfexec": 2000
+            },
+            "messages": 67,
+            "written": 20796
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-proc-process-listing",
+        "08-tender-command",
+        "09-tender-status",
+        "10-tender-revive",
+        "11-reed-attach-exec",
+        "12-tender-rename"
+      ],
+      "profile": "cautious",
+      "estimate": 381408,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61568,
+        "read_union": 112912,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 408,
+            "reads": {
+              "file:internal/proc/doc.go": 108,
+              "file:internal/proc/proc_linux.go": 1992,
+              "file:internal/proc/proc_windows.go": 864,
+              "package:internal/proc": 2000,
+              "tests:internal/proc": 2000
+            },
+            "messages": 45.5,
+            "written": 14058
+          },
+          {
+            "card": 8,
+            "card_text": 828,
+            "reads": {
+              "file:docs/overview.md": 9000,
+              "file:internal/pausecli/doc.go": 288,
+              "file:internal/shortcutcli/doc.go": 444,
+              "file:internal/shortcutcli/shortcuts.yaml": 96,
+              "file:pattern/PATTERN-cli-cobra.md": 420,
+              "file:tools/sandbox/SANDBOX-CORE-SUITE.md": 4716,
+              "package:cmd/lyx": 2000,
+              "package:docs": 2000,
+              "package:internal/pausecli": 2000,
+              "package:internal/shortcutcli": 2000,
+              "package:pattern": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:docs": 2000,
+              "tests:internal/pausecli": 2000,
+              "tests:internal/shortcutcli": 2000,
+              "tests:pattern": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 113.5,
+            "written": 34878
+          },
+          {
+            "card": 9,
+            "card_text": 996,
+            "reads": {
+              "file:docs/overview.md": 9000,
+              "file:internal/pauseengine/doc.go": 516,
+              "package:docs": 2000,
+              "package:internal/pausecli": 2000,
+              "package:internal/pauseengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/pausecli": 2000,
+              "tests:internal/pauseengine": 2000
+            },
+            "messages": 123,
+            "written": 37896
+          },
+          {
+            "card": 10,
+            "card_text": 1368,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1788,
+              "file:contracts/specs/refusal-spec.md": 5376,
+              "file:docs/overview.md": 9000,
+              "file:internal/pausecli/doc.go": 288,
+              "file:internal/pauseengine/doc.go": 516,
+              "file:tools/sandbox/SANDBOX-CORE-SUITE.md": 4716,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/pausecli": 2000,
+              "package:internal/pauseengine": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/pausecli": 2000,
+              "tests:internal/pauseengine": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 169,
+            "written": 52068
+          },
+          {
+            "card": 11,
+            "card_text": 516,
+            "reads": {
+              "file:internal/reedcli/doc.go": 228,
+              "package:cmd/lyx": 2000,
+              "package:internal/reedcli": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/reedcli": 2000
+            },
+            "messages": 85,
+            "written": 26016
+          },
+          {
+            "card": 12,
+            "card_text": 612,
+            "reads": {
+              "file:cmd/lyx/seamsignature_test.go": 900,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1788,
+              "file:docs/overview.md": 9000,
+              "file:internal/pausecli/cli.go": 2676,
+              "file:internal/pausecli/cli_test.go": 2496,
+              "file:internal/pausecli/deps.go": 2772,
+              "file:internal/pausecli/deps_test.go": 1212,
+              "file:internal/pausecli/doc.go": 288,
+              "file:internal/pausecli/gate.go": 744,
+              "file:internal/pausecli/testmain_test.go": 192,
+              "file:internal/pauseengine/doc.go": 516,
+              "file:internal/pauseengine/pause.go": 4980,
+              "file:internal/pauseengine/pause_test.go": 7908,
+              "file:internal/pauseengine/report.go": 2172,
+              "file:internal/pauseengine/resume.go": 1908,
+              "file:internal/pauseengine/resume_test.go": 2220,
+              "file:internal/pauseengine/testmain_test.go": 168,
+              "file:pattern/PATTERN-cli-cobra.md": 420,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/tendercli": 2000,
+              "package:internal/tenderengine": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/tendercli": 2000,
+              "tests:internal/tenderengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 138,
+            "written": 42012
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "622d89feca73b348c555b3145452f402",
+  "masterSessionId": "7dcad885-e3f1-4e52-b765-afe7ef72c656",
+  "batches": {
+    "1": {
+      "slug": "pauserecord-network-held",
+      "cards": [
+        "01-pauserecord-network-held",
+        "02-github-held-deadline",
+        "03-github-per-request-deadlines",
+        "04-shuttle-conditioned-send",
+        "05-orch-conditional-notice",
+        "06-orch-watch-binary-reexec"
+      ],
+      "cardHashes": {
+        "01-pauserecord-network-held": "28f97329e709280faae540010a6c0a7b5146b5a4fa8a918381b30eaf1e6e683c",
+        "02-github-held-deadline": "8da8c4ba6654ea49dcb02fa11617039d97355b6958341ff5b82bc011e6aba465",
+        "03-github-per-request-deadlines": "1afb44f7c82009166f738a47f03b7d485e8580c13aec363e6354a72f76e120c7",
+        "04-shuttle-conditioned-send": "fd506dd4c58f813c262b9ba899d77d0267207e3bfcf798743cb1c3218c78f66c",
+        "05-orch-conditional-notice": "8f1aae3d1cc34c77142f7c94ee4fbb5af70b030aaae6ab98afc1b529962a2a67",
+        "06-orch-watch-binary-reexec": "301a1845e3ea03bf026fb35f525a0310090be045fc4eba75f1478eae68c480af"
+      },
+      "startSha": "e05b83faa209927a451c0537496ad7d665c12501",
+      "kind": "fork",
+      "spawnedAt": "2026-10-14T14:45:54Z",
+      "sessionId": "7dcad885-e3f1-4e52-b765-afe7ef72c656",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
